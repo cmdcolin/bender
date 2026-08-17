@@ -1,0 +1,98 @@
+// The chip's demo-song ROM bank, the way a bargain-bin keyboard ships it: four
+// factory doodles and eight public-domain tunes everybody has heard come out of
+// a plastic speaker. Steps are semitones above A3; -1 rests, -2 holds the note
+// already sounding. stepHz is that ROM's own sequencer rate.
+export interface Rom {
+  name: string
+  stepHz: number
+  steps: number[]
+}
+
+export const ROMS: Rom[] = [
+  {
+    name: 'lullaby',
+    stepHz: 3.2,
+    steps: [0, 0, 7, 7, 9, 9, 7, -1, 5, 5, 4, 4, 2, 2, 0, -1],
+  },
+  {
+    name: 'march',
+    stepHz: 3.2,
+    steps: [0, -1, 0, 4, 7, -1, 7, 4, 0, 4, 7, 12, 7, 4, 0, -1],
+  },
+  {
+    name: 'arp',
+    stepHz: 3.2,
+    steps: [0, 4, 7, 12, 7, 4, 0, 4, 7, 12, 16, 12, 7, 4, 0, 4],
+  },
+  {
+    name: 'scale',
+    stepHz: 3.2,
+    steps: [0, 2, 4, 5, 7, 9, 11, 12, 12, 11, 9, 7, 5, 4, 2, 0],
+  },
+  {
+    name: 'für elise',
+    stepHz: 8,
+    steps: [
+      19, 18, 19, 18, 19, 14, 17, 15, 12, -2, -2, -1, 3, 7, 12, 14, -2, -2, -1, -1, 7, 11, 14, 15,
+      -2, -2, -1, -1, 7, 19, 18, 19,
+    ],
+  },
+  {
+    name: 'ode to joy',
+    stepHz: 6,
+    steps: [
+      7, -2, 7, -2, 8, -2, 10, -2, 10, -2, 8, -2, 7, -2, 5, -2, 3, -2, 3, -2, 5, -2, 7, -2, 7, -2,
+      -2, 5, 5, -2, -2, -2,
+    ],
+  },
+  {
+    name: 'rondo turca',
+    stepHz: 9,
+    steps: [
+      14, 12, 11, 12, 15, -2, -1, -1, 17, 15, 14, 15, 19, -2, -1, -1, 19, 17, 16, 17, 20, -2, -1,
+      -1, 24, 22, 20, 19, 17, 15, 14, 12,
+    ],
+  },
+  {
+    name: 'yankee',
+    stepHz: 6,
+    steps: [
+      3, 3, 5, 7, 3, 7, 5, -1, 3, 3, 5, 7, 3, -2, 2, -1, 3, 3, 5, 7, 8, 7, 5, 3, 2, 0, 2, 5, 3, -2,
+      -2, -1,
+    ],
+  },
+  {
+    name: 'camptown',
+    stepHz: 6,
+    steps: [
+      10, 10, 7, 10, 12, 10, 7, -1, 5, 7, 5, -2, -1, -1, -1, -1, 10, 10, 7, 10, 12, 10, 7, -1, 5, 3,
+      -2, -2, -1, -1, -1, -1,
+    ],
+  },
+  {
+    name: 'wm tell',
+    stepHz: 9,
+    steps: [
+      10, 10, 10, -1, 10, 10, 10, -1, 10, 10, 10, 10, 10, 10, 10, -1, 10, 15, 19, -1, 10, 15, 19,
+      -1, 19, 17, 15, 17, 15, 17, 15, -1,
+    ],
+  },
+  {
+    name: 'ragtime',
+    stepHz: 8,
+    steps: [
+      5, 6, 7, 15, -2, 7, 15, -2, 7, 15, -2, -2, -2, -2, -1, -1, 3, 5, 7, 12, -2, 5, 12, -2, 5, 12,
+      -2, -2, -2, -2, -1, -1,
+    ],
+  },
+  {
+    name: 'danube',
+    stepHz: 5,
+    steps: [
+      5, -2, 9, 12, -2, -2, -2, -2, 12, -2, -1, -1, 12, -2, -1, -1, 14, -2, -2, -2, -2, -2, -1, -1,
+      12, -2, -1, -1, 12, -2, -1, -1,
+    ],
+  },
+]
+
+export const ROM_NAMES = ROMS.map(r => r.name)

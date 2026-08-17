@@ -4,6 +4,9 @@ import { ENUM_KEYS } from '../ui/controls'
 import { createStore, type Store } from '../listeners'
 import type { FromWorklet, ToWorklet } from './messages'
 import { packParams } from './params'
+import { encodeWav } from './wav'
+
+const REC_MAX_S = 600 // a take stops itself at ten minutes
 
 export interface Meter {
   peak: number
@@ -22,6 +25,8 @@ export class Engine {
   readonly running = createStore(false)
   readonly micOn = createStore(false)
   readonly playing = createStore(false)
+  readonly recording = createStore(false)
+  readonly recSeconds = createStore(0)
   readonly sampleName = createStore<string | null>(null)
 
   private ctx: AudioContext | null = null
@@ -44,9 +49,9 @@ export class Engine {
       outputChannelCount: [2],
     })
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
-      if (e.data.kind === 'meter') {
-        this.meter.set({ peak: e.data.peak, scope: e.data.scope })
-      }
+      const msg = e.data
+      if (msg.kind === 'meter') this.meter.set({ peak: msg.peak, scope: msg.scope })
+      else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     node.connect(ctx.destination)
     this.ctx = ctx
@@ -144,6 +149,45 @@ export class Engine {
     this.sampleName.set(file.name)
   }
 
+  private take: { l: Float32Array; r: Float32Array }[] = []
+
+  private onRecChunk(msg: { l: Float32Array; r: Float32Array; done: boolean }) {
+    if (msg.l.length) this.take.push({ l: msg.l, r: msg.r })
+    const frames = this.take.reduce((n, c) => n + c.l.length, 0)
+    const sr = this.ctx?.sampleRate ?? 48000
+    this.recSeconds.set(frames / sr)
+    if (frames >= sr * REC_MAX_S && this.recording.get()) this.stopRecording()
+    if (msg.done) this.saveTake(sr)
+  }
+
+  private saveTake(sr: number) {
+    const take = this.take
+    this.take = []
+    if (!take.length) return
+    const url = URL.createObjectURL(encodeWav(take, sr))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `bender-${stamp()}.wav`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  }
+
+  startRecording() {
+    if (!this.node || this.recording.get()) return
+    this.take = []
+    this.recSeconds.set(0)
+    this.recording.set(true)
+    this.post({ kind: 'record', on: true })
+  }
+
+  // Stopping is what saves it: the worklet's last slab carries done, and the
+  // file lands in the downloads folder.
+  stopRecording() {
+    if (!this.recording.get()) return
+    this.recording.set(false)
+    this.post({ kind: 'record', on: false })
+  }
+
   // The demo song never starts itself — the user presses play.
   setPlaying(playing: boolean) {
     this.playing.set(playing)
@@ -162,6 +206,12 @@ export class Engine {
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
     this.post({ kind: 'panic' })
   }
+}
+
+function stamp(): string {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
 }
 
 export const engine = new Engine()

@@ -102,6 +102,7 @@
 
 .playBtn,
 .playBtnOn,
+.recBtnOn,
 .ioBtn,
 .ioBtnOn {
   font-size: var(--fs-sm);
@@ -127,6 +128,12 @@
 .playBtnOn {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+.recBtnOn {
+  color: var(--danger);
+  border-color: var(--danger);
+  font-variant-numeric: tabular-nums;
 }
 
 .drop,

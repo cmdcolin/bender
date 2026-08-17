@@ -1,3 +1,4 @@
+import { ROM_NAMES } from '../dsp/stages/roms'
 import type { ControlKey } from '../controls'
 
 export interface SliderDef {
@@ -39,11 +40,11 @@ export const GROUPS: Group[] = [
         key: 'chipTune',
         label: 'Tune ROM',
         min: 0,
-        max: 3,
+        max: ROM_NAMES.length - 1,
         step: 1,
         unit: '',
-        choices: ['lullaby', 'march', 'arp', 'demo'],
-        help: 'Which built-in demo tune the chip plays from ROM.',
+        choices: ROM_NAMES,
+        help: 'Which demo song the chip plays from ROM. Each ROM carries its own sequencer rate, so the clock and the starve bend hit them differently.',
       },
       {
         key: 'chipClockX',

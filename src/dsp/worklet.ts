@@ -6,6 +6,7 @@ import { Smoother } from './smoother'
 import { BLOCK, type StereoBlock } from './stage'
 
 const SCOPE_LEN = 512
+const REC_CHUNK = 1 << 15 // frames per posted slab (~0.7 s at 48 k)
 const METER_EVERY = 3 // blocks between meter posts (~8 ms at 48 k)
 
 class BenderProcessor extends AudioWorkletProcessor {
@@ -18,6 +19,10 @@ class BenderProcessor extends AudioWorkletProcessor {
   private scopePos = 0
   private meterCountdown = METER_EVERY
   private peak = 0
+  private recording = false
+  private recL = new Float32Array(REC_CHUNK)
+  private recR = new Float32Array(REC_CHUNK)
+  private recFill = 0
 
   constructor() {
     super()
@@ -40,6 +45,15 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'noteOff':
           this.built.toyChip.noteOff(msg.semitone)
           break
+        case 'record':
+          if (msg.on) {
+            this.recFill = 0
+            this.recording = true
+          } else if (this.recording) {
+            this.recording = false
+            this.flushRec(true)
+          }
+          break
         case 'transport':
           this.built.transport.playing = msg.playing
           break
@@ -48,6 +62,15 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
       }
     }
+  }
+
+  // Hand the take's audio to the main thread a slab at a time; it owns the
+  // growing tape, the worklet only ever holds one chunk.
+  private flushRec(done: boolean) {
+    const l = this.recL.slice(0, this.recFill)
+    const r = this.recR.slice(0, this.recFill)
+    this.recFill = 0
+    this.port.postMessage({ kind: 'rec', l, r, done }, [l.buffer, r.buffer])
   }
 
   process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean {
@@ -72,6 +95,14 @@ class BenderProcessor extends AudioWorkletProcessor {
 
     out[0].set(io.l.subarray(0, n))
     if (out[1]) out[1].set(io.r.subarray(0, n))
+
+    if (this.recording) {
+      for (let i = 0; i < n; i++) {
+        this.recL[this.recFill] = io.l[i]!
+        this.recR[this.recFill] = io.r[i]!
+        if (++this.recFill === REC_CHUNK) this.flushRec(false)
+      }
+    }
 
     for (let i = 0; i < n; i++) {
       this.scope[this.scopePos] = io.l[i]!

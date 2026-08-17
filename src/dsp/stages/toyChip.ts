@@ -3,27 +3,16 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
 import { mulberry32, type Rng } from '../util/rng'
-
-// Semitone offsets from A4-ish base; -1 is a rest.
-const TUNES: number[][] = [
-  // lullaby
-  [0, 0, 7, 7, 9, 9, 7, -1, 5, 5, 4, 4, 2, 2, 0, -1],
-  // march
-  [0, -1, 0, 4, 7, -1, 7, 4, 0, 4, 7, 12, 7, 4, 0, -1],
-  // arp
-  [0, 4, 7, 12, 7, 4, 0, 4, 7, 12, 16, 12, 7, 4, 0, 4],
-  // demo
-  [0, 2, 4, 5, 7, 9, 11, 12, 12, 11, 9, 7, 5, 4, 2, 0],
-]
+import { ROMS } from './roms'
 
 const BASE_HZ = 220
-const STEP_HZ = 3.2
 
 export class ToyChip implements Stage {
   label = 'toyChip'
   private phase = 0
   private keyPhase = 0
   private pos = 0
+  private note = -1
   private stepClock = 0
   private env = 0
   private keyEnv = 0
@@ -58,7 +47,8 @@ export class ToyChip implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.chipLevel]!
-    const tune = TUNES[Math.round(p[IDX.chipTune]!)] ?? TUNES[0]!
+    const rom = ROMS[Math.round(p[IDX.chipTune]!)] ?? ROMS[0]!
+    const tune = rom.steps
     const clockX = p[IDX.chipClockX]!
     const starve = p[IDX.chipStarve]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
@@ -70,6 +60,7 @@ export class ToyChip implements Stage {
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
       this.pos = 0
+      this.note = -1
       this.stepClock = 0
       this.env = 0
     }
@@ -84,7 +75,7 @@ export class ToyChip implements Stage {
       }
 
       // sequencer — the run/stop line freezes it where it stands
-      if (this.transport.playing) this.stepClock += (STEP_HZ * clock) / this.sr
+      if (this.transport.playing) this.stepClock += (rom.stepHz * clock) / this.sr
       if (this.stepClock >= 1) {
         this.stepClock -= 1
         let next = this.pos + 1
@@ -93,7 +84,14 @@ export class ToyChip implements Stage {
           next = this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * tune.length)
         }
         this.pos = next % tune.length
-        this.env = tune[this.pos]! >= 0 ? 1 : this.env
+        // -2 holds whatever is ringing; -1 drops the voice; anything else strikes
+        const step = tune[this.pos]!
+        if (step >= 0) {
+          this.note = step
+          this.env = 1
+        } else if (step === -1) {
+          this.note = -1
+        }
       }
 
       // gate bend: the gate line buzzes open and shut
@@ -115,7 +113,7 @@ export class ToyChip implements Stage {
       if (!rail.booting && !(starve > 0 && rail.stalled)) {
         // bias bend shifts the square's duty cycle
         const duty = spot === 3 ? 0.5 + pot * 0.45 : 0.5
-        const note = this.transport.playing ? tune[this.pos]! : -1
+        const note = this.transport.playing ? this.note : -1
         if (note >= 0 && this.env > 0.003) {
           const hz = BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor
           this.phase = (this.phase + hz / this.sr) % 1
@@ -140,6 +138,7 @@ export class ToyChip implements Stage {
   }
 
   panic() {
+    this.note = -1
     this.phase = 0
     this.keyPhase = 0
     this.env = 0

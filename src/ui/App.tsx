@@ -10,10 +10,17 @@ import { Scope } from './Scope'
 import { GroupSection, StageHeading } from './Section'
 import styles from './App.module.css'
 
+function clock(seconds: number): string {
+  const s = Math.floor(seconds)
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
 export function App() {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
   const playing = useStoreValue(engine.playing)
+  const recording = useStoreValue(engine.recording)
+  const recSeconds = useStoreValue(engine.recSeconds)
   const sampleName = useStoreValue(engine.sampleName)
   const [dragging, setDragging] = useState(false)
 
@@ -44,6 +51,13 @@ export function App() {
             title="run or stop the chip's ROM tune and the drum pattern"
           >
             {playing ? '❚❚ pause demo song' : '▶ play demo song'}
+          </button>
+          <button
+            className={recording ? styles.recBtnOn : styles.ioBtn}
+            onClick={() => (recording ? engine.stopRecording() : engine.startRecording())}
+            title="record the output to a wav file — stopping saves it"
+          >
+            {recording ? `■ stop & save ${clock(recSeconds)}` : '● record'}
           </button>
           <button
             className={micOn ? styles.ioBtnOn : styles.ioBtn}
