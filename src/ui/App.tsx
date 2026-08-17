@@ -13,6 +13,7 @@ import styles from './App.module.css'
 export function App() {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
+  const playing = useStoreValue(engine.playing)
   const sampleName = useStoreValue(engine.sampleName)
   const [dragging, setDragging] = useState(false)
 
@@ -38,6 +39,13 @@ export function App() {
         <Keys />
         <div className={styles.ioRow}>
           <button
+            className={playing ? styles.playBtnOn : styles.playBtn}
+            onClick={() => engine.setPlaying(!playing)}
+            title="run or stop the chip's ROM tune and the drum pattern"
+          >
+            {playing ? '❚❚ pause demo song' : '▶ play demo song'}
+          </button>
+          <button
             className={micOn ? styles.ioBtnOn : styles.ioBtn}
             onClick={() => engine.enableMic()}
           >
@@ -48,9 +56,9 @@ export function App() {
           </span>
         </div>
         <p className={styles.hint}>
-          play keys with <span className={styles.kbd}>a s d f …</span> — turn up{' '}
-          <b>Starve</b> until the toy reboots, solder the <b>Bend spot</b> pot, push any{' '}
-          <b>Feedback</b> past 1
+          press <b>play demo song</b> or play keys with{' '}
+          <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b> until the toy
+          reboots, solder the <b>Bend spot</b> pot, push any <b>Feedback</b> past 1
         </p>
       </div>
 

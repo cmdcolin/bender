@@ -1,4 +1,5 @@
 import { Chain } from './chain'
+import { Transport } from './transport'
 import { ToyRail } from './toyRail'
 import { Brownout } from './stages/brownout'
 import { ChaosOsc } from './stages/chaosOsc'
@@ -19,14 +20,22 @@ export interface BuiltChain {
   chain: Chain
   toyChip: ToyChip
   sampler: Sampler
+  transport: Transport
 }
 
 export function buildBender(sr: number): BuiltChain {
   const chain = new Chain(sr)
   const rail = new ToyRail(sr)
-  const toyChip = new ToyChip(sr, rail)
+  const transport = new Transport()
+  const toyChip = new ToyChip(sr, rail, transport)
   const sampler = new Sampler()
-  chain.sources = [toyChip, new ToyDrum(sr, rail), new ChaosOsc(sr), new Noise(sr), sampler]
+  chain.sources = [
+    toyChip,
+    new ToyDrum(sr, rail, transport),
+    new ChaosOsc(sr),
+    new Noise(sr),
+    sampler,
+  ]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch, 6 filt
   chain.bendById = [
     undefined,
@@ -39,9 +48,12 @@ export function buildBender(sr: number): BuiltChain {
   ]
   chain.pedals = [new TapeDelay(sr), new SpringVerb(sr)]
   chain.post = [new Brownout(sr)]
-  return { chain, toyChip, sampler }
+  return { chain, toyChip, sampler, transport }
 }
 
+// Offline rendering (tests): the ROM sequencers run from the first sample.
 export function buildChain(sr: number): Chain {
-  return buildBender(sr).chain
+  const built = buildBender(sr)
+  built.transport.playing = true
+  return built.chain
 }

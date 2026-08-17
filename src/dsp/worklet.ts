@@ -40,6 +40,9 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'noteOff':
           this.built.toyChip.noteOff(msg.semitone)
           break
+        case 'transport':
+          this.built.transport.playing = msg.playing
+          break
         case 'panic':
           this.built.chain.panic()
           break

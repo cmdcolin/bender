@@ -100,6 +100,8 @@
   gap: 10px;
 }
 
+.playBtn,
+.playBtnOn,
 .ioBtn,
 .ioBtnOn {
   font-size: var(--fs-sm);
@@ -114,6 +116,17 @@
 .ioBtnOn {
   color: var(--danger);
   border-color: #55232c;
+}
+
+.playBtn,
+.playBtnOn {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.playBtnOn {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .drop,

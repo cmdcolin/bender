@@ -21,6 +21,7 @@ export class Engine {
   })
   readonly running = createStore(false)
   readonly micOn = createStore(false)
+  readonly playing = createStore(false)
   readonly sampleName = createStore<string | null>(null)
 
   private ctx: AudioContext | null = null
@@ -51,6 +52,7 @@ export class Engine {
     this.ctx = ctx
     this.node = node
     this.post({ kind: 'params', pack: packParams(this.controls.get()) })
+    this.post({ kind: 'transport', playing: this.playing.get() })
     this.running.set(true)
   }
 
@@ -118,7 +120,11 @@ export class Engine {
   async enableMic() {
     if (!this.ctx || this.micStream) return
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      },
     })
     this.micStream = stream
     const src = this.ctx.createMediaStreamSource(stream)
@@ -136,6 +142,12 @@ export class Engine {
     }
     this.post({ kind: 'sample', mono }, [mono.buffer])
     this.sampleName.set(file.name)
+  }
+
+  // The demo song never starts itself — the user presses play.
+  setPlaying(playing: boolean) {
+    this.playing.set(playing)
+    this.post({ kind: 'transport', playing })
   }
 
   noteOn(semitone: number) {

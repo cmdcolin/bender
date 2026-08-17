@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
+import type { Transport } from '../transport'
 import { mulberry32, type Rng } from '../util/rng'
 
 // Semitone offsets from A4-ish base; -1 is a rest.
@@ -36,6 +37,7 @@ export class ToyChip implements Stage {
   constructor(
     private readonly sr: number,
     private readonly rail: ToyRail,
+    private readonly transport: Transport,
   ) {
     this.rng = mulberry32(101)
   }
@@ -81,8 +83,8 @@ export class ToyChip implements Stage {
         clock *= 1 + pot * 24 * (1 + 0.4 * Math.sin(this.clockWalk))
       }
 
-      // sequencer
-      this.stepClock += (STEP_HZ * clock) / this.sr
+      // sequencer — the run/stop line freezes it where it stands
+      if (this.transport.playing) this.stepClock += (STEP_HZ * clock) / this.sr
       if (this.stepClock >= 1) {
         this.stepClock -= 1
         let next = this.pos + 1
@@ -113,7 +115,7 @@ export class ToyChip implements Stage {
       if (!rail.booting && !(starve > 0 && rail.stalled)) {
         // bias bend shifts the square's duty cycle
         const duty = spot === 3 ? 0.5 + pot * 0.45 : 0.5
-        const note = tune[this.pos]!
+        const note = this.transport.playing ? tune[this.pos]! : -1
         if (note >= 0 && this.env > 0.003) {
           const hz = BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor
           this.phase = (this.phase + hz / this.sr) % 1

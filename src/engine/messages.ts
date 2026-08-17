@@ -13,11 +13,16 @@ export interface NoteMsg {
   semitone: number
 }
 
+export interface TransportMsg {
+  kind: 'transport'
+  playing: boolean
+}
+
 export interface PanicMsg {
   kind: 'panic'
 }
 
-export type ToWorklet = ParamsMsg | SampleMsg | NoteMsg | PanicMsg
+export type ToWorklet = ParamsMsg | SampleMsg | NoteMsg | TransportMsg | PanicMsg
 
 export interface MeterMsg {
   kind: 'meter'

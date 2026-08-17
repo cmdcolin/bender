@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
+import type { Transport } from '../transport'
 import { mulberry32, type Rng } from '../util/rng'
 
 // 16 steps; bit 1 = kick, 2 = snare, 4 = hat.
@@ -31,6 +32,7 @@ export class ToyDrum implements Stage {
   constructor(
     private readonly sr: number,
     private readonly rail: ToyRail,
+    private readonly transport: Transport,
   ) {
     this.rng = mulberry32(202)
   }
@@ -65,14 +67,16 @@ export class ToyDrum implements Stage {
 
     let loadSum = 0
     for (let i = 0; i < io.n; i++) {
-      this.stepClock += stepHz / this.sr
-      if (this.stepClock >= 1) {
-        this.stepClock -= 1
-        this.pos = (this.pos + 1) % pattern.length
-        this.trigger(pattern[this.pos]!)
+      if (this.transport.playing) {
+        this.stepClock += stepHz / this.sr
+        if (this.stepClock >= 1) {
+          this.stepClock -= 1
+          this.pos = (this.pos + 1) % pattern.length
+          this.trigger(pattern[this.pos]!)
+        }
       }
       // the bend: hammer the current step's trigger line at audio rate
-      if (retrigHz > 0.5) {
+      if (this.transport.playing && retrigHz > 0.5) {
         this.retrigPhase += retrigHz / this.sr
         if (this.retrigPhase >= 1) {
           this.retrigPhase -= 1
