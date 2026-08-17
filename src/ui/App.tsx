@@ -12,6 +12,7 @@ import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
 import { GROUPS } from './controls'
 import { Keys } from './Keys'
+import { MidiPanel } from './MidiPanel'
 import {
   loadMorph,
   MORPH_LABELS,
@@ -354,6 +355,8 @@ export function App() {
         </div>
 
         <Presets morphSeconds={morphSeconds} />
+
+        <MidiPanel />
 
         <ChainMap open={open} onOpen={toggle} />
         {openGroup ? (

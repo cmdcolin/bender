@@ -1,0 +1,153 @@
+.panel {
+  border-top: 1px solid var(--border-quiet);
+  padding: 2px 0 5px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 2px;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: var(--fs-lg);
+  text-align: left;
+  cursor: pointer;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.live {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.quiet {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 2px 4px;
+}
+
+.hint {
+  padding: 2px 2px 4px;
+  font-size: var(--fs-sm);
+  color: var(--fg4);
+}
+
+/* Armed or sweeping: the board is waiting on the controller, and nothing else
+   on screen says so. */
+.waiting {
+  composes: hint;
+  color: var(--accent2);
+}
+
+.btn,
+.toggle {
+  font-size: var(--fs-xs);
+  padding: 2px 8px;
+  background: none;
+  color: var(--fg3);
+  border: 1px solid var(--border-quiet);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn:hover,
+.toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.toggleOn {
+  composes: toggle;
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+.select {
+  font-size: var(--fs-xs);
+  padding: 2px 4px;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--border-quiet);
+  border-radius: 3px;
+}
+
+.clock {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--accent2);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.bound {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--fg3);
+}
+
+.boundName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.drop {
+  background: none;
+  border: none;
+  color: var(--fg4);
+  font-size: var(--fs-md);
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.drop:hover {
+  color: var(--danger);
+}
+
+.danger {
+  composes: btn;
+  margin: 3px 2px 0;
+  color: var(--fg4);
+}
+
+.danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}

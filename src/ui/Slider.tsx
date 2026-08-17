@@ -1,8 +1,9 @@
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
-import { useControlValue } from './ControlsContext'
+import { useControlValue, useStoreValue } from './ControlsContext'
 import type { SliderDef } from './controls'
 import { snapToStep } from './controls'
+import { midi } from './midi'
 import { formatValue, fromPos, toPos } from './slider-scale'
 import styles from './Slider.module.css'
 
@@ -12,6 +13,45 @@ import styles from './Slider.module.css'
 function write(key: SliderDef['key'], value: number) {
   engine.armStep()
   engine.set(key, value)
+}
+
+// The control's end of a knob: what it is bound to, whether it is waiting to be
+// bound, and — the part with nowhere else to live — where the physical knob is
+// sitting while it has yet to catch this value. Soft takeover makes a knob inert
+// until it sweeps through what is on screen, and without the mark the control
+// just looks broken.
+function Bind({ def }: { def: SliderDef }) {
+  const status = useStoreValue(midi.status)
+  const armed = useStoreValue(midi.armed)
+  const binding = useStoreValue(midi.bindings)[def.key]
+  const waiting = useStoreValue(midi.pickups)[def.key]
+  if (status !== 'ready') return null
+  const mine = armed === def.key
+  return (
+    <>
+      {waiting === undefined ? null : (
+        <span
+          className={styles.pickup}
+          title={`your knob is sitting at ${formatValue(def, waiting)} — sweep it through ${formatValue(def, engine.controls.get()[def.key])} to pick this control up`}
+        >
+          {formatValue(def, waiting)}
+        </span>
+      )}
+      <button
+        className={mine ? styles.bindOn : styles.bind}
+        onClick={() => midi.arm(mine ? null : def.key)}
+        title={
+          mine
+            ? 'move a knob to take this control — esc to cancel'
+            : binding === undefined
+              ? 'put this control on a knob: press, then move the knob'
+              : `on CC${binding.controller}${binding.channel === 0 ? '' : ` ch${binding.channel + 1}`} — press to move it to another knob`
+        }
+      >
+        {binding === undefined ? '⚟' : `CC${binding.controller}`}
+      </button>
+    </>
+  )
 }
 
 export function ControlSlider({ def }: { def: SliderDef }) {
@@ -39,6 +79,7 @@ export function ControlSlider({ def }: { def: SliderDef }) {
               </button>
             )
           })}
+          <Bind def={def} />
         </span>
       </div>
     )
@@ -87,6 +128,7 @@ export function ControlSlider({ def }: { def: SliderDef }) {
             {def.action.label}
           </button>
         )}
+        <Bind def={def} />
       </span>
     </div>
   )

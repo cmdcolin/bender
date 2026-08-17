@@ -435,6 +435,29 @@ whichever box it lands on with that box's own sequencer stopped.
 
 **Record** writes the output to a 16-bit stereo wav; stopping saves the take.
 
+## The controller
+
+Chrome and Edge hand a page the MIDI wire, and the **midi** panel takes it:
+press `⚟` beside any control, move a knob, and that knob owns it. `auto-map`
+binds a known device's knobs by CC number and `learn in order` does the same for
+any controller — sweep each knob once, left to right, and each takes the next
+control. The order both follow puts the mixes and levels first, because those
+are what a set is played on: the first row of knobs reaches whether each stage
+is there at all, and the rest follow down the signal path.
+
+A bound knob does not grab its control on the first message. It has to sweep
+through the value already on screen — otherwise loading a preset would snap
+every control back to wherever the hardware happened to be left standing, which
+is the one thing a physical knob can't show you. Until it catches, the control
+draws where the knob is waiting in amber, and one continuous turn banks one step
+in the undo walk, the way a slider drag does.
+
+Notes play the toy chip's keyboard, with A3 where the ROM has it, so a
+controller strikes the same voice the on-screen keys do. Clock is the other
+half: the drum machine can follow the tick on the wire, and it does it by
+writing the tempo control, so the slider moves with the room rather than
+fighting it.
+
 ## Run
 
 ```

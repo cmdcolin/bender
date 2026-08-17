@@ -57,6 +57,26 @@
   color: var(--fg2);
 }
 
+/* The knob's end of the row, in the same quiet register as .action: an offer
+   sitting beside the readout, and only there at all once a controller is on. */
+.bind {
+  composes: action;
+  font-family: var(--mono);
+}
+
+.bindOn {
+  composes: bind;
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
+/* Where the physical knob is sitting while it has yet to catch this control.
+   Amber because it is the one number in the row that is not the board. */
+.pickup {
+  margin-left: 5px;
+  color: var(--accent2);
+}
+
 .choices {
   grid-column: 2 / 4;
   display: flex;
