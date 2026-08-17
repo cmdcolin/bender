@@ -9,7 +9,11 @@ const SR = 48000
 function render(overrides: Partial<Controls>, seconds: number) {
   const chain = buildChain(SR)
   const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
-  const io: StereoBlock = { l: new Float32Array(BLOCK), r: new Float32Array(BLOCK), n: BLOCK }
+  const io: StereoBlock = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   const l = new Float32Array(blocks * BLOCK)
   const r = new Float32Array(blocks * BLOCK)
@@ -21,7 +25,8 @@ function render(overrides: Partial<Controls>, seconds: number) {
   return { l, r }
 }
 
-const rms = (x: Float32Array) => Math.sqrt(x.reduce((a, v) => a + v * v, 0) / x.length)
+const rms = (x: Float32Array) =>
+  Math.sqrt(x.reduce((a, v) => a + v * v, 0) / x.length)
 const db = (x: number) => 20 * Math.log10(x)
 
 // Energy above the midband as a fraction of the whole, via a first-difference
@@ -42,14 +47,22 @@ function zcr(x: Float32Array): number {
 // tone drifts window to window.
 function wander(x: Float32Array): number {
   const wins: number[] = []
-  for (let i = SR; i + 2400 < x.length; i += 2400) wins.push(zcr(x.subarray(i, i + 2400)))
+  for (let i = SR; i + 2400 < x.length; i += 2400)
+    wins.push(zcr(x.subarray(i, i + 2400)))
   const mean = wins.reduce((a, b) => a + b, 0) / wins.length
-  const sd = Math.sqrt(wins.reduce((a, b) => a + (b - mean) ** 2, 0) / wins.length)
+  const sd = Math.sqrt(
+    wins.reduce((a, b) => a + (b - mean) ** 2, 0) / wins.length,
+  )
   return (sd / mean) * 100
 }
 
 const SILENT: Partial<Controls> = { chipLevel: 0 }
-const TONE: Partial<Controls> = { chipLevel: 0, oscLevel: 0.7, oscAHz: 220, oscXmod: 0 }
+const TONE: Partial<Controls> = {
+  chipLevel: 0,
+  oscLevel: 0.7,
+  oscAHz: 220,
+  oscXmod: 0,
+}
 const STEADY: Partial<Controls> = { tapeHiss: 0, tapeWow: 0, tapeFlutter: 0 }
 
 test('hiss is a floor of its own — audible with nothing playing, gone when turned down', () => {
@@ -62,7 +75,10 @@ test('hiss is a floor of its own — audible with nothing playing, gone when tur
 
 test('a slower tape hisses louder and darker', () => {
   const at = (speed: number) =>
-    render({ ...SILENT, tapeMix: 1, tapeHiss: 1, tapeSpeed: speed }, 1).l.subarray(SR / 2)
+    render(
+      { ...SILENT, tapeMix: 1, tapeHiss: 1, tapeSpeed: speed },
+      1,
+    ).l.subarray(SR / 2)
   const [slow, mid, fast] = [at(0), at(1), at(2)]
   expect(rms(slow)).toBeGreaterThan(rms(mid))
   expect(rms(mid)).toBeGreaterThan(rms(fast))
@@ -72,10 +88,17 @@ test('a slower tape hisses louder and darker', () => {
 
 test('speed sets how much top end survives the head gap', () => {
   const at = (speed: number) =>
-    bright(render({ ...TONE, ...STEADY, tapeMix: 1, tapeSpeed: speed }, 1).l.subarray(SR / 2))
+    bright(
+      render(
+        { ...TONE, ...STEADY, tapeMix: 1, tapeSpeed: speed },
+        1,
+      ).l.subarray(SR / 2),
+    )
   expect(at(0)).toBeLessThan(at(1))
   expect(at(1)).toBeLessThan(at(2))
-  expect(at(2)).toBeLessThan(bright(render({ ...TONE, ...STEADY }, 1).l.subarray(SR / 2)))
+  expect(at(2)).toBeLessThan(
+    bright(render({ ...TONE, ...STEADY }, 1).l.subarray(SR / 2)),
+  )
 })
 
 // At 15 ips the head gap already sits past the programme, so bias can't work
@@ -85,12 +108,14 @@ test('bias runs bright to dull at every speed', () => {
   for (const speed of [0, 1, 2]) {
     const steps = [-1, -0.5, 0, 0.5, 1].map(bias =>
       bright(
-        render({ ...TONE, ...STEADY, tapeMix: 1, tapeSpeed: speed, tapeBias: bias }, 1).l.subarray(
-          SR / 2,
-        ),
+        render(
+          { ...TONE, ...STEADY, tapeMix: 1, tapeSpeed: speed, tapeBias: bias },
+          1,
+        ).l.subarray(SR / 2),
       ),
     )
-    for (let i = 1; i < steps.length; i++) expect(steps[i]!).toBeLessThan(steps[i - 1]!)
+    for (let i = 1; i < steps.length; i++)
+      expect(steps[i]!).toBeLessThan(steps[i - 1]!)
   }
 })
 
@@ -98,7 +123,10 @@ test('record level compresses without running away — makeup holds it near unit
   const dry = rms(render({ ...TONE, ...STEADY }, 1).l.subarray(SR / 2))
   for (const drive of [-12, -6, 0, 6, 12, 15]) {
     const wet = rms(
-      render({ ...TONE, ...STEADY, tapeMix: 1, tapeDrive: drive }, 1).l.subarray(SR / 2),
+      render(
+        { ...TONE, ...STEADY, tapeMix: 1, tapeDrive: drive },
+        1,
+      ).l.subarray(SR / 2),
     )
     expect(Math.abs(db(wet / dry))).toBeLessThan(4)
   }
@@ -107,7 +135,17 @@ test('record level compresses without running away — makeup holds it near unit
 test('the transport wobbles the pitch, and holds it dead steady when wound down', () => {
   const at = (w: number) =>
     wander(
-      render({ ...TONE, tapeHiss: 0, tapeMix: 1, tapeWow: w, tapeFlutter: w, tapeSpeed: 0 }, 4).l,
+      render(
+        {
+          ...TONE,
+          tapeHiss: 0,
+          tapeMix: 1,
+          tapeWow: w,
+          tapeFlutter: w,
+          tapeSpeed: 0,
+        },
+        4,
+      ).l,
     )
   expect(at(0)).toBe(0)
   expect(at(0.3)).toBeGreaterThan(0.3)
@@ -130,8 +168,18 @@ test('dropouts dip the level, and shed highs on the way down', () => {
 test('print-through leaves a ghost one spool wrap behind the signal', () => {
   const ghost = (print: number) => {
     const chain = buildChain(SR)
-    const io: StereoBlock = { l: new Float32Array(BLOCK), r: new Float32Array(BLOCK), n: BLOCK }
-    const on = packParams({ ...DEFAULT_CONTROLS, ...TONE, ...STEADY, tapeMix: 1, tapePrint: print })
+    const io: StereoBlock = {
+      l: new Float32Array(BLOCK),
+      r: new Float32Array(BLOCK),
+      n: BLOCK,
+    }
+    const on = packParams({
+      ...DEFAULT_CONTROLS,
+      ...TONE,
+      ...STEADY,
+      tapeMix: 1,
+      tapePrint: print,
+    })
     const off = packParams({
       ...DEFAULT_CONTROLS,
       ...SILENT,
@@ -156,7 +204,10 @@ test('print-through leaves a ghost one spool wrap behind the signal', () => {
 
 test('azimuth error collapses badly to mono', () => {
   const collapse = (az: number) => {
-    const { l, r } = render({ ...TONE, ...STEADY, tapeMix: 1, tapeAzimuth: az }, 1)
+    const { l, r } = render(
+      { ...TONE, ...STEADY, tapeMix: 1, tapeAzimuth: az },
+      1,
+    )
     const mono = new Float32Array(l.length)
     for (let i = 0; i < l.length; i++) mono[i] = 0.5 * (l[i]! + r[i]!)
     return db(rms(mono.subarray(SR / 2)) / rms(l.subarray(SR / 2)))
@@ -167,12 +218,18 @@ test('azimuth error collapses badly to mono', () => {
 
 test('the machine at rest colours but does not wreck the signal', () => {
   const dry = render({ chipLevel: 0.5, ...STEADY }, 2)
-  const wet = render({ chipLevel: 0.5, ...STEADY, tapeMix: 1, tapeDrive: 0, tapeSpeed: 2 }, 2)
+  const wet = render(
+    { chipLevel: 0.5, ...STEADY, tapeMix: 1, tapeDrive: 0, tapeSpeed: 2 },
+    2,
+  )
   const n = 60000
   const lat = Math.round(0.01 * SR)
   const err = new Float32Array(n)
-  for (let i = 0; i < n; i++) err[i] = wet.l[SR / 2 + i + lat]! - dry.l[SR / 2 + i]!
-  expect(db(rms(err) / rms(dry.l.subarray(SR / 2, SR / 2 + n)))).toBeLessThan(-12)
+  for (let i = 0; i < n; i++)
+    err[i] = wet.l[SR / 2 + i + lat]! - dry.l[SR / 2 + i]!
+  expect(db(rms(err) / rms(dry.l.subarray(SR / 2, SR / 2 + n)))).toBeLessThan(
+    -12,
+  )
 })
 
 test('tape off leaves the board bit-identical', () => {

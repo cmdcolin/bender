@@ -10,9 +10,33 @@ import { gaussian, mulberry32, type Rng } from '../util/rng'
 // wavelength too, so it drops with speed; less tape past the head per second
 // means more hiss and slower wow; and a spool wrap takes longer to come round.
 const SPEED = [
-  { gapHz: 6500, bumpHz: 26, hiss: 1.7, wowHz: 0.55, flutHz: 5, wobble: 1.7, printMs: 900 },
-  { gapHz: 12000, bumpHz: 38, hiss: 1, wowHz: 0.8, flutHz: 6.8, wobble: 1, printMs: 450 },
-  { gapHz: 19000, bumpHz: 55, hiss: 0.55, wowHz: 1.15, flutHz: 9.5, wobble: 0.6, printMs: 225 },
+  {
+    gapHz: 6500,
+    bumpHz: 26,
+    hiss: 1.7,
+    wowHz: 0.55,
+    flutHz: 5,
+    wobble: 1.7,
+    printMs: 900,
+  },
+  {
+    gapHz: 12000,
+    bumpHz: 38,
+    hiss: 1,
+    wowHz: 0.8,
+    flutHz: 6.8,
+    wobble: 1,
+    printMs: 450,
+  },
+  {
+    gapHz: 19000,
+    bumpHz: 55,
+    hiss: 0.55,
+    wowHz: 1.15,
+    flutHz: 9.5,
+    wobble: 0.6,
+    printMs: 225,
+  },
 ]
 
 const NOMINAL_MS = 10
@@ -69,16 +93,22 @@ class TapeHead {
     const tl = this.tiltLp.process(played, s.tiltCoef)
     const printed = played + s.tilt * (played - tl)
 
-    this.env = flushDenormal(this.env + s.envCoef * (Math.abs(printed) - this.env))
+    this.env = flushDenormal(
+      this.env + s.envCoef * (Math.abs(printed) - this.env),
+    )
     const n = this.gauss()
     const nLp = this.hissLp.process(n, s.hissCoef)
-    const hiss = (n + 0.8 * (n - 2 * nLp)) * s.hiss * (1 + s.modNoise * this.env)
+    const hiss =
+      (n + 0.8 * (n - 2 * nLp)) * s.hiss * (1 + s.modNoise * this.env)
     this.line.write(printed + hiss)
 
     let y = this.line.readHermite(delay)
     if (s.printGain > 0) {
       y +=
-        this.printLp.process(this.line.readHermite(delay + s.printDelay), s.printCoef) * s.printGain
+        this.printLp.process(
+          this.line.readHermite(delay + s.printDelay),
+          s.printCoef,
+        ) * s.printGain
     }
     y = this.gapLp.process(y, s.gapCoef * gapScale)
 
@@ -139,7 +169,10 @@ export class Tape implements Stage {
 
   process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
     const mix = p[IDX.tapeMix]!
-    const sp = SPEED[Math.min(Math.max(Math.round(p[IDX.tapeSpeed]!), 0), SPEED.length - 1)]!
+    const sp =
+      SPEED[
+        Math.min(Math.max(Math.round(p[IDX.tapeSpeed]!), 0), SPEED.length - 1)
+      ]!
     const bias = p[IDX.tapeBias]!
     // Under-bias records hotter highs and distorts sooner; over-bias is duller
     // and squashes. One knob, the two moving against each other.
@@ -185,10 +218,12 @@ export class Tape implements Stage {
       const wobbleMs =
         wowAmt *
           1.6 *
-          (0.75 * Math.sin(this.wow * 2 * Math.PI) + 0.25 * Math.sin(this.wow2 * 2 * Math.PI)) +
+          (0.75 * Math.sin(this.wow * 2 * Math.PI) +
+            0.25 * Math.sin(this.wow2 * 2 * Math.PI)) +
         flutAmt *
           0.16 *
-          (0.6 * Math.sin(this.flut * 2 * Math.PI) + 0.4 * Math.sin(this.flut2 * 2 * Math.PI)) +
+          (0.6 * Math.sin(this.flut * 2 * Math.PI) +
+            0.4 * Math.sin(this.flut2 * 2 * Math.PI)) +
         Math.max(-1, Math.min(1, drift)) * 0.9 * wowAmt +
         scrape * 0.02 * flutAmt
       const d = Math.max(this.nominal + wobbleMs * msToSamples, 4)
@@ -199,7 +234,8 @@ export class Tape implements Stage {
       }
       if (this.dropLeft > 0) this.dropLeft--
       this.dropEnv = flushDenormal(
-        this.dropEnv + dropCoef * ((this.dropLeft > 0 ? this.dropDepth : 0) - this.dropEnv),
+        this.dropEnv +
+          dropCoef * ((this.dropLeft > 0 ? this.dropDepth : 0) - this.dropEnv),
       )
       // Oxide sheds highs before it sheds level — the tell that separates a
       // dropout from a power cut.
@@ -212,8 +248,12 @@ export class Tape implements Stage {
       this.dryR.write(inR)
       const wetL = this.headL.process(inL, d, gapScale, s) * dropGain
       const wetR =
-        this.headR.process(inR, d + azimuth, gapScale * (1 - (0.35 * azimuth) / AZIMUTH_MAX), s) *
-        dropGain
+        this.headR.process(
+          inR,
+          d + azimuth,
+          gapScale * (1 - (0.35 * azimuth) / AZIMUTH_MAX),
+          s,
+        ) * dropGain
 
       // The dry side runs down the same nominal delay, so the blend only combs
       // when the transport actually wobbles.
