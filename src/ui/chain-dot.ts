@@ -1,20 +1,9 @@
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { GROUPS, groupKeys, sliderFor } from './controls'
+import { bendAt, BENDS, GROUPS, groupKeys, sliderFor } from './controls'
 
 // The signal path, emitted as DOT so graphviz can draw what the chain actually
 // does: live bend order, the feedback wire, and where it lands. The panel draws
 // this live; scripts/chain-svg.ts draws the README's copy from the same source.
-
-const BEND_GROUP = [
-  undefined,
-  'Ring mod',
-  'Crusher',
-  'Shaper',
-  'Comb',
-  'Glitch buffer',
-  'Screech filter',
-  'Freq shifter',
-] as const
 
 const FB_TARGET = ['mix', 'Chaos osc', 'Toy keyboard', 'Tape delay'] as const
 
@@ -123,23 +112,17 @@ function bendOrder(c: Controls): string[] {
   const names: string[] = []
   for (const slot of slots) {
     const id = Math.round(slot)
-    const name = BEND_GROUP[id]
-    if (!name || seen.has(id)) continue
+    const bend = bendAt(id)
+    if (!bend || seen.has(id)) continue
     seen.add(id)
-    names.push(name)
+    names.push(bend.group)
   }
   return names
 }
 
-const BEND_MIX: Record<string, keyof Controls> = {
-  'Ring mod': 'ringMix',
-  Crusher: 'crushMix',
-  Shaper: 'distMix',
-  Comb: 'combMix',
-  'Glitch buffer': 'glitchMix',
-  'Screech filter': 'filtMix',
-  'Freq shifter': 'shiftMix',
-}
+const BEND_MIX: Record<string, keyof Controls> = Object.fromEntries(
+  BENDS.map(b => [b.group, b.mix]),
+)
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 

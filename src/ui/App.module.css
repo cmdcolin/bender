@@ -121,6 +121,37 @@ select.btn {
   position: relative;
 }
 
+/* Above the presets, and marked off from them: a preset is a board someone
+   wrote down, a roll is one nobody has heard yet. */
+.dice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.diceLabel {
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  padding-right: 2px;
+}
+
+.die {
+  font-size: var(--fs-xs);
+  padding: 3px 9px;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.die:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .ioRow {
   display: flex;
   align-items: center;

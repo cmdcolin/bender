@@ -20,7 +20,7 @@ import {
   type MorphSeconds,
 } from './morph'
 import { Presets } from './Presets'
-import { mutate, randomLook } from './presets'
+import { mutate, randomLook, SCENARIOS } from './presets'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { boardUrl } from './share'
@@ -296,11 +296,34 @@ export function App() {
           </button>
         </div>
 
+        {/* Rolls that are about how the stages sit together, so no one panel
+            could offer them. The ones that are about a single stage live in
+            that stage's own header, next to its reset. */}
+        <div className={styles.dice}>
+          <span className={styles.diceLabel}>roll</span>
+          {SCENARIOS.map(s => (
+            <button
+              key={s.name}
+              className={styles.die}
+              title={s.blurb}
+              onClick={() =>
+                engine.audition(s.roll(controls, Math.random), morphSeconds)
+              }
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+
         <Presets controls={controls} morphSeconds={morphSeconds} />
 
         <ChainMap open={open} onOpen={toggle} />
         {openGroup ? (
-          <OpenGroup group={openGroup} onClose={() => setOpen(null)} />
+          <OpenGroup
+            group={openGroup}
+            onClose={() => setOpen(null)}
+            seconds={morphSeconds}
+          />
         ) : (
           <PathHint />
         )}

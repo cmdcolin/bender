@@ -1268,6 +1268,26 @@ export const GROUPS: Group[] = [
   },
 ]
 
+// Which stage each bend slot names, in the order the slot's own choices list
+// them, and the dry/wet that decides whether you hear it. The map reads this to
+// lay the path out; a roll reads it to put one bend on the board on its own.
+export const BENDS = [
+  { group: 'Ring mod', mix: 'ringMix' },
+  { group: 'Crusher', mix: 'crushMix' },
+  { group: 'Shaper', mix: 'distMix' },
+  { group: 'Comb', mix: 'combMix' },
+  { group: 'Glitch buffer', mix: 'glitchMix' },
+  { group: 'Screech filter', mix: 'filtMix' },
+  { group: 'Freq shifter', mix: 'shiftMix' },
+] as const satisfies readonly { group: string; mix: ControlKey }[]
+
+/** The bend a slot value names — nothing, for the empty slot at zero. */
+export const bendAt = (slot: number) => BENDS[Math.round(slot) - 1]
+
+export const BEND_SLOT_KEYS = [0, 1, 2, 3, 4, 5].map(
+  i => `bendSlot${i}` as ControlKey,
+)
+
 export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
 export const EDITOR_KEYS = new Set<ControlKey>(
   GROUPS.flatMap(g => g.editor?.keys ?? []),

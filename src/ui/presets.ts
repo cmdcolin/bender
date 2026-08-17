@@ -2,12 +2,18 @@ import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { Glide } from '../engine/glide'
 import {
   ALL_SLIDERS,
+  bendAt,
+  BEND_SLOT_KEYS,
+  GROUPS,
+  type Group,
+  groupKeys,
   HOLD_KEYS,
+  SLIDER_BY_KEY,
   type SliderDef,
   sliderFor,
   snapToStep,
 } from './controls'
-import { DRUM_ROMS, GRID_ROWS } from './drums'
+import { DRUM_ROMS, type DrumStepKey, GRID_ROWS, STEPS, stepBit } from './drums'
 import { fromPos, toPos } from './slider-scale'
 
 export interface PresetDef {
@@ -632,6 +638,16 @@ const CLOCK_RATIOS = [
   8,
 ]
 
+// Swing is a feel, not a dial: straight, a hair behind, the triplet shuffle
+// every drum machine of the era had, and hard dotted. 0.37 of the way to a
+// shuffle is a machine that can't quite play it.
+const SWING_NOTCHES = [0, 0.15, 1 / 3, 0.5, 2 / 3]
+
+const nearest = (value: number, candidates: number[]) =>
+  candidates.reduce((best, c) =>
+    Math.abs(c - value) < Math.abs(best - value) ? c : best,
+  )
+
 const nearestLog = (value: number, candidates: number[]) =>
   candidates.reduce((best, c) =>
     Math.abs(Math.log(c / value)) < Math.abs(Math.log(best / value)) ? c : best,
@@ -681,6 +697,29 @@ const nudge = (
 ) =>
   snapToStep(def, fromPos(def, toPos(def, value) + (rand() * 2 - 1) * amount))
 
+// Puts back on the grid whatever this gesture actually moved. A roll of one
+// stage has no business quantising a delay time it never touched — that would
+// be an edit in a panel you didn't press.
+function inTime(next: Controls, moved: (key: ControlKey) => boolean): Controls {
+  if (moved('drumSwing')) {
+    next.drumSwing = snapToStep(
+      sliderFor('drumSwing'),
+      nearest(next.drumSwing, SWING_NOTCHES),
+    )
+  }
+  if (moved('chipClockX')) {
+    next.chipClockX = snapToStep(
+      sliderFor('chipClockX'),
+      nearestLog(next.chipClockX, CLOCK_RATIOS),
+    )
+  }
+  for (const key of BEAT_MS)
+    if (moved(key)) next[key] = onGrid(key, next[key], next.drumBpm, 'ms')
+  for (const key of BEAT_HZ)
+    if (moved(key)) next[key] = onGrid(key, next[key], next.drumBpm, 'hz')
+  return next
+}
+
 export function mutate(
   controls: Controls,
   amount: number,
@@ -697,15 +736,7 @@ export function mutate(
     }
     next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
-  next.chipClockX = snapToStep(
-    sliderFor('chipClockX'),
-    nearestLog(next.chipClockX, CLOCK_RATIOS),
-  )
-  for (const key of BEAT_MS)
-    next[key] = onGrid(key, next[key], next.drumBpm, 'ms')
-  for (const key of BEAT_HZ)
-    next[key] = onGrid(key, next[key], next.drumBpm, 'hz')
-  return next
+  return inTime(next, () => true)
 }
 
 // A roll of the dice asks for a different circuit, not a different song: the
@@ -714,3 +745,222 @@ export function randomLook(current: Controls, rand: () => number): Controls {
   const preset = PRESETS[Math.floor(rand() * PRESETS.length)]!
   return keepYours(mutate(applyPreset(preset, current), 0.08, rand), current)
 }
+
+// A roll, as against a nudge: the control takes a fresh value from anywhere on
+// its own travel rather than a step off the one it had — with three things it
+// knows about a board.
+//
+// A control the toy boots at the bottom of its travel is one that stays off
+// until you ask for it, so a roll leaves it there a third of the time; turning
+// every last one of them on at once is how a board goes to porridge. When a
+// roll brings a logarithmic one on it comes on low more often than high, since
+// half way up that travel is already most of the way up the range — a retrigger
+// is a roll before it is a scream. And a dry/wet that came on at all lands in
+// the top of its travel rather than at a permanent half-wet.
+function rollValue(def: SliderDef, rand: () => number): number {
+  const at = (pos: number) => snapToStep(def, fromPos(def, pos))
+  // A level is the whole of whether the stage is there at all, so rolling the
+  // stage always leaves it somewhere you can hear.
+  if (def.label === 'Level') return audible(def, rand)
+  const offAtBoot = DEFAULT_CONTROLS[def.key] === def.min
+  if (offAtBoot && rand() < 0.35) return def.min
+  if (def.choices) return def.min + Math.floor(rand() * def.choices.length)
+  if (def.label === 'Mix') return audible(def, rand)
+  return at(offAtBoot && def.curve === 'log' ? rand() ** 2 : rand())
+}
+
+/** Somewhere in the top two thirds of the travel: on, and audibly so. */
+const audible = (def: SliderDef, rand: () => number) =>
+  snapToStep(def, fromPos(def, 0.35 + rand() * 0.65))
+
+// Fresh values for the controls named, and nothing else on the board moved.
+// What is yours and the clock sit this out, the same as they do under a nudge.
+export function rollKeys(
+  current: Controls,
+  keys: Iterable<ControlKey>,
+  rand: () => number,
+): Controls {
+  const next = { ...current }
+  const moved = new Set<ControlKey>()
+  for (const key of keys) {
+    if (YOURS.has(key) || CLOCK_KEYS.has(key)) continue
+    const def = SLIDER_BY_KEY.get(key)
+    if (!def) continue
+    next[key] = rollValue(def, rand)
+    moved.add(key)
+  }
+  return inTime(next, k => moved.has(k))
+}
+
+// A sixteen-step pattern that still reads as a pattern: the kick owns the
+// downbeat, the snare answers on the backbeat, the hat runs one subdivision,
+// and the rest are trimmings. Rolling every step independently gives you noise
+// on a grid, which is the one thing the plugboard already lets you draw by hand.
+function rollPattern(rand: () => number): Record<DrumStepKey, number> {
+  const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
+  const every = (n: number, from = 0) => {
+    let mask = 0
+    for (let s = from; s < STEPS; s += n) mask |= stepBit(s)
+    return mask
+  }
+
+  let kick = stepBit(0)
+  if (rand() < 0.8) kick |= stepBit(8)
+  for (const step of [3, 6, 10, 11, 14])
+    if (rand() < 0.22) kick |= stepBit(step)
+
+  let snare = rand() < 0.85 ? stepBit(4) | stepBit(12) : stepBit(12)
+  if (rand() < 0.3) snare |= stepBit(pick([7, 10, 14, 15]))
+
+  const hat = rand() < 0.2 ? 0 : every(pick([1, 2, 2, 4]), rand() < 0.2 ? 1 : 0)
+
+  return {
+    drumKick: kick,
+    drumSnare: snare,
+    drumHat: hat,
+    drumClap: rand() < 0.3 ? snare & (stepBit(4) | stepBit(12)) : 0,
+    drumTom: rand() < 0.3 ? stepBit(13) | stepBit(14) | stepBit(15) : 0,
+    drumBell: rand() < 0.2 ? stepBit(0) | stepBit(3) | stepBit(6) : 0,
+    drumAccent: pick([
+      every(8),
+      every(4),
+      stepBit(0),
+      stepBit(4) | stepBit(12),
+    ]),
+  }
+}
+
+// Roll one stage of the board and leave every other stage alone. The kit is the
+// one stage whose pattern is part of what it is, so its own roll writes the grid
+// too — the general rolls never touch it, but this is the button that names it.
+export function rollGroup(
+  group: Group,
+  current: Controls,
+  rand: () => number,
+): Controls {
+  const next = rollKeys(
+    current,
+    group.sliders.map(s => s.key),
+    rand,
+  )
+  // You rolled this stage in order to hear it, so its own dry/wet doesn't get
+  // to land at zero. Turning a stage off is what the reset beside this is for.
+  const mix = group.sliders.find(s => s.label === 'Mix')
+  if (mix && next[mix.key] === mix.min) next[mix.key] = audible(mix, rand)
+  if (group.editor?.kind !== 'drums') return next
+  return { ...next, ...rollPattern(rand) }
+}
+
+/** Every control the stage owns, back where it booted. */
+export function resetGroup(group: Group, current: Controls): Controls {
+  const next = { ...current }
+  for (const key of groupKeys(group)) next[key] = DEFAULT_CONTROLS[key]
+  return next
+}
+
+export interface ScenarioDef {
+  name: string
+  blurb: string
+  roll: (current: Controls, rand: () => number) => Controls
+}
+
+const WIRE_KEYS: ControlKey[] = [
+  'fbDest',
+  'micPatch',
+  'mod0Src',
+  'mod0Dest',
+  'mod1Src',
+  'mod1Dest',
+]
+
+// Same parts, different order. Every bend keeps the settings you gave it and
+// swaps places with another, and the wires that decide where things land get
+// re-soldered — the one roll that asks "what if this went through that first"
+// without any opinion about what it should sound like.
+function rewire(current: Controls, rand: () => number): Controls {
+  const next = { ...current }
+  const slots = BEND_SLOT_KEYS.map(k => current[k])
+  for (let i = slots.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[slots[i], slots[j]] = [slots[j]!, slots[i]!]
+  }
+  BEND_SLOT_KEYS.forEach((key, i) => {
+    next[key] = slots[i]!
+  })
+  return rollKeys(next, WIRE_KEYS, rand)
+}
+
+const bendCount = () => (sliderFor('bendSlot0').choices?.length ?? 1) - 1
+
+// One bend, on its own, turned up. Six at once is where a board turns to
+// porridge; this clears the slots down to a single bend and rolls that one
+// hard, so whatever comes back is a sound you can name.
+function oneBend(current: Controls, rand: () => number): Controls {
+  const slot = 1 + Math.floor(rand() * bendCount())
+  const bend = bendAt(slot)!
+  const group = GROUPS.find(g => g.name === bend.group)!
+  const next = rollGroup(group, current, rand)
+  BEND_SLOT_KEYS.forEach((key, i) => {
+    next[key] = i === 0 ? slot : 0
+  })
+  // Rolled hard means heard: the one bend on the board does not get to sit at
+  // a dry/wet of zero.
+  next[bend.mix] = snapToStep(sliderFor(bend.mix), 0.6 + rand() * 0.4)
+  return next
+}
+
+// Where a control has to sit for the board to be on the edge of running away:
+// the feedbacks past unity, the supply on the floor, the DAC down to a few bits.
+// Positions on the travel rather than values, so the table says "near the top"
+// and the slider says what that means.
+const WRECK: [ControlKey, number, number][] = [
+  ['fbAmt', 0.65, 1],
+  ['fbDelayMs', 0, 0.6],
+  ['dlyFb', 0.7, 1],
+  ['dlyMix', 0.3, 0.7],
+  ['combFb', 0.8, 1],
+  ['filtRes', 0.85, 1],
+  ['chipStarve', 0.4, 0.9],
+  ['brownAmt', 0.4, 0.9],
+  ['driveDb', 0.5, 1],
+  ['distMix', 0.5, 1],
+  ['stompSag', 0.5, 1],
+  ['bits', 0, 0.3],
+  ['crushMix', 0.4, 1],
+]
+
+// Everything that can run away, wound up at once. The safety tail holds it at
+// the rails, so the worst this can do is be loud and horrible — which is the
+// request.
+function wreck(current: Controls, rand: () => number): Controls {
+  const next = { ...current }
+  const moved = new Set<ControlKey>()
+  for (const [key, lo, hi] of WRECK) {
+    const def = sliderFor(key)
+    next[key] = snapToStep(def, fromPos(def, lo + rand() * (hi - lo)))
+    moved.add(key)
+  }
+  return inTime(next, key => moved.has(key))
+}
+
+// The rolls a single panel can't offer, because each one is about how the
+// stages sit together rather than about what any one of them is set to.
+export const SCENARIOS: ScenarioDef[] = [
+  {
+    name: 'rewire',
+    blurb:
+      'Shuffle the bend order and re-solder the wires — same parts, different board',
+    roll: rewire,
+  },
+  {
+    name: 'one bend',
+    blurb: 'Clear the slots down to a single bend and roll that one hard',
+    roll: oneBend,
+  },
+  {
+    name: 'wreck it',
+    blurb:
+      'Every feedback past unity, the supply on the floor, the DAC down to a few bits',
+    roll: wreck,
+  },
+]

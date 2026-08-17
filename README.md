@@ -177,11 +177,32 @@ a question about the circuit and never about the tune.
 A shake stays in time. The tempo is not one of the things it shakes, and every
 control that counts in time rather than in pitch — delay time, glitch slice,
 drum retrigger, the bay LFO — comes back down on a division of that beat, so the
-echoes still land with the pattern and a roll is still a roll. The toy's own
-clock keeps its freedom to be somewhere else, but lands on a simple ratio, which
-is an interval as well as a tempo. Everything else moves along its own slider
-travel, so a log control drifts by a proportion of where it sits rather than by
-a slice of its whole span — a 40 ms delay comes back near 40 ms.
+echoes still land with the pattern and a roll is still a roll. Swing lands on a
+feel rather than a number: straight, a hair behind, the triplet shuffle, dotted.
+The toy's own clock keeps its freedom to be somewhere else, but lands on a
+simple ratio, which is an interval as well as a tempo. Everything else moves
+along its own slider travel, so a log control drifts by a proportion of where it
+sits rather than by a slice of its whole span — a 40 ms delay comes back near 40
+ms.
+
+Rolling smaller than a whole board: every stage's panel has its own **roll** and
+**reset**, so you can ask one question at a time — a new spring tank under the
+board you already like, or that stage back where it booted without losing the
+rest. A roll knows a little about boards. A control the toy boots at the bottom
+of its travel is off until asked, so it stays off a third of the time rather
+than everything coming on at once; a stage you rolled comes back audible, since
+its own level and dry/wet are what make it a stage at all; and the drum machine,
+the one stage whose pattern is part of what it is, writes a fresh sixteen steps
+— kick on the downbeat, snare on the backbeat, one subdivision on the hat,
+trimmings on the rest, at the tempo you already had.
+
+Above the presets are the rolls no single panel can offer, because each is about
+how the stages sit together: **rewire** shuffles the bend order and re-solders
+the patch wires without retuning a single bend, **one bend** clears the slots
+down to one and rolls that one hard (six at once is where a board turns to
+porridge), and **wreck it** winds up everything that can run away at once — the
+feedbacks past unity, the supply on the floor, the DAC down to a few bits. The
+safety tail holds all of it at the rails.
 
 A preset chip is also a fader. Click it for the whole board, or drag it sideways
 for part of the way there: the drag runs the same road the morph flies, under

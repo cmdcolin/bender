@@ -24,6 +24,29 @@
   color: var(--accent);
 }
 
+/* The stage's own verbs, quiet until you go looking: the header is a label
+   first, and a row of loud buttons there would fight the controls under it. */
+.verb,
+.verbOff {
+  font-size: var(--fs-xs);
+  padding: 2px 8px;
+  background: none;
+  color: var(--fg4);
+  border: 1px solid var(--border-quiet);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.verb:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.verbOff {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .close {
   background: none;
   border: none;
