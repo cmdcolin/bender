@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defaultExclude, defineConfig } from 'vitest/config'
 import pkg from './package.json' with { type: 'json' }
 
 function gitSha() {
@@ -19,4 +19,7 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
     __GIT_SHA__: JSON.stringify(gitSha()),
   },
+  // Worktrees carry their own copy of the suite; running them here would report
+  // another branch's work in progress as this branch's failure.
+  test: { exclude: [...defaultExclude, '**/.claude/**'] },
 })
