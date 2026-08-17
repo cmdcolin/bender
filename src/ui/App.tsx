@@ -93,7 +93,8 @@ function MorphControl(props: {
 export function App() {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
-  const playing = useStoreValue(engine.playing)
+  const songPlaying = useStoreValue(engine.songPlaying)
+  const drumsPlaying = useStoreValue(engine.drumsPlaying)
   const recording = useStoreValue(engine.recording)
   const recSeconds = useStoreValue(engine.recSeconds)
   const sampleName = useStoreValue(engine.sampleName)
@@ -121,8 +122,8 @@ export function App() {
     setTimeout(() => setCopied(false), 1500)
   }
 
-  // Space is the transport wherever the focus is; the keypress itself is the
-  // gesture that takes the audio context live.
+  // Space is the run/stop line over both machines, wherever the focus is; the
+  // keypress itself is the gesture that takes the audio context live.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey)
@@ -130,7 +131,7 @@ export function App() {
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
       e.preventDefault()
-      engine.setPlaying(!engine.playing.get())
+      engine.toggleRun()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -171,12 +172,22 @@ export function App() {
         <Keys />
         <BodyPad onOpen={setOpen} />
         <div className={styles.ioRow}>
+          {/* Two machines, two switches. The kit used to run off the demo
+              song's line, so writing a pattern and hearing it meant putting the
+              toy's ROM tune on underneath it. */}
           <button
-            className={playing ? styles.playBtnOn : styles.playBtn}
-            onClick={() => engine.setPlaying(!playing)}
-            title="run or stop the chip's ROM tune and the drum pattern — space does it too"
+            className={songPlaying ? styles.playBtnOn : styles.playBtn}
+            onClick={() => engine.setSongPlaying(!songPlaying)}
+            title="run or stop the toy chip's ROM tune. Nothing else starts it — space runs both machines"
           >
-            {playing ? '❚❚ pause demo song' : '▶ play demo song'}
+            {songPlaying ? '❚❚ pause demo song' : '▶ play demo song'}
+          </button>
+          <button
+            className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
+            onClick={() => engine.setDrumsPlaying(!drumsPlaying)}
+            title="run or stop the drum machine's pattern, with or without the demo song. Bring the kit's Level up if you hear nothing"
+          >
+            {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
           </button>
           <button
             className={recording ? styles.recBtnOn : styles.ioBtn}
@@ -206,11 +217,11 @@ export function App() {
               your volume low.{' '}
             </b>
           )}
-          press <b>play demo song</b> (or{' '}
-          <span className={styles.kbd}>space</span>), or play keys with{' '}
-          <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b>{' '}
-          until the toy reboots, solder the <b>Bend spot</b> pot, push any{' '}
-          <b>Feedback</b> past 1
+          press <b>play demo song</b> or <b>play drums</b> (
+          <span className={styles.kbd}>space</span> runs both), or play keys
+          with <span className={styles.kbd}>a s d f …</span> — turn up{' '}
+          <b>Starve</b> until the toy reboots, solder the <b>Bend spot</b> pot,
+          push any <b>Feedback</b> past 1
         </p>
       </div>
 
@@ -229,17 +240,15 @@ export function App() {
           <button
             className={styles.btn}
             onClick={() =>
-              engine.audition(randomLook(controls, Math.random), morphSeconds)
+              engine.morphTo(randomLook(controls, Math.random), morphSeconds)
             }
-            title="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern and levels stay put"
+            title="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern, levels and what is running stay put"
           >
             random
           </button>
           <button
             className={styles.btn}
             onClick={e =>
-              // No audition: a nudge is to the board you are already hearing, so
-              // it must not start the demo song under someone playing the keys.
               engine.morphTo(
                 mutate(
                   engine.controls.get(),
@@ -307,7 +316,7 @@ export function App() {
               className={styles.die}
               title={s.blurb}
               onClick={() =>
-                engine.audition(s.roll(controls, Math.random), morphSeconds)
+                engine.morphTo(s.roll(controls, Math.random), morphSeconds)
               }
             >
               {s.name}

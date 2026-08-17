@@ -52,9 +52,10 @@ export function buildBender(sr: number): BuiltChain {
   return { chain, toyChip, toyDrum, sampler, transport }
 }
 
-// Offline rendering (tests): the ROM sequencers run from the first sample.
+// Offline rendering (tests): both ROM sequencers run from the first sample.
 export function buildChain(sr: number): Chain {
   const built = buildBender(sr)
-  built.transport.playing = true
+  built.transport.tune = true
+  built.transport.drums = true
   return built.chain
 }

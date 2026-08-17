@@ -28,7 +28,7 @@ function usePlayStep(): number {
 // you can edit rather than a mode you are stuck in.
 export function DrumGrid() {
   const controls = useStoreValue(engine.controls)
-  const playing = useStoreValue(engine.playing)
+  const playing = useStoreValue(engine.drumsPlaying)
   const playStep = usePlayStep()
   const live = playing && controls.drumLevel > 0
   const masks = Object.fromEntries(
@@ -86,15 +86,19 @@ export function DrumGrid() {
         ))}
       </div>
 
-      {controls.drumLevel === 0 && (
+      {/* The one place that may start the kit, because it is a button that says
+          it will. Nothing else on the board presses play for you. */}
+      {live || (
         <button
           className={styles.silent}
           onClick={() => {
-            engine.patch({ drumLevel: 0.8 })
-            engine.setPlaying(true)
+            if (controls.drumLevel === 0) engine.patch({ drumLevel: 0.8 })
+            engine.setDrumsPlaying(true)
           }}
         >
-          the kit is turned down — bring Level up and run it
+          {controls.drumLevel === 0
+            ? 'the kit is turned down — bring Level up and run it'
+            : 'the kit is stopped — run it'}
         </button>
       )}
     </div>

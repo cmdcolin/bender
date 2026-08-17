@@ -66,7 +66,7 @@ function PresetChip(props: {
   const apply = () => {
     const { from, path } = road()
     const target = path.at(from, 1)
-    engine.audition(target, props.morphSeconds)
+    engine.morphTo(target, props.morphSeconds)
     props.onScrub({ name: props.def.name, from, path, t: 1, produced: target })
   }
 
@@ -103,9 +103,6 @@ function PresetChip(props: {
         // Over the live controls, as the morph does, so whatever a second hand
         // is holding — the body pad, the output level — survives the drag.
         const produced = d.path.at(engine.controls.get(), d.t)
-        // Dragging a chip is auditioning it, the same as clicking one — but
-        // only worth saying once a gesture, not on every pointer step.
-        if (!engine.playing.get()) engine.setPlaying(true)
         engine.writeBoard(produced)
         props.onScrub({
           name: props.def.name,

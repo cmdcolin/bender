@@ -13,9 +13,12 @@ export interface NoteMsg {
   semitone: number
 }
 
+// Both run lines in one message: they are two switches on one desk, and the
+// worklet has no use for knowing which of them the hand moved.
 export interface TransportMsg {
   kind: 'transport'
-  playing: boolean
+  tune: boolean
+  drums: boolean
 }
 
 export interface RecordMsg {

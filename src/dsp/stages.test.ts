@@ -594,6 +594,28 @@ test('the whole-kit ring reaches the voices the three-way one never did', () => 
   expect(bin(wholeKit, 540)).toBeGreaterThan(4 * bin(threeWay, 540))
 })
 
+// Two machines on one desk. The kit used to hang off the demo song's run line,
+// so writing a pattern and hearing it meant putting the toy's ROM tune on
+// underneath — and stopping the tune stopped the kit.
+test('each machine runs on its own run line', () => {
+  const both: Partial<Controls> = { chipLevel: 0.8, drumLevel: 0.9 }
+  const runLines = (tune: boolean, drums: boolean) =>
+    renderBender(both, 1, built => {
+      built.transport.tune = tune
+      built.transport.drums = drums
+    })
+
+  const silent = rms(runLines(false, false))
+  const kitOnly = rms(runLines(false, true))
+  const tuneOnly = rms(runLines(true, false))
+  expect(silent).toBeLessThan(0.001)
+  expect(kitOnly).toBeGreaterThan(0.02)
+  expect(tuneOnly).toBeGreaterThan(0.02)
+  // Neither is the other: the kit on its own has no sustained tone in it, and
+  // the tune on its own has no step of the pattern.
+  expect(runLines(false, true)).not.toEqual(runLines(true, false))
+})
+
 test('an unbridged kit is the kit it always was', () => {
   const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
   expect(render({ ...look, drumCrossAmt: 1 }, 1)).toEqual(render(look, 1))

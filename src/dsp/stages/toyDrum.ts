@@ -148,7 +148,7 @@ export class ToyDrum implements Stage {
 
     let loadSum = 0
     for (let i = 0; i < io.n; i++) {
-      if (this.transport.playing) {
+      if (this.transport.drums) {
         // Swing holds the offbeat back and takes it off the step after, so a
         // pair still spans two steps and the tempo is what the knob says.
         const span = this.step % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
@@ -163,7 +163,7 @@ export class ToyDrum implements Stage {
       const retrigHz = mod
         ? Math.min(baseRetrig * Math.pow(2, mod[i]! * 4), 8000)
         : baseRetrig
-      if (this.transport.playing && retrigHz > 0.5) {
+      if (this.transport.drums && retrigHz > 0.5) {
         this.retrigPhase += retrigHz / this.sr
         if (this.retrigPhase >= 1) {
           this.retrigPhase -= 1

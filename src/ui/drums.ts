@@ -88,6 +88,31 @@ export const DRUM_ROMS: DrumRom[] = [
     drumHat: 0b0011_0011_0011_0011,
     drumAccent: 0b1000_0000_1000_0000,
   }),
+  rom('breaks', 'Kick off the beat, ghost snare in the gap', {
+    drumKick: 0b1000_0010_0010_0000,
+    drumSnare: 0b0000_1001_0000_1000,
+    drumHat: 0b1010_1110_1010_1110,
+    drumAccent: 0b0000_1000_0000_1000,
+  }),
+  rom('electro', 'Syncopated kick under a flat backbeat clap', {
+    drumKick: 0b1001_0000_1001_0000,
+    drumClap: 0b0000_1000_0000_1000,
+    drumHat: 0b0010_0010_0010_0010,
+    drumBell: 0b0000_0000_0000_0010,
+    drumAccent: 0b1000_0000_1000_0000,
+  }),
+  rom('motorik', 'Eighths on the kick, sixteenths on the hat, no let-up', {
+    drumKick: 0b1010_1010_1010_1010,
+    drumSnare: 0b0000_1000_0000_1000,
+    drumHat: 0b1111_1111_1111_1111,
+    drumAccent: 0b1000_0000_1000_0000,
+  }),
+  rom('one drop', 'Nothing on the one — kick and snare together on three', {
+    drumKick: 0b0000_0000_1000_0000,
+    drumSnare: 0b0000_0000_1000_0000,
+    drumHat: 0b0010_0010_0010_0010,
+    drumAccent: 0b0000_0000_1000_0000,
+  }),
   rom('bossa', 'Clave on the cowbell, no snare at all', {
     drumKick: 0b1001_0010_0010_0100,
     drumHat: 0b0010_0100_1001_0010,

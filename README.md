@@ -62,8 +62,9 @@ band down with the tune.
 
 The drum machine is a sixteen-step plugboard rather than a fixed pattern. Six
 voices — kick, snare, hat, clap, tom, cowbell — each get a row of steps you
-click, and an accent row underneath decides which columns hit harder. The
-factory patterns sit as buttons above the grid and write into those same steps,
+click, and an accent row underneath decides which columns hit harder. The ten
+factory patterns sit as buttons above the grid — rock, disco, breaks, electro,
+motorik, one drop, bossa, fill, clap, march — and write into those same steps,
 so a ROM is somewhere to start from rather than a mode to be stuck in. **Swing**
 holds every offbeat step back and takes the time off the step after, so the
 shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
@@ -221,10 +222,18 @@ The chip's ROM bank holds eighteen demo songs, each with its own sequencer rate:
 four factory doodles, eight public-domain tunes every cheap keyboard shipped
 (Für Elise, Ode to Joy, Rondo alla Turca, William Tell…), and six slow ones in
 minor and modal keys — Gymnopédie, Gnossienne, Sakura, Dies Irae, Chopin's
-funeral march, Greensleeves — where a starving rail stops being funny. Nothing
-plays by itself: **play demo song** runs the ROM sequencers, the keys work
-either way. **Record** writes the output to a 16-bit stereo wav; stopping saves
-the take.
+funeral march, Greensleeves — where a starving rail stops being funny.
+
+The toy and the drum box are two machines sharing a desk and a power strip, so
+they have a run switch each: **play demo song** runs the chip's ROM sequencer,
+**play drums** runs the pattern, and the kit does not need the tune underneath
+it to be heard. <kbd>space</kbd> is one run/stop over both, and it puts back
+whatever was running rather than starting everything. Nothing else on the board
+presses play — not a preset, not a random roll, not a link you opened. The keys
+work whatever is or isn't running, and starving the toy still takes the kit down
+with it, because the rail is the one thing the two machines do share.
+
+**Record** writes the output to a 16-bit stereo wav; stopping saves the take.
 
 ## Run
 

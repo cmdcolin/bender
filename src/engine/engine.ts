@@ -39,7 +39,11 @@ export class Engine {
     })
   readonly running = createStore(false)
   readonly micOn = createStore(false)
-  readonly playing = createStore(false)
+  // The two run lines, separately. The drum machine is its own box: it runs
+  // without the demo song, which is what anybody who wanted to write a pattern
+  // and hear it always expected of it.
+  readonly songPlaying = createStore(false)
+  readonly drumsPlaying = createStore(false)
   readonly recording = createStore(false)
   readonly recSeconds = createStore(0)
   readonly sampleName = createStore<string | null>(null)
@@ -101,7 +105,7 @@ export class Engine {
     this.ctx = ctx
     this.node = node
     this.post({ kind: 'params', pack: packParams(this.controls.get()) })
-    this.post({ kind: 'transport', playing: this.playing.get() })
+    this.postTransport()
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {
@@ -203,14 +207,6 @@ export class Engine {
   morphTo(target: Controls, seconds = 1) {
     this.bank()
     this.travel(target, seconds)
-  }
-
-  // Picking a board is a request to hear it, so the ROM runs even if it was
-  // paused. Not what a nudge to the board already playing does — mutate must
-  // not start the demo song under someone playing the keys.
-  audition(target: Controls, seconds = 1) {
-    this.setPlaying(true)
-    this.morphTo(target, seconds)
   }
 
   // A board written straight rather than travelled to: a preset chip dragged by
@@ -335,10 +331,52 @@ export class Engine {
     this.post({ kind: 'record', on: false })
   }
 
-  // The demo song never starts itself — the user presses play.
-  setPlaying(playing: boolean) {
-    this.playing.set(playing)
-    this.post({ kind: 'transport', playing })
+  // Neither sequencer ever starts itself. A preset, a random roll, a link, a
+  // click on the map: none of them press play, because a board is a circuit and
+  // running it is a separate thing you asked for. The app used to start the tune
+  // on half of those, and a machine that breaks into song when you touch it is a
+  // toy rather than an instrument.
+  private postTransport() {
+    this.post({
+      kind: 'transport',
+      tune: this.songPlaying.get(),
+      drums: this.drumsPlaying.get(),
+    })
+  }
+
+  private setRun(song: boolean, drums: boolean) {
+    if (song === this.songPlaying.get() && drums === this.drumsPlaying.get())
+      return
+    this.songPlaying.set(song)
+    this.drumsPlaying.set(drums)
+    this.postTransport()
+  }
+
+  setSongPlaying(on: boolean) {
+    this.setRun(on, this.drumsPlaying.get())
+  }
+
+  setDrumsPlaying(on: boolean) {
+    this.setRun(this.songPlaying.get(), on)
+  }
+
+  // What space puts back. Both to begin with: on a board nobody has run yet,
+  // "play" means play the board.
+  private lastRun = { song: true, drums: true }
+
+  // Space is one run/stop line over both machines. It stops whatever is running
+  // and the next press starts that same thing again, so a board running the kit
+  // on its own comes back running the kit on its own rather than breaking into
+  // the demo song.
+  toggleRun() {
+    const song = this.songPlaying.get()
+    const drums = this.drumsPlaying.get()
+    if (song || drums) {
+      this.lastRun = { song, drums }
+      this.setRun(false, false)
+    } else {
+      this.setRun(this.lastRun.song, this.lastRun.drums)
+    }
   }
 
   noteOn(semitone: number) {

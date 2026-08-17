@@ -181,8 +181,8 @@ export class ToyChip implements Stage {
       this.lastReboot = rail.rebootCount
       this.restart(tune)
     }
-    if (this.transport.playing !== this.wasPlaying) {
-      this.wasPlaying = this.transport.playing
+    if (this.transport.tune !== this.wasPlaying) {
+      this.wasPlaying = this.transport.tune
       if (this.wasPlaying) this.restart(tune)
     }
 
@@ -197,8 +197,7 @@ export class ToyChip implements Stage {
       if (modClock) clock *= Math.pow(2, modClock[i]! * 3)
 
       // sequencer — the run/stop line freezes it where it stands
-      if (this.transport.playing)
-        this.stepClock += (rom.stepHz * clock) / this.sr
+      if (this.transport.tune) this.stepClock += (rom.stepHz * clock) / this.sr
       if (this.stepClock >= 1) {
         this.stepClock -= 1
         let next = this.pos + 1
@@ -252,7 +251,7 @@ export class ToyChip implements Stage {
 
       let out = 0
       if (!rail.booting && !(starve > 0 && rail.stalled)) {
-        const note = this.transport.playing ? this.note : -1
+        const note = this.transport.tune ? this.note : -1
         if (note >= 0 && this.env > ENV_FLOOR) {
           const hz = Math.min(
             BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor,
