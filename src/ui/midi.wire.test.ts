@@ -6,13 +6,16 @@ import { beforeEach, expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { sliderFor } from './controls'
-import { ccToValue, midi } from './midi'
+import { ccToValue, midi, velocity } from './midi'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
 
 const input = { onmidimessage: null as Handler }
+const sent: number[][] = []
+const output = { send: (bytes: number[]) => sent.push(bytes) }
 const access = {
   inputs: new Map([['one', input]]),
+  outputs: new Map([['one', output]]),
   addEventListener() {},
   removeEventListener() {},
 }
@@ -20,7 +23,13 @@ const access = {
 vi.stubGlobal('navigator', {
   requestMIDIAccess: () => Promise.resolve(access),
 })
-vi.stubGlobal('requestAnimationFrame', () => 0)
+// Runs the callback where the browser would defer it, so a coalesced send lands
+// inside the test that caused it rather than after the suite.
+vi.stubGlobal('requestAnimationFrame', (fn: () => void) => {
+  fn()
+  return 1
+})
+vi.stubGlobal('cancelAnimationFrame', () => {})
 
 const send = (...bytes: number[]) => {
   input.onmidimessage?.({ data: new Uint8Array(bytes) } as MIDIMessageEvent)
@@ -30,8 +39,10 @@ const cc = (controller: number, value: number, channel = 0) =>
   send(0xb0 | channel, controller, value)
 
 beforeEach(async () => {
+  midi.setLights(false)
   midi.clearAll()
   midi.arm(null)
+  sent.length = 0
   engine.writeBoard({ ...DEFAULT_CONTROLS })
   if (midi.status.get() !== 'ready') {
     midi.enable()
@@ -133,7 +144,8 @@ test('notes strike the chip, and let go of the note they struck', () => {
   const off = vi.spyOn(engine, 'noteOff')
   midi.setNotes(true)
   send(0x90, 60, 100) // middle C
-  expect(on).toHaveBeenCalledWith(3) // three semitones above the toy's A3
+  // Three semitones above the toy's A3, struck as hard as the key was hit.
+  expect(on).toHaveBeenCalledWith(3, velocity(100))
   send(0x80, 60, 0)
   expect(off).toHaveBeenCalledWith(3)
   // The running-status spelling of a note off, which a latching voice needs too.
@@ -143,6 +155,18 @@ test('notes strike the chip, and let go of the note they struck', () => {
   off.mockRestore()
 })
 
+test('a harder key strikes harder', () => {
+  const on = vi.spyOn(engine, 'noteOn')
+  midi.setNotes(true)
+  send(0x90, 60, 20)
+  send(0x90, 64, 127)
+  const [soft, hard] = on.mock.calls.map(c => c[1] ?? 1)
+  expect(soft).toBeDefined()
+  expect(hard).toBe(1)
+  expect(soft!).toBeLessThan(hard!)
+  on.mockRestore()
+})
+
 test('notes stay off the chip when the panel says so', () => {
   const on = vi.spyOn(engine, 'noteOn')
   midi.setNotes(false)
@@ -150,6 +174,82 @@ test('notes stay off the chip when the panel says so', () => {
   expect(on).not.toHaveBeenCalled()
   midi.setNotes(true)
   on.mockRestore()
+})
+
+// An endless encoder has no position to disagree with the screen, so the whole
+// soft-takeover dance is beside the point: a turn moves the control from
+// wherever it stands, first message included.
+test('an encoder turns the control from where it stands, with nothing to catch', () => {
+  const def = sliderFor('dlyMix')
+  engine.writeBoard({ ...DEFAULT_CONTROLS, dlyMix: 0.5 })
+  midi.arm('dlyMix')
+  cc(30, 65)
+  midi.setRelative('dlyMix', true)
+
+  cc(30, 65) // one click up, offset spelling
+  expect(engine.controls.get().dlyMix).toBeGreaterThan(0.5)
+  expect(midi.pickups.get().dlyMix).toBeUndefined()
+
+  const up = engine.controls.get().dlyMix
+  cc(30, 63) // one click back down
+  // A click is one CC step's worth of travel, landed on the control's own grid —
+  // which here is the coarser of the two, so a click is exactly one grid step
+  // and turning back undoes turning forward.
+  expect(up - 0.5).toBeCloseTo(def.step, 5)
+  expect(engine.controls.get().dlyMix).toBeCloseTo(0.5, 5)
+})
+
+test('a preset cannot strand an encoder', () => {
+  midi.arm('dlyMix')
+  cc(31, 65)
+  midi.setRelative('dlyMix', true)
+  cc(31, 65)
+  engine.writeBoard({ ...engine.controls.get(), dlyMix: 0.9 })
+  expect(midi.pickups.get().dlyMix).toBeUndefined()
+  cc(31, 65)
+  expect(engine.controls.get().dlyMix).toBeGreaterThan(0.9)
+})
+
+// The two spellings mean opposite things by the same byte, so the one the knob
+// uses is latched from its first message rather than re-read per byte — where a
+// fast turn's big delta would look exactly like the other spelling.
+test('an encoder that counts from the ends is read that way too', () => {
+  midi.arm('dlyMix')
+  cc(32, 1)
+  midi.setRelative('dlyMix', true)
+  engine.writeBoard({ ...DEFAULT_CONTROLS, dlyMix: 0.5 })
+
+  cc(32, 1) // one click up, two's-complement spelling
+  expect(engine.controls.get().dlyMix).toBeGreaterThan(0.5)
+  cc(32, 127) // one click down
+  expect(engine.controls.get().dlyMix).toBeCloseTo(0.5, 5)
+  // A fast turn: +40, which in the other spelling would read as a big negative.
+  cc(32, 40)
+  expect(engine.controls.get().dlyMix).toBeGreaterThan(0.5)
+})
+
+test('the rings follow the board, and only where it moved', () => {
+  midi.arm('dlyMix')
+  cc(33, 0)
+  midi.setLights(true)
+  sent.length = 0
+
+  engine.writeBoard({ ...engine.controls.get(), dlyMix: 1 })
+  expect(sent).toEqual([[0xb0, 33, 127]])
+
+  // A frame that moved nothing bound must not re-send what it already said.
+  sent.length = 0
+  engine.writeBoard({ ...engine.controls.get(), revMix: 0.4 })
+  expect(sent).toEqual([])
+  midi.setLights(false)
+})
+
+test('the rings stay dark until they are switched on', () => {
+  midi.arm('dlyMix')
+  cc(34, 0)
+  sent.length = 0
+  engine.writeBoard({ ...engine.controls.get(), dlyMix: 1 })
+  expect(sent).toEqual([])
 })
 
 test('clock sets the tempo only once it is asked to', () => {

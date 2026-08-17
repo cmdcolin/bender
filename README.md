@@ -470,14 +470,34 @@ A bound knob does not grab its control on the first message. It has to sweep
 through the value already on screen — otherwise loading a preset would snap
 every control back to wherever the hardware happened to be left standing, which
 is the one thing a physical knob can't show you. Until it catches, the control
-draws where the knob is waiting in amber, and one continuous turn banks one step
-in the undo walk, the way a slider drag does.
+draws where the knob is waiting in amber, the panel counts how many knobs are
+out of step, and one continuous turn banks one step in the undo walk, the way a
+slider drag does.
+
+An endless encoder skips all of that. It reports turns rather than a position,
+so there is nothing to disagree with the screen and nothing to strand: a click
+moves the control one CC step's worth of its travel from wherever it stands,
+which crosses a log filter and a five-choice enum at the same speed. Two
+spellings of a turn are in the wild and they mean opposite things by the same
+byte — 63 is +63 in one and −1 in the other — so no rule reads a lone message
+correctly for both. What separates them is where a single click lands, against
+the middle or against the ends, so bender latches the spelling from a knob's
+first message and keeps it. The `↻` on a binding's row is what says the knob is
+an encoder at all; the giveaway that it needs pressing is a control that slams
+to one end and sticks.
+
+**Light the rings** sends each bound control's value back out, which is the
+other half of the same problem: a knob whose ring follows the preset was never
+stranded to begin with. An encoder needs it most, having no pointer of its own —
+the ring is the only place its control's value can be shown on the hardware.
 
 Notes play the toy chip's keyboard, with A3 where the ROM has it, so a
-controller strikes the same voice the on-screen keys do. Clock is the other
-half: the drum machine can follow the tick on the wire, and it does it by
-writing the tempo control, so the slider moves with the room rather than
-fighting it.
+controller strikes the same voice the on-screen keys do. Velocity comes with
+them: the toy's own keys are switches and always strike full, but a wire onto
+the gate can arrive at any level, which is what the trigger patch has always
+done. Clock is the other half: the drum machine can follow the tick on the wire,
+and it does it by writing the tempo control, so the slider moves with the room
+rather than fighting it.
 
 ## Run
 

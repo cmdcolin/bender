@@ -52,7 +52,7 @@ class BenderProcessor extends AudioWorkletProcessor {
           this.built.sampler.setBuffer(msg.mono)
           break
         case 'noteOn':
-          this.built.toyChip.noteOn(msg.semitone)
+          this.built.toyChip.noteOn(msg.semitone, msg.gain)
           break
         case 'noteOff':
           this.built.toyChip.noteOff(msg.semitone)

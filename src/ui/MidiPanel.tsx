@@ -10,6 +10,7 @@ function label(key: Parameters<typeof sliderFor>[0]): string {
 
 function Bindings() {
   const bindings = useStoreValue(midi.bindings)
+  const pickups = useStoreValue(midi.pickups)
   // Walked in signal-path order rather than bind order, so a row doesn't move
   // under the pointer as bindings come and go.
   const bound = ALL_SLIDERS.filter(s => bindings[s.key] !== undefined)
@@ -19,9 +20,30 @@ function Bindings() {
       <div className={styles.list}>
         {bound.map(s => {
           const b = bindings[s.key]
-          return b === undefined ? null : (
+          if (b === undefined) return null
+          const stranded = pickups[s.key] !== undefined
+          return (
             <div key={s.key} className={styles.bound}>
-              <span className={styles.boundName}>{label(s.key)}</span>
+              <span
+                className={stranded ? styles.strandedName : styles.boundName}
+              >
+                {label(s.key)}
+              </span>
+              {/* The one thing a knob cannot tell you about itself. An encoder
+                  read as a position slams its control to one end and stays
+                  there, which looks like a broken binding rather than a wrong
+                  one — so the fix sits on the row where that happens. */}
+              <button
+                className={b.relative === true ? styles.modeOn : styles.mode}
+                onClick={() => midi.setRelative(s.key, b.relative !== true)}
+                title={
+                  b.relative === true
+                    ? 'read as an endless encoder: each message is a turn. Press to read it as a position instead'
+                    : 'read as a position: each message is where the knob is. Press if this knob is an endless encoder — the giveaway is a control that slams to one end and sticks'
+                }
+              >
+                {b.relative === true ? '↻' : '↔'}
+              </button>
               <span className={styles.cc}>
                 CC{b.controller}
                 {b.channel === 0 ? '' : ` ch${b.channel + 1}`}
@@ -51,7 +73,10 @@ function Wired() {
   const bpm = useStoreValue(midi.bpm)
   const notes = useStoreValue(midi.notes)
   const clockLock = useStoreValue(midi.clockLock)
+  const lights = useStoreValue(midi.lights)
+  const stranded = Object.keys(useStoreValue(midi.pickups)).length
   const [deviceName, setDeviceName] = useState(DEVICE_PROFILES[0]?.name ?? '')
+  const [encoders, setEncoders] = useState(false)
   const device: DeviceProfile | undefined =
     DEVICE_PROFILES.find(d => d.name === deviceName) ?? DEVICE_PROFILES[0]
 
@@ -72,11 +97,20 @@ function Wired() {
       ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
       : armed !== null
         ? `move a knob to take ${label(armed)} — esc to cancel`
-        : 'press ⚟ on any control, then move a knob to bind it'
+        : // A preset or a roll strands every bound knob at once, and only the
+          // open stage shows its own amber marks — so the count belongs here,
+          // where every binding is listed whatever stage it lives on.
+          stranded > 0
+          ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
+          : 'press ⚟ on any control, then move a knob to bind it'
 
   return (
     <>
-      <div className={armed || learn ? styles.waiting : styles.hint}>
+      <div
+        className={
+          armed || learn || stranded > 0 ? styles.waiting : styles.hint
+        }
+      >
         {hint}
       </div>
 
@@ -104,10 +138,19 @@ function Wired() {
           </button>
           <button
             className={styles.btn}
-            onClick={() => midi.learnSequence()}
+            onClick={() => midi.learnSequence(encoders)}
             title="works on any controller whatever its CC numbers: sweep each knob once, left to right, and each takes the next control. Replaces every binding you have"
           >
             learn in order
+          </button>
+          {/* A sweep can see which knob moved but not what kind of knob it is:
+              an encoder's clicks and a fader's positions are the same bytes. */}
+          <button
+            className={encoders ? styles.toggleOn : styles.toggle}
+            onClick={() => setEncoders(!encoders)}
+            title="the knobs being swept are endless encoders — they report turns, not positions. Applies to what learn in order binds"
+          >
+            ↻ endless
           </button>
         </div>
       ) : (
@@ -131,6 +174,13 @@ function Wired() {
         >
           clock sets the tempo
         </button>
+        <button
+          className={lights ? styles.toggleOn : styles.toggle}
+          onClick={() => midi.setLights(!lights)}
+          title="send each bound control's value back out, so a device with lit rings shows where the board is. A ring that follows a preset is a knob that was never stranded"
+        >
+          light the rings
+        </button>
         <span className={bpm === null ? styles.quiet : styles.clock}>
           {bpm === null ? '♩ no clock' : `♩ ${bpm.toFixed(1)}`}
         </span>
@@ -148,6 +198,7 @@ function Wired() {
 export function MidiPanel() {
   const status = useStoreValue(midi.status)
   const bindings = useStoreValue(midi.bindings)
+  const stranded = Object.keys(useStoreValue(midi.pickups)).length
   const [open, setOpen] = useState(false)
   const count = Object.keys(bindings).length
 
@@ -155,7 +206,12 @@ export function MidiPanel() {
     status === 'ready'
       ? count === 0
         ? 'connected'
-        : `${count} bound`
+        : // Folded away is where this panel usually sits, so a stranded knob has
+          // to be visible from the outside or the header is telling a half-truth
+          // about a board whose knobs have all gone inert.
+          stranded > 0
+          ? `${count} bound · ${stranded} waiting`
+          : `${count} bound`
       : status === 'unsupported'
         ? 'not in this browser'
         : status === 'denied'
@@ -172,7 +228,15 @@ export function MidiPanel() {
         onClick={() => setOpen(!open)}
       >
         <span className={styles.title}>midi</span>
-        <span className={status === 'ready' ? styles.live : styles.quiet}>
+        <span
+          className={
+            stranded > 0 && status === 'ready'
+              ? styles.waitingTag
+              : status === 'ready'
+                ? styles.live
+                : styles.quiet
+          }
+        >
           {summary}
         </span>
       </button>

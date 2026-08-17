@@ -11,6 +11,10 @@ export interface SampleMsg {
 export interface NoteMsg {
   kind: 'noteOn' | 'noteOff'
   semitone: number
+  /** How hard the gate arrives, 0 to 1. The toy's own keys are switches and
+      always send 1; a wire soldered onto the gate — the trigger patch, or a
+      controller — is what can strike softly. */
+  gain?: number
 }
 
 // Both run lines in one message: they are two switches on one desk, and the

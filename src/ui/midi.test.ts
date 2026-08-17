@@ -2,13 +2,18 @@ import { expect, test } from 'vitest'
 import { CONTROL_KEYS } from '../controls'
 import { ALL_SLIDERS, sliderFor } from './controls'
 import {
+  applyDelta,
   AUTOMAP_KEYS,
   bpmFromPulses,
+  ccToDelta,
   ccToValue,
   hasCaught,
+  isOffsetSpelling,
   omit,
   parseBindings,
+  velocity,
 } from './midi'
+import { toPos } from './slider-scale'
 
 test('a CC sweeps the whole of a control and lands on its grid', () => {
   const def = sliderFor('filtHz')
@@ -97,6 +102,63 @@ test('the mixes and levels take the head of the spine', () => {
   expect(roles).toBeGreaterThan(0)
   for (const key of AUTOMAP_KEYS.slice(0, roles))
     expect(sliderFor(key).role).toBeDefined()
+})
+
+// The two encoder spellings mean opposite things by the same byte, so nothing
+// can read a lone message correctly for both. What separates them is where a
+// single click lands: against the middle, or against the ends.
+test('a single click tells the two encoder spellings apart', () => {
+  expect(isOffsetSpelling(65)).toBe(true) // one click up, offset
+  expect(isOffsetSpelling(63)).toBe(true) // one click down, offset
+  expect(isOffsetSpelling(1)).toBe(false) // one click up, two's complement
+  expect(isOffsetSpelling(127)).toBe(false) // one click down, two's complement
+  expect(isOffsetSpelling(64)).toBe(false) // dead centre is no turn at all
+})
+
+test('each spelling counts turns in both directions', () => {
+  expect(ccToDelta(65, true)).toBe(1)
+  expect(ccToDelta(63, true)).toBe(-1)
+  expect(ccToDelta(68, true)).toBe(4)
+  expect(ccToDelta(1, false)).toBe(1)
+  expect(ccToDelta(127, false)).toBe(-1)
+  expect(ccToDelta(4, false)).toBe(4)
+  expect(ccToDelta(124, false)).toBe(-4)
+})
+
+test('a turn moves any control at the same rate, and stops at the ends', () => {
+  // One click is one CC step's worth of travel, whatever the control's units or
+  // curve — so an encoder crosses a log filter and a five-choice enum alike.
+  for (const key of ['filtHz', 'dlyMix', 'distMode'] as const) {
+    const def = sliderFor(key)
+    const up = applyDelta(def, def.min, 1)
+    expect(up).toBeGreaterThanOrEqual(def.min)
+    expect(applyDelta(def, def.min, -1)).toBe(def.min)
+    expect(applyDelta(def, def.max, 1)).toBe(def.max)
+  }
+  const def = sliderFor('filtHz')
+  const mid = ccToValue(def, 64)
+  expect(toPos(def, applyDelta(def, mid, 10))).toBeCloseTo(
+    toPos(def, mid) + 10 / 127,
+    3,
+  )
+})
+
+test('velocity strikes at full and never at nothing', () => {
+  expect(velocity(127)).toBe(1)
+  expect(velocity(0)).toBeGreaterThan(0.2)
+  expect(velocity(64)).toBeGreaterThan(velocity(20))
+  expect(velocity(20)).toBeLessThan(1)
+})
+
+test('a stored binding keeps how its knob is read', () => {
+  const raw = JSON.stringify({
+    filtHz: { channel: 0, controller: 12, relative: true },
+    dlyMix: { channel: 0, controller: 13 },
+  })
+  expect(parseBindings(raw)).toEqual({
+    filtHz: { channel: 0, controller: 12, relative: true },
+    dlyMix: { channel: 0, controller: 13 },
+  })
 })
 
 test('omit copies without the key', () => {

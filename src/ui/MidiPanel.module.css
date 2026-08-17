@@ -33,6 +33,13 @@
   color: var(--fg4);
 }
 
+/* Knobs gone inert, said from the folded-up header. Amber is what a waiting
+   knob is drawn in everywhere else on the board. */
+.waitingTag {
+  composes: quiet;
+  color: var(--accent2);
+}
+
 .row {
   display: flex;
   flex-wrap: wrap;
@@ -121,10 +128,38 @@
   white-space: nowrap;
 }
 
+.strandedName {
+  composes: boundName;
+  color: var(--accent2);
+}
+
 .cc {
   font-family: var(--mono);
   font-size: var(--fs-xs);
   color: var(--accent);
+}
+
+/* How the knob is read, on the row where reading it wrong shows up. */
+.mode {
+  background: none;
+  border: 1px solid var(--border-quiet);
+  border-radius: 3px;
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+  line-height: 1;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+
+.mode:hover {
+  color: var(--fg2);
+  border-color: var(--border-hover);
+}
+
+.modeOn {
+  composes: mode;
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .drop {

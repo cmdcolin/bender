@@ -151,8 +151,11 @@ export class ToyChip implements Stage {
     this.counterFault = new Burst(sr, 1.1)
   }
 
-  noteOn(semitone: number) {
-    this.strike(semitone, 1).held = true
+  // The toy's own keys are switches: they pass no gain and strike at full. A
+  // wire onto the gate can arrive at any level, which is what the trigger patch
+  // has always done and what a controller's velocity is.
+  noteOn(semitone: number, gain = 1) {
+    this.strike(semitone, gain).held = true
   }
 
   // A voice struck and let go. The keys hold theirs down; a trigger line

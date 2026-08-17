@@ -528,8 +528,8 @@ export class Engine {
     }
   }
 
-  noteOn(semitone: number) {
-    this.post({ kind: 'noteOn', semitone })
+  noteOn(semitone: number, gain = 1) {
+    this.post({ kind: 'noteOn', semitone, gain })
   }
 
   noteOff(semitone: number) {

@@ -6,7 +6,7 @@ import { CONTROL_KEYS, type ControlKey } from '../controls'
 import { engine } from '../engine/engine'
 import { createStore } from '../listeners'
 import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
-import { fromPos } from './slider-scale'
+import { fromPos, toPos } from './slider-scale'
 import type { SliderDef } from './controls'
 
 // One CC source = a (channel, controller) pair. The channel is kept so two
@@ -14,6 +14,9 @@ import type { SliderDef } from './controls'
 export interface Binding {
   channel: number
   controller: number
+  /** The knob is an endless encoder reporting turns rather than a position.
+      See `applyDelta` for what that changes, which is more than the arithmetic. */
+  relative?: boolean
 }
 
 export type BindingMap = Partial<Record<ControlKey, Binding>>
@@ -44,14 +47,24 @@ export interface DeviceProfile {
   name: string
   channel: number
   ccs: number[]
+  /** The device's knobs report turns rather than positions. Stamped onto every
+      binding the profile makes, and adjustable per binding after that: one desk
+      can hold an encoder box and a fader box at once. */
+  relative?: boolean
 }
+
+const TWISTER_CCS = Array.from({ length: 64 }, (_, i) => i)
 
 export const DEVICE_PROFILES: DeviceProfile[] = [
   // 16 encoders × 4 on-device banks, factory-default CC 0..63 on channel 1.
+  // Its encoders are endless, and each can be set either way in the device's own
+  // utility, so both readings are offered rather than guessed at.
+  { name: 'MIDI Fighter Twister', channel: 0, ccs: TWISTER_CCS },
   {
-    name: 'MIDI Fighter Twister',
+    name: 'MIDI Fighter Twister (endless)',
     channel: 0,
-    ccs: Array.from({ length: 64 }, (_, i) => i),
+    ccs: TWISTER_CCS,
+    relative: true,
   },
   // Eight knobs, factory CC 74..81 — one row, so it takes the head of the spine.
   {
@@ -74,6 +87,19 @@ export const AUTOMAP_KEYS: ControlKey[] = [
 // controller's middle C lands three semitones up, where a keyboard expects it.
 const A3 = 57
 
+// How hard the gate arrives, from how hard the key was hit. Velocity strikes the
+// envelope's starting level, which is the same door the trigger patch comes in
+// through — the toy's own keys are switches and can't do this, but a wire onto
+// the gate always could.
+//
+// It floors well above zero rather than sweeping the whole range: plenty of
+// controllers send one fixed velocity for every note, and on those a full sweep
+// would just make the chip permanently quieter than the on-screen keys with
+// nothing to show for it.
+const VELOCITY_FLOOR = 0.3
+export const velocity = (v: number) =>
+  VELOCITY_FLOOR + (1 - VELOCITY_FLOOR) * (v / 127)
+
 const BINDINGS_KEY = 'bender.midi'
 // Set once a grant succeeds, so a reload reconnects without another trip to the
 // panel. Cleared on denial, so a revoked permission doesn't leave every load
@@ -81,6 +107,7 @@ const BINDINGS_KEY = 'bender.midi'
 const ENABLED_KEY = 'bender.midi.on'
 const NOTES_KEY = 'bender.midi.notes'
 const CLOCK_KEY = 'bender.midi.clock'
+const LIGHTS_KEY = 'bender.midi.lights'
 
 function read(key: string): string | null {
   try {
@@ -125,9 +152,12 @@ export function parseBindings(raw: string | null): BindingMap {
     const key = CONTROL_KEYS.find(c => c === k)
     if (key === undefined || !SLIDER_BY_KEY.has(key)) continue
     if (typeof v !== 'object' || v === null) continue
-    const { channel, controller } = v as Partial<Binding>
+    const { channel, controller, relative } = v as Partial<Binding>
     if (typeof channel === 'number' && typeof controller === 'number')
-      out[key] = { channel, controller }
+      out[key] =
+        relative === true
+          ? { channel, controller, relative }
+          : { channel, controller }
   }
   return out
 }
@@ -151,6 +181,40 @@ type Span = Pick<SliderDef, 'min' | 'max' | 'step' | 'curve'>
 // than racing through the useful end of the scale.
 export function ccToValue(def: SliderDef, cc: number): number {
   return snapToStep(def, fromPos(def, cc / 127))
+}
+
+// An endless encoder's message is a turn, not a place, and there are two
+// spellings of it in the wild:
+//
+//   offset   one click up is 65, one down is 63 — the delta is cc − 64. This is
+//            the MIDI Fighter Twister's ENC 3FH/41H.
+//   two's    one click up is 1, one down is 127 — negatives count down from 128.
+//
+// They collide head-on: 63 is +63 in two's and −1 in offset, so no rule reads a
+// lone byte correctly for both, and a wrong guess sends the control flying the
+// wrong way at full speed. What separates them is where a *single click* lands —
+// hard against the middle in offset, hard against the ends in two's — so the
+// spelling is latched from the first message a knob sends and kept, rather than
+// re-read per byte where a fast turn's big delta would look like the other one.
+export const isOffsetSpelling = (cc: number) =>
+  cc !== 64 && Math.abs(cc - 64) <= 8
+
+export function ccToDelta(cc: number, offset: boolean): number {
+  return offset ? cc - 64 : cc < 64 ? cc : cc - 128
+}
+
+// A turn applied in travel, not in units. A click moves the same fraction of any
+// control's sweep — one CC step's worth — so an encoder covers a log filter and
+// a five-choice enum at the same speed a knob would, rather than crawling across
+// the first and flying through the second. Turning faster sends bigger deltas,
+// so acceleration comes free from the hardware.
+export function applyDelta(
+  def: SliderDef,
+  value: number,
+  delta: number,
+): number {
+  const pos = toPos(def, value) + delta / 127
+  return snapToStep(def, fromPos(def, Math.min(1, Math.max(0, pos))))
 }
 
 // Half a control's span per MIDI step — the pickup tolerance for the very first
@@ -202,6 +266,9 @@ class Midi {
   readonly notes = createStore(read(NOTES_KEY) !== '0')
   /** Clock ticks set the drum machine's tempo. */
   readonly clockLock = createStore(read(CLOCK_KEY) === '1')
+  /** Send each bound control's value back out, so a device with lit rings shows
+      where the board is. */
+  readonly lights = createStore(read(LIGHTS_KEY) === '1')
 
   private access: MIDIAccess | null = null
   private onStateChange: (() => void) | null = null
@@ -210,6 +277,7 @@ class Midi {
     keys: ControlKey[]
     index: number
     seen: Set<string>
+    relative: boolean
   } | null = null
 
   // Soft-takeover bookkeeping. `sent` is the last value MIDI wrote, which is how
@@ -218,10 +286,18 @@ class Midi {
   private knob = new Map<ControlKey, number>()
   private engaged = new Set<ControlKey>()
   private lastTouch = new Map<ControlKey, number>()
+  // Which spelling each endless encoder turned out to use, by source. Latched
+  // from a knob's first message and held: see ccToDelta for why it can't be
+  // re-read per byte.
+  private spelling = new Map<string, boolean>()
 
   private pulses: number[] = []
   private lastPulse = 0
   private clockTimer: ReturnType<typeof setInterval> | null = null
+  private lightRaf = 0
+  // What each ring was last told, so a frame that moved one control doesn't
+  // re-send the other 138.
+  private lit = new Map<ControlKey, number>()
 
   constructor() {
     this.reindex()
@@ -241,8 +317,12 @@ class Midi {
         write(ENABLED_KEY, '1')
         this.status.set('ready')
         this.listen(access)
+        this.lightAll()
         // Devices plugged in after the grant still get wired up.
-        this.onStateChange = () => this.listen(access)
+        this.onStateChange = () => {
+          this.listen(access)
+          this.lightAll()
+        }
         access.addEventListener('statechange', this.onStateChange)
         // A source that stops sending ticks — or is unplugged — never sends the
         // stop byte, so drop the tempo once the ticks go quiet.
@@ -276,6 +356,12 @@ class Midi {
     write(CLOCK_KEY, on ? '1' : '0')
   }
 
+  setLights(on: boolean) {
+    this.lights.set(on)
+    write(LIGHTS_KEY, on ? '1' : '0')
+    if (on) this.lightAll()
+  }
+
   /** Replace every binding with a device's factory layout: each knob CC takes
       the next control down the spine. Returns how many controls got a knob. */
   autoMap(profile: DeviceProfile): number {
@@ -284,7 +370,10 @@ class Midi {
     for (const [i, key] of AUTOMAP_KEYS.entries()) {
       const cc = profile.ccs[i]
       if (cc === undefined) break
-      next[key] = { channel: profile.channel, controller: cc }
+      next[key] =
+        profile.relative === true
+          ? { channel: profile.channel, controller: cc, relative: true }
+          : { channel: profile.channel, controller: cc }
       n += 1
     }
     this.replace(next)
@@ -293,12 +382,28 @@ class Midi {
 
   /** Device-agnostic bulk bind: start from a clean slate, then bind the next
       control down the spine to each fresh knob that turns. Works on any
-      controller, whatever its CC layout. */
-  learnSequence() {
+      controller, whatever its CC layout. `relative` says whether those knobs are
+      endless encoders, which is the one thing a sweep cannot tell by watching. */
+  learnSequence(relative = false) {
     this.armed.set(null)
-    this.sweep = { keys: AUTOMAP_KEYS, index: 0, seen: new Set() }
+    this.sweep = { keys: AUTOMAP_KEYS, index: 0, seen: new Set(), relative }
     this.replace({})
     this.reportSweep()
+  }
+
+  /** Read a bound knob the other way. A knob that jumps its control to one end
+      and sticks is an encoder being read as a position, and this is the fix. */
+  setRelative(key: ControlKey, on: boolean) {
+    const b = this.bindings.get()[key]
+    if (b === undefined) return
+    this.spelling.delete(sourceId(b))
+    this.release(key)
+    this.persist({
+      ...this.bindings.get(),
+      [key]: on
+        ? { channel: b.channel, controller: b.controller, relative: true }
+        : { channel: b.channel, controller: b.controller },
+    })
   }
 
   stopLearn() {
@@ -319,6 +424,8 @@ class Midi {
 
   destroy() {
     if (this.clockTimer !== null) clearInterval(this.clockTimer)
+    if (this.lightRaf !== 0) cancelAnimationFrame(this.lightRaf)
+    this.lightRaf = 0
     if (this.access) {
       for (const input of this.access.inputs.values())
         input.onmidimessage = null
@@ -349,8 +456,11 @@ class Midi {
     this.knob.clear()
     this.sent.clear()
     this.lastTouch.clear()
+    this.spelling.clear()
+    this.lit.clear()
     if (Object.keys(this.pickups.get()).length > 0) this.pickups.set({})
     this.persist(next)
+    this.lightAll()
   }
 
   private reportSweep() {
@@ -374,6 +484,7 @@ class Midi {
     this.knob.delete(key)
     this.sent.delete(key)
     this.lastTouch.delete(key)
+    this.lit.delete(key)
     this.setPickup(key, null)
   }
 
@@ -401,7 +512,40 @@ class Midi {
         const at = this.knob.get(key)
         if (at !== undefined) this.setPickup(key, at)
       }
+      this.lightSoon()
     })
+  }
+
+  // Every bound control's value, back out to the device. A knob with a lit ring
+  // stops being stranded in the first place: the ring follows the preset, so
+  // there is nothing to sweep back to and nothing for the amber mark to warn
+  // about. An endless encoder needs it most — it has no pointer of its own, and
+  // the ring is the only place its control's value can be shown at all.
+  //
+  // Coalesced to a frame because a 30s morph moves every control every frame,
+  // and a serial wire carrying 139 controls at that rate is a wire with a
+  // queue on it. One frame's worth is what the hardware can draw anyway.
+  private lightSoon() {
+    if (!this.lights.get() || this.lightRaf !== 0) return
+    this.lightRaf = requestAnimationFrame(() => {
+      this.lightRaf = 0
+      this.lightAll()
+    })
+  }
+
+  private lightAll() {
+    if (!this.lights.get() || this.access === null) return
+    const controls = engine.controls.get()
+    for (const [k, b] of Object.entries(this.bindings.get())) {
+      const key = k as ControlKey
+      const def = SLIDER_BY_KEY.get(key)
+      if (b === undefined || def === undefined) continue
+      const cc = Math.round(toPos(def, controls[key]) * 127)
+      if (this.lit.get(key) === cc) continue
+      this.lit.set(key, cc)
+      for (const out of this.access.outputs.values())
+        out.send([0xb0 | b.channel, b.controller, cc])
+    }
   }
 
   // `cc` is the value of the message that did the binding. It never drives the
@@ -423,17 +567,33 @@ class Midi {
     if (prev !== undefined) this.release(prev)
     this.persist(next)
     const def = SLIDER_BY_KEY.get(key)
-    if (def === undefined) return
+    // An endless encoder reports no position, so there is none to seed.
+    if (def === undefined || b.relative === true) return
     const at = ccToValue(def, cc)
     this.knob.set(key, at)
     if (at !== engine.controls.get()[key]) this.setPickup(key, at)
   }
 
-  private drive(key: ControlKey, cc: number) {
+  private drive(key: ControlKey, b: Binding, cc: number) {
     const def = SLIDER_BY_KEY.get(key)
     if (def === undefined) return
-    const value = ccToValue(def, cc)
     const live = engine.controls.get()[key]
+
+    // An endless encoder has no position to disagree with the screen, so there
+    // is nothing for soft takeover to catch and nothing to strand: a turn moves
+    // the control from wherever it stands, which is what the whole pickup dance
+    // was working around in the first place.
+    if (b.relative === true) {
+      const id = sourceId(b)
+      const known = this.spelling.get(id)
+      const offset = known ?? isOffsetSpelling(cc)
+      if (known === undefined) this.spelling.set(id, offset)
+      const delta = ccToDelta(cc, offset)
+      if (delta !== 0) this.write(key, applyDelta(def, live, delta))
+      return
+    }
+
+    const value = ccToValue(def, cc)
     if (hasCaught(def, live, this.knob.get(key), value)) this.engaged.add(key)
     this.knob.set(key, value)
     if (!this.engaged.has(key)) {
@@ -441,6 +601,12 @@ class Midi {
       return
     }
     this.setPickup(key, null)
+    this.write(key, value)
+  }
+
+  // One turn is one step in the walk, the way a slider drag is: there is no
+  // pointer-up to close the gesture, so a quiet knob closes it.
+  private write(key: ControlKey, value: number) {
     const now = performance.now()
     if (now - (this.lastTouch.get(key) ?? -Infinity) > GESTURE_GAP_MS)
       engine.armStep()
@@ -492,13 +658,17 @@ class Midi {
     // both have to reach noteOff or the note never lets go.
     if (this.notes.get() && (status === 0x90 || status === 0x80)) {
       const semitone = first - A3
-      if (status === 0x90 && second > 0) engine.noteOn(semitone)
+      if (status === 0x90 && second > 0)
+        engine.noteOn(semitone, velocity(second))
       else engine.noteOff(semitone)
       return
     }
     // Control Change is 0xB0..0xBF: status, controller, value.
     if (status !== 0xb0) return
-    const b = { channel: head & 0x0f, controller: first }
+    const relative = this.sweep?.relative === true
+    const b: Binding = relative
+      ? { channel: head & 0x0f, controller: first, relative: true }
+      : { channel: head & 0x0f, controller: first }
     const id = sourceId(b)
     const sweep = this.sweep
     if (sweep !== null) {
@@ -520,8 +690,15 @@ class Midi {
       return
     }
     const key = this.keyBySource.get(id)
-    if (key !== undefined) this.drive(key, second)
+    const bound = key === undefined ? undefined : this.bindings.get()[key]
+    if (key !== undefined && bound !== undefined) this.drive(key, bound, second)
   }
 }
 
 export const midi = new Midi()
+
+// One manager per page, so nothing in the app tears it down. A dev reload does
+// replace the module, though, and without this the old one keeps its handlers on
+// the inputs and its clock timer running — two managers driving the board from
+// one knob, which is a confusing thing to meet while working on this file.
+import.meta.hot?.dispose(() => midi.destroy())
