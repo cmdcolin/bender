@@ -256,7 +256,7 @@ export function App() {
                 morphSeconds,
               )
             }
-            title="keep this board and nudge every control around where it sits — shift for wild, alt for gentle"
+            title="keep this board and nudge every control around where it sits, in time: the tempo stays put and the delay, slice, roll and LFO land back on the grid — shift for wild, alt for gentle"
           >
             mutate
           </button>

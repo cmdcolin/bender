@@ -32,6 +32,91 @@ test('mutate never moves the song, the pattern or your levels', () => {
   }
 })
 
+// How many beats a length of time or a rate works out to at the given tempo.
+const beats = (bpm: number, seconds: number) => seconds / (60 / bpm)
+
+// On the grid if it is a note length, or that note halved or doubled any number
+// of times.
+const onGrid = (beatCount: number) => {
+  const notes = [0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1, 1.5, 2, 3, 4]
+  return notes.some(note => {
+    const octaves = Math.log2(beatCount / note)
+    return Math.abs(octaves - Math.round(octaves)) < 0.02
+  })
+}
+
+test('mutate leaves the tempo where it is', () => {
+  for (const bpm of [96, 118, 170]) {
+    const before = { ...mine(), drumBpm: bpm }
+    for (let seed = 1; seed <= 30; seed++) {
+      expect(mutate(before, 0.3, mulberry32(seed)).drumBpm).toBe(bpm)
+    }
+  }
+})
+
+test('mutate puts what counts in time back on the beat', () => {
+  const starts = [
+    { delayMs: 350, glitchSliceMs: 120, drumRetrigHz: 16, modLfoHz: 1 },
+    { delayMs: 24, glitchSliceMs: 800, drumRetrigHz: 700, modLfoHz: 12 },
+    // A retrigger switched off is free to come on, but only in time.
+    { delayMs: 1200, glitchSliceMs: 30, drumRetrigHz: 0, modLfoHz: 0.3 },
+  ]
+  for (const start of starts) {
+    const before = { ...mine(), drumBpm: 120, ...start }
+    for (let seed = 1; seed <= 40; seed++) {
+      const after = mutate(before, 0.3, mulberry32(seed))
+      expect(onGrid(beats(120, after.delayMs / 1000))).toBe(true)
+      expect(onGrid(beats(120, after.glitchSliceMs / 1000))).toBe(true)
+      expect(onGrid(beats(120, 1 / after.modLfoHz))).toBe(true)
+      if (after.drumRetrigHz > 0) {
+        expect(onGrid(beats(120, 1 / after.drumRetrigHz))).toBe(true)
+      }
+    }
+  }
+})
+
+test('a tempo too fast to be a pulse frees the timed controls again', () => {
+  const before = { ...mine(), drumBpm: 2400, delayMs: 350 }
+  const times = new Set<number>()
+  for (let seed = 1; seed <= 20; seed++) {
+    times.add(mutate(before, 0.12, mulberry32(seed)).delayMs)
+  }
+  expect(times.size).toBeGreaterThan(4)
+})
+
+test('mutate moves a log control by a proportion of where it sits', () => {
+  const quiet = { ...mine(), delayMs: 40, drumBpm: 2400 }
+  for (let seed = 1; seed <= 40; seed++) {
+    const after = mutate(quiet, 0.12, mulberry32(seed)).delayMs
+    expect(after).toBeGreaterThan(20)
+    expect(after).toBeLessThan(120)
+  }
+})
+
+test('mutate lands the toy clock on a ratio of the one it had', () => {
+  const wanted = [
+    1 / 8,
+    1 / 6,
+    1 / 4,
+    1 / 3,
+    1 / 2,
+    2 / 3,
+    3 / 4,
+    1,
+    4 / 3,
+    3 / 2,
+    2,
+    3,
+    4,
+    6,
+    8,
+  ].map(r => Number(r.toFixed(2)))
+  for (let seed = 1; seed <= 40; seed++) {
+    const after = mutate(mine(), 0.3, mulberry32(seed)).chipClockX
+    expect(wanted).toContain(Number(after.toFixed(2)))
+  }
+})
+
 test('random rolls a whole new board and still leaves them alone', () => {
   const before = mine()
   for (let seed = 1; seed <= 60; seed++) {

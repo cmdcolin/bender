@@ -1,7 +1,14 @@
 import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { romIndex } from '../dsp/stages/roms'
-import { ALL_SLIDERS, HOLD_KEYS, snapToStep } from './controls'
+import {
+  ALL_SLIDERS,
+  HOLD_KEYS,
+  type SliderDef,
+  sliderFor,
+  snapToStep,
+} from './controls'
 import { DRUM_ROMS, GRID_ROWS } from './drums'
+import { fromPos, toPos } from './slider-scale'
 
 export interface PresetDef {
   name: string
@@ -571,6 +578,97 @@ export function applyPreset(preset: PresetDef, current: Controls): Controls {
   )
 }
 
+// The tempo is the one number a nudge must not touch. Move it and every echo,
+// roll and sweep that was landing with the pattern lands somewhere else instead
+// — the board comes back a different circuit *and* out of time, and you can no
+// longer tell which of the two you are hearing.
+const CLOCK_KEYS = new Set<ControlKey>(['drumBpm'])
+
+// Note lengths as a fraction of a beat: sixteenth up to a bar, with the
+// triplets and the dotted values in between.
+const NOTE_BEATS = [0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1, 1.5, 2, 3, 4]
+
+// Controls that count in time rather than in pitch or in level. A nudge moves
+// them as freely as anything else and then puts them back down on the grid, so
+// the delay lands on a dotted eighth, the slice on a sixteenth and the roll on
+// a division of the step.
+const BEAT_MS: ControlKey[] = ['delayMs', 'glitchSliceMs']
+const BEAT_HZ: ControlKey[] = ['drumRetrigHz', 'modLfoHz']
+
+// Past this the sequencer is a buzz rather than a pulse, so there is no beat to
+// be in time with and the timed controls go back to roaming.
+const MAX_MUSICAL_BPM = 600
+
+// The toy runs off its own crystal, so a nudge can still send it somewhere else
+// entirely — but it lands on a simple ratio, where the tune still lines up with
+// the kit. The same knob is the pitch, so those ratios are intervals too.
+const CLOCK_RATIOS = [
+  1 / 8,
+  1 / 6,
+  1 / 4,
+  1 / 3,
+  1 / 2,
+  2 / 3,
+  3 / 4,
+  1,
+  4 / 3,
+  3 / 2,
+  2,
+  3,
+  4,
+  6,
+  8,
+]
+
+const nearestLog = (value: number, candidates: number[]) =>
+  candidates.reduce((best, c) =>
+    Math.abs(Math.log(c / value)) < Math.abs(Math.log(best / value)) ? c : best,
+  )
+
+// Every note the grid implies, doubled and halved until it runs off both ends
+// of the control: half a beat is on the grid, and so is a sixty-fourth of one,
+// which is what lets a retrigger scream at an exact multiple of the step. A note
+// the control cannot actually hold — its own resolution rounds it off by more
+// than a percent — is not on the grid, because landing there would be a claim
+// the knob can't keep.
+function gridValues(def: SliderDef, beatS: number, unit: 'ms' | 'hz') {
+  const out: number[] = []
+  for (const note of NOTE_BEATS) {
+    for (let oct = -10; oct <= 6; oct++) {
+      const period = note * beatS * 2 ** oct
+      const want = unit === 'hz' ? 1 / period : period * 1000
+      if (want < def.min || want > def.max) continue
+      const held = snapToStep(def, want)
+      if (Math.abs(held / want - 1) < 0.01) out.push(held)
+    }
+  }
+  return out
+}
+
+function onGrid(
+  key: ControlKey,
+  value: number,
+  bpm: number,
+  unit: 'ms' | 'hz',
+) {
+  // Zero is a control switched off rather than a length of time, and nothing
+  // divides into it.
+  if (value <= 0 || bpm > MAX_MUSICAL_BPM) return value
+  const grid = gridValues(sliderFor(key), 60 / bpm, unit)
+  return grid.length ? nearestLog(value, grid) : value
+}
+
+// Along the control's own travel, not across its span: a log slider moves by a
+// proportion of where it sits, so a 40 ms delay comes back a few milliseconds
+// away rather than halfway across the two-second range.
+const nudge = (
+  def: SliderDef,
+  value: number,
+  amount: number,
+  rand: () => number,
+) =>
+  snapToStep(def, fromPos(def, toPos(def, value) + (rand() * 2 - 1) * amount))
+
 export function mutate(
   controls: Controls,
   amount: number,
@@ -578,16 +676,23 @@ export function mutate(
 ): Controls {
   const next = { ...controls }
   for (const def of ALL_SLIDERS) {
-    if (YOURS.has(def.key)) continue
+    if (YOURS.has(def.key) || CLOCK_KEYS.has(def.key)) continue
     if (def.choices) {
       if (rand() < amount * 0.5) {
         next[def.key] = def.min + Math.floor(rand() * def.choices.length)
       }
       continue
     }
-    const jitter = (rand() * 2 - 1) * amount * (def.max - def.min)
-    next[def.key] = snapToStep(def, controls[def.key] + jitter)
+    next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
+  next.chipClockX = snapToStep(
+    sliderFor('chipClockX'),
+    nearestLog(next.chipClockX, CLOCK_RATIOS),
+  )
+  for (const key of BEAT_MS)
+    next[key] = onGrid(key, next[key], next.drumBpm, 'ms')
+  for (const key of BEAT_HZ)
+    next[key] = onGrid(key, next[key], next.drumBpm, 'hz')
   return next
 }
 
