@@ -37,7 +37,7 @@ export class DelayLine {
   read(delay: number): number {
     const mask = this.mask
     const d = Math.min(Math.max(delay, 1), mask - 1)
-    const i = Math.floor(d)
+    const i = d | 0
     const frac = d - i
     const p = this.pos - 1 - i
     const a = this.buf[p & mask]!
@@ -63,7 +63,10 @@ export class DelayLine {
     const mask = this.mask
     const buf = this.buf
     const d = Math.min(Math.max(delay, 1), mask - 3)
-    const i = Math.floor(d)
+    // The clamp above leaves d positive and inside a ring, so truncation is the
+    // floor — and truncating is one instruction where Math.floor is a call the
+    // tape makes four times a sample.
+    const i = d | 0
     const f = d - i
     const p = this.pos - i
     const ym1 = buf[p & mask]!
