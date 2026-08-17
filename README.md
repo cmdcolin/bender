@@ -74,6 +74,38 @@ kit runs on the same rail and the same divider as the keyboard, so starving the
 toy takes the drums with it and flat batteries drag the tempo down with the
 tune.
 
+## The trigger patch
+
+The rail is what the two boxes share by accident. The trigger patch is what you
+solder on purpose: their trigger lines, brought out so either end can drive the
+other.
+
+**Kit fires keys** bridges one of the kit's voices — or any hit at all — onto
+the keyboard's gate, and a drum hit strikes a note. It strikes a key voice
+rather than the melody line, so it sounds with the demo song stopped, the same
+as your hands do. What it plays is its own choice: the note already standing,
+**the next step** of the ROM, any step at random, or a tone off the
+accompaniment's triad. The next step is the one to try first — one hit, one
+step, so the pattern clocks the tune and the kick decides where the melody goes.
+Write a bar with the kick on the beat and the toy plays in time with itself for
+once.
+
+**Keys fire kit** is the wire back: every note the chip strikes fires a drum
+voice, whether the pattern is running or not, so the kit is playable by hand off
+the keyboard. **The step** hands the grid over instead — a key fires whichever
+column the sequencer is sitting on, and an empty column falls back to the kick
+the way the retrigger bend and the mic trigger do.
+
+Solder both and the two boxes play each other. The lap closes once a block
+rather than once a sample, because the chip is wired ahead of the kit and reads
+the kit's hits 2.7 ms late, so what comes out is a rattle at the block rate held
+at the rails by the safety tail — which is what a trigger line looped back on
+itself has always done.
+
+Both lines are patch-bay sources too, so a hit can push a cutoff, a tape speed
+or the glitch chance. Unlike the LFO they don't sweep: they snap up on the hit
+and fall from there.
+
 The bends that matter:
 
 - **Starve** sags the shared toy supply: pitch dives, notes collapse, and past
@@ -104,12 +136,12 @@ The bends that matter:
   fires.
 - **The patch bay** is two wires and a soldering iron. Each picks up the bay's
   LFO, the sag on whichever supply is dying, the output envelope, the mic, an
-  axis of the body pad, the feedback bus itself, or the chip's sequencer ramping
-  across each ROM step — the one source that stays in time with the tune. That
-  goes onto a filter cutoff, a carrier, a clock, the shift, the word length, the
-  tape speed, the glitch chance, the stompbox drive, the drum cross-patch or the
-  feedback amount. Depth goes negative, so a failing supply can drag a pitch
-  either way.
+  axis of the body pad, the feedback bus itself, the chip's sequencer ramping
+  across each ROM step — the one source that stays in time with the tune — or
+  either box's trigger line, a drum hit or a note struck. That goes onto a
+  filter cutoff, a carrier, a clock, the shift, the word length, the tape speed,
+  the glitch chance, the stompbox drive, the drum cross-patch or the feedback
+  amount. Depth goes negative, so a failing supply can drag a pitch either way.
 - **The body pad** is the bare contacts every bent toy grows sooner or later:
   touch both and your own resistance is the control. It does nothing until a
   wire in the bay is soldered to it, which is also true of the real thing.
@@ -240,7 +272,9 @@ it to be heard. <kbd>space</kbd> is one run/stop over both, and it puts back
 whatever was running rather than starting everything. Nothing else on the board
 presses play — not a preset, not a random roll, not a link you opened. The keys
 work whatever is or isn't running, and starving the toy still takes the kit down
-with it, because the rail is the one thing the two machines do share.
+with it, because the rail is what the two machines share whether anybody asked
+for it. The trigger patch is the part you do ask for, and a bridged line fires
+whichever box it lands on with that box's own sequencer stopped.
 
 **Record** writes the output to a 16-bit stereo wav; stopping saves the take.
 
