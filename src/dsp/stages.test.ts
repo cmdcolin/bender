@@ -443,3 +443,28 @@ test('an unbridged kit is the kit it always was', () => {
   const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
   expect(render({ ...look, drumCrossAmt: 1 }, 1)).toEqual(render(look, 1))
 })
+
+test('a ROM step wire rides the sequencer, pushing the clock as each step runs', () => {
+  const look: Partial<Controls> = { chipLevel: 0.8, mod0Dest: 4, mod0Depth: 0.6 }
+  const plain = render(look, 2)
+  const wired = render({ ...look, mod0Src: 8 }, 2)
+  expect(wired).not.toEqual(plain)
+  expect(pitchHz(tail(wired, 1))).toBeGreaterThan(pitchHz(tail(plain, 1)))
+})
+
+test('a wire onto the shifter moves the shift itself', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    sampleLevel: 1,
+    bendSlot0: 7,
+    shiftMix: 1,
+    shiftHz: 100,
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: 9,
+    mod0Depth: 1,
+  }
+  const load = (b: BuiltChain) => b.sampler.setBuffer(sine(500, 1))
+  // body X pinned at 1 lifts a 100 Hz shift four octaves, to 1600
+  expect(pitchHz(tail(renderBender(look, 1, load)))).toBeCloseTo(2100, -2)
+})

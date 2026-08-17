@@ -15,11 +15,14 @@ export const DEST = {
   glitch: 7,
   fbAmt: 8,
   stompDrive: 9,
+  shiftHz: 10,
+  bits: 11,
+  drumCross: 12,
 } as const
-export const N_DEST = 10
+export const N_DEST = 13
 
 // Ids match the mod*Src choices.
-const SRC = { off: 0, lfo: 1, supply: 2, env: 3, mic: 4, bodyX: 5, bodyY: 6, fb: 7 }
+const SRC = { off: 0, lfo: 1, supply: 2, env: 3, mic: 4, bodyX: 5, bodyY: 6, fb: 7, rom: 8 }
 
 const WIRES = [
   [IDX.mod0Src, IDX.mod0Dest, IDX.mod0Depth],
@@ -44,6 +47,7 @@ export interface ModSources {
   droop: Float32Array
   env: Float32Array
   fb: Float32Array
+  step: Float32Array
 }
 
 // The patch bay: two wires, each soldered from a source onto a destination
@@ -110,6 +114,8 @@ export class ModBus {
         return this.micEnv
       case SRC.fb:
         return src.fb
+      case SRC.rom:
+        return src.step
       case SRC.bodyX:
       case SRC.bodyY:
         this.held.fill(p[from === SRC.bodyX ? IDX.bodyX : IDX.bodyY]!, 0, n)

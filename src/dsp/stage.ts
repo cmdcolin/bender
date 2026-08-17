@@ -22,6 +22,8 @@ export interface Ctx {
   sag: Float32Array
   droop: Float32Array
   env: Float32Array
+  /** the chip's sequencer phase, 0 to 1 across the current ROM step */
+  step: Float32Array
   mod: ModBus
 }
 

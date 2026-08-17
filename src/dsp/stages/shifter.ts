@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { flushDenormal, softclip } from '../util/softclip'
 
@@ -79,13 +80,18 @@ export class Shifter implements Stage {
     return p[IDX.shiftMix]! > 0
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const dir = Math.round(p[IDX.shiftDir]!) === 1 ? -1 : 1
     const fb = p[IDX.shiftFb]!
     const mix = p[IDX.shiftMix]!
-    const inc = p[IDX.shiftHz]! / this.sr
+    const baseHz = p[IDX.shiftHz]!
+    const mod = ctx.mod.read(DEST.shiftHz)
+    const incBase = baseHz / this.sr
 
     for (let i = 0; i < io.n; i++) {
+      const inc = mod
+        ? Math.min(baseHz * Math.pow(2, mod[i]! * 4), this.sr * 0.4) / this.sr
+        : incBase
       this.phase = (this.phase + inc) % 1
       const c = Math.cos(this.phase * 2 * Math.PI)
       const s = Math.sin(this.phase * 2 * Math.PI)

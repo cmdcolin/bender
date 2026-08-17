@@ -305,6 +305,7 @@ export class ToyChip implements Stage {
         (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) + (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0)
       rail.tick(Math.abs(out), starve, extra)
       ctx.railV[i] = rail.v
+      ctx.step[i] = this.stepClock
       io.l[i]! += out
       io.r[i]! += out
     }

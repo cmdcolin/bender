@@ -38,6 +38,7 @@ export class Chain {
       sag: new Float32Array(BLOCK),
       droop: new Float32Array(BLOCK),
       env: new Float32Array(BLOCK),
+      step: new Float32Array(BLOCK),
       mod: new ModBus(sr),
     }
     this.fbCombL = new DelayLine(0.5 * sr + 4)
@@ -69,6 +70,7 @@ export class Chain {
     this.ctx.sag.fill(0)
     this.ctx.droop.fill(0)
     this.ctx.env.fill(0)
+    this.ctx.step.fill(0)
     this.limitEnv = 0
   }
 
@@ -88,6 +90,7 @@ export class Chain {
     ctx.mod.build(n, p, ctx)
     ctx.railV.fill(1, 0, n)
     ctx.sag.fill(0, 0, n)
+    ctx.step.fill(0, 0, n)
 
     io.l.fill(0, 0, n)
     io.r.fill(0, 0, n)

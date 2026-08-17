@@ -74,10 +74,12 @@ The bends that matter:
   fires.
 - **The patch bay** is two wires and a soldering iron. Each picks up the bay's
   LFO, the sag on whichever supply is dying, the output envelope, the mic, an
-  axis of the body pad or the feedback bus itself, and pushes it onto a filter
-  cutoff, a carrier, a clock, the tape speed, the glitch chance, the feedback
-  amount or the stompbox drive. Depth goes negative, so a failing supply can
-  drag a pitch either way.
+  axis of the body pad, the feedback bus itself, or the chip's sequencer ramping
+  across each ROM step — the one source that stays in time with the tune. That
+  goes onto a filter cutoff, a carrier, a clock, the shift, the word length, the
+  tape speed, the glitch chance, the stompbox drive, the drum cross-patch or the
+  feedback amount. Depth goes negative, so a failing supply can drag a pitch
+  either way.
 - **The body pad** is the bare contacts every bent toy grows sooner or later:
   touch both and your own resistance is the control. It does nothing until a
   wire in the bay is soldered to it, which is also true of the real thing.

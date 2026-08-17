@@ -28,14 +28,19 @@ export class Crusher implements Stage {
     const jitter = p[IDX.srJitter]!
     const mix = p[IDX.crushMix]!
     const mod = ctx.mod.read(DEST.crushHz)
-    const steps = Math.pow(2, bits - 1)
+    const modBits = ctx.mod.read(DEST.bits)
+    const stepsBase = Math.pow(2, bits - 1)
     const holdBase = Math.max(this.sr / Math.max(srHz, 1), 1)
 
     for (let i = 0; i < io.n; i++) {
-      // the clock is only read where a hold latches, as the real divider does
+      // the clock and the word length are only read where a hold latches, as
+      // the real divider does
       const hold = mod
         ? Math.max(this.sr / Math.min(Math.max(srHz * Math.pow(2, mod[i]! * 4), 20), this.sr), 1)
         : holdBase
+      const steps = modBits
+        ? Math.pow(2, Math.min(Math.max(bits + modBits[i]! * 8, 1), 16) - 1)
+        : stepsBase
       this.countL -= 1
       if (this.countL <= 0) {
         this.holdL = Math.round(io.l[i]! * steps) / steps

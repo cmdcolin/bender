@@ -64,7 +64,8 @@ export class ToyDrum implements Stage {
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = p[IDX.micPatch] === 5
     const cross = Math.round(p[IDX.drumCross]!)
-    const bleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
+    const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
+    const modCross = cross === 0 ? null : ctx.mod.read(DEST.drumCross)
     const rail = this.rail
 
     if (rail.rebootCount !== this.lastReboot) {
@@ -105,6 +106,9 @@ export class ToyDrum implements Stage {
       let kickAmp = this.kickEnv
       let snareAmp = this.snareEnv
       let hatAmp = this.hatEnv
+      const bleed = modCross
+        ? Math.min(Math.max(baseBleed + modCross[i]!, 0), 1)
+        : baseBleed
       if (bleed > 0) {
         const k = this.kickEnv
         const s = this.snareEnv

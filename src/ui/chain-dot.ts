@@ -30,6 +30,9 @@ const WIRE_TARGET = [
   'Glitch buffer',
   'Feedback bus',
   'Stompbox',
+  'Freq shifter',
+  'Crusher',
+  'Toy drums',
 ] as const
 
 const SRC_LABEL = sliderFor('mod0Src').choices ?? []
