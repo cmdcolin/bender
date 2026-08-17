@@ -26,6 +26,23 @@ test('choice sliders are integer enums covering their range', () => {
   }
 })
 
+test('the clock lock lands the toy on a division of the kit', () => {
+  const def = sliderFor('chipClockX')
+  const lock = def.action
+  expect(lock).toBeDefined()
+  const at = (chipClockX: number) =>
+    lock!.value({ ...DEFAULT_CONTROLS, chipClockX }, def)
+  // 118 bpm is 7.87 steps a second on the kit and the boot ROM runs its own at
+  // 3.2, so step for step the crystal wants 2.46×. From a knob sitting at 1 the
+  // nearest lock is a third of that — the tune taking three kit steps to a step
+  // of its own — and from 3 it is the step-for-step one.
+  const kitHz = (DEFAULT_CONTROLS.drumBpm / 60) * 4
+  expect(at(1)).toBeCloseTo(kitHz / 3.2 / 3, 6)
+  expect(at(3)).toBeCloseTo(kitHz / 3.2, 6)
+  // Whichever it picked, the kit's step rate is a whole number of the toy's.
+  expect((kitHz / (3.2 * at(1))) % 1).toBeCloseTo(0, 6)
+})
+
 test('log sliders have a positive floor or zero minimum', () => {
   for (const def of ALL_SLIDERS) {
     if (def.curve === 'log') expect(def.min, def.key).toBeGreaterThanOrEqual(0)

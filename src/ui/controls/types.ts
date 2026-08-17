@@ -1,4 +1,4 @@
-import type { ControlKey } from '../../controls'
+import type { ControlKey, Controls } from '../../controls'
 
 export interface SliderDef {
   key: ControlKey
@@ -10,6 +10,14 @@ export interface SliderDef {
   help: string
   choices?: string[]
   curve?: 'log'
+  /** A value the control has a reason to jump to that isn't a place on its own
+      travel — it is worked out from the rest of the board. One press, drawn
+      beside the readout. */
+  action?: {
+    label: string
+    title: string
+    value: (c: Controls, def: SliderDef) => number
+  }
 }
 
 export const STAGE_ORDER = [

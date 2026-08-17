@@ -113,3 +113,12 @@
 .unwired:hover {
   color: var(--accent);
 }
+
+/* A finger is not a mouse pointer: on a phone the pad is the instrument, so it
+   gets the height a hand needs to find a corner of it. */
+@media (max-width: 760px) {
+  .pad,
+  .padOn {
+    height: 120px;
+  }
+}

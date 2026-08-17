@@ -118,17 +118,26 @@ function Row({ row, tick }: { row: DrumRow; tick: number | null }) {
           />
         ))}
       </div>
-      <button
+      {/* A select rather than a nudge or a shift-click alone: it says what the
+          numbers are, it is one tap on a phone, and it is the only way to give a
+          row its sixteen steps back once you have shortened it. */}
+      <select
         className={len === STEPS ? styles.len : styles.lenShort}
-        onClick={() => engine.set(row.len, STEPS)}
+        value={len}
+        onChange={e => engine.set(row.len, Number(e.currentTarget.value))}
+        aria-label={`${row.label} row length`}
         title={
           len === STEPS
-            ? `the ${row.label} row runs all sixteen steps — shift-click a step to bring it round sooner and it drifts against the rest`
-            : `the ${row.label} row comes round every ${len} steps — press for all sixteen back`
+            ? `how many steps the ${row.label} row plays before it comes round. All sixteen is the machine as it left the factory; anything else runs against the rows that kept theirs`
+            : `the ${row.label} row comes round every ${len} steps, so it lands somewhere different against the others each bar`
         }
       >
-        {len}
-      </button>
+        {Array.from({ length: STEPS }, (_, i) => (
+          <option key={i} value={i + 1}>
+            {i + 1}
+          </option>
+        ))}
+      </select>
     </div>
   )
 }

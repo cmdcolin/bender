@@ -24,7 +24,7 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
   const controls = useStoreValue(engine.controls)
   const [held, setHeld] = useState(false)
 
-  const wires = ([0, 1] as const).flatMap(i => {
+  const wires = ([0, 1, 2, 3] as const).flatMap(i => {
     const src = Math.round(controls[`mod${i}Src`])
     if (src !== 5 && src !== 6) return []
     return [

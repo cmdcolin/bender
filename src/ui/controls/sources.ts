@@ -1,6 +1,36 @@
-import { ROM_NAMES } from '../../dsp/stages/roms'
+import type { Controls } from '../../controls'
+import { ROM_NAMES, ROMS } from '../../dsp/stages/roms'
 import { GRID_ROWS, VOICE_LABELS } from '../../drums'
-import type { Group } from './types'
+import type { Group, SliderDef } from './types'
+
+// The toy has no sync input, so locking it to the kit means picking the crystal
+// speed at which the ROM's own steps divide into the kit's. Which multiple of
+// that speed you want is a pitch decision as much as a timing one — the same
+// knob is both — so it lands on the one nearest where the crystal already sits.
+const LOCK_MULTIPLES = [
+  1 / 8,
+  1 / 6,
+  1 / 4,
+  1 / 3,
+  1 / 2,
+  2 / 3,
+  1,
+  3 / 2,
+  2,
+  3,
+]
+
+function lockToKit(c: Controls, def: SliderDef): number {
+  const romHz = ROMS[Math.round(c.chipTune)]?.stepHz ?? 8
+  const base = ((c.drumBpm / 60) * 4) / romHz
+  const off = (v: number) => Math.abs(Math.log(v / c.chipClockX))
+  const speeds = LOCK_MULTIPLES.map(m => base * m).filter(
+    v => v >= def.min && v <= def.max,
+  )
+  // Nothing in range is a tempo the crystal cannot reach; the knob stays put.
+  if (speeds.length === 0) return c.chipClockX
+  return speeds.reduce((best, v) => (off(v) < off(best) ? v : best))
+}
 
 export const SOURCE_GROUPS: Group[] = [
   {
@@ -54,6 +84,12 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '×',
         curve: 'log',
         help: 'Drags the master clock crystal. Everything the chip does — pitch, tempo, envelopes — slurs together.',
+        action: {
+          label: 'lock',
+          title:
+            'set the crystal to the nearest speed at which this ROM’s steps divide into the kit’s, so the tune and the pattern line up. It is the same knob as the pitch, so locking moves that too — and nothing holds it there: crystal drift, a starving rail or a wire on the clock will walk it off again',
+          value: lockToKit,
+        },
       },
       {
         key: 'chipStarve',

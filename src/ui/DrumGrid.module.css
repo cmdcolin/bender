@@ -77,6 +77,9 @@
   border-radius: 2px;
   background: var(--bg2);
   cursor: pointer;
+  /* A step is a contact, not a word: no double-tap zoom, and no 300 ms wait to
+     find out whether the tap was one. */
+  touch-action: manipulation;
 }
 
 .cell:hover,
@@ -113,7 +116,7 @@
   opacity: 0.3;
 }
 
-/* How many steps the row plays. It reads as a number rather than a control
+/* How many steps the row plays. It reads as a number rather than as a control
    because most rows never leave sixteen, and the one that has moved is the one
    worth spotting. */
 .len,
@@ -125,6 +128,8 @@
   border: none;
   color: var(--fg4);
   cursor: pointer;
+  appearance: none;
+  text-align: right;
 }
 
 .len:hover,
@@ -150,4 +155,24 @@
 
 .silent:hover {
   color: var(--fg2);
+}
+
+/* Sixteen contacts across a phone are 4 mm each, which is a step you close by
+   accident. The row gives up its name to buy them height and width; the grid is
+   what the panel is for. */
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: 2.2rem 1fr 1.6rem;
+    gap: 4px;
+  }
+  .cell,
+  .cellOn,
+  .accent,
+  .accentOn {
+    height: 26px;
+  }
+  .accent,
+  .accentOn {
+    height: 20px;
+  }
 }

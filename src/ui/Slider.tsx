@@ -71,7 +71,23 @@ export function ControlSlider({ def }: { def: SliderDef }) {
         }}
         onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
       />
-      <span className={styles.readout}>{formatValue(def, value)}</span>
+      <span className={styles.readout}>
+        {formatValue(def, value)}
+        {def.action && (
+          <button
+            className={styles.action}
+            title={def.action.title}
+            onClick={() =>
+              write(
+                def.key,
+                snapToStep(def, def.action!.value(engine.controls.get(), def)),
+              )
+            }
+          >
+            {def.action.label}
+          </button>
+        )}
+      </span>
     </div>
   )
 }
