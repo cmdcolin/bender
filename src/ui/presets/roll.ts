@@ -113,11 +113,13 @@ function rollValue(def: SliderDef, rand: () => number): number {
   const at = (pos: number) => snapToStep(def, fromPos(def, pos))
   // A level is the whole of whether the stage is there at all, so rolling the
   // stage always leaves it somewhere you can hear.
-  if (def.label === 'Level') return audible(def, rand)
+  if (def.role === 'level') return audible(def, rand)
   const offAtBoot = DEFAULT_CONTROLS[def.key] === def.min
   if (offAtBoot && rand() < 0.35) return def.min
   if (def.choices) return def.min + Math.floor(rand() * def.choices.length)
-  if (def.label === 'Mix') return audible(def, rand)
+  // Past the boot check, not before it, unlike a level: a stage the toy boots
+  // dry is one a roll is still allowed to leave off the board entirely.
+  if (def.role === 'mix') return audible(def, rand)
   return at(offAtBoot && def.curve === 'log' ? rand() ** 2 : rand())
 }
 
@@ -214,7 +216,7 @@ export function rollGroup(
   )
   // You rolled this stage in order to hear it, so its own dry/wet doesn't get
   // to land at zero. Turning a stage off is what the reset beside this is for.
-  const mix = group.sliders.find(s => s.label === 'Mix')
+  const mix = group.sliders.find(s => s.role === 'mix')
   if (mix && next[mix.key] === mix.min) next[mix.key] = audible(mix, rand)
   if (group.editor?.kind !== 'drums') return next
   return { ...next, ...rollPattern(rand), ...rollLengths(rand) }

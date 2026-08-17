@@ -10,6 +10,10 @@ export interface SliderDef {
   help: string
   choices?: string[]
   curve?: 'log'
+  /** What the control is to the stage, where that outlives its name: a mix is
+      the stage's dry/wet, a level is the whole of whether it is there at all.
+      A roll reads this to decide what it must leave audible. */
+  role?: 'mix' | 'level'
   /** A value the control has a reason to jump to that isn't a place on its own
       travel — it is worked out from the rest of the board. One press, drawn
       beside the readout. */

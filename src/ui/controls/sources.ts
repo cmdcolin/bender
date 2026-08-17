@@ -40,6 +40,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'chipLevel',
         label: 'Level',
+        role: 'level',
         min: 0,
         max: 1,
         step: 0.01,
@@ -159,6 +160,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'drumLevel',
         label: 'Level',
+        role: 'level',
         min: 0,
         max: 1,
         step: 0.01,
@@ -261,6 +263,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'oscLevel',
         label: 'Level',
+        role: 'level',
         min: 0,
         max: 1,
         step: 0.01,

@@ -54,6 +54,7 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'stompLevel',
         label: 'Level',
+        role: 'level',
         min: -24,
         max: 12,
         step: 0.5,
@@ -63,6 +64,7 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'stompMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -152,6 +154,7 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -196,6 +199,7 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'revMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,

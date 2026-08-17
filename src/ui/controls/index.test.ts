@@ -2,11 +2,13 @@ import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
 import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
 
-test('the bend table lines up with the slots that name it', () => {
-  expect(BENDS.length).toBe((sliderFor('bendSlot0').choices?.length ?? 0) - 1)
+// A slot's choices are derived from the table, so the counts can't drift. What
+// still can is a table entry naming a group or a dry/wet that isn't there.
+test('every bend names a group and a mix that exist', () => {
   for (const bend of BENDS) {
-    expect(GROUPS.map(g => g.name)).toContain(bend.group)
-    expect(DEFAULT_CONTROLS).toHaveProperty(bend.mix)
+    const group = GROUPS.find(g => g.name === bend.group)
+    expect(group, bend.group).toBeDefined()
+    expect(group!.sliders.find(s => s.role === 'mix')?.key).toBe(bend.mix)
   }
 })
 

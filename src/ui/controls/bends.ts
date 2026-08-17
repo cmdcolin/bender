@@ -1,27 +1,44 @@
 import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
+// Which stage each bend slot names, the short name a slot wears when it names
+// it, and the dry/wet that decides whether you hear it. The slot choices and
+// their range come off this table, in this order — slot value n names entry
+// n−1, so the order here is the order the slots count in. The map reads it to
+// lay the path out; a roll reads it to put one bend on the board on its own.
+export const BENDS = [
+  { group: 'Ring mod', label: 'ring', mix: 'ringMix' },
+  { group: 'Crusher', label: 'crush', mix: 'crushMix' },
+  { group: 'Shaper', label: 'dist', mix: 'distMix' },
+  { group: 'Comb', label: 'comb', mix: 'combMix' },
+  { group: 'Glitch buffer', label: 'glitch', mix: 'glitchMix' },
+  { group: 'Screech filter', label: 'filt', mix: 'filtMix' },
+  { group: 'Freq shifter', label: 'shift', mix: 'shiftMix' },
+] as const satisfies readonly {
+  group: string
+  label: string
+  mix: ControlKey
+}[]
+
+/** The bend a slot value names — nothing, for the empty slot at zero. */
+export const bendAt = (slot: number) => BENDS[Math.round(slot) - 1]
+
+export const BEND_SLOT_KEYS = [0, 1, 2, 3, 4, 5].map(
+  i => `bendSlot${i}` as ControlKey,
+)
+
 export const BEND_GROUPS: Group[] = [
   {
     name: 'Slot order',
     place: 'Bends',
-    sliders: [0, 1, 2, 3, 4, 5].map(i => ({
-      key: `bendSlot${i}` as ControlKey,
+    sliders: BEND_SLOT_KEYS.map((key, i) => ({
+      key,
       label: `Slot ${i + 1}`,
       min: 0,
-      max: 7,
+      max: BENDS.length,
       step: 1,
       unit: '',
-      choices: [
-        '—',
-        'ring',
-        'crush',
-        'dist',
-        'comb',
-        'glitch',
-        'filt',
-        'shift',
-      ],
+      choices: ['—', ...BENDS.map(b => b.label)],
       help: 'Which bend runs in this position. The signal walks the slots top to bottom; duplicates run once at their first slot.',
     })),
   },
@@ -52,6 +69,7 @@ export const BEND_GROUPS: Group[] = [
       {
         key: 'ringMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -95,6 +113,7 @@ export const BEND_GROUPS: Group[] = [
       {
         key: 'crushMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -157,6 +176,7 @@ export const BEND_GROUPS: Group[] = [
       {
         key: 'distMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -201,6 +221,7 @@ export const BEND_GROUPS: Group[] = [
       {
         key: 'combMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -254,6 +275,7 @@ export const BEND_GROUPS: Group[] = [
       {
         key: 'filtMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -326,6 +348,7 @@ export const BEND_GROUPS: Group[] = [
       {
         key: 'glitchMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -370,6 +393,7 @@ export const BEND_GROUPS: Group[] = [
       {
         key: 'shiftMix',
         label: 'Mix',
+        role: 'mix',
         min: 0,
         max: 1,
         step: 0.01,
@@ -379,23 +403,3 @@ export const BEND_GROUPS: Group[] = [
     ],
   },
 ]
-
-// Which stage each bend slot names, in the order the slot's own choices list
-// them, and the dry/wet that decides whether you hear it. The map reads this to
-// lay the path out; a roll reads it to put one bend on the board on its own.
-export const BENDS = [
-  { group: 'Ring mod', mix: 'ringMix' },
-  { group: 'Crusher', mix: 'crushMix' },
-  { group: 'Shaper', mix: 'distMix' },
-  { group: 'Comb', mix: 'combMix' },
-  { group: 'Glitch buffer', mix: 'glitchMix' },
-  { group: 'Screech filter', mix: 'filtMix' },
-  { group: 'Freq shifter', mix: 'shiftMix' },
-] as const satisfies readonly { group: string; mix: ControlKey }[]
-
-/** The bend a slot value names — nothing, for the empty slot at zero. */
-export const bendAt = (slot: number) => BENDS[Math.round(slot) - 1]
-
-export const BEND_SLOT_KEYS = [0, 1, 2, 3, 4, 5].map(
-  i => `bendSlot${i}` as ControlKey,
-)

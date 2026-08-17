@@ -27,6 +27,7 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeDrive',
         label: 'Level',
+        role: 'level',
         min: -12,
         max: 15,
         step: 0.5,
