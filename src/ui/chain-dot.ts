@@ -137,7 +137,7 @@ function sourceStrip(c: Controls, o: Options): string {
     const fill = open ? ` BGCOLOR="${k.open}"` : ''
     return `<TR><TD PORT="${nodeId(name)}" HREF="#${groupAnchor(name)}" TITLE="${esc(name)}"${fill}><FONT COLOR="${fg}">${esc(name)}</FONT>${count}</TD></TR>`
   })
-  return `<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="${k.bg}" COLOR="${k.border}">${rows.join('')}</TABLE>`
+  return `<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="2" BGCOLOR="${k.bg}" COLOR="${k.border}">${rows.join('')}</TABLE>`
 }
 
 export interface Options {
@@ -146,7 +146,7 @@ export interface Options {
       amount; the README's copy just names the parts. */
   live?: boolean
   /** Folds the path into two columns joined by a slack cable. The panel wants
-      it — a straight run is 810px tall and buries every control under itself —
+      it — a straight run is 770px tall and buries every control under itself —
       and the README, drawn as a standalone image, does not. */
   wrap?: boolean
   /** The stage whose controls the panel is showing, lit on the map. */
@@ -155,7 +155,7 @@ export interface Options {
 
 // The path, wired between the nodes that are already declared. Straight down
 // the page, or folded in half so the panel gets a map roughly as wide as it is
-// tall instead of a 810px ribbon down one side of a 420px column.
+// tall instead of a 770px ribbon down one side of a 420px column.
 //
 // The fold is two chains pinned rank-by-rank into columns, with the cable from
 // the foot of the first to the head of the second carrying the eye across.
@@ -204,9 +204,9 @@ export function buildMap(c: Controls, o: Options = {}): Drawing {
     'digraph chain {',
     '  bgcolor="transparent"',
     '  rankdir=TB',
-    `  nodesep=${o.wrap ? 0.22 : 0.18}`,
-    '  ranksep=0.22',
-    `  node [shape=box, style="filled,rounded", fillcolor="${k.bg}", color="${k.border}", fontcolor="${k.fg}", fontname="Helvetica", fontsize=12, height=0.3, margin="0.14,0.06"]`,
+    `  nodesep=${o.wrap ? 0.14 : 0.12}`,
+    '  ranksep=0.1',
+    `  node [shape=box, style="filled,rounded", fillcolor="${k.bg}", color="${k.border}", fontcolor="${k.fg}", fontname="Helvetica", fontsize=10, height=0.2, margin="0.09,0.02"]`,
     `  edge [color="${k.border}", arrowsize=0.6, penwidth=1.1]`,
   ]
 
@@ -289,7 +289,7 @@ export function buildMap(c: Controls, o: Options = {}): Drawing {
       `  out -> ${nodeId('Feedback bus')} [color="${wire}", style=dashed, ${door}]`,
     )
     lines.push(
-      `  ${nodeId('Feedback bus')} -> ${target} [color="${wire}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${wire}", fontsize=10, ${door}]`,
+      `  ${nodeId('Feedback bus')} -> ${target} [color="${wire}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${wire}", fontsize=9, ${door}]`,
     )
   }
 
@@ -309,10 +309,10 @@ export function buildMap(c: Controls, o: Options = {}): Drawing {
     doors.add('Patch bay')
     doors.add(pickup)
     lines.push(
-      `  wire${i} [label="${SRC_LABEL[src]}", shape=plaintext, fontcolor="${k.mod}", fontsize=10, URL="#${groupAnchor(pickup)}", tooltip="${pickup}"]`,
+      `  wire${i} [label="${SRC_LABEL[src]}", shape=plaintext, fontcolor="${k.mod}", fontsize=9, URL="#${groupAnchor(pickup)}", tooltip="${pickup}"]`,
     )
     lines.push(
-      `  wire${i} -> ${inStrip ? `sources:${nodeId(dest)}` : anchor} [color="${k.mod}", style=dotted, constraint=false, label=" ${o.live === false ? 'patch wire' : depth.toFixed(2)}", fontcolor="${k.mod}", fontsize=10, ${door}]`,
+      `  wire${i} -> ${inStrip ? `sources:${nodeId(dest)}` : anchor} [color="${k.mod}", style=dotted, constraint=false, label=" ${o.live === false ? 'patch wire' : depth.toFixed(2)}", fontcolor="${k.mod}", fontsize=9, ${door}]`,
     )
     // sit the wire beside what it feeds, or it floats to the top and stretches
     // the whole drawing sideways

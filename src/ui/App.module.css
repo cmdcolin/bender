@@ -8,15 +8,15 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
+  padding: 10px;
 }
 
 .panel {
   width: 420px;
   flex: none;
   overflow-y: auto;
-  padding: 10px 14px 40px;
+  padding: 8px 12px 8px;
   border-left: 1px solid var(--border);
   background: var(--bg2);
 }
@@ -24,8 +24,8 @@
 .masthead {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  padding: 4px 0 10px;
+  gap: 6px;
+  padding: 0 0 6px;
 }
 
 .brand {
@@ -50,8 +50,8 @@
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding-bottom: 8px;
+  gap: 4px;
+  padding-bottom: 6px;
 }
 
 .btn,
@@ -60,7 +60,7 @@
 .flight {
   flex: 1 1 64px;
   font-size: var(--fs-sm);
-  padding: 6px 0;
+  padding: 3px 0;
   background: var(--bg3);
   color: var(--fg2);
   border: 1px solid var(--border);
@@ -101,7 +101,7 @@ select.btn {
   position: relative;
   overflow: hidden;
   font-size: var(--fs-sm);
-  padding: 6px 0;
+  padding: 3px 0;
   background: var(--bg3);
   color: var(--fg);
   border: 1px solid var(--accent);
@@ -127,8 +127,8 @@ select.btn {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
-  padding-bottom: 8px;
+  gap: 3px;
+  padding-bottom: 5px;
 }
 
 .diceLabel {
@@ -139,7 +139,7 @@ select.btn {
 
 .die {
   font-size: var(--fs-xs);
-  padding: 3px 9px;
+  padding: 2px 7px;
   background: var(--bg3);
   color: var(--fg2);
   border: 1px solid var(--border);
@@ -155,7 +155,7 @@ select.btn {
 .ioRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .playBtn,
@@ -164,7 +164,7 @@ select.btn {
 .ioBtn,
 .ioBtnOn {
   font-size: var(--fs-sm);
-  padding: 4px 10px;
+  padding: 3px 8px;
   background: var(--bg3);
   color: var(--fg2);
   border: 1px solid var(--border);
@@ -200,7 +200,7 @@ select.btn {
   color: var(--fg4);
   border: 1px dashed var(--border);
   border-radius: 3px;
-  padding: 4px 10px;
+  padding: 3px 8px;
 }
 
 .dropHot {

@@ -1,5 +1,5 @@
 .map {
-  padding: 8px 0;
+  padding: 2px 0 0;
   border-bottom: 1px solid var(--border-quiet);
 }
 
@@ -11,6 +11,14 @@
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+/* With a stage open the map is the index, not the work: it gives back what it
+   can spare on a short screen, the viewBox scaling the drawing down rather than
+   cropping it. Not a step further — a map whose labels have gone to 6px has
+   stopped being the index it is there to be. */
+.mapOpen .graph svg {
+  max-height: 44vh;
 }
 
 .graph a {

@@ -69,7 +69,7 @@ export function ChainMap({
   }, [dot])
 
   return (
-    <div className={styles.map}>
+    <div className={open ? `${styles.map} ${styles.mapOpen}` : styles.map}>
       <div
         className={styles.graph}
         ref={host}

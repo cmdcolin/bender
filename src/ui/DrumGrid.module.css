@@ -1,20 +1,20 @@
 .wrap {
-  padding: 4px 0 10px;
+  padding: 2px 0 6px;
   border-bottom: 1px solid var(--border-quiet);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .roms {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 3px;
+  margin-bottom: 5px;
 }
 
 .rom,
 .romOn {
   font-size: var(--fs-xs);
-  padding: 3px 9px;
+  padding: 2px 7px;
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
@@ -36,14 +36,14 @@
 .grid {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .row {
   display: grid;
-  grid-template-columns: 3.4rem 1fr;
+  grid-template-columns: 3.2rem 1fr;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .name,
@@ -70,7 +70,7 @@
 .cellOn,
 .accent,
 .accentOn {
-  height: 18px;
+  height: 15px;
   min-width: 0;
   padding: 0;
   border: 1px solid var(--border-quiet);

@@ -13,11 +13,13 @@
   --border: #2c2c31;
   --border-quiet: #202024;
   --border-hover: #45454c;
-  --fs-xs: 11px;
-  --fs-sm: 12px;
-  --fs-md: 13.5px;
-  --fs-lg: 15px;
-  --fs-xl: 20px;
+  /* The panel is an instrument's front plate: everything it holds has to be on
+     screen at once, so the scale runs a step under a document's. */
+  --fs-xs: 10px;
+  --fs-sm: 11px;
+  --fs-md: 12px;
+  --fs-lg: 13px;
+  --fs-xl: 16px;
   --mono: 'SF Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 }
 

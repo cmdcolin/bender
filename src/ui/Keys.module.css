@@ -9,7 +9,7 @@
   width: 50%;
   min-width: 240px;
   max-width: 460px;
-  height: 72px;
+  height: 60px;
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
   overflow: hidden;
@@ -58,7 +58,7 @@
 .hold,
 .holdOn {
   font-size: var(--fs-sm);
-  padding: 5px 12px;
+  padding: 3px 10px;
   background: var(--bg3);
   color: var(--fg2);
   border: 1px solid var(--border);

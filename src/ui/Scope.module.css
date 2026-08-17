@@ -1,6 +1,9 @@
+/* The trace squashes rather than pushing the keys and the pad off the screen: a
+   scope is a shape, and the shape survives the squeeze. */
 .canvas {
   width: 100%;
   height: auto;
+  max-height: 22vh;
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
   background: #0a0a0c;
