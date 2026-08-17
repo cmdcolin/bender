@@ -4,9 +4,9 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../controls'
-import { mulberry32 } from '../dsp/util/rng'
-import { romIndex } from '../dsp/stages/roms'
+} from '../../controls'
+import { mulberry32 } from '../../dsp/util/rng'
+import { romIndex } from '../../dsp/stages/roms'
 import {
   BENDS,
   BEND_SLOT_KEYS,
@@ -15,8 +15,8 @@ import {
   groupKeys,
   HOLD_KEYS,
   sliderFor,
-} from './controls'
-import { GRID_ROWS, hasStep } from './drums'
+} from '../controls'
+import { GRID_ROWS, hasStep } from '../drums'
 import {
   applyPreset,
   mutate,
@@ -26,7 +26,7 @@ import {
   resetGroup,
   rollGroup,
   SCENARIOS,
-} from './presets'
+} from '.'
 
 const groupNamed = (name: string): Group =>
   GROUPS.find(g => g.name === name) as Group
