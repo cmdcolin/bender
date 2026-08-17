@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
@@ -64,7 +65,9 @@ export class ToyChip implements Stage {
     const pot = p[IDX.chipBendPot]!
     const micToRail = p[IDX.micPatch] === 1
     const fbToRail = Math.round(p[IDX.fbDest]!) === 2
+    const modClock = ctx.mod.read(DEST.chipClock)
     const rail = this.rail
+    const maxHz = this.sr * 0.49
 
     // a reboot, and pressing play, both drop the needle on step 0
     if (rail.rebootCount !== this.lastReboot) {
@@ -84,6 +87,7 @@ export class ToyChip implements Stage {
         this.clockWalk *= 0.999
         clock *= 1 + pot * 24 * (1 + 0.4 * Math.sin(this.clockWalk))
       }
+      if (modClock) clock *= Math.pow(2, modClock[i]! * 3)
 
       // sequencer — the run/stop line freezes it where it stands
       if (this.transport.playing) this.stepClock += (rom.stepHz * clock) / this.sr
@@ -128,12 +132,15 @@ export class ToyChip implements Stage {
         const duty = spot === 3 ? 0.5 + pot * 0.45 : 0.5
         const note = this.transport.playing ? this.note : -1
         if (note >= 0 && this.env > 0.003) {
-          const hz = BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor
+          const hz = Math.min(BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor, maxHz)
           this.phase = (this.phase + hz / this.sr) % 1
           out += (this.phase < duty ? 1 : -1) * this.env
         }
         if (this.keyEnv > 0.003 && this.keyNote >= 0) {
-          const hz = BASE_HZ * Math.pow(2, this.keyNote / 12) * clock * rail.pitchFactor
+          const hz = Math.min(
+            BASE_HZ * Math.pow(2, this.keyNote / 12) * clock * rail.pitchFactor,
+            maxHz,
+          )
           this.keyPhase = (this.keyPhase + hz / this.sr) % 1
           out += (this.keyPhase < duty ? 1 : -1) * this.keyEnv
         }
@@ -145,6 +152,7 @@ export class ToyChip implements Stage {
       const extra =
         (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) + (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0)
       rail.tick(Math.abs(out), starve, extra)
+      ctx.railV[i] = rail.v
       io.l[i]! += out
       io.r[i]! += out
     }

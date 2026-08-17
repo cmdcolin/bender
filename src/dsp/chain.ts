@@ -1,5 +1,7 @@
 import { IDX } from '../engine/params'
+import { DEST, ModBus } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
+import { Follower, coef } from './util/follower'
 import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole'
 import { flushDenormal, softclip } from './util/softclip'
 import { DelayLine } from './util/delayline'
@@ -19,6 +21,7 @@ export class Chain {
   private readonly fbTiltLpR = new OnePoleLP()
   private fbCombL: DelayLine
   private fbCombR: DelayLine
+  private outEnv = new Follower()
   private limitEnv = 0
 
   sources: Stage[] = []
@@ -27,7 +30,16 @@ export class Chain {
   post: Stage[] = []
 
   constructor(readonly sr: number) {
-    this.ctx = { sr, mic: new Float32Array(BLOCK), fb: new Float32Array(BLOCK) }
+    this.ctx = {
+      sr,
+      mic: new Float32Array(BLOCK),
+      fb: new Float32Array(BLOCK),
+      railV: new Float32Array(BLOCK).fill(1),
+      sag: new Float32Array(BLOCK),
+      droop: new Float32Array(BLOCK),
+      env: new Float32Array(BLOCK),
+      mod: new ModBus(sr),
+    }
     this.fbCombL = new DelayLine(0.5 * sr + 4)
     this.fbCombR = new DelayLine(0.5 * sr + 4)
   }
@@ -51,6 +63,12 @@ export class Chain {
     this.fbTiltLpR.reset()
     this.fbCombL.reset()
     this.fbCombR.reset()
+    this.outEnv.reset()
+    this.ctx.mod.panic()
+    this.ctx.railV.fill(1)
+    this.ctx.sag.fill(0)
+    this.ctx.droop.fill(0)
+    this.ctx.env.fill(0)
     this.limitEnv = 0
   }
 
@@ -61,12 +79,19 @@ export class Chain {
     const micLevel = p[IDX.micLevel]!
     for (let i = 0; i < n; i++) ctx.mic[i] = micLevel * (mic?.[i] ?? 0)
 
+    // Supply droop and the mod lanes are built from last block's buses, then
+    // the supplies are handed back to whoever owns them at their stock values.
+    for (let i = 0; i < n; i++) {
+      ctx.fb[i] = 0.5 * (this.fbRetL[i]! + this.fbRetR[i]!)
+      ctx.droop[i] = Math.min(Math.max(1 - ctx.railV[i]!, ctx.sag[i]!), 1)
+    }
+    ctx.mod.build(n, p, ctx)
+    ctx.railV.fill(1, 0, n)
+    ctx.sag.fill(0, 0, n)
+
     io.l.fill(0, 0, n)
     io.r.fill(0, 0, n)
     const fbDest = Math.round(p[IDX.fbDest]!)
-    for (let i = 0; i < n; i++) {
-      ctx.fb[i] = 0.5 * (this.fbRetL[i]! + this.fbRetR[i]!)
-    }
     if (fbDest === 0) {
       for (let i = 0; i < n; i++) {
         io.l[i] = this.fbRetL[i]!
@@ -106,9 +131,14 @@ export class Chain {
 
     const gain = Math.pow(10, p[IDX.outGain]! / 20)
     const dcCoef = 1 - (2 * Math.PI * 10) / this.sr
+    const envA = coef(0.005, this.sr)
+    const envR = coef(0.08, this.sr)
     for (let i = 0; i < n; i++) {
-      io.l[i] = softclip(this.dcL.process(io.l[i]! * gain, dcCoef))
-      io.r[i] = softclip(this.dcR.process(io.r[i]! * gain, dcCoef))
+      const l = softclip(this.dcL.process(io.l[i]! * gain, dcCoef))
+      const r = softclip(this.dcR.process(io.r[i]! * gain, dcCoef))
+      io.l[i] = l
+      io.r[i] = r
+      ctx.env[i] = this.outEnv.process(Math.max(Math.abs(l), Math.abs(r)), envA, envR)
     }
 
     this.computeFeedback(io, p)
@@ -139,8 +169,9 @@ export class Chain {
   // loop alone is too slow for it.
   private computeFeedback(io: StereoBlock, p: Float32Array) {
     const { n } = io
-    const amt = p[IDX.fbAmt]!
-    if (amt <= 0) {
+    const base = p[IDX.fbAmt]!
+    const modAmt = this.ctx.mod.read(DEST.fbAmt)
+    if (base <= 0 && !modAmt) {
       this.fbRetL.fill(0)
       this.fbRetR.fill(0)
       return
@@ -148,8 +179,11 @@ export class Chain {
     const tilt = p[IDX.fbTone]!
     const tiltCoef = lpCoef(800, this.sr)
     const combDelay = Math.max((p[IDX.fbDelayMs]! / 1000) * this.sr, 1)
-    const combG = Math.min(amt, 1.05)
     for (let i = 0; i < n; i++) {
+      const amt = modAmt
+        ? Math.min(Math.max(base + modAmt[i]! * 1.5, 0), 1.5)
+        : base
+      const combG = Math.min(amt, 1.05)
       let xl = io.l[i]! * amt
       let xr = io.r[i]! * amt
       const lpL = this.fbTiltLpL.process(xl, tiltCoef)

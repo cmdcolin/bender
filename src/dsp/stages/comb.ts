@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
 import { OnePoleLP, lpCoef } from '../util/onepole'
@@ -23,13 +24,18 @@ export class Comb implements Stage {
     return p[IDX.combMix]! > 0
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
-    const delay = this.sr / p[IDX.combHz]!
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const baseHz = p[IDX.combHz]!
+    const mod = ctx.mod.read(DEST.combHz)
+    const delayBase = this.sr / baseHz
     const fb = p[IDX.combFb]!
     const mix = p[IDX.combMix]!
     const coef = lpCoef(p[IDX.combDampHz]!, this.sr)
 
     for (let i = 0; i < io.n; i++) {
+      const delay = mod
+        ? this.sr / Math.min(Math.max(baseHz * Math.pow(2, mod[i]! * 2), 20), 4000)
+        : delayBase
       const wl = softclip(io.l[i]! + fb * this.dampL.process(this.lineL.read(delay), coef))
       const wr = softclip(io.r[i]! + fb * this.dampR.process(this.lineR.read(delay * 1.003), coef))
       this.lineL.write(wl)

@@ -21,7 +21,7 @@ export class Brownout implements Stage {
     return p[IDX.brownAmt]! > 0 || p[IDX.brownCrackle]! > 0 || p[IDX.humLevel]! > 0
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const amt = p[IDX.brownAmt]!
     const dropProb = p[IDX.brownRate]! / this.sr
     const crackleAmt = p[IDX.brownCrackle]!
@@ -34,6 +34,7 @@ export class Brownout implements Stage {
       const x = Math.max(Math.abs(io.l[i]!), Math.abs(io.r[i]!))
       const coef = x > this.sag ? attack : release
       this.sag = flushDenormal(this.sag + coef * (x - this.sag))
+      ctx.sag[i] = this.sag
 
       let g = 1 / (1 + amt * 4 * this.sag)
       if (amt > 0 && this.dropRemaining <= 0 && this.rng() < dropProb * (1 + this.sag)) {

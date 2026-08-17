@@ -11,6 +11,7 @@ import { RingMod } from './stages/ringmod'
 import { Sampler } from './stages/sampler'
 import { Screech } from './stages/screech'
 import { Shaper } from './stages/shaper'
+import { Shifter } from './stages/shifter'
 import { SpringVerb } from './stages/springVerb'
 import { TapeDelay } from './stages/tapeDelay'
 import { ToyChip } from './stages/toyChip'
@@ -36,7 +37,8 @@ export function buildBender(sr: number): BuiltChain {
     new Noise(sr),
     sampler,
   ]
-  // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch, 6 filt
+  // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
+  // 6 filt, 7 shift — six slots for seven bends, so you pick
   chain.bendById = [
     undefined,
     new RingMod(sr),
@@ -45,6 +47,7 @@ export function buildBender(sr: number): BuiltChain {
     new Comb(sr),
     new GlitchBuf(sr),
     new Screech(sr),
+    new Shifter(sr),
   ]
   chain.pedals = [new TapeDelay(sr), new SpringVerb(sr)]
   chain.post = [new Brownout(sr)]

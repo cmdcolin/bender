@@ -1,12 +1,16 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
+import { coef as timeCoef } from '../util/follower'
 import { OnePoleLP, lpCoef } from '../util/onepole'
-import { softclip } from '../util/softclip'
+import { flushDenormal, softclip } from '../util/softclip'
 import { mulberry32, type Rng } from '../util/rng'
 
 // Fractional delay with wow/flutter transport wobble and a saturating
-// feedback loop that runs away musically past unity.
+// feedback loop that runs away musically past unity. The capstan is a real
+// motor: it has weight, it answers the brake, and it can be wired to the same
+// dying supply as the toy.
 export class TapeDelay implements Stage {
   label = 'tapeDelay'
   private lineL: DelayLine
@@ -15,12 +19,15 @@ export class TapeDelay implements Stage {
   private toneR = new OnePoleLP()
   private wowPhase = 0
   private flutterWalk = 0
+  private motor = 1
+  private slide = 0
+  private readonly maxDelay: number
   private rng: Rng
 
   constructor(private readonly sr: number) {
-    const max = 2.2 * sr
-    this.lineL = new DelayLine(max)
-    this.lineR = new DelayLine(max)
+    this.maxDelay = 4.5 * sr
+    this.lineL = new DelayLine(this.maxDelay + 4)
+    this.lineR = new DelayLine(this.maxDelay + 4)
     this.rng = mulberry32(606)
   }
 
@@ -38,6 +45,11 @@ export class TapeDelay implements Stage {
     const coef = lpCoef(p[IDX.dlyToneHz]!, this.sr)
     const micInject = p[IDX.micPatch] === 3
     const fbInject = Math.round(p[IDX.fbDest]!) === 3
+    const brake = p[IDX.tapeBrake]!
+    const railDrag = p[IDX.tapeMotorRail]!
+    const modSpeed = ctx.mod.read(DEST.tapeSpeed)
+    const inertia = timeCoef(0.3, this.sr)
+    const recenter = 1 / (3 * this.sr)
 
     for (let i = 0; i < io.n; i++) {
       this.wowPhase = (this.wowPhase + wowHz / this.sr) % 1
@@ -45,7 +57,18 @@ export class TapeDelay implements Stage {
       this.flutterWalk *= 0.995
       const wobble =
         wowDepth * Math.sin(this.wowPhase * 2 * Math.PI) + this.flutterWalk * 0.002 * this.sr
-      const d = Math.max(delaySamples + wobble, 1)
+
+      let want = (1 - brake) * (1 - railDrag * ctx.droop[i]!)
+      if (modSpeed) want *= Math.pow(2, modSpeed[i]! * 1.5)
+      this.motor += inertia * (Math.min(Math.max(want, 0), 4) - this.motor)
+      // the read head runs at motor speed against a fixed write head, so the
+      // gap opens while the transport is slow — that gap is the pitch dive
+      this.slide = flushDenormal(this.slide + (1 - this.motor) - this.slide * recenter)
+      this.slide = Math.min(
+        Math.max(this.slide, 1 - delaySamples),
+        this.maxDelay - delaySamples - 4,
+      )
+      const d = Math.min(Math.max(delaySamples + this.slide + wobble, 1), this.maxDelay)
 
       const tapL = this.toneL.process(this.lineL.read(d), coef)
       const tapR = this.toneR.process(this.lineR.read(d * 1.007), coef)
@@ -72,5 +95,7 @@ export class TapeDelay implements Stage {
     this.toneL.reset()
     this.toneR.reset()
     this.flutterWalk = 0
+    this.motor = 1
+    this.slide = 0
   }
 }

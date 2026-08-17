@@ -1,7 +1,9 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
+import { Transient } from '../util/follower'
 import { mulberry32, type Rng } from '../util/rng'
 
 // 16 steps; bit 1 = kick, 2 = snare, 4 = hat.
@@ -28,6 +30,7 @@ export class ToyDrum implements Stage {
   private snareLp = 0
   private lastReboot = 0
   private rng: Rng
+  private micTrig: Transient
 
   constructor(
     private readonly sr: number,
@@ -35,6 +38,7 @@ export class ToyDrum implements Stage {
     private readonly transport: Transport,
   ) {
     this.rng = mulberry32(202)
+    this.micTrig = new Transient(sr)
   }
 
   when(p: Float32Array) {
@@ -52,11 +56,13 @@ export class ToyDrum implements Stage {
     if (bits & 4) this.hatEnv = 1
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.drumLevel]!
     const pattern = PATTERNS[Math.round(p[IDX.drumPattern]!)] ?? PATTERNS[0]!
     const stepHz = (p[IDX.drumBpm]! / 60) * 4
-    const retrigHz = p[IDX.drumRetrigHz]!
+    const baseRetrig = p[IDX.drumRetrigHz]!
+    const mod = ctx.mod.read(DEST.retrig)
+    const micTrig = p[IDX.micPatch] === 5
     const rail = this.rail
 
     if (rail.rebootCount !== this.lastReboot) {
@@ -76,12 +82,19 @@ export class ToyDrum implements Stage {
         }
       }
       // the bend: hammer the current step's trigger line at audio rate
+      const retrigHz = mod
+        ? Math.min(baseRetrig * Math.pow(2, mod[i]! * 4), 8000)
+        : baseRetrig
       if (this.transport.playing && retrigHz > 0.5) {
         this.retrigPhase += retrigHz / this.sr
         if (this.retrigPhase >= 1) {
           this.retrigPhase -= 1
           this.trigger(pattern[this.pos]! || 1)
         }
+      }
+      // mic soldered onto the trigger line: clap at it and the kit fires
+      if (micTrig && this.micTrig.process(ctx.mic[i]!, 0.05)) {
+        this.trigger(pattern[this.pos]! || 1)
       }
 
       let out = 0
@@ -122,5 +135,6 @@ export class ToyDrum implements Stage {
     this.snareEnv = 0
     this.hatEnv = 0
     this.snareLp = 0
+    this.micTrig.reset()
   }
 }

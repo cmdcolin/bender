@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { flushDenormal, softclip } from '../util/softclip'
 
@@ -40,9 +41,11 @@ export class Screech implements Stage {
     return p[IDX.filtMix]! > 0
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
-    const fc = Math.min(p[IDX.filtHz]!, this.sr * 0.22)
-    const f = 2 * Math.sin((Math.PI * fc) / this.sr)
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    const nyq = this.sr * 0.22
+    const base = p[IDX.filtHz]!
+    const mod = ctx.mod.read(DEST.filtHz)
+    const fBase = 2 * Math.sin((Math.PI * Math.min(base, nyq)) / this.sr)
     const res = p[IDX.filtRes]!
     const damp = 2 * (1 - Math.min(res, 1)) + (res > 1 ? -(res - 1) * 1.5 : 0)
     const mode = Math.round(p[IDX.filtMode]!)
@@ -50,6 +53,12 @@ export class Screech implements Stage {
     const mix = p[IDX.filtMix]!
 
     for (let i = 0; i < io.n; i++) {
+      const f = mod
+        ? 2 *
+          Math.sin(
+            (Math.PI * Math.min(Math.max(base * Math.pow(2, mod[i]! * 4), 10), nyq)) / this.sr,
+          )
+        : fBase
       const wl = this.svfL.process(softclip(io.l[i]! * gain), f, damp, mode)
       const wr = this.svfR.process(softclip(io.r[i]! * gain), f, damp, mode)
       io.l[i] = io.l[i]! * (1 - mix) + wl * mix

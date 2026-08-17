@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { mulberry32, type Rng } from '../util/rng'
 
@@ -21,15 +22,20 @@ export class Crusher implements Stage {
     return p[IDX.crushMix]! > 0
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const bits = p[IDX.bits]!
     const srHz = p[IDX.srHz]!
     const jitter = p[IDX.srJitter]!
     const mix = p[IDX.crushMix]!
+    const mod = ctx.mod.read(DEST.crushHz)
     const steps = Math.pow(2, bits - 1)
-    const hold = Math.max(this.sr / Math.max(srHz, 1), 1)
+    const holdBase = Math.max(this.sr / Math.max(srHz, 1), 1)
 
     for (let i = 0; i < io.n; i++) {
+      // the clock is only read where a hold latches, as the real divider does
+      const hold = mod
+        ? Math.max(this.sr / Math.min(Math.max(srHz * Math.pow(2, mod[i]! * 4), 20), this.sr), 1)
+        : holdBase
       this.countL -= 1
       if (this.countL <= 0) {
         this.holdL = Math.round(io.l[i]! * steps) / steps

@@ -1,5 +1,7 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { Transient } from '../util/follower'
 import { mulberry32, type Rng } from '../util/rng'
 
 // Rolling record buffer with probabilistic stutter/reverse/repitch replay of
@@ -18,12 +20,14 @@ export class GlitchBuf implements Stage {
   private reverse = false
   private rate = 1
   private rng: Rng
+  private micTrig: Transient
 
   constructor(private readonly sr: number) {
     const n = Math.ceil(2 * sr)
     this.bufL = new Float32Array(n)
     this.bufR = new Float32Array(n)
     this.rng = mulberry32(505)
+    this.micTrig = new Transient(sr)
   }
 
   when(p: Float32Array) {
@@ -43,10 +47,13 @@ export class GlitchBuf implements Stage {
     this.playPos = this.reverse ? sliceSamples - 1 : 0
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const mix = p[IDX.glitchMix]!
     const freeze = Math.round(p[IDX.glitchFreeze]!) === 1
     const sliceSamples = Math.max(Math.floor((p[IDX.glitchSliceMs]! / 1000) * this.sr), 16)
+    const baseProb = p[IDX.glitchProb]!
+    const mod = ctx.mod.read(DEST.glitch)
+    const micTrig = p[IDX.micPatch] === 6
     const n = this.bufL.length
 
     for (let i = 0; i < io.n; i++) {
@@ -59,9 +66,14 @@ export class GlitchBuf implements Stage {
       this.sliceCountdown -= 1
       if (this.sliceCountdown <= 0) {
         this.sliceCountdown = sliceSamples
-        if (!this.glitching && (freeze || this.rng() < p[IDX.glitchProb]!)) {
+        const prob = mod ? Math.min(Math.max(baseProb + mod[i]!, 0), 1) : baseProb
+        if (!this.glitching && (freeze || this.rng() < prob)) {
           this.beginEvent(p, sliceSamples)
         }
+      }
+      // mic soldered onto the trigger line: a shout stutters the buffer
+      if (micTrig && !this.glitching && this.micTrig.process(ctx.mic[i]!, 0.05)) {
+        this.beginEvent(p, sliceSamples)
       }
 
       let wetL = io.l[i]!
@@ -93,5 +105,6 @@ export class GlitchBuf implements Stage {
     this.bufR.fill(0)
     this.glitching = false
     this.sliceCountdown = 0
+    this.micTrig.reset()
   }
 }
