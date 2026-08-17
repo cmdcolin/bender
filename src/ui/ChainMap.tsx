@@ -3,6 +3,7 @@ import type { instance } from '@viz-js/viz'
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
 import { buildDot } from './chain-dot'
+import { revealGroup } from './reveal'
 import styles from './ChainMap.module.css'
 
 // A megabyte of wasm graphviz, kept out of the boot path.
@@ -46,9 +47,7 @@ export function ChainMap() {
           const href = link?.getAttribute('href') ?? link?.getAttribute('xlink:href')
           if (!href?.startsWith('#')) return
           e.preventDefault()
-          document
-            .getElementById(href.slice(1))
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          revealGroup(href.slice(1))
         }}
       />
       {error && <span className={styles.error}>{error}</span>}

@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { useStoreValue } from './ControlsContext'
 import { engine } from '../engine/engine'
 import type { Group } from './controls'
+import { scrollIntoPanel, useRevealed } from './reveal'
 import { ControlSlider } from './Slider'
 import styles from './Section.module.css'
 
@@ -14,8 +15,14 @@ function useTouchedCount(group: Group): number {
 export function GroupSection({ group, defaultOpen }: { group: Group; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen ?? false)
   const touched = useTouchedCount(group)
+  const el = useRef<HTMLDivElement>(null)
+  const id = `group-${group.name.replace(/\W+/g, '-')}`
+  useRevealed(id, () => {
+    setOpen(true)
+    if (el.current) scrollIntoPanel(el.current)
+  })
   return (
-    <div className={styles.section} id={`group-${group.name.replace(/\W+/g, '-')}`}>
+    <div className={styles.section} id={id} ref={el}>
       <button className={styles.header} onClick={() => setOpen(o => !o)}>
         <span className={styles.arrow}>{open ? '▾' : '▸'}</span>
         <span className={styles.title}>{group.name}</span>

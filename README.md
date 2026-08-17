@@ -11,25 +11,16 @@ Live: https://cmdcolin.github.io/bender/
 
 ## The signal path
 
-```
-toy chip + toy drums + chaos osc + noise + mic + sample
-   +  ◄————————— feedback return ————————┐
-   ▼                                     │
-bend slots ×6, reorderable               │
-  ring mod · crusher · shaper ·          │
-  comb · glitch buffer · screech filter  │
-   ▼                                     │
-tape delay → spring verb                 │
-   ▼                                     │
-brownout → dc block → soft clip —————————┤
-   ▼                            feedback bus
-limiter → out
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
+  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, tape delay, spring verb, brownout and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix" src="img/chain-light.svg" width="420">
+</picture>
 
-The panel redraws that path with graphviz as you play: the bend slots appear in
-whatever order you patched them, dead stages grey out, and the feedback wire
-lands on whichever node **Patched into** picks. Click a node to jump to its
-controls.
+Graphviz draws that from the chain itself — `pnpm diagram` regenerates it from
+the same DOT the app emits (`src/ui/chain-dot.ts`). The panel redraws it live as
+you play: the bend slots appear in whatever order you patched them, dead stages
+grey out, and the feedback wire lands on whichever node **Patched into** picks.
+Click a node to open its controls.
 
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —

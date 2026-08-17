@@ -1,5 +1,7 @@
 import { expect, test } from 'vitest'
 import { instance } from '@viz-js/viz'
+import { readFileSync } from 'node:fs'
+import { renderDiagrams } from '../../scripts/chain-svg'
 import { DEFAULT_CONTROLS } from '../controls'
 import { buildDot, groupAnchor } from './chain-dot'
 
@@ -34,4 +36,10 @@ test('nodes link to the anchors the panel renders', () => {
 
 test('touched controls show a count', () => {
   expect(buildDot({ ...DEFAULT_CONTROLS, ringMix: 0.5, ringHz: 100 })).toContain('Ring mod  2')
+})
+
+test("the README's diagrams are what the chain draws today — else `pnpm diagram`", async () => {
+  for (const [path, svg] of Object.entries(await renderDiagrams())) {
+    expect(readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8')).toBe(svg)
+  }
 })
