@@ -1,4 +1,5 @@
 import type { ControlKey } from '../../controls'
+import { VOICE_LABELS } from '../../drums'
 import type { Group } from './types'
 
 export const PATCH_GROUPS: Group[] = [
@@ -102,19 +103,10 @@ export const PATCH_GROUPS: Group[] = [
         key: 'trigToKeys',
         label: 'Kit fires keys',
         min: 0,
-        max: 7,
+        max: VOICE_LABELS.length + 1,
         step: 1,
         unit: '',
-        choices: [
-          'off',
-          'kick',
-          'snare',
-          'hat',
-          'clap',
-          'tom',
-          'bell',
-          'any hit',
-        ],
+        choices: ['off', ...VOICE_LABELS, 'any hit'],
         help: 'Bridges one of the kit’s trigger lines onto the keyboard’s gate, so a drum hit strikes a note. It strikes a key voice rather than the melody, so it sounds whether or not the demo song is running.',
       },
       {
@@ -131,20 +123,10 @@ export const PATCH_GROUPS: Group[] = [
         key: 'trigToDrum',
         label: 'Keys fire kit',
         min: 0,
-        max: 8,
+        max: VOICE_LABELS.length + 2,
         step: 1,
         unit: '',
-        choices: [
-          'off',
-          'kick',
-          'snare',
-          'hat',
-          'clap',
-          'tom',
-          'bell',
-          'whole kit',
-          'the step',
-        ],
+        choices: ['off', ...VOICE_LABELS, 'whole kit', 'the step'],
         help: 'The wire back: the keyboard’s gate onto the kit’s trigger line, so every note it strikes hits the kit whether the pattern is running or not. The step hands the grid to your hands — a key fires whichever column the sequencer is on. Solder both wires and the two boxes play each other.',
       },
     ],

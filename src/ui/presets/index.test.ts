@@ -16,7 +16,7 @@ import {
   HOLD_KEYS,
   sliderFor,
 } from '../controls'
-import { GRID_ROWS, hasStep } from '../drums'
+import { GRID_ROWS, hasStep } from '../../drums'
 import {
   applyPreset,
   mutate,

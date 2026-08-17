@@ -1,6 +1,6 @@
 import type { ControlKey, Controls } from '../../controls'
 import { HOLD_KEYS } from '../controls'
-import { GRID_ROWS } from '../drums'
+import { GRID_ROWS } from '../../drums'
 
 // What a morph holds is yours during the trip; this is what is yours over the
 // whole gesture. On top of the levels and contacts you have your hands on, what
@@ -16,7 +16,7 @@ export const YOURS = new Set<ControlKey>([
   ...HOLD_KEYS,
   'sampleLevel',
   'chipTune',
-  ...GRID_ROWS.map(r => r.key),
+  ...GRID_ROWS.flatMap(r => [r.key, r.len]),
 ])
 
 export const keepYours = (

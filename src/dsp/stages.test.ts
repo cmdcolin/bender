@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'
+import { STEPS } from '../drums'
 import { buildBender, buildChain, type BuiltChain } from './build'
+import { CYCLE } from './stages/toyDrum'
 import { DEST } from './modbus'
 import { ToyRail } from './toyRail'
 import { BLOCK, type StereoBlock } from './stage'
@@ -989,4 +991,28 @@ test('every wire in the bay is the same wire', () => {
     ),
   )
   for (const out of rest) expect(out).toEqual(first)
+})
+
+test('the step counter wraps somewhere every pattern length divides', () => {
+  for (let len = 1; len <= STEPS; len++) expect(CYCLE % len).toBe(0)
+})
+
+test('a short row comes round on its own, against the rest of the bar', () => {
+  // One hat on the row's first step, at sixteen steps a second. All sixteen
+  // steps is one strike a second; four steps is one every quarter of that.
+  const hat: Partial<Controls> = { drumHat: stepMask(0), drumDecay: 0.3 }
+  const full = onsets(soloVoice(hat, 1.9))
+  const short = onsets(soloVoice({ ...hat, drumHatLen: 4 }, 1.9))
+  expect(full).toHaveLength(1)
+  expect(short.length).toBeGreaterThanOrEqual(7)
+  expect(short[1]! - short[0]!).toBeCloseTo(0.25 * SR, -3)
+})
+
+test('a row past its length is a row the sequencer never reaches', () => {
+  const kit: Partial<Controls> = { drumHatLen: 4, drumDecay: 0.3 }
+  // Step 7 sits outside the four the row plays, so it sounds like the row
+  // without it — the contact stays closed for when the row gets its steps back.
+  expect(soloVoice({ ...kit, drumHat: stepMask(0, 6) }, 2)).toEqual(
+    soloVoice({ ...kit, drumHat: stepMask(0) }, 2),
+  )
 })

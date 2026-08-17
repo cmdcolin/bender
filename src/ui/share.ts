@@ -5,7 +5,7 @@ import {
   type Controls,
 } from '../controls'
 import { EDITOR_KEYS, sliderFor, snapToStep } from './controls'
-import { asMask } from './drums'
+import { asLen, asMask, LEN_KEYS } from '../drums'
 
 // A board as a link: every control that is off stock, by name, so a link keeps
 // working when the param table grows or its order changes. Names cost more
@@ -47,8 +47,13 @@ export function decodeControls(encoded: string): Partial<Controls> {
     const raw = part.slice(at + 1).trim()
     const v = Number(raw)
     if (raw === '' || !Number.isFinite(v)) continue
-    // Step masks have no slider to snap to — they are sixteen bits or nothing.
-    out[key] = EDITOR_KEYS.has(key) ? asMask(v) : snapToStep(sliderFor(key), v)
+    // The grid's controls have no slider to snap to: a pattern is sixteen bits
+    // or nothing, and a row's length is a whole number of steps it can play.
+    out[key] = LEN_KEYS.has(key)
+      ? asLen(v)
+      : EDITOR_KEYS.has(key)
+        ? asMask(v)
+        : snapToStep(sliderFor(key), v)
   }
   return out
 }

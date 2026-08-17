@@ -34,6 +34,17 @@ export const DEFAULT_CONTROLS = {
   drumBell: 0,
   drumAccent: 0,
 
+  // How many of those steps each row plays before it comes round again. All
+  // sixteen is the machine as it left the factory; anything else is polymeter —
+  // five on the hat against sixteen on the kick takes a minute to line back up.
+  drumKickLen: 16,
+  drumSnareLen: 16,
+  drumHatLen: 16,
+  drumClapLen: 16,
+  drumTomLen: 16,
+  drumBellLen: 16,
+  drumAccentLen: 16,
+
   oscLevel: 0,
   oscAHz: 220,
   oscBHz: 55,

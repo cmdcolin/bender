@@ -40,6 +40,14 @@ export const PARAM_DEFS = [
   ['drumBell', 'step'],
   ['drumAccent', 'step'],
 
+  ['drumKickLen', 'step'],
+  ['drumSnareLen', 'step'],
+  ['drumHatLen', 'step'],
+  ['drumClapLen', 'step'],
+  ['drumTomLen', 'step'],
+  ['drumBellLen', 'step'],
+  ['drumAccentLen', 'step'],
+
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],
   ['oscBHz', 'slew'],

@@ -1,5 +1,5 @@
 import { ROM_NAMES } from '../../dsp/stages/roms'
-import { GRID_ROWS } from '../drums'
+import { GRID_ROWS } from '../../drums'
 import type { Group } from './types'
 
 export const SOURCE_GROUPS: Group[] = [
@@ -115,7 +115,10 @@ export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Toy drums',
     place: 'Sources',
-    editor: { kind: 'drums', keys: GRID_ROWS.map(r => r.key) },
+    editor: {
+      kind: 'drums',
+      keys: GRID_ROWS.flatMap(r => [r.key, r.len]),
+    },
     sliders: [
       {
         key: 'drumLevel',
@@ -170,7 +173,10 @@ export const SOURCE_GROUPS: Group[] = [
         label: 'Bit depth',
         min: 2,
         max: 16,
-        step: 0.1,
+        // A DAC has a whole number of bits. The crusher's own word length is
+        // fractional on purpose — it is a knob sweeping a step size — but this
+        // one is a part the kit was built with.
+        step: 1,
         unit: 'bit',
         help: 'Word length of the one cheap DAC the whole kit shares. Stock is 7 — wind it down and the tails turn to gravel before the hits do.',
       },

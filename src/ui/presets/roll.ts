@@ -13,7 +13,13 @@ import {
   sliderFor,
   snapToStep,
 } from '../controls'
-import { type DrumStepKey, STEPS, stepBit } from '../drums'
+import {
+  type DrumLenKey,
+  type DrumStepKey,
+  GRID_ROWS,
+  STEPS,
+  stepBit,
+} from '../../drums'
 import { fromPos, toPos } from '../slider-scale'
 import { applyPreset } from './apply'
 import { inTime } from './quantize'
@@ -176,6 +182,23 @@ function rollPattern(rand: () => number): Record<DrumStepKey, number> {
   }
 }
 
+// One row running against the others, about half the time. A fresh length on
+// every row is six patterns none of which is the one you hear, so the kick keeps
+// its bar and one of the trimmings drifts against it — and the lengths that read
+// as polymeter rather than as a dropped step are the ones sixteen doesn't divide.
+const ODD_LENGTHS = [3, 5, 6, 7, 9, 11, 13, 14, 15]
+const DRIFTERS = ['drumHat', 'drumBell', 'drumTom', 'drumAccent'] as const
+
+function rollLengths(rand: () => number): Record<DrumLenKey, number> {
+  const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
+  const lens = Object.fromEntries(GRID_ROWS.map(r => [r.len, STEPS])) as Record<
+    DrumLenKey,
+    number
+  >
+  if (rand() < 0.45) lens[`${pick(DRIFTERS)}Len`] = pick(ODD_LENGTHS)
+  return lens
+}
+
 // Roll one stage of the board and leave every other stage alone. The kit is the
 // one stage whose pattern is part of what it is, so its own roll writes the grid
 // too — the general rolls never touch it, but this is the button that names it.
@@ -194,7 +217,7 @@ export function rollGroup(
   const mix = group.sliders.find(s => s.label === 'Mix')
   if (mix && next[mix.key] === mix.min) next[mix.key] = audible(mix, rand)
   if (group.editor?.kind !== 'drums') return next
-  return { ...next, ...rollPattern(rand) }
+  return { ...next, ...rollPattern(rand), ...rollLengths(rand) }
 }
 
 /** Every control the stage owns, back where it booted. */

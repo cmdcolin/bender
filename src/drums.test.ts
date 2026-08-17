@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { DEFAULT_CONTROLS } from '../controls'
+import { DEFAULT_CONTROLS } from './controls'
 import {
   DRUM_ROMS,
   GRID_ROWS,

@@ -1,8 +1,7 @@
+import { N_DRUM_VOICES } from '../drums'
 import { BLOCK } from './stage'
 
-/** The kit's voices, in the bit order of a step — the order of the rows in the
-    grid, and of the choices on anything that names one. */
-export const N_DRUM_VOICES = 6
+export { N_DRUM_VOICES }
 
 /** What a bridged trigger line is clipped to: nothing, one voice, or any hit at
     all. The choices run off, kick…bell, any — so the last one is the whole kit. */

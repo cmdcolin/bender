@@ -37,8 +37,9 @@ export interface MeterMsg {
   kind: 'meter'
   peak: number
   scope: Float32Array
-  /** Which step the drum sequencer is on, for the grid's playhead. */
-  step: number
+  /** Steps the drum sequencer has clocked, for the grid's playheads: each row
+      is this modulo its own length. */
+  tick: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number
 }

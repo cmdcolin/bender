@@ -23,7 +23,7 @@ const REC_MAX_S = 600 // a take stops itself at ten minutes
 export interface Meter {
   peak: number
   scope: Float32Array
-  step: number
+  tick: number
   duck: number
 }
 
@@ -58,7 +58,7 @@ export class Engine {
     createStore<Meter>({
       peak: 0,
       scope: new Float32Array(512),
-      step: 0,
+      tick: 0,
       duck: 0,
     })
   readonly running = createStore(false)
@@ -127,7 +127,7 @@ export class Engine {
         this.meter.set({
           peak: msg.peak,
           scope: msg.scope,
-          step: msg.step,
+          tick: msg.tick,
           duck: msg.duck,
         })
       else if (msg.kind === 'rec') this.onRecChunk(msg)

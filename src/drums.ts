@@ -1,51 +1,86 @@
-import type { ControlKey } from '../controls'
+import type { ControlKey } from './controls'
 
-// The drum machine's plugboard: one sixteen-bit mask per voice, plus an accent
-// row that decides how hard a step hits rather than what plays on it. Step 1
-// sits in the high bit, so every mask literal in this file and in
+// The drum machine's vocabulary, in one place: what the six voices are, in the
+// bit order of a step; the controls each row's pattern and length live in; and
+// the factory patterns. The panel draws its grid from this table, the trigger
+// patch and the cross-patch name their choices off it, and the DSP reads its
+// param order from it — the order of the rows here *is* the bit order of a step.
+//
+// Step 1 sits in the high bit, so every mask literal in this file and in
 // DEFAULT_CONTROLS reads left to right exactly like the grid on screen.
 
 export const STEPS = 16
 
-export const GRID_ROWS = [
+export const DRUM_VOICES = [
   {
     key: 'drumKick',
+    len: 'drumKickLen',
     label: 'kick',
     help: 'Sine thump, pitch falling through its own envelope.',
   },
-  { key: 'drumSnare', label: 'snare', help: 'Filtered noise crack.' },
+  {
+    key: 'drumSnare',
+    len: 'drumSnareLen',
+    label: 'snare',
+    help: 'Filtered noise crack.',
+  },
   {
     key: 'drumHat',
+    len: 'drumHatLen',
     label: 'hat',
     help: 'The same noise, gated short and bright.',
   },
   {
     key: 'drumClap',
+    len: 'drumClapLen',
     label: 'clap',
     help: 'Three noise bursts nine milliseconds apart, then the tail.',
   },
   {
     key: 'drumTom',
+    len: 'drumTomLen',
     label: 'tom',
     help: 'A slower, higher kick — the fill voice.',
   },
   {
     key: 'drumBell',
+    len: 'drumBellLen',
     label: 'bell',
     help: 'Two detuned squares through a notch: the cowbell.',
   },
-  {
-    key: 'drumAccent',
-    label: 'accent',
-    help: 'Not a voice — whatever plays on this step hits harder.',
-  },
-] as const satisfies readonly { key: ControlKey; label: string; help: string }[]
+] as const satisfies readonly {
+  key: ControlKey
+  len: ControlKey
+  label: string
+  help: string
+}[]
 
-export type DrumStepKey = (typeof GRID_ROWS)[number]['key']
+// Not a voice: it decides how hard whatever plays on a step lands. It carries a
+// length of its own all the same, so the accents can run against the voices.
+const ACCENT_ROW = {
+  key: 'drumAccent',
+  len: 'drumAccentLen',
+  label: 'accent',
+  help: 'Not a voice — whatever plays on this step hits harder.',
+} as const
+
+export const GRID_ROWS = [...DRUM_VOICES, ACCENT_ROW] as const
+
+export const N_DRUM_VOICES = DRUM_VOICES.length
+export const VOICE_LABELS = DRUM_VOICES.map(v => v.label)
+
+export type DrumRow = (typeof GRID_ROWS)[number]
+export type DrumStepKey = DrumRow['key']
+export type DrumLenKey = DrumRow['len']
+
+export const LEN_KEYS = new Set<ControlKey>(GRID_ROWS.map(r => r.len))
 
 /** Sixteen bits and nothing else, whatever a link or a stray float carried. */
 export const asMask = (v: number) =>
   Math.min(Math.max(Math.round(v), 0), (1 << STEPS) - 1)
+
+/** A length is a whole number of steps, and a row of no steps is not a row. */
+export const asLen = (v: number) => Math.min(Math.max(Math.round(v), 1), STEPS)
 
 export const stepBit = (step: number) => 1 << (STEPS - 1 - step)
 export const hasStep = (mask: number, step: number) =>

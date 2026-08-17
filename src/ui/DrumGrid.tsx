@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
 import {
+  asLen,
   DRUM_ROMS,
   GRID_ROWS,
   STEPS,
@@ -9,16 +10,17 @@ import {
   romMatching,
   toggleStep,
   type DrumRom,
+  type DrumRow,
   type DrumStepKey,
-} from './drums'
+} from '../drums'
 import styles from './DrumGrid.module.css'
 
-// The playhead only moves when the step does, so the grid redraws sixteen times
-// a bar rather than at the meter's rate.
-function usePlayStep(): number {
+// The playhead only moves when a step does, so the grid redraws at the step rate
+// rather than at the meter's.
+function usePlayTick(): number {
   return useSyncExternalStore(
     engine.meter.subscribe,
-    () => engine.meter.get().step,
+    () => engine.meter.get().tick,
   )
 }
 
@@ -26,10 +28,14 @@ function usePlayStep(): number {
 // the accent row underneath deciding how hard each column lands. The ROM
 // buttons write into the same masks, so a factory pattern is a starting point
 // you can edit rather than a mode you are stuck in.
+//
+// Each row carries its own length, so the rows need not come round together.
+// Shift-click a step to end a row there; the badge on the right says where it
+// ends, and puts the row back to sixteen.
 export function DrumGrid() {
   const controls = useStoreValue(engine.controls)
   const playing = useStoreValue(engine.drumsPlaying)
-  const playStep = usePlayStep()
+  const tick = usePlayTick()
   const live = playing && controls.drumLevel > 0
   const masks = Object.fromEntries(
     GRID_ROWS.map(r => [r.key, controls[r.key]]),
@@ -55,34 +61,7 @@ export function DrumGrid() {
 
       <div className={styles.grid}>
         {GRID_ROWS.map(row => (
-          <div key={row.key} className={styles.row} title={row.help}>
-            <span className={controls[row.key] ? styles.nameOn : styles.name}>
-              {row.label}
-            </span>
-            <div className={styles.cells}>
-              {Array.from({ length: STEPS }, (_, s) => {
-                const on = hasStep(controls[row.key], s)
-                const beat = s % 4 === 0
-                const under = live && s === playStep
-                return (
-                  <button
-                    key={s}
-                    className={cellClass(
-                      row.key === 'drumAccent',
-                      on,
-                      beat,
-                      under,
-                    )}
-                    aria-label={`${row.label} step ${s + 1}`}
-                    aria-pressed={on}
-                    onClick={() =>
-                      engine.set(row.key, toggleStep(controls[row.key], s))
-                    }
-                  />
-                )
-              })}
-            </div>
-          </div>
+          <Row key={row.key} row={row} tick={live ? tick : null} />
         ))}
       </div>
 
@@ -105,20 +84,75 @@ export function DrumGrid() {
   )
 }
 
-function cellClass(
-  accent: boolean,
-  on: boolean,
-  beat: boolean,
-  under: boolean,
-): string {
-  const base = accent
-    ? on
+function Row({ row, tick }: { row: DrumRow; tick: number | null }) {
+  const controls = useStoreValue(engine.controls)
+  const mask = controls[row.key]
+  const len = asLen(controls[row.len])
+  const accent = row.key === 'drumAccent'
+  // Each row's own playhead: the counter is steps clocked, so a short row is
+  // round again while the long ones are still in the bar.
+  const under = tick === null ? -1 : tick % len
+
+  return (
+    <div className={styles.row} title={row.help}>
+      <span className={mask ? styles.nameOn : styles.name}>{row.label}</span>
+      <div className={styles.cells}>
+        {Array.from({ length: STEPS }, (_, s) => (
+          <button
+            key={s}
+            className={cellClass({
+              accent,
+              on: hasStep(mask, s),
+              beat: s % 4 === 0,
+              under: s === under,
+              past: s >= len,
+            })}
+            aria-label={`${row.label} step ${s + 1}`}
+            aria-pressed={hasStep(mask, s)}
+            title={`shift-click to bring the ${row.label} row round after step ${s + 1}`}
+            onClick={e =>
+              e.shiftKey
+                ? engine.set(row.len, s + 1)
+                : engine.set(row.key, toggleStep(mask, s))
+            }
+          />
+        ))}
+      </div>
+      <button
+        className={len === STEPS ? styles.len : styles.lenShort}
+        onClick={() => engine.set(row.len, STEPS)}
+        title={
+          len === STEPS
+            ? `the ${row.label} row runs all sixteen steps — shift-click a step to bring it round sooner and it drifts against the rest`
+            : `the ${row.label} row comes round every ${len} steps — press for all sixteen back`
+        }
+      >
+        {len}
+      </button>
+    </div>
+  )
+}
+
+function cellClass(s: {
+  accent: boolean
+  on: boolean
+  beat: boolean
+  under: boolean
+  past: boolean
+}): string {
+  const base = s.accent
+    ? s.on
       ? styles.accentOn
       : styles.accent
-    : on
+    : s.on
       ? styles.cellOn
       : styles.cell
-  return [base, beat && styles.beat, under && styles.under]
+  return [
+    base,
+    s.beat && styles.beat,
+    s.under && styles.under,
+    s.past && styles.past,
+  ]
     .filter(Boolean)
     .join(' ')
 }

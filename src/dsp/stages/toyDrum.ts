@@ -1,3 +1,4 @@
+import { DRUM_VOICES, GRID_ROWS, STEPS } from '../../drums'
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
@@ -8,12 +9,11 @@ import { Transient } from '../util/follower'
 import { mulberry32, type Rng } from '../util/rng'
 
 const TAU = 2 * Math.PI
-const STEPS = 16
 const ACCENT_GAIN = 1.7
 
 // Voice order is the bit order of a step, and the order of the rows in the
-// panel's grid. The pattern lives in one sixteen-bit mask per voice, step 1 in
-// the high bit.
+// panel's grid — both come off the one table in drums.ts. The pattern lives in
+// one sixteen-bit mask per voice, step 1 in the high bit.
 const KICK = 0
 const SNARE = 1
 const HAT = 2
@@ -22,14 +22,14 @@ const TOM = 4
 const BELL = 5
 const N_VOICES = N_DRUM_VOICES
 
-const VOICE_PARAM = [
-  IDX.drumKick,
-  IDX.drumSnare,
-  IDX.drumHat,
-  IDX.drumClap,
-  IDX.drumTom,
-  IDX.drumBell,
-]
+const VOICE_PARAM = DRUM_VOICES.map(v => IDX[v.key])
+const LEN_PARAM = GRID_ROWS.map(r => IDX[r.len])
+const ACCENT_ROW = GRID_ROWS.length - 1
+
+// Every pattern length divides this, so the counter can wrap without a row
+// jumping mid-bar: it is the least common multiple of 1 through 16. At the
+// fastest tempo the panel offers, one lap of it is over an hour.
+export const CYCLE = 720720
 
 // Which envelope each amplifier leans across to, per drumCross choice. A voice
 // wired to itself is a voice nobody bridged.
@@ -44,9 +44,16 @@ const CROSS_WIRING: readonly number[][] = [
 
 export class ToyDrum implements Stage {
   label = 'toyDrum'
-  /** The step the sequencer is on; the panel draws its playhead from this. */
-  step = 0
+  /**
+   * Steps clocked since the machine started, not the column it is on: with a
+   * length per row there is no one column. Each row's playhead is this counter
+   * modulo its own length, which is how the panel draws them and how the
+   * sequencer reads them.
+   */
+  tick = 0
   private stepClock = 0
+  /** Each row's length this block, clamped to something a modulo can use. */
+  private lens = new Uint8Array(GRID_ROWS.length).fill(STEPS)
   private retrigPhase = 0
   private env = new Float32Array(N_VOICES)
   private amp = new Float32Array(N_VOICES)
@@ -84,13 +91,23 @@ export class ToyDrum implements Stage {
     return on
   }
 
-  private bitsAt(p: Float32Array, step: number): number {
+  // Which voices this tick names. Each row reads its own column, so a row five
+  // steps long is round again while the kick is still in the first bar — the
+  // pattern drifts against itself for as long as the two lengths take to line
+  // back up, which on a five against sixteen is eighty steps.
+  private bitsAt(p: Float32Array, tick: number): number {
     let bits = 0
     for (let v = 0; v < N_VOICES; v++) {
+      const step = tick % this.lens[v]!
       if ((Math.round(p[VOICE_PARAM[v]!]!) >> (STEPS - 1 - step)) & 1)
         bits |= 1 << v
     }
     return bits
+  }
+
+  private accentAt(p: Float32Array, tick: number): boolean {
+    const step = tick % this.lens[ACCENT_ROW]!
+    return ((Math.round(p[IDX.drumAccent]!) >> (STEPS - 1 - step)) & 1) === 1
   }
 
   // The trigger line: every voice the step names fires at once, at the step's
@@ -115,18 +132,10 @@ export class ToyDrum implements Stage {
     ctx.trig.drumFired(i, bits, gain)
   }
 
-  private fire(
-    p: Float32Array,
-    accent: number,
-    ctx: Ctx,
-    i: number,
-    fallback = false,
-  ) {
-    const bits = fallback
-      ? this.bitsAt(p, this.step) || 1
-      : this.bitsAt(p, this.step)
-    const hard = (accent >> (STEPS - 1 - this.step)) & 1
-    this.hit(bits, hard ? ACCENT_GAIN : 1, ctx, i)
+  private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
+    const named = this.bitsAt(p, this.tick)
+    const bits = fallback ? named || 1 : named
+    this.hit(bits, this.accentAt(p, this.tick) ? ACCENT_GAIN : 1, ctx, i)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -137,7 +146,6 @@ export class ToyDrum implements Stage {
     const baseTune = p[IDX.drumTune]!
     const modTune = ctx.mod.read(DEST.drumTune)
     const decay = Math.max(p[IDX.drumDecay]!, 0.05)
-    const accent = Math.round(p[IDX.drumAccent]!)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = p[IDX.micPatch] === 5
@@ -149,9 +157,15 @@ export class ToyDrum implements Stage {
     // The kit shares one cheap DAC; the panel's Bit depth is its word length.
     const q = Math.pow(2, Math.max(p[IDX.drumBits]!, 1) - 1)
 
+    // Every row's length, read once a block: a length that moved mid-block would
+    // move a playhead the panel has already drawn.
+    for (let r = 0; r < this.lens.length; r++) {
+      this.lens[r] = Math.min(Math.max(Math.round(p[LEN_PARAM[r]!]!), 1), STEPS)
+    }
+
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
-      this.step = 0
+      this.tick = 0
       this.stepClock = 0
     }
 
@@ -170,12 +184,12 @@ export class ToyDrum implements Stage {
       if (this.transport.drums) {
         // Swing holds the offbeat back and takes it off the step after, so a
         // pair still spans two steps and the tempo is what the knob says.
-        const span = this.step % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
+        const span = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
         this.stepClock += stepHz / this.sr
         if (this.stepClock >= span) {
           this.stepClock -= span
-          this.step = (this.step + 1) % STEPS
-          this.fire(p, accent, ctx, i)
+          this.tick = (this.tick + 1) % CYCLE
+          this.fire(p, ctx, i)
         }
       }
       // the bend: hammer the current step's trigger line at audio rate
@@ -186,18 +200,18 @@ export class ToyDrum implements Stage {
         this.retrigPhase += retrigHz / this.sr
         if (this.retrigPhase >= 1) {
           this.retrigPhase -= 1
-          this.fire(p, accent, ctx, i, true)
+          this.fire(p, ctx, i, true)
         }
       }
       // mic soldered onto the trigger line: clap at it and the kit fires
       if (micTrig && this.micTrig.process(ctx.mic[i]!, 0.05)) {
-        this.fire(p, accent, ctx, i, true)
+        this.fire(p, ctx, i, true)
       }
       // The keyboard's gate, reaching across: every note the chip strikes hits
       // the kit, whether the pattern is running or not. 'the step' hands the
       // grid to your hands — a key plays whatever column the sequencer is on.
       if (keyTrig > 0 && ctx.trig.key[i]! > 0) {
-        if (keyTrig === STEP_CHOICE) this.fire(p, accent, ctx, i, true)
+        if (keyTrig === STEP_CHOICE) this.fire(p, ctx, i, true)
         else this.hit(voiceMask(keyTrig), 1, ctx, i)
       }
 

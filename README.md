@@ -81,6 +81,14 @@ kit runs on the same rail and the same divider as the keyboard, so starving the
 toy takes the drums with it and flat batteries drag the tempo down with the
 tune.
 
+Each row also has its own length. Shift-click a step to bring that row round
+after it — the badge on the right says where it ends, and pressing the badge
+gives the row all sixteen back. Five on the hat against sixteen on the kick is
+polymeter: the two line back up every eighty steps, so the pattern takes the
+best part of a minute to repeat and never sounds like it is looping. The rows
+share one clock, so nothing drifts out of time; what drifts is which steps land
+together.
+
 ## The trigger patch
 
 The rail is what the two boxes share by accident. The trigger patch is what you

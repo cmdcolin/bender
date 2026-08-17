@@ -1,5 +1,5 @@
 import type { Controls } from '../../controls'
-import { DRUM_ROMS } from '../drums'
+import { DRUM_ROMS } from '../../drums'
 
 export interface PresetDef {
   name: string

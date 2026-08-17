@@ -41,7 +41,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 3.2rem 1fr;
+  grid-template-columns: 3.2rem 1fr 1.3rem;
   align-items: center;
   gap: 6px;
 }
@@ -105,6 +105,35 @@
 
 .under {
   box-shadow: inset 0 0 0 1px var(--fg);
+}
+
+/* Past the row's own length: still a contact you can close, but the sequencer
+   has come round before it gets here. */
+.past {
+  opacity: 0.3;
+}
+
+/* How many steps the row plays. It reads as a number rather than a control
+   because most rows never leave sixteen, and the one that has moved is the one
+   worth spotting. */
+.len,
+.lenShort {
+  font-size: var(--fs-xs);
+  font-family: var(--mono);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--fg4);
+  cursor: pointer;
+}
+
+.len:hover,
+.lenShort:hover {
+  color: var(--fg);
+}
+
+.lenShort {
+  color: var(--accent2);
 }
 
 .silent {
