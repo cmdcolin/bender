@@ -1,0 +1,49 @@
+.section {
+  border-bottom: 1px solid var(--border-quiet);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 2px;
+  background: none;
+  border: none;
+  color: var(--fg2);
+  font-size: var(--fs-md);
+  cursor: pointer;
+  text-align: left;
+}
+
+.header:hover .title {
+  color: var(--fg);
+}
+
+.arrow {
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+  width: 10px;
+}
+
+.title {
+  flex: 1;
+}
+
+.count {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.body {
+  padding: 2px 2px 8px 16px;
+}
+
+.stage {
+  margin: 14px 0 2px;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg4);
+}

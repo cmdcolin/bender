@@ -1,0 +1,33 @@
+.map {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-quiet);
+}
+
+.stage {
+  font-size: var(--fs-xs);
+  padding: 3px 8px;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.stage:hover {
+  border-color: var(--border-hover);
+  color: var(--fg);
+}
+
+.count {
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
+.arrow {
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+}
