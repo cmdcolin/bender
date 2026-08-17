@@ -228,6 +228,18 @@ const crossings = (x: Float32Array, from: number, to: number) => {
   return n
 }
 
+// The same count, over the time the board spends making a sound rather than the
+// time it spends running. Pitch without the tempo folded into it.
+const soundingPitch = (x: Float32Array, from: number, to: number) => {
+  let n = 0
+  let live = 0
+  for (let i = from * SR + 1; i < to * SR; i++) {
+    if (Math.abs(x[i]!) > 0.005) live++
+    if (x[i - 1]! <= 0 && x[i]! > 0) n++
+  }
+  return live > 0 ? (n * SR) / live : 0
+}
+
 // Rendered on a board sagging steadily rather than rebooting, so what is being
 // measured is the drift and not the reboot timing. Heat takes about forty seconds
 // to climb and two minutes to fall — how far it goes is held by the Thermal and
@@ -242,11 +254,17 @@ test('a hot board is not the board that booted', () => {
   const hot = render({ ...look, heatAmt: 1 }, 20)
   const cold = render({ ...look, heatAmt: 0 }, 20)
   const early = [hot, cold].map(x => crossings(x, 1, 4))
-  const late = [hot, cold].map(x => crossings(x, 17, 20))
-  // Barely apart at the start, and the hot one running flat by the end: warming
-  // up costs it rail, and the rail is its pitch and its tempo both.
+  // Barely apart at the start.
   expect(Math.abs(early[0]! - early[1]!)).toBeLessThan(early[1]! * 0.015)
-  expect(late[0]!).toBeLessThan(late[1]! * 0.98)
+
+  // ...and running flatter by the end. Crossings per second of audio that is
+  // actually sounding, rather than per second of tape: the rail is the tempo as
+  // well as the pitch, so a hot board holds each note longer as well as pitching
+  // it lower, and a straight count rewards it for the sustain it gained while
+  // punishing it for the pitch it lost. Dividing by the time it spends audible
+  // asks only about the pitch.
+  const sounding = [hot, cold].map(x => soundingPitch(x, 15, 20))
+  expect(sounding[0]!).toBeLessThan(sounding[1]! * 0.98)
 })
 
 test('clustered faults change when things happen, not whether', () => {

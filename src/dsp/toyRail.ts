@@ -84,6 +84,20 @@ const CLIP_HOLD_SPAN = 0.18
 const CLOCK_DRAG_PULL = 40
 const CLOCK_DRAG_DROP = 400
 
+// The decoupling on the oscillator, as a time constant.
+//
+// One RC oscillator clocks the whole chip. The pitch is that oscillator
+// divided; the tempo is the same oscillator divided further; the envelopes are
+// counted off it too. They cannot come apart — drop the pitch a fifth and the
+// tune slows by a fifth, because there is nothing else in there keeping time.
+//
+// What can differ is how fast each end sees the rail move. The timing node has
+// its own decoupling, so a single note's current is averaged away before it
+// reaches the timebase — which is why a chord does not make the tempo stutter.
+// A sag that lasts longer than this is not averaged away by anything, and the
+// whole toy slows down with it.
+const CLOCK_DECOUPLE = 0.12
+
 // The shared toy supply rail. Output current drains it in proportion to starve
 // and to how flat the cells are; when it droops past the watchdog threshold the
 // chip browns out, reboots after a boot delay, and everything powered from it
@@ -115,6 +129,9 @@ export class ToyRail {
   private slow = 1
   private clipRemaining = 0
   private drag = 0
+  // The rail as the timebase sees it, behind its own decoupling.
+  private clockV = 1
+  private readonly decouple: number
   private thresholdWalk = new Drunk()
   private clipFault: Burst
   private rng: Rng
@@ -125,6 +142,7 @@ export class ToyRail {
   ) {
     this.rng = mulberry32(seed)
     this.clipFault = new Burst(sr, 0.8)
+    this.decouple = 1 - Math.exp(-1 / (CLOCK_DECOUPLE * sr))
   }
 
   // What the board is, as opposed to what it is being asked to do. Flat cells
@@ -153,6 +171,14 @@ export class ToyRail {
   // highest impedance on the board and draws essentially none. So the further
   // the clip moves onto the clock, the less of a choke it is.
   tick(load: number, starve: number, extra: number, clipHz = 0, clipClock = 0) {
+    // First, because the timebase reads the rail through its own decoupling and
+    // every path out of this method leaves the voltage somewhere different — a
+    // latch, a boot, an ordinary sample. A tick is a tick as far as the
+    // oscillator is concerned.
+    this.clockV = flushDenormal(
+      this.clockV + this.decouple * (this.v - this.clockV),
+    )
+
     this.clipFault.step()
     if (
       clipHz > 0 &&
@@ -287,11 +313,15 @@ export class ToyRail {
     return 0.55 + 0.45 * this.v
   }
 
-  // The chip's RC clock tracks the cells rather than the instantaneous sag, so
-  // a note's own current shows up as pitch and flat batteries show up as tempo:
-  // the sequencer, the envelopes and the drum machine all crawl together.
+  // The same rail the pitch is reading, behind the timing node's decoupling —
+  // not the cells, which is what this used to be. A chip with one oscillator in
+  // it cannot dive in pitch and hold its tempo: both are that oscillator, and a
+  // starve deep enough to drop the tune an octave halves the tempo on the way
+  // past. Flat cells still show up here, because flat cells are a rail that
+  // sits low; what has changed is that a sag which lasts now does too, and the
+  // sequencer, the envelopes and the drum machine crawl with the note.
   get clockFactor() {
-    return 0.35 + 0.65 * this.open
+    return 0.35 + 0.65 * this.clockV
   }
 
   get ampFactor() {
@@ -322,6 +352,7 @@ export class ToyRail {
     this.latchRemaining = 0
     this.clipRemaining = 0
     this.drag = 0
+    this.clockV = 1
     this.reported = 0
     this.stress = 0
     this.thresholdWalk.reset()

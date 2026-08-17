@@ -99,7 +99,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip — the tune keeps restarting.',
+        help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip — the tune keeps restarting. One oscillator clocks the whole chip, so a sag that lasts takes the tempo down with the pitch: the tune slurs and slows together, the way a tape does. A dip inside a single note is too quick for the timing pin to notice, which is why a chord sags without the beat stumbling.',
       },
       {
         key: 'chipBattery',
@@ -126,7 +126,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 40,
         step: 0.1,
         unit: 'Hz',
-        help: 'Bare metal dragged across the pads, and how often it finds one. Each touch shorts the rail to the floor and lets go, so the supply falls off a cliff and climbs back at whatever rate the reservoir allows — the fastest way to the dive, and the one that repeats. It is a hand holding a paperclip rather than a switch: the rate is the average, the fault cluster decides how much it bunches.',
+        help: 'Bare metal dragged across the pads, and how often it finds one. Each touch chokes hard for a few tens of milliseconds and lets go, and what it chokes leaves at whatever rate the Reservoir allows — so this is the dive that repeats without you doing anything. A choke rather than a short: crash the rail to ground instead and the pitch is simply gone and then simply back, two steps with the dive missing. It is a hand holding a paperclip rather than a switch, so the rate is an average and the fault cluster decides how much it bunches.',
       },
       {
         key: 'chipClipClock',

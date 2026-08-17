@@ -115,10 +115,17 @@ test('the keys play under the chip’s own bottom note', () => {
   expect(bin(note(-12), 220)).toBeLessThan(0.5 * bin(note(-12), 110))
 })
 
-test('flat batteries run the tune low, and it keeps running', () => {
+test('flat batteries run the tune low and late, and it keeps running', () => {
+  // Pitch off a held key rather than off the tune. One oscillator does both
+  // jobs, so flat cells slow the sequencer as well as dropping the note — and a
+  // pitch read across a fixed window of a tune that is no longer keeping the
+  // same time is reading two different bars, not two different pitches.
+  const held = (o: Partial<Controls>) =>
+    pitchHz(playKeys({ ...CHIP_ONLY, chipLevel: 1, ...o }, c => c.noteOn(0), 1))
+  expect(held({ chipBattery: 0.5 })).toBeLessThan(held({}) * 0.9)
+
   const fresh = render({ ...CHIP_ONLY, chipLevel: 1 }, 3)
   const flat = render({ ...CHIP_ONLY, chipLevel: 1, chipBattery: 0.5 }, 3)
-  expect(pitchHz(flat)).toBeLessThan(pitchHz(fresh) * 0.9)
   // Half-dead cells drop the pitch; they don't stop the toy playing.
   expect(rms(flat)).toBeGreaterThan(rms(fresh) * 0.5)
 })

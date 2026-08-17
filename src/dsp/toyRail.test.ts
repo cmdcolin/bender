@@ -151,6 +151,35 @@ test('the bend comes out of the speaker as a pitch that travels', () => {
   expect(stock[0]! / settled(stock)).toBeCloseTo(1, 1)
 })
 
+test('pitch and tempo are one oscillator, and cannot come apart', () => {
+  const rail = new ToyRail(SR)
+  const settle = (starve: number) => {
+    const r = new ToyRail(SR)
+    for (let i = 0; i < 2 * SR; i++) r.tick(0.12, starve, 0)
+    return r
+  }
+  // A rail that has been down for a while takes the timebase with it. Anything
+  // else would need a second oscillator, and there is only the one in there.
+  const easy = settle(0.1)
+  const hard = settle(0.5)
+  expect(hard.pitchFactor).toBeLessThan(easy.pitchFactor)
+  expect(hard.clockFactor).toBeLessThan(easy.clockFactor)
+
+  // A single note's own current is a different matter: the timing node has its
+  // own decoupling, so a dip shorter than that barely reaches the timebase —
+  // which is why a chord dips the pitch without making the tempo stutter. Not
+  // nothing, because the decoupling is one small capacitor and not a wall, but
+  // a fraction of what the same dip does to the note.
+  for (let i = 0; i < 0.4 * SR; i++) rail.tick(0, 0.3, 0)
+  const wasClock = rail.clockFactor
+  const wasPitch = rail.pitchFactor
+  for (let i = 0; i < 0.01 * SR; i++) rail.tick(0.9, 0.3, 0)
+  const pitchMoved = (wasPitch - rail.pitchFactor) / wasPitch
+  const clockMoved = (wasClock - rail.clockFactor) / wasClock
+  expect(pitchMoved).toBeGreaterThan(0.05)
+  expect(clockMoved).toBeLessThan(pitchMoved * 0.5)
+})
+
 test('the clock bend reaches octaves the supply cannot', () => {
   const span = (o: Partial<Controls>) => {
     const v = pitchWalk(o).filter(x => x > 1)

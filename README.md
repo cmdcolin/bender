@@ -128,15 +128,22 @@ The bends that matter:
 
 - **Starve** sags the shared toy supply: pitch dives, notes collapse, and past
   the brownout threshold the watchdog reboots the chip — the tune keeps
-  restarting. The pot doing the starving is a resistor to ground, so it goes on
-  drawing after the chip has gone quiet; a quarter of the way up is a toy
-  running flat and diving, and three quarters restarts the tune several times a
-  second. Where the watchdog trips drifts with heat and wanders on its own, the
-  reset line holds for somewhere between 40 and 130 ms, and the rail has climbed
-  somewhere different by the time it lets go — so the reboots never land on a
-  metronome. The lamp beside the keys is that rail in volts, 4.5 V on fresh
-  cells, and it says **reboot** when the watchdog cycles the chip: everything
-  else in this list is that number moving.
+  restarting. There is one RC oscillator in a toy like this, and everything is
+  that oscillator divided: the note, the sequencer, the envelopes. So they
+  cannot come apart. A sag that lasts drops the tempo by whatever it drops the
+  pitch, and the tune slurs and slows together the way a tape does. What can
+  differ is only how fast each end sees the rail move — the timing pin has its
+  own decoupling, so a dip inside a single note is averaged away before it gets
+  there, which is why a chord sags the pitch without making the beat stumble.
+  The pot doing the starving is a resistor to ground, so it goes on drawing
+  after the chip has gone quiet; a quarter of the way up is a toy running flat
+  and diving, and three quarters restarts the tune several times a second. Where
+  the watchdog trips drifts with heat and wanders on its own, the reset line
+  holds for somewhere between 40 and 130 ms, and the rail has climbed somewhere
+  different by the time it lets go — so the reboots never land on a metronome.
+  The lamp beside the keys is that rail in volts, 4.5 V on fresh cells, and it
+  says **reboot** when the watchdog cycles the chip: everything else in this
+  list is that number moving.
 - **Reservoir** is how much of the board's own capacitance sits behind whatever
   Starve is pulling on, and it is the difference between a starve you land on
   and one you hear travel. Across the supply pins there is a tenth of a
