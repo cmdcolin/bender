@@ -42,41 +42,6 @@
   padding: 2px 2px 8px;
 }
 
-/* The stages no wire reaches, under the drawing rather than in it. */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding: 8px 0;
-}
-
-.chip,
-.chipOn {
-  font-size: var(--fs-xs);
-  padding: 3px 9px;
-  background: var(--bg3);
-  color: var(--fg3);
-  border: 1px solid var(--border-quiet);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.chip:hover {
-  border-color: var(--border-hover);
-  color: var(--fg2);
-}
-
-.chipOn {
-  background: var(--bg3);
-  color: var(--fg);
-  border-color: var(--fg4);
-}
-
-.chipCount {
-  color: var(--accent);
-  font-family: var(--mono);
-}
-
 .hint {
   margin: 0;
   padding: 10px 2px;

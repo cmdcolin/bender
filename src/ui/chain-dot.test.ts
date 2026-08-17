@@ -2,8 +2,9 @@ import { expect, test } from 'vitest'
 import { instance } from '@viz-js/viz'
 import { readFileSync } from 'node:fs'
 import { renderDiagrams } from '../../scripts/chain-svg'
-import { DEFAULT_CONTROLS } from '../controls'
+import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { buildDot, groupAnchor, PANEL } from './chain-dot'
+import { GROUPS } from './controls'
 
 const viz = await instance()
 
@@ -124,6 +125,80 @@ test('a wire onto a stage that is not in the path is left undrawn', () => {
     mod0Depth: 1,
   })
   expect(dot).not.toContain('wire0')
+})
+
+// The map is the panel's only index, so a group with no door on it is a group
+// with no way in. Boards that push the drawing about: nothing patched, an empty
+// bend rack, and a board with both wires soldered.
+const BOARDS: Record<string, Controls> = {
+  stock: DEFAULT_CONTROLS,
+  bare: {
+    ...DEFAULT_CONTROLS,
+    bendSlot0: 0,
+    bendSlot1: 0,
+    bendSlot2: 0,
+    bendSlot3: 0,
+    bendSlot4: 0,
+    bendSlot5: 0,
+  },
+  wired: {
+    ...DEFAULT_CONTROLS,
+    tapeMix: 0.5,
+    mod0Src: 5,
+    mod0Dest: 6,
+    mod0Depth: 0.8,
+    mod1Src: 1,
+    mod1Dest: 0,
+    mod1Depth: 0.4,
+  },
+}
+
+test.each(Object.entries(BOARDS))('every group has a door: %s', (_, board) => {
+  const dot = buildDot(board, { wrap: true })
+  for (const g of GROUPS) expect(dot).toContain(`#${groupAnchor(g.name)}`)
+  expect(viz.renderString(dot, { format: 'svg' })).toContain('<svg')
+})
+
+test('the shelf holds what the path does not reach, and only that', () => {
+  const dot = buildDot(DEFAULT_CONTROLS)
+  const shelf = dot.slice(dot.indexOf('shelf ['))
+  expect(shelf).toContain(groupAnchor('Freq shifter'))
+  expect(shelf).toContain(groupAnchor('Slot order'))
+  expect(shelf).toContain(groupAnchor('Body contact'))
+  expect(shelf).not.toContain(groupAnchor('Tape machine'))
+  expect(shelf).not.toContain(groupAnchor('Ring mod'))
+})
+
+test('a slotted bend leaves the shelf', () => {
+  const dot = buildDot({ ...DEFAULT_CONTROLS, bendSlot0: 7 })
+  expect(dot.slice(dot.indexOf('shelf ['))).not.toContain(
+    groupAnchor('Freq shifter'),
+  )
+})
+
+test('an empty rack says so in the path, and opens the slot order', () => {
+  const dot = buildDot(BOARDS.bare!)
+  expect(dot).toContain(`no_bends [label="no bends patched"`)
+  expect(dot).toMatch(new RegExp(`no_bends \\[.*#${groupAnchor('Slot order')}`))
+})
+
+test('a wire label opens what it picks up, the wire itself the bay', () => {
+  const dot = buildDot({
+    ...DEFAULT_CONTROLS,
+    mod0Src: 5,
+    mod0Dest: 6,
+    mod0Depth: 0.8,
+  })
+  expect(dot).toMatch(
+    new RegExp(`wire0 \\[label="body X".*#${groupAnchor('Body contact')}`),
+  )
+  expect(dot).toMatch(
+    new RegExp(`wire0 -> Tape_delay .*#${groupAnchor('Patch bay')}`),
+  )
+})
+
+test("the README's copy is the path alone — no shelf", () => {
+  expect(buildDot(DEFAULT_CONTROLS, { live: false })).not.toContain('shelf [')
 })
 
 test('a wire onto the feedback amount draws onto the bus', () => {

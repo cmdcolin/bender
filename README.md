@@ -21,9 +21,13 @@ the same DOT the app emits (`src/ui/chain-dot.ts`). The panel redraws it live as
 you play: the bend slots appear in whatever order you patched them, dead stages
 grey out, the feedback wire lands on whichever node **Patched into** picks, and
 patch-bay wires ride over the top, dotted, from what they pick up onto what they
-push. Click a node to open its controls.
+push. Click a node to open its controls; click a wire for the bay, or its label
+for whatever that end is clipped onto.
 
-Six slots, seven bends — you pick which ones are on the board.
+Six slots, seven bends — you pick which ones are on the board. What the path
+doesn't reach goes on a shelf under the map — the slot rack, the bends off the
+board, a bay or contact pad with nothing wired to it — so every control has a
+door in the drawing and the panel needs no index beside it.
 
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —

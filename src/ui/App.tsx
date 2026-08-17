@@ -10,7 +10,6 @@ import { gitSha, versionLabel } from '../version'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
-import { pathGroups } from './chain-dot'
 import { GROUPS } from './controls'
 import { Keys } from './Keys'
 import {
@@ -23,7 +22,7 @@ import {
 import { Presets } from './Presets'
 import { mutate, randomLook } from './presets'
 import { Scope } from './Scope'
-import { OffPathChips, OpenGroup, PathHint } from './Section'
+import { OpenGroup, PathHint } from './Section'
 import { boardUrl } from './share'
 import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
@@ -100,12 +99,11 @@ export function App() {
   const sampleName = useStoreValue(engine.sampleName)
   const controls = useStoreValue(engine.controls)
   const [dragging, setDragging] = useState(false)
-  // Which stage's controls the panel is showing. The map is the way in, so one
-  // stage is open at a time and the rest of the panel stays the map.
+  // Which stage's controls the panel is showing. The map is the way in — every
+  // group has a door on it, stages in the path and the rest on the shelf under
+  // it — so one stage is open at a time and the rest of the panel stays the map.
   const [open, setOpen] = useState<string | null>(null)
   const openGroup = GROUPS.find(g => g.name === open)
-  const onPath = pathGroups(controls)
-  const offPath = GROUPS.filter(g => !onPath.has(g.name))
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
   const [copied, setCopied] = useState(false)
   const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
@@ -301,7 +299,6 @@ export function App() {
         <Presets controls={controls} morphSeconds={morphSeconds} />
 
         <ChainMap open={open} onOpen={toggle} />
-        <OffPathChips groups={offPath} open={open} onOpen={toggle} />
         {openGroup ? (
           <OpenGroup group={openGroup} onClose={() => setOpen(null)} />
         ) : (

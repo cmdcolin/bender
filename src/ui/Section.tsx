@@ -56,60 +56,10 @@ export function OpenGroup({
   )
 }
 
-// The stages the drawing has nowhere to put: the slot order that decides the
-// drawing, the patch bay and body pad that ride over it, and any bend sitting
-// in no slot. Chips rather than boxes, because "no wire reaches this" is a hard
-// thing to say inside a picture made of wires.
-export function OffPathChips({
-  groups,
-  open,
-  onOpen,
-}: {
-  groups: Group[]
-  open: string | null
-  onOpen: (name: string) => void
-}) {
-  if (groups.length === 0) return null
-  return (
-    <div className={styles.chips}>
-      {groups.map(g => (
-        <OffPathChip
-          key={g.name}
-          group={g}
-          on={open === g.name}
-          onOpen={onOpen}
-        />
-      ))}
-    </div>
-  )
-}
-
-function OffPathChip({
-  group,
-  on,
-  onOpen,
-}: {
-  group: Group
-  on: boolean
-  onOpen: (name: string) => void
-}) {
-  const touched = useTouchedCount(group)
-  return (
-    <button
-      className={on ? styles.chipOn : styles.chip}
-      aria-expanded={on}
-      onClick={() => onOpen(group.name)}
-    >
-      {group.name}
-      {touched > 0 && <span className={styles.chipCount}> • {touched}</span>}
-    </button>
-  )
-}
-
 export function PathHint() {
   return (
     <p className={styles.hint}>
-      click a stage on the path to open its controls
+      click a stage on the path — or a part off the board — to open its controls
     </p>
   )
 }

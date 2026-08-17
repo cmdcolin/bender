@@ -37,6 +37,17 @@ const WIRE_TARGET = [
 
 const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 
+// A wire's label names what it picks up, so it opens the thing it is clipped
+// onto rather than the bay — mod*Src order. The rest (the bay's own LFO, the
+// supply sag, the output envelope) belong to no one stage, so they open the bay.
+const SRC_GROUP: Record<number, string> = {
+  4: 'Mic & sample',
+  5: 'Body contact',
+  6: 'Body contact',
+  7: 'Feedback bus',
+  8: 'Toy keyboard',
+}
+
 const SOURCE_ACTIVE: Record<string, (c: Controls) => boolean> = {
   'Toy keyboard': c => c.chipLevel > 0,
   'Toy drums': c => c.drumLevel > 0,
@@ -71,24 +82,6 @@ export const PANEL: Palette = {
 
 export function groupAnchor(name: string): string {
   return `group-${name.replace(/\W+/g, '-')}`
-}
-
-// Which groups the drawing currently reaches. The panel opens stages by
-// clicking the map, so whatever the map leaves out needs offering some other
-// way — the slot order, the patch bay, the body pad, and any bend sitting in no
-// slot. Read off the same conditions buildDot draws by, so a stage cannot be
-// both undrawn and unreachable.
-export function pathGroups(c: Controls): Set<string> {
-  return new Set([
-    ...Object.keys(SOURCE_ACTIVE),
-    ...bendOrder(c),
-    'Stompbox',
-    'Tape delay',
-    'Spring verb',
-    'Brownout',
-    'Output',
-    'Feedback bus',
-  ])
 }
 
 function touchedCount(name: string, c: Controls): number {
@@ -164,6 +157,53 @@ function sourceStrip(c: Controls, o: Options): string {
   return `<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="${k.bg}" COLOR="${k.border}">${rows.join('')}</TABLE>`
 }
 
+// Everything the path doesn't reach: the slot rack, any bend sitting in no
+// slot, and a patch bay or body pad with nothing wired to it. A shelf under the
+// board rather than a row of chips beside it, because the map is the panel's
+// only index — a stage the drawing can't hold still needs somewhere to be
+// picked up from, and "nothing is wired to this" is easier to say in a shelf
+// than in a picture made of wires. Three to a row: a bare board leaves nine
+// parts off it, and a column of nine is taller than the path they came off.
+const SHELF_COLS = 3
+
+// Rows as even as the count allows — four parts read better as two and two than
+// as three and a stray — and the last cell of a short row widens to fill it, so
+// the shelf is a block rather than a staircase.
+function shelfRows(names: string[]): string[][] {
+  const rows = Math.ceil(names.length / SHELF_COLS)
+  const each = Math.floor(names.length / rows)
+  const wide = names.length % rows
+  const out: string[][] = []
+  for (let r = 0, i = 0; r < rows; r++) {
+    const take = each + (r < wide ? 1 : 0)
+    out.push(names.slice(i, i + take))
+    i += take
+  }
+  return out
+}
+
+function shelfStrip(names: string[], c: Controls, o: Options): string {
+  const k = o.palette ?? PANEL
+  const rows = shelfRows(names)
+  const cols = Math.max(...rows.map(r => r.length))
+  const cell = (name: string, span: number) => {
+    const touched = touchedCount(name, c)
+    const open = o.open === name
+    const count =
+      touched > 0 ? ` <FONT COLOR="${k.accent}">${touched}</FONT>` : ''
+    const fill = open ? ` BGCOLOR="${k.open}"` : ''
+    const wide = span > 1 ? ` COLSPAN="${span}"` : ''
+    return `<TD HREF="#${groupAnchor(name)}" TITLE="${esc(name)}"${fill}${wide}><FONT COLOR="${open ? k.fg : k.dim}">${esc(name)}</FONT>${count}</TD>`
+  }
+  const drawn = rows.map(row => {
+    const cells = row.map((name, i) =>
+      cell(name, i === row.length - 1 ? cols - row.length + 1 : 1),
+    )
+    return `<TR>${cells.join('')}</TR>`
+  })
+  return `<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="${k.bg}" COLOR="${k.border}"><TR><TD COLSPAN="${cols}" BORDER="0"><FONT COLOR="${k.dim}" POINT-SIZE="10">off the board</FONT></TD></TR>${drawn.join('')}</TABLE>`
+}
+
 export interface Options {
   palette?: Palette
   /** A live board shows how far each stage is off stock, and the feedback
@@ -192,12 +232,17 @@ export interface Options {
 // deep whatever sits opposite it — the strip's extra rows come free, and
 // evening the two columns out by height only pushes nodes past the tail of the
 // short one, where each costs a row of its own.
-function wireRun(seq: string[], k: Palette, o: Options): string[] {
-  if (!o.wrap) return seq.slice(1).map((id, i) => `  ${seq[i]} -> ${id}`)
+function columns(seq: string[], o: Options): [string[]] | [string[], string[]] {
+  if (!o.wrap) return [seq]
   const half = Math.ceil(seq.length / 2)
-  const [down, up] = [seq.slice(0, half), seq.slice(half)]
+  return [seq.slice(0, half), seq.slice(half)]
+}
+
+function wireRun(seq: string[], k: Palette, o: Options): string[] {
   const chain = (col: string[]) =>
     col.slice(1).map((id, i) => `  ${col[i]} -> ${id}`)
+  const [down, up] = columns(seq, o)
+  if (!up) return chain(down)
   return [
     ...chain(down),
     ...chain(up),
@@ -224,8 +269,12 @@ export function buildDot(c: Controls, o: Options = {}): string {
   ]
 
   const drawn = new Set<string>()
+  // Every group the drawing opens, whether from a box, a strip row or a wire.
+  // The shelf at the foot is the rest, so no group is left without a door.
+  const doors = new Set<string>(Object.keys(SOURCE_ACTIVE))
   const node = (name: string, active: boolean) => {
     drawn.add(nodeId(name))
+    doors.add(name)
     return groupNode(name, c, active, o)
   }
 
@@ -251,9 +300,10 @@ export function buildDot(c: Controls, o: Options = {}): string {
     run(nodeId(name), node(name, mixKey ? c[mixKey] > 0 : true))
   }
   if (bends.length === 0) {
+    doors.add('Slot order')
     run(
       'no_bends',
-      `  no_bends [label="no bends patched", fontcolor="${k.dim}"]`,
+      `  no_bends [label="no bends patched", fontcolor="${k.dim}", URL="#${groupAnchor('Slot order')}", tooltip="Slot order"]`,
     )
   }
 
@@ -311,8 +361,11 @@ export function buildDot(c: Controls, o: Options = {}): string {
     if (!inStrip && !drawn.has(nodeId(dest))) continue
     const anchor = inStrip ? 'sources' : nodeId(dest)
     const door = `URL="#${groupAnchor('Patch bay')}", tooltip="Patch bay"`
+    const pickup = SRC_GROUP[src] ?? 'Patch bay'
+    doors.add('Patch bay')
+    doors.add(pickup)
     lines.push(
-      `  wire${i} [label="${SRC_LABEL[src]}", shape=plaintext, fontcolor="${k.mod}", fontsize=10, ${door}]`,
+      `  wire${i} [label="${SRC_LABEL[src]}", shape=plaintext, fontcolor="${k.mod}", fontsize=10, URL="#${groupAnchor(pickup)}", tooltip="${pickup}"]`,
     )
     lines.push(
       `  wire${i} -> ${inStrip ? `sources:${nodeId(dest)}` : anchor} [color="${k.mod}", style=dotted, constraint=false, label=" ${o.live === false ? 'patch wire' : depth.toFixed(2)}", fontcolor="${k.mod}", fontsize=10, ${door}]`,
@@ -320,6 +373,21 @@ export function buildDot(c: Controls, o: Options = {}): string {
     // sit the wire beside what it feeds, or it floats to the top and stretches
     // the whole drawing sideways
     lines.push(`  { rank=same; wire${i}; ${anchor} }`)
+  }
+
+  // The shelf hangs off the foot of every column, on invisible wire so it sits
+  // under the board without drawing a signal that isn't there. The README's
+  // copy is a picture of the path and nothing else, so it goes without.
+  const shelf = GROUPS.map(g => g.name).filter(name => !doors.has(name))
+  if (o.live !== false && shelf.length > 0) {
+    const tails = [
+      ...columns(seq, o).flatMap(col => col.slice(-1)),
+      nodeId('Feedback bus'),
+    ]
+    lines.push(
+      `  shelf [shape=none, margin=0, label=<${shelfStrip(shelf, c, o)}>]`,
+      ...tails.map(tail => `  ${tail} -> shelf [style=invis]`),
+    )
   }
 
   lines.push('}')
