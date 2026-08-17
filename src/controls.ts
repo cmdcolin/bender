@@ -14,7 +14,7 @@ export const DEFAULT_CONTROLS = {
   chipDrift: 0,
   chipLatch: 0,
 
-  drumLevel: 0,
+  drumLevel: 0.7,
   drumBpm: 118,
   drumSwing: 0,
   drumTune: 1,

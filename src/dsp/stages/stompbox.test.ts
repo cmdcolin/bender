@@ -84,9 +84,11 @@ test('bias shuts the gate circuit, and a flat battery sets it howling', () => {
   expect(shut).toBeLessThan(through * 0.1)
 
   // nothing at the input at all, and it still finds something to say
-  expect(rms(tail(render({ chipLevel: 0, ...box }, 2)))).toBeLessThan(1e-4)
   expect(
-    rms(tail(render({ chipLevel: 0, ...box, stompSag: 0.9 }, 2))),
+    rms(tail(render({ chipLevel: 0, drumLevel: 0, ...box }, 2))),
+  ).toBeLessThan(1e-4)
+  expect(
+    rms(tail(render({ chipLevel: 0, drumLevel: 0, ...box, stompSag: 0.9 }, 2))),
   ).toBeGreaterThan(0.02)
 })
 

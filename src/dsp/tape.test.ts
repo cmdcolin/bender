@@ -56,9 +56,10 @@ function wander(x: Float32Array): number {
   return (sd / mean) * 100
 }
 
-const SILENT: Partial<Controls> = { chipLevel: 0 }
+const SILENT: Partial<Controls> = { chipLevel: 0, drumLevel: 0 }
 const TONE: Partial<Controls> = {
   chipLevel: 0,
+  drumLevel: 0,
   oscLevel: 0.7,
   oscAHz: 220,
   oscXmod: 0,

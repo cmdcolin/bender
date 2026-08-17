@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { DEFAULT_CONTROLS } from '../../controls'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { buildChain, type BuiltChain } from '../build'
 import { BLOCK } from '../stage'
@@ -14,13 +14,22 @@ import {
   tail,
 } from '../testRender'
 
+// The board boots with the drum machine running too; these takes measure the
+// chip's own tune, so they mute it.
+const CHIP_ONLY: Partial<Controls> = { drumLevel: 0 }
+
 test('default board makes sound (the toy chip demo tune)', () => {
   expect(rms(render({}, 1))).toBeGreaterThan(0.005)
 })
 
 test('starve reboots restart the tune', () => {
   const chain = buildChain(SR)
-  const p = packParams({ ...DEFAULT_CONTROLS, chipLevel: 1, chipStarve: 1 })
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    ...CHIP_ONLY,
+    chipLevel: 1,
+    chipStarve: 1,
+  })
   const io = makeIo()
   let sawSilentBoot = false
   let sawSound = false
@@ -50,8 +59,8 @@ test('the auto bass-chord puts a bass under the tune', () => {
     }
     return rms(lp)
   }
-  const dry = render({ chipLevel: 0.6 }, 3)
-  const backed = render({ chipLevel: 0.6, chipAccomp: 0.8 }, 3)
+  const dry = render({ ...CHIP_ONLY, chipLevel: 0.6 }, 3)
+  const backed = render({ ...CHIP_ONLY, chipLevel: 0.6, chipAccomp: 0.8 }, 3)
   expect(rms(backed)).toBeGreaterThan(rms(dry))
   expect(lowEnd(backed)).toBeGreaterThan(lowEnd(dry) * 2)
 })
@@ -60,8 +69,11 @@ test('the accompaniment browns out with the chip it runs on', () => {
   // it is the same divider on the same rail, so a starved chip takes it down too
   const quietFraction = (x: Float32Array) =>
     x.reduce((a, v) => a + (Math.abs(v) < 0.01 ? 1 : 0), 0) / x.length
-  const running = render({ chipLevel: 1, chipAccomp: 1 }, 3)
-  const starved = render({ chipLevel: 1, chipAccomp: 1, chipStarve: 1 }, 3)
+  const running = render({ ...CHIP_ONLY, chipLevel: 1, chipAccomp: 1 }, 3)
+  const starved = render(
+    { ...CHIP_ONLY, chipLevel: 1, chipAccomp: 1, chipStarve: 1 },
+    3,
+  )
   expect(quietFraction(starved)).toBeGreaterThan(quietFraction(running) * 2)
   expect(
     starved.reduce((a, v) => Math.max(a, Math.abs(v)), 0),
@@ -104,8 +116,8 @@ test('the keys play under the chip’s own bottom note', () => {
 })
 
 test('flat batteries run the tune low, and it keeps running', () => {
-  const fresh = render({ chipLevel: 1 }, 3)
-  const flat = render({ chipLevel: 1, chipBattery: 0.5 }, 3)
+  const fresh = render({ ...CHIP_ONLY, chipLevel: 1 }, 3)
+  const flat = render({ ...CHIP_ONLY, chipLevel: 1, chipBattery: 0.5 }, 3)
   expect(pitchHz(flat)).toBeLessThan(pitchHz(fresh) * 0.9)
   // Half-dead cells drop the pitch; they don't stop the toy playing.
   expect(rms(flat)).toBeGreaterThan(rms(fresh) * 0.5)
