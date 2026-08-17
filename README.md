@@ -92,8 +92,10 @@ as your hands do. What it plays is its own choice: the note already standing,
 **the next step** of the ROM, any step at random, or a tone off the
 accompaniment's triad. The next step is the one to try first — one hit, one
 step, so the pattern clocks the tune and the kick decides where the melody goes.
-Write a bar with the kick on the beat and the toy plays in time with itself for
-once.
+The whole band walks with it — the bass and the chord stabs move on the step
+whichever clock moved it. Write a bar with the kick on the beat and the toy
+plays in time with itself for once; leave the demo song running underneath and
+both clocks push the same counter, which is a tune skipping ahead of itself.
 
 **Keys fire kit** is the wire back: every note the chip strikes fires a drum
 voice, whether the pattern is running or not, so the kit is playable by hand off

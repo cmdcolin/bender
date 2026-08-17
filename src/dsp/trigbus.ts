@@ -16,6 +16,11 @@ export const voiceMask = (choice: number) =>
 /** The choice past the voices and the whole kit: whatever the step names. */
 export const STEP_CHOICE = N_DRUM_VOICES + 2
 
+// A note rides the key line as semitone + this, so an empty sample stays 0
+// whatever the octave switch is doing to the numbers — the keys reach an octave
+// under the toy's own bottom, and semitone −1 is a note somebody pressed.
+const KEY_BIAS = 128
+
 // The two boxes' trigger lines, brought out to a bus so a wire can bridge them.
 // The kit stamps which voices fired and how hard; the keyboard stamps the note
 // its gate struck.
@@ -31,7 +36,7 @@ export class TriggerBus {
   drumBits = new Float32Array(BLOCK)
   /** How hard, so an accented step strikes a harder note. */
   drumGain = new Float32Array(BLOCK)
-  /** A note the keyboard struck this block: semitone + 1, or 0 for nothing. */
+  /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
   readonly key = new Float32Array(BLOCK)
 
   private pendBits = new Float32Array(BLOCK)
@@ -43,7 +48,7 @@ export class TriggerBus {
   }
 
   keyStruck(i: number, semitone: number) {
-    this.key[i] = semitone + 1
+    this.key[i] = semitone + KEY_BIAS
   }
 
   // Once a block, from the chain: last block's kit hits become the readable

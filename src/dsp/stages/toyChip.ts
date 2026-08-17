@@ -110,7 +110,11 @@ export class ToyChip implements Stage {
   private clockWalk = 0
   private lastReboot = 0
   private wasPlaying = false
-  private pendingKey = -1
+  // The gate, waiting to go out on the bus. A flag rather than a sentinel note:
+  // the keys reach under the toy's bottom key, so there is no note number left
+  // over to mean "nothing struck".
+  private keyPending = false
+  private keyNote = 0
   private lastTiming = 0
   private envDecay = 1
   private rng: Rng
@@ -135,7 +139,8 @@ export class ToyChip implements Stage {
     v.env = gain
     v.held = false
     v.started = this.voiceClock++
-    this.pendingKey = semitone
+    this.keyNote = semitone
+    this.keyPending = true
     return v
   }
 
@@ -291,7 +296,8 @@ export class ToyChip implements Stage {
         if (step >= 0) {
           this.note = step
           this.env = 1
-          this.pendingKey = step
+          this.keyNote = step
+          this.keyPending = true
           this.harmonize(step)
         } else if (step === -1) {
           this.note = -1
@@ -406,9 +412,9 @@ export class ToyChip implements Stage {
       // The chip's gate, brought out to the bus whether anything is soldered to
       // it or not: a note struck is a note struck, whether the ROM struck it,
       // your hand struck it or a drum hit came back round and struck it.
-      if (this.pendingKey >= 0) {
-        ctx.trig.keyStruck(i, this.pendingKey)
-        this.pendingKey = -1
+      if (this.keyPending) {
+        ctx.trig.keyStruck(i, this.keyNote)
+        this.keyPending = false
       }
       io.l[i]! += out
       io.r[i]! += out

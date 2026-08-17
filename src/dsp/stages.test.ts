@@ -795,6 +795,15 @@ test('the keys fire the kit, with the pattern stopped', () => {
   expect(rms(kit({ trigToDrum: 1 }))).toBeGreaterThan(0.01)
 })
 
+// The octave switch reaches under the chip's own bottom key, so the line has to
+// carry a note below zero as a note rather than as an empty sample.
+test('a key under the chip’s bottom note still fires the kit', () => {
+  const out = playKeys({ chipLevel: 0, drumLevel: 1, trigToDrum: 1 }, chip =>
+    chip.noteOn(-1),
+  )
+  expect(rms(out)).toBeGreaterThan(0.01)
+})
+
 test('a key on the step plays whatever column the sequencer is on', () => {
   const key = (masks: Partial<Controls>) =>
     playKeys(
