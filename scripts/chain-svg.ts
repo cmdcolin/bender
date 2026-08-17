@@ -20,6 +20,7 @@ const BOARD: Controls = {
   combMix: 0.5,
   glitchMix: 0.5,
   filtMix: 0.5,
+  stompMix: 0.5,
   dlyMix: 0.4,
   revMix: 0.3,
   brownAmt: 0.3,

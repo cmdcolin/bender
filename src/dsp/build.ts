@@ -13,6 +13,7 @@ import { Screech } from './stages/screech'
 import { Shaper } from './stages/shaper'
 import { Shifter } from './stages/shifter'
 import { SpringVerb } from './stages/springVerb'
+import { Stompbox } from './stages/stompbox'
 import { TapeDelay } from './stages/tapeDelay'
 import { ToyChip } from './stages/toyChip'
 import { ToyDrum } from './stages/toyDrum'
@@ -49,7 +50,7 @@ export function buildBender(sr: number): BuiltChain {
     new Screech(sr),
     new Shifter(sr),
   ]
-  chain.pedals = [new TapeDelay(sr), new SpringVerb(sr)]
+  chain.pedals = [new Stompbox(sr), new TapeDelay(sr), new SpringVerb(sr)]
   chain.post = [new Brownout(sr)]
   return { chain, toyChip, sampler, transport }
 }

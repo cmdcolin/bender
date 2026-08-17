@@ -14,8 +14,9 @@ export const DEST = {
   tapeSpeed: 6,
   glitch: 7,
   fbAmt: 8,
+  stompDrive: 9,
 } as const
-export const N_DEST = 9
+export const N_DEST = 10
 
 // Ids match the mod*Src choices.
 const SRC = { off: 0, lfo: 1, supply: 2, env: 3, mic: 4, bodyX: 5, bodyY: 6, fb: 7 }

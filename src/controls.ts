@@ -80,6 +80,14 @@ export const DEFAULT_CONTROLS = {
   shiftFb: 0,
   shiftMix: 0,
 
+  stompCircuit: 0,
+  stompDrive: 18,
+  stompTone: 0.5,
+  stompBias: 0,
+  stompSag: 0,
+  stompLevel: 0,
+  stompMix: 0,
+
   delayMs: 350,
   dlyFb: 0.35,
   wowDepthMs: 0,

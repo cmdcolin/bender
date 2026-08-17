@@ -88,6 +88,14 @@ export const PARAM_DEFS = [
   ['shiftFb', 'ramp'],
   ['shiftMix', 'slew'],
 
+  ['stompCircuit', 'step'],
+  ['stompDrive', 'ramp'],
+  ['stompTone', 'slew'],
+  ['stompBias', 'slew'],
+  ['stompSag', 'slew'],
+  ['stompLevel', 'ramp'],
+  ['stompMix', 'slew'],
+
   ['delayMs', 'slew'],
   ['dlyFb', 'ramp'],
   ['wowDepthMs', 'slew'],

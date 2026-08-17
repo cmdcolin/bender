@@ -13,7 +13,7 @@ Live: https://cmdcolin.github.io/bender/
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, tape delay, spring verb, brownout and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
+  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, spring verb, brownout and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
 </picture>
 
 Graphviz draws that from the chain itself — `pnpm diagram` regenerates it from
@@ -71,8 +71,9 @@ The bends that matter:
 - **The patch bay** is two wires and a soldering iron. Each picks up the bay's
   LFO, the sag on whichever supply is dying, the output envelope, the mic, an
   axis of the body pad or the feedback bus itself, and pushes it onto a filter
-  cutoff, a carrier, a clock, the tape speed, the glitch chance or the feedback
-  amount. Depth goes negative, so a failing supply can drag a pitch either way.
+  cutoff, a carrier, a clock, the tape speed, the glitch chance, the feedback
+  amount or the stompbox drive. Depth goes negative, so a failing supply can
+  drag a pitch either way.
 - **The body pad** is the bare contacts every bent toy grows sooner or later:
   touch both and your own resistance is the control. It does nothing until a
   wire in the bay is soldered to it, which is also true of the real thing.
@@ -91,6 +92,20 @@ The bends that matter:
   hard the supply strains; the ripple wobbles the rail.
 - **Sub octave** is a flip-flop divider under the shaper that mistracks on
   complex input, like the vintage pedals did.
+- **The stompbox** is the dirt box at the front of the board, and each of its
+  six circuits clips somewhere different in its own gain stage rather than
+  running the same curve through a different formula. The screamer clips inside
+  the op-amp's feedback loop, so the dry note walks under it and never quite
+  lets go; the rat clips to ground behind an op-amp too slow to keep up, which
+  is the fizz; the muff is two clipping stages and a scooped tone stack the
+  note has to survive; the germanium one is lopsided, and its bias rides down
+  on the signal so it splutters as a note dies and cleans up when you back off;
+  the octave rectifies the shape before it clips it, so it comes out an octave
+  up on one note and gargling on two; the gate is misbiased to the edge of
+  cutoff. **Battery** is how dead the 9V is — the rail falls as the pedal
+  works, so notes bloom and collapse, and it shares the board's supply, so
+  Starve and Brownout drag the pedal down with everything else. Starve the gate
+  circuit far enough and it stops needing an input at all.
 - Every feedback (delay, comb, screech filter, feedback bus) goes past unity.
 
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**

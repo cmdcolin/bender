@@ -29,6 +29,7 @@ const WIRE_TARGET = [
   'Tape delay',
   'Glitch buffer',
   'Feedback bus',
+  'Stompbox',
 ] as const
 
 const SRC_LABEL = sliderFor('mod0Src').choices ?? []
@@ -78,6 +79,7 @@ export function pathGroups(c: Controls): Set<string> {
   const drawn = new Set([
     ...Object.keys(SOURCE_ACTIVE),
     ...bendOrder(c),
+    'Stompbox',
     'Tape delay',
     'Spring verb',
     'Brownout',
@@ -238,6 +240,7 @@ export function buildDot(c: Controls, o: Options = {}): string {
   }
 
   for (const [name, active] of [
+    ['Stompbox', c.stompMix > 0],
     ['Tape delay', c.dlyMix > 0],
     ['Spring verb', c.revMix > 0],
     ['Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0],
