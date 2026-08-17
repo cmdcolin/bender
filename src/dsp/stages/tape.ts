@@ -77,7 +77,8 @@ class TapeHead {
 
     let y = this.line.readHermite(delay)
     if (s.printGain > 0) {
-      y += this.printLp.process(this.line.readHermite(delay + s.printDelay), s.printCoef) * s.printGain
+      y +=
+        this.printLp.process(this.line.readHermite(delay + s.printDelay), s.printCoef) * s.printGain
     }
     y = this.gapLp.process(y, s.gapCoef * gapScale)
 
@@ -210,7 +211,9 @@ export class Tape implements Stage {
       this.dryL.write(inL)
       this.dryR.write(inR)
       const wetL = this.headL.process(inL, d, gapScale, s) * dropGain
-      const wetR = this.headR.process(inR, d + azimuth, gapScale * (1 - 0.35 * azimuth / AZIMUTH_MAX), s) * dropGain
+      const wetR =
+        this.headR.process(inR, d + azimuth, gapScale * (1 - (0.35 * azimuth) / AZIMUTH_MAX), s) *
+        dropGain
 
       // The dry side runs down the same nominal delay, so the blend only combs
       // when the transport actually wobbles.

@@ -13,7 +13,15 @@ export interface SliderDef {
   curve?: 'log'
 }
 
-export const STAGE_ORDER = ['Sources', 'Bends', 'Pedals', 'Patch', 'Feedback', 'Tape', 'Master'] as const
+export const STAGE_ORDER = [
+  'Sources',
+  'Bends',
+  'Pedals',
+  'Patch',
+  'Feedback',
+  'Tape',
+  'Master',
+] as const
 export type StagePlace = (typeof STAGE_ORDER)[number]
 
 export interface Group {

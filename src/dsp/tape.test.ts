@@ -61,7 +61,8 @@ test('hiss is a floor of its own — audible with nothing playing, gone when tur
 })
 
 test('a slower tape hisses louder and darker', () => {
-  const at = (speed: number) => render({ ...SILENT, tapeMix: 1, tapeHiss: 1, tapeSpeed: speed }, 1).l.subarray(SR / 2)
+  const at = (speed: number) =>
+    render({ ...SILENT, tapeMix: 1, tapeHiss: 1, tapeSpeed: speed }, 1).l.subarray(SR / 2)
   const [slow, mid, fast] = [at(0), at(1), at(2)]
   expect(rms(slow)).toBeGreaterThan(rms(mid))
   expect(rms(mid)).toBeGreaterThan(rms(fast))
@@ -83,7 +84,11 @@ test('speed sets how much top end survives the head gap', () => {
 test('bias runs bright to dull at every speed', () => {
   for (const speed of [0, 1, 2]) {
     const steps = [-1, -0.5, 0, 0.5, 1].map(bias =>
-      bright(render({ ...TONE, ...STEADY, tapeMix: 1, tapeSpeed: speed, tapeBias: bias }, 1).l.subarray(SR / 2)),
+      bright(
+        render({ ...TONE, ...STEADY, tapeMix: 1, tapeSpeed: speed, tapeBias: bias }, 1).l.subarray(
+          SR / 2,
+        ),
+      ),
     )
     for (let i = 1; i < steps.length; i++) expect(steps[i]!).toBeLessThan(steps[i - 1]!)
   }
@@ -92,14 +97,18 @@ test('bias runs bright to dull at every speed', () => {
 test('record level compresses without running away — makeup holds it near unity', () => {
   const dry = rms(render({ ...TONE, ...STEADY }, 1).l.subarray(SR / 2))
   for (const drive of [-12, -6, 0, 6, 12, 15]) {
-    const wet = rms(render({ ...TONE, ...STEADY, tapeMix: 1, tapeDrive: drive }, 1).l.subarray(SR / 2))
+    const wet = rms(
+      render({ ...TONE, ...STEADY, tapeMix: 1, tapeDrive: drive }, 1).l.subarray(SR / 2),
+    )
     expect(Math.abs(db(wet / dry))).toBeLessThan(4)
   }
 })
 
 test('the transport wobbles the pitch, and holds it dead steady when wound down', () => {
   const at = (w: number) =>
-    wander(render({ ...TONE, tapeHiss: 0, tapeMix: 1, tapeWow: w, tapeFlutter: w, tapeSpeed: 0 }, 4).l)
+    wander(
+      render({ ...TONE, tapeHiss: 0, tapeMix: 1, tapeWow: w, tapeFlutter: w, tapeSpeed: 0 }, 4).l,
+    )
   expect(at(0)).toBe(0)
   expect(at(0.3)).toBeGreaterThan(0.3)
   expect(at(1)).toBeGreaterThan(at(0.3))
@@ -110,7 +119,8 @@ test('dropouts dip the level, and shed highs on the way down', () => {
   const quietest = (drop: number) => {
     const { l } = render({ ...TONE, ...STEADY, tapeMix: 1, tapeDrop: drop }, 6)
     let min = Infinity
-    for (let i = SR; i + 1200 < l.length; i += 600) min = Math.min(min, rms(l.subarray(i, i + 1200)))
+    for (let i = SR; i + 1200 < l.length; i += 600)
+      min = Math.min(min, rms(l.subarray(i, i + 1200)))
     return min
   }
   expect(db(quietest(0.5) / quietest(0))).toBeLessThan(-4)
@@ -122,7 +132,14 @@ test('print-through leaves a ghost one spool wrap behind the signal', () => {
     const chain = buildChain(SR)
     const io: StereoBlock = { l: new Float32Array(BLOCK), r: new Float32Array(BLOCK), n: BLOCK }
     const on = packParams({ ...DEFAULT_CONTROLS, ...TONE, ...STEADY, tapeMix: 1, tapePrint: print })
-    const off = packParams({ ...DEFAULT_CONTROLS, ...SILENT, oscLevel: 0, tapeMix: 1, tapeHiss: 0, tapePrint: print })
+    const off = packParams({
+      ...DEFAULT_CONTROLS,
+      ...SILENT,
+      oscLevel: 0,
+      tapeMix: 1,
+      tapeHiss: 0,
+      tapePrint: print,
+    })
     const blocks = Math.ceil((1.5 * SR) / BLOCK)
     const out = new Float32Array(blocks * BLOCK)
     for (let b = 0; b < blocks; b++) {
