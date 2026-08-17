@@ -4,6 +4,7 @@
 //
 //   pnpm bench            the everything-on board, 20 s
 //   pnpm bench stock 10   the board as it boots
+import { PerformanceObserver } from 'node:perf_hooks'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { packParams } from '../src/engine/params'
 import { buildBender } from '../src/dsp/build'
@@ -123,20 +124,36 @@ function bench(overrides: Partial<Controls>, seconds: number) {
   // ever adds time, so the fastest pass is the one least polluted by it — and a
   // mean makes two runs an hour apart incomparable.
   let total = Infinity
+  let best: Row[] = rows
   for (let pass = 0; pass < REPS; pass++) {
     for (const r of rows) r.ms = 0
     const t0 = performance.now()
     for (let b = 0; b < blocks; b++) chain.process(io, p)
-    total = Math.min(total, performance.now() - t0)
+    const took = performance.now() - t0
+    if (took >= total) continue
+    total = took
+    best = rows.map(r => ({ ...r }))
   }
-  rows.sort((a, b) => b.ms - a.ms)
-  return { total, blocks, rows }
+  best.sort((a, b) => b.ms - a.ms)
+  return { total, blocks, rows: best }
 }
 
 const which = process.argv[2] ?? 'heavy'
 const seconds = Number(process.argv[3] ?? 20)
 const board = BOARDS[which]
 if (!board) throw new Error(`no board '${which}' — try ${Object.keys(BOARDS)}`)
+
+// A collection on the audio thread is a gap in the sound, so what the render
+// loop hands the collector matters as much as what it spends. The number to
+// aim at is none at all.
+let collections = 0
+let collectedMs = 0
+new PerformanceObserver(list => {
+  for (const e of list.getEntries()) {
+    collections++
+    collectedMs += e.duration
+  }
+}).observe({ entryTypes: ['gc'] })
 
 const { total, blocks, rows } = bench(board, seconds)
 const audioMs = (blocks * BLOCK * 1000) / SR
@@ -158,4 +175,7 @@ for (const r of rows) {
 }
 console.log(
   `  ${'chain'.padEnd(12)} ${(total - stageMs).toFixed(0).padStart(6)}ms  ${pct(total - stageMs)}`,
+)
+console.log(
+  `\ncollections while rendering: ${collections}${collections ? ` (${collectedMs.toFixed(0)}ms)` : ''}`,
 )

@@ -4,7 +4,7 @@ import {
   useSyncExternalStore,
   type DragEvent,
 } from 'react'
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { gitSha, versionLabel } from '../version'
 import { BodyPad } from './BodyPad'
@@ -98,7 +98,6 @@ export function App() {
   const recording = useStoreValue(engine.recording)
   const recSeconds = useStoreValue(engine.recSeconds)
   const sampleName = useStoreValue(engine.sampleName)
-  const controls = useStoreValue(engine.controls)
   const [dragging, setDragging] = useState(false)
   // Which stage's controls the panel is showing. The map is the way in — every
   // group has a door on it, stages in the path and the rest on the shelf under
@@ -113,7 +112,7 @@ export function App() {
   const drifting = useStoreValue(engine.drifting)
 
   useEffect(() => engine.autostart(), [])
-  useBoardUrl(controls)
+  useBoardUrl()
 
   // The bar already says this; the button is for handing it to someone.
   const share = () => {
@@ -245,7 +244,10 @@ export function App() {
           <button
             className={styles.btn}
             onClick={() =>
-              engine.morphTo(randomLook(controls, Math.random), morphSeconds)
+              engine.morphTo(
+                randomLook(engine.controls.get(), Math.random),
+                morphSeconds,
+              )
             }
             title="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern, levels and what is running stay put"
           >
@@ -340,7 +342,10 @@ export function App() {
               className={styles.die}
               title={s.blurb}
               onClick={() =>
-                engine.morphTo(s.roll(controls, Math.random), morphSeconds)
+                engine.morphTo(
+                  s.roll(engine.controls.get(), Math.random),
+                  morphSeconds,
+                )
               }
             >
               {s.name}
@@ -353,14 +358,17 @@ export function App() {
             title="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. Click again, or touch anything else, to call it off and keep what is playing"
             onClick={() => {
               if (hunting) engine.stopHunt()
-              else void engine.hunt(huntCandidates(controls, Math.random))
+              else
+                void engine.hunt(
+                  huntCandidates(engine.controls.get(), Math.random),
+                )
             }}
           >
             {hunting ? 'listening…' : 'hunt'}
           </button>
         </div>
 
-        <Presets controls={controls} morphSeconds={morphSeconds} />
+        <Presets morphSeconds={morphSeconds} />
 
         <ChainMap open={open} onOpen={toggle} />
         {openGroup ? (

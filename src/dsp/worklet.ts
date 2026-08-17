@@ -8,10 +8,9 @@ import { BLOCK, type StereoBlock } from './stage'
 const SCOPE_LEN = 512 // a power of two, so the ring wraps on a mask
 const SCOPE_MASK = SCOPE_LEN - 1
 const REC_CHUNK = 1 << 15 // frames per posted slab (~0.7 s at 48 k)
-// Blocks between meter posts. The panel draws off a frame callback, so posting
-// faster than a frame buys nothing and costs the audio thread a 2 kB buffer it
-// then has to hand across — which is the one allocation here big enough for the
-// collector to notice, and a collection here is a gap in the sound.
+// Blocks between meter posts. Everything downstream draws off a frame callback,
+// so posting faster than a frame buys nothing and costs the audio thread a 2 kB
+// buffer, a copy and a hand across the wire — twice over, at the old rate.
 const METER_EVERY = 6 // ~16 ms at 48 k
 
 class BenderProcessor extends AudioWorkletProcessor {

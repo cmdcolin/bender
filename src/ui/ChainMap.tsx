@@ -10,6 +10,16 @@ import styles from './ChainMap.module.css'
 // A megabyte of wasm graphviz, kept out of the boot path.
 let viz: Promise<Awaited<ReturnType<typeof instance>>> | undefined
 
+// Graphviz lays the whole map out again for any change to the string at all,
+// and two of the strings in it are numbers printed on wires — the feedback
+// amount and each patch wire's depth. A morph moves those every frame, so a
+// travelling board was asking for ninety-odd full layouts a second to redraw
+// two decimal places, which is the main thread gone for as long as the morph
+// lasts. What the map is for is its shape, and a shape can wait a tenth of a
+// second: it draws at once when it has been still, and on the trailing edge
+// while the board is moving.
+const REDRAW_MS = 150
+
 const BY_ANCHOR = new Map(GROUPS.map(g => [groupAnchor(g.name), g.name]))
 
 // Graphviz paints a wire as a hairline, and a dashed one only takes a click on
@@ -44,6 +54,7 @@ export function ChainMap({
   const controls = useStoreValue(engine.controls)
   const host = useRef<HTMLDivElement>(null)
   const lastDot = useRef<string>('')
+  const drawnAt = useRef(0)
   const [error, setError] = useState<string>()
 
   const { dot, doors } = buildMap(controls, {
@@ -52,19 +63,29 @@ export function ChainMap({
   })
   useEffect(() => {
     if (dot === lastDot.current) return
-    lastDot.current = dot
     let stale = false
-    viz ??= import('@viz-js/viz').then(m => m.instance())
-    viz
-      .then(v => {
-        if (stale || !host.current) return
-        const svg = v.renderSVGElement(dot)
-        widenWires(svg)
-        host.current.replaceChildren(svg)
-      })
-      .catch((e: unknown) => setError(String(e)))
+    const paint = () => {
+      lastDot.current = dot
+      drawnAt.current = performance.now()
+      viz ??= import('@viz-js/viz').then(m => m.instance())
+      viz
+        .then(v => {
+          if (stale || !host.current) return
+          const svg = v.renderSVGElement(dot)
+          widenWires(svg)
+          host.current.replaceChildren(svg)
+        })
+        .catch((e: unknown) => setError(String(e)))
+    }
+    // Cancelling and rescheduling keeps the deadline where the last paint put
+    // it, so a board that never stops moving still redraws every REDRAW_MS.
+    const id = setTimeout(
+      paint,
+      Math.max(REDRAW_MS - (performance.now() - drawnAt.current), 0),
+    )
     return () => {
       stale = true
+      clearTimeout(id)
     }
   }, [dot])
 

@@ -86,10 +86,16 @@ export function groupAnchor(name: string): string {
   return `group-${name.replace(/\W+/g, '-')}`
 }
 
+// Settled once: the drawing asks after twenty groups' keys every time it is
+// built, and it is built on every frame a board is travelling.
+const KEYS_BY_GROUP = new Map(GROUPS.map(g => [g.name, groupKeys(g)]))
+
 function touchedCount(name: string, c: Controls): number {
-  const group = GROUPS.find(g => g.name === name)
-  if (!group) return 0
-  return groupKeys(group).filter(k => c[k] !== DEFAULT_CONTROLS[k]).length
+  const keys = KEYS_BY_GROUP.get(name)
+  if (!keys) return 0
+  let n = 0
+  for (const k of keys) if (c[k] !== DEFAULT_CONTROLS[k]) n++
+  return n
 }
 
 function nodeId(name: string): string {

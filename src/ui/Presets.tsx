@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { sameControls, type Controls } from '../controls'
 import { engine } from '../engine/engine'
 import type { Glide } from '../engine/glide'
+import { useStoreValue } from './ControlsContext'
 import type { MorphSeconds } from './morph'
 import { PRESETS, presetPath, type PresetDef } from './presets'
 import styles from './Presets.module.css'
@@ -138,15 +139,14 @@ function PresetChip(props: {
   )
 }
 
-export function Presets(props: {
-  controls: Controls
-  morphSeconds: MorphSeconds
-}) {
+// The row subscribes to the board itself rather than taking it as a prop: the
+// fill is the only thing here that reads it, and holding it a level up would
+// redraw the panel every frame a morph is in flight.
+export function Presets(props: { morphSeconds: MorphSeconds }) {
+  const controls = useStoreValue(engine.controls)
   const [scrub, setScrub] = useState<Scrub | null>(null)
   const held =
-    scrub !== null && sameControls(props.controls, scrub.produced)
-      ? scrub
-      : null
+    scrub !== null && sameControls(controls, scrub.produced) ? scrub : null
 
   return (
     <div className={styles.presets}>

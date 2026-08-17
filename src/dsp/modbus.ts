@@ -100,8 +100,9 @@ export class ModBus {
   // share a buffer, and the second would overwrite what the first is about to
   // read.
   private readonly held = WIRES.map(() => new Float32Array(BLOCK))
-  // What each wire picked up this block. A field rather than a fresh array,
-  // because build() runs 375 times a second on the audio thread.
+  // What each wire picked up this block, in a field the bus keeps: build() runs
+  // 375 times a second, and a fresh array and closure each time is work the
+  // audio thread does not have to do.
   private readonly picks: (Float32Array | null)[] = WIRES.map(() => null)
   // A trigger line is a spike one sample wide; an envelope follower would barely
   // notice one. These snap up to the hit and fall from there, so a wire off the
