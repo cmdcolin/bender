@@ -3,7 +3,7 @@ import { instance } from '@viz-js/viz'
 import { readFileSync } from 'node:fs'
 import { renderDiagrams } from '../../scripts/chain-svg'
 import { DEFAULT_CONTROLS } from '../controls'
-import { buildDot, groupAnchor } from './chain-dot'
+import { buildDot, groupAnchor, PANEL } from './chain-dot'
 
 const viz = await instance()
 
@@ -23,15 +23,32 @@ test('a duplicated bend runs once, at its first slot', () => {
   expect(dot).toContain('Ring_mod -> Crusher')
 })
 
-test('the feedback wire appears only when the bus is up, and lands on its destination', () => {
-  expect(buildDot(DEFAULT_CONTROLS)).not.toContain('Feedback_bus')
+test('the feedback bus stays on the map at zero, greyed out', () => {
+  const dot = buildDot(DEFAULT_CONTROLS)
+  expect(dot).toContain('out -> Feedback_bus')
+  expect(dot).toContain(`color="${PANEL.dim}", style=dashed`)
+  expect(viz.renderString(dot, { format: 'svg' })).toContain('<svg')
+})
+
+test('the feedback wire lands on its destination', () => {
   const toOsc = buildDot({ ...DEFAULT_CONTROLS, fbAmt: 0.4, fbDest: 1 })
   expect(toOsc).toContain('Feedback_bus -> sources:Chaos_osc')
+  expect(toOsc).toContain(`color="${PANEL.accent2}", style=dashed`)
   expect(viz.renderString(toOsc, { format: 'svg' })).toContain('<svg')
 })
 
 test('nodes link to the anchors the panel renders', () => {
   expect(buildDot(DEFAULT_CONTROLS)).toContain(`URL="#${groupAnchor('Tape delay')}"`)
+})
+
+test('the wires are doors too — feedback to the bus, a patch wire to the bay', () => {
+  const dot = buildDot({ ...DEFAULT_CONTROLS, fbAmt: 0.4, mod0Src: 5, mod0Dest: 6, mod0Depth: 0.8 })
+  const fb = `URL="#${groupAnchor('Feedback bus')}"`
+  expect(dot).toContain(`out -> Feedback_bus [color="${PANEL.accent2}", style=dashed, ${fb}`)
+  expect(dot.match(new RegExp(`Feedback_bus -> mix .*${fb}`))).toBeTruthy()
+  expect(
+    dot.match(new RegExp(`wire0 -> Tape_delay .*URL="#${groupAnchor('Patch bay')}"`)),
+  ).toBeTruthy()
 })
 
 test('touched controls show a count', () => {
@@ -68,7 +85,7 @@ test('a wire onto a stage that is not in the path is left undrawn', () => {
   expect(dot).not.toContain('wire0')
 })
 
-test('a wire onto the feedback amount draws the bus even at zero', () => {
+test('a wire onto the feedback amount draws onto the bus', () => {
   const dot = buildDot({ ...DEFAULT_CONTROLS, mod0Src: 6, mod0Dest: 8, mod0Depth: 1 })
   expect(dot).toContain('wire0 -> Feedback_bus')
 })

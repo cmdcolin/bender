@@ -17,13 +17,28 @@
   cursor: pointer;
 }
 
-.graph a:hover text {
+.graph a:hover text,
+.graph a:focus-visible text {
   fill: var(--fg);
 }
 
-.graph a:hover polygon,
-.graph a:hover path {
+.graph .node a:hover polygon,
+.graph .node a:hover path,
+.graph .node a:focus-visible polygon,
+.graph .node a:focus-visible path {
   stroke: var(--border-hover);
+}
+
+/* A wire's colour is what says where it lands, so hovering one thickens it
+   rather than repainting it. A focus ring around a line that brackets half the
+   map would be the whole map, so focus thickens it too. */
+.graph .edge a:hover path,
+.graph .edge a:focus-visible path {
+  stroke-width: 2.4;
+}
+
+.graph a:focus-visible {
+  outline: none;
 }
 
 .error {

@@ -11,6 +11,22 @@ let viz: Promise<Awaited<ReturnType<typeof instance>>> | undefined
 
 const BY_ANCHOR = new Map(GROUPS.map(g => [groupAnchor(g.name), g.name]))
 
+// Graphviz paints a wire as a hairline, and a dashed one only takes a click on
+// the dashes themselves. Each wire that is a door gets a transparent twin laid
+// under it — transparent rather than absent, so it still takes the pointer, and
+// 8 wide so the band stays inside the gap to whatever it runs past. The width
+// is inline because the hover rule that thickens the visible stroke would
+// otherwise shrink the target out from under the pointer.
+function widenWires(svg: SVGSVGElement) {
+  for (const path of svg.querySelectorAll('g.edge a path')) {
+    const hit = path.cloneNode() as SVGPathElement
+    hit.style.stroke = 'transparent'
+    hit.style.strokeWidth = '8'
+    hit.removeAttribute('stroke-dasharray')
+    path.before(hit)
+  }
+}
+
 // The signal path drawn by graphviz: live bend order, the feedback wire, and
 // each stage a door into its controls. The map is the panel's index — clicking
 // a box is what puts a stage's knobs on screen — so it draws folded into two
@@ -36,7 +52,9 @@ export function ChainMap({
     viz
       .then(v => {
         if (stale || !host.current) return
-        host.current.replaceChildren(v.renderSVGElement(dot))
+        const svg = v.renderSVGElement(dot)
+        widenWires(svg)
+        host.current.replaceChildren(svg)
       })
       .catch((e: unknown) => setError(String(e)))
     return () => {

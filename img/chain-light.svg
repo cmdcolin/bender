@@ -255,28 +255,46 @@
 <!-- out&#45;&gt;Feedback_bus -->
 <g id="edge15" class="edge">
 <title>out&#45;&gt;Feedback_bus</title>
+<g id="a_edge15"><a xlink:href="#group-Feedback-bus" xlink:title="Feedback bus">
 <path fill="none" stroke="#9a6700" stroke-width="1.1" stroke-dasharray="5,2" d="M68.43,-39.76C68.43,-37.05 68.43,-34.07 68.43,-31.1"/>
 <polygon fill="#9a6700" stroke="#9a6700" stroke-width="1.1" points="70.53,-31.14 68.43,-25.14 66.33,-31.14 70.53,-31.14"/>
+</a>
+</g>
 </g>
 <!-- Feedback_bus&#45;&gt;mix -->
 <g id="edge16" class="edge">
 <title>Feedback_bus&#45;&gt;mix</title>
+<g id="a_edge16"><a xlink:href="#group-Feedback-bus" xlink:title="Feedback bus">
 <path fill="none" stroke="#9a6700" stroke-width="1.1" stroke-dasharray="5,2" d="M116.64,-20.61C127.13,-24.69 137,-30.83 143.43,-40.04 149.29,-48.44 143.75,-52.85 143.43,-63.08 138.31,-223.48 132.2,-263.39 120.43,-423.44 116.5,-476.87 137.83,-497.53 110.43,-543.56 107.61,-548.3 103.62,-552.37 99.21,-555.83"/>
 <polygon fill="#9a6700" stroke="#9a6700" stroke-width="1.1" points="98.09,-554.05 94.37,-559.2 100.49,-557.49 98.09,-554.05"/>
+</a>
+</g>
+<g id="a_edge16&#45;label"><a xlink:href="#group-Feedback-bus" xlink:title=" feedback">
 <text xml:space="preserve" text-anchor="middle" x="150.87" y="-288.8" font-family="Times,serif" font-size="10.00" fill="#9a6700"> feedback</text>
+</a>
+</g>
 </g>
 <!-- wire0 -->
 <g id="node17" class="node">
 <title>wire0</title>
+<g id="a_node17"><a xlink:href="#group-Patch-bay" xlink:title="Patch bay">
 <path fill="#f6f8fa" stroke="none" d="M200.23,-422.72C200.23,-422.72 160.63,-422.72 160.63,-422.72 157.03,-422.72 153.43,-419.12 153.43,-415.52 153.43,-415.52 153.43,-408.32 153.43,-408.32 153.43,-404.72 157.03,-401.12 160.63,-401.12 160.63,-401.12 200.23,-401.12 200.23,-401.12 203.83,-401.12 207.43,-404.72 207.43,-408.32 207.43,-408.32 207.43,-415.52 207.43,-415.52 207.43,-419.12 203.83,-422.72 200.23,-422.72"/>
 <text xml:space="preserve" text-anchor="middle" x="180.43" y="-408.92" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#2f6f9f">LFO</text>
+</a>
+</g>
 </g>
 <!-- wire0&#45;&gt;Screech_filter -->
 <g id="edge17" class="edge">
 <title>wire0&#45;&gt;Screech_filter</title>
+<g id="a_edge17"><a xlink:href="#group-Patch-bay" xlink:title="Patch bay">
 <path fill="none" stroke="#2f6f9f" stroke-width="1.1" stroke-dasharray="1,5" d="M153.57,-411.92C143.93,-411.92 132.7,-411.92 121.61,-411.92"/>
 <polygon fill="#2f6f9f" stroke="#2f6f9f" stroke-width="1.1" points="121.65,-409.82 115.65,-411.92 121.65,-414.02 121.65,-409.82"/>
+</a>
+</g>
+<g id="a_edge17&#45;label"><a xlink:href="#group-Patch-bay" xlink:title=" patch wire">
 <text xml:space="preserve" text-anchor="middle" x="133.47" y="-417.92" font-family="Times,serif" font-size="10.00" fill="#2f6f9f"> patch wire</text>
+</a>
+</g>
 </g>
 </g>
 </svg>

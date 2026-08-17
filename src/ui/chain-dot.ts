@@ -79,7 +79,7 @@ export function groupAnchor(name: string): string {
 // slot. Read off the same conditions buildDot draws by, so a stage cannot be
 // both undrawn and unreachable.
 export function pathGroups(c: Controls): Set<string> {
-  const drawn = new Set([
+  return new Set([
     ...Object.keys(SOURCE_ACTIVE),
     ...bendOrder(c),
     'Stompbox',
@@ -87,15 +87,8 @@ export function pathGroups(c: Controls): Set<string> {
     'Spring verb',
     'Brownout',
     'Output',
+    'Feedback bus',
   ])
-  if (c.fbAmt > 0) drawn.add('Feedback bus')
-  for (const i of [0, 1] as const) {
-    const wired = Math.round(c[`mod${i}Src`]) !== 0 && c[`mod${i}Depth`] !== 0
-    if (wired && WIRE_TARGET[Math.round(c[`mod${i}Dest`])] === 'Feedback bus') {
-      drawn.add('Feedback bus')
-    }
-  }
-  return drawn
 }
 
 function touchedCount(name: string, c: Controls): number {
@@ -257,16 +250,21 @@ export function buildDot(c: Controls, o: Options = {}): string {
 
   lines.push(...wireRun(seq, k, o))
 
-  if (c.fbAmt > 0) {
+  // The bus is soldered to the board whether or not it is turned up, so it
+  // stays on the map — greyed at zero, like any other stage sitting at no mix.
+  // The wire carries the same URL as the box, so clicking the line that runs
+  // off the output opens the bus's controls without hunting for the node.
+  {
+    const up = c.fbAmt > 0
+    const wire = up ? k.accent2 : k.dim
     const dest = FB_TARGET[Math.round(c.fbDest)] ?? 'mix'
     const target =
       dest === 'mix' ? 'mix' : dest in SOURCE_ACTIVE ? `sources:${nodeId(dest)}` : nodeId(dest)
-    lines.push(node('Feedback bus', true))
+    const door = `URL="#${groupAnchor('Feedback bus')}", tooltip="Feedback bus"`
+    lines.push(node('Feedback bus', up))
+    lines.push(`  out -> ${nodeId('Feedback bus')} [color="${wire}", style=dashed, ${door}]`)
     lines.push(
-      `  out -> ${nodeId('Feedback bus')} [color="${k.accent2}", style=dashed]`,
-    )
-    lines.push(
-      `  ${nodeId('Feedback bus')} -> ${target} [color="${k.accent2}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${k.accent2}", fontsize=10]`,
+      `  ${nodeId('Feedback bus')} -> ${target} [color="${wire}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${wire}", fontsize=10, ${door}]`,
     )
   }
 
@@ -278,15 +276,15 @@ export function buildDot(c: Controls, o: Options = {}): string {
     const depth = c[`mod${i}Depth`]
     const dest = WIRE_TARGET[Math.round(c[`mod${i}Dest`])]
     if (src === 0 || depth === 0 || !dest) continue
-    if (dest === 'Feedback bus' && !drawn.has(nodeId(dest))) lines.push(node(dest, true))
     const inStrip = dest in SOURCE_ACTIVE
     if (!inStrip && !drawn.has(nodeId(dest))) continue
     const anchor = inStrip ? 'sources' : nodeId(dest)
+    const door = `URL="#${groupAnchor('Patch bay')}", tooltip="Patch bay"`
     lines.push(
-      `  wire${i} [label="${SRC_LABEL[src]}", shape=plaintext, fontcolor="${k.mod}", fontsize=10]`,
+      `  wire${i} [label="${SRC_LABEL[src]}", shape=plaintext, fontcolor="${k.mod}", fontsize=10, ${door}]`,
     )
     lines.push(
-      `  wire${i} -> ${inStrip ? `sources:${nodeId(dest)}` : anchor} [color="${k.mod}", style=dotted, constraint=false, label=" ${o.live === false ? 'patch wire' : depth.toFixed(2)}", fontcolor="${k.mod}", fontsize=10]`,
+      `  wire${i} -> ${inStrip ? `sources:${nodeId(dest)}` : anchor} [color="${k.mod}", style=dotted, constraint=false, label=" ${o.live === false ? 'patch wire' : depth.toFixed(2)}", fontcolor="${k.mod}", fontsize=10, ${door}]`,
     )
     // sit the wire beside what it feeds, or it floats to the top and stretches
     // the whole drawing sideways
