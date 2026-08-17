@@ -1,10 +1,11 @@
 import { useState, type PointerEvent } from 'react'
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
-import { sliderFor } from './controls'
+import { groupFor, sliderFor } from './controls'
 import styles from './BodyPad.module.css'
 
 const DEST_LABELS = sliderFor('mod0Dest').choices ?? []
+const PATCH_BAY = groupFor('mod0Src')
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
 // Skin resistance between two contacts, in kΩ: high and useless until you
@@ -17,7 +18,7 @@ function resistance(x: number, y: number): string {
 // The bare contacts every bent toy grows sooner or later: touch both and your
 // body becomes the resistor. Wire an axis to something in the patch bay first,
 // or the pad does nothing — which is also true of the real thing.
-export function BodyPad() {
+export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
   const controls = useStoreValue(engine.controls)
   const [held, setHeld] = useState(false)
 
@@ -78,14 +79,7 @@ export function BodyPad() {
             </span>
           ))
         ) : (
-          <button
-            className={styles.unwired}
-            onClick={() =>
-              document
-                .getElementById('group-Patch-bay')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-          >
+          <button className={styles.unwired} onClick={() => onOpen(PATCH_BAY)}>
             no wire soldered to it — patch one
           </button>
         )}

@@ -87,7 +87,7 @@ export function App() {
       >
         <Scope />
         <Keys />
-        <BodyPad />
+        <BodyPad onOpen={setOpen} />
         <div className={styles.ioRow}>
           <button
             className={playing ? styles.playBtnOn : styles.playBtn}

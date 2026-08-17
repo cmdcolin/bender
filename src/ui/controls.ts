@@ -1225,6 +1225,16 @@ export function sliderFor(key: ControlKey): SliderDef {
   return def
 }
 
+export const GROUP_BY_KEY = new Map<ControlKey, string>(
+  GROUPS.flatMap(g => g.sliders.map(s => [s.key, g.name] as const)),
+)
+
+export function groupFor(key: ControlKey): string {
+  const name = GROUP_BY_KEY.get(key)
+  if (!name) throw new Error(`no group for ${key}`)
+  return name
+}
+
 export function snapToStep(def: Pick<SliderDef, 'min' | 'max' | 'step'>, value: number): number {
   const stepped = def.min + Math.round((value - def.min) / def.step) * def.step
   return Math.min(def.max, Math.max(def.min, Number(stepped.toFixed(6))))
