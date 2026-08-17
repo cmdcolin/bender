@@ -1,5 +1,7 @@
 import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
+import { KEY_CHOICE, MIC_CHOICE } from '../../dsp/stages/sampler'
+import { STEP_CHOICE } from '../../dsp/trigbus'
 import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
 
 // A slot's choices are derived from the table, so the counts can't drift. What
@@ -51,6 +53,18 @@ test('the clock lock lands the toy on a division of the kit', () => {
   expect(at(3)).toBeCloseTo(kitHz / 3.2, 6)
   // Whichever it picked, the kit's step rate is a whole number of the toy's.
   expect((kitHz / (3.2 * at(1))) % 1).toBeCloseTo(0, 6)
+})
+
+// The voices themselves come off VOICE_LABELS either side, so they cannot drift.
+// What each list adds past them is written out by hand and read back by a
+// hard-coded offset, and the two lists add different things — so an entry
+// slipped into either tail silently moves what the decoder hears.
+test('the trigger tails decode the choice they name', () => {
+  const at = (key: 'trigToDrum' | 'sampleTrig', i: number) =>
+    sliderFor(key).choices?.[i]
+  expect(at('trigToDrum', STEP_CHOICE)).toBe('the step')
+  expect(at('sampleTrig', KEY_CHOICE)).toBe('key')
+  expect(at('sampleTrig', MIC_CHOICE)).toBe('mic')
 })
 
 test('log sliders have a positive floor or zero minimum', () => {

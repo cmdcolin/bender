@@ -4,8 +4,10 @@ import { N_DRUM_VOICES, voiceMask } from '../trigbus'
 import { Transient } from '../util/follower'
 
 // Past the voices and the whole kit, the two lines that aren't the kit at all.
-const KEY_CHOICE = N_DRUM_VOICES + 2
-const MIC_CHOICE = N_DRUM_VOICES + 3
+// The offsets are the tail of sampleTrig's own choices, which is a different
+// tail from the trigger patch's — a test pins each to the label it decodes.
+export const KEY_CHOICE = N_DRUM_VOICES + 2
+export const MIC_CHOICE = N_DRUM_VOICES + 3
 
 // A dropped audio file at bendable speed: looping through the chain, or waiting
 // on a trigger line the way the kit's own voices do. Struck, it is a seventh
