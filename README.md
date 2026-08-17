@@ -452,6 +452,14 @@ near 9%, and the board as it boots near 1%. `pnpm bench stock` renders that one.
 Anything that pushes the heavy board up is what runs out of budget first on a
 slower machine, which is where the sound starts breaking up.
 
+`pnpm soak` plays a bar and then leaves the board ringing itself out for several
+minutes, printing what each stage costs as it goes. The number to watch is
+whether any column climbs: every envelope here decays geometrically and one that
+never arrives at zero arrives at 1e-320 instead, where the hardware stops
+handling arithmetic in one piece and the stage costs twenty times what it did.
+That is the slowdown that turns up after the app has been open a while rather
+than under load, and `denormal.test.ts` walks the whole graph looking for it.
+
 ## Footnote
 
 Initial template with Claude Fable. Follows in footsteps of
