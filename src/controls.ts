@@ -11,6 +11,7 @@ export const DEFAULT_CONTROLS = {
   chipBattery: 0,
   chipCap: 0,
   chipClipHz: 0,
+  chipClipClock: 0,
   chipBendSpot: 0,
   chipBendPot: 0,
   chipDrift: 0,

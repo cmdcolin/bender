@@ -151,6 +151,66 @@ test('the bend comes out of the speaker as a pitch that travels', () => {
   expect(stock[0]! / settled(stock)).toBeCloseTo(1, 1)
 })
 
+test('the clock bend reaches octaves the supply cannot', () => {
+  const span = (o: Partial<Controls>) => {
+    const v = pitchWalk(o).filter(x => x > 1)
+    return Math.log2(Math.max(...v) / Math.min(...v))
+  }
+  // Starving the rail is worth two thirds of an octave and then the chip stops
+  // running, because a CMOS oscillator barely cares what its supply is doing.
+  // Hanging a capacitor on that oscillator divides it instead, and division has
+  // no such ceiling — which is why the dive that needs octaves has to come off
+  // the timing pin and cannot come off the rail.
+  expect(span({ chipStarve: 0.55, chipCap: 0.6 })).toBeLessThan(1)
+  expect(
+    span({ chipCap: 0.6, chipClipHz: 3, chipClipClock: 0.5 }),
+  ).toBeGreaterThan(1.5)
+})
+
+test('the clip leaves the clock slowly and lets go of it at once', () => {
+  const rail = new ToyRail(SR, 7)
+  const seen: number[] = []
+  for (let i = 0; i < 3 * SR; i++) {
+    if (i % 128 === 0) rail.setBoard(0, 0, 0, 0, 0.55)
+    rail.tick(0.1, 0.25, 0, 3, 0.2)
+    if (i % 24 === 0) seen.push(rail.clipTravel)
+  }
+  let rising = 0
+  let falling = 0
+  for (let i = 1; i < seen.length; i++) {
+    const d = seen[i]! - seen[i - 1]!
+    if (d > 1e-6) rising++
+    else if (d < -1e-6) falling++
+  }
+  // Charging the found cap through the contact takes time; lifting the clip
+  // takes the cap out of circuit altogether, which takes none. Rising travel is
+  // the clock on its way down, so the dive is what there is time to hear — and
+  // symmetric, the same bend would only warble.
+  expect(rising).toBeGreaterThan(falling * 2)
+})
+
+test('a clip on the clock is not a clip on the supply', () => {
+  const onClock = new ToyRail(SR, 21)
+  const onSupply = new ToyRail(SR, 21)
+  let clockLow = 1
+  let supplyLow = 1
+  for (let i = 0; i < 4 * SR; i++) {
+    if (i % 128 === 0) {
+      onClock.setBoard(0, 0, 0, 0, 0.5)
+      onSupply.setBoard(0, 0, 0, 0, 0.5)
+    }
+    onClock.tick(0.1, 0, 0, 5, 1)
+    onSupply.tick(0.1, 0, 0, 5, 0)
+    clockLow = Math.min(clockLow, onClock.v)
+    supplyLow = Math.min(supplyLow, onSupply.v)
+  }
+  // One piece of metal in one place. A supply pad is a low impedance that draws
+  // when you bridge it; the oscillator pin draws nothing worth the name, so the
+  // rail never notices the clip is on the board at all.
+  expect(supplyLow).toBeLessThan(0.6)
+  expect(clockLow).toBeGreaterThan(0.95)
+})
+
 test('a clipped board browns out without the starve knob being touched', () => {
   const rail = new ToyRail(SR, 11)
   rail.setBoard(0, 0, 0, 0, 0.35)

@@ -129,6 +129,15 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Bare metal dragged across the pads, and how often it finds one. Each touch shorts the rail to the floor and lets go, so the supply falls off a cliff and climbs back at whatever rate the reservoir allows — the fastest way to the dive, and the one that repeats. It is a hand holding a paperclip rather than a switch: the rate is the average, the fault cluster decides how much it bunches.',
       },
       {
+        key: 'chipClipClock',
+        label: 'Clip on clock',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Whether the clip lands on the timing pin instead of the supply — and it is the difference between a sag and a dive. Starving the rail is worth two thirds of an octave before the chip stops running at all; a capacitor hung on the oscillator divides the clock instead, and division has no such ceiling. Four octaves at the top, travelling at whatever rate the Reservoir charges, with the whole timebase going along: tune, tempo and envelopes together, the melody arriving somewhere under the bottom of its own keyboard. Needs Clip chatter to have something to land with.',
+      },
+      {
         key: 'chipBendSpot',
         label: 'Bend spot',
         min: 0,

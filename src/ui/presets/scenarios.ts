@@ -84,6 +84,7 @@ const WRECK: [ControlKey, number, number][] = [
   ['filtRes', 0.85, 1],
   ['chipStarve', 0.4, 0.9],
   ['chipCap', 0.45, 0.85],
+  ['chipClipClock', 0.3, 0.9],
   ['brownAmt', 0.4, 0.9],
   ['driveDb', 0.5, 1],
   ['distMix', 0.5, 1],
@@ -133,6 +134,7 @@ const ANTAGONISTS: [ControlKey, ControlKey][] = [
   // together they are a dive; either one alone is a setting.
   ['chipStarve', 'chipCap'],
   ['chipCap', 'chipClipHz'],
+  ['chipClipClock', 'chipClipHz'],
   ['dlyFb', 'delayMs'],
   ['combFb', 'combHz'],
   ['stompDrive', 'stompSag'],

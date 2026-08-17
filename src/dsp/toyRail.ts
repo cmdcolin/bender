@@ -69,6 +69,21 @@ const CLIP_STARVE = 1.2
 const CLIP_HOLD_MIN = 0.02
 const CLIP_HOLD_SPAN = 0.18
 
+// The contact, as something the timebase can read, and why it is not symmetric.
+//
+// Pressing down couples whatever cap the clip found onto the timing node, and
+// that cap has to charge through the contact before the clock has finished
+// moving — slow, and slower the bigger the cap. Lifting off does not discharge
+// anything: it takes the cap out of the circuit altogether, and the node is
+// left with nothing but its own resistor and the few picofarads inside the die.
+// So the clock leaves slowly and comes back at once.
+//
+// That asymmetry is the whole reason the bend reads as a dive rather than a
+// wobble. Symmetric, it would spend as long climbing as falling and the ear
+// would hear a warble; as built, the falls are what there is time to hear.
+const CLOCK_DRAG_PULL = 40
+const CLOCK_DRAG_DROP = 400
+
 // The shared toy supply rail. Output current drains it in proportion to starve
 // and to how flat the cells are; when it droops past the watchdog threshold the
 // chip browns out, reboots after a boot delay, and everything powered from it
@@ -99,6 +114,7 @@ export class ToyRail {
   // ticked forty-eight thousand times a second.
   private slow = 1
   private clipRemaining = 0
+  private drag = 0
   private thresholdWalk = new Drunk()
   private clipFault: Burst
   private rng: Rng
@@ -130,9 +146,13 @@ export class ToyRail {
   }
 
   // load: |output| this sample. extra: mic patched onto the rail. clipHz: how
-  // often bare metal finds a pad and chokes the supply for as long as it rests
-  // there.
-  tick(load: number, starve: number, extra: number, clipHz = 0) {
+  // often bare metal finds a pad. clipClock: which pad it found — 0 is the
+  // supply and 1 is the timing pin, and it is a trade rather than two knobs
+  // because the clip is one piece of metal in one place. A supply pad is a low
+  // impedance that draws current when you bridge it; the oscillator pin is the
+  // highest impedance on the board and draws essentially none. So the further
+  // the clip moves onto the clock, the less of a choke it is.
+  tick(load: number, starve: number, extra: number, clipHz = 0, clipClock = 0) {
     this.clipFault.step()
     if (
       clipHz > 0 &&
@@ -146,10 +166,21 @@ export class ToyRail {
     // A touch is a starve nobody turned the knob for, so it arrives on the same
     // wire as the knob and everything downstream treats it the same way.
     let choked = starve
-    if (this.clipRemaining > 0) {
+    const touching = this.clipRemaining > 0
+    if (touching) {
       this.clipRemaining--
-      choked += CLIP_STARVE
+      choked += CLIP_STARVE * (1 - clipClock)
     }
+
+    // The same contact, read by the timebase instead of the supply. Down is the
+    // found cap charging through the clip; up is the clip leaving, which is not
+    // a discharge but a disconnection, and takes no time at all.
+    const pull = touching
+      ? CLOCK_DRAG_PULL / this.sr / this.slow
+      : CLOCK_DRAG_DROP / this.sr
+    this.drag = flushDenormal(
+      this.drag + pull * ((touching ? 1 : 0) - this.drag),
+    )
 
     this.stress = choked + this.battery
     // Everything the supply does, slowed by whatever capacitance is behind the
@@ -242,6 +273,15 @@ export class ToyRail {
     return this.latchRemaining > 0
   }
 
+  /**
+   * How much of the found cap is currently sitting on the timing node, 0 to 1.
+   * Whoever owns the clock decides what that is worth in octaves — the rail
+   * only knows the contact is there and how far the charge has got.
+   */
+  get clipTravel() {
+    return this.drag
+  }
+
   // 1 at full rail; pitch sags toward half an octave down as it dies.
   get pitchFactor() {
     return 0.55 + 0.45 * this.v
@@ -281,6 +321,7 @@ export class ToyRail {
     this.bootRemaining = 0
     this.latchRemaining = 0
     this.clipRemaining = 0
+    this.drag = 0
     this.reported = 0
     this.stress = 0
     this.thresholdWalk.reset()

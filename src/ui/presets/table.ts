@@ -25,13 +25,15 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'paperclip',
-    blurb: 'Bare metal on the supply pads — every touch dives and climbs back',
+    blurb:
+      'Bare metal on the timing pin — every touch dives an octave and snaps back',
     patch: {
       chipLevel: 0.85,
       chipAccomp: 0.5,
-      chipStarve: 0.62,
-      chipCap: 0.7,
-      chipClipHz: 1.2,
+      chipStarve: 0.3,
+      chipCap: 0.6,
+      chipClipHz: 3,
+      chipClipClock: 0.45,
       faultCluster: 0.55,
       humLevel: 0.2,
       brownAmt: 0.25,

@@ -84,6 +84,11 @@ const CHORD_GAIN = 0.7
 // rail down.
 const LATCH_AMP = 0.85
 
+// How far a capacitor hung on the timing pin can divide the clock: four
+// octaves, which is what puts a toy melody under the bottom of its own keyboard
+// and turns its squares into something you feel rather than hear.
+const CLOCK_DRAG_MAX = 15
+
 // One small output stage carries every voice, so a chord leans on its headroom
 // rather than coming out four times louder.
 const MIXER_DRIVE = 0.35
@@ -292,6 +297,7 @@ export class ToyChip implements Stage {
     const rail = this.rail
     const maxHz = this.sr * 0.49
     const clipHz = p[IDX.chipClipHz]!
+    const clipClock = p[IDX.chipClipClock]!
     rail.setBoard(
       battery,
       ctx.heat,
@@ -325,6 +331,16 @@ export class ToyChip implements Stage {
         this.clockWalk *= 0.999
         clock *= 1 + pot * 24 * (1 + 0.4 * Math.sin(this.clockWalk))
       }
+      // The clip landing on the timing pin instead of the supply, which is the
+      // other way to move a clock and by far the larger one. Starving the rail
+      // is worth a fraction of an octave before the chip stops running at all;
+      // hanging a capacitor off the oscillator divides it, and dividing has no
+      // such limit. Four octaves at the top of the knob, travelling at whatever
+      // rate the found cap charges — the whole timebase going with it, so the
+      // tune, the tempo and the envelopes dive together and the melody arrives
+      // somewhere under the bottom of the keyboard.
+      if (clipClock > 0)
+        clock /= 1 + clipClock * CLOCK_DRAG_MAX * rail.clipTravel
       // The toy runs on its own crystal and it wanders. Nothing pulls it back,
       // so it never settles on a ratio with the drum machine — the two lean past
       // each other and come back for as long as you leave it running.
@@ -479,7 +495,7 @@ export class ToyChip implements Stage {
       const starve = modStarve
         ? Math.min(Math.max(baseStarve + modStarve[i]!, 0), 1)
         : baseStarve
-      rail.tick(Math.abs(out), starve, extra, clipHz)
+      rail.tick(Math.abs(out), starve, extra, clipHz, clipClock)
       ctx.railV[i] = rail.v
       ctx.step[i] = this.stepClock
       // The chip's gate, brought out to the bus whether anything is soldered to

@@ -158,6 +158,32 @@ The bends that matter:
   crash the rail to ground and the pitch is simply gone and then simply back,
   two steps with the dive missing. The rate is an average and the fault cluster
   decides how much it bunches, because a hand does not keep time.
+- **Clip on clock** is where that same piece of metal landed, and it is the
+  difference between a sag and a dive. A CMOS oscillator barely cares what its
+  supply is doing: starve the rail and you get two thirds of an octave, and then
+  the chip stops running rather than going any lower. Hang a capacitor on the
+  oscillator instead and you are dividing the clock, which has no such ceiling —
+  four octaves at the top of the knob, with the whole timebase going along, so
+  the tune, the tempo and the envelopes dive together and the melody arrives
+  somewhere under the bottom of its own keyboard, all fundamental and no
+  harmonics left. The travel is the found capacitor charging through the
+  contact, so Reservoir sets how long the dive takes here too.
+
+  It is one piece of metal in one place, so the knob is a trade rather than a
+  second bend: a supply pad is a low impedance that draws current when you
+  bridge it, the oscillator pin is the highest impedance on the board and draws
+  essentially none, and the further the clip moves onto the clock the less of a
+  choke it is. Leaving is slow and coming back is instant — charging that cap
+  takes time, lifting the clip takes it out of the circuit altogether — which is
+  the whole reason the bend reads as a dive rather than a warble.
+
+  This is also why bare metal on a cheap board finds the sound at all. Almost
+  every node on a toy keyboard is low impedance and shrugs off a bit of stray
+  resistance; the timing pin is the one place where a paperclip, a fingertip or
+  any stray RC rewrites the machine. It needs a toy clocked from a bare RC
+  oscillator rather than a resonator — which is what the cheap ones used, to
+  save the cost of the resonator.
+
 - **Latch-up** is the brownout that doesn't reboot. CMOS on a collapsing rail
   can jam instead: the die holds whatever note was sounding, keeps drawing
   current, and the output stage sits where it was left rather than fading with
