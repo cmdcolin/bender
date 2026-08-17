@@ -1,4 +1,5 @@
 import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
+import { romIndex } from '../dsp/stages/roms'
 import { ALL_SLIDERS, snapToStep } from './controls'
 
 export interface PresetDef {
@@ -213,6 +214,65 @@ export const PRESETS: PresetDef[] = [
       driveDb: 18,
       distMode: 2,
       distToneHz: 4000,
+    },
+  },
+  {
+    name: 'grief machine',
+    blurb: 'Funeral march at half clock, browning out into a long tank',
+    patch: {
+      chipLevel: 0.8,
+      chipTune: romIndex('funeral'),
+      chipClockX: 0.55,
+      chipStarve: 0.45,
+      brownAmt: 0.3,
+      humLevel: 0.25,
+      dlyMix: 0.35,
+      delayMs: 380,
+      dlyFb: 0.5,
+      revMix: 0.6,
+      revDecayS: 5,
+      revBoing: 0.5,
+    },
+  },
+  {
+    name: 'séance',
+    blurb: 'Satie through a soldered DAC bias and a ringing comb',
+    patch: {
+      chipLevel: 0.7,
+      chipTune: romIndex('gnossienne'),
+      chipClockX: 0.7,
+      chipBendSpot: 3,
+      chipBendPot: 0.25,
+      ringMix: 0.3,
+      ringHz: 6,
+      combMix: 0.4,
+      combHz: 180,
+      combFb: 0.8,
+      dlyMix: 0.3,
+      delayMs: 300,
+      flutter: 0.3,
+      revMix: 0.5,
+      revDecayS: 4,
+    },
+  },
+  {
+    name: 'dying walkman',
+    blurb: 'Sakura on a chewed tape and a failing DAC',
+    patch: {
+      chipLevel: 0.75,
+      chipTune: romIndex('sakura'),
+      chipClockX: 0.8,
+      bits: 7,
+      srHz: 9000,
+      crushMix: 0.5,
+      dlyMix: 0.5,
+      delayMs: 260,
+      dlyFb: 0.45,
+      wowDepthMs: 5,
+      wowHz: 0.8,
+      flutter: 0.45,
+      dlyToneHz: 3500,
+      revMix: 0.35,
     },
   },
   {

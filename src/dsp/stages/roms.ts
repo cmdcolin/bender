@@ -93,6 +93,63 @@ export const ROMS: Rom[] = [
       12, -2, -1, -1, 12, -2, -1, -1,
     ],
   },
+
+  // The sad end of the bank: slow ROMs in minor and modal keys, where a starved
+  // rail sounds less like a joke and more like the toy is grieving.
+  {
+    name: 'gymnopédie',
+    stepHz: 2.2,
+    steps: [
+      21, -2, -2, -2, 24, -2, 23, -2, 21, -2, -2, -2, 16, -2, -2, -1, 19, -2, -2, -2, 21, -2, 19,
+      -2, 16, -2, -2, -2, 14, -2, -2, -1,
+    ],
+  },
+  {
+    name: 'gnossienne',
+    stepHz: 4,
+    steps: [
+      8, 10, 11, 13, 15, -2, 16, 15, 14, 15, -2, -2, -1, -1, -1, -1, 15, 16, 15, 13, 11, 10, 8, -2,
+      -2, -1, -1, -1, -1, -1, -1, -1,
+    ],
+  },
+  {
+    name: 'sakura',
+    stepHz: 3,
+    steps: [
+      12, -2, 14, -2, 12, -2, 14, -2, 12, -2, 14, 15, 14, -2, 12, -2, 14, -2, 12, -2, 8, -2, 7, -2,
+      8, -2, 7, -2, 12, -2, -2, -1,
+    ],
+  },
+  {
+    name: 'dies irae',
+    stepHz: 3,
+    steps: [
+      12, -2, 10, -2, 12, -2, -2, -1, 8, -2, 10, -2, 7, -2, -2, -1, 8, -2, 7, -2, 5, -2, -2, -1, 7,
+      -2, 8, -2, 7, -2, 5, -1,
+    ],
+  },
+  {
+    name: 'funeral',
+    stepHz: 2.6,
+    steps: [
+      12, -2, -2, -2, 12, -2, 12, -2, 12, -2, -2, -2, 15, -2, 14, 12, 14, -2, 12, -2, -2, -1, -1,
+      -1, 12, -2, -2, -2, 12, -2, -2, -1,
+    ],
+  },
+  {
+    name: 'greensleeves',
+    stepHz: 4.5,
+    steps: [
+      12, 15, 17, 19, -2, 20, 19, 17, 14, -2, 10, 11, 12, 14, -2, 10, -2, -1, 12, 15, 17, 19, -2,
+      20, 19, 17, 14, -2, 10, 11, 12, -1,
+    ],
+  },
 ]
 
 export const ROM_NAMES = ROMS.map(r => r.name)
+
+export function romIndex(name: string): number {
+  const i = ROMS.findIndex(r => r.name === name)
+  if (i < 0) throw new Error(`no ROM named ${name}`)
+  return i
+}

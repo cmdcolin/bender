@@ -21,6 +21,7 @@ export class ToyChip implements Stage {
   private gateClock = 0
   private clockWalk = 0
   private lastReboot = 0
+  private wasPlaying = false
   private rng: Rng
 
   constructor(
@@ -45,6 +46,14 @@ export class ToyChip implements Stage {
     return p[IDX.chipLevel]! > 0 || p[IDX.drumLevel]! > 0
   }
 
+  private restart(tune: number[]) {
+    this.pos = 0
+    this.stepClock = 0
+    const step = tune[0]!
+    this.note = step >= 0 ? step : -1
+    this.env = step >= 0 ? 1 : 0
+  }
+
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.chipLevel]!
     const rom = ROMS[Math.round(p[IDX.chipTune]!)] ?? ROMS[0]!
@@ -57,12 +66,14 @@ export class ToyChip implements Stage {
     const fbToRail = Math.round(p[IDX.fbDest]!) === 2
     const rail = this.rail
 
+    // a reboot, and pressing play, both drop the needle on step 0
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
-      this.pos = 0
-      this.note = -1
-      this.stepClock = 0
-      this.env = 0
+      this.restart(tune)
+    }
+    if (this.transport.playing !== this.wasPlaying) {
+      this.wasPlaying = this.transport.playing
+      if (this.wasPlaying) this.restart(tune)
     }
 
     for (let i = 0; i < io.n; i++) {
@@ -105,7 +116,9 @@ export class ToyChip implements Stage {
         this.gateState = 1
       }
 
-      const envDecay = Math.exp(-(2.5 * clock) / this.sr)
+      // one envelope generator, timed off the ROM's own step rate the way a
+      // cheap chip ties decay to its tempo clock
+      const envDecay = Math.exp(-(0.8 * rom.stepHz * clock) / this.sr)
       this.env *= envDecay
       this.keyEnv = this.keyNote >= 0 ? 1 : this.keyEnv * envDecay
 

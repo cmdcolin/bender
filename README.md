@@ -51,9 +51,11 @@ The bends that matter:
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**
 shakes the current board.
 
-The chip's ROM bank holds twelve demo songs — four factory doodles and eight
-public-domain tunes every cheap keyboard shipped (Für Elise, Ode to Joy, Rondo
-alla Turca, William Tell…), each with its own sequencer rate. Nothing plays by
+The chip's ROM bank holds eighteen demo songs, each with its own sequencer rate:
+four factory doodles, eight public-domain tunes every cheap keyboard shipped
+(Für Elise, Ode to Joy, Rondo alla Turca, William Tell…), and six slow ones in
+minor and modal keys — Gymnopédie, Gnossienne, Sakura, Dies Irae, Chopin's
+funeral march, Greensleeves — where a starving rail stops being funny. Nothing plays by
 itself: **play demo song** runs the ROM sequencers, the keys work either way.
 **Record** writes the output to a 16-bit stereo wav; stopping saves the take.
 

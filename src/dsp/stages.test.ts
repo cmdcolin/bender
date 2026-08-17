@@ -58,8 +58,10 @@ test('starve reboots restart the tune', () => {
   let sawSound = false
   for (let b = 0; b < Math.ceil((3 * sr) / BLOCK); b++) {
     chain.process(io, p)
+    // the safety tail's dc blocker leaves a decaying residue, so "silent"
+    // means below anything audible rather than exactly zero
     const peak = Math.max(...io.l.subarray(0, BLOCK).map(Math.abs))
-    if (peak === 0) sawSilentBoot = true
+    if (peak < 1e-9) sawSilentBoot = true
     else sawSound = true
   }
   expect(sawSound).toBe(true)
