@@ -9,86 +9,9 @@ import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { packParams } from '../src/engine/params'
 import { buildBender } from '../src/dsp/build'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../src/dsp/stage'
+import { BOARDS } from './boards'
 
 const SR = 48000
-
-// Every pedal wet, tape on, the supply dying, four wires in the bay and the
-// faults rolling — and the bend slots named outright.
-//
-// Naming them matters: the rack has six slots for seven bends, so one always
-// sits out, and a mix turned up on the one that is out costs nothing at all.
-// Left to the stock slots this board set shiftMix and shiftFb on a shifter that
-// was in no slot, which quietly kept the dearest bend on the board out of every
-// number this script has ever printed. Glitch buffer sits out instead, as the
-// cheapest of the seven — swap it in for whichever you want to read.
-const HEAVY: Partial<Controls> = {
-  bendSlot0: 1,
-  bendSlot1: 2,
-  bendSlot2: 3,
-  bendSlot3: 4,
-  bendSlot4: 6,
-  bendSlot5: 7,
-  chipLevel: 0.6,
-  chipAccomp: 1,
-  chipStarve: 0.3,
-  chipBattery: 0.4,
-  chipBendSpot: 1,
-  chipBendPot: 0.3,
-  chipDrift: 0.5,
-  chipLatch: 0.2,
-  drumLevel: 0.6,
-  drumRetrigHz: 20,
-  drumCross: 2,
-  drumCrossAmt: 0.4,
-  oscLevel: 0.3,
-  oscXmod: 0.4,
-  noiseLevel: 0.2,
-  crackleAmp: 0.3,
-  ringMix: 0.5,
-  crushMix: 0.5,
-  srHz: 12000,
-  srJitter: 0.3,
-  bits: 8,
-  distMix: 0.5,
-  subLevel: 0.4,
-  filtMix: 0.5,
-  filtRes: 1.2,
-  combMix: 0.5,
-  glitchMix: 0.5,
-  shiftMix: 0.5,
-  shiftFb: 0.4,
-  stompMix: 0.6,
-  stompLevel: -6,
-  stompSag: 0.5,
-  dlyMix: 0.5,
-  wowDepthMs: 3,
-  flutter: 0.4,
-  revMix: 0.4,
-  tapeMix: 0.7,
-  tapeDrop: 0.3,
-  tapePrint: 0.5,
-  tapeAzimuth: 0.3,
-  brownAmt: 0.4,
-  brownCrackle: 0.3,
-  humLevel: 0.3,
-  fbAmt: 0.5,
-  heatAmt: 0.5,
-  faultCluster: 0.4,
-  jointChatter: 0.3,
-  relayRate: 0.2,
-  couple: 0.5,
-  modLfoHz: 3,
-  mod0Src: 1,
-  mod0Dest: 0,
-  mod1Src: 3,
-  mod1Dest: 8,
-  mod2Src: 2,
-  mod2Dest: 2,
-  mod3Src: 9,
-  mod3Dest: 6,
-}
-
-const BOARDS: Record<string, Partial<Controls>> = { heavy: HEAVY, stock: {} }
 
 const REPS = 5
 

@@ -21,6 +21,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   private io: StereoBlock
   private micMono = new Float32Array(BLOCK)
   private scope = new Float32Array(SCOPE_LEN)
+  private scopeOut = new Float32Array(SCOPE_LEN)
   private scopePos = 0
   private meterCountdown = METER_EVERY
   // Scratch for the chip's note report, filled per meter post rather than
@@ -83,11 +84,16 @@ class BenderProcessor extends AudioWorkletProcessor {
 
   // Hand the take's audio to the main thread a slab at a time; it owns the
   // growing tape, the worklet only ever holds one chunk.
+  //
+  // Posted without transfer, so the two slab buffers are allocated once and
+  // written over for the whole take. Transferring meant a fresh 128 kB pair off
+  // the audio thread's heap every 0.7 s, and a collector run on this thread is
+  // a hole in the sound. The clone the structured serializer takes is the main
+  // thread's problem, and the main thread can afford it.
   private flushRec(done: boolean) {
-    const l = this.recL.slice(0, this.recFill)
-    const r = this.recR.slice(0, this.recFill)
+    const n = this.recFill
     this.recFill = 0
-    this.port.postMessage({ kind: 'rec', l, r, done }, [l.buffer, r.buffer])
+    this.port.postMessage({ kind: 'rec', l: this.recL, r: this.recR, n, done })
   }
 
   process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean {
@@ -114,48 +120,66 @@ class BenderProcessor extends AudioWorkletProcessor {
       mic ? this.micMono : undefined,
     )
 
-    out[0].set(io.l.subarray(0, n))
-    if (out[1]) out[1].set(io.r.subarray(0, n))
+    // subarray builds a view object, and a view object on the audio thread is
+    // garbage on the audio thread. A full block is what the host asks for
+    // essentially always, so the copy that needs no view is the one to take.
+    const l = io.l
+    const r = io.r
+    if (n === BLOCK) {
+      out[0].set(l)
+      if (out[1]) out[1].set(r)
+    } else {
+      out[0].set(l.subarray(0, n))
+      if (out[1]) out[1].set(r.subarray(0, n))
+    }
 
-    if (this.recording) {
-      for (let i = 0; i < n; i++) {
-        this.recL[this.recFill] = io.l[i]!
-        this.recR[this.recFill] = io.r[i]!
+    // One pass for the tape, the trace and the peak: three walks over the same
+    // 128 samples were three loop set-ups and three passes over the same line.
+    const recording = this.recording
+    let scopePos = this.scopePos
+    let peak = this.peak
+    for (let i = 0; i < n; i++) {
+      const v = l[i]!
+      if (recording) {
+        this.recL[this.recFill] = v
+        this.recR[this.recFill] = r[i]!
         if (++this.recFill === REC_CHUNK) this.flushRec(false)
       }
+      this.scope[scopePos] = v
+      scopePos = (scopePos + 1) & SCOPE_MASK
+      const a = v < 0 ? -v : v
+      if (a > peak) peak = a
     }
+    this.scopePos = scopePos
+    this.peak = peak
 
-    for (let i = 0; i < n; i++) {
-      this.scope[this.scopePos] = io.l[i]!
-      this.scopePos = (this.scopePos + 1) & SCOPE_MASK
-      const a = Math.abs(io.l[i]!)
-      if (a > this.peak) this.peak = a
-    }
     this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {
       this.meterCountdown = METER_EVERY
       // Unrolled from wherever the write head stands, in two runs rather than a
-      // modulo per sample.
-      const scope = new Float32Array(SCOPE_LEN)
-      const head = this.scopePos
-      scope.set(this.scope.subarray(head))
-      scope.set(this.scope.subarray(0, head), SCOPE_LEN - head)
-      const tick = this.built.toyDrum.tick
+      // modulo per sample, into a buffer this owns. It used to be a fresh 2 kB
+      // array transferred away sixty times a second — 128 kB/s of garbage on the
+      // one thread that cannot afford a collection. Posting it untransferred
+      // costs the serializer a copy and this thread nothing; the write head has
+      // already moved on by the time the copy is taken, which is why it is
+      // unrolled into a second buffer rather than posted in place.
+      const scope = this.scopeOut
+      const ring = this.scope
+      const head = scopePos
+      for (let i = 0; i < SCOPE_LEN; i++)
+        scope[i] = ring[(head + i) & SCOPE_MASK]!
       const rail = this.built.rail
       const sounding = this.built.toyChip.soundingNotes(this.chipNotes)
-      this.port.postMessage(
-        {
-          kind: 'meter',
-          peak: this.peak,
-          scope,
-          tick,
-          duck: this.duck,
-          rail: rail.v,
-          reboots: rail.rebootCount,
-          notes: this.chipNotes.slice(0, sounding),
-        },
-        [scope.buffer],
-      )
+      this.port.postMessage({
+        kind: 'meter',
+        peak,
+        scope,
+        tick: this.built.toyDrum.tick,
+        duck: this.duck,
+        rail: rail.v,
+        reboots: rail.rebootCount,
+        notes: this.chipNotes.slice(0, sounding),
+      })
       this.peak = 0
       this.duck = 0
     }

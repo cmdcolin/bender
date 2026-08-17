@@ -60,10 +60,14 @@ export interface MeterMsg {
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.
+// The two arrays are the worklet's own, posted untransferred so the audio
+// thread allocates nothing per slab — `n` says how much of them is this slab,
+// and copying that much out is the receiver's job.
 export interface RecMsg {
   kind: 'rec'
   l: Float32Array
   r: Float32Array
+  n: number
   done: boolean
 }
 

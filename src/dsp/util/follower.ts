@@ -35,18 +35,31 @@ export class Transient {
   private fast = new Follower()
   private slow = new Follower()
   private wait = 0
+  // Four fixed time constants, so four exp calls — settled once here rather
+  // than per sample, which is what they were.
+  private readonly fastA: number
+  private readonly fastR: number
+  private readonly slowA: number
+  private readonly slowR: number
+  private readonly lockout: number
 
-  constructor(private readonly sr: number) {}
+  constructor(private readonly sr: number) {
+    this.fastA = coef(0.002, sr)
+    this.fastR = coef(0.02, sr)
+    this.slowA = coef(0.15, sr)
+    this.slowR = coef(0.4, sr)
+    this.lockout = Math.floor(0.06 * sr)
+  }
 
   process(x: number, thresh: number): boolean {
-    const f = this.fast.process(x, coef(0.002, this.sr), coef(0.02, this.sr))
-    const s = this.slow.process(x, coef(0.15, this.sr), coef(0.4, this.sr))
+    const f = this.fast.process(x, this.fastA, this.fastR)
+    const s = this.slow.process(x, this.slowA, this.slowR)
     if (this.wait > 0) {
       this.wait--
       return false
     }
     if (f > thresh && f > s * 1.6) {
-      this.wait = Math.floor(0.06 * this.sr)
+      this.wait = this.lockout
       return true
     }
     return false

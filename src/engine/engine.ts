@@ -470,8 +470,14 @@ export class Engine {
 
   private take: { l: Float32Array; r: Float32Array }[] = []
 
-  private onRecChunk(msg: { l: Float32Array; r: Float32Array; done: boolean }) {
-    if (msg.l.length) this.take.push({ l: msg.l, r: msg.r })
+  private onRecChunk(msg: {
+    l: Float32Array
+    r: Float32Array
+    n: number
+    done: boolean
+  }) {
+    if (msg.n)
+      this.take.push({ l: msg.l.slice(0, msg.n), r: msg.r.slice(0, msg.n) })
     const frames = this.take.reduce((n, c) => n + c.l.length, 0)
     const sr = this.ctx?.sampleRate ?? 48000
     this.recSeconds.set(frames / sr)

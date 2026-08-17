@@ -37,22 +37,33 @@ function bright(x: Float32Array): number {
   return Math.sqrt(hp / x.length) / (rms(x) + 1e-12)
 }
 
-function zcr(x: Float32Array): number {
-  let n = 0
-  for (let i = 1; i < x.length; i++) if (x[i]! >= 0 !== x[i - 1]! >= 0) n++
-  return ((n / 2) * SR) / x.length
+// Where a steady tone crosses zero going up, to a fraction of a sample. Counting
+// whole crossings in a window instead quantises the pitch to one crossing in
+// 2400 samples, which at 220 Hz is 0.45% — coarser than the wander this file
+// asserts on, so a transport wobbling by a third of a percent read as either
+// zero or twice the truth depending on where the crossings happened to land.
+function crossings(x: Float32Array): number[] {
+  const t: number[] = []
+  for (let i = 1; i < x.length; i++) {
+    const a = x[i - 1]!
+    const b = x[i]!
+    if (a <= 0 && b > 0) t.push(a === b ? i : i - 1 + -a / (b - a))
+  }
+  return t
 }
 
-// Pitch wander as a percentage: how much the zero-crossing rate of a steady
-// tone drifts window to window.
+// Pitch wander as a percentage: how much the period of a steady tone drifts
+// over the render, measured across eight cycles at a time.
 function wander(x: Float32Array): number {
-  const wins: number[] = []
-  for (let i = SR; i + 2400 < x.length; i += 2400)
-    wins.push(zcr(x.subarray(i, i + 2400)))
-  const mean = wins.reduce((a, b) => a + b, 0) / wins.length
-  const sd = Math.sqrt(
-    wins.reduce((a, b) => a + (b - mean) ** 2, 0) / wins.length,
-  )
+  const t = crossings(x.subarray(SR))
+  const hz: number[] = []
+  for (let i = 8; i < t.length; i++) {
+    const f = (8 * SR) / (t[i]! - t[i - 8]!)
+    if (Number.isFinite(f)) hz.push(f)
+  }
+  if (hz.length === 0) return 0
+  const mean = hz.reduce((a, b) => a + b, 0) / hz.length
+  const sd = Math.sqrt(hz.reduce((a, b) => a + (b - mean) ** 2, 0) / hz.length)
   return (sd / mean) * 100
 }
 
@@ -148,9 +159,13 @@ test('the transport wobbles the pitch, and holds it dead steady when wound down'
         4,
       ).l,
     )
-  expect(at(0)).toBe(0)
-  expect(at(0.3)).toBeGreaterThan(0.3)
-  expect(at(1)).toBeGreaterThan(at(0.3))
+  // Wound down it is steady to the floor of the measurement itself, which is
+  // where a sample-rate estimate of a 220 Hz period bottoms out.
+  expect(at(0)).toBeLessThan(0.05)
+  expect(at(0.3)).toBeGreaterThan(0.2)
+  // Reading the period rather than counting crossings resolves the two apart,
+  // so the knob can be held to roughly what it says rather than merely to more.
+  expect(at(1)).toBeGreaterThan(at(0.3) * 2)
   expect(at(1)).toBeLessThan(3)
 })
 

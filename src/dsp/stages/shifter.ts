@@ -10,45 +10,39 @@ const COEF_B = [
   0.4021921162426, 0.856171088242, 0.9722909545651, 0.9952884791278,
 ]
 
-class Ap2 {
-  private x1 = 0
-  private x2 = 0
-  private y1 = 0
-  private y2 = 0
-
-  constructor(private readonly a2: number) {}
-
-  process(x: number): number {
-    const y = this.a2 * (x + this.y2) - this.x2
-    this.x2 = this.x1
-    this.x1 = x
-    this.y2 = this.y1
-    this.y1 = flushDenormal(y)
-    return y
-  }
-
-  reset() {
-    this.x1 = 0
-    this.x2 = 0
-    this.y1 = 0
-    this.y2 = 0
-  }
-}
+const A2 = Float64Array.from([...COEF_A, ...COEF_B], c => c * c)
+const N_SEC = COEF_A.length
 
 // The analytic pair a single-sideband shift needs: re and im carry the same
 // signal a quarter cycle apart, at every frequency at once.
+//
+// Eight second-order allpass sections, held as four numbers each in one flat
+// state array rather than eight objects. Two chains of four ran as sixteen
+// method calls a sample per channel, and every one of them reloaded its four
+// fields from a different object; the sections themselves are six flops.
 class Hilbert {
   re = 0
   im = 0
-  private a = COEF_A.map(c => new Ap2(c * c))
-  private b = COEF_B.map(c => new Ap2(c * c))
+  private readonly st = new Float64Array(A2.length * 4)
   private held = 0
 
+  private chain(x: number, from: number): number {
+    const st = this.st
+    for (let k = from; k < from + N_SEC; k++) {
+      const o = k * 4
+      const y = A2[k]! * (x + st[o + 3]!) - st[o + 1]!
+      st[o + 1] = st[o]!
+      st[o] = x
+      st[o + 3] = st[o + 2]!
+      st[o + 2] = flushDenormal(y)
+      x = y
+    }
+    return x
+  }
+
   process(x: number) {
-    let a = x
-    for (const s of this.a) a = s.process(a)
-    let b = x
-    for (const s of this.b) b = s.process(b)
+    const a = this.chain(x, 0)
+    const b = this.chain(x, N_SEC)
     this.re = this.held
     this.held = a
     // chain B leads chain A, so negating it gives the quadrature pair the
@@ -57,8 +51,7 @@ class Hilbert {
   }
 
   reset() {
-    for (const s of this.a) s.reset()
-    for (const s of this.b) s.reset()
+    this.st.fill(0)
     this.re = 0
     this.im = 0
     this.held = 0

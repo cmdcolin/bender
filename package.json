@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "bench": "tsx scripts/bench.ts",
+    "blocks": "tsx scripts/blocks.ts",
     "diagram": "tsx scripts/chain-svg.ts",
     "soak": "tsx scripts/soak.ts",
     "preview": "vite preview",

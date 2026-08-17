@@ -1,5 +1,3 @@
-import { flushDenormal } from './softclip'
-
 // Rounded up to a power of two so wrapping is a mask rather than a modulo. A
 // tap costs three wraps and the board holds twenty-odd lines, and `%` on a
 // length the compiler can't see is an integer divide every time — the spring
@@ -23,8 +21,15 @@ export class DelayLine {
     this.mask = this.buf.length - 1
   }
 
+  // No denormal guard here, deliberately. What stalls the hardware is a *double*
+  // in the denormal range, and the smallest thing that survives the trip through
+  // this buffer is a float denormal, 1.4e-45 — which reads back out as an
+  // ordinary double, three hundred decades clear of where doubles go slow. The
+  // guard belongs on the recursive doubles the filters carry, and there it is
+  // worth 38x; here it was a compare on every write, and the board writes into
+  // forty-odd lines a sample.
   write(x: number) {
-    this.buf[this.pos] = flushDenormal(x)
+    this.buf[this.pos] = x
     this.pos = (this.pos + 1) & this.mask
   }
 
