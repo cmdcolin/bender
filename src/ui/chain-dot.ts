@@ -1,5 +1,5 @@
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { GROUPS } from './controls'
+import { GROUPS, sliderFor } from './controls'
 
 // The signal path, emitted as DOT so graphviz can draw what the chain actually
 // does: live bend order, the feedback wire, and where it lands. The panel draws
@@ -13,9 +13,25 @@ const BEND_GROUP = [
   'Comb',
   'Glitch buffer',
   'Screech filter',
+  'Freq shifter',
 ] as const
 
 const FB_TARGET = ['mix', 'Chaos osc', 'Toy keyboard', 'Tape delay'] as const
+
+// Which group owns each patch-bay destination, in mod*Dest order.
+const WIRE_TARGET = [
+  'Screech filter',
+  'Ring mod',
+  'Comb',
+  'Crusher',
+  'Toy keyboard',
+  'Toy drums',
+  'Tape delay',
+  'Glitch buffer',
+  'Feedback bus',
+] as const
+
+const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 
 const SOURCE_ACTIVE: Record<string, (c: Controls) => boolean> = {
   'Toy keyboard': c => c.chipLevel > 0,
@@ -32,6 +48,8 @@ export interface Palette {
   border: string
   accent: string
   accent2: string
+  /** control wires, cool against the warm signal path */
+  mod: string
 }
 
 export const PANEL: Palette = {
@@ -41,6 +59,7 @@ export const PANEL: Palette = {
   border: '#2c2c31',
   accent: '#ff5d3b',
   accent2: '#ffb03b',
+  mod: '#5ea9d8',
 }
 
 export function groupAnchor(name: string): string {
@@ -87,6 +106,7 @@ const BEND_MIX: Record<string, keyof Controls> = {
   Comb: 'combMix',
   'Glitch buffer': 'glitchMix',
   'Screech filter': 'filtMix',
+  'Freq shifter': 'shiftMix',
 }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -121,6 +141,12 @@ export function buildDot(c: Controls, o: Options = {}): string {
     `  edge [color="${k.border}", arrowsize=0.6, penwidth=1.1]`,
   ]
 
+  const drawn = new Set<string>()
+  const node = (name: string, active: boolean) => {
+    drawn.add(nodeId(name))
+    return groupNode(name, c, active, o)
+  }
+
   // The sources ride one strip rather than five nodes on a rank of their own:
   // a column of boxes keeps the whole path narrow enough to read at this size.
   lines.push(`  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`)
@@ -131,7 +157,7 @@ export function buildDot(c: Controls, o: Options = {}): string {
   const bends = bendOrder(c)
   for (const name of bends) {
     const mixKey = BEND_MIX[name]
-    lines.push(groupNode(name, c, mixKey ? c[mixKey] > 0 : true, o))
+    lines.push(node(name, mixKey ? c[mixKey] > 0 : true))
     lines.push(`  ${prev} -> ${nodeId(name)}`)
     prev = nodeId(name)
   }
@@ -147,7 +173,7 @@ export function buildDot(c: Controls, o: Options = {}): string {
     ['Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0],
     ['Output', true],
   ] as const) {
-    lines.push(groupNode(name, c, active, o))
+    lines.push(node(name, active))
     lines.push(`  ${prev} -> ${nodeId(name)}`)
     prev = nodeId(name)
   }
@@ -159,13 +185,36 @@ export function buildDot(c: Controls, o: Options = {}): string {
     const dest = FB_TARGET[Math.round(c.fbDest)] ?? 'mix'
     const target =
       dest === 'mix' ? 'mix' : dest in SOURCE_ACTIVE ? `sources:${nodeId(dest)}` : nodeId(dest)
-    lines.push(groupNode('Feedback bus', c, true, o))
+    lines.push(node('Feedback bus', true))
     lines.push(
       `  out -> ${nodeId('Feedback bus')} [color="${k.accent2}", style=dashed]`,
     )
     lines.push(
       `  ${nodeId('Feedback bus')} -> ${target} [color="${k.accent2}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${k.accent2}", fontsize=10]`,
     )
+  }
+
+  // Patch wires ride over the top of the signal path, dotted and cool, from
+  // whatever the wire picks up onto the group it is soldered to. A wire to a
+  // stage that isn't in the path does nothing, so it isn't drawn.
+  for (const i of [0, 1] as const) {
+    const src = Math.round(c[`mod${i}Src`])
+    const depth = c[`mod${i}Depth`]
+    const dest = WIRE_TARGET[Math.round(c[`mod${i}Dest`])]
+    if (src === 0 || depth === 0 || !dest) continue
+    if (dest === 'Feedback bus' && !drawn.has(nodeId(dest))) lines.push(node(dest, true))
+    const inStrip = dest in SOURCE_ACTIVE
+    if (!inStrip && !drawn.has(nodeId(dest))) continue
+    const anchor = inStrip ? 'sources' : nodeId(dest)
+    lines.push(
+      `  wire${i} [label="${SRC_LABEL[src]}", shape=plaintext, fontcolor="${k.mod}", fontsize=10]`,
+    )
+    lines.push(
+      `  wire${i} -> ${inStrip ? `sources:${nodeId(dest)}` : anchor} [color="${k.mod}", style=dotted, constraint=false, label=" ${o.live === false ? 'patch wire' : depth.toFixed(2)}", fontcolor="${k.mod}", fontsize=10]`,
+    )
+    // sit the wire beside what it feeds, or it floats to the top and stretches
+    // the whole drawing sideways
+    lines.push(`  { rank=same; wire${i}; ${anchor} }`)
   }
 
   lines.push('}')

@@ -50,3 +50,25 @@ test("the README's diagrams are what the chain draws today — else `pnpm diagra
     expect(readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8')).toBe(svg)
   }
 })
+
+test('the shifter draws when it is in a slot', () => {
+  expect(buildDot({ ...DEFAULT_CONTROLS, bendSlot0: 7 })).toContain('mix -> Freq_shifter')
+})
+
+test('a patch wire draws onto the group it is soldered to', () => {
+  expect(buildDot(DEFAULT_CONTROLS)).not.toContain('wire0')
+  const wired = buildDot({ ...DEFAULT_CONTROLS, mod0Src: 5, mod0Dest: 6, mod0Depth: 0.8 })
+  expect(wired).toContain('label="body X"')
+  expect(wired).toContain('wire0 -> Tape_delay')
+  expect(viz.renderString(wired, { format: 'svg' })).toContain('<svg')
+})
+
+test('a wire onto a stage that is not in the path is left undrawn', () => {
+  const dot = buildDot({ ...DEFAULT_CONTROLS, bendSlot4: 0, mod0Src: 1, mod0Dest: 2, mod0Depth: 1 })
+  expect(dot).not.toContain('wire0')
+})
+
+test('a wire onto the feedback amount draws the bus even at zero', () => {
+  const dot = buildDot({ ...DEFAULT_CONTROLS, mod0Src: 6, mod0Dest: 8, mod0Depth: 1 })
+  expect(dot).toContain('wire0 -> Feedback_bus')
+})

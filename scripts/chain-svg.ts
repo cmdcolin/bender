@@ -24,6 +24,9 @@ const BOARD: Controls = {
   revMix: 0.3,
   brownAmt: 0.3,
   fbAmt: 0.45,
+  mod0Src: 1,
+  mod0Dest: 0,
+  mod0Depth: 0.5,
 }
 
 const THEMES: Record<string, Palette> = {
@@ -34,6 +37,7 @@ const THEMES: Record<string, Palette> = {
     border: '#a8b1bb',
     accent: '#cf4520',
     accent2: '#9a6700',
+    mod: '#2f6f9f',
   },
   dark: {
     bg: '#161b22',
@@ -42,6 +46,7 @@ const THEMES: Record<string, Palette> = {
     border: '#4d5560',
     accent: '#ff5d3b',
     accent2: '#d29922',
+    mod: '#5ea9d8',
   },
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, type DragEvent } from 'react'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { engine } from '../engine/engine'
+import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
 import { GROUPS, STAGE_ORDER } from './controls'
@@ -66,6 +67,7 @@ export function App() {
       >
         <Scope />
         <Keys />
+        <BodyPad />
         <div className={styles.ioRow}>
           <button
             className={playing ? styles.playBtnOn : styles.playBtn}

@@ -289,10 +289,96 @@ export const PRESETS: PresetDef[] = [
       driveDb: 28,
     },
   },
+  {
+    name: 'dying transport',
+    blurb: 'Tape motor wired to the same failing supply as the toy',
+    patch: {
+      chipLevel: 0.7,
+      dlyMix: 0.6,
+      delayMs: 320,
+      dlyFb: 0.8,
+      dlyToneHz: 3200,
+      tapeMotorRail: 1,
+      brownAmt: 0.85,
+      brownRate: 3,
+    },
+  },
+  {
+    name: 'barber pole',
+    blurb: 'Every lap through the shifter climbs again, so nothing lands',
+    patch: {
+      chipLevel: 0.5,
+      bendSlot0: 7,
+      shiftMix: 0.85,
+      shiftHz: 3,
+      shiftFb: 0.92,
+      revMix: 0.35,
+      revDecayS: 4,
+    },
+  },
+  {
+    name: 'clangour',
+    blurb: 'Shifted far enough that the harmonics stop being harmonics',
+    patch: {
+      chipLevel: 0.8,
+      bendSlot0: 7,
+      shiftMix: 1,
+      shiftHz: 380,
+      dlyMix: 0.3,
+      delayMs: 180,
+      dlyFb: 0.45,
+    },
+  },
+  {
+    name: 'touch the contacts',
+    blurb: 'Body pad on the filter, and leaning on it opens the feedback',
+    patch: {
+      chipLevel: 0,
+      crackleAmp: 0.5,
+      crackleRate: 30,
+      bendSlot0: 6,
+      filtMix: 1,
+      filtRes: 1.2,
+      filtHz: 180,
+      mod0Src: 5,
+      mod0Dest: 0,
+      mod0Depth: 0.9,
+      mod1Src: 6,
+      mod1Dest: 8,
+      mod1Depth: 0.6,
+      fbDelayMs: 3,
+    },
+  },
+  {
+    name: 'clock wobble',
+    blurb: 'The bay LFO dragging the chip crystal around',
+    patch: {
+      chipLevel: 0.85,
+      modLfoHz: 0.5,
+      mod0Src: 1,
+      mod0Dest: 4,
+      mod0Depth: 0.55,
+      dlyMix: 0.25,
+      delayMs: 240,
+    },
+  },
+  {
+    name: 'clap at it',
+    blurb: 'Mic soldered onto the drum machine trigger line',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      micLevel: 1.2,
+      micPatch: 5,
+      distMix: 0.45,
+      driveDb: 16,
+      revMix: 0.3,
+    },
+  },
 ]
 
-// Never randomized: output volume and mic gain stay where the user put them.
-const HANDS_OFF = new Set<ControlKey>(['outGain', 'micLevel'])
+// Never randomized: output volume, mic gain and the pad your finger is on.
+const HANDS_OFF = new Set<ControlKey>(['outGain', 'micLevel', 'bodyX', 'bodyY'])
 
 export function applyPreset(preset: PresetDef): Controls {
   return { ...DEFAULT_CONTROLS, ...preset.patch }

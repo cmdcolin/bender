@@ -13,14 +13,17 @@ Live: https://cmdcolin.github.io/bender/
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, tape delay, spring verb, brownout and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix" src="img/chain-light.svg" width="420">
+  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, tape delay, spring verb, brownout and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
 </picture>
 
 Graphviz draws that from the chain itself — `pnpm diagram` regenerates it from
 the same DOT the app emits (`src/ui/chain-dot.ts`). The panel redraws it live as
 you play: the bend slots appear in whatever order you patched them, dead stages
-grey out, and the feedback wire lands on whichever node **Patched into** picks.
-Click a node to open its controls.
+grey out, the feedback wire lands on whichever node **Patched into** picks, and
+patch-bay wires ride over the top, dotted, from what they pick up onto what they
+push. Click a node to open its controls.
+
+Six slots, seven bends — you pick which ones are on the board.
 
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —
@@ -38,7 +41,25 @@ The bends that matter:
 - **Retrigger** hammers the drum machine's trigger line; past ~40 Hz the
   retrigger period becomes the pitch and the kit screams.
 - **Mic patch** wires the mic past the mixer, straight onto the chip rail, the
-  oscillator's FM input, the delay feedback path, or the ring mod carrier.
+  oscillator's FM input, the delay feedback path, the ring mod carrier, or the
+  trigger line of the drum machine or glitch buffer — clap at it and the circuit
+  fires.
+- **The patch bay** is two wires and a soldering iron. Each picks up the bay's
+  LFO, the sag on whichever supply is dying, the output envelope, the mic, an
+  axis of the body pad or the feedback bus itself, and pushes it onto a filter
+  cutoff, a carrier, a clock, the tape speed, the glitch chance or the feedback
+  amount. Depth goes negative, so a failing supply can drag a pitch either way.
+- **The body pad** is the bare contacts every bent toy grows sooner or later:
+  touch both and your own resistance is the control. It does nothing until a
+  wire in the bay is soldered to it, which is also true of the real thing.
+- **Brake + supply drag** treat the tape capstan as a motor with weight.
+  Everything already on the tape sags on the way down and spins back up on
+  release; wire the motor to the supply and the repeats dive whenever the power
+  fails.
+- **Freq shifter** moves every partial by the same number of Hz rather than the
+  same ratio, so harmonic input comes out inharmonic. Its own feedback makes
+  each lap shift again — the barber pole — and parked inside the global loop it
+  stops the squeal ever settling on a pitch.
 - **Patched into** re-solders the feedback return: the source mix, the
   oscillator's FM input, the toy rail (the output browns out its own toy), or
   straight into the tape.
