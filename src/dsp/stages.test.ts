@@ -1016,3 +1016,26 @@ test('a row past its length is a row the sequencer never reaches', () => {
     soloVoice({ ...kit, drumHat: stepMask(0) }, 2),
   )
 })
+
+test('a struck sample is a seventh voice on the kit', () => {
+  const kit: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0.05,
+    drumBpm: 120,
+    drumKick: 0b1000_1000_1000_1000,
+    drumSnare: 0,
+    drumHat: 0,
+    sampleLevel: 1,
+    sampleMode: 1,
+  }
+  const load = (b: BuiltChain) => {
+    b.sampler.setBuffer(sine(500, 0.1))
+    b.transport.drums = true
+  }
+  // A one-shot with nothing wired to it plays once and stops; wired to the kick
+  // it is back at the top of the file on every hit.
+  const once = renderBender(kit, 2, load)
+  const struck = renderBender({ ...kit, sampleTrig: 1 }, 2, load)
+  expect(bin(tail(once, 0.5), 500)).toBeLessThan(0.005)
+  expect(bin(tail(struck, 0.5), 500)).toBeGreaterThan(0.02)
+})

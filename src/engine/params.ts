@@ -64,6 +64,8 @@ export const PARAM_DEFS = [
   ['micPatch', 'step'],
   ['sampleLevel', 'slew'],
   ['sampleSpeed', 'slew'],
+  ['sampleTrig', 'step'],
+  ['sampleMode', 'step'],
 
   ['bendSlot0', 'step'],
   ['bendSlot1', 'step'],

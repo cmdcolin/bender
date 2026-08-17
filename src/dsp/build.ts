@@ -44,7 +44,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   const transport = new Transport()
   const toyChip = new ToyChip(sr, rail, transport, next())
   const toyDrum = new ToyDrum(sr, rail, transport, next())
-  const sampler = new Sampler()
+  const sampler = new Sampler(sr)
   chain.sources = [toyChip, toyDrum, new ChaosOsc(sr), new Noise(sr), sampler]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
   // 6 filt, 7 shift — six slots for seven bends, so you pick

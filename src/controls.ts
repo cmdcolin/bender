@@ -61,6 +61,8 @@ export const DEFAULT_CONTROLS = {
   micPatch: 0,
   sampleLevel: 0,
   sampleSpeed: 1,
+  sampleTrig: 0,
+  sampleMode: 0,
 
   bendSlot0: 1,
   bendSlot1: 2,

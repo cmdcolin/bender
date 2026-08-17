@@ -171,6 +171,11 @@ The bends that matter:
   oscillator's FM input, the delay feedback path, the ring mod carrier, or the
   trigger line of the drum machine or glitch buffer — clap at it and the circuit
   fires.
+- **Struck by** puts a dropped file on a trigger line: one of the kit's voices,
+  any hit at all, a note off the keyboard, or a shout in the mic. Set **Ending**
+  to one-shot and whatever you dropped is a seventh drum voice, played from the
+  top on every hit; left as a loop, the trigger is a needle dropped back at the
+  start while it runs.
 - **The patch bay** is four wires and a soldering iron. Each picks up the bay's
   LFO, the sag on whichever supply is dying, the output envelope, the mic, an
   axis of the body pad, the feedback bus itself, the chip's sequencer ramping

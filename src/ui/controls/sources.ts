@@ -1,5 +1,5 @@
 import { ROM_NAMES } from '../../dsp/stages/roms'
-import { GRID_ROWS } from '../../drums'
+import { GRID_ROWS, VOICE_LABELS } from '../../drums'
 import type { Group } from './types'
 
 export const SOURCE_GROUPS: Group[] = [
@@ -372,6 +372,26 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '×',
         help: 'Playback speed. Negative runs backwards; zero freezes on the current spot.',
+      },
+      {
+        key: 'sampleTrig',
+        label: 'Struck by',
+        min: 0,
+        max: VOICE_LABELS.length + 3,
+        step: 1,
+        unit: '',
+        choices: ['off', ...VOICE_LABELS, 'any hit', 'key', 'mic'],
+        help: 'Which trigger line drops the needle back at the top of the file: one of the kit’s voices, any hit at all, a note off the keyboard, or a shout in the mic. With one-shot beside it, the file becomes a seventh drum voice — whatever you dropped, played from the start on every hit. Off, it loops the way it always did.',
+      },
+      {
+        key: 'sampleMode',
+        label: 'Ending',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['loop', 'one-shot'],
+        help: 'What happens at the end of the file: round again, or stop there and wait to be struck. Backwards, the end is the top of the file.',
       },
     ],
   },
