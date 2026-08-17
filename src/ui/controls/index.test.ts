@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
-import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../controls'
-import { ALL_SLIDERS, EDITOR_KEYS, sliderFor } from './controls'
+import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
+import { ALL_SLIDERS, EDITOR_KEYS, sliderFor } from '.'
 
 test('every control has exactly one widget, slider or editor', () => {
   const keys = [...ALL_SLIDERS.map(s => s.key), ...EDITOR_KEYS]
