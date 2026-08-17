@@ -321,7 +321,6 @@ export function App() {
             could offer them. The ones that are about a single stage live in
             that stage's own header, next to its reset. */}
         <div className={styles.dice}>
-          <span className={styles.diceLabel}>roll</span>
           {SCENARIOS.map(s => (
             <button
               key={s.name}
@@ -334,7 +333,7 @@ export function App() {
                 )
               }
             >
-              {s.name}
+              {s.label}
             </button>
           ))}
           {/* The one roll that listens to what it rolled. It plays its way
@@ -350,7 +349,7 @@ export function App() {
                 )
             }}
           >
-            {hunting ? 'listening…' : 'hunt'}
+            {hunting ? 'listening…' : 'hunt an edge'}
           </button>
         </div>
 

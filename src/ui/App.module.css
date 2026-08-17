@@ -139,25 +139,21 @@ select.btn {
   padding-bottom: 5px;
 }
 
-.diceLabel {
-  font-size: var(--fs-xs);
-  color: var(--fg4);
-  padding-right: 2px;
-}
-
+/* Square-cornered like every other button on the page: a pill reads as a tag
+   you filter by rather than a verb you press. */
 .die {
-  font-size: var(--fs-xs);
-  padding: 2px 7px;
+  font-size: var(--fs-sm);
+  padding: 3px 8px;
   background: var(--bg3);
   color: var(--fg2);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 3px;
   cursor: pointer;
 }
 
 .die:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--fg);
+  border-color: var(--border-hover);
 }
 
 .ioRow {

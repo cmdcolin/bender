@@ -14,6 +14,7 @@ import { CLOCK_KEYS, YOURS } from './yours'
 
 export interface ScenarioDef {
   name: string
+  label: string
   blurb: string
   roll: (current: Controls, rand: () => number) => Controls
 }
@@ -213,39 +214,47 @@ export function huntCandidates(
 }
 
 // The rolls a single panel can't offer, because each one is about how the
-// stages sit together rather than about what any one of them is set to.
+// stages sit together rather than about what any one of them is set to. Every
+// label carries "random" because that is the part a name like "rewire" hides:
+// the button does not open a rewiring dialog, it rolls one and hands it over.
 export const SCENARIOS: ScenarioDef[] = [
   {
     name: 'rewire',
+    label: 'random rewire',
     blurb:
       'Shuffle the bend order and re-solder the wires — same parts, different board',
     roll: rewire,
   },
   {
     name: 'one bend',
+    label: 'random one bend',
     blurb: 'Clear the slots down to a single bend and roll that one hard',
     roll: oneBend,
   },
   {
     name: 'wreck it',
+    label: 'random wreck',
     blurb:
       'Every feedback past unity, the supply on the floor, the DAC down to a few bits',
     roll: wreck,
   },
   {
     name: 'slam',
+    label: 'random slam',
     blurb:
       'One to three controls all the way to an end of their travel, nothing else touched',
     roll: slam,
   },
   {
     name: 'on the edge',
+    label: 'random edge',
     blurb:
       'Two pairs that fight, each driven to opposite corners — the boundary rather than the middle',
     roll: edge,
   },
   {
     name: 'let it age',
+    label: 'random aging',
     blurb:
       'Heat, clustered faults, a wandering crystal and a latching die: a board that stops repeating itself',
     roll: age,
