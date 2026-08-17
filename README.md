@@ -137,6 +137,27 @@ The bends that matter:
   metronome. The lamp beside the keys is that rail in volts, 4.5 V on fresh
   cells, and it says **reboot** when the watchdog cycles the chip: everything
   else in this list is that number moving.
+- **Reservoir** is how much of the board's own capacitance sits behind whatever
+  Starve is pulling on, and it is the difference between a starve you land on
+  and one you hear travel. Across the supply pins there is a tenth of a
+  microfarad and the rail follows its load inside a millisecond, so the pitch
+  arrives at its new place rather than going there. Wind this up and the same
+  starve acquires a shape: the note leaves from where it was, dives,
+  decelerating as the cap and the pot come into balance, and parks at the bottom
+  — everything on the rail going with it, pitch, tempo and envelopes together.
+  It moves no voltage at all, only the time taken to reach one, from 17 ms to
+  two seconds. The travel is geometric because the caps on a real board are
+  decades apart, so the swoop sits through the middle of the knob rather than
+  crushed against one end. Far enough up and the watchdog stops snapping the
+  rail back at all: the tune is struck high, dragged down, cut off, and struck
+  high again.
+- **Clip chatter** is the hand holding the paperclip. Nobody solders anything
+  for this bend — bare metal dragged across the pads finds a point, chokes the
+  supply hard for a few tens of milliseconds and lets go, and the rail leaves
+  and comes back at whatever rate the Reservoir allows. A choke, not a short:
+  crash the rail to ground and the pitch is simply gone and then simply back,
+  two steps with the dive missing. The rate is an average and the fault cluster
+  decides how much it bunches, because a hand does not keep time.
 - **Latch-up** is the brownout that doesn't reboot. CMOS on a collapsing rail
   can jam instead: the die holds whatever note was sounding, keeps drawing
   current, and the output stage sits where it was left rather than fading with

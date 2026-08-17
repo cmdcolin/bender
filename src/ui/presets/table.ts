@@ -24,6 +24,21 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'paperclip',
+    blurb: 'Bare metal on the supply pads — every touch dives and climbs back',
+    patch: {
+      chipLevel: 0.85,
+      chipAccomp: 0.5,
+      chipStarve: 0.62,
+      chipCap: 0.7,
+      chipClipHz: 1.2,
+      faultCluster: 0.55,
+      humLevel: 0.2,
+      brownAmt: 0.25,
+      drumLevel: 0.25,
+    },
+  },
+  {
     name: 'flat batteries',
     blurb:
       'Cells too far gone to hold the rail — the whole toy runs low and late',

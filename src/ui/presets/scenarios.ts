@@ -83,6 +83,7 @@ const WRECK: [ControlKey, number, number][] = [
   ['combFb', 0.8, 1],
   ['filtRes', 0.85, 1],
   ['chipStarve', 0.4, 0.9],
+  ['chipCap', 0.45, 0.85],
   ['brownAmt', 0.4, 0.9],
   ['driveDb', 0.5, 1],
   ['distMix', 0.5, 1],
@@ -128,6 +129,10 @@ const ANTAGONISTS: [ControlKey, ControlKey][] = [
   ['filtRes', 'filtDriveDb'],
   ['chipStarve', 'chipClockX'],
   ['chipStarve', 'chipLatch'],
+  // How far the rail goes against how long it takes to get there. Wound up
+  // together they are a dive; either one alone is a setting.
+  ['chipStarve', 'chipCap'],
+  ['chipCap', 'chipClipHz'],
   ['dlyFb', 'delayMs'],
   ['combFb', 'combHz'],
   ['stompDrive', 'stompSag'],
