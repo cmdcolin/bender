@@ -627,8 +627,6 @@ test('the mic soldered onto the drum trigger fires the kit', () => {
 })
 
 test('bridged envelope pins put the kick on the snare steps', () => {
-  // twelve snares to four kicks, so a full swap moves most of the bar down
-  // into the kick
   const look: Partial<Controls> = {
     chipLevel: 0,
     drumLevel: 0.9,
@@ -639,7 +637,33 @@ test('bridged envelope pins put the kick on the snare steps', () => {
   }
   const stock = render(look, 2)
   const swapped = render({ ...look, drumCross: 1, drumCrossAmt: 1 }, 2)
-  expect(lowEnergy(swapped)).toBeGreaterThan(1.5 * lowEnergy(stock))
+  // Steps 9 to 12 are snares with no kick among them, so the bar's own half of
+  // the pattern is the control: down there the swap is the only thing that can
+  // put a thump on the beat at all.
+  const snaresOnly = (x: Float32Array) =>
+    x.subarray(Math.round(SR), Math.round(1.5 * SR))
+  expect(lowEnergy(snaresOnly(swapped))).toBeGreaterThan(
+    10 * lowEnergy(snaresOnly(stock)),
+  )
+  expect(lowEnergy(swapped)).toBeGreaterThan(1.2 * lowEnergy(stock))
+})
+
+// The envelope and the amplifier are two pins. A voice leaning all the way over
+// to a neighbour has nothing opening its own amplifier, and running its decay
+// inside the output test left it stuck at full for as long as the bridge was
+// soldered: silent, then a hit that had been waiting minutes the moment you
+// unpatched it — and, until then, a borrowed envelope that never fell.
+test('a bridged envelope still falls, so a borrowed hit is a hit and not a drone', () => {
+  const bridged: Partial<Controls> = {
+    drumKick: stepMask(2, 4, 6),
+    drumBpm: 60,
+    drumDecay: 0.3,
+    drumCross: 1,
+    drumCrossAmt: 1,
+  }
+  // The kick steps drive the snare's amplifier; nothing drives the kick's.
+  const out = soloVoice(bridged, 1.8)
+  expect(onsets(out)).toHaveLength(3)
 })
 
 test('the whole-kit ring reaches the voices the three-way one never did', () => {

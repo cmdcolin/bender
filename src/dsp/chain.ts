@@ -23,6 +23,10 @@ export class Chain {
   private fbCombR: DelayLine
   private outEnv = new Follower()
   private limitEnv = 0
+  // The six slot params, read once a block into a buffer this owns, and one bit
+  // per bend id for the duplicates. Nothing in process() allocates: a Set and a
+  // spread per block is 375 collections a second on the audio thread.
+  private readonly slots = new Float32Array(6)
 
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
@@ -112,23 +116,26 @@ export class Chain {
       if (!s.when || s.when(p)) s.process(io, p, ctx)
     }
 
-    const seen = new Set<number>()
-    for (const slot of [
-      p[IDX.bendSlot0]!,
-      p[IDX.bendSlot1]!,
-      p[IDX.bendSlot2]!,
-      p[IDX.bendSlot3]!,
-      p[IDX.bendSlot4]!,
-      p[IDX.bendSlot5]!,
-    ]) {
-      const id = Math.round(slot)
-      if (id <= 0 || seen.has(id)) continue
-      seen.add(id)
+    const slots = this.slots
+    slots[0] = p[IDX.bendSlot0]!
+    slots[1] = p[IDX.bendSlot1]!
+    slots[2] = p[IDX.bendSlot2]!
+    slots[3] = p[IDX.bendSlot3]!
+    slots[4] = p[IDX.bendSlot4]!
+    slots[5] = p[IDX.bendSlot5]!
+    let seen = 0
+    for (let i = 0; i < slots.length; i++) {
+      const id = Math.round(slots[i]!)
+      if (id <= 0 || seen & (1 << id)) continue
+      seen |= 1 << id
       const s = this.bendById[id]
       if (s && (!s.when || s.when(p))) s.process(io, p, ctx)
     }
 
-    for (const s of [...this.pedals, ...this.post]) {
+    for (const s of this.pedals) {
+      if (!s.when || s.when(p)) s.process(io, p, ctx)
+    }
+    for (const s of this.post) {
       if (!s.when || s.when(p)) s.process(io, p, ctx)
     }
 

@@ -55,6 +55,7 @@ export class ToyDrum implements Stage {
   private gain = new Float32Array(N_VOICES).fill(1)
   private weight = new Float32Array(N_VOICES).fill(1)
   private phase = new Float32Array(N_VOICES)
+  private falls = new Float32Array(N_VOICES)
   private bellPhase2 = 0
   private bellLp = 0
   private snareLp = 0
@@ -139,13 +140,14 @@ export class ToyDrum implements Stage {
     }
 
     const fall = (rate: number) => Math.exp(-rate / (this.sr * decay))
-    const kickFall = fall(9)
-    const snareFall = fall(22)
-    const hatFall = fall(60)
     const clapBurstFall = fall(70)
-    const clapTailFall = fall(13)
-    const tomFall = fall(11)
-    const bellFall = fall(16)
+    const falls = this.falls
+    falls[KICK] = fall(9)
+    falls[SNARE] = fall(22)
+    falls[HAT] = fall(60)
+    falls[CLAP] = fall(13)
+    falls[TOM] = fall(11)
+    falls[BELL] = fall(16)
 
     let loadSum = 0
     for (let i = 0; i < io.n; i++) {
@@ -204,19 +206,16 @@ export class ToyDrum implements Stage {
           this.phase[KICK] = (this.phase[KICK]! + hz / this.sr) % 1
           out +=
             Math.sin(this.phase[KICK]! * TAU) * amp[KICK]! * weight[KICK]! * 1.2
-          env[KICK]! *= kickFall
         }
         if (amp[SNARE]! > 0.002) {
           const noise = this.rng() * 2 - 1
           this.snareLp += 0.25 * (noise - this.snareLp)
           out +=
             (noise - this.snareLp * 0.5) * amp[SNARE]! * weight[SNARE]! * 0.8
-          env[SNARE]! *= snareFall
         }
         if (amp[HAT]! > 0.002) {
           const noise = this.rng() * 2 - 1
           out += (noise - this.snareLp) * amp[HAT]! * weight[HAT]! * 0.35
-          env[HAT]! *= hatFall
         }
         // The clap is three bursts nine milliseconds apart and then the room:
         // one noise source, retriggered, with the last hit left to ring on.
@@ -235,13 +234,11 @@ export class ToyDrum implements Stage {
           this.clapSlow += 0.05 * (noise - this.clapSlow)
           out +=
             (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
-          env[CLAP]! *= this.clapsLeft > 0 ? clapBurstFall : clapTailFall
         }
         if (amp[TOM]! > 0.002) {
           const hz = (90 + 70 * amp[TOM]!) * pf
           this.phase[TOM] = (this.phase[TOM]! + hz / this.sr) % 1
           out += Math.sin(this.phase[TOM]! * TAU) * amp[TOM]! * weight[TOM]!
-          env[TOM]! *= tomFall
         }
         if (amp[BELL]! > 0.002) {
           this.phase[BELL] = (this.phase[BELL]! + (540 * pf) / this.sr) % 1
@@ -251,7 +248,16 @@ export class ToyDrum implements Stage {
             (this.bellPhase2 < 0.5 ? 1 : -1)
           this.bellLp += 0.4 * (sq - this.bellLp)
           out += (sq - this.bellLp) * amp[BELL]! * weight[BELL]! * 0.3
-          env[BELL]! *= bellFall
+        }
+        // Every voice's envelope falls on its own, whatever its amplifier is
+        // hearing. Decaying the envelope inside the output test instead left a
+        // bridged voice stuck at full: a kick leaning all the way over to a
+        // snare that never fires has nothing to open its own amplifier with, so
+        // nothing was left to run its envelope down, and unpatching the bridge
+        // dropped a hit that had been waiting there for minutes.
+        for (let v = 0; v < N_VOICES; v++) {
+          env[v]! *=
+            v === CLAP && this.clapsLeft > 0 ? clapBurstFall : falls[v]!
         }
         out = Math.round(out * q) / q
         out *= rail.ampFactor
