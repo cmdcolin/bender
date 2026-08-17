@@ -1,5 +1,5 @@
 import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
-import { romIndex } from '../dsp/stages/roms'
+import { Glide } from '../engine/glide'
 import {
   ALL_SLIDERS,
   HOLD_KEYS,
@@ -304,10 +304,9 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'grief machine',
-    blurb: 'Funeral march at half clock, browning out into a long tank',
+    blurb: 'Half clock, browning out into a long tank',
     patch: {
       chipLevel: 0.8,
-      chipTune: romIndex('funeral'),
       chipClockX: 0.55,
       chipStarve: 0.45,
       brownAmt: 0.3,
@@ -322,10 +321,9 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'séance',
-    blurb: 'Satie through a soldered DAC bias and a ringing comb',
+    blurb: 'A soldered DAC bias into a ringing comb, slowed right down',
     patch: {
       chipLevel: 0.7,
-      chipTune: romIndex('gnossienne'),
       chipClockX: 0.7,
       chipBendSpot: 3,
       chipBendPot: 0.25,
@@ -343,10 +341,9 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'dying walkman',
-    blurb: 'Sakura on a chewed tape and a failing DAC',
+    blurb: 'A chewed tape running into a failing DAC',
     patch: {
       chipLevel: 0.75,
-      chipTune: romIndex('sakura'),
       chipClockX: 0.8,
       bits: 7,
       srHz: 9000,
@@ -378,10 +375,10 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'yell into it',
-    blurb: 'Mic soldered into the delay feedback path',
+    blurb:
+      'Mic soldered into the delay feedback path — bring your mic level up',
     patch: {
       chipLevel: 0,
-      micLevel: 1.2,
       micPatch: 3,
       dlyMix: 0.7,
       dlyFb: 0.95,
@@ -466,11 +463,10 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'clap at it',
     blurb:
-      'Mic soldered onto the drum machine trigger line — it fires your pattern',
+      'Mic on the drum trigger line: clap and it fires your pattern — bring your mic level up',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
-      micLevel: 1.2,
       micPatch: 5,
       distMix: 0.45,
       driveDb: 16,
@@ -498,7 +494,6 @@ export const PRESETS: PresetDef[] = [
       'The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken',
     patch: {
       chipLevel: 0.7,
-      chipTune: 12,
       tapeMix: 1,
       tapeSpeed: 1,
       tapeDrive: 4,
@@ -515,7 +510,6 @@ export const PRESETS: PresetDef[] = [
       'Slow tape gone soft: dropouts, print-through, the pitch never settling',
     patch: {
       chipLevel: 0.7,
-      chipTune: 14,
       tapeMix: 1,
       tapeSpeed: 0,
       tapeDrive: 10,
@@ -552,8 +546,13 @@ export const PRESETS: PresetDef[] = [
 // What a morph holds is yours during the trip; this is what is yours over the
 // whole gesture. On top of the levels and contacts you have your hands on, what
 // is playing is yours too — the demo song you picked and the pattern you wrote.
-// A preset moves one of these only if it names it, and neither random nor
-// mutate moves any of them, so auditioning a board never costs you the tune.
+// Neither random nor mutate moves any of them, and a preset moves one only if
+// it names it.
+//
+// The demo song is the one nothing may name: a preset is a statement about the
+// circuit, so swapping the tune under it changes the one thing you were using to
+// judge the change. Several used to, and auditioning a row of them meant losing
+// the song you were listening to as well as the board. A test holds the line.
 const YOURS = new Set<ControlKey>([
   ...HOLD_KEYS,
   'sampleLevel',
@@ -576,6 +575,19 @@ export function applyPreset(preset: PresetDef, current: Controls): Controls {
     current,
     preset.patch,
   )
+}
+
+// The road from the board you are on to the one a preset names. Clicking the
+// chip flies it on the clock; dragging the chip is the same road under your
+// finger, one pointer step at a time, so the far end of the drag is exactly what
+// the click gives you and everywhere short of it is a board neither the preset
+// nor you would have written down.
+//
+// The same Glide the morph travels, deliberately: modes cut at the midpoint and
+// your levels and contacts are held, so a half-dragged preset is a board that
+// can actually be played rather than half a distortion circuit.
+export function presetPath(preset: PresetDef, from: Controls): Glide {
+  return new Glide(from, applyPreset(preset, from))
 }
 
 // The tempo is the one number a nudge must not touch. Move it and every echo,

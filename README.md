@@ -167,11 +167,8 @@ only combs once the transport actually wobbles.
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**
 shakes the current board. None of the three take what is yours: the demo song
 you picked, the pattern you wrote and the output, mic and sample levels all stay
-where you left them, and a preset only moves one of them if it names it. So
-auditioning a board is a question about the circuit, not about the tune.
-**Share** puts everything you moved into the URL by name and copies the link, so
-a board travels as text you can read and edit — and a link written against an
-older build still opens the board it meant.
+where you left them — no preset names the song at all, so auditioning a board is
+a question about the circuit and never about the tune.
 
 A shake stays in time. The tempo is not one of the things it shakes, and every
 control that counts in time rather than in pitch — delay time, glitch slice,
@@ -181,6 +178,18 @@ clock keeps its freedom to be somewhere else, but lands on a simple ratio, which
 is an interval as well as a tempo. Everything else moves along its own slider
 travel, so a log control drifts by a proportion of where it sits rather than by
 a slice of its whole span — a 40 ms delay comes back near 40 ms.
+
+A preset chip is also a fader. Click it for the whole board, or drag it sideways
+for part of the way there: the drag runs the same road the morph flies, under
+your finger instead of on the clock, so it stops wherever you let go. Drag it
+back down and the board retraces to where it stood before you touched the chip.
+The fill is how far along you are, and it empties the moment anything else moves
+the board — a board that has been nudged since is not a fraction of a preset any
+more, and nothing can work out what it is instead.
+
+**Share** puts everything you moved into the URL by name and copies the link, so
+a board travels as text you can read and edit — and a link written against an
+older build still opens the board it meant.
 
 The chip's ROM bank holds eighteen demo songs, each with its own sequencer rate:
 four factory doodles, eight public-domain tunes every cheap keyboard shipped

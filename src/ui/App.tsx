@@ -20,7 +20,8 @@ import {
   saveMorph,
   type MorphSeconds,
 } from './morph'
-import { mutate, PRESETS, applyPreset, randomLook } from './presets'
+import { Presets } from './Presets'
+import { mutate, randomLook } from './presets'
 import { Scope } from './Scope'
 import { OffPathChips, OpenGroup, PathHint } from './Section'
 import { boardUrl } from './share'
@@ -30,12 +31,6 @@ import styles from './App.module.css'
 function clock(seconds: number): string {
   const s = Math.floor(seconds)
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}
-
-// Picking a board is a request to hear it, so the ROM runs even if it was paused.
-function audition(target: Controls, seconds: number) {
-  engine.setPlaying(true)
-  engine.morphTo(target, seconds)
 }
 
 // One slot holding either the duration a new board *will* take to arrive or,
@@ -236,7 +231,7 @@ export function App() {
           <button
             className={styles.btn}
             onClick={() =>
-              audition(randomLook(controls, Math.random), morphSeconds)
+              engine.audition(randomLook(controls, Math.random), morphSeconds)
             }
             title="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern and levels stay put"
           >
@@ -303,18 +298,7 @@ export function App() {
           </button>
         </div>
 
-        <div className={styles.presets}>
-          {PRESETS.map(p => (
-            <button
-              key={p.name}
-              className={styles.preset}
-              title={p.blurb}
-              onClick={() => audition(applyPreset(p, controls), morphSeconds)}
-            >
-              {p.name}
-            </button>
-          ))}
-        </div>
+        <Presets controls={controls} morphSeconds={morphSeconds} />
 
         <ChainMap open={open} onOpen={toggle} />
         <OffPathChips groups={offPath} open={open} onOpen={toggle} />

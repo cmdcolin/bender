@@ -205,6 +205,25 @@ export class Engine {
     this.travel(target, seconds)
   }
 
+  // Picking a board is a request to hear it, so the ROM runs even if it was
+  // paused. Not what a nudge to the board already playing does — mutate must
+  // not start the demo song under someone playing the keys.
+  audition(target: Controls, seconds = 1) {
+    this.setPlaying(true)
+    this.morphTo(target, seconds)
+  }
+
+  // A board written straight rather than travelled to: a preset chip dragged by
+  // hand, where the board follows the pointer and a morph would only fight it.
+  // It takes the step armed on the way down, so the whole drag banks one entry
+  // in the walk — the board as it stood before the hand landed on the chip.
+  writeBoard(next: Controls) {
+    this.commitStep()
+    this.cancelMorph()
+    this.controls.set(next)
+    this.flushSoon()
+  }
+
   // Travel to a new board over `seconds`, or land in one frame at zero. It sets
   // off from the *live* controls, so rolls chain: hitting random again halfway
   // through a morph leaves from where the board actually is rather than snapping

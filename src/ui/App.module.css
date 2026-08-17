@@ -121,28 +121,6 @@ select.btn {
   position: relative;
 }
 
-.presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  padding-bottom: 8px;
-}
-
-.preset {
-  font-size: var(--fs-xs);
-  padding: 3px 9px;
-  background: none;
-  color: var(--fg3);
-  border: 1px solid var(--border-quiet);
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.preset:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
 .ioRow {
   display: flex;
   align-items: center;
