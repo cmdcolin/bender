@@ -13,7 +13,7 @@ Live: https://cmdcolin.github.io/bender/
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, spring verb, brownout and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
+  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
 </picture>
 
 Graphviz draws that from the chain itself — `pnpm diagram` regenerates it from
@@ -107,6 +107,41 @@ The bends that matter:
   Starve and Brownout drag the pedal down with everything else. Starve the gate
   circuit far enough and it stops needing an input at all.
 - Every feedback (delay, comb, screech filter, feedback bus) goes past unity.
+
+## The tape machine
+
+The tape delay wobbles its echoes; the tape machine records the instrument. It
+sits last, after the brownout, so everything upstream is the room and this is
+what it went down on.
+
+Signal crosses the record head through a pre-emphasis curve and comes back
+through its inverse, so the highs saturate first and transients round off
+before anything sounds distorted. Hiss lands on the medium rather than in the
+mix — the replay head colours it, the speed sets how loud it is, and it breathes
+a little with the signal, the way biased oxide does.
+
+**Speed** moves the machine as one part rather than one knob among ten. The head
+gap loses highs at a wavelength, so a slower tape loses them lower; the replay
+bump sits at a wavelength too, so it drops with speed; less tape past the head
+per second means more hiss and slower wow; and a spool wrap takes longer to come
+back round, which sets how far behind the print-through ghost arrives. 3¾ ips is
+dark, noisy and unsteady. 15 ips is nearly a wire.
+
+**Bias** runs underbiased-bright-and-crunchy to overbiased-dull-and-squashed,
+distortion and top end moving against each other. It carries its own record tilt
+rather than leaning on the head gap alone — at 15 ips the gap already sits past
+the programme, so a gap-only model inverts the knob at the fast speed.
+
+The failures are the point. **Dropouts** shed highs before they shed level,
+which is what separates oxide from a power cut. **Print-through** is the layer
+wound underneath bleeding through, a dull ghost one wrap behind.
+**Azimuth** lags the right channel and eats its top end, so the take collapses
+badly to mono. Wow is capstan eccentricity plus a slow drift that never lets the
+pitch settle; flutter is the fast wobble plus the scrape of tape dragging past
+the head.
+
+The dry side runs down the same nominal head delay as the wet, so **To tape**
+only combs once the transport actually wobbles.
 
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**
 shakes the current board.
