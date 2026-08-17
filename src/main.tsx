@@ -4,7 +4,9 @@ import { App } from './ui/App'
 import { boardFromLocation } from './ui/share'
 import './theme.css'
 
-// Opening someone's link is a request to hear their board, so the ROM runs.
+// A url that names a board is a request to hear it, so the ROM runs — someone
+// else's link, or your own reload of one. Arriving with a bare url is not, and
+// the audio waits for a gesture either way.
 const shared = boardFromLocation()
 if (shared) {
   engine.patch(shared)

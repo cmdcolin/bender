@@ -1,7 +1,12 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { sliderFor } from './controls'
-import { decodeControls, encodeControls } from './share'
+import {
+  boardFromUrl,
+  boardQuery,
+  decodeControls,
+  encodeControls,
+} from './share'
 
 test('a board survives the round trip', () => {
   const board: Controls = {
@@ -14,7 +19,10 @@ test('a board survives the round trip', () => {
     mod0Dest: 9,
     mod0Depth: -0.6,
   }
-  expect({ ...DEFAULT_CONTROLS, ...decodeControls(encodeControls(board)) }).toEqual(board)
+  expect({
+    ...DEFAULT_CONTROLS,
+    ...decodeControls(encodeControls(board)),
+  }).toEqual(board)
 })
 
 test('only what is off stock travels', () => {
@@ -23,7 +31,9 @@ test('only what is off stock travels', () => {
 })
 
 test('the pad your finger is on is not part of the board', () => {
-  expect(encodeControls({ ...DEFAULT_CONTROLS, bodyX: 0.7, bodyY: 0.3 })).toBe('')
+  expect(encodeControls({ ...DEFAULT_CONTROLS, bodyX: 0.7, bodyY: 0.3 })).toBe(
+    '',
+  )
   expect(decodeControls('bodyX:0.7')).toEqual({})
 })
 
@@ -45,4 +55,29 @@ test('junk decodes to nothing rather than to NaN', () => {
   expect(decodeControls('')).toEqual({})
   expect(decodeControls('nonsense')).toEqual({})
   expect(decodeControls('dlyFb:abc,:5,filtRes:')).toEqual({})
+})
+
+test('the query carries the board and leaves the rest of the url alone', () => {
+  const q = boardQuery('?debug=1', { ...DEFAULT_CONTROLS, dlyFb: 1.4 })
+  expect(new URLSearchParams(q).get('set')).toBe('dlyFb:1.4')
+  expect(new URLSearchParams(q).get('debug')).toBe('1')
+})
+
+test('a stock board drops the param rather than writing an empty one', () => {
+  expect(boardQuery('?set=dlyFb:1.4', { ...DEFAULT_CONTROLS })).toBe('')
+})
+
+test('a link opens the board it names, from the query or the old hash', () => {
+  expect(boardFromUrl('?set=filtRes:1.2', '')).toEqual({ filtRes: 1.2 })
+  expect(boardFromUrl('', '#b=filtRes:1.2')).toEqual({ filtRes: 1.2 })
+  expect(boardFromUrl('?set=filtRes:1.2', '#b=dlyFb:1.4')).toEqual({
+    filtRes: 1.2,
+  })
+})
+
+test('a url naming no board is nothing to patch', () => {
+  expect(boardFromUrl('', '')).toBeNull()
+  expect(boardFromUrl('?set=', '')).toBeNull()
+  expect(boardFromUrl('?set=retiredKnob:3', '')).toBeNull()
+  expect(boardFromUrl('', '#somethingelse')).toBeNull()
 })

@@ -1,12 +1,26 @@
-import { CONTROL_KEYS, DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
+import {
+  CONTROL_KEYS,
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../controls'
 import { sliderFor, snapToStep } from './controls'
 
 // A board as a link: every control that is off stock, by name, so a link keeps
 // working when the param table grows or its order changes. Names cost more
 // characters than indices and are worth it — a stale link decodes to the board
 // it meant, and anything it names that no longer exists is simply dropped.
+//
+// It rides in the query string, and the address bar carries it at all times
+// rather than only once someone presses share (see useBoardUrl). The board on
+// screen is then always the board the url names: a reload keeps it, and copying
+// out of the address bar is as good as the button.
 
-const HASH_KEY = 'b'
+const PARAM = 'set'
+
+// Where a board rode before the query string. Read, never written, so links
+// from that day still open the board they meant.
+const LEGACY_HASH_KEY = 'b'
 
 // Your finger is not part of the board.
 const PRIVATE = new Set<ControlKey>(['bodyX', 'bodyY'])
@@ -37,16 +51,41 @@ export function decodeControls(encoded: string): Partial<Controls> {
   return out
 }
 
-export function boardUrl(c: Controls): string {
-  const url = new URL(window.location.href)
-  url.hash = `${HASH_KEY}=${encodeControls(c)}`
-  return url.toString()
+// The query a board writes, over whatever the address bar already had. A stock
+// board drops the param rather than writing an empty one: everything the link
+// carries is a control off stock, so a board with none of those is the same
+// board a bare url opens.
+export function boardQuery(search: string, c: Controls): string {
+  const q = new URLSearchParams(search)
+  const set = encodeControls(c)
+  if (set === '') q.delete(PARAM)
+  else q.set(PARAM, set)
+  return q.toString()
 }
 
 // Whatever board the link carried, or nothing.
-export function boardFromLocation(): Partial<Controls> | null {
-  const hash = window.location.hash.replace(/^#/, '')
-  if (!hash.startsWith(`${HASH_KEY}=`)) return null
-  const patch = decodeControls(hash.slice(HASH_KEY.length + 1))
+export function boardFromUrl(
+  search: string,
+  hash: string,
+): Partial<Controls> | null {
+  const legacy = hash.replace(/^#/, '')
+  const raw =
+    new URLSearchParams(search).get(PARAM) ??
+    (legacy.startsWith(`${LEGACY_HASH_KEY}=`)
+      ? legacy.slice(LEGACY_HASH_KEY.length + 1)
+      : null)
+  if (raw === null) return null
+  const patch = decodeControls(raw)
   return Object.keys(patch).length > 0 ? patch : null
+}
+
+export function boardUrl(c: Controls): string {
+  const query = boardQuery(window.location.search, c)
+  // Assembled from the origin and path rather than edited in place, so a link
+  // read out of the old hash comes back as a query and the hash goes with it.
+  return `${window.location.origin}${window.location.pathname}${query ? `?${query}` : ''}`
+}
+
+export function boardFromLocation(): Partial<Controls> | null {
+  return boardFromUrl(window.location.search, window.location.hash)
 }

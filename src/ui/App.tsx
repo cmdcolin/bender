@@ -24,6 +24,7 @@ import { mutate, PRESETS, applyPreset, randomLook } from './presets'
 import { Scope } from './Scope'
 import { OffPathChips, OpenGroup, PathHint } from './Section'
 import { boardUrl } from './share'
+import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
 
 function clock(seconds: number): string {
@@ -115,11 +116,13 @@ export function App() {
   const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
 
   useEffect(() => engine.autostart(), [])
+  useBoardUrl(controls)
 
+  // The bar already says this; the button is for handing it to someone.
   const share = () => {
-    const url = boardUrl(engine.controls.get())
-    history.replaceState(null, '', url)
-    navigator.clipboard?.writeText(url).catch(() => {})
+    navigator.clipboard
+      ?.writeText(boardUrl(engine.controls.get()))
+      .catch(() => {})
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
