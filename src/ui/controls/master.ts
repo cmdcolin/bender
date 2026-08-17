@@ -30,6 +30,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        shy: true,
         help: 'Crackle injected in proportion to how hard the supply is working.',
       },
       {

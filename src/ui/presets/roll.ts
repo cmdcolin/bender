@@ -49,6 +49,24 @@ const nudge = (
 // How far each one goes is unchanged; amount decides how many are in it.
 const shakeShare = (amount: number) => 0.12 + 0.5 * amount
 
+// Crackle is the loudest thing on the board per notch of its slider, and it
+// lands on top of the rest rather than beside it: bring it up and it is the only
+// thing the roll did that you can hear. A shy control mostly sits a roll out, and
+// comes on in the bottom of its travel when it comes on at all. Nothing here
+// reaches your hand or the preset list — dial it where you like, and a preset
+// that names crackle still crackles when you pick it by name.
+const SHY_ODDS = 0.08
+const SHY_TOP = 0.3
+
+const shyValue = (def: SliderDef, rand: () => number) =>
+  rand() < SHY_ODDS ? snapToStep(def, fromPos(def, rand() * SHY_TOP)) : def.min
+
+const calmShy = (next: Controls, rand: () => number): Controls => {
+  for (const def of ALL_SLIDERS)
+    if (def.shy) next[def.key] = shyValue(def, rand)
+  return next
+}
+
 export function mutate(
   controls: Controls,
   amount: number,
@@ -65,6 +83,10 @@ export function mutate(
       continue
     }
     if (rand() > share) continue
+    // A shy control already off stays off: a nudge is a small move, and off to
+    // faintly crackling is not a small move. One you turned up yourself is a
+    // control like any other from here on.
+    if (def.shy && controls[def.key] === def.min) continue
     next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
   return inTime(next, () => true)
@@ -92,10 +114,11 @@ function thinOut(next: Controls, rand: () => number): Controls {
 // preset it lands on hands over its board and nothing else.
 export function randomLook(current: Controls, rand: () => number): Controls {
   const preset = PRESETS[Math.floor(rand() * PRESETS.length)]!
-  return keepYours(
-    thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand),
-    current,
-  )
+  const next = thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand)
+  // A preset that names crackle names it loud, and a roll that landed on that
+  // preset never asked for it. The shy controls get rolled shy whatever the
+  // preset had to say about them.
+  return keepYours(calmShy(next, rand), current)
 }
 
 // A roll, as against a nudge: the control takes a fresh value from anywhere on
@@ -109,8 +132,14 @@ export function randomLook(current: Controls, rand: () => number): Controls {
 // half way up that travel is already most of the way up the range — a retrigger
 // is a roll before it is a scream. And a dry/wet that came on at all lands in
 // the top of its travel rather than at a permanent half-wet.
-function rollValue(def: SliderDef, rand: () => number): number {
+//
+// `named` says the roll pointed at this control's own stage, which is the one
+// case a shy control rolls like any other.
+function rollValue(def: SliderDef, rand: () => number, named = false): number {
   const at = (pos: number) => snapToStep(def, fromPos(def, pos))
+  // Ahead of everything below, including the levels: a shy control is one the
+  // roll is allowed to leave off however loud its stage ends up.
+  if (def.shy && !named) return shyValue(def, rand)
   // A level is the whole of whether the stage is there at all, so rolling the
   // stage always leaves it somewhere you can hear.
   if (def.role === 'level') return audible(def, rand)
@@ -214,6 +243,12 @@ export function rollGroup(
     group.sliders.map(s => s.key),
     rand,
   )
+  // Pressing the dice on the crackle is asking for crackle: the shy controls of
+  // the stage you pointed at roll the way the rest of the board's do. Shy is
+  // about what a roll of the whole board hands you unasked.
+  for (const def of group.sliders) {
+    if (def.shy) next[def.key] = rollValue(def, rand, true)
+  }
   // You rolled this stage in order to hear it, so its own dry/wet doesn't get
   // to land at zero. Turning a stage off is what the reset beside this is for.
   const mix = group.sliders.find(s => s.role === 'mix')

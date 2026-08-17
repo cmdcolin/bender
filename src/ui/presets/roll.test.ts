@@ -121,6 +121,52 @@ test('random does change the board it is rolling for', () => {
   expect(looks.has(JSON.stringify(before))).toBe(false)
 })
 
+// The one you press over and over, so the thing it hands you unasked is the
+// thing you hear a hundred times. Crackle covers whatever else the roll did.
+test('random rarely brings crackle on, and never loud', () => {
+  const before = mine()
+  let on = 0
+  for (let seed = 1; seed <= 300; seed++) {
+    const after = randomLook(before, mulberry32(seed))
+    for (const key of ['crackleAmp', 'brownCrackle'] as const) {
+      expect(after[key], `${key}/${seed}`).toBeLessThanOrEqual(0.3)
+      if (after[key] > 0) on++
+    }
+  }
+  expect(on).toBeGreaterThan(0)
+  expect(on / 600).toBeLessThan(0.15)
+})
+
+test('mutate does not turn crackle on from nothing', () => {
+  const off = { ...mine(), crackleAmp: 0, brownCrackle: 0 }
+  for (let seed = 1; seed <= 60; seed++) {
+    const after = mutate(off, 0.3, mulberry32(seed))
+    expect(after.crackleAmp).toBe(0)
+    expect(after.brownCrackle).toBe(0)
+  }
+})
+
+test('a crackle you dialled in is a control like any other', () => {
+  const dialled = { ...mine(), crackleAmp: 0.7 }
+  const seen = new Set<number>()
+  for (let seed = 1; seed <= 60; seed++) {
+    seen.add(mutate(dialled, 0.3, mulberry32(seed)).crackleAmp)
+  }
+  expect(seen.size).toBeGreaterThan(4)
+  expect(Math.max(...seen)).toBeGreaterThan(0.7)
+})
+
+test('pressing the dice on the crackle stage asks for crackle', () => {
+  const levels = new Set<number>()
+  for (let seed = 1; seed <= 40; seed++) {
+    levels.add(
+      rollGroup(groupNamed('Noise & crackle'), mine(), mulberry32(seed))
+        .crackleAmp,
+    )
+  }
+  expect(Math.max(...levels)).toBeGreaterThan(0.5)
+})
+
 test('rolling a stage leaves every other stage alone', () => {
   const before = mine()
   for (const name of ['Spring verb', 'Ring mod', 'Tape machine']) {

@@ -14,6 +14,10 @@ export interface SliderDef {
       the stage's dry/wet, a level is the whole of whether it is there at all.
       A roll reads this to decide what it must leave audible. */
   role?: 'mix' | 'level'
+  /** Covers the board rather than joining it, so a roll brings it on rarely and
+      low. Your hand still puts it wherever you want it, and a preset that names
+      it still gets it when you pick that preset by name. */
+  shy?: true
   /** A value the control has a reason to jump to that isn't a place on its own
       travel — it is worked out from the rest of the board. One press, drawn
       beside the readout. */

@@ -377,6 +377,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        shy: true,
         help: 'Dirty-pot contact crackle: random spikes rung through a resonant filter.',
       },
       {
