@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'
 import { buildBender, buildChain, type BuiltChain } from './build'
+import { ToyRail } from './toyRail'
 import { BLOCK, type StereoBlock } from './stage'
 
 function makeIo(): StereoBlock {
@@ -53,6 +54,13 @@ function renderBender(
 }
 
 const tail = (x: Float32Array, seconds = 0.5) => x.subarray(x.length - seconds * SR)
+
+// Play the keyboard with the ROM sequencer stopped, so only the keys sound.
+const playKeys = (
+  overrides: Partial<Controls>,
+  script: (chip: BuiltChain['toyChip']) => void,
+  seconds = 0.5,
+) => renderBender(overrides, seconds, built => script(built.toyChip))
 
 function render(overrides: Partial<Controls>, seconds = 0.5): Float32Array {
   const sr = 48000
@@ -148,6 +156,55 @@ test('feedback patched into the delay still loops', () => {
   const tail = out.subarray(out.length - 4800)
   const rms = Math.sqrt(tail.reduce((a, x) => a + x * x, 0) / tail.length)
   expect(rms).toBeGreaterThan(0.01)
+})
+
+test('a chord sounds fuller than one note but nothing like four times louder', () => {
+  const one = rms(playKeys({}, chip => chip.noteOn(0)))
+  const four = rms(
+    playKeys({}, chip => {
+      for (const n of [0, 4, 7, 12]) chip.noteOn(n)
+    }),
+  )
+  expect(four).toBeGreaterThan(one * 1.3)
+  expect(four).toBeLessThan(one * 2.5)
+})
+
+test('a fifth note steals the oldest voice', () => {
+  // Both takes end with the player holding only note 0. In the second, note 0's
+  // voice went to the fifth note, so every voice is released and rings out.
+  const script = (extra: number[]) => (chip: BuiltChain['toyChip']) => {
+    for (const n of [0, 4, 7, 12, ...extra]) chip.noteOn(n)
+    for (const n of [4, 7, 12, ...extra]) chip.noteOff(n)
+  }
+  const held = rms(tail(playKeys({}, script([]), 2), 0.1))
+  const stolen = rms(tail(playKeys({}, script([16]), 2), 0.1))
+  expect(held).toBeGreaterThan(0.05)
+  expect(stolen).toBeLessThan(held * 0.1)
+})
+
+test('a starving rail collapses the voices raggedly, not in lockstep', () => {
+  const rail = new ToyRail(SR)
+  rail.v = 0.45
+  const amps = [0.86, 1.21].map(t => rail.ampFactorAt(t))
+  const pitches = [0.86, 1.21].map(t => rail.pitchFactorAt(t))
+  expect(amps[0]).toBeGreaterThan(amps[1]! + 0.05)
+  expect(pitches[0]).toBeGreaterThan(pitches[1]! + 0.02)
+
+  rail.v = 1
+  // Part tolerance only shows up as the supply sags; a full rail tunes true.
+  expect(rail.pitchFactorAt(0.86)).toBeCloseTo(1)
+  expect(rail.pitchFactorAt(1.21)).toBeCloseTo(1)
+})
+
+test('narrow tone taps thin out and survive the divider running out of counts', () => {
+  const square = rms(playKeys({ chipTone: 0 }, chip => chip.noteOn(0)))
+  const buzz = rms(playKeys({ chipTone: 3 }, chip => chip.noteOn(0)))
+  expect(buzz).toBeGreaterThan(0.01)
+  expect(buzz).toBeLessThan(square * 0.8)
+
+  // Clocked up past where a 1/16 tap fits between samples, it still sounds.
+  const fast = rms(playKeys({ chipTone: 3, chipClockX: 16 }, chip => chip.noteOn(12)))
+  expect(fast).toBeGreaterThan(0.01)
 })
 
 test('no-input feedback bus self-oscillates from nothing', () => {

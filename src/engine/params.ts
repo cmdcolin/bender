@@ -12,6 +12,7 @@ export type Smooth = 'slew' | 'ramp' | 'step'
 export const PARAM_DEFS = [
   ['chipLevel', 'slew'],
   ['chipTune', 'step'],
+  ['chipTone', 'step'],
   ['chipClockX', 'slew'],
   ['chipStarve', 'slew'],
   ['chipBendSpot', 'step'],

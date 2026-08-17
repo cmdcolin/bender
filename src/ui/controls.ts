@@ -47,6 +47,16 @@ export const GROUPS: Group[] = [
         help: 'Which demo song the chip plays from ROM. Each ROM carries its own sequencer rate, so the clock and the starve bend hit them differently.',
       },
       {
+        key: 'chipTone',
+        label: 'Tone',
+        min: 0,
+        max: 3,
+        step: 1,
+        unit: '',
+        choices: ['organ 1/2', 'reed 1/4', 'clav 1/8', 'buzz 1/16'],
+        help: 'Which width of pulse the tone selector taps off the divider chain. Narrow taps null different harmonics and thin out — the chip never levelled them, so they get quieter as they get reedier.',
+      },
+      {
         key: 'chipClockX',
         label: 'Clock',
         min: 0.05,

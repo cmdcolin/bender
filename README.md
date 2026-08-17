@@ -31,6 +31,20 @@ runaway is a feature, held at the rails by design. A fixed safety tail (DC
 block, soft clip, −1 dBFS limiter, NaN watchdog) means no setting can blow up
 the output.
 
+The keyboard plays four notes at once, the way the toys of the era did. Every
+voice shares the one supply but has its own output stage, so a starving chip
+doesn't sag in lockstep: each voice detunes and browns out at its own rail
+voltage and a chord collapses raggedly, a note at a time. All four mix into a
+single small output stage, so a chord leans on its headroom rather than coming
+out four times louder — and draws harder on the rail, which is its own way of
+browning the chip out.
+
+**Tone** taps the divider chain at a different pulse width — 1/2, 1/4, 1/8,
+1/16. Narrow taps null different harmonics and thin out; nothing levels them
+back up, exactly as the chips left it. A counter can't strike a pulse narrower
+than one clock tick, so the narrow tones widen back toward a square as the note
+climbs past the divider's resolution.
+
 The bends that matter:
 
 - **Starve** sags the shared toy supply: pitch dives, notes collapse, and past

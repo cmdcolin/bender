@@ -39,7 +39,18 @@ export class ToyRail {
   }
 
   get ampFactor() {
-    return Math.min(Math.max((this.v - 0.15) / 0.55, 0), 1)
+    return this.ampFactorAt(1)
+  }
+
+  // Part tolerance. Every voice shares one rail but has its own output stage,
+  // so each browns out at its own voltage and sags by its own amount: a chord
+  // on a starving chip detunes against itself and dies a voice at a time.
+  ampFactorAt(trim: number) {
+    return Math.min(Math.max((this.v - 0.15 * trim) / 0.55, 0), 1)
+  }
+
+  pitchFactorAt(trim: number) {
+    return 1 - (1 - this.pitchFactor) * trim
   }
 
   get stalled() {
