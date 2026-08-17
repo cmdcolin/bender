@@ -1,6 +1,14 @@
 import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
-import { ALL_SLIDERS, EDITOR_KEYS, sliderFor } from '.'
+import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
+
+test('the bend table lines up with the slots that name it', () => {
+  expect(BENDS.length).toBe((sliderFor('bendSlot0').choices?.length ?? 0) - 1)
+  for (const bend of BENDS) {
+    expect(GROUPS.map(g => g.name)).toContain(bend.group)
+    expect(DEFAULT_CONTROLS).toHaveProperty(bend.mix)
+  }
+})
 
 test('every control has exactly one widget, slider or editor', () => {
   const keys = [...ALL_SLIDERS.map(s => s.key), ...EDITOR_KEYS]
