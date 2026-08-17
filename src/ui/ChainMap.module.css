@@ -3,13 +3,10 @@
   border-bottom: 1px solid var(--border-quiet);
 }
 
-.graph {
-  overflow: auto;
-  max-height: 340px;
-}
-
-/* Graphviz sizes the svg in points, which lands near the panel's width; it only
-   scales down, so the labels never shrink below what graphviz laid out. */
+/* The path draws at whatever height graphviz lays out and the panel scrolls it
+   with everything else — a scroll box of its own only ever clipped the chain and
+   trapped the wheel. Graphviz sizes the svg in points, which lands inside the
+   panel's width, so it only ever scales down and the labels stay put. */
 .graph svg {
   display: block;
   max-width: 100%;

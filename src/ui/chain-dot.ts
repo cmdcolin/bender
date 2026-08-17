@@ -50,6 +50,8 @@ export interface Palette {
   accent2: string
   /** control wires, cool against the warm signal path */
   mod: string
+  /** fill behind the stage whose controls the panel is showing */
+  open: string
 }
 
 export const PANEL: Palette = {
@@ -60,6 +62,7 @@ export const PANEL: Palette = {
   accent: '#ff5d3b',
   accent2: '#ffb03b',
   mod: '#5ea9d8',
+  open: '#332622',
 }
 
 export function groupAnchor(name: string): string {
@@ -80,9 +83,11 @@ function groupNode(name: string, c: Controls, active: boolean, o: Options): stri
   const k = o.palette ?? PANEL
   const touched = o.live === false ? 0 : touchedCount(name, c)
   const label = touched > 0 ? `${name}  ${touched}` : name
-  const color = touched > 0 ? k.accent : k.border
-  const fg = active ? k.fg : k.dim
-  return `  ${nodeId(name)} [label="${label}", color="${color}", fontcolor="${fg}", URL="#${groupAnchor(name)}"]`
+  const open = o.open === name
+  const color = open ? k.fg : touched > 0 ? k.accent : k.border
+  const fg = active || open ? k.fg : k.dim
+  const fill = open ? k.open : k.bg
+  return `  ${nodeId(name)} [label="${label}", fillcolor="${fill}", color="${color}", penwidth=${open ? 2 : 1}, fontcolor="${fg}", URL="#${groupAnchor(name)}"]`
 }
 
 function bendOrder(c: Controls): string[] {
@@ -115,9 +120,11 @@ function sourceStrip(c: Controls, o: Options): string {
   const k = o.palette ?? PANEL
   const rows = Object.entries(SOURCE_ACTIVE).map(([name, isLive]) => {
     const touched = o.live === false ? 0 : touchedCount(name, c)
-    const fg = isLive(c) ? k.fg : k.dim
+    const open = o.open === name
+    const fg = isLive(c) || open ? k.fg : k.dim
     const count = touched > 0 ? ` <FONT COLOR="${k.accent}">${touched}</FONT>` : ''
-    return `<TR><TD PORT="${nodeId(name)}" HREF="#${groupAnchor(name)}" TITLE="${esc(name)}"><FONT COLOR="${fg}">${esc(name)}</FONT>${count}</TD></TR>`
+    const fill = open ? ` BGCOLOR="${k.open}"` : ''
+    return `<TR><TD PORT="${nodeId(name)}" HREF="#${groupAnchor(name)}" TITLE="${esc(name)}"${fill}><FONT COLOR="${fg}">${esc(name)}</FONT>${count}</TD></TR>`
   })
   return `<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="${k.bg}" COLOR="${k.border}">${rows.join('')}</TABLE>`
 }
@@ -127,6 +134,38 @@ export interface Options {
   /** A live board shows how far each stage is off stock, and the feedback
       amount; the README's copy just names the parts. */
   live?: boolean
+  /** Folds the path into two columns joined by a slack cable. The panel wants
+      it — a straight run is 810px tall and buries every control under itself —
+      and the README, drawn as a standalone image, does not. */
+  wrap?: boolean
+  /** The stage whose controls the panel is showing, lit on the map. */
+  open?: string
+}
+
+// The path, wired between the nodes that are already declared. Straight down
+// the page, or folded in half so the panel gets a map roughly as wide as it is
+// tall instead of a 810px ribbon down one side of a 420px column.
+//
+// The fold is two chains pinned rank-by-rank into columns, with the cable from
+// the foot of the first to the head of the second carrying the eye across.
+// `constraint=false` is what lets that edge exist without graphviz stacking the
+// second column back under the first, and the slack in it is graphviz's own
+// spline routing around the rows between — it reads as cable because it is the
+// one line on the map that isn't a short vertical hop.
+function wireRun(seq: Run[], k: Palette, o: Options): string[] {
+  const ids = seq.map(s => s.id)
+  if (!o.wrap) return ids.slice(1).map((id, i) => `  ${ids[i]} -> ${id}`)
+  const [down, up] = splitByHeight(seq)
+  const chain = (col: string[]) => col.slice(1).map((id, i) => `  ${col[i]} -> ${id}`)
+  return [
+    ...chain(down),
+    ...chain(up),
+    `  ${down[down.length - 1]} -> ${up[0]} [constraint=false, color="${k.accent}", penwidth=1.8, arrowsize=0.8]`,
+    // Row i of one column beside row i of the other. Graphviz keeps them in
+    // declaration order, so the path always reads down the left and up the
+    // right rather than swapping sides as the bend count changes.
+    ...down.slice(0, up.length).map((id, i) => `  { rank=same; ${id}; ${up[i]} }`),
+  ]
 }
 
 export function buildDot(c: Controls, o: Options = {}): string {
@@ -135,7 +174,7 @@ export function buildDot(c: Controls, o: Options = {}): string {
     'digraph chain {',
     '  bgcolor="transparent"',
     '  rankdir=TB',
-    '  nodesep=0.18',
+    `  nodesep=${o.wrap ? 0.22 : 0.18}`,
     '  ranksep=0.22',
     `  node [shape=box, style="filled,rounded", fillcolor="${k.bg}", color="${k.border}", fontcolor="${k.fg}", fontname="Helvetica", fontsize=12, height=0.3, margin="0.14,0.06"]`,
     `  edge [color="${k.border}", arrowsize=0.6, penwidth=1.1]`,
@@ -147,24 +186,30 @@ export function buildDot(c: Controls, o: Options = {}): string {
     return groupNode(name, c, active, o)
   }
 
+  // The path is collected in signal order before any of it is wired, because
+  // the wrap below needs to know how long the run is to find its middle.
+  const seq: Run[] = []
+  const run = (id: string, decl: string, rows = 1) => {
+    lines.push(decl)
+    seq.push({ id, rows })
+  }
+
   // The sources ride one strip rather than five nodes on a rank of their own:
   // a column of boxes keeps the whole path narrow enough to read at this size.
-  lines.push(`  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`)
-  lines.push(`  mix [label="mix bus", shape=box, fontcolor="${k.dim}"]`)
-  lines.push('  sources -> mix')
+  run(
+    'sources',
+    `  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`,
+    Object.keys(SOURCE_ACTIVE).length,
+  )
+  run('mix', `  mix [label="mix bus", shape=box, fontcolor="${k.dim}"]`)
 
-  let prev = 'mix'
   const bends = bendOrder(c)
   for (const name of bends) {
     const mixKey = BEND_MIX[name]
-    lines.push(node(name, mixKey ? c[mixKey] > 0 : true))
-    lines.push(`  ${prev} -> ${nodeId(name)}`)
-    prev = nodeId(name)
+    run(nodeId(name), node(name, mixKey ? c[mixKey] > 0 : true))
   }
   if (bends.length === 0) {
-    lines.push(`  no_bends [label="no bends patched", fontcolor="${k.dim}"]`)
-    lines.push(`  mix -> no_bends`)
-    prev = 'no_bends'
+    run('no_bends', `  no_bends [label="no bends patched", fontcolor="${k.dim}"]`)
   }
 
   for (const [name, active] of [
@@ -173,13 +218,12 @@ export function buildDot(c: Controls, o: Options = {}): string {
     ['Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0],
     ['Output', true],
   ] as const) {
-    lines.push(node(name, active))
-    lines.push(`  ${prev} -> ${nodeId(name)}`)
-    prev = nodeId(name)
+    run(nodeId(name), node(name, active))
   }
 
-  lines.push(`  out [label="dc block → clip → limit", shape=box, fontcolor="${k.dim}"]`)
-  lines.push(`  ${prev} -> out`)
+  run('out', `  out [label="dc block → clip → limit", shape=box, fontcolor="${k.dim}"]`)
+
+  lines.push(...wireRun(seq, k, o))
 
   if (c.fbAmt > 0) {
     const dest = FB_TARGET[Math.round(c.fbDest)] ?? 'mix'

@@ -1,6 +1,6 @@
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(5.5rem, 1fr) minmax(4.2rem, auto);
+  grid-template-columns: minmax(0, 1.1fr) minmax(6rem, 1fr) minmax(5rem, auto);
   align-items: center;
   gap: 8px;
   margin: 6px 0;
@@ -22,7 +22,7 @@
 
 .track {
   width: 100%;
-  height: 18px;
+  height: 20px;
   margin: 0;
   accent-color: var(--accent);
   background: transparent;
@@ -46,7 +46,7 @@
 .choice,
 .choiceOn {
   font-size: var(--fs-xs);
-  padding: 2px 7px;
+  padding: 3px 9px;
   background: var(--bg3);
   color: var(--fg3);
   border: 1px solid var(--border-quiet);

@@ -13,7 +13,7 @@
 }
 
 .panel {
-  width: 344px;
+  width: 420px;
   flex: none;
   overflow-y: auto;
   padding: 10px 14px 40px;
@@ -50,7 +50,7 @@
 .btnDanger {
   flex: 1;
   font-size: var(--fs-sm);
-  padding: 5px 0;
+  padding: 6px 0;
   background: var(--bg3);
   color: var(--fg2);
   border: 1px solid var(--border);
@@ -81,7 +81,7 @@
 
 .preset {
   font-size: var(--fs-xs);
-  padding: 3px 8px;
+  padding: 4px 10px;
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
