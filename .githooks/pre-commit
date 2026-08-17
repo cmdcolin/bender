@@ -1,0 +1,10 @@
+#!/bin/sh
+# Formats staged files with prettier before commit.
+# Wired up by `pnpm install` via the "prepare" script (core.hooksPath).
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.html' '*.md')
+[ -z "$staged" ] && exit 0
+
+echo "$staged" | xargs pnpm exec prettier --write
+echo "$staged" | xargs git add

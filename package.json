@@ -13,7 +13,8 @@
     "pat": "node scripts/push.mjs patch",
     "min": "node scripts/push.mjs minor",
     "maj": "node scripts/push.mjs major",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@viz-js/viz": "^3.29.0",
