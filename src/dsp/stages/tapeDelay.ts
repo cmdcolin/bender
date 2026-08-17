@@ -31,8 +31,8 @@ export class TapeDelay implements Stage {
     this.rng = mulberry32(606)
   }
 
-  when(p: Float32Array) {
-    return p[IDX.dlyMix]! > 0 || (p[IDX.fbDest] === 3 && p[IDX.fbAmt]! > 0)
+  when(p: Float32Array, ctx: Ctx) {
+    return p[IDX.dlyMix]! > 0 || (ctx.fbDest === 3 && p[IDX.fbAmt]! > 0)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -44,7 +44,7 @@ export class TapeDelay implements Stage {
     const mix = p[IDX.dlyMix]!
     const coef = lpCoef(p[IDX.dlyToneHz]!, this.sr)
     const micInject = p[IDX.micPatch] === 3
-    const fbInject = Math.round(p[IDX.fbDest]!) === 3
+    const fbInject = ctx.fbDest === 3
     const brake = p[IDX.tapeBrake]!
     const railDrag = p[IDX.tapeMotorRail]!
     const modSpeed = ctx.mod.read(DEST.tapeSpeed)

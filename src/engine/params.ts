@@ -19,6 +19,8 @@ export const PARAM_DEFS = [
   ['chipBattery', 'slew'],
   ['chipBendSpot', 'step'],
   ['chipBendPot', 'slew'],
+  ['chipDrift', 'slew'],
+  ['chipLatch', 'slew'],
 
   ['drumLevel', 'slew'],
   ['drumBpm', 'slew'],
@@ -161,6 +163,12 @@ export const PARAM_DEFS = [
   ['tapeDrop', 'slew'],
   ['tapePrint', 'slew'],
   ['tapeAzimuth', 'slew'],
+
+  ['heatAmt', 'slew'],
+  ['faultCluster', 'slew'],
+  ['jointChatter', 'slew'],
+  ['relayRate', 'slew'],
+  ['couple', 'slew'],
 
   ['outGain', 'ramp'],
 ] as const satisfies readonly (readonly [ControlKey, Smooth])[]

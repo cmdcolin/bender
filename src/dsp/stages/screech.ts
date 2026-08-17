@@ -27,9 +27,18 @@ class Svf {
   }
 }
 
+// The floor the coupled damping can be driven to: as far negative as the
+// resonance knob alone reaches at its top, and no further.
+const DAMP_FLOOR = -1
+
 // MS-20-flavored resonant 2-pole. Resonance past 1.0 goes to negative damping
 // and the filter self-oscillates at the cutoff — ping it with crackle, or park
 // it inside the global feedback loop and let it pick the squeal's pitch.
+//
+// Cross-coupling is the positive half of the argument the board has with itself:
+// top end already in the chain opens the resonance, which makes more top end.
+// The supply is the half pulling the other way, and because the two run on
+// different time constants the pair never finds a level to sit at.
 export class Screech implements Stage {
   label = 'screech'
   private svfL = new Svf()
@@ -43,7 +52,8 @@ export class Screech implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const nyq = this.sr * 0.22
-    const base = p[IDX.filtHz]!
+    // A hot tank drifts flat, the way every cheap filter does.
+    const base = p[IDX.filtHz]! * (1 - 0.08 * ctx.heat)
     const mod = ctx.mod.read(DEST.filtHz)
     const fBase = 2 * Math.sin((Math.PI * Math.min(base, nyq)) / this.sr)
     const res = p[IDX.filtRes]!
@@ -51,6 +61,7 @@ export class Screech implements Stage {
     const mode = Math.round(p[IDX.filtMode]!)
     const gain = Math.pow(10, p[IDX.filtDriveDb]! / 20)
     const mix = p[IDX.filtMix]!
+    const couple = p[IDX.couple]!
 
     for (let i = 0; i < io.n; i++) {
       const f = mod
@@ -61,8 +72,12 @@ export class Screech implements Stage {
               this.sr,
           )
         : fBase
-      const wl = this.svfL.process(softclip(io.l[i]! * gain), f, damp, mode)
-      const wr = this.svfR.process(softclip(io.r[i]! * gain), f, damp, mode)
+      const d =
+        couple > 0
+          ? Math.max(damp - couple * ctx.bright[i]! * 0.9, DAMP_FLOOR)
+          : damp
+      const wl = this.svfL.process(softclip(io.l[i]! * gain), f, d, mode)
+      const wr = this.svfR.process(softclip(io.r[i]! * gain), f, d, mode)
       io.l[i] = io.l[i]! * (1 - mix) + wl * mix
       io.r[i] = io.r[i]! * (1 - mix) + wr * mix
     }

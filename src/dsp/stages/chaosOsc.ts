@@ -26,8 +26,8 @@ export class ChaosOsc implements Stage {
 
   // Also runs while the feedback bus is patched into the FM input, so the
   // loop stays alive even with the level down.
-  when(p: Float32Array) {
-    return p[IDX.oscLevel]! > 0 || (p[IDX.fbDest] === 1 && p[IDX.fbAmt]! > 0)
+  when(p: Float32Array, ctx: Ctx) {
+    return p[IDX.oscLevel]! > 0 || (ctx.fbDest === 1 && p[IDX.fbAmt]! > 0)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -38,7 +38,7 @@ export class ChaosOsc implements Stage {
     const mode = Math.round(p[IDX.oscShape]!)
     const starve = p[IDX.oscStarve]!
     const micFm = p[IDX.micPatch] === 2
-    const fbFm = Math.round(p[IDX.fbDest]!) === 1
+    const fbFm = ctx.fbDest === 1
 
     for (let i = 0; i < io.n; i++) {
       const pitchF = 0.5 + 0.5 * this.rail
@@ -57,7 +57,9 @@ export class ChaosOsc implements Stage {
         out = shape(this.phaseA, mode) * amp
       }
 
-      const charge = 70 / this.sr
+      // A hot part takes longer to come back after each stall, so the
+      // motorboating slows down over minutes without anything being turned.
+      const charge = (70 * (1 - 0.4 * ctx.heat)) / this.sr
       const drain = (starve * 800) / this.sr
       this.rail = flushDenormal(
         Math.min(

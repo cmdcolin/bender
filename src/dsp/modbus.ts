@@ -1,6 +1,7 @@
 import { IDX } from '../engine/params'
 import { BLOCK } from './stage'
 import type { TriggerBus } from './trigbus'
+import { Chaos, Drunk } from './util/drift'
 import { Decay, Follower, coef } from './util/follower'
 import { mulberry32, type Rng } from './util/rng'
 
@@ -19,8 +20,14 @@ export const DEST = {
   shiftHz: 10,
   bits: 11,
   drumCross: 12,
+  wDepth0: 13,
+  wDepth1: 14,
 } as const
-export const N_DEST = 13
+export const N_DEST = 15
+
+// The two lanes a wire can land on that aren't a stage: the other wire's own
+// depth. In wire order, so wire i's depth is DEPTH_DEST[i].
+const DEPTH_DEST = [DEST.wDepth0, DEST.wDepth1] as const
 
 // Ids match the mod*Src choices.
 const SRC = {
@@ -35,6 +42,7 @@ const SRC = {
   rom: 8,
   drum: 9,
   key: 10,
+  heat: 11,
 }
 
 const WIRES = [
@@ -62,6 +70,7 @@ export interface ModSources {
   fb: Float32Array
   step: Float32Array
   trig: TriggerBus
+  heat: number
 }
 
 // The patch bay: two wires, each soldered from a source onto a destination
@@ -72,7 +81,10 @@ export class ModBus {
   private readonly live = new Uint8Array(N_DEST)
   private readonly lfo = new Float32Array(BLOCK)
   private readonly micEnv = new Float32Array(BLOCK)
-  private readonly held = new Float32Array(BLOCK)
+  // One per wire: two wires picking up the same held value would otherwise
+  // share a buffer, and the second would overwrite what the first is about to
+  // read.
+  private readonly held = [new Float32Array(BLOCK), new Float32Array(BLOCK)]
   // A trigger line is a spike one sample wide; an envelope follower would barely
   // notice one. These snap up to the hit and fall from there, so a wire off the
   // kit or off the keys pushes what it is soldered to on every hit.
@@ -83,10 +95,16 @@ export class ModBus {
   private mic = new Follower()
   private drumHit = new Decay()
   private keyHit = new Decay()
-  private rng: Rng = mulberry32(808)
+  private chaos = new Chaos()
+  private drunk = new Drunk()
+  private rng: Rng
 
-  constructor(private readonly sr: number) {
+  constructor(
+    private readonly sr: number,
+    seed = 808,
+  ) {
     for (let i = 0; i < N_DEST; i++) this.lanes.push(new Float32Array(BLOCK))
+    this.rng = mulberry32(seed)
   }
 
   read(dest: number): Float32Array | null {
@@ -107,7 +125,12 @@ export class ModBus {
       const prev = this.lfoPhase
       this.lfoPhase = (this.lfoPhase + hz / this.sr) % 1
       if (this.lfoPhase < prev) this.shValue = this.rng() * 2 - 1
-      this.lfo[i] = lfoShape(this.lfoPhase, shape, this.shValue)
+      this.lfo[i] =
+        shape === 4
+          ? this.chaos.step(hz, this.sr)
+          : shape === 5
+            ? this.drunk.step(hz, this.sr, this.rng)
+            : lfoShape(this.lfoPhase, shape, this.shValue)
       this.micEnv[i] = Math.min(
         this.mic.process(src.mic[i]!, attack, release) * 2,
         1,
@@ -119,24 +142,61 @@ export class ModBus {
       this.keyEnv[i] = this.keyHit.process(src.trig.key[i]! > 0 ? 1 : 0, fall)
     }
 
-    for (const [srcIdx, destIdx, depthIdx] of WIRES) {
+    // What each wire picks up, before anything decides how hard it pushes. Both
+    // are resolved first because either may be the thing that sets the other's
+    // depth, and a wire that only worked in one direction would make the pair
+    // an ordering rule rather than a pair.
+    const picks = WIRES.map(([srcIdx], w) => {
       const from = Math.round(p[srcIdx]!)
-      const depth = p[depthIdx]!
+      return from === SRC.off ? null : this.pick(from, w, n, p, src)
+    })
+
+    const onDepth = (dest: number) =>
+      dest === DEST.wDepth0 || dest === DEST.wDepth1
+
+    // Depth lanes first, so a wire's own depth is settled before it lands.
+    for (let w = 0; w < WIRES.length; w++) {
+      const [, destIdx, depthIdx] = WIRES[w]!
       const dest = Math.round(p[destIdx]!)
-      if (from === SRC.off || depth === 0 || dest < 0 || dest >= N_DEST)
-        continue
-      const lane = this.lanes[dest]!
-      if (!this.live[dest]) {
-        lane.fill(0, 0, n)
-        this.live[dest] = 1
+      if (picks[w] && onDepth(dest)) {
+        this.add(dest, n, p[depthIdx]!, picks[w]!, null)
       }
-      const wire = this.pick(from, n, p, src)
-      for (let i = 0; i < n; i++) lane[i]! += depth * wire[i]!
+    }
+
+    for (let w = 0; w < WIRES.length; w++) {
+      const [, destIdx, depthIdx] = WIRES[w]!
+      const dest = Math.round(p[destIdx]!)
+      const depth = p[depthIdx]!
+      const mod = this.read(DEPTH_DEST[w]!)
+      if (!picks[w] || dest < 0 || dest >= N_DEST || onDepth(dest)) continue
+      if (depth === 0 && !mod) continue
+      this.add(dest, n, depth, picks[w]!, mod)
+    }
+  }
+
+  private add(
+    dest: number,
+    n: number,
+    depth: number,
+    wire: Float32Array,
+    depthMod: Float32Array | null,
+  ) {
+    const lane = this.lanes[dest]!
+    if (!this.live[dest]) {
+      lane.fill(0, 0, n)
+      this.live[dest] = 1
+    }
+    for (let i = 0; i < n; i++) {
+      const d = depthMod
+        ? Math.min(Math.max(depth + depthMod[i]!, -2), 2)
+        : depth
+      lane[i]! += d * wire[i]!
     }
   }
 
   private pick(
     from: number,
+    wire: number,
     n: number,
     p: Float32Array,
     src: ModSources,
@@ -156,10 +216,19 @@ export class ModBus {
         return this.drumEnv
       case SRC.key:
         return this.keyEnv
+      case SRC.heat:
       case SRC.bodyX:
-      case SRC.bodyY:
-        this.held.fill(p[from === SRC.bodyX ? IDX.bodyX : IDX.bodyY]!, 0, n)
-        return this.held
+      case SRC.bodyY: {
+        const held = this.held[wire]!
+        held.fill(
+          from === SRC.heat
+            ? src.heat
+            : p[from === SRC.bodyX ? IDX.bodyX : IDX.bodyY]!,
+          0,
+          n,
+        )
+        return held
+      }
       default:
         return this.lfo
     }
@@ -172,5 +241,7 @@ export class ModBus {
     this.mic.reset()
     this.drumHit.reset()
     this.keyHit.reset()
+    this.chaos.reset()
+    this.drunk.reset()
   }
 }

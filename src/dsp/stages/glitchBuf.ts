@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { Burst } from '../util/burst'
 import { Transient } from '../util/follower'
 import { mulberry32, type Rng } from '../util/rng'
 
@@ -21,13 +22,19 @@ export class GlitchBuf implements Stage {
   private rate = 1
   private rng: Rng
   private micTrig: Transient
+  private fault: Burst
 
-  constructor(private readonly sr: number) {
+  constructor(
+    private readonly sr: number,
+    seed = 505,
+  ) {
     const n = Math.ceil(2 * sr)
     this.bufL = new Float32Array(n)
     this.bufR = new Float32Array(n)
-    this.rng = mulberry32(505)
+    this.rng = mulberry32(seed)
     this.micTrig = new Transient(sr)
+    // A disc that has started skipping skips again on the next revolution.
+    this.fault = new Burst(sr, 0.9, 7)
   }
 
   when(p: Float32Array) {
@@ -57,9 +64,11 @@ export class GlitchBuf implements Stage {
     const baseProb = p[IDX.glitchProb]!
     const mod = ctx.mod.read(DEST.glitch)
     const micTrig = p[IDX.micPatch] === 6
+    const cluster = p[IDX.faultCluster]!
     const n = this.bufL.length
 
     for (let i = 0; i < io.n; i++) {
+      this.fault.step()
       if (!freeze) {
         this.bufL[this.writePos] = io.l[i]!
         this.bufR[this.writePos] = io.r[i]!
@@ -72,7 +81,10 @@ export class GlitchBuf implements Stage {
         const prob = mod
           ? Math.min(Math.max(baseProb + mod[i]!, 0), 1)
           : baseProb
-        if (!this.glitching && (freeze || this.rng() < prob)) {
+        if (
+          !this.glitching &&
+          (freeze || this.fault.roll(prob, cluster, this.rng))
+        ) {
           this.beginEvent(p, sliceSamples)
         }
       }
@@ -117,5 +129,6 @@ export class GlitchBuf implements Stage {
     this.glitching = false
     this.sliceCountdown = 0
     this.micTrig.reset()
+    this.fault.reset()
   }
 }

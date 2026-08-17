@@ -72,8 +72,9 @@ export class ToyDrum implements Stage {
     private readonly sr: number,
     private readonly rail: ToyRail,
     private readonly transport: Transport,
+    seed = 202,
   ) {
-    this.rng = mulberry32(202)
+    this.rng = mulberry32(seed)
     this.micTrig = new Transient(sr)
   }
 

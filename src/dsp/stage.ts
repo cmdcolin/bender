@@ -25,6 +25,22 @@ export interface Ctx {
   env: Float32Array
   /** the chip's sequencer phase, 0 to 1 across the current ROM step */
   step: Float32Array
+  /**
+   * How bright the chain is running, signed: positive when there is more
+   * high-frequency energy in the loop than programme, negative when it has gone
+   * dull. The second global bus, and deliberately the fast one — droop is slow
+   * and never negative, so on its own it can only make every stage pump in step.
+   * Two buses that disagree are what let the board argue with itself.
+   */
+  bright: Float32Array
+  /** 0 cold, 1 as hot as the board gets. Block rate: it moves over minutes. */
+  heat: number
+  /**
+   * Which pin the feedback return is actually on this block. The relay walks it
+   * off the one the param names, so every stage that consumes the return reads
+   * it from here — otherwise half the board thinks the wire is somewhere else.
+   */
+  fbDest: number
   mod: ModBus
   /** the trigger lines of the two boxes, for whatever has bridged them */
   trig: TriggerBus
@@ -32,7 +48,7 @@ export interface Ctx {
 
 export interface Stage {
   label: string
-  when?(p: Float32Array): boolean
+  when?(p: Float32Array, ctx: Ctx): boolean
   process(io: StereoBlock, p: Float32Array, ctx: Ctx): void
   panic(): void
 }

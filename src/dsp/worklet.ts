@@ -26,7 +26,10 @@ class BenderProcessor extends AudioWorkletProcessor {
 
   constructor() {
     super()
-    this.built = buildBender(sampleRate)
+    // Seeded off the clock, so the noise, the faults and the reboots are this
+    // session's rather than the same stream every page load. A board is still a
+    // board — what it does is reproducible — but a take is a take.
+    this.built = buildBender(sampleRate, (Date.now() ^ 0x5bd1) >>> 0)
     this.smoother = new Smoother(sampleRate, BLOCK)
     this.io = {
       l: new Float32Array(BLOCK),

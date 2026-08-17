@@ -5,6 +5,8 @@ import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
 import { voiceMask } from '../trigbus'
 import { softclip } from '../util/softclip'
+import { Burst } from '../util/burst'
+import { Drunk } from '../util/drift'
 import { mulberry32, type Rng } from '../util/rng'
 import { ROMS, type Rom } from './roms'
 
@@ -66,6 +68,10 @@ const CHORD_TRIM = [0.9, 1.15, 1]
 // The triad sits under the melody rather than beside it.
 const CHORD_GAIN = 0.7
 
+// A jammed output stage sits where the latch left it instead of following the
+// rail down.
+const LATCH_AMP = 0.85
+
 // One small output stage carries every voice, so a chord leans on its headroom
 // rather than coming out four times louder.
 const MIXER_DRIVE = 0.35
@@ -118,13 +124,19 @@ export class ToyChip implements Stage {
   private lastTiming = 0
   private envDecay = 1
   private rng: Rng
+  // The crystal's own wander, and the counter's habit of slipping in runs
+  // rather than at a steady rate.
+  private drift = new Drunk()
+  private counterFault: Burst
 
   constructor(
     private readonly sr: number,
     private readonly rail: ToyRail,
     private readonly transport: Transport,
+    seed = 101,
   ) {
-    this.rng = mulberry32(101)
+    this.rng = mulberry32(seed)
+    this.counterFault = new Burst(sr, 1.1)
   }
 
   noteOn(semitone: number) {
@@ -165,10 +177,16 @@ export class ToyChip implements Stage {
     return p[IDX.chipLevel]! > 0 || p[IDX.drumLevel]! > 0
   }
 
-  private restart(tune: number[]) {
-    this.pos = 0
-    this.stepClock = 0
-    const step = tune[0]!
+  // Pressing play drops the needle on step 0. Coming back from a brownout is
+  // not that tidy: the program counter holds whatever junk was in the latch when
+  // the rail went, so the tune comes back from the middle of itself as often as
+  // from the top. Rebooting into bar one every time is what made a starving chip
+  // sound like a loop.
+  private restart(tune: number[], junk = false) {
+    this.pos =
+      junk && this.rng() < 0.6 ? Math.floor(this.rng() * tune.length) : 0
+    this.stepClock = junk ? this.rng() : 0
+    const step = tune[this.pos]!
     this.note = step >= 0 ? step : -1
     this.env = step >= 0 ? 1 : 0
     this.chord = this.triads[0]!
@@ -242,15 +260,18 @@ export class ToyChip implements Stage {
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
     const micToRail = p[IDX.micPatch] === 1
-    const fbToRail = Math.round(p[IDX.fbDest]!) === 2
+    const fbToRail = ctx.fbDest === 2
     const modClock = ctx.mod.read(DEST.chipClock)
     const accomp = p[IDX.chipAccomp]!
     // Whichever of the kit's voices is bridged onto the gate, and what it plays.
     const trigMask = voiceMask(Math.round(p[IDX.trigToKeys]!))
     const trigNote = Math.round(p[IDX.trigKeysNote]!)
+    const drift = p[IDX.chipDrift]!
+    const cluster = p[IDX.faultCluster]!
+    const couple = p[IDX.couple]!
     const rail = this.rail
     const maxHz = this.sr * 0.49
-    rail.setBattery(battery)
+    rail.setBattery(battery, ctx.heat, p[IDX.chipLatch]!, cluster)
 
     if (rom !== this.lastRom) {
       this.lastRom = rom
@@ -258,10 +279,9 @@ export class ToyChip implements Stage {
       this.chord = this.triads[0]!
     }
 
-    // a reboot, and pressing play, both drop the needle on step 0
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
-      this.restart(tune)
+      this.restart(tune, true)
     }
     if (this.transport.tune !== this.wasPlaying) {
       this.wasPlaying = this.transport.tune
@@ -269,6 +289,8 @@ export class ToyChip implements Stage {
     }
 
     for (let i = 0; i < io.n; i++) {
+      this.counterFault.step()
+      const latched = rail.latched
       // clock bend: the pot shorts the RC — wildly fast and unstable
       let clock = clockX
       if (spot === 1 && pot > 0) {
@@ -276,17 +298,29 @@ export class ToyChip implements Stage {
         this.clockWalk *= 0.999
         clock *= 1 + pot * 24 * (1 + 0.4 * Math.sin(this.clockWalk))
       }
+      // The toy runs on its own crystal and it wanders. Nothing pulls it back,
+      // so it never settles on a ratio with the drum machine — the two lean past
+      // each other and come back for as long as you leave it running.
+      if (drift > 0) {
+        clock *= 1 + this.drift.step(0.08, this.sr, this.rng) * 0.3 * drift
+      }
       if (modClock) clock *= Math.pow(2, modClock[i]! * 3)
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
 
-      // sequencer — the run/stop line freezes it where it stands
-      if (this.transport.tune) this.stepClock += (rom.stepHz * timing) / this.sr
+      // sequencer — the run/stop line freezes it where it stands, and so does a
+      // latched die: the counter stops clocking and the note it was on stays on
+      if (this.transport.tune && !latched) {
+        this.stepClock += (rom.stepHz * timing) / this.sr
+      }
       if (this.stepClock >= 1) {
         this.stepClock -= 1
         let next = this.pos + 1
         // counter bend: program counter corruption
-        if (spot === 2 && this.rng() < pot * 0.7) {
+        if (
+          spot === 2 &&
+          this.counterFault.roll(pot * 0.7, cluster, this.rng)
+        ) {
           next =
             this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * tune.length)
         }
@@ -326,16 +360,23 @@ export class ToyChip implements Stage {
 
       // One envelope generator, timed off the ROM's own step rate the way a
       // cheap chip ties decay to its tempo clock. Only a moving clock — the bend
-      // walking, or a wire on it — makes that a fresh exp every sample.
+      // walking, the crystal wandering, or a wire on it — makes that a fresh exp
+      // every sample; a latch holds the envelope where it stood along with
+      // everything else it froze.
       if (timing !== this.lastTiming) {
         this.lastTiming = timing
         this.envDecay = Math.exp(-(0.8 * rom.stepHz * timing) / this.sr)
       }
-      const envDecay = this.envDecay
+      const envDecay = latched ? 1 : this.envDecay
       this.env *= envDecay
       this.bassEnv *= envDecay
       this.chordEnv *= envDecay
       for (const v of this.voices) if (!v.held) v.env *= envDecay
+
+      // A latched output stage is jammed on rather than fading with the supply,
+      // so the note doesn't get quieter as the rail goes — it holds its level
+      // and dives in pitch until there is no rail left to hold it.
+      const amp = latched ? LATCH_AMP : rail.ampFactor
 
       let out = 0
       if (!rail.booting && !rail.dead) {
@@ -346,8 +387,7 @@ export class ToyChip implements Stage {
             maxHz,
           )
           this.phase = (this.phase + hz / this.sr) % 1
-          out +=
-            pulse(this.phase, duty, hz / this.sr) * this.env * rail.ampFactor
+          out += pulse(this.phase, duty, hz / this.sr) * this.env * amp
         }
         let keys = 0
         if (accomp > 0) {
@@ -403,9 +443,12 @@ export class ToyChip implements Stage {
       }
 
       out *= level * 0.4
+      // A loop screaming in the top end draws on the same cells the toy runs
+      // off, so a squeal that got away browns out the chip that started it.
       const extra =
         (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) +
-        (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0)
+        (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0) +
+        couple * Math.max(ctx.bright[i]!, 0) * 0.5
       rail.tick(Math.abs(out), starve, extra)
       ctx.railV[i] = rail.v
       ctx.step[i] = this.stepClock

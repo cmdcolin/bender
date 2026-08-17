@@ -1,9 +1,17 @@
+import { Drunk } from './util/drift'
+import { mulberry32, type Rng } from './util/rng'
 import { flushDenormal } from './util/softclip'
 
 // The shared toy supply rail. Output current drains it in proportion to starve
 // and to how flat the cells are; when it droops past the watchdog threshold the
 // chip browns out, reboots after a boot delay, and everything powered from it
 // restarts.
+//
+// Where it trips, how long it takes to come back and how far it comes back are
+// all a little different every time. A watchdog built to one threshold, one
+// delay and one recovery voltage reboots metronomically, which is the one thing
+// a dying toy never does — and the reboot is this instrument's headline bend, so
+// a metronome is the worst place for one.
 export class ToyRail {
   v = 1
   bootRemaining = 0
@@ -14,16 +22,32 @@ export class ToyRail {
   private open = 1
   private battery = 0
   private stress = 0
+  private heat = 0
+  private latch = 0
+  private cluster = 0
+  private latchRemaining = 0
+  private thresholdWalk = new Drunk()
+  private rng: Rng
 
-  constructor(private readonly sr: number) {}
+  constructor(
+    private readonly sr: number,
+    seed = 909,
+  ) {
+    this.rng = mulberry32(seed)
+  }
 
   // Flat cells lose open-circuit voltage and gain internal resistance, so the
   // rail never recovers to full, recovers slower, and sags under load with
   // nothing starving it. Starve is the collapse; this is the floor it collapses
-  // from. Whoever owns the tick sets it once a block.
-  setBattery(battery: number) {
+  // from. Heat takes the same floor down again, and the chip's own clock tracks
+  // it, so a hot board runs flat as well as low. Whoever owns the tick sets it
+  // once a block.
+  setBattery(battery: number, heat = 0, latch = 0, cluster = 0) {
     this.battery = battery
-    this.open = 1 - 0.45 * battery
+    this.heat = heat
+    this.latch = latch
+    this.cluster = cluster
+    this.open = Math.max(1 - 0.45 * battery - 0.12 * heat, 0.2)
   }
 
   // load: |output| this sample. extra: mic patched onto the rail.
@@ -31,22 +55,67 @@ export class ToyRail {
     this.stress = starve + this.battery
     const charge = (60 * (1 - 0.35 * this.battery)) / this.sr
     const drain = (starve * 900 + this.battery * 80) / this.sr
+    // A latched die is a short across the supply that no longer cares what the
+    // output is doing: it draws until the rail is on the floor.
+    const latchDraw = this.latchRemaining > 0 ? 260 / this.sr : 0
     this.v +=
-      charge * (this.open - this.v) - drain * (load + this.reported + extra)
+      charge * (this.open - this.v) -
+      drain * (load + this.reported + extra) -
+      latchDraw
     this.v = flushDenormal(Math.min(Math.max(this.v, 0), 1))
+
+    const walk = this.thresholdWalk.step(0.15, this.sr, this.rng) * 0.025
+
+    if (this.latchRemaining > 0) {
+      this.latchRemaining--
+      // It lets go when there is no longer enough rail to hold the latch in,
+      // and then the watchdog finally gets the power cycle it wanted.
+      if (this.latchRemaining === 0 || this.v < 0.04) {
+        this.latchRemaining = 0
+        this.reboot()
+      }
+      return
+    }
     if (this.bootRemaining > 0) {
       this.bootRemaining--
       return
     }
-    if (this.stress > 0 && this.v < 0.12) {
-      this.rebootCount++
-      this.bootRemaining = Math.floor(0.07 * this.sr)
-      this.v = Math.min(0.35, this.open)
+    if (this.stress > 0 && this.v < 0.12 + 0.05 * this.heat + walk) {
+      // Sometimes it doesn't reboot cleanly. CMOS on a collapsing rail can
+      // latch instead: the die jams, holds whatever it was doing and keeps
+      // drawing current, so one note screams down into the floor and the
+      // watchdog is locked out until the supply gives up under it. Hot parts
+      // latch more readily, which is why it happens to a toy that has been
+      // running a while and not to one just switched on.
+      if (this.rng() < this.latch * (0.35 + 0.65 * this.heat)) {
+        const held = 1 + this.cluster * 2
+        this.latchRemaining = Math.floor(
+          (0.1 + this.rng() * 1.1 * held) * this.sr,
+        )
+      } else {
+        this.reboot()
+      }
     }
+  }
+
+  private reboot() {
+    this.rebootCount++
+    // How long the reset line holds, and how far the rail has climbed by the
+    // time it lets go. Flat cells take longer to get there and arrive lower, so
+    // a dying toy reboots into a worse state than it left.
+    this.bootRemaining = Math.floor(
+      (0.04 + this.rng() * 0.09) * (1 + 0.6 * this.battery) * this.sr,
+    )
+    this.v = Math.min(0.22 + this.rng() * 0.24, this.open)
   }
 
   get booting() {
     return this.bootRemaining > 0
+  }
+
+  /** Jammed rather than rebooting: still powered, still sounding, stuck. */
+  get latched() {
+    return this.latchRemaining > 0
   }
 
   // 1 at full rail; pitch sags toward half an octave down as it dies.
@@ -77,15 +146,18 @@ export class ToyRail {
   }
 
   // Down at the voltage the chip stops running at, with something holding it
-  // there — a rail nobody is straining sits at rest, not dead.
+  // there — a rail nobody is straining sits at rest, not dead. A latched die is
+  // not dead either: it is the loudest the chip ever gets.
   get dead() {
-    return this.stress > 0 && this.v < 0.2
+    return !this.latched && this.stress > 0 && this.v < 0.2
   }
 
   reset() {
     this.v = 1
     this.bootRemaining = 0
+    this.latchRemaining = 0
     this.reported = 0
     this.stress = 0
+    this.thresholdWalk.reset()
   }
 }

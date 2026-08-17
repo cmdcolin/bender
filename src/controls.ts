@@ -11,6 +11,8 @@ export const DEFAULT_CONTROLS = {
   chipBattery: 0,
   chipBendSpot: 0,
   chipBendPot: 0,
+  chipDrift: 0,
+  chipLatch: 0,
 
   drumLevel: 0,
   drumBpm: 118,
@@ -155,6 +157,12 @@ export const DEFAULT_CONTROLS = {
   tapeDrop: 0,
   tapePrint: 0,
   tapeAzimuth: 0,
+
+  heatAmt: 0,
+  faultCluster: 0,
+  jointChatter: 0,
+  relayRate: 0,
+  couple: 0,
 
   outGain: 0,
 }
