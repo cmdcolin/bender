@@ -44,10 +44,12 @@ single small output stage, so a chord leans on its headroom rather than coming
 out four times louder — and draws harder on the rail, which is its own way of
 browning the chip out.
 
-Sixteen keys is what the toy had; where they sit on the divider is not.
-<kbd>z</kbd> and <kbd>x</kbd> move them an octave down or two up, which is a
-bass line at one end and, at the other, the top of the counter where the narrow
-tones run out of ticks and widen back into squares.
+The board draws three octaves, and the sixteen keys your typing hand covers
+carry their letter printed on them the way the toys printed note names. Drag
+across it and it plays what you cross. <kbd>z</kbd> and <kbd>x</kbd> move the
+whole board an octave down or two up — a bass line at one end and, at the other,
+the top of the counter where the narrow tones run out of ticks and widen back
+into squares.
 
 **Tone** taps the divider chain at a different pulse width — 1/2, 1/4, 1/8,
 1/16. Narrow taps null different harmonics and thin out; nothing levels them

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type PointerEvent } from 'react'
 import { engine } from '../engine/engine'
 import styles from './Keys.module.css'
 
@@ -21,20 +21,35 @@ const KEY_MAP: Record<string, number> = {
   p: 15,
 }
 
-const WHITE = [0, 2, 4, 5, 7, 9, 11, 12, 14]
-const BLACK: Record<number, number> = {
-  0: 1,
-  1: 3,
-  3: 6,
-  4: 8,
-  5: 10,
-  6: 13,
-  7: 15,
-}
+// The letter each key answers to, drawn on the key itself. Cheap keyboards
+// printed the note names on theirs, and it beats hunting for a hint under the
+// panel — sixteen keys carry one, and the rest of the board is for the mouse or
+// for the octave switch to bring under your hands.
+const LETTER: Record<number, string> = Object.fromEntries(
+  Object.entries(KEY_MAP).map(([letter, note]) => [note, letter]),
+)
 
-// Sixteen keys is what the toy had; where they sit on the chip's divider is not.
-// An octave either way covers a bass line and the top of the counter, which is
-// where the narrow tones run out of ticks and widen back into squares.
+// Three octaves on the board. The chip's divider reaches either side of them, so
+// the octave switch moves the whole keyboard rather than scrolling it: what is
+// drawn is where your hands are, not everything the chip can strike.
+const OCTAVES_DRAWN = 3
+const TOP = OCTAVES_DRAWN * 12
+const WHITE_PC = [0, 2, 4, 5, 7, 9, 11]
+// The pitch classes with a black key above them. Where there is none, two whites
+// sit side by side — the pattern that makes a keyboard readable at a glance, and
+// the reason the board closes on a tonic with nothing over it.
+const BLACK_PC = new Set([0, 2, 5, 7, 9])
+
+const WHITE_KEYS = [
+  ...Array.from({ length: OCTAVES_DRAWN }, (_, o) =>
+    WHITE_PC.map(pc => pc + 12 * o),
+  ).flat(),
+  TOP,
+]
+
+const blackAbove = (semitone: number) =>
+  semitone < TOP && BLACK_PC.has(semitone % 12) ? semitone + 1 : undefined
+
 const OCTAVES = [-1, 0, 1, 2]
 
 // The toy keyboard's keys: clickable, plus the computer keyboard (a s d f...).
@@ -85,14 +100,14 @@ export function Keys() {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
-      const key = e.key.toLowerCase()
-      const step = key === 'z' ? -1 : key === 'x' ? 1 : 0
+      const pressed = e.key.toLowerCase()
+      const step = pressed === 'z' ? -1 : pressed === 'x' ? 1 : 0
       if (step !== 0) {
         const next = octave + step
         if (OCTAVES.includes(next)) shiftTo(next)
         return
       }
-      const note = KEY_MAP[key]
+      const note = KEY_MAP[pressed]
       if (note !== undefined) press(note)
     }
     const up = (e: KeyboardEvent) => {
@@ -107,53 +122,82 @@ export function Keys() {
     }
   })
 
+  // A hand dragged across three octaves plays what it crosses. The capture a
+  // touch hands to the key it started on would otherwise keep every event there,
+  // so a glissando would come out as one note held down.
+  const grab = (note: number) => (e: PointerEvent<HTMLButtonElement>) => {
+    e.currentTarget.releasePointerCapture(e.pointerId)
+    press(note)
+  }
+  const slideInto = (note: number) => (e: PointerEvent<HTMLButtonElement>) => {
+    if (e.buttons && !hold) press(note)
+  }
+
+  const key = (note: number, black: boolean) => (
+    <button
+      className={
+        black
+          ? isHeld(note)
+            ? styles.blackOn
+            : styles.black
+          : isHeld(note)
+            ? styles.whiteOn
+            : styles.white
+      }
+      aria-label={`key ${note + shift}`}
+      onPointerDown={e => {
+        if (black) e.stopPropagation()
+        grab(note)(e)
+      }}
+      onPointerEnter={slideInto(note)}
+      onPointerUp={() => release(note)}
+      onPointerLeave={() => isHeld(note) && release(note)}
+    >
+      {LETTER[note] && (
+        <span className={black ? styles.blackLetter : styles.letter}>
+          {LETTER[note]}
+        </span>
+      )}
+    </button>
+  )
+
   return (
     <div className={styles.row}>
       <div className={styles.keys}>
-        {WHITE.map((note, i) => (
-          <div key={note} className={styles.whiteWrap}>
-            <button
-              className={isHeld(note) ? styles.whiteOn : styles.white}
-              onPointerDown={() => press(note)}
-              onPointerUp={() => release(note)}
-              onPointerLeave={() => isHeld(note) && release(note)}
-            />
-            {BLACK[i] !== undefined && (
-              <button
-                className={isHeld(BLACK[i]!) ? styles.blackOn : styles.black}
-                onPointerDown={e => {
-                  e.stopPropagation()
-                  press(BLACK[i]!)
-                }}
-                onPointerUp={() => release(BLACK[i]!)}
-                onPointerLeave={() => isHeld(BLACK[i]!) && release(BLACK[i]!)}
-              />
-            )}
-          </div>
-        ))}
+        {WHITE_KEYS.map(note => {
+          const black = blackAbove(note)
+          return (
+            <div key={note} className={styles.whiteWrap}>
+              {key(note, false)}
+              {black !== undefined && key(black, true)}
+            </div>
+          )
+        })}
       </div>
-      <button
-        className={hold ? styles.holdOn : styles.hold}
-        onClick={() => {
-          if (hold) releaseAll()
-          setHold(!hold)
-        }}
-        title="latch keys on — press a held key again to let it go"
-      >
-        hold
-      </button>
-      <span className={styles.octaves}>
-        {OCTAVES.map(o => (
-          <button
-            key={o}
-            className={o === octave ? styles.octaveOn : styles.octave}
-            onClick={() => shiftTo(o)}
-            title={`move the keys ${o === 0 ? 'back where the toy has them' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`} — z and x do the same`}
-          >
-            {o > 0 ? `+${o}` : o}
-          </button>
-        ))}
-      </span>
+      <div className={styles.switches}>
+        <button
+          className={hold ? styles.holdOn : styles.hold}
+          onClick={() => {
+            if (hold) releaseAll()
+            setHold(!hold)
+          }}
+          title="latch keys on — press a held key again to let it go"
+        >
+          hold
+        </button>
+        <span className={styles.octaves}>
+          {OCTAVES.map(o => (
+            <button
+              key={o}
+              className={o === octave ? styles.octaveOn : styles.octave}
+              onClick={() => shiftTo(o)}
+              title={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`} — z and x do the same`}
+            >
+              {o > 0 ? `+${o}` : o}
+            </button>
+          ))}
+        </span>
+      </div>
     </div>
   )
 }
