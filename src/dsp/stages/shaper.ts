@@ -84,5 +84,7 @@ export class Shaper implements Stage {
     this.toneR.reset()
     this.flipL = 1
     this.flipR = 1
+    this.wasNegL = false
+    this.wasNegR = false
   }
 }

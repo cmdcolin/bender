@@ -336,9 +336,13 @@ export class Chain {
   }
 
   // The bend slots, in whatever order the board is wired in this block, each
-  // through its own joint. A slot whose joint has opened is not in the path at
-  // all: no fade, and a click at each end of the gap, which is what a contact
-  // breaking under signal actually does.
+  // through the joint of the position it is sitting in. A slot whose joint has
+  // opened is not in the path at all: no fade, and a click at each end of the
+  // gap, which is what a contact breaking under signal actually does.
+  //
+  // The joint belongs to the position rather than to the bend, because it is
+  // the socket that is badly soldered — the relay re-seats which bend sits in
+  // which socket and the dry joint stays where it was.
   private runBends(
     io: StereoBlock,
     p: Float32Array,
@@ -351,12 +355,19 @@ export class Chain {
     let seen = 0
     for (let k = 0; k < SLOT_IDX.length; k++) {
       const id = Math.round(slots[this.order[k]!]!)
-      if (id <= 0 || seen & (1 << id)) continue
-      seen |= 1 << id
-      const s = this.bendById[id]
-      if (!s) continue
-      // An empty slot has no joint, because it has nothing soldered into it.
+      const first = id > 0 && !(seen & (1 << id))
+      if (id > 0) seen |= 1 << id
       const joint = this.joints[k]!
+      const s = first ? this.bendById[id] : undefined
+      // A position with nothing soldered into it has no joint to break, so its
+      // joint comes back at rest. Leaving it standing would freeze it mid-break
+      // instead: a socket emptied while its contact was open used to hold that
+      // break — and the excitement behind it — until something was patched back
+      // in, which then arrived already gone.
+      if (!s) {
+        joint.reset()
+        continue
+      }
       const passing = joint.pass(chatter, cluster, n)
       if (joint.moved) {
         const click = Math.min(this.ctx.env[0]! * 1.5, 0.5)
