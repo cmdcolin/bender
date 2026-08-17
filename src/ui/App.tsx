@@ -23,7 +23,6 @@ import { Presets } from './Presets'
 import { huntCandidates, mutate, randomLook, SCENARIOS } from './presets'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
-import { boardUrl } from './share'
 import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
 
@@ -105,7 +104,6 @@ export function App() {
   const [open, setOpen] = useState<string | null>(null)
   const openGroup = GROUPS.find(g => g.name === open)
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
-  const [copied, setCopied] = useState(false)
   const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
   const walk = useStoreValue(engine.history)
   const hunting = useStoreValue(engine.hunting)
@@ -113,15 +111,6 @@ export function App() {
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
-
-  // The bar already says this; the button is for handing it to someone.
-  const share = () => {
-    navigator.clipboard
-      ?.writeText(boardUrl(engine.controls.get()))
-      .catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
-  }
 
   // Space is the run/stop line over both machines, wherever the focus is; the
   // keypress itself is the gesture that takes the audio context live.
@@ -320,13 +309,10 @@ export function App() {
           )}
           <MorphControl seconds={morphSeconds} onSet={setMorphSeconds} />
           <button
-            className={styles.btn}
-            onClick={share}
-            title="copy a link that opens this exact board"
+            className={styles.btnDanger}
+            onClick={() => engine.panic()}
+            title="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes"
           >
-            {copied ? 'copied' : 'share'}
-          </button>
-          <button className={styles.btnDanger} onClick={() => engine.panic()}>
             panic
           </button>
         </div>
