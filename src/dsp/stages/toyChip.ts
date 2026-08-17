@@ -30,6 +30,9 @@ export const TONE_DUTY = [0.5, 0.25, 0.125, 0.0625]
 // Four notes, as the toys of the era had.
 const VOICE_TRIM = [0.86, 1.21, 0.97, 1.12]
 
+// A key voice. Silence is its envelope being down, not a sentinel note: the keys
+// reach an octave under the toy's own bottom, and a semitone below zero is a
+// note like any other.
 interface Voice {
   note: number
   phase: number
@@ -86,7 +89,7 @@ export class ToyChip implements Stage {
   private stepClock = 0
   private env = 0
   private voices: Voice[] = VOICE_TRIM.map(() => ({
-    note: -1,
+    note: 0,
     phase: 0,
     env: 0,
     held: false,
@@ -372,7 +375,7 @@ export class ToyChip implements Stage {
         }
         for (let k = 0; k < this.voices.length; k++) {
           const v = this.voices[k]!
-          if (v.note < 0 || v.env <= ENV_FLOOR) continue
+          if (v.env <= ENV_FLOOR) continue
           const trim = VOICE_TRIM[k]!
           const hz = Math.min(
             BASE_HZ * ratio(v.note) * clock * rail.pitchFactorAt(trim),
@@ -412,7 +415,7 @@ export class ToyChip implements Stage {
     this.bassEnv = 0
     this.chordEnv = 0
     for (const v of this.voices) {
-      v.note = -1
+      v.note = 0
       v.env = 0
       v.held = false
     }

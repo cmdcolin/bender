@@ -219,9 +219,12 @@ export function App() {
           )}
           press <b>play demo song</b> or <b>play drums</b> (
           <span className={styles.kbd}>space</span> runs both), or play keys
-          with <span className={styles.kbd}>a s d f …</span> — turn up{' '}
+          with <span className={styles.kbd}>a s d f …</span> (
+          <span className={styles.kbd}>z</span>{' '}
+          <span className={styles.kbd}>x</span> for octaves) — turn up{' '}
           <b>Starve</b> until the toy reboots, solder the <b>Bend spot</b> pot,
-          push any <b>Feedback</b> past 1
+          bridge the two boxes in <b>Trigger patch</b>, push any <b>Feedback</b>{' '}
+          past 1
         </p>
       </div>
 

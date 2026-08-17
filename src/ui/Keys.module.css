@@ -55,8 +55,15 @@
   background: var(--accent);
 }
 
+.octaves {
+  display: flex;
+  gap: 2px;
+}
+
 .hold,
-.holdOn {
+.holdOn,
+.octave,
+.octaveOn {
   font-size: var(--fs-sm);
   padding: 3px 10px;
   background: var(--bg3);
@@ -66,13 +73,20 @@
   cursor: pointer;
 }
 
-.hold:hover {
+.hold:hover,
+.octave:hover {
   border-color: var(--border-hover);
   color: var(--fg);
 }
 
-.holdOn {
+.holdOn,
+.octaveOn {
   background: var(--accent);
   border-color: var(--accent);
   color: #17171a;
+}
+
+.octave,
+.octaveOn {
+  padding: 3px 6px;
 }
