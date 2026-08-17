@@ -73,6 +73,18 @@ function renderBender(
 
 const tail = (x: Float32Array, seconds = 0.5) => x.subarray(x.length - seconds * SR)
 
+// How much of the signal sits down where the kick lives.
+function lowEnergy(x: Float32Array, hz = 120): number {
+  const c = 1 - Math.exp((-2 * Math.PI * hz) / SR)
+  let y = 0
+  let sum = 0
+  for (let i = 0; i < x.length; i++) {
+    y += c * (x[i]! - y)
+    sum += y * y
+  }
+  return Math.sqrt(sum / x.length)
+}
+
 // Play the keyboard with the ROM sequencer stopped, so only the keys sound.
 const playKeys = (
   overrides: Partial<Controls>,
@@ -416,4 +428,18 @@ test('the mic soldered onto the drum trigger fires the kit', () => {
   const inert = renderBender({ ...look, micPatch: 4 }, 1, undefined, clicks)
   expect(rms(inert)).toBe(0)
   expect(rms(trig)).toBeGreaterThan(0.01)
+})
+
+test('bridged envelope pins put the kick on the snare steps', () => {
+  // the fill pattern is twelve snares to four kicks, so a full swap moves
+  // most of the bar down into the kick
+  const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9, drumPattern: 3, drumBpm: 120 }
+  const stock = render(look, 2)
+  const swapped = render({ ...look, drumCross: 1, drumCrossAmt: 1 }, 2)
+  expect(lowEnergy(swapped)).toBeGreaterThan(1.5 * lowEnergy(stock))
+})
+
+test('an unbridged kit is the kit it always was', () => {
+  const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
+  expect(render({ ...look, drumCrossAmt: 1 }, 1)).toEqual(render(look, 1))
 })

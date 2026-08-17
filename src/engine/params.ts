@@ -23,6 +23,8 @@ export const PARAM_DEFS = [
   ['drumPattern', 'step'],
   ['drumBpm', 'slew'],
   ['drumRetrigHz', 'slew'],
+  ['drumCross', 'step'],
+  ['drumCrossAmt', 'slew'],
 
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],

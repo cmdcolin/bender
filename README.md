@@ -64,6 +64,10 @@ The bends that matter:
   program counter (melody scrambling), DAC bias, or the gate line.
 - **Retrigger** hammers the drum machine's trigger line; past ~40 Hz the
   retrigger period becomes the pitch and the kit screams.
+- **Cross-patch** bridges two drum voices' envelope pins, so each amplifier
+  hears the wrong envelope. Bleed it all the way over and the voices swap: the
+  kick fires on snare steps, the noise swells over the kick's long decay, and a
+  hat tick puts a pitch blip through the kick oscillator.
 - **Mic patch** wires the mic past the mixer, straight onto the chip rail, the
   oscillator's FM input, the delay feedback path, the ring mod carrier, or the
   trigger line of the drum machine or glitch buffer — clap at it and the circuit

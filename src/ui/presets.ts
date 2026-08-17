@@ -349,6 +349,21 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'wrong voices',
+    blurb: 'Envelope pins bridged — the kit fires the wrong drums',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumPattern: 1,
+      drumBpm: 128,
+      drumCross: 4,
+      drumCrossAmt: 0.85,
+      distMix: 0.35,
+      driveDb: 12,
+      revMix: 0.25,
+    },
+  },
+  {
     name: 'yell into it',
     blurb: 'Mic soldered into the delay feedback path',
     patch: {

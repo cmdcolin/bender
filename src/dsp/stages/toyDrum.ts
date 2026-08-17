@@ -63,6 +63,8 @@ export class ToyDrum implements Stage {
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = p[IDX.micPatch] === 5
+    const cross = Math.round(p[IDX.drumCross]!)
+    const bleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
     const rail = this.rail
 
     if (rail.rebootCount !== this.lastReboot) {
@@ -97,24 +99,50 @@ export class ToyDrum implements Stage {
         this.trigger(pattern[this.pos]! || 1)
       }
 
+      // Bridged envelope pins: each amplifier leans across to a neighbour's
+      // envelope instead of its own. All the way over is a full swap, so the
+      // kick fires on snare steps and the noise swells on kicks.
+      let kickAmp = this.kickEnv
+      let snareAmp = this.snareEnv
+      let hatAmp = this.hatEnv
+      if (bleed > 0) {
+        const k = this.kickEnv
+        const s = this.snareEnv
+        const h = this.hatEnv
+        if (cross === 1) {
+          kickAmp += bleed * (s - k)
+          snareAmp += bleed * (k - s)
+        } else if (cross === 2) {
+          snareAmp += bleed * (h - s)
+          hatAmp += bleed * (s - h)
+        } else if (cross === 3) {
+          kickAmp += bleed * (h - k)
+          hatAmp += bleed * (k - h)
+        } else {
+          kickAmp += bleed * (s - k)
+          snareAmp += bleed * (h - s)
+          hatAmp += bleed * (k - h)
+        }
+      }
+
       let out = 0
       if (!rail.booting) {
         const pf = rail.pitchFactor
-        if (this.kickEnv > 0.002) {
-          const hz = (40 + 90 * this.kickEnv * this.kickEnv) * pf
+        if (kickAmp > 0.002) {
+          const hz = (40 + 90 * kickAmp * kickAmp) * pf
           this.kickPhase = (this.kickPhase + hz / this.sr) % 1
-          out += Math.sin(this.kickPhase * 2 * Math.PI) * this.kickEnv * 1.2
+          out += Math.sin(this.kickPhase * 2 * Math.PI) * kickAmp * 1.2
           this.kickEnv *= Math.exp(-9 / this.sr)
         }
-        if (this.snareEnv > 0.002) {
+        if (snareAmp > 0.002) {
           const noise = this.rng() * 2 - 1
           this.snareLp += 0.25 * (noise - this.snareLp)
-          out += (noise - this.snareLp * 0.5) * this.snareEnv * 0.8
+          out += (noise - this.snareLp * 0.5) * snareAmp * 0.8
           this.snareEnv *= Math.exp(-22 / this.sr)
         }
-        if (this.hatEnv > 0.002) {
+        if (hatAmp > 0.002) {
           const noise = this.rng() * 2 - 1
-          out += (noise - this.snareLp) * this.hatEnv * 0.35
+          out += (noise - this.snareLp) * hatAmp * 0.35
           this.hatEnv *= Math.exp(-60 / this.sr)
         }
         // one cheap DAC for the whole kit

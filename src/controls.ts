@@ -15,6 +15,8 @@ export const DEFAULT_CONTROLS = {
   drumPattern: 0,
   drumBpm: 118,
   drumRetrigHz: 0,
+  drumCross: 0,
+  drumCrossAmt: 0.5,
 
   oscLevel: 0,
   oscAHz: 220,
