@@ -11,6 +11,7 @@ import { Keys } from './Keys'
 import { mutate, PRESETS, applyPreset, randomLook } from './presets'
 import { Scope } from './Scope'
 import { OffPathChips, OpenGroup, PathHint } from './Section'
+import { boardUrl } from './share'
 import styles from './App.module.css'
 
 function clock(seconds: number): string {
@@ -40,8 +41,17 @@ export function App() {
   const onPath = pathGroups(controls)
   const offPath = GROUPS.filter(g => !onPath.has(g.name))
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => engine.autostart(), [])
+
+  const share = () => {
+    const url = boardUrl(engine.controls.get())
+    history.replaceState(null, '', url)
+    navigator.clipboard?.writeText(url).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
   // Space is the transport wherever the focus is; the keypress itself is the
   // gesture that takes the audio context live.
@@ -152,6 +162,13 @@ export function App() {
             onClick={() => engine.patch({ ...DEFAULT_CONTROLS })}
           >
             reset
+          </button>
+          <button
+            className={styles.btn}
+            onClick={share}
+            title="copy a link that opens this exact board"
+          >
+            {copied ? 'copied' : 'share'}
           </button>
           <button className={styles.btnDanger} onClick={() => engine.panic()}>
             panic

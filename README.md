@@ -150,7 +150,9 @@ The dry side runs down the same nominal head delay as the wet, so **To tape**
 only combs once the transport actually wobbles.
 
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**
-shakes the current board.
+shakes the current board. **Share** puts everything you moved into the URL by
+name and copies the link, so a board travels as text you can read and edit —
+and a link written against an older build still opens the board it meant.
 
 The chip's ROM bank holds eighteen demo songs, each with its own sequencer rate:
 four factory doodles, eight public-domain tunes every cheap keyboard shipped

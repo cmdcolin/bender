@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'
 import { buildBender, buildChain, type BuiltChain } from './build'
+import { DEST } from './modbus'
 import { ToyRail } from './toyRail'
 import { BLOCK, type StereoBlock } from './stage'
 
@@ -445,7 +446,7 @@ test('an unbridged kit is the kit it always was', () => {
 })
 
 test('a ROM step wire rides the sequencer, pushing the clock as each step runs', () => {
-  const look: Partial<Controls> = { chipLevel: 0.8, mod0Dest: 4, mod0Depth: 0.6 }
+  const look: Partial<Controls> = { chipLevel: 0.8, mod0Dest: DEST.chipClock, mod0Depth: 0.6 }
   const plain = render(look, 2)
   const wired = render({ ...look, mod0Src: 8 }, 2)
   expect(wired).not.toEqual(plain)
@@ -461,7 +462,7 @@ test('a wire onto the shifter moves the shift itself', () => {
     shiftHz: 100,
     bodyX: 1,
     mod0Src: 5,
-    mod0Dest: 9,
+    mod0Dest: DEST.shiftHz,
     mod0Depth: 1,
   }
   const load = (b: BuiltChain) => b.sampler.setBuffer(sine(500, 1))
