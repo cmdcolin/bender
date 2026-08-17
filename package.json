@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@viz-js/viz": "^3.29.0",
+    "prettier": "^3.9.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

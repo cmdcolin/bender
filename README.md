@@ -1,10 +1,9 @@
 # bender
 
-A toy you break on purpose. A virtual toy keyboard and drum machine run on a
-modelled supply rail; you starve the rail, solder a pot onto the die, patch a
-microphone into the circuit, and listen to what falls out. Nothing here plays a
-"glitch sample" — the reboots, pitch dives and screams emerge from the
-mechanisms.
+A virtual toy keyboard and drum machine run on a modelled supply rail; you
+starve the rail, solder a pot onto the die, patch a microphone into the circuit,
+and listen to what falls out. Nothing here plays a "glitch sample" — the
+reboots, pitch dives and screams emerge from the mechanisms.
 
 Real-time in the browser, on one AudioWorklet.
 
@@ -32,11 +31,11 @@ whatever order you patched them, dead stages grey out, and the feedback wire
 lands on whichever node **Patched into** picks. Click a node to jump to its
 controls.
 
-The whole chain runs inside a single worklet `process()`, so the global
-feedback loop is tight enough to squeal and every feedback path saturates
-in-loop — runaway is a feature, held at the rails by design. A fixed safety
-tail (DC block, soft clip, −1 dBFS limiter, NaN watchdog) means no setting can
-blow up the output.
+The whole chain runs inside a single worklet `process()`, so the global feedback
+loop is tight enough to squeal and every feedback path saturates in-loop —
+runaway is a feature, held at the rails by design. A fixed safety tail (DC
+block, soft clip, −1 dBFS limiter, NaN watchdog) means no setting can blow up
+the output.
 
 The bends that matter:
 
@@ -52,8 +51,8 @@ The bends that matter:
 - **Patched into** re-solders the feedback return: the source mix, the
   oscillator's FM input, the toy rail (the output browns out its own toy), or
   straight into the tape.
-- **Ground hum** leaks mains fundamental and rectifier buzz in proportion to
-  how hard the supply strains; the ripple wobbles the rail.
+- **Ground hum** leaks mains fundamental and rectifier buzz in proportion to how
+  hard the supply strains; the ripple wobbles the rail.
 - **Sub octave** is a flip-flop divider under the shaper that mistracks on
   complex input, like the vintage pedals did.
 - Every feedback (delay, comb, screech filter, feedback bus) goes past unity.
@@ -68,6 +67,11 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm test` runs the DSP suite, including a torture test that slams every
-param — all feedbacks pinned past unity at once — and asserts nothing
-non-finite or past the limiter ever leaves the chain.
+`pnpm test` runs the DSP suite, including a torture test that slams every param
+— all feedbacks pinned past unity at once — and asserts nothing non-finite or
+past the limiter ever leaves the chain.
+
+## Footnote
+
+Initial template with Claude Fable. Follows in footsteps of
+https://github.com/cmdcolin/ntsc.js

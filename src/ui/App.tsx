@@ -52,20 +52,22 @@ export function App() {
             {micOn ? '● mic live' : 'enable mic'}
           </button>
           <span className={dragging ? styles.dropHot : styles.drop}>
-            {sampleName ? `sample: ${sampleName}` : 'drop an audio file anywhere'}
+            {sampleName
+              ? `sample: ${sampleName}`
+              : 'drop an audio file anywhere'}
           </span>
         </div>
         <p className={styles.hint}>
           press <b>play demo song</b> or play keys with{' '}
-          <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b> until the toy
-          reboots, solder the <b>Bend spot</b> pot, push any <b>Feedback</b> past 1
+          <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b>{' '}
+          until the toy reboots, solder the <b>Bend spot</b> pot, push any{' '}
+          <b>Feedback</b> past 1
         </p>
       </div>
 
       <div className={styles.panel}>
         <div className={styles.masthead}>
           <span className={styles.brand}>bender</span>
-          <span className={styles.tag}>a toy you break on purpose</span>
         </div>
 
         <div className={styles.actions}>
@@ -79,14 +81,21 @@ export function App() {
             className={styles.btn}
             onClick={e =>
               engine.patch(
-                mutate(engine.controls.get(), e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12, Math.random),
+                mutate(
+                  engine.controls.get(),
+                  e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
+                  Math.random,
+                ),
               )
             }
             title="mutate the current board — shift for wild, alt for gentle"
           >
             mutate
           </button>
-          <button className={styles.btn} onClick={() => engine.patch({ ...DEFAULT_CONTROLS })}>
+          <button
+            className={styles.btn}
+            onClick={() => engine.patch({ ...DEFAULT_CONTROLS })}
+          >
             reset
           </button>
           <button className={styles.btnDanger} onClick={() => engine.panic()}>
@@ -113,7 +122,11 @@ export function App() {
           <div key={stage} id={`stage-${stage}`}>
             <StageHeading>{stage}</StageHeading>
             {GROUPS.filter(g => g.place === stage).map(g => (
-              <GroupSection key={g.name} group={g} defaultOpen={g.name === 'Toy keyboard'} />
+              <GroupSection
+                key={g.name}
+                group={g}
+                defaultOpen={g.name === 'Toy keyboard'}
+              />
             ))}
           </div>
         ))}
@@ -122,9 +135,10 @@ export function App() {
       {!running && (
         <button className={styles.startOverlay} onClick={() => engine.start()}>
           <span className={styles.startBrand}>bender</span>
-          <span className={styles.startSub}>a toy you break on purpose</span>
           <span className={styles.startCta}>▶ power on</span>
-          <span className={styles.startWarn}>loud, harsh noise ahead — start with your volume low</span>
+          <span className={styles.startWarn}>
+            loud, harsh noise ahead — start with your volume low
+          </span>
         </button>
       )}
     </div>
