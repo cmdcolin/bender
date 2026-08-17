@@ -156,8 +156,8 @@ test('the drunk walk reaches the ends of its travel and stays inside them', () =
 test('heat takes the rail floor down and the clock with it', () => {
   const cold = new ToyRail(SR)
   const hot = new ToyRail(SR)
-  cold.setBattery(0.3, 0)
-  hot.setBattery(0.3, 1)
+  cold.setBoard(0.3, 0)
+  hot.setBoard(0.3, 1)
   for (let i = 0; i < SR; i++) {
     cold.tick(0, 0, 0)
     hot.tick(0, 0, 0)
@@ -171,7 +171,7 @@ test('heat takes the rail floor down and the clock with it', () => {
 // the one thing a dying toy never does.
 test('reboots do not arrive on a metronome', () => {
   const rail = new ToyRail(SR)
-  rail.setBattery(0)
+  rail.setBoard(0)
   const gaps: number[] = []
   let last = 0
   let seen = 0
@@ -189,7 +189,7 @@ test('reboots do not arrive on a metronome', () => {
 
 test('a latched die holds its level instead of fading with the rail', () => {
   const rail = new ToyRail(SR, 3)
-  rail.setBattery(0, 0, 1)
+  rail.setBoard(0, 0, 1)
   let latchedFor = 0
   let everDeadWhileLatched = false
   for (let i = 0; i < 12 * SR; i++) {

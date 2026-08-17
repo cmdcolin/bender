@@ -288,7 +288,14 @@ export class ToyChip implements Stage {
     const couple = p[IDX.couple]!
     const rail = this.rail
     const maxHz = this.sr * 0.49
-    rail.setBattery(battery, ctx.heat, p[IDX.chipLatch]!, cluster)
+    const clipHz = p[IDX.chipClipHz]!
+    rail.setBoard(
+      battery,
+      ctx.heat,
+      p[IDX.chipLatch]!,
+      cluster,
+      p[IDX.chipCap]!,
+    )
 
     if (rom !== this.lastRom) {
       this.lastRom = rom
@@ -469,7 +476,7 @@ export class ToyChip implements Stage {
       const starve = modStarve
         ? Math.min(Math.max(baseStarve + modStarve[i]!, 0), 1)
         : baseStarve
-      rail.tick(Math.abs(out), starve, extra)
+      rail.tick(Math.abs(out), starve, extra, clipHz)
       ctx.railV[i] = rail.v
       ctx.step[i] = this.stepClock
       // The chip's gate, brought out to the bus whether anything is soldered to

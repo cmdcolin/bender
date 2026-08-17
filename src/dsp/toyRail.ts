@@ -1,3 +1,4 @@
+import { Burst } from './util/burst'
 import { Drunk } from './util/drift'
 import { mulberry32, type Rng } from './util/rng'
 import { flushDenormal } from './util/softclip'
@@ -27,6 +28,47 @@ const WATCHDOG_V = 0.21
 // has stopped, rather than being paid back by its silence.
 const STARVE_SHUNT = 12
 
+// How much of the board's own capacitance the contact found, as a slowing
+// factor on everything the supply does.
+//
+// This is the difference between a starve you set and a starve you hear travel.
+// Straight across the supply pins there is a tenth of a microfarad and the rail
+// follows its load inside a millisecond: wind the pot down and the pitch arrives
+// at its new place rather than going there. Land on a pad with the smoothing can
+// behind it and the same starve acquires a shape — a third of a second to fall,
+// decelerating the whole way as the cap and the pot come into balance. Nobody
+// adds that cap. It is already on the board; the knob is which point you found.
+//
+// Charge, drain, shunt and the latch pull all scale by the one factor, so the
+// voltage the rail settles at is the voltage it always settled at. Only the time
+// it takes to get there moves, and a cap of zero is the stock board with its
+// arithmetic unchanged.
+//
+// The knob is which cap you found, and the caps on a board are decades apart —
+// a 1 µF, a 47 µF and a 1000 µF sitting within an inch of each other. So it
+// spans its range geometrically: linear here would bury everything worth
+// hearing in the first tenth of the travel and leave the rest one long smear.
+// End to end that is 17 ms to two seconds, with the swoop most of the way up
+// through the middle where a hand is most likely to land on it.
+const CAP_DECADES = 120
+
+// A paperclip is not a switch, and it is not a short either. It bounces, it is
+// held in fingers that move, and it lands on pads through skin and oxide and its
+// own scratchy contact — so what it does to the supply is choke it, hard and
+// briefly, rather than crash it to ground.
+//
+// The difference is the whole sound. Crash the rail and the pitch is simply gone
+// and then simply back: two steps, and the only thing left to hear is the climb,
+// which is the wrong way round. Choke it instead and the rail leaves at whatever
+// rate the capacitance behind the point allows — so the note dives, decelerating,
+// for as long as the metal is down, and the dive is what the bend is for.
+const CLIP_STARVE = 1.2
+
+// How long one touch lasts: a hand's worth, and never twice the same. Long
+// enough to hear the rail travel, short enough that a run of them stutters.
+const CLIP_HOLD_MIN = 0.02
+const CLIP_HOLD_SPAN = 0.18
+
 // The shared toy supply rail. Output current drains it in proportion to starve
 // and to how flat the cells are; when it droops past the watchdog threshold the
 // chip browns out, reboots after a boot delay, and everything powered from it
@@ -51,7 +93,14 @@ export class ToyRail {
   private latch = 0
   private cluster = 0
   private latchRemaining = 0
+  private cap = 0
+  // How much slower the cap makes every move the supply can make. Worked out
+  // once a block rather than per sample: it is a Math.pow, and the rail is
+  // ticked forty-eight thousand times a second.
+  private slow = 1
+  private clipRemaining = 0
   private thresholdWalk = new Drunk()
+  private clipFault: Burst
   private rng: Rng
 
   constructor(
@@ -59,27 +108,57 @@ export class ToyRail {
     seed = 909,
   ) {
     this.rng = mulberry32(seed)
+    this.clipFault = new Burst(sr, 0.8)
   }
 
-  // Flat cells lose open-circuit voltage and gain internal resistance, so the
-  // rail never recovers to full, recovers slower, and sags under load with
-  // nothing starving it. Starve is the collapse; this is the floor it collapses
-  // from. Heat takes the same floor down again, and the chip's own clock tracks
-  // it, so a hot board runs flat as well as low. Whoever owns the tick sets it
-  // once a block.
-  setBattery(battery: number, heat = 0, latch = 0, cluster = 0) {
+  // What the board is, as opposed to what it is being asked to do. Flat cells
+  // lose open-circuit voltage and gain internal resistance, so the rail never
+  // recovers to full, recovers slower, and sags under load with nothing starving
+  // it. Starve is the collapse; this is the floor it collapses from. Heat takes
+  // the same floor down again, and the chip's own clock tracks it, so a hot
+  // board runs flat as well as low. The reservoir doesn't change any of those
+  // resting places — only how long the rail takes to reach them. Whoever owns
+  // the tick sets all of it once a block.
+  setBoard(battery: number, heat = 0, latch = 0, cluster = 0, cap = 0) {
     this.battery = battery
     this.heat = heat
     this.latch = latch
     this.cluster = cluster
+    this.cap = cap
+    this.slow = Math.pow(CAP_DECADES, cap)
     this.open = Math.max(1 - 0.45 * battery - 0.12 * heat, 0.2)
   }
 
-  // load: |output| this sample. extra: mic patched onto the rail.
-  tick(load: number, starve: number, extra: number) {
-    this.stress = starve + this.battery
-    const charge = (60 * (1 - 0.35 * this.battery)) / this.sr
-    const drain = (starve * 900 + this.battery * 80) / this.sr
+  // load: |output| this sample. extra: mic patched onto the rail. clipHz: how
+  // often bare metal finds a pad and chokes the supply for as long as it rests
+  // there.
+  tick(load: number, starve: number, extra: number, clipHz = 0) {
+    this.clipFault.step()
+    if (
+      clipHz > 0 &&
+      this.clipRemaining <= 0 &&
+      this.clipFault.roll(clipHz / this.sr, this.cluster, this.rng)
+    ) {
+      this.clipRemaining = Math.floor(
+        (CLIP_HOLD_MIN + this.rng() * CLIP_HOLD_SPAN) * this.sr,
+      )
+    }
+    // A touch is a starve nobody turned the knob for, so it arrives on the same
+    // wire as the knob and everything downstream treats it the same way.
+    let choked = starve
+    if (this.clipRemaining > 0) {
+      this.clipRemaining--
+      choked += CLIP_STARVE
+    }
+
+    this.stress = choked + this.battery
+    // Everything the supply does, slowed by whatever capacitance is behind the
+    // point in question. One factor for all of it, so the cap buys time without
+    // moving any resting place: a rail that used to settle in 17 ms settles in a
+    // second instead, at the voltage it always settled at.
+    const slow = this.slow
+    const charge = (60 * (1 - 0.35 * this.battery)) / this.sr / slow
+    const drain = (choked * 900 + this.battery * 80) / this.sr / slow
     const walk = this.thresholdWalk.step(0.15, this.sr, this.rng) * 0.025
 
     // A latched die is a short across the supply that no longer cares what the
@@ -89,7 +168,7 @@ export class ToyRail {
     // escape from, which is why the note screams rather than stopping.
     if (this.latchRemaining > 0) {
       this.v = flushDenormal(
-        this.v + (LATCH_PULL / this.sr) * (LATCH_HOLD - this.v),
+        this.v + (LATCH_PULL / this.sr / slow) * (LATCH_HOLD - this.v),
       )
       this.latchRemaining--
       // Then the current gives out, and the watchdog finally gets the power
@@ -105,7 +184,7 @@ export class ToyRail {
     // stayed there. A hard starve came out as a steady gate — the chip switching
     // off and on at one voltage — and the watchdog never tripped at all, so the
     // reboot the whole bend is named after was unreachable from this knob.
-    const shunt = (starve * STARVE_SHUNT) / this.sr
+    const shunt = (choked * STARVE_SHUNT) / this.sr / slow
     this.v +=
       charge * (this.open - this.v) -
       drain * (load + this.reported + extra) -
@@ -142,7 +221,16 @@ export class ToyRail {
     this.bootRemaining = Math.floor(
       (0.04 + this.rng() * 0.09) * (1 + 0.6 * this.battery) * this.sr,
     )
-    this.v = Math.min(0.22 + this.rng() * 0.24, this.open)
+    // On the stock board the recovery is the regulator's and it arrives where it
+    // arrives. A capacitor cannot be filled by a decision, though: the more of
+    // one sits behind the point, the less of that jump is physically available,
+    // and past a certain size the reboot stops being an event the voltage can
+    // see at all — the chip goes quiet, the cap charges at its own rate, and the
+    // tune comes back in underneath the climb rather than on top of it. That is
+    // the shape of the whole repeat: struck high, dragged down, cut off, struck
+    // high again.
+    const settle = Math.min(0.22 + this.rng() * 0.24, this.open)
+    if (settle > this.v) this.v += (1 - this.cap) * (settle - this.v)
   }
 
   get booting() {
@@ -192,8 +280,10 @@ export class ToyRail {
     this.v = 1
     this.bootRemaining = 0
     this.latchRemaining = 0
+    this.clipRemaining = 0
     this.reported = 0
     this.stress = 0
     this.thresholdWalk.reset()
+    this.clipFault.reset()
   }
 }
