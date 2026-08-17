@@ -2,6 +2,7 @@ import { IDX } from '../engine/params'
 import { DEST, ModBus } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
 import { Follower, coef } from './util/follower'
+import { TriggerBus } from './trigbus'
 import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole'
 import { flushDenormal, softclip } from './util/softclip'
 import { DelayLine } from './util/delayline'
@@ -44,6 +45,7 @@ export class Chain {
       env: new Float32Array(BLOCK),
       step: new Float32Array(BLOCK),
       mod: new ModBus(sr),
+      trig: new TriggerBus(),
     }
     this.fbCombL = new DelayLine(0.5 * sr + 4)
     this.fbCombR = new DelayLine(0.5 * sr + 4)
@@ -70,6 +72,7 @@ export class Chain {
     this.fbCombR.reset()
     this.outEnv.reset()
     this.ctx.mod.panic()
+    this.ctx.trig.panic()
     this.ctx.railV.fill(1)
     this.ctx.sag.fill(0)
     this.ctx.droop.fill(0)
@@ -91,6 +94,8 @@ export class Chain {
       ctx.fb[i] = 0.5 * (this.fbRetL[i]! + this.fbRetR[i]!)
       ctx.droop[i] = Math.min(Math.max(1 - ctx.railV[i]!, ctx.sag[i]!), 1)
     }
+    // Last block's kit hits become the ones a bridged trigger line can read.
+    ctx.trig.swap(n)
     ctx.mod.build(n, p, ctx)
     ctx.railV.fill(1, 0, n)
     ctx.sag.fill(0, 0, n)

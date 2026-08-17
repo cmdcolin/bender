@@ -561,6 +561,51 @@ export const PRESETS: PresetDef[] = [
       delayMs: 180,
     },
   },
+  {
+    name: 'the kit plays the tune',
+    blurb:
+      'Kick soldered onto the keyboard’s gate: one hit, one step of the ROM',
+    patch: {
+      chipLevel: 0.8,
+      chipAccomp: 0.35,
+      drumLevel: 0.6,
+      drumBpm: 104,
+      trigToKeys: 1,
+      trigKeysNote: 1,
+      dlyMix: 0.22,
+      delayMs: 288,
+      dlyFb: 0.35,
+    },
+  },
+  {
+    name: 'call and answer',
+    blurb: 'The snare strikes a chord, and every note it strikes claps back',
+    patch: {
+      chipLevel: 0.75,
+      drumLevel: 0.7,
+      drumBpm: 92,
+      trigToKeys: 2,
+      trigKeysNote: 3,
+      trigToDrum: 4,
+      revMix: 0.3,
+      revDecayS: 2.4,
+    },
+  },
+  {
+    name: 'every hit opens it',
+    blurb:
+      'A wire off the kit’s trigger line onto the cutoff — shut between hits',
+    patch: {
+      chipLevel: 0.7,
+      drumLevel: 0.8,
+      filtMix: 1,
+      filtHz: 180,
+      filtRes: 0.85,
+      mod0Src: 9,
+      mod0Dest: 0,
+      mod0Depth: 0.85,
+    },
+  },
 ]
 
 // What a morph holds is yours during the trip; this is what is yours over the
@@ -885,6 +930,9 @@ const WIRE_KEYS: ControlKey[] = [
   'mod0Dest',
   'mod1Src',
   'mod1Dest',
+  'trigToKeys',
+  'trigKeysNote',
+  'trigToDrum',
 ]
 
 // Same parts, different order. Every bend keeps the settings you gave it and

@@ -141,6 +141,7 @@ const BOARDS: Record<string, Controls> = {
     bendSlot4: 0,
     bendSlot5: 0,
   },
+  bridged: { ...DEFAULT_CONTROLS, trigToKeys: 7, trigToDrum: 1 },
   wired: {
     ...DEFAULT_CONTROLS,
     tapeMix: 0.5,
@@ -199,6 +200,33 @@ test('a wire label opens what it picks up, the wire itself the bay', () => {
   )
   expect(dot).toMatch(
     new RegExp(`wire0 -> Tape_delay .*#${groupAnchor('Patch bay')}`),
+  )
+})
+
+test('a bridged trigger line draws between the two boxes', () => {
+  const stock = buildMap(DEFAULT_CONTROLS)
+  expect(stock.dot).not.toContain('trigToKeys')
+  expect(stock.doors).not.toContain('Trigger patch')
+
+  const both = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1, trigToDrum: 8 })
+  expect(both.dot).toContain('label="kick trig"')
+  expect(both.dot).toContain('trigToKeys -> sources:Toy_keyboard')
+  expect(both.dot).toContain('label="the step trig"')
+  expect(both.dot).toContain('trigToDrum -> sources:Toy_drums')
+  expect(both.doors).toContain('Trigger patch')
+  expect(viz.renderString(both.dot, { format: 'svg' })).toContain('<svg')
+})
+
+test('a wire off a trigger line opens the box it picks up from', () => {
+  const dot = buildDot({
+    ...DEFAULT_CONTROLS,
+    mod0Src: 9,
+    mod0Dest: 0,
+    mod0Depth: 1,
+    filtMix: 0.5,
+  })
+  expect(dot).toMatch(
+    new RegExp(`wire0 \\[label="drum hit".*#${groupAnchor('Toy drums')}`),
   )
 })
 

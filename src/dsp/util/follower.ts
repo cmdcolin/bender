@@ -16,6 +16,20 @@ export class Follower {
   }
 }
 
+// A trigger line read as a control voltage: a hit snaps it up to whatever weight
+// arrived, and from there it falls. An envelope follower would barely notice a
+// spike one sample wide.
+export class Decay {
+  private y = 0
+  process(x: number, fall: number): number {
+    this.y = flushDenormal(x > this.y ? x : this.y * fall)
+    return this.y
+  }
+  reset() {
+    this.y = 0
+  }
+}
+
 // Fires once per attack, with a lockout so one shout stays one hit.
 export class Transient {
   private fast = new Follower()

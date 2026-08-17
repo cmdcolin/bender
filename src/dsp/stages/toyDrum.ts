@@ -3,6 +3,7 @@ import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
+import { N_DRUM_VOICES, STEP_CHOICE, voiceMask } from '../trigbus'
 import { Transient } from '../util/follower'
 import { mulberry32, type Rng } from '../util/rng'
 
@@ -19,7 +20,7 @@ const HAT = 2
 const CLAP = 3
 const TOM = 4
 const BELL = 5
-const N_VOICES = 6
+const N_VOICES = N_DRUM_VOICES
 
 const VOICE_PARAM = [
   IDX.drumKick,
@@ -93,7 +94,12 @@ export class ToyDrum implements Stage {
 
   // The trigger line: every voice the step names fires at once, at the step's
   // own weight. The clap is the odd one out — it doesn't strike, it claps.
-  private trigger(bits: number, gain: number) {
+  //
+  // Every hit is stamped on the bus as it goes, whether the sequencer struck it,
+  // the retrigger bend hammered it, a shout came in the mic or the keyboard's
+  // gate reached across. The line is one node; what is soldered to it decides.
+  private hit(bits: number, gain: number, ctx: Ctx, i: number) {
+    if (!bits) return
     for (let v = 0; v < N_VOICES; v++) {
       if (!(bits & (1 << v))) continue
       this.gain[v] = gain
@@ -105,14 +111,21 @@ export class ToyDrum implements Stage {
         this.phase[v] = 0
       }
     }
+    ctx.trig.drumFired(i, bits, gain)
   }
 
-  private fire(p: Float32Array, accent: number, fallback = false) {
+  private fire(
+    p: Float32Array,
+    accent: number,
+    ctx: Ctx,
+    i: number,
+    fallback = false,
+  ) {
     const bits = fallback
       ? this.bitsAt(p, this.step) || 1
       : this.bitsAt(p, this.step)
     const hard = (accent >> (STEPS - 1 - this.step)) & 1
-    this.trigger(bits, hard ? ACCENT_GAIN : 1)
+    this.hit(bits, hard ? ACCENT_GAIN : 1, ctx, i)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -126,6 +139,7 @@ export class ToyDrum implements Stage {
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = p[IDX.micPatch] === 5
+    const keyTrig = Math.round(p[IDX.trigToDrum]!)
     const cross = Math.round(p[IDX.drumCross]!)
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
     const modCross = cross === 0 ? null : ctx.mod.read(DEST.drumCross)
@@ -159,7 +173,7 @@ export class ToyDrum implements Stage {
         if (this.stepClock >= span) {
           this.stepClock -= span
           this.step = (this.step + 1) % STEPS
-          this.fire(p, accent)
+          this.fire(p, accent, ctx, i)
         }
       }
       // the bend: hammer the current step's trigger line at audio rate
@@ -170,12 +184,19 @@ export class ToyDrum implements Stage {
         this.retrigPhase += retrigHz / this.sr
         if (this.retrigPhase >= 1) {
           this.retrigPhase -= 1
-          this.fire(p, accent, true)
+          this.fire(p, accent, ctx, i, true)
         }
       }
       // mic soldered onto the trigger line: clap at it and the kit fires
       if (micTrig && this.micTrig.process(ctx.mic[i]!, 0.05)) {
-        this.fire(p, accent, true)
+        this.fire(p, accent, ctx, i, true)
+      }
+      // The keyboard's gate, reaching across: every note the chip strikes hits
+      // the kit, whether the pattern is running or not. 'the step' hands the
+      // grid to your hands — a key plays whatever column the sequencer is on.
+      if (keyTrig > 0 && ctx.trig.key[i]! > 0) {
+        if (keyTrig === STEP_CHOICE) this.fire(p, accent, ctx, i, true)
+        else this.hit(voiceMask(keyTrig), 1, ctx, i)
       }
 
       // Bridged envelope pins: each amplifier leans across to a neighbour's

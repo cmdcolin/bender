@@ -130,6 +130,10 @@ export const DEFAULT_CONTROLS = {
   bodyX: 0,
   bodyY: 0,
 
+  trigToKeys: 0,
+  trigKeysNote: 0,
+  trigToDrum: 0,
+
   fbAmt: 0,
   fbDelayMs: 5,
   fbTone: 0,

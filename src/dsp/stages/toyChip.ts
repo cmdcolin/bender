@@ -3,6 +3,7 @@ import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
+import { voiceMask } from '../trigbus'
 import { softclip } from '../util/softclip'
 import { mulberry32, type Rng } from '../util/rng'
 import { ROMS, type Rom } from './roms'
@@ -95,6 +96,7 @@ export class ToyChip implements Stage {
   private clockWalk = 0
   private lastReboot = 0
   private wasPlaying = false
+  private pendingKey = -1
   private rng: Rng
 
   constructor(
@@ -106,11 +108,19 @@ export class ToyChip implements Stage {
   }
 
   noteOn(semitone: number) {
+    this.strike(semitone, 1).held = true
+  }
+
+  // A voice struck and let go. The keys hold theirs down; a trigger line
+  // soldered onto the gate does not, so what it strikes decays like a ROM note.
+  private strike(semitone: number, gain: number): Voice {
     const v = this.pick(semitone)
     v.note = semitone
-    v.env = 1
-    v.held = true
+    v.env = gain
+    v.held = false
     v.started = this.voiceClock++
+    this.pendingKey = semitone
+    return v
   }
 
   noteOff(semitone: number) {
@@ -152,6 +162,36 @@ export class ToyChip implements Stage {
     if (found) this.chord = found
   }
 
+  // What a hit off the kit's trigger line does to the chip. It strikes a voice
+  // rather than the melody oscillator, so it sounds whether or not the demo
+  // song is running — the same as your hands do.
+  private fromDrum(mode: number, tune: number[], gain: number) {
+    switch (mode) {
+      // The kit clocks the tune: one hit, one step of the ROM, so a sixteen-step
+      // pattern plays the melody and the kick decides where the beat is.
+      case 1: {
+        this.pos = (this.pos + 1) % tune.length
+        const step = tune[this.pos]!
+        if (step >= 0) {
+          this.note = step
+          this.harmonize(step)
+          this.strike(step, gain)
+        }
+        return
+      }
+      case 2: {
+        const step = tune[Math.floor(this.rng() * tune.length)]!
+        if (step >= 0) this.strike(step, gain)
+        return
+      }
+      case 3:
+        this.strike(this.chord[Math.floor(this.rng() * 3)]!, gain)
+        return
+      default:
+        this.strike(this.note >= 0 ? this.note : this.chord[0]!, gain)
+    }
+  }
+
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.chipLevel]!
     const rom = ROMS[Math.round(p[IDX.chipTune]!)] ?? ROMS[0]!
@@ -168,6 +208,9 @@ export class ToyChip implements Stage {
     const fbToRail = Math.round(p[IDX.fbDest]!) === 2
     const modClock = ctx.mod.read(DEST.chipClock)
     const accomp = p[IDX.chipAccomp]!
+    // Whichever of the kit's voices is bridged onto the gate, and what it plays.
+    const trigMask = voiceMask(Math.round(p[IDX.trigToKeys]!))
+    const trigNote = Math.round(p[IDX.trigKeysNote]!)
     const rail = this.rail
     const maxHz = this.sr * 0.49
     rail.setBattery(battery)
@@ -216,6 +259,7 @@ export class ToyChip implements Stage {
         if (step >= 0) {
           this.note = step
           this.env = 1
+          this.pendingKey = step
           this.harmonize(step)
         } else if (step === -1) {
           this.note = -1
@@ -231,6 +275,12 @@ export class ToyChip implements Stage {
         } else {
           this.chordEnv = 1
         }
+      }
+
+      // The kit's trigger line, bridged onto the gate. The hit is a block old,
+      // which is 2.7 ms and nothing a trigger line has ever been able to tell.
+      if (trigMask && Math.round(ctx.trig.drumBits[i]!) & trigMask) {
+        this.fromDrum(trigNote, tune, Math.min(ctx.trig.drumGain[i]!, 1))
       }
 
       // gate bend: the gate line buzzes open and shut
@@ -328,6 +378,13 @@ export class ToyChip implements Stage {
       rail.tick(Math.abs(out), starve, extra)
       ctx.railV[i] = rail.v
       ctx.step[i] = this.stepClock
+      // The chip's gate, brought out to the bus whether anything is soldered to
+      // it or not: a note struck is a note struck, whether the ROM struck it,
+      // your hand struck it or a drum hit came back round and struck it.
+      if (this.pendingKey >= 0) {
+        ctx.trig.keyStruck(i, this.pendingKey)
+        this.pendingKey = -1
+      }
       io.l[i]! += out
       io.r[i]! += out
     }

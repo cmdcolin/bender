@@ -35,6 +35,8 @@ const SRC_GROUP: Record<number, string> = {
   6: 'Body contact',
   7: 'Feedback bus',
   8: 'Toy keyboard',
+  9: 'Toy drums',
+  10: 'Toy keyboard',
 }
 
 const SOURCE_ACTIVE: Record<string, (c: Controls) => boolean> = {
@@ -291,6 +293,29 @@ export function buildMap(c: Controls, o: Options = {}): Drawing {
     lines.push(
       `  ${nodeId('Feedback bus')} -> ${target} [color="${wire}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${wire}", fontsize=9, ${door}]`,
     )
+  }
+
+  // The trigger lines between the two boxes. Both ends sit in the source strip,
+  // where an edge from the strip onto itself would be a loop graphviz draws
+  // through the middle of the path — so each bridged line is a label of its own
+  // beside the strip, the way a patch wire is, dashed rather than dotted because
+  // what it carries is a hit and not a voltage.
+  for (const [key, from, to] of [
+    ['trigToKeys', 'Toy drums', 'Toy keyboard'],
+    ['trigToDrum', 'Toy keyboard', 'Toy drums'],
+  ] as const) {
+    const choice = Math.round(c[key])
+    if (choice <= 0) continue
+    const label = sliderFor(key).choices?.[choice] ?? 'trig'
+    const door = `URL="#${groupAnchor('Trigger patch')}", tooltip="Trigger patch"`
+    doors.add('Trigger patch')
+    lines.push(
+      `  ${key} [label="${label} trig", shape=plaintext, fontcolor="${k.mod}", fontsize=9, URL="#${groupAnchor(from)}", tooltip="${from}"]`,
+    )
+    lines.push(
+      `  ${key} -> sources:${nodeId(to)} [color="${k.mod}", style=dashed, constraint=false, ${door}]`,
+    )
+    lines.push(`  { rank=same; ${key}; sources }`)
   }
 
   // Patch wires ride over the top of the signal path, dotted and cool, from

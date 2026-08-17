@@ -136,6 +136,10 @@ export const PARAM_DEFS = [
   ['bodyX', 'slew'],
   ['bodyY', 'slew'],
 
+  ['trigToKeys', 'step'],
+  ['trigKeysNote', 'step'],
+  ['trigToDrum', 'step'],
+
   ['fbAmt', 'ramp'],
   ['fbDelayMs', 'slew'],
   ['fbTone', 'slew'],

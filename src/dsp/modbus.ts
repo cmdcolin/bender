@@ -1,6 +1,7 @@
 import { IDX } from '../engine/params'
 import { BLOCK } from './stage'
-import { Follower, coef } from './util/follower'
+import type { TriggerBus } from './trigbus'
+import { Decay, Follower, coef } from './util/follower'
 import { mulberry32, type Rng } from './util/rng'
 
 // Where a patch wire can land. Ids match the mod*Dest choices.
@@ -32,6 +33,8 @@ const SRC = {
   bodyY: 6,
   fb: 7,
   rom: 8,
+  drum: 9,
+  key: 10,
 }
 
 const WIRES = [
@@ -58,6 +61,7 @@ export interface ModSources {
   env: Float32Array
   fb: Float32Array
   step: Float32Array
+  trig: TriggerBus
 }
 
 // The patch bay: two wires, each soldered from a source onto a destination
@@ -69,9 +73,16 @@ export class ModBus {
   private readonly lfo = new Float32Array(BLOCK)
   private readonly micEnv = new Float32Array(BLOCK)
   private readonly held = new Float32Array(BLOCK)
+  // A trigger line is a spike one sample wide; an envelope follower would barely
+  // notice one. These snap up to the hit and fall from there, so a wire off the
+  // kit or off the keys pushes what it is soldered to on every hit.
+  private readonly drumEnv = new Float32Array(BLOCK)
+  private readonly keyEnv = new Float32Array(BLOCK)
   private lfoPhase = 0
   private shValue = 0
   private mic = new Follower()
+  private drumHit = new Decay()
+  private keyHit = new Decay()
   private rng: Rng = mulberry32(808)
 
   constructor(private readonly sr: number) {
@@ -91,6 +102,7 @@ export class ModBus {
     const shape = Math.round(p[IDX.modLfoShape]!)
     const attack = coef(0.005, this.sr)
     const release = coef(0.12, this.sr)
+    const fall = Math.exp(-1 / (0.12 * this.sr))
     for (let i = 0; i < n; i++) {
       const prev = this.lfoPhase
       this.lfoPhase = (this.lfoPhase + hz / this.sr) % 1
@@ -100,6 +112,11 @@ export class ModBus {
         this.mic.process(src.mic[i]!, attack, release) * 2,
         1,
       )
+      this.drumEnv[i] = this.drumHit.process(
+        Math.min(src.trig.drumGain[i]!, 1),
+        fall,
+      )
+      this.keyEnv[i] = this.keyHit.process(src.trig.key[i]! > 0 ? 1 : 0, fall)
     }
 
     for (const [srcIdx, destIdx, depthIdx] of WIRES) {
@@ -135,6 +152,10 @@ export class ModBus {
         return src.fb
       case SRC.rom:
         return src.step
+      case SRC.drum:
+        return this.drumEnv
+      case SRC.key:
+        return this.keyEnv
       case SRC.bodyX:
       case SRC.bodyY:
         this.held.fill(p[from === SRC.bodyX ? IDX.bodyX : IDX.bodyY]!, 0, n)
@@ -149,5 +170,7 @@ export class ModBus {
     this.lfoPhase = 0
     this.shValue = 0
     this.mic.reset()
+    this.drumHit.reset()
+    this.keyHit.reset()
   }
 }

@@ -1,4 +1,5 @@
 import type { ModBus } from './modbus'
+import type { TriggerBus } from './trigbus'
 
 export interface StereoBlock {
   l: Float32Array
@@ -25,6 +26,8 @@ export interface Ctx {
   /** the chip's sequencer phase, 0 to 1 across the current ROM step */
   step: Float32Array
   mod: ModBus
+  /** the trigger lines of the two boxes, for whatever has bridged them */
+  trig: TriggerBus
 }
 
 export interface Stage {
