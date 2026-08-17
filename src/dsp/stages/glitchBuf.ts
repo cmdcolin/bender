@@ -34,7 +34,7 @@ export class GlitchBuf implements Stage {
     this.rng = mulberry32(seed)
     this.micTrig = new Transient(sr)
     // A disc that has started skipping skips again on the next revolution.
-    this.fault = new Burst(sr, 0.9, 7)
+    this.fault = new Burst(sr, 0.9)
   }
 
   when(p: Float32Array) {

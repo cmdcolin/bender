@@ -101,10 +101,13 @@ test('mutate puts what counts in time back on the beat', () => {
   }
 })
 
+// Enough seeds that a shake lands on the one control being watched a good few
+// times: a shake moves a handful of controls rather than all of them, so any
+// given control sits most rolls out.
 test('a tempo too fast to be a pulse frees the timed controls again', () => {
   const before = { ...mine(), drumBpm: 2400, delayMs: 350 }
   const times = new Set<number>()
-  for (let seed = 1; seed <= 20; seed++) {
+  for (let seed = 1; seed <= 80; seed++) {
     times.add(mutate(before, 0.12, mulberry32(seed)).delayMs)
   }
   expect(times.size).toBeGreaterThan(4)

@@ -27,7 +27,7 @@ export class Brownout implements Stage {
   ) {
     this.rng = mulberry32(seed)
     this.dropFault = new Burst(sr, 2.2)
-    this.crackleFault = new Burst(sr, 0.5, 8)
+    this.crackleFault = new Burst(sr, 0.5)
   }
 
   // Cross-coupling counts as a reason to run: this stage owns the supply strain

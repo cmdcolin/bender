@@ -22,6 +22,11 @@ const WIRE_TARGET = [
   'Freq shifter',
   'Crusher',
   'Toy drums',
+  // A wire onto the other wire's depth lands inside the bay rather than on any
+  // stage, so the map has nothing on the path to point it at — the bay's own
+  // panel is where that pair reads.
+  'Patch bay',
+  'Patch bay',
 ] as const
 
 const SRC_LABEL = sliderFor('mod0Src').choices ?? []

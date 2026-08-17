@@ -3,6 +3,7 @@ import { Glide } from '../engine/glide'
 import {
   ALL_SLIDERS,
   bendAt,
+  BENDS,
   BEND_SLOT_KEYS,
   GROUPS,
   type Group,
@@ -779,12 +780,25 @@ function inTime(next: Controls, moved: (key: ControlKey) => boolean): Controls {
   return next
 }
 
+// A shake lands on a handful of controls rather than on all of them. Nudging
+// every one of the hundred-odd at once is the central limit theorem with a
+// slider rack in front of it: each control moves by less than you can hear it
+// move, none of them moves far enough to be the reason the board changed, and
+// what comes back is a board creeping toward the middle of every travel — which
+// is the one place nothing sounds like anything. Leaving most of them exactly
+// where they were is what lets the few that did move be audible as the
+// difference.
+//
+// How far each one goes is unchanged; amount decides how many are in it.
+const shakeShare = (amount: number) => 0.12 + 0.5 * amount
+
 export function mutate(
   controls: Controls,
   amount: number,
   rand: () => number,
 ): Controls {
   const next = { ...controls }
+  const share = shakeShare(amount)
   for (const def of ALL_SLIDERS) {
     if (YOURS.has(def.key) || CLOCK_KEYS.has(def.key)) continue
     if (def.choices) {
@@ -793,16 +807,38 @@ export function mutate(
       }
       continue
     }
+    if (rand() > share) continue
     next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
   return inTime(next, () => true)
+}
+
+// Six bends wet at once is porridge — every stage half there, none of them the
+// thing you are hearing. A roll that lands that way is thinned by taking bends
+// off the board outright rather than by turning everything down, because a stage
+// you can't pick out is worth less than a stage that isn't there.
+const MAX_WET_BENDS = 3
+
+function thinOut(next: Controls, rand: () => number): Controls {
+  const wet = BENDS.filter(b => next[b.mix] > sliderFor(b.mix).min)
+  for (let i = wet.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[wet[i], wet[j]] = [wet[j]!, wet[i]!]
+  }
+  for (const bend of wet.slice(MAX_WET_BENDS)) {
+    next[bend.mix] = sliderFor(bend.mix).min
+  }
+  return next
 }
 
 // A roll of the dice asks for a different circuit, not a different song: the
 // preset it lands on hands over its board and nothing else.
 export function randomLook(current: Controls, rand: () => number): Controls {
   const preset = PRESETS[Math.floor(rand() * PRESETS.length)]!
-  return keepYours(mutate(applyPreset(preset, current), 0.08, rand), current)
+  return keepYours(
+    thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand),
+    current,
+  )
 }
 
 // A roll, as against a nudge: the control takes a fresh value from anywhere on
@@ -991,6 +1027,99 @@ const WRECK: [ControlKey, number, number][] = [
   ['crushMix', 0.4, 1],
 ]
 
+// Controls worth driving to an end of their travel: everything with a travel to
+// drive, minus what is yours and the clock.
+const slammable = () =>
+  ALL_SLIDERS.filter(
+    d => !d.choices && !YOURS.has(d.key) && !CLOCK_KEYS.has(d.key),
+  )
+
+// One, two or three controls all the way to an end, and nothing else touched.
+// It is how a hand actually finds a sound — all the way up, listen, all the way
+// back — and it is the opposite of a nudge, which asks a hundred questions at
+// once and hands back a hundred answers you can't tell apart. Either end counts:
+// a control slammed shut is as much an answer as one slammed open.
+function slam(current: Controls, rand: () => number): Controls {
+  const pool = slammable()
+  const next = { ...current }
+  const moved = new Set<ControlKey>()
+  const count = 1 + Math.floor(rand() * 3)
+  for (let i = 0; i < count && pool.length > 0; i++) {
+    const def = pool.splice(Math.floor(rand() * pool.length), 1)[0]!
+    const pos = rand() < 0.5 ? rand() * 0.06 : 1 - rand() * 0.06
+    next[def.key] = snapToStep(def, fromPos(def, pos))
+    moved.add(def.key)
+  }
+  return inTime(next, key => moved.has(key))
+}
+
+// Pairs that fight. Wind one up and the other decides whether the result
+// screams, gates or dies on the spot, so rolling the two together lands on the
+// boundary between those — which is where a circuit stops being predictable.
+// Rolled independently, the same two controls land in the middle of both
+// travels, which is where it sounds like a setting rather than an event.
+const ANTAGONISTS: [ControlKey, ControlKey][] = [
+  ['fbAmt', 'fbDelayMs'],
+  ['fbAmt', 'fbTone'],
+  ['filtRes', 'filtDriveDb'],
+  ['chipStarve', 'chipClockX'],
+  ['chipStarve', 'chipLatch'],
+  ['dlyFb', 'delayMs'],
+  ['combFb', 'combHz'],
+  ['stompDrive', 'stompSag'],
+  ['shiftFb', 'shiftHz'],
+  ['drumRetrigHz', 'drumDecay'],
+  ['couple', 'filtRes'],
+  ['oscStarve', 'oscXmod'],
+]
+
+// Two pairs, each driven to opposite ends of itself: one of them near the top of
+// its travel and its opposite number near the bottom, which is the corner of the
+// pair rather than the middle of it. Everything else is left where it stood, so
+// what comes back is the board you had, standing on an edge.
+function edge(current: Controls, rand: () => number): Controls {
+  const pairs = [...ANTAGONISTS]
+  const next = { ...current }
+  const moved = new Set<ControlKey>()
+  for (let i = 0; i < 2 && pairs.length > 0; i++) {
+    const [a, b] = pairs.splice(Math.floor(rand() * pairs.length), 1)[0]!
+    const high = rand() < 0.5
+    for (const [key, top] of [
+      [a, high],
+      [b, !high],
+    ] as const) {
+      const def = sliderFor(key)
+      const pos = top ? 0.82 + rand() * 0.18 : rand() * 0.18
+      next[key] = snapToStep(def, fromPos(def, pos))
+      moved.add(key)
+    }
+  }
+  return inTime(next, key => moved.has(key))
+}
+
+// The mechanisms that make the board stop repeating itself, turned up together
+// — because each of them alone is a detail and the four of them at once is a
+// different instrument. Nothing here is a sound: they are all statements about
+// how the board behaves over minutes rather than over a note.
+const AGE: [ControlKey, number, number][] = [
+  ['heatAmt', 0.55, 1],
+  ['faultCluster', 0.5, 1],
+  ['chipDrift', 0.15, 0.6],
+  ['chipLatch', 0.2, 0.7],
+  ['jointChatter', 0.05, 0.4],
+  ['relayRate', 0, 0.3],
+  ['couple', 0.25, 0.8],
+]
+
+function age(current: Controls, rand: () => number): Controls {
+  const next = { ...current }
+  for (const [key, lo, hi] of AGE) {
+    const def = sliderFor(key)
+    next[key] = snapToStep(def, lo + rand() * (hi - lo))
+  }
+  return next
+}
+
 // Everything that can run away, wound up at once. The safety tail holds it at
 // the rails, so the worst this can do is be loud and horrible — which is the
 // request.
@@ -1024,5 +1153,23 @@ export const SCENARIOS: ScenarioDef[] = [
     blurb:
       'Every feedback past unity, the supply on the floor, the DAC down to a few bits',
     roll: wreck,
+  },
+  {
+    name: 'slam',
+    blurb:
+      'One to three controls all the way to an end of their travel, nothing else touched',
+    roll: slam,
+  },
+  {
+    name: 'on the edge',
+    blurb:
+      'Two pairs that fight, each driven to opposite corners — the boundary rather than the middle',
+    roll: edge,
+  },
+  {
+    name: 'let it age',
+    blurb:
+      'Heat, clustered faults, a wandering crystal and a latching die: a board that stops repeating itself',
+    roll: age,
   },
 ]

@@ -2,6 +2,31 @@ import { Drunk } from './util/drift'
 import { mulberry32, type Rng } from './util/rng'
 import { flushDenormal } from './util/softclip'
 
+// Where a jammed die and its supply come to rest against each other, and how
+// fast they get there. Low enough that the chip can't run and the pitch has
+// dived most of an octave; not low enough to let the latch go.
+const LATCH_HOLD = 0.06
+const LATCH_PULL = 12
+
+// The voltage the chip stops running at, and where the watchdog trips.
+//
+// The watchdog has to sit at or above the point the chip gives up, and it used to
+// sit well below. That inverted the whole bend: the amplitude collapse silenced
+// the chip at 0.2, silence meant no load, no load meant the rail was paid back,
+// and the supply parked itself on a knife edge a thousandth of a volt above 0.2
+// and stayed there for as long as you held the knob. What came out was a steady
+// gate — the chip switching off and on at one voltage — and the reboot the bend
+// is named after could not physically happen, because the current that would
+// have carried the rail down there had already been cut off by the chip going
+// quiet. A watchdog watches for the chip failing; it cannot be set below it.
+const DEAD_V = 0.2
+const WATCHDOG_V = 0.21
+
+// The pot doing the starving is a resistor to ground, and it draws whether or
+// not the chip is singing — so a starve deep enough keeps pulling after the chip
+// has stopped, rather than being paid back by its silence.
+const STARVE_SHUNT = 12
+
 // The shared toy supply rail. Output current drains it in proportion to starve
 // and to how flat the cells are; when it droops past the watchdog threshold the
 // chip browns out, reboots after a boot delay, and everything powered from it
@@ -55,32 +80,43 @@ export class ToyRail {
     this.stress = starve + this.battery
     const charge = (60 * (1 - 0.35 * this.battery)) / this.sr
     const drain = (starve * 900 + this.battery * 80) / this.sr
+    const walk = this.thresholdWalk.step(0.15, this.sr, this.rng) * 0.025
+
     // A latched die is a short across the supply that no longer cares what the
-    // output is doing: it draws until the rail is on the floor.
-    const latchDraw = this.latchRemaining > 0 ? 260 / this.sr : 0
+    // output is doing. It doesn't crash the rail to nothing, though — the latch
+    // needs some rail to hold itself in, so the two settle against each other
+    // and sit there: a low, steady voltage the chip can neither run on nor
+    // escape from, which is why the note screams rather than stopping.
+    if (this.latchRemaining > 0) {
+      this.v = flushDenormal(
+        this.v + (LATCH_PULL / this.sr) * (LATCH_HOLD - this.v),
+      )
+      this.latchRemaining--
+      // Then the current gives out, and the watchdog finally gets the power
+      // cycle it has been locked out of.
+      if (this.latchRemaining === 0) this.reboot()
+      return
+    }
+
+    // The pot doing the starving is a resistor to ground, and it draws whether
+    // or not the chip is singing. Without that the loop closed the wrong way:
+    // the amplitude collapse cut the load, no load meant the rail was paid back,
+    // and the supply parked itself a whisker above the watchdog threshold and
+    // stayed there. A hard starve came out as a steady gate — the chip switching
+    // off and on at one voltage — and the watchdog never tripped at all, so the
+    // reboot the whole bend is named after was unreachable from this knob.
+    const shunt = (starve * STARVE_SHUNT) / this.sr
     this.v +=
       charge * (this.open - this.v) -
       drain * (load + this.reported + extra) -
-      latchDraw
+      shunt
     this.v = flushDenormal(Math.min(Math.max(this.v, 0), 1))
 
-    const walk = this.thresholdWalk.step(0.15, this.sr, this.rng) * 0.025
-
-    if (this.latchRemaining > 0) {
-      this.latchRemaining--
-      // It lets go when there is no longer enough rail to hold the latch in,
-      // and then the watchdog finally gets the power cycle it wanted.
-      if (this.latchRemaining === 0 || this.v < 0.04) {
-        this.latchRemaining = 0
-        this.reboot()
-      }
-      return
-    }
     if (this.bootRemaining > 0) {
       this.bootRemaining--
       return
     }
-    if (this.stress > 0 && this.v < 0.12 + 0.05 * this.heat + walk) {
+    if (this.stress > 0 && this.v < WATCHDOG_V + 0.05 * this.heat + walk) {
       // Sometimes it doesn't reboot cleanly. CMOS on a collapsing rail can
       // latch instead: the die jams, holds whatever it was doing and keeps
       // drawing current, so one note screams down into the floor and the
@@ -149,7 +185,7 @@ export class ToyRail {
   // there — a rail nobody is straining sits at rest, not dead. A latched die is
   // not dead either: it is the loudest the chip ever gets.
   get dead() {
-    return !this.latched && this.stress > 0 && this.v < 0.2
+    return !this.latched && this.stress > 0 && this.v < DEAD_V
   }
 
   reset() {
