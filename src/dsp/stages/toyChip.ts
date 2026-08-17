@@ -13,6 +13,18 @@ import { ROMS, type Rom } from './roms'
 const BASE_HZ = 220
 const ENV_FLOOR = 0.003
 
+// An envelope that has fallen under the floor stops there, rather than halving
+// its way toward zero for the rest of the session.
+//
+// Everything here already treats the floor as silence — a voice under it is a
+// voice free to be stolen, and none of them are summed — so the last stretch
+// was inaudible arithmetic. It was not free arithmetic, though: five minutes of
+// quiet is all it takes for a decaying double to reach the range the hardware
+// stops handling in one piece, and from there every multiply costs twenty times
+// what it did. The one stage that is always on doubled in cost the longer the
+// toy was left switched on, and stayed doubled.
+const fade = (env: number, decay: number) => (env > ENV_FLOOR ? env * decay : 0)
+
 // Every note the divider can strike, as a ratio. The ROM steps, the keys and the
 // triads are all whole semitones, so the chip's own pitches are a table — eight
 // voices at eight Math.pow calls a sample is the one stage that is always on
@@ -373,10 +385,10 @@ export class ToyChip implements Stage {
         this.envDecay = Math.exp(-(0.8 * rom.stepHz * timing) / this.sr)
       }
       const envDecay = latched ? 1 : this.envDecay
-      this.env *= envDecay
-      this.bassEnv *= envDecay
-      this.chordEnv *= envDecay
-      for (const v of this.voices) if (!v.held) v.env *= envDecay
+      this.env = fade(this.env, envDecay)
+      this.bassEnv = fade(this.bassEnv, envDecay)
+      this.chordEnv = fade(this.chordEnv, envDecay)
+      for (const v of this.voices) if (!v.held) v.env = fade(v.env, envDecay)
 
       // A latched output stage is jammed on rather than fading with the supply,
       // so the note doesn't get quieter as the rail goes — it holds its level

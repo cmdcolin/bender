@@ -218,20 +218,25 @@ export class ToyDrum implements Stage {
       // Bridged envelope pins: each amplifier leans across to a neighbour's
       // envelope instead of its own. All the way over is a full swap, so the
       // kick fires on snare steps and the noise swells on kicks.
+      //
+      // With nothing bridged an amplifier hears its own envelope, so it reads
+      // that array rather than a copy of it: the leaned-across pair only exists
+      // while something is leaning, and copying twelve floats a sample to say
+      // nothing was bridged is the kit's whole idle cost.
       const env = this.env
-      const amp = this.amp
-      const weight = this.weight
       const bleed = modCross
         ? Math.min(Math.max(baseBleed + modCross[i]!, 0), 1)
         : baseBleed
-      amp.set(env)
-      weight.set(this.gain)
+      let amp = env
+      let weight = this.gain
       if (bleed > 0) {
+        amp = this.amp
+        weight = this.weight
         const wiring = CROSS_WIRING[cross] ?? CROSS_WIRING[0]!
         for (let v = 0; v < N_VOICES; v++) {
           const from = wiring[v]!
-          amp[v]! += bleed * (env[from]! - env[v]!)
-          weight[v]! += bleed * (this.gain[from]! - this.gain[v]!)
+          amp[v] = env[v]! + bleed * (env[from]! - env[v]!)
+          weight[v] = this.gain[v]! + bleed * (this.gain[from]! - this.gain[v]!)
         }
       }
 

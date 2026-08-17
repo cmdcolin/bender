@@ -10,8 +10,9 @@ class Svf {
     this.low = flushDenormal(this.low + f * this.band)
     const high = x - this.low - damp * this.band
     // saturating the band path is what turns negative damping into a held
-    // scream instead of a blowup
-    this.band = softclip(this.band + f * high)
+    // scream instead of a blowup, and flushing it is what stops a tank left
+    // ringing down from coming to rest on a denormal it then pays for for ever
+    this.band = flushDenormal(softclip(this.band + f * high))
     switch (mode) {
       case 1:
         return this.band
