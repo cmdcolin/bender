@@ -133,6 +133,17 @@ export const PARAM_DEFS = [
   ['humLevel', 'slew'],
   ['humHz', 'step'],
 
+  ['tapeMix', 'slew'],
+  ['tapeSpeed', 'step'],
+  ['tapeDrive', 'ramp'],
+  ['tapeBias', 'slew'],
+  ['tapeHiss', 'slew'],
+  ['tapeWow', 'slew'],
+  ['tapeFlutter', 'slew'],
+  ['tapeDrop', 'slew'],
+  ['tapePrint', 'slew'],
+  ['tapeAzimuth', 'slew'],
+
   ['outGain', 'ramp'],
 ] as const satisfies readonly (readonly [ControlKey, Smooth])[]
 

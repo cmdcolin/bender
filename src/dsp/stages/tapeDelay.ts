@@ -70,8 +70,8 @@ export class TapeDelay implements Stage {
       )
       const d = Math.min(Math.max(delaySamples + this.slide + wobble, 1), this.maxDelay)
 
-      const tapL = this.toneL.process(this.lineL.read(d), coef)
-      const tapR = this.toneR.process(this.lineR.read(d * 1.007), coef)
+      const tapL = this.toneL.process(this.lineL.readHermite(d), coef)
+      const tapR = this.toneR.process(this.lineR.readHermite(d * 1.007), coef)
       let wl = io.l[i]! + softclip(fb * tapL)
       let wr = io.r[i]! + softclip(fb * tapR)
       if (micInject) {

@@ -244,6 +244,7 @@ export function buildDot(c: Controls, o: Options = {}): string {
     ['Tape delay', c.dlyMix > 0],
     ['Spring verb', c.revMix > 0],
     ['Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0],
+    ['Tape machine', c.tapeMix > 0],
     ['Output', true],
   ] as const) {
     run(nodeId(name), node(name, active))

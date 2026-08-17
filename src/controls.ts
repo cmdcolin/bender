@@ -125,6 +125,17 @@ export const DEFAULT_CONTROLS = {
   humLevel: 0,
   humHz: 0,
 
+  tapeMix: 0,
+  tapeSpeed: 1,
+  tapeDrive: 6,
+  tapeBias: 0,
+  tapeHiss: 0.35,
+  tapeWow: 0.25,
+  tapeFlutter: 0.25,
+  tapeDrop: 0,
+  tapePrint: 0,
+  tapeAzimuth: 0,
+
   outGain: 0,
 }
 
