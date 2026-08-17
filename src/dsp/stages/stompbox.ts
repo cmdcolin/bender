@@ -3,7 +3,7 @@ import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { Follower, coef } from '../util/follower'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
-import { flushDenormal } from '../util/softclip'
+import { flushDenormal, softclip } from '../util/softclip'
 
 // Ids match the stompCircuit choices.
 const SCREAMER = 0
@@ -14,14 +14,12 @@ const OCTAVE = 4
 const GATE = 5
 
 // Silicon across the op-amp's feedback loop: rounds into the rail and stays.
-const diode = (x: number, ceil: number) => ceil * Math.tanh(x / ceil)
+const diode = (x: number, ceil: number) => ceil * softclip(x / ceil)
 
 // Germanium cuts off early on one half. The even harmonics and the DC offset
 // both fall out of that lopsidedness.
 const asym = (x: number, ceil: number) =>
-  x > 0
-    ? ceil * Math.tanh(x / ceil)
-    : 0.55 * ceil * Math.tanh(x / (0.55 * ceil))
+  x > 0 ? ceil * softclip(x / ceil) : 0.55 * ceil * softclip(x / (0.55 * ceil))
 
 // Diodes clipped to ground instead, with the knee real ones have. The harder
 // edge is most of what separates a rat from a screamer.

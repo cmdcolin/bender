@@ -1,19 +1,24 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
-import { DelayLine } from '../util/delayline'
+import { DelayLine, fixedTap } from '../util/delayline'
 import { OnePoleLP, lpCoef } from '../util/onepole'
 
 const AP_MS = [4.7, 8.3, 11.9]
 const COMB_MS = [31, 37, 41, 43]
 
+// Neither tap in the tank ever moves, so both split their delay once and read
+// through readAt from there.
 class Allpass {
   private line: DelayLine
-  constructor(private readonly delay: number) {
+  private whole: number
+  private frac: number
+  constructor(delay: number) {
     this.line = new DelayLine(delay + 4)
+    ;({ whole: this.whole, frac: this.frac } = fixedTap(delay, delay))
   }
   process(x: number, g: number): number {
-    const d = this.line.read(this.delay)
+    const d = this.line.readAt(this.whole, this.frac)
     const w = x + g * d
     this.line.write(w)
     return d - g * w
@@ -26,14 +31,17 @@ class Allpass {
 class DampedComb {
   private line: DelayLine
   private damp = new OnePoleLP()
+  private whole: number
+  private frac: number
   constructor(
     readonly delaySec: number,
-    private readonly delay: number,
+    delay: number,
   ) {
     this.line = new DelayLine(delay + 4)
+    ;({ whole: this.whole, frac: this.frac } = fixedTap(delay, delay))
   }
   process(x: number, fb: number, dampCoef: number): number {
-    const d = this.line.read(this.delay)
+    const d = this.line.readAt(this.whole, this.frac)
     this.line.write(x + fb * this.damp.process(d, dampCoef))
     return d
   }

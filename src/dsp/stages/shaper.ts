@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { OnePoleLP, lpCoef } from '../util/onepole'
+import { softclip } from '../util/softclip'
 
 function fold(x: number): number {
   // reflect off ±1 until inside
@@ -13,13 +14,13 @@ function shape(x: number, mode: number): number {
     case 1:
       return Math.min(Math.max(x, -1), 1)
     case 2:
-      return Math.tanh(x * 1.5) * (x > 0 ? 1 : 0.6)
+      return softclip(x * 1.5) * (x > 0 ? 1 : 0.6)
     case 3:
       return fold(x)
     case 4:
-      return Math.abs(Math.tanh(x)) * 2 - 1
+      return Math.abs(softclip(x)) * 2 - 1
     default:
-      return Math.tanh(x)
+      return softclip(x)
   }
 }
 
