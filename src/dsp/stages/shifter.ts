@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { QuadOsc } from '../util/lfo'
 import { flushDenormal, softclip } from '../util/softclip'
 
 // Two allpass chains whose outputs stay about 90° apart across the band.
@@ -72,7 +73,7 @@ export class Shifter implements Stage {
   label = 'shifter'
   private hL = new Hilbert()
   private hR = new Hilbert()
-  private phase = 0
+  private carrier = new QuadOsc()
   private fbL = 0
   private fbR = 0
 
@@ -88,15 +89,23 @@ export class Shifter implements Stage {
     const mix = p[IDX.shiftMix]!
     const baseHz = p[IDX.shiftHz]!
     const mod = ctx.mod.read(DEST.shiftHz)
-    const incBase = baseHz / this.sr
+    // A shift that holds still turns the carrier by the same angle every
+    // sample, so the rate is set once and the pair costs four multiplies from
+    // there. A wire on it moves the angle per sample, which is the two library
+    // calls back — no worse than it was, and only while something is wired.
+    const carrier = this.carrier
+    if (!mod) carrier.setRate(baseHz, this.sr)
 
     for (let i = 0; i < io.n; i++) {
-      const inc = mod
-        ? Math.min(baseHz * Math.pow(2, mod[i]! * 4), this.sr * 0.4) / this.sr
-        : incBase
-      this.phase = (this.phase + inc) % 1
-      const c = Math.cos(this.phase * 2 * Math.PI)
-      const s = Math.sin(this.phase * 2 * Math.PI)
+      if (mod) {
+        carrier.setRate(
+          Math.min(baseHz * Math.pow(2, mod[i]! * 4), this.sr * 0.4),
+          this.sr,
+        )
+      }
+      carrier.step()
+      const c = carrier.re
+      const s = carrier.im
 
       this.hL.process(io.l[i]! + softclip(fb * this.fbL))
       this.hR.process(io.r[i]! + softclip(fb * this.fbR))
@@ -115,7 +124,7 @@ export class Shifter implements Stage {
   panic() {
     this.hL.reset()
     this.hR.reset()
-    this.phase = 0
+    this.carrier.reset()
     this.fbL = 0
     this.fbR = 0
   }

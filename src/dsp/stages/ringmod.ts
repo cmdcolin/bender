@@ -1,10 +1,11 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { QuadOsc } from '../util/lfo'
 
 export class RingMod implements Stage {
   label = 'ringmod'
-  private phase = 0
+  private carrier = new QuadOsc()
 
   constructor(private readonly sr: number) {}
 
@@ -18,17 +19,22 @@ export class RingMod implements Stage {
     const square = Math.round(p[IDX.ringShape]!) === 1
     const mix = p[IDX.ringMix]!
     const micCarrier = p[IDX.micPatch] === 4
+    const carrier = this.carrier
+    if (!mod) carrier.setRate(base, this.sr)
 
     for (let i = 0; i < io.n; i++) {
       let car: number
       if (micCarrier) {
         car = Math.min(Math.max(ctx.mic[i]! * 2, -1), 1)
       } else {
-        const hz = mod
-          ? Math.min(base * Math.pow(2, mod[i]! * 4), this.sr * 0.45)
-          : base
-        this.phase = (this.phase + hz / this.sr) % 1
-        const s = Math.sin(this.phase * 2 * Math.PI)
+        if (mod) {
+          carrier.setRate(
+            Math.min(base * Math.pow(2, mod[i]! * 4), this.sr * 0.45),
+            this.sr,
+          )
+        }
+        carrier.step()
+        const s = carrier.im
         car = square ? Math.sign(s) || 1 : s
       }
       io.l[i] = io.l[i]! * (1 - mix) + io.l[i]! * car * mix
@@ -37,6 +43,6 @@ export class RingMod implements Stage {
   }
 
   panic() {
-    this.phase = 0
+    this.carrier.reset()
   }
 }

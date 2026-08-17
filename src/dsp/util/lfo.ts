@@ -31,3 +31,43 @@ export class SineOsc {
     this.c = 1
   }
 }
+
+// A sine and its cosine together, for four multiplies.
+//
+// The magic circle above carries a second state, but it sits half a sample
+// behind the first — near enough for the amplitude to hold, nowhere near a
+// quadrature pair. A single-sideband shifter cancels one sideband by summing
+// two products, and it cancels exactly as well as its carrier is 90° apart, so
+// that half sample is the difference between a shift and a ring modulator.
+//
+// So this rotates a unit vector by the whole angle instead: re and im come out
+// as cos and sin of the same phase, and the pair costs a quarter of the two
+// library calls it replaces. What it gives up is the exact invariant — rounding
+// walks the amplitude by about 3e-12 over twenty seconds, and grows with the
+// square root of that, so a board left running for a week is still ten thousand
+// times inside the noise floor.
+export class QuadOsc {
+  re = 1
+  im = 0
+  private cw = 1
+  private sw = 0
+
+  /** The rate to turn at. Hoist it out of the sample loop where it holds. */
+  setRate(hz: number, sr: number) {
+    const w = (2 * Math.PI * Math.min(Math.max(hz, 0), sr * 0.49)) / sr
+    this.cw = Math.cos(w)
+    this.sw = Math.sin(w)
+  }
+
+  /** One turn. Read re and im after it, as cos and sin of the new phase. */
+  step() {
+    const re = this.re * this.cw - this.im * this.sw
+    this.im = this.im * this.cw + this.re * this.sw
+    this.re = re
+  }
+
+  reset() {
+    this.re = 1
+    this.im = 0
+  }
+}

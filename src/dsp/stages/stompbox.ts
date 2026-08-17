@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { Follower, coef } from '../util/follower'
+import { SineOsc } from '../util/lfo'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
 import { flushDenormal, softclip } from '../util/softclip'
 
@@ -58,7 +59,8 @@ interface Voicing {
   couple: number
   toneLp: number
   ring: number
-  squealHz: number
+  /** the starved squeal's rate, already turned into a step for SineOsc */
+  squealK: number
   thresh: number
 }
 
@@ -80,7 +82,7 @@ class Box {
   private rail = 1
   private gate = 0
   private gated = false
-  private phase = 0
+  private squeal = new SineOsc()
 
   private readonly envA: number
   private readonly envR: number
@@ -195,9 +197,8 @@ class Box {
           this.gate +
             (this.gated ? this.gateA : this.gateR) * (target - this.gate),
         )
-        this.phase = (this.phase + v.squealHz / this.sr) % 1
         const squeal =
-          v.sag * (1 - this.gate) * 0.3 * Math.sin(this.phase * 2 * Math.PI)
+          v.sag * (1 - this.gate) * 0.3 * this.squeal.step(v.squealK)
         y = this.tone.process(u * this.gate + squeal * ceil, v.toneLp)
         break
       }
@@ -228,7 +229,7 @@ class Box {
     this.rail = 1
     this.gate = 0
     this.gated = false
-    this.phase = 0
+    this.squeal.reset()
   }
 }
 
@@ -247,7 +248,7 @@ export class Stompbox implements Stage {
     couple: 0,
     toneLp: 0,
     ring: 0,
-    squealHz: 0,
+    squealK: 0,
     thresh: 0,
   }
 
@@ -276,7 +277,7 @@ export class Stompbox implements Stage {
     // ones do: bias walks it toward cutoff, so it shuts higher up, and a flat
     // battery is what sets it howling.
     v.thresh = 0.005 + Math.max(v.bias, 0) * 0.35
-    v.squealHz = 80 * Math.pow(30, t)
+    v.squealK = SineOsc.rate(80 * Math.pow(30, t), this.sr)
     v.ring =
       2 *
       Math.sin(
