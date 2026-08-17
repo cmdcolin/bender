@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "bench": "tsx scripts/bench.ts",
     "diagram": "tsx scripts/chain-svg.ts",
     "preview": "vite preview",
     "test": "vitest run",

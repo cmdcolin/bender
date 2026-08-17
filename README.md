@@ -445,6 +445,13 @@ pnpm dev
 — all feedbacks pinned past unity at once — and asserts nothing non-finite or
 past the limiter ever leaves the chain.
 
+`pnpm bench` renders offline and says what the chain costs per block, stage by
+stage. The worklet gets 2.7 ms to fill 2.7 ms of audio, so the number that
+matters is the share of one core: a board with everything patched at once sits
+near 9%, and the board as it boots near 1%. `pnpm bench stock` renders that one.
+Anything that pushes the heavy board up is what runs out of budget first on a
+slower machine, which is where the sound starts breaking up.
+
 ## Footnote
 
 Initial template with Claude Fable. Follows in footsteps of
