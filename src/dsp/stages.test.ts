@@ -767,6 +767,22 @@ test('the next step hands the tune to the pattern', () => {
   expect(bin(oneNote, 220)).toBeGreaterThan(4 * bin(walked, 220))
 })
 
+test('the whole band walks with a drum-clocked step', () => {
+  // The bass sits an octave under the tonic, and it can only be the kick putting
+  // it there: the chip's own sequencer is stopped.
+  // The kit is turned right down, so what is left is what it triggered.
+  const walked = {
+    chipTune: 3,
+    chipLevel: 1,
+    drumLevel: 0.02,
+    trigToKeys: 1,
+    trigKeysNote: 1,
+  }
+  const bare = bridge({ ...walked, chipAccomp: 0 })
+  const band = bridge({ ...walked, chipAccomp: 1 })
+  expect(bin(band, 110)).toBeGreaterThan(4 * bin(bare, 110))
+})
+
 test('the keys fire the kit, with the pattern stopped', () => {
   // Only the kit is audible, and only the trigger line can be firing it: the
   // sequencer is stopped and the chip is turned all the way down.

@@ -178,6 +178,19 @@ export class ToyChip implements Stage {
     if (found) this.chord = found
   }
 
+  // The accompaniment section, off whichever clock moved the step: bass on the
+  // step, chord stab on the offbeat, the bass alternating root and fifth the way
+  // the toys walked it.
+  private oomPah() {
+    if (this.pos % 2 === 0) {
+      this.bassNote = (this.bassFifth ? this.chord[2]! : this.chord[0]!) - 12
+      this.bassFifth = !this.bassFifth
+      this.bassEnv = 1
+    } else {
+      this.chordEnv = 1
+    }
+  }
+
   // What a hit off the kit's trigger line does to the chip. It strikes a voice
   // rather than the melody oscillator, so it sounds whether or not the demo
   // song is running — the same as your hands do.
@@ -193,6 +206,9 @@ export class ToyChip implements Stage {
           this.harmonize(step)
           this.strike(step, gain)
         }
+        // The whole band walks with the step, so the backing follows the kick
+        // rather than a clock the tune is no longer keeping.
+        this.oomPah()
         return
       }
       case 2: {
@@ -281,16 +297,7 @@ export class ToyChip implements Stage {
           this.note = -1
         }
 
-        // oom-pah off the same step clock: bass on the step, chord on the
-        // offbeat, the bass alternating root and fifth the way the toys walked it
-        if (this.pos % 2 === 0) {
-          this.bassNote =
-            (this.bassFifth ? this.chord[2]! : this.chord[0]!) - 12
-          this.bassFifth = !this.bassFifth
-          this.bassEnv = 1
-        } else {
-          this.chordEnv = 1
-        }
+        this.oomPah()
       }
 
       // The kit's trigger line, bridged onto the gate. The hit is a block old,
