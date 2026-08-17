@@ -396,6 +396,13 @@ stops where it is and keeps what is playing. The boards it tried on the way are
 not in the walk — the whole hunt banks one entry, the board you were on when it
 started.
 
+**Drift** is mutate on a timer: every fifteen seconds the board sets off for
+somewhere near where it stands, travelling most of the way there before it
+leaves again, so nothing ever cuts and it never arrives anywhere it stays. It is
+the installation mode — leave it running and come back to a board you did not
+write. Your levels, the song and the pattern stay yours, and none of the legs
+land in the walk, so one undo puts back the board you set drifting.
+
 A preset chip is also a fader. Click it for the whole board, or drag it sideways
 for part of the way there: the drag runs the same road the morph flies, under
 your finger instead of on the clock, so it stops wherever you let go. Drag it

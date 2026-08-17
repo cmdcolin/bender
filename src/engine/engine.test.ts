@@ -129,3 +129,25 @@ test('anything you touch calls a hunt off and keeps what is playing', async () =
   expect(await hunt).toBe(null)
   expect(engine.controls.get().revMix).toBe(0.5)
 })
+
+test('drift walks the board along on its own, and banks none of it', () => {
+  const engine = new Engine()
+  const boards = [board({ dlyFb: 0.4 }), board({ dlyFb: 0.9 })]
+  let leg = 0
+  // The morph is stubbed out to nothing, so each leg lands when it is asked for
+  // at cut — what matters here is that the timer keeps asking and the walk stays
+  // empty. Every leg is a fresh target the way mutate hands one over.
+  engine.startDrift(() => boards[Math.min(leg++, 1)]!, 0)
+  expect(engine.drifting.get()).toBe(true)
+  expect(leg).toBe(1)
+
+  engine.stopDrift()
+  expect(engine.drifting.get()).toBe(false)
+  expect(engine.history.get().past).toHaveLength(0)
+
+  // And the board you set drifting is still the one step back, because the only
+  // entry in the walk is the one your own gesture put there.
+  engine.armStep()
+  engine.set('dlyFb', 0.2)
+  expect(engine.history.get().past).toHaveLength(1)
+})

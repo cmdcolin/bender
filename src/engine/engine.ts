@@ -86,6 +86,8 @@ export class Engine {
   readonly history = createStore<History<Controls>>(EMPTY_HISTORY)
   /** True while a hunt is auditioning boards, so its button can say so. */
   readonly hunting = createStore(false)
+  /** True while the board is nudging itself along on a timer. */
+  readonly drifting = createStore(false)
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -94,6 +96,7 @@ export class Engine {
   private dirty = false
   private rafQueued = false
   private huntToken = 0
+  private driftTimer: ReturnType<typeof setInterval> | undefined
 
   async start() {
     this.booting ??= this.boot()
@@ -263,6 +266,7 @@ export class Engine {
   async hunt(candidates: Controls[], holdMs = 1400): Promise<Controls | null> {
     if (candidates.length === 0) return null
     const token = ++this.huntToken
+    this.stopDrift()
     this.bank()
     this.hunting.set(true)
     let best: Controls | null = null
@@ -280,6 +284,32 @@ export class Engine {
     this.hunting.set(false)
     if (best) this.writeLive(best)
     return best
+  }
+
+  // Installation mode: every so often the board sets off for somewhere near
+  // where it stands, and it never arrives anywhere it stays. Each leg travels
+  // most of the way to the next one, so nothing ever cuts — what you hear is a
+  // board that keeps moving rather than a board being replaced.
+  //
+  // No step is banked. A drift left running overnight would otherwise be a walk
+  // of a thousand boards nobody chose, with the one you did choose at the far
+  // end of it; the board you set drifting is still one undo away.
+  startDrift(next: () => Controls, everyS = 15) {
+    this.stopDrift()
+    this.stopHunt()
+    this.drifting.set(true)
+    const leg = () => {
+      this.armed = null
+      this.travel(next(), everyS * 0.85)
+    }
+    leg()
+    this.driftTimer = setInterval(leg, everyS * 1000)
+  }
+
+  stopDrift() {
+    if (this.driftTimer !== undefined) clearInterval(this.driftTimer)
+    this.driftTimer = undefined
+    if (this.drifting.get()) this.drifting.set(false)
   }
 
   /** Cancel a hunt in flight and leave whatever board is playing on the board. */

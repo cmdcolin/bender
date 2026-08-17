@@ -55,6 +55,7 @@
 }
 
 .btn,
+.btnOn,
 .btnOff,
 .btnDanger,
 .flight {
@@ -71,6 +72,13 @@
 .btn:hover {
   border-color: var(--border-hover);
   color: var(--fg);
+}
+
+/* A verb that is still running: lit, and it says so in the label too, because a
+   border alone is a thing you notice only once you are looking for it. */
+.btnOn {
+  color: var(--fg);
+  border-color: var(--accent);
 }
 
 /* Greyed rather than hidden: an empty walk is the honest answer to "can I take

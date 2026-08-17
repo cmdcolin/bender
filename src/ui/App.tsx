@@ -110,6 +110,7 @@ export function App() {
   const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
   const walk = useStoreValue(engine.history)
   const hunting = useStoreValue(engine.hunting)
+  const drifting = useStoreValue(engine.drifting)
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl(controls)
@@ -265,6 +266,25 @@ export function App() {
             title="keep this board and nudge every control around where it sits, in time: the tempo stays put and the delay, slice, roll and LFO land back on the grid — shift for wild, alt for gentle"
           >
             mutate
+          </button>
+          {/* Beside mutate, because that is what it is: the same nudge, gentle,
+              on a timer, forever. Nothing else on the board plays itself. */}
+          <button
+            className={drifting ? styles.btnOn : styles.btn}
+            onClick={() =>
+              drifting
+                ? engine.stopDrift()
+                : engine.startDrift(() =>
+                    mutate(engine.controls.get(), 0.05, Math.random),
+                  )
+            }
+            title={
+              drifting
+                ? 'stop drifting and keep the board wherever it has got to'
+                : 'let the board nudge itself somewhere near where it stands, every fifteen seconds, travelling most of the way there before it sets off again — a board that plays itself. Your levels, song and pattern stay put, and none of it lands in the walk: one undo puts back the board you set drifting'
+            }
+          >
+            {drifting ? 'drifting…' : 'drift'}
           </button>
           <button
             className={styles.btn}
