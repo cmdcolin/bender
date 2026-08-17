@@ -1,33 +1,21 @@
 .section {
-  border-bottom: 1px solid var(--border-quiet);
+  border-top: 1px solid var(--border-quiet);
+  padding-top: 4px;
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   padding: 6px 2px;
-  background: none;
-  border: none;
-  color: var(--fg2);
-  font-size: var(--fs-md);
-  cursor: pointer;
-  text-align: left;
-}
-
-.header:hover .title {
   color: var(--fg);
-}
-
-.arrow {
-  color: var(--fg4);
-  font-size: var(--fs-xs);
-  width: 12px;
+  font-size: var(--fs-lg);
 }
 
 .title {
   flex: 1;
+  font-weight: 600;
 }
 
 .count {
@@ -36,14 +24,63 @@
   color: var(--accent);
 }
 
-.body {
-  padding: 2px 2px 8px 16px;
+.close {
+  background: none;
+  border: none;
+  color: var(--fg4);
+  font-size: var(--fs-lg);
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
 }
 
-.stage {
-  margin: 14px 0 2px;
+.close:hover {
+  color: var(--fg);
+}
+
+.body {
+  padding: 2px 2px 8px;
+}
+
+/* The stages no wire reaches, under the drawing rather than in it. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.chip,
+.chipOn {
   font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  padding: 3px 9px;
+  background: var(--bg3);
+  color: var(--fg3);
+  border: 1px solid var(--border-quiet);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--border-hover);
+  color: var(--fg2);
+}
+
+.chipOn {
+  background: var(--bg3);
+  color: var(--fg);
+  border-color: var(--fg4);
+}
+
+.chipCount {
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
+.hint {
+  margin: 0;
+  padding: 10px 2px;
+  border-top: 1px solid var(--border-quiet);
+  font-size: var(--fs-sm);
   color: var(--fg4);
 }

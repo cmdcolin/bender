@@ -88,7 +88,7 @@
 
 .preset {
   font-size: var(--fs-xs);
-  padding: 4px 10px;
+  padding: 3px 9px;
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);

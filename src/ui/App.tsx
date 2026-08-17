@@ -5,11 +5,12 @@ import { gitSha, versionLabel } from '../version'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
-import { GROUPS, STAGE_ORDER } from './controls'
+import { pathGroups } from './chain-dot'
+import { GROUPS } from './controls'
 import { Keys } from './Keys'
 import { mutate, PRESETS, applyPreset, randomLook } from './presets'
 import { Scope } from './Scope'
-import { GroupSection, StageHeading } from './Section'
+import { OffPathChips, OpenGroup, PathHint } from './Section'
 import styles from './App.module.css'
 
 function clock(seconds: number): string {
@@ -36,7 +37,8 @@ export function App() {
   // stage is open at a time and the rest of the panel stays the map.
   const [open, setOpen] = useState<string | null>(null)
   const openGroup = GROUPS.find(g => g.name === open)
-  const offPath = GROUPS.filter(g => !pathGroups(controls).has(g.name))
+  const onPath = pathGroups(controls)
+  const offPath = GROUPS.filter(g => !onPath.has(g.name))
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
 
   useEffect(() => engine.autostart(), [])
@@ -169,20 +171,13 @@ export function App() {
           ))}
         </div>
 
-        <ChainMap />
-
-        {STAGE_ORDER.map(stage => (
-          <div key={stage} id={`stage-${stage}`}>
-            <StageHeading>{stage}</StageHeading>
-            {GROUPS.filter(g => g.place === stage).map(g => (
-              <GroupSection
-                key={g.name}
-                group={g}
-                defaultOpen={g.name === 'Toy keyboard'}
-              />
-            ))}
-          </div>
-        ))}
+        <ChainMap open={open} onOpen={toggle} />
+        <OffPathChips groups={offPath} open={open} onOpen={toggle} />
+        {openGroup ? (
+          <OpenGroup group={openGroup} onClose={() => setOpen(null)} />
+        ) : (
+          <PathHint />
+        )}
       </div>
     </div>
   )

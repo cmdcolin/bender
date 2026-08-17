@@ -13,11 +13,11 @@
   --border: #2c2c31;
   --border-quiet: #202024;
   --border-hover: #45454c;
-  --fs-xs: 12px;
-  --fs-sm: 13px;
-  --fs-md: 14.5px;
-  --fs-lg: 16px;
-  --fs-xl: 22px;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13.5px;
+  --fs-lg: 15px;
+  --fs-xl: 20px;
   --mono: 'SF Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 }
 

@@ -69,6 +69,30 @@ export function groupAnchor(name: string): string {
   return `group-${name.replace(/\W+/g, '-')}`
 }
 
+// Which groups the drawing currently reaches. The panel opens stages by
+// clicking the map, so whatever the map leaves out needs offering some other
+// way — the slot order, the patch bay, the body pad, and any bend sitting in no
+// slot. Read off the same conditions buildDot draws by, so a stage cannot be
+// both undrawn and unreachable.
+export function pathGroups(c: Controls): Set<string> {
+  const drawn = new Set([
+    ...Object.keys(SOURCE_ACTIVE),
+    ...bendOrder(c),
+    'Tape delay',
+    'Spring verb',
+    'Brownout',
+    'Output',
+  ])
+  if (c.fbAmt > 0) drawn.add('Feedback bus')
+  for (const i of [0, 1] as const) {
+    const wired = Math.round(c[`mod${i}Src`]) !== 0 && c[`mod${i}Depth`] !== 0
+    if (wired && WIRE_TARGET[Math.round(c[`mod${i}Dest`])] === 'Feedback bus') {
+      drawn.add('Feedback bus')
+    }
+  }
+  return drawn
+}
+
 function touchedCount(name: string, c: Controls): number {
   const group = GROUPS.find(g => g.name === name)
   if (!group) return 0
@@ -152,10 +176,15 @@ export interface Options {
 // second column back under the first, and the slack in it is graphviz's own
 // spline routing around the rows between — it reads as cable because it is the
 // one line on the map that isn't a short vertical hop.
-function wireRun(seq: Run[], k: Palette, o: Options): string[] {
-  const ids = seq.map(s => s.id)
-  if (!o.wrap) return ids.slice(1).map((id, i) => `  ${ids[i]} -> ${id}`)
-  const [down, up] = splitByHeight(seq)
+// Split down the middle by count, not by drawn height. Graphviz pins the
+// columns rank by rank, so the row holding the five-deep source strip is five
+// deep whatever sits opposite it — the strip's extra rows come free, and
+// evening the two columns out by height only pushes nodes past the tail of the
+// short one, where each costs a row of its own.
+function wireRun(seq: string[], k: Palette, o: Options): string[] {
+  if (!o.wrap) return seq.slice(1).map((id, i) => `  ${seq[i]} -> ${id}`)
+  const half = Math.ceil(seq.length / 2)
+  const [down, up] = [seq.slice(0, half), seq.slice(half)]
   const chain = (col: string[]) => col.slice(1).map((id, i) => `  ${col[i]} -> ${id}`)
   return [
     ...chain(down),
@@ -188,19 +217,15 @@ export function buildDot(c: Controls, o: Options = {}): string {
 
   // The path is collected in signal order before any of it is wired, because
   // the wrap below needs to know how long the run is to find its middle.
-  const seq: Run[] = []
-  const run = (id: string, decl: string, rows = 1) => {
+  const seq: string[] = []
+  const run = (id: string, decl: string) => {
     lines.push(decl)
-    seq.push({ id, rows })
+    seq.push(id)
   }
 
   // The sources ride one strip rather than five nodes on a rank of their own:
   // a column of boxes keeps the whole path narrow enough to read at this size.
-  run(
-    'sources',
-    `  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`,
-    Object.keys(SOURCE_ACTIVE).length,
-  )
+  run('sources', `  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`)
   run('mix', `  mix [label="mix bus", shape=box, fontcolor="${k.dim}"]`)
 
   const bends = bendOrder(c)

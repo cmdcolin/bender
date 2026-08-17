@@ -1,21 +1,3 @@
-import { useEffect } from 'react'
-
-const EVENT = 'bender:reveal'
-
-export function revealGroup(id: string) {
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: id }))
-}
-
-export function useRevealed(id: string, onReveal: () => void) {
-  useEffect(() => {
-    const listener = (e: Event) => {
-      if ((e as CustomEvent<string>).detail === id) onReveal()
-    }
-    window.addEventListener(EVENT, listener)
-    return () => window.removeEventListener(EVENT, listener)
-  })
-}
-
 function scrollParent(el: HTMLElement): HTMLElement | undefined {
   for (let p = el.parentElement; p; p = p.parentElement) {
     const overflow = getComputedStyle(p).overflowY
