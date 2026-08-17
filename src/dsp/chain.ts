@@ -222,7 +222,7 @@ export class Chain {
         io.r[i] = this.fbRetR[i]!
       }
     }
-    if (p[IDX.micPatch] === 0) {
+    if (Math.round(p[IDX.micPatch]!) === 0) {
       for (let i = 0; i < n; i++) {
         io.l[i]! += ctx.mic[i]!
         io.r[i]! += ctx.mic[i]!

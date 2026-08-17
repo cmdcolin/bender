@@ -2,6 +2,10 @@
    scope is a shape, and the shape survives the squeeze. */
 .canvas {
   width: 100%;
+  /* Held here rather than taken from the canvas's own width and height, because
+     the trace sizes its backing store to the box it ended up in: leaving the
+     shape of the box depending on that would be a loop. */
+  aspect-ratio: 800 / 260;
   height: auto;
   max-height: 22vh;
   border: 1px solid var(--border-quiet);

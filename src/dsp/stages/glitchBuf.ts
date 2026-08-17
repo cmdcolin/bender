@@ -63,7 +63,7 @@ export class GlitchBuf implements Stage {
     )
     const baseProb = p[IDX.glitchProb]!
     const mod = ctx.mod.read(DEST.glitch)
-    const micTrig = p[IDX.micPatch] === 6
+    const micTrig = Math.round(p[IDX.micPatch]!) === 6
     const cluster = p[IDX.faultCluster]!
     const n = this.bufL.length
 

@@ -271,7 +271,7 @@ export class ToyChip implements Stage {
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
-    const micToRail = p[IDX.micPatch] === 1
+    const micToRail = Math.round(p[IDX.micPatch]!) === 1
     const fbToRail = ctx.fbDest === 2
     const modClock = ctx.mod.read(DEST.chipClock)
     // A wire onto the supply itself. Everything else on this board is powered

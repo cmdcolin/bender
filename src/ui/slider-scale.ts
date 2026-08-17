@@ -27,10 +27,8 @@ export function formatValue(def: SliderDef, value: number): string {
   const text =
     abs >= 1000
       ? value.toFixed(0)
-      : abs >= 100
+      : abs >= 10
         ? value.toFixed(1)
-        : abs >= 10
-          ? value.toFixed(1)
-          : value.toFixed(2)
+        : value.toFixed(2)
   return def.unit ? `${text} ${def.unit}` : text
 }

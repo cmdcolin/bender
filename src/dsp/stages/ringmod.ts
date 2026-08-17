@@ -18,7 +18,7 @@ export class RingMod implements Stage {
     const mod = ctx.mod.read(DEST.ringHz)
     const square = Math.round(p[IDX.ringShape]!) === 1
     const mix = p[IDX.ringMix]!
-    const micCarrier = p[IDX.micPatch] === 4
+    const micCarrier = Math.round(p[IDX.micPatch]!) === 4
     const carrier = this.carrier
     if (!mod) carrier.setRate(base, this.sr)
 

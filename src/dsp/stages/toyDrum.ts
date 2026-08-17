@@ -148,7 +148,7 @@ export class ToyDrum implements Stage {
     const decay = Math.max(p[IDX.drumDecay]!, 0.05)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
-    const micTrig = p[IDX.micPatch] === 5
+    const micTrig = Math.round(p[IDX.micPatch]!) === 5
     const keyTrig = Math.round(p[IDX.trigToDrum]!)
     const cross = Math.round(p[IDX.drumCross]!)
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!

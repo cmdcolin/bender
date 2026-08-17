@@ -107,17 +107,24 @@ export class Engine {
 
   // A fresh AudioContext is suspended until the page has seen a gesture, so
   // boot it on load and let the first click or key press take it live.
-  autostart() {
-    void this.start()
+  //
+  // Hands back the way to stop listening, so the caller can drop the two window
+  // listeners without waiting for a gesture that may never come — which is also
+  // what makes it honest as an effect.
+  autostart(): () => void {
+    const stop = () => {
+      window.removeEventListener('pointerdown', go)
+      window.removeEventListener('keydown', go)
+    }
     const go = () => {
       void this.start().then(() => {
-        if (!this.running.get()) return
-        window.removeEventListener('pointerdown', go)
-        window.removeEventListener('keydown', go)
+        if (this.running.get()) stop()
       })
     }
+    void this.start()
     window.addEventListener('pointerdown', go)
     window.addEventListener('keydown', go)
+    return stop
   }
 
   private async boot() {

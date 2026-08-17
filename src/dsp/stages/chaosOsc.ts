@@ -37,7 +37,7 @@ export class ChaosOsc implements Stage {
     const xmod = p[IDX.oscXmod]!
     const mode = Math.round(p[IDX.oscShape]!)
     const starve = p[IDX.oscStarve]!
-    const micFm = p[IDX.micPatch] === 2
+    const micFm = Math.round(p[IDX.micPatch]!) === 2
     const fbFm = ctx.fbDest === 1
 
     for (let i = 0; i < io.n; i++) {
