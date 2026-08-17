@@ -131,8 +131,17 @@ class BenderProcessor extends AudioWorkletProcessor {
         scope[i] = this.scope[(this.scopePos + i) % SCOPE_LEN]!
       }
       const tick = this.built.toyDrum.tick
+      const rail = this.built.rail
       this.port.postMessage(
-        { kind: 'meter', peak: this.peak, scope, tick, duck: this.duck },
+        {
+          kind: 'meter',
+          peak: this.peak,
+          scope,
+          tick,
+          duck: this.duck,
+          rail: rail.v,
+          reboots: rail.rebootCount,
+        },
         [scope.buffer],
       )
       this.peak = 0

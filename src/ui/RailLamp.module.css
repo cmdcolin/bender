@@ -1,0 +1,25 @@
+.lamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: help;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent2);
+}
+
+/* Monospace, so a rail on its way down doesn't shuffle the row it sits in. */
+.volts {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+  min-width: 3.1rem;
+}

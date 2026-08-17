@@ -42,6 +42,12 @@ export interface MeterMsg {
   tick: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number
+  /** The toy supply, 0 at the floor and 1 at full cells — the number the pitch,
+      the tempo and the brownouts all come off. */
+  rail: number
+  /** Times the watchdog has power-cycled the chip, so the panel can flash on a
+      reboot rather than try to catch the 70 ms the rail is down for. */
+  reboots: number
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

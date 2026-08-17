@@ -133,7 +133,9 @@ The bends that matter:
   second. Where the watchdog trips drifts with heat and wanders on its own, the
   reset line holds for somewhere between 40 and 130 ms, and the rail has climbed
   somewhere different by the time it lets go — so the reboots never land on a
-  metronome.
+  metronome. The lamp beside the keys is that rail in volts, 4.5 V on fresh
+  cells, and it says **reboot** when the watchdog cycles the chip: everything
+  else in this list is that number moving.
 - **Latch-up** is the brownout that doesn't reboot. CMOS on a collapsing rail
   can jam instead: the die holds whatever note was sounding, keeps drawing
   current, and the output stage sits where it was left rather than fading with

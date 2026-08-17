@@ -1,5 +1,6 @@
 import { useEffect, useState, type PointerEvent } from 'react'
 import { engine } from '../engine/engine'
+import { RailLamp } from './RailLamp'
 import styles from './Keys.module.css'
 
 const KEY_MAP: Record<string, number> = {
@@ -175,6 +176,9 @@ export function Keys() {
         })}
       </div>
       <div className={styles.switches}>
+        {/* Beside the keys because the keys are what it explains: a note that
+            comes out flat, quiet or not at all is this number falling. */}
+        <RailLamp />
         <button
           className={hold ? styles.holdOn : styles.hold}
           onClick={() => {

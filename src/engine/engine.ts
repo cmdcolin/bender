@@ -25,6 +25,8 @@ export interface Meter {
   scope: Float32Array
   tick: number
   duck: number
+  rail: number
+  reboots: number
 }
 
 // What a board on the edge of running away sounds like from the main thread.
@@ -60,6 +62,8 @@ export class Engine {
       scope: new Float32Array(512),
       tick: 0,
       duck: 0,
+      rail: 1,
+      reboots: 0,
     })
   readonly running = createStore(false)
   readonly micOn = createStore(false)
@@ -129,6 +133,8 @@ export class Engine {
           scope: msg.scope,
           tick: msg.tick,
           duck: msg.duck,
+          rail: msg.rail,
+          reboots: msg.reboots,
         })
       else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
