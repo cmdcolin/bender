@@ -19,6 +19,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   private scopePos = 0
   private meterCountdown = METER_EVERY
   private peak = 0
+  private duck = 0
   private recording = false
   private recL = new Float32Array(REC_CHUNK)
   private recR = new Float32Array(REC_CHUNK)
@@ -122,6 +123,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       const a = Math.abs(io.l[i]!)
       if (a > this.peak) this.peak = a
     }
+    this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {
       this.meterCountdown = METER_EVERY
       const scope = new Float32Array(SCOPE_LEN)
@@ -129,10 +131,12 @@ class BenderProcessor extends AudioWorkletProcessor {
         scope[i] = this.scope[(this.scopePos + i) % SCOPE_LEN]!
       }
       const step = this.built.toyDrum.step
-      this.port.postMessage({ kind: 'meter', peak: this.peak, scope, step }, [
-        scope.buffer,
-      ])
+      this.port.postMessage(
+        { kind: 'meter', peak: this.peak, scope, step, duck: this.duck },
+        [scope.buffer],
+      )
       this.peak = 0
+      this.duck = 0
     }
     return true
   }

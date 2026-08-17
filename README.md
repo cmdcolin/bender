@@ -361,6 +361,20 @@ like a setting rather than an event. **Let it age** turns the five ageing
 mechanisms up together, because each alone is a detail and all five at once is a
 different instrument.
 
+**Hunt** is the one roll that listens to what it rolled. Every other one throws
+dice and hands over whatever came up; this one rolls six boards, plays each for
+a second and a half, and keeps whichever came nearest the edge of running away.
+The limiter is what tells it: a board that never reaches the ceiling is nowhere
+near the edge, a board pinned flat against it is past the edge and sounds much
+like everything further past it, and the edge itself is the board that keeps
+arriving there and backing off — so what it looks for is how _unevenly_ the
+limiter works rather than how hard. You hear it going through them, which is the
+honest version of the thing: a board can only be judged by playing it, so a
+search for one has to be audible. Touch anything, or press it again, and it
+stops where it is and keeps what is playing. The boards it tried on the way are
+not in the walk — the whole hunt banks one entry, the board you were on when it
+started.
+
 A preset chip is also a fader. Click it for the whole board, or drag it sideways
 for part of the way there: the drag runs the same road the morph flies, under
 your finger instead of on the clock, so it stops wherever you let go. Drag it

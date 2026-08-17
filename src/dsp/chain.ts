@@ -101,6 +101,14 @@ export class Chain {
   private order = [0, 1, 2, 3, 4, 5]
   private fbShift = 0
 
+  /**
+   * How hard the limiter leaned on the last block, 0 to 1. Read by nothing in
+   * the audio path — it goes up to the main thread, where it is the only thing
+   * that can tell a board sitting on the edge of running away from one that is
+   * merely loud, or already pinned flat against the ceiling.
+   */
+  duck = 0
+
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
   pedals: Stage[] = []
@@ -264,13 +272,16 @@ export class Chain {
     this.computeFeedback(io, p)
 
     const rel = Math.exp(-1 / (0.1 * this.sr))
+    let held = 0
     for (let i = 0; i < n; i++) {
       const peak = Math.max(Math.abs(io.l[i]!), Math.abs(io.r[i]!))
       this.limitEnv = flushDenormal(Math.max(peak, this.limitEnv * rel))
       const g = this.limitEnv > LIMIT_CEIL ? LIMIT_CEIL / this.limitEnv : 1
+      held += 1 - g
       io.l[i]! *= g
       io.r[i]! *= g
     }
+    this.duck = held / n
 
     if (
       !Number.isFinite(io.l[0]!) ||

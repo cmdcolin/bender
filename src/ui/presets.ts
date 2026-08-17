@@ -1134,6 +1134,21 @@ function wreck(current: Controls, rand: () => number): Controls {
   return inTime(next, key => moved.has(key))
 }
 
+// A row of boards for the hunt to listen through, rather than one board handed
+// over unheard. The two rolls that go looking for an edge do most of it, with a
+// rewire among them because the same parts in a different order is often the one
+// that squeals.
+export function huntCandidates(
+  current: Controls,
+  rand: () => number,
+  count = 6,
+): Controls[] {
+  const rolls = [edge, slam, edge, rewire, slam, edge]
+  return Array.from({ length: count }, (_, i) =>
+    rolls[i % rolls.length]!(current, rand),
+  )
+}
+
 // The rolls a single panel can't offer, because each one is about how the
 // stages sit together rather than about what any one of them is set to.
 export const SCENARIOS: ScenarioDef[] = [

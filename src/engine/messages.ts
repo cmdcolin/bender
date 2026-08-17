@@ -39,6 +39,8 @@ export interface MeterMsg {
   scope: Float32Array
   /** Which step the drum sequencer is on, for the grid's playhead. */
   step: number
+  /** How hard the limiter has been leaning since the last meter, 0 to 1. */
+  duck: number
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

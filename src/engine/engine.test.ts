@@ -1,6 +1,6 @@
 import { beforeEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { Engine } from './engine'
+import { edgeScore, Engine } from './engine'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
 // out to nothing, so a morph asked for in seconds stays in flight for the whole
@@ -87,4 +87,45 @@ test('panic is not a step in the walk', () => {
   engine.patch({ fbAmt: 1.5 })
   engine.panic()
   expect(engine.history.get().past).toHaveLength(0)
+})
+
+// ── the hunt ─────────────────────────────────────────────────────────────────
+
+test('the edge score picks intermittent limiting over none and over pinned', () => {
+  const flat = new Array(20).fill(0)
+  const pinned = new Array(20).fill(0.6)
+  const surging = Array.from({ length: 20 }, (_, i) => (i % 4 < 2 ? 0 : 0.6))
+  const loud = new Array(20).fill(0.8)
+  // Nowhere near the edge, and already past it, both lose to the board that
+  // keeps arriving at the ceiling and backing off.
+  expect(edgeScore(surging, loud)).toBeGreaterThan(edgeScore(pinned, loud))
+  expect(edgeScore(surging, loud)).toBeGreaterThan(edgeScore(flat, loud))
+  // Between two boards that never reach the limiter, the audible one wins.
+  expect(edgeScore(flat, loud)).toBeGreaterThan(
+    edgeScore(flat, new Array(20).fill(0)),
+  )
+  expect(edgeScore([], [])).toBe(0)
+})
+
+test('a hunt banks one step, keeps a winner, and gives way to a hand', async () => {
+  const engine = new Engine()
+  const boards = [board({ dlyFb: 0.4 }), board({ dlyFb: 0.9 })]
+  const hunt = engine.hunt(boards, 20)
+  expect(engine.hunting.get()).toBe(true)
+  const landed = await hunt
+  expect(engine.hunting.get()).toBe(false)
+  // The boards it tried on the way are not boards you chose: one entry for the
+  // whole gesture, and it is the board you were on before it started.
+  expect(engine.history.get().past).toHaveLength(1)
+  expect(boards).toContain(landed)
+  expect(engine.controls.get().dlyFb).toBe(landed!.dlyFb)
+})
+
+test('anything you touch calls a hunt off and keeps what is playing', async () => {
+  const engine = new Engine()
+  const hunt = engine.hunt([board({ dlyFb: 0.4 }), board({ dlyFb: 0.9 })], 40)
+  engine.set('revMix', 0.5)
+  expect(engine.hunting.get()).toBe(false)
+  expect(await hunt).toBe(null)
+  expect(engine.controls.get().revMix).toBe(0.5)
 })

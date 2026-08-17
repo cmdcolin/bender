@@ -20,7 +20,7 @@ import {
   type MorphSeconds,
 } from './morph'
 import { Presets } from './Presets'
-import { mutate, randomLook, SCENARIOS } from './presets'
+import { huntCandidates, mutate, randomLook, SCENARIOS } from './presets'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { boardUrl } from './share'
@@ -109,6 +109,7 @@ export function App() {
   const [copied, setCopied] = useState(false)
   const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
   const walk = useStoreValue(engine.history)
+  const hunting = useStoreValue(engine.hunting)
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl(controls)
@@ -325,6 +326,18 @@ export function App() {
               {s.name}
             </button>
           ))}
+          {/* The one roll that listens to what it rolled. It plays its way
+              through the candidates, so it takes as long as it takes. */}
+          <button
+            className={styles.die}
+            title="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. Click again, or touch anything else, to call it off and keep what is playing"
+            onClick={() => {
+              if (hunting) engine.stopHunt()
+              else void engine.hunt(huntCandidates(controls, Math.random))
+            }}
+          >
+            {hunting ? 'listening…' : 'hunt'}
+          </button>
         </div>
 
         <Presets controls={controls} morphSeconds={morphSeconds} />

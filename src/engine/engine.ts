@@ -24,6 +24,29 @@ export interface Meter {
   peak: number
   scope: Float32Array
   step: number
+  duck: number
+}
+
+// What a board on the edge of running away sounds like from the main thread.
+//
+// The limiter is the one thing that knows. A board that never reaches it is
+// nowhere near the edge; a board pinned flat against it is past the edge, and
+// every setting past that point sounds the same because the ceiling is what you
+// are listening to. The edge itself is the board that keeps arriving at the
+// ceiling and backing off — so what to look for is not how hard the limiter
+// works but how unevenly, which is the spread of its gain reduction rather than
+// the mean of it.
+//
+// A board that is merely audible still beats silence, or a hunt through six
+// boards that never quite squeal would land on whichever was quietest.
+export function edgeScore(ducks: number[], peaks: number[]): number {
+  if (ducks.length === 0) return 0
+  const mean = ducks.reduce((a, v) => a + v, 0) / ducks.length
+  const sd = Math.sqrt(
+    ducks.reduce((a, v) => a + (v - mean) ** 2, 0) / ducks.length,
+  )
+  const loud = peaks.reduce((a, v) => a + v, 0) / peaks.length
+  return sd + 0.12 * Math.min(loud, 1)
 }
 
 // Owns the AudioContext, the worklet node and the control values. The UI
@@ -36,6 +59,7 @@ export class Engine {
       peak: 0,
       scope: new Float32Array(512),
       step: 0,
+      duck: 0,
     })
   readonly running = createStore(false)
   readonly micOn = createStore(false)
@@ -56,6 +80,8 @@ export class Engine {
   // offer it have to grey out and light up as it fills; it changes once per
   // gesture, not per frame.
   readonly history = createStore<History<Controls>>(EMPTY_HISTORY)
+  /** True while a hunt is auditioning boards, so its button can say so. */
+  readonly hunting = createStore(false)
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -63,6 +89,7 @@ export class Engine {
   private micStream: MediaStream | null = null
   private dirty = false
   private rafQueued = false
+  private huntToken = 0
 
   async start() {
     this.booting ??= this.boot()
@@ -97,7 +124,12 @@ export class Engine {
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
       if (msg.kind === 'meter')
-        this.meter.set({ peak: msg.peak, scope: msg.scope, step: msg.step })
+        this.meter.set({
+          peak: msg.peak,
+          scope: msg.scope,
+          step: msg.step,
+          duck: msg.duck,
+        })
       else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     node.connect(ctx.destination)
@@ -113,6 +145,7 @@ export class Engine {
   }
 
   set(key: ControlKey, value: number) {
+    this.stopHunt()
     if (this.controls.get()[key] !== value) this.commitStep()
     this.cancelMorph()
     this.controls.set({ ...this.controls.get(), [key]: value })
@@ -205,8 +238,80 @@ export class Engine {
   // here, so the walk covers all of them without each caller having to remember
   // to bank one.
   morphTo(target: Controls, seconds = 1) {
+    this.stopHunt()
     this.bank()
     this.travel(target, seconds)
+  }
+
+  // Audition a row of boards and keep the one nearest the edge of running away.
+  //
+  // Every other roll on the board throws dice and hands you whatever came up.
+  // This one listens: it cuts to each candidate, gives it long enough to show
+  // what it does, scores it off the limiter and lands on the best of them. You
+  // hear it going through them, which is the honest version of the thing — a
+  // board can only be judged by playing it, so a search for one has to be
+  // audible. Anything else you touch calls it off and keeps whatever is playing.
+  //
+  // Only one banked step for the whole hunt, taken before the first candidate:
+  // the boards it tried on the way are not boards you chose.
+  async hunt(candidates: Controls[], holdMs = 1400): Promise<Controls | null> {
+    if (candidates.length === 0) return null
+    const token = ++this.huntToken
+    this.bank()
+    this.hunting.set(true)
+    let best: Controls | null = null
+    let bestScore = -Infinity
+    for (const board of candidates) {
+      if (token !== this.huntToken) return null
+      this.writeLive(board)
+      const score = await this.audition(holdMs, token)
+      if (token !== this.huntToken) return null
+      if (score > bestScore) {
+        bestScore = score
+        best = board
+      }
+    }
+    this.hunting.set(false)
+    if (best) this.writeLive(best)
+    return best
+  }
+
+  /** Cancel a hunt in flight and leave whatever board is playing on the board. */
+  stopHunt() {
+    if (!this.hunting.get()) return
+    this.huntToken++
+    this.hunting.set(false)
+  }
+
+  // A board straight onto the rails with no step banked: the hunt owns its own
+  // entry in the walk, and the candidates in between are not places you were.
+  private writeLive(next: Controls) {
+    this.cancelMorph()
+    this.controls.set(next)
+    this.flushSoon()
+  }
+
+  // Listen to one candidate. The first stretch is thrown away: a board that has
+  // just been cut to is still the tail of the last one, and a delay line full of
+  // somebody else's squeal would score this one.
+  private audition(ms: number, token: number): Promise<number> {
+    return new Promise(resolve => {
+      const ducks: number[] = []
+      const peaks: number[] = []
+      let settled = false
+      const off = this.meter.subscribe(() => {
+        if (!settled) return
+        const m = this.meter.get()
+        ducks.push(m.duck)
+        peaks.push(m.peak)
+      })
+      const settle = setTimeout(() => (settled = true), Math.min(400, ms / 3))
+      setTimeout(() => {
+        clearTimeout(settle)
+        off()
+        resolve(token === this.huntToken ? edgeScore(ducks, peaks) : -Infinity)
+      }, ms)
+    })
   }
 
   // A board written straight rather than travelled to: a preset chip dragged by
@@ -214,6 +319,7 @@ export class Engine {
   // It takes the step armed on the way down, so the whole drag banks one entry
   // in the walk — the board as it stood before the hand landed on the chip.
   writeBoard(next: Controls) {
+    this.stopHunt()
     this.commitStep()
     this.cancelMorph()
     this.controls.set(next)
