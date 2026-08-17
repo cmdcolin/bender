@@ -9,7 +9,10 @@
     "diagram": "tsx scripts/chain-svg.ts",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "pat": "node scripts/push.mjs patch",
+    "min": "node scripts/push.mjs minor",
+    "maj": "node scripts/push.mjs major"
   },
   "dependencies": {
     "@viz-js/viz": "^3.29.0",

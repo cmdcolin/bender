@@ -1,6 +1,7 @@
 import { useEffect, useState, type DragEvent } from 'react'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { engine } from '../engine/engine'
+import { gitSha, versionLabel } from '../version'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
@@ -29,7 +30,14 @@ export function App() {
   const recording = useStoreValue(engine.recording)
   const recSeconds = useStoreValue(engine.recSeconds)
   const sampleName = useStoreValue(engine.sampleName)
+  const controls = useStoreValue(engine.controls)
   const [dragging, setDragging] = useState(false)
+  // Which stage's controls the panel is showing. The map is the way in, so one
+  // stage is open at a time and the rest of the panel stays the map.
+  const [open, setOpen] = useState<string | null>(null)
+  const openGroup = GROUPS.find(g => g.name === open)
+  const offPath = GROUPS.filter(g => !pathGroups(controls).has(g.name))
+  const toggle = (name: string) => setOpen(o => (o === name ? null : name))
 
   useEffect(() => engine.autostart(), [])
 
@@ -110,6 +118,9 @@ export function App() {
       <div className={styles.panel}>
         <div className={styles.masthead}>
           <span className={styles.brand}>bender</span>
+          <span className={styles.version} title={`bender ${versionLabel} (${gitSha})`}>
+            {versionLabel}
+          </span>
         </div>
 
         <div className={styles.actions}>

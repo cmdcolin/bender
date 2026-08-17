@@ -35,6 +35,13 @@
   color: var(--accent);
 }
 
+.version {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--fg3);
+  font-variant-numeric: tabular-nums;
+}
+
 .tag {
   font-size: var(--fs-xs);
   color: var(--fg4);
