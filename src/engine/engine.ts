@@ -1,5 +1,6 @@
 import workletUrl from '../dsp/worklet.ts?worker&url'
-import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
+import { CONTROL_KEYS, DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
+import { ENUM_KEYS } from '../ui/controls'
 import { createStore, type Store } from '../listeners'
 import type { FromWorklet, ToWorklet } from './messages'
 import { packParams } from './params'
@@ -58,13 +59,48 @@ export class Engine {
   }
 
   set(key: ControlKey, value: number) {
+    this.cancelMorph()
     this.controls.set({ ...this.controls.get(), [key]: value })
     this.flushSoon()
   }
 
   patch(partial: Partial<Controls>) {
+    this.cancelMorph()
     this.controls.set({ ...this.controls.get(), ...partial })
     this.flushSoon()
+  }
+
+  private morphRaf = 0
+
+  private cancelMorph() {
+    if (this.morphRaf) cancelAnimationFrame(this.morphRaf)
+    this.morphRaf = 0
+  }
+
+  // Glide the board into a new look, phosphene-style: numeric controls ease
+  // over `seconds`, enums cut at the start.
+  morphTo(target: Controls, seconds = 1.2) {
+    this.cancelMorph()
+    const from = this.controls.get()
+    const start = performance.now()
+    const cut: Partial<Controls> = {}
+    for (const k of ENUM_KEYS) cut[k] = target[k]
+    this.controls.set({ ...from, ...cut })
+    this.flushSoon()
+    const tick = () => {
+      const t = Math.min((performance.now() - start) / (seconds * 1000), 1)
+      const e = t * t * (3 - 2 * t)
+      const next = { ...this.controls.get() }
+      for (const k of CONTROL_KEYS) {
+        if (ENUM_KEYS.has(k)) continue
+        next[k] = from[k] + (target[k] - from[k]) * e
+      }
+      this.controls.set(next)
+      this.dirty = true
+      this.flushSoon()
+      this.morphRaf = t < 1 ? requestAnimationFrame(tick) : 0
+    }
+    this.morphRaf = requestAnimationFrame(tick)
   }
 
   private flushSoon() {

@@ -63,7 +63,7 @@ export function App() {
         <div className={styles.actions}>
           <button
             className={styles.btn}
-            onClick={() => engine.patch(randomLook(Math.random))}
+            onClick={() => engine.morphTo(randomLook(Math.random), 1.6)}
           >
             random
           </button>
@@ -92,7 +92,7 @@ export function App() {
               key={p.name}
               className={styles.preset}
               title={p.blurb}
-              onClick={() => engine.patch(applyPreset(p))}
+              onClick={() => engine.morphTo(applyPreset(p))}
             >
               {p.name}
             </button>

@@ -740,6 +740,11 @@ export const GROUPS: Group[] = [
 ]
 
 export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
+
+// Enum-valued controls can't be interpolated — a morph cuts them at the start.
+export const ENUM_KEYS = new Set<ControlKey>(
+  ALL_SLIDERS.filter(s => s.choices).map(s => s.key),
+)
 export const SLIDER_BY_KEY = new Map<ControlKey, SliderDef>(ALL_SLIDERS.map(s => [s.key, s]))
 
 export function sliderFor(key: ControlKey): SliderDef {
