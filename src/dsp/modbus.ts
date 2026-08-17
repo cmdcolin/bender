@@ -26,13 +26,20 @@ export const DEST = {
   delayMs: 16,
   wDepth0: 17,
   wDepth1: 18,
+  wDepth2: 19,
+  wDepth3: 20,
 } as const
-export const N_DEST = 19
+export const N_DEST = 21
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth.
 // In wire order, so wire i's depth is DEPTH_DEST[i], and last in the id order so
 // a lane is a depth lane exactly when it sits at or past the first of them.
-const DEPTH_DEST = [DEST.wDepth0, DEST.wDepth1] as const
+const DEPTH_DEST = [
+  DEST.wDepth0,
+  DEST.wDepth1,
+  DEST.wDepth2,
+  DEST.wDepth3,
+] as const
 const onDepth = (dest: number) => dest >= DEPTH_DEST[0]
 
 // Ids match the mod*Src choices.
@@ -54,6 +61,8 @@ const SRC = {
 const WIRES = [
   [IDX.mod0Src, IDX.mod0Dest, IDX.mod0Depth],
   [IDX.mod1Src, IDX.mod1Dest, IDX.mod1Depth],
+  [IDX.mod2Src, IDX.mod2Dest, IDX.mod2Depth],
+  [IDX.mod3Src, IDX.mod3Dest, IDX.mod3Depth],
 ] as const
 
 function lfoShape(phase: number, shape: number, sh: number): number {
@@ -90,7 +99,7 @@ export class ModBus {
   // One per wire: two wires picking up the same held value would otherwise
   // share a buffer, and the second would overwrite what the first is about to
   // read.
-  private readonly held = [new Float32Array(BLOCK), new Float32Array(BLOCK)]
+  private readonly held = WIRES.map(() => new Float32Array(BLOCK))
   // A trigger line is a spike one sample wide; an envelope follower would barely
   // notice one. These snap up to the hit and fall from there, so a wire off the
   // kit or off the keys pushes what it is soldered to on every hit.

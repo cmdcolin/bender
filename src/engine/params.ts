@@ -135,6 +135,12 @@ export const PARAM_DEFS = [
   ['mod1Src', 'step'],
   ['mod1Dest', 'step'],
   ['mod1Depth', 'slew'],
+  ['mod2Src', 'step'],
+  ['mod2Dest', 'step'],
+  ['mod2Depth', 'slew'],
+  ['mod3Src', 'step'],
+  ['mod3Dest', 'step'],
+  ['mod3Depth', 'slew'],
   ['bodyX', 'slew'],
   ['bodyY', 'slew'],
 

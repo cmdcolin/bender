@@ -26,7 +26,7 @@ export const PATCH_GROUPS: Group[] = [
         choices: ['sine', 'ramp', 'square', 'S&H', 'chaos', 'drunk'],
         help: 'Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle. The last two never come round again: chaos folds along a Rössler band, passing near where it has been without ever landing there, and drunk is a bounded walk that reflects off the ends of its travel. Rate still sets roughly how fast, but nothing about the next cycle is in the last one.',
       },
-      ...[0, 1].flatMap(i => [
+      ...[0, 1, 2, 3].flatMap(i => [
         {
           key: `mod${i}Src` as ControlKey,
           label: `Wire ${i + 1} from`,
@@ -54,7 +54,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as ControlKey,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 18,
+          max: 20,
           step: 1,
           unit: '',
           choices: [
@@ -77,8 +77,10 @@ export const PATCH_GROUPS: Group[] = [
             'delay time',
             'wire 1 depth',
             'wire 2 depth',
+            'wire 3 depth',
+            'wire 4 depth',
           ],
-          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on the board, so a wire there reaches everything powered from it at once — a drum hit browns the chip out on every kick, and the watchdog does the rest. The last two land on the other wire’s own depth, so one wire decides how hard the other pushes — two wires that modulate each other stop being two modulations and start being one that neither of them wrote.',
+          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on the board, so a wire there reaches everything powered from it at once — a drum hit browns the chip out on every kick, and the watchdog does the rest. The last four land on a wire’s own depth, so one wire decides how hard another pushes — two wires that modulate each other stop being two modulations and start being one that neither of them wrote.',
         },
         {
           key: `mod${i}Depth` as ControlKey,

@@ -129,6 +129,12 @@ export const DEFAULT_CONTROLS = {
   mod1Src: 0,
   mod1Dest: 1,
   mod1Depth: 0.5,
+  mod2Src: 0,
+  mod2Dest: 2,
+  mod2Depth: 0.5,
+  mod3Src: 0,
+  mod3Dest: 4,
+  mod3Depth: 0.5,
   bodyX: 0,
   bodyY: 0,
 

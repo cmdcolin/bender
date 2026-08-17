@@ -163,7 +163,7 @@ The bends that matter:
   oscillator's FM input, the delay feedback path, the ring mod carrier, or the
   trigger line of the drum machine or glitch buffer — clap at it and the circuit
   fires.
-- **The patch bay** is two wires and a soldering iron. Each picks up the bay's
+- **The patch bay** is four wires and a soldering iron. Each picks up the bay's
   LFO, the sag on whichever supply is dying, the output envelope, the mic, an
   axis of the body pad, the feedback bus itself, the chip's sequencer ramping
   across each ROM step — the one source that stays in time with the tune — or
@@ -180,9 +180,9 @@ The bends that matter:
   it browns the chip out on every kick and the watchdog restarts the tune from
   wherever the counter was; off the LFO it is a rail that dies in time.
 
-  Either wire can also land on the _other wire's depth_, which is where the pair
-  stops being two modulations and starts being one neither of them wrote. And
-  the bay's oscillator has two shapes past the four an LFO has: **chaos** folds
+  Any wire can also land on _another wire's depth_, which is where a pair stops
+  being two modulations and starts being one neither of them wrote. And the
+  bay's oscillator has two shapes past the four an LFO has: **chaos** folds
   along a Rössler band, passing near where it has been without ever landing
   there, and **drunk** is a bounded walk that reflects off the ends of its
   travel. Rate still says roughly how fast; nothing about the next cycle is in

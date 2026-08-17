@@ -965,3 +965,28 @@ test('a held wire on the delay time is the same as turning the knob there', () =
   const diff = wired.map((v, i) => v - byHand[i]!)
   expect(rms(diff)).toBeLessThan(0.01 * rms(byHand))
 })
+
+test('every wire in the bay is the same wire', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0.8,
+    bendSlot0: 6,
+    filtHz: 200,
+    filtRes: 0.4,
+    filtMix: 1,
+    bodyX: 1,
+  }
+  // Four wires, one at a time, each soldered from the pad onto the cutoff. Which
+  // lane the bay resolves it on is not a thing the board can hear.
+  const [first, ...rest] = [0, 1, 2, 3].map(i =>
+    render(
+      {
+        ...look,
+        [`mod${i}Src`]: 5,
+        [`mod${i}Dest`]: DEST.filtHz,
+        [`mod${i}Depth`]: 1,
+      },
+      0.5,
+    ),
+  )
+  for (const out of rest) expect(out).toEqual(first)
+})

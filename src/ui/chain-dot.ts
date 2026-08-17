@@ -22,9 +22,15 @@ const WIRE_TARGET = [
   'Freq shifter',
   'Crusher',
   'Toy drums',
-  // A wire onto the other wire's depth lands inside the bay rather than on any
+  'Toy keyboard',
+  'Toy drums',
+  'Spring verb',
+  'Tape delay',
+  // A wire onto another wire's depth lands inside the bay rather than on any
   // stage, so the map has nothing on the path to point it at — the bay's own
-  // panel is where that pair reads.
+  // panel is where those pairs read.
+  'Patch bay',
+  'Patch bay',
   'Patch bay',
   'Patch bay',
 ] as const
@@ -326,7 +332,7 @@ export function buildMap(c: Controls, o: Options = {}): Drawing {
   // Patch wires ride over the top of the signal path, dotted and cool, from
   // whatever the wire picks up onto the group it is soldered to. A wire to a
   // stage that isn't in the path does nothing, so it isn't drawn.
-  for (const i of [0, 1] as const) {
+  for (const i of [0, 1, 2, 3] as const) {
     const src = Math.round(c[`mod${i}Src`])
     const depth = c[`mod${i}Depth`]
     const dest = WIRE_TARGET[Math.round(c[`mod${i}Dest`])]
