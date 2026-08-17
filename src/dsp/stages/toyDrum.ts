@@ -1,4 +1,4 @@
-import { DRUM_VOICES, GRID_ROWS, STEPS } from '../../drums'
+import { asLen, DRUM_VOICES, GRID_ROWS, STEPS } from '../../drums'
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
@@ -160,7 +160,7 @@ export class ToyDrum implements Stage {
     // Every row's length, read once a block: a length that moved mid-block would
     // move a playhead the panel has already drawn.
     for (let r = 0; r < this.lens.length; r++) {
-      this.lens[r] = Math.min(Math.max(Math.round(p[LEN_PARAM[r]!]!), 1), STEPS)
+      this.lens[r] = asLen(p[LEN_PARAM[r]!]!)
     }
 
     if (rail.rebootCount !== this.lastReboot) {

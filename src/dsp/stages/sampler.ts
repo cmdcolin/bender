@@ -1,6 +1,6 @@
-import { N_DRUM_VOICES, voiceMask } from '../trigbus'
 import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { N_DRUM_VOICES, voiceMask } from '../trigbus'
 import { Transient } from '../util/follower'
 
 // Past the voices and the whole kit, the two lines that aren't the kit at all.
