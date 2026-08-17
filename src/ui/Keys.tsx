@@ -22,7 +22,15 @@ const KEY_MAP: Record<string, number> = {
 }
 
 const WHITE = [0, 2, 4, 5, 7, 9, 11, 12, 14]
-const BLACK: Record<number, number> = { 0: 1, 1: 3, 3: 6, 4: 8, 5: 10, 6: 13, 7: 15 }
+const BLACK: Record<number, number> = {
+  0: 1,
+  1: 3,
+  3: 6,
+  4: 8,
+  5: 10,
+  6: 13,
+  7: 15,
+}
 
 // The toy keyboard's keys: clickable, plus the computer keyboard (a s d f...).
 // Hold latches what you press, so both hands are free for the panel.

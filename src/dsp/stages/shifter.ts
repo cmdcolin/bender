@@ -5,7 +5,9 @@ import { flushDenormal, softclip } from '../util/softclip'
 
 // Two allpass chains whose outputs stay about 90° apart across the band.
 const COEF_A = [0.6923878, 0.9360654322959, 0.988229522686, 0.9987488452737]
-const COEF_B = [0.4021921162426, 0.856171088242, 0.9722909545651, 0.9952884791278]
+const COEF_B = [
+  0.4021921162426, 0.856171088242, 0.9722909545651, 0.9952884791278,
+]
 
 class Ap2 {
   private x1 = 0

@@ -197,13 +197,15 @@ export class ToyChip implements Stage {
       if (modClock) clock *= Math.pow(2, modClock[i]! * 3)
 
       // sequencer — the run/stop line freezes it where it stands
-      if (this.transport.playing) this.stepClock += (rom.stepHz * clock) / this.sr
+      if (this.transport.playing)
+        this.stepClock += (rom.stepHz * clock) / this.sr
       if (this.stepClock >= 1) {
         this.stepClock -= 1
         let next = this.pos + 1
         // counter bend: program counter corruption
         if (spot === 2 && this.rng() < pot * 0.7) {
-          next = this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * tune.length)
+          next =
+            this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * tune.length)
         }
         this.pos = next % tune.length
         // -2 holds whatever is ringing; -1 drops the voice; anything else strikes
@@ -219,7 +221,8 @@ export class ToyChip implements Stage {
         // oom-pah off the same step clock: bass on the step, chord on the
         // offbeat, the bass alternating root and fifth the way the toys walked it
         if (this.pos % 2 === 0) {
-          this.bassNote = (this.bassFifth ? this.chord[2]! : this.chord[0]!) - 12
+          this.bassNote =
+            (this.bassFifth ? this.chord[2]! : this.chord[0]!) - 12
           this.bassFifth = !this.bassFifth
           this.bassEnv = 1
         } else {
@@ -232,7 +235,8 @@ export class ToyChip implements Stage {
         this.gateClock += ((30 + pot * 400) * (0.5 + this.rng())) / this.sr
         if (this.gateClock >= 1) {
           this.gateClock -= 1
-          this.gateState = this.rng() < 0.5 + pot * 0.3 ? 1 - this.gateState : this.gateState
+          this.gateState =
+            this.rng() < 0.5 + pot * 0.3 ? 1 - this.gateState : this.gateState
         }
       } else {
         this.gateState = 1
@@ -250,15 +254,22 @@ export class ToyChip implements Stage {
       if (!rail.booting && !(starve > 0 && rail.stalled)) {
         const note = this.transport.playing ? this.note : -1
         if (note >= 0 && this.env > ENV_FLOOR) {
-          const hz = Math.min(BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor, maxHz)
+          const hz = Math.min(
+            BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor,
+            maxHz,
+          )
           this.phase = (this.phase + hz / this.sr) % 1
-          out += pulse(this.phase, duty, hz / this.sr) * this.env * rail.ampFactor
+          out +=
+            pulse(this.phase, duty, hz / this.sr) * this.env * rail.ampFactor
         }
         let keys = 0
         if (accomp > 0) {
           if (this.bassEnv > ENV_FLOOR) {
             const hz = Math.min(
-              BASE_HZ * Math.pow(2, this.bassNote / 12) * clock * rail.pitchFactorAt(BASS_TRIM),
+              BASE_HZ *
+                Math.pow(2, this.bassNote / 12) *
+                clock *
+                rail.pitchFactorAt(BASS_TRIM),
               maxHz,
             )
             this.bassPhase = (this.bassPhase + hz / this.sr) % 1
@@ -272,7 +283,10 @@ export class ToyChip implements Stage {
             for (let c = 0; c < 3; c++) {
               const trim = CHORD_TRIM[c]!
               const hz = Math.min(
-                BASE_HZ * Math.pow(2, this.chord[c]! / 12) * clock * rail.pitchFactorAt(trim),
+                BASE_HZ *
+                  Math.pow(2, this.chord[c]! / 12) *
+                  clock *
+                  rail.pitchFactorAt(trim),
                 maxHz,
               )
               this.chordPhase[c] = (this.chordPhase[c]! + hz / this.sr) % 1
@@ -290,11 +304,15 @@ export class ToyChip implements Stage {
           if (v.note < 0 || v.env <= ENV_FLOOR) continue
           const trim = VOICE_TRIM[k]!
           const hz = Math.min(
-            BASE_HZ * Math.pow(2, v.note / 12) * clock * rail.pitchFactorAt(trim),
+            BASE_HZ *
+              Math.pow(2, v.note / 12) *
+              clock *
+              rail.pitchFactorAt(trim),
             maxHz,
           )
           v.phase = (v.phase + hz / this.sr) % 1
-          keys += pulse(v.phase, duty, hz / this.sr) * v.env * rail.ampFactorAt(trim)
+          keys +=
+            pulse(v.phase, duty, hz / this.sr) * v.env * rail.ampFactorAt(trim)
         }
         out = (out + mixVoices(keys)) * this.gateState
         if (spot === 3) out += pot * 0.4
@@ -302,7 +320,8 @@ export class ToyChip implements Stage {
 
       out *= level * 0.4
       const extra =
-        (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) + (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0)
+        (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) +
+        (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0)
       rail.tick(Math.abs(out), starve, extra)
       ctx.railV[i] = rail.v
       ctx.step[i] = this.stepClock

@@ -69,7 +69,8 @@ export function ChainMap({
         ref={host}
         onClick={e => {
           const link = (e.target as Element).closest('a')
-          const href = link?.getAttribute('href') ?? link?.getAttribute('xlink:href')
+          const href =
+            link?.getAttribute('href') ?? link?.getAttribute('xlink:href')
           const name = href?.startsWith('#') && BY_ANCHOR.get(href.slice(1))
           if (!name) return
           e.preventDefault()

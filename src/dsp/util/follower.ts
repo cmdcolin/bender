@@ -6,7 +6,9 @@ export class Follower {
   private y = 0
   process(x: number, attack: number, release: number): number {
     const a = Math.abs(x)
-    this.y = flushDenormal(this.y + (a > this.y ? attack : release) * (a - this.y))
+    this.y = flushDenormal(
+      this.y + (a > this.y ? attack : release) * (a - this.y),
+    )
     return this.y
   }
   reset() {

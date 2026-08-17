@@ -152,10 +152,9 @@ export const PARAM_DEFS = [
 export type ParamName = (typeof PARAM_DEFS)[number][0]
 export const N_PARAMS = PARAM_DEFS.length
 
-export const IDX = Object.fromEntries(PARAM_DEFS.map(([n], i) => [n, i])) as Record<
-  ParamName,
-  number
->
+export const IDX = Object.fromEntries(
+  PARAM_DEFS.map(([n], i) => [n, i]),
+) as Record<ParamName, number>
 
 export const SMOOTH: readonly Smooth[] = PARAM_DEFS.map(([, s]) => s)
 

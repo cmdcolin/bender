@@ -41,5 +41,12 @@ export function Scope() {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  return <canvas ref={canvasRef} className={styles.canvas} width={800} height={260} />
+  return (
+    <canvas
+      ref={canvasRef}
+      className={styles.canvas}
+      width={800}
+      height={260}
+    />
+  )
 }

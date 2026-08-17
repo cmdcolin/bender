@@ -1,6 +1,9 @@
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(5.7rem, 1fr) minmax(4.6rem, auto);
+  grid-template-columns: minmax(0, 1.1fr) minmax(5.7rem, 1fr) minmax(
+      4.6rem,
+      auto
+    );
   align-items: center;
   gap: 8px;
   margin: 6px 0;

@@ -34,10 +34,16 @@ export class Comb implements Stage {
 
     for (let i = 0; i < io.n; i++) {
       const delay = mod
-        ? this.sr / Math.min(Math.max(baseHz * Math.pow(2, mod[i]! * 2), 20), 4000)
+        ? this.sr /
+          Math.min(Math.max(baseHz * Math.pow(2, mod[i]! * 2), 20), 4000)
         : delayBase
-      const wl = softclip(io.l[i]! + fb * this.dampL.process(this.lineL.read(delay), coef))
-      const wr = softclip(io.r[i]! + fb * this.dampR.process(this.lineR.read(delay * 1.003), coef))
+      const wl = softclip(
+        io.l[i]! + fb * this.dampL.process(this.lineL.read(delay), coef),
+      )
+      const wr = softclip(
+        io.r[i]! +
+          fb * this.dampR.process(this.lineR.read(delay * 1.003), coef),
+      )
       this.lineL.write(wl)
       this.lineR.write(wr)
       io.l[i] = io.l[i]! * (1 - mix) + wl * mix

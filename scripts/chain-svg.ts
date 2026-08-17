@@ -60,7 +60,9 @@ export async function renderDiagrams(): Promise<Record<string, string>> {
   return Object.fromEntries(
     Object.entries(THEMES).map(([name, palette]) => [
       `img/chain-${name}.svg`,
-      viz.renderString(buildDot(BOARD, { palette, live: false }), { format: 'svg' }),
+      viz.renderString(buildDot(BOARD, { palette, live: false }), {
+        format: 'svg',
+      }),
     ]),
   )
 }

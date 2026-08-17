@@ -22,7 +22,17 @@ export const DEST = {
 export const N_DEST = 13
 
 // Ids match the mod*Src choices.
-const SRC = { off: 0, lfo: 1, supply: 2, env: 3, mic: 4, bodyX: 5, bodyY: 6, fb: 7, rom: 8 }
+const SRC = {
+  off: 0,
+  lfo: 1,
+  supply: 2,
+  env: 3,
+  mic: 4,
+  bodyX: 5,
+  bodyY: 6,
+  fb: 7,
+  rom: 8,
+}
 
 const WIRES = [
   [IDX.mod0Src, IDX.mod0Dest, IDX.mod0Depth],
@@ -86,14 +96,18 @@ export class ModBus {
       this.lfoPhase = (this.lfoPhase + hz / this.sr) % 1
       if (this.lfoPhase < prev) this.shValue = this.rng() * 2 - 1
       this.lfo[i] = lfoShape(this.lfoPhase, shape, this.shValue)
-      this.micEnv[i] = Math.min(this.mic.process(src.mic[i]!, attack, release) * 2, 1)
+      this.micEnv[i] = Math.min(
+        this.mic.process(src.mic[i]!, attack, release) * 2,
+        1,
+      )
     }
 
     for (const [srcIdx, destIdx, depthIdx] of WIRES) {
       const from = Math.round(p[srcIdx]!)
       const depth = p[depthIdx]!
       const dest = Math.round(p[destIdx]!)
-      if (from === SRC.off || depth === 0 || dest < 0 || dest >= N_DEST) continue
+      if (from === SRC.off || depth === 0 || dest < 0 || dest >= N_DEST)
+        continue
       const lane = this.lanes[dest]!
       if (!this.live[dest]) {
         lane.fill(0, 0, n)
@@ -104,7 +118,12 @@ export class ModBus {
     }
   }
 
-  private pick(from: number, n: number, p: Float32Array, src: ModSources): Float32Array {
+  private pick(
+    from: number,
+    n: number,
+    p: Float32Array,
+    src: ModSources,
+  ): Float32Array {
     switch (from) {
       case SRC.supply:
         return src.droop

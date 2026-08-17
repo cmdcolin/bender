@@ -18,7 +18,9 @@ export class Brownout implements Stage {
   }
 
   when(p: Float32Array) {
-    return p[IDX.brownAmt]! > 0 || p[IDX.brownCrackle]! > 0 || p[IDX.humLevel]! > 0
+    return (
+      p[IDX.brownAmt]! > 0 || p[IDX.brownCrackle]! > 0 || p[IDX.humLevel]! > 0
+    )
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -37,8 +39,14 @@ export class Brownout implements Stage {
       ctx.sag[i] = this.sag
 
       let g = 1 / (1 + amt * 4 * this.sag)
-      if (amt > 0 && this.dropRemaining <= 0 && this.rng() < dropProb * (1 + this.sag)) {
-        this.dropRemaining = Math.floor((0.01 + this.rng() * 0.08) * this.sr * (1 + this.sag))
+      if (
+        amt > 0 &&
+        this.dropRemaining <= 0 &&
+        this.rng() < dropProb * (1 + this.sag)
+      ) {
+        this.dropRemaining = Math.floor(
+          (0.01 + this.rng() * 0.08) * this.sr * (1 + this.sag),
+        )
       }
       if (this.dropRemaining > 0) {
         this.dropRemaining--
@@ -46,7 +54,11 @@ export class Brownout implements Stage {
       }
 
       const crackle =
-        crackleAmt > 0 ? (this.rng() < this.sag * 0.3 ? (this.rng() * 2 - 1) * crackleAmt : 0) : 0
+        crackleAmt > 0
+          ? this.rng() < this.sag * 0.3
+            ? (this.rng() * 2 - 1) * crackleAmt
+            : 0
+          : 0
 
       // ground loop: mains fundamental plus rectifier buzz, louder as the
       // supply strains, with a ripple wobble in the rail gain itself

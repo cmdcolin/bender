@@ -8,9 +8,14 @@ async function bytes(blob: Blob): Promise<DataView> {
 test('wav header describes 16-bit stereo at the given rate', async () => {
   const chunk = { l: new Float32Array(4), r: new Float32Array(4) }
   const v = await bytes(encodeWav([chunk, chunk], 44100))
-  expect(String.fromCharCode(v.getUint8(0), v.getUint8(1), v.getUint8(2), v.getUint8(3))).toBe(
-    'RIFF',
-  )
+  expect(
+    String.fromCharCode(
+      v.getUint8(0),
+      v.getUint8(1),
+      v.getUint8(2),
+      v.getUint8(3),
+    ),
+  ).toBe('RIFF')
   expect(v.getUint16(22, true)).toBe(2)
   expect(v.getUint32(24, true)).toBe(44100)
   expect(v.getUint16(34, true)).toBe(16)

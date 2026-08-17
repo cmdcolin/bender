@@ -50,7 +50,10 @@ export class GlitchBuf implements Stage {
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const mix = p[IDX.glitchMix]!
     const freeze = Math.round(p[IDX.glitchFreeze]!) === 1
-    const sliceSamples = Math.max(Math.floor((p[IDX.glitchSliceMs]! / 1000) * this.sr), 16)
+    const sliceSamples = Math.max(
+      Math.floor((p[IDX.glitchSliceMs]! / 1000) * this.sr),
+      16,
+    )
     const baseProb = p[IDX.glitchProb]!
     const mod = ctx.mod.read(DEST.glitch)
     const micTrig = p[IDX.micPatch] === 6
@@ -66,13 +69,19 @@ export class GlitchBuf implements Stage {
       this.sliceCountdown -= 1
       if (this.sliceCountdown <= 0) {
         this.sliceCountdown = sliceSamples
-        const prob = mod ? Math.min(Math.max(baseProb + mod[i]!, 0), 1) : baseProb
+        const prob = mod
+          ? Math.min(Math.max(baseProb + mod[i]!, 0), 1)
+          : baseProb
         if (!this.glitching && (freeze || this.rng() < prob)) {
           this.beginEvent(p, sliceSamples)
         }
       }
       // mic soldered onto the trigger line: a shout stutters the buffer
-      if (micTrig && !this.glitching && this.micTrig.process(ctx.mic[i]!, 0.05)) {
+      if (
+        micTrig &&
+        !this.glitching &&
+        this.micTrig.process(ctx.mic[i]!, 0.05)
+      ) {
         this.beginEvent(p, sliceSamples)
       }
 
@@ -83,7 +92,9 @@ export class GlitchBuf implements Stage {
         wetL = this.bufL[idx]!
         wetR = this.bufR[idx]!
         this.playPos += this.reverse ? -this.rate : this.rate
-        const done = this.reverse ? this.playPos < 0 : this.playPos >= this.sliceLen
+        const done = this.reverse
+          ? this.playPos < 0
+          : this.playPos >= this.sliceLen
         if (done) {
           this.repeatsLeft -= 1
           if (freeze) this.repeatsLeft = 1

@@ -21,7 +21,8 @@ export function fromPos(def: SliderDef, pos: number): number {
 }
 
 export function formatValue(def: SliderDef, value: number): string {
-  if (def.choices) return def.choices[Math.round(value) - def.min] ?? String(value)
+  if (def.choices)
+    return def.choices[Math.round(value) - def.min] ?? String(value)
   const abs = Math.abs(value)
   const text =
     abs >= 1000

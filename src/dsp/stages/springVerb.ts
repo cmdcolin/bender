@@ -34,7 +34,12 @@ class DampedComb {
   ) {
     this.line = new DelayLine(delaySec * sr + 4)
   }
-  process(x: number, fb: number, dampCoef: number, delaySamples: number): number {
+  process(
+    x: number,
+    fb: number,
+    dampCoef: number,
+    delaySamples: number,
+  ): number {
     const d = this.line.read(delaySamples)
     this.line.write(x + fb * this.damp.process(d, dampCoef))
     return d

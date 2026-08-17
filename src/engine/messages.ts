@@ -27,7 +27,8 @@ export interface PanicMsg {
   kind: 'panic'
 }
 
-export type ToWorklet = ParamsMsg | SampleMsg | NoteMsg | TransportMsg | RecordMsg | PanicMsg
+export type ToWorklet =
+  ParamsMsg | SampleMsg | NoteMsg | TransportMsg | RecordMsg | PanicMsg
 
 export interface MeterMsg {
   kind: 'meter'

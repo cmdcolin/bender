@@ -56,19 +56,25 @@ export class TapeDelay implements Stage {
       this.flutterWalk += (this.rng() - 0.5) * flutter * 0.6
       this.flutterWalk *= 0.995
       const wobble =
-        wowDepth * Math.sin(this.wowPhase * 2 * Math.PI) + this.flutterWalk * 0.002 * this.sr
+        wowDepth * Math.sin(this.wowPhase * 2 * Math.PI) +
+        this.flutterWalk * 0.002 * this.sr
 
       let want = (1 - brake) * (1 - railDrag * ctx.droop[i]!)
       if (modSpeed) want *= Math.pow(2, modSpeed[i]! * 1.5)
       this.motor += inertia * (Math.min(Math.max(want, 0), 4) - this.motor)
       // the read head runs at motor speed against a fixed write head, so the
       // gap opens while the transport is slow — that gap is the pitch dive
-      this.slide = flushDenormal(this.slide + (1 - this.motor) - this.slide * recenter)
+      this.slide = flushDenormal(
+        this.slide + (1 - this.motor) - this.slide * recenter,
+      )
       this.slide = Math.min(
         Math.max(this.slide, 1 - delaySamples),
         this.maxDelay - delaySamples - 4,
       )
-      const d = Math.min(Math.max(delaySamples + this.slide + wobble, 1), this.maxDelay)
+      const d = Math.min(
+        Math.max(delaySamples + this.slide + wobble, 1),
+        this.maxDelay,
+      )
 
       const tapL = this.toneL.process(this.lineL.readHermite(d), coef)
       const tapR = this.toneR.process(this.lineR.readHermite(d * 1.007), coef)

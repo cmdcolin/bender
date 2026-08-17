@@ -3,7 +3,9 @@ export interface Store<T> {
   get: () => T
 }
 
-export function createStore<T>(initial: T): Store<T> & { set: (next: T) => void } {
+export function createStore<T>(
+  initial: T,
+): Store<T> & { set: (next: T) => void } {
   let value = initial
   const listeners = new Set<() => void>()
   return {

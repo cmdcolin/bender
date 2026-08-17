@@ -45,7 +45,8 @@ function crest(x: Float32Array): number {
 
 function sine(hz: number, seconds: number, amp = 0.6): Float32Array {
   const buf = new Float32Array(Math.round(seconds * SR))
-  for (let i = 0; i < buf.length; i++) buf[i] = amp * Math.sin((2 * Math.PI * hz * i) / SR)
+  for (let i = 0; i < buf.length; i++)
+    buf[i] = amp * Math.sin((2 * Math.PI * hz * i) / SR)
   return buf
 }
 
@@ -72,7 +73,8 @@ function renderBender(
   return out
 }
 
-const tail = (x: Float32Array, seconds = 0.5) => x.subarray(x.length - seconds * SR)
+const tail = (x: Float32Array, seconds = 0.5) =>
+  x.subarray(x.length - seconds * SR)
 
 // How much of the signal sits down where the kick lives.
 function lowEnergy(x: Float32Array, hz = 120): number {
@@ -116,7 +118,14 @@ test('default board makes sound (the toy chip demo tune)', () => {
 test('all-mixes-zero equals no bends: same output with slots emptied', () => {
   const base: Partial<Controls> = { chipLevel: 0.5 }
   const a = render(base)
-  const b = render({ ...base, bendSlot0: 0, bendSlot1: 0, bendSlot2: 0, bendSlot3: 0, bendSlot4: 0 })
+  const b = render({
+    ...base,
+    bendSlot0: 0,
+    bendSlot1: 0,
+    bendSlot2: 0,
+    bendSlot3: 0,
+    bendSlot4: 0,
+  })
   expect(a).toEqual(b)
 })
 
@@ -154,7 +163,10 @@ test('starve reboots restart the tune', () => {
 })
 
 test('runaway delay feedback stays bounded and audible', () => {
-  const out = render({ chipLevel: 0.6, dlyMix: 0.6, dlyFb: 1.5, delayMs: 80 }, 3)
+  const out = render(
+    { chipLevel: 0.6, dlyMix: 0.6, dlyFb: 1.5, delayMs: 80 },
+    3,
+  )
   const tail = out.subarray(out.length - 4800)
   const rms = Math.sqrt(tail.reduce((a, x) => a + x * x, 0) / tail.length)
   expect(rms).toBeGreaterThan(0.01)
@@ -181,7 +193,14 @@ test('screech filter self-oscillates past unity resonance', () => {
 
 test('feedback patched into the delay still loops', () => {
   const out = render(
-    { chipLevel: 0.5, fbAmt: 1.3, fbDest: 3, dlyMix: 0.8, delayMs: 150, dlyFb: 0.7 },
+    {
+      chipLevel: 0.5,
+      fbAmt: 1.3,
+      fbDest: 3,
+      dlyMix: 0.8,
+      delayMs: 150,
+      dlyFb: 0.7,
+    },
     2,
   )
   const tail = out.subarray(out.length - 4800)
@@ -216,7 +235,9 @@ test('the accompaniment browns out with the chip it runs on', () => {
   const running = render({ chipLevel: 1, chipAccomp: 1 }, 3)
   const starved = render({ chipLevel: 1, chipAccomp: 1, chipStarve: 1 }, 3)
   expect(quietFraction(starved)).toBeGreaterThan(quietFraction(running) * 2)
-  expect(starved.reduce((a, v) => Math.max(a, Math.abs(v)), 0)).toBeLessThanOrEqual(0.891 + 1e-6)
+  expect(
+    starved.reduce((a, v) => Math.max(a, Math.abs(v)), 0),
+  ).toBeLessThanOrEqual(0.891 + 1e-6)
 })
 
 test('a chord sounds fuller than one note but nothing like four times louder', () => {
@@ -264,12 +285,17 @@ test('narrow tone taps thin out and survive the divider running out of counts', 
   expect(buzz).toBeLessThan(square * 0.8)
 
   // Clocked up past where a 1/16 tap fits between samples, it still sounds.
-  const fast = rms(playKeys({ chipTone: 3, chipClockX: 16 }, chip => chip.noteOn(12)))
+  const fast = rms(
+    playKeys({ chipTone: 3, chipClockX: 16 }, chip => chip.noteOn(12)),
+  )
   expect(fast).toBeGreaterThan(0.01)
 })
 
 test('no-input feedback bus self-oscillates from nothing', () => {
-  const out = render({ chipLevel: 0, fbAmt: 1.4, fbDelayMs: 2, crackleAmp: 0.2 }, 2)
+  const out = render(
+    { chipLevel: 0, fbAmt: 1.4, fbDelayMs: 2, crackleAmp: 0.2 },
+    2,
+  )
   const tail = out.subarray(out.length - 4800)
   const rms = Math.sqrt(tail.reduce((a, x) => a + x * x, 0) / tail.length)
   expect(rms).toBeGreaterThan(0.01)
@@ -364,21 +390,35 @@ test('drive flattens the wave — and the tone knob keeps the top off', () => {
   const dirty = throughPedal({ stompCircuit: 1, stompDrive: 34, stompMix: 1 })
   expect(crest(tail(clean))).toBeGreaterThan(1.35)
   expect(crest(tail(dirty))).toBeLessThan(1.15)
-  const dark = throughPedal({ stompCircuit: 1, stompDrive: 34, stompTone: 0, stompMix: 1 })
+  const dark = throughPedal({
+    stompCircuit: 1,
+    stompDrive: 34,
+    stompTone: 0,
+    stompMix: 1,
+  })
   expect(bin(tail(dark), 2000)).toBeLessThan(bin(tail(dirty), 2000) * 0.5)
 })
 
 test('the octave circuit puts the octave on top, the screamer does not', () => {
-  const oct = tail(throughPedal({ stompCircuit: 4, stompDrive: 30, stompMix: 1 }))
+  const oct = tail(
+    throughPedal({ stompCircuit: 4, stompDrive: 30, stompMix: 1 }),
+  )
   expect(bin(oct, 800)).toBeGreaterThan(bin(oct, 400) * 2)
   // symmetric clipping makes odd harmonics, so a screamer leaves 400 on top
-  const ts = tail(throughPedal({ stompCircuit: 0, stompDrive: 30, stompMix: 1 }))
+  const ts = tail(
+    throughPedal({ stompCircuit: 0, stompDrive: 30, stompMix: 1 }),
+  )
   expect(bin(ts, 400)).toBeGreaterThan(bin(ts, 800) * 2)
 })
 
 test('a flat battery sags the pedal, and the board’s own supply drags it too', () => {
   const fresh = throughPedal({ stompCircuit: 2, stompDrive: 30, stompMix: 1 })
-  const flat = throughPedal({ stompCircuit: 2, stompDrive: 30, stompSag: 1, stompMix: 1 })
+  const flat = throughPedal({
+    stompCircuit: 2,
+    stompDrive: 30,
+    stompSag: 1,
+    stompMix: 1,
+  })
   expect(rms(tail(flat))).toBeLessThan(rms(tail(fresh)) * 0.6)
   // same battery, but this time it is the master brownout pulling it down
   const browned = throughPedal({
@@ -393,7 +433,11 @@ test('a flat battery sags the pedal, and the board’s own supply drags it too',
 })
 
 test('bias shuts the gate circuit, and a flat battery sets it howling', () => {
-  const box: Partial<Controls> = { stompCircuit: 5, stompDrive: 40, stompMix: 1 }
+  const box: Partial<Controls> = {
+    stompCircuit: 5,
+    stompDrive: 40,
+    stompMix: 1,
+  }
   // a note well under where the bias walks the gate to
   const through = rms(tail(throughPedal(box, 0.08)))
   const shut = rms(tail(throughPedal({ ...box, stompBias: 0.8 }, 0.08)))
@@ -402,7 +446,9 @@ test('bias shuts the gate circuit, and a flat battery sets it howling', () => {
 
   // nothing at the input at all, and it still finds something to say
   expect(rms(tail(render({ chipLevel: 0, ...box }, 2)))).toBeLessThan(1e-4)
-  expect(rms(tail(render({ chipLevel: 0, ...box, stompSag: 0.9 }, 2)))).toBeGreaterThan(0.02)
+  expect(
+    rms(tail(render({ chipLevel: 0, ...box, stompSag: 0.9 }, 2))),
+  ).toBeGreaterThan(0.02)
 })
 
 test('a wire onto the stomp drive turns it up', () => {
@@ -421,7 +467,8 @@ test('a wire onto the stomp drive turns it up', () => {
 
 test('the mic soldered onto the drum trigger fires the kit', () => {
   const clicks = (mic: Float32Array, offset: number) => {
-    for (let i = 0; i < mic.length; i++) mic[i] = (offset + i) % 12000 < 40 ? 0.9 : 0
+    for (let i = 0; i < mic.length; i++)
+      mic[i] = (offset + i) % 12000 < 40 ? 0.9 : 0
   }
   const look: Partial<Controls> = { chipLevel: 0, drumLevel: 1, micLevel: 1 }
   // the sequencer is stopped, so anything we hear came off the trigger line
@@ -434,7 +481,12 @@ test('the mic soldered onto the drum trigger fires the kit', () => {
 test('bridged envelope pins put the kick on the snare steps', () => {
   // the fill pattern is twelve snares to four kicks, so a full swap moves
   // most of the bar down into the kick
-  const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9, drumPattern: 3, drumBpm: 120 }
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0.9,
+    drumPattern: 3,
+    drumBpm: 120,
+  }
   const stock = render(look, 2)
   const swapped = render({ ...look, drumCross: 1, drumCrossAmt: 1 }, 2)
   expect(lowEnergy(swapped)).toBeGreaterThan(1.5 * lowEnergy(stock))
@@ -446,7 +498,11 @@ test('an unbridged kit is the kit it always was', () => {
 })
 
 test('a ROM step wire rides the sequencer, pushing the clock as each step runs', () => {
-  const look: Partial<Controls> = { chipLevel: 0.8, mod0Dest: DEST.chipClock, mod0Depth: 0.6 }
+  const look: Partial<Controls> = {
+    chipLevel: 0.8,
+    mod0Dest: DEST.chipClock,
+    mod0Depth: 0.6,
+  }
   const plain = render(look, 2)
   const wired = render({ ...look, mod0Src: 8 }, 2)
   expect(wired).not.toEqual(plain)

@@ -47,13 +47,13 @@ climbs past the divider's resolution.
 
 **Auto bass-chord** is the accompaniment section, the thing that made a toy
 keyboard sound like a whole bad band. It runs off the melody's own step clock —
-bass on the step, chord stab on the offbeat, the bass alternating root and
-fifth — and it reads its chord off the tune rather than a chord button: a chord
-tone moves it, a passing tone leaves it where it stands. Each ROM declares its
-key, so the three chords it has (tonic, dominant, subdominant) land in the
-song. It runs on the same divider and the same rail as everything else, so the
-clock bend drags it, the counter bend scrambles it, and starving the chip takes
-the backing band down with the tune.
+bass on the step, chord stab on the offbeat, the bass alternating root and fifth
+— and it reads its chord off the tune rather than a chord button: a chord tone
+moves it, a passing tone leaves it where it stands. Each ROM declares its key,
+so the three chords it has (tonic, dominant, subdominant) land in the song. It
+runs on the same divider and the same rail as everything else, so the clock bend
+drags it, the counter bend scrambles it, and starving the chip takes the backing
+band down with the tune.
 
 The bends that matter:
 
@@ -103,15 +103,15 @@ The bends that matter:
   running the same curve through a different formula. The screamer clips inside
   the op-amp's feedback loop, so the dry note walks under it and never quite
   lets go; the rat clips to ground behind an op-amp too slow to keep up, which
-  is the fizz; the muff is two clipping stages and a scooped tone stack the
-  note has to survive; the germanium one is lopsided, and its bias rides down
-  on the signal so it splutters as a note dies and cleans up when you back off;
-  the octave rectifies the shape before it clips it, so it comes out an octave
-  up on one note and gargling on two; the gate is misbiased to the edge of
-  cutoff. **Battery** is how dead the 9V is — the rail falls as the pedal
-  works, so notes bloom and collapse, and it shares the board's supply, so
-  Starve and Brownout drag the pedal down with everything else. Starve the gate
-  circuit far enough and it stops needing an input at all.
+  is the fizz; the muff is two clipping stages and a scooped tone stack the note
+  has to survive; the germanium one is lopsided, and its bias rides down on the
+  signal so it splutters as a note dies and cleans up when you back off; the
+  octave rectifies the shape before it clips it, so it comes out an octave up on
+  one note and gargling on two; the gate is misbiased to the edge of cutoff.
+  **Battery** is how dead the 9V is — the rail falls as the pedal works, so
+  notes bloom and collapse, and it shares the board's supply, so Starve and
+  Brownout drag the pedal down with everything else. Starve the gate circuit far
+  enough and it stops needing an input at all.
 - Every feedback (delay, comb, screech filter, feedback bus) goes past unity.
 
 ## The tape machine
@@ -121,10 +121,10 @@ sits last, after the brownout, so everything upstream is the room and this is
 what it went down on.
 
 Signal crosses the record head through a pre-emphasis curve and comes back
-through its inverse, so the highs saturate first and transients round off
-before anything sounds distorted. Hiss lands on the medium rather than in the
-mix — the replay head colours it, the speed sets how loud it is, and it breathes
-a little with the signal, the way biased oxide does.
+through its inverse, so the highs saturate first and transients round off before
+anything sounds distorted. Hiss lands on the medium rather than in the mix — the
+replay head colours it, the speed sets how loud it is, and it breathes a little
+with the signal, the way biased oxide does.
 
 **Speed** moves the machine as one part rather than one knob among ten. The head
 gap loses highs at a wavelength, so a slower tape loses them lower; the replay
@@ -140,27 +140,28 @@ the programme, so a gap-only model inverts the knob at the fast speed.
 
 The failures are the point. **Dropouts** shed highs before they shed level,
 which is what separates oxide from a power cut. **Print-through** is the layer
-wound underneath bleeding through, a dull ghost one wrap behind.
-**Azimuth** lags the right channel and eats its top end, so the take collapses
-badly to mono. Wow is capstan eccentricity plus a slow drift that never lets the
-pitch settle; flutter is the fast wobble plus the scrape of tape dragging past
-the head.
+wound underneath bleeding through, a dull ghost one wrap behind. **Azimuth**
+lags the right channel and eats its top end, so the take collapses badly to
+mono. Wow is capstan eccentricity plus a slow drift that never lets the pitch
+settle; flutter is the fast wobble plus the scrape of tape dragging past the
+head.
 
 The dry side runs down the same nominal head delay as the wet, so **To tape**
 only combs once the transport actually wobbles.
 
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**
 shakes the current board. **Share** puts everything you moved into the URL by
-name and copies the link, so a board travels as text you can read and edit —
-and a link written against an older build still opens the board it meant.
+name and copies the link, so a board travels as text you can read and edit — and
+a link written against an older build still opens the board it meant.
 
 The chip's ROM bank holds eighteen demo songs, each with its own sequencer rate:
 four factory doodles, eight public-domain tunes every cheap keyboard shipped
 (Für Elise, Ode to Joy, Rondo alla Turca, William Tell…), and six slow ones in
 minor and modal keys — Gymnopédie, Gnossienne, Sakura, Dies Irae, Chopin's
-funeral march, Greensleeves — where a starving rail stops being funny. Nothing plays by
-itself: **play demo song** runs the ROM sequencers, the keys work either way.
-**Record** writes the output to a 16-bit stereo wav; stopping saves the take.
+funeral march, Greensleeves — where a starving rail stops being funny. Nothing
+plays by itself: **play demo song** runs the ROM sequencers, the keys work
+either way. **Record** writes the output to a 16-bit stereo wav; stopping saves
+the take.
 
 ## Run
 

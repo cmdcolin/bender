@@ -56,7 +56,9 @@ export class Screech implements Stage {
       const f = mod
         ? 2 *
           Math.sin(
-            (Math.PI * Math.min(Math.max(base * Math.pow(2, mod[i]! * 4), 10), nyq)) / this.sr,
+            (Math.PI *
+              Math.min(Math.max(base * Math.pow(2, mod[i]! * 4), 10), nyq)) /
+              this.sr,
           )
         : fBase
       const wl = this.svfL.process(softclip(io.l[i]! * gain), f, damp, mode)

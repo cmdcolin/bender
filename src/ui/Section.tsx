@@ -9,14 +9,21 @@ import styles from './Section.module.css'
 
 function useTouchedCount(group: Group): number {
   const controls = useStoreValue(engine.controls)
-  return group.sliders.filter(s => controls[s.key] !== DEFAULT_CONTROLS[s.key]).length
+  return group.sliders.filter(s => controls[s.key] !== DEFAULT_CONTROLS[s.key])
+    .length
 }
 
 // The one stage the map has open, with its controls already unfolded. The panel
 // used to stack all twenty groups as collapsed headers and scroll to whichever
 // the map pointed at; the map is the index now, so what is on screen is what
 // you are turning.
-export function OpenGroup({ group, onClose }: { group: Group; onClose: () => void }) {
+export function OpenGroup({
+  group,
+  onClose,
+}: {
+  group: Group
+  onClose: () => void
+}) {
   const touched = useTouchedCount(group)
   const el = useRef<HTMLDivElement>(null)
   // A tall map can leave the stage it just opened below the fold, so the panel
@@ -64,7 +71,12 @@ export function OffPathChips({
   return (
     <div className={styles.chips}>
       {groups.map(g => (
-        <OffPathChip key={g.name} group={g} on={open === g.name} onOpen={onOpen} />
+        <OffPathChip
+          key={g.name}
+          group={g}
+          on={open === g.name}
+          onOpen={onOpen}
+        />
       ))}
     </div>
   )
@@ -93,5 +105,9 @@ function OffPathChip({
 }
 
 export function PathHint() {
-  return <p className={styles.hint}>click a stage on the path to open its controls</p>
+  return (
+    <p className={styles.hint}>
+      click a stage on the path to open its controls
+    </p>
+  )
 }

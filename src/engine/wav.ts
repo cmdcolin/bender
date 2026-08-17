@@ -1,10 +1,14 @@
 // 16-bit stereo PCM in a canonical 44-byte-header RIFF file.
-export function encodeWav(chunks: { l: Float32Array; r: Float32Array }[], sr: number): Blob {
+export function encodeWav(
+  chunks: { l: Float32Array; r: Float32Array }[],
+  sr: number,
+): Blob {
   const frames = chunks.reduce((n, c) => n + c.l.length, 0)
   const buf = new ArrayBuffer(44 + frames * 4)
   const view = new DataView(buf)
   const ascii = (at: number, text: string) => {
-    for (let i = 0; i < text.length; i++) view.setUint8(at + i, text.charCodeAt(i))
+    for (let i = 0; i < text.length; i++)
+      view.setUint8(at + i, text.charCodeAt(i))
   }
 
   ascii(0, 'RIFF')

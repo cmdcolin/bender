@@ -19,7 +19,9 @@ const diode = (x: number, ceil: number) => ceil * Math.tanh(x / ceil)
 // Germanium cuts off early on one half. The even harmonics and the DC offset
 // both fall out of that lopsidedness.
 const asym = (x: number, ceil: number) =>
-  x > 0 ? ceil * Math.tanh(x / ceil) : 0.55 * ceil * Math.tanh(x / (0.55 * ceil))
+  x > 0
+    ? ceil * Math.tanh(x / ceil)
+    : 0.55 * ceil * Math.tanh(x / (0.55 * ceil))
 
 // Diodes clipped to ground instead, with the knee real ones have. The harder
 // edge is most of what separates a rat from a screamer.
@@ -132,7 +134,10 @@ class Box {
     switch (v.circuit) {
       case RAT: {
         const driven = gain * hp
-        const step = Math.min(Math.max(driven - this.slew, -this.slewStep), this.slewStep)
+        const step = Math.min(
+          Math.max(driven - this.slew, -this.slewStep),
+          this.slewStep,
+        )
         this.slew = flushDenormal(this.slew + step)
         y = this.tone.process(clipToGround(this.slew + v.bias, ceil), v.toneLp)
         break
@@ -144,7 +149,10 @@ class Box {
         // whatever the first one has left.
         const one = diode(gain * hp + v.bias, ceil)
         const damped = this.mid.process(one, this.midCoef)
-        const two = diode(1.8 * (damped - this.inter.process(damped, this.interCoef)), ceil)
+        const two = diode(
+          1.8 * (damped - this.inter.process(damped, this.interCoef)),
+          ceil,
+        )
         // The arms of the stack overlap, so the middle of the knob is a dip
         // and not a hole: the note has to survive its own tone control.
         const lo = this.tone.process(two, v.toneLp)
@@ -158,7 +166,10 @@ class Box {
         // you back off the input.
         const loaded = this.load.process(hp, this.loadCoef)
         const drag = this.drag.process(loaded, this.dragA, this.dragR)
-        y = this.tone.process(asym(gain * (loaded - drag * 0.45) + v.bias, ceil), v.toneLp)
+        y = this.tone.process(
+          asym(gain * (loaded - drag * 0.45) + v.bias, ceil),
+          v.toneLp,
+        )
         break
       }
       case OCTAVE: {
@@ -167,7 +178,10 @@ class Box {
         // and clips afterwards: fold a wave that is already square and both
         // halves are the same height, which is no octave at all.
         const rect = 2 * Math.abs(hp)
-        const oct = asym(gain * (rect - this.inter.process(rect, this.rectCoef)) + v.bias, ceil)
+        const oct = asym(
+          gain * (rect - this.inter.process(rect, this.rectCoef)) + v.bias,
+          ceil,
+        )
         // A little of the straight fuzz alongside it is the ghosting: on one
         // note that is an octave, on two it is the two of them gargling.
         y = 0.85 * this.ring.process(oct, v.ring) + 0.25 * asym(gain * hp, ceil)
@@ -180,10 +194,12 @@ class Box {
         this.gated = env > (this.gated ? v.thresh * 0.5 : v.thresh)
         const target = this.gated ? 1 : 0
         this.gate = flushDenormal(
-          this.gate + (this.gated ? this.gateA : this.gateR) * (target - this.gate),
+          this.gate +
+            (this.gated ? this.gateA : this.gateR) * (target - this.gate),
         )
         this.phase = (this.phase + v.squealHz / this.sr) % 1
-        const squeal = v.sag * (1 - this.gate) * 0.3 * Math.sin(this.phase * 2 * Math.PI)
+        const squeal =
+          v.sag * (1 - this.gate) * 0.3 * Math.sin(this.phase * 2 * Math.PI)
         y = this.tone.process(u * this.gate + squeal * ceil, v.toneLp)
         break
       }
@@ -263,7 +279,11 @@ export class Stompbox implements Stage {
     // battery is what sets it howling.
     v.thresh = 0.005 + Math.max(v.bias, 0) * 0.35
     v.squealHz = 80 * Math.pow(30, t)
-    v.ring = 2 * Math.sin((Math.PI * Math.min(400 * Math.pow(7.5, t), this.sr * 0.2)) / this.sr)
+    v.ring =
+      2 *
+      Math.sin(
+        (Math.PI * Math.min(400 * Math.pow(7.5, t), this.sr * 0.2)) / this.sr,
+      )
     switch (v.circuit) {
       case RAT:
         v.couple = lpCoef(90, this.sr)

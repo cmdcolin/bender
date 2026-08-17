@@ -101,7 +101,12 @@ function nodeId(name: string): string {
   return name.replace(/\W+/g, '_')
 }
 
-function groupNode(name: string, c: Controls, active: boolean, o: Options): string {
+function groupNode(
+  name: string,
+  c: Controls,
+  active: boolean,
+  o: Options,
+): string {
   const k = o.palette ?? PANEL
   const touched = o.live === false ? 0 : touchedCount(name, c)
   const label = touched > 0 ? `${name}  ${touched}` : name
@@ -113,7 +118,14 @@ function groupNode(name: string, c: Controls, active: boolean, o: Options): stri
 }
 
 function bendOrder(c: Controls): string[] {
-  const slots = [c.bendSlot0, c.bendSlot1, c.bendSlot2, c.bendSlot3, c.bendSlot4, c.bendSlot5]
+  const slots = [
+    c.bendSlot0,
+    c.bendSlot1,
+    c.bendSlot2,
+    c.bendSlot3,
+    c.bendSlot4,
+    c.bendSlot5,
+  ]
   const seen = new Set<number>()
   const names: string[] = []
   for (const slot of slots) {
@@ -144,7 +156,8 @@ function sourceStrip(c: Controls, o: Options): string {
     const touched = o.live === false ? 0 : touchedCount(name, c)
     const open = o.open === name
     const fg = isLive(c) || open ? k.fg : k.dim
-    const count = touched > 0 ? ` <FONT COLOR="${k.accent}">${touched}</FONT>` : ''
+    const count =
+      touched > 0 ? ` <FONT COLOR="${k.accent}">${touched}</FONT>` : ''
     const fill = open ? ` BGCOLOR="${k.open}"` : ''
     return `<TR><TD PORT="${nodeId(name)}" HREF="#${groupAnchor(name)}" TITLE="${esc(name)}"${fill}><FONT COLOR="${fg}">${esc(name)}</FONT>${count}</TD></TR>`
   })
@@ -183,7 +196,8 @@ function wireRun(seq: string[], k: Palette, o: Options): string[] {
   if (!o.wrap) return seq.slice(1).map((id, i) => `  ${seq[i]} -> ${id}`)
   const half = Math.ceil(seq.length / 2)
   const [down, up] = [seq.slice(0, half), seq.slice(half)]
-  const chain = (col: string[]) => col.slice(1).map((id, i) => `  ${col[i]} -> ${id}`)
+  const chain = (col: string[]) =>
+    col.slice(1).map((id, i) => `  ${col[i]} -> ${id}`)
   return [
     ...chain(down),
     ...chain(up),
@@ -191,7 +205,9 @@ function wireRun(seq: string[], k: Palette, o: Options): string[] {
     // Row i of one column beside row i of the other. Graphviz keeps them in
     // declaration order, so the path always reads down the left and up the
     // right rather than swapping sides as the bend count changes.
-    ...down.slice(0, up.length).map((id, i) => `  { rank=same; ${id}; ${up[i]} }`),
+    ...down
+      .slice(0, up.length)
+      .map((id, i) => `  { rank=same; ${id}; ${up[i]} }`),
   ]
 }
 
@@ -223,7 +239,10 @@ export function buildDot(c: Controls, o: Options = {}): string {
 
   // The sources ride one strip rather than five nodes on a rank of their own:
   // a column of boxes keeps the whole path narrow enough to read at this size.
-  run('sources', `  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`)
+  run(
+    'sources',
+    `  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`,
+  )
   run('mix', `  mix [label="mix bus", shape=box, fontcolor="${k.dim}"]`)
 
   const bends = bendOrder(c)
@@ -232,7 +251,10 @@ export function buildDot(c: Controls, o: Options = {}): string {
     run(nodeId(name), node(name, mixKey ? c[mixKey] > 0 : true))
   }
   if (bends.length === 0) {
-    run('no_bends', `  no_bends [label="no bends patched", fontcolor="${k.dim}"]`)
+    run(
+      'no_bends',
+      `  no_bends [label="no bends patched", fontcolor="${k.dim}"]`,
+    )
   }
 
   for (const [name, active] of [
@@ -246,7 +268,10 @@ export function buildDot(c: Controls, o: Options = {}): string {
     run(nodeId(name), node(name, active))
   }
 
-  run('out', `  out [label="dc block → clip → limit", shape=box, fontcolor="${k.dim}"]`)
+  run(
+    'out',
+    `  out [label="dc block → clip → limit", shape=box, fontcolor="${k.dim}"]`,
+  )
 
   lines.push(...wireRun(seq, k, o))
 
@@ -259,10 +284,16 @@ export function buildDot(c: Controls, o: Options = {}): string {
     const wire = up ? k.accent2 : k.dim
     const dest = FB_TARGET[Math.round(c.fbDest)] ?? 'mix'
     const target =
-      dest === 'mix' ? 'mix' : dest in SOURCE_ACTIVE ? `sources:${nodeId(dest)}` : nodeId(dest)
+      dest === 'mix'
+        ? 'mix'
+        : dest in SOURCE_ACTIVE
+          ? `sources:${nodeId(dest)}`
+          : nodeId(dest)
     const door = `URL="#${groupAnchor('Feedback bus')}", tooltip="Feedback bus"`
     lines.push(node('Feedback bus', up))
-    lines.push(`  out -> ${nodeId('Feedback bus')} [color="${wire}", style=dashed, ${door}]`)
+    lines.push(
+      `  out -> ${nodeId('Feedback bus')} [color="${wire}", style=dashed, ${door}]`,
+    )
     lines.push(
       `  ${nodeId('Feedback bus')} -> ${target} [color="${wire}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${wire}", fontsize=10, ${door}]`,
     )

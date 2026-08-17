@@ -31,7 +31,11 @@ test('never-NaN torture: random param slams for 10 s', () => {
         const def = sliderFor(name)
         const r = rng()
         target[IDX[name]] =
-          r < 0.15 ? def.min : r < 0.3 ? def.max : def.min + rng() * (def.max - def.min)
+          r < 0.15
+            ? def.min
+            : r < 0.3
+              ? def.max
+              : def.min + rng() * (def.max - def.min)
       }
       target[IDX.fbAmt] = rng() < 0.5 ? 1.5 : target[IDX.fbAmt]!
       target[IDX.dlyFb] = rng() < 0.5 ? 1.5 : target[IDX.dlyFb]!

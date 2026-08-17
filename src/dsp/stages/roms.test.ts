@@ -10,7 +10,9 @@ test('every ROM is playable: named, clocked, and made of legal steps', () => {
   for (const rom of ROMS) {
     expect(rom.steps.length, rom.name).toBeGreaterThan(0)
     expect(rom.stepHz, rom.name).toBeGreaterThan(0)
-    expect(rom.steps[0], `${rom.name} opens on a note`).toBeGreaterThanOrEqual(0)
+    expect(rom.steps[0], `${rom.name} opens on a note`).toBeGreaterThanOrEqual(
+      0,
+    )
     for (const step of rom.steps) {
       expect(step, rom.name).toBeGreaterThanOrEqual(-2)
       expect(step, rom.name).toBeLessThanOrEqual(36)
@@ -28,7 +30,10 @@ test('every ROM sits in the key it declares', () => {
     const scale = rom.minor ? MINOR : MAJOR
     const notes = rom.steps.filter(s => s >= 0)
     const inKey = notes.filter(n => scale.has((((n - rom.key) % 12) + 12) % 12))
-    expect(inKey.length / notes.length, `${rom.name} is diatonic to its key`).toBeGreaterThan(0.8)
+    expect(
+      inKey.length / notes.length,
+      `${rom.name} is diatonic to its key`,
+    ).toBeGreaterThan(0.8)
   }
 })
 
@@ -36,7 +41,11 @@ function rms(overrides: Partial<Controls>, seconds: number): number {
   const sr = 48000
   const chain = buildChain(sr)
   const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
-  const io: StereoBlock = { l: new Float32Array(BLOCK), r: new Float32Array(BLOCK), n: BLOCK }
+  const io: StereoBlock = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
   let sum = 0
   const blocks = Math.ceil((seconds * sr) / BLOCK)
   for (let b = 0; b < blocks; b++) {

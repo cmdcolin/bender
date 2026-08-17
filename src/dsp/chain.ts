@@ -141,7 +141,11 @@ export class Chain {
       const r = softclip(this.dcR.process(io.r[i]! * gain, dcCoef))
       io.l[i] = l
       io.r[i] = r
-      ctx.env[i] = this.outEnv.process(Math.max(Math.abs(l), Math.abs(r)), envA, envR)
+      ctx.env[i] = this.outEnv.process(
+        Math.max(Math.abs(l), Math.abs(r)),
+        envA,
+        envR,
+      )
     }
 
     this.computeFeedback(io, p)

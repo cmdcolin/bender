@@ -12,7 +12,9 @@ const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 // lean on it.
 function resistance(x: number, y: number): string {
   const kohm = 1500 * Math.pow(10, -(0.6 * x + 1.6 * y))
-  return kohm >= 1000 ? `${(kohm / 1000).toFixed(2)} MΩ` : `${Math.round(kohm)} kΩ`
+  return kohm >= 1000
+    ? `${(kohm / 1000).toFixed(2)} MΩ`
+    : `${Math.round(kohm)} kΩ`
 }
 
 // The bare contacts every bent toy grows sooner or later: touch both and your
@@ -25,7 +27,9 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
   const wires = ([0, 1] as const).flatMap(i => {
     const src = Math.round(controls[`mod${i}Src`])
     if (src !== 5 && src !== 6) return []
-    return [`body ${src === 5 ? 'X' : 'Y'} → ${DEST_LABELS[Math.round(controls[`mod${i}Dest`])]}`]
+    return [
+      `body ${src === 5 ? 'X' : 'Y'} → ${DEST_LABELS[Math.round(controls[`mod${i}Dest`])]}`,
+    ]
   })
 
   const track = (e: PointerEvent<HTMLDivElement>) => {
@@ -58,11 +62,20 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
         <span className={styles.contact} style={{ left: '93%' }} />
         {held && (
           <>
-            <span className={styles.vline} style={{ left: `${controls.bodyX * 100}%` }} />
-            <span className={styles.hline} style={{ top: `${(1 - controls.bodyY) * 100}%` }} />
+            <span
+              className={styles.vline}
+              style={{ left: `${controls.bodyX * 100}%` }}
+            />
+            <span
+              className={styles.hline}
+              style={{ top: `${(1 - controls.bodyY) * 100}%` }}
+            />
             <span
               className={styles.dot}
-              style={{ left: `${controls.bodyX * 100}%`, top: `${(1 - controls.bodyY) * 100}%` }}
+              style={{
+                left: `${controls.bodyX * 100}%`,
+                top: `${(1 - controls.bodyY) * 100}%`,
+              }}
             />
           </>
         )}

@@ -60,7 +60,13 @@ export class ChaosOsc implements Stage {
       const charge = 70 / this.sr
       const drain = (starve * 800) / this.sr
       this.rail = flushDenormal(
-        Math.min(Math.max(this.rail + charge * (1 - this.rail) - drain * Math.abs(out), 0), 1),
+        Math.min(
+          Math.max(
+            this.rail + charge * (1 - this.rail) - drain * Math.abs(out),
+            0,
+          ),
+          1,
+        ),
       )
 
       out *= level * 0.5

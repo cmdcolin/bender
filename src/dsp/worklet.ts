@@ -28,7 +28,11 @@ class BenderProcessor extends AudioWorkletProcessor {
     super()
     this.built = buildBender(sampleRate)
     this.smoother = new Smoother(sampleRate, BLOCK)
-    this.io = { l: new Float32Array(BLOCK), r: new Float32Array(BLOCK), n: BLOCK }
+    this.io = {
+      l: new Float32Array(BLOCK),
+      r: new Float32Array(BLOCK),
+      n: BLOCK,
+    }
     this.target.set(packParams(DEFAULT_CONTROLS))
     this.port.onmessage = (e: MessageEvent<ToWorklet>) => {
       const msg = e.data
@@ -91,7 +95,11 @@ class BenderProcessor extends AudioWorkletProcessor {
     }
 
     this.smoother.step(this.target)
-    this.built.chain.process(io, this.smoother.cur, mic ? this.micMono : undefined)
+    this.built.chain.process(
+      io,
+      this.smoother.cur,
+      mic ? this.micMono : undefined,
+    )
 
     out[0].set(io.l.subarray(0, n))
     if (out[1]) out[1].set(io.r.subarray(0, n))
@@ -116,7 +124,9 @@ class BenderProcessor extends AudioWorkletProcessor {
       for (let i = 0; i < SCOPE_LEN; i++) {
         scope[i] = this.scope[(this.scopePos + i) % SCOPE_LEN]!
       }
-      this.port.postMessage({ kind: 'meter', peak: this.peak, scope }, [scope.buffer])
+      this.port.postMessage({ kind: 'meter', peak: this.peak, scope }, [
+        scope.buffer,
+      ])
       this.peak = 0
     }
     return true

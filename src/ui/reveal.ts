@@ -1,7 +1,11 @@
 function scrollParent(el: HTMLElement): HTMLElement | undefined {
   for (let p = el.parentElement; p; p = p.parentElement) {
     const overflow = getComputedStyle(p).overflowY
-    if ((overflow === 'auto' || overflow === 'scroll') && p.scrollHeight > p.clientHeight) return p
+    if (
+      (overflow === 'auto' || overflow === 'scroll') &&
+      p.scrollHeight > p.clientHeight
+    )
+      return p
   }
   return undefined
 }
@@ -20,5 +24,6 @@ export function scrollIntoPanel(el: HTMLElement) {
   const above = box.top - view.top - 8
   const below = box.bottom - view.bottom + 8
   const delta = above < 0 ? above : below > 0 ? Math.min(below, above) : 0
-  if (delta) panel.scrollTo({ top: panel.scrollTop + delta, behavior: 'smooth' })
+  if (delta)
+    panel.scrollTo({ top: panel.scrollTop + delta, behavior: 'smooth' })
 }
