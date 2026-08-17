@@ -1,5 +1,5 @@
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { bendAt, BENDS, GROUPS, groupKeys, sliderFor } from './controls'
+import type { Controls } from '../controls'
+import { bendAt, BENDS, sliderFor, touchedCount } from './controls'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg'
 
 // The signal path, laid out and drawn: live bend order, the feedback wire, and
@@ -94,18 +94,6 @@ export function groupAnchor(name: string): string {
 
 function nodeId(name: string): string {
   return name.replace(/\W+/g, '_')
-}
-
-// Settled once: the drawing asks after twenty groups' keys every time it is
-// built, and it is built on every frame a board is travelling.
-const KEYS_BY_GROUP = new Map(GROUPS.map(g => [g.name, groupKeys(g)]))
-
-function touchedCount(name: string, c: Controls): number {
-  const keys = KEYS_BY_GROUP.get(name)
-  if (!keys) return 0
-  let n = 0
-  for (const k of keys) if (c[k] !== DEFAULT_CONTROLS[k]) n++
-  return n
 }
 
 const FONT = 10

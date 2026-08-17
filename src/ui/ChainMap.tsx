@@ -1,6 +1,6 @@
-import { createElement, type ReactNode } from 'react'
+import { createElement, useEffect, useState, type ReactNode } from 'react'
+import type { Controls } from '../controls'
 import { engine } from '../engine/engine'
-import { useStoreValue } from './ControlsContext'
 import { buildMap, drawMap } from './chain-map'
 import { GROUPS } from './controls'
 import { Shelf } from './Section'
@@ -8,6 +8,43 @@ import type { El } from './svg'
 import styles from './ChainMap.module.css'
 
 const DOORS = new Set(GROUPS.map(g => g.name))
+
+// Graphviz used to lay the map out again for any change to the string at all,
+// and it was debounced for that. Drawing it ourselves is far cheaper but not
+// free: the panel still hands React a fresh tree of 179 SVG elements to diff,
+// which is half a millisecond to build and at least as much again to reconcile
+// — and two of the strings in it are numbers printed on wires, the feedback
+// amount and each patch wire's depth, which a morph moves every frame.
+//
+// What the map is for is its shape, and a shape can wait a tenth of a second.
+// So it draws at once when it has been still, and on the trailing edge while
+// the board is moving. Which stage is open is not on this clock: that arrives
+// as a prop and lights up the moment it is clicked.
+const REDRAW_MS = 120
+
+function useSettledControls(): Controls {
+  const [controls, setControls] = useState(engine.controls.get)
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let drawnAt = 0
+    const draw = () => {
+      timer = undefined
+      drawnAt = performance.now()
+      setControls(engine.controls.get())
+    }
+    const off = engine.controls.subscribe(() => {
+      if (timer !== undefined) return
+      const wait = REDRAW_MS - (performance.now() - drawnAt)
+      if (wait <= 0) draw()
+      else timer = setTimeout(draw, wait)
+    })
+    return () => {
+      off()
+      if (timer !== undefined) clearTimeout(timer)
+    }
+  }, [])
+  return controls
+}
 
 function mount(node: El | string, key: number): ReactNode {
   if (typeof node === 'string') return node
@@ -27,7 +64,7 @@ export function ChainMap({
   open: string | null
   onOpen: (name: string) => void
 }) {
-  const controls = useStoreValue(engine.controls)
+  const controls = useSettledControls()
   const map = buildMap(controls, { wrap: true, open: open ?? undefined })
 
   return (

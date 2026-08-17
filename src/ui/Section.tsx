@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { DEFAULT_CONTROLS } from '../controls'
 import { useStoreValue } from './ControlsContext'
 import { engine } from '../engine/engine'
-import { groupKeys, type Group } from './controls'
+import { touchedCount, type Group } from './controls'
 import { DrumGrid } from './DrumGrid'
 import { resetGroup, rollGroup } from './presets'
 import { scrollIntoPanel } from './reveal'
@@ -10,9 +9,7 @@ import { ControlSlider } from './Slider'
 import styles from './Section.module.css'
 
 function useTouchedCount(group: Group): number {
-  const controls = useStoreValue(engine.controls)
-  return groupKeys(group).filter(k => controls[k] !== DEFAULT_CONTROLS[k])
-    .length
+  return touchedCount(group, useStoreValue(engine.controls))
 }
 
 // The one stage the map has open, with its controls already unfolded. The panel

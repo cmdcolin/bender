@@ -1,4 +1,8 @@
-import type { ControlKey } from '../../controls'
+import {
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../../controls'
 import { BEND_GROUPS } from './bends'
 import { FEEDBACK_GROUPS } from './feedback'
 import { MASTER_GROUPS } from './master'
@@ -33,9 +37,26 @@ export const EDITOR_KEYS = new Set<ControlKey>(
   GROUPS.flatMap(g => g.editor?.keys ?? []),
 )
 
+// Settled once, by name. The drawing asks after all twenty groups' keys every
+// time it is built and the panel asks again per part on the shelf per render,
+// and both of those happen on every frame a board is travelling.
+const KEYS_BY_GROUP = new Map<string, readonly ControlKey[]>(
+  GROUPS.map(g => [
+    g.name,
+    [...g.sliders.map(s => s.key), ...(g.editor?.keys ?? [])],
+  ]),
+)
+
 /** Every control a group owns, whatever kind of widget turns it. */
-export function groupKeys(group: Group): ControlKey[] {
-  return [...group.sliders.map(s => s.key), ...(group.editor?.keys ?? [])]
+export function groupKeys(group: Group | string): readonly ControlKey[] {
+  return KEYS_BY_GROUP.get(typeof group === 'string' ? group : group.name) ?? []
+}
+
+/** How far off stock a group is sitting, counted in controls. */
+export function touchedCount(group: Group | string, c: Controls): number {
+  let n = 0
+  for (const k of groupKeys(group)) if (c[k] !== DEFAULT_CONTROLS[k]) n++
+  return n
 }
 
 // Halfway between two enum choices is no choice at all, and halfway between two
