@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { DEFAULT_CONTROLS } from '../controls'
+import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { packParams } from '../engine/params'
 import { buildBender } from './build'
 import { BLOCK, type StereoBlock } from './stage'
@@ -43,38 +43,75 @@ function denormals(root: object): string[] {
   return found
 }
 
-test('a board left ringing itself out never settles into denormal range', () => {
-  // Everything here decays per sample at a rate set by the sample rate, so a
-  // slow rate reaches the same place in the same simulated minutes for a sixth
-  // of the work. What is under test is where a value comes to rest, not pitch.
-  const sr = 8000
-  const built = buildBender(sr, 7)
+// Everything here decays per sample at a rate set by the sample rate, so a slow
+// rate reaches the same place in the same simulated minutes for a sixth of the
+// work. What is under test is where a value comes to rest, not pitch.
+const SR = 8000
+
+function ring(hot: Partial<Controls>, cold: Partial<Controls>): string[] {
+  const built = buildBender(SR, 7)
   const io: StereoBlock = {
     l: new Float32Array(BLOCK),
     r: new Float32Array(BLOCK),
     n: BLOCK,
   }
-  // Everything that rings, struck once and then left alone.
-  const p = packParams({
-    ...DEFAULT_CONTROLS,
-    chipLevel: 0.6,
-    chipAccomp: 1,
-    drumLevel: 0.6,
-    revMix: 0.4,
-    dlyMix: 0.3,
-    filtMix: 0.4,
-    combMix: 0.3,
-    stompMix: 0.4,
-    tapeMix: 0.4,
-  })
-
   built.transport.tune = true
   built.transport.drums = true
-  for (let b = 0; b < (2 * sr) / BLOCK; b++) built.chain.process(io, p)
+  const struck = packParams({ ...DEFAULT_CONTROLS, ...hot })
+  for (let b = 0; b < (2 * SR) / BLOCK; b++) built.chain.process(io, struck)
   built.transport.tune = false
   built.transport.drums = false
   // Long enough for a double to halve its way down from unity to nothing.
-  for (let b = 0; b < (400 * sr) / BLOCK; b++) built.chain.process(io, p)
+  const after = packParams({ ...DEFAULT_CONTROLS, ...hot, ...cold })
+  for (let b = 0; b < (400 * SR) / BLOCK; b++) built.chain.process(io, after)
+  return denormals(built.chain)
+}
 
-  expect(denormals(built.chain)).toEqual([])
+// Everything that rings, struck once and then left alone.
+const RINGING: Partial<Controls> = {
+  chipLevel: 0.6,
+  chipAccomp: 1,
+  drumLevel: 0.6,
+  revMix: 0.4,
+  dlyMix: 0.3,
+  filtMix: 0.4,
+  combMix: 0.3,
+  stompMix: 0.4,
+  tapeMix: 0.4,
+}
+
+test('a board left ringing itself out never settles into denormal range', () => {
+  expect(ring(RINGING, {})).toEqual([])
+}, 30_000)
+
+// The knobs that feed a value with nothing else driving it: at rest the state
+// they wind up is multiplied down by itself for ever, and a decay that starts
+// from zero never leaves it. So a stage is only honestly tested from the far
+// side of a knob that was up and came back down — which is where the tape
+// delay's flutter walk had been coasting into denormal range and costing the
+// stage most of its own cost again, on a board that reads as untouched.
+const WOUND_UP: Partial<Controls> = {
+  flutter: 0.5,
+  wowDepthMs: 3,
+  tapeWow: 0.5,
+  tapeFlutter: 0.5,
+  tapeDrop: 0.3,
+  tapePrint: 0.5,
+  stompSag: 0.5,
+  brownAmt: 0.4,
+  brownCrackle: 0.3,
+  humLevel: 0.3,
+  crackleAmp: 0.3,
+  chipStarve: 0.3,
+  subLevel: 0.4,
+  shiftMix: 0.5,
+  shiftFb: 0.4,
+  couple: 0.5,
+}
+
+test('nor does one whose knobs were turned back down', () => {
+  const cold = Object.fromEntries(
+    Object.keys(WOUND_UP).map(k => [k, DEFAULT_CONTROLS[k as ControlKey]]),
+  )
+  expect(ring({ ...RINGING, ...WOUND_UP, bendSlot5: 7 }, cold)).toEqual([])
 }, 30_000)

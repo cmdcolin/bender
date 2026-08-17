@@ -65,8 +65,9 @@ export class TapeDelay implements Stage {
             this.maxDelay - 8,
           )
         : baseDelay
-      this.flutterWalk += (this.rng() - 0.5) * flutter * 0.6
-      this.flutterWalk *= 0.995
+      this.flutterWalk = flushDenormal(
+        (this.flutterWalk + (this.rng() - 0.5) * flutter * 0.6) * 0.995,
+      )
       const wobble =
         wowDepth * this.wow.step(wowK) + this.flutterWalk * 0.002 * this.sr
 
