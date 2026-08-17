@@ -1,11 +1,11 @@
-import { instance } from '@viz-js/viz'
 import { writeFileSync } from 'node:fs'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { buildDot, type Palette } from '../src/ui/chain-dot'
+import { buildMap, drawMap, type Palette } from '../src/ui/chain-map'
+import { serialize } from '../src/ui/svg'
 
-// The README's signal path, drawn from the same DOT the panel emits, in a pair
-// of themes so it reads on GitHub light and dark. `pnpm diagram` rewrites it;
-// chain-dot.test.ts fails if the committed copies fall behind.
+// The README's signal path, drawn by the same code the panel draws with, in a
+// pair of themes so it reads on GitHub light and dark. `pnpm diagram` rewrites
+// it; chain-map.test.ts fails if the committed copies fall behind.
 
 // Everything patched in, so no stage greys out as "not in the path".
 const BOARD: Controls = {
@@ -55,20 +55,19 @@ const THEMES: Record<string, Palette> = {
 
 export const DIAGRAMS = Object.keys(THEMES).map(name => `img/chain-${name}.svg`)
 
-export async function renderDiagrams(): Promise<Record<string, string>> {
-  const viz = await instance()
+export function renderDiagrams(): Record<string, string> {
   return Object.fromEntries(
     Object.entries(THEMES).map(([name, palette]) => [
       `img/chain-${name}.svg`,
-      viz.renderString(buildDot(BOARD, { palette, live: false }), {
-        format: 'svg',
-      }),
+      `<?xml version="1.0" encoding="UTF-8"?>\n${serialize(
+        drawMap(buildMap(BOARD, { palette, live: false })),
+      )}\n`,
     ]),
   )
 }
 
 if (import.meta.main) {
-  for (const [path, svg] of Object.entries(await renderDiagrams())) {
+  for (const [path, svg] of Object.entries(renderDiagrams())) {
     writeFileSync(path, svg)
     console.log(path)
   }

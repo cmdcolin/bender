@@ -16,13 +16,14 @@ Live: https://cmdcolin.github.io/bender/
   <img alt="Sources sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
 </picture>
 
-Graphviz draws that from the chain itself — `pnpm diagram` regenerates it from
-the same DOT the app emits (`src/ui/chain-dot.ts`). The panel redraws it live as
-you play: the bend slots appear in whatever order you patched them, dead stages
-grey out, the feedback wire lands on whichever node **Patched into** picks, and
-patch-bay wires ride over the top, dotted, from what they pick up onto what they
-push. Click a node to open its controls; click a wire for the bay, or its label
-for whatever that end is clipped onto.
+The app draws that from the chain itself — `pnpm diagram` regenerates it with
+the same layout the panel uses (`src/ui/chain-map.ts`), which places the boxes
+and routes the wires directly rather than handing the job to a graph library.
+The panel redraws it live as you play: the bend slots appear in whatever order
+you patched them, dead stages grey out, the feedback wire lands on whichever
+node **Patched into** picks, and patch-bay wires ride over the top, dotted, from
+what they pick up onto what they push. Click a node to open its controls; click
+a wire for the bay, or its label for whatever that end is clipped onto.
 
 Six slots, seven bends — you pick which ones are on the board. The drawing
 reports which stages it found a door for, and the parts left over sit on a shelf

@@ -3,10 +3,10 @@
   border-bottom: 1px solid var(--border-quiet);
 }
 
-/* The path draws at whatever height graphviz lays out and the panel scrolls it
-   with everything else — a scroll box of its own only ever clipped the chain and
-   trapped the wheel. Graphviz sizes the svg in points, which lands inside the
-   panel's width, so it only ever scales down and the labels stay put. */
+/* The path draws at whatever height the layout came out and the panel scrolls
+   it with everything else — a scroll box of its own only ever clipped the chain
+   and trapped the wheel. The drawing is sized in the same units the panel is,
+   so it only ever scales down and the labels stay put. */
 .graph svg {
   display: block;
   max-width: 100%;
@@ -30,26 +30,22 @@
   fill: var(--fg);
 }
 
-.graph .node a:hover polygon,
-.graph .node a:hover path,
-.graph .node a:focus-visible polygon,
-.graph .node a:focus-visible path {
+/* :global, because these are the drawing's own class names rather than ones
+   this file hands out — the module would otherwise hash them into selectors
+   that match nothing. */
+.graph a:hover :global(.box),
+.graph a:focus-visible :global(.box) {
   stroke: var(--border-hover);
 }
 
 /* A wire's colour is what says where it lands, so hovering one thickens it
    rather than repainting it. A focus ring around a line that brackets half the
    map would be the whole map, so focus thickens it too. */
-.graph .edge a:hover path,
-.graph .edge a:focus-visible path {
+.graph a:hover :global(.line),
+.graph a:focus-visible :global(.line) {
   stroke-width: 2.4;
 }
 
 .graph a:focus-visible {
   outline: none;
-}
-
-.error {
-  font-size: var(--fs-xs);
-  color: var(--danger);
 }
