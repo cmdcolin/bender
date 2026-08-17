@@ -3,14 +3,5 @@
   "singleQuote": true,
   "trailingComma": "all",
   "arrowParens": "avoid",
-  "proseWrap": "always",
-  "plugins": ["prettier-plugin-astro"],
-  "overrides": [
-    {
-      "files": "*.astro",
-      "options": {
-        "parser": "astro"
-      }
-    }
-  ]
+  "proseWrap": "always"
 }
