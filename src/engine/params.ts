@@ -44,6 +44,7 @@ export const PARAM_DEFS = [
   ['bendSlot2', 'step'],
   ['bendSlot3', 'step'],
   ['bendSlot4', 'step'],
+  ['bendSlot5', 'step'],
 
   ['ringHz', 'slew'],
   ['ringShape', 'step'],
@@ -58,7 +59,14 @@ export const PARAM_DEFS = [
   ['distBias', 'slew'],
   ['distMode', 'step'],
   ['distToneHz', 'slew'],
+  ['subLevel', 'slew'],
   ['distMix', 'slew'],
+
+  ['filtHz', 'slew'],
+  ['filtRes', 'ramp'],
+  ['filtMode', 'step'],
+  ['filtDriveDb', 'ramp'],
+  ['filtMix', 'slew'],
 
   ['combHz', 'slew'],
   ['combFb', 'ramp'],
@@ -89,10 +97,13 @@ export const PARAM_DEFS = [
   ['fbAmt', 'ramp'],
   ['fbDelayMs', 'slew'],
   ['fbTone', 'slew'],
+  ['fbDest', 'step'],
 
   ['brownAmt', 'slew'],
   ['brownRate', 'slew'],
   ['brownCrackle', 'slew'],
+  ['humLevel', 'slew'],
+  ['humHz', 'step'],
 
   ['outGain', 'ramp'],
 ] as const satisfies readonly (readonly [ControlKey, Smooth])[]

@@ -62,6 +62,7 @@ export class ToyChip implements Stage {
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
     const micToRail = p[IDX.micPatch] === 1
+    const fbToRail = Math.round(p[IDX.fbDest]!) === 2
     const rail = this.rail
 
     if (rail.rebootCount !== this.lastReboot) {
@@ -128,7 +129,9 @@ export class ToyChip implements Stage {
       }
 
       out *= level * 0.4
-      rail.tick(Math.abs(out), starve, micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0)
+      const extra =
+        (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) + (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0)
+      rail.tick(Math.abs(out), starve, extra)
       io.l[i]! += out
       io.r[i]! += out
     }

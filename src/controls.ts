@@ -34,8 +34,9 @@ export const DEFAULT_CONTROLS = {
   bendSlot0: 1,
   bendSlot1: 2,
   bendSlot2: 3,
-  bendSlot3: 4,
-  bendSlot4: 5,
+  bendSlot3: 6,
+  bendSlot4: 4,
+  bendSlot5: 5,
 
   ringHz: 300,
   ringShape: 0,
@@ -50,7 +51,14 @@ export const DEFAULT_CONTROLS = {
   distBias: 0,
   distMode: 0,
   distToneHz: 8000,
+  subLevel: 0,
   distMix: 0,
+
+  filtHz: 800,
+  filtRes: 0.7,
+  filtMode: 0,
+  filtDriveDb: 0,
+  filtMix: 0,
 
   combHz: 110,
   combFb: 0.7,
@@ -81,10 +89,13 @@ export const DEFAULT_CONTROLS = {
   fbAmt: 0,
   fbDelayMs: 5,
   fbTone: 0,
+  fbDest: 0,
 
   brownAmt: 0,
   brownRate: 6,
   brownCrackle: 0,
+  humLevel: 0,
+  humHz: 0,
 
   outGain: 0,
 }

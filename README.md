@@ -14,9 +14,9 @@ Real-time in the browser, on one AudioWorklet.
 toy chip + toy drums + chaos osc + noise + mic + sample
    +  ◄————————— feedback return ————————┐
    ▼                                     │
-bend slots ×5, reorderable               │
+bend slots ×6, reorderable               │
   ring mod · crusher · shaper ·          │
-  comb · glitch buffer                   │
+  comb · glitch buffer · screech filter  │
    ▼                                     │
 tape delay → spring verb                 │
    ▼                                     │
@@ -42,7 +42,14 @@ The bends that matter:
   retrigger period becomes the pitch and the kit screams.
 - **Mic patch** wires the mic past the mixer, straight onto the chip rail, the
   oscillator's FM input, the delay feedback path, or the ring mod carrier.
-- Every feedback (delay, comb, feedback bus) goes past unity.
+- **Patched into** re-solders the feedback return: the source mix, the
+  oscillator's FM input, the toy rail (the output browns out its own toy), or
+  straight into the tape.
+- **Ground hum** leaks mains fundamental and rectifier buzz in proportion to
+  how hard the supply strains; the ripple wobbles the rail.
+- **Sub octave** is a flip-flop divider under the shaper that mistracks on
+  complex input, like the vintage pedals did.
+- Every feedback (delay, comb, screech filter, feedback bus) goes past unity.
 
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**
 shakes the current board.

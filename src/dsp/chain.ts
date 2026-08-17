@@ -27,7 +27,7 @@ export class Chain {
   post: Stage[] = []
 
   constructor(readonly sr: number) {
-    this.ctx = { sr, mic: new Float32Array(BLOCK) }
+    this.ctx = { sr, mic: new Float32Array(BLOCK), fb: new Float32Array(BLOCK) }
     this.fbCombL = new DelayLine(0.5 * sr + 4)
     this.fbCombR = new DelayLine(0.5 * sr + 4)
   }
@@ -63,9 +63,15 @@ export class Chain {
 
     io.l.fill(0, 0, n)
     io.r.fill(0, 0, n)
+    const fbDest = Math.round(p[IDX.fbDest]!)
     for (let i = 0; i < n; i++) {
-      io.l[i] = this.fbRetL[i]!
-      io.r[i] = this.fbRetR[i]!
+      ctx.fb[i] = 0.5 * (this.fbRetL[i]! + this.fbRetR[i]!)
+    }
+    if (fbDest === 0) {
+      for (let i = 0; i < n; i++) {
+        io.l[i] = this.fbRetL[i]!
+        io.r[i] = this.fbRetR[i]!
+      }
     }
     if (p[IDX.micPatch] === 0) {
       for (let i = 0; i < n; i++) {
@@ -85,6 +91,7 @@ export class Chain {
       p[IDX.bendSlot2]!,
       p[IDX.bendSlot3]!,
       p[IDX.bendSlot4]!,
+      p[IDX.bendSlot5]!,
     ]) {
       const id = Math.round(slot)
       if (id <= 0 || seen.has(id)) continue

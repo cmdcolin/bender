@@ -25,7 +25,7 @@ export class TapeDelay implements Stage {
   }
 
   when(p: Float32Array) {
-    return p[IDX.dlyMix]! > 0
+    return p[IDX.dlyMix]! > 0 || (p[IDX.fbDest] === 3 && p[IDX.fbAmt]! > 0)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -37,6 +37,7 @@ export class TapeDelay implements Stage {
     const mix = p[IDX.dlyMix]!
     const coef = lpCoef(p[IDX.dlyToneHz]!, this.sr)
     const micInject = p[IDX.micPatch] === 3
+    const fbInject = Math.round(p[IDX.fbDest]!) === 3
 
     for (let i = 0; i < io.n; i++) {
       this.wowPhase = (this.wowPhase + wowHz / this.sr) % 1
@@ -53,6 +54,10 @@ export class TapeDelay implements Stage {
       if (micInject) {
         wl += ctx.mic[i]!
         wr += ctx.mic[i]!
+      }
+      if (fbInject) {
+        wl += ctx.fb[i]!
+        wr += ctx.fb[i]!
       }
       this.lineL.write(wl)
       this.lineR.write(wr)

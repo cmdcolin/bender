@@ -74,6 +74,34 @@ test('runaway delay feedback stays bounded and audible', () => {
   expect(Math.max(...tail.map(Math.abs))).toBeLessThanOrEqual(0.891 + 1e-6)
 })
 
+test('screech filter self-oscillates past unity resonance', () => {
+  const out = render(
+    {
+      chipLevel: 0,
+      crackleAmp: 0.4,
+      crackleRate: 20,
+      bendSlot0: 6,
+      filtMix: 1,
+      filtRes: 1.25,
+      filtHz: 400,
+    },
+    2,
+  )
+  const tail = out.subarray(out.length - 4800)
+  const rms = Math.sqrt(tail.reduce((a, x) => a + x * x, 0) / tail.length)
+  expect(rms).toBeGreaterThan(0.02)
+})
+
+test('feedback patched into the delay still loops', () => {
+  const out = render(
+    { chipLevel: 0.5, fbAmt: 1.3, fbDest: 3, dlyMix: 0.8, delayMs: 150, dlyFb: 0.7 },
+    2,
+  )
+  const tail = out.subarray(out.length - 4800)
+  const rms = Math.sqrt(tail.reduce((a, x) => a + x * x, 0) / tail.length)
+  expect(rms).toBeGreaterThan(0.01)
+})
+
 test('no-input feedback bus self-oscillates from nothing', () => {
   const out = render({ chipLevel: 0, fbAmt: 1.4, fbDelayMs: 2, crackleAmp: 0.2 }, 2)
   const tail = out.subarray(out.length - 4800)

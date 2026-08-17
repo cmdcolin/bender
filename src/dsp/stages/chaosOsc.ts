@@ -24,8 +24,10 @@ export class ChaosOsc implements Stage {
 
   constructor(private readonly sr: number) {}
 
+  // Also runs while the feedback bus is patched into the FM input, so the
+  // loop stays alive even with the level down.
   when(p: Float32Array) {
-    return p[IDX.oscLevel]! > 0
+    return p[IDX.oscLevel]! > 0 || (p[IDX.fbDest] === 1 && p[IDX.fbAmt]! > 0)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -36,6 +38,7 @@ export class ChaosOsc implements Stage {
     const mode = Math.round(p[IDX.oscShape]!)
     const starve = p[IDX.oscStarve]!
     const micFm = p[IDX.micPatch] === 2
+    const fbFm = Math.round(p[IDX.fbDest]!) === 1
 
     for (let i = 0; i < io.n; i++) {
       const pitchF = 0.5 + 0.5 * this.rail
@@ -47,6 +50,7 @@ export class ChaosOsc implements Stage {
       if (!stalled) {
         let hz = aHz * pitchF + xmod * b
         if (micFm) hz += ctx.mic[i]! * 1500
+        if (fbFm) hz += ctx.fb[i]! * 1800
         hz = Math.min(Math.max(hz, 0), this.sr * 0.45)
         this.phaseA = (this.phaseA + hz / this.sr) % 1
         const amp = Math.min(Math.max((this.rail - 0.12) / 0.6, 0), 1)
