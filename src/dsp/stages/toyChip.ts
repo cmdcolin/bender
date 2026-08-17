@@ -11,6 +11,17 @@ import { ROMS, type Rom } from './roms'
 const BASE_HZ = 220
 const ENV_FLOOR = 0.003
 
+// Every note the divider can strike, as a ratio. The ROM steps, the keys and the
+// triads are all whole semitones, so the chip's own pitches are a table — eight
+// voices at eight Math.pow calls a sample is the one stage that is always on
+// paying for arithmetic it did last sample.
+const SEMI_LO = -48
+const SEMI = Float64Array.from({ length: 144 }, (_, i) =>
+  Math.pow(2, (i + SEMI_LO) / 12),
+)
+const ratio = (semitone: number) =>
+  SEMI[semitone - SEMI_LO] ?? Math.pow(2, semitone / 12)
+
 // The tone selector taps the divider chain at a different width. Narrow pulses
 // null different harmonics; none of them is compensated for level, exactly as
 // the cheap chips left them.
@@ -97,6 +108,8 @@ export class ToyChip implements Stage {
   private lastReboot = 0
   private wasPlaying = false
   private pendingKey = -1
+  private lastTiming = 0
+  private envDecay = 1
   private rng: Rng
 
   constructor(
@@ -295,9 +308,14 @@ export class ToyChip implements Stage {
         this.gateState = 1
       }
 
-      // one envelope generator, timed off the ROM's own step rate the way a
-      // cheap chip ties decay to its tempo clock
-      const envDecay = Math.exp(-(0.8 * rom.stepHz * timing) / this.sr)
+      // One envelope generator, timed off the ROM's own step rate the way a
+      // cheap chip ties decay to its tempo clock. Only a moving clock — the bend
+      // walking, or a wire on it — makes that a fresh exp every sample.
+      if (timing !== this.lastTiming) {
+        this.lastTiming = timing
+        this.envDecay = Math.exp(-(0.8 * rom.stepHz * timing) / this.sr)
+      }
+      const envDecay = this.envDecay
       this.env *= envDecay
       this.bassEnv *= envDecay
       this.chordEnv *= envDecay
@@ -308,7 +326,7 @@ export class ToyChip implements Stage {
         const note = this.transport.tune ? this.note : -1
         if (note >= 0 && this.env > ENV_FLOOR) {
           const hz = Math.min(
-            BASE_HZ * Math.pow(2, note / 12) * clock * rail.pitchFactor,
+            BASE_HZ * ratio(note) * clock * rail.pitchFactor,
             maxHz,
           )
           this.phase = (this.phase + hz / this.sr) % 1
@@ -320,7 +338,7 @@ export class ToyChip implements Stage {
           if (this.bassEnv > ENV_FLOOR) {
             const hz = Math.min(
               BASE_HZ *
-                Math.pow(2, this.bassNote / 12) *
+                ratio(this.bassNote) *
                 clock *
                 rail.pitchFactorAt(BASS_TRIM),
               maxHz,
@@ -337,7 +355,7 @@ export class ToyChip implements Stage {
               const trim = CHORD_TRIM[c]!
               const hz = Math.min(
                 BASE_HZ *
-                  Math.pow(2, this.chord[c]! / 12) *
+                  ratio(this.chord[c]!) *
                   clock *
                   rail.pitchFactorAt(trim),
                 maxHz,
@@ -357,10 +375,7 @@ export class ToyChip implements Stage {
           if (v.note < 0 || v.env <= ENV_FLOOR) continue
           const trim = VOICE_TRIM[k]!
           const hz = Math.min(
-            BASE_HZ *
-              Math.pow(2, v.note / 12) *
-              clock *
-              rail.pitchFactorAt(trim),
+            BASE_HZ * ratio(v.note) * clock * rail.pitchFactorAt(trim),
             maxHz,
           )
           v.phase = (v.phase + hz / this.sr) % 1

@@ -8,10 +8,7 @@ const COMB_MS = [31, 37, 41, 43]
 
 class Allpass {
   private line: DelayLine
-  constructor(
-    sr: number,
-    private readonly delay: number,
-  ) {
+  constructor(private readonly delay: number) {
     this.line = new DelayLine(delay + 4)
   }
   process(x: number, g: number): number {
@@ -29,18 +26,13 @@ class DampedComb {
   private line: DelayLine
   private damp = new OnePoleLP()
   constructor(
-    sr: number,
     readonly delaySec: number,
+    private readonly delay: number,
   ) {
-    this.line = new DelayLine(delaySec * sr + 4)
+    this.line = new DelayLine(delay + 4)
   }
-  process(
-    x: number,
-    fb: number,
-    dampCoef: number,
-    delaySamples: number,
-  ): number {
-    const d = this.line.read(delaySamples)
+  process(x: number, fb: number, dampCoef: number): number {
+    const d = this.line.read(this.delay)
     this.line.write(x + fb * this.damp.process(d, dampCoef))
     return d
   }
@@ -58,12 +50,15 @@ export class SpringVerb implements Stage {
   private apR: Allpass[]
   private combsL: DampedComb[]
   private combsR: DampedComb[]
+  private readonly fbL = new Float64Array(COMB_MS.length)
+  private readonly fbR = new Float64Array(COMB_MS.length)
 
   constructor(private readonly sr: number) {
-    this.apL = AP_MS.map(ms => new Allpass(sr, (ms / 1000) * sr))
-    this.apR = AP_MS.map(ms => new Allpass(sr, (ms / 1000) * sr * 1.05))
-    this.combsL = COMB_MS.map(ms => new DampedComb(sr, ms / 1000))
-    this.combsR = COMB_MS.map(ms => new DampedComb(sr, (ms + 1.7) / 1000))
+    const comb = (ms: number) => new DampedComb(ms / 1000, (ms / 1000) * sr)
+    this.apL = AP_MS.map(ms => new Allpass((ms / 1000) * sr))
+    this.apR = AP_MS.map(ms => new Allpass((ms / 1000) * sr * 1.05))
+    this.combsL = COMB_MS.map(comb)
+    this.combsR = COMB_MS.map(ms => comb(ms + 1.7))
   }
 
   when(p: Float32Array) {
@@ -75,6 +70,15 @@ export class SpringVerb implements Stage {
     const mix = p[IDX.revMix]!
     const boing = 0.35 + 0.5 * p[IDX.revBoing]!
     const dampCoef = lpCoef(p[IDX.revToneHz]!, this.sr)
+    // A tank's feedback follows the decay knob, and the knob holds still for the
+    // block: eight pow calls a sample is eight for nothing.
+    const fbL = this.fbL
+    const fbR = this.fbR
+    const decayFb = (c: DampedComb) => Math.pow(10, (-3 * c.delaySec) / decay)
+    for (let j = 0; j < fbL.length; j++) {
+      fbL[j] = decayFb(this.combsL[j]!)
+      fbR[j] = decayFb(this.combsR[j]!)
+    }
 
     for (let i = 0; i < io.n; i++) {
       let xl = io.l[i]!
@@ -83,13 +87,9 @@ export class SpringVerb implements Stage {
       for (const ap of this.apR) xr = ap.process(xr, boing)
       let wl = 0
       let wr = 0
-      for (const c of this.combsL) {
-        const fb = Math.pow(10, (-3 * c.delaySec) / decay)
-        wl += c.process(xl, fb, dampCoef, c.delaySec * this.sr)
-      }
-      for (const c of this.combsR) {
-        const fb = Math.pow(10, (-3 * c.delaySec) / decay)
-        wr += c.process(xr, fb, dampCoef, c.delaySec * this.sr)
+      for (let j = 0; j < fbL.length; j++) {
+        wl += this.combsL[j]!.process(xl, fbL[j]!, dampCoef)
+        wr += this.combsR[j]!.process(xr, fbR[j]!, dampCoef)
       }
       io.l[i] = io.l[i]! * (1 - mix) + wl * 0.3 * mix
       io.r[i] = io.r[i]! * (1 - mix) + wr * 0.3 * mix
