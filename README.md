@@ -119,7 +119,27 @@ The bends that matter:
 
 - **Starve** sags the shared toy supply: pitch dives, notes collapse, and past
   the brownout threshold the watchdog reboots the chip — the tune keeps
-  restarting.
+  restarting. The pot doing the starving is a resistor to ground, so it goes on
+  drawing after the chip has gone quiet; a quarter of the way up is a toy
+  running flat and diving, and three quarters restarts the tune several times a
+  second. Where the watchdog trips drifts with heat and wanders on its own, the
+  reset line holds for somewhere between 40 and 130 ms, and the rail has climbed
+  somewhere different by the time it lets go — so the reboots never land on a
+  metronome.
+- **Latch-up** is the brownout that doesn't reboot. CMOS on a collapsing rail
+  can jam instead: the die holds whatever note was sounding, keeps drawing
+  current, and the output stage sits where it was left rather than fading with
+  the supply, so one note screams and dives for up to a second while the
+  watchdog is locked out — until the current gives out and it finally gets its
+  power cycle. Hot parts latch more readily, which is why it happens to a toy
+  that has been running a while and not to one just switched on.
+- **Crystal drift** is the toy's clock wandering off the ratio you set it to.
+  Nothing pulls it back, so it never settles against the drum machine: the two
+  lean past each other and come back for as long as you leave it running.
+- **Junk in the counter.** Pressing play drops the needle on step 0; coming back
+  from a brownout does not. The program counter holds whatever was in the latch
+  when the rail went, so the tune comes back from the middle of itself as often
+  as from the top — a starving chip that always restarted at bar one was a loop.
 - **Batteries** is how flat the cells are, which is the floor Starve collapses
   from. Flat cells hold a lower open-circuit voltage and more internal
   resistance, so the rail never comes back to full between notes and every note
@@ -147,10 +167,22 @@ The bends that matter:
   LFO, the sag on whichever supply is dying, the output envelope, the mic, an
   axis of the body pad, the feedback bus itself, the chip's sequencer ramping
   across each ROM step — the one source that stays in time with the tune — or
-  either box's trigger line, a drum hit or a note struck. That goes onto a
-  filter cutoff, a carrier, a clock, the shift, the word length, the tape speed,
-  the glitch chance, the stompbox drive, the drum cross-patch or the feedback
-  amount. Depth goes negative, so a failing supply can drag a pitch either way.
+  either box's trigger line — a drum hit or a note struck — or how hot the board
+  has got, which is the slowest thing on it and the one that never comes back to
+  where it started. That goes onto a filter cutoff, a carrier, a clock, the
+  shift, the word length, the tape speed, the glitch chance, the stompbox drive,
+  the drum cross-patch or the feedback amount. Depth goes negative, so a failing
+  supply can drag a pitch either way.
+
+  Either wire can also land on the _other wire's depth_, which is where the pair
+  stops being two modulations and starts being one neither of them wrote. And
+  the bay's oscillator has two shapes past the four an LFO has: **chaos** folds
+  along a Rössler band, passing near where it has been without ever landing
+  there, and **drunk** is a bounded walk that reflects off the ends of its
+  travel. Rate still says roughly how fast; nothing about the next cycle is in
+  the last one, which is the difference between a modulated board and a board
+  that keeps surprising you.
+
 - **The body pad** is the bare contacts every bent toy grows sooner or later:
   touch both and your own resistance is the control. It does nothing until a
   wire in the bay is soldered to it, which is also true of the real thing.
@@ -184,6 +216,56 @@ The bends that matter:
   Brownout drag the pedal down with everything else. Starve the gate circuit far
   enough and it stops needing an input at all.
 - Every feedback (delay, comb, screech filter, feedback bus) goes past unity.
+
+## Ageing
+
+Every bend above is a thing you can hear inside a note. These five are about
+what the board does over minutes, and they are the difference between an
+instrument with settings and an instrument with a mood. All five sit at nothing
+until asked, so a board that doesn't want them is the board that was here
+before.
+
+**Heat** has no reading on the panel because a real one doesn't either. It
+climbs off whatever you are making the board dissipate — a screaming loop, a
+starved rail, a pedal wound up — over about a minute, and falls back over two.
+The rail holds less as it goes, the watchdog trips sooner, a starving oscillator
+takes longer to come back after each stall, and the spring tank drifts flat.
+Turned up, the board three minutes in is not the one that booted, and it never
+settles anywhere, because where it goes depends on what you played on the way
+there.
+
+**Fault clustering** is whether faults arrive on a rate or in runs. Every
+dropout, spark, glitch and counter slip used to roll its own dice at a constant
+rate, which the ear averages into a texture inside a second — after that it
+stops being an event and becomes the sound of the knob position. Wound up, each
+fault leaves the next one likelier for a couple of seconds, the way a joint that
+has started arcing goes on arcing. The knob redistributes rather than
+intensifies: the same faults arrive as a minute of nothing and then a dozen at
+once, because the resting rate is what pays for the bursts.
+
+**Dry joints** is how intermittent the solder is under the bend slots. A cold
+joint opens and the stage on that slot is simply not in the path — no dry/wet
+fade, a click going out and another coming back, and whatever it was ringing
+left where it stood. What drops out is whatever you patched there, so the board
+rewrites its own signal path while it plays.
+
+**Re-solder** is the board changing its own topology: two bend slots swap
+places, or the feedback return jumps to a different pin. Nothing about the
+settings moves — every bend keeps the values you gave it — which makes it the
+one roll on the board that asks "what if this went through that first" while
+your hands are off it.
+
+**Cross-coupling** wires the loop's own brightness against its supply. Top end
+in the chain opens the screech filter's resonance, which makes more top end; the
+same energy strains the supply and draws on the toy's cells, which shuts it back
+down several hundred milliseconds later. Two couplings of opposite sign on
+different time constants never find a level to sit at, so a squeal hunts around
+a pitch instead of settling on one — with no LFO anywhere near it. It is also
+how a runaway browns out the toy that started it.
+
+Sitting under all of it: the noise, the faults and the reboots are seeded off
+the clock when the instrument boots. A board is still a board and does what it
+says, but two takes of one board are two takes rather than the same file twice.
 
 ## The tape machine
 
@@ -226,6 +308,17 @@ you picked, the pattern you wrote and the output, mic and sample levels all stay
 where you left them — no preset names the song at all, so auditioning a board is
 a question about the circuit and never about the tune.
 
+A shake lands on a handful of controls rather than on all of them. Nudging every
+one of the hundred-odd at once is the central limit theorem with a slider rack
+in front of it: each control moves by less than you can hear it move, none of
+them moves far enough to be the reason the board changed, and what comes back
+drifts toward the middle of every travel — which is the one place nothing sounds
+like anything. Leaving most of them exactly where they were is what lets the few
+that did move be audible as the difference. And a random look thins itself down
+to three wet bends on the way out, by taking the extras off the board rather
+than turning them down, because a stage you can't pick out is worth less than a
+stage that isn't there.
+
 A shake stays in time. The tempo is not one of the things it shakes, and every
 control that counts in time rather than in pitch — delay time, glitch slice,
 drum retrigger, the bay LFO — comes back down on a division of that beat, so the
@@ -255,6 +348,18 @@ down to one and rolls that one hard (six at once is where a board turns to
 porridge), and **wreck it** winds up everything that can run away at once — the
 feedbacks past unity, the supply on the floor, the DAC down to a few bits. The
 safety tail holds all of it at the rails.
+
+Three of them go looking for an edge rather than a middle. **Slam** drives one
+to three controls all the way to an end of their travel and touches nothing
+else, which is how a hand actually finds a sound — all the way up, listen, all
+the way back — and either end counts, since a control slammed shut is as much an
+answer as one slammed open. **On the edge** takes two pairs that fight, the sort
+where winding one up decides whether the other screams, gates or dies, and
+drives each pair to opposite corners of itself: rolled independently the same
+two controls land in the middle of both travels, which is where a circuit sounds
+like a setting rather than an event. **Let it age** turns the five ageing
+mechanisms up together, because each alone is a detail and all five at once is a
+different instrument.
 
 A preset chip is also a fader. Click it for the whole board, or drag it sideways
 for part of the way there: the drag runs the same road the morph flies, under
