@@ -146,3 +146,6 @@ export type ControlKey = keyof Controls
 export const CONTROL_KEYS = Object.keys(DEFAULT_CONTROLS) as ControlKey[]
 
 export const atRest = (v: number, k: ControlKey) => v === DEFAULT_CONTROLS[k]
+
+export const sameControls = (a: Controls, b: Controls) =>
+  CONTROL_KEYS.every(k => a[k] === b[k])

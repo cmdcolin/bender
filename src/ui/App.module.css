@@ -55,6 +55,7 @@
 }
 
 .btn,
+.btnOff,
 .btnDanger,
 .flight {
   flex: 1 1 64px;
@@ -70,6 +71,13 @@
 .btn:hover {
   border-color: var(--border-hover);
   color: var(--fg);
+}
+
+/* Greyed rather than hidden: an empty walk is the honest answer to "can I take
+   that back", and a button that came and went would move the whole row. */
+.btnOff {
+  color: var(--fg4);
+  cursor: default;
 }
 
 .btnDanger {

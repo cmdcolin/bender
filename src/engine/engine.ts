@@ -1,5 +1,17 @@
 import workletUrl from '../dsp/worklet.ts?worker&url'
-import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
+import {
+  DEFAULT_CONTROLS,
+  sameControls,
+  type ControlKey,
+  type Controls,
+} from '../controls'
+import {
+  EMPTY_HISTORY,
+  record,
+  stepBack,
+  stepForward,
+  type History,
+} from '../history'
 import { createStore, type Store } from '../listeners'
 import { Glide } from './glide'
 import type { FromWorklet, ToWorklet } from './messages'
@@ -34,6 +46,10 @@ export class Engine {
   // by the one button that draws it, so a 30s morph costs that button per frame
   // and not the whole panel.
   readonly morphProgress = createStore<number | null>(null)
+  // The walk over boards you have been through. A store because the buttons that
+  // offer it have to grey out and light up as it fills; it changes once per
+  // gesture, not per frame.
+  readonly history = createStore<History<Controls>>(EMPTY_HISTORY)
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -91,6 +107,7 @@ export class Engine {
   }
 
   set(key: ControlKey, value: number) {
+    if (this.controls.get()[key] !== value) this.commitStep()
     this.cancelMorph()
     this.controls.set({ ...this.controls.get(), [key]: value })
     this.flushSoon()
@@ -103,11 +120,73 @@ export class Engine {
   }
 
   private morphRaf = 0
+  private morphTarget: Controls | null = null
+  private armed: Controls | null = null
 
   private cancelMorph() {
     if (this.morphRaf) cancelAnimationFrame(this.morphRaf)
     this.morphRaf = 0
+    this.morphTarget = null
     if (this.morphProgress.get() !== null) this.morphProgress.set(null)
+  }
+
+  // The board to bank: where it has settled, or where a morph in flight is
+  // taking it. The two differ only mid-morph, and there the destination is the
+  // honest answer — a tween is a frame, not a board. Bank the frame and the
+  // board you were stepping out of is unreachable, since redo would land on an
+  // arbitrary point along the path to it. Not the same as where a gesture sets
+  // off *from*: a morph departs from the live controls, deliberately, because
+  // chaining off the tween is the point of a long one.
+  private toBank(): Controls {
+    return this.morphTarget ?? this.controls.get()
+  }
+
+  private bank() {
+    this.armed = null
+    this.history.set(record(this.history.get(), this.toBank(), sameControls))
+  }
+
+  // Arm a step without taking one. A slider drag is one gesture and wants one
+  // entry in the walk, not one per pointer move, so the UI arms on the way down
+  // and the first write that actually moves something banks the board as it was
+  // before the whole gesture. Arming twice over is free; arming and then moving
+  // nothing costs no entry at all, which is what makes a click that lands a
+  // slider back where it started leave no dead step to press undo through.
+  armStep() {
+    this.armed ??= this.toBank()
+  }
+
+  private commitStep() {
+    const armed = this.armed
+    if (armed === null) return
+    this.armed = null
+    this.history.set(record(this.history.get(), armed, sameControls))
+  }
+
+  // Both directions are the same move: take the step the walk offers, if any.
+  //
+  // Through the morph, so a step back arrives however the row says boards
+  // arrive. Undo is the verb this is least obviously right for — a take-back
+  // wants to be instant — but the walk is a walk through board space, and at a
+  // long morph the way back is as worth hearing as the way out was. Stepping
+  // back and forth over one boundary is the cheapest way to find where it sits.
+  // At `cut` it is the write it always was.
+  undo(seconds = 1) {
+    this.walk(stepBack(this.history.get(), this.toBank()), seconds)
+  }
+
+  redo(seconds = 1) {
+    this.walk(stepForward(this.history.get(), this.toBank()), seconds)
+  }
+
+  private walk(
+    step: { history: History<Controls>; value: Controls } | null,
+    seconds: number,
+  ) {
+    if (step === null) return
+    this.armed = null
+    this.history.set(step.history)
+    this.travel(step.value, seconds)
   }
 
   // Stop where it has got to and keep the half-way board, which is a board like
@@ -116,11 +195,19 @@ export class Engine {
     this.cancelMorph()
   }
 
+  // Every whole-board verb — a preset, random, mutate, reset — comes through
+  // here, so the walk covers all of them without each caller having to remember
+  // to bank one.
+  morphTo(target: Controls, seconds = 1) {
+    this.bank()
+    this.travel(target, seconds)
+  }
+
   // Travel to a new board over `seconds`, or land in one frame at zero. It sets
   // off from the *live* controls, so rolls chain: hitting random again halfway
   // through a morph leaves from where the board actually is rather than snapping
   // back to the last resting board first.
-  morphTo(target: Controls, seconds = 1) {
+  private travel(target: Controls, seconds: number) {
     this.cancelMorph()
     const glide = new Glide(this.controls.get(), target)
     const land = () => {
@@ -132,6 +219,7 @@ export class Engine {
       land()
       return
     }
+    this.morphTarget = target
     const start = performance.now()
     const tick = () => {
       const t = Math.min((performance.now() - start) / (seconds * 1000), 1)

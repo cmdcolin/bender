@@ -114,6 +114,7 @@ export function App() {
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
   const [copied, setCopied] = useState(false)
   const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
+  const walk = useStoreValue(engine.history)
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl(controls)
@@ -141,6 +142,19 @@ export function App() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+
+  // The walk, on the keys every other app puts it on. Repeats count: holding
+  // ctrl+z is how you get back out of a run of rolls.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== 'z' || !(e.ctrlKey || e.metaKey)) return
+      e.preventDefault()
+      if (e.shiftKey) engine.redo(morphSeconds)
+      else engine.undo(morphSeconds)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [morphSeconds])
 
   const onDrop = async (e: DragEvent) => {
     e.preventDefault()
@@ -252,6 +266,28 @@ export function App() {
           >
             reset
           </button>
+          {/* Beside reset, because what undo has in common with it is what a
+              hand reaching for either one wants: out of here. */}
+          <button
+            className={walk.past.length ? styles.btn : styles.btnOff}
+            onClick={() => engine.undo(morphSeconds)}
+            disabled={!walk.past.length}
+            title="step back through the boards you have been through (ctrl+z). It arrives however morph says boards arrive, so at a long one the way back is a transition too"
+          >
+            undo
+          </button>
+          {/* Only once there is a walk to step forward into: a permanently
+              greyed redo would cost a slot in the row on every session that
+              never undid anything. */}
+          {walk.future.length > 0 && (
+            <button
+              className={styles.btn}
+              onClick={() => engine.redo(morphSeconds)}
+              title="step forward again (ctrl+shift+z)"
+            >
+              redo
+            </button>
+          )}
           <MorphControl seconds={morphSeconds} onSet={setMorphSeconds} />
           <button
             className={styles.btn}
