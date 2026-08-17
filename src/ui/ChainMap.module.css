@@ -1,33 +1,34 @@
 .map {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
   padding: 8px 0;
   border-bottom: 1px solid var(--border-quiet);
 }
 
-.stage {
-  font-size: var(--fs-xs);
-  padding: 3px 8px;
-  background: var(--bg3);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
+.graph {
+  overflow: auto;
+  max-height: 300px;
+}
+
+/* The svg keeps only its viewBox, so it scales to the panel; the floor keeps
+   the labels readable when the panel is narrower than the graph. */
+.graph svg {
+  display: block;
+  min-width: 360px;
+}
+
+.graph a {
   cursor: pointer;
 }
 
-.stage:hover {
-  border-color: var(--border-hover);
-  color: var(--fg);
+.graph a:hover text {
+  fill: var(--fg);
 }
 
-.count {
-  color: var(--accent);
-  font-family: var(--mono);
+.graph a:hover polygon,
+.graph a:hover path {
+  stroke: var(--border-hover);
 }
 
-.arrow {
-  color: var(--fg4);
+.error {
   font-size: var(--fs-xs);
+  color: var(--danger);
 }

@@ -8,6 +8,8 @@ mechanisms.
 
 Real-time in the browser, on one AudioWorklet.
 
+Live: https://cmdcolin.github.io/bender/
+
 ## The signal path
 
 ```
@@ -24,6 +26,11 @@ brownout → dc block → soft clip —————————┤
    ▼                            feedback bus
 limiter → out
 ```
+
+The panel redraws that path with graphviz as you play: the bend slots appear in
+whatever order you patched them, dead stages grey out, and the feedback wire
+lands on whichever node **Patched into** picks. Click a node to jump to its
+controls.
 
 The whole chain runs inside a single worklet `process()`, so the global
 feedback loop is tight enough to squeal and every feedback path saturates

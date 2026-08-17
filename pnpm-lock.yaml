@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@viz-js/viz':
+        specifier: ^3.29.0
+        version: 3.29.0
       react:
         specifier: ^19.2.0
         version: 19.2.8
@@ -502,6 +505,9 @@ packages:
 
   '@vitest/utils@3.2.7':
     resolution: {integrity: sha512-x6BDOd7dyo3PFLY3I9/HJ25X/6OurhGXk2/B9gOZNPF7XDVjeBK4k01lQE5uvDpbuheErh91qYuE1E2OEjK3Rw==}
+
+  '@viz-js/viz@3.29.0':
+    resolution: {integrity: sha512-iq4MTqNCr8pinP4C73JRFx/h2w4QbtHvXINNiPeBv3/C5tSamXwakst6ODlR/l6uh3/SGr7IAGIfSk2qMekiNw==}
 
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
@@ -1183,6 +1189,8 @@ snapshots:
       '@vitest/pretty-format': 3.2.7
       loupe: 3.2.1
       tinyrainbow: 2.0.0
+
+  '@viz-js/viz@3.29.0': {}
 
   assertion-error@2.0.1: {}
 
