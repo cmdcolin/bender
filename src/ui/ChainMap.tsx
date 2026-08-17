@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { instance } from '@viz-js/viz'
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
-import { buildDot, groupAnchor } from './chain-dot'
+import { buildMap, groupAnchor } from './chain-dot'
 import { GROUPS } from './controls'
+import { Shelf } from './Section'
 import styles from './ChainMap.module.css'
 
 // A megabyte of wasm graphviz, kept out of the boot path.
@@ -31,6 +32,8 @@ function widenWires(svg: SVGSVGElement) {
 // each stage a door into its controls. The map is the panel's index — clicking
 // a box is what puts a stage's knobs on screen — so it draws folded into two
 // columns, which is what keeps it and the stage it opens on screen together.
+// Whatever the drawing found no door for goes on the shelf underneath, which is
+// why the index is complete: every group is either on the path or on the shelf.
 export function ChainMap({
   open,
   onOpen,
@@ -43,7 +46,10 @@ export function ChainMap({
   const lastDot = useRef<string>('')
   const [error, setError] = useState<string>()
 
-  const dot = buildDot(controls, { wrap: true, open: open ?? undefined })
+  const { dot, doors } = buildMap(controls, {
+    wrap: true,
+    open: open ?? undefined,
+  })
   useEffect(() => {
     if (dot === lastDot.current) return
     lastDot.current = dot
@@ -78,6 +84,11 @@ export function ChainMap({
         }}
       />
       {error && <span className={styles.error}>{error}</span>}
+      <Shelf
+        groups={GROUPS.filter(g => !doors.has(g.name))}
+        open={open}
+        onOpen={onOpen}
+      />
     </div>
   )
 }

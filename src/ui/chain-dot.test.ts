@@ -3,7 +3,7 @@ import { instance } from '@viz-js/viz'
 import { readFileSync } from 'node:fs'
 import { renderDiagrams } from '../../scripts/chain-svg'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { buildDot, groupAnchor, PANEL } from './chain-dot'
+import { buildDot, buildMap, groupAnchor, PANEL } from './chain-dot'
 import { GROUPS } from './controls'
 
 const viz = await instance()
@@ -153,33 +153,38 @@ const BOARDS: Record<string, Controls> = {
   },
 }
 
-test.each(Object.entries(BOARDS))('every group has a door: %s', (_, board) => {
-  const dot = buildDot(board, { wrap: true })
-  for (const g of GROUPS) expect(dot).toContain(`#${groupAnchor(g.name)}`)
+// A door the map claims but never draws is worse than no door at all: the panel
+// shelves what the doors leave out, so the group would go missing from both.
+test.each(Object.entries(BOARDS))('every door is drawn: %s', (_, board) => {
+  const { dot, doors } = buildMap(board, { wrap: true })
+  const names = new Set(GROUPS.map(g => g.name))
+  for (const name of doors) {
+    expect(names).toContain(name)
+    expect(dot).toContain(`#${groupAnchor(name)}`)
+  }
   expect(viz.renderString(dot, { format: 'svg' })).toContain('<svg')
 })
 
-test('the shelf holds what the path does not reach, and only that', () => {
-  const dot = buildDot(DEFAULT_CONTROLS)
-  const shelf = dot.slice(dot.indexOf('shelf ['))
-  expect(shelf).toContain(groupAnchor('Freq shifter'))
-  expect(shelf).toContain(groupAnchor('Slot order'))
-  expect(shelf).toContain(groupAnchor('Body contact'))
-  expect(shelf).not.toContain(groupAnchor('Tape machine'))
-  expect(shelf).not.toContain(groupAnchor('Ring mod'))
+test('the doors are what the path reaches, and only that', () => {
+  const { doors } = buildMap(DEFAULT_CONTROLS)
+  expect(doors).toContain('Tape machine')
+  expect(doors).toContain('Ring mod')
+  expect(doors).not.toContain('Freq shifter')
+  expect(doors).not.toContain('Slot order')
+  expect(doors).not.toContain('Body contact')
 })
 
 test('a slotted bend leaves the shelf', () => {
-  const dot = buildDot({ ...DEFAULT_CONTROLS, bendSlot0: 7 })
-  expect(dot.slice(dot.indexOf('shelf ['))).not.toContain(
-    groupAnchor('Freq shifter'),
+  expect(buildMap({ ...DEFAULT_CONTROLS, bendSlot0: 7 }).doors).toContain(
+    'Freq shifter',
   )
 })
 
 test('an empty rack says so in the path, and opens the slot order', () => {
-  const dot = buildDot(BOARDS.bare!)
+  const { dot, doors } = buildMap(BOARDS.bare!)
   expect(dot).toContain(`no_bends [label="no bends patched"`)
   expect(dot).toMatch(new RegExp(`no_bends \\[.*#${groupAnchor('Slot order')}`))
+  expect(doors).toContain('Slot order')
 })
 
 test('a wire label opens what it picks up, the wire itself the bay', () => {
@@ -195,10 +200,6 @@ test('a wire label opens what it picks up, the wire itself the bay', () => {
   expect(dot).toMatch(
     new RegExp(`wire0 -> Tape_delay .*#${groupAnchor('Patch bay')}`),
   )
-})
-
-test("the README's copy is the path alone — no shelf", () => {
-  expect(buildDot(DEFAULT_CONTROLS, { live: false })).not.toContain('shelf [')
 })
 
 test('a wire onto the feedback amount draws onto the bus', () => {

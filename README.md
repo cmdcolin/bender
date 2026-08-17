@@ -24,10 +24,11 @@ patch-bay wires ride over the top, dotted, from what they pick up onto what they
 push. Click a node to open its controls; click a wire for the bay, or its label
 for whatever that end is clipped onto.
 
-Six slots, seven bends — you pick which ones are on the board. What the path
-doesn't reach goes on a shelf under the map — the slot rack, the bends off the
-board, a bay or contact pad with nothing wired to it — so every control has a
-door in the drawing and the panel needs no index beside it.
+Six slots, seven bends — you pick which ones are on the board. The drawing
+reports which stages it found a door for, and the parts left over sit on a shelf
+under it — the slot rack, the bends off the board, a bay or contact pad with
+nothing wired to it — so every control is one click from the map, on the path or
+on the shelf.
 
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —

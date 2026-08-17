@@ -91,6 +91,58 @@ export function OpenGroup({
   )
 }
 
+// The parts the drawing has no wire for: the slot rack, any bend sitting in no
+// slot, and a patch bay or body pad with nothing soldered to it. They sit on a
+// shelf under the map, because "nothing is wired to this" is a hard thing to
+// say inside a picture made of wires — and the map is the panel's only index,
+// so a part it can't hold still needs somewhere to be picked up from.
+export function Shelf({
+  groups,
+  open,
+  onOpen,
+}: {
+  groups: Group[]
+  open: string | null
+  onOpen: (name: string) => void
+}) {
+  if (groups.length === 0) return null
+  return (
+    <div className={styles.shelf}>
+      <span className={styles.shelfLabel}>off the board</span>
+      {groups.map(g => (
+        <ShelfPart
+          key={g.name}
+          group={g}
+          on={open === g.name}
+          onOpen={onOpen}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ShelfPart({
+  group,
+  on,
+  onOpen,
+}: {
+  group: Group
+  on: boolean
+  onOpen: (name: string) => void
+}) {
+  const touched = useTouchedCount(group)
+  return (
+    <button
+      className={on ? styles.partOn : styles.part}
+      aria-expanded={on}
+      onClick={() => onOpen(group.name)}
+    >
+      {group.name}
+      {touched > 0 && <span className={styles.partCount}> • {touched}</span>}
+    </button>
+  )
+}
+
 export function PathHint() {
   return (
     <p className={styles.hint}>

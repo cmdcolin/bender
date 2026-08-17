@@ -65,6 +65,49 @@
   padding: 2px 2px 8px;
 }
 
+/* The parts no wire reaches, under the drawing rather than in it. The label
+   takes a row of its own so the parts wrap under it as one block. */
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  padding: 6px 0 10px;
+}
+
+.shelfLabel {
+  width: 100%;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.part,
+.partOn {
+  font-size: var(--fs-xs);
+  padding: 3px 9px;
+  background: var(--bg3);
+  color: var(--fg3);
+  border: 1px solid var(--border-quiet);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.part:hover {
+  border-color: var(--border-hover);
+  color: var(--fg2);
+}
+
+.partOn {
+  background: var(--bg3);
+  color: var(--fg);
+  border-color: var(--fg4);
+}
+
+.partCount {
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
 .hint {
   margin: 0;
   padding: 10px 2px;
