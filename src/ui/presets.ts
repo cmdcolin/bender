@@ -39,6 +39,20 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'flat batteries',
+    blurb:
+      'Cells too far gone to hold the rail — the whole toy runs low and late',
+    patch: {
+      chipLevel: 0.85,
+      chipBattery: 0.75,
+      chipAccomp: 0.6,
+      drumLevel: 0.55,
+      drumBits: 5,
+      tapeMix: 0.45,
+      tapeHiss: 0.5,
+    },
+  },
+  {
     name: 'melody scrambler',
     blurb: 'Pot soldered on the program counter',
     patch: {

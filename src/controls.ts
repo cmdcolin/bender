@@ -8,6 +8,7 @@ export const DEFAULT_CONTROLS = {
   chipAccomp: 0,
   chipClockX: 1,
   chipStarve: 0,
+  chipBattery: 0,
   chipBendSpot: 0,
   chipBendPot: 0,
 

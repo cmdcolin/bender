@@ -70,14 +70,23 @@ holds every offbeat step back and takes the time off the step after, so the
 shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
 once, and **Bit depth** is the word length of the one cheap DAC all six voices
 share — wind it down and the tails fall off the bottom before the hits do. The
-kit runs on the same rail as the keyboard, so starving the toy takes the drums
-with it.
+kit runs on the same rail and the same divider as the keyboard, so starving the
+toy takes the drums with it and flat batteries drag the tempo down with the
+tune.
 
 The bends that matter:
 
 - **Starve** sags the shared toy supply: pitch dives, notes collapse, and past
   the brownout threshold the watchdog reboots the chip — the tune keeps
   restarting.
+- **Batteries** is how flat the cells are, which is the floor Starve collapses
+  from. Flat cells hold a lower open-circuit voltage and more internal
+  resistance, so the rail never comes back to full between notes and every note
+  sags it further with nothing starving it. The divider tracks the cells rather
+  than the instantaneous dip, so the whole toy runs low _and_ late — tune,
+  accompaniment and drum machine slowing together, where Starve's per-note dive
+  comes out as pitch. Far enough down and a chord alone is enough to brown the
+  chip out.
 - **Bend spot + pot** solders a virtual pot onto the die: clock feedback,
   program counter (melody scrambling), DAC bias, or the gate line.
 - **Retrigger** hammers the drum machine's trigger line; past ~40 Hz the

@@ -16,6 +16,7 @@ export const PARAM_DEFS = [
   ['chipAccomp', 'slew'],
   ['chipClockX', 'slew'],
   ['chipStarve', 'slew'],
+  ['chipBattery', 'slew'],
   ['chipBendSpot', 'step'],
   ['chipBendPot', 'slew'],
 

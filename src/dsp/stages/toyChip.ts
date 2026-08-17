@@ -158,6 +158,7 @@ export class ToyChip implements Stage {
     const tune = rom.steps
     const clockX = p[IDX.chipClockX]!
     const starve = p[IDX.chipStarve]!
+    const battery = p[IDX.chipBattery]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
@@ -169,6 +170,7 @@ export class ToyChip implements Stage {
     const accomp = p[IDX.chipAccomp]!
     const rail = this.rail
     const maxHz = this.sr * 0.49
+    rail.setBattery(battery)
 
     if (rom !== this.lastRom) {
       this.lastRom = rom
@@ -195,9 +197,11 @@ export class ToyChip implements Stage {
         clock *= 1 + pot * 24 * (1 + 0.4 * Math.sin(this.clockWalk))
       }
       if (modClock) clock *= Math.pow(2, modClock[i]! * 3)
+      // Flat cells slow the divider itself, so the song runs late as well as low.
+      const timing = clock * rail.clockFactor
 
       // sequencer — the run/stop line freezes it where it stands
-      if (this.transport.tune) this.stepClock += (rom.stepHz * clock) / this.sr
+      if (this.transport.tune) this.stepClock += (rom.stepHz * timing) / this.sr
       if (this.stepClock >= 1) {
         this.stepClock -= 1
         let next = this.pos + 1
@@ -243,14 +247,14 @@ export class ToyChip implements Stage {
 
       // one envelope generator, timed off the ROM's own step rate the way a
       // cheap chip ties decay to its tempo clock
-      const envDecay = Math.exp(-(0.8 * rom.stepHz * clock) / this.sr)
+      const envDecay = Math.exp(-(0.8 * rom.stepHz * timing) / this.sr)
       this.env *= envDecay
       this.bassEnv *= envDecay
       this.chordEnv *= envDecay
       for (const v of this.voices) if (!v.held) v.env *= envDecay
 
       let out = 0
-      if (!rail.booting && !(starve > 0 && rail.stalled)) {
+      if (!rail.booting && !rail.dead) {
         const note = this.transport.tune ? this.note : -1
         if (note >= 0 && this.env > ENV_FLOOR) {
           const hz = Math.min(

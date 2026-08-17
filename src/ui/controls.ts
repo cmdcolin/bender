@@ -97,6 +97,15 @@ export const GROUPS: Group[] = [
         help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip — the tune keeps restarting.',
       },
       {
+        key: 'chipBattery',
+        label: 'Batteries',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How flat the cells are. The rail never comes back to full, so the toy runs low and slow — pitch, tempo and the drum machine with it — and every note sags it further with nothing starving it. Far enough down and a chord alone browns the chip out.',
+      },
+      {
         key: 'chipBendSpot',
         label: 'Bend spot',
         min: 0,

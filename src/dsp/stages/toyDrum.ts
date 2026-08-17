@@ -116,7 +116,8 @@ export class ToyDrum implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.drumLevel]!
-    const stepHz = (p[IDX.drumBpm]! / 60) * 4
+    // Same divider, same cells as the keyboard: flat batteries drag the tempo.
+    const stepHz = (p[IDX.drumBpm]! / 60) * 4 * this.rail.clockFactor
     const swing = Math.min(Math.max(p[IDX.drumSwing]!, 0), 0.9)
     const tune = p[IDX.drumTune]!
     const decay = Math.max(p[IDX.drumDecay]!, 0.05)

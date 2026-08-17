@@ -278,6 +278,70 @@ test('a starving rail collapses the voices raggedly, not in lockstep', () => {
   expect(rail.pitchFactorAt(1.21)).toBeCloseTo(1)
 })
 
+test('flat cells hold the rail under full and take the clock down with it', () => {
+  const rail = new ToyRail(SR)
+  rail.setBattery(0.8)
+  for (let i = 0; i < SR; i++) rail.tick(0, 0, 0)
+  expect(rail.v).toBeCloseTo(1 - 0.45 * 0.8, 2)
+  expect(rail.pitchFactor).toBeLessThan(0.9)
+  expect(rail.clockFactor).toBeLessThan(0.9)
+
+  // Nothing flat, nothing drawing: the rail sits at full and keeps time.
+  const fresh = new ToyRail(SR)
+  fresh.setBattery(0)
+  for (let i = 0; i < SR; i++) fresh.tick(0.2, 0, 0)
+  expect(fresh.v).toBe(1)
+  expect(fresh.clockFactor).toBe(1)
+  expect(fresh.dead).toBe(false)
+})
+
+test('a flat battery sags under load, and reboots the chip on its own', () => {
+  const quiet = new ToyRail(SR)
+  const loud = new ToyRail(SR)
+  for (const rail of [quiet, loud]) rail.setBattery(1)
+  for (let i = 0; i < SR; i++) {
+    quiet.tick(0.02, 0, 0)
+    loud.tick(0.15, 0, 0)
+  }
+  expect(loud.v).toBeLessThan(quiet.v - 0.1)
+
+  // No starve anywhere — the cells alone take it past the watchdog threshold.
+  const hammered = new ToyRail(SR)
+  hammered.setBattery(1)
+  for (let i = 0; i < SR; i++) hammered.tick(0.4, 0, 0)
+  expect(hammered.rebootCount).toBeGreaterThan(0)
+})
+
+test('flat batteries run the tune low, and it keeps running', () => {
+  const fresh = render({ chipLevel: 1 }, 3)
+  const flat = render({ chipLevel: 1, chipBattery: 0.5 }, 3)
+  expect(pitchHz(flat)).toBeLessThan(pitchHz(fresh) * 0.9)
+  // Half-dead cells drop the pitch; they don't stop the toy playing.
+  expect(rms(flat)).toBeGreaterThan(rms(fresh) * 0.5)
+})
+
+test('flat batteries drag the drum machine down with the tune', () => {
+  // Kick on every fourth step, so the first hit lands one beat in and its
+  // arrival time is the tempo — measured off a rail that has been idle, so
+  // nothing about how hard the kit sags can move it.
+  const kit: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0.8,
+    drumBpm: 120,
+    drumKick: 0b1000_1000_1000_1000,
+    drumSnare: 0,
+    drumHat: 0,
+  }
+  const firstHit = (x: Float32Array) => {
+    const peak = x.reduce((a, v) => Math.max(a, Math.abs(v)), 0)
+    return x.findIndex(v => Math.abs(v) > peak * 0.3) / SR
+  }
+  const fresh = firstHit(render(kit, 2))
+  const flat = firstHit(render({ ...kit, chipBattery: 0.6 }, 2))
+  expect(fresh).toBeCloseTo(0.5, 1)
+  expect(flat).toBeGreaterThan(fresh * 1.15)
+})
+
 test('narrow tone taps thin out and survive the divider running out of counts', () => {
   const square = rms(playKeys({ chipTone: 0 }, chip => chip.noteOn(0)))
   const buzz = rms(playKeys({ chipTone: 3 }, chip => chip.noteOn(0)))
