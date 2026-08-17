@@ -30,16 +30,17 @@ export function App() {
   const sampleName = useStoreValue(engine.sampleName)
   const [dragging, setDragging] = useState(false)
 
-  // Space is the transport wherever the focus is; before power-on it is the
-  // switch itself, a keypress being gesture enough to open the audio context.
+  useEffect(() => engine.autostart(), [])
+
+  // Space is the transport wherever the focus is; the keypress itself is the
+  // gesture that takes the audio context live.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
       e.preventDefault()
-      if (!engine.running.get()) void engine.start()
-      else engine.setPlaying(!engine.playing.get())
+      engine.setPlaying(!engine.playing.get())
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -93,6 +94,11 @@ export function App() {
           </span>
         </div>
         <p className={styles.hint}>
+          {!running && (
+            <b className={styles.warn}>
+              click anywhere to power on — loud, harsh noise ahead, start with your volume low.{' '}
+            </b>
+          )}
           press <b>play demo song</b> (or <span className={styles.kbd}>space</span>), or play keys
           with <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b> until the toy
           reboots, solder the <b>Bend spot</b> pot, push any <b>Feedback</b> past 1
@@ -165,16 +171,6 @@ export function App() {
           </div>
         ))}
       </div>
-
-      {!running && (
-        <button className={styles.startOverlay} onClick={() => engine.start()}>
-          <span className={styles.startBrand}>bender</span>
-          <span className={styles.startCta}>▶ power on</span>
-          <span className={styles.startWarn}>
-            loud, harsh noise ahead — start with your volume low
-          </span>
-        </button>
-      )}
     </div>
   )
 }

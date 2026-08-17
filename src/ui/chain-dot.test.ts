@@ -26,7 +26,7 @@ test('a duplicated bend runs once, at its first slot', () => {
 test('the feedback wire appears only when the bus is up, and lands on its destination', () => {
   expect(buildDot(DEFAULT_CONTROLS)).not.toContain('Feedback_bus')
   const toOsc = buildDot({ ...DEFAULT_CONTROLS, fbAmt: 0.4, fbDest: 1 })
-  expect(toOsc).toContain('Feedback_bus -> Chaos_osc')
+  expect(toOsc).toContain('Feedback_bus -> sources:Chaos_osc')
   expect(viz.renderString(toOsc, { format: 'svg' })).toContain('<svg')
 })
 
@@ -36,6 +36,13 @@ test('nodes link to the anchors the panel renders', () => {
 
 test('touched controls show a count', () => {
   expect(buildDot({ ...DEFAULT_CONTROLS, ringMix: 0.5, ringHz: 100 })).toContain('Ring mod  2')
+})
+
+test('the sources ride one strip, each row linking to its group', () => {
+  const dot = buildDot(DEFAULT_CONTROLS)
+  expect(dot).toContain(`PORT="Chaos_osc" HREF="#${groupAnchor('Chaos osc')}"`)
+  expect(dot).toContain('Noise &amp; crackle')
+  expect(dot).toContain('sources -> mix')
 })
 
 test("the README's diagrams are what the chain draws today — else `pnpm diagram`", async () => {

@@ -5,14 +5,15 @@
 
 .graph {
   overflow: auto;
-  max-height: 300px;
+  max-height: 340px;
 }
 
-/* The svg keeps only its viewBox, so it scales to the panel; the floor keeps
-   the labels readable when the panel is narrower than the graph. */
+/* Graphviz sizes the svg in points, which lands near the panel's width; it only
+   scales down, so the labels never shrink below what graphviz laid out. */
 .graph svg {
   display: block;
-  min-width: 360px;
+  max-width: 100%;
+  height: auto;
 }
 
 .graph a {

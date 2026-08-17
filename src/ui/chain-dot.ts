@@ -89,6 +89,19 @@ const BEND_MIX: Record<string, keyof Controls> = {
   'Screech filter': 'filtMix',
 }
 
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+
+function sourceStrip(c: Controls, o: Options): string {
+  const k = o.palette ?? PANEL
+  const rows = Object.entries(SOURCE_ACTIVE).map(([name, isLive]) => {
+    const touched = o.live === false ? 0 : touchedCount(name, c)
+    const fg = isLive(c) ? k.fg : k.dim
+    const count = touched > 0 ? ` <FONT COLOR="${k.accent}">${touched}</FONT>` : ''
+    return `<TR><TD PORT="${nodeId(name)}" HREF="#${groupAnchor(name)}" TITLE="${esc(name)}"><FONT COLOR="${fg}">${esc(name)}</FONT>${count}</TD></TR>`
+  })
+  return `<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" BGCOLOR="${k.bg}" COLOR="${k.border}">${rows.join('')}</TABLE>`
+}
+
 export interface Options {
   palette?: Palette
   /** A live board shows how far each stage is off stock, and the feedback
@@ -102,18 +115,17 @@ export function buildDot(c: Controls, o: Options = {}): string {
     'digraph chain {',
     '  bgcolor="transparent"',
     '  rankdir=TB',
-    '  nodesep=0.14',
-    '  ranksep=0.2',
-    `  node [shape=box, style="filled,rounded", fillcolor="${k.bg}", color="${k.border}", fontcolor="${k.fg}", fontname="Helvetica", fontsize=9, height=0.24, margin="0.09,0.04"]`,
-    `  edge [color="${k.border}", arrowsize=0.5, penwidth=0.9]`,
+    '  nodesep=0.18',
+    '  ranksep=0.22',
+    `  node [shape=box, style="filled,rounded", fillcolor="${k.bg}", color="${k.border}", fontcolor="${k.fg}", fontname="Helvetica", fontsize=12, height=0.3, margin="0.14,0.06"]`,
+    `  edge [color="${k.border}", arrowsize=0.6, penwidth=1.1]`,
   ]
 
-  const sources = Object.keys(SOURCE_ACTIVE)
-  for (const name of sources) lines.push(groupNode(name, c, SOURCE_ACTIVE[name]!(c), o))
-  lines.push(
-    `  mix [label="mix bus", shape=box, style=filled, fillcolor="${k.bg}", fontcolor="${k.dim}"]`,
-  )
-  for (const name of sources) lines.push(`  ${nodeId(name)} -> mix`)
+  // The sources ride one strip rather than five nodes on a rank of their own:
+  // a column of boxes keeps the whole path narrow enough to read at this size.
+  lines.push(`  sources [shape=none, margin=0, label=<${sourceStrip(c, o)}>]`)
+  lines.push(`  mix [label="mix bus", shape=box, fontcolor="${k.dim}"]`)
+  lines.push('  sources -> mix')
 
   let prev = 'mix'
   const bends = bendOrder(c)
@@ -140,19 +152,19 @@ export function buildDot(c: Controls, o: Options = {}): string {
     prev = nodeId(name)
   }
 
-  lines.push(
-    `  out [label="dc block → clip → limit", shape=box, style=filled, fillcolor="${k.bg}", fontcolor="${k.dim}"]`,
-  )
+  lines.push(`  out [label="dc block → clip → limit", shape=box, fontcolor="${k.dim}"]`)
   lines.push(`  ${prev} -> out`)
 
   if (c.fbAmt > 0) {
-    const target = FB_TARGET[Math.round(c.fbDest)] ?? 'mix'
+    const dest = FB_TARGET[Math.round(c.fbDest)] ?? 'mix'
+    const target =
+      dest === 'mix' ? 'mix' : dest in SOURCE_ACTIVE ? `sources:${nodeId(dest)}` : nodeId(dest)
     lines.push(groupNode('Feedback bus', c, true, o))
     lines.push(
       `  out -> ${nodeId('Feedback bus')} [color="${k.accent2}", style=dashed]`,
     )
     lines.push(
-      `  ${nodeId('Feedback bus')} -> ${target === 'mix' ? 'mix' : nodeId(target)} [color="${k.accent2}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${k.accent2}", fontsize=8]`,
+      `  ${nodeId('Feedback bus')} -> ${target} [color="${k.accent2}", style=dashed, constraint=false, label=" ${o.live === false ? 'feedback' : c.fbAmt.toFixed(2)}", fontcolor="${k.accent2}", fontsize=10]`,
     )
   }
 

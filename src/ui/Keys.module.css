@@ -1,5 +1,14 @@
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .keys {
   display: flex;
+  width: 50%;
+  min-width: 240px;
+  max-width: 460px;
   height: 72px;
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
@@ -44,4 +53,26 @@
 
 .blackOn {
   background: var(--accent);
+}
+
+.hold,
+.holdOn {
+  font-size: var(--fs-sm);
+  padding: 5px 12px;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.hold:hover {
+  border-color: var(--border-hover);
+  color: var(--fg);
+}
+
+.holdOn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #17171a;
 }

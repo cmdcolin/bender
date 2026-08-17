@@ -30,17 +30,35 @@ export class Engine {
   readonly sampleName = createStore<string | null>(null)
 
   private ctx: AudioContext | null = null
+  private booting: Promise<void> | undefined
   private node: AudioWorkletNode | null = null
   private micStream: MediaStream | null = null
   private dirty = false
   private rafQueued = false
 
   async start() {
-    if (this.ctx) {
-      await this.ctx.resume()
-      this.running.set(true)
-      return
+    this.booting ??= this.boot()
+    await this.booting
+    await this.ctx?.resume()
+    this.running.set(this.ctx?.state === 'running')
+  }
+
+  // A fresh AudioContext is suspended until the page has seen a gesture, so
+  // boot it on load and let the first click or key press take it live.
+  autostart() {
+    void this.start()
+    const go = () => {
+      void this.start().then(() => {
+        if (!this.running.get()) return
+        window.removeEventListener('pointerdown', go)
+        window.removeEventListener('keydown', go)
+      })
     }
+    window.addEventListener('pointerdown', go)
+    window.addEventListener('keydown', go)
+  }
+
+  private async boot() {
     const ctx = new AudioContext()
     await ctx.audioWorklet.addModule(workletUrl)
     const node = new AudioWorkletNode(ctx, 'bender', {
@@ -54,11 +72,11 @@ export class Engine {
       else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     node.connect(ctx.destination)
+    ctx.onstatechange = () => this.running.set(ctx.state === 'running')
     this.ctx = ctx
     this.node = node
     this.post({ kind: 'params', pack: packParams(this.controls.get()) })
     this.post({ kind: 'transport', playing: this.playing.get() })
-    this.running.set(true)
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {

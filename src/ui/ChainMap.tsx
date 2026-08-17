@@ -26,10 +26,7 @@ export function ChainMap() {
     viz
       .then(v => {
         if (stale || !host.current) return
-        const svg = v.renderSVGElement(dot)
-        svg.removeAttribute('width')
-        svg.removeAttribute('height')
-        host.current.replaceChildren(svg)
+        host.current.replaceChildren(v.renderSVGElement(dot))
       })
       .catch((e: unknown) => setError(String(e)))
     return () => {
