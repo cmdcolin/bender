@@ -5,9 +5,14 @@ import { buildBender, type BuiltChain } from './build'
 import { Smoother } from './smoother'
 import { BLOCK, type StereoBlock } from './stage'
 
-const SCOPE_LEN = 512
+const SCOPE_LEN = 512 // a power of two, so the ring wraps on a mask
+const SCOPE_MASK = SCOPE_LEN - 1
 const REC_CHUNK = 1 << 15 // frames per posted slab (~0.7 s at 48 k)
-const METER_EVERY = 3 // blocks between meter posts (~8 ms at 48 k)
+// Blocks between meter posts. The panel draws off a frame callback, so posting
+// faster than a frame buys nothing and costs the audio thread a 2 kB buffer it
+// then has to hand across — which is the one allocation here big enough for the
+// collector to notice, and a collection here is a gap in the sound.
+const METER_EVERY = 6 // ~16 ms at 48 k
 
 class BenderProcessor extends AudioWorkletProcessor {
   private target = new Float32Array(N_PARAMS)
@@ -119,17 +124,19 @@ class BenderProcessor extends AudioWorkletProcessor {
 
     for (let i = 0; i < n; i++) {
       this.scope[this.scopePos] = io.l[i]!
-      this.scopePos = (this.scopePos + 1) % SCOPE_LEN
+      this.scopePos = (this.scopePos + 1) & SCOPE_MASK
       const a = Math.abs(io.l[i]!)
       if (a > this.peak) this.peak = a
     }
     this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {
       this.meterCountdown = METER_EVERY
+      // Unrolled from wherever the write head stands, in two runs rather than a
+      // modulo per sample.
       const scope = new Float32Array(SCOPE_LEN)
-      for (let i = 0; i < SCOPE_LEN; i++) {
-        scope[i] = this.scope[(this.scopePos + i) % SCOPE_LEN]!
-      }
+      const head = this.scopePos
+      scope.set(this.scope.subarray(head))
+      scope.set(this.scope.subarray(0, head), SCOPE_LEN - head)
       const tick = this.built.toyDrum.tick
       const rail = this.built.rail
       this.port.postMessage(

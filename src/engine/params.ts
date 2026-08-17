@@ -196,7 +196,13 @@ export const IDX = Object.fromEntries(
   PARAM_DEFS.map(([n], i) => [n, i]),
 ) as Record<ParamName, number>
 
-export const SMOOTH: readonly Smooth[] = PARAM_DEFS.map(([, s]) => s)
+// The smoothing class per param, as a rate the worklet can multiply by rather
+// than a name it has to compare: 0 snaps, anything else is the time constant.
+// The smoother walks all of these every block, and a string switch there is
+// a hundred and seventy comparisons 375 times a second.
+export const SMOOTH_SEC: Float32Array = Float32Array.from(
+  PARAM_DEFS.map(([, s]) => (s === 'step' ? 0 : s === 'slew' ? 0.01 : 0.003)),
+)
 
 export function packParams(values: Controls): Float32Array {
   const out = new Float32Array(N_PARAMS)

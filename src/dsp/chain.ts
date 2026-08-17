@@ -35,6 +35,8 @@ class Joint {
   private openFor = 0
   private burst: Burst
   private wasOpen = false
+  /** Set by pass(): the joint has just broken, or just come back. */
+  moved = false
 
   constructor(
     private readonly sr: number,
@@ -43,9 +45,9 @@ class Joint {
     this.burst = new Burst(sr, 1.2)
   }
 
-  /** True when the joint is passing. `changed` says it just moved. */
-  pass(chatter: number, cluster: number, n: number) {
-    for (let i = 0; i < n; i++) this.burst.step()
+  /** True when the joint is passing; `moved` says it just changed its mind. */
+  pass(chatter: number, cluster: number, n: number): boolean {
+    this.burst.coolFor(n)
     if (this.openFor > 0) this.openFor -= n
     else if (chatter > 0) {
       const perBlock = ((0.4 + chatter * 9) * n) / this.sr
@@ -56,14 +58,15 @@ class Joint {
       }
     }
     const open = this.openFor > 0
-    const changed = open !== this.wasOpen
+    this.moved = open !== this.wasOpen
     this.wasOpen = open
-    return { passing: !open, changed }
+    return !open
   }
 
   reset() {
     this.openFor = 0
     this.wasOpen = false
+    this.moved = false
     this.burst.reset()
   }
 }
@@ -317,7 +320,7 @@ export class Chain {
   // to the next pin — the settings don't move, the topology does.
   private updateRelay(p: Float32Array, n: number, cluster: number) {
     const rate = p[IDX.relayRate]!
-    for (let i = 0; i < n; i++) this.relayBurst.step()
+    this.relayBurst.coolFor(n)
     if (rate <= 0) return
     const perBlock = ((0.02 + rate * 1.2) * n) / this.sr
     if (!this.relayBurst.roll(perBlock, cluster, this.rng)) return
@@ -353,8 +356,9 @@ export class Chain {
       const s = this.bendById[id]
       if (!s) continue
       // An empty slot has no joint, because it has nothing soldered into it.
-      const { passing, changed } = this.joints[k]!.pass(chatter, cluster, n)
-      if (changed) {
+      const joint = this.joints[k]!
+      const passing = joint.pass(chatter, cluster, n)
+      if (joint.moved) {
         const click = Math.min(this.ctx.env[0]! * 1.5, 0.5)
         io.l[0]! += click
         io.r[0]! += click

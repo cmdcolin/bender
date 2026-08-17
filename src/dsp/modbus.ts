@@ -100,6 +100,9 @@ export class ModBus {
   // share a buffer, and the second would overwrite what the first is about to
   // read.
   private readonly held = WIRES.map(() => new Float32Array(BLOCK))
+  // What each wire picked up this block. A field rather than a fresh array,
+  // because build() runs 375 times a second on the audio thread.
+  private readonly picks: (Float32Array | null)[] = WIRES.map(() => null)
   // A trigger line is a spike one sample wide; an envelope follower would barely
   // notice one. These snap up to the hit and fall from there, so a wire off the
   // kit or off the keys pushes what it is soldered to on every hit.
@@ -157,14 +160,15 @@ export class ModBus {
       this.keyEnv[i] = this.keyHit.process(src.trig.key[i]! > 0 ? 1 : 0, fall)
     }
 
-    // What each wire picks up, before anything decides how hard it pushes. Both
-    // are resolved first because either may be the thing that sets the other's
+    // What each wire picks up, before anything decides how hard it pushes. All
+    // are resolved first because any may be the thing that sets another's
     // depth, and a wire that only worked in one direction would make the pair
     // an ordering rule rather than a pair.
-    const picks = WIRES.map(([srcIdx], w) => {
-      const from = Math.round(p[srcIdx]!)
-      return from === SRC.off ? null : this.pick(from, w, n, p, src)
-    })
+    const picks = this.picks
+    for (let w = 0; w < WIRES.length; w++) {
+      const from = Math.round(p[WIRES[w]![0]]!)
+      picks[w] = from === SRC.off ? null : this.pick(from, w, n, p, src)
+    }
 
     // Depth lanes first, so a wire's own depth is settled before it lands.
     for (let w = 0; w < WIRES.length; w++) {

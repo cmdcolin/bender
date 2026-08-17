@@ -169,15 +169,15 @@ export class ToyDrum implements Stage {
       this.stepClock = 0
     }
 
-    const fall = (rate: number) => Math.exp(-rate / (this.sr * decay))
-    const clapBurstFall = fall(70)
+    const perSample = -1 / (this.sr * decay)
+    const clapBurstFall = Math.exp(70 * perSample)
     const falls = this.falls
-    falls[KICK] = fall(9)
-    falls[SNARE] = fall(22)
-    falls[HAT] = fall(60)
-    falls[CLAP] = fall(13)
-    falls[TOM] = fall(11)
-    falls[BELL] = fall(16)
+    falls[KICK] = Math.exp(9 * perSample)
+    falls[SNARE] = Math.exp(22 * perSample)
+    falls[HAT] = Math.exp(60 * perSample)
+    falls[CLAP] = Math.exp(13 * perSample)
+    falls[TOM] = Math.exp(11 * perSample)
+    falls[BELL] = Math.exp(16 * perSample)
 
     let loadSum = 0
     for (let i = 0; i < io.n; i++) {

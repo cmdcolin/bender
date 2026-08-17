@@ -41,6 +41,11 @@ export class Burst {
     this.excite = flushDenormal(this.excite * this.cool)
   }
 
+  /** The same, a block at a time, for a fault only rolled once a block. */
+  coolFor(n: number) {
+    this.excite = flushDenormal(this.excite * Math.pow(this.cool, n))
+  }
+
   roll(prob: number, cluster: number, rng: Rng): boolean {
     if (prob <= 0) return false
     const n = Math.min(Math.max(cluster, 0), 1) * MAX_BRANCH

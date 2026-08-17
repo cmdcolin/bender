@@ -90,10 +90,10 @@ export class SpringVerb implements Stage {
     // block: eight pow calls a sample is eight for nothing.
     const fbL = this.fbL
     const fbR = this.fbR
-    const decayFb = (c: DampedComb) => Math.pow(10, (-3 * c.delaySec) / decay)
+    const perSec = -3 / decay
     for (let j = 0; j < fbL.length; j++) {
-      fbL[j] = decayFb(this.combsL[j]!)
-      fbR[j] = decayFb(this.combsR[j]!)
+      fbL[j] = Math.pow(10, this.combsL[j]!.delaySec * perSec)
+      fbR[j] = Math.pow(10, this.combsR[j]!.delaySec * perSec)
     }
 
     for (let i = 0; i < io.n; i++) {
