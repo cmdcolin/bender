@@ -134,7 +134,8 @@ export class ToyDrum implements Stage {
     // Same divider, same cells as the keyboard: flat batteries drag the tempo.
     const stepHz = (p[IDX.drumBpm]! / 60) * 4 * this.rail.clockFactor
     const swing = Math.min(Math.max(p[IDX.drumSwing]!, 0), 0.9)
-    const tune = p[IDX.drumTune]!
+    const baseTune = p[IDX.drumTune]!
+    const modTune = ctx.mod.read(DEST.drumTune)
     const decay = Math.max(p[IDX.drumDecay]!, 0.05)
     const accent = Math.round(p[IDX.drumAccent]!)
     const baseRetrig = p[IDX.drumRetrigHz]!
@@ -222,6 +223,11 @@ export class ToyDrum implements Stage {
 
       let out = 0
       if (!rail.booting) {
+        // One trimmer for the whole kit, so a wire on it moves every struck
+        // voice together — two octaves either way at full depth.
+        const tune = modTune
+          ? baseTune * Math.pow(2, 2 * modTune[i]!)
+          : baseTune
         const pf = rail.pitchFactor * tune
         if (amp[KICK]! > 0.002) {
           const hz = (40 + 90 * amp[KICK]! * amp[KICK]!) * pf

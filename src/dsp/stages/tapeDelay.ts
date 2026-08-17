@@ -36,7 +36,7 @@ export class TapeDelay implements Stage {
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
-    const delaySamples = (p[IDX.delayMs]! / 1000) * this.sr
+    const baseDelay = (p[IDX.delayMs]! / 1000) * this.sr
     const fb = p[IDX.dlyFb]!
     const wowDepth = (p[IDX.wowDepthMs]! / 1000) * this.sr
     const wowHz = p[IDX.wowHz]!
@@ -48,10 +48,21 @@ export class TapeDelay implements Stage {
     const brake = p[IDX.tapeBrake]!
     const railDrag = p[IDX.tapeMotorRail]!
     const modSpeed = ctx.mod.read(DEST.tapeSpeed)
+    // Two ways to move the repeats, and they don't sound alike: the motor has
+    // weight, so a wire on the speed dives in pitch on its way there, while a
+    // wire on the time moves the head itself — the tap jumps and the repeat that
+    // was already on the tape comes back at a new spacing.
+    const modTime = ctx.mod.read(DEST.delayMs)
     const inertia = timeCoef(0.3, this.sr)
     const recenter = 1 / (3 * this.sr)
 
     for (let i = 0; i < io.n; i++) {
+      const delaySamples = modTime
+        ? Math.min(
+            Math.max(baseDelay * Math.pow(2, 2 * modTime[i]!), 1),
+            this.maxDelay - 8,
+          )
+        : baseDelay
       this.wowPhase = (this.wowPhase + wowHz / this.sr) % 1
       this.flutterWalk += (this.rng() - 0.5) * flutter * 0.6
       this.flutterWalk *= 0.995

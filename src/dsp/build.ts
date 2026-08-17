@@ -26,6 +26,10 @@ export interface BuiltChain {
   toyDrum: ToyDrum
   sampler: Sampler
   transport: Transport
+  /** The shared toy supply, out here because it is the one state worth watching
+      from outside the audio thread: the panel draws it, and a test asks it
+      whether the watchdog tripped. */
+  rail: ToyRail
 }
 
 // One seed for the whole instrument, drawn from it for each part that needs its
@@ -56,7 +60,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   ]
   chain.pedals = [new Stompbox(sr), new TapeDelay(sr), new SpringVerb(sr)]
   chain.post = [new Brownout(sr, next()), new Tape(sr)]
-  return { chain, toyChip, toyDrum, sampler, transport }
+  return { chain, toyChip, toyDrum, sampler, transport, rail }
 }
 
 // Offline rendering (tests): both ROM sequencers run from the first sample.

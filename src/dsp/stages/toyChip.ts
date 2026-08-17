@@ -252,7 +252,7 @@ export class ToyChip implements Stage {
     const rom = ROMS[Math.round(p[IDX.chipTune]!)] ?? ROMS[0]!
     const tune = rom.steps
     const clockX = p[IDX.chipClockX]!
-    const starve = p[IDX.chipStarve]!
+    const baseStarve = p[IDX.chipStarve]!
     const battery = p[IDX.chipBattery]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
@@ -262,6 +262,11 @@ export class ToyChip implements Stage {
     const micToRail = p[IDX.micPatch] === 1
     const fbToRail = ctx.fbDest === 2
     const modClock = ctx.mod.read(DEST.chipClock)
+    // A wire onto the supply itself. Everything else on this board is powered
+    // from the rail, so this is the one destination that reaches all of them at
+    // once: a kick on it browns the toy out on every hit, the LFO on it is a
+    // rail that dies in time.
+    const modStarve = ctx.mod.read(DEST.starve)
     const accomp = p[IDX.chipAccomp]!
     // Whichever of the kit's voices is bridged onto the gate, and what it plays.
     const trigMask = voiceMask(Math.round(p[IDX.trigToKeys]!))
@@ -449,6 +454,9 @@ export class ToyChip implements Stage {
         (micToRail ? Math.abs(ctx.mic[i]!) * 2 : 0) +
         (fbToRail ? Math.abs(ctx.fb[i]!) * 2 : 0) +
         couple * Math.max(ctx.bright[i]!, 0) * 0.5
+      const starve = modStarve
+        ? Math.min(Math.max(baseStarve + modStarve[i]!, 0), 1)
+        : baseStarve
       rail.tick(Math.abs(out), starve, extra)
       ctx.railV[i] = rail.v
       ctx.step[i] = this.stepClock

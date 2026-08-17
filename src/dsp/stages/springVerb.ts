@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
 import { OnePoleLP, lpCoef } from '../util/onepole'
@@ -65,8 +66,15 @@ export class SpringVerb implements Stage {
     return p[IDX.revMix]! > 0
   }
 
-  process(io: StereoBlock, p: Float32Array, _ctx: Ctx) {
-    const decay = p[IDX.revDecayS]!
+  process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
+    // A tank is springs and a coil: how long it rings is a block-rate thing, so
+    // a wire on the decay is read once at the top of the block rather than eight
+    // pow calls a sample down inside it.
+    const mod = ctx.mod.read(DEST.revDecay)
+    const decay = Math.min(
+      Math.max(p[IDX.revDecayS]! * (mod ? Math.pow(2, 2 * mod[0]!) : 1), 0.05),
+      30,
+    )
     const mix = p[IDX.revMix]!
     const boing = 0.35 + 0.5 * p[IDX.revBoing]!
     const dampCoef = lpCoef(p[IDX.revToneHz]!, this.sr)

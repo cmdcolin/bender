@@ -886,3 +886,82 @@ test('a wire onto the shifter moves the shift itself', () => {
   // body X pinned at 1 lifts a 100 Hz shift four octaves, to 1600
   expect(pitchHz(tail(renderBender(look, 1, load)))).toBeCloseTo(2100, -2)
 })
+
+// How many times the watchdog tripped over `seconds` of a board — the supply is
+// the one thing a wire can reach that has a counter on it.
+function reboots(overrides: Partial<Controls>, seconds: number): number {
+  const built = buildBender(SR)
+  built.transport.tune = true
+  built.transport.drums = true
+  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const io = makeIo()
+  for (let b = 0; b < Math.ceil((seconds * SR) / BLOCK); b++) {
+    built.chain.process(io, p)
+  }
+  return built.rail.rebootCount
+}
+
+test('a wire off the kit onto the supply browns the toy out on every hit', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 1,
+    drumLevel: 0.3,
+    drumBpm: 120,
+    drumKick: 0b1000_1000_1000_1000,
+    mod0Dest: DEST.starve,
+    mod0Depth: 1,
+  }
+  // Starve itself never leaves zero: the kick is what dies the rail, and the
+  // watchdog is what it costs.
+  expect(reboots(look, 3)).toBe(0)
+  expect(reboots({ ...look, mod0Src: 9 }, 3)).toBeGreaterThan(1)
+})
+
+test('a wire on the kit’s trimmer moves every voice together', () => {
+  const kit: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0.9,
+    drumBpm: 120,
+    drumKick: 0b1000_1000_1000_1000,
+    drumSnare: 0,
+    drumHat: 0,
+    bodyX: 1,
+    mod0Dest: DEST.drumTune,
+    mod0Depth: 0.5,
+  }
+  const stock = render(kit, 2)
+  const lifted = render({ ...kit, mod0Src: 5 }, 2)
+  // Body X held at 1 is an octave of trimmer, so the kick counts twice as fast.
+  expect(pitchHz(lifted)).toBeGreaterThan(1.6 * pitchHz(stock))
+})
+
+test('a wire on the tank stretches how long it rings', () => {
+  const wet: Partial<Controls> = {
+    chipLevel: 0.8,
+    revDecayS: 0.3,
+    revMix: 1,
+    bodyX: 1,
+    mod0Dest: DEST.revDecay,
+    mod0Depth: 1,
+  }
+  const dead = render(wet, 2)
+  const ringing = render({ ...wet, mod0Src: 5 }, 2)
+  expect(rms(tail(ringing))).toBeGreaterThan(1.3 * rms(tail(dead)))
+})
+
+test('a held wire on the delay time is the same as turning the knob there', () => {
+  const echo: Partial<Controls> = {
+    chipLevel: 0.8,
+    delayMs: 350,
+    dlyFb: 0.6,
+    dlyMix: 1,
+  }
+  const wired = render(
+    { ...echo, bodyX: 1, mod0Src: 5, mod0Dest: DEST.delayMs, mod0Depth: 1 },
+    2,
+  )
+  // Two octaves of time at full depth: 350 ms becomes 1.4 s, and a body pad
+  // parked at 1 is a knob that isn't moving.
+  const byHand = render({ ...echo, delayMs: 1400 }, 2)
+  const diff = wired.map((v, i) => v - byHand[i]!)
+  expect(rms(diff)).toBeLessThan(0.01 * rms(byHand))
+})

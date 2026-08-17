@@ -20,14 +20,20 @@ export const DEST = {
   shiftHz: 10,
   bits: 11,
   drumCross: 12,
-  wDepth0: 13,
-  wDepth1: 14,
+  starve: 13,
+  drumTune: 14,
+  revDecay: 15,
+  delayMs: 16,
+  wDepth0: 17,
+  wDepth1: 18,
 } as const
-export const N_DEST = 15
+export const N_DEST = 19
 
-// The two lanes a wire can land on that aren't a stage: the other wire's own
-// depth. In wire order, so wire i's depth is DEPTH_DEST[i].
+// The lanes a wire can land on that aren't a stage: another wire's own depth.
+// In wire order, so wire i's depth is DEPTH_DEST[i], and last in the id order so
+// a lane is a depth lane exactly when it sits at or past the first of them.
 const DEPTH_DEST = [DEST.wDepth0, DEST.wDepth1] as const
+const onDepth = (dest: number) => dest >= DEPTH_DEST[0]
 
 // Ids match the mod*Src choices.
 const SRC = {
@@ -150,9 +156,6 @@ export class ModBus {
       const from = Math.round(p[srcIdx]!)
       return from === SRC.off ? null : this.pick(from, w, n, p, src)
     })
-
-    const onDepth = (dest: number) =>
-      dest === DEST.wDepth0 || dest === DEST.wDepth1
 
     // Depth lanes first, so a wire's own depth is settled before it lands.
     for (let w = 0; w < WIRES.length; w++) {

@@ -170,9 +170,15 @@ The bends that matter:
   either box's trigger line — a drum hit or a note struck — or how hot the board
   has got, which is the slowest thing on it and the one that never comes back to
   where it started. That goes onto a filter cutoff, a carrier, a clock, the
-  shift, the word length, the tape speed, the glitch chance, the stompbox drive,
-  the drum cross-patch or the feedback amount. Depth goes negative, so a failing
-  supply can drag a pitch either way.
+  shift, the word length, the tape speed or delay time, the glitch chance, the
+  stompbox drive, the kit's trimmer, the tank's decay, the drum cross-patch or
+  the feedback amount. Depth goes negative, so a failing supply can drag a pitch
+  either way.
+
+  One destination is not a stage at all: **starve** is the supply the toy runs
+  on, so a wire there reaches everything powered from it at once. Off a drum hit
+  it browns the chip out on every kick and the watchdog restarts the tune from
+  wherever the counter was; off the LFO it is a rail that dies in time.
 
   Either wire can also land on the _other wire's depth_, which is where the pair
   stops being two modulations and starts being one neither of them wrote. And
