@@ -20,11 +20,22 @@ export const PARAM_DEFS = [
   ['chipBendPot', 'slew'],
 
   ['drumLevel', 'slew'],
-  ['drumPattern', 'step'],
   ['drumBpm', 'slew'],
+  ['drumSwing', 'slew'],
+  ['drumTune', 'slew'],
+  ['drumDecay', 'slew'],
+  ['drumBits', 'step'],
   ['drumRetrigHz', 'slew'],
   ['drumCross', 'step'],
   ['drumCrossAmt', 'slew'],
+
+  ['drumKick', 'step'],
+  ['drumSnare', 'step'],
+  ['drumHat', 'step'],
+  ['drumClap', 'step'],
+  ['drumTom', 'step'],
+  ['drumBell', 'step'],
+  ['drumAccent', 'step'],
 
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],

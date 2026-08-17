@@ -1,0 +1,124 @@
+.wrap {
+  padding: 4px 0 10px;
+  border-bottom: 1px solid var(--border-quiet);
+  margin-bottom: 6px;
+}
+
+.roms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.rom,
+.romOn {
+  font-size: var(--fs-xs);
+  padding: 3px 9px;
+  background: none;
+  color: var(--fg3);
+  border: 1px solid var(--border-quiet);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.rom:hover {
+  border-color: var(--border-hover);
+  color: var(--fg);
+}
+
+.romOn {
+  color: var(--fg);
+  border-color: var(--fg4);
+  background: var(--bg3);
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 3.4rem 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.name,
+.nameOn {
+  font-size: var(--fs-xs);
+  font-family: var(--mono);
+  text-align: right;
+  color: var(--fg4);
+}
+
+.nameOn {
+  color: var(--fg2);
+}
+
+.cells {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 2px;
+}
+
+/* A step is a lamp over a contact: dark until you close it, and every fourth
+   one carries the beat line so sixteen of them stay countable. */
+.cell,
+.cellOn,
+.accent,
+.accentOn {
+  height: 18px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--border-quiet);
+  border-radius: 2px;
+  background: var(--bg2);
+  cursor: pointer;
+}
+
+.cell:hover,
+.accent:hover {
+  border-color: var(--border-hover);
+}
+
+.cellOn {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.accent,
+.accentOn {
+  height: 12px;
+}
+
+.accentOn {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+
+.beat {
+  border-left-color: var(--border-hover);
+}
+
+.under {
+  box-shadow: inset 0 0 0 1px var(--fg);
+}
+
+.silent {
+  display: block;
+  margin-top: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.silent:hover {
+  color: var(--fg2);
+}

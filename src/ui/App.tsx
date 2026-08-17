@@ -235,8 +235,10 @@ export function App() {
         <div className={styles.actions}>
           <button
             className={styles.btn}
-            onClick={() => audition(randomLook(Math.random), morphSeconds)}
-            title="a board you have not heard: a random preset nudged off itself. It replaces what you have — mutate keeps it"
+            onClick={() =>
+              audition(randomLook(controls, Math.random), morphSeconds)
+            }
+            title="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern and levels stay put"
           >
             random
           </button>
@@ -307,7 +309,7 @@ export function App() {
               key={p.name}
               className={styles.preset}
               title={p.blurb}
-              onClick={() => audition(applyPreset(p), morphSeconds)}
+              onClick={() => audition(applyPreset(p, controls), morphSeconds)}
             >
               {p.name}
             </button>

@@ -1,12 +1,15 @@
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { romIndex } from '../dsp/stages/roms'
 import { ALL_SLIDERS, HOLD_KEYS, snapToStep } from './controls'
+import { DRUM_ROMS, GRID_ROWS } from './drums'
 
 export interface PresetDef {
   name: string
   blurb: string
   patch: Partial<Controls>
 }
+
+const romMasks = (name: string) => DRUM_ROMS.find(r => r.name === name)!.masks
 
 export const PRESETS: PresetDef[] = [
   {
@@ -357,7 +360,7 @@ export const PRESETS: PresetDef[] = [
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
-      drumPattern: 1,
+      ...romMasks('disco'),
       drumBpm: 128,
       drumCross: 4,
       drumCrossAmt: 0.85,
@@ -455,7 +458,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'clap at it',
-    blurb: 'Mic soldered onto the drum machine trigger line',
+    blurb:
+      'Mic soldered onto the drum machine trigger line — it fires your pattern',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,
@@ -464,6 +468,21 @@ export const PRESETS: PresetDef[] = [
       distMix: 0.45,
       driveDb: 16,
       revMix: 0.3,
+    },
+  },
+  {
+    name: 'clap along',
+    blurb: 'Backbeat claps, shuffled hard, through four bits of DAC',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 104,
+      drumSwing: 0.5,
+      drumDecay: 1.4,
+      drumBits: 4,
+      ...romMasks('clap'),
+      revMix: 0.3,
+      revDecayS: 2.5,
     },
   },
   {
@@ -523,8 +542,33 @@ export const PRESETS: PresetDef[] = [
   },
 ]
 
-export function applyPreset(preset: PresetDef): Controls {
-  return { ...DEFAULT_CONTROLS, ...preset.patch }
+// What a morph holds is yours during the trip; this is what is yours over the
+// whole gesture. On top of the levels and contacts you have your hands on, what
+// is playing is yours too — the demo song you picked and the pattern you wrote.
+// A preset moves one of these only if it names it, and neither random nor
+// mutate moves any of them, so auditioning a board never costs you the tune.
+const YOURS = new Set<ControlKey>([
+  ...HOLD_KEYS,
+  'sampleLevel',
+  'chipTune',
+  ...GRID_ROWS.map(r => r.key),
+])
+
+const keepYours = (
+  next: Controls,
+  current: Controls,
+  named: Partial<Controls> = {},
+) => {
+  for (const k of YOURS) if (!(k in named)) next[k] = current[k]
+  return next
+}
+
+export function applyPreset(preset: PresetDef, current: Controls): Controls {
+  return keepYours(
+    { ...DEFAULT_CONTROLS, ...preset.patch },
+    current,
+    preset.patch,
+  )
 }
 
 export function mutate(
@@ -534,7 +578,7 @@ export function mutate(
 ): Controls {
   const next = { ...controls }
   for (const def of ALL_SLIDERS) {
-    if (HOLD_KEYS.has(def.key)) continue
+    if (YOURS.has(def.key)) continue
     if (def.choices) {
       if (rand() < amount * 0.5) {
         next[def.key] = def.min + Math.floor(rand() * def.choices.length)
@@ -547,7 +591,9 @@ export function mutate(
   return next
 }
 
-export function randomLook(rand: () => number): Controls {
+// A roll of the dice asks for a different circuit, not a different song: the
+// preset it lands on hands over its board and nothing else.
+export function randomLook(current: Controls, rand: () => number): Controls {
   const preset = PRESETS[Math.floor(rand() * PRESETS.length)]!
-  return mutate(applyPreset(preset), 0.08, rand)
+  return keepYours(mutate(applyPreset(preset, current), 0.08, rand), current)
 }

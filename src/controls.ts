@@ -12,11 +12,24 @@ export const DEFAULT_CONTROLS = {
   chipBendPot: 0,
 
   drumLevel: 0,
-  drumPattern: 0,
   drumBpm: 118,
+  drumSwing: 0,
+  drumTune: 1,
+  drumDecay: 1,
+  drumBits: 7,
   drumRetrigHz: 0,
   drumCross: 0,
   drumCrossAmt: 0.5,
+
+  // The pattern: one sixteen-bit mask per voice, step 1 in the high bit so the
+  // literal reads left to right like the grid. This is the 'rock' ROM.
+  drumKick: 0b1000_0000_1001_0000,
+  drumSnare: 0b0000_1000_0000_1000,
+  drumHat: 0b0010_0010_0010_0010,
+  drumClap: 0,
+  drumTom: 0,
+  drumBell: 0,
+  drumAccent: 0,
 
   oscLevel: 0,
   oscAHz: 220,

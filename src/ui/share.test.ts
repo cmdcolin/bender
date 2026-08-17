@@ -51,6 +51,22 @@ test('values outside the panel are pulled back onto it', () => {
   expect(wild.chipTune).toBe(sliderFor('chipTune').max)
 })
 
+test('the drum pattern travels with the board', () => {
+  const board: Controls = {
+    ...DEFAULT_CONTROLS,
+    drumClap: 0b0000_1000_0000_1000,
+    drumBell: 0b1001_0010_0010_1000,
+  }
+  const back = decodeControls(encodeControls(board))
+  expect(back.drumClap).toBe(board.drumClap)
+  expect(back.drumBell).toBe(board.drumBell)
+  // sixteen bits is all a step mask can be, whatever the link says
+  expect(decodeControls('drumKick:1e9,drumTom:-4')).toEqual({
+    drumKick: 65535,
+    drumTom: 0,
+  })
+})
+
 test('junk decodes to nothing rather than to NaN', () => {
   expect(decodeControls('')).toEqual({})
   expect(decodeControls('nonsense')).toEqual({})

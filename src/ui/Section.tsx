@@ -2,14 +2,15 @@ import { useEffect, useRef } from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { useStoreValue } from './ControlsContext'
 import { engine } from '../engine/engine'
-import type { Group } from './controls'
+import { groupKeys, type Group } from './controls'
+import { DrumGrid } from './DrumGrid'
 import { scrollIntoPanel } from './reveal'
 import { ControlSlider } from './Slider'
 import styles from './Section.module.css'
 
 function useTouchedCount(group: Group): number {
   const controls = useStoreValue(engine.controls)
-  return group.sliders.filter(s => controls[s.key] !== DEFAULT_CONTROLS[s.key])
+  return groupKeys(group).filter(k => controls[k] !== DEFAULT_CONTROLS[k])
     .length
 }
 
@@ -46,6 +47,7 @@ export function OpenGroup({
         </button>
       </div>
       <div className={styles.body}>
+        {group.editor?.kind === 'drums' && <DrumGrid />}
         {group.sliders.map(def => (
           <ControlSlider key={def.key} def={def} />
         ))}

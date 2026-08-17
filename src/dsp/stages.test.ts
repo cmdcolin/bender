@@ -465,6 +465,90 @@ test('a wire onto the stomp drive turns it up', () => {
   expect(crest(tail(wired))).toBeLessThan(crest(tail(unwired)) * 0.85)
 })
 
+// The sequencer advances before it fires, so step 1 only comes round after a
+// whole lap — a solo hit goes somewhere the render will actually reach.
+const stepMask = (...steps: number[]) =>
+  steps.reduce((m, s) => m | (1 << (15 - s)), 0)
+
+// One voice alone on an empty grid, nothing else in the kit or the chain.
+const soloVoice = (overrides: Partial<Controls>, seconds = 0.5) =>
+  render(
+    {
+      chipLevel: 0,
+      drumLevel: 1,
+      drumBpm: 240,
+      drumKick: 0,
+      drumSnare: 0,
+      drumHat: 0,
+      ...overrides,
+    },
+    seconds,
+  )
+
+const VOICE_KEYS = [
+  'drumKick',
+  'drumSnare',
+  'drumHat',
+  'drumClap',
+  'drumTom',
+  'drumBell',
+] as const
+
+test('every voice in the grid is reachable from its own mask', () => {
+  for (const key of VOICE_KEYS) {
+    expect(rms(soloVoice({ [key]: stepMask(2) })), key).toBeGreaterThan(0.002)
+  }
+  expect(rms(soloVoice({}))).toBe(0)
+})
+
+test('an accented step hits harder than a plain one', () => {
+  const plain = soloVoice({ drumKick: stepMask(2) })
+  const hard = soloVoice({ drumKick: stepMask(2), drumAccent: stepMask(2) })
+  expect(rms(hard)).toBeGreaterThan(rms(plain) * 1.3)
+})
+
+// A hit is one onset if the voice goes quiet for long enough before it.
+function onsets(x: Float32Array): number[] {
+  const hits: number[] = []
+  let quiet = x.length
+  for (let i = 0; i < x.length; i++) {
+    if (Math.abs(x[i]!) > 0.05) {
+      if (quiet > 0.08 * SR) hits.push(i)
+      quiet = 0
+    } else quiet++
+  }
+  return hits
+}
+
+test('swing holds the offbeat back and takes it off the step after', () => {
+  // hats on steps 3, 4 and 5, choked short so each hit is its own onset
+  const pattern: Partial<Controls> = {
+    drumHat: stepMask(2, 3, 4),
+    drumBpm: 60,
+    drumDecay: 0.3,
+  }
+  const straight = onsets(soloVoice(pattern, 1.4))
+  const swung = onsets(soloVoice({ ...pattern, drumSwing: 0.6 }, 1.4))
+  expect(straight).toHaveLength(3)
+  expect(swung).toHaveLength(3)
+  const gap = (h: number[], i: number) => h[i + 1]! - h[i]!
+  // the offbeat is late, so the gap onto it grows and the next one shrinks
+  expect(gap(swung, 0)).toBeGreaterThan(gap(straight, 0) * 1.2)
+  expect(gap(swung, 1)).toBeLessThan(gap(straight, 1) * 0.85)
+  // and the beat after it lands where it always did
+  expect(Math.abs(swung[2]! - straight[2]!)).toBeLessThan(0.01 * SR)
+})
+
+test('bit depth is the kit’s own DAC: the quiet tail falls off the bottom', () => {
+  const hit: Partial<Controls> = { drumTom: stepMask(2), drumBpm: 60 }
+  const decayed = (x: Float32Array) =>
+    x.subarray(Math.round(0.75 * SR), Math.round(1 * SR))
+  const stock = decayed(soloVoice(hit, 1))
+  const crushed = decayed(soloVoice({ ...hit, drumBits: 2 }, 1))
+  expect(rms(stock)).toBeGreaterThan(0.001)
+  expect(rms(crushed)).toBeLessThan(rms(stock) * 0.2)
+})
+
 test('the mic soldered onto the drum trigger fires the kit', () => {
   const clicks = (mic: Float32Array, offset: number) => {
     for (let i = 0; i < mic.length; i++)
@@ -479,17 +563,35 @@ test('the mic soldered onto the drum trigger fires the kit', () => {
 })
 
 test('bridged envelope pins put the kick on the snare steps', () => {
-  // the fill pattern is twelve snares to four kicks, so a full swap moves
-  // most of the bar down into the kick
+  // twelve snares to four kicks, so a full swap moves most of the bar down
+  // into the kick
   const look: Partial<Controls> = {
     chipLevel: 0,
     drumLevel: 0.9,
-    drumPattern: 3,
     drumBpm: 120,
+    drumKick: 0b1000_1000_0000_1100,
+    drumSnare: 0b0111_0111_1111_0011,
+    drumHat: 0,
   }
   const stock = render(look, 2)
   const swapped = render({ ...look, drumCross: 1, drumCrossAmt: 1 }, 2)
   expect(lowEnergy(swapped)).toBeGreaterThan(1.5 * lowEnergy(stock))
+})
+
+test('the whole-kit ring reaches the voices the three-way one never did', () => {
+  // only kicks in the pattern, so anything the cowbell does came off the ring
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0.9,
+    drumBpm: 120,
+    drumKick: 0b1000_1000_1000_1000,
+    drumSnare: 0,
+    drumHat: 0,
+    drumCrossAmt: 1,
+  }
+  const threeWay = render({ ...look, drumCross: 4 }, 1)
+  const wholeKit = render({ ...look, drumCross: 5 }, 1)
+  expect(bin(wholeKit, 540)).toBeGreaterThan(4 * bin(threeWay, 540))
 })
 
 test('an unbridged kit is the kit it always was', () => {

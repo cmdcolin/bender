@@ -124,7 +124,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       for (let i = 0; i < SCOPE_LEN; i++) {
         scope[i] = this.scope[(this.scopePos + i) % SCOPE_LEN]!
       }
-      this.port.postMessage({ kind: 'meter', peak: this.peak, scope }, [
+      const step = this.built.toyDrum.step
+      this.port.postMessage({ kind: 'meter', peak: this.peak, scope, step }, [
         scope.buffer,
       ])
       this.peak = 0

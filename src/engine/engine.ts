@@ -23,6 +23,7 @@ const REC_MAX_S = 600 // a take stops itself at ten minutes
 export interface Meter {
   peak: number
   scope: Float32Array
+  step: number
 }
 
 // Owns the AudioContext, the worklet node and the control values. The UI
@@ -34,6 +35,7 @@ export class Engine {
     createStore<Meter>({
       peak: 0,
       scope: new Float32Array(512),
+      step: 0,
     })
   readonly running = createStore(false)
   readonly micOn = createStore(false)
@@ -91,7 +93,7 @@ export class Engine {
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
       if (msg.kind === 'meter')
-        this.meter.set({ peak: msg.peak, scope: msg.scope })
+        this.meter.set({ peak: msg.peak, scope: msg.scope, step: msg.step })
       else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     node.connect(ctx.destination)

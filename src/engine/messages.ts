@@ -34,6 +34,8 @@ export interface MeterMsg {
   kind: 'meter'
   peak: number
   scope: Float32Array
+  /** Which step the drum sequencer is on, for the grid's playhead. */
+  step: number
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

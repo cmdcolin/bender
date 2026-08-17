@@ -1,5 +1,5 @@
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { GROUPS, sliderFor } from './controls'
+import { GROUPS, groupKeys, sliderFor } from './controls'
 
 // The signal path, emitted as DOT so graphviz can draw what the chain actually
 // does: live bend order, the feedback wire, and where it lands. The panel draws
@@ -94,7 +94,7 @@ export function pathGroups(c: Controls): Set<string> {
 function touchedCount(name: string, c: Controls): number {
   const group = GROUPS.find(g => g.name === name)
   if (!group) return 0
-  return group.sliders.filter(s => c[s.key] !== DEFAULT_CONTROLS[s.key]).length
+  return groupKeys(group).filter(k => c[k] !== DEFAULT_CONTROLS[k]).length
 }
 
 function nodeId(name: string): string {

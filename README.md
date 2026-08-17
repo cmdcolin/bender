@@ -55,6 +55,18 @@ runs on the same divider and the same rail as everything else, so the clock bend
 drags it, the counter bend scrambles it, and starving the chip takes the backing
 band down with the tune.
 
+The drum machine is a sixteen-step plugboard rather than a fixed pattern. Six
+voices — kick, snare, hat, clap, tom, cowbell — each get a row of steps you
+click, and an accent row underneath decides which columns hit harder. The
+factory patterns sit as buttons above the grid and write into those same steps,
+so a ROM is somewhere to start from rather than a mode to be stuck in. **Swing**
+holds every offbeat step back and takes the time off the step after, so the
+shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
+once, and **Bit depth** is the word length of the one cheap DAC all six voices
+share — wind it down and the tails fall off the bottom before the hits do. The
+kit runs on the same rail as the keyboard, so starving the toy takes the drums
+with it.
+
 The bends that matter:
 
 - **Starve** sags the shared toy supply: pitch dives, notes collapse, and past
@@ -67,7 +79,10 @@ The bends that matter:
 - **Cross-patch** bridges two drum voices' envelope pins, so each amplifier
   hears the wrong envelope. Bleed it all the way over and the voices swap: the
   kick fires on snare steps, the noise swells over the kick's long decay, and a
-  hat tick puts a pitch blip through the kick oscillator.
+  hat tick puts a pitch blip through the kick oscillator. Rotate passes the
+  original three around a ring; whole kit passes all six, so a voice with no
+  steps of its own still fires — the cowbell rings on a kick, the clap answers
+  a tom.
 - **Mic patch** wires the mic past the mixer, straight onto the chip rail, the
   oscillator's FM input, the delay feedback path, the ring mod carrier, or the
   trigger line of the drum machine or glitch buffer — clap at it and the circuit
@@ -150,9 +165,19 @@ The dry side runs down the same nominal head delay as the wet, so **To tape**
 only combs once the transport actually wobbles.
 
 Presets morph into place; **random** rolls a preset and jitters it, **mutate**
+<<<<<<< HEAD
 shakes the current board. **Share** puts everything you moved into the URL by
 name and copies the link, so a board travels as text you can read and edit — and
 a link written against an older build still opens the board it meant.
+=======
+shakes the current board. None of the three take what is yours: the demo song
+you picked, the pattern you wrote and the output, mic and sample levels all stay
+where you left them, and a preset only moves one of them if it names it. So
+auditioning a board is a question about the circuit, not about the tune.
+**Share** puts everything you moved into the URL by name and copies the link, so
+a board travels as text you can read and edit — and a link written against an
+older build still opens the board it meant.
+>>>>>>> bd4ca5c (A sixteen-step grid for the drum machine, and six voices to put on it)
 
 The chip's ROM bank holds eighteen demo songs, each with its own sequencer rate:
 four factory doodles, eight public-domain tunes every cheap keyboard shipped

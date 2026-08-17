@@ -6,28 +6,62 @@ import type { Transport } from '../transport'
 import { Transient } from '../util/follower'
 import { mulberry32, type Rng } from '../util/rng'
 
-// 16 steps; bit 1 = kick, 2 = snare, 4 = hat.
-const PATTERNS: number[][] = [
-  // rock
-  [1, 0, 4, 0, 2, 0, 4, 0, 1, 0, 4, 1, 2, 0, 4, 0],
-  // disco
-  [1, 0, 4, 4, 1, 2, 4, 4, 1, 0, 4, 4, 1, 2, 4, 4],
-  // bossa
-  [1, 0, 4, 1, 0, 4, 1, 0, 4, 0, 1, 4, 0, 1, 4, 0],
-  // fill
-  [1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2],
+const TAU = 2 * Math.PI
+const STEPS = 16
+const ACCENT_GAIN = 1.7
+
+// Voice order is the bit order of a step, and the order of the rows in the
+// panel's grid. The pattern lives in one sixteen-bit mask per voice, step 1 in
+// the high bit.
+const KICK = 0
+const SNARE = 1
+const HAT = 2
+const CLAP = 3
+const TOM = 4
+const BELL = 5
+const N_VOICES = 6
+
+const VOICE_PARAM = [
+  IDX.drumKick,
+  IDX.drumSnare,
+  IDX.drumHat,
+  IDX.drumClap,
+  IDX.drumTom,
+  IDX.drumBell,
+]
+
+// Which envelope each amplifier leans across to, per drumCross choice. A voice
+// wired to itself is a voice nobody bridged.
+const CROSS_WIRING: readonly number[][] = [
+  [KICK, SNARE, HAT, CLAP, TOM, BELL],
+  [SNARE, KICK, HAT, CLAP, TOM, BELL],
+  [KICK, HAT, SNARE, CLAP, TOM, BELL],
+  [HAT, SNARE, KICK, CLAP, TOM, BELL],
+  [SNARE, HAT, KICK, CLAP, TOM, BELL],
+  [SNARE, HAT, CLAP, TOM, BELL, KICK],
 ]
 
 export class ToyDrum implements Stage {
   label = 'toyDrum'
+  /** The step the sequencer is on; the panel draws its playhead from this. */
+  step = 0
   private stepClock = 0
-  private pos = 0
   private retrigPhase = 0
-  private kickPhase = 0
-  private kickEnv = 0
-  private snareEnv = 0
-  private hatEnv = 0
+  private env = new Float32Array(N_VOICES)
+  private amp = new Float32Array(N_VOICES)
+  // How hard the last trigger hit each voice, and what its amplifier is
+  // hearing once the cross-patch has leaned it across. A voice that has never
+  // fired still has an amplifier at unity, so a borrowed envelope drives it.
+  private gain = new Float32Array(N_VOICES).fill(1)
+  private weight = new Float32Array(N_VOICES).fill(1)
+  private phase = new Float32Array(N_VOICES)
+  private bellPhase2 = 0
+  private bellLp = 0
   private snareLp = 0
+  private clapFast = 0
+  private clapSlow = 0
+  private clapsLeft = 0
+  private clapTimer = 0
   private lastReboot = 0
   private rng: Rng
   private micTrig: Transient
@@ -47,19 +81,46 @@ export class ToyDrum implements Stage {
     return on
   }
 
-  private trigger(bits: number) {
-    if (bits & 1) {
-      this.kickEnv = 1
-      this.kickPhase = 0
+  private bitsAt(p: Float32Array, step: number): number {
+    let bits = 0
+    for (let v = 0; v < N_VOICES; v++) {
+      if ((Math.round(p[VOICE_PARAM[v]!]!) >> (STEPS - 1 - step)) & 1)
+        bits |= 1 << v
     }
-    if (bits & 2) this.snareEnv = 1
-    if (bits & 4) this.hatEnv = 1
+    return bits
+  }
+
+  // The trigger line: every voice the step names fires at once, at the step's
+  // own weight. The clap is the odd one out — it doesn't strike, it claps.
+  private trigger(bits: number, gain: number) {
+    for (let v = 0; v < N_VOICES; v++) {
+      if (!(bits & (1 << v))) continue
+      this.gain[v] = gain
+      if (v === CLAP) {
+        this.clapsLeft = 3
+        this.clapTimer = 0
+      } else {
+        this.env[v] = 1
+        this.phase[v] = 0
+      }
+    }
+  }
+
+  private fire(p: Float32Array, accent: number, fallback = false) {
+    const bits = fallback
+      ? this.bitsAt(p, this.step) || 1
+      : this.bitsAt(p, this.step)
+    const hard = (accent >> (STEPS - 1 - this.step)) & 1
+    this.trigger(bits, hard ? ACCENT_GAIN : 1)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.drumLevel]!
-    const pattern = PATTERNS[Math.round(p[IDX.drumPattern]!)] ?? PATTERNS[0]!
     const stepHz = (p[IDX.drumBpm]! / 60) * 4
+    const swing = Math.min(Math.max(p[IDX.drumSwing]!, 0), 0.9)
+    const tune = p[IDX.drumTune]!
+    const decay = Math.max(p[IDX.drumDecay]!, 0.05)
+    const accent = Math.round(p[IDX.drumAccent]!)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = p[IDX.micPatch] === 5
@@ -67,21 +128,35 @@ export class ToyDrum implements Stage {
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
     const modCross = cross === 0 ? null : ctx.mod.read(DEST.drumCross)
     const rail = this.rail
+    // The kit shares one cheap DAC; the panel's Bit depth is its word length.
+    const q = Math.pow(2, Math.max(p[IDX.drumBits]!, 1) - 1)
 
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
-      this.pos = 0
+      this.step = 0
       this.stepClock = 0
     }
+
+    const fall = (rate: number) => Math.exp(-rate / (this.sr * decay))
+    const kickFall = fall(9)
+    const snareFall = fall(22)
+    const hatFall = fall(60)
+    const clapBurstFall = fall(70)
+    const clapTailFall = fall(13)
+    const tomFall = fall(11)
+    const bellFall = fall(16)
 
     let loadSum = 0
     for (let i = 0; i < io.n; i++) {
       if (this.transport.playing) {
+        // Swing holds the offbeat back and takes it off the step after, so a
+        // pair still spans two steps and the tempo is what the knob says.
+        const span = this.step % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
         this.stepClock += stepHz / this.sr
-        if (this.stepClock >= 1) {
-          this.stepClock -= 1
-          this.pos = (this.pos + 1) % pattern.length
-          this.trigger(pattern[this.pos]!)
+        if (this.stepClock >= span) {
+          this.stepClock -= span
+          this.step = (this.step + 1) % STEPS
+          this.fire(p, accent)
         }
       }
       // the bend: hammer the current step's trigger line at audio rate
@@ -92,65 +167,92 @@ export class ToyDrum implements Stage {
         this.retrigPhase += retrigHz / this.sr
         if (this.retrigPhase >= 1) {
           this.retrigPhase -= 1
-          this.trigger(pattern[this.pos]! || 1)
+          this.fire(p, accent, true)
         }
       }
       // mic soldered onto the trigger line: clap at it and the kit fires
       if (micTrig && this.micTrig.process(ctx.mic[i]!, 0.05)) {
-        this.trigger(pattern[this.pos]! || 1)
+        this.fire(p, accent, true)
       }
 
       // Bridged envelope pins: each amplifier leans across to a neighbour's
       // envelope instead of its own. All the way over is a full swap, so the
       // kick fires on snare steps and the noise swells on kicks.
-      let kickAmp = this.kickEnv
-      let snareAmp = this.snareEnv
-      let hatAmp = this.hatEnv
+      const env = this.env
+      const amp = this.amp
+      const weight = this.weight
       const bleed = modCross
         ? Math.min(Math.max(baseBleed + modCross[i]!, 0), 1)
         : baseBleed
+      amp.set(env)
+      weight.set(this.gain)
       if (bleed > 0) {
-        const k = this.kickEnv
-        const s = this.snareEnv
-        const h = this.hatEnv
-        if (cross === 1) {
-          kickAmp += bleed * (s - k)
-          snareAmp += bleed * (k - s)
-        } else if (cross === 2) {
-          snareAmp += bleed * (h - s)
-          hatAmp += bleed * (s - h)
-        } else if (cross === 3) {
-          kickAmp += bleed * (h - k)
-          hatAmp += bleed * (k - h)
-        } else {
-          kickAmp += bleed * (s - k)
-          snareAmp += bleed * (h - s)
-          hatAmp += bleed * (k - h)
+        const wiring = CROSS_WIRING[cross] ?? CROSS_WIRING[0]!
+        for (let v = 0; v < N_VOICES; v++) {
+          const from = wiring[v]!
+          amp[v]! += bleed * (env[from]! - env[v]!)
+          weight[v]! += bleed * (this.gain[from]! - this.gain[v]!)
         }
       }
 
       let out = 0
       if (!rail.booting) {
-        const pf = rail.pitchFactor
-        if (kickAmp > 0.002) {
-          const hz = (40 + 90 * kickAmp * kickAmp) * pf
-          this.kickPhase = (this.kickPhase + hz / this.sr) % 1
-          out += Math.sin(this.kickPhase * 2 * Math.PI) * kickAmp * 1.2
-          this.kickEnv *= Math.exp(-9 / this.sr)
+        const pf = rail.pitchFactor * tune
+        if (amp[KICK]! > 0.002) {
+          const hz = (40 + 90 * amp[KICK]! * amp[KICK]!) * pf
+          this.phase[KICK] = (this.phase[KICK]! + hz / this.sr) % 1
+          out +=
+            Math.sin(this.phase[KICK]! * TAU) * amp[KICK]! * weight[KICK]! * 1.2
+          env[KICK]! *= kickFall
         }
-        if (snareAmp > 0.002) {
+        if (amp[SNARE]! > 0.002) {
           const noise = this.rng() * 2 - 1
           this.snareLp += 0.25 * (noise - this.snareLp)
-          out += (noise - this.snareLp * 0.5) * snareAmp * 0.8
-          this.snareEnv *= Math.exp(-22 / this.sr)
+          out +=
+            (noise - this.snareLp * 0.5) * amp[SNARE]! * weight[SNARE]! * 0.8
+          env[SNARE]! *= snareFall
         }
-        if (hatAmp > 0.002) {
+        if (amp[HAT]! > 0.002) {
           const noise = this.rng() * 2 - 1
-          out += (noise - this.snareLp) * hatAmp * 0.35
-          this.hatEnv *= Math.exp(-60 / this.sr)
+          out += (noise - this.snareLp) * amp[HAT]! * weight[HAT]! * 0.35
+          env[HAT]! *= hatFall
         }
-        // one cheap DAC for the whole kit
-        out = Math.round(out * 64) / 64
+        // The clap is three bursts nine milliseconds apart and then the room:
+        // one noise source, retriggered, with the last hit left to ring on.
+        if (this.clapsLeft > 0) {
+          this.clapTimer -= 1 / this.sr
+          if (this.clapTimer <= 0) {
+            this.clapTimer = 0.009
+            this.clapsLeft--
+            env[CLAP] = 1
+            amp[CLAP] = 1
+          }
+        }
+        if (amp[CLAP]! > 0.002) {
+          const noise = this.rng() * 2 - 1
+          this.clapFast += 0.45 * (noise - this.clapFast)
+          this.clapSlow += 0.05 * (noise - this.clapSlow)
+          out +=
+            (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
+          env[CLAP]! *= this.clapsLeft > 0 ? clapBurstFall : clapTailFall
+        }
+        if (amp[TOM]! > 0.002) {
+          const hz = (90 + 70 * amp[TOM]!) * pf
+          this.phase[TOM] = (this.phase[TOM]! + hz / this.sr) % 1
+          out += Math.sin(this.phase[TOM]! * TAU) * amp[TOM]! * weight[TOM]!
+          env[TOM]! *= tomFall
+        }
+        if (amp[BELL]! > 0.002) {
+          this.phase[BELL] = (this.phase[BELL]! + (540 * pf) / this.sr) % 1
+          this.bellPhase2 = (this.bellPhase2 + (800 * pf) / this.sr) % 1
+          const sq =
+            (this.phase[BELL]! < 0.5 ? 1 : -1) +
+            (this.bellPhase2 < 0.5 ? 1 : -1)
+          this.bellLp += 0.4 * (sq - this.bellLp)
+          out += (sq - this.bellLp) * amp[BELL]! * weight[BELL]! * 0.3
+          env[BELL]! *= bellFall
+        }
+        out = Math.round(out * q) / q
         out *= rail.ampFactor
       }
 
@@ -163,10 +265,17 @@ export class ToyDrum implements Stage {
   }
 
   panic() {
-    this.kickEnv = 0
-    this.snareEnv = 0
-    this.hatEnv = 0
+    this.env.fill(0)
+    this.amp.fill(0)
+    this.gain.fill(1)
+    this.weight.fill(1)
+    this.phase.fill(0)
+    this.bellPhase2 = 0
+    this.bellLp = 0
     this.snareLp = 0
+    this.clapFast = 0
+    this.clapSlow = 0
+    this.clapsLeft = 0
     this.micTrig.reset()
   }
 }

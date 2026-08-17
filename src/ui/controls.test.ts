@@ -1,15 +1,16 @@
 import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../controls'
-import { ALL_SLIDERS, sliderFor } from './controls'
+import { ALL_SLIDERS, EDITOR_KEYS, sliderFor } from './controls'
 
-test('every control has exactly one slider', () => {
-  const keys = ALL_SLIDERS.map(s => s.key)
+test('every control has exactly one widget, slider or editor', () => {
+  const keys = [...ALL_SLIDERS.map(s => s.key), ...EDITOR_KEYS]
   expect(new Set(keys).size).toBe(keys.length)
   expect([...keys].sort()).toEqual([...CONTROL_KEYS].sort())
 })
 
 test('defaults sit inside slider ranges', () => {
   for (const k of CONTROL_KEYS) {
+    if (EDITOR_KEYS.has(k)) continue
     const def = sliderFor(k)
     const v = DEFAULT_CONTROLS[k]
     expect(v, k).toBeGreaterThanOrEqual(def.min)

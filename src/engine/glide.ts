@@ -14,7 +14,7 @@
 // answer to "what does the board look like a third of the way along".
 
 import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls'
-import { ENUM_KEYS, HOLD_KEYS } from '../ui/controls'
+import { CUT_KEYS, HOLD_KEYS } from '../ui/controls'
 
 // Eased, not linear. A linear morph lurches into motion and stops dead, which
 // reads as two cuts with a slide between them; smoothstep leaves and arrives at
@@ -35,8 +35,8 @@ export class Glide {
     const moved = CONTROL_KEYS.filter(
       k => !HOLD_KEYS.has(k) && from[k] !== to[k],
     )
-    this.travel = moved.filter(k => !ENUM_KEYS.has(k))
-    this.switching = moved.filter(k => ENUM_KEYS.has(k))
+    this.travel = moved.filter(k => !CUT_KEYS.has(k))
+    this.switching = moved.filter(k => CUT_KEYS.has(k))
   }
 
   // The board `t` of the way along, 0..1, written over `base` — the engine's

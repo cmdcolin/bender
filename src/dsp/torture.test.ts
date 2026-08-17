@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { IDX, N_PARAMS, PARAM_DEFS, packParams } from '../engine/params'
-import { ALL_SLIDERS, sliderFor } from '../ui/controls'
+import { ALL_SLIDERS, EDITOR_KEYS, sliderFor } from '../ui/controls'
 import { buildChain } from './build'
 import { Smoother } from './smoother'
 import { BLOCK, type StereoBlock } from './stage'
@@ -28,6 +28,11 @@ test('never-NaN torture: random param slams for 10 s', () => {
   for (let b = 0; b < blocks; b++) {
     if (b % 8 === 0) {
       for (const [name] of PARAM_DEFS) {
+        // the drum grid has no slider to slam; its steps are raw sixteen-bit masks
+        if (EDITOR_KEYS.has(name)) {
+          target[IDX[name]] = Math.floor(rng() * 65536)
+          continue
+        }
         const def = sliderFor(name)
         const r = rng()
         target[IDX[name]] =

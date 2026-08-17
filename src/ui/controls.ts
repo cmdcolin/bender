@@ -1,5 +1,6 @@
 import { ROM_NAMES } from '../dsp/stages/roms'
 import type { ControlKey } from '../controls'
+import { GRID_ROWS } from './drums'
 
 export interface SliderDef {
   key: ControlKey
@@ -28,6 +29,9 @@ export interface Group {
   name: string
   place: StagePlace
   sliders: SliderDef[]
+  /** Controls a widget of the group's own turns, because a row of sliders is
+      the wrong shape for them. */
+  editor?: { kind: 'drums'; keys: ControlKey[] }
 }
 
 export const GROUPS: Group[] = [
@@ -116,6 +120,7 @@ export const GROUPS: Group[] = [
   {
     name: 'Toy drums',
     place: 'Sources',
+    editor: { kind: 'drums', keys: GRID_ROWS.map(r => r.key) },
     sliders: [
       {
         key: 'drumLevel',
@@ -127,16 +132,6 @@ export const GROUPS: Group[] = [
         help: 'How loud the toy drum machine is in the source mix.',
       },
       {
-        key: 'drumPattern',
-        label: 'Pattern ROM',
-        min: 0,
-        max: 3,
-        step: 1,
-        unit: '',
-        choices: ['rock', 'disco', 'bossa', 'fill'],
-        help: 'Which built-in pattern the drum machine plays.',
-      },
-      {
         key: 'drumBpm',
         label: 'Tempo',
         min: 10,
@@ -145,6 +140,44 @@ export const GROUPS: Group[] = [
         unit: 'bpm',
         curve: 'log',
         help: 'Sequencer clock. Musical at the bottom; drag it far past the panel legend and the pattern smears into a buzz.',
+      },
+      {
+        key: 'drumSwing',
+        label: 'Swing',
+        min: 0,
+        max: 0.9,
+        step: 0.01,
+        unit: '',
+        help: 'Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving.',
+      },
+      {
+        key: 'drumTune',
+        label: 'Tune',
+        min: 0.25,
+        max: 4,
+        step: 0.01,
+        unit: '×',
+        curve: 'log',
+        help: 'The pitch trimmer inside the kit: every struck voice moves together. It rides on the supply, so starving the toy drags it down again.',
+      },
+      {
+        key: 'drumDecay',
+        label: 'Decay',
+        min: 0.25,
+        max: 4,
+        step: 0.01,
+        unit: '×',
+        curve: 'log',
+        help: 'Stretches or chokes every envelope at once. Short is a click track; long lets the kick and toms run into each other.',
+      },
+      {
+        key: 'drumBits',
+        label: 'Bit depth',
+        min: 2,
+        max: 16,
+        step: 0.1,
+        unit: 'bit',
+        help: 'Word length of the one cheap DAC the whole kit shares. Stock is 7 — wind it down and the tails turn to gravel before the hits do.',
       },
       {
         key: 'drumRetrigHz',
@@ -160,11 +193,18 @@ export const GROUPS: Group[] = [
         key: 'drumCross',
         label: 'Cross-patch',
         min: 0,
-        max: 4,
+        max: 5,
         step: 1,
         unit: '',
-        choices: ['off', 'kick/snare', 'snare/hat', 'kick/hat', 'rotate'],
-        help: 'Bridges two voices’ envelope pins so each amplifier hears the wrong envelope. Rotate passes all three around the ring.',
+        choices: [
+          'off',
+          'kick/snare',
+          'snare/hat',
+          'kick/hat',
+          'rotate',
+          'whole kit',
+        ],
+        help: 'Bridges two voices’ envelope pins so each amplifier hears the wrong envelope. Rotate passes the original three around the ring; whole kit passes all six, so the cowbell rings on a kick and the clap answers a tom.',
       },
       {
         key: 'drumCrossAmt',
@@ -1229,11 +1269,22 @@ export const GROUPS: Group[] = [
 ]
 
 export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
-
-// Enum-valued controls can't be interpolated — a morph cuts them at its midpoint.
-export const ENUM_KEYS = new Set<ControlKey>(
-  ALL_SLIDERS.filter(s => s.choices).map(s => s.key),
+export const EDITOR_KEYS = new Set<ControlKey>(
+  GROUPS.flatMap(g => g.editor?.keys ?? []),
 )
+
+/** Every control a group owns, whatever kind of widget turns it. */
+export function groupKeys(group: Group): ControlKey[] {
+  return [...group.sliders.map(s => s.key), ...(group.editor?.keys ?? [])]
+}
+
+// Halfway between two enum choices is no choice at all, and halfway between two
+// step masks is a pattern neither side wrote — a morph cuts both at its
+// midpoint rather than interpolating them.
+export const CUT_KEYS = new Set<ControlKey>([
+  ...ALL_SLIDERS.filter(s => s.choices).map(s => s.key),
+  ...EDITOR_KEYS,
+])
 
 // Yours, not the look's: how loud it comes out, how hot the mic runs and where
 // your finger is on the pad. Neither a random roll nor a morph touches them, so
