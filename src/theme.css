@@ -1,0 +1,40 @@
+:root {
+  color-scheme: dark;
+  --bg: #0c0c0e;
+  --bg2: #131316;
+  --bg3: #1b1b1f;
+  --fg: #e8e8ea;
+  --fg2: #b9b9be;
+  --fg3: #8a8a91;
+  --fg4: #5c5c63;
+  --accent: #ff5d3b;
+  --accent2: #ffb03b;
+  --danger: #ff3355;
+  --border: #2c2c31;
+  --border-quiet: #202024;
+  --border-hover: #45454c;
+  --fs-xs: 10px;
+  --fs-sm: 11px;
+  --fs-md: 12.5px;
+  --fs-lg: 14px;
+  --fs-xl: 18px;
+  --mono: 'SF Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, sans-serif;
+  font-size: var(--fs-md);
+}
