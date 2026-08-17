@@ -1,5 +1,5 @@
-import { useState, type DragEvent } from 'react'
-import { DEFAULT_CONTROLS } from '../controls'
+import { useEffect, useState, type DragEvent } from 'react'
+import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { engine } from '../engine/engine'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
@@ -15,6 +15,12 @@ function clock(seconds: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
+// Picking a look is a request to hear it, so the ROM runs even if it was paused.
+function audition(target: Controls, seconds?: number) {
+  engine.setPlaying(true)
+  engine.morphTo(target, seconds)
+}
+
 export function App() {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
@@ -23,6 +29,21 @@ export function App() {
   const recSeconds = useStoreValue(engine.recSeconds)
   const sampleName = useStoreValue(engine.sampleName)
   const [dragging, setDragging] = useState(false)
+
+  // Space is the transport wherever the focus is; before power-on it is the
+  // switch itself, a keypress being gesture enough to open the audio context.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
+      e.preventDefault()
+      if (!engine.running.get()) void engine.start()
+      else engine.setPlaying(!engine.playing.get())
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const onDrop = async (e: DragEvent) => {
     e.preventDefault()
@@ -48,7 +69,7 @@ export function App() {
           <button
             className={playing ? styles.playBtnOn : styles.playBtn}
             onClick={() => engine.setPlaying(!playing)}
-            title="run or stop the chip's ROM tune and the drum pattern"
+            title="run or stop the chip's ROM tune and the drum pattern — space does it too"
           >
             {playing ? '❚❚ pause demo song' : '▶ play demo song'}
           </button>
@@ -72,10 +93,9 @@ export function App() {
           </span>
         </div>
         <p className={styles.hint}>
-          press <b>play demo song</b> or play keys with{' '}
-          <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b>{' '}
-          until the toy reboots, solder the <b>Bend spot</b> pot, push any{' '}
-          <b>Feedback</b> past 1
+          press <b>play demo song</b> (or <span className={styles.kbd}>space</span>), or play keys
+          with <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b> until the toy
+          reboots, solder the <b>Bend spot</b> pot, push any <b>Feedback</b> past 1
         </p>
       </div>
 
@@ -87,7 +107,7 @@ export function App() {
         <div className={styles.actions}>
           <button
             className={styles.btn}
-            onClick={() => engine.morphTo(randomLook(Math.random), 1.6)}
+            onClick={() => audition(randomLook(Math.random), 1.6)}
           >
             random
           </button>
@@ -123,7 +143,7 @@ export function App() {
               key={p.name}
               className={styles.preset}
               title={p.blurb}
-              onClick={() => engine.morphTo(applyPreset(p))}
+              onClick={() => audition(applyPreset(p))}
             >
               {p.name}
             </button>
