@@ -3,6 +3,7 @@ import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
 import { coef as timeCoef } from '../util/follower'
+import { SineOsc } from '../util/lfo'
 import { OnePoleLP, lpCoef } from '../util/onepole'
 import { flushDenormal, softclip } from '../util/softclip'
 import { mulberry32, type Rng } from '../util/rng'
@@ -17,7 +18,7 @@ export class TapeDelay implements Stage {
   private lineR: DelayLine
   private toneL = new OnePoleLP()
   private toneR = new OnePoleLP()
-  private wowPhase = 0
+  private wow = new SineOsc()
   private flutterWalk = 0
   private motor = 1
   private slide = 0
@@ -55,6 +56,7 @@ export class TapeDelay implements Stage {
     const modTime = ctx.mod.read(DEST.delayMs)
     const inertia = timeCoef(0.3, this.sr)
     const recenter = 1 / (3 * this.sr)
+    const wowK = SineOsc.rate(wowHz, this.sr)
 
     for (let i = 0; i < io.n; i++) {
       const delaySamples = modTime
@@ -63,12 +65,10 @@ export class TapeDelay implements Stage {
             this.maxDelay - 8,
           )
         : baseDelay
-      this.wowPhase = (this.wowPhase + wowHz / this.sr) % 1
       this.flutterWalk += (this.rng() - 0.5) * flutter * 0.6
       this.flutterWalk *= 0.995
       const wobble =
-        wowDepth * Math.sin(this.wowPhase * 2 * Math.PI) +
-        this.flutterWalk * 0.002 * this.sr
+        wowDepth * this.wow.step(wowK) + this.flutterWalk * 0.002 * this.sr
 
       let want = (1 - brake) * (1 - railDrag * ctx.droop[i]!)
       if (modSpeed) want *= Math.pow(2, modSpeed[i]! * 1.5)
@@ -111,6 +111,7 @@ export class TapeDelay implements Stage {
     this.lineR.reset()
     this.toneL.reset()
     this.toneR.reset()
+    this.wow.reset()
     this.flutterWalk = 0
     this.motor = 1
     this.slide = 0

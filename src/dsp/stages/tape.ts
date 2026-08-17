@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
+import { SineOsc } from '../util/lfo'
 import { OnePoleLP, lpCoef } from '../util/onepole'
 import { flushDenormal, softclip } from '../util/softclip'
 import { gaussian, mulberry32, type Rng } from '../util/rng'
@@ -142,16 +143,34 @@ export class Tape implements Stage {
   private dryR: DelayLine
   private driftLp = new OnePoleLP()
   private scrapeLp = new OnePoleLP()
-  private wow = 0
-  private wow2 = 0
-  private flut = 0
-  private flut2 = 0
+  private wow = new SineOsc()
+  private wow2 = new SineOsc()
+  private flut = new SineOsc()
+  private flut2 = new SineOsc()
   private dropLeft = 0
   private dropDepth = 0
   private dropEnv = 0
   private nominal: number
   private rng: Rng
   private gauss: Rng
+  private readonly s: Settings = {
+    drive: 1,
+    makeup: 1,
+    emph: 1.2,
+    emphCoef: 0,
+    tilt: 0,
+    tiltCoef: 0,
+    hiss: 0,
+    hissCoef: 0,
+    modNoise: 1.8,
+    envCoef: 0,
+    gapCoef: 0,
+    bumpF: 0,
+    bumpQ: 1 / 1.2,
+    printGain: 0,
+    printDelay: 0,
+    printCoef: 0,
+  }
 
   constructor(private readonly sr: number) {
     this.headL = new TapeHead(sr, 909)
@@ -178,25 +197,20 @@ export class Tape implements Stage {
     // and squashes. One knob, the two moving against each other.
     const drive = Math.pow(10, p[IDX.tapeDrive]! / 20) * (1 - 0.45 * bias)
     const gapHz = Math.min(sp.gapHz * Math.pow(2, -bias * 0.5), this.sr * 0.45)
-    const bumpF = 2 * Math.sin((Math.PI * sp.bumpHz) / this.sr)
-    const s: Settings = {
-      drive,
-      makeup: Math.pow(drive, -0.8),
-      emph: 1.2,
-      emphCoef: lpCoef(EMPH_HZ, this.sr),
-      tilt: -bias * 0.6,
-      tiltCoef: lpCoef(3000, this.sr),
-      hiss: p[IDX.tapeHiss]! * sp.hiss * 0.006,
-      hissCoef: lpCoef(1500, this.sr),
-      modNoise: 1.8,
-      envCoef: lpCoef(12, this.sr),
-      gapCoef: lpCoef(gapHz, this.sr),
-      bumpF,
-      bumpQ: 1 / 1.2,
-      printGain: p[IDX.tapePrint]! * 0.05,
-      printDelay: (sp.printMs / 1000) * this.sr,
-      printCoef: lpCoef(2500, this.sr),
-    }
+    const s = this.s
+    s.drive = drive
+    s.makeup = Math.pow(drive, -0.8)
+    s.emphCoef = lpCoef(EMPH_HZ, this.sr)
+    s.tilt = -bias * 0.6
+    s.tiltCoef = lpCoef(3000, this.sr)
+    s.hiss = p[IDX.tapeHiss]! * sp.hiss * 0.006
+    s.hissCoef = lpCoef(1500, this.sr)
+    s.envCoef = lpCoef(12, this.sr)
+    s.gapCoef = lpCoef(gapHz, this.sr)
+    s.bumpF = 2 * Math.sin((Math.PI * sp.bumpHz) / this.sr)
+    s.printGain = p[IDX.tapePrint]! * 0.05
+    s.printDelay = (sp.printMs / 1000) * this.sr
+    s.printCoef = lpCoef(2500, this.sr)
 
     const azimuth = p[IDX.tapeAzimuth]! * AZIMUTH_MAX
     const wowAmt = p[IDX.tapeWow]! * sp.wobble
@@ -207,24 +221,22 @@ export class Tape implements Stage {
     const driftCoef = lpCoef(0.12, this.sr)
     const scrapeCoef = lpCoef(120, this.sr)
     const msToSamples = this.sr / 1000
+    const wowK = SineOsc.rate(sp.wowHz, this.sr)
+    const wow2K = SineOsc.rate(sp.wowHz * 0.37, this.sr)
+    const flutK = SineOsc.rate(sp.flutHz, this.sr)
+    const flut2K = SineOsc.rate(sp.flutHz * 1.54, this.sr)
 
     for (let i = 0; i < io.n; i++) {
-      this.wow = (this.wow + sp.wowHz / this.sr) % 1
-      this.wow2 = (this.wow2 + (sp.wowHz * 0.37) / this.sr) % 1
-      this.flut = (this.flut + sp.flutHz / this.sr) % 1
-      this.flut2 = (this.flut2 + (sp.flutHz * 1.54) / this.sr) % 1
       const drift = this.driftLp.process(this.gauss(), driftCoef) * 260
       const scrape = this.scrapeLp.process(this.gauss(), scrapeCoef)
       const wobbleMs =
         wowAmt *
           1.6 *
-          (0.75 * Math.sin(this.wow * 2 * Math.PI) +
-            0.25 * Math.sin(this.wow2 * 2 * Math.PI)) +
+          (0.75 * this.wow.step(wowK) + 0.25 * this.wow2.step(wow2K)) +
         flutAmt *
           0.16 *
-          (0.6 * Math.sin(this.flut * 2 * Math.PI) +
-            0.4 * Math.sin(this.flut2 * 2 * Math.PI)) +
-        Math.max(-1, Math.min(1, drift)) * 0.9 * wowAmt +
+          (0.6 * this.flut.step(flutK) + 0.4 * this.flut2.step(flut2K)) +
+        Math.min(Math.max(drift, -1), 1) * 0.9 * wowAmt +
         scrape * 0.02 * flutAmt
       const d = Math.max(this.nominal + wobbleMs * msToSamples, 4)
 
@@ -269,10 +281,10 @@ export class Tape implements Stage {
     this.dryR.reset()
     this.driftLp.reset()
     this.scrapeLp.reset()
-    this.wow = 0
-    this.wow2 = 0
-    this.flut = 0
-    this.flut2 = 0
+    this.wow.reset()
+    this.wow2.reset()
+    this.flut.reset()
+    this.flut2.reset()
     this.dropLeft = 0
     this.dropDepth = 0
     this.dropEnv = 0

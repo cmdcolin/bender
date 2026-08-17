@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { flushDenormal } from '../util/softclip'
 import { Burst } from '../util/burst'
+import { SineOsc } from '../util/lfo'
 import { mulberry32, type Rng } from '../util/rng'
 
 // Master supply starve: loud passages sag the rail and pump the whole mix,
@@ -16,7 +17,7 @@ export class Brownout implements Stage {
   label = 'brownout'
   private sag = 0
   private dropRemaining = 0
-  private humPhase = 0
+  private hum = new SineOsc()
   private rng: Rng
   private dropFault: Burst
   private crackleFault: Burst
@@ -47,7 +48,10 @@ export class Brownout implements Stage {
     const dropProb = p[IDX.brownRate]! / this.sr
     const crackleAmt = p[IDX.brownCrackle]!
     const humLevel = p[IDX.humLevel]!
-    const humHz = Math.round(p[IDX.humHz]!) === 1 ? 60 : 50
+    const humK = SineOsc.rate(
+      Math.round(p[IDX.humHz]!) === 1 ? 60 : 50,
+      this.sr,
+    )
     const cluster = p[IDX.faultCluster]!
     const couple = p[IDX.couple]!
     const attack = 1 - Math.exp(-1 / (0.02 * this.sr))
@@ -93,8 +97,7 @@ export class Brownout implements Stage {
       // supply strains, with a ripple wobble in the rail gain itself
       let hum = 0
       if (humLevel > 0) {
-        this.humPhase = (this.humPhase + humHz / this.sr) % 1
-        const s = Math.sin(this.humPhase * 2 * Math.PI)
+        const s = this.hum.step(humK)
         const buzz = Math.abs(s) * 2 - 1
         hum = (s * 0.55 + buzz * 0.45) * humLevel * 0.25 * (1 + this.sag * 2.5)
         g *= 1 - humLevel * 0.25 * (0.5 + 0.5 * s) * (amt > 0 ? 1 : 0.4)
@@ -108,7 +111,7 @@ export class Brownout implements Stage {
   panic() {
     this.sag = 0
     this.dropRemaining = 0
-    this.humPhase = 0
+    this.hum.reset()
     this.dropFault.reset()
     this.crackleFault.reset()
   }

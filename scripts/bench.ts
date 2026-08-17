@@ -76,6 +76,8 @@ const HEAVY: Partial<Controls> = {
 
 const BOARDS: Record<string, Partial<Controls>> = { heavy: HEAVY, stock: {} }
 
+const REPS = 5
+
 interface Row {
   label: string
   ms: number
@@ -117,10 +119,16 @@ function bench(overrides: Partial<Controls>, seconds: number) {
   }
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   for (let b = 0; b < 400; b++) chain.process(io, p)
-  for (const r of rows) r.ms = 0
-  const t0 = performance.now()
-  for (let b = 0; b < blocks; b++) chain.process(io, p)
-  const total = performance.now() - t0
+  // Best of a few passes, not the mean. Anything else sharing the machine only
+  // ever adds time, so the fastest pass is the one least polluted by it — and a
+  // mean makes two runs an hour apart incomparable.
+  let total = Infinity
+  for (let pass = 0; pass < REPS; pass++) {
+    for (const r of rows) r.ms = 0
+    const t0 = performance.now()
+    for (let b = 0; b < blocks; b++) chain.process(io, p)
+    total = Math.min(total, performance.now() - t0)
+  }
   rows.sort((a, b) => b.ms - a.ms)
   return { total, blocks, rows }
 }
