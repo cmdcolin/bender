@@ -5,6 +5,10 @@
 export interface Rom {
   name: string
   stepHz: number
+  /** tonic as semitones above A, for the auto bass-chord section to harmonize against */
+  key: number
+  /** absent is major */
+  minor?: boolean
   steps: number[]
 }
 
@@ -12,26 +16,32 @@ export const ROMS: Rom[] = [
   {
     name: 'lullaby',
     stepHz: 3.2,
+    key: 0,
     steps: [0, 0, 7, 7, 9, 9, 7, -1, 5, 5, 4, 4, 2, 2, 0, -1],
   },
   {
     name: 'march',
     stepHz: 3.2,
+    key: 0,
     steps: [0, -1, 0, 4, 7, -1, 7, 4, 0, 4, 7, 12, 7, 4, 0, -1],
   },
   {
     name: 'arp',
     stepHz: 3.2,
+    key: 0,
     steps: [0, 4, 7, 12, 7, 4, 0, 4, 7, 12, 16, 12, 7, 4, 0, 4],
   },
   {
     name: 'scale',
     stepHz: 3.2,
+    key: 0,
     steps: [0, 2, 4, 5, 7, 9, 11, 12, 12, 11, 9, 7, 5, 4, 2, 0],
   },
   {
     name: 'für elise',
     stepHz: 8,
+    key: 0,
+    minor: true,
     steps: [
       19, 18, 19, 18, 19, 14, 17, 15, 12, -2, -2, -1, 3, 7, 12, 14, -2, -2, -1, -1, 7, 11, 14, 15,
       -2, -2, -1, -1, 7, 19, 18, 19,
@@ -40,6 +50,7 @@ export const ROMS: Rom[] = [
   {
     name: 'ode to joy',
     stepHz: 6,
+    key: 3,
     steps: [
       7, -2, 7, -2, 8, -2, 10, -2, 10, -2, 8, -2, 7, -2, 5, -2, 3, -2, 3, -2, 5, -2, 7, -2, 7, -2,
       -2, 5, 5, -2, -2, -2,
@@ -48,6 +59,8 @@ export const ROMS: Rom[] = [
   {
     name: 'rondo turca',
     stepHz: 9,
+    key: 0,
+    minor: true,
     steps: [
       14, 12, 11, 12, 15, -2, -1, -1, 17, 15, 14, 15, 19, -2, -1, -1, 19, 17, 16, 17, 20, -2, -1,
       -1, 24, 22, 20, 19, 17, 15, 14, 12,
@@ -56,6 +69,7 @@ export const ROMS: Rom[] = [
   {
     name: 'yankee',
     stepHz: 6,
+    key: 3,
     steps: [
       3, 3, 5, 7, 3, 7, 5, -1, 3, 3, 5, 7, 3, -2, 2, -1, 3, 3, 5, 7, 8, 7, 5, 3, 2, 0, 2, 5, 3, -2,
       -2, -1,
@@ -64,6 +78,7 @@ export const ROMS: Rom[] = [
   {
     name: 'camptown',
     stepHz: 6,
+    key: 3,
     steps: [
       10, 10, 7, 10, 12, 10, 7, -1, 5, 7, 5, -2, -1, -1, -1, -1, 10, 10, 7, 10, 12, 10, 7, -1, 5, 3,
       -2, -2, -1, -1, -1, -1,
@@ -72,6 +87,7 @@ export const ROMS: Rom[] = [
   {
     name: 'wm tell',
     stepHz: 9,
+    key: 3,
     steps: [
       10, 10, 10, -1, 10, 10, 10, -1, 10, 10, 10, 10, 10, 10, 10, -1, 10, 15, 19, -1, 10, 15, 19,
       -1, 19, 17, 15, 17, 15, 17, 15, -1,
@@ -80,6 +96,7 @@ export const ROMS: Rom[] = [
   {
     name: 'ragtime',
     stepHz: 8,
+    key: 3,
     steps: [
       5, 6, 7, 15, -2, 7, 15, -2, 7, 15, -2, -2, -2, -2, -1, -1, 3, 5, 7, 12, -2, 5, 12, -2, 5, 12,
       -2, -2, -2, -2, -1, -1,
@@ -88,6 +105,7 @@ export const ROMS: Rom[] = [
   {
     name: 'danube',
     stepHz: 5,
+    key: 5,
     steps: [
       5, -2, 9, 12, -2, -2, -2, -2, 12, -2, -1, -1, 12, -2, -1, -1, 14, -2, -2, -2, -2, -2, -1, -1,
       12, -2, -1, -1, 12, -2, -1, -1,
@@ -99,6 +117,8 @@ export const ROMS: Rom[] = [
   {
     name: 'gymnopédie',
     stepHz: 2.2,
+    key: 9,
+    minor: true,
     steps: [
       21, -2, -2, -2, 24, -2, 23, -2, 21, -2, -2, -2, 16, -2, -2, -1, 19, -2, -2, -2, 21, -2, 19,
       -2, 16, -2, -2, -2, 14, -2, -2, -1,
@@ -107,6 +127,8 @@ export const ROMS: Rom[] = [
   {
     name: 'gnossienne',
     stepHz: 4,
+    key: 8,
+    minor: true,
     steps: [
       8, 10, 11, 13, 15, -2, 16, 15, 14, 15, -2, -2, -1, -1, -1, -1, 15, 16, 15, 13, 11, 10, 8, -2,
       -2, -1, -1, -1, -1, -1, -1, -1,
@@ -115,6 +137,8 @@ export const ROMS: Rom[] = [
   {
     name: 'sakura',
     stepHz: 3,
+    key: 0,
+    minor: true,
     steps: [
       12, -2, 14, -2, 12, -2, 14, -2, 12, -2, 14, 15, 14, -2, 12, -2, 14, -2, 12, -2, 8, -2, 7, -2,
       8, -2, 7, -2, 12, -2, -2, -1,
@@ -123,6 +147,8 @@ export const ROMS: Rom[] = [
   {
     name: 'dies irae',
     stepHz: 3,
+    key: 5,
+    minor: true,
     steps: [
       12, -2, 10, -2, 12, -2, -2, -1, 8, -2, 10, -2, 7, -2, -2, -1, 8, -2, 7, -2, 5, -2, -2, -1, 7,
       -2, 8, -2, 7, -2, 5, -1,
@@ -131,6 +157,8 @@ export const ROMS: Rom[] = [
   {
     name: 'funeral',
     stepHz: 2.6,
+    key: 0,
+    minor: true,
     steps: [
       12, -2, -2, -2, 12, -2, 12, -2, 12, -2, -2, -2, 15, -2, 14, 12, 14, -2, 12, -2, -2, -1, -1,
       -1, 12, -2, -2, -2, 12, -2, -2, -1,
@@ -139,6 +167,8 @@ export const ROMS: Rom[] = [
   {
     name: 'greensleeves',
     stepHz: 4.5,
+    key: 0,
+    minor: true,
     steps: [
       12, 15, 17, 19, -2, 20, 19, 17, 14, -2, 10, 11, 12, 14, -2, 10, -2, -1, 12, 15, 17, 19, -2,
       20, 19, 17, 14, -2, 10, 11, 12, -1,

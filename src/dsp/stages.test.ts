@@ -158,6 +158,36 @@ test('feedback patched into the delay still loops', () => {
   expect(rms).toBeGreaterThan(0.01)
 })
 
+test('the auto bass-chord puts a bass under the tune', () => {
+  // four poles at 160 Hz, steep enough to leave the melody's 220 Hz behind and
+  // pass the accompaniment's bass an octave under it
+  const lowEnd = (x: Float32Array) => {
+    const a = Math.exp((-2 * Math.PI * 160) / SR)
+    const z = [0, 0, 0, 0]
+    const lp = new Float32Array(x.length)
+    for (let i = 0; i < x.length; i++) {
+      let v = x[i]!
+      for (let k = 0; k < z.length; k++) v = z[k] = z[k]! * a + v * (1 - a)
+      lp[i] = v
+    }
+    return rms(lp)
+  }
+  const dry = render({ chipLevel: 0.6 }, 3)
+  const backed = render({ chipLevel: 0.6, chipAccomp: 0.8 }, 3)
+  expect(rms(backed)).toBeGreaterThan(rms(dry))
+  expect(lowEnd(backed)).toBeGreaterThan(lowEnd(dry) * 2)
+})
+
+test('the accompaniment browns out with the chip it runs on', () => {
+  // it is the same divider on the same rail, so a starved chip takes it down too
+  const quietFraction = (x: Float32Array) =>
+    x.reduce((a, v) => a + (Math.abs(v) < 0.01 ? 1 : 0), 0) / x.length
+  const running = render({ chipLevel: 1, chipAccomp: 1 }, 3)
+  const starved = render({ chipLevel: 1, chipAccomp: 1, chipStarve: 1 }, 3)
+  expect(quietFraction(starved)).toBeGreaterThan(quietFraction(running) * 2)
+  expect(starved.reduce((a, v) => Math.max(a, Math.abs(v)), 0)).toBeLessThanOrEqual(0.891 + 1e-6)
+})
+
 test('a chord sounds fuller than one note but nothing like four times louder', () => {
   const one = rms(playKeys({}, chip => chip.noteOn(0)))
   const four = rms(

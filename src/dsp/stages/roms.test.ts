@@ -18,6 +18,20 @@ test('every ROM is playable: named, clocked, and made of legal steps', () => {
   }
 })
 
+// The auto bass-chord harmonizes against the declared key, so a ROM annotated
+// in the wrong one would play its accompaniment against the tune.
+test('every ROM sits in the key it declares', () => {
+  const MAJOR = new Set([0, 2, 4, 5, 7, 9, 11])
+  // the raised seventh comes along: these tunes lean on the harmonic minor
+  const MINOR = new Set([0, 2, 3, 5, 7, 8, 10, 11])
+  for (const rom of ROMS) {
+    const scale = rom.minor ? MINOR : MAJOR
+    const notes = rom.steps.filter(s => s >= 0)
+    const inKey = notes.filter(n => scale.has((((n - rom.key) % 12) + 12) % 12))
+    expect(inKey.length / notes.length, `${rom.name} is diatonic to its key`).toBeGreaterThan(0.8)
+  }
+})
+
 function rms(overrides: Partial<Controls>, seconds: number): number {
   const sr = 48000
   const chain = buildChain(sr)

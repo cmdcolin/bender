@@ -13,6 +13,7 @@ export const PARAM_DEFS = [
   ['chipLevel', 'slew'],
   ['chipTune', 'step'],
   ['chipTone', 'step'],
+  ['chipAccomp', 'slew'],
   ['chipClockX', 'slew'],
   ['chipStarve', 'slew'],
   ['chipBendSpot', 'step'],

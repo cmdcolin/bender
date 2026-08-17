@@ -57,6 +57,15 @@ export const GROUPS: Group[] = [
         help: 'Which width of pulse the tone selector taps off the divider chain. Narrow taps null different harmonics and thin out — the chip never levelled them, so they get quieter as they get reedier.',
       },
       {
+        key: 'chipAccomp',
+        label: 'Auto bass-chord',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running. It reads the chord off the melody and picks major or minor from the ROM’s own notes. Same divider, same rail — starve the chip and the backing band goes down with it.',
+      },
+      {
         key: 'chipClockX',
         label: 'Clock',
         min: 0.05,

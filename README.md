@@ -45,6 +45,16 @@ back up, exactly as the chips left it. A counter can't strike a pulse narrower
 than one clock tick, so the narrow tones widen back toward a square as the note
 climbs past the divider's resolution.
 
+**Auto bass-chord** is the accompaniment section, the thing that made a toy
+keyboard sound like a whole bad band. It runs off the melody's own step clock —
+bass on the step, chord stab on the offbeat, the bass alternating root and
+fifth — and it reads its chord off the tune rather than a chord button: a chord
+tone moves it, a passing tone leaves it where it stands. Each ROM declares its
+key, so the three chords it has (tonic, dominant, subdominant) land in the
+song. It runs on the same divider and the same rail as everything else, so the
+clock bend drags it, the counter bend scrambles it, and starving the chip takes
+the backing band down with the tune.
+
 The bends that matter:
 
 - **Starve** sags the shared toy supply: pitch dives, notes collapse, and past

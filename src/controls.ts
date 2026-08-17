@@ -5,6 +5,7 @@ export const DEFAULT_CONTROLS = {
   chipLevel: 0.6,
   chipTune: 0,
   chipTone: 0,
+  chipAccomp: 0,
   chipClockX: 1,
   chipStarve: 0,
   chipBendSpot: 0,
