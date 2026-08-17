@@ -303,7 +303,15 @@ export const GROUPS: Group[] = [
         max: 6,
         step: 1,
         unit: '',
-        choices: ['mix', 'chip rail', 'osc FM', 'delay fb', 'ring car', 'drum trig', 'glitch trig'],
+        choices: [
+          'mix',
+          'chip rail',
+          'osc FM',
+          'delay fb',
+          'ring car',
+          'drum trig',
+          'glitch trig',
+        ],
         help: 'Where the mic wire is soldered: the mix bus, the toy supply rail (yell to brown it out), oscillator A’s FM input, the delay feedback path, the ring mod carrier, or the trigger line of the drum machine or glitch buffer — clap at it and the circuit fires.',
       },
       {
@@ -336,7 +344,16 @@ export const GROUPS: Group[] = [
       max: 7,
       step: 1,
       unit: '',
-      choices: ['—', 'ring', 'crush', 'dist', 'comb', 'glitch', 'filt', 'shift'],
+      choices: [
+        '—',
+        'ring',
+        'crush',
+        'dist',
+        'comb',
+        'glitch',
+        'filt',
+        'shift',
+      ],
       help: 'Which bend runs in this position. The signal walks the slots top to bottom; duplicates run once at their first slot.',
     })),
   },
@@ -1213,11 +1230,24 @@ export const GROUPS: Group[] = [
 
 export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
 
-// Enum-valued controls can't be interpolated — a morph cuts them at the start.
+// Enum-valued controls can't be interpolated — a morph cuts them at its midpoint.
 export const ENUM_KEYS = new Set<ControlKey>(
   ALL_SLIDERS.filter(s => s.choices).map(s => s.key),
 )
-export const SLIDER_BY_KEY = new Map<ControlKey, SliderDef>(ALL_SLIDERS.map(s => [s.key, s]))
+
+// Yours, not the look's: how loud it comes out, how hot the mic runs and where
+// your finger is on the pad. Neither a random roll nor a morph touches them, so
+// picking a look never changes your monitoring level and a morph never drags the
+// body pad out from under you mid-gesture.
+export const HOLD_KEYS = new Set<ControlKey>([
+  'outGain',
+  'micLevel',
+  'bodyX',
+  'bodyY',
+])
+export const SLIDER_BY_KEY = new Map<ControlKey, SliderDef>(
+  ALL_SLIDERS.map(s => [s.key, s]),
+)
 
 export function sliderFor(key: ControlKey): SliderDef {
   const def = SLIDER_BY_KEY.get(key)
@@ -1235,7 +1265,10 @@ export function groupFor(key: ControlKey): string {
   return name
 }
 
-export function snapToStep(def: Pick<SliderDef, 'min' | 'max' | 'step'>, value: number): number {
+export function snapToStep(
+  def: Pick<SliderDef, 'min' | 'max' | 'step'>,
+  value: number,
+): number {
   const stepped = def.min + Math.round((value - def.min) / def.step) * def.step
   return Math.min(def.max, Math.max(def.min, Number(stepped.toFixed(6))))
 }

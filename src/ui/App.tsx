@@ -1,4 +1,9 @@
-import { useEffect, useState, type DragEvent } from 'react'
+import {
+  useEffect,
+  useState,
+  useSyncExternalStore,
+  type DragEvent,
+} from 'react'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { engine } from '../engine/engine'
 import { gitSha, versionLabel } from '../version'
@@ -8,6 +13,13 @@ import { useStoreValue } from './ControlsContext'
 import { pathGroups } from './chain-dot'
 import { GROUPS } from './controls'
 import { Keys } from './Keys'
+import {
+  loadMorph,
+  MORPH_LABELS,
+  MORPH_SECONDS,
+  saveMorph,
+  type MorphSeconds,
+} from './morph'
 import { mutate, PRESETS, applyPreset, randomLook } from './presets'
 import { Scope } from './Scope'
 import { OffPathChips, OpenGroup, PathHint } from './Section'
@@ -19,10 +31,68 @@ function clock(seconds: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
-// Picking a look is a request to hear it, so the ROM runs even if it was paused.
-function audition(target: Controls, seconds?: number) {
+// Picking a board is a request to hear it, so the ROM runs even if it was paused.
+function audition(target: Controls, seconds: number) {
   engine.setPlaying(true)
   engine.morphTo(target, seconds)
+}
+
+// One slot holding either the duration a new board *will* take to arrive or,
+// while one travels, how far along it is and the way to stop it. They are one
+// widget read two ways, and the actions row has no sixth place to give.
+//
+// The flight readout earns its place because a long morph is otherwise
+// indistinguishable from an app that ignored you: at 30s the first second moves
+// almost nothing. Pressing it says "I liked it better half way", which until now
+// you could only say by grabbing a slider — that is, by changing the board you
+// wanted to keep.
+//
+// The only thing here that subscribes to the morph, deliberately: progress moves
+// every frame, and held in App it would re-render the whole panel at that rate.
+function MorphControl(props: {
+  seconds: MorphSeconds
+  onSet: (s: MorphSeconds) => void
+}) {
+  const progress = useSyncExternalStore(
+    engine.morphProgress.subscribe,
+    engine.morphProgress.get,
+  )
+  if (progress !== null) {
+    return (
+      <button
+        className={styles.flight}
+        onClick={() => engine.stopMorph()}
+        title={`travelling over ${props.seconds}s — press to stop here and keep the half-way board, which is a board like any other. Grabbing a slider does the same`}
+      >
+        <span
+          className={styles.flightFill}
+          style={{ transform: `scaleX(${progress})` }}
+        />
+        <span className={styles.flightLabel}>stop here</span>
+      </button>
+    )
+  }
+  return (
+    <select
+      className={styles.btn}
+      value={props.seconds}
+      onChange={e => {
+        const picked = MORPH_SECONDS.find(s => String(s) === e.target.value)
+        if (picked === undefined) return
+        props.onSet(picked)
+        saveMorph(picked)
+      }}
+      title={
+        props.seconds > 0
+          ? `presets, random, mutate and reset travel to the new board over ${props.seconds}s instead of cutting to it. Rolling again mid-morph carries on from wherever the board has got to`
+          : 'presets, random, mutate and reset land in one frame — pick a duration to make them travel there instead, which is where the sounds between two presets live'
+      }
+    >
+      {MORPH_SECONDS.map(s => (
+        <option key={s} value={s}>{`morph: ${MORPH_LABELS[s]}`}</option>
+      ))}
+    </select>
+  )
 }
 
 export function App() {
@@ -42,6 +112,7 @@ export function App() {
   const offPath = GROUPS.filter(g => !onPath.has(g.name))
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
   const [copied, setCopied] = useState(false)
+  const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
 
   useEffect(() => engine.autostart(), [])
 
@@ -57,7 +128,8 @@ export function App() {
   // gesture that takes the audio context live.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey)
+        return
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
       e.preventDefault()
@@ -98,7 +170,9 @@ export function App() {
           </button>
           <button
             className={recording ? styles.recBtnOn : styles.ioBtn}
-            onClick={() => (recording ? engine.stopRecording() : engine.startRecording())}
+            onClick={() =>
+              recording ? engine.stopRecording() : engine.startRecording()
+            }
             title="record the output to a wav file — stopping saves it"
           >
             {recording ? `■ stop & save ${clock(recSeconds)}` : '● record'}
@@ -118,19 +192,25 @@ export function App() {
         <p className={styles.hint}>
           {!running && (
             <b className={styles.warn}>
-              click anywhere to power on — loud, harsh noise ahead, start with your volume low.{' '}
+              click anywhere to power on — loud, harsh noise ahead, start with
+              your volume low.{' '}
             </b>
           )}
-          press <b>play demo song</b> (or <span className={styles.kbd}>space</span>), or play keys
-          with <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b> until the toy
-          reboots, solder the <b>Bend spot</b> pot, push any <b>Feedback</b> past 1
+          press <b>play demo song</b> (or{' '}
+          <span className={styles.kbd}>space</span>), or play keys with{' '}
+          <span className={styles.kbd}>a s d f …</span> — turn up <b>Starve</b>{' '}
+          until the toy reboots, solder the <b>Bend spot</b> pot, push any{' '}
+          <b>Feedback</b> past 1
         </p>
       </div>
 
       <div className={styles.panel}>
         <div className={styles.masthead}>
           <span className={styles.brand}>bender</span>
-          <span className={styles.version} title={`bender ${versionLabel} (${gitSha})`}>
+          <span
+            className={styles.version}
+            title={`bender ${versionLabel} (${gitSha})`}
+          >
             {versionLabel}
           </span>
         </div>
@@ -138,31 +218,38 @@ export function App() {
         <div className={styles.actions}>
           <button
             className={styles.btn}
-            onClick={() => audition(randomLook(Math.random), 1.6)}
+            onClick={() => audition(randomLook(Math.random), morphSeconds)}
+            title="a board you have not heard: a random preset nudged off itself. It replaces what you have — mutate keeps it"
           >
             random
           </button>
           <button
             className={styles.btn}
             onClick={e =>
-              engine.patch(
+              // No audition: a nudge is to the board you are already hearing, so
+              // it must not start the demo song under someone playing the keys.
+              engine.morphTo(
                 mutate(
                   engine.controls.get(),
                   e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
                   Math.random,
                 ),
+                morphSeconds,
               )
             }
-            title="mutate the current board — shift for wild, alt for gentle"
+            title="keep this board and nudge every control around where it sits — shift for wild, alt for gentle"
           >
             mutate
           </button>
           <button
             className={styles.btn}
-            onClick={() => engine.patch({ ...DEFAULT_CONTROLS })}
+            onClick={() =>
+              engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
+            }
           >
             reset
           </button>
+          <MorphControl seconds={morphSeconds} onSet={setMorphSeconds} />
           <button
             className={styles.btn}
             onClick={share}
@@ -181,7 +268,7 @@ export function App() {
               key={p.name}
               className={styles.preset}
               title={p.blurb}
-              onClick={() => audition(applyPreset(p))}
+              onClick={() => audition(applyPreset(p), morphSeconds)}
             >
               {p.name}
             </button>

@@ -1,6 +1,6 @@
-import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
+import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { romIndex } from '../dsp/stages/roms'
-import { ALL_SLIDERS, snapToStep } from './controls'
+import { ALL_SLIDERS, HOLD_KEYS, snapToStep } from './controls'
 
 export interface PresetDef {
   name: string
@@ -248,7 +248,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'octave up',
-    blurb: 'Rectified into a ringing transformer — an octave on one note, gargle on two',
+    blurb:
+      'Rectified into a ringing transformer — an octave on one note, gargle on two',
     patch: {
       chipLevel: 0.75,
       stompCircuit: 4,
@@ -261,7 +262,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'velcro',
-    blurb: 'Starved to the edge of cutoff: it gates, sputters and howls between notes',
+    blurb:
+      'Starved to the edge of cutoff: it gates, sputters and howls between notes',
     patch: {
       chipLevel: 0.7,
       stompCircuit: 5,
@@ -275,7 +277,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'squeezed screamer',
-    blurb: 'The bay envelope wired onto the drive, so it digs in as it gets loud',
+    blurb:
+      'The bay envelope wired onto the drive, so it digs in as it gets loud',
     patch: {
       chipLevel: 0.8,
       stompCircuit: 0,
@@ -465,7 +468,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'found tape',
-    blurb: 'The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken',
+    blurb:
+      'The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken',
     patch: {
       chipLevel: 0.7,
       chipTune: 12,
@@ -481,7 +485,8 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'shed oxide',
-    blurb: 'Slow tape gone soft: dropouts, print-through, the pitch never settling',
+    blurb:
+      'Slow tape gone soft: dropouts, print-through, the pitch never settling',
     patch: {
       chipLevel: 0.7,
       chipTune: 14,
@@ -518,17 +523,18 @@ export const PRESETS: PresetDef[] = [
   },
 ]
 
-// Never randomized: output volume, mic gain and the pad your finger is on.
-const HANDS_OFF = new Set<ControlKey>(['outGain', 'micLevel', 'bodyX', 'bodyY'])
-
 export function applyPreset(preset: PresetDef): Controls {
   return { ...DEFAULT_CONTROLS, ...preset.patch }
 }
 
-export function mutate(controls: Controls, amount: number, rand: () => number): Controls {
+export function mutate(
+  controls: Controls,
+  amount: number,
+  rand: () => number,
+): Controls {
   const next = { ...controls }
   for (const def of ALL_SLIDERS) {
-    if (HANDS_OFF.has(def.key)) continue
+    if (HOLD_KEYS.has(def.key)) continue
     if (def.choices) {
       if (rand() < amount * 0.5) {
         next[def.key] = def.min + Math.floor(rand() * def.choices.length)

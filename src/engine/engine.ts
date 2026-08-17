@@ -1,7 +1,7 @@
 import workletUrl from '../dsp/worklet.ts?worker&url'
-import { CONTROL_KEYS, DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
-import { ENUM_KEYS } from '../ui/controls'
+import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { createStore, type Store } from '../listeners'
+import { Glide } from './glide'
 import type { FromWorklet, ToWorklet } from './messages'
 import { packParams } from './params'
 import { encodeWav } from './wav'
@@ -18,16 +18,22 @@ export interface Meter {
 // animation frame.
 export class Engine {
   readonly controls = createStore<Controls>({ ...DEFAULT_CONTROLS })
-  readonly meter: Store<Meter> & { set: (m: Meter) => void } = createStore<Meter>({
-    peak: 0,
-    scope: new Float32Array(512),
-  })
+  readonly meter: Store<Meter> & { set: (m: Meter) => void } =
+    createStore<Meter>({
+      peak: 0,
+      scope: new Float32Array(512),
+    })
   readonly running = createStore(false)
   readonly micOn = createStore(false)
   readonly playing = createStore(false)
   readonly recording = createStore(false)
   readonly recSeconds = createStore(0)
   readonly sampleName = createStore<string | null>(null)
+  // How far a morph has got, 0..1, or null when none is running. A store rather
+  // than a value passed down because it moves at the frame rate: subscribed to
+  // by the one button that draws it, so a 30s morph costs that button per frame
+  // and not the whole panel.
+  readonly morphProgress = createStore<number | null>(null)
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -68,7 +74,8 @@ export class Engine {
     })
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
-      if (msg.kind === 'meter') this.meter.set({ peak: msg.peak, scope: msg.scope })
+      if (msg.kind === 'meter')
+        this.meter.set({ peak: msg.peak, scope: msg.scope })
       else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     node.connect(ctx.destination)
@@ -100,30 +107,42 @@ export class Engine {
   private cancelMorph() {
     if (this.morphRaf) cancelAnimationFrame(this.morphRaf)
     this.morphRaf = 0
+    if (this.morphProgress.get() !== null) this.morphProgress.set(null)
   }
 
-  // Glide the board into a new look, phosphene-style: numeric controls ease
-  // over `seconds`, enums cut at the start.
-  morphTo(target: Controls, seconds = 1.2) {
+  // Stop where it has got to and keep the half-way board, which is a board like
+  // any other. Grabbing a slider does the same thing, through set().
+  stopMorph() {
     this.cancelMorph()
-    const from = this.controls.get()
+  }
+
+  // Travel to a new board over `seconds`, or land in one frame at zero. It sets
+  // off from the *live* controls, so rolls chain: hitting random again halfway
+  // through a morph leaves from where the board actually is rather than snapping
+  // back to the last resting board first.
+  morphTo(target: Controls, seconds = 1) {
+    this.cancelMorph()
+    const glide = new Glide(this.controls.get(), target)
+    const land = () => {
+      this.cancelMorph()
+      this.controls.set(glide.at(this.controls.get(), 1))
+      this.flushSoon()
+    }
+    if (seconds <= 0) {
+      land()
+      return
+    }
     const start = performance.now()
-    const cut: Partial<Controls> = {}
-    for (const k of ENUM_KEYS) cut[k] = target[k]
-    this.controls.set({ ...from, ...cut })
-    this.flushSoon()
     const tick = () => {
       const t = Math.min((performance.now() - start) / (seconds * 1000), 1)
-      const e = t * t * (3 - 2 * t)
-      const next = { ...this.controls.get() }
-      for (const k of CONTROL_KEYS) {
-        if (ENUM_KEYS.has(k)) continue
-        next[k] = from[k] + (target[k] - from[k]) * e
+      if (t >= 1) {
+        land()
+        return
       }
-      this.controls.set(next)
-      this.dirty = true
+      this.controls.set(glide.at(this.controls.get(), t))
+      this.morphProgress.set(t)
       this.flushSoon()
-      this.morphRaf = t < 1 ? requestAnimationFrame(tick) : 0
+      this.morphRaf = requestAnimationFrame(tick)
     }
     this.morphRaf = requestAnimationFrame(tick)
   }
@@ -161,7 +180,8 @@ export class Engine {
     const mono = new Float32Array(buf.length)
     for (let ch = 0; ch < buf.numberOfChannels; ch++) {
       const data = buf.getChannelData(ch)
-      for (let i = 0; i < buf.length; i++) mono[i]! += data[i]! / buf.numberOfChannels
+      for (let i = 0; i < buf.length; i++)
+        mono[i]! += data[i]! / buf.numberOfChannels
     }
     this.post({ kind: 'sample', mono }, [mono.buffer])
     this.sampleName.set(file.name)

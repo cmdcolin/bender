@@ -49,13 +49,15 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding-bottom: 8px;
 }
 
 .btn,
-.btnDanger {
-  flex: 1;
+.btnDanger,
+.flight {
+  flex: 1 1 64px;
   font-size: var(--fs-sm);
   padding: 6px 0;
   background: var(--bg3);
@@ -77,6 +79,38 @@
 
 .btnDanger:hover {
   background: #2a1216;
+}
+
+select.btn {
+  text-align: center;
+  appearance: none;
+}
+
+/* The fill is a transform on a full-width bar rather than a width, so a 30s
+   morph animates on the compositor instead of relaying out the row 60 times a
+   second. The label sits over it and never moves. */
+.flight {
+  position: relative;
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  padding: 6px 0;
+  background: var(--bg3);
+  color: var(--fg);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.flightFill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0.28;
+  transform-origin: left;
+}
+
+.flightLabel {
+  position: relative;
 }
 
 .presets {
