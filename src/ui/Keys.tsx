@@ -1,6 +1,8 @@
 import { useEffect, useState, type PointerEvent } from 'react'
 import { engine } from '../engine/engine'
+import { semitoneName } from '../notes'
 import { useStoreValue } from './ControlsContext'
+import { blackAbove, OCTAVES, pitch, TOP, WHITE_KEYS } from './keyboard'
 import { RailLamp } from './RailLamp'
 import styles from './Keys.module.css'
 
@@ -31,28 +33,13 @@ const LETTER: Record<number, string> = Object.fromEntries(
   Object.entries(KEY_MAP).map(([letter, note]) => [note, letter]),
 )
 
-// Three octaves on the board. The chip's divider reaches either side of them, so
-// the octave switch moves the whole keyboard rather than scrolling it: what is
-// drawn is where your hands are, not everything the chip can strike.
-const OCTAVES_DRAWN = 3
-const TOP = OCTAVES_DRAWN * 12
-const WHITE_PC = [0, 2, 4, 5, 7, 9, 11]
-// The pitch classes with a black key above them. Where there is none, two whites
-// sit side by side — the pattern that makes a keyboard readable at a glance, and
-// the reason the board closes on a tonic with nothing over it.
-const BLACK_PC = new Set([0, 2, 5, 7, 9])
+// Who is holding a key down, and so what colour it is.
+type Lit = 'hand' | 'chip' | 'dark'
 
-const WHITE_KEYS = [
-  ...Array.from({ length: OCTAVES_DRAWN }, (_, o) =>
-    WHITE_PC.map(pc => pc + 12 * o),
-  ).flat(),
-  TOP,
-]
-
-const blackAbove = (semitone: number) =>
-  semitone < TOP && BLACK_PC.has(semitone % 12) ? semitone + 1 : undefined
-
-const OCTAVES = [-2, -1, 0, 1, 2]
+const KEY_CLASS = {
+  white: { dark: styles.white, hand: styles.whiteOn, chip: styles.whiteChip },
+  black: { dark: styles.black, hand: styles.blackOn, chip: styles.blackChip },
+}
 
 // The toy keyboard's keys: clickable, plus the computer keyboard (a s d f...).
 // Hold latches what you press, so both hands are free for the panel.
@@ -63,33 +50,43 @@ export function Keys() {
   const [hold, setHold] = useState(false)
   const [octave, setOctave] = useState(0)
   const shift = octave * 12
-  // What this board sent, and what is sounding anywhere. They part company the
-  // moment a controller is plugged in: a key lights for whoever struck it, but
-  // only the pointer's own notes answer to the pointer letting go.
-  const sounding = useStoreValue(engine.sounding)
-  const isDown = (note: number) => held.has(note + shift)
-  const isLit = (note: number) => sounding.has(note + shift)
-  // A keybed reaches further than three octaves, so a note played past either
-  // end of what is drawn would light nothing at all and read as a dead wire.
-  const below = [...sounding].some(s => s < shift)
-  const above = [...sounding].some(s => s > TOP + shift)
+  const at = (key: number) => pitch(key, shift)
+  // Two lights on one board. What a hand is holding down — this one's pointer,
+  // the letter keys, a controller — and what the chip is sounding on its own,
+  // which is the ROM's tune, the backing under it, and whatever the kit's
+  // trigger line strikes. Your own notes are in both, a meter apart, so yours
+  // wins and the toy's is what is left.
+  const keysDown = useStoreValue(engine.keysDown)
+  const chipNotes = useStoreValue(engine.chipNotes)
+  const isDown = (key: number) => held.has(at(key))
+  const litBy = (key: number): Lit =>
+    keysDown.has(at(key)) ? 'hand' : chipNotes.has(at(key)) ? 'chip' : 'dark'
+  // A keybed reaches further than three octaves, and so does the tune when the
+  // clock bend drags it off the board. A note played past either end would
+  // otherwise light nothing at all and read as a dead wire.
+  const playing = [...keysDown, ...chipNotes]
+  const below = playing.some(s => s < at(0))
+  const above = playing.some(s => s > at(TOP))
 
-  const press = (note: number) => {
-    const semitone = note + shift
-    if (hold && held.has(semitone)) {
-      release(note, true)
+  const press = (key: number) => {
+    const semitone = at(key)
+    // Latched keys let go on a second press. What is latched is what is
+    // sounding, not what this component remembers sending: panic clears the
+    // board underneath it, and a key that is dark should strike, not unlatch.
+    if (hold && keysDown.has(semitone)) {
+      release(key, true)
       return
     }
     engine.noteOn(semitone)
     setHeld(h => new Set(h).add(semitone))
   }
 
-  const release = (note: number, force = false) => {
+  const release = (key: number, force = false) => {
     if (hold && !force) return
-    engine.noteOff(note + shift)
+    engine.noteOff(at(key))
     setHeld(h => {
       const next = new Set(h)
-      next.delete(note + shift)
+      next.delete(at(key))
       return next
     })
   }
@@ -144,33 +141,29 @@ export function Keys() {
     if (e.buttons && !hold) press(note)
   }
 
-  const key = (note: number, black: boolean) => (
-    <button
-      className={
-        black
-          ? isLit(note)
-            ? styles.blackOn
-            : styles.black
-          : isLit(note)
-            ? styles.whiteOn
-            : styles.white
-      }
-      aria-label={`key ${note + shift}`}
-      onPointerDown={e => {
-        if (black) e.stopPropagation()
-        grab(note)(e)
-      }}
-      onPointerEnter={slideInto(note)}
-      onPointerUp={() => release(note)}
-      onPointerLeave={() => isDown(note) && release(note)}
-    >
-      {LETTER[note] && (
-        <span className={black ? styles.blackLetter : styles.letter}>
-          {LETTER[note]}
-        </span>
-      )}
-    </button>
-  )
+  const key = (note: number, black: boolean) => {
+    const lit = litBy(note)
+    return (
+      <button
+        className={KEY_CLASS[black ? 'black' : 'white'][lit]}
+        aria-label={`key ${semitoneName(at(note))}`}
+        aria-pressed={lit !== 'dark'}
+        onPointerDown={e => {
+          if (black) e.stopPropagation()
+          grab(note)(e)
+        }}
+        onPointerEnter={slideInto(note)}
+        onPointerUp={() => release(note)}
+        onPointerLeave={() => isDown(note) && release(note)}
+      >
+        {LETTER[note] && (
+          <span className={black ? styles.blackLetter : styles.letter}>
+            {LETTER[note]}
+          </span>
+        )}
+      </button>
+    )
+  }
 
   return (
     <div className={styles.row}>

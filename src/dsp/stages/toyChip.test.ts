@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
-import { buildChain, type BuiltChain } from '../build'
+import { buildBender, buildChain, type BuiltChain } from '../build'
 import { BLOCK } from '../stage'
 import {
   bin,
@@ -13,6 +13,7 @@ import {
   SR,
   tail,
 } from '../testRender'
+import { ToyChip } from './toyChip'
 
 // The board boots with the drum machine running too; these takes measure the
 // chip's own tune, so they mute it.
@@ -143,4 +144,55 @@ test('narrow tone taps thin out and survive the divider running out of counts', 
     playKeys({ chipTone: 3, chipClockX: 16 }, chip => chip.noteOn(12)),
   )
   expect(fast).toBeGreaterThan(0.01)
+})
+
+// What the panel's keyboard lights up: the chip has to say which notes it is
+// making a sound with, or a tune playing itself leaves the drawn board dark.
+test('the chip reports the notes it is sounding', () => {
+  const built = buildBender(SR)
+  built.transport.tune = true
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    ...CHIP_ONLY,
+    chipLevel: 1,
+    chipAccomp: 1,
+  })
+  const io = makeIo()
+  const out = new Int16Array(ToyChip.MAX_SOUNDING)
+  const seen = new Set<number>()
+  for (let b = 0; b < Math.ceil((2 * SR) / BLOCK); b++) {
+    built.chain.process(io, p)
+    for (const note of out.subarray(0, built.toyChip.soundingNotes(out)))
+      seen.add(note)
+  }
+  // Two seconds of the demo tune is several steps of melody with the oom-pah
+  // walking under it, so the board is never lit by one note alone.
+  expect(seen.size).toBeGreaterThan(3)
+})
+
+test('a struck key is sounding until it decays, and a silent chip reports none', () => {
+  const built = buildBender(SR)
+  const p = packParams({ ...DEFAULT_CONTROLS, ...CHIP_ONLY, chipLevel: 1 })
+  const io = makeIo()
+  const out = new Int16Array(ToyChip.MAX_SOUNDING)
+  const sounding = () =>
+    [...out.subarray(0, built.toyChip.soundingNotes(out))] as number[]
+
+  // The transport is stopped, so nothing but the key is playing.
+  built.chain.process(io, p)
+  expect(sounding()).toEqual([])
+
+  built.toyChip.noteOn(7)
+  built.chain.process(io, p)
+  expect(sounding()).toEqual([7])
+
+  // Let go, the voice decays on the tune's own clock rather than stopping, so
+  // the key stays lit for as long as it is still making a sound.
+  built.toyChip.noteOff(7)
+  built.chain.process(io, p)
+  expect(sounding()).toEqual([7])
+
+  for (let b = 0; b < Math.ceil((4 * SR) / BLOCK); b++)
+    built.chain.process(io, p)
+  expect(sounding()).toEqual([])
 })

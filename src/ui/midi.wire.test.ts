@@ -156,14 +156,14 @@ test('notes strike the chip, and let go of the note they struck', () => {
 })
 
 // The panel's keyboard lights off this set, so a key on the wire has to land in
-// it at the pitch the chip is playing — three semitones up from the controller's
-// middle C, which is where the drawn board has it.
+// it at the pitch the chip is playing: the chip counts from A3, so a
+// controller's middle C is semitone 3.
 test('a key on the wire lights the key on the screen', () => {
   midi.setNotes(true)
   send(0x90, 60, 100)
-  expect(engine.sounding.get().has(3)).toBe(true)
+  expect(engine.keysDown.get().has(3)).toBe(true)
   send(0x80, 60, 0)
-  expect(engine.sounding.get().has(3)).toBe(false)
+  expect(engine.keysDown.get().has(3)).toBe(false)
 })
 
 test('a harder key strikes harder', () => {

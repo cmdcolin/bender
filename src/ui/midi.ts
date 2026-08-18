@@ -4,6 +4,7 @@
 
 import { CONTROL_KEYS, type ControlKey } from '../controls'
 import { engine } from '../engine/engine'
+import { noteName, toSemitone } from '../notes'
 import { createStore } from '../listeners'
 import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
 import { fromPos, toPos } from './slider-scale'
@@ -48,24 +49,6 @@ export interface Traffic {
 // these by default, which is why it is skipped rather than left to the user.
 export const isLoopback = (name: string | null) =>
   /midi ?through|loopmidi|iac driver/i.test(name ?? '')
-
-const NOTE_NAMES = [
-  'C',
-  'C#',
-  'D',
-  'D#',
-  'E',
-  'F',
-  'F#',
-  'G',
-  'G#',
-  'A',
-  'A#',
-  'B',
-]
-
-export const noteName = (note: number) =>
-  `${NOTE_NAMES[note % 12] ?? '?'}${Math.floor(note / 12) - 1}`
 
 // Names the message the way the panel talks about it, so a reading needs no
 // byte tables: a knob is its CC, a key is its pitch, a tick is the clock.
@@ -144,10 +127,6 @@ export const AUTOMAP_KEYS: ControlKey[] = [
   ...ALL_SLIDERS.filter(s => s.role).map(s => s.key),
   ...ALL_SLIDERS.filter(s => !s.role).map(s => s.key),
 ]
-
-// A3 is the toy's own zero — the ROM's steps are semitones above it — so a
-// controller's middle C lands three semitones up, where a keyboard expects it.
-const A3 = 57
 
 // How hard the gate arrives, from how hard the key was hit. Velocity strikes the
 // envelope's starting level, which is the same door the trigger patch comes in
@@ -759,7 +738,7 @@ class Midi {
     // running-status spelling of a Note Off, and the chip's keyboard latches, so
     // both have to reach noteOff or the note never lets go.
     if (this.notes.get() && (status === 0x90 || status === 0x80)) {
-      const semitone = first - A3
+      const semitone = toSemitone(first)
       if (status === 0x90 && second > 0)
         engine.noteOn(semitone, velocity(second))
       else engine.noteOff(semitone)

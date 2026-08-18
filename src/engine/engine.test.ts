@@ -1,6 +1,6 @@
 import { beforeEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { edgeScore, Engine } from './engine'
+import { edgeScore, Engine, mergeNotes } from './engine'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
 // out to nothing, so a morph asked for in seconds stays in flight for the whole
@@ -157,21 +157,36 @@ test('the notes that are down are the notes that were struck and not let go', ()
   const engine = new Engine()
   engine.noteOn(3)
   engine.noteOn(7)
-  expect([...engine.sounding.get()]).toEqual([3, 7])
+  expect([...engine.keysDown.get()]).toEqual([3, 7])
 
   engine.noteOff(3)
-  expect([...engine.sounding.get()]).toEqual([7])
+  expect([...engine.keysDown.get()]).toEqual([7])
 
   // Panic silences the chip, so nothing is left lit over a voice that is gone.
   engine.panic()
-  expect(engine.sounding.get().size).toBe(0)
+  expect(engine.keysDown.get().size).toBe(0)
 })
 
 test('striking a note already down is not news', () => {
   const engine = new Engine()
   engine.noteOn(3)
-  const before = engine.sounding.get()
+  const before = engine.keysDown.get()
   engine.noteOn(3)
   engine.noteOff(9)
-  expect(engine.sounding.get()).toBe(before)
+  expect(engine.keysDown.get()).toBe(before)
+})
+
+// The chip's report arrives every 16 ms whether or not it has anything new to
+// say, and the keyboard renders off it.
+test('an unchanged note report hands back the set it was given', () => {
+  const now = new Set([3, 7])
+  expect(mergeNotes(now, Int16Array.from([7, 3]))).toBe(now)
+  expect(mergeNotes(now, Int16Array.from([3, 7, 7]))).toBe(now)
+  expect(mergeNotes(new Set(), new Int16Array(0))).toEqual(new Set())
+
+  expect(mergeNotes(now, Int16Array.from([3]))).toEqual(new Set([3]))
+  expect(mergeNotes(now, Int16Array.from([3, 7, 10]))).toEqual(
+    new Set([3, 7, 10]),
+  )
+  expect(mergeNotes(now, new Int16Array(0))).toEqual(new Set())
 })

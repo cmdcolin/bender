@@ -51,6 +51,22 @@ export function edgeScore(ducks: number[], peaks: number[]): number {
   return sd + 0.12 * Math.min(loud, 1)
 }
 
+// The chip's note report folded into what the panel already believes. It posts
+// every 16 ms whether or not anything changed, and a store that turned over that
+// often would re-render the keyboard sixty times a second to draw the same keys
+// — so an unchanged report hands back the set that came in, and the caller can
+// tell by identity that there is nothing to say.
+export function mergeNotes(
+  now: ReadonlySet<number>,
+  notes: Int16Array,
+): ReadonlySet<number> {
+  if (notes.length === 0) return now.size === 0 ? now : new Set()
+  let known = true
+  for (const note of notes) known &&= now.has(note)
+  const next = new Set(notes)
+  return known && next.size === now.size ? now : next
+}
+
 // Owns the AudioContext, the worklet node and the control values. The UI
 // writes controls here; the engine coalesces them into one packed post per
 // animation frame.
@@ -88,11 +104,15 @@ export class Engine {
   readonly hunting = createStore(false)
   /** True while the board is nudging itself along on a timer. */
   readonly drifting = createStore(false)
-  // Which semitones are down, whoever put them there: the on-screen keys, the
-  // computer keyboard, a controller on the wire. The chip holds a note until it
-  // is let go, and the keyboard on the panel draws itself from this, so what the
-  // wire is playing shows up under your eyes rather than only in your ears.
-  readonly sounding = createStore<ReadonlySet<number>>(new Set())
+  // Which semitones are down under a hand: the on-screen keys, the computer
+  // keyboard, a controller on the wire. Held here rather than read back off the
+  // chip because it is exact and immediate — the keys light on the press, not on
+  // the next meter, and they light on a board whose audio has not started.
+  readonly keysDown = createStore<ReadonlySet<number>>(new Set())
+  // And what the chip says it is sounding, which is the rest of the board: the
+  // ROM's tune, the backing under it, a note a drum hit struck through the
+  // trigger patch. Yours show up in here too, a meter late.
+  readonly chipNotes = createStore<ReadonlySet<number>>(new Set())
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -142,7 +162,9 @@ export class Engine {
     })
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
-      if (msg.kind === 'meter')
+      if (msg.kind === 'meter') {
+        const notes = mergeNotes(this.chipNotes.get(), msg.notes)
+        if (notes !== this.chipNotes.get()) this.chipNotes.set(notes)
         this.meter.set({
           peak: msg.peak,
           scope: msg.scope,
@@ -151,7 +173,7 @@ export class Engine {
           rail: msg.rail,
           reboots: msg.reboots,
         })
-      else if (msg.kind === 'rec') this.onRecChunk(msg)
+      } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     node.connect(ctx.destination)
     ctx.onstatechange = () => this.running.set(ctx.state === 'running')
@@ -546,18 +568,18 @@ export class Engine {
   // Striking a note that is already down is no news to anything watching, so
   // the set only turns over when it really changes.
   private hold(semitone: number, down: boolean) {
-    const notes = this.sounding.get()
+    const notes = this.keysDown.get()
     if (notes.has(semitone) === down) return
     const next = new Set(notes)
     if (down) next.add(semitone)
     else next.delete(semitone)
-    this.sounding.set(next)
+    this.keysDown.set(next)
   }
 
   panic() {
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
     this.post({ kind: 'panic' })
-    if (this.sounding.get().size > 0) this.sounding.set(new Set())
+    if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
   }
 }
 

@@ -140,6 +140,9 @@ export class ToyChip implements Stage {
   private keyNote = 0
   private lastTiming = 0
   private envDecay = 1
+  // The last block's accompaniment level, kept for the note report: bass and
+  // chord envelopes run whether or not anyone can hear them.
+  private accompLevel = 0
   private rng: Rng
   // The crystal's own wander, and the counter's habit of slipping in runs
   // rather than at a steady rate.
@@ -179,6 +182,32 @@ export class ToyChip implements Stage {
   noteOff(semitone: number) {
     for (const v of this.voices) if (v.note === semitone) v.held = false
   }
+
+  // Every note the chip is making a sound with, written into `out` and returned
+  // as a count — the melody, the backing it walks under it, and the four key
+  // voices, which is where your hands, a controller and the kit's trigger line
+  // all end up. What the panel's keyboard lights, so a tune plays itself across
+  // the drawn keys and a kick bridged onto the gate shows which note it strikes.
+  //
+  // Envelopes rather than note numbers decide, because a voice that has decayed
+  // still remembers what it played. A chip that is rebooting or dead is silent
+  // whatever its envelopes say.
+  soundingNotes(out: Int16Array): number {
+    let n = 0
+    if (this.rail.booting || this.rail.dead) return n
+    if (this.transport.tune && this.note >= 0 && this.env > ENV_FLOOR)
+      out[n++] = this.note
+    if (this.accompLevel > 0) {
+      if (this.bassEnv > ENV_FLOOR) out[n++] = this.bassNote
+      if (this.chordEnv > ENV_FLOOR)
+        for (const note of this.chord) out[n++] = note
+    }
+    for (const v of this.voices) if (v.env > ENV_FLOOR) out[n++] = v.note
+    return n
+  }
+
+  /** How many notes `soundingNotes` can report at once. */
+  static readonly MAX_SOUNDING = 9
 
   // Retrigger the note if it is already up, else take a silent voice; failing
   // that steal, preferring a released voice and the oldest within its group.
@@ -288,6 +317,7 @@ export class ToyChip implements Stage {
     // rail that dies in time.
     const modStarve = ctx.mod.read(DEST.starve)
     const accomp = p[IDX.chipAccomp]!
+    this.accompLevel = accomp
     // Whichever of the kit's voices is bridged onto the gate, and what it plays.
     const trigMask = voiceMask(Math.round(p[IDX.trigToKeys]!))
     const trigNote = Math.round(p[IDX.trigKeysNote]!)

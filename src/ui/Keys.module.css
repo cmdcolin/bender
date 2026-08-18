@@ -29,7 +29,8 @@
 }
 
 .white,
-.whiteOn {
+.whiteOn,
+.whiteChip {
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -42,12 +43,21 @@
   padding: 0 0 3px;
 }
 
+/* Lit by a hand — the pointer, the letter keys, a controller on the wire. */
 .whiteOn {
   background: var(--accent);
 }
 
+/* Lit by the toy playing itself: the ROM's tune, the backing under it, a note a
+   drum hit struck through the trigger patch. Amber rather than the accent, so
+   what you are playing stays legible over what the board is playing. */
+.whiteChip {
+  background: var(--accent2);
+}
+
 .black,
-.blackOn {
+.blackOn,
+.blackChip {
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -66,6 +76,10 @@
 
 .blackOn {
   background: var(--accent);
+}
+
+.blackChip {
+  background: var(--accent2);
 }
 
 /* A note sounding past either end of the drawn board. The keys stay where your

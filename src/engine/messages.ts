@@ -52,6 +52,11 @@ export interface MeterMsg {
   /** Times the watchdog has power-cycled the chip, so the panel can flash on a
       reboot rather than try to catch the 70 ms the rail is down for. */
   reboots: number
+  /** Every note the chip is sounding, in its own semitones — the tune, the
+      backing and the key voices. The panel's keyboard lights off this, which is
+      how a note nobody pressed (the ROM's, or one a drum hit struck) reaches the
+      screen at all. */
+  notes: Int16Array
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

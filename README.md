@@ -45,12 +45,22 @@ single small output stage, so a chord leans on its headroom rather than coming
 out four times louder — and draws harder on the rail, which is its own way of
 browning the chip out.
 
-The board draws three octaves, and the sixteen keys your typing hand covers
-carry their letter printed on them the way the toys printed note names. Drag
-across it and it plays what you cross. <kbd>z</kbd> and <kbd>x</kbd> move the
-whole board two octaves either way — a bass line at one end, well under the
+The board draws three octaves from C3, and the sixteen keys your typing hand
+covers carry their letter printed on them the way the toys printed note names.
+Drag across it and it plays what you cross. <kbd>z</kbd> and <kbd>x</kbd> move
+the whole board two octaves either way — a bass line at one end, well under the
 toy's own bottom key, and at the other the top of the counter where the narrow
 tones run out of ticks and widen back into squares.
+
+The keys light for whatever is playing them. A hand lights them in the accent
+colour — the pointer, the letter keys, a controller on the wire — and the toy
+playing itself lights them amber: the ROM's tune walking up the board, the
+oom-pah under it, a note the kit strikes through the trigger patch. The chip
+reports what it is sounding along with the meter, so what lights is what is
+making a noise rather than what was asked for: a voice decays out of the light
+as it decays out of the mix, and a chip that browns out goes dark. Notes played
+past either end of the drawn three octaves put a mark at that end, which is what
+the octave switch is for.
 
 **Tone** taps the divider chain at a different pulse width — 1/2, 1/4, 1/8,
 1/16. Narrow taps null different harmonics and thin out; nothing levels them
@@ -524,17 +534,14 @@ other half of the same problem: a knob whose ring follows the preset was never
 stranded to begin with. An encoder needs it most, having no pointer of its own —
 the ring is the only place its control's value can be shown on the hardware.
 
-Notes play the toy chip's keyboard, with A3 where the ROM has it, so a
-controller strikes the same voice the on-screen keys do — and lights it, since
-the drawn board follows every note that is down whoever put it there. A keybed
-reaches further than the three octaves on screen, so a note played past either
-end puts a mark at that end rather than lighting nothing: the octave switch is
-what brings it under the drawn keys. Velocity comes with them: the toy's own
-keys are switches and always strike full, but a wire onto the gate can arrive at
-any level, which is what the trigger patch has always done. Clock is the other
-half: the drum machine can follow the tick on the wire, and it does it by
-writing the tempo control, so the slider moves with the room rather than
-fighting it.
+Notes play the toy chip's keyboard, with A3 where the ROM has it — the chip
+counts its semitones from 220 Hz, so a controller's middle C arrives three
+semitones up — and they strike and light the same keys the on-screen board does.
+Velocity comes with them: the toy's own keys are switches and always strike
+full, but a wire onto the gate can arrive at any level, which is what the
+trigger patch has always done. Clock is the other half: the drum machine can
+follow the tick on the wire, and it does it by writing the tempo control, so the
+slider moves with the room rather than fighting it.
 
 ## Run
 

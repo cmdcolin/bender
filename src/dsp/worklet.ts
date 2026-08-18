@@ -3,6 +3,7 @@ import { N_PARAMS, packParams } from '../engine/params'
 import { DEFAULT_CONTROLS } from '../controls'
 import { buildBender, type BuiltChain } from './build'
 import { Smoother } from './smoother'
+import { ToyChip } from './stages/toyChip'
 import { BLOCK, type StereoBlock } from './stage'
 
 const SCOPE_LEN = 512 // a power of two, so the ring wraps on a mask
@@ -22,6 +23,9 @@ class BenderProcessor extends AudioWorkletProcessor {
   private scope = new Float32Array(SCOPE_LEN)
   private scopePos = 0
   private meterCountdown = METER_EVERY
+  // Scratch for the chip's note report, filled per meter post rather than
+  // allocated on the audio thread.
+  private chipNotes = new Int16Array(ToyChip.MAX_SOUNDING)
   private peak = 0
   private duck = 0
   private recording = false
@@ -138,6 +142,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       scope.set(this.scope.subarray(0, head), SCOPE_LEN - head)
       const tick = this.built.toyDrum.tick
       const rail = this.built.rail
+      const sounding = this.built.toyChip.soundingNotes(this.chipNotes)
       this.port.postMessage(
         {
           kind: 'meter',
@@ -147,6 +152,7 @@ class BenderProcessor extends AudioWorkletProcessor {
           duck: this.duck,
           rail: rail.v,
           reboots: rail.rebootCount,
+          notes: this.chipNotes.slice(0, sounding),
         },
         [scope.buffer],
       )
