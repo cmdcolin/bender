@@ -283,6 +283,7 @@ export function App() {
             onClick={() =>
               engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
             }
+            title="back to the board the toy ships with. It travels there like anything else, and it lands in the walk, so undo brings back whatever you were on"
           >
             reset
           </button>
@@ -308,14 +309,6 @@ export function App() {
               redo
             </button>
           )}
-          <MorphControl seconds={morphSeconds} onSet={setMorphSeconds} />
-          <button
-            className={styles.btnDanger}
-            onClick={() => engine.panic()}
-            title="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes"
-          >
-            panic
-          </button>
         </div>
 
         {/* Rolls that are about how the stages sit together, so no one panel
@@ -325,7 +318,7 @@ export function App() {
           {SCENARIOS.map(s => (
             <button
               key={s.name}
-              className={styles.die}
+              className={styles.btn}
               title={s.blurb}
               onClick={() =>
                 engine.morphTo(
@@ -340,7 +333,7 @@ export function App() {
           {/* The one roll that listens to what it rolled. It plays its way
               through the candidates, so it takes as long as it takes. */}
           <button
-            className={styles.die}
+            className={styles.btn}
             title="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. Click again, or touch anything else, to call it off and keep what is playing"
             onClick={() => {
               if (hunting) engine.stopHunt()
@@ -351,6 +344,21 @@ export function App() {
             }}
           >
             {hunting ? 'listening…' : 'hunt an edge'}
+          </button>
+        </div>
+
+        {/* How a board arrives, and how to stop one that has arrived badly.
+            Below the rolls because neither one picks a board — they sit out of
+            the row that does, at their own width rather than stretched across
+            whatever the wrap left over. */}
+        <div className={styles.utils}>
+          <MorphControl seconds={morphSeconds} onSet={setMorphSeconds} />
+          <button
+            className={styles.btnDanger}
+            onClick={() => engine.panic()}
+            title="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes"
+          >
+            panic
           </button>
         </div>
 

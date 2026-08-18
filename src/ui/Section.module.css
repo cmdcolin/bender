@@ -18,41 +18,21 @@
   font-weight: 600;
 }
 
-/* The stage's own verbs, quiet until you go looking: the header is a label
-   first, and a row of loud buttons there would fight the controls under it. */
-.verb,
-.verbOff,
-.reset {
-  font-size: var(--fs-xs);
-  padding: 2px 8px;
-  background: none;
-  color: var(--fg4);
-  border: 1px solid var(--border-quiet);
-  border-radius: 10px;
-  cursor: pointer;
+/* The stage's own verbs: roll this stage, or put it back where it booted. */
+.verb {
+  composes: chipQuiet from './button.module.css';
 }
 
-.verb:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+.verbOff {
+  composes: chipOff from './button.module.css';
 }
 
 /* Carrying the count it is about to take back to zero. It lights the way panic
    does, not the way a roll does: what it undoes is an afternoon of turning,
    recoverable off ctrl+z and still not a thing to press by accident. */
 .reset {
-  color: var(--accent);
+  composes: chipDanger from './button.module.css';
   font-variant-numeric: tabular-nums;
-}
-
-.reset:hover {
-  color: var(--danger);
-  border-color: var(--danger);
-}
-
-.verbOff {
-  opacity: 0.4;
-  cursor: default;
 }
 
 .close {
@@ -89,6 +69,9 @@
   color: var(--fg4);
 }
 
+/* Not a pick but a shell holding two of them, one that opens the part and one
+   that resets it, so the padding belongs to the halves rather than to the frame
+   around them — which is why it wears the look rather than composing it. */
 .part,
 .partOn {
   display: inline-flex;
@@ -101,8 +84,8 @@
 }
 
 .part:hover {
+  color: var(--fg);
   border-color: var(--border-hover);
-  color: var(--fg2);
 }
 
 .partOn {

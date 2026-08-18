@@ -8,21 +8,13 @@
 /* pan-y so a vertical scroll over the row still scrolls the panel: the chip
    only claims the sideways drag. */
 .preset {
+  composes: chip from './button.module.css';
   position: relative;
   overflow: hidden;
-  font-size: var(--fs-xs);
-  padding: 2px 6px;
-  background: none;
-  color: var(--fg3);
-  border: 1px solid var(--border-quiet);
-  border-radius: 10px;
-  cursor: pointer;
   touch-action: pan-y;
 }
 
 .preset:hover {
-  color: var(--accent);
-  border-color: var(--accent);
   cursor: ew-resize;
 }
 
@@ -31,8 +23,7 @@
    else moves the board. */
 .presetOn {
   composes: preset;
-  color: var(--fg);
-  border-color: var(--accent);
+  composes: chipOn from './button.module.css';
 }
 
 /* How far along this preset the board is standing. A transform on a full-width

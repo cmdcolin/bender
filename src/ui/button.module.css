@@ -1,0 +1,140 @@
+/* Every button on the board is one of three kinds, and there is no fourth. A
+   module composes the kind it means and adds only structure — where the thing
+   sits, how it is laid out — so no padding, colour or radius is written down
+   twice in two files that then drift a pixel apart.
+
+   The states each kind can be in live here too, next to it. A module that
+   spelled out its own lit or greyed colours would be racing this file for which
+   rule the bundler happens to emit last; composing the state means the answer
+   is settled here, where both rules are in view.
+
+   Nothing here sets a width. A button is as wide as its label, always: a row
+   that stretched its buttons to fill the line would hand whichever two happened
+   to wrap the look of a different, more important kind of button.
+
+   Every hover skips a disabled button: greyed-out undo lighting up under the
+   pointer would promise a step back that isn't there. */
+
+/* The panel's loud verbs — random, drift, panic. Filled and square, and the
+   only kind at fs-sm, because these are what you came here to press. */
+.action {
+  font-size: var(--fs-sm);
+  padding: 3px 8px;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.action:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+/* A verb that is still running: lit, and the ones that use it say so in the
+   label too, because a border alone is a thing you notice only once you are
+   looking for it. */
+.actionOn {
+  composes: action;
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+/* Greyed rather than hidden: an empty walk is the honest answer to "can I take
+   that back", and a button that came and went would move the whole row. */
+.actionOff {
+  composes: action;
+  color: var(--fg4);
+  cursor: default;
+}
+
+/* The one that takes something away. Red at rest, and it deepens rather than
+   brightening under the pointer: nothing about it should read as encouraging. */
+.actionDanger {
+  composes: action;
+  color: var(--danger);
+  border-color: #55232c;
+}
+
+.actionDanger:hover:not(:disabled) {
+  background: #2a1216;
+  color: var(--danger);
+  border-color: #55232c;
+}
+
+/* One quiet thing among many of its kind: a preset, a MIDI switch, a stage's
+   own verbs. Outlined rather than filled, so a row of forty reads as a list,
+   and the accent on hover is what says it is pressable at all. */
+.chip {
+  font-size: var(--fs-xs);
+  padding: 2px 7px;
+  background: none;
+  color: var(--fg3);
+  border: 1px solid var(--border-quiet);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.chip:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.chipOn {
+  composes: chip;
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+/* Quieter still, for a chip sitting in a header: the header is a label first,
+   and a row of legible buttons there would fight the controls under it. */
+.chipQuiet {
+  composes: chip;
+  color: var(--fg4);
+}
+
+.chipOff {
+  composes: chip;
+  color: var(--fg4);
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* A chip that undoes an afternoon of turning. Lit the way panic is, not the way
+   a roll is: recoverable off ctrl+z and still not a thing to press by accident. */
+.chipDanger {
+  composes: chip;
+  color: var(--accent);
+}
+
+.chipDanger:hover:not(:disabled) {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* One of a set where exactly one is on: a kit ROM, a part. Square, because a
+   pill reads as a tag you filter by rather than a switch you throw — and the
+   chosen one fills in rather than lighting up, since what it marks is where you
+   are, not something running. */
+.pick {
+  font-size: var(--fs-xs);
+  padding: 2px 7px;
+  background: none;
+  color: var(--fg3);
+  border: 1px solid var(--border-quiet);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.pick:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+.pickOn {
+  composes: pick;
+  color: var(--fg);
+  background: var(--bg3);
+  border-color: var(--fg4);
+}

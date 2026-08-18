@@ -11,26 +11,12 @@
   margin-bottom: 5px;
 }
 
-.rom,
-.romOn {
-  font-size: var(--fs-xs);
-  padding: 2px 7px;
-  background: none;
-  color: var(--fg3);
-  border: 1px solid var(--border-quiet);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.rom:hover {
-  border-color: var(--border-hover);
-  color: var(--fg);
+.rom {
+  composes: pick from './button.module.css';
 }
 
 .romOn {
-  color: var(--fg);
-  border-color: var(--fg4);
-  background: var(--bg3);
+  composes: pickOn from './button.module.css';
 }
 
 .grid {

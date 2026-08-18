@@ -87,21 +87,12 @@
   color: var(--accent2);
 }
 
-.btn,
-.toggle {
-  font-size: var(--fs-xs);
-  padding: 2px 8px;
-  background: none;
-  color: var(--fg3);
-  border: 1px solid var(--border-quiet);
-  border-radius: 10px;
-  cursor: pointer;
+.btn {
+  composes: chip from './button.module.css';
 }
 
-.btn:hover,
-.toggle:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+.toggle {
+  composes: chip from './button.module.css';
 }
 
 .btn:disabled {
@@ -111,8 +102,7 @@
 
 .toggleOn {
   composes: toggle;
-  color: var(--fg);
-  border-color: var(--accent);
+  composes: chipOn from './button.module.css';
 }
 
 .select {

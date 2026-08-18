@@ -47,54 +47,37 @@
   color: var(--fg4);
 }
 
-.actions {
+/* Every row of verbs in the panel is the same row: buttons at their own width,
+   wrapping when they run out. Nothing stretches to fill a line, so a button's
+   width says how long its label is and nothing else — a row that wrapped used
+   to hand its last two buttons the whole leftover width and read as a
+   different, more important kind of button. */
+.actions,
+.dice,
+.utils {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 4px;
   padding-bottom: 6px;
 }
 
-.btn,
-.btnOn,
-.btnOff,
-.btnDanger,
-.flight {
-  flex: 1 1 64px;
-  font-size: var(--fs-sm);
-  padding: 3px 0;
-  background: var(--bg3);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  cursor: pointer;
+/* Aliases, so the row's markup reads in its own words: the shapes and every
+   state they take are in button.module.css. */
+.btn {
+  composes: action from './button.module.css';
 }
 
-.btn:hover {
-  border-color: var(--border-hover);
-  color: var(--fg);
-}
-
-/* A verb that is still running: lit, and it says so in the label too, because a
-   border alone is a thing you notice only once you are looking for it. */
 .btnOn {
-  color: var(--fg);
-  border-color: var(--accent);
+  composes: actionOn from './button.module.css';
 }
 
-/* Greyed rather than hidden: an empty walk is the honest answer to "can I take
-   that back", and a button that came and went would move the whole row. */
 .btnOff {
-  color: var(--fg4);
-  cursor: default;
+  composes: actionOff from './button.module.css';
 }
 
 .btnDanger {
-  color: var(--danger);
-  border-color: #55232c;
-}
-
-.btnDanger:hover {
-  background: #2a1216;
+  composes: actionDanger from './button.module.css';
 }
 
 select.btn {
@@ -104,17 +87,14 @@ select.btn {
 
 /* The fill is a transform on a full-width bar rather than a width, so a 30s
    morph animates on the compositor instead of relaying out the row 60 times a
-   second. The label sits over it and never moves. */
+   second. The label sits over it and never moves. The width is the morph
+   select's, whose place it takes for the length of the morph: sized to its own
+   label it would shuffle everything after it along twice per roll. */
 .flight {
+  composes: actionOn from './button.module.css';
   position: relative;
   overflow: hidden;
-  font-size: var(--fs-sm);
-  padding: 3px 0;
-  background: var(--bg3);
-  color: var(--fg);
-  border: 1px solid var(--accent);
-  border-radius: 3px;
-  cursor: pointer;
+  min-width: 92px;
 }
 
 .flightFill {
@@ -127,33 +107,6 @@ select.btn {
 
 .flightLabel {
   position: relative;
-}
-
-/* Above the presets, and marked off from them: a preset is a board someone
-   wrote down, a roll is one nobody has heard yet. */
-.dice {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 3px;
-  padding-bottom: 5px;
-}
-
-/* Square-cornered like every other button on the page: a pill reads as a tag
-   you filter by rather than a verb you press. */
-.die {
-  font-size: var(--fs-sm);
-  padding: 3px 8px;
-  background: var(--bg3);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.die:hover {
-  color: var(--fg);
-  border-color: var(--border-hover);
 }
 
 .ioRow {
