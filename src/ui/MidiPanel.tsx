@@ -6,6 +6,7 @@ import { AUTOMAP_KEYS, DEVICE_PROFILES, midi, type DeviceProfile } from './midi'
 import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
 import { noteName } from '../notes'
 import styles from './MidiPanel.module.css'
+import { Tip } from './Tip'
 
 function label(key: Parameters<typeof sliderFor>[0]): string {
   return `${groupFor(key)} · ${sliderFor(key).label}`
@@ -36,29 +37,33 @@ function Bindings() {
                   read as a position slams its control to one end and stays
                   there, which looks like a broken binding rather than a wrong
                   one — so the fix sits on the row where that happens. */}
-              <button
-                className={b.relative === true ? styles.modeOn : styles.mode}
-                onClick={() => midi.setRelative(s.key, b.relative !== true)}
-                title={
+              <Tip
+                text={
                   b.relative === true
                     ? 'read as an endless encoder: each message is a turn. Press to read it as a position instead'
                     : 'read as a position: each message is where the knob is. Press if this knob is an endless encoder — the giveaway is a control that slams to one end and sticks'
                 }
               >
-                {b.relative === true ? '↻' : '↔'}
-              </button>
+                <button
+                  className={b.relative === true ? styles.modeOn : styles.mode}
+                  onClick={() => midi.setRelative(s.key, b.relative !== true)}
+                >
+                  {b.relative === true ? '↻' : '↔'}
+                </button>
+              </Tip>
               <span className={styles.cc}>
                 CC{b.controller}
                 {b.channel === 0 ? '' : ` ch${b.channel + 1}`}
               </span>
-              <button
-                className={styles.drop}
-                onClick={() => midi.clearBinding(s.key)}
-                aria-label={`unbind ${s.label}`}
-                title={`take ${s.label} off its knob`}
-              >
-                ×
-              </button>
+              <Tip text={`take ${s.label} off its knob`}>
+                <button
+                  className={styles.drop}
+                  onClick={() => midi.clearBinding(s.key)}
+                  aria-label={`unbind ${s.label}`}
+                >
+                  ×
+                </button>
+              </Tip>
             </div>
           )
         })}
@@ -86,13 +91,11 @@ function Pads() {
     <>
       <div className={styles.row}>
         {learn === null ? (
-          <button
-            className={styles.btn}
-            onClick={() => midi.learnPads()}
-            title="hit a pad for each of the kit's six voices in turn. For a pad bank that isn't on channel 10, or isn't General MIDI — the ones that are need none of this. Replaces every pad you have; the ⚟ on a row moves one"
-          >
-            learn pads
-          </button>
+          <Tip text="hit a pad for each of the kit's six voices in turn. For a pad bank that isn't on channel 10, or isn't General MIDI — the ones that are need none of this. Replaces every pad you have; the ⚟ on a row moves one">
+            <button className={styles.btn} onClick={() => midi.learnPads()}>
+              learn pads
+            </button>
+          </Tip>
         ) : (
           <button className={styles.btn} onClick={() => midi.stopPadLearn()}>
             stop learning — keep the {learn.done} bound so far
@@ -113,32 +116,36 @@ function Pads() {
               <span className={mine ? styles.strandedName : styles.boundName}>
                 {voiceLabel(key)}
               </span>
-              <button
-                className={mine ? styles.modeOn : styles.mode}
-                onClick={() => midi.armPad(mine ? null : key)}
-                aria-label={`bind the ${voiceLabel(key)} to a pad`}
-                title={
+              <Tip
+                text={
                   mine
                     ? `hit the pad you want the ${voiceLabel(key)} on — esc to cancel`
                     : `put the ${voiceLabel(key)} on one pad, leaving the other five where they are`
                 }
               >
-                ⚟
-              </button>
+                <button
+                  className={mine ? styles.modeOn : styles.mode}
+                  onClick={() => midi.armPad(mine ? null : key)}
+                  aria-label={`bind the ${voiceLabel(key)} to a pad`}
+                >
+                  ⚟
+                </button>
+              </Tip>
               <span className={p === undefined ? styles.quiet : styles.cc}>
                 {p === undefined
                   ? `GM ch${GM_CHANNEL + 1}`
                   : `${noteName(p.note)}${p.channel === 0 ? '' : ` ch${p.channel + 1}`}`}
               </span>
               {p === undefined ? null : (
-                <button
-                  className={styles.drop}
-                  onClick={() => midi.clearPad(key)}
-                  aria-label={`unbind the ${voiceLabel(key)} pad`}
-                  title={`take the ${voiceLabel(key)} off its pad`}
-                >
-                  ×
-                </button>
+                <Tip text={`take the ${voiceLabel(key)} off its pad`}>
+                  <button
+                    className={styles.drop}
+                    onClick={() => midi.clearPad(key)}
+                    aria-label={`unbind the ${voiceLabel(key)} pad`}
+                  >
+                    ×
+                  </button>
+                </Tip>
               )}
             </div>
           )
@@ -207,13 +214,14 @@ function Wire() {
             {traffic.port === '' ? '' : ` · ${traffic.port}`}
           </span>
         )}
-        <button
-          className={debug ? styles.toggleOn : styles.toggle}
-          onClick={() => midi.setDebug(!debug)}
-          title="also print every message to the browser console, which keeps a scrollback the one-line readout cannot"
-        >
-          log to console
-        </button>
+        <Tip text="also print every message to the browser console, which keeps a scrollback the one-line readout cannot">
+          <button
+            className={debug ? styles.toggleOn : styles.toggle}
+            onClick={() => midi.setDebug(!debug)}
+          >
+            log to console
+          </button>
+        </Tip>
       </div>
     </>
   )
@@ -289,31 +297,34 @@ function Wired() {
               </option>
             ))}
           </select>
-          <button
-            className={styles.btn}
-            disabled={device === undefined}
-            onClick={() => device && midi.autoMap(device)}
-            title={`bind this device's knobs by CC number, in order: the mixes and levels first, then the rest down the signal path. Replaces every binding you have`}
-          >
-            auto-map{' '}
-            {device ? Math.min(device.ccs.length, AUTOMAP_KEYS.length) : 0}
-          </button>
-          <button
-            className={styles.btn}
-            onClick={() => midi.learnSequence(encoders)}
-            title="works on any controller whatever its CC numbers: sweep each knob once, left to right, and each takes the next control. Replaces every binding you have"
-          >
-            learn in order
-          </button>
+          <Tip text="bind this device's knobs by CC number, in order: the mixes and levels first, then the rest down the signal path. Replaces every binding you have">
+            <button
+              className={styles.btn}
+              disabled={device === undefined}
+              onClick={() => device && midi.autoMap(device)}
+            >
+              auto-map{' '}
+              {device ? Math.min(device.ccs.length, AUTOMAP_KEYS.length) : 0}
+            </button>
+          </Tip>
+          <Tip text="works on any controller whatever its CC numbers: sweep each knob once, left to right, and each takes the next control. Replaces every binding you have">
+            <button
+              className={styles.btn}
+              onClick={() => midi.learnSequence(encoders)}
+            >
+              learn in order
+            </button>
+          </Tip>
           {/* A sweep can see which knob moved but not what kind of knob it is:
               an encoder's clicks and a fader's positions are the same bytes. */}
-          <button
-            className={encoders ? styles.toggleOn : styles.toggle}
-            onClick={() => setEncoders(!encoders)}
-            title="the knobs being swept are endless encoders — they report turns, not positions. Applies to what learn in order binds"
-          >
-            ↻ endless
-          </button>
+          <Tip text="the knobs being swept are endless encoders — they report turns, not positions. Applies to what learn in order binds">
+            <button
+              className={encoders ? styles.toggleOn : styles.toggle}
+              onClick={() => setEncoders(!encoders)}
+            >
+              ↻ endless
+            </button>
+          </Tip>
         </div>
       ) : (
         <button className={styles.btn} onClick={() => midi.stopLearn()}>
@@ -322,34 +333,38 @@ function Wired() {
       )}
 
       <div className={styles.row}>
-        <button
-          className={notes ? styles.toggleOn : styles.toggle}
-          onClick={() => midi.setNotes(!notes)}
-          title="notes play the toy chip's keyboard — the same voice the on-screen keys strike, and they light the same keys. The sustain pedal holds them, and all-notes-off lets them go, on any CC nothing else has taken"
-        >
-          notes play the keys
-        </button>
-        <button
-          className={pads ? styles.toggleOn : styles.toggle}
-          onClick={() => midi.setPads(!pads)}
-          title="pads play the drum machine's voices. Channel 10 is General MIDI's drum channel and lands on the kit with nothing to set up; a pad bank sending anything else is what learn pads is for"
-        >
-          pads play the kit
-        </button>
-        <button
-          className={clockLock ? styles.toggleOn : styles.toggle}
-          onClick={() => midi.setClockLock(!clockLock)}
-          title="the drum machine's tempo follows the clock on the wire. It writes the BPM control, so the slider moves with it"
-        >
-          clock sets the tempo
-        </button>
-        <button
-          className={lights ? styles.toggleOn : styles.toggle}
-          onClick={() => midi.setLights(!lights)}
-          title="send each bound control's value back out, so a device with lit rings shows where the board is. A ring that follows a preset is a knob that was never stranded"
-        >
-          light the rings
-        </button>
+        <Tip text="notes play the toy chip's keyboard — the same voice the on-screen keys strike, and they light the same keys. The sustain pedal holds them, and all-notes-off lets them go, on any CC nothing else has taken">
+          <button
+            className={notes ? styles.toggleOn : styles.toggle}
+            onClick={() => midi.setNotes(!notes)}
+          >
+            notes play the keys
+          </button>
+        </Tip>
+        <Tip text="pads play the drum machine's voices. Channel 10 is General MIDI's drum channel and lands on the kit with nothing to set up; a pad bank sending anything else is what learn pads is for">
+          <button
+            className={pads ? styles.toggleOn : styles.toggle}
+            onClick={() => midi.setPads(!pads)}
+          >
+            pads play the kit
+          </button>
+        </Tip>
+        <Tip text="the drum machine's tempo follows the clock on the wire. It writes the BPM control, so the slider moves with it">
+          <button
+            className={clockLock ? styles.toggleOn : styles.toggle}
+            onClick={() => midi.setClockLock(!clockLock)}
+          >
+            clock sets the tempo
+          </button>
+        </Tip>
+        <Tip text="send each bound control's value back out, so a device with lit rings shows where the board is. A ring that follows a preset is a knob that was never stranded">
+          <button
+            className={lights ? styles.toggleOn : styles.toggle}
+            onClick={() => midi.setLights(!lights)}
+          >
+            light the rings
+          </button>
+        </Tip>
         <span className={bpm === null ? styles.quiet : styles.clock}>
           {bpm === null ? '♩ no clock' : `♩ ${bpm.toFixed(1)}`}
         </span>

@@ -7,6 +7,7 @@ import { resetGroup, rollGroup } from './presets'
 import { scrollIntoPanel } from './reveal'
 import { ControlSlider } from './Slider'
 import styles from './Section.module.css'
+import { Tip } from './Tip'
 
 function useTouchedCount(group: Group): number {
   return touchedCount(group, useStoreValue(engine.controls))
@@ -56,33 +57,35 @@ export function OpenGroup({
     <div className={styles.section} ref={el}>
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
-        <button
-          className={styles.verb}
-          onClick={roll}
-          title={
+        <Tip
+          text={
             group.editor?.kind === 'drums'
               ? 'roll this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
               : `roll every control in ${group.name} somewhere new and leave the rest of the board alone`
           }
         >
-          roll
-        </button>
-        <button
-          className={touched > 0 ? styles.reset : styles.verbOff}
-          onClick={() => putBack(group, seconds)}
-          disabled={touched === 0}
-          title={putBackTitle(group, touched)}
-        >
-          {touched > 0 ? `reset ${touched}` : 'reset'}
-        </button>
-        <button
-          className={styles.close}
-          onClick={onClose}
-          title={`close ${group.name} — the path stays`}
-          aria-label={`close ${group.name}`}
-        >
-          ×
-        </button>
+          <button className={styles.verb} onClick={roll}>
+            roll
+          </button>
+        </Tip>
+        <Tip text={putBackTitle(group, touched)}>
+          <button
+            className={touched > 0 ? styles.reset : styles.verbOff}
+            onClick={() => putBack(group, seconds)}
+            disabled={touched === 0}
+          >
+            {touched > 0 ? `reset ${touched}` : 'reset'}
+          </button>
+        </Tip>
+        <Tip text={`close ${group.name} — the path stays`}>
+          <button
+            className={styles.close}
+            onClick={onClose}
+            aria-label={`close ${group.name}`}
+          >
+            ×
+          </button>
+        </Tip>
       </div>
       <div className={styles.body}>
         {group.editor?.kind === 'drums' && <DrumGrid />}
@@ -149,14 +152,15 @@ function ShelfPart({
         {group.name}
       </button>
       {touched > 0 && (
-        <button
-          className={styles.partReset}
-          onClick={() => putBack(group, seconds)}
-          title={putBackTitle(group, touched)}
-          aria-label={`reset ${group.name}`}
-        >
-          {touched}
-        </button>
+        <Tip text={putBackTitle(group, touched)}>
+          <button
+            className={styles.partReset}
+            onClick={() => putBack(group, seconds)}
+            aria-label={`reset ${group.name}`}
+          >
+            {touched}
+          </button>
+        </Tip>
       )}
     </span>
   )

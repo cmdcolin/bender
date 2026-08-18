@@ -1,0 +1,23 @@
+/* A popover, so the browser puts it in the top layer and the whole question of
+   what it might end up behind never arises. What is written out here is the
+   popover's own default look coming back off: the box is ours, and the browser
+   would otherwise centre it in the window and draw its own frame. */
+.tip {
+  inset: auto;
+  margin: 0;
+  overflow: visible;
+  /* Wide enough for the long ones to read as a paragraph rather than a column,
+     narrow enough that a tip on a step cell doesn't cover the row it explains. */
+  max-width: 300px;
+  padding: 4px 7px;
+  background: var(--bg2);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  box-shadow: 0 4px 14px #000a;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  /* It is never a target: a tip that opened over the control it explains would
+     otherwise swallow the click, and drags run under it either way. */
+  pointer-events: none;
+}

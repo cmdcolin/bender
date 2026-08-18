@@ -6,6 +6,7 @@ import { useStoreValue } from './ControlsContext'
 import type { MorphSeconds } from './morph'
 import { PRESETS, presetPath, type PresetDef } from './presets'
 import styles from './Presets.module.css'
+import { Tip } from './Tip'
 
 // Far enough that an ordinary click can wobble without scrubbing the board.
 const DRAG_SLOP = 4
@@ -72,70 +73,73 @@ function PresetChip(props: {
   }
 
   return (
-    <button
-      className={props.scrub === null ? styles.preset : styles.presetOn}
-      title={`${props.def.blurb} — click for the whole board, or drag sideways to stop part way there`}
-      // A drag is one gesture and wants one entry in the walk: arm here, and
-      // the first write that moves anything takes the board as it stood before
-      // the hand landed. A click banks its own step through morphTo instead,
-      // which clears this one.
-      onPointerDown={e => {
-        e.currentTarget.setPointerCapture(e.pointerId)
-        engine.armStep()
-        drag.current = {
-          pressX: e.clientX,
-          lastX: null,
-          t: props.scrub?.t ?? 0,
-          ...road(),
-        }
-      }}
-      onPointerMove={e => {
-        const d = drag.current
-        if (d === null) return
-        // The slop is spent getting here, so the trip starts from this point
-        // rather than jumping by however far the press had already drifted.
-        const anchor =
-          d.lastX === null && Math.abs(e.clientX - d.pressX) > DRAG_SLOP
-            ? e.clientX
-            : d.lastX
-        if (anchor === null) return
-        d.t = clamp01(d.t + (e.clientX - anchor) / DRAG_FULL)
-        d.lastX = e.clientX
-        // Over the live controls, as the morph does, so whatever a second hand
-        // is holding — the body pad, the output level — survives the drag.
-        const produced = d.path.at(engine.controls.get(), d.t)
-        engine.writeBoard(produced)
-        props.onScrub({
-          name: props.def.name,
-          from: d.from,
-          path: d.path,
-          t: d.t,
-          produced,
-        })
-      }}
-      onPointerUp={() => {
-        const d = drag.current
-        drag.current = null
-        if (d !== null && d.lastX === null) apply()
-      }}
-      onPointerCancel={() => {
-        drag.current = null
-      }}
-      // Pointerup is what applies a press, so the click trailing a mouse release
-      // must not apply it twice. Keyboard activation fires a bare click with no
-      // pointer events at all, and detail === 0 is what tells the two apart.
-      onClick={e => {
-        if (e.detail === 0) apply()
-      }}
+    <Tip
+      text={`${props.def.blurb} — click for the whole board, or drag sideways to stop part way there`}
     >
-      {props.scrub === null ? null : (
-        <span
-          className={styles.fill}
-          style={{ transform: `scaleX(${props.scrub.t})` }}
-        />
-      )}
-      <span className={styles.label}>{props.def.name}</span>
-    </button>
+      <button
+        className={props.scrub === null ? styles.preset : styles.presetOn}
+        // A drag is one gesture and wants one entry in the walk: arm here, and
+        // the first write that moves anything takes the board as it stood before
+        // the hand landed. A click banks its own step through morphTo instead,
+        // which clears this one.
+        onPointerDown={e => {
+          e.currentTarget.setPointerCapture(e.pointerId)
+          engine.armStep()
+          drag.current = {
+            pressX: e.clientX,
+            lastX: null,
+            t: props.scrub?.t ?? 0,
+            ...road(),
+          }
+        }}
+        onPointerMove={e => {
+          const d = drag.current
+          if (d === null) return
+          // The slop is spent getting here, so the trip starts from this point
+          // rather than jumping by however far the press had already drifted.
+          const anchor =
+            d.lastX === null && Math.abs(e.clientX - d.pressX) > DRAG_SLOP
+              ? e.clientX
+              : d.lastX
+          if (anchor === null) return
+          d.t = clamp01(d.t + (e.clientX - anchor) / DRAG_FULL)
+          d.lastX = e.clientX
+          // Over the live controls, as the morph does, so whatever a second hand
+          // is holding — the body pad, the output level — survives the drag.
+          const produced = d.path.at(engine.controls.get(), d.t)
+          engine.writeBoard(produced)
+          props.onScrub({
+            name: props.def.name,
+            from: d.from,
+            path: d.path,
+            t: d.t,
+            produced,
+          })
+        }}
+        onPointerUp={() => {
+          const d = drag.current
+          drag.current = null
+          if (d !== null && d.lastX === null) apply()
+        }}
+        onPointerCancel={() => {
+          drag.current = null
+        }}
+        // Pointerup is what applies a press, so the click trailing a mouse release
+        // must not apply it twice. Keyboard activation fires a bare click with no
+        // pointer events at all, and detail === 0 is what tells the two apart.
+        onClick={e => {
+          if (e.detail === 0) apply()
+        }}
+      >
+        {props.scrub === null ? null : (
+          <span
+            className={styles.fill}
+            style={{ transform: `scaleX(${props.scrub.t})` }}
+          />
+        )}
+        <span className={styles.label}>{props.def.name}</span>
+      </button>
+    </Tip>
   )
 }
 

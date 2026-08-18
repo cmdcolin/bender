@@ -26,6 +26,7 @@ import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
+import { Tip } from './Tip'
 
 function clock(seconds: number): string {
   const s = Math.floor(seconds)
@@ -54,39 +55,42 @@ function MorphControl(props: {
   )
   if (progress !== null) {
     return (
-      <button
-        className={styles.flight}
-        onClick={() => engine.stopMorph()}
-        title={`travelling over ${props.seconds}s — press to stop here and keep the half-way board, which is a board like any other. Grabbing a slider does the same`}
+      <Tip
+        text={`travelling over ${props.seconds}s — press to stop here and keep the half-way board, which is a board like any other. Grabbing a slider does the same`}
       >
-        <span
-          className={styles.flightFill}
-          style={{ transform: `scaleX(${progress})` }}
-        />
-        <span className={styles.flightLabel}>stop here</span>
-      </button>
+        <button className={styles.flight} onClick={() => engine.stopMorph()}>
+          <span
+            className={styles.flightFill}
+            style={{ transform: `scaleX(${progress})` }}
+          />
+          <span className={styles.flightLabel}>stop here</span>
+        </button>
+      </Tip>
     )
   }
   return (
-    <select
-      className={styles.btn}
-      value={props.seconds}
-      onChange={e => {
-        const picked = MORPH_SECONDS.find(s => String(s) === e.target.value)
-        if (picked === undefined) return
-        props.onSet(picked)
-        saveMorph(picked)
-      }}
-      title={
+    <Tip
+      text={
         props.seconds > 0
           ? `presets, random, mutate and reset travel to the new board over ${props.seconds}s instead of cutting to it. Rolling again mid-morph carries on from wherever the board has got to`
           : 'presets, random, mutate and reset land in one frame — pick a duration to make them travel there instead, which is where the sounds between two presets live'
       }
     >
-      {MORPH_SECONDS.map(s => (
-        <option key={s} value={s}>{`morph: ${MORPH_LABELS[s]}`}</option>
-      ))}
-    </select>
+      <select
+        className={styles.btn}
+        value={props.seconds}
+        onChange={e => {
+          const picked = MORPH_SECONDS.find(s => String(s) === e.target.value)
+          if (picked === undefined) return
+          props.onSet(picked)
+          saveMorph(picked)
+        }}
+      >
+        {MORPH_SECONDS.map(s => (
+          <option key={s} value={s}>{`morph: ${MORPH_LABELS[s]}`}</option>
+        ))}
+      </select>
+    </Tip>
   )
 }
 
@@ -166,29 +170,32 @@ export function App() {
           {/* Two machines, two switches. The kit used to run off the demo
               song's line, so writing a pattern and hearing it meant putting the
               toy's ROM tune on underneath it. */}
-          <button
-            className={songPlaying ? styles.playBtnOn : styles.playBtn}
-            onClick={() => engine.setSongPlaying(!songPlaying)}
-            title="run or stop the toy chip's ROM tune. Nothing else starts it — space runs both machines"
-          >
-            {songPlaying ? '❚❚ pause demo song' : '▶ play demo song'}
-          </button>
-          <button
-            className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
-            onClick={() => engine.setDrumsPlaying(!drumsPlaying)}
-            title="run or stop the drum machine's pattern, with or without the demo song. Bring the kit's Level up if you hear nothing"
-          >
-            {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
-          </button>
-          <button
-            className={recording ? styles.recBtnOn : styles.ioBtn}
-            onClick={() =>
-              recording ? engine.stopRecording() : engine.startRecording()
-            }
-            title="record the output to a wav file — stopping saves it"
-          >
-            {recording ? `■ stop & save ${clock(recSeconds)}` : '● record'}
-          </button>
+          <Tip text="run or stop the toy chip's ROM tune. Nothing else starts it — space runs both machines">
+            <button
+              className={songPlaying ? styles.playBtnOn : styles.playBtn}
+              onClick={() => engine.setSongPlaying(!songPlaying)}
+            >
+              {songPlaying ? '❚❚ pause demo song' : '▶ play demo song'}
+            </button>
+          </Tip>
+          <Tip text="run or stop the drum machine's pattern, with or without the demo song. Bring the kit's Level up if you hear nothing">
+            <button
+              className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
+              onClick={() => engine.setDrumsPlaying(!drumsPlaying)}
+            >
+              {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
+            </button>
+          </Tip>
+          <Tip text="record the output to a wav file — stopping saves it">
+            <button
+              className={recording ? styles.recBtnOn : styles.ioBtn}
+              onClick={() =>
+                recording ? engine.stopRecording() : engine.startRecording()
+              }
+            >
+              {recording ? `■ stop & save ${clock(recSeconds)}` : '● record'}
+            </button>
+          </Tip>
           <button
             className={micOn ? styles.ioBtnOn : styles.ioBtn}
             onClick={() => engine.enableMic()}
@@ -222,92 +229,97 @@ export function App() {
       <div className={styles.panel}>
         <div className={styles.masthead}>
           <span className={styles.brand}>bender</span>
-          <span
-            className={styles.version}
-            title={`bender ${versionLabel} (${gitSha})`}
-          >
-            {versionLabel}
-          </span>
+          <Tip text={`bender ${versionLabel} (${gitSha})`}>
+            <span className={styles.version}>{versionLabel}</span>
+          </Tip>
         </div>
 
         <div className={styles.actions}>
-          <button
-            className={styles.btn}
-            onClick={() =>
-              engine.morphTo(
-                randomLook(engine.controls.get(), Math.random),
-                morphSeconds,
-              )
-            }
-            title="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern, levels and what is running stay put"
-          >
-            random
-          </button>
-          <button
-            className={styles.btn}
-            onClick={e =>
-              engine.morphTo(
-                mutate(
-                  engine.controls.get(),
-                  e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
-                  Math.random,
-                ),
-                morphSeconds,
-              )
-            }
-            title="keep this board and nudge every control around where it sits, in time: the tempo stays put and the delay, slice, roll and LFO land back on the grid — shift for wild, alt for gentle"
-          >
-            mutate
-          </button>
+          <Tip text="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern, levels and what is running stay put">
+            <button
+              className={styles.btn}
+              onClick={() =>
+                engine.morphTo(
+                  randomLook(engine.controls.get(), Math.random),
+                  morphSeconds,
+                )
+              }
+            >
+              random
+            </button>
+          </Tip>
+          <Tip text="keep this board and nudge every control around where it sits, in time: the tempo stays put and the delay, slice, roll and LFO land back on the grid — shift for wild, alt for gentle">
+            <button
+              className={styles.btn}
+              onClick={e =>
+                engine.morphTo(
+                  mutate(
+                    engine.controls.get(),
+                    e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
+                    Math.random,
+                  ),
+                  morphSeconds,
+                )
+              }
+            >
+              mutate
+            </button>
+          </Tip>
           {/* Beside mutate, because that is what it is: the same nudge, gentle,
               on a timer, forever. Nothing else on the board plays itself. */}
-          <button
-            className={drifting ? styles.btnOn : styles.btn}
-            onClick={() =>
-              drifting
-                ? engine.stopDrift()
-                : engine.startDrift(() =>
-                    mutate(engine.controls.get(), 0.05, Math.random),
-                  )
-            }
-            title={
+          <Tip
+            text={
               drifting
                 ? 'stop drifting and keep the board wherever it has got to'
                 : 'let the board nudge itself somewhere near where it stands, every fifteen seconds, travelling most of the way there before it sets off again — a board that plays itself. Your levels, song and pattern stay put, and none of it lands in the walk: one undo puts back the board you set drifting'
             }
           >
-            {drifting ? 'drifting…' : 'drift'}
-          </button>
-          <button
-            className={styles.btn}
-            onClick={() =>
-              engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
-            }
-            title="back to the board the toy ships with. It travels there like anything else, and it lands in the walk, so undo brings back whatever you were on"
-          >
-            reset
-          </button>
+            <button
+              className={drifting ? styles.btnOn : styles.btn}
+              onClick={() =>
+                drifting
+                  ? engine.stopDrift()
+                  : engine.startDrift(() =>
+                      mutate(engine.controls.get(), 0.05, Math.random),
+                    )
+              }
+            >
+              {drifting ? 'drifting…' : 'drift'}
+            </button>
+          </Tip>
+          <Tip text="back to the board the toy ships with. It travels there like anything else, and it lands in the walk, so undo brings back whatever you were on">
+            <button
+              className={styles.btn}
+              onClick={() =>
+                engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
+              }
+            >
+              reset
+            </button>
+          </Tip>
           {/* Beside reset, because what undo has in common with it is what a
               hand reaching for either one wants: out of here. */}
-          <button
-            className={walk.past.length ? styles.btn : styles.btnOff}
-            onClick={() => engine.undo(morphSeconds)}
-            disabled={!walk.past.length}
-            title="step back through the boards you have been through (ctrl+z). It arrives however morph says boards arrive, so at a long one the way back is a transition too"
-          >
-            undo
-          </button>
+          <Tip text="step back through the boards you have been through (ctrl+z). It arrives however morph says boards arrive, so at a long one the way back is a transition too">
+            <button
+              className={walk.past.length ? styles.btn : styles.btnOff}
+              onClick={() => engine.undo(morphSeconds)}
+              disabled={!walk.past.length}
+            >
+              undo
+            </button>
+          </Tip>
           {/* Only once there is a walk to step forward into: a permanently
               greyed redo would cost a slot in the row on every session that
               never undid anything. */}
           {walk.future.length > 0 && (
-            <button
-              className={styles.btn}
-              onClick={() => engine.redo(morphSeconds)}
-              title="step forward again (ctrl+shift+z)"
-            >
-              redo
-            </button>
+            <Tip text="step forward again (ctrl+shift+z)">
+              <button
+                className={styles.btn}
+                onClick={() => engine.redo(morphSeconds)}
+              >
+                redo
+              </button>
+            </Tip>
           )}
         </div>
 
@@ -316,35 +328,36 @@ export function App() {
             that stage's own header, next to its reset. */}
         <div className={styles.dice}>
           {SCENARIOS.map(s => (
-            <button
-              key={s.name}
-              className={styles.btn}
-              title={s.blurb}
-              onClick={() =>
-                engine.morphTo(
-                  s.roll(engine.controls.get(), Math.random),
-                  morphSeconds,
-                )
-              }
-            >
-              {s.label}
-            </button>
+            <Tip key={s.name} text={s.blurb}>
+              <button
+                className={styles.btn}
+                onClick={() =>
+                  engine.morphTo(
+                    s.roll(engine.controls.get(), Math.random),
+                    morphSeconds,
+                  )
+                }
+              >
+                {s.label}
+              </button>
+            </Tip>
           ))}
           {/* The one roll that listens to what it rolled. It plays its way
               through the candidates, so it takes as long as it takes. */}
-          <button
-            className={styles.btn}
-            title="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. Click again, or touch anything else, to call it off and keep what is playing"
-            onClick={() => {
-              if (hunting) engine.stopHunt()
-              else
-                void engine.hunt(
-                  huntCandidates(engine.controls.get(), Math.random),
-                )
-            }}
-          >
-            {hunting ? 'listening…' : 'hunt an edge'}
-          </button>
+          <Tip text="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. Click again, or touch anything else, to call it off and keep what is playing">
+            <button
+              className={styles.btn}
+              onClick={() => {
+                if (hunting) engine.stopHunt()
+                else
+                  void engine.hunt(
+                    huntCandidates(engine.controls.get(), Math.random),
+                  )
+              }}
+            >
+              {hunting ? 'listening…' : 'hunt an edge'}
+            </button>
+          </Tip>
         </div>
 
         {/* How a board arrives, and how to stop one that has arrived badly.
@@ -353,13 +366,11 @@ export function App() {
             whatever the wrap left over. */}
         <div className={styles.utils}>
           <MorphControl seconds={morphSeconds} onSet={setMorphSeconds} />
-          <button
-            className={styles.btnDanger}
-            onClick={() => engine.panic()}
-            title="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes"
-          >
-            panic
-          </button>
+          <Tip text="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes">
+            <button className={styles.btnDanger} onClick={() => engine.panic()}>
+              panic
+            </button>
+          </Tip>
         </div>
 
         <Presets morphSeconds={morphSeconds} />

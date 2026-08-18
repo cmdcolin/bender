@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { memo, useEffect, useState, useSyncExternalStore } from 'react'
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
 import {
@@ -17,6 +17,7 @@ import {
   type DrumStepKey,
 } from '../drums'
 import styles from './DrumGrid.module.css'
+import { Tip } from './Tip'
 
 // The playhead only moves when a step does, so the grid redraws at the step rate
 // rather than at the meter's.
@@ -97,14 +98,14 @@ export function DrumGrid() {
     <div className={styles.wrap}>
       <div className={styles.roms}>
         {DRUM_ROMS.map(r => (
-          <button
-            key={r.name}
-            className={loaded === r ? styles.romOn : styles.rom}
-            title={r.blurb}
-            onClick={() => load(r)}
-          >
-            {r.name}
-          </button>
+          <Tip key={r.name} text={r.blurb}>
+            <button
+              className={loaded === r ? styles.romOn : styles.rom}
+              onClick={() => load(r)}
+            >
+              {r.name}
+            </button>
+          </Tip>
         ))}
         {/* The other way a pattern gets written: play it in rather than draw
             it. It needs the kit running for there to be a step to land on, and
@@ -115,13 +116,8 @@ export function DrumGrid() {
             hits still sound, so nothing about playing says the pattern isn't
             being kept. It gets its own look rather than a word, because the
             fix is to press play and the button next to it already says so. */}
-        <button
-          className={
-            !tapping ? styles.tap : playing ? styles.tapOn : styles.tapIdle
-          }
-          aria-pressed={tapping}
-          onClick={() => engine.tapRecord.set(!tapping)}
-          title={
+        <Tip
+          text={
             !tapping
               ? 'play the pattern in: arm this and every pad hit — or press of a row’s name — writes the step it lands on, rounded to the nearest. The kit has to be running for there to be a step'
               : playing
@@ -129,8 +125,16 @@ export function DrumGrid() {
                 : 'armed, but the kit is stopped — hits sound and nothing is written. Run the kit and they land on the step they arrive in'
           }
         >
-          tap in
-        </button>
+          <button
+            className={
+              !tapping ? styles.tap : playing ? styles.tapOn : styles.tapIdle
+            }
+            aria-pressed={tapping}
+            onClick={() => engine.tapRecord.set(!tapping)}
+          >
+            tap in
+          </button>
+        </Tip>
       </div>
 
       <div className={styles.grid}>
@@ -183,66 +187,104 @@ function Row({
   const voice = DRUM_VOICES.findIndex(v => v.key === row.key)
 
   return (
-    <div className={styles.row} title={row.help}>
-      {/* The name is the voice itself: press it to hear the row without waiting
-          for the playhead to reach a step you have just written. Accent is not
-          a voice, so its name is only a name. */}
-      {voice < 0 ? (
-        <span className={mask ? styles.nameOn : styles.name}>{row.label}</span>
-      ) : (
-        <button
-          className={lit ? styles.nameHit : mask ? styles.nameOn : styles.name}
-          onClick={() => engine.drumHit(voiceBit(voice))}
-          title={`press to hear the ${row.label} — with tap in armed and the kit running, it writes the step it lands on`}
+    <Tip text={row.help}>
+      <div className={styles.row}>
+        {/* The name is the voice itself: press it to hear the row without waiting
+            for the playhead to reach a step you have just written. Accent is
+            not a voice, so its name is only a name. */}
+        {voice < 0 ? (
+          <span className={mask ? styles.nameOn : styles.name}>
+            {row.label}
+          </span>
+        ) : (
+          <Tip
+            text={`press to hear the ${row.label} — with tap in armed and the kit running, it writes the step it lands on`}
+          >
+            <button
+              className={
+                lit ? styles.nameHit : mask ? styles.nameOn : styles.name
+              }
+              onClick={() => engine.drumHit(voiceBit(voice))}
+            >
+              {row.label}
+            </button>
+          </Tip>
+        )}
+        <div className={styles.cells}>
+          {Array.from({ length: STEPS }, (_, s) => (
+            <Cell
+              key={s}
+              row={row}
+              step={s}
+              className={cellClass({
+                accent,
+                on: hasStep(mask, s),
+                beat: s % 4 === 0,
+                under: s === under,
+                past: s >= len,
+              })}
+              on={hasStep(mask, s)}
+              mask={mask}
+            />
+          ))}
+        </div>
+        {/* A select rather than a nudge or a shift-click alone: it says what the
+            numbers are, it is one tap on a phone, and it is the only way to
+            give a row its sixteen steps back once you have shortened it. */}
+        <Tip
+          text={
+            len === STEPS
+              ? `how many steps the ${row.label} row plays before it comes round. All sixteen is the machine as it left the factory; anything else runs against the rows that kept theirs`
+              : `the ${row.label} row comes round every ${len} steps, so it lands somewhere different against the others each bar`
+          }
         >
-          {row.label}
-        </button>
-      )}
-      <div className={styles.cells}>
-        {Array.from({ length: STEPS }, (_, s) => (
-          <button
-            key={s}
-            className={cellClass({
-              accent,
-              on: hasStep(mask, s),
-              beat: s % 4 === 0,
-              under: s === under,
-              past: s >= len,
-            })}
-            aria-label={`${row.label} step ${s + 1}`}
-            aria-pressed={hasStep(mask, s)}
-            title={`shift-click to bring the ${row.label} row round after step ${s + 1}`}
-            onClick={e =>
-              e.shiftKey
-                ? engine.set(row.len, s + 1)
-                : engine.set(row.key, toggleStep(mask, s))
-            }
-          />
-        ))}
+          <select
+            className={len === STEPS ? styles.len : styles.lenShort}
+            value={len}
+            onChange={e => engine.set(row.len, Number(e.currentTarget.value))}
+            aria-label={`${row.label} row length`}
+          >
+            {Array.from({ length: STEPS }, (_, i) => (
+              <option key={i} value={i + 1}>
+                {i + 1}
+              </option>
+            ))}
+          </select>
+        </Tip>
       </div>
-      {/* A select rather than a nudge or a shift-click alone: it says what the
-          numbers are, it is one tap on a phone, and it is the only way to give a
-          row its sixteen steps back once you have shortened it. */}
-      <select
-        className={len === STEPS ? styles.len : styles.lenShort}
-        value={len}
-        onChange={e => engine.set(row.len, Number(e.currentTarget.value))}
-        aria-label={`${row.label} row length`}
-        title={
-          len === STEPS
-            ? `how many steps the ${row.label} row plays before it comes round. All sixteen is the machine as it left the factory; anything else runs against the rows that kept theirs`
-            : `the ${row.label} row comes round every ${len} steps, so it lands somewhere different against the others each bar`
-        }
-      >
-        {Array.from({ length: STEPS }, (_, i) => (
-          <option key={i} value={i + 1}>
-            {i + 1}
-          </option>
-        ))}
-      </select>
-    </div>
+    </Tip>
   )
 }
+
+// Memoised because the playhead moves: a tick re-renders the row, and without
+// this every one of its sixteen cells would rebuild the tip hanging off it to
+// arrive at the same box it already had. Only the two cells whose class changed
+// have anything to do.
+const Cell = memo(function Cell(props: {
+  row: DrumRow
+  step: number
+  className: string
+  on: boolean
+  mask: number
+}) {
+  const { row, step } = props
+  return (
+    <Tip
+      text={`shift-click to bring the ${row.label} row round after step ${step + 1}`}
+    >
+      <button
+        className={props.className}
+        aria-label={`${row.label} step ${step + 1}`}
+        aria-pressed={props.on}
+        onClick={e =>
+          e.shiftKey
+            ? engine.set(row.len, step + 1)
+            : engine.set(row.key, toggleStep(props.mask, step))
+        }
+      />
+    </Tip>
+  )
+})
 
 function cellClass(s: {
   accent: boolean

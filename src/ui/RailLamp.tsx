@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { engine } from '../engine/engine'
 import styles from './RailLamp.module.css'
+import { Tip } from './Tip'
 
 // Three cells in the battery compartment, which is what the toys ran on.
 const NOMINAL_V = 4.5
@@ -48,14 +49,13 @@ export function RailLamp() {
   }, [])
 
   return (
-    <span
-      className={styles.lamp}
-      title="the toy's supply rail, 4.5 V on fresh cells. Everything the chip does rides on it: pitch and tempo sag as it falls, voices drop out one at a time, and under about half a volt the watchdog power-cycles the chip — which is what the lamp says on a reboot"
-    >
-      <span ref={dot} className={styles.dot} />
-      <span ref={label} className={styles.volts}>
-        {NOMINAL_V.toFixed(2)} V
+    <Tip text="the toy's supply rail, 4.5 V on fresh cells. Everything the chip does rides on it: pitch and tempo sag as it falls, voices drop out one at a time, and under about half a volt the watchdog power-cycles the chip — which is what the lamp says on a reboot">
+      <span className={styles.lamp}>
+        <span ref={dot} className={styles.dot} />
+        <span ref={label} className={styles.volts}>
+          {NOMINAL_V.toFixed(2)} V
+        </span>
       </span>
-    </span>
+    </Tip>
   )
 }

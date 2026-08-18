@@ -5,6 +5,7 @@ import { useStoreValue } from './ControlsContext'
 import { blackAbove, OCTAVES, pitch, TOP, WHITE_KEYS } from './keyboard'
 import { RailLamp } from './RailLamp'
 import styles from './Keys.module.css'
+import { Tip } from './Tip'
 
 const KEY_MAP: Record<string, number> = {
   a: 0,
@@ -221,26 +222,30 @@ export function Keys() {
         {/* Beside the keys because the keys are what it explains: a note that
             comes out flat, quiet or not at all is this number falling. */}
         <RailLamp />
-        <button
-          className={hold ? styles.holdOn : styles.hold}
-          onClick={() => {
-            if (hold) releaseAll()
-            setHold(!hold)
-          }}
-          title="latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down"
-        >
-          hold
-        </button>
+        <Tip text="latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down">
+          <button
+            className={hold ? styles.holdOn : styles.hold}
+            onClick={() => {
+              if (hold) releaseAll()
+              setHold(!hold)
+            }}
+          >
+            hold
+          </button>
+        </Tip>
         <span className={styles.octaves}>
           {OCTAVES.map(o => (
-            <button
+            <Tip
               key={o}
-              className={o === octave ? styles.octaveOn : styles.octave}
-              onClick={() => shiftTo(o)}
-              title={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`} — z and x do the same`}
+              text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`} — z and x do the same`}
             >
-              {o > 0 ? `+${o}` : o}
-            </button>
+              <button
+                className={o === octave ? styles.octaveOn : styles.octave}
+                onClick={() => shiftTo(o)}
+              >
+                {o > 0 ? `+${o}` : o}
+              </button>
+            </Tip>
           ))}
         </span>
       </div>
