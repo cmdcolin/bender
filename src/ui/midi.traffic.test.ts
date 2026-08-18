@@ -2,7 +2,7 @@
 // the first question a controller that does nothing raises.
 
 import { beforeEach, expect, test, vi } from 'vitest'
-import { describe, midi } from './midi'
+import { describe, isLoopback, midi } from './midi'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
 
@@ -49,4 +49,12 @@ test('a message counts whether or not the board acts on it', () => {
   expect(after?.count).toBe(before + 1)
   expect(after?.text).toBe('note on C4 vel 100 ch1')
   expect(after?.port).toBe('MPK mini IV MIDI Port')
+})
+
+test('a through port is not lit, so the board cannot drive itself', () => {
+  expect(isLoopback('Midi Through Port-0')).toBe(true)
+  expect(isLoopback('loopMIDI Port')).toBe(true)
+  expect(isLoopback('IAC Driver Bus 1')).toBe(true)
+  expect(isLoopback('MPK mini IV MIDI Port')).toBe(false)
+  expect(isLoopback(null)).toBe(false)
 })

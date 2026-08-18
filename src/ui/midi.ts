@@ -42,6 +42,13 @@ export interface Traffic {
   count: number
 }
 
+// A through port carries whatever is sent to it straight back to its own input,
+// so lighting the rings on one is the app driving its own bound controls from
+// its own echo — a knob nobody touched, walking the board. Linux ships one of
+// these by default, which is why it is skipped rather than left to the user.
+export const isLoopback = (name: string | null) =>
+  /midi ?through|loopmidi|iac driver/i.test(name ?? '')
+
 const NOTE_NAMES = [
   'C',
   'C#',
@@ -635,8 +642,10 @@ class Midi {
       const cc = Math.round(toPos(def, controls[key]) * 127)
       if (this.lit.get(key) === cc) continue
       this.lit.set(key, cc)
-      for (const out of this.access.outputs.values())
+      for (const out of this.access.outputs.values()) {
+        if (isLoopback(out.name)) continue
         out.send([0xb0 | b.channel, b.controller, cc])
+      }
     }
   }
 
