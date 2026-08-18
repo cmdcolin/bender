@@ -268,6 +268,14 @@
   transform: translateY(2px);
 }
 
+/* A key catching the light as the pointer crosses it. Plastic doesn't light up
+   under a hand, but a key that answers the pointer is the one thing the drawn
+   board can do that the toy couldn't, and the colours are spoken for. */
+.white:hover,
+.black:hover {
+  filter: brightness(1.07);
+}
+
 /* A note sounding past either end of the drawn board. The keys stay where your
    hands are; this says the wire is playing somewhere else, and which way the
    octave switch has to go to meet it. */

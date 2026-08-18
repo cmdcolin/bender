@@ -209,7 +209,7 @@ export function Keys() {
         <div className={styles.deck}>
           <span className={styles.badge}>
             <span className={styles.brand}>bender</span>
-            <span className={styles.model}>3 oct · 16 key</span>
+            <span className={styles.model}>3 oct · 37 key</span>
           </span>
           <span className={styles.stripe} aria-hidden="true" />
           <div className={styles.switches}>

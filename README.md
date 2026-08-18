@@ -327,9 +327,9 @@ The bends that matter:
   the watchdog trips drifts with heat and wanders on its own, the reset line
   holds for somewhere between 40 and 130 ms, and the rail has climbed somewhere
   different by the time it lets go — so the reboots never land on a metronome.
-  The lamp beside the keys is that rail in volts, 4.5 V on fresh cells, and it
-  says **reboot** when the watchdog cycles the chip: everything else in this
-  list is that number moving.
+  The lamp on the toy's deck, above the keys, is that rail in volts, 4.5 V on
+  fresh cells, and it says **reboot** when the watchdog cycles the chip:
+  everything else in this list is that number moving.
 - **Reservoir** is how much of the board's own capacitance sits behind whatever
   Starve is pulling on, and it is the difference between a starve you land on
   and one you hear travel. Across the supply pins there is a tenth of a
