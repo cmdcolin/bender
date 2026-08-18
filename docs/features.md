@@ -277,7 +277,7 @@ pitch as the board browns out.
 | Tone        | 500–15000 Hz |
 | Brake       | 0–1          |
 | Supply drag | 0–1          |
-| Mix         | 0–1          |
+| Return      | 0–1          |
 
 ### Spring verb
 

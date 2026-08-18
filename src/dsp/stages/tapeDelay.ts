@@ -106,8 +106,10 @@ export class TapeDelay implements Stage {
       }
       this.lineL.write(wl)
       this.lineR.write(wr)
-      io.l[i] = io.l[i]! * (1 - mix) + tapL * mix
-      io.r[i] = io.r[i]! * (1 - mix) + tapR * mix
+      // The echo returns on its own fader, the way it does off a send: the dry
+      // never leaves the desk, so asking for more repeats never costs top end.
+      io.l[i] = io.l[i]! + tapL * mix
+      io.r[i] = io.r[i]! + tapR * mix
     }
   }
 

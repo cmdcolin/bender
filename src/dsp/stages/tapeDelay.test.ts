@@ -3,15 +3,20 @@ import type { Controls } from '../../controls'
 import type { BuiltChain } from '../build'
 import { pitchHz, renderBender, sine, tail } from '../testRender'
 
+// The echo returns on a fader of its own, so the dry is always in the room
+// with it. These play a one-shot second and listen to the last half of the
+// next one, where the only thing left sounding is what came off the tape.
+
 const load = (b: BuiltChain) => b.sampler.setBuffer(sine(400, 1))
 
 test('the tape brake drags everything already on the tape down in pitch', () => {
   const look: Partial<Controls> = {
     chipLevel: 0,
     sampleLevel: 1,
+    sampleMode: 1,
     dlyMix: 1,
     delayMs: 200,
-    dlyFb: 0,
+    dlyFb: 0.7,
   }
   const free = renderBender(look, 2, load)
   const braked = renderBender({ ...look, tapeBrake: 0.5 }, 2, load)
@@ -23,9 +28,10 @@ test('a sagging supply drags the tape motor with it', () => {
   const look: Partial<Controls> = {
     chipLevel: 0,
     sampleLevel: 1,
+    sampleMode: 1,
     dlyMix: 1,
     delayMs: 200,
-    dlyFb: 0,
+    dlyFb: 0.7,
     brownAmt: 1,
     brownRate: 0,
   }
