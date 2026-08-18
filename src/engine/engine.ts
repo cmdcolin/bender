@@ -12,7 +12,14 @@ import {
   stepForward,
   type History,
 } from '../history'
-import { asLen, asMask, DRUM_VOICES, quantizeStep, stepBit } from '../drums'
+import {
+  asLen,
+  asMask,
+  DRUM_VOICES,
+  quantizeStep,
+  stepBit,
+  type DrumStepKey,
+} from '../drums'
 import { createStore, type Store } from '../listeners'
 import { Glide } from './glide'
 import type { FromWorklet, ToWorklet } from './messages'
@@ -633,13 +640,21 @@ export class Engine {
   private writeHit(bits: number) {
     const controls = this.controls.get()
     const phase = this.stepPhase()
-    this.armStep()
+    // Worked out before anything is written, so the whole hit is one gesture:
+    // arming per voice would bank a step per voice, and arming for a hit that
+    // lands on steps already written would leave an arm nothing commits — which
+    // the next gesture banks instead of the board it set off from.
+    const writes: [DrumStepKey, number][] = []
     for (const [v, voice] of DRUM_VOICES.entries()) {
       if ((bits & (1 << v)) === 0) continue
       const len = asLen(controls[voice.len])
-      const step = quantizeStep(this.lastTick, phase, len)
-      this.set(voice.key, asMask(controls[voice.key]) | stepBit(step))
+      const mask = asMask(controls[voice.key])
+      const next = mask | stepBit(quantizeStep(this.lastTick, phase, len))
+      if (next !== mask) writes.push([voice.key, next])
     }
+    if (writes.length === 0) return
+    this.armStep()
+    for (const [key, value] of writes) this.set(key, value)
   }
 
   // Striking a note that is already down is no news to anything watching, so

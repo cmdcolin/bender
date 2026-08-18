@@ -273,3 +273,26 @@ test('a hit lands on the nearer step, and never off the row', () => {
   // Before the kit has clocked at all there is no step to be on.
   expect(quantizeStep(-1, 0.1, STEPS)).toBe(STEPS - 1)
 })
+
+// A hit landing on a step that is already written changes nothing, so it must
+// leave nothing armed either: an arm that no write ever commits sits there and
+// swallows the next gesture's board, banking one from before whatever happened
+// in between.
+test('a hit that writes nothing arms nothing', () => {
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.tapRecord.set(true)
+  engine.patch({ drumKick: 0, drumSwing: 0 })
+  atStep(engine, 4)
+  engine.drumHit(1)
+  const banked = engine.history.get().past.length
+  engine.drumHit(1)
+  expect(engine.history.get().past.length).toBe(banked)
+
+  // A board moved by something that does not bank, then a gesture that does.
+  engine.patch({ dlyFb: 0.9 })
+  engine.armStep()
+  engine.set('revMix', 0.3)
+  engine.undo(0)
+  expect(engine.controls.get().dlyFb).toBe(0.9)
+})
