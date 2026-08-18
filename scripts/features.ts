@@ -253,6 +253,15 @@ tables themselves, so the list cannot drift from the instrument.
 
 Try it: **${LIVE}**
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../img/chain-dark.svg">
+  <img alt="The signal path: six sources sum into the mix bus, run through six reorderable bend slots and the pedals, then brownout, the tape machine and the output, with the feedback bus wired from the output back to the mix" src="../img/chain-light.svg" width="520">
+</picture>
+
+The panel draws that live as you play, from the chain itself — the bends appear
+in whatever order you patched them and dead stages grey out. \`pnpm diagram\`
+renders it with the same layout the app uses.
+
 ## The tour
 
 - **Nothing here is a sample.** The reboots, the pitch dives and the screams
