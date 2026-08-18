@@ -190,3 +190,13 @@ test('an unchanged note report hands back the set it was given', () => {
   )
   expect(mergeNotes(now, new Int16Array(0))).toEqual(new Set())
 })
+
+// The worklet hands over its own buffer rather than a slice of it, so what sits
+// past the count is whatever the last report left there. Reading it would light
+// keys that stopped sounding and never let them go dark.
+test('the note report reads only as far as its count', () => {
+  const buffer = Int16Array.from([3, 7, 12, 12, 12])
+  expect(mergeNotes(new Set(), buffer, 2)).toEqual(new Set([3, 7]))
+  expect(mergeNotes(new Set([3, 7]), buffer, 2)).toEqual(new Set([3, 7]))
+  expect(mergeNotes(new Set([3, 7]), buffer, 0)).toEqual(new Set())
+})

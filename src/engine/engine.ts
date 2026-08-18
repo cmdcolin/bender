@@ -56,14 +56,21 @@ export function edgeScore(ducks: number[], peaks: number[]): number {
 // often would re-render the keyboard sixty times a second to draw the same keys
 // — so an unchanged report hands back the set that came in, and the caller can
 // tell by identity that there is nothing to say.
+//
+// The report arrives as the worklet's whole buffer, because slicing it to
+// length would allocate on the audio thread. Only the first `count` entries are
+// this report; past that is the last one's, and reading it would light keys that
+// have stopped sounding and never let them go dark.
 export function mergeNotes(
   now: ReadonlySet<number>,
   notes: Int16Array,
+  count = notes.length,
 ): ReadonlySet<number> {
-  if (notes.length === 0) return now.size === 0 ? now : new Set()
+  const sounding = notes.subarray(0, count)
+  if (sounding.length === 0) return now.size === 0 ? now : new Set()
   let known = true
-  for (const note of notes) known &&= now.has(note)
-  const next = new Set(notes)
+  for (const note of sounding) known &&= now.has(note)
+  const next = new Set(sounding)
   return known && next.size === now.size ? now : next
 }
 
@@ -163,7 +170,7 @@ export class Engine {
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
       if (msg.kind === 'meter') {
-        const notes = mergeNotes(this.chipNotes.get(), msg.notes)
+        const notes = mergeNotes(this.chipNotes.get(), msg.notes, msg.noteCount)
         if (notes !== this.chipNotes.get()) this.chipNotes.set(notes)
         this.meter.set({
           peak: msg.peak,

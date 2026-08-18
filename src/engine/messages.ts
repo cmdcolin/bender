@@ -55,8 +55,13 @@ export interface MeterMsg {
   /** Every note the chip is sounding, in its own semitones — the tune, the
       backing and the key voices. The panel's keyboard lights off this, which is
       how a note nobody pressed (the ROM's, or one a drum hit struck) reaches the
-      screen at all. */
+      screen at all.
+
+      The worklet's own buffer, posted untransferred like the record slabs, so
+      `noteCount` says how much of it is this report and the rest is last
+      report's. */
   notes: Int16Array
+  noteCount: number
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

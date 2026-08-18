@@ -36,7 +36,11 @@ const run = (cmd: string, args: string[], cwd = here) =>
 
 const work = mkdtempSync(join(tmpdir(), 'bender-ab-'))
 try {
-  run('sh', ['-c', `git archive ${ref} | tar -x -C ${work}`])
+  // Through a tar file rather than a pipe, so no shell sees the ref.
+  const tar = join(work, 'ref.tar')
+  run('git', ['archive', '--format=tar', '-o', tar, ref])
+  run('tar', ['-xf', tar, '-C', work])
+  rmSync(tar)
   // Its source, but *this* measurement code — otherwise the harness is half of
   // what is being compared, and a ref from before blocks.ts existed can't run.
   cpSync(join(here, 'scripts'), join(work, 'scripts'), { recursive: true })

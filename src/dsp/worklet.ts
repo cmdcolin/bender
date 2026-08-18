@@ -24,8 +24,10 @@ class BenderProcessor extends AudioWorkletProcessor {
   private scopeOut = new Float32Array(SCOPE_LEN)
   private scopePos = 0
   private meterCountdown = METER_EVERY
-  // Scratch for the chip's note report, filled per meter post rather than
-  // allocated on the audio thread.
+  // The chip's note report, written into per meter post and handed over as it
+  // stands. Slicing it to length would have been one small array sixty times a
+  // second on the thread that cannot afford a collection, so the count rides
+  // along instead and the reader takes that many.
   private chipNotes = new Int16Array(ToyChip.MAX_SOUNDING)
   private peak = 0
   private duck = 0
@@ -183,7 +185,8 @@ class BenderProcessor extends AudioWorkletProcessor {
         duck: this.duck,
         rail: rail.v,
         reboots: rail.rebootCount,
-        notes: this.chipNotes.slice(0, sounding),
+        notes: this.chipNotes,
+        noteCount: sounding,
       })
       this.peak = 0
       this.duck = 0

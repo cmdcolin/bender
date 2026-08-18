@@ -11,6 +11,7 @@
 // doc with a hole in it — which is the same reason the number of controls is
 // counted rather than typed.
 import { writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { format, resolveConfig } from 'prettier'
 import { BENDS } from '../src/ui/controls/bends'
 import { GROUPS } from '../src/ui/controls'
@@ -211,7 +212,10 @@ at all is [dataflow.md](dataflow.md).
   return out.join('\n')
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Compared as paths rather than as strings: a directory with a space in it
+// url-encodes on one side and not the other, and the generator would quietly
+// write nothing — the one failure this file exists to prevent.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   writeFileSync(
     new URL('../docs/features.md', import.meta.url),
     await renderFeatures(),
