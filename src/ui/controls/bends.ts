@@ -193,7 +193,7 @@ export const BEND_GROUPS: Group[] = [
         key: 'combHz',
         label: 'Pitch',
         min: 20,
-        max: 2000,
+        max: 4000,
         step: 0.1,
         unit: 'Hz',
         curve: 'log',

@@ -100,10 +100,10 @@ export const PEDAL_GROUPS: Group[] = [
         key: 'wowDepthMs',
         label: 'Wow',
         min: 0,
-        max: 10,
+        max: 50,
         step: 0.1,
         unit: 'ms',
-        help: 'Slow speed wobble of the transport.',
+        help: 'Slow speed wobble of the transport. A few ms is a tired capstan; fifty is a reel with something caught in it.',
       },
       {
         key: 'wowHz',

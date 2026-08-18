@@ -100,9 +100,9 @@ stall-and-recover cycle motorboats on its own.
 | control   | range              |
 | --------- | ------------------ |
 | Level     | 0–1                |
-| Osc A     | 20–4000 Hz         |
-| Osc B     | 0.1–4000 Hz        |
-| Cross-mod | 0–2000 Hz          |
+| Osc A     | 20–12000 Hz        |
+| Osc B     | 0.1–12000 Hz       |
+| Cross-mod | 0–8000 Hz          |
 | Shape     | square, saw, pulse |
 | Starve    | 0–1                |
 
@@ -110,12 +110,12 @@ stall-and-recover cycle motorboats on its own.
 
 Hiss with a colour control, and sparse crackle with a rate of its own.
 
-| control      | range    |
-| ------------ | -------- |
-| Noise        | 0–1      |
-| Color        | -1–1     |
-| Crackle      | 0–1      |
-| Crackle rate | 0–200 /s |
+| control      | range     |
+| ------------ | --------- |
+| Noise        | 0–1       |
+| Color        | -1–1      |
+| Crackle      | 0–1       |
+| Crackle rate | 0–2000 /s |
 
 ### Mic & sample
 
@@ -194,7 +194,7 @@ A tuned delay with feedback past unity — a pitch you can drive into oscillatio
 
 | control  | range        |
 | -------- | ------------ |
-| Pitch    | 20–2000 Hz   |
+| Pitch    | 20–4000 Hz   |
 | Feedback | 0–1.2        |
 | Damping  | 500–15000 Hz |
 | Mix      | 0–1          |
@@ -271,7 +271,7 @@ pitch as the board browns out.
 | ----------- | ------------ |
 | Time        | 20–4000 ms   |
 | Feedback    | 0–1.5        |
-| Wow         | 0–10 ms      |
+| Wow         | 0–50 ms      |
 | Wow rate    | 0.1–8 Hz     |
 | Flutter     | 0–1          |
 | Tone        | 500–15000 Hz |
@@ -300,7 +300,7 @@ land on another wire’s depth, which is how the bay modulates itself.
 
 | control      | range                                                                                                                                                                                                                                             |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LFO rate     | 0.02–40 Hz                                                                                                                                                                                                                                        |
+| LFO rate     | 0.02–400 Hz                                                                                                                                                                                                                                       |
 | LFO shape    | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                             |
 | Wire 1 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                        |
 | Wire 1 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth |

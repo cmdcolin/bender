@@ -11,11 +11,11 @@ export const PATCH_GROUPS: Group[] = [
         key: 'modLfoHz',
         label: 'LFO rate',
         min: 0.02,
-        max: 40,
+        max: 400,
         step: 0.01,
         unit: 'Hz',
         curve: 'log',
-        help: 'The bay’s own oscillator, free-running. Slow is a sweep, fast is a buzz through whatever it is wired to.',
+        help: 'The bay’s own oscillator, free-running. Slow is a sweep, fast is a buzz through whatever it is wired to — and the wires carry a value per sample, so at the top of the travel a wire onto a pitch is modulation rather than vibrato. The chaos shape is the exception: its own step size stops growing around 160 Hz, so it runs out of speed while the other five keep going.',
       },
       {
         key: 'modLfoShape',
