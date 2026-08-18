@@ -17,14 +17,14 @@ import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { format, resolveConfig } from 'prettier'
 import { BENDS } from '../src/ui/controls/bends'
-import { GROUPS } from '../src/ui/controls'
+import { ALL_SLIDERS, GROUPS } from '../src/ui/controls'
 import type { Group, SliderDef } from '../src/ui/controls/types'
 import { STAGE_ORDER } from '../src/ui/controls/types'
 import { PRESETS } from '../src/ui/presets/table'
 import { boardHash } from '../src/ui/share'
 import { DEFAULT_CONTROLS } from '../src/controls'
 import { ROMS } from '../src/dsp/stages/roms'
-import { DRUM_VOICES } from '../src/drums'
+import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums'
 import pkg from '../package.json' with { type: 'json' }
 
 const BLURBS: Record<string, string> = {
@@ -187,7 +187,7 @@ function gloss(s: SliderDef): string {
 function rows(sliders: SliderDef[]): string[] {
   const merged = new Map<string, { label: string; nums: number[] }>()
   for (const s of sliders) {
-    const key = `${s.label.replace(/\d+/g, '#')}|${range(s)}|${gloss(s)}`
+    const key = `${s.label.replace(/\d+/g, '#')}|${range(s)}|${gloss(s)}|${s.shy}`
     const at = merged.get(key)
     const idx = Number(s.label.match(/\d+/)?.[0])
     if (at) at.nums.push(idx)
@@ -199,7 +199,7 @@ function rows(sliders: SliderDef[]): string[] {
     const name =
       nums.length > 1 ? label.replace(/\d+/, `${first}–${last}`) : label
     const s = sliders.find(x => x.label === label)!
-    return `| ${name} | ${range(s)} | ${gloss(s)} |`
+    return `| ${name}${s.shy ? ' †' : ''} | ${range(s)} | ${gloss(s)} |`
   })
 }
 
@@ -210,6 +210,19 @@ function rows(sliders: SliderDef[]): string[] {
 const fold = (summary: string, body: string) =>
   `<details>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
 
+// A group whose widget is not a row of sliders says so above the fold, because
+// the table below cannot: the pattern is sixteen bits and a length per row, and
+// counting only the sliders leaves the loudest half of the drum machine off the
+// inventory entirely.
+function grid(g: Group): string {
+  if (!g.editor) return ''
+  const n = g.editor.keys.length
+  return `\nThe pattern grid is a widget rather than a row of sliders, so the table
+below leaves it out: ${num(GRID_ROWS.length)} rows (the ${num(DRUM_VOICES.length)} voices and an accent), each
+carrying ${STEPS} steps and a length of its own. That is ${n} more controls, and they
+ride in a link like the rest.\n`
+}
+
 function groupSection(g: Group): string {
   const blurb = BLURBS[g.name]
   if (!blurb) {
@@ -218,7 +231,9 @@ function groupSection(g: Group): string {
     )
   }
   const table = rows(g.sliders).join('\n')
-  return `### ${g.name}\n\n${blurb}\n\n${fold(
+  // The doc tells people a roll leaves the shy ones alone, so it had better say
+  // which those are.
+  return `### ${g.name}\n\n${blurb}\n${grid(g)}\n${fold(
     `${g.sliders.length} control${g.sliders.length === 1 ? '' : 's'}`,
     `| control | range | what it does |\n| --- | --- | --- |\n${table}`,
   )}\n`
@@ -248,7 +263,7 @@ function build(): string {
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. ${sliders.length} controls in ${GROUPS.length} groups, ${num(BENDS.length)} bends competing for ${num(slots)} slots,
+ruin. ${sliders.length} knobs and switches in ${GROUPS.length} groups, ${num(BENDS.length)} bends competing for ${num(slots)} slots,
 ${ROMS.length} ROM tunes and ${PRESETS.length} presets — and everything below comes off the control
 tables themselves, so the list cannot drift from the instrument.
 
@@ -295,6 +310,13 @@ renders it with the same layout the app uses.
 The [README](../README.md) explains how the interesting parts work and why they
 behave as they do. What follows is the list, for finding out whether something
 exists and what it is called.
+
+A **†** marks a shy control: one a roll brings on rarely and low, so no single
+effect buries the board. Your own hand still puts it wherever you want it, and a
+preset that names it still gets it. ${
+    ALL_SLIDERS.filter(s => s.shy).length
+  } of them, mostly the ones that cover
+the board rather than joining it.
 `)
 
   for (const place of STAGE_ORDER) {
@@ -312,7 +334,7 @@ exists and what it is called.
   out.push(`## Around the instrument
 
 - **Roll** randomises the board with a bias toward leaving something audible;
-  controls marked \`shy\` come on rarely and low, so a roll does not bury the
+  the controls marked † come on rarely and low, so a roll does not bury the
   board under one effect.
 - **Morph** travels between two boards over time rather than jumping.
 - **The board rides in the URL**, so a link is a patch. A link never presses
