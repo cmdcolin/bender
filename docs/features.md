@@ -7,7 +7,7 @@ The [README](../README.md) explains how the interesting parts work and why they
 behave as they do; this is the list, for finding out whether something exists
 and what it is called.
 
-158 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 45
+159 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 45
 presets, and one supply rail that most of it is plugged into.
 
 ## Sources
@@ -72,6 +72,9 @@ there. Nothing about it is played, though; it is _configured_, one byte at a
 time, over a bus. Which is what _Data line_ and _Address line_ are for: a byte
 that lands wrong stays wrong until the processor writes that register again, and
 if the wire carrying the key back up cannot go low, the note never ends.
+_Effect_ is the ROM’s other job: a bird, surf, wind, a siren or crickets, each
+of them a program in the processor spraying register writes rather than a
+sample, which makes it the busiest thing the bus ever carries.
 
 | control       | range                                                         |
 | ------------- | ------------------------------------------------------------- |
@@ -80,6 +83,7 @@ if the wire carrying the key back up cannot go low, the note never ends.
 | Brightness    | 0–1                                                           |
 | Feedback      | 0–7                                                           |
 | Note length   | 0.02–4 s                                                      |
+| Effect        | off, bird, surf, wind, siren, crickets                        |
 | Data line     | off, D0, D1, D2, D3, D4, D5, D6, D7                           |
 | Data fault    | cut, to ground, to +V, bridged                                |
 | Address line  | off, A0, A1, A2, A3, A4, A5                                   |

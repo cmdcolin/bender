@@ -3,7 +3,15 @@ import { Bus } from '../bus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import { softclip } from '../util/softclip'
-import { PATCH_BYTES, REG } from './fmVoices'
+import { mulberry32 } from '../util/rng'
+import {
+  type Cpu,
+  EFFECT_CH,
+  EFFECTS,
+  loadEffect,
+  stopEffect,
+} from './fmEffects'
+import { KEY_ON, PATCH_BYTES, REG } from './fmVoices'
 
 // The other chip on the board: two operators a voice, four voices, and a
 // register file the CPU writes over a bus.
@@ -59,8 +67,8 @@ const wave = (phase: number, half: number) => {
 
 const ENV_FLOOR = 0.0005
 
-/** The key going down, in the register it shares with the octave. */
-const KEY_ON = 0x10
+/** The noise byte the effect ROM reads, which is a table on the real part. */
+const EFFECT_SEED = 0x5e
 
 const IDLE = 0
 const ATTACK = 1
@@ -141,6 +149,16 @@ export class FmChip implements Stage {
   private sentVoice = -1
   private sentBright = -1
   private sentFeedback = -1
+  // The effect ROM, and the driver running it: a script of writes over time,
+  // clocked off the CPU rather than off the rail.
+  private effect = -1
+  private effectTick = 0
+  private effectClock = 0
+  private cpu: Cpu = {
+    write: (addr, data) => this.write(addr, data),
+    rng: mulberry32(EFFECT_SEED),
+    s: new Float64Array(4),
+  }
 
   constructor(
     private readonly sr: number,
@@ -218,12 +236,20 @@ export class FmChip implements Stage {
     }
   }
 
+  // A driver running an effect keeps the top channel for it and gives the
+  // keyboard the rest, which is what four channels and one effect button always
+  // meant: the sound the button makes is a voice you no longer have.
   private pick(note: number): Channel {
-    for (const c of this.ch)
+    const free = this.effect >= 0 ? EFFECT_CH : N_CH
+    for (let i = 0; i < free; i++) {
+      const c = this.ch[i]!
       if (c.note === note && c.car.stage !== IDLE) return c
-    for (const c of this.ch) if (c.car.stage === IDLE) return c
+    }
+    for (let i = 0; i < free; i++)
+      if (this.ch[i]!.car.stage === IDLE) return this.ch[i]!
     let steal = this.ch[0]!
-    for (const c of this.ch) if (c.started < steal.started) steal = c
+    for (let i = 1; i < free; i++)
+      if (this.ch[i]!.started < steal.started) steal = this.ch[i]!
     return steal
   }
 
@@ -267,7 +293,26 @@ export class FmChip implements Stage {
   }
 
   noteOff(note: number) {
-    for (let i = 0; i < N_CH; i++) if (this.ch[i]!.note === note) this.keyOff(i)
+    const n = this.effect >= 0 ? EFFECT_CH : N_CH
+    for (let i = 0; i < n; i++) if (this.ch[i]!.note === note) this.keyOff(i)
+  }
+
+  // The effect button, pressed or let go. Going in, eight patch bytes; coming
+  // out, the one write that ends whatever the script left keyed on, and the
+  // melody patch sent again the way a driver re-selects its instrument. Both are
+  // writes like any other, so both are somewhere a cut line can land.
+  private setEffect(next: number) {
+    if (this.effect >= 0) stopEffect(this.cpu)
+    this.effect = next
+    this.effectTick = 0
+    this.effectClock = 0
+    this.cpu.s.fill(0)
+    // Whatever the keyboard had queued on that channel is not the driver's any
+    // more, so the key-up it was waiting to send never goes.
+    this.ch[EFFECT_CH]!.offIn = 0
+    const eff = EFFECTS[next]
+    if (eff) loadEffect(this.cpu, eff)
+    else this.sentVoice = -1
   }
 
   // The patch registers turned into something a sample loop can use. Done once a
@@ -349,6 +394,10 @@ export class FmChip implements Stage {
     const rail = this.rail
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 
+    const effect = Math.round(p[IDX.fmEffect]!) - 1
+    if (effect !== this.effect) this.setEffect(effect)
+    const script = EFFECTS[this.effect]
+
     if (
       voice !== this.sentVoice ||
       bright !== this.sentBright ||
@@ -367,6 +416,20 @@ export class FmChip implements Stage {
     let load = 0
 
     for (let i = 0; i < io.n; i++) {
+      // The effect ROM, running. Its rate is the CPU's crystal and nothing on
+      // this board reaches that, so the gesture keeps its own time however far
+      // the rail has dragged the chip it is writing to — which is the whole
+      // sound of it: a bird call in tempo, driving a synthesiser that has been
+      // told nonsense.
+      if (script) {
+        this.effectClock += script.hz / this.sr
+        while (this.effectClock >= 1) {
+          this.effectClock -= 1
+          const tick = this.effectTick++
+          script.run(this.cpu, tick, tick / script.hz)
+        }
+      }
+
       // The key line the toy brings out, which is every note anything on this
       // board strikes: the demo song, your hands, a controller, or a drum hit
       // that came back round. Somebody soldered it onto this chip's key input,
@@ -424,6 +487,11 @@ export class FmChip implements Stage {
 
   panic() {
     this.regs.fill(0)
+    this.effect = -1
+    this.effectTick = 0
+    this.effectClock = 0
+    this.cpu.s.fill(0)
+    this.cpu.rng = mulberry32(EFFECT_SEED)
     for (const c of this.ch) {
       c.mod = newOp()
       c.car = newOp()

@@ -28,13 +28,16 @@ export const REG = {
   instVol: 0x30,
 } as const
 
+/** The key going down, in the register it shares with the top of the frequency. */
+export const KEY_ON = 0x10
+
 /** The sustained-envelope bit: set, the note waits for the key to come up. */
 const HOLD = 0x20
 /** The waveform bits in the shape byte. */
-const CAR_HALF = 0x08
-const MOD_HALF = 0x10
+export const CAR_HALF = 0x08
+export const MOD_HALF = 0x10
 
-interface Voice {
+export interface Voice {
   name: string
   /** frequency multiplier index for each operator, into the part's own table */
   modMult: number
@@ -55,7 +58,8 @@ interface Voice {
 
 const nibbles = ([hi, lo]: [number, number]) => (hi << 4) | lo
 
-const pack = (v: Voice) => [
+/** A patch as the eight bytes the CPU actually sends. */
+export const pack = (v: Omit<Voice, 'name'>) => [
   (v.hold ? HOLD : 0) | v.modMult,
   (v.hold ? HOLD : 0) | v.carMult,
   v.level,

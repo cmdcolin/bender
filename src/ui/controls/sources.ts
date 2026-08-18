@@ -1,5 +1,6 @@
 import type { Controls } from '../../controls'
 import { FAULT_NAMES, lineNames } from '../../dsp/bus'
+import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
 import {
   ROM_ADDR_LINES,
@@ -401,6 +402,17 @@ export const SOURCE_GROUPS: Group[] = [
         unit: 's',
         curve: 'log',
         help: 'How long the processor waits before writing the key back up. A trigger line carries a strike and nothing else, so the length of the note is a decision something has to make and this is where it is made. Your hand overrides it — letting a key go sends the release early — and a cut data line overrides it the other way, by making sure the write never lands.',
+      },
+      {
+        key: 'fmEffect',
+        label: 'Effect',
+        min: 0,
+        max: FM_EFFECT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FM_EFFECT_NAMES,
+        shy: true,
+        help: 'The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board. Each is a little program in the processor firing register writes at the synthesiser, hundreds a second on the weather, which makes an effect far and away the busiest thing the bus ever carries. A note is four writes; a bird call never stops, so a cut line lands on every one of them and the corruption never lets up while the gesture keeps its own time. It borrows the fourth channel and the patch registers to do it, so the keyboard is down to three voices and plays in the effect’s voice — until you let the button go and the processor sends the voice again.',
       },
       {
         key: 'fmDataLine',

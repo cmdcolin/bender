@@ -62,6 +62,7 @@ export const PARAM_DEFS = [
   ['fmBright', 'slew'],
   ['fmFeedback', 'step'],
   ['fmLength', 'slew'],
+  ['fmEffect', 'step'],
   ['fmDataLine', 'step'],
   ['fmDataFault', 'step'],
   ['fmAddrLine', 'step'],

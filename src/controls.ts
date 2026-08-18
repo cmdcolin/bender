@@ -59,6 +59,7 @@ export const DEFAULT_CONTROLS = {
   fmBright: 0.5,
   fmFeedback: 0,
   fmLength: 0.4,
+  fmEffect: 0,
   fmDataLine: 0,
   fmDataFault: 0,
   fmAddrLine: 0,

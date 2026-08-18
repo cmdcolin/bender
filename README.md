@@ -191,6 +191,48 @@ good. **Address line** is the other bus: the byte arrives intact and gets filed
 under the wrong register, which is the more violent of the two, because whatever
 should have gone there never did.
 
+### The effect ROM
+
+**Effect** is the other button on a keyboard like this, and what comes out of it
+is not a sample. There is no sample memory on the board and nowhere to put one.
+A bird call is a little program in the processor firing register writes at the
+synthesiser hundreds of times a second — a stack of short frequency sweeps with
+a key-on between them. Surf is the modulator's feedback wound past the point
+where it stops making harmonics and starts making noise, with slow swells
+written into the level register. Wind is that same noise under a random walk on
+the frequency count. Then a siren, which is nothing but the frequency registers
+being rewritten, and crickets, which are nothing but key-ons.
+
+Which makes an effect the busiest thing the bus ever carries, and the dataline
+bend scales with traffic. A note is four writes. A bird call never stops, so
+every one of those writes arrives wrong and the corruption never lets up — and
+the gesture survives it, because the timing belongs to the processor and nothing
+here has been done to the processor. What you get is the shape of a bird call
+driving a chip that has been told nonsense.
+
+Two things fall out of that which no bent patch can do. Set the fault to **cut**
+and the stale bit carries the previous write's value forward, so on a sweep each
+write is contaminated by the one before it: the corruption is correlated with
+the effect's own motion rather than sitting at a constant offset, which is the
+difference between a recording that sounds alive and one that sounds merely
+broken. And a sweep rewrites the frequency registers constantly while never
+rewriting the patch, so the pitch keeps recovering and the timbre stays scarred.
+You hear the two timescales at once, which is the register file's persistence
+doing something audible.
+
+An effect borrows the fourth channel and the whole patch to do it, because there
+is one instrument in the register file and the effect wants it. So the keyboard
+is down to three voices while a script runs, playing in the effect's voice
+rather than the one under the voice button — until you let the button go, when
+the processor sends the voice again, over the same wires, for the fault to catch
+one more time.
+
+Starve the rail underneath and the two clocks come apart. The processor is
+clocked off a resonator and a resonator does not care what the supply is doing,
+so the calls go on arriving at the rate it sends them while the synthesiser they
+are addressed to dives and slurs — the one place on this board where a gesture
+and the pitch of it are on different clocks.
+
 ## The trigger patch
 
 The rail is what the two boxes share by accident. The trigger patch is what you
