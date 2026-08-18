@@ -465,6 +465,16 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the bit holds whatever was last on it. Back it off and the line still carries some of the time, so most writes land and the occasional one does not: a patch that is nearly right, a note in ten that hangs.',
       },
+      {
+        key: 'fmStrobe',
+        label: 'Strobe slip',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught. Nothing is corrupted here — both bytes arrive intact and the latch simply does not clock, so a perfectly good value commits to whichever register the last pulse that landed had named. Which is a fault no cut wire can imitate: every byte involved is right, and they are only paired one write late. Turn it up and the latch slips further, because a latch that misses holds rather than skips — two misses running is two writes of lag, and a strobe that never lands is the whole run piling into one register. It bites hardest on the effects, where the processor writes the same short run of registers hundreds of times a second: shift that by one and every frequency byte lands in the register carrying the key.',
+      },
     ],
   },
   {

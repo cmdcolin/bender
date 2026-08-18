@@ -65,6 +65,7 @@ export const DEFAULT_CONTROLS = {
   fmAddrLine: 0,
   fmAddrFault: 0,
   fmBusCut: 1,
+  fmStrobe: 0,
 
   oscLevel: 0,
   oscAHz: 220,

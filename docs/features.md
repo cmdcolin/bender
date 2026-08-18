@@ -7,7 +7,7 @@ The [README](../README.md) explains how the interesting parts work and why they
 behave as they do; this is the list, for finding out whether something exists
 and what it is called.
 
-159 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 45
+160 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 45
 presets, and one supply rail that most of it is plugged into.
 
 ## Sources
@@ -89,6 +89,7 @@ sample, which makes it the busiest thing the bus ever carries.
 | Address line  | off, A0, A1, A2, A3, A4, A5                                   |
 | Address fault | cut, to ground, to +V, bridged                                |
 | Cut depth     | 0–1                                                           |
+| Strobe slip   | 0–1                                                           |
 
 ### Chaos osc
 

@@ -68,6 +68,7 @@ export const PARAM_DEFS = [
   ['fmAddrLine', 'step'],
   ['fmAddrFault', 'step'],
   ['fmBusCut', 'slew'],
+  ['fmStrobe', 'slew'],
 
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],

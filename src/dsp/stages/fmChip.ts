@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params'
-import { Bus } from '../bus'
+import { Bus, Strobe } from '../bus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import { softclip } from '../util/softclip'
@@ -69,6 +69,9 @@ const ENV_FLOOR = 0.0005
 
 /** The noise byte the effect ROM reads, which is a table on the real part. */
 const EFFECT_SEED = 0x5e
+
+/** Which strobe pulses come out too narrow, which is a race and not a pattern. */
+const STROBE_SEED = 0xa3
 
 const IDLE = 0
 const ATTACK = 1
@@ -143,6 +146,10 @@ export class FmChip implements Stage {
   private addrLine = -1
   private addrFault = 0
   private busCut = 1
+  // The write strobe, and how often its pulse comes out too narrow for the
+  // address latch to catch.
+  private strobe = 0
+  private addrLatch = new Strobe(STROBE_SEED)
   // What the CPU last sent the chip, so it only sends the patch again when
   // something it knows about has moved. A processor that rewrote eight registers
   // every sample would paper over every fault the moment it landed.
@@ -186,7 +193,10 @@ export class FmChip implements Stage {
       this.dataFault,
       this.busCut,
     )
-    const reg = a % N_REGS
+    // Both bytes have crossed the bus by now. Where the value lands is the
+    // strobe's decision: a pulse the latch missed leaves the last register it
+    // caught still standing, so this write commits there instead.
+    const reg = this.addrLatch.latch(a, this.strobe) % N_REGS
     const before = this.regs[reg]!
     this.regs[reg] = d & 0xff
 
@@ -391,6 +401,7 @@ export class FmChip implements Stage {
     this.addrLine = Math.round(p[IDX.fmAddrLine]!) - 1
     this.addrFault = Math.round(p[IDX.fmAddrFault]!)
     this.busCut = p[IDX.fmBusCut]!
+    this.strobe = p[IDX.fmStrobe]!
     const rail = this.rail
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 
@@ -510,6 +521,7 @@ export class FmChip implements Stage {
     }
     this.dataBus.reset()
     this.addrBus.reset()
+    this.addrLatch.reset()
     this.sentVoice = -1
     this.sentBright = -1
     this.sentFeedback = -1

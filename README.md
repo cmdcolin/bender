@@ -193,6 +193,39 @@ good. **Address line** is the other bus: the byte arrives intact and gets filed
 under the wrong register, which is the more violent of the two, because whatever
 should have gone there never did.
 
+### Slip the strobe
+
+Both bends above work by bending a wire, and both are a byte that comes out
+wrong somewhere. **Strobe slip** is the third one, and it corrupts nothing at
+all. A register write is two things arriving together: a number naming the
+register, and the value to put in it. What pairs them is the strobe — the pulse
+that tells the address latch to take what is on the wires right now. Make that
+pulse marginal and the latch sometimes does not catch it, and the value commits
+to whichever register the last pulse that did land had named.
+
+Nothing is broken in that sentence. Both bytes crossed the bus intact, both are
+exactly what the processor spelled, and the register they landed in is a real
+register. They are simply paired one write late, which is a sound no cut wire
+can make, because a cut wire has to damage something to do anything.
+
+A latch that misses holds rather than skips, so the slip compounds. Two misses
+running is two writes of lag; wind it all the way over and the latch never moves
+off the first register it ever caught, every write in the run piles into that
+one, and the chip goes silent because nothing ever names the register carrying
+the key. The interesting playing is well below that, where most writes land and
+some arrive one late.
+
+What it costs you is however many writes you make, which is why this is the bend
+the effect ROM was worth building for. A note is four writes and comes out
+smeared. The weather is hundreds a second, and the processor spends them
+rewriting the same short run of registers over and over — the frequency count,
+then the byte carrying the key. Shift that by one and every frequency byte you
+send lands in the register holding the key down, continuously, for as long as
+the script runs. The crickets are the clearest: clean they are chirps with gaps,
+and a slipping strobe drones them into one tone. Which is exactly where a cut
+key line takes them, arrived at from the opposite direction — every wire on the
+board working perfectly, and the key-up landing next door.
+
 ### The effect ROM
 
 **Effect** is the other button on a keyboard like this, and what comes out of it

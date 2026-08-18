@@ -85,3 +85,34 @@ export class Bus {
     this.held = 0
   }
 }
+
+// The strobe: the pulse that tells the address latch to take what is on the
+// wires. It is not one of the four things above, because nothing here is a bit
+// held anywhere — both bytes cross the bus intact and the latch simply does not
+// clock, so a perfectly good value commits to whichever register the last pulse
+// that landed had named. Every byte involved is right; they are paired one
+// write late, which is a fault no cut wire can imitate.
+//
+// A latch that misses holds rather than skips, so a marginal strobe slips
+// further the longer it stays marginal: two misses running is two writes of
+// lag, and a strobe that never lands leaves every write in the run piling into
+// whatever register was named first.
+export class Strobe {
+  private latched = 0
+  private rng: Rng
+
+  constructor(private readonly seed = 0xa3) {
+    this.rng = mulberry32(seed)
+  }
+
+  /** The register a write commits to. `slip` is how often the pulse is missed. */
+  latch(addr: number, slip: number): number {
+    if (this.rng() >= slip) this.latched = addr
+    return this.latched
+  }
+
+  reset() {
+    this.latched = 0
+    this.rng = mulberry32(this.seed)
+  }
+}
