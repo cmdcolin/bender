@@ -52,6 +52,14 @@ the whole board two octaves either way — a bass line at one end, well under th
 toy's own bottom key, and at the other the top of the counter where the narrow
 tones run out of ticks and widen back into squares.
 
+**Hold** latches every key you touch after it; alt-click pins down one key on
+its own, which is how a drone stays under both hands while the rest of the board
+plays normally. Either way a second press on a lit key lets it go. A key nobody
+lifted — the window losing focus mid-press, a window manager claiming the
+alt-drag to move itself, a controller unplugged mid-note — is let go of rather
+than left ringing, since the chip's voices latch and a note nothing ends never
+ends.
+
 The keys light for whatever is playing them. A hand lights them in the accent
 colour — the pointer, the letter keys, a controller on the wire — and the toy
 playing itself lights them amber: the ROM's tune walking up the board, the
@@ -537,11 +545,14 @@ the ring is the only place its control's value can be shown on the hardware.
 Notes play the toy chip's keyboard, with A3 where the ROM has it — the chip
 counts its semitones from 220 Hz, so a controller's middle C arrives three
 semitones up — and they strike and light the same keys the on-screen board does.
-Velocity comes with them: the toy's own keys are switches and always strike
-full, but a wire onto the gate can arrive at any level, which is what the
-trigger patch has always done. Clock is the other half: the drum machine can
-follow the tick on the wire, and it does it by writing the tempo control, so the
-slider moves with the room rather than fighting it.
+The sustain pedal holds them and lets them go, and either spelling of "all notes
+off" clears the board — both read off any CC that nothing has bound, so a pedal
+input you would rather spend on the tape speed stays yours. Velocity comes with
+them: the toy's own keys are switches and always strike full, but a wire onto
+the gate can arrive at any level, which is what the trigger patch has always
+done. Clock is the other half: the drum machine can follow the tick on the wire,
+and it does it by writing the tempo control, so the slider moves with the room
+rather than fighting it.
 
 ## Run
 

@@ -216,7 +216,7 @@ function Wired() {
         <button
           className={notes ? styles.toggleOn : styles.toggle}
           onClick={() => midi.setNotes(!notes)}
-          title="notes play the toy chip's keyboard, with A3 at middle C's octave — the same voice the on-screen keys strike"
+          title="notes play the toy chip's keyboard — the same voice the on-screen keys strike, and they light the same keys. The sustain pedal holds them, and all-notes-off lets them go, on any CC nothing else has taken"
         >
           notes play the keys
         </button>

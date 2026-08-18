@@ -317,7 +317,7 @@ class Midi {
   readonly debug = createStore(read(DEBUG_KEY) === '1')
 
   private access: MIDIAccess | null = null
-  private onStateChange: (() => void) | null = null
+  private onStateChange: ((e: Event) => void) | null = null
   private keyBySource = new Map<string, ControlKey>()
   private sweep: {
     keys: ControlKey[]
@@ -336,6 +336,15 @@ class Midi {
   // from a knob's first message and held: see ccToDelta for why it can't be
   // re-read per byte.
   private spelling = new Map<string, boolean>()
+
+  // What the wire is holding down, so it can be let go of by something other
+  // than the note-off that may never come: a pedal lifting, an all-notes-off, a
+  // device leaving the desk mid-note.
+  private notesOn = new Set<number>()
+  // Notes let go of while the sustain pedal was down. They are still sounding,
+  // and the pedal lifting is what ends them.
+  private sustained = new Set<number>()
+  private pedal = false
 
   private seen = 0
   // A turning knob sends far faster than anyone can read, so the readout lands
@@ -369,8 +378,12 @@ class Midi {
         this.status.set('ready')
         this.listen(access)
         this.lightAll()
-        // Devices plugged in after the grant still get wired up.
-        this.onStateChange = () => {
+        // Devices plugged in after the grant still get wired up — and one
+        // pulled out mid-note never sends the note off, so what it was holding
+        // is let go of here or it is held for ever.
+        this.onStateChange = (e: Event) => {
+          if ((e as MIDIConnectionEvent).port?.state === 'disconnected')
+            this.allNotesOff()
           this.listen(access)
           this.lightAll()
         }
@@ -400,6 +413,7 @@ class Midi {
   setNotes(on: boolean) {
     this.notes.set(on)
     write(NOTES_KEY, on ? '1' : '0')
+    if (!on) this.allNotesOff()
   }
 
   setClockLock(on: boolean) {
@@ -719,6 +733,43 @@ class Midi {
     if (this.bpm.get() !== null) this.bpm.set(null)
   }
 
+  private strike(semitone: number, gain: number) {
+    this.notesOn.add(semitone)
+    this.sustained.delete(semitone)
+    engine.noteOn(semitone, gain)
+  }
+
+  // A key let go of under a held pedal keeps sounding, and the pedal is what
+  // ends it. The chip's voices latch, so a note nobody ends never stops.
+  private letGo(semitone: number) {
+    if (this.pedal) {
+      this.sustained.add(semitone)
+      return
+    }
+    this.notesOn.delete(semitone)
+    this.sustained.delete(semitone)
+    engine.noteOff(semitone)
+  }
+
+  private setPedal(down: boolean) {
+    if (down === this.pedal) return
+    this.pedal = down
+    if (down) return
+    for (const semitone of this.sustained) {
+      this.notesOn.delete(semitone)
+      engine.noteOff(semitone)
+    }
+    this.sustained.clear()
+  }
+
+  /** Let go of every note the wire is holding, pedal and all. */
+  allNotesOff() {
+    this.pedal = false
+    this.sustained.clear()
+    for (const semitone of this.notesOn) engine.noteOff(semitone)
+    this.notesOn.clear()
+  }
+
   private onMessage(e: MIDIMessageEvent, port = '') {
     const data = e.data
     const head = data?.[0]
@@ -739,9 +790,8 @@ class Midi {
     // both have to reach noteOff or the note never lets go.
     if (this.notes.get() && (status === 0x90 || status === 0x80)) {
       const semitone = toSemitone(first)
-      if (status === 0x90 && second > 0)
-        engine.noteOn(semitone, velocity(second))
-      else engine.noteOff(semitone)
+      if (status === 0x90 && second > 0) this.strike(semitone, velocity(second))
+      else this.letGo(semitone)
       return
     }
     // Control Change is 0xB0..0xBF: status, controller, value.
@@ -772,7 +822,20 @@ class Midi {
     }
     const key = this.keyBySource.get(id)
     const bound = key === undefined ? undefined : this.bindings.get()[key]
-    if (key !== undefined && bound !== undefined) this.drive(key, bound, second)
+    if (key !== undefined && bound !== undefined) {
+      this.drive(key, bound, second)
+      return
+    }
+    // The controller messages a keyboard sends that aren't a knob. Only once
+    // nothing has bound them: a CC deliberately given to a control is that
+    // control's, and a desk with a spare pedal input is entitled to spend it on
+    // the tape speed.
+    if (!this.notes.get()) return
+    // 64 is the sustain pedal, and 120 and 123 are the two spellings of "let go
+    // of everything" — which is what a controller sends when it loses its own
+    // place, and the standard cure for a note left ringing.
+    if (first === 64) this.setPedal(second >= 64)
+    else if (first === 120 || first === 123) this.allNotesOff()
   }
 }
 

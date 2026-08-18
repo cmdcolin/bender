@@ -33,6 +33,12 @@ const LETTER: Record<number, string> = Object.fromEntries(
   Object.entries(KEY_MAP).map(([letter, note]) => [note, letter]),
 )
 
+const omitFrom = (set: Set<number>, value: number) => {
+  const next = new Set(set)
+  next.delete(value)
+  return next
+}
+
 // Who is holding a key down, and so what colour it is.
 type Lit = 'hand' | 'chip' | 'dark'
 
@@ -47,6 +53,10 @@ export function Keys() {
   // What was sent, not which key was pressed: the octave moves under your hand
   // and a note has to be let go at the pitch it went down at.
   const [held, setHeld] = useState<Set<number>>(new Set())
+  // Notes alt-click has pinned down, one at a time. The hold switch latches
+  // everything you touch after it; this holds a drone under both hands while the
+  // rest of the board still plays and lets go the way keys normally do.
+  const [latched, setLatched] = useState<Set<number>>(new Set())
   const [hold, setHold] = useState(false)
   const [octave, setOctave] = useState(0)
   const shift = octave * 12
@@ -68,32 +78,52 @@ export function Keys() {
   const below = playing.some(s => s < at(0))
   const above = playing.some(s => s > at(TOP))
 
-  const press = (key: number) => {
+  // Whether letting go of a key lets go of the note.
+  const sticky = (semitone: number) => hold || latched.has(semitone)
+
+  const press = (key: number, latch = false) => {
     const semitone = at(key)
-    // Latched keys let go on a second press. What is latched is what is
-    // sounding, not what this component remembers sending: panic clears the
-    // board underneath it, and a key that is dark should strike, not unlatch.
-    if (hold && keysDown.has(semitone)) {
+    // A press on a note already pinned down is what lets it go — by the hold
+    // switch or by alt, either way, since a key you can see lit and cannot turn
+    // off is a stuck note however it got that way. What counts as down is what
+    // is sounding rather than what this component remembers sending: panic
+    // clears the board underneath it, and a dark key should strike.
+    if (keysDown.has(semitone) && (latch || sticky(semitone))) {
       release(key, true)
       return
     }
     engine.noteOn(semitone)
     setHeld(h => new Set(h).add(semitone))
+    if (latch) setLatched(l => new Set(l).add(semitone))
   }
 
   const release = (key: number, force = false) => {
-    if (hold && !force) return
-    engine.noteOff(at(key))
-    setHeld(h => {
-      const next = new Set(h)
-      next.delete(at(key))
-      return next
-    })
+    const semitone = at(key)
+    if (!force && sticky(semitone)) return
+    engine.noteOff(semitone)
+    setHeld(h => omitFrom(h, semitone))
+    if (latched.has(semitone)) setLatched(l => omitFrom(l, semitone))
   }
 
   const releaseAll = () => {
     for (const semitone of held) engine.noteOff(semitone)
     setHeld(new Set())
+    setLatched(new Set())
+  }
+
+  // What a hand was holding, when the hand goes away: the window loses focus
+  // mid-press and the key-up lands wherever the focus went, so without this a
+  // note is held for ever by a key nobody is pressing any more. What was pinned
+  // down on purpose stays down — that is what pinning it was for.
+  const releaseLoose = () => {
+    const loose = [...held].filter(semitone => !sticky(semitone))
+    if (loose.length === 0) return
+    for (const semitone of loose) engine.noteOff(semitone)
+    setHeld(h => {
+      const next = new Set(h)
+      for (const semitone of loose) next.delete(semitone)
+      return next
+    })
   }
 
   // Whatever is down went down at the old octave, and nothing is going to let go
@@ -124,9 +154,11 @@ export function Keys() {
     }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
+    window.addEventListener('blur', releaseLoose)
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', releaseLoose)
     }
   })
 
@@ -135,11 +167,15 @@ export function Keys() {
   // so a glissando would come out as one note held down.
   const grab = (note: number) => (e: PointerEvent<HTMLButtonElement>) => {
     e.currentTarget.releasePointerCapture(e.pointerId)
-    press(note)
+    press(note, e.altKey)
   }
   const slideInto = (note: number) => (e: PointerEvent<HTMLButtonElement>) => {
     if (e.buttons && !hold) press(note)
   }
+  // A pointer taken away rather than lifted: a window manager claiming alt-drag
+  // to move the window, a touch turning into a scroll, the system stepping in.
+  // No pointer-up follows any of them, so this is the last word on the note.
+  const cancel = (note: number) => () => release(note)
 
   const key = (note: number, black: boolean) => {
     const lit = litBy(note)
@@ -155,6 +191,7 @@ export function Keys() {
         onPointerEnter={slideInto(note)}
         onPointerUp={() => release(note)}
         onPointerLeave={() => isDown(note) && release(note)}
+        onPointerCancel={cancel(note)}
       >
         {LETTER[note] && (
           <span className={black ? styles.blackLetter : styles.letter}>
@@ -190,7 +227,7 @@ export function Keys() {
             if (hold) releaseAll()
             setHold(!hold)
           }}
-          title="latch keys on — press a held key again to let it go"
+          title="latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down"
         >
           hold
         </button>

@@ -13,12 +13,20 @@ type Handler = ((e: MIDIMessageEvent) => void) | null
 const input = { onmidimessage: null as Handler }
 const sent: number[][] = []
 const output = { send: (bytes: number[]) => sent.push(bytes) }
+// The state-change listener is kept so a test can unplug the device: that is
+// the one thing a controller cannot tell the app about itself, since a port on
+// its way out sends nothing.
+let onStateChange: ((e: Event) => void) | null = null
 const access = {
   inputs: new Map([['one', input]]),
   outputs: new Map([['one', output]]),
-  addEventListener() {},
+  addEventListener(_kind: string, fn: (e: Event) => void) {
+    onStateChange = fn
+  },
   removeEventListener() {},
 }
+const unplug = () =>
+  onStateChange?.({ port: { state: 'disconnected' } } as unknown as Event)
 
 vi.stubGlobal('navigator', {
   requestMIDIAccess: () => Promise.resolve(access),
@@ -42,6 +50,7 @@ beforeEach(async () => {
   midi.setLights(false)
   midi.clearAll()
   midi.arm(null)
+  midi.allNotesOff()
   sent.length = 0
   engine.writeBoard({ ...DEFAULT_CONTROLS })
   if (midi.status.get() !== 'ready') {
@@ -164,6 +173,70 @@ test('a key on the wire lights the key on the screen', () => {
   expect(engine.keysDown.get().has(3)).toBe(true)
   send(0x80, 60, 0)
   expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
+// The pedal, and the two messages that mean "let go of everything". The chip's
+// voices latch, so a note the wire never ends is a note that never stops — and
+// the panel's keyboard now sits there lit, saying so.
+test('the sustain pedal holds notes past the key coming up', () => {
+  midi.setNotes(true)
+  send(0xb0, 64, 127) // pedal down
+  send(0x90, 60, 100)
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(true)
+
+  send(0xb0, 64, 0) // pedal up
+  expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
+test('a key struck under the pedal and let go with it ends once', () => {
+  midi.setNotes(true)
+  send(0xb0, 64, 127)
+  send(0x90, 60, 100)
+  send(0xb0, 64, 0)
+  // Still down: the key was never let go of, so the pedal lifting is not its
+  // business.
+  expect(engine.keysDown.get().has(3)).toBe(true)
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
+test('all notes off lets go of everything the wire is holding', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  send(0x90, 64, 100)
+  expect(engine.keysDown.get().size).toBe(2)
+  send(0xb0, 123, 0)
+  expect(engine.keysDown.get().size).toBe(0)
+})
+
+test('a device leaving the desk mid-note lets go of it', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  expect(engine.keysDown.get().has(3)).toBe(true)
+  unplug()
+  expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
+test('turning notes off at the panel does not strand what is playing', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  midi.setNotes(false)
+  expect(engine.keysDown.get().size).toBe(0)
+  midi.setNotes(true)
+})
+
+// A pedal input spent on a control is that control's. Only a CC nobody has
+// bound is read as a pedal.
+test('a bound CC64 drives its control rather than the pedal', () => {
+  midi.setNotes(true)
+  midi.arm('dlyMix')
+  cc(64, 64)
+  send(0x90, 60, 100)
+  send(0xb0, 64, 127) // would be pedal down, but the knob owns this CC
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+  midi.clearAll()
 })
 
 test('a harder key strikes harder', () => {
