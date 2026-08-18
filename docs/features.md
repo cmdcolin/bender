@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 186 knobs and switches in 27 groups, seven bends competing for six slots,
-18 ROM tunes and 49 presets — and everything below comes off the control tables
+18 ROM tunes and 45 presets — and everything below comes off the control tables
 themselves, so the list cannot drift from the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/**
@@ -302,7 +302,7 @@ the rate.
 
 </details>
 
-### Shaper
+### Clipper
 
 A rack of clipping circuits, with bias, a tone control and a sub octave.
 
@@ -655,7 +655,7 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 
 ### Presets
 
-49 boards worth keeping. Every name is a link that opens the app with that board
+45 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -672,15 +672,13 @@ on it — a link never presses play, so it is loaded and waiting.
   — An address line on the floor: the song folds into its own first half
 - [**stuck key**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.5,fmLevel:0.8,fmVoice:1,fmBright:0.6,fmLength:0.3,fmDataLine:5,fmDataFault:2)
   — The FM chip never told the key came up, so nothing it plays ends
-- [**cut the dataline**](https://cmdcolin.github.io/bender/#set=chipLevel:0,fmLevel:0.8,fmVoice:3,fmFeedback:5,fmDataLine:4,fmBusCut:0.6)
-  — A trace most of the way through: the patch arrives wrong and stays wrong
 - [**dawn chorus**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmDataLine:3,fmBusCut:0.55)
   — Bird calls off the effect ROM, every write of them arriving wrong
 - [**weather station**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:3,fmStrobe:0.15)
   — Wind, with the address latch missing one pulse in seven
 - [**air raid**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:4,fmAddrLine:6,fmBusCut:0.5)
   — A siren filed under the wrong registers as it climbs
-- [**one long cricket**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:5,fmStrobe:0.4)
+- [**stuck cricket**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:5,fmStrobe:0.4)
   — The key-up lands next door, so the chirps never stop being one note
 - [**gravel dac**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9)
   — The kit’s converter built from resistors nobody measured
@@ -694,16 +692,12 @@ on it — a link never presses play, so it is loaded and waiting.
   — Runaway delay feedback, warped transport
 - [**no-input squeal**](https://cmdcolin.github.io/bender/#set=chipLevel:0,driveDb:26,distMode:1,distMix:0.4,fbAmt:1.35,fbDelayMs:0.6,fbTone:0.4)
   — The mixer patched into itself, nothing at the input
-- [**runaway howl**](https://cmdcolin.github.io/bender/#set=chipLevel:0.3,glitchMix:0.3,delayMs:420,dlyFb:1.15,dlyMix:0.5,fbAmt:1.5,fbDelayMs:90,fbTone:-0.4)
-  — Long global loop through the whole board
 - [**haunted spring**](https://cmdcolin.github.io/bender/#set=chipLevel:0.45,chipClockX:0.5,noiseLevel:0.08,noiseColor:-0.5,ringHz:3.5,ringMix:0.35,revDecayS:6,revBoing:0.9,revMix:0.75,revDryCut:0.75)
   — Slow chip through a huge dispersive tank
 - [**contact crackle**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.9,crackleRate:55,combHz:220,combFb:1.15,combMix:0.8,revMix:0.4)
   — Dirty pot sparks ringing a screaming comb
 - [**siren chaos**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.85,oscBHz:2.2,oscXmod:900,oscStarve:0.5,ringHz:40,ringMix:0.3)
   — Cross-modulated oscillators starving themselves
-- [**acid screech**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.7,crackleRate:22,bendSlot0:6,filtHz:320,filtRes:1.15,filtDriveDb:8,filtMix:0.9,delayMs:500,dlyFb:0.55,dlyMix:0.3)
-  — Self-oscillating filter pinged by contact sparks
 - [**ground loop**](https://cmdcolin.github.io/bender/#set=chipLevel:0.55,chipStarve:0.5,revDecayS:3,revMix:0.3,brownAmt:0.5,brownCrackle:0.4,humLevel:0.8)
   — Bad power: hum, sag and a straining supply
 - [**possessed osc**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
@@ -720,8 +714,6 @@ on it — a link never presses play, so it is loaded and waiting.
   — Starved to the edge of cutoff: it gates, sputters and howls between notes
 - [**squeezed screamer**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,stompDrive:16,stompTone:0.55,stompMix:1,delayMs:320,dlyMix:0.3,mod0Src:3,mod0Dest:9,mod0Depth:0.7)
   — The bay envelope wired onto the drive, so it digs in as it gets loud
-- [**grief machine**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,chipClockX:0.55,chipStarve:0.45,delayMs:380,dlyFb:0.5,dlyMix:0.35,revDecayS:5,revMix:0.6,brownAmt:0.3,humLevel:0.25)
-  — Half clock, browning out into a long tank
 - [**séance**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipClockX:0.7,chipBendSpot:3,chipBendPot:0.25,ringHz:6,ringMix:0.3,combHz:180,combFb:0.8,combMix:0.4,delayMs:300,flutter:0.3,dlyMix:0.3,revDecayS:4,revMix:0.5)
   — A soldered DAC bias into a ringing comb, slowed right down
 - [**dying walkman**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,chipClockX:0.8,bits:7,srHz:9000,crushMix:0.5,delayMs:260,dlyFb:0.45,wowDepthMs:5,flutter:0.45,dlyToneHz:3500,dlyMix:0.5,revMix:0.35)
@@ -730,14 +722,14 @@ on it — a link never presses play, so it is loaded and waiting.
   — Envelope pins bridged — the kit fires the wrong drums
 - [**yell into it**](https://cmdcolin.github.io/bender/#set=chipLevel:0,micPatch:3,driveDb:28,distMix:0.6,delayMs:220,dlyFb:0.95,dlyMix:0.7)
   — Mic soldered into the delay feedback path — bring your mic level up
-- [**dying transport**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,delayMs:320,dlyFb:0.8,dlyToneHz:3200,tapeMotorRail:1,dlyMix:0.6,brownAmt:0.85,brownRate:3)
+- [**motor sag**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,delayMs:320,dlyFb:0.8,dlyToneHz:3200,tapeMotorRail:1,dlyMix:0.6,brownAmt:0.85,brownRate:3)
   — Tape motor wired to the same failing supply as the toy
 - [**barber pole**](https://cmdcolin.github.io/bender/#set=chipLevel:0.5,bendSlot0:7,shiftHz:3,shiftFb:0.92,shiftMix:0.85,revDecayS:4,revMix:0.35)
   — Every lap through the shifter climbs again, so nothing lands
 - [**clangour**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,bendSlot0:7,shiftHz:380,shiftMix:1,delayMs:180,dlyFb:0.45,dlyMix:0.3)
   — Shifted far enough that the harmonics stop being harmonics
-- [**touch the contacts**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
-  — Body pad on the filter, and leaning on it opens the feedback
+- [**body pad**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
+  — Skin on the pad rides the cutoff, and leaning on it opens the feedback
 - [**clock wobble**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)
   — The bay LFO dragging the chip crystal around
 - [**clap at it**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,micPatch:5,driveDb:16,distMix:0.45,revMix:0.3)
@@ -749,13 +741,13 @@ on it — a link never presses play, so it is loaded and waiting.
   — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
 - [**shed oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35)
   — Slow tape gone soft: dropouts, print-through, the pitch never settling
-- [**pinned to the oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,drumLevel:0.5,drumBpm:96,delayMs:180,dlyMix:0.25,tapeMix:1,tapeSpeed:2,tapeDrive:15,tapeBias:-0.85,tapeHiss:0.4,tapeWow:0.15,tapeFlutter:0.2)
+- [**pinned**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,drumLevel:0.5,drumBpm:96,delayMs:180,dlyMix:0.25,tapeMix:1,tapeSpeed:2,tapeDrive:15,tapeBias:-0.85,tapeHiss:0.4,tapeWow:0.15,tapeFlutter:0.2)
   — Underbiased and slammed — the machine as the distortion
-- [**the kit plays the tune**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,chipAccomp:0.35,drumLevel:0.6,drumBpm:104,delayMs:288,dlyMix:0.22,trigToKeys:1,trigKeysNote:1)
+- [**kit on keys**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,chipAccomp:0.35,drumLevel:0.6,drumBpm:104,delayMs:288,dlyMix:0.22,trigToKeys:1,trigKeysNote:1)
   — Kick soldered onto the keyboard’s gate: one hit, one step of the ROM
 - [**call and answer**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,drumBpm:92,revDecayS:2.4,revMix:0.3,trigToKeys:2,trigKeysNote:3,trigToDrum:4)
   — The snare strikes a chord, and every note it strikes claps back
-- [**every hit opens it**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,drumLevel:0.8,filtHz:180,filtRes:0.85,filtMix:1,mod0Src:9,mod0Depth:0.85)
+- [**hit gate**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,drumLevel:0.8,filtHz:180,filtRes:0.85,filtMix:1,mod0Src:9,mod0Depth:0.85)
   — A wire off the kit’s trigger line onto the cutoff — shut between hits
 
 ### Kit voices

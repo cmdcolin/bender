@@ -46,7 +46,7 @@ const BLURBS: Record<string, string> = {
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
   Crusher:
     'Bit depth and sample rate, both down far enough to fall apart, with jitter on the rate.',
-  Shaper:
+  Clipper:
     'A rack of clipping circuits, with bias, a tone control and a sub octave.',
   Comb: 'A tuned delay with feedback past unity — a pitch you can drive into oscillation.',
   'Screech filter':

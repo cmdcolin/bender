@@ -11,8 +11,8 @@ import { Tip } from './Tip'
 // Far enough that an ordinary click can wobble without scrubbing the board.
 const DRAG_SLOP = 4
 // Sideways travel for the whole trip, in pixels. A fixed distance rather than
-// the chip's own width, so a narrow chip ("velcro") and a wide one ("touch the
-// contacts") scrub at the same rate — and the pointer is captured, so the drag
+// the chip's own width, so a narrow chip ("pinned") and a wide one ("squeezed
+// screamer") scrub at the same rate — and the pointer is captured, so the drag
 // carries on past either edge.
 const DRAG_FULL = 140
 

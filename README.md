@@ -635,7 +635,7 @@ The bends that matter:
   straight into the tape.
 - **Ground hum** leaks mains fundamental and rectifier buzz in proportion to how
   hard the supply strains; the ripple wobbles the rail.
-- **Sub octave** is a flip-flop divider under the shaper that mistracks on
+- **Sub octave** is a flip-flop divider under the clipper that mistracks on
   complex input, like the vintage pedals did.
 - **The stompbox** is the dirt box at the front of the board, and each of its
   six circuits clips somewhere different in its own gain stage rather than

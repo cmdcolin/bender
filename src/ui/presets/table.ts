@@ -112,20 +112,6 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'cut the dataline',
-    blurb:
-      'A trace most of the way through: the patch arrives wrong and stays wrong',
-    patch: {
-      chipLevel: 0,
-      fmLevel: 0.8,
-      fmVoice: 3,
-      fmFeedback: 5,
-      fmDataLine: 4,
-      fmDataFault: 0,
-      fmBusCut: 0.6,
-    },
-  },
-  {
     name: 'dawn chorus',
     blurb: 'Bird calls off the effect ROM, every write of them arriving wrong',
     patch: {
@@ -163,7 +149,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'one long cricket',
+    name: 'stuck cricket',
     blurb:
       'The key-up lands next door, so the chirps never stop being one note',
     patch: {
@@ -254,20 +240,6 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'runaway howl',
-    blurb: 'Long global loop through the whole board',
-    patch: {
-      chipLevel: 0.3,
-      fbAmt: 1.5,
-      fbDelayMs: 90,
-      fbTone: -0.4,
-      dlyMix: 0.5,
-      dlyFb: 1.15,
-      delayMs: 420,
-      glitchMix: 0.3,
-    },
-  },
-  {
     name: 'haunted spring',
     blurb: 'Slow chip through a huge dispersive tank',
     patch: {
@@ -307,24 +279,6 @@ export const PRESETS: PresetDef[] = [
       oscStarve: 0.5,
       ringMix: 0.3,
       ringHz: 40,
-    },
-  },
-  {
-    name: 'acid screech',
-    blurb: 'Self-oscillating filter pinged by contact sparks',
-    patch: {
-      chipLevel: 0,
-      crackleAmp: 0.7,
-      crackleRate: 22,
-      bendSlot0: 6,
-      filtMix: 0.9,
-      filtRes: 1.15,
-      filtHz: 320,
-      filtMode: 0,
-      filtDriveDb: 8,
-      dlyMix: 0.3,
-      delayMs: 500,
-      dlyFb: 0.55,
     },
   },
   {
@@ -444,23 +398,6 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'grief machine',
-    blurb: 'Half clock, browning out into a long tank',
-    patch: {
-      chipLevel: 0.8,
-      chipClockX: 0.55,
-      chipStarve: 0.45,
-      brownAmt: 0.3,
-      humLevel: 0.25,
-      dlyMix: 0.35,
-      delayMs: 380,
-      dlyFb: 0.5,
-      revMix: 0.6,
-      revDecayS: 5,
-      revBoing: 0.5,
-    },
-  },
-  {
     name: 'séance',
     blurb: 'A soldered DAC bias into a ringing comb, slowed right down',
     patch: {
@@ -529,7 +466,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'dying transport',
+    name: 'motor sag',
     blurb: 'Tape motor wired to the same failing supply as the toy',
     patch: {
       chipLevel: 0.7,
@@ -569,8 +506,9 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'touch the contacts',
-    blurb: 'Body pad on the filter, and leaning on it opens the feedback',
+    name: 'body pad',
+    blurb:
+      'Skin on the pad rides the cutoff, and leaning on it opens the feedback',
     patch: {
       chipLevel: 0,
       crackleAmp: 0.5,
@@ -665,7 +603,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'pinned to the oxide',
+    name: 'pinned',
     blurb: 'Underbiased and slammed — the machine as the distortion',
     patch: {
       chipLevel: 0.8,
@@ -683,7 +621,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'the kit plays the tune',
+    name: 'kit on keys',
     blurb:
       'Kick soldered onto the keyboard’s gate: one hit, one step of the ROM',
     patch: {
@@ -713,7 +651,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'every hit opens it',
+    name: 'hit gate',
     blurb:
       'A wire off the kit’s trigger line onto the cutoff — shut between hits',
     patch: {

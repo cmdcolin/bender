@@ -9,7 +9,7 @@ import type { Group } from './types'
 export const BENDS = [
   { group: 'Ring mod', label: 'ring', mix: 'ringMix' },
   { group: 'Crusher', label: 'crush', mix: 'crushMix' },
-  { group: 'Shaper', label: 'dist', mix: 'distMix' },
+  { group: 'Clipper', label: 'dist', mix: 'distMix' },
   { group: 'Comb', label: 'comb', mix: 'combMix' },
   { group: 'Glitch buffer', label: 'glitch', mix: 'glitchMix' },
   { group: 'Screech filter', label: 'filt', mix: 'filtMix' },
@@ -123,7 +123,7 @@ export const BEND_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Shaper',
+    name: 'Clipper',
     place: 'Bends',
     sliders: [
       {

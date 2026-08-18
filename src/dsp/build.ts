@@ -12,7 +12,7 @@ import { Noise } from './stages/noise'
 import { RingMod } from './stages/ringmod'
 import { Sampler } from './stages/sampler'
 import { Screech } from './stages/screech'
-import { Shaper } from './stages/shaper'
+import { Clipper } from './stages/clipper'
 import { Shifter } from './stages/shifter'
 import { SpringVerb } from './stages/springVerb'
 import { Stompbox } from './stages/stompbox'
@@ -64,7 +64,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     undefined,
     new RingMod(sr),
     new Crusher(sr),
-    new Shaper(sr),
+    new Clipper(sr),
     new Comb(sr),
     new GlitchBuf(sr, next()),
     new Screech(sr),

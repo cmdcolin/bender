@@ -13,14 +13,14 @@ import { mine } from './testBoard'
 
 test('a preset moves what it names and keeps the rest of what is yours', () => {
   const before = mine()
-  const grief = PRESETS.find(p => p.name === 'grief machine')!
-  const after = applyPreset(grief, before)
+  const toy = PRESETS.find(p => p.name === 'dying toy')!
+  const after = applyPreset(toy, before)
   // it says nothing about the drums, so the pattern survives
   expect(GRID_ROWS.map(r => after[r.key])).toEqual(
     GRID_ROWS.map(r => before[r.key]),
   )
   expect(after.outGain).toBe(before.outGain)
-  expect(after.chipStarve).toBe(grief.patch.chipStarve)
+  expect(after.chipStarve).toBe(toy.patch.chipStarve)
 })
 
 // A preset is a statement about the circuit. Naming the tune as well means

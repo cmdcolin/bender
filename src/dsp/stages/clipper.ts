@@ -24,8 +24,8 @@ function shape(x: number, mode: number): number {
   }
 }
 
-export class Shaper implements Stage {
-  label = 'shaper'
+export class Clipper implements Stage {
+  label = 'clipper'
   private toneL = new OnePoleLP()
   private toneR = new OnePoleLP()
   private flipL = 1
