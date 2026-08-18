@@ -27,7 +27,10 @@ export class TapeDelay implements Stage {
   private rng: Rng
 
   constructor(private readonly sr: number) {
-    this.maxDelay = 4.5 * sr
+    // The line rounds up to a power of two, so at every rate the board runs at
+    // this is the same buffer 4.5 s asked for — the last second of it was
+    // allocated either way and simply wasn't reachable.
+    this.maxDelay = 5.3 * sr
     this.lineL = new DelayLine(this.maxDelay + 4)
     this.lineR = new DelayLine(this.maxDelay + 4)
     this.rng = mulberry32(606)

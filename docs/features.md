@@ -56,7 +56,7 @@ envelope, so a hit you can hear opens a voice nothing struck.
 | Tempo       | 10–3000 bpm                                             |
 | Swing       | 0–0.9                                                   |
 | Tune        | 0.25–4 ×                                                |
-| Decay       | 0.25–4 ×                                                |
+| Decay       | 0.25–16 ×                                               |
 | Bit depth   | 2–16 bit                                                |
 | Ladder      | 0–1                                                     |
 | Retrigger   | 0–4000 Hz                                               |
@@ -269,7 +269,7 @@ pitch as the board browns out.
 
 | control     | range        |
 | ----------- | ------------ |
-| Time        | 20–2000 ms   |
+| Time        | 20–4000 ms   |
 | Feedback    | 0–1.5        |
 | Wow         | 0–10 ms      |
 | Wow rate    | 0.1–8 Hz     |
@@ -286,7 +286,7 @@ deliberately cheap.
 
 | control | range        |
 | ------- | ------------ |
-| Decay   | 0.1–8 s      |
+| Decay   | 0.1–30 s     |
 | Tone    | 500–12000 Hz |
 | Boing   | 0–1          |
 | Mix     | 0–1          |

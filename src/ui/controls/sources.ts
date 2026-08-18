@@ -286,11 +286,11 @@ export const SOURCE_GROUPS: Group[] = [
         key: 'drumDecay',
         label: 'Decay',
         min: 0.25,
-        max: 4,
+        max: 16,
         step: 0.01,
         unit: '×',
         curve: 'log',
-        help: 'Stretches or chokes every envelope at once. Short is a click track; long lets the kick and toms run into each other.',
+        help: 'Stretches or chokes every envelope at once. Short is a click track; long lets the kick and toms run into each other. Past about eight the kick stops being a hit and becomes a note held under the pattern — and it leans on the supply for as long as it rings.',
       },
       {
         key: 'drumBits',
