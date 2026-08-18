@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { FAULT } from '../bus'
-import { buildChain } from '../build'
+import { buildBender, buildChain } from '../build'
 import { BLOCK } from '../stage'
 import { makeIo, pitchHz, renderBender, rms, SR } from '../testRender'
 import { type Cpu, EFFECTS, FM_EFFECT_NAMES } from './fmEffects'
@@ -143,7 +143,45 @@ test('an effect takes the patch registers, and gives them back', () => {
   for (let e = 1; e < FM_EFFECT_NAMES.length; e++) {
     const held = afterTheEffect({ fmEffect: e }, { fmEffect: e }, 6)
     const released = afterTheEffect({ fmEffect: e }, {}, 6)
-    expect(deviation(held, never), FM_EFFECT_NAMES[e]).toBeGreaterThan(0.5)
-    expect(deviation(released, never), FM_EFFECT_NAMES[e]).toBeLessThan(0.35)
+    const gone = deviation(held, never)
+    const back = deviation(released, never)
+    expect(gone, FM_EFFECT_NAMES[e]).toBeGreaterThan(1)
+    // Letting the button go does not land back on the untouched board exactly,
+    // and the residue is not the patch — those eight bytes come back
+    // byte-for-byte, which the next test holds. It is the fourth channel: the
+    // song spent the first half allocated across three voices instead of four,
+    // so the notes still ringing when the button comes up are on different
+    // channels than they would have been. What matters is the ratio.
+    expect(back, FM_EFFECT_NAMES[e]).toBeLessThan(0.7)
+    expect(back, FM_EFFECT_NAMES[e]).toBeLessThan(gone * 0.5)
   }
+})
+
+// The precise half of the claim above, read off the register file rather than
+// out of the audio: the driver re-selects its instrument on the way out, so
+// every one of the eight patch bytes is the one it would have held had no
+// effect ever run. It is also the regression guard — send the voice while the
+// script is still running and the effect plays in the keyboard's patch instead
+// of its own, feedback included, which is where surf and wind get their noise.
+test('the eight patch bytes come back byte-for-byte', () => {
+  const patchRegs = (during: number, after: number) => {
+    const built = buildBender(SR)
+    const base = {
+      ...DEFAULT_CONTROLS,
+      ...NOTHING_PLAYING,
+      fmVoice: 3,
+      chipTune: romIndex('scale'),
+    }
+    const first = packParams({ ...base, fmEffect: during })
+    const second = packParams({ ...base, fmEffect: after })
+    const io = makeIo()
+    const blocks = Math.ceil((6 * SR) / BLOCK)
+    const half = Math.floor(blocks / 2)
+    for (let b = 0; b < blocks; b++)
+      built.chain.process(io, b < half ? first : second)
+    return Array.from(built.fmChip.patchRegs())
+  }
+  const never = patchRegs(0, 0)
+  for (let e = 1; e < FM_EFFECT_NAMES.length; e++)
+    expect(patchRegs(e, 0), FM_EFFECT_NAMES[e]).toEqual(never)
 })

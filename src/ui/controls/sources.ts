@@ -412,7 +412,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: FM_EFFECT_NAMES,
         shy: true,
-        help: 'The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board. Each is a little program in the processor firing register writes at the synthesiser, hundreds a second on the weather, which makes an effect far and away the busiest thing the bus ever carries. A note is four writes; a bird call never stops, so a cut line lands on every one of them and the corruption never lets up while the gesture keeps its own time. It borrows the fourth channel and the patch registers to do it, so the keyboard is down to three voices and plays in the effect’s voice — until you let the button go and the processor sends the voice again.',
+        help: 'The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board. Each is a little program in the processor firing register writes at the synthesiser, hundreds a second on the weather, which makes an effect far and away the busiest thing the bus ever carries. A note is four writes; a bird call never stops, so a cut line lands on every one of them and the corruption never lets up while the gesture keeps its own time. It borrows the fourth channel and the patch registers to do it, so the keyboard is down to three voices and plays in the effect’s voice — until you let the button go and the processor sends the voice again. Which is also why *Voice*, *Bright* and *Feedback* sit still while a script runs: the driver has one instrument to select and the effect is holding it, so those knobs only land once the button comes up.',
       },
       {
         key: 'fmDataLine',

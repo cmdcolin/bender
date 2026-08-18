@@ -398,6 +398,12 @@ export class FmChip implements Stage {
     if (effect !== this.effect) this.setEffect(effect)
     const script = EFFECTS[this.effect]
 
+    // A driver with an effect running does not re-select the melody instrument
+    // behind it. The script owns the patch registers until the button comes up,
+    // and letting it go is what sends the voice again — so a knob moved while a
+    // bird is calling is a knob nothing acts on until the calling stops. Send it
+    // anyway and it lands on top of the effect's own patch, which is the whole
+    // sound of the effect: the feedback the weather is made of never arrives.
     if (
       voice !== this.sentVoice ||
       bright !== this.sentBright ||
@@ -406,7 +412,7 @@ export class FmChip implements Stage {
       this.sentVoice = voice
       this.sentBright = bright
       this.sentFeedback = fb
-      this.sendVoice(voice, bright, fb)
+      if (this.effect < 0) this.sendVoice(voice, bright, fb)
     }
 
     this.readPatch(rail.clockFactor)
@@ -483,6 +489,11 @@ export class FmChip implements Stage {
 
   private volume(n: number) {
     return atten(this.regs[REG.instVol + n]! & 0x0f, 3)
+  }
+
+  /** The eight patch bytes as they currently stand, for a test to read. */
+  patchRegs() {
+    return this.regs.slice(0, PATCH_BYTES[0]!.length)
   }
 
   panic() {
