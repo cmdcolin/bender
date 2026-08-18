@@ -1,0 +1,113 @@
+// Source for docs/img/dataflow.svg, which docs/dataflow.md embeds.
+// Regenerate with: dot -Tsvg docs/img/dataflow.dot -o docs/img/dataflow.svg
+//
+// This is NOT the signal path — img/chain-light.svg in the README is, it is
+// generated from the same code the panel draws with, and it shows which stage
+// feeds which. This one shows how a block gets rendered at all: which thread
+// each step runs on, where the two of them talk, and which steps run per sample
+// rather than per block. Those are the facts docs/optimizations.md keeps
+// referring to and the signal path cannot show.
+//
+// Deliberately the MAIN PATH only. The mic input, the sampler's buffer upload,
+// MIDI, and the panic/record control messages all enter through the same port
+// as the params and are described in dataflow.md instead.
+//
+// Palette follows ~/src/gmod/bam-js/docs/img/dataflow.dot so the family reads
+// alike, with two entries repurposed: there is no wasm here and no worker pool,
+// so orange marks the per-sample loop — which is where this instrument's budget
+// actually goes — and the thread split is a pair of clusters rather than a node
+// colour, because almost every node would otherwise be purple.
+digraph bender {
+  rankdir=TB
+  bgcolor="white"
+  nodesep=0.3
+  ranksep=0.34
+  node [shape=box style="filled,rounded" fillcolor="#f6f8fa" color="#57606a"
+        fontname="Helvetica" fontsize=10 margin="0.14,0.07"]
+  edge [color="#57606a" fontname="Helvetica" fontsize=9]
+
+  // The main thread appears twice on purpose: it is one thread, but the round
+  // trip is what the diagram is about, and drawing it as one box puts the panel
+  // underneath the audio it is driving.
+  subgraph cluster_main {
+    label="main thread — driving it"
+    labelloc="t"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=12
+    panel [label="panel · Controls"]
+    pack  [label="packParams → Float32Array"]
+    send  [label="port.postMessage" fillcolor="#dafbe1" color="#1a7f37"]
+  }
+
+  subgraph cluster_back {
+    label="main thread — the way back"
+    labelloc="t"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=12
+    recv [label="Engine.onMessage" fillcolor="#dafbe1" color="#1a7f37"]
+    draw [label="meters · scope · rail lamp"]
+    take [label="wav encode"]
+  }
+
+  subgraph cluster_audio {
+    label="audio thread — 128 frames, 2.7 ms, 375× a second"
+    labelloc="t"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=12
+    proc   [label="process(inputs, outputs)" fillcolor="#ddf4ff" color="#0969da"]
+    smooth [label="Smoother — params glide"]
+    buses  [label="ModBus · TriggerBus · ToyRail" fillcolor="#fff8c5" color="#9a6700"]
+    srcs   [label="sources sum" fillcolor="#ffd8b5" color="#bc4c00"]
+    bends  [label="6 bend slots, reordered" fillcolor="#ffd8b5" color="#bc4c00"]
+    pedals [label="stompbox → delay → spring" fillcolor="#ffd8b5" color="#bc4c00"]
+    postfx [label="brownout → tape" fillcolor="#ffd8b5" color="#bc4c00"]
+    tail   [label="dc block → softclip → limiter" fillcolor="#ffd8b5" color="#bc4c00"]
+    fb     [label="feedback comb" fillcolor="#ffd8b5" color="#bc4c00"]
+    outbuf [label="outputs[0]" fillcolor="#ddf4ff" color="#0969da"]
+    meter  [label="meter · scope · rec slab" fillcolor="#dafbe1" color="#1a7f37"]
+  }
+
+  panel -> pack
+  pack -> send
+  send -> smooth [label=" params "]
+  proc -> smooth
+  smooth -> buses
+  buses -> srcs
+  srcs -> bends -> pedals -> postfx -> tail
+  tail -> outbuf
+  tail -> fb
+  fb -> srcs [style=dashed label=" next block " constraint=false]
+  tail -> meter
+  meter -> recv [label=" every 6th block "]
+  recv -> draw
+  recv -> take [style=dashed label=" recording "]
+
+  subgraph cluster_legend {
+    label="Legend"
+    labelloc="t"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=10
+    node [shape=box style="filled,rounded" fontsize=9 margin="0.1,0.04"]
+    l1 [label="callback in / out" fillcolor="#ddf4ff" color="#0969da"]
+    l2 [label="crosses the thread boundary" fillcolor="#dafbe1" color="#1a7f37"]
+    l3 [label="shared bus, read by many stages" fillcolor="#fff8c5" color="#9a6700"]
+    l4 [label="runs per sample" fillcolor="#ffd8b5" color="#bc4c00"]
+    l1 -> l2 -> l3 -> l4 [style=invis]
+  }
+}
