@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { engine } from '../engine/engine'
-import { boardUrl } from './share'
+import { boardFromLocation, boardUrl } from './share'
 
 // The address bar as a mirror of the board: every control that is off stock is
-// in the url at all times, so a reload keeps the board and copying out of the
+// in the url's hash at all times, so a reload keeps the board and copying out of the
 // bar is as good as pressing share. This hook owns the address bar — nothing
 // else writes it.
 //
@@ -29,11 +29,23 @@ export function useBoardUrl() {
         history.replaceState(null, '', url)
       }, 250)
     }
+    // A hash someone pasted or stepped back onto is a board arriving, and the
+    // address bar is no longer a place a page load happens: changing it fires
+    // this and nothing else. Without it the tab keeps the board it had and the
+    // next write paints over what was pasted. replaceState does not fire the
+    // event, so our own writes cannot come back round.
+    const read = () => {
+      const board = boardFromLocation()
+      if (board) engine.patch(board)
+    }
+
     write()
     const off = engine.controls.subscribe(write)
+    window.addEventListener('hashchange', read)
     return () => {
       off()
       clearTimeout(id)
+      window.removeEventListener('hashchange', read)
     }
   }, [])
 }

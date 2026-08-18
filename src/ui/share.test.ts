@@ -3,7 +3,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { sliderFor } from './controls'
 import {
   boardFromUrl,
-  boardQuery,
+  boardHash,
   decodeControls,
   encodeControls,
 } from './share'
@@ -73,27 +73,49 @@ test('junk decodes to nothing rather than to NaN', () => {
   expect(decodeControls('dlyFb:abc,:5,filtRes:')).toEqual({})
 })
 
-test('the query carries the board and leaves the rest of the url alone', () => {
-  const q = boardQuery('?debug=1', { ...DEFAULT_CONTROLS, dlyFb: 1.4 })
-  expect(new URLSearchParams(q).get('set')).toBe('dlyFb:1.4')
-  expect(new URLSearchParams(q).get('debug')).toBe('1')
+test('the hash carries the board and leaves the rest of the hash alone', () => {
+  const h = boardHash('#debug=1', { ...DEFAULT_CONTROLS, dlyFb: 1.4 })
+  expect(new URLSearchParams(h).get('set')).toBe('dlyFb:1.4')
+  expect(new URLSearchParams(h).get('debug')).toBe('1')
 })
 
 test('a stock board drops the param rather than writing an empty one', () => {
-  expect(boardQuery('?set=dlyFb:1.4', { ...DEFAULT_CONTROLS })).toBe('')
+  expect(boardHash('#set=dlyFb:1.4', { ...DEFAULT_CONTROLS })).toBe('')
 })
 
-test('a link opens the board it names, from the query or the old hash', () => {
-  expect(boardFromUrl('?set=filtRes:1.2', '')).toEqual({ filtRes: 1.2 })
+test('the separators stay one character each in the bar', () => {
+  const h = boardHash('', { ...DEFAULT_CONTROLS, dlyFb: 1.4, filtRes: 1.2 })
+  expect(h).toBe('set=filtRes:1.2,dlyFb:1.4')
+  expect(boardFromUrl('', `#${h}`)).toEqual({ filtRes: 1.2, dlyFb: 1.4 })
+  // and an escaped link from before still reads
+  expect(boardFromUrl('', '#set=filtRes%3A1.2%2CdlyFb%3A1.4')).toEqual({
+    filtRes: 1.2,
+    dlyFb: 1.4,
+  })
+})
+
+test('writing a board clears the name it rode under before', () => {
+  const h = boardHash('#b=filtRes:1.2', { ...DEFAULT_CONTROLS, dlyFb: 1.4 })
+  expect(new URLSearchParams(h).get('b')).toBeNull()
+  expect(new URLSearchParams(h).get('set')).toBe('dlyFb:1.4')
+})
+
+test('a link opens the board it names, from the hash or an older url', () => {
+  expect(boardFromUrl('', '#set=filtRes:1.2')).toEqual({ filtRes: 1.2 })
   expect(boardFromUrl('', '#b=filtRes:1.2')).toEqual({ filtRes: 1.2 })
-  expect(boardFromUrl('?set=filtRes:1.2', '#b=dlyFb:1.4')).toEqual({
+  expect(boardFromUrl('?set=filtRes:1.2', '')).toEqual({ filtRes: 1.2 })
+  expect(boardFromUrl('?set=dlyFb:1.4', '#set=filtRes:1.2')).toEqual({
+    filtRes: 1.2,
+  })
+  expect(boardFromUrl('', '#set=filtRes:1.2&b=dlyFb:1.4')).toEqual({
     filtRes: 1.2,
   })
 })
 
 test('a url naming no board is nothing to patch', () => {
   expect(boardFromUrl('', '')).toBeNull()
-  expect(boardFromUrl('?set=', '')).toBeNull()
-  expect(boardFromUrl('?set=retiredKnob:3', '')).toBeNull()
+  expect(boardFromUrl('', '#set=')).toBeNull()
+  expect(boardFromUrl('', '#set=retiredKnob:3')).toBeNull()
   expect(boardFromUrl('', '#somethingelse')).toBeNull()
+  expect(boardFromUrl('?set=', '')).toBeNull()
 })

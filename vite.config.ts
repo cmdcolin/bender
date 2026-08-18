@@ -21,5 +21,10 @@ export default defineConfig({
   },
   // Worktrees carry their own copy of the suite; running them here would report
   // another branch's work in progress as this branch's failure.
-  test: { exclude: [...defaultExclude, '**/.claude/**'] },
+  // The dsp tests are cpu-bound and run beside twenty-nine other files, so the
+  // stock five seconds fails them for waiting rather than for being wrong.
+  test: {
+    exclude: [...defaultExclude, '**/.claude/**'],
+    testTimeout: 20000,
+  },
 })
