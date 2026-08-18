@@ -1,5 +1,11 @@
 import type { Controls } from '../../controls'
-import { ROM_NAMES, ROMS } from '../../dsp/stages/roms'
+import { FAULT_NAMES, lineNames } from '../../dsp/bus'
+import {
+  ROM_ADDR_LINES,
+  ROM_DATA_LINES,
+  ROM_NAMES,
+  ROMS,
+} from '../../dsp/stages/roms'
 import { GRID_ROWS, VOICE_LABELS } from '../../drums'
 import type { Group, SliderDef } from './types'
 
@@ -136,6 +142,57 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'Whether the clip lands on the timing pin instead of the supply — and it is the difference between a sag and a dive. Starving the rail is worth two thirds of an octave before the chip stops running at all; a capacitor hung on the oscillator divides the clock instead, and division has no such ceiling. Four octaves at the top, travelling at whatever rate the Reservoir charges, with the whole timebase going along: tune, tempo and envelopes together, the melody arriving somewhere under the bottom of its own keyboard. Needs Clip chatter to have something to land with.',
+      },
+      {
+        key: 'chipDataLine',
+        label: 'Data line',
+        min: 0,
+        max: ROM_DATA_LINES,
+        step: 1,
+        unit: '',
+        choices: lineNames('D', ROM_DATA_LINES),
+        shy: true,
+        help: 'Which wire between the ROM and the divider the knife found. The chip stores a note code rather than a pitch, so the low lines are small intervals and the high ones are octaves — D0 is a semitone, D2 a major third, D5 the better part of three octaves. Nothing about it is random: one wire wrong is the same wrong note every time that step comes round, so the song keeps its rhythm and its shape and becomes a different song.',
+      },
+      {
+        key: 'chipDataFault',
+        label: 'Data fault',
+        min: 0,
+        max: FAULT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FAULT_NAMES,
+        help: 'What happened to the wire. Cut leaves the pin floating, so the bit goes stale and carries whatever the word before had in it. To ground takes that bit out of every note the chip reads. To +V puts it into every note — including the ones that were not notes, because a rest is only a code, and a code with a bit forced into it is a pitch. Bridged solders the line to its neighbour so the two can no longer disagree, and the melody comes out in clumps.',
+      },
+      {
+        key: 'chipAddrLine',
+        label: 'Address line',
+        min: 0,
+        max: ROM_ADDR_LINES,
+        step: 1,
+        unit: '',
+        choices: lineNames('A', ROM_ADDR_LINES),
+        shy: true,
+        help: 'Which wire between the program counter and the ROM the knife found. The counter still counts and the tempo never moves; the ROM is simply handed the wrong step. A0 plays the tune in swapped pairs, A3 held low locks it into the bottom eight steps for good, and a line this ROM never drives does nothing at all — a sixteen-step song has no A4 for you to find.',
+      },
+      {
+        key: 'chipAddrFault',
+        label: 'Address fault',
+        min: 0,
+        max: FAULT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FAULT_NAMES,
+        help: 'The same four things, on the address side. Cut leaves the step stale, so the tune stutters on notes it has already played; ground and +V nail that address bit for every read, which folds the song into half of itself; bridged ties two addresses together and the melody arrives in clumps of two and four.',
+      },
+      {
+        key: 'chipBusCut',
+        label: 'Cut depth',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the pin floats for good: the bit holds whatever the last word left on it and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the bit is right on some reads and a word old on others, and the melody flickers between two versions of itself.',
       },
       {
         key: 'chipBendSpot',

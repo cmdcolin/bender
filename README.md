@@ -233,6 +233,38 @@ The bends that matter:
   chip out.
 - **Bend spot + pot** solders a virtual pot onto the die: clock feedback,
   program counter (melody scrambling), DAC bias, or the gate line.
+- **Data line + Address line** put a knife through the two buses between the ROM
+  and the rest of the chip. Every other bend here attacks the analogue — the
+  supply, the clock, the output stage. A bus fault leaves all of that working
+  perfectly and changes what the chip is being _told_: the divider still
+  divides, the counter still counts, the envelope still falls, and the note that
+  arrives is simply not the note the ROM holds. It is the same wrong note every
+  time that step comes round, which is the whole difference worth having. The
+  counter bend above wanders; a cut bus is a different song, in time, for as
+  long as you leave it.
+
+  The chip stores a note code rather than a pitch, so the data lines are
+  intervals — D0 a semitone, D2 a major third, D5 the better part of three
+  octaves. Codes 0 and 1 are the two things that are not notes, which is why a
+  data line held high fills a song's rests in: a rest is only a code, and a code
+  with a bit forced into it is a pitch. The address lines carry structure
+  instead. A0 plays the tune in swapped pairs, A3 held low locks it into the
+  bottom eight steps for good, and a line this ROM never drives does nothing at
+  all — a sixteen-step song has no A4 for you to find, which is the honest
+  answer rather than a special case anybody wrote.
+
+  Four things happen to a wire. **To ground** and **to +V** nail that bit for
+  every read. **Bridged** solders the line to its neighbour so the two can no
+  longer disagree, and whichever driver pulls low wins — the melody comes out in
+  clumps. **Cut** parts the trace and leaves the pin floating, and a CMOS input
+  with nothing driving it keeps the charge the last word left on it: the bit
+  goes stale rather than stuck, frozen on whatever the bus happened to be
+  carrying at the moment the knife went through. **Cut depth** is how far
+  through it went. All the way and the bit stays where it froze; back it off and
+  the trace still carries some of the time, so the bit is right on some reads
+  and a word old on others and the melody flickers between two versions of
+  itself.
+
 - **Retrigger** hammers the drum machine's trigger line; past ~40 Hz the
   retrigger period becomes the pitch and the kit screams.
 - **Cross-patch** bridges two drum voices' envelope pins, so each amplifier

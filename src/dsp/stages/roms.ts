@@ -183,3 +183,15 @@ export function romIndex(name: string): number {
   if (i < 0) throw new Error(`no ROM named ${name}`)
   return i
 }
+
+// The step as a word on the data bus, which is what a melody chip actually
+// stores: a note code, not a signed semitone. Codes 0 and 1 are the two things
+// that are not notes and every code above them is a pitch, so the low bits are
+// small intervals and the high ones are octaves. That encoding is the whole
+// reason a cut data line is musical rather than random — one wire wrong is one
+// interval wrong, the same interval every time that step comes round, and a
+// wire stuck high turns the rests into notes because a rest is only a code.
+export const ROM_DATA_LINES = 6
+export const ROM_ADDR_LINES = 5
+export const encodeStep = (step: number) => step + 2
+export const decodeStep = (word: number) => word - 2

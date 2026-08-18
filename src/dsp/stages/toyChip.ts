@@ -9,7 +9,15 @@ import { Burst } from '../util/burst'
 import { Drunk } from '../util/drift'
 import { octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
-import { ROMS, type Rom } from './roms'
+import { Bus } from '../bus'
+import {
+  decodeStep,
+  encodeStep,
+  ROM_ADDR_LINES,
+  ROM_DATA_LINES,
+  ROMS,
+  type Rom,
+} from './roms'
 
 const BASE_HZ = 220
 const ENV_FLOOR = 0.003
@@ -145,6 +153,17 @@ export class ToyChip implements Stage {
   // chord envelopes run whether or not anyone can hear them.
   private accompLevel = 0
   private rng: Rng
+  // The two buses between the ROM and the rest of the chip, and where the knife
+  // is on them this block. Held here rather than passed down because every read
+  // of the ROM has to go through the same fault — a sequencer that saw one note
+  // and a divider that got another would be two chips.
+  private dataBus: Bus
+  private addrBus: Bus
+  private dataLine = -1
+  private dataFault = 0
+  private addrLine = -1
+  private addrFault = 0
+  private busCut = 1
   // The crystal's own wander, and the counter's habit of slipping in runs
   // rather than at a steady rate.
   private drift = new Drunk()
@@ -158,6 +177,8 @@ export class ToyChip implements Stage {
   ) {
     this.rng = mulberry32(seed)
     this.counterFault = new Burst(sr, 1.1)
+    this.dataBus = new Bus(ROM_DATA_LINES, seed ^ 0xda7a)
+    this.addrBus = new Bus(ROM_ADDR_LINES, seed ^ 0xadd4)
   }
 
   // The toy's own keys are switches: they pass no gain and strike at full. A
@@ -227,6 +248,23 @@ export class ToyChip implements Stage {
     return p[IDX.chipLevel]! > 0 || p[IDX.drumLevel]! > 0
   }
 
+  // The only way anything here reads the ROM. The counter puts an address on
+  // one bus and a note code comes back on the other, so a fault on either
+  // reaches the melody, the chord the accompaniment harmonises to and whatever
+  // a drum hit clocks out of the tune alike.
+  private readRom(tune: number[], pos: number): number {
+    const addr =
+      this.addrBus.read(pos, this.addrLine, this.addrFault, this.busCut) %
+      tune.length
+    const word = this.dataBus.read(
+      encodeStep(tune[addr]!),
+      this.dataLine,
+      this.dataFault,
+      this.busCut,
+    )
+    return decodeStep(word)
+  }
+
   // Pressing play drops the needle on step 0. Coming back from a brownout is
   // not that tidy: the program counter holds whatever junk was in the latch when
   // the rail went, so the tune comes back from the middle of itself as often as
@@ -236,7 +274,7 @@ export class ToyChip implements Stage {
     this.pos =
       junk && this.rng() < 0.6 ? Math.floor(this.rng() * tune.length) : 0
     this.stepClock = junk ? this.rng() : 0
-    const step = tune[this.pos]!
+    const step = this.readRom(tune, this.pos)
     this.note = step >= 0 ? step : -1
     this.env = step >= 0 ? 1 : 0
     this.chord = this.triads[0]!
@@ -273,7 +311,7 @@ export class ToyChip implements Stage {
       // pattern plays the melody and the kick decides where the beat is.
       case 1: {
         this.pos = (this.pos + 1) % tune.length
-        const step = tune[this.pos]!
+        const step = this.readRom(tune, this.pos)
         if (step >= 0) {
           this.note = step
           this.harmonize(step)
@@ -285,7 +323,7 @@ export class ToyChip implements Stage {
         return
       }
       case 2: {
-        const step = tune[Math.floor(this.rng() * tune.length)]!
+        const step = this.readRom(tune, Math.floor(this.rng() * tune.length))
         if (step >= 0) this.strike(step, gain)
         return
       }
@@ -306,6 +344,13 @@ export class ToyChip implements Stage {
     const battery = p[IDX.chipBattery]!
     const spot = Math.round(p[IDX.chipBendSpot]!)
     const pot = p[IDX.chipBendPot]!
+    // Choice 0 on either selector is a bus nobody has been at, so the lines
+    // count from -1 and every read below is a straight one.
+    this.dataLine = Math.round(p[IDX.chipDataLine]!) - 1
+    this.dataFault = Math.round(p[IDX.chipDataFault]!)
+    this.addrLine = Math.round(p[IDX.chipAddrLine]!) - 1
+    this.addrFault = Math.round(p[IDX.chipAddrFault]!)
+    this.busCut = p[IDX.chipBusCut]!
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
@@ -400,7 +445,7 @@ export class ToyChip implements Stage {
         }
         this.pos = next % tune.length
         // -2 holds whatever is ringing; -1 drops the voice; anything else strikes
-        const step = tune[this.pos]!
+        const step = this.readRom(tune, this.pos)
         if (step >= 0) {
           this.note = step
           this.env = 1
@@ -545,6 +590,8 @@ export class ToyChip implements Stage {
   }
 
   panic() {
+    this.dataBus.reset()
+    this.addrBus.reset()
     this.note = -1
     this.phase = 0
     this.env = 0
