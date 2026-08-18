@@ -7,7 +7,7 @@ The [README](../README.md) explains how the interesting parts work and why they
 behave as they do; this is the list, for finding out whether something exists
 and what it is called.
 
-172 controls in 26 groups, seven bends competing for six slots, 18 ROM tunes, 49
+177 controls in 26 groups, seven bends competing for six slots, 18 ROM tunes, 49
 presets, and one supply rail that most of it is plugged into.
 
 ## Sources
@@ -49,21 +49,29 @@ the supply underneath it.
 A step grid with a length per row, so a five-step hat runs against a
 sixteen-step kick until they line back up. _Retrigger_ hammers the current step
 at audio rate; _Cross-patch_ leans one voice’s amplifier onto another’s
-envelope, so a hit you can hear opens a voice nothing struck.
+envelope, so a hit you can hear opens a voice nothing struck. _Address line_ and
+_Data line_ put a knife through the wires between the step counter and the
+pattern memory: the counter goes on counting and the grid goes on chasing it,
+and the machine plays somebody else’s pattern.
 
-| control     | range                                                   |
-| ----------- | ------------------------------------------------------- |
-| Level       | 0–1                                                     |
-| Tempo       | 10–3000 bpm                                             |
-| Swing       | 0–0.9                                                   |
-| Tune        | 0.125–8 ×                                               |
-| Decay       | 0.25–16 ×                                               |
-| Bit depth   | 2–16 bit                                                |
-| Ladder      | 0–1                                                     |
-| Part grade  | 0–0.6                                                   |
-| Retrigger   | 0–4000 Hz                                               |
-| Cross-patch | off, kick/snare, snare/hat, kick/hat, rotate, whole kit |
-| Cross bleed | 0–1                                                     |
+| control       | range                                                   |
+| ------------- | ------------------------------------------------------- |
+| Level         | 0–1                                                     |
+| Tempo         | 10–3000 bpm                                             |
+| Swing         | 0–0.9                                                   |
+| Tune          | 0.125–8 ×                                               |
+| Decay         | 0.25–16 ×                                               |
+| Bit depth     | 2–16 bit                                                |
+| Ladder        | 0–1                                                     |
+| Part grade    | 0–0.6                                                   |
+| Retrigger     | 0–4000 Hz                                               |
+| Cross-patch   | off, kick/snare, snare/hat, kick/hat, rotate, whole kit |
+| Cross bleed   | 0–1                                                     |
+| Address line  | off, A0, A1, A2, A3                                     |
+| Address fault | cut, to ground, to +V, bridged                          |
+| Data line     | off, D0, D1, D2, D3, D4, D5                             |
+| Data fault    | cut, to ground, to +V, bridged                          |
+| Cut depth     | 0–1                                                     |
 
 ### FM chip
 

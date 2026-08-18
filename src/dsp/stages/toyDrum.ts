@@ -1,5 +1,13 @@
-import { ACCENT_GAIN, asLen, DRUM_VOICES, GRID_ROWS, STEPS } from '../../drums'
+import {
+  ACCENT_GAIN,
+  ADDR_LINES,
+  asLen,
+  DRUM_VOICES,
+  GRID_ROWS,
+  STEPS,
+} from '../../drums'
 import { IDX } from '../../engine/params'
+import { Bus } from '../bus'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
@@ -100,6 +108,16 @@ export class ToyDrum implements Stage {
   private lastReboot = 0
   private rng: Rng
   private micTrig: Transient
+  // The wires between the step counter and the pattern memory, and what a knife
+  // has done to one of them. Read once a block: which trace you cut is not a
+  // thing that moves inside one.
+  private addrBus: Bus
+  private dataBus: Bus
+  private addrLine = -1
+  private addrFault = 0
+  private dataLine = -1
+  private dataFault = 0
+  private busCut = 1
   // What this board's resistors came out at, in counts of the rung they sit on.
   // Drawn once: the knob says how bad the ladder is, not which parts are wrong.
   private trim = new Float32Array(LADDER_BITS)
@@ -123,6 +141,8 @@ export class ToyDrum implements Stage {
   ) {
     this.rng = mulberry32(seed)
     this.micTrig = new Transient(sr)
+    this.addrBus = new Bus(ADDR_LINES, seed ^ 0xadd4)
+    this.dataBus = new Bus(N_VOICES, seed ^ 0xda7a)
     // Off its own stream: the resistors were soldered on before the kit made a
     // sound, and drawing them out of the noise source would move every hit.
     const parts = mulberry32(seed ^ 0x1adde4)
@@ -166,22 +186,41 @@ export class ToyDrum implements Stage {
     this.struckGain = Math.max(this.struckGain, gain)
   }
 
+  // Which cell of the pattern memory answers for a row this tick. The counter
+  // is one thing and the wires out of it are another: a fault here leaves the
+  // counting alone — the grid's playhead goes on chasing the step it always did
+  // — and a different cell comes back. A row's length lives in the counter, so
+  // an address that has been leaned on reaches cells a five-step row would
+  // never have played, and the memory has sixteen of them whatever the row says.
+  private stepAt(tick: number, row: number): number {
+    const step = tick % this.lens[row]!
+    return (
+      this.addrBus.read(step, this.addrLine, this.addrFault, this.busCut) %
+      STEPS
+    )
+  }
+
   // Which voices this tick names. Each row reads its own column, so a row five
   // steps long is round again while the kick is still in the first bar — the
   // pattern drifts against itself for as long as the two lengths take to line
   // back up, which on a five against sixteen is eighty steps.
+  //
+  // The word that comes back is one bit a voice, and it is the trigger line
+  // rather than an amplifier: a data line held high strikes the voice for real,
+  // stamping the bus and lighting the row, where the cross-patch only lends an
+  // envelope. The accent rides a line of its own and is not in this word.
   private bitsAt(p: Float32Array, tick: number): number {
     let bits = 0
     for (let v = 0; v < N_VOICES; v++) {
-      const step = tick % this.lens[v]!
+      const step = this.stepAt(tick, v)
       if ((Math.round(p[VOICE_PARAM[v]!]!) >> (STEPS - 1 - step)) & 1)
         bits |= 1 << v
     }
-    return bits
+    return this.dataBus.read(bits, this.dataLine, this.dataFault, this.busCut)
   }
 
   private accentAt(p: Float32Array, tick: number): boolean {
-    const step = tick % this.lens[ACCENT_ROW]!
+    const step = this.stepAt(tick, ACCENT_ROW)
     return ((Math.round(p[IDX.drumAccent]!) >> (STEPS - 1 - step)) & 1) === 1
   }
 
@@ -237,6 +276,11 @@ export class ToyDrum implements Stage {
     const q = Math.pow(2, bits - 1)
     const ladder = p[IDX.drumLadder]!
     const ladderTol = p[IDX.drumLadderTol]!
+    this.addrLine = Math.round(p[IDX.drumAddrLine]!) - 1
+    this.addrFault = Math.round(p[IDX.drumAddrFault]!)
+    this.dataLine = Math.round(p[IDX.drumDataLine]!) - 1
+    this.dataFault = Math.round(p[IDX.drumDataFault]!)
+    this.busCut = p[IDX.drumBusCut]!
 
     // Every row's length, read once a block: a length that moved mid-block would
     // move a playhead the panel has already drawn.
@@ -447,5 +491,7 @@ export class ToyDrum implements Stage {
     this.clapSlow = 0
     this.clapsLeft = 0
     this.micTrig.reset()
+    this.addrBus.reset()
+    this.dataBus.reset()
   }
 }

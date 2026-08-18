@@ -48,6 +48,11 @@ export const DEFAULT_CONTROLS = {
   drumRetrigHz: 0,
   drumCross: 0,
   drumCrossAmt: 0.5,
+  drumAddrLine: 0,
+  drumAddrFault: 0,
+  drumDataLine: 0,
+  drumDataFault: 0,
+  drumBusCut: 1,
 
   // The pattern: one sixteen-bit mask per voice, step 1 in the high bit so the
   // literal reads left to right like the grid. This is the 'rock' ROM.

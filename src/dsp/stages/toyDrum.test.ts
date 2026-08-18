@@ -425,3 +425,89 @@ test('a snare and a hat on the same step are one noise source, not two', () => {
     1.4 * (energy(crack(hat)) + energy(crack(snare))),
   )
 })
+
+// The wires between the step counter and the pattern memory. Nothing here is a
+// malfunction: the counter counts, the memory answers, and what comes back is
+// the cell the wires named rather than the cell the counter did.
+const FAULT_GROUND = 1
+const FAULT_SUPPLY = 2
+const FAULT_BRIDGE = 3
+
+test('an address line held low plays every step twice', () => {
+  // Hats on the even steps, a hit every other tick. A0 stuck low files every
+  // odd step on top of the even one below it, so the odd ticks fetch the even
+  // steps' hats too and the row comes out at double the rate.
+  const hats: Partial<Controls> = {
+    drumHat: 0b1010_1010_1010_1010,
+    drumBpm: 60,
+    drumDecay: 0.3,
+  }
+  const straight = onsets(soloVoice(hats, 4.2))
+  const doubled = onsets(
+    soloVoice({ ...hats, drumAddrLine: 1, drumAddrFault: FAULT_GROUND }, 4.2),
+  )
+  expect(straight).toHaveLength(8)
+  expect(doubled).toHaveLength(16)
+})
+
+test('an address line held high plays the back half of the bar and never the front', () => {
+  // Kick in the front half, cowbell in the back. A3 stuck high adds eight to
+  // every step, so the front half is unreachable and the back half plays twice.
+  const bar: Partial<Controls> = {
+    drumKick: 0b1111_1111_0000_0000,
+    drumBell: 0b0000_0000_1111_1111,
+    drumBpm: 240,
+  }
+  const stock = soloVoice(bar, 2)
+  const bent = soloVoice(
+    { ...bar, drumAddrLine: 4, drumAddrFault: FAULT_SUPPLY },
+    2,
+  )
+  expect(bin(bent, 540)).toBeGreaterThan(1.6 * bin(stock, 540))
+  expect(lowEnergy(bent)).toBeLessThan(0.2 * lowEnergy(stock))
+})
+
+// The data side is the trigger line itself, which is what separates it from the
+// cross-patch: a bit forced high strikes the voice rather than lending it an
+// envelope, so the row lights and everything soldered onto the trigger bus
+// hears about it.
+test('a data line held high strikes a voice the grid has nothing on', () => {
+  const empty: Partial<Controls> = { drumBpm: 60, drumDecay: 0.3 }
+  const forced = (line: number) =>
+    soloVoice(
+      { ...empty, drumDataLine: line, drumDataFault: FAULT_SUPPLY },
+      2.05,
+    )
+  const bell = forced(6)
+  const kick = forced(1)
+  expect(rms(soloVoice(empty, 2.05))).toBe(0)
+  expect(onsets(bell)).toHaveLength(8)
+  expect(onsets(kick)).toHaveLength(8)
+  // One wire each, and a different voice on the far end of it.
+  expect(lowEnergy(kick)).toBeGreaterThan(20 * lowEnergy(bell))
+})
+
+test('a bridged pair of data lines comes out only where both rows agree', () => {
+  // Kick on all four beats, snare on two of them. D0 bridged to D1 pulls each
+  // down to what they have in common, so the kick loses the beats the snare has
+  // nothing on.
+  const pair: Partial<Controls> = {
+    drumKick: 0b1000_1000_1000_1000,
+    drumSnare: 0b0000_1000_0000_1000,
+    drumBpm: 240,
+    drumDecay: 0.3,
+  }
+  const stock = onsets(soloVoice(pair, 2.05))
+  const bridged = onsets(
+    soloVoice({ ...pair, drumDataLine: 1, drumDataFault: FAULT_BRIDGE }, 2.05),
+  )
+  expect(stock).toHaveLength(8)
+  expect(bridged).toHaveLength(4)
+})
+
+test('a bus nobody has cut is the kit it always was', () => {
+  const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
+  expect(
+    render({ ...look, drumAddrFault: 3, drumDataFault: 2, drumBusCut: 0.4 }, 1),
+  ).toEqual(render(look, 1))
+})

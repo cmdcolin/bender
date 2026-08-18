@@ -53,6 +53,11 @@ export const PARAM_DEFS = [
   ['drumRetrigHz', 'slew'],
   ['drumCross', 'step'],
   ['drumCrossAmt', 'slew'],
+  ['drumAddrLine', 'step'],
+  ['drumAddrFault', 'step'],
+  ['drumDataLine', 'step'],
+  ['drumDataFault', 'step'],
+  ['drumBusCut', 'slew'],
 
   ['drumKick', 'step'],
   ['drumSnare', 'step'],

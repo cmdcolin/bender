@@ -8,7 +8,7 @@ import {
   ROM_NAMES,
   ROMS,
 } from '../../dsp/stages/roms'
-import { GRID_ROWS, VOICE_LABELS } from '../../drums'
+import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
 import type { Group, SliderDef } from './types'
 
 // The toy has no sync input, so locking it to the kit means picking the crystal
@@ -366,6 +366,57 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'How far each amplifier leans across. All the way over is a full swap — the kick fires on snare steps, the noise swells on kicks, and a hat tick puts a pitch blip through the kick.',
+      },
+      {
+        key: 'drumAddrLine',
+        label: 'Address line',
+        min: 0,
+        max: ADDR_LINES,
+        step: 1,
+        unit: '',
+        choices: lineNames('A', ADDR_LINES),
+        shy: true,
+        help: 'Which of the four wires carrying a step number from the counter to the pattern memory the knife found. Nothing malfunctions: the counter still counts, the playhead on the grid still chases the step it always did, and a different cell of memory answers. A0 held low plays every step twice; A3 held high hands you the back half of the bar and never the front. A row’s length is the counter’s business rather than the memory’s, so a faulted address reaches cells a five-step row would never have played.',
+      },
+      {
+        key: 'drumAddrFault',
+        label: 'Address fault',
+        min: 0,
+        max: FAULT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FAULT_NAMES,
+        help: 'The same four things a knife does to any trace, on the side that chooses the step. Cut leaves the wire floating and the bit goes stale, carrying whatever the fetch before left on it, so the pattern flickers between two versions of itself. Bridged solders it to its neighbour and the steps collapse onto a lattice.',
+      },
+      {
+        key: 'drumDataLine',
+        label: 'Data line',
+        min: 0,
+        max: N_DRUM_VOICES,
+        step: 1,
+        unit: '',
+        choices: lineNames('D', N_DRUM_VOICES),
+        shy: true,
+        help: 'Which of the six wires carrying the word back the knife found — one wire a voice, in the order of the rows. To +V is that voice on every step the machine fetches, which is the machine-gun; to ground is a row you can see and cannot hear. This is the trigger line rather than an amplifier, so a bit forced high strikes the voice for real: it lights the row, stamps the trigger bus, and reaches everything soldered onto it — the sampler, the keyboard, the FM chip. The cross-patch beside it only ever lent an envelope.',
+      },
+      {
+        key: 'drumDataFault',
+        label: 'Data fault',
+        min: 0,
+        max: FAULT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FAULT_NAMES,
+        help: 'The same four, on the side carrying the word. Bridged is the one worth knowing here: two voices soldered to each other come out only where both rows agree, so a busy pattern thins to what the pair have in common.',
+      },
+      {
+        key: 'drumBusCut',
+        label: 'Cut depth',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the wire holds whatever was last on it. Back it off and it still conducts sometimes: most fetches land, the occasional one does not, and the pattern comes apart a step at a time rather than all at once.',
       },
     ],
   },

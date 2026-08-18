@@ -11,6 +11,11 @@ import type { ControlKey } from './controls'
 
 export const STEPS = 16
 
+// The wires between the step counter and the pattern memory: four to carry a
+// step number, and one per voice to carry the word that comes back. Which is
+// what there is to put a knife through — see the bus bend in toyDrum.
+export const ADDR_LINES = 4
+
 export const DRUM_VOICES = [
   {
     key: 'drumKick',

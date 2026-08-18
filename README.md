@@ -145,6 +145,32 @@ nothing else would say the pattern isn't being kept. It is never on when you
 arrive, and every hit is one step in the undo walk — a hand that has just played
 the wrong drum wants that hit back and nothing else.
 
+### Cut the pattern bus
+
+The wires between the step counter and the pattern memory take the same four
+faults as the toy's ROM bus and the FM chip's register file, and the kit is the
+one machine here whose memory holds something you wrote. Nothing malfunctions
+when one of them goes: the counter counts, the memory answers, and the cell that
+answers is the one the wires named rather than the one the counter did.
+
+**Address line** picks which of the four the knife found. A0 held low files
+every odd step on top of the even one below it, so the bar plays at half its
+resolution twice over; A3 held high hands you the back half and never the front.
+A row's length lives in the counter rather than in the memory, so an address
+that has been leaned on reaches cells a five-step row could never have played.
+The playhead on the grid goes on chasing the step it always did — the counter is
+the undamaged part, and what it drives is the display.
+
+**Data line** is the other side, and it is the trigger line itself rather than
+an amplifier, which is what separates it from the cross-patch. One wire a voice,
+in the order of the rows: forced high, that voice fires on every step the
+machine fetches, and it fires for real — the row lights, the trigger bus is
+stamped, and the sampler, the FM chip and the keyboard all hear about a hit
+nobody wrote. Forced low, it is a row you can see and cannot hear. Bridge a pair
+and the two come out only where both rows agree, which thins a busy pattern to
+what they have in common. The cross-patch lends an envelope; this strikes the
+drum.
+
 ## The other chip
 
 The board has a second synthesiser on it, and it is not a divider. Two operators
