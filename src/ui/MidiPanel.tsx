@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useStoreValue } from './ControlsContext'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
+import { engine } from '../engine/engine'
 import { AUTOMAP_KEYS, DEVICE_PROFILES, midi, type DeviceProfile } from './midi'
 import styles from './MidiPanel.module.css'
 
@@ -63,6 +64,58 @@ function Bindings() {
       <button className={styles.danger} onClick={() => midi.clearAll()}>
         clear all {bound.length} bindings
       </button>
+    </>
+  )
+}
+
+// What the wire is actually carrying. A controller that does nothing is either
+// silent or misread, and only the raw bytes tell those apart.
+function Wire() {
+  const traffic = useStoreValue(midi.traffic)
+  const debug = useStoreValue(midi.debug)
+  const notes = useStoreValue(midi.notes)
+  const running = useStoreValue(engine.running)
+  return (
+    <>
+      {/* Notes reach the chip through the audio engine, and a suspended engine
+          drops them without a sound or a word. Nothing else on the board says
+          so, because everything else is reached by a click that would have
+          started it. */}
+      {notes && !running ? (
+        <div className={styles.waiting}>
+          the audio engine is asleep — MIDI alone can’t wake it. Click the page
+          once, or press a key, and the notes will sound
+        </div>
+      ) : null}
+      {/* This toggle starts on, so the press that looks like switching it on is
+          the press that switched it off — and the keybed goes quiet with the
+          wire still visibly busy. */}
+      {!notes && traffic?.text.startsWith('note') === true ? (
+        <div className={styles.waiting}>
+          keys are arriving but “notes play the keys” is off — it starts on, so
+          a press turns it off
+        </div>
+      ) : null}
+      <div className={styles.row}>
+        <span className={traffic === null ? styles.quiet : styles.wire}>
+          {traffic === null
+            ? 'nothing on the wire yet — move a knob or press a key'
+            : `${traffic.bytes.map(b => b.toString(16).padStart(2, '0')).join(' ')} · ${traffic.text}`}
+        </span>
+        {traffic === null ? null : (
+          <span className={styles.quiet}>
+            {traffic.count} msg{traffic.count === 1 ? '' : 's'}
+            {traffic.port === '' ? '' : ` · ${traffic.port}`}
+          </span>
+        )}
+        <button
+          className={debug ? styles.toggleOn : styles.toggle}
+          onClick={() => midi.setDebug(!debug)}
+          title="also print every message to the browser console, which keeps a scrollback the one-line readout cannot"
+        >
+          log to console
+        </button>
+      </div>
     </>
   )
 }
@@ -186,6 +239,7 @@ function Wired() {
         </span>
       </div>
 
+      <Wire />
       <Bindings />
     </>
   )
@@ -218,15 +272,16 @@ export function MidiPanel() {
           ? 'refused'
           : status === 'requesting'
             ? 'asking…'
-            : 'off'
+            : 'off — press to connect a controller'
 
   return (
     <div className={styles.panel}>
       <button
-        className={styles.header}
+        className={status === 'ready' ? styles.header : styles.headerCall}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
       >
+        <span className={styles.caret}>{open ? '▾' : '▸'}</span>
         <span className={styles.title}>midi</span>
         <span
           className={

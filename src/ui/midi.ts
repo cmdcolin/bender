@@ -29,6 +29,61 @@ export type PickupMap = Partial<Record<ControlKey, number>>
 export type MidiStatus =
   'unsupported' | 'idle' | 'requesting' | 'ready' | 'denied'
 
+// The last thing to come down the wire, and how many have come down it at all.
+// A controller that looks dead is either not sending or not being understood,
+// and those two look identical from the panel without this.
+export interface Traffic {
+  bytes: number[]
+  /** What the manager decided the bytes meant, in the panel's words. */
+  text: string
+  /** Which input it arrived on — the difference between a keybed and its pads. */
+  port: string
+  at: number
+  count: number
+}
+
+const NOTE_NAMES = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+]
+
+export const noteName = (note: number) =>
+  `${NOTE_NAMES[note % 12] ?? '?'}${Math.floor(note / 12) - 1}`
+
+// Names the message the way the panel talks about it, so a reading needs no
+// byte tables: a knob is its CC, a key is its pitch, a tick is the clock.
+export function describe(bytes: number[]): string {
+  const head = bytes[0]
+  if (head === undefined) return 'empty'
+  if (head === 0xf8) return 'clock tick'
+  if (head === 0xfc) return 'clock stop'
+  if (head === 0xfa) return 'clock start'
+  const channel = (head & 0x0f) + 1
+  const status = head & 0xf0
+  const first = bytes[1]
+  const second = bytes[2]
+  if (first === undefined || second === undefined)
+    return `status ${head.toString(16)}`
+  if (status === 0x90 && second > 0)
+    return `note on ${noteName(first)} vel ${second} ch${channel}`
+  if (status === 0x90 || status === 0x80)
+    return `note off ${noteName(first)} ch${channel}`
+  if (status === 0xb0) return `CC${first} = ${second} ch${channel}`
+  if (status === 0xe0) return `pitch bend ch${channel}`
+  if (status === 0xa0 || status === 0xd0) return `aftertouch ch${channel}`
+  return `status ${head.toString(16)} ch${channel}`
+}
+
 // Live progress of a "learn in order" sweep: bind each control down the spine
 // to whichever knob turns next. `next` is the one still waiting for a knob.
 export interface LearnState {
@@ -108,6 +163,7 @@ const ENABLED_KEY = 'bender.midi.on'
 const NOTES_KEY = 'bender.midi.notes'
 const CLOCK_KEY = 'bender.midi.clock'
 const LIGHTS_KEY = 'bender.midi.lights'
+const DEBUG_KEY = 'bender.midi.debug'
 
 function read(key: string): string | null {
   try {
@@ -269,6 +325,10 @@ class Midi {
   /** Send each bound control's value back out, so a device with lit rings shows
       where the board is. */
   readonly lights = createStore(read(LIGHTS_KEY) === '1')
+  /** The last message off the wire. Null until one arrives. */
+  readonly traffic = createStore<Traffic | null>(null)
+  /** Echo every message to the console as well as the panel. */
+  readonly debug = createStore(read(DEBUG_KEY) === '1')
 
   private access: MIDIAccess | null = null
   private onStateChange: (() => void) | null = null
@@ -290,6 +350,11 @@ class Midi {
   // from a knob's first message and held: see ccToDelta for why it can't be
   // re-read per byte.
   private spelling = new Map<string, boolean>()
+
+  private seen = 0
+  // A turning knob sends far faster than anyone can read, so the readout lands
+  // at a legible rate while the count stays exact.
+  private lastTraffic = 0
 
   private pulses: number[] = []
   private lastPulse = 0
@@ -354,6 +419,11 @@ class Midi {
   setClockLock(on: boolean) {
     this.clockLock.set(on)
     write(CLOCK_KEY, on ? '1' : '0')
+  }
+
+  setDebug(on: boolean) {
+    this.debug.set(on)
+    write(DEBUG_KEY, on ? '1' : '0')
   }
 
   setLights(on: boolean) {
@@ -436,7 +506,29 @@ class Midi {
 
   private listen(access: MIDIAccess) {
     for (const input of access.inputs.values())
-      input.onmidimessage = e => this.onMessage(e)
+      input.onmidimessage = e => this.onMessage(e, input.name ?? '')
+  }
+
+  // Clock ticks arrive 24 times a beat and would bury everything else, so they
+  // count but only take the readout when nothing else is using it.
+  private record(bytes: number[], port: string) {
+    this.seen += 1
+    const now = performance.now()
+    const tick = bytes[0] === 0xf8
+    if (this.debug.get() && !tick)
+      console.log(
+        `[midi] ${port} ${bytes.map(b => b.toString(16).padStart(2, '0')).join(' ')} — ${describe(bytes)}`,
+      )
+    if (tick && now - this.lastTraffic < 900) return
+    if (now - this.lastTraffic < 80) return
+    this.lastTraffic = now
+    this.traffic.set({
+      bytes,
+      text: describe(bytes),
+      port,
+      at: now,
+      count: this.seen,
+    })
   }
 
   private reindex() {
@@ -639,10 +731,11 @@ class Midi {
     if (this.bpm.get() !== null) this.bpm.set(null)
   }
 
-  private onMessage(e: MIDIMessageEvent) {
+  private onMessage(e: MIDIMessageEvent, port = '') {
     const data = e.data
     const head = data?.[0]
     if (data === null || head === undefined) return
+    this.record([...data], port)
     // System real-time is a single status byte: 0xF8 is a clock tick, 0xFC stop.
     if (data.length === 1) {
       if (head === 0xf8) this.onPulse()

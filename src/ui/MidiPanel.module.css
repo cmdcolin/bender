@@ -21,6 +21,32 @@
   font-weight: 600;
 }
 
+.caret {
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+/* Folded away and unconnected, this row is the only way to reach the wire — so
+   it is drawn as the button it is rather than as a heading, which is how it
+   went unfound. */
+.headerCall {
+  composes: header;
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 3px 6px;
+}
+
+.headerCall .quiet {
+  color: var(--accent);
+}
+
+/* Raw bytes, which are only ever read a character at a time. */
+.wire {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
 .live {
   font-family: var(--mono);
   font-size: var(--fs-xs);
