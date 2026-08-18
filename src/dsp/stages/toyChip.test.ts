@@ -104,15 +104,17 @@ test('a fifth note steals the oldest voice', () => {
   expect(stolen).toBeLessThan(held * 0.1)
 })
 
-// An octave under the toy's own bottom key. Silence is a voice with its envelope
-// down, so a semitone below zero is a note rather than the empty voice it used to
-// read as.
+// Two octaves under the toy's own bottom key, which is as far down as the octave
+// switch goes. Silence is a voice with its envelope down, so a semitone below
+// zero is a note rather than the empty voice it used to read as.
 test('the keys play under the chip’s own bottom note', () => {
   const note = (semitone: number) =>
     playKeys({ chipLevel: 0.9 }, chip => chip.noteOn(semitone), 0.3)
   expect(bin(note(0), 220)).toBeGreaterThan(0.01)
   expect(bin(note(-12), 110)).toBeGreaterThan(0.01)
   expect(bin(note(-12), 220)).toBeLessThan(0.5 * bin(note(-12), 110))
+  expect(bin(note(-24), 55)).toBeGreaterThan(0.01)
+  expect(bin(note(-24), 110)).toBeLessThan(0.5 * bin(note(-24), 55))
 })
 
 test('flat batteries run the tune low and late, and it keeps running', () => {

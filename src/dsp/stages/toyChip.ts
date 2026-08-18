@@ -45,7 +45,7 @@ export const TONE_DUTY = [0.5, 0.25, 0.125, 0.0625]
 const VOICE_TRIM = [0.86, 1.21, 0.97, 1.12]
 
 // A key voice. Silence is its envelope being down, not a sentinel note: the keys
-// reach an octave under the toy's own bottom, and a semitone below zero is a
+// reach two octaves under the toy's own bottom, and a semitone below zero is a
 // note like any other.
 interface Voice {
   note: number

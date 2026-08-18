@@ -51,7 +51,7 @@ const WHITE_KEYS = [
 const blackAbove = (semitone: number) =>
   semitone < TOP && BLACK_PC.has(semitone % 12) ? semitone + 1 : undefined
 
-const OCTAVES = [-1, 0, 1, 2]
+const OCTAVES = [-2, -1, 0, 1, 2]
 
 // The toy keyboard's keys: clickable, plus the computer keyboard (a s d f...).
 // Hold latches what you press, so both hands are free for the panel.
