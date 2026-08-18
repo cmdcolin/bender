@@ -39,7 +39,7 @@ test('no preset picks the demo song', () => {
 
 test('a preset that names the pattern writes it', () => {
   const before = mine()
-  const along = PRESETS.find(p => p.name === 'clap along')!
+  const along = PRESETS.find(p => p.name === 'backbeat')!
   const after = applyPreset(along, before)
   expect(after.drumClap).toBe(along.patch.drumClap)
   expect(after.drumKick).not.toBe(before.drumKick)

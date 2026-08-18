@@ -587,7 +587,7 @@ Gain, ahead of a dc block, soft clip and limiter that always run.
 
 </details>
 
-### Parts
+### Board parts
 
 What the toy board is made of, rather than what you are doing to it. Every one
 of these was a number compiled into the model until somebody wanted the other
@@ -619,7 +619,7 @@ raggedly or all at once.
 
 </details>
 
-### Ageing
+### Wear
 
 The slow ones. _Heat_ builds with what the board is dissipating and takes the
 rail down with it. _Dry joints_ drop a bend slot out of the path mid-note.
@@ -696,25 +696,25 @@ on it — a link never presses play, so it is loaded and waiting.
   — Slow chip through a huge dispersive tank
 - [**contact crackle**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.9,crackleRate:55,combHz:220,combFb:1.15,combMix:0.8,revMix:0.4)
   — Dirty pot sparks ringing a screaming comb
-- [**siren chaos**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.85,oscBHz:2.2,oscXmod:900,oscStarve:0.5,ringHz:40,ringMix:0.3)
+- [**dogfight**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.85,oscBHz:2.2,oscXmod:900,oscStarve:0.5,ringHz:40,ringMix:0.3)
   — Cross-modulated oscillators starving themselves
 - [**ground loop**](https://cmdcolin.github.io/bender/#set=chipLevel:0.55,chipStarve:0.5,revDecayS:3,revMix:0.3,brownAmt:0.5,brownCrackle:0.4,humLevel:0.8)
   — Bad power: hum, sag and a straining supply
-- [**possessed osc**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
+- [**fm howl**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
   — The feedback bus soldered onto the FM input
-- [**sub stomp**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,driveDb:18,distMode:2,distToneHz:4000,subLevel:0.9,distMix:0.8)
-  — Octave-divider fuzz under the tune
+- [**divider fuzz**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,driveDb:18,distMode:2,distToneHz:4000,subLevel:0.9,distMix:0.8)
+  — A flip-flop octave under the tune, clipped along with it
 - [**wall of muff**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,stompCircuit:2,stompDrive:34,stompTone:0.35,stompLevel:-6,stompMix:1,revDecayS:3,revMix:0.3)
   — Two clipping stages that never let the note decay
-- [**dying fuzz face**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,stompCircuit:3,stompDrive:30,stompTone:0.4,stompBias:-0.25,stompSag:0.85,stompMix:1,delayMs:280,dlyFb:0.45,dlyMix:0.25)
-  — Germanium on a flat battery, spluttering as each note goes
+- [**flat germanium**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,stompCircuit:3,stompDrive:30,stompTone:0.4,stompBias:-0.25,stompSag:0.85,stompMix:1,delayMs:280,dlyFb:0.45,dlyMix:0.25)
+  — The lopsided circuit on a dead cell, spluttering as each note goes
 - [**octave up**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,stompCircuit:4,stompDrive:26,stompTone:0.6,stompMix:0.9,revBoing:0.7,revMix:0.35)
   — Rectified into a ringing transformer — an octave on one note, gargle on two
 - [**velcro**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,stompCircuit:5,stompDrive:40,stompTone:0.3,stompBias:0.35,stompSag:0.8,stompLevel:-6,stompMix:1)
   — Starved to the edge of cutoff: it gates, sputters and howls between notes
 - [**squeezed screamer**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,stompDrive:16,stompTone:0.55,stompMix:1,delayMs:320,dlyMix:0.3,mod0Src:3,mod0Dest:9,mod0Depth:0.7)
   — The bay envelope wired onto the drive, so it digs in as it gets loud
-- [**séance**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipClockX:0.7,chipBendSpot:3,chipBendPot:0.25,ringHz:6,ringMix:0.3,combHz:180,combFb:0.8,combMix:0.4,delayMs:300,flutter:0.3,dlyMix:0.3,revDecayS:4,revMix:0.5)
+- [**cold room**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipClockX:0.7,chipBendSpot:3,chipBendPot:0.25,ringHz:6,ringMix:0.3,combHz:180,combFb:0.8,combMix:0.4,delayMs:300,flutter:0.3,dlyMix:0.3,revDecayS:4,revMix:0.5)
   — A soldered DAC bias into a ringing comb, slowed right down
 - [**dying walkman**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,chipClockX:0.8,bits:7,srHz:9000,crushMix:0.5,delayMs:260,dlyFb:0.45,wowDepthMs:5,flutter:0.45,dlyToneHz:3500,dlyMix:0.5,revMix:0.35)
   — A chewed tape running into a failing DAC
@@ -726,17 +726,17 @@ on it — a link never presses play, so it is loaded and waiting.
   — Tape motor wired to the same failing supply as the toy
 - [**barber pole**](https://cmdcolin.github.io/bender/#set=chipLevel:0.5,bendSlot0:7,shiftHz:3,shiftFb:0.92,shiftMix:0.85,revDecayS:4,revMix:0.35)
   — Every lap through the shifter climbs again, so nothing lands
-- [**clangour**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,bendSlot0:7,shiftHz:380,shiftMix:1,delayMs:180,dlyFb:0.45,dlyMix:0.3)
+- [**bell metal**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,bendSlot0:7,shiftHz:380,shiftMix:1,delayMs:180,dlyFb:0.45,dlyMix:0.3)
   — Shifted far enough that the harmonics stop being harmonics
-- [**body pad**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
-  — Skin on the pad rides the cutoff, and leaning on it opens the feedback
+- [**lean on it**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
+  — Skin on the pad rides the cutoff, and pressing harder opens the feedback
 - [**clock wobble**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)
   — The bay LFO dragging the chip crystal around
 - [**clap at it**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,micPatch:5,driveDb:16,distMix:0.45,revMix:0.3)
   — Mic on the drum trigger line: clap and it fires your pattern — bring your
   mic level up
-- [**clap along**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumSnare:0,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
-  — Backbeat claps, shuffled hard, through four bits of DAC
+- [**backbeat**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumSnare:0,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
+  — Claps on two and four, shuffled hard, through four bits of DAC
 - [**found tape**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,revDecayS:1.6,revMix:0.18,tapeMix:1,tapeDrive:4,tapeHiss:0.55,tapeWow:0.3)
   — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
 - [**shed oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35)

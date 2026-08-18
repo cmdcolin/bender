@@ -269,7 +269,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'siren chaos',
+    name: 'dogfight',
     blurb: 'Cross-modulated oscillators starving themselves',
     patch: {
       chipLevel: 0,
@@ -295,7 +295,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'possessed osc',
+    name: 'fm howl',
     blurb: 'The feedback bus soldered onto the FM input',
     patch: {
       chipLevel: 0,
@@ -310,8 +310,8 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'sub stomp',
-    blurb: 'Octave-divider fuzz under the tune',
+    name: 'divider fuzz',
+    blurb: 'A flip-flop octave under the tune, clipped along with it',
     patch: {
       chipLevel: 0.75,
       distMix: 0.8,
@@ -336,8 +336,8 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'dying fuzz face',
-    blurb: 'Germanium on a flat battery, spluttering as each note goes',
+    name: 'flat germanium',
+    blurb: 'The lopsided circuit on a dead cell, spluttering as each note goes',
     patch: {
       chipLevel: 0.8,
       stompCircuit: 3,
@@ -398,7 +398,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'séance',
+    name: 'cold room',
     blurb: 'A soldered DAC bias into a ringing comb, slowed right down',
     patch: {
       chipLevel: 0.7,
@@ -493,7 +493,7 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'clangour',
+    name: 'bell metal',
     blurb: 'Shifted far enough that the harmonics stop being harmonics',
     patch: {
       chipLevel: 0.8,
@@ -506,9 +506,9 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'body pad',
+    name: 'lean on it',
     blurb:
-      'Skin on the pad rides the cutoff, and leaning on it opens the feedback',
+      'Skin on the pad rides the cutoff, and pressing harder opens the feedback',
     patch: {
       chipLevel: 0,
       crackleAmp: 0.5,
@@ -553,8 +553,8 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
-    name: 'clap along',
-    blurb: 'Backbeat claps, shuffled hard, through four bits of DAC',
+    name: 'backbeat',
+    blurb: 'Claps on two and four, shuffled hard, through four bits of DAC',
     patch: {
       chipLevel: 0,
       drumLevel: 0.9,

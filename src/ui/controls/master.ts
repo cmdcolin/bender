@@ -70,7 +70,7 @@ export const MASTER_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Parts',
+    name: 'Board parts',
     place: 'Master',
     sliders: [
       {
@@ -171,7 +171,7 @@ export const MASTER_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Ageing',
+    name: 'Wear',
     place: 'Master',
     sliders: [
       {
