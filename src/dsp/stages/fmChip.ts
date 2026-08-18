@@ -2,6 +2,8 @@ import { IDX } from '../../engine/params'
 import { Bus, Strobe } from '../bus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
+import { N_DRUM_VOICES, voiceMask } from '../trigbus'
+import { ACCENT_GAIN } from '../../drums'
 import { softclip } from '../util/softclip'
 import { mulberry32 } from '../util/rng'
 import {
@@ -11,7 +13,15 @@ import {
   loadEffect,
   stopEffect,
 } from './fmEffects'
-import { KEY_ON, PATCH_BYTES, REG } from './fmVoices'
+import {
+  attackSecs,
+  fallSecs,
+  KEY_ON,
+  MULT,
+  PATCH_BYTES,
+  REG,
+  TEST,
+} from './fmVoices'
 
 // The other chip on the board: two operators a voice, four voices, and a
 // register file the CPU writes over a bus.
@@ -42,30 +52,56 @@ const N_REGS = 64
 const FNUM_BASE = 32.7
 const FNUM_FULL = 256
 
-// The multiplier table, as the part shipped it: not a scale, and not even
-// monotonic at the top, because the last few entries repeat.
-const MULT = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12, 15, 15]
-
 // Attenuation, in the two step sizes the register file uses: three quarters of
 // a decibel for the modulator's six bits, three for the carrier's four.
 const atten = (steps: number, perStep: number) =>
   Math.pow(10, (-steps * perStep) / 20)
 
-// Envelope rates. Four bits each, counted off the same divider as everything
-// else on this board, so a starving rail drags the envelopes out along with the
-// pitch and the tempo — one oscillator, as ever.
-const attackSecs = (r: number) => 0.0005 * Math.pow(2, (15 - r) * 0.6)
-const fallSecs = (r: number) => 0.004 * Math.pow(2, (15 - r) * 0.62)
+// Envelope rates come off the same divider as everything else on this board, so
+// a starving rail drags the envelopes out along with the pitch and the tempo —
+// one oscillator, as ever. The table itself lives with the register map.
 
-// Half a sine is the other waveform the part had, and the reason an FM chip of
-// this era can sound reedy rather than glassy: rectifying one operator doubles
-// its fundamental and fills in odd harmonics the sine never had.
-const wave = (phase: number, half: number) => {
-  const s = Math.sin(phase * 2 * Math.PI)
-  return half ? Math.max(s, 0) : s
+// The sine, as the part stores it rather than as mathematics has it: nothing on
+// this chip computes a sine, it looks one up. A quarter of a wave, 256 entries,
+// and two more bits of phase to build the other three quarters — one mirrors the
+// quarter back on itself, one flips the sign.
+//
+// Which makes the waveform an *address*, and an address is a bus like any other.
+// It is the one bus on the chip the processor never touches: the register file
+// is written a few times a note, and this is read eight times a sample, so a
+// knife here is the opposite bend to a knife on the data lines. Nothing
+// accumulates and nothing persists. It is under your hand for as long as the
+// note is held, and it changes the shape of the wave rather than the number the
+// chip was told.
+const SINE_BITS = 10
+const SINE_STEPS = 1 << SINE_BITS
+/** the quarter the table holds, and the two bits that make the rest of it */
+const QUARTER = SINE_STEPS >> 2
+const MIRROR = QUARTER
+const SIGN = QUARTER << 1
+
+const sineQuarter = Float64Array.from({ length: QUARTER }, (_, i) =>
+  Math.sin(((i + 0.5) / QUARTER) * (Math.PI / 2)),
+)
+
+const sineAt = (addr: number) => {
+  const i = addr & (QUARTER - 1)
+  const s = sineQuarter[addr & MIRROR ? QUARTER - 1 - i : i]!
+  return addr & SIGN ? -s : s
 }
 
+/** Which way the stale bit falls on a cut waveform line. */
+const WAVE_SEED = 0x1d
+
 const ENV_FLOOR = 0.0005
+
+// What the kit plays when its trigger lines are clipped to this chip's key
+// input. A drum machine has no notes to send — a trigger line carries a strike
+// and nothing else — so the note has to be decided at this end, and one note per
+// voice in the kit's own row order is the decision the wire makes for you. They
+// are a pentatonic apart on purpose: a pattern written for drums comes out as a
+// riff rather than a cluster.
+const DRUM_NOTES = [0, 12, 24, 15, 5, 19]
 
 /** The noise byte the effect ROM reads, which is a table on the real part. */
 const EFFECT_SEED = 0x5e
@@ -78,6 +114,16 @@ const ATTACK = 1
 const DECAY = 2
 const SUSTAIN = 3
 const RELEASE = 4
+
+// What the panel adds to a patch on its way to the chip: the tone controls the
+// keyboard had a button for, and the two ratios and the decay it did not.
+interface Panel {
+  bright: number
+  fb: number
+  modRatio: number
+  carRatio: number
+  modDecay: number
+}
 
 interface Op {
   phase: number
@@ -138,6 +184,7 @@ export class FmChip implements Stage {
   private clock = 0
   private modRates = newRates()
   private carRates = newRates()
+  private raceRates = newRates()
   private feedback = 0
   private dataBus = new Bus(8)
   private addrBus = new Bus(6)
@@ -146,6 +193,15 @@ export class FmChip implements Stage {
   private addrLine = -1
   private addrFault = 0
   private busCut = 1
+  // The wave ROM's address lines. One bus for the whole chip, because there is
+  // one operator datapath on the die and every operator takes its turn on it —
+  // so a stale bit here carries the phase of whichever operator went before,
+  // which is a different operator every time.
+  private waveBus = new Bus(SINE_BITS, WAVE_SEED)
+  private waveLine = -1
+  private waveFault = 0
+  /** what the output latch is holding, for the test bit that stops it taking */
+  private held = 0
   // The write strobe, and how often its pulse comes out too narrow for the
   // address latch to catch.
   private strobe = 0
@@ -154,8 +210,13 @@ export class FmChip implements Stage {
   // something it knows about has moved. A processor that rewrote eight registers
   // every sample would paper over every fault the moment it landed.
   private sentVoice = -1
-  private sentBright = -1
-  private sentFeedback = -1
+  private sent: Panel = {
+    bright: -1,
+    fb: -1,
+    modRatio: -1,
+    carRatio: -1,
+    modDecay: -1,
+  }
   // The effect ROM, and the driver running it: a script of writes over time,
   // clocked off the CPU rather than off the rail.
   private effect = -1
@@ -230,18 +291,37 @@ export class FmChip implements Stage {
   }
 
   // The patch, as the CPU sends it: eight bytes out of the voice table with the
-  // two knobs folded in on the way past. Which is why moving a slider is when a
-  // cut line bites — the corruption arrives with the write, not with the note.
-  private sendVoice(voice: number, bright: number, fb: number) {
+  // panel folded in on the way past. Which is why moving a slider is when a cut
+  // line bites — the corruption arrives with the write, not with the note.
+  //
+  // Everything the panel does to a patch it does here, in the byte, because
+  // that is the only way anything reaches this chip. There is no layer between
+  // the knob and the register: a ratio is four bits of a flags byte and a decay
+  // is a nibble, so the knobs have the resolution the part had and no more.
+  private sendVoice(voice: number, panel: Panel) {
+    // The write every driver for this part sends before anything else, and the
+    // only time one goes near the test register at all. It is a zero on the
+    // same eight wires as the patch, so it is a zero exactly as far as the
+    // wires allow.
+    this.write(REG.test, 0)
     const bytes = PATCH_BYTES[voice] ?? PATCH_BYTES[0]!
     for (let i = 0; i < 8; i++) {
       let byte = bytes[i]!
       if (i === REG.modLevel) {
         // Brightness is the modulator's own volume, and the register counts
         // attenuation, so a brighter patch is a smaller number.
-        byte = (byte & 0xc0) | Math.round((byte & 0x3f) * (1 - bright * 0.9))
+        byte =
+          (byte & 0xc0) | Math.round((byte & 0x3f) * (1 - panel.bright * 0.9))
       }
-      if (i === REG.feedback) byte = (byte & ~0x07) | fb
+      if (i === REG.feedback) byte = (byte & ~0x07) | panel.fb
+      // A ratio knob at nothing is a ratio the voice keeps, so the eight
+      // patches stay the eight patches until you ask for something else.
+      if (i === REG.modFlags && panel.modRatio > 0)
+        byte = (byte & ~0x0f) | (panel.modRatio - 1)
+      if (i === REG.carFlags && panel.carRatio > 0)
+        byte = (byte & ~0x0f) | (panel.carRatio - 1)
+      if (i === REG.modAttack && panel.modDecay > 0)
+        byte = (byte & ~0x0f) | (16 - panel.modDecay)
       this.write(i, byte)
     }
   }
@@ -268,7 +348,7 @@ export class FmChip implements Stage {
   // write — which is the write that also carries the top bit of the frequency,
   // exactly as the part laid it out. One wire wrong up there moves the pitch and
   // whether the note happens at all.
-  private keyOn(note: number, lengthSamples: number) {
+  private keyOn(note: number, lengthSamples: number, vol = 0) {
     const hz = 220 * Math.pow(2, note / 12)
     const block = Math.min(
       Math.max(Math.floor(Math.log2(hz / FNUM_BASE)), 0),
@@ -288,8 +368,11 @@ export class FmChip implements Stage {
     // note. It is also the write that stops arriving first when a line goes.
     this.write(REG.keyBlock + i, this.regs[REG.keyBlock + i]! & ~KEY_ON)
     // Volume goes out with the note, as the part expected: one nibble, and a
-    // wire stuck in it leaves that channel at the wrong level for good.
-    this.write(REG.instVol + i, 0)
+    // wire stuck in it leaves that channel at the wrong level for good. It is
+    // also the only place a strike's weight can go — an accented step on the kit
+    // is a note this chip is told to play at a different attenuation, because
+    // there is nothing else in the register file that means loud.
+    this.write(REG.instVol + i, vol)
     this.write(REG.fnumLo + i, fnum & 0xff)
     this.write(REG.keyBlock + i, ((fnum >> 8) & 1) | (block << 1) | KEY_ON)
   }
@@ -368,6 +451,30 @@ export class FmChip implements Stage {
       shape & 0x08,
     )
     this.feedback = (shape & 0x07) === 0 ? 0 : Math.pow(2, (shape & 0x07) - 8)
+
+    // What the envelope counter does with its carry forced: the fastest step it
+    // has, on every operator at once, whatever the rate registers hold. It
+    // still reads the rail, because the counter is still counting the same
+    // divider — a raced envelope on a starving board is a longer click.
+    const fast = Math.exp(
+      -1 / (fallSecs(15) * Math.max(clockFactor, 0.05) * this.sr),
+    )
+    this.raceRates.attack = 1
+    this.raceRates.decay = fast
+    this.raceRates.release = fast
+    this.raceRates.sustain = ENV_FLOOR
+    this.raceRates.sustained = false
+  }
+
+  // One operator's turn on the wave ROM. The phase's top bits are the address;
+  // half a sine is not a rectifier but the sign bit's half of the table read as
+  // silence, which is how the part did it — so a sign line held low is a reedy
+  // patch that has forgotten how to be reedy.
+  private wave(phase: number, half: number) {
+    let addr = Math.floor(phase * SINE_STEPS) & (SINE_STEPS - 1)
+    if (this.waveLine >= 0)
+      addr = this.waveBus.read(addr, this.waveLine, this.waveFault, this.busCut)
+    return half && addr & SIGN ? 0 : sineAt(addr)
   }
 
   private stepEnv(op: Op, r: Rates) {
@@ -396,16 +503,25 @@ export class FmChip implements Stage {
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.fmLevel]!
     const voice = Math.round(p[IDX.fmVoice]!)
-    const bright = p[IDX.fmBright]!
-    const fb = Math.round(p[IDX.fmFeedback]!)
+    const panel: Panel = {
+      bright: p[IDX.fmBright]!,
+      fb: Math.round(p[IDX.fmFeedback]!),
+      modRatio: Math.round(p[IDX.fmModRatio]!),
+      carRatio: Math.round(p[IDX.fmCarRatio]!),
+      modDecay: Math.round(p[IDX.fmModDecay]!),
+    }
     this.dataLine = Math.round(p[IDX.fmDataLine]!) - 1
     this.dataFault = Math.round(p[IDX.fmDataFault]!)
     this.addrLine = Math.round(p[IDX.fmAddrLine]!) - 1
     this.addrFault = Math.round(p[IDX.fmAddrFault]!)
     this.busCut = p[IDX.fmBusCut]!
     this.strobe = p[IDX.fmStrobe]!
+    this.waveLine = Math.round(p[IDX.fmWaveLine]!) - 1
+    this.waveFault = Math.round(p[IDX.fmWaveFault]!)
     const rail = this.rail
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
+
+    const drumMask = voiceMask(Math.round(p[IDX.fmStruck]!))
 
     const effect = Math.round(p[IDX.fmEffect]!) - 1
     if (effect !== this.effect) this.setEffect(effect)
@@ -417,15 +533,18 @@ export class FmChip implements Stage {
     // bird is calling is a knob nothing acts on until the calling stops. Send it
     // anyway and it lands on top of the effect's own patch, which is the whole
     // sound of the effect: the feedback the weather is made of never arrives.
+    const sent = this.sent
     if (
       voice !== this.sentVoice ||
-      bright !== this.sentBright ||
-      fb !== this.sentFeedback
+      panel.bright !== sent.bright ||
+      panel.fb !== sent.fb ||
+      panel.modRatio !== sent.modRatio ||
+      panel.carRatio !== sent.carRatio ||
+      panel.modDecay !== sent.modDecay
     ) {
       this.sentVoice = voice
-      this.sentBright = bright
-      this.sentFeedback = fb
-      if (this.effect < 0) this.sendVoice(voice, bright, fb)
+      this.sent = panel
+      if (this.effect < 0) this.sendVoice(voice, panel)
     }
 
     this.readPatch(rail.clockFactor)
@@ -456,6 +575,27 @@ export class FmChip implements Stage {
       const struck = ctx.trig.key[i]!
       if (struck !== 0) this.keyOn(struck - 128, lengthSamples)
 
+      // And the kit's own lines, for whoever clipped them on here as well. The
+      // kit is wired behind this chip in the source order, so what arrives is
+      // last block's hits — 2.7 ms, which is under the resolution of a trigger
+      // line and nowhere near the resolution of a drum machine.
+      if (drumMask !== 0) {
+        const bits = Math.round(ctx.trig.drumBits[i]!) & drumMask
+        if (bits !== 0) {
+          const vol = Math.round((1 - ctx.trig.drumGain[i]! / ACCENT_GAIN) * 3)
+          for (let v = 0; v < N_DRUM_VOICES; v++)
+            if (bits & (1 << v))
+              this.keyOn(DRUM_NOTES[v]!, lengthSamples, Math.max(vol, 0))
+        }
+      }
+
+      // The test register, read down here with the operators rather than up
+      // with the patch, because what it switches is the counters and the latch
+      // themselves and those run at the sample.
+      const test = this.regs[REG.test]!
+      const wideOpen = (test & TEST.envMax) !== 0
+      const raced = (test & TEST.envRace) !== 0
+
       let sum = 0
       const pitch = rail.pitchFactor
       for (let n = 0; n < N_CH; n++) {
@@ -473,24 +613,38 @@ export class FmChip implements Stage {
         const hz =
           (fnum / FNUM_FULL) * FNUM_BASE * Math.pow(2, (key >> 1) & 7) * pitch
 
-        this.stepEnv(c.mod, mod)
-        this.stepEnv(c.car, car)
+        this.stepEnv(c.mod, raced ? this.raceRates : mod)
+        this.stepEnv(c.car, raced ? this.raceRates : car)
+        // Wide open is not a loud envelope, it is no envelope: the stages go on
+        // running underneath, so notes still start and still end — they simply
+        // stop having a shape between the two.
+        const modEnv = wideOpen ? 1 : c.mod.env
+        const carEnv = wideOpen ? 1 : c.car.env
 
         const inc = hz / this.sr
         c.mod.phase = (c.mod.phase + inc * mod.mult) % 1
         const self = (c.mod.fb1 + c.mod.fb2) * this.feedback
-        const m = wave(c.mod.phase + self, mod.half) * c.mod.env * mod.level
+        const m = this.wave(c.mod.phase + self, mod.half) * modEnv * mod.level
         c.mod.fb2 = c.mod.fb1
         c.mod.fb1 = m
 
         c.car.phase = (c.car.phase + inc * car.mult) % 1
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
-        sum += wave(c.car.phase + m * 2, car.half) * c.car.env * this.volume(n)
+        sum +=
+          this.wave(c.car.phase + m * 2, car.half) * carEnv * this.volume(n)
       }
 
-      // One small output stage for four voices, as ever on a board like this.
-      const out = (softclip(sum * drive) / drive) * rail.ampFactor * level * 0.3
+      // One small output stage for four voices, as ever on a board like this,
+      // and the latch in front of it — the last place on the chip a test bit
+      // can reach. A latch that only takes every other slot holds through the
+      // one it missed, and a sign line held is everything below the line folded
+      // back over it.
+      if ((test & TEST.dacSkew) === 0 || (i & 1) === 0) {
+        const word = softclip(sum * drive) / drive
+        this.held = test & TEST.dacSign ? Math.abs(word) : word
+      }
+      const out = this.held * rail.ampFactor * level * 0.3
       load += Math.abs(out)
       io.l[i]! += out
       io.r[i]! += out
@@ -523,9 +677,10 @@ export class FmChip implements Stage {
     }
     this.dataBus.reset()
     this.addrBus.reset()
+    this.waveBus.reset()
+    this.held = 0
     this.addrLatch.reset()
     this.sentVoice = -1
-    this.sentBright = -1
-    this.sentFeedback = -1
+    this.sent.bright = -1
   }
 }

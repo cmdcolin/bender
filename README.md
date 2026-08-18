@@ -187,10 +187,14 @@ a few years later, sharing this one's supply.
 It has no keyboard and no sequencer of its own. Somebody soldered its key input
 onto the toy's gate line, so it plays whatever strikes a note over there: the
 demo song, your hands, a controller, or a drum hit that came back round the
-trigger patch. Turn the toy itself down to nothing and the ROM keeps clocking,
-because the tune is now the other chip's part. It runs off the same rail too, so
-starving the toy dives its pitch, drags its envelopes out and browns it out
-along with everything else.
+trigger patch. **Struck by** clips the kit's own lines on beside that one, and
+since a trigger line carries a strike and nothing else, the note is this chip's
+to decide — one per voice, in the kit's row order, a pentatonic apart, which is
+what turns a pattern written for drums into a riff. Four channels between them,
+so a busy grid steals its own notes. Turn the toy itself down to nothing and the
+ROM keeps clocking, because the tune is now the other chip's part. It runs off
+the same rail too, so starving the toy dives its pitch, drags its envelopes out
+and browns it out along with everything else.
 
 **Voice** picks one of eight patches, **Brightness** is how loud the modulator
 is into the carrier — the whole of the tone control on a two-operator part — and
@@ -199,6 +203,19 @@ it stops making harmonics and starts making noise, which is where these chips'
 drum sounds came from. A trigger line carries a strike and nothing else, so
 **Note length** is where something has to decide when the note ends; letting a
 key go sends the release early.
+
+Three more open the patch itself up rather than picking one. **Mod ratio** and
+**Car ratio** are what each operator runs at against the note, off the part's
+own multiplier table — the modulator's ratio picks which harmonics it can put
+there, the carrier's moves the note, and the interval between the two is the
+whole character of a two-operator sound. **Mod decay** is how fast the modulator
+falls away, which is the difference between a struck thing and a blown one: a
+bright attack collapsing to a sine in eighty milliseconds is a bell, and one
+that never collapses is an organ. All three are four bits each, because that is
+what the registers hold — the table stops being a scale near the top and
+repeats, there is no detune anywhere on the chip, and every one of them rides
+out in the same eight bytes as the rest of the patch. Which makes them three
+more knobs whose whole job is to hand a cut wire a fresh write to ruin.
 
 ### Cut the dataline
 
@@ -269,6 +286,63 @@ the script runs. The crickets are the clearest: clean they are chirps with gaps,
 and a slipping strobe drones them into one tone. Which is exactly where a cut
 key line takes them, arrived at from the opposite direction — every wire on the
 board working perfectly, and the key-up landing next door.
+
+### Cut the wave ROM
+
+Every bend above is a bend on the write path, and they all work the same way in
+the end: a byte lands wrong in a register and stays there. There is a second bus
+on this chip, and the processor never touches it.
+
+Nothing here computes a sine. The part looks one up — a quarter of a wave in a
+table, 256 entries, with two more bits of phase to build the other three
+quarters out of it: one mirrors the quarter back on itself, one flips the sign.
+So the waveform is an _address_, ten wires wide, read eight times a sample by
+the operators themselves. **Wave line** is a knife through one of them.
+
+It is the opposite bend to the data lines in every respect that matters. Nothing
+accumulates, because nothing is being told anything — take the knife off and the
+next sample is clean. Nothing waits for the processor to come round either: it
+is under your hand for as long as the note is held. And the wires are weighted,
+so where you cut is the whole of it. Hold the mirror line and the quarter simply
+runs twice instead of turning round, which is a sawtooth edge and an octave
+where a sine was — on the modulator, an entirely different set of sidebands
+rather than a damaged one. Hold the sign line and every read comes back off the
+top half of the table: a rectified wave, all octave and no fundamental. Cut low
+enough down the bus and you have severed a wire worth a fraction of a phase
+step, and you will hear almost nothing, which is what a binary bus is.
+
+Cut is the strange fault here. A severed trace is a pin nothing drives again, so
+it holds the last phase bit that reached it and stops being part of the wave at
+all. Back **Cut depth** off and the trace still conducts sometimes, so the bit
+is right on some reads and stale on others, and the wave flickers between two
+shapes at the rate the operators come round rather than at any rate anything is
+playing.
+
+### The register the driver only clears
+
+There is one more register on the part, sitting in the gap above the patch
+bytes, and the datasheet does not have it. The factory used it to check the die.
+No driver ever writes anything musical there — the only time one goes near it is
+the write that clears it at power-on, because a chip that came up with a test
+bit set would be a chip that never sounded right.
+
+That one write is the whole of the bend, because it is a byte on the same eight
+wires as every other. A **data line** held high sets a bit in it that nothing in
+the chip's normal life ever sets, and the clear that should undo it crosses the
+same broken wire. Move a knob and the processor sends the patch again, test
+register first, and corrupts it again identically. What is in there does not
+decay, drift or resolve; it is overwritten by another corrupted copy of itself
+until you take the knife off the bus.
+
+And what those bits switch is not in the register file's vocabulary at all. They
+are the counters and the output latch themselves: every operator forced wide
+open so the envelopes stop being envelopes and the keys become a gate; the
+envelope counter forced to its fastest step, so every note in every patch
+collapses to the same four-millisecond click; the output latch taking every
+other slot, which is half the sample rate and all of the aliasing; and the
+latch's sign line held, so what reaches the pin is rectified. No arrangement of
+patch bytes makes any of those sounds, which is the point of reaching a register
+that was never meant to be part of the instrument.
 
 ### The effect ROM
 

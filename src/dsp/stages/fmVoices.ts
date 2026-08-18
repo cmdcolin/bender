@@ -22,11 +22,55 @@ export const REG = {
   /** sustain level in the high nibble, release in the low */
   modSustain: 0x06,
   carSustain: 0x07,
+  /** the one the driver only ever writes zero to: see TEST */
+  test: 0x0f,
   /** per channel from here down */
   fnumLo: 0x10,
   keyBlock: 0x20,
   instVol: 0x30,
 } as const
+
+// The test register, which the part has and the datasheet does not. It sits in
+// the gap above the patch bytes, the factory used it to check the die, and the
+// only time a driver goes near it is the write that clears it at power-on —
+// every driver for this part sends that write, because a chip that came up with
+// a test bit set would be a chip that never sounded right.
+//
+// That one write is the whole of the bend. It is a byte on the same bus as
+// every other, so a data line held high sets a bit in it that nothing was ever
+// meant to set, and the clear that should undo it crosses the same broken wire.
+// Nothing else on the chip persists like this: a corrupted patch byte is
+// overwritten the next time a knob moves, and a corrupted test byte is
+// overwritten by another corrupted test byte.
+//
+// Four switches, and none of them is a sound the register file can make. They
+// are not levels or rates — they are the counters and the latch themselves.
+export const TEST = {
+  /** every operator wide open, whatever its attenuation says: the envelopes
+      stop being envelopes and the keys become a gate */
+  envMax: 0x01,
+  /** the envelope counter forced to its fastest step, so every note in every
+      patch collapses to the same four-millisecond click */
+  envRace: 0x02,
+  /** the output latch takes every other slot and holds through the one it
+      missed, which is half the sample rate and all of the aliasing */
+  dacSkew: 0x04,
+  /** the latch's sign line held, so what reaches the pin is rectified */
+  dacSign: 0x08,
+} as const
+
+// Envelope rates, four bits each. They live here rather than in the chip
+// because the panel names its decay choices in milliseconds and has to count
+// them off the same table the operators do.
+export const attackSecs = (r: number) => 0.0005 * Math.pow(2, (15 - r) * 0.6)
+export const fallSecs = (r: number) => 0.004 * Math.pow(2, (15 - r) * 0.62)
+
+// The multiplier table, as the part shipped it: not a scale, and not even
+// monotonic at the top, because the last few entries repeat. A voice's ratio is
+// an index into this and nothing else — there is no detune on the chip and no
+// fine anywhere, so two operators are either in a whole-number ratio or they
+// are the same note.
+export const MULT = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 12, 15, 15]
 
 /** The key going down, in the register it shares with the top of the frequency. */
 export const KEY_ON = 0x10

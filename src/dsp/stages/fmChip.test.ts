@@ -136,6 +136,137 @@ test('a byte that landed wrong stays landed after the knife comes off', () => {
   expect(rms(scarred)).toBeGreaterThan(rms(stillCut) * 1.5)
 })
 
+// A patch is eight bytes and the panel only ever edits one of them on the way
+// past, so what the ratio knobs prove is that the edit lands where the part put
+// it: four bits of a flags byte, one operator each.
+const held = (o: Partial<Controls>) =>
+  playKeys(
+    { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+    chip => chip.noteOn(0),
+    0.6,
+  ).subarray(Math.round(0.2 * SR))
+
+test('the carrier’s ratio moves the note, the modulator’s moves the colour', () => {
+  const patched = held({})
+  // 2× on the carrier is the same patch an octave up: the operator you hear is
+  // the one running at the multiple.
+  expect(bin(held({ fmCarRatio: 3 }), 440)).toBeGreaterThan(
+    bin(patched, 440) * 4,
+  )
+  // 7× on the modulator does not move the note at all — it puts the sidebands
+  // seven harmonics out, which is the whole of how a two-operator chip makes a
+  // bell out of two sines.
+  const clang = held({ fmModRatio: 8 })
+  expect(bin(clang, 220)).toBeGreaterThan(0.01)
+  expect(overtones(clang) / rms(clang)).toBeGreaterThan(
+    (overtones(patched) / rms(patched)) * 1.3,
+  )
+})
+
+test('the modulator’s decay is what makes a note struck or blown', () => {
+  // The bell patch, whose modulator has somewhere to fall to. Collapse it in
+  // four milliseconds and what is left ringing is the carrier on its own.
+  const bright = (o: Partial<Controls>) => {
+    const w = held({ fmVoice: 3, ...o })
+    return overtones(w) / rms(w)
+  }
+  expect(bright({ fmModDecay: 1 })).toBeLessThan(0.35)
+  expect(bright({ fmModDecay: 16 })).toBeGreaterThan(0.8)
+})
+
+// The kit's trigger lines, clipped onto the key input beside the keyboard's. A
+// trigger line carries a strike and nothing else, so the note is this chip's to
+// decide — which is what the test can see, because nothing else is playing 220.
+test('the kit strikes the chip, and the note is decided at this end', () => {
+  const kit: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0.5,
+    fmLevel: 0.8,
+    chipTune: romIndex('scale'),
+  }
+  const off = render({ ...kit, fmStruck: 0 }, 2)
+  const kick = render({ ...kit, fmStruck: 1 }, 2)
+  expect(bin(kick, 220)).toBeGreaterThan(bin(off, 220) * 10)
+  expect(rms(kick)).toBeGreaterThan(rms(off))
+})
+
+// The other bus on the chip, and the opposite bend. The processor never touches
+// this one — the operators read it eight times a sample — so nothing lands in a
+// register and nothing outlives the knife.
+const WAVE_MIRROR = 9
+const WAVE_SIGN = 10
+
+test('cutting the wave ROM’s address changes the wave, not the note', () => {
+  const at = (o: Partial<Controls>) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+      chip => chip.noteOn(0),
+      0.6,
+    ).subarray(Math.round(0.2 * SR))
+  const clean = at({})
+  // The mirror bit is what turns a quarter of a wave into the second quarter.
+  // Held, the quarter simply runs again, so the shape repeats twice in the
+  // cycle: the note the chip was told is still 220, and what comes out of it is
+  // an octave up with a cliff in it.
+  const bent = at({ fmWaveLine: WAVE_MIRROR, fmWaveFault: FAULT.ground })
+  expect(bin(clean, 440)).toBeLessThan(bin(clean, 220))
+  expect(bin(bent, 440)).toBeGreaterThan(bin(bent, 220) * 2)
+})
+
+test('a sine with no sign bit has no fundamental left', () => {
+  const at = (o: Partial<Controls>) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+      chip => chip.noteOn(0),
+      0.6,
+    ).subarray(Math.round(0.2 * SR))
+  const clean = at({})
+  const flat = at({ fmWaveLine: WAVE_SIGN, fmWaveFault: FAULT.ground })
+  // Every read comes back off the top half of the table, which is a rectified
+  // wave, and a rectified wave is all octave and no fundamental.
+  expect(bin(flat, 220)).toBeLessThan(bin(clean, 220) * 0.05)
+  expect(bin(flat, 440)).toBeGreaterThan(bin(clean, 440) * 2)
+})
+
+test('the wave bend leaves nothing behind when the knife comes off', () => {
+  const clean = afterTheFault({}, {}, 4)
+  const after = afterTheFault(
+    { fmWaveLine: WAVE_MIRROR, fmWaveFault: FAULT.ground },
+    {},
+    4,
+  )
+  let sum = 0
+  for (let i = 0; i < clean.length; i++) sum += (after[i]! - clean[i]!) ** 2
+  // A data line scars the register file and this does not touch it, so the
+  // second half of the render is the board it always was.
+  expect(Math.sqrt(sum / clean.length) / rms(clean)).toBeLessThan(0.05)
+})
+
+// The register the processor only ever writes zero to. That write is on the same
+// eight wires as every other, so a line held high is a bit set in a register
+// nothing on the chip was meant to set — and the clear that would undo it goes
+// out over the same broken wire.
+const RACE_LINE = 2
+
+test('a stuck bit in the test register races every envelope', () => {
+  const organ = (o: Partial<Controls>) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+      chip => chip.noteOn(0),
+      0.6,
+    )
+  const held = organ({})
+  const raced = organ({ fmDataLine: RACE_LINE, fmDataFault: FAULT.supply })
+  const early = (x: Float32Array) => rms(x.subarray(0, Math.round(0.02 * SR)))
+  const late = (x: Float32Array) => rms(x.subarray(Math.round(0.3 * SR)))
+  // The organ patch holds until the key comes up, and the corruption cannot
+  // reach the bit that says so — what ends the note is the envelope counter
+  // running at a rate no register asked for.
+  expect(late(held) / early(held)).toBeGreaterThan(0.5)
+  expect(early(raced)).toBeGreaterThan(0.01)
+  expect(late(raced) / early(raced)).toBeLessThan(0.05)
+})
+
 test('the chip runs off the toy’s rail, so starving the toy dives it too', () => {
   const hz = (o: Partial<Controls>) => {
     const x = playKeys(

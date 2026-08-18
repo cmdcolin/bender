@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 180 controls in 26 groups, seven bends competing for six slots, 18 ROM
+ruin. 186 controls in 26 groups, seven bends competing for six slots, 18 ROM
 tunes and 49 presets — and everything below comes off the control tables
 themselves, so the list cannot drift from the instrument.
 
@@ -112,28 +112,38 @@ and the machine plays somebody else’s pattern.
 The other synthesiser on the board: two operators a voice, four voices, on the
 same rail. It has no keyboard and no sequencer of its own — its key input is
 soldered onto the toy’s gate line, so it plays whatever strikes a note over
-there. Nothing about it is played, though; it is _configured_, one byte at a
-time, over a bus. Which is what _Data line_ and _Address line_ are for: a byte
-that lands wrong stays wrong until the processor writes that register again, and
-if the wire carrying the key back up cannot go low, the note never ends.
-_Effect_ is the ROM’s other job: a bird, surf, wind, a siren or crickets, each
-of them a program in the processor spraying register writes rather than a
-sample, which makes it the busiest thing the bus ever carries.
+there, and _Struck by_ clips the kit’s trigger lines on beside it. Nothing about
+it is played, though; it is _configured_, one byte at a time, over a bus. Which
+is what _Data line_ and _Address line_ are for: a byte that lands wrong stays
+wrong until the processor writes that register again, and if the wire carrying
+the key back up cannot go low, the note never ends. _Wave line_ is the other
+bus, the one the processor never touches — the sine is a table and a table is an
+address, so a knife there changes the shape of the wave under your hand and
+leaves nothing behind. _Effect_ is the ROM’s other job: a bird, surf, wind, a
+siren or crickets, each of them a program in the processor spraying register
+writes rather than a sample, which makes it the busiest thing the bus ever
+carries.
 
-| control       | range                                                         | what it does                                                                                                                |
-| ------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Level         | off to full                                                   | How loud the FM chip is in the source mix                                                                                   |
-| Voice         | organ, brass, e.piano, bell, clarinet, bass, strings, marimba | Which of the eight patches under the voice buttons the processor sends the chip                                             |
-| Brightness    | off to full                                                   | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control                   |
-| Feedback      | 0 to 7                                                        | How much of the modulator goes back into itself, three bits of it as the part had                                           |
-| Note length   | 0.02 to 4 s                                                   | How long the processor waits before writing the key back up                                                                 |
-| Effect        | off, bird, surf, wind, siren, crickets                        | The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board |
-| Data line     | off, D0, D1, D2, D3, D4, D5, D6, D7                           | Which of the eight wires carrying bytes to the register file the knife found                                                |
-| Data fault    | cut, to ground, to +V, bridged                                | What happened to the wire — the same four things a knife does to any trace                                                  |
-| Address line  | off, A0, A1, A2, A3, A4, A5                                   | Which of the six wires choosing the register the knife found                                                                |
-| Address fault | cut, to ground, to +V, bridged                                | The same four things, on the address side                                                                                   |
-| Cut depth     | off to full                                                   | How far through the trace the knife went — the cut fault is the only one that reads it                                      |
-| Strobe slip   | off to full                                                   | The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught     |
+| control       | range                                                                                                                           | what it does                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Level         | off to full                                                                                                                     | How loud the FM chip is in the source mix                                                                                   |
+| Voice         | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                                                                   | Which of the eight patches under the voice buttons the processor sends the chip                                             |
+| Brightness    | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control                   |
+| Feedback      | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                           |
+| Mod ratio     | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | What the modulator runs at against the note, as a multiple of it                                                            |
+| Car ratio     | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | The same table on the carrier, which moves the note itself rather than its colour                                           |
+| Mod decay     | as patched, 4 ms, 6 ms, 9 ms, 15 ms, 22 ms, 34 ms, 53 ms, 81 ms, 0.12 s, 0.19 s, 0.29 s, 0.45 s, 0.69 s, 1.07 s, 1.64 s, 2.52 s | How long the modulator takes to fall away, which is what makes an FM note a bell or an organ                                |
+| Note length   | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up                                                                 |
+| Struck by     | off, kick, snare, hat, clap, tom, bell, any hit                                                                                 | The kit’s trigger lines, clipped onto this chip’s key input alongside the keyboard’s                                        |
+| Effect        | off, bird, surf, wind, siren, crickets                                                                                          | The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board |
+| Data line     | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                                             | Which of the eight wires carrying bytes to the register file the knife found                                                |
+| Data fault    | cut, to ground, to +V, bridged                                                                                                  | What happened to the wire — the same four things a knife does to any trace                                                  |
+| Address line  | off, A0, A1, A2, A3, A4, A5                                                                                                     | Which of the six wires choosing the register the knife found                                                                |
+| Address fault | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the address side                                                                                   |
+| Cut depth     | off to full                                                                                                                     | How far through the trace the knife went — the cut fault is the only one that reads it                                      |
+| Strobe slip   | off to full                                                                                                                     | The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught     |
+| Wave line     | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                                                                     | Which of the ten wires addressing the sine table the knife found                                                            |
+| Wave fault    | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the wave ROM’s address                                                                             |
 
 ### Chaos osc
 

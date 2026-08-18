@@ -1,7 +1,7 @@
 import type { Controls } from '../../controls'
 import { FAULT_NAMES, lineNames } from '../../dsp/bus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
-import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
+import { fallSecs, FM_VOICE_NAMES, MULT } from '../../dsp/stages/fmVoices'
 import {
   ROM_ADDR_LINES,
   ROM_DATA_LINES,
@@ -39,6 +39,19 @@ function lockToKit(c: Controls, def: SliderDef): number {
   if (speeds.length === 0) return c.chipClockX
   return speeds.reduce((best, v) => (off(v) < off(best) ? v : best))
 }
+
+// The two panel controls the keyboard never had a button for, named in the
+// units the register file counts in: a ratio is an index into the part's own
+// multiplier table, and a decay is one of sixteen rates off the same divider
+// everything else on the board runs on.
+const RATIO_CHOICES = ['as patched', ...MULT.map(m => `${m}×`)]
+const DECAY_CHOICES = [
+  'as patched',
+  ...Array.from({ length: 16 }, (_, i) => {
+    const secs = fallSecs(15 - i)
+    return secs < 0.1 ? `${Math.round(secs * 1000)} ms` : `${secs.toFixed(2)} s`
+  }),
+]
 
 export const SOURCE_GROUPS: Group[] = [
   {
@@ -482,6 +495,36 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How much of the modulator goes back into itself, three bits of it as the part had. Past about five the operator stops making harmonics and starts making noise, which is where the chip’s own drum sounds came from.',
       },
       {
+        key: 'fmModRatio',
+        label: 'Mod ratio',
+        min: 0,
+        max: RATIO_CHOICES.length - 1,
+        step: 1,
+        unit: '',
+        choices: RATIO_CHOICES,
+        help: 'What the modulator runs at against the note, as a multiple of it. This and *Brightness* are the whole of two-operator FM: the ratio picks which harmonics the modulator can put there and brightness decides how many of them arrive. Whole numbers stay in tune with the note and land on its own harmonics — 1 for a fuller version of the same tone, 2 and 3 for reed and brass, 7 upward for bells and metal. The table is the part’s own, so it stops being a scale near the top and repeats: there is no 11 or 13 on this chip, and nothing between the steps, because a ratio here is four bits of a flags byte and nothing finer exists. Left at *as patched*, the voice keeps whatever it shipped with.',
+      },
+      {
+        key: 'fmCarRatio',
+        label: 'Car ratio',
+        min: 0,
+        max: RATIO_CHOICES.length - 1,
+        step: 1,
+        unit: '',
+        choices: RATIO_CHOICES,
+        help: 'The same table on the carrier, which moves the note itself rather than its colour — the operator you hear is the one running at this multiple, so 2 is the same patch an octave up. Set both ratios and what matters is the interval between them: 1 against 2 is a hollow octave, 2 against 3 a fifth, and anything where the modulator is not a whole multiple of the carrier makes sidebands that are not harmonics of anything, which is the clangorous end of the chip.',
+      },
+      {
+        key: 'fmModDecay',
+        label: 'Mod decay',
+        min: 0,
+        max: DECAY_CHOICES.length - 1,
+        step: 1,
+        unit: '',
+        choices: DECAY_CHOICES,
+        help: 'How long the modulator takes to fall away, which is what makes an FM note a bell or an organ: a bright attack that collapses to a sine in eighty milliseconds is a struck thing, and one that never collapses is a blown one. Sixteen rates, because the register holds four bits of it, and they are counted off the same divider as the tempo and the pitch — so starving the rail stretches this along with everything else and the times printed here are the times on a board with its supply intact.',
+      },
+      {
         key: 'fmLength',
         label: 'Note length',
         min: 0.02,
@@ -490,6 +533,16 @@ export const SOURCE_GROUPS: Group[] = [
         unit: 's',
         curve: 'log',
         help: 'How long the processor waits before writing the key back up. A trigger line carries a strike and nothing else, so the length of the note is a decision something has to make and this is where it is made. Your hand overrides it — letting a key go sends the release early — and a cut data line overrides it the other way, by making sure the write never lands.',
+      },
+      {
+        key: 'fmStruck',
+        label: 'Struck by',
+        min: 0,
+        max: N_DRUM_VOICES + 1,
+        step: 1,
+        unit: '',
+        choices: ['off', ...VOICE_LABELS, 'any hit'],
+        help: 'The kit’s trigger lines, clipped onto this chip’s key input alongside the keyboard’s. A drum machine has no notes to send — a trigger line carries a strike and nothing else — so the note is decided at this end: one per voice, in the kit’s own row order, a pentatonic apart, which is what turns a pattern written for drums into a riff. Every voice you clip on takes a channel while it rings, and there are four, so a busy grid steals its own notes. Accents come across as well, in the only place the register file has for them: an accented step is written at a different attenuation. Whatever the grid is doing, the FM chip is now playing it.',
       },
       {
         key: 'fmEffect',
@@ -562,6 +615,28 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         help: 'The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught. Nothing is corrupted here — both bytes arrive intact and the latch simply does not clock, so a perfectly good value commits to whichever register the last pulse that landed had named. Which is a fault no cut wire can imitate: every byte involved is right, and they are only paired one write late. Turn it up and the latch slips further, because a latch that misses holds rather than skips — two misses running is two writes of lag, and a strobe that never lands is the whole run piling into one register. It bites hardest on the effects, where the processor writes the same short run of registers hundreds of times a second: shift that by one and every frequency byte lands in the register carrying the key.',
+      },
+      {
+        key: 'fmWaveLine',
+        label: 'Wave line',
+        min: 0,
+        max: 10,
+        step: 1,
+        unit: '',
+        choices: lineNames('W', 10),
+        shy: true,
+        help: 'Which of the ten wires addressing the sine table the knife found. Nothing on this chip computes a sine — it looks one up, a quarter of a wave with two more bits of phase to build the rest — so the waveform is an address and an address can be cut. It is the opposite bend to the data lines: the processor never touches this bus, the operators read it eight times a sample, and nothing accumulates. The wires are weighted, so where you cut is the whole of it. W8 mirrors the quarter back on itself, and held, the quarter simply runs twice: the chip is still playing the note it was told and what comes out is an octave up with a cliff in it. W9 is the sign, and a sine with no sign is a rectified one — all octave, no fundamental. Below those the wires only move the phase a fraction of a step each, so the bottom of the bus is a wire you can cut and hear almost nothing, which is what a binary bus is.',
+      },
+      {
+        key: 'fmWaveFault',
+        label: 'Wave fault',
+        min: 0,
+        max: FAULT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        shy: true,
+        choices: FAULT_NAMES,
+        help: 'The same four things, on the wave ROM’s address. Cut is the strange one: a severed trace is a pin nothing drives again, so it holds the last phase bit that reached it and every read after that comes back with that bit stale — the line stops being part of the wave at all. Back the cut depth off and the trace still conducts sometimes, so the bit is right on some reads and stale on others and the wave flickers between two shapes at the rate the operators come round. To ground and to +V nail it for every read, which is a waveform rather than a fault.',
       },
     ],
   },
