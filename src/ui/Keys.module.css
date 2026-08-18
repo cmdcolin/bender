@@ -1,3 +1,9 @@
+/* The toy drawn as the object it is: a molded case, a control deck across the
+   top with the badge and the speaker on it, and a keybed sunk into the shell.
+   Everything here is plastic and the light that falls on it — the colours that
+   *mean* something are still the panel's accent and amber, because a lit key has
+   to say the same thing here as the scope and the map say everywhere else. */
+
 .row {
   display: flex;
   align-items: flex-end;
@@ -5,22 +11,177 @@
   gap: 8px;
 }
 
-/* Three octaves wide, and it takes the column: twenty-two white keys in the
-   460px one octave used to sit in are 20px each, which is not a key anybody can
-   hit. touch-action keeps a finger dragged across it playing rather than
-   scrolling the page. */
+/* The case. Three octaves wide and it takes the column: twenty-two white keys
+   in the 460px one octave used to sit in are 20px each, which is not a key
+   anybody can hit. The gradient is one overhead light on beige-grey ABS, and the
+   45° hatch under it is the mold texture — invisible until you look, and the
+   difference between plastic and a rectangle. */
+.body {
+  --case-top: #4c4c58;
+  --case: #2f2f39;
+  --case-low: #1b1b22;
+  --case-edge: #0d0d11;
+  /* The ink every label on a toy's front panel is printed in. */
+  --stamp: #8c8c9a;
+  --decal-pink: #ff3d8b;
+  --decal-cyan: #2fd3d3;
+  --decal-yellow: #ffd23b;
+
+  position: relative;
+  flex: 1 1 460px;
+  min-width: 280px;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 8px 10px 11px;
+  border: 1px solid var(--case-edge);
+  border-radius: 12px 12px 6px 6px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.014) 0 2px,
+      transparent 2px 4px
+    ),
+    linear-gradient(var(--case-top), var(--case) 16%, var(--case-low));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.17),
+    inset 0 -3px 7px rgba(0, 0, 0, 0.45),
+    0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* The two screws holding the shell together, where they went: bottom corners,
+   under the keybed, slot horizontal because that is how the machine that drove
+   them left them. */
+.body::before,
+.body::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 40%,
+      rgba(0, 0, 0, 0.6) 40% 60%,
+      transparent 60%
+    ),
+    radial-gradient(circle at 35% 30%, #6e6e7c, #34343e 65%, #16161b);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.body::before {
+  left: 4px;
+}
+
+.body::after {
+  right: 4px;
+}
+
+/* The front panel: badge, decal, switches, speaker. On a toy every one of them
+   is on the same strip above the keys, so they are here too. */
+.deck {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 22px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* Molded chrome, which is a light gradient with a hard line across the middle —
+   the trick every logo on every keyboard, radio and boombox of the decade was
+   struck from. Italic because nothing in 1985 was upright. */
+.brand {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  background: linear-gradient(#fffdf7 38%, #a9a496 52%, #f4eee0 66%, #cbc5b6);
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.55));
+}
+
+.model {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--stamp);
+}
+
+/* The decal: three bars raked over, the flag every toy, boombox and pair of
+   trainers of the decade wore. The one place on the board where a colour is
+   there to be a colour and doesn't stand for anything. */
+.stripe {
+  flex: none;
+  width: 40px;
+  height: 12px;
+  border-radius: 1px;
+  transform: skewX(-18deg);
+  opacity: 0.8;
+  background: linear-gradient(
+    90deg,
+    var(--decal-pink) 0 30%,
+    transparent 30% 35%,
+    var(--decal-yellow) 35% 65%,
+    transparent 65% 70%,
+    var(--decal-cyan) 70% 100%
+  );
+}
+
+/* One speaker, punched in a grid, which is all a toy ever had. */
+.grille {
+  flex: none;
+  width: 52px;
+  height: 21px;
+  border-radius: 3px;
+  background-color: #272730;
+  background-image: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 0.85) 1.1px,
+    transparent 1.4px
+  );
+  background-size: 5px 5px;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.7),
+    0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* The bed the keys are sunk into: dark, and deep enough that the shell's lip
+   throws a shadow down the top of every key. touch-action keeps a finger dragged
+   across it playing rather than scrolling the page. */
 .keys {
   display: flex;
-  flex: 1 1 420px;
-  min-width: 260px;
-  max-width: 760px;
-  height: 72px;
-  border: 1px solid var(--border-quiet);
-  border-radius: 4px;
-  overflow: hidden;
   position: relative;
+  height: 78px;
+  border-radius: 3px 3px 5px 5px;
+  background: #08080a;
+  overflow: hidden;
   user-select: none;
   touch-action: none;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.85),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* That lip's shadow, over the keys rather than under them, so a key that goes
+   down goes down *into* something. */
+.keys::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: linear-gradient(rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+  z-index: 3;
 }
 
 .whiteWrap {
@@ -36,23 +197,36 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: #d8d4cc;
   border: none;
-  border-right: 1px solid #a9a49a;
+  border-right: 1px solid #979285;
+  border-radius: 0 0 4px 4px;
   cursor: pointer;
-  padding: 0 0 3px;
+  padding: 0 0 4px;
+  background: linear-gradient(#fcf9f1, #f1ece0 52%, #ded8c7 86%, #c5beac);
+  box-shadow:
+    inset -2px 0 3px rgba(0, 0, 0, 0.09),
+    inset 0 -7px 6px -5px rgba(0, 0, 0, 0.35);
 }
 
-/* Lit by a hand — the pointer, the letter keys, a controller on the wire. */
+/* Lit by a hand — the pointer, the letter keys, a controller on the wire. A key
+   under a finger is also a key that has gone down, so it does both. */
 .whiteOn {
-  background: var(--accent);
+  background: linear-gradient(#ffb694, #ff6a45 44%, #e8451f 86%, #c33610);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.3),
+    0 0 14px rgba(255, 93, 59, 0.5);
+  transform: translateY(2px);
 }
 
 /* Lit by the toy playing itself: the ROM's tune, the backing under it, a note a
    drum hit struck through the trigger patch. Amber rather than the accent, so
    what you are playing stays legible over what the board is playing. */
 .whiteChip {
-  background: var(--accent2);
+  background: linear-gradient(#ffdfa4, #ffb03b 44%, #e08c15 86%, #b86f0c);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.3),
+    0 0 14px rgba(255, 176, 59, 0.45);
+  transform: translateY(2px);
 }
 
 .black,
@@ -66,20 +240,32 @@
   right: -18%;
   width: 40%;
   height: 58%;
-  background: #17171a;
-  border: 1px solid #000;
+  border: none;
   border-radius: 0 0 3px 3px;
   cursor: pointer;
   z-index: 2;
-  padding: 0 0 2px;
+  padding: 0 0 3px;
+  background: linear-gradient(#43434f, #22222a 32%, #0f0f14 80%, #2e2e37);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset -1px 0 0 rgba(0, 0, 0, 0.5),
+    0 3px 5px rgba(0, 0, 0, 0.6);
 }
 
 .blackOn {
-  background: var(--accent);
+  background: linear-gradient(#ffa87f, #ff5d3b 46%, #cd3a17);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(255, 93, 59, 0.55);
+  transform: translateY(2px);
 }
 
 .blackChip {
-  background: var(--accent2);
+  background: linear-gradient(#ffd699, #ffb03b 46%, #c87c0f);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(255, 176, 59, 0.45);
+  transform: translateY(2px);
 }
 
 /* A note sounding past either end of the drawn board. The keys stay where your
@@ -88,12 +274,13 @@
 .offLow,
 .offHigh {
   position: absolute;
-  top: 3px;
+  top: 4px;
   font-size: var(--fs-sm);
   line-height: 1;
   color: var(--accent);
+  text-shadow: 0 0 7px rgba(255, 93, 59, 0.8);
   pointer-events: none;
-  z-index: 3;
+  z-index: 4;
 }
 
 .offLow {
@@ -104,8 +291,9 @@
   right: 3px;
 }
 
-/* The letter the key answers to: quiet enough that the board still reads as a
-   keyboard, there enough that nobody has to go looking for the hint. */
+/* The letter the key answers to, printed on the key the way a toy printed its
+   note names: quiet enough that the board still reads as a keyboard, there
+   enough that nobody has to go looking for the hint. */
 .letter,
 .blackLetter {
   font-size: var(--fs-xs);
@@ -114,51 +302,104 @@
 }
 
 .letter {
-  color: #6d675d;
+  color: #7c766a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .blackLetter {
-  color: #8d8880;
+  color: #9a94a4;
 }
 
+.whiteOn .letter,
+.whiteChip .letter {
+  color: rgba(48, 12, 0, 0.65);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.blackOn .blackLetter,
+.blackChip .blackLetter {
+  color: rgba(40, 10, 0, 0.7);
+}
+
+/* Pushed down to the speaker end of the deck, so the badge keeps the left and
+   the switches sit under the hand that reaches past the keys for them. */
 .switches {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 6px;
+  margin-left: auto;
+}
+
+.stamp {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stamp);
 }
 
 .octaves {
   display: flex;
-  gap: 2px;
+  gap: 3px;
 }
 
+/* Molded rubber, not a web button: domed, its own shadow under it, and it goes
+   down when you press it. */
 .hold,
 .holdOn,
 .octave,
 .octaveOn {
-  font-size: var(--fs-sm);
-  padding: 3px 10px;
-  background: var(--bg3);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border: 1px solid #101015;
+  border-radius: 4px;
   cursor: pointer;
+  color: var(--fg2);
+  background: linear-gradient(#484854, #2c2c35 60%, #22222a);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 .octave,
 .octaveOn {
   padding: 3px 6px;
+  font-variant-numeric: tabular-nums;
 }
 
 .hold:hover,
 .octave:hover {
-  border-color: var(--border-hover);
   color: var(--fg);
+  background: linear-gradient(#53535f, #33333d 60%, #26262f);
 }
 
+.hold:active,
+.octave:active,
+.holdOn:active,
+.octaveOn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Thrown, and lit from behind the way a switch on a toy was — the lamp under the
+   cap is the only reason you can tell across a room. */
 .holdOn,
 .octaveOn {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #17171a;
+  color: #2a0d04;
+  background: linear-gradient(#ffb694, #ff6a45 55%, #e8451f);
+  border-color: #8f2a0e;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 9px rgba(255, 93, 59, 0.45);
+}
+
+/* Nothing decorative survives the squeeze: on a narrow board the deck is for the
+   switches, and the badge is the last thing anybody needs. */
+@media (max-width: 640px) {
+  .stripe,
+  .grille,
+  .model {
+    display: none;
+  }
 }

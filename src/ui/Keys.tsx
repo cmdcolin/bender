@@ -205,49 +205,61 @@ export function Keys() {
 
   return (
     <div className={styles.row}>
-      <div className={styles.keys}>
-        {below && <span className={styles.offLow}>◂</span>}
-        {above && <span className={styles.offHigh}>▸</span>}
-        {WHITE_KEYS.map(note => {
-          const black = blackAbove(note)
-          return (
-            <div key={note} className={styles.whiteWrap}>
-              {key(note, false)}
-              {black !== undefined && key(black, true)}
-            </div>
-          )
-        })}
-      </div>
-      <div className={styles.switches}>
-        {/* Beside the keys because the keys are what it explains: a note that
-            comes out flat, quiet or not at all is this number falling. */}
-        <RailLamp />
-        <Tip text="latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down">
-          <button
-            className={hold ? styles.holdOn : styles.hold}
-            onClick={() => {
-              if (hold) releaseAll()
-              setHold(!hold)
-            }}
-          >
-            hold
-          </button>
-        </Tip>
-        <span className={styles.octaves}>
-          {OCTAVES.map(o => (
-            <Tip
-              key={o}
-              text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`} — z and x do the same`}
-            >
+      <div className={styles.body}>
+        <div className={styles.deck}>
+          <span className={styles.badge}>
+            <span className={styles.brand}>bender</span>
+            <span className={styles.model}>3 oct · 16 key</span>
+          </span>
+          <span className={styles.stripe} aria-hidden="true" />
+          <div className={styles.switches}>
+            {/* On the deck, which is where a toy put everything. The lamp is the
+                battery light: a note that comes out flat, quiet or not at all is
+                that number falling. */}
+            <RailLamp />
+            <Tip text="latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down">
               <button
-                className={o === octave ? styles.octaveOn : styles.octave}
-                onClick={() => shiftTo(o)}
+                className={hold ? styles.holdOn : styles.hold}
+                onClick={() => {
+                  if (hold) releaseAll()
+                  setHold(!hold)
+                }}
               >
-                {o > 0 ? `+${o}` : o}
+                hold
               </button>
             </Tip>
-          ))}
-        </span>
+            <span className={styles.stamp}>octave</span>
+            <span className={styles.octaves}>
+              {OCTAVES.map(o => (
+                <Tip
+                  key={o}
+                  text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`} — z and x do the same`}
+                >
+                  <button
+                    className={o === octave ? styles.octaveOn : styles.octave}
+                    onClick={() => shiftTo(o)}
+                  >
+                    {o > 0 ? `+${o}` : o}
+                  </button>
+                </Tip>
+              ))}
+            </span>
+            <span className={styles.grille} aria-hidden="true" />
+          </div>
+        </div>
+        <div className={styles.keys}>
+          {below && <span className={styles.offLow}>◂</span>}
+          {above && <span className={styles.offHigh}>▸</span>}
+          {WHITE_KEYS.map(note => {
+            const black = blackAbove(note)
+            return (
+              <div key={note} className={styles.whiteWrap}>
+                {key(note, false)}
+                {black !== undefined && key(black, true)}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
