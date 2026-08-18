@@ -83,7 +83,7 @@ const bursts = (x: Float32Array) => {
 
 // A cricket is nothing but key-ons, so it is where the famous bend is loudest:
 // the wire carrying the key back down cannot go low, the chip is never told the
-// note ended, and a call of five chirps a second becomes one tone for good.
+// note ended, and a call of six chirps a second becomes one tone for good.
 test('a key line that cannot go low turns the crickets into one tone', () => {
   const at = (o: Partial<Controls>) =>
     renderBender({ ...NOTHING_PLAYING, fmEffect: effect('crickets'), ...o }, 4)

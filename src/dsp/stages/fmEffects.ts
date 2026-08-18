@@ -230,7 +230,7 @@ export const EFFECTS: Effect[] = [
   },
   {
     // The sparse one, and the reason it is worth having: a cricket is nothing
-    // but key-ons. Five strikes and a long gap, so the register carrying the key
+    // but key-ons. Six strikes and a long gap, so the register carrying the key
     // gets hammered and everything else on the bus sits still — which is the
     // effect where a key line that cannot go low is a single tone for good.
     name: 'crickets',
