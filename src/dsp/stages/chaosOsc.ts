@@ -1,5 +1,6 @@
 import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { wrap1 } from '../util/lfo'
 import { flushDenormal } from '../util/softclip'
 
 function shape(phase: number, mode: number): number {
@@ -42,7 +43,7 @@ export class ChaosOsc implements Stage {
 
     for (let i = 0; i < io.n; i++) {
       const pitchF = 0.5 + 0.5 * this.rail
-      this.phaseB = (this.phaseB + (bHz * pitchF) / this.sr) % 1
+      this.phaseB = wrap1(this.phaseB + (bHz * pitchF) / this.sr)
       const b = shape(this.phaseB, mode)
 
       let out = 0
@@ -52,7 +53,7 @@ export class ChaosOsc implements Stage {
         if (micFm) hz += ctx.mic[i]! * 1500
         if (fbFm) hz += ctx.fb[i]! * 1800
         hz = Math.min(Math.max(hz, 0), this.sr * 0.45)
-        this.phaseA = (this.phaseA + hz / this.sr) % 1
+        this.phaseA = wrap1(this.phaseA + hz / this.sr)
         const amp = Math.min(Math.max((this.rail - 0.12) / 0.6, 0), 1)
         out = shape(this.phaseA, mode) * amp
       }

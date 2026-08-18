@@ -88,8 +88,13 @@ class BenderProcessor extends AudioWorkletProcessor {
   // Posted without transfer, so the two slab buffers are allocated once and
   // written over for the whole take. Transferring meant a fresh 128 kB pair off
   // the audio thread's heap every 0.7 s, and a collector run on this thread is
-  // a hole in the sound. The clone the structured serializer takes is the main
-  // thread's problem, and the main thread can afford it.
+  // a hole in the sound.
+  //
+  // The serializer still copies the slabs, and it copies them here — postMessage
+  // serializes synchronously on the thread that calls it. What that buys is the
+  // kind of cost: a 128 kB memcpy every 0.7 s is 13 µs in a block that has
+  // 2.7 ms, and it lands where the schedule can see it, where an allocation
+  // lands whenever the collector decides.
   private flushRec(done: boolean) {
     const n = this.recFill
     this.recFill = 0
@@ -156,13 +161,13 @@ class BenderProcessor extends AudioWorkletProcessor {
     this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {
       this.meterCountdown = METER_EVERY
-      // Unrolled from wherever the write head stands, in two runs rather than a
-      // modulo per sample, into a buffer this owns. It used to be a fresh 2 kB
-      // array transferred away sixty times a second — 128 kB/s of garbage on the
-      // one thread that cannot afford a collection. Posting it untransferred
-      // costs the serializer a copy and this thread nothing; the write head has
-      // already moved on by the time the copy is taken, which is why it is
-      // unrolled into a second buffer rather than posted in place.
+      // Unrolled from wherever the write head stands into a buffer this owns.
+      // It used to be a fresh 2 kB array transferred away sixty times a second
+      // — 128 kB/s of garbage on the one thread that cannot afford a collection.
+      // Posting it untransferred costs a 2 kB copy in the serializer instead,
+      // which is nothing sixty times a second; it is unrolled into a second
+      // buffer because the write head moves on while the ring is still the
+      // ring, and the reader wants it laid out oldest first.
       const scope = this.scopeOut
       const ring = this.scope
       const head = scopePos

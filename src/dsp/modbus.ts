@@ -3,6 +3,7 @@ import { BLOCK } from './stage'
 import type { TriggerBus } from './trigbus'
 import { Chaos, Drunk } from './util/drift'
 import { Decay, Follower, coef } from './util/follower'
+import { wrap1 } from './util/lfo'
 import { mulberry32, type Rng } from './util/rng'
 
 // Where a patch wire can land. Ids match the mod*Dest choices.
@@ -142,7 +143,7 @@ export class ModBus {
     const fall = Math.exp(-1 / (0.12 * this.sr))
     for (let i = 0; i < n; i++) {
       const prev = this.lfoPhase
-      this.lfoPhase = (this.lfoPhase + hz / this.sr) % 1
+      this.lfoPhase = wrap1(this.lfoPhase + hz / this.sr)
       if (this.lfoPhase < prev) this.shValue = this.rng() * 2 - 1
       this.lfo[i] =
         shape === 4

@@ -2,7 +2,7 @@ import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
 import { SineOsc } from '../util/lfo'
-import { OnePoleLP, lpCoef } from '../util/onepole'
+import { lpCoef } from '../util/onepole'
 import { flushDenormal, softclip } from '../util/softclip'
 import { gaussian, mulberry32, type Rng } from '../util/rng'
 
@@ -68,14 +68,19 @@ interface Settings {
 // the oxide itself (hiss laid on the medium, so playback colours it), then the
 // replay head (gap loss, head bump) and the layer bleeding through from the
 // wrap underneath.
+//
+// Its six one-poles are six doubles on this object rather than six objects
+// holding one double each. A head runs all of them every sample, so the old
+// shape was six pointers off to six places on the heap for six multiply-adds,
+// and two heads make that twelve — the same thing the spring tank was paying.
 class TapeHead {
   private line: DelayLine
-  private preLp = new OnePoleLP()
-  private deLp = new OnePoleLP()
-  private tiltLp = new OnePoleLP()
-  private hissLp = new OnePoleLP()
-  private gapLp = new OnePoleLP()
-  private printLp = new OnePoleLP()
+  private pre = 0
+  private de = 0
+  private tiltY = 0
+  private hissY = 0
+  private gap = 0
+  private print = 0
   private env = 0
   private bumpLow = 0
   private bumpBand = 0
@@ -87,31 +92,35 @@ class TapeHead {
   }
 
   process(x: number, delay: number, gapScale: number, s: Settings): number {
-    const pre = this.preLp.process(x * s.drive, s.emphCoef)
-    const rec = softclip(pre + (1 + s.emph) * (x * s.drive - pre))
-    const de = this.deLp.process(rec, s.emphCoef)
+    const xd = x * s.drive
+    this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
+    const pre = this.pre
+    const rec = softclip(pre + (1 + s.emph) * (xd - pre))
+    this.de = flushDenormal(this.de + s.emphCoef * (rec - this.de))
+    const de = this.de
     const played = (de + (rec - de) / (1 + s.emph)) * s.makeup
-    const tl = this.tiltLp.process(played, s.tiltCoef)
-    const printed = played + s.tilt * (played - tl)
+    this.tiltY = flushDenormal(this.tiltY + s.tiltCoef * (played - this.tiltY))
+    const printed = played + s.tilt * (played - this.tiltY)
 
     this.env = flushDenormal(
       this.env + s.envCoef * (Math.abs(printed) - this.env),
     )
     const n = this.gauss()
-    const nLp = this.hissLp.process(n, s.hissCoef)
+    this.hissY = flushDenormal(this.hissY + s.hissCoef * (n - this.hissY))
     const hiss =
-      (n + 0.8 * (n - 2 * nLp)) * s.hiss * (1 + s.modNoise * this.env)
+      (n + 0.8 * (n - 2 * this.hissY)) * s.hiss * (1 + s.modNoise * this.env)
     this.line.write(printed + hiss)
 
     let y = this.line.readHermite(delay)
     if (s.printGain > 0) {
-      y +=
-        this.printLp.process(
-          this.line.readHermite(delay + s.printDelay),
-          s.printCoef,
-        ) * s.printGain
+      const through = this.line.readHermite(delay + s.printDelay)
+      this.print = flushDenormal(
+        this.print + s.printCoef * (through - this.print),
+      )
+      y += this.print * s.printGain
     }
-    y = this.gapLp.process(y, s.gapCoef * gapScale)
+    this.gap = flushDenormal(this.gap + s.gapCoef * gapScale * (y - this.gap))
+    y = this.gap
 
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
     const high = y - this.bumpLow - s.bumpQ * this.bumpBand
@@ -121,12 +130,12 @@ class TapeHead {
 
   reset() {
     this.line.reset()
-    this.preLp.reset()
-    this.deLp.reset()
-    this.tiltLp.reset()
-    this.hissLp.reset()
-    this.gapLp.reset()
-    this.printLp.reset()
+    this.pre = 0
+    this.de = 0
+    this.tiltY = 0
+    this.hissY = 0
+    this.gap = 0
+    this.print = 0
     this.env = 0
     this.bumpLow = 0
     this.bumpBand = 0
@@ -141,8 +150,8 @@ export class Tape implements Stage {
   private headR: TapeHead
   private dryL: DelayLine
   private dryR: DelayLine
-  private driftLp = new OnePoleLP()
-  private scrapeLp = new OnePoleLP()
+  private driftY = 0
+  private scrapeY = 0
   private wow = new SineOsc()
   private wow2 = new SineOsc()
   private flut = new SineOsc()
@@ -227,8 +236,14 @@ export class Tape implements Stage {
     const flut2K = SineOsc.rate(sp.flutHz * 1.54, this.sr)
 
     for (let i = 0; i < io.n; i++) {
-      const drift = this.driftLp.process(this.gauss(), driftCoef) * 260
-      const scrape = this.scrapeLp.process(this.gauss(), scrapeCoef)
+      this.driftY = flushDenormal(
+        this.driftY + driftCoef * (this.gauss() - this.driftY),
+      )
+      const drift = this.driftY * 260
+      this.scrapeY = flushDenormal(
+        this.scrapeY + scrapeCoef * (this.gauss() - this.scrapeY),
+      )
+      const scrape = this.scrapeY
       const wobbleMs =
         wowAmt *
           1.6 *
@@ -269,8 +284,10 @@ export class Tape implements Stage {
 
       // The dry side runs down the same nominal delay, so the blend only combs
       // when the transport actually wobbles.
-      io.l[i] = this.dryL.read(this.nominal) * (1 - mix) + wetL * mix
-      io.r[i] = this.dryR.read(this.nominal) * (1 - mix) + wetR * mix
+      // The dry tap is a whole number of samples and never moves, so it splits
+      // to itself and a zero fraction: nothing here to clamp or floor.
+      io.l[i] = this.dryL.readAt(this.nominal, 0) * (1 - mix) + wetL * mix
+      io.r[i] = this.dryR.readAt(this.nominal, 0) * (1 - mix) + wetR * mix
     }
   }
 
@@ -279,8 +296,8 @@ export class Tape implements Stage {
     this.headR.reset()
     this.dryL.reset()
     this.dryR.reset()
-    this.driftLp.reset()
-    this.scrapeLp.reset()
+    this.driftY = 0
+    this.scrapeY = 0
     this.wow.reset()
     this.wow2.reset()
     this.flut.reset()

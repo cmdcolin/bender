@@ -6,6 +6,7 @@ import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
 import { N_DRUM_VOICES, STEP_CHOICE, voiceMask } from '../trigbus'
 import { Transient } from '../util/follower'
+import { wrap1 } from '../util/lfo'
 import { mulberry32, type Rng } from '../util/rng'
 
 const TAU = 2 * Math.PI
@@ -250,7 +251,7 @@ export class ToyDrum implements Stage {
         const pf = rail.pitchFactor * tune
         if (amp[KICK]! > 0.002) {
           const hz = (40 + 90 * amp[KICK]! * amp[KICK]!) * pf
-          this.phase[KICK] = (this.phase[KICK]! + hz / this.sr) % 1
+          this.phase[KICK] = wrap1(this.phase[KICK]! + hz / this.sr)
           out +=
             Math.sin(this.phase[KICK]! * TAU) * amp[KICK]! * weight[KICK]! * 1.2
         }
@@ -284,12 +285,12 @@ export class ToyDrum implements Stage {
         }
         if (amp[TOM]! > 0.002) {
           const hz = (90 + 70 * amp[TOM]!) * pf
-          this.phase[TOM] = (this.phase[TOM]! + hz / this.sr) % 1
+          this.phase[TOM] = wrap1(this.phase[TOM]! + hz / this.sr)
           out += Math.sin(this.phase[TOM]! * TAU) * amp[TOM]! * weight[TOM]!
         }
         if (amp[BELL]! > 0.002) {
-          this.phase[BELL] = (this.phase[BELL]! + (540 * pf) / this.sr) % 1
-          this.bellPhase2 = (this.bellPhase2 + (800 * pf) / this.sr) % 1
+          this.phase[BELL] = wrap1(this.phase[BELL]! + (540 * pf) / this.sr)
+          this.bellPhase2 = wrap1(this.bellPhase2 + (800 * pf) / this.sr)
           const sq =
             (this.phase[BELL]! < 0.5 ? 1 : -1) +
             (this.bellPhase2 < 0.5 ? 1 : -1)

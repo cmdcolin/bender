@@ -1,3 +1,20 @@
+// Bring an advanced phase back into [0, 1).
+//
+// No increment on this board reaches a whole cycle — every one of them is a
+// frequency divided by the sample rate, and the fastest is clamped under
+// Nyquist — so one subtraction is the modulo. The `% 1` is what a phase moving
+// faster than that would need, and it costs a compare that never fires to keep
+// this the same function `% 1` is.
+//
+// Worth less than it looks. Ten phases a sample go through here and `% 1` is
+// fmod, which costs 16.5 ns on a chain where each turn waits for the last one;
+// but these ten are independent, the hardware overlaps them, and measured that
+// way the compare saves 0.65 ns a turn. Six nanoseconds a sample against two
+// thousand is inside the noise of a shared machine. It stays because it is
+// exact and it reads no worse, not because it showed up.
+export const wrap1 = (phase: number) =>
+  phase < 1 ? phase : phase < 2 ? phase - 1 : phase % 1
+
 // A sine that costs two multiplies.
 //
 // The magic circle: a state pair rotated by k = 2 sin(πf/sr), the same

@@ -7,6 +7,7 @@ import { voiceMask } from '../trigbus'
 import { softclip } from '../util/softclip'
 import { Burst } from '../util/burst'
 import { Drunk } from '../util/drift'
+import { wrap1 } from '../util/lfo'
 import { mulberry32, type Rng } from '../util/rng'
 import { ROMS, type Rom } from './roms'
 
@@ -459,8 +460,9 @@ export class ToyChip implements Stage {
             BASE_HZ * ratio(note) * clock * rail.pitchFactor,
             maxHz,
           )
-          this.phase = (this.phase + hz / this.sr) % 1
-          out += pulse(this.phase, duty, hz / this.sr) * this.env * amp
+          const inc = hz / this.sr
+          this.phase = wrap1(this.phase + inc)
+          out += pulse(this.phase, duty, inc) * this.env * amp
         }
         let keys = 0
         if (accomp > 0) {
@@ -472,9 +474,10 @@ export class ToyChip implements Stage {
                 rail.pitchFactorAt(BASS_TRIM),
               maxHz,
             )
-            this.bassPhase = (this.bassPhase + hz / this.sr) % 1
+            const inc = hz / this.sr
+            this.bassPhase = wrap1(this.bassPhase + inc)
             keys +=
-              pulse(this.bassPhase, duty, hz / this.sr) *
+              pulse(this.bassPhase, duty, inc) *
               this.bassEnv *
               rail.ampFactorAt(BASS_TRIM) *
               accomp
@@ -489,9 +492,10 @@ export class ToyChip implements Stage {
                   rail.pitchFactorAt(trim),
                 maxHz,
               )
-              this.chordPhase[c] = (this.chordPhase[c]! + hz / this.sr) % 1
+              const inc = hz / this.sr
+              this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
               keys +=
-                pulse(this.chordPhase[c]!, duty, hz / this.sr) *
+                pulse(this.chordPhase[c]!, duty, inc) *
                 this.chordEnv *
                 rail.ampFactorAt(trim) *
                 CHORD_GAIN *
@@ -507,9 +511,9 @@ export class ToyChip implements Stage {
             BASE_HZ * ratio(v.note) * clock * rail.pitchFactorAt(trim),
             maxHz,
           )
-          v.phase = (v.phase + hz / this.sr) % 1
-          keys +=
-            pulse(v.phase, duty, hz / this.sr) * v.env * rail.ampFactorAt(trim)
+          const inc = hz / this.sr
+          v.phase = wrap1(v.phase + inc)
+          keys += pulse(v.phase, duty, inc) * v.env * rail.ampFactorAt(trim)
         }
         out = (out + mixVoices(keys)) * this.gateState
         if (spot === 3) out += pot * 0.4
