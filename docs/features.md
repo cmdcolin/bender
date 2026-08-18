@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 177 controls in 26 groups, seven bends competing for six slots, 18 ROM
+ruin. 179 controls in 26 groups, seven bends competing for six slots, 18 ROM
 tunes and 49 presets — and everything below comes off the control tables
 themselves, so the list cannot drift from the instrument.
 
@@ -96,7 +96,9 @@ and the machine plays somebody else’s pattern.
 | Bit depth     | 2 to 16 bits                                            | Word length of the one cheap DAC the whole kit shares                                                                 |
 | Ladder        | off to full                                             | How much of that converter’s error you are hearing                                                                    |
 | Part grade    | 0 to 0.6                                                | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                         |
+| Overflow      | off or wrap                                             | What the converter does with a sum that will not fit its word                                                         |
 | Retrigger     | 0 Hz to 4 kHz                                           | Retriggers the current step at this rate                                                                              |
+| Trigger floor | off to full                                             | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                  |
 | Cross-patch   | off, kick/snare, snare/hat, kick/hat, rotate, whole kit | Bridges two voices’ envelope pins so each amplifier hears the wrong envelope                                          |
 | Cross bleed   | off to full                                             | How far each amplifier leans across                                                                                   |
 | Address line  | off, A0, A1, A2, A3                                     | Which of the four wires carrying a step number from the counter to the pattern memory the knife found                 |

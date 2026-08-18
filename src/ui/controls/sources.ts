@@ -332,6 +332,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'What the reel those resistors came off was sold as — 15% is the bin this kit was built out of. Which rungs are long and which are short is soldered in and does not move; this is how far out they are, so the whole lurch scales without changing where on the signal it lands. Ladder is how much of it reaches the output; this is how bad the parts were to begin with.',
       },
       {
+        key: 'drumOverflow',
+        label: 'Overflow',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['off', 'wrap'],
+        help: 'What the converter does with a sum that will not fit its word. The accumulator behind the ladder is as wide as the word and no wider, and a cheap one rolls over rather than stopping at the top: a step stacking four voices under an accent comes out inside-out, while the quiet steps either side of it are untouched. The fold is the pattern’s own dynamics rather than a setting, so it moves when Level, Decay or the accent row moves, and a kit that wraps can never leave the box past full scale. Off, the sum does, and the limiter at the end of the chain is what deals with it.',
+      },
+      {
         key: 'drumRetrigHz',
         label: 'Retrigger',
         min: 0,
@@ -340,6 +350,15 @@ export const SOURCE_GROUPS: Group[] = [
         unit: 'Hz',
         curve: 'log',
         help: 'Retriggers the current step at this rate. Slow is a machine-gun roll; past ~40 Hz the retrigger period becomes the pitch and the drum screams.',
+      },
+      {
+        key: 'drumTrigFloor',
+        label: 'Trigger floor',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How far a voice has to have drained before the one-shot behind it will answer the trigger line again. At nothing every pulse strikes, which is what a retrigger at audio rate has always been. Wind it up and a line hammered faster than a voice can empty comes out divided: the kit answers a 300 Hz hammer with a rattle of its own, at a rate *Decay* sets rather than *Retrigger* — and one that slows as the supply sags, because the envelope is counted off the same oscillator the tempo is. All the way up, a voice will not strike again until it has stopped sounding. It sits on the trigger line rather than in the bend, so the sequencer, the pads, the mic and the keyboard queue behind it too.',
       },
       {
         key: 'drumCross',

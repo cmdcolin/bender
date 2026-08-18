@@ -511,3 +511,58 @@ test('a bus nobody has cut is the kit it always was', () => {
     render({ ...look, drumAddrFault: 3, drumDataFault: 2, drumBusCut: 0.4 }, 1),
   ).toEqual(render(look, 1))
 })
+
+// The one-shot behind each voice. A trigger line hammered faster than a voice
+// can drain used to strike it every pulse, so the retrigger bend was a tone
+// generator at the knob's own rate and nothing else. With a floor under it the
+// kit answers at a rate of its own — the one its envelopes set.
+test('a trigger floor divides a hammered line down to the kit’s own rate', () => {
+  const hammer: Partial<Controls> = {
+    drumBpm: 60,
+    drumRetrigHz: 300,
+    drumDecay: 0.3,
+  }
+  // Nothing on the grid: a retrigger falls back to the kick, so the hammer is
+  // the only thing striking anything.
+  const buzz = soloVoice(hammer, 4)
+  const quick = soloVoice({ ...hammer, drumTrigFloor: 1 }, 4)
+  const slow = soloVoice({ ...hammer, drumTrigFloor: 1, drumDecay: 0.6 }, 4)
+  // Every pulse strikes, so it never goes quiet: one onset for four seconds.
+  expect(onsets(buzz)).toHaveLength(1)
+  expect(rms(buzz)).toBeGreaterThan(0.05)
+  // Twice the decay is half the rate, which is Decay setting the pitch of the
+  // rattle where Retrigger used to.
+  expect(onsets(quick).length).toBeGreaterThan(12)
+  expect(onsets(quick).length).toBeGreaterThan(onsets(slow).length * 1.7)
+})
+
+// A fold is a discontinuity, and the voices cannot make one: the loudest thing
+// any of them does between two samples is a sine at 800 Hz. So the step between
+// neighbouring samples, against the level overall, is what says the accumulator
+// rolled over rather than that the kit got quieter.
+const slew = (x: Float32Array) => {
+  let s = 0
+  for (let i = 1; i < x.length; i++) s += (x[i]! - x[i - 1]!) ** 2
+  return Math.sqrt(s / x.length) / rms(x)
+}
+
+test('a wrapping accumulator turns the loud step inside-out', () => {
+  const stack: Partial<Controls> = {
+    drumLevel: 1,
+    drumKick: stepMask(2),
+    drumSnare: stepMask(2),
+    drumClap: stepMask(2),
+    drumTom: stepMask(2),
+    drumAccent: stepMask(2),
+    drumBpm: 60,
+  }
+  const peak = (x: Float32Array) =>
+    x.reduce((a, v) => Math.max(a, Math.abs(v)), 0)
+  const stock = soloVoice(stack, 1.5)
+  const wrapped = soloVoice({ ...stack, drumOverflow: 1 }, 1.5)
+  // Rolling over is also a ceiling: what wraps cannot leave the box past full
+  // scale, where the sum that did not wrap left it to the limiter to catch.
+  expect(peak(stock)).toBeGreaterThan(0.8)
+  expect(peak(wrapped)).toBeLessThan(0.7 * peak(stock))
+  expect(slew(wrapped)).toBeGreaterThan(1.6 * slew(stock))
+})

@@ -19,6 +19,11 @@ import { mulberry32, type Rng } from '../util/rng'
 
 const TAU = 2 * Math.PI
 
+// The envelope level a voice stops carrying anything at. It is where the output
+// stops asking the oscillators for samples, and it is the far end of the trigger
+// floor: a voice that has drained this far has stopped sounding.
+const AUDIBLE = 0.002
+
 // The widest word the converter has resistors for, and how far out the reel
 // they came off was sold as. The grade is a knob and this is where it rests: it
 // scales as a ratio against this number, so a kit nobody has re-graded renders
@@ -118,6 +123,10 @@ export class ToyDrum implements Stage {
   private dataLine = -1
   private dataFault = 0
   private busCut = 1
+  // How far a voice has to have drained before its one-shot will answer again.
+  // At 1 nothing is ever locked out, because an envelope leaves at 1 and only
+  // falls: the board that touches this knob is the only one that divides.
+  private trigFloor = 1
   // What this board's resistors came out at, in counts of the rung they sit on.
   // Drawn once: the knob says how bad the ladder is, not which parts are wrong.
   private trim = new Float32Array(LADDER_BITS)
@@ -227,24 +236,36 @@ export class ToyDrum implements Stage {
   // The trigger line: every voice the step names fires at once, at the step's
   // own weight. The clap is the odd one out — it doesn't strike, it claps.
   //
+  // What strikes is not always what was named. Each voice sits behind a one-shot
+  // that will not answer again until its envelope has drained past the floor, so
+  // a line hammered faster than a voice can empty comes out divided — and only
+  // what actually struck is stamped, because the grid lights for hits rather
+  // than for pulses.
+  //
   // Every hit is stamped on the bus as it goes, whether the sequencer struck it,
   // the retrigger bend hammered it, a shout came in the mic or the keyboard's
   // gate reached across. The line is one node; what is soldered to it decides.
   private hit(bits: number, gain: number, ctx: Ctx, i: number) {
     if (!bits) return
+    let struck = 0
     for (let v = 0; v < N_VOICES; v++) {
       if (!(bits & (1 << v))) continue
-      this.gain[v] = gain
       if (v === CLAP) {
+        if (this.clapsLeft > 0 || this.env[CLAP]! > this.trigFloor) continue
+        this.gain[v] = gain
         this.clapsLeft = 3
         this.clapTimer = 0
       } else {
+        if (this.env[v]! > this.trigFloor) continue
+        this.gain[v] = gain
         this.env[v] = 1
         this.phase[v] = 0
       }
+      struck |= 1 << v
     }
-    this.firedSince |= bits
-    ctx.trig.drumFired(i, bits, gain)
+    if (!struck) return
+    this.firedSince |= struck
+    ctx.trig.drumFired(i, struck, gain)
   }
 
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
@@ -281,6 +302,11 @@ export class ToyDrum implements Stage {
     this.dataLine = Math.round(p[IDX.drumDataLine]!) - 1
     this.dataFault = Math.round(p[IDX.drumDataFault]!)
     this.busCut = p[IDX.drumBusCut]!
+    // All the way up is a voice that will not answer again until it has stopped
+    // sounding; at nothing the floor sits above where an envelope starts, so
+    // nothing is ever locked out.
+    this.trigFloor = 1 - (1 - AUDIBLE) * p[IDX.drumTrigFloor]!
+    const wrap = Math.round(p[IDX.drumOverflow]!) === 1
 
     // Every row's length, read once a block: a length that moved mid-block would
     // move a playhead the panel has already drawn.
@@ -387,7 +413,7 @@ export class ToyDrum implements Stage {
         // voice together — two octaves either way at full depth.
         const tune = modTune ? baseTune * octaves(2 * modTune[i]!) : baseTune
         const pf = rail.pitchFactor * tune
-        if (amp[KICK]! > 0.002) {
+        if (amp[KICK]! > AUDIBLE) {
           const hz = (40 + 90 * amp[KICK]! * amp[KICK]!) * pf
           this.phase[KICK] = wrap1(this.phase[KICK]! + hz / this.sr)
           out +=
@@ -414,27 +440,31 @@ export class ToyDrum implements Stage {
         // The filter is a cap on the board and it keeps its charge between hits,
         // so it runs when anything is drawing on the transistor and stops when
         // nothing is: the kit's idle cost is one branch, not one draw.
-        if (amp[SNARE]! > 0.002 || amp[HAT]! > 0.002 || amp[CLAP]! > 0.002) {
+        if (
+          amp[SNARE]! > AUDIBLE ||
+          amp[HAT]! > AUDIBLE ||
+          amp[CLAP]! > AUDIBLE
+        ) {
           const noise = this.rng() * 2 - 1
           this.noiseLp += 0.25 * (noise - this.noiseLp)
-          if (amp[SNARE]! > 0.002)
+          if (amp[SNARE]! > AUDIBLE)
             out +=
               (noise - this.noiseLp * 0.5) * amp[SNARE]! * weight[SNARE]! * 0.8
-          if (amp[HAT]! > 0.002)
+          if (amp[HAT]! > AUDIBLE)
             out += (noise - this.noiseLp) * amp[HAT]! * weight[HAT]! * 0.35
-          if (amp[CLAP]! > 0.002) {
+          if (amp[CLAP]! > AUDIBLE) {
             this.clapFast += 0.45 * (noise - this.clapFast)
             this.clapSlow += 0.05 * (noise - this.clapSlow)
             out +=
               (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
           }
         }
-        if (amp[TOM]! > 0.002) {
+        if (amp[TOM]! > AUDIBLE) {
           const hz = (90 + 70 * amp[TOM]!) * pf
           this.phase[TOM] = wrap1(this.phase[TOM]! + hz / this.sr)
           out += Math.sin(this.phase[TOM]! * TAU) * amp[TOM]! * weight[TOM]!
         }
-        if (amp[BELL]! > 0.002) {
+        if (amp[BELL]! > AUDIBLE) {
           this.phase[BELL] = wrap1(this.phase[BELL]! + (540 * pf) / this.sr)
           this.bellPhase2 = wrap1(this.bellPhase2 + (800 * pf) / this.sr)
           const sq =
@@ -453,7 +483,15 @@ export class ToyDrum implements Stage {
           env[v]! *=
             v === CLAP && this.clapsLeft > 0 ? clapBurstFall : falls[v]!
         }
-        const code = Math.round(out * q)
+        // The accumulator behind the ladder is as wide as the word and no
+        // wider. A cheap one rolls over rather than stopping at the top, so a
+        // step stacking four voices under an accent comes out inside-out while
+        // the quiet steps either side of it are untouched — the fold is the
+        // pattern's own dynamics rather than a setting. Left alone, the sum
+        // leaves the kit past full scale and the limiter at the end of the
+        // chain is what deals with it.
+        let code = Math.round(out * q)
+        if (wrap) code = ((((code + q) % (2 * q)) + 2 * q) % (2 * q)) - q
         out = (code + this.ladderErr(code, bits, ladder, ladderTol)) / q
         out *= rail.ampFactor
       }

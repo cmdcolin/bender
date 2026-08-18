@@ -114,12 +114,19 @@ zero crossing. So it lands hardest on whatever is quietest, and a tail on its
 way out is nothing but zero crossings. Winding Bit depth back up is no escape
 either — quantization error halves at every rung, and the ladder's error is its
 resistors' tolerance, so a longer word buys a longer word's worth of the same
-grit. The kit runs on the same rail and the same divider as the keyboard, so
-starving the toy takes the drums with it and flat batteries drag the tempo down
-with the tune. One oscillator clocks all of it and the envelopes are counted off
-that same oscillator, so a kit going down with the cells goes low, late _and_
-long: the tails stretch as the pattern slows, and the nine milliseconds between
-the clap's three bursts stretch with them until the clap is a flam.
+grit. The accumulator those codes land in is as wide as the word and no wider,
+and **Overflow** decides what a cheap one does when the sum will not fit: roll
+over, and a step stacking four voices under an accent comes out inside-out while
+the quiet steps either side of it are untouched, which makes the fold the
+pattern's own dynamics rather than a setting. A kit that wraps also cannot leave
+the box past full scale; one that doesn't leaves that to the limiter at the end
+of the chain. The kit runs on the same rail and the same divider as the
+keyboard, so starving the toy takes the drums with it and flat batteries drag
+the tempo down with the tune. One oscillator clocks all of it and the envelopes
+are counted off that same oscillator, so a kit going down with the cells goes
+low, late _and_ long: the tails stretch as the pattern slows, and the nine
+milliseconds between the clap's three bursts stretch with them until the clap is
+a flam.
 
 Each row also has its own length. Shift-click a step to bring that row round
 after it — the badge on the right says where it ends, and pressing the badge
@@ -475,6 +482,14 @@ The bends that matter:
 
 - **Retrigger** hammers the drum machine's trigger line; past ~40 Hz the
   retrigger period becomes the pitch and the kit screams.
+- **Trigger floor** is how far a voice has to have drained before the one-shot
+  behind it will answer that line again. At nothing every pulse strikes, which
+  is the tone above. Wind it up and a line hammered faster than a voice can
+  empty comes out divided — the kit answers a 300 Hz hammer with a rattle at a
+  rate its own envelopes set, so Decay is what tunes it and a sagging supply
+  slows it. All the way up, a voice will not strike again until it has stopped
+  sounding. It sits on the trigger line rather than in the bend, so the
+  sequencer, the pads, the mic and the keyboard queue behind it too.
 - **Cross-patch** bridges two drum voices' envelope pins, so each amplifier
   hears the wrong envelope. Bleed it all the way over and the voices swap: the
   kick fires on snare steps, the noise swells over the kick's long decay, and a
