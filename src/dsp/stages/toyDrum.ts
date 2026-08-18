@@ -92,7 +92,7 @@ export class ToyDrum implements Stage {
   private falls = new Float32Array(N_VOICES)
   private bellPhase2 = 0
   private bellLp = 0
-  private snareLp = 0
+  private noiseLp = 0
   private clapFast = 0
   private clapSlow = 0
   private clapsLeft = 0
@@ -349,16 +349,6 @@ export class ToyDrum implements Stage {
           out +=
             Math.sin(this.phase[KICK]! * TAU) * amp[KICK]! * weight[KICK]! * 1.2
         }
-        if (amp[SNARE]! > 0.002) {
-          const noise = this.rng() * 2 - 1
-          this.snareLp += 0.25 * (noise - this.snareLp)
-          out +=
-            (noise - this.snareLp * 0.5) * amp[SNARE]! * weight[SNARE]! * 0.8
-        }
-        if (amp[HAT]! > 0.002) {
-          const noise = this.rng() * 2 - 1
-          out += (noise - this.snareLp) * amp[HAT]! * weight[HAT]! * 0.35
-        }
         // The clap is three bursts nine milliseconds apart and then the room:
         // one noise source, retriggered, with the last hit left to ring on.
         if (this.clapsLeft > 0) {
@@ -370,12 +360,30 @@ export class ToyDrum implements Stage {
             amp[CLAP] = 1
           }
         }
-        if (amp[CLAP]! > 0.002) {
+        // There is one noise transistor on the board, and the snare, the hat and
+        // the clap are all hung off it. Two of them on the same step hear the
+        // same hiss, so they sum coherently into one crack instead of standing
+        // beside each other as two — and the hat is a high-pass rather than a
+        // second noise minus a first one, because what it subtracts is the
+        // filtered version of the sample it is holding.
+        //
+        // The filter is a cap on the board and it keeps its charge between hits,
+        // so it runs when anything is drawing on the transistor and stops when
+        // nothing is: the kit's idle cost is one branch, not one draw.
+        if (amp[SNARE]! > 0.002 || amp[HAT]! > 0.002 || amp[CLAP]! > 0.002) {
           const noise = this.rng() * 2 - 1
-          this.clapFast += 0.45 * (noise - this.clapFast)
-          this.clapSlow += 0.05 * (noise - this.clapSlow)
-          out +=
-            (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
+          this.noiseLp += 0.25 * (noise - this.noiseLp)
+          if (amp[SNARE]! > 0.002)
+            out +=
+              (noise - this.noiseLp * 0.5) * amp[SNARE]! * weight[SNARE]! * 0.8
+          if (amp[HAT]! > 0.002)
+            out += (noise - this.noiseLp) * amp[HAT]! * weight[HAT]! * 0.35
+          if (amp[CLAP]! > 0.002) {
+            this.clapFast += 0.45 * (noise - this.clapFast)
+            this.clapSlow += 0.05 * (noise - this.clapSlow)
+            out +=
+              (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
+          }
         }
         if (amp[TOM]! > 0.002) {
           const hz = (90 + 70 * amp[TOM]!) * pf
@@ -434,7 +442,7 @@ export class ToyDrum implements Stage {
     this.phase.fill(0)
     this.bellPhase2 = 0
     this.bellLp = 0
-    this.snareLp = 0
+    this.noiseLp = 0
     this.clapFast = 0
     this.clapSlow = 0
     this.clapsLeft = 0

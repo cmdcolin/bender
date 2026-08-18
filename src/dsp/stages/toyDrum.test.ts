@@ -400,3 +400,28 @@ test('a sagging rail spreads the clap\u2019s bursts', () => {
   expect(fresh).toBeLessThan(0.02)
   expect(flat).toBeGreaterThan(fresh * 1.08)
 })
+
+// One noise transistor on the board, not three. Two voices hung off it hear the
+// same hiss, so a snare and a hat on the same step sum coherently into one crack
+// — where three independent sources would sum to their energies and nothing
+// more. It is also what makes the hat a high-pass: what it subtracts is the
+// filtered version of the sample it is holding, and drawing its own sample left
+// it subtracting a number the snare had frozen there whenever it last rang.
+test('a snare and a hat on the same step are one noise source, not two', () => {
+  const at: Partial<Controls> = { drumBpm: 60, drumLevel: 0.5 }
+  const hat = soloVoice({ ...at, drumHat: stepMask(2) }, 1)
+  const snare = soloVoice({ ...at, drumSnare: stepMask(2) }, 1)
+  const both = soloVoice(
+    { ...at, drumHat: stepMask(2), drumSnare: stepMask(2) },
+    1,
+  )
+  // The overlap is what carries it: the hat is gone in a few tens of
+  // milliseconds and the snare rings on past it alone.
+  const onset = onsets(both)[0]!
+  const crack = (x: Float32Array) =>
+    x.subarray(onset, onset + Math.round(0.008 * SR))
+  const energy = (x: Float32Array) => x.reduce((a, v) => a + v * v, 0)
+  expect(energy(crack(both))).toBeGreaterThan(
+    1.4 * (energy(crack(hat)) + energy(crack(snare))),
+  )
+})
