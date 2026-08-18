@@ -2,15 +2,8 @@ import { useEffect, useState } from 'react'
 import { useStoreValue } from './ControlsContext'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
 import { engine } from '../engine/engine'
-import {
-  AUTOMAP_KEYS,
-  DEVICE_PROFILES,
-  GM_CHANNEL,
-  midi,
-  VOICE_KEYS,
-  voiceLabel,
-  type DeviceProfile,
-} from './midi'
+import { AUTOMAP_KEYS, DEVICE_PROFILES, midi, type DeviceProfile } from './midi'
+import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
 import { noteName } from '../notes'
 import styles from './MidiPanel.module.css'
 

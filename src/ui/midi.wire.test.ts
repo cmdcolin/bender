@@ -7,7 +7,8 @@ import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { sliderFor } from './controls'
 import { ACCENT_GAIN, hasStep } from '../drums'
-import { ccToValue, midi, padGain, velocity } from './midi'
+import { ccToValue, midi, velocity } from './midi'
+import { padGain } from './pads'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
 

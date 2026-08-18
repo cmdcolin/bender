@@ -1,20 +1,17 @@
 // Knobs on a MIDI controller turning the board's controls, plus the three things
 // a wire carries that aren't a knob: notes, which the toy chip already has a
-// voice for; pads, which the drum machine already has six voices for; and clock,
-// which the drum machine already has a tempo for.
+// voice for; pads, which the drum machine already has six voices for and which
+// keep their own half of this in pads.ts; and clock, which the drum machine
+// already has a tempo for.
 
 import { CONTROL_KEYS, type ControlKey } from '../controls'
-import {
-  ACCENT_GAIN,
-  DRUM_VOICES,
-  VOICE_LABELS,
-  voiceBit,
-  type DrumVoiceKey,
-} from '../drums'
+import { VOICE_LABELS, type DrumVoiceKey } from '../drums'
 import { engine } from '../engine/engine'
 import { noteName, toSemitone } from '../notes'
 import { createStore } from '../listeners'
 import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
+import { PadKit } from './pads'
+import { forget, omit, parseMap, read, write } from './persist'
 import { fromPos, toPos } from './slider-scale'
 import type { SliderDef } from './controls'
 
@@ -29,16 +26,6 @@ export interface Binding {
 }
 
 export type BindingMap = Partial<Record<ControlKey, Binding>>
-
-// One pad = a (channel, note) pair, the way a knob is a (channel, controller)
-// one. A pad has no position to keep and nothing to catch up with: it is a
-// switch, so this is the whole of it.
-export interface PadBinding {
-  channel: number
-  note: number
-}
-
-export type PadMap = Partial<Record<DrumVoiceKey, PadBinding>>
 
 // Where a knob sits for a control it hasn't caught yet, in control units. Soft
 // takeover makes those knobs inert, and without this the panel gives no sign of
@@ -161,154 +148,34 @@ const VELOCITY_FLOOR = 0.3
 export const velocity = (v: number) =>
   VELOCITY_FLOOR + (1 - VELOCITY_FLOOR) * (v / 127)
 
-// Channel 10 — index 9 — is where General MIDI puts percussion, and it is the
-// one thing about a pad that needs no learning: a pad bank sending there is
-// saying it is a drum, whatever else the device is doing.
-export const GM_CHANNEL = 9
-
-// The General MIDI percussion map, folded onto a kit that has six voices. The
-// whole 35…81 range is here rather than the eight notes a pad bank usually
-// sends, because a controller with a full drum layout — or a DAW's clip playing
-// out to us — sends the rest too, and a note that lands nowhere reads as a dead
-// pad. Everything with a stick in it goes to a tom, everything metallic and
-// short to the hat, and the wooden and pitched percussion to the bell.
-export const GM_PADS: Record<DrumVoiceKey, number[]> = {
-  drumKick: [35, 36],
-  drumSnare: [37, 38, 40],
-  drumClap: [39],
-  drumHat: [42, 44, 46, 49, 51, 52, 54, 55, 57, 59, 69, 70, 73, 74],
-  drumTom: [41, 43, 45, 47, 48, 50, 60, 61, 62, 63, 64, 65, 66, 78, 79],
-  drumBell: [53, 56, 58, 67, 68, 71, 72, 75, 76, 77, 80, 81],
-}
-
-export const VOICE_KEYS: DrumVoiceKey[] = DRUM_VOICES.map(v => v.key)
-export const voiceLabel = (key: DrumVoiceKey) =>
-  DRUM_VOICES.find(v => v.key === key)?.label ?? key
-export const voiceIndex = (key: DrumVoiceKey) => VOICE_KEYS.indexOf(key)
-
-const GM_VOICE_BY_NOTE = new Map<number, number>()
-for (const [key, notes] of Object.entries(GM_PADS))
-  for (const note of notes)
-    GM_VOICE_BY_NOTE.set(note, voiceIndex(key as DrumVoiceKey))
-
-/** Which voice a General MIDI percussion note names, or null for a note the
-    standard leaves to the machine. */
-export const gmVoice = (note: number) => GM_VOICE_BY_NOTE.get(note) ?? null
-
-// How hard a pad's hit lands. The kit has two weights of its own — a plain step
-// and an accented one — so a pad plays between them: a middling hit is a plain
-// step, and the hardest is an accent. Softer than middling goes on down to a
-// ghost note, which the sequencer has no way of asking for at all.
-const PAD_FLOOR = 0.3
-export const padGain = (v: number) =>
-  PAD_FLOOR + (ACCENT_GAIN - PAD_FLOOR) * (v / 127)
-
-// Live progress of a pad sweep: hit a pad for each voice, down the kit.
-export interface PadLearnState {
-  done: number
-  total: number
-  next: DrumVoiceKey | null
-}
-
 const BINDINGS_KEY = 'bender.midi'
 // Set once a grant succeeds, so a reload reconnects without another trip to the
 // panel. Cleared on denial, so a revoked permission doesn't leave every load
 // reporting an error nobody asked for.
 const ENABLED_KEY = 'bender.midi.on'
 const NOTES_KEY = 'bender.midi.notes'
-const PADS_KEY = 'bender.midi.pads'
-const PAD_MAP_KEY = 'bender.midi.padmap'
 const CLOCK_KEY = 'bender.midi.clock'
 const LIGHTS_KEY = 'bender.midi.lights'
 const DEBUG_KEY = 'bender.midi.debug'
 
-function read(key: string): string | null {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function write(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-    // A board that will not persist its bindings is still a board.
-  }
-}
-
-function forget(key: string) {
-  try {
-    localStorage.removeItem(key)
-  } catch {
-    // As above.
-  }
-}
-
-// A stored map read back. Anything that no longer names a control with a slider
-// — one renamed or dropped between versions — is discarded rather than left in
-// the map as a binding that fires into nothing: the panel lists bindings by
-// walking the slider table, so a key that table doesn't know could never be
-// shown, and its knob could only be freed by clearing every binding.
-export function parseBindings(raw: string | null): BindingMap {
-  if (raw === null) return {}
-  let stored: unknown
-  try {
-    stored = JSON.parse(raw)
-  } catch {
-    return {}
-  }
-  if (typeof stored !== 'object' || stored === null) return {}
-  const out: BindingMap = {}
-  for (const [k, v] of Object.entries(stored)) {
-    const key = CONTROL_KEYS.find(c => c === k)
-    if (key === undefined || !SLIDER_BY_KEY.has(key)) continue
-    if (typeof v !== 'object' || v === null) continue
-    const { channel, controller, relative } = v as Partial<Binding>
-    if (typeof channel === 'number' && typeof controller === 'number')
-      out[key] =
-        relative === true
-          ? { channel, controller, relative }
-          : { channel, controller }
-  }
-  return out
-}
-
-// A stored pad map read back, dropping anything that no longer names a voice.
-export function parsePads(raw: string | null): PadMap {
-  if (raw === null) return {}
-  let stored: unknown
-  try {
-    stored = JSON.parse(raw)
-  } catch {
-    return {}
-  }
-  if (typeof stored !== 'object' || stored === null) return {}
-  const out: PadMap = {}
-  for (const [k, v] of Object.entries(stored)) {
-    const key = VOICE_KEYS.find(c => c === k)
-    if (key === undefined) continue
-    if (typeof v !== 'object' || v === null) continue
-    const { channel, note } = v as Partial<PadBinding>
-    if (typeof channel === 'number' && typeof note === 'number')
-      out[key] = { channel, note }
-  }
-  return out
-}
+// A stored binding map read back. Anything that no longer names a control with
+// a slider — one renamed or dropped between versions — goes, the same way the
+// pad map drops a voice the kit no longer has.
+export const parseBindings = (raw: string | null): BindingMap =>
+  parseMap(
+    raw,
+    name => CONTROL_KEYS.find(k => k === name && SLIDER_BY_KEY.has(k)) ?? null,
+    stored => {
+      const { channel, controller, relative } = stored as Partial<Binding>
+      if (typeof channel !== 'number' || typeof controller !== 'number')
+        return null
+      return relative === true
+        ? { channel, controller, relative }
+        : { channel, controller }
+    },
+  )
 
 const sourceId = (b: Binding) => `${b.channel}:${b.controller}`
-const padId = (p: PadBinding) => `${p.channel}:${p.note}`
-
-/** A copy of a partial map without one key. */
-export function omit<K extends string, V>(
-  map: Partial<Record<K, V>>,
-  key: K,
-): Partial<Record<K, V>> {
-  const out = { ...map }
-  delete out[key]
-  return out
-}
 
 type Span = Pick<SliderDef, 'min' | 'max' | 'step' | 'curve'>
 
@@ -391,6 +258,11 @@ export function bpmFromPulses(pulses: number[]): number | null {
 const GESTURE_GAP_MS = 400
 
 class Midi {
+  // The kit's side of the wire, which is a different instrument: pads bind by
+  // being hit rather than by arming a control, and nothing over there has a
+  // position to catch up with. Declared first because the stores below are it.
+  private readonly kit = new PadKit()
+
   readonly status = createStore<MidiStatus>('idle')
   readonly bindings = createStore<BindingMap>(parseBindings(read(BINDINGS_KEY)))
   readonly armed = createStore<ControlKey | null>(null)
@@ -401,9 +273,9 @@ class Midi {
   /** Notes play the toy chip's keyboard. */
   readonly notes = createStore(read(NOTES_KEY) !== '0')
   /** Pads play the kit. Channel 10 needs no binding at all; anything else does. */
-  readonly pads = createStore(read(PADS_KEY) !== '0')
-  readonly padBindings = createStore<PadMap>(parsePads(read(PAD_MAP_KEY)))
-  readonly padLearn = createStore<PadLearnState | null>(null)
+  readonly pads = this.kit.on
+  readonly padBindings = this.kit.bindings
+  readonly padLearn = this.kit.learn
   /** Clock ticks set the drum machine's tempo. */
   readonly clockLock = createStore(read(CLOCK_KEY) === '1')
   /** Send each bound control's value back out, so a device with lit rings shows
@@ -417,12 +289,6 @@ class Midi {
   private access: MIDIAccess | null = null
   private onStateChange: ((e: Event) => void) | null = null
   private keyBySource = new Map<string, ControlKey>()
-  private voiceByPad = new Map<string, number>()
-  private padSweep: {
-    keys: DrumVoiceKey[]
-    index: number
-    seen: Set<string>
-  } | null = null
   private sweep: {
     keys: ControlKey[]
     index: number
@@ -465,7 +331,6 @@ class Midi {
 
   constructor() {
     this.reindex()
-    this.reindexPads()
     this.watchControls()
     if (read(ENABLED_KEY) === '1') this.enable()
   }
@@ -512,7 +377,7 @@ class Midi {
 
   arm(key: ControlKey | null) {
     this.stopLearn()
-    this.stopPadLearn()
+    this.kit.stopLearn()
     this.armed.set(key)
   }
 
@@ -523,35 +388,27 @@ class Midi {
   }
 
   setPads(on: boolean) {
-    this.pads.set(on)
-    write(PADS_KEY, on ? '1' : '0')
-    if (!on) this.stopPadLearn()
+    this.kit.setOn(on)
   }
 
-  /** Hit a pad for each voice, down the kit. Any layout on any channel: a pad
-      bank that isn't on channel 10, or isn't General MIDI, is exactly what this
-      is for. Replaces whatever was learned before. */
+  /** Hit a pad for each of the kit's voices in turn — for a pad bank that isn't
+      on channel 10, or isn't General MIDI. Replaces whatever was learned. */
   learnPads() {
     this.armed.set(null)
     this.stopLearn()
-    this.padSweep = { keys: VOICE_KEYS, index: 0, seen: new Set() }
-    this.persistPads({})
-    this.reportPadSweep()
+    this.kit.learnAll()
   }
 
   stopPadLearn() {
-    if (this.padSweep !== null) {
-      this.padSweep = null
-      this.padLearn.set(null)
-    }
+    this.kit.stopLearn()
   }
 
   clearPad(key: DrumVoiceKey) {
-    this.persistPads(omit(this.padBindings.get(), key))
+    this.kit.clear(key)
   }
 
   clearPads() {
-    this.persistPads({})
+    this.kit.clearAll()
   }
 
   setClockLock(on: boolean) {
@@ -675,54 +532,6 @@ class Midi {
     this.keyBySource.clear()
     for (const [key, b] of Object.entries(this.bindings.get()))
       if (b !== undefined) this.keyBySource.set(sourceId(b), key as ControlKey)
-  }
-
-  private reindexPads() {
-    this.voiceByPad.clear()
-    for (const [key, p] of Object.entries(this.padBindings.get()))
-      if (p !== undefined)
-        this.voiceByPad.set(padId(p), voiceIndex(key as DrumVoiceKey))
-  }
-
-  private persistPads(next: PadMap) {
-    this.padBindings.set(next)
-    this.reindexPads()
-    write(PAD_MAP_KEY, JSON.stringify(next))
-  }
-
-  // A pad drives one voice at a time, the way a knob drives one control: the
-  // voice a pad already had is dropped rather than doubled up on.
-  private bindPad(key: DrumVoiceKey, p: PadBinding) {
-    const prev = this.voiceByPad.get(padId(p))
-    const map =
-      prev === undefined
-        ? { ...this.padBindings.get() }
-        : omit(this.padBindings.get(), VOICE_KEYS[prev] ?? key)
-    map[key] = p
-    this.persistPads(map)
-  }
-
-  private reportPadSweep() {
-    const s = this.padSweep
-    this.padLearn.set(
-      s === null
-        ? null
-        : {
-            done: s.index,
-            total: s.keys.length,
-            next: s.keys[s.index] ?? null,
-          },
-    )
-  }
-
-  /** Which of the kit's voices a note strikes: what was learned first, then
-      General MIDI on channel 10, and null for a note that is nobody's pad — a
-      keyboard's, most of the time, which is where it goes instead. */
-  padVoice(channel: number, note: number): number | null {
-    if (!this.pads.get()) return null
-    const learned = this.voiceByPad.get(padId({ channel, note }))
-    if (learned !== undefined) return learned
-    return channel === GM_CHANNEL ? gmVoice(note) : null
   }
 
   private persist(next: BindingMap) {
@@ -966,11 +775,11 @@ class Midi {
     // driving the kit says which voice it drove: the bytes alone can't tell a
     // pad from a key, and that is the one thing you want to read while binding.
     const struck =
-      this.padSweep === null &&
+      !this.kit.binding &&
       data.length === 3 &&
       (head & 0xf0) === 0x90 &&
       (data[2] ?? 0) > 0
-        ? this.padVoice(head & 0x0f, data[1] ?? 0)
+        ? this.kit.voiceFor(head & 0x0f, data[1] ?? 0)
         : null
     this.record(
       [...data],
@@ -991,30 +800,10 @@ class Midi {
     // running-status spelling of a Note Off, and the chip's keyboard latches, so
     // both have to reach noteOff or the note never lets go.
     if (status === 0x90 || status === 0x80) {
-      const channel = head & 0x0f
       const on = status === 0x90 && second > 0
-      const sweep = this.padSweep
-      if (sweep !== null) {
-        // Only a hit binds — the finger coming back up is the same pad — and a
-        // pad already claimed this sweep can be leaned on without eating the
-        // voice after it.
-        const waiting = sweep.keys[sweep.index]
-        const id = `${channel}:${first}`
-        if (!on || waiting === undefined || sweep.seen.has(id)) return
-        sweep.seen.add(id)
-        this.bindPad(waiting, { channel, note: first })
-        sweep.index += 1
-        if (sweep.index >= sweep.keys.length) this.padSweep = null
-        this.reportPadSweep()
-        return
-      }
-      const voice = this.padVoice(channel, first)
-      // A drum has no release: the pad's note off is a finger lifting off a
-      // switch that has already fired, so there is nothing to let go of.
-      if (voice !== null) {
-        if (on) engine.drumHit(voiceBit(voice), padGain(second))
-        return
-      }
+      // Binding a pad, striking a voice, or swallowing the finger coming back
+      // up — whichever it was, the kit has had it and the chip must not.
+      if (this.kit.play(head & 0x0f, first, on, second)) return
       if (!this.notes.get()) return
       const semitone = toSemitone(first)
       if (on) this.strike(semitone, velocity(second))

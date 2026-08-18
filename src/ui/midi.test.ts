@@ -10,15 +10,11 @@ import {
   ccToValue,
   hasCaught,
   isOffsetSpelling,
-  gmVoice,
-  GM_PADS,
-  omit,
-  padGain,
   parseBindings,
-  parsePads,
   velocity,
-  VOICE_KEYS,
 } from './midi'
+import { gmVoice, GM_PADS, padGain, parsePads, VOICE_KEYS } from './pads'
+import { omit } from './persist'
 import { toPos } from './slider-scale'
 
 test('a CC sweeps the whole of a control and lands on its grid', () => {
