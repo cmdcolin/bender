@@ -12,6 +12,30 @@ import { mulberry32, type Rng } from '../util/rng'
 const TAU = 2 * Math.PI
 const ACCENT_GAIN = 1.7
 
+// The widest word the converter has resistors for, and how far out the worst of
+// them is when the ladder knob is all the way up.
+//
+// A ladder DAC halves the weight at every rung down the word, and it does that
+// with resistors somebody bought by the reel. Each one is out by its tolerance,
+// so the steps are uneven — and unevenly, because the error scales with the rung
+// it sits on: the top resistor is worth half of full scale and half of its
+// tolerance is an enormous number of counts. Which is why the sound of a cheap
+// converter is not hiss. It is one lurch, at the code where every bit changes at
+// once, and for a signal that code is the zero crossing.
+const LADDER_BITS = 16
+const LADDER_TOL = 0.15
+
+// How close to nominal the best rung on the board can be.
+//
+// A part is not a coin toss around its marked value. Anything that came out of
+// the press inside a tighter band was measured, sorted and sold as a tighter
+// grade, so what is left in the cheap bin is the parts that missed — reliably
+// out, by somewhere between most of the tolerance and all of it. Drawing flat
+// through zero instead gave the board a rung or two that happened to be nearly
+// right, and the stock word length landed on one of them: the knob did least at
+// the setting the kit ships at.
+const LADDER_FLOOR = 0.4
+
 // Voice order is the bit order of a step, and the order of the rows in the
 // panel's grid — both come off the one table in drums.ts. The pattern lives in
 // one sixteen-bit mask per voice, step 1 in the high bit.
@@ -75,6 +99,9 @@ export class ToyDrum implements Stage {
   private lastReboot = 0
   private rng: Rng
   private micTrig: Transient
+  // What this board's resistors came out at, in counts of the rung they sit on.
+  // Drawn once: the knob says how bad the ladder is, not which parts are wrong.
+  private trim = new Float32Array(LADDER_BITS)
 
   constructor(
     private readonly sr: number,
@@ -84,6 +111,25 @@ export class ToyDrum implements Stage {
   ) {
     this.rng = mulberry32(seed)
     this.micTrig = new Transient(sr)
+    // Off its own stream: the resistors were soldered on before the kit made a
+    // sound, and drawing them out of the noise source would move every hit.
+    const parts = mulberry32(seed ^ 0x1adde4)
+    for (let k = 0; k < LADDER_BITS; k++) {
+      const off =
+        (LADDER_FLOOR + (1 - LADDER_FLOOR) * parts()) * LADDER_TOL * (1 << k)
+      this.trim[k] = parts() < 0.5 ? -off : off
+    }
+  }
+
+  // What the converter puts out instead of the code it was handed, in counts.
+  // Bit depth is where the word is tapped off the ladder, so shortening it hands
+  // the top of the scale to a different resistor and the error changes character
+  // as well as size.
+  private ladderErr(code: number, bits: number, amt: number): number {
+    const word = code + (1 << (bits - 1))
+    let err = 0
+    for (let k = 0; k < bits; k++) if ((word >> k) & 1) err += this.trim[k]!
+    return err * amt
   }
 
   when(p: Float32Array) {
@@ -156,7 +202,9 @@ export class ToyDrum implements Stage {
     const modCross = cross === 0 ? null : ctx.mod.read(DEST.drumCross)
     const rail = this.rail
     // The kit shares one cheap DAC; the panel's Bit depth is its word length.
-    const q = Math.pow(2, Math.max(p[IDX.drumBits]!, 1) - 1)
+    const bits = Math.max(Math.round(p[IDX.drumBits]!), 1)
+    const q = Math.pow(2, bits - 1)
+    const ladder = p[IDX.drumLadder]!
 
     // Every row's length, read once a block: a length that moved mid-block would
     // move a playhead the panel has already drawn.
@@ -305,7 +353,8 @@ export class ToyDrum implements Stage {
           env[v]! *=
             v === CLAP && this.clapsLeft > 0 ? clapBurstFall : falls[v]!
         }
-        out = Math.round(out * q) / q
+        const code = Math.round(out * q)
+        out = (code + this.ladderErr(code, bits, ladder)) / q
         out *= rail.ampFactor
       }
 

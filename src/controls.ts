@@ -28,6 +28,7 @@ export const DEFAULT_CONTROLS = {
   drumTune: 1,
   drumDecay: 1,
   drumBits: 7,
+  drumLadder: 0,
   drumRetrigHz: 0,
   drumCross: 0,
   drumCrossAmt: 0.5,

@@ -303,6 +303,15 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Word length of the one cheap DAC the whole kit shares. Stock is 7 — wind it down and the tails turn to gravel before the hits do.',
       },
       {
+        key: 'drumLadder',
+        label: 'Ladder',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How far out the resistors in that converter are. A ladder halves its weight at every rung down the word, and a kit like this got its rungs off a reel nobody measured, so the steps come out uneven — and unevenly, because the error scales with the rung: half the tolerance of the top resistor is an enormous number of counts. That is why a cheap converter is not hiss. It is one lurch, at the code where every bit changes at once, and for a signal that code is the zero crossing — so it lands hardest on whatever is quietest, and a tail on its way out is nothing but zero crossings. Bit depth moves where the word is tapped off the ladder, so it changes the character of the error as well as the size.',
+      },
+      {
         key: 'drumRetrigHz',
         label: 'Retrigger',
         min: 0,

@@ -36,6 +36,7 @@ export const PARAM_DEFS = [
   ['drumTune', 'slew'],
   ['drumDecay', 'slew'],
   ['drumBits', 'step'],
+  ['drumLadder', 'slew'],
   ['drumRetrigHz', 'slew'],
   ['drumCross', 'step'],
   ['drumCrossAmt', 'slew'],

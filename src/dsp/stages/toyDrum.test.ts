@@ -105,6 +105,56 @@ test('bit depth is the kit’s own DAC: the quiet tail falls off the bottom', ()
   expect(rms(crushed)).toBeLessThan(rms(stock) * 0.2)
 })
 
+// The whole kit through the converter, loud and quiet parts kept apart: what
+// the ladder does is not noise added to the signal, it is an error that depends
+// on which bits are set, and the code where every bit changes at once is
+// midscale — the zero crossing.
+const LOUD = 0.15
+
+function ladderError(bits: number, amt: number) {
+  const board: Partial<Controls> = {
+    chipLevel: 0,
+    drumBpm: 120,
+    drumDecay: 1.5,
+    drumBits: bits,
+  }
+  const clean = render(board, 3)
+  const bent = render({ ...board, drumLadder: amt }, 3)
+  const at = (want: boolean) => {
+    let err = 0
+    let sig = 0
+    for (let i = 0; i < clean.length; i++) {
+      const c = clean[i]!
+      if (Math.abs(c) > LOUD !== want) continue
+      err += (bent[i]! - c) ** 2
+      sig += c * c
+    }
+    return Math.sqrt(err / sig)
+  }
+  return { loud: at(true), quiet: at(false) }
+}
+
+test('an untrimmed ladder lands hardest on whatever is quietest', () => {
+  const off = ladderError(7, 0)
+  expect(off.loud).toBe(0)
+  expect(off.quiet).toBe(0)
+  const bad = ladderError(7, 1)
+  expect(bad.loud).toBeGreaterThan(0.02)
+  expect(bad.quiet).toBeGreaterThan(bad.loud * 3)
+})
+
+// The difference between a bad converter and a short word. Quantization error
+// falls by half at every rung, so a fourteen-bit kit is a hundred and twenty
+// times cleaner than a seven-bit one; the ladder's error is its resistors'
+// tolerance, and a longer word buys a longer word's worth of the same
+// tolerance. Wind Bit depth up and the grit is still there.
+test('a longer word does not buy its way out of the ladder', () => {
+  const short = ladderError(7, 1)
+  const long = ladderError(14, 1)
+  expect(long.loud).toBeGreaterThan(short.loud * 0.25)
+  expect(long.quiet).toBeGreaterThan(0.05)
+})
+
 test('bridged envelope pins put the kick on the snare steps', () => {
   const look: Partial<Controls> = {
     chipLevel: 0,

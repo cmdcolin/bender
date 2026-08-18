@@ -95,10 +95,20 @@ so a ROM is somewhere to start from rather than a mode to be stuck in. **Swing**
 holds every offbeat step back and takes the time off the step after, so the
 shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
 once, and **Bit depth** is the word length of the one cheap DAC all six voices
-share — wind it down and the tails fall off the bottom before the hits do. The
-kit runs on the same rail and the same divider as the keyboard, so starving the
-toy takes the drums with it and flat batteries drag the tempo down with the
-tune.
+share — wind it down and the tails fall off the bottom before the hits do.
+**Ladder** is how far out that converter's resistors are. A ladder halves its
+weight at every rung down the word, and this one got its rungs off a reel nobody
+measured, so the steps come out uneven — unevenly, because the error scales with
+the rung it sits on and half the tolerance of the top resistor is an enormous
+number of counts. Which is why a cheap converter is not hiss: it is one lurch,
+at the code where every bit changes at once, and for a signal that code is the
+zero crossing. So it lands hardest on whatever is quietest, and a tail on its
+way out is nothing but zero crossings. Winding Bit depth back up is no escape
+either — quantization error halves at every rung, and the ladder's error is its
+resistors' tolerance, so a longer word buys a longer word's worth of the same
+grit. The kit runs on the same rail and the same divider as the keyboard, so
+starving the toy takes the drums with it and flat batteries drag the tempo down
+with the tune.
 
 Each row also has its own length. Shift-click a step to bring that row round
 after it — the badge on the right says where it ends, and pressing the badge
