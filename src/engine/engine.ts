@@ -88,6 +88,11 @@ export class Engine {
   readonly hunting = createStore(false)
   /** True while the board is nudging itself along on a timer. */
   readonly drifting = createStore(false)
+  // Which semitones are down, whoever put them there: the on-screen keys, the
+  // computer keyboard, a controller on the wire. The chip holds a note until it
+  // is let go, and the keyboard on the panel draws itself from this, so what the
+  // wire is playing shows up under your eyes rather than only in your ears.
+  readonly sounding = createStore<ReadonlySet<number>>(new Set())
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -530,15 +535,29 @@ export class Engine {
 
   noteOn(semitone: number, gain = 1) {
     this.post({ kind: 'noteOn', semitone, gain })
+    this.hold(semitone, true)
   }
 
   noteOff(semitone: number) {
     this.post({ kind: 'noteOff', semitone })
+    this.hold(semitone, false)
+  }
+
+  // Striking a note that is already down is no news to anything watching, so
+  // the set only turns over when it really changes.
+  private hold(semitone: number, down: boolean) {
+    const notes = this.sounding.get()
+    if (notes.has(semitone) === down) return
+    const next = new Set(notes)
+    if (down) next.add(semitone)
+    else next.delete(semitone)
+    this.sounding.set(next)
   }
 
   panic() {
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
     this.post({ kind: 'panic' })
+    if (this.sounding.get().size > 0) this.sounding.set(new Set())
   }
 }
 

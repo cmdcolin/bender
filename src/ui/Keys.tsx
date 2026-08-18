@@ -1,5 +1,6 @@
 import { useEffect, useState, type PointerEvent } from 'react'
 import { engine } from '../engine/engine'
+import { useStoreValue } from './ControlsContext'
 import { RailLamp } from './RailLamp'
 import styles from './Keys.module.css'
 
@@ -62,7 +63,16 @@ export function Keys() {
   const [hold, setHold] = useState(false)
   const [octave, setOctave] = useState(0)
   const shift = octave * 12
-  const isHeld = (note: number) => held.has(note + shift)
+  // What this board sent, and what is sounding anywhere. They part company the
+  // moment a controller is plugged in: a key lights for whoever struck it, but
+  // only the pointer's own notes answer to the pointer letting go.
+  const sounding = useStoreValue(engine.sounding)
+  const isDown = (note: number) => held.has(note + shift)
+  const isLit = (note: number) => sounding.has(note + shift)
+  // A keybed reaches further than three octaves, so a note played past either
+  // end of what is drawn would light nothing at all and read as a dead wire.
+  const below = [...sounding].some(s => s < shift)
+  const above = [...sounding].some(s => s > TOP + shift)
 
   const press = (note: number) => {
     const semitone = note + shift
@@ -138,10 +148,10 @@ export function Keys() {
     <button
       className={
         black
-          ? isHeld(note)
+          ? isLit(note)
             ? styles.blackOn
             : styles.black
-          : isHeld(note)
+          : isLit(note)
             ? styles.whiteOn
             : styles.white
       }
@@ -152,7 +162,7 @@ export function Keys() {
       }}
       onPointerEnter={slideInto(note)}
       onPointerUp={() => release(note)}
-      onPointerLeave={() => isHeld(note) && release(note)}
+      onPointerLeave={() => isDown(note) && release(note)}
     >
       {LETTER[note] && (
         <span className={black ? styles.blackLetter : styles.letter}>
@@ -165,6 +175,8 @@ export function Keys() {
   return (
     <div className={styles.row}>
       <div className={styles.keys}>
+        {below && <span className={styles.offLow}>◂</span>}
+        {above && <span className={styles.offHigh}>▸</span>}
         {WHITE_KEYS.map(note => {
           const black = blackAbove(note)
           return (

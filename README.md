@@ -525,12 +525,16 @@ stranded to begin with. An encoder needs it most, having no pointer of its own â
 the ring is the only place its control's value can be shown on the hardware.
 
 Notes play the toy chip's keyboard, with A3 where the ROM has it, so a
-controller strikes the same voice the on-screen keys do. Velocity comes with
-them: the toy's own keys are switches and always strike full, but a wire onto
-the gate can arrive at any level, which is what the trigger patch has always
-done. Clock is the other half: the drum machine can follow the tick on the wire,
-and it does it by writing the tempo control, so the slider moves with the room
-rather than fighting it.
+controller strikes the same voice the on-screen keys do â€” and lights it, since
+the drawn board follows every note that is down whoever put it there. A keybed
+reaches further than the three octaves on screen, so a note played past either
+end puts a mark at that end rather than lighting nothing: the octave switch is
+what brings it under the drawn keys. Velocity comes with them: the toy's own
+keys are switches and always strike full, but a wire onto the gate can arrive at
+any level, which is what the trigger patch has always done. Clock is the other
+half: the drum machine can follow the tick on the wire, and it does it by
+writing the tempo control, so the slider moves with the room rather than
+fighting it.
 
 ## Run
 

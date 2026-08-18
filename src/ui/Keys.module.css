@@ -18,6 +18,7 @@
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
   overflow: hidden;
+  position: relative;
   user-select: none;
   touch-action: none;
 }
@@ -65,6 +66,28 @@
 
 .blackOn {
   background: var(--accent);
+}
+
+/* A note sounding past either end of the drawn board. The keys stay where your
+   hands are; this says the wire is playing somewhere else, and which way the
+   octave switch has to go to meet it. */
+.offLow,
+.offHigh {
+  position: absolute;
+  top: 3px;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  color: var(--accent);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.offLow {
+  left: 3px;
+}
+
+.offHigh {
+  right: 3px;
 }
 
 /* The letter the key answers to: quiet enough that the board still reads as a

@@ -151,3 +151,27 @@ test('drift walks the board along on its own, and banks none of it', () => {
   engine.set('dlyFb', 0.2)
   expect(engine.history.get().past).toHaveLength(1)
 })
+
+// The panel's keyboard draws itself from this, so what it holds is what lights.
+test('the notes that are down are the notes that were struck and not let go', () => {
+  const engine = new Engine()
+  engine.noteOn(3)
+  engine.noteOn(7)
+  expect([...engine.sounding.get()]).toEqual([3, 7])
+
+  engine.noteOff(3)
+  expect([...engine.sounding.get()]).toEqual([7])
+
+  // Panic silences the chip, so nothing is left lit over a voice that is gone.
+  engine.panic()
+  expect(engine.sounding.get().size).toBe(0)
+})
+
+test('striking a note already down is not news', () => {
+  const engine = new Engine()
+  engine.noteOn(3)
+  const before = engine.sounding.get()
+  engine.noteOn(3)
+  engine.noteOff(9)
+  expect(engine.sounding.get()).toBe(before)
+})
