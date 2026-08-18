@@ -216,8 +216,11 @@ export class ToyDrum implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.drumLevel]!
-    // Same divider, same cells as the keyboard: flat batteries drag the tempo.
-    const stepHz = (p[IDX.drumBpm]! / 60) * 4 * this.rail.clockFactor
+    const rail = this.rail
+    // Same divider, same cells as the keyboard: flat batteries drag the tempo,
+    // and everything else this chip counts — see perSample below.
+    const clock = rail.clockFactor
+    const stepHz = (p[IDX.drumBpm]! / 60) * 4 * clock
     const swing = Math.min(Math.max(p[IDX.drumSwing]!, 0), 0.9)
     const baseTune = p[IDX.drumTune]!
     const modTune = ctx.mod.read(DEST.drumTune)
@@ -229,7 +232,6 @@ export class ToyDrum implements Stage {
     const cross = Math.round(p[IDX.drumCross]!)
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
     const modCross = cross === 0 ? null : ctx.mod.read(DEST.drumCross)
-    const rail = this.rail
     // The kit shares one cheap DAC; the panel's Bit depth is its word length.
     const bits = Math.max(Math.round(p[IDX.drumBits]!), 1)
     const q = Math.pow(2, bits - 1)
@@ -248,8 +250,16 @@ export class ToyDrum implements Stage {
       this.stepClock = 0
     }
 
-    const perSample = -1 / (this.sr * decay)
+    // There is one oscillator in the chip and the envelopes are counted off it,
+    // the same as the tempo and the pitch. So a rail that drags the pattern slow
+    // drags every tail out with it, and a kit going down with the batteries goes
+    // low, late and long rather than only low and late. Decay is a divisor on
+    // that count, not a time: the knob keeps saying what it always said.
+    const perSample = -clock / (this.sr * decay)
     const clapBurstFall = Math.exp(70 * perSample)
+    // The clap's nine milliseconds are counted off the same oscillator, so on a
+    // sagging rail the three bursts spread into a flam.
+    const clapGap = 0.009 / clock
     const falls = this.falls
     falls[KICK] = Math.exp(9 * perSample)
     falls[SNARE] = Math.exp(22 * perSample)
@@ -354,7 +364,7 @@ export class ToyDrum implements Stage {
         if (this.clapsLeft > 0) {
           this.clapTimer -= 1 / this.sr
           if (this.clapTimer <= 0) {
-            this.clapTimer = 0.009
+            this.clapTimer = clapGap
             this.clapsLeft--
             env[CLAP] = 1
             amp[CLAP] = 1

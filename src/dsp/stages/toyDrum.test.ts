@@ -310,3 +310,93 @@ test('the kit reports what fired, once each', () => {
   // Reading takes them: a hit the panel has already lit is one it has seen.
   expect(built.toyDrum.takeFired()).toBe(0)
 })
+
+// Where the weight of a hit sits after its peak, in seconds. An exponential
+// tail puts it at half the time constant, and it does not care how loud the hit
+// was — which is what makes it readable on a rail that is sagging the amplitude
+// at the same time as it is dragging the clock.
+function tailCentroid(x: Float32Array): number {
+  let peak = 0
+  let at = 0
+  for (let i = 0; i < x.length; i++) {
+    if (Math.abs(x[i]!) > peak) {
+      peak = Math.abs(x[i]!)
+      at = i
+    }
+  }
+  let num = 0
+  let den = 0
+  for (let i = at; i < x.length; i++) {
+    const e = x[i]! * x[i]!
+    num += (i - at) * e
+    den += e
+  }
+  return den > 0 ? num / den / SR : 0
+}
+
+// There is one oscillator in the chip, and the tempo, the pitch and the
+// envelopes are all counted off it. Flat cells used to drag two of the three:
+// the pattern ran late and low with its tails exactly as long as they were on
+// fresh cells, which is a kit whose sequencer and whose envelope counter are
+// reading different clocks. There is only the one.
+test('flat cells stretch the kit’s tails, not only its tempo', () => {
+  const hit: Partial<Controls> = {
+    drumHat: stepMask(2),
+    drumBpm: 60,
+    drumDecay: 8,
+  }
+  const fresh = tailCentroid(soloVoice(hit, 2))
+  const flat = tailCentroid(soloVoice({ ...hit, chipBattery: 0.6 }, 2))
+  expect(fresh).toBeGreaterThan(0.02)
+  expect(flat).toBeGreaterThan(fresh * 1.08)
+})
+
+// How far apart a clap's three bursts came out. They are noise, so what sits
+// nine milliseconds apart is where each one starts rather than any one sample:
+// rectify, smooth, and take the leading edges that are far enough apart to be
+// bursts rather than the hiss crossing a threshold twice.
+function burstStarts(x: Float32Array): number[] {
+  const a = 1 - Math.exp(-1 / (0.001 * SR))
+  let e = 0
+  let top = 0
+  const env = new Float32Array(x.length)
+  for (let i = 0; i < x.length; i++) {
+    e += a * (Math.abs(x[i]!) - e)
+    env[i] = e
+    if (e > top) top = e
+  }
+  const starts: number[] = []
+  let from = -1
+  for (let i = 0; i <= env.length; i++) {
+    const loud = i < env.length && env[i]! > 0.35 * top
+    if (loud && from < 0) from = i
+    if (!loud && from >= 0) {
+      if (i - from > 0.001 * SR) starts.push(from / SR)
+      from = -1
+    }
+  }
+  return starts
+}
+
+// The clap's nine milliseconds are counted off that same oscillator rather than
+// measured against the wall, so a rail that drags the tempo spreads the three
+// bursts apart by as much.
+test('a sagging rail spreads the clap\u2019s bursts', () => {
+  const clap: Partial<Controls> = {
+    drumClap: stepMask(2),
+    drumBpm: 60,
+    // Short enough that each burst is down to a twelfth of itself before the
+    // next one lands, which is what makes three of them countable.
+    drumDecay: 0.25,
+  }
+  const span = (x: Float32Array) => {
+    const starts = burstStarts(x)
+    expect(starts.length).toBeGreaterThanOrEqual(3)
+    return starts[2]! - starts[0]!
+  }
+  const fresh = span(soloVoice(clap, 2))
+  const flat = span(soloVoice({ ...clap, chipBattery: 0.6 }, 2))
+  expect(fresh).toBeGreaterThan(0.016)
+  expect(fresh).toBeLessThan(0.02)
+  expect(flat).toBeGreaterThan(fresh * 1.08)
+})

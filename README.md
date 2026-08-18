@@ -116,7 +116,10 @@ either — quantization error halves at every rung, and the ladder's error is it
 resistors' tolerance, so a longer word buys a longer word's worth of the same
 grit. The kit runs on the same rail and the same divider as the keyboard, so
 starving the toy takes the drums with it and flat batteries drag the tempo down
-with the tune.
+with the tune. One oscillator clocks all of it and the envelopes are counted off
+that same oscillator, so a kit going down with the cells goes low, late _and_
+long: the tails stretch as the pattern slows, and the nine milliseconds between
+the clap's three bursts stretch with them until the clap is a flam.
 
 Each row also has its own length. Shift-click a step to bring that row round
 after it — the badge on the right says where it ends, and pressing the badge
@@ -396,9 +399,10 @@ The bends that matter:
   resistance, so the rail never comes back to full between notes and every note
   sags it further with nothing starving it. The divider tracks the cells rather
   than the instantaneous dip, so the whole toy runs low _and_ late — tune,
-  accompaniment and drum machine slowing together, where Starve's per-note dive
-  comes out as pitch. Far enough down and a chord alone is enough to brown the
-  chip out.
+  accompaniment and drum machine slowing together, and every envelope counted
+  off that divider lengthening as it goes — where Starve's per-note dive comes
+  out as pitch. Far enough down and a chord alone is enough to brown the chip
+  out.
 - **Lead resistance** is a resistor in series with the cells, which is the half
   of flat cells that is not the voltage. With nothing drawing, no current flows
   and a resistor carrying nothing drops nothing — so the rail rests exactly
