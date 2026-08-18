@@ -2,7 +2,16 @@ import { useEffect, useState } from 'react'
 import { useStoreValue } from './ControlsContext'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
 import { engine } from '../engine/engine'
-import { AUTOMAP_KEYS, DEVICE_PROFILES, midi, type DeviceProfile } from './midi'
+import {
+  AUTOMAP_KEYS,
+  DEVICE_PROFILES,
+  GM_CHANNEL,
+  midi,
+  VOICE_KEYS,
+  voiceLabel,
+  type DeviceProfile,
+} from './midi'
+import { noteName } from '../notes'
 import styles from './MidiPanel.module.css'
 
 function label(key: Parameters<typeof sliderFor>[0]): string {
@@ -68,29 +77,103 @@ function Bindings() {
   )
 }
 
+// The pads, which are bound by hitting them rather than by arming a control:
+// there is nothing on the kit to press ⚟ on, and a pad bank is one gesture from
+// end to end anyway. Nothing listed here is the ordinary case — channel 10 is
+// General MIDI's drum channel and needs no binding at all.
+function Pads() {
+  const pads = useStoreValue(midi.pads)
+  const bound = useStoreValue(midi.padBindings)
+  const learn = useStoreValue(midi.padLearn)
+  const learned = VOICE_KEYS.filter(k => bound[k] !== undefined)
+  if (!pads) return null
+  return (
+    <>
+      <div className={styles.row}>
+        {learn === null ? (
+          <button
+            className={styles.btn}
+            onClick={() => midi.learnPads()}
+            title="hit a pad for each of the kit's six voices in turn. For a pad bank that isn't on channel 10, or isn't General MIDI — the ones that are need none of this"
+          >
+            learn pads
+          </button>
+        ) : (
+          <button className={styles.btn} onClick={() => midi.stopPadLearn()}>
+            stop learning — keep the {learn.done} bound so far
+          </button>
+        )}
+        {learned.length === 0 ? (
+          <span className={styles.quiet}>
+            pads on channel {GM_CHANNEL + 1} play the kit by General MIDI
+          </span>
+        ) : null}
+      </div>
+      {learned.length === 0 ? null : (
+        <div className={styles.list}>
+          {learned.map(key => {
+            const p = bound[key]
+            if (p === undefined) return null
+            return (
+              <div key={key} className={styles.bound}>
+                <span className={styles.boundName}>{voiceLabel(key)}</span>
+                <span className={styles.cc}>
+                  {noteName(p.note)}
+                  {p.channel === 0 ? '' : ` ch${p.channel + 1}`}
+                </span>
+                <button
+                  className={styles.drop}
+                  onClick={() => midi.clearPad(key)}
+                  aria-label={`unbind the ${voiceLabel(key)} pad`}
+                  title={`take the ${voiceLabel(key)} off its pad`}
+                >
+                  ×
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </>
+  )
+}
+
 // What the wire is actually carrying. A controller that does nothing is either
 // silent or misread, and only the raw bytes tell those apart.
 function Wire() {
   const traffic = useStoreValue(midi.traffic)
   const debug = useStoreValue(midi.debug)
   const notes = useStoreValue(midi.notes)
+  const pads = useStoreValue(midi.pads)
   const running = useStoreValue(engine.running)
+  const level = useStoreValue(engine.controls).drumLevel
   return (
     <>
       {/* Notes reach the chip through the audio engine, and a suspended engine
           drops them without a sound or a word. Nothing else on the board says
           so, because everything else is reached by a click that would have
           started it. */}
-      {notes && !running ? (
+      {(notes || pads) && !running ? (
         <div className={styles.waiting}>
           the audio engine is asleep — MIDI alone can’t wake it. Click the page
           once, or press a key, and the notes will sound
         </div>
       ) : null}
+      {/* Level is the switch that decides the kit is there at all, and a pad
+          reaching a kit that is turned down is a dead pad with a busy wire —
+          the same silence as a pad nothing has bound. */}
+      {traffic?.voice !== undefined && level === 0 ? (
+        <div className={styles.waiting}>
+          pads are striking the kit, but its Level is at zero — bring it up and
+          they will sound
+        </div>
+      ) : null}
       {/* This toggle starts on, so the press that looks like switching it on is
           the press that switched it off — and the keybed goes quiet with the
           wire still visibly busy. */}
-      {!notes && traffic?.text.startsWith('note') === true ? (
+      {!notes &&
+      traffic?.voice === undefined &&
+      traffic?.text.startsWith('note') === true ? (
         <div className={styles.waiting}>
           keys are arriving but “notes play the keys” is off — it starts on, so
           a press turns it off
@@ -100,7 +183,7 @@ function Wire() {
         <span className={traffic === null ? styles.quiet : styles.wire}>
           {traffic === null
             ? 'nothing on the wire yet — move a knob or press a key'
-            : `${traffic.bytes.map(b => b.toString(16).padStart(2, '0')).join(' ')} · ${traffic.text}`}
+            : `${traffic.bytes.map(b => b.toString(16).padStart(2, '0')).join(' ')} · ${traffic.text}${traffic.voice === undefined ? '' : ` → ${traffic.voice}`}`}
         </span>
         {traffic === null ? null : (
           <span className={styles.quiet}>
@@ -125,6 +208,8 @@ function Wired() {
   const learn = useStoreValue(midi.learn)
   const bpm = useStoreValue(midi.bpm)
   const notes = useStoreValue(midi.notes)
+  const pads = useStoreValue(midi.pads)
+  const padLearn = useStoreValue(midi.padLearn)
   const clockLock = useStoreValue(midi.clockLock)
   const lights = useStoreValue(midi.lights)
   const stranded = Object.keys(useStoreValue(midi.pickups)).length
@@ -140,28 +225,33 @@ function Wired() {
       if (e.key !== 'Escape') return
       midi.arm(null)
       midi.stopLearn()
+      midi.stopPadLearn()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
   const hint =
-    learn !== null
-      ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
-      : armed !== null
-        ? `move a knob to take ${label(armed)} — esc to cancel`
-        : // A preset or a roll strands every bound knob at once, and only the
-          // open stage shows its own amber marks — so the count belongs here,
-          // where every binding is listed whatever stage it lives on.
-          stranded > 0
-          ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
-          : 'press ⚟ on any control, then move a knob to bind it'
+    padLearn !== null
+      ? `hit the pad for ${padLearn.next === null ? 'the kit' : voiceLabel(padLearn.next)} — ${padLearn.done}/${padLearn.total} bound, esc to stop`
+      : learn !== null
+        ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
+        : armed !== null
+          ? `move a knob to take ${label(armed)} — esc to cancel`
+          : // A preset or a roll strands every bound knob at once, and only the
+            // open stage shows its own amber marks — so the count belongs here,
+            // where every binding is listed whatever stage it lives on.
+            stranded > 0
+            ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
+            : 'press ⚟ on any control, then move a knob to bind it'
 
   return (
     <>
       <div
         className={
-          armed || learn || stranded > 0 ? styles.waiting : styles.hint
+          armed || learn || padLearn || stranded > 0
+            ? styles.waiting
+            : styles.hint
         }
       >
         {hint}
@@ -221,6 +311,13 @@ function Wired() {
           notes play the keys
         </button>
         <button
+          className={pads ? styles.toggleOn : styles.toggle}
+          onClick={() => midi.setPads(!pads)}
+          title="pads play the drum machine's voices. Channel 10 is General MIDI's drum channel and lands on the kit with nothing to set up; a pad bank sending anything else is what learn pads is for"
+        >
+          pads play the kit
+        </button>
+        <button
           className={clockLock ? styles.toggleOn : styles.toggle}
           onClick={() => midi.setClockLock(!clockLock)}
           title="the drum machine's tempo follows the clock on the wire. It writes the BPM control, so the slider moves with it"
@@ -239,6 +336,7 @@ function Wired() {
         </span>
       </div>
 
+      <Pads />
       <Wire />
       <Bindings />
     </>

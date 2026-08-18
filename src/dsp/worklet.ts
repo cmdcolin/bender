@@ -69,6 +69,9 @@ class BenderProcessor extends AudioWorkletProcessor {
           // is the one half that has to be handed to it directly.
           this.built.fmChip.noteOff(msg.semitone)
           break
+        case 'drumHit':
+          this.built.toyDrum.strike(msg.bits, msg.gain)
+          break
         case 'record':
           if (msg.on) {
             this.recFill = 0

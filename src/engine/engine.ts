@@ -578,6 +578,14 @@ export class Engine {
     this.hold(semitone, false)
   }
 
+  // A hit on the kit that no step named: a pad on a controller, played by hand.
+  // Neither sequencer need be running — the kit answers a finger the way it
+  // answers the mic — but the kit does have to be turned up, because Level is
+  // the switch that decides the box is there at all.
+  drumHit(bits: number, gain = 1) {
+    if (bits !== 0) this.post({ kind: 'drumHit', bits, gain })
+  }
+
   // Striking a note that is already down is no news to anything watching, so
   // the set only turns over when it really changes.
   private hold(semitone: number, down: boolean) {

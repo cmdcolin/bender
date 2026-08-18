@@ -1,4 +1,4 @@
-import { asLen, DRUM_VOICES, GRID_ROWS, STEPS } from '../../drums'
+import { ACCENT_GAIN, asLen, DRUM_VOICES, GRID_ROWS, STEPS } from '../../drums'
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
@@ -10,7 +10,6 @@ import { octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 
 const TAU = 2 * Math.PI
-const ACCENT_GAIN = 1.7
 
 // The widest word the converter has resistors for, and how far out the worst of
 // them is when the ladder knob is all the way up.
@@ -102,6 +101,12 @@ export class ToyDrum implements Stage {
   // What this board's resistors came out at, in counts of the rung they sit on.
   // Drawn once: the knob says how bad the ladder is, not which parts are wrong.
   private trim = new Float32Array(LADDER_BITS)
+  // A hit from outside the box — a pad on a controller, struck by hand rather
+  // than by the sequencer. It waits here for the top of the next block: the
+  // trigger line is a wire the DSP reads, and nothing on the main thread can
+  // reach into the middle of one.
+  private struckBits = 0
+  private struckGain = 0
 
   constructor(
     private readonly sr: number,
@@ -136,6 +141,14 @@ export class ToyDrum implements Stage {
     const on = p[IDX.drumLevel]! > 0
     if (!on) this.rail.reported = 0
     return on
+  }
+
+  /** Strike voices by hand. `bits` is the bit order of a step, so one message
+      can land a whole kit's worth; two hits inside one block fold together and
+      the harder one sets the weight. */
+  strike(bits: number, gain: number) {
+    this.struckBits |= bits
+    this.struckGain = Math.max(this.struckGain, gain)
   }
 
   // Which voices this tick names. Each row reads its own column, so a row five
@@ -230,6 +243,14 @@ export class ToyDrum implements Stage {
 
     let loadSum = 0
     for (let i = 0; i < io.n; i++) {
+      // Hands first, and whether or not the pattern is running: a pad is a
+      // finger on the trigger line, and the kit answers a finger with the
+      // machine stopped the way it answers the mic.
+      if (i === 0 && this.struckBits !== 0) {
+        this.hit(this.struckBits, this.struckGain, ctx, i)
+        this.struckBits = 0
+        this.struckGain = 0
+      }
       if (this.transport.drums) {
         // Swing holds the offbeat back and takes it off the step after, so a
         // pair still spans two steps and the tempo is what the knob says.
@@ -367,6 +388,8 @@ export class ToyDrum implements Stage {
   }
 
   panic() {
+    this.struckBits = 0
+    this.struckGain = 0
     this.env.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)

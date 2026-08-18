@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { CONTROL_KEYS } from '../controls'
 import { ALL_SLIDERS, sliderFor } from './controls'
+import { ACCENT_GAIN, N_DRUM_VOICES } from '../drums'
 import {
   applyDelta,
   AUTOMAP_KEYS,
@@ -9,9 +10,14 @@ import {
   ccToValue,
   hasCaught,
   isOffsetSpelling,
+  gmVoice,
+  GM_PADS,
   omit,
+  padGain,
   parseBindings,
+  parsePads,
   velocity,
+  VOICE_KEYS,
 } from './midi'
 import { toPos } from './slider-scale'
 
@@ -165,4 +171,54 @@ test('omit copies without the key', () => {
   const map = { a: 1, b: 2 }
   expect(omit(map, 'a')).toEqual({ b: 2 })
   expect(map).toEqual({ a: 1, b: 2 })
+})
+
+// A note that named two voices would fire whichever the loop reached last, and
+// the map is written out by hand — so this is the check the hand needs.
+test('no percussion note names two voices', () => {
+  const seen = new Set<number>()
+  for (const notes of Object.values(GM_PADS))
+    for (const note of notes) {
+      expect(seen.has(note)).toBe(false)
+      seen.add(note)
+    }
+  // Every note General MIDI puts on the drum channel lands somewhere: a pad
+  // that does nothing reads as a broken pad.
+  for (let note = 35; note <= 81; note++) expect(seen.has(note)).toBe(true)
+})
+
+test('the map covers the kit, and only the kit', () => {
+  expect(Object.keys(GM_PADS).length).toBe(N_DRUM_VOICES)
+  for (const key of VOICE_KEYS) expect(GM_PADS[key].length).toBeGreaterThan(0)
+  for (const notes of Object.values(GM_PADS))
+    for (const note of notes) {
+      const voice = gmVoice(note)
+      expect(voice).not.toBeNull()
+      expect(voice!).toBeLessThan(N_DRUM_VOICES)
+    }
+  // Below the standard's own bottom note is somebody's keyboard, not a pad.
+  expect(gmVoice(34)).toBeNull()
+  expect(gmVoice(82)).toBeNull()
+})
+
+// The kit itself has two weights — a plain step and an accented one — and a pad
+// plays between them, so a middling hit is what the sequencer would have played.
+test('a pad plays between a plain step and an accent', () => {
+  expect(padGain(127)).toBe(ACCENT_GAIN)
+  expect(padGain(64)).toBeCloseTo(1, 1)
+  expect(padGain(0)).toBeGreaterThan(0)
+  for (let v = 1; v <= 127; v++)
+    expect(padGain(v)).toBeGreaterThan(padGain(v - 1))
+})
+
+test('a stored pad map keeps what still names a voice', () => {
+  const stored = JSON.stringify({
+    drumKick: { channel: 9, note: 36 },
+    drumSnare: { channel: 9 },
+    drumWhistle: { channel: 9, note: 40 },
+    drumHat: 42,
+  })
+  expect(parsePads(stored)).toEqual({ drumKick: { channel: 9, note: 36 } })
+  expect(parsePads(null)).toEqual({})
+  expect(parsePads('not json')).toEqual({})
 })

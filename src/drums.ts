@@ -69,6 +69,15 @@ export const GRID_ROWS = [...DRUM_VOICES, ACCENT_ROW] as const
 export const N_DRUM_VOICES = DRUM_VOICES.length
 export const VOICE_LABELS = DRUM_VOICES.map(v => v.label)
 
+/** How much harder an accented step lands than a plain one — the kit's only two
+    weights, and so the two ends a pad's velocity plays between. */
+export const ACCENT_GAIN = 1.7
+
+/** One voice as a step's bit, for anything striking the trigger line by hand. */
+export const voiceBit = (voice: number) => 1 << voice
+
+export type DrumVoice = (typeof DRUM_VOICES)[number]
+export type DrumVoiceKey = DrumVoice['key']
 export type DrumRow = (typeof GRID_ROWS)[number]
 export type DrumStepKey = DrumRow['key']
 export type DrumLenKey = DrumRow['len']

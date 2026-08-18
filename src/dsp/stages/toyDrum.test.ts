@@ -1,7 +1,15 @@
 import { expect, test } from 'vitest'
 import type { Controls } from '../../controls'
 import { STEPS } from '../../drums'
-import { bin, lowEnergy, render, rms, SR, stepMask } from '../testRender'
+import {
+  bin,
+  lowEnergy,
+  render,
+  renderBender,
+  rms,
+  SR,
+  stepMask,
+} from '../testRender'
 import { CYCLE } from './toyDrum'
 
 // One voice alone on an empty grid, nothing else in the kit or the chain.
@@ -238,4 +246,44 @@ test('a row past its length is a row the sequencer never reaches', () => {
   expect(soloVoice({ ...kit, drumHat: stepMask(0, 6) }, 2)).toEqual(
     soloVoice({ ...kit, drumHat: stepMask(0) }, 2),
   )
+})
+
+// A pad on a controller, striking the trigger line by hand. The sequencer is
+// stopped throughout: the kit answers a finger whether or not the pattern is
+// running, the way it answers the mic.
+test('a hand can strike the kit with the pattern stopped', () => {
+  const stopped: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 1,
+    drumKick: 0,
+    drumSnare: 0,
+    drumHat: 0,
+  }
+  const silent = renderBender(stopped, 0.3)
+  const struck = renderBender(stopped, 0.3, built => built.toyDrum.strike(1, 1))
+  expect(rms(silent)).toBeLessThan(1e-4)
+  expect(rms(struck)).toBeGreaterThan(0.01)
+
+  // How hard it lands is the pad's, not the pattern's: an accent's worth of
+  // weight is louder than a plain step's.
+  const soft = renderBender(stopped, 0.3, built => built.toyDrum.strike(1, 0.4))
+  expect(rms(soft)).toBeLessThan(rms(struck))
+})
+
+test('two pads inside one block fold into one hit of both voices', () => {
+  const stopped: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 1,
+    drumKick: 0,
+    drumSnare: 0,
+    drumHat: 0,
+  }
+  const kick = renderBender(stopped, 0.3, b => b.toyDrum.strike(1, 1))
+  const both = renderBender(stopped, 0.3, b => {
+    b.toyDrum.strike(1, 1)
+    b.toyDrum.strike(1 << 2, 1)
+  })
+  // The hat is the bright one, so the pair carries what the kick alone does not.
+  expect(bin(both, 6000)).toBeGreaterThan(bin(kick, 6000) * 4)
+  expect(onsets(both).length).toBe(1)
 })

@@ -6,7 +6,8 @@ import { beforeEach, expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { sliderFor } from './controls'
-import { ccToValue, midi, velocity } from './midi'
+import { ACCENT_GAIN } from '../drums'
+import { ccToValue, midi, padGain, velocity } from './midi'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
 
@@ -49,6 +50,8 @@ const cc = (controller: number, value: number, channel = 0) =>
 beforeEach(async () => {
   midi.setLights(false)
   midi.clearAll()
+  midi.clearPads()
+  midi.setPads(true)
   midi.arm(null)
   midi.allNotesOff()
   sent.length = 0
@@ -258,6 +261,118 @@ test('notes stay off the chip when the panel says so', () => {
   expect(on).not.toHaveBeenCalled()
   midi.setNotes(true)
   on.mockRestore()
+})
+
+// Channel 10 is where General MIDI puts percussion, so a pad bank sending there
+// is a pad bank saying it is a drum. Nothing to bind, nothing to learn.
+test('a pad on channel 10 plays the kit with nothing set up', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  const note = vi.spyOn(engine, 'noteOn')
+  midi.setNotes(true)
+  send(0x99, 36, 100) // GM bass drum
+  expect(hit).toHaveBeenCalledWith(1, padGain(100))
+  send(0x99, 38, 100) // GM acoustic snare
+  expect(hit).toHaveBeenLastCalledWith(2, padGain(100))
+  // The kit took it, so the chip never saw it — a pad is not a key.
+  expect(note).not.toHaveBeenCalled()
+  hit.mockRestore()
+  note.mockRestore()
+})
+
+// A drum is struck, not held: it has no release for a finger to come up off.
+test('a pad lifting is nothing to let go of', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  send(0x99, 36, 100)
+  send(0x89, 36, 0)
+  send(0x99, 36, 0) // the running-status spelling of the same
+  expect(hit).toHaveBeenCalledTimes(1)
+  expect(engine.keysDown.get().size).toBe(0)
+  hit.mockRestore()
+})
+
+// The kit's two weights are a plain step and an accented one, and a pad plays
+// between them: middling is a step, hardest is an accent.
+test('a harder pad hits harder, and the hardest accents', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  send(0x99, 36, 20)
+  send(0x99, 36, 127)
+  const [soft, hard] = hit.mock.calls.map(c => c[1] ?? 1)
+  expect(soft!).toBeLessThan(1)
+  expect(hard).toBe(ACCENT_GAIN)
+  hit.mockRestore()
+})
+
+test('a sweep binds one voice per pad, down the kit', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  midi.learnPads()
+  expect(midi.padLearn.get()?.next).toBe('drumKick')
+  send(0x90, 60, 100) // a pad on channel 1, nowhere near General MIDI
+  send(0x80, 60, 0) // lifting must not claim the voice after it
+  send(0x90, 60, 100) // and neither must leaning on the same pad again
+  expect(midi.padLearn.get()?.done).toBe(1)
+  send(0x90, 61, 100)
+  expect(midi.padBindings.get().drumKick).toEqual({ channel: 0, note: 60 })
+  expect(midi.padBindings.get().drumSnare).toEqual({ channel: 0, note: 61 })
+  midi.stopPadLearn()
+  expect(midi.padLearn.get()).toBeNull()
+
+  // Nothing was struck while binding — a pad you are pointing at is not a pad
+  // you are playing.
+  expect(hit).not.toHaveBeenCalled()
+  send(0x90, 61, 100)
+  expect(hit).toHaveBeenCalledWith(2, padGain(100))
+  hit.mockRestore()
+})
+
+test('a learned pad wins over General MIDI', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  midi.learnPads()
+  send(0x99, 36, 100) // GM's kick note, learned as the kick
+  send(0x99, 40, 100) // GM's electric snare, learned as the snare
+  midi.stopPadLearn()
+  send(0x99, 38, 100) // GM's acoustic snare, which nothing learned
+  expect(hit).toHaveBeenLastCalledWith(2, padGain(100))
+  hit.mockRestore()
+})
+
+test('a pad drives one voice at a time', () => {
+  midi.learnPads()
+  send(0x90, 60, 100) // kick
+  midi.stopPadLearn()
+  midi.learnPads()
+  send(0x90, 60, 100) // the same pad, now the kick again from a fresh sweep
+  send(0x90, 62, 100) // snare
+  midi.stopPadLearn()
+  expect(midi.padBindings.get().drumKick).toEqual({ channel: 0, note: 60 })
+  expect(midi.padBindings.get().drumSnare).toEqual({ channel: 0, note: 62 })
+})
+
+test('with pads off, a drum note is just a note', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  const note = vi.spyOn(engine, 'noteOn')
+  midi.setPads(false)
+  midi.setNotes(true)
+  send(0x99, 36, 100)
+  expect(hit).not.toHaveBeenCalled()
+  expect(note).toHaveBeenCalled()
+  midi.setPads(true)
+  hit.mockRestore()
+  note.mockRestore()
+})
+
+// The bytes cannot tell a pad from a key, and which of the two it was is the
+// thing you want to read while binding one.
+test('the readout says which voice a pad struck', async () => {
+  // The readout lands at a legible rate rather than a knob's, so each of these
+  // has to arrive with the last one already on the panel.
+  const legible = () => new Promise(r => setTimeout(r, 100))
+  await legible()
+  send(0x99, 42, 100)
+  expect(midi.traffic.get()?.voice).toBe('hat')
+  midi.setNotes(true)
+  await legible()
+  send(0x90, 60, 100)
+  expect(midi.traffic.get()?.voice).toBeUndefined()
 })
 
 // An endless encoder has no position to disagree with the screen, so the whole

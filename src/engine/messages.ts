@@ -17,6 +17,15 @@ export interface NoteMsg {
   gain?: number
 }
 
+// A hit on the kit from outside the sequencer: a pad struck by hand. `bits` is
+// the bit order of a step, so one message can name a whole kit's worth.
+export interface DrumHitMsg {
+  kind: 'drumHit'
+  bits: number
+  /** How hard it lands, the way an accented step lands harder than a plain one. */
+  gain: number
+}
+
 // Both run lines in one message: they are two switches on one desk, and the
 // worklet has no use for knowing which of them the hand moved.
 export interface TransportMsg {
@@ -35,7 +44,13 @@ export interface PanicMsg {
 }
 
 export type ToWorklet =
-  ParamsMsg | SampleMsg | NoteMsg | TransportMsg | RecordMsg | PanicMsg
+  | ParamsMsg
+  | SampleMsg
+  | NoteMsg
+  | DrumHitMsg
+  | TransportMsg
+  | RecordMsg
+  | PanicMsg
 
 export interface MeterMsg {
   kind: 'meter'

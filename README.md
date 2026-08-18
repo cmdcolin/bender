@@ -651,8 +651,22 @@ off" clears the board — both read off any CC that nothing has bound, so a peda
 input you would rather spend on the tape speed stays yours. Velocity comes with
 them: the toy's own keys are switches and always strike full, but a wire onto
 the gate can arrive at any level, which is what the trigger patch has always
-done. Clock is the other half: the drum machine can follow the tick on the wire,
-and it does it by writing the tempo control, so the slider moves with the room
+done.
+
+Pads play the kit. Channel 10 is where General MIDI puts percussion, so a pad
+bank sending there needs nothing set up at all: the whole standard map is folded
+onto bender's six voices, with the sticks going to the tom, the metal to the
+hat, and the wood and the cowbells to the bell. A pad bank that sends somewhere
+else — its own channel, its own notes — is what `learn pads` is for: hit a pad
+for each voice down the kit, and what you hit wins over the standard map
+wherever the two meet. A pad strikes the same trigger line the sequencer does,
+so it fires with the pattern stopped, and its velocity plays between the kit's
+own two weights: middling is a plain step, hardest is an accented one, and below
+that is a ghost note the grid has no way of asking for. Nothing is held — a drum
+has no release — so the note off a pad sends on the way up is dropped.
+
+Clock is the other half: the drum machine can follow the tick on the wire, and
+it does it by writing the tempo control, so the slider moves with the room
 rather than fighting it.
 
 ## Run
