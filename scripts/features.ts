@@ -7,6 +7,9 @@
 // control tables themselves. What is written here is the part a table cannot
 // say: what each group is for.
 //
+// Every control's own line comes off the tooltip the panel already shows for
+// it, so the doc and the instrument say the same thing by construction.
+//
 // Adding a group without a line in BLURBS throws rather than quietly shipping a
 // doc with a hole in it — which is the same reason the number of controls is
 // counted rather than typed.
@@ -93,6 +96,8 @@ const SCRIPTS: Record<string, string> = {
   maj: 'release: major',
 }
 
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
 const num = (n: number) => {
   const words = [
     'zero',
@@ -112,10 +117,80 @@ const num = (n: number) => {
   return words[n] ?? String(n)
 }
 
-const range = (s: SliderDef) => {
-  if (s.choices) return s.choices.join(', ')
-  const unit = s.unit ? ` ${s.unit}` : ''
-  return `${s.min}–${s.max}${unit}`
+const n = (v: number) => String(Number(v.toFixed(4)))
+const sign = (v: number, signed: boolean) =>
+  v < 0 ? `−${n(-v)}` : signed && v > 0 ? `+${n(v)}` : n(v)
+
+// Hz and ms are the two that run over three orders of magnitude, and 48000 Hz
+// is a number you have to count the digits of.
+const scale = (v: number, unit: string) => {
+  if (unit === 'Hz' && Math.abs(v) >= 1000) return { v: v / 1000, unit: 'kHz' }
+  if (unit === 'ms' && Math.abs(v) >= 1000) return { v: v / 1000, unit: 's' }
+  return { v, unit }
+}
+
+const SPELLED: Record<string, string> = {
+  '/s': 'per second',
+  oct: 'octaves',
+  bit: 'bits',
+}
+
+// Ranges in the words the panel would use, rather than two numbers with a dash
+// between them: '0–1' says nothing that 'off to full' doesn't, and '-1–1' has
+// to be read twice.
+function range(s: SliderDef): string {
+  if (s.choices)
+    return s.choices.length === 2
+      ? s.choices.join(' or ')
+      : s.choices.join(', ')
+  const { min, max, unit } = s
+  const signed = min < 0
+  const to = (a: string, b: string) => `${a} to ${b}`
+  if (!unit) {
+    if (min === 0 && max === 1) return 'off to full'
+    return to(sign(min, false), sign(max, signed))
+  }
+  if (unit === '×') return to(`${sign(min, false)}×`, `${sign(max, signed)}×`)
+  if (SPELLED[unit])
+    return `${to(sign(min, false), sign(max, signed))} ${SPELLED[unit]}`
+  const lo = scale(min, unit)
+  const hi = scale(max, unit)
+  return lo.unit === hi.unit
+    ? `${to(sign(lo.v, false), sign(hi.v, signed))} ${hi.unit}`
+    : to(`${sign(lo.v, false)} ${lo.unit}`, `${sign(hi.v, signed)} ${hi.unit}`)
+}
+
+// The panel already says what every control is, in its tooltip. The doc says
+// the first sentence of it, and where that sentence is a long one with a list
+// after the colon, only the half before — the range column is the list.
+function gloss(s: SliderDef): string {
+  const [first = s.help] = s.help.split(/(?<=[.?!])\s+/)
+  const trimmed = first.replace(/\.$/, '')
+  if (trimmed.length <= 130) return trimmed
+  const clause = trimmed.search(/[:—;]/)
+  return clause > 0 && clause < 120 ? trimmed.slice(0, clause).trim() : trimmed
+}
+
+// A group with four identical wires on it prints one wire and says so. The
+// labels carry the only difference, so 'Wire 1 from' through 'Wire 4 from'
+// come back as one row named 'Wire 1–4 from'.
+function rows(sliders: SliderDef[]): string[] {
+  const merged = new Map<string, { label: string; nums: number[] }>()
+  for (const s of sliders) {
+    const key = `${s.label.replace(/\d+/g, '#')}|${range(s)}|${gloss(s)}`
+    const at = merged.get(key)
+    const idx = Number(s.label.match(/\d+/)?.[0])
+    if (at) at.nums.push(idx)
+    else merged.set(key, { label: s.label, nums: [idx] })
+  }
+  return [...merged.values()].map(({ label, nums }) => {
+    const [first] = nums
+    const last = nums[nums.length - 1]
+    const name =
+      nums.length > 1 ? label.replace(/\d+/, `${first}–${last}`) : label
+    const s = sliders.find(x => x.label === label)!
+    return `| ${name} | ${range(s)} | ${gloss(s)} |`
+  })
 }
 
 function groupSection(g: Group): string {
@@ -125,8 +200,8 @@ function groupSection(g: Group): string {
       `no blurb for control group '${g.name}' — add one to BLURBS in scripts/features.ts`,
     )
   }
-  const rows = g.sliders.map(s => `| ${s.label} | ${range(s)} |`).join('\n')
-  return `### ${g.name}\n\n${blurb}\n\n| control | range |\n| --- | --- |\n${rows}\n`
+  const table = rows(g.sliders).join('\n')
+  return `### ${g.name}\n\n${blurb}\n\n| control | range | what it does |\n| --- | --- | --- |\n${table}\n`
 }
 
 // Formatted here rather than left for `pnpm format`, so the committed file is
@@ -144,18 +219,53 @@ function build(): string {
   const sliders = GROUPS.flatMap(g => g.sliders)
 
   const out: string[] = []
+  const slots = GROUPS.find(g => g.name === 'Slot order')!.sliders.length
+  const wires = GROUPS.find(g => g.name === 'Patch bay')!
+  const dests = wires.sliders.find(s => s.label.endsWith('to'))!.choices!.length
+
   out.push(`<!-- Generated by \`pnpm features\`. Edit scripts/features.ts, not this file. -->
 
 # What is in the box
 
-An inventory, generated from the control tables so it cannot drift from them.
-The [README](../README.md) explains how the interesting parts work and why they
-behave as they do; this is the list, for finding out whether something exists
-and what it is called.
+A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
+ruin. ${sliders.length} controls in ${GROUPS.length} groups, ${num(BENDS.length)} bends competing for ${num(slots)} slots,
+${ROMS.length} ROM tunes and ${PRESETS.length} presets — and everything below comes off the control
+tables themselves, so the list cannot drift from the instrument.
 
-${sliders.length} controls in ${GROUPS.length} groups, ${num(BENDS.length)} bends competing for
-${num(GROUPS.find(g => g.name === 'Slot order')!.sliders.length)} slots, ${ROMS.length} ROM tunes,
-${PRESETS.length} presets, and one supply rail that most of it is plugged into.
+Try it: **https://cmdcolin.github.io/bender/**
+
+## The tour
+
+- **Nothing here is a sample.** The reboots, the pitch dives and the screams
+  fall out of the mechanisms. One RC oscillator clocks the whole toy chip, so
+  pitch, tempo and envelopes are the same thing divided — starve the rail and
+  they all go down together, and there is no setting where they come apart.
+- **Solder a pot onto the die.** *Bend spot* picks the clock, the counter, the
+  bias or the gate; *Bend pot* is how far you turn it. *Clip chatter* is the
+  paperclip: bare metal dragged across the pads, biting the supply a few times a
+  second, each touch a dive the board has to climb back out of.
+- **Put a knife through the bus.** Cut, ground, bridge or pull up a data or
+  address line — on the toy, on the drum machine, or on the FM chip — and the
+  wrong byte lands. On the FM chip it *stays* wrong until the processor writes
+  that register again.
+- **${cap(num(BENDS.length))} bends, ${num(slots)} slots.** You pick which are on the board and in what
+  order, so one always sits out. A mix at zero takes the stage out of the path
+  rather than merely silencing it.
+- **A patch bay that modulates itself.** ${cap(num(wires.sliders.filter(s => s.label.endsWith('depth')).length))} wires, ${dests} destinations —
+  and the last four of those destinations are the other wires' depths.
+- **Feedback tight enough to squeal.** The whole chain runs inside one worklet
+  \`process()\`, so the global loop is at audio rate and every feedback path
+  saturates in-loop. Runaway is a feature; a fixed safety tail means no setting
+  can blow up the output.
+- **The board ages while you play.** Heat builds off whatever you are making it
+  dissipate, dry joints drop a bend out of the path mid-note, and *Re-solder*
+  rewires the slot order on its own.
+- **A link is a patch.** The whole board rides in the URL. Roll the dice, morph
+  between two boards, play it over MIDI, record it to wav.
+
+The [README](../README.md) explains how the interesting parts work and why they
+behave as they do. What follows is the list, for finding out whether something
+exists and what it is called.
 `)
 
   for (const place of STAGE_ORDER) {
@@ -164,7 +274,7 @@ ${PRESETS.length} presets, and one supply rail that most of it is plugged into.
     out.push(`## ${place}\n`)
     if (place === 'Bends') {
       out.push(
-        `${num(BENDS.length)} of them for ${num(GROUPS.find(g => g.name === 'Slot order')!.sliders.length)} slots, so one always sits out — and the slots are ordered, so which comes first is yours. Each has a mix, and a mix at zero takes the stage out of the path rather than merely silencing it.\n`,
+        `${cap(num(BENDS.length))} of them for ${num(GROUPS.find(g => g.name === 'Slot order')!.sliders.length)} slots, so one always sits out — and the slots are ordered, so which comes first is yours. Each has a mix, and a mix at zero takes the stage out of the path rather than merely silencing it.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))
@@ -184,10 +294,6 @@ ${PRESETS.length} presets, and one supply rail that most of it is plugged into.
 - **Record to wav**, straight off the output.
 - **A live signal-path map** that greys out whatever is not in the path.
 - **Scope, meters and a rail lamp**, all fed by the meter message.
-
-### ROM tunes
-
-${ROMS.map(r => r.name).join(', ')}.
 
 ### Kit voices
 
