@@ -178,6 +178,7 @@ export const PARAM_DEFS = [
   ['revToneHz', 'slew'],
   ['revBoing', 'slew'],
   ['revMix', 'slew'],
+  ['revDryCut', 'slew'],
 
   ['modLfoHz', 'slew'],
   ['modLfoShape', 'step'],

@@ -331,7 +331,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   for (const [name, active] of [
     ['Stompbox', c.stompMix > 0],
     ['Tape delay', c.dlyMix > 0],
-    ['Spring verb', c.revMix > 0],
+    ['Spring verb', c.revMix > 0 || c.revDryCut > 0],
     ['Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0],
     ['Tape machine', c.tapeMix > 0],
     ['Output', true],

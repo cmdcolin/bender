@@ -274,6 +274,7 @@ export const PRESETS: PresetDef[] = [
       chipLevel: 0.45,
       chipClockX: 0.5,
       revMix: 0.75,
+      revDryCut: 0.75,
       revDecayS: 6,
       revBoing: 0.9,
       ringMix: 0.35,

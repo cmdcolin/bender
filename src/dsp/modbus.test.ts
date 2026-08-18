@@ -111,11 +111,16 @@ test('a wire on the kit’s trimmer moves every voice together', () => {
   expect(pitchHz(lifted)).toBeGreaterThan(1.6 * pitchHz(stock))
 })
 
+// The tank returns on a fader of its own, so a full mix is the springs on top of
+// the board rather than instead of it. The dry cut is what solos them, and this
+// wants them soloed: the claim is about how long the tail rings, and the chip
+// still playing underneath it would be most of what the tail measured.
 test('a wire on the tank stretches how long it rings', () => {
   const wet: Partial<Controls> = {
     chipLevel: 0.8,
     revDecayS: 0.3,
     revMix: 1,
+    revDryCut: 1,
     bodyX: 1,
     mod0Dest: DEST.revDecay,
     mod0Depth: 1,

@@ -107,8 +107,10 @@ export class SpringVerb implements Stage {
     )
   }
 
+  // Out of the path entirely with both knobs down, which is the boot state: the
+  // dry cut is the only thing here that does anything at a mix of zero.
   when(p: Float32Array) {
-    return p[IDX.revMix]! > 0
+    return p[IDX.revMix]! > 0 || p[IDX.revDryCut]! > 0
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -135,8 +137,15 @@ export class SpringVerb implements Stage {
 
     const l = io.l
     const r = io.r
-    const dry = 1 - mix
     const wetGain = 0.3 * mix
+    // The two are separate decisions, which is the whole point of the pair: the
+    // tank comes back on its own fader, the way the delay does off a send, and
+    // how much board goes into it with the springs is this. A crossfade made one
+    // knob of both, so asking for more spring traded away the dry it was
+    // supposed to sit behind — and the return is dark and smeared by
+    // construction, damped per comb and dispersed before that, so the trade read
+    // as the board going dull rather than as more room.
+    const dry = 1 - p[IDX.revDryCut]!
     for (let i = 0; i < io.n; i++) {
       const wl = this.tankL.step(l[i]!, boing, fbL, dampCoef)
       const wr = this.tankR.step(r[i]!, boing, fbR, dampCoef)

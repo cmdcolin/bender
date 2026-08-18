@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 179 controls in 26 groups, seven bends competing for six slots, 18 ROM
+ruin. 180 controls in 26 groups, seven bends competing for six slots, 18 ROM
 tunes and 49 presets — and everything below comes off the control tables
 themselves, so the list cannot drift from the instrument.
 
@@ -328,7 +328,8 @@ deliberately cheap.
 | Decay   | 0.1 to 30 s      | How long the springs ring                            |
 | Tone    | 500 Hz to 12 kHz | Damping inside the tank                              |
 | Boing   | off to full      | Spring dispersion — the drip and chirp on transients |
-| Mix     | off to full      | Dry/wet                                              |
+| Return  | off to full      | How loud the tank comes back                         |
+| Dry cut | off to full      | How much of the dry the tank swallows                |
 
 ## Patch
 
