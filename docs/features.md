@@ -55,7 +55,7 @@ envelope, so a hit you can hear opens a voice nothing struck.
 | Level       | 0–1                                                     |
 | Tempo       | 10–3000 bpm                                             |
 | Swing       | 0–0.9                                                   |
-| Tune        | 0.25–4 ×                                                |
+| Tune        | 0.125–8 ×                                               |
 | Decay       | 0.25–16 ×                                               |
 | Bit depth   | 2–16 bit                                                |
 | Ladder      | 0–1                                                     |

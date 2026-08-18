@@ -275,12 +275,12 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'drumTune',
         label: 'Tune',
-        min: 0.25,
-        max: 4,
+        min: 0.125,
+        max: 8,
         step: 0.01,
         unit: '×',
         curve: 'log',
-        help: 'The pitch trimmer inside the kit: every struck voice moves together. It rides on the supply, so starving the toy drags it down again.',
+        help: 'The pitch trimmer inside the kit: every struck voice moves together. It rides on the supply, so starving the toy drags it down again. At the bottom of the travel the kick is under hearing and arrives as the thump of its own envelope; at the top the whole kit is a handful of tick marks.',
       },
       {
         key: 'drumDecay',
