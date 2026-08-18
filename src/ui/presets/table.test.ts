@@ -7,6 +7,7 @@ import {
 import { GRID_ROWS } from '../../drums'
 import { HOLD_KEYS } from '../controls'
 import { applyPreset, presetPath } from './apply'
+import { renderBender, rms } from '../../dsp/testRender'
 import { PRESETS } from './table'
 import { mine } from './testBoard'
 
@@ -95,4 +96,17 @@ test('every preset patches keys that exist', () => {
       expect(DEFAULT_CONTROLS, `${preset.name}/${key}`).toHaveProperty(key)
     }
   }
+})
+
+// A preset naming an effect is a preset whose whole point is a script running,
+// and the effect it names is an index into a list that grows. Render each one
+// and listen: silence here means the catalog is pointing at the wrong entry, or
+// at a bend that turned the chip off on the way past.
+test('every preset that names an effect makes a sound', () => {
+  const named = PRESETS.filter(p => p.patch.fmEffect)
+  expect(named.length).toBeGreaterThan(3)
+  for (const preset of named)
+    expect(rms(renderBender(preset.patch, 3)), preset.name).toBeGreaterThan(
+      0.01,
+    )
 })

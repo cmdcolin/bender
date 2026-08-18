@@ -1,5 +1,6 @@
 import type { Controls } from '../../controls'
 import { DRUM_ROMS } from '../../drums'
+import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 
 export interface PresetDef {
   name: string
@@ -8,6 +9,9 @@ export interface PresetDef {
 }
 
 const romMasks = (name: string) => DRUM_ROMS.find(r => r.name === name)!.masks
+
+/** By name, so the catalog survives the ROM growing another script. */
+const effect = (name: string) => FM_EFFECT_NAMES.indexOf(name)
 
 export const PRESETS: PresetDef[] = [
   {
@@ -119,6 +123,55 @@ export const PRESETS: PresetDef[] = [
       fmDataLine: 4,
       fmDataFault: 0,
       fmBusCut: 0.6,
+    },
+  },
+  {
+    name: 'dawn chorus',
+    blurb: 'Bird calls off the effect ROM, every write of them arriving wrong',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmEffect: effect('bird'),
+      fmDataLine: 3,
+      fmDataFault: 0,
+      fmBusCut: 0.55,
+    },
+  },
+  {
+    name: 'weather station',
+    blurb: 'Wind, with the address latch missing one pulse in seven',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmEffect: effect('wind'),
+      fmStrobe: 0.15,
+    },
+  },
+  {
+    name: 'air raid',
+    blurb: 'A siren filed under the wrong registers as it climbs',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmEffect: effect('siren'),
+      fmAddrLine: 6,
+      fmAddrFault: 0,
+      fmBusCut: 0.5,
+    },
+  },
+  {
+    name: 'one long cricket',
+    blurb:
+      'The key-up lands next door, so the chirps never stop being one note',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmEffect: effect('crickets'),
+      fmStrobe: 0.4,
     },
   },
   {

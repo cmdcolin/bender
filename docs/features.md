@@ -7,7 +7,7 @@ The [README](../README.md) explains how the interesting parts work and why they
 behave as they do; this is the list, for finding out whether something exists
 and what it is called.
 
-160 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 45
+160 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 49
 presets, and one supply rail that most of it is plugged into.
 
 ## Sources
@@ -411,15 +411,16 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 ## Around the instrument
 
 - **Presets** — _dying toy_, _paperclip_, _flat batteries_, _melody scrambler_,
-  _wrong song_, _half a tune_, _stuck key_, _cut the dataline_, _gravel dac_,
-  _machine gun_, _drum scream_, _crushed chip_, _tape scream_, _no-input
-  squeal_, _runaway howl_, _haunted spring_, _contact crackle_, _siren chaos_,
-  _acid screech_, _ground loop_, _possessed osc_, _sub stomp_, _wall of muff_,
-  _dying fuzz face_, _octave up_, _velcro_, _squeezed screamer_, _grief
-  machine_, _séance_, _dying walkman_, _wrong voices_, _yell into it_, _dying
-  transport_, _barber pole_, _clangour_, _touch the contacts_, _clock wobble_,
-  _clap at it_, _clap along_, _found tape_, _shed oxide_, _pinned to the oxide_,
-  _the kit plays the tune_, _call and answer_, _every hit opens it_.
+  _wrong song_, _half a tune_, _stuck key_, _cut the dataline_, _dawn chorus_,
+  _weather station_, _air raid_, _one long cricket_, _gravel dac_, _machine
+  gun_, _drum scream_, _crushed chip_, _tape scream_, _no-input squeal_,
+  _runaway howl_, _haunted spring_, _contact crackle_, _siren chaos_, _acid
+  screech_, _ground loop_, _possessed osc_, _sub stomp_, _wall of muff_, _dying
+  fuzz face_, _octave up_, _velcro_, _squeezed screamer_, _grief machine_,
+  _séance_, _dying walkman_, _wrong voices_, _yell into it_, _dying transport_,
+  _barber pole_, _clangour_, _touch the contacts_, _clock wobble_, _clap at it_,
+  _clap along_, _found tape_, _shed oxide_, _pinned to the oxide_, _the kit
+  plays the tune_, _call and answer_, _every hit opens it_.
 - **Roll** randomises the board with a bias toward leaving something audible;
   controls marked `shy` come on rarely and low, so a roll does not bury the
   board under one effect.

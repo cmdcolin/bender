@@ -312,14 +312,16 @@ export class FmChip implements Stage {
   // melody patch sent again the way a driver re-selects its instrument. Both are
   // writes like any other, so both are somewhere a cut line can land.
   private setEffect(next: number) {
-    if (this.effect >= 0) stopEffect(this.cpu)
     this.effect = next
     this.effectTick = 0
     this.effectClock = 0
     this.cpu.s.fill(0)
-    // Whatever the keyboard had queued on that channel is not the driver's any
-    // more, so the key-up it was waiting to send never goes.
+    // One key-up, whichever direction the button moved. Going out it ends what
+    // the script left keyed on; going in it ends whatever the keyboard was
+    // still holding on the channel the script is about to take, because the
+    // key-up that channel had queued is not the driver's to send any more.
     this.ch[EFFECT_CH]!.offIn = 0
+    stopEffect(this.cpu)
     const eff = EFFECTS[next]
     if (eff) loadEffect(this.cpu, eff)
     else this.sentVoice = -1

@@ -58,8 +58,18 @@ const shakeShare = (amount: number) => 0.12 + 0.5 * amount
 const SHY_ODDS = 0.08
 const SHY_TOP = 0.3
 
-const shyValue = (def: SliderDef, rand: () => number) =>
-  rand() < SHY_ODDS ? snapToStep(def, fromPos(def, rand() * SHY_TOP)) : def.min
+// The bottom of the travel only means anything on a control whose travel is an
+// amount. A list of choices is not ordered by how much of itself it is — a
+// cricket is not more effect than a bird, and D7 is not a deeper cut than D0 —
+// so reading the low end as the quiet end just makes most of the list
+// unreachable. A shy control with choices stays off exactly as often; when it
+// does come on it takes any of them.
+const shyValue = (def: SliderDef, rand: () => number) => {
+  if (rand() >= SHY_ODDS) return def.min
+  if (def.choices)
+    return def.min + 1 + Math.floor(rand() * (def.choices.length - 1))
+  return snapToStep(def, fromPos(def, rand() * SHY_TOP))
+}
 
 const calmShy = (next: Controls, rand: () => number): Controls => {
   for (const def of ALL_SLIDERS)

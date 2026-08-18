@@ -3,7 +3,15 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { Strobe } from '../bus'
 import { buildBender } from '../build'
-import { makeIo, render, renderBender, rms, SR } from '../testRender'
+import {
+  deviation,
+  makeIo,
+  quiet,
+  render,
+  renderBender,
+  rms,
+  SR,
+} from '../testRender'
 import { FM_EFFECT_NAMES } from './fmEffects'
 import { romIndex } from './roms'
 
@@ -99,12 +107,6 @@ test('a strobe that never lands is a chip that never sounds', () => {
     ).toBe(0)
 })
 
-const deviation = (x: Float32Array, from: Float32Array) => {
-  let sum = 0
-  for (let i = 0; i < x.length; i++) sum += (x[i]! - from[i]!) ** 2
-  return Math.sqrt(sum / x.length) / rms(from)
-}
-
 // The slip is per write, so what it costs you is however many writes you make.
 // A note is four; the weather is hundreds a second, and it is deranged that
 // much harder for the same marginal pulse. The toy's sequencer only runs under
@@ -125,15 +127,6 @@ test('the same slip costs an effect more than it costs notes', () => {
     expect(moved, name).toBeGreaterThan(notes * 1.4)
   }
 })
-
-/** How much of the run the chip spent quiet, in 20 ms windows. */
-const quiet = (x: Float32Array) => {
-  const n = Math.round(0.02 * SR)
-  const env: number[] = []
-  for (let i = 0; i + n <= x.length; i += n) env.push(rms(x.subarray(i, i + n)))
-  const peak = env.reduce((a, v) => Math.max(a, v), 0)
-  return env.reduce((a, v) => a + (v < peak * 0.1 ? 1 : 0), 0) / env.length
-}
 
 // The crickets again, arriving at the same place as the famous bend by a route
 // that has nothing in common with it. A cut key line is a bit that cannot go

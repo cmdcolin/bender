@@ -444,7 +444,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('A', 6),
         shy: true,
-        help: 'Which of the six wires choosing the register the knife found. The byte arrives intact and is filed in the wrong place, which is the more violent of the two: a frequency written into an envelope register, a key-on written into a waveform. It also means whatever should have gone there never did, so the chip goes on playing the last thing it was told about that register.',
+        help: 'Which of the six wires choosing the register the knife found. The byte arrives intact and is filed in the wrong place, which is the more violent of the two: a frequency written into an envelope register, a key-on written into a waveform. It also means whatever should have gone there never did, so the chip goes on playing the last thing it was told about that register. Some of these lines do nothing while an effect runs, and that is the part rather than the control: a script only ever writes the fourth channel and the eight patch bytes, so the wires that only matter to the registers it never names have nothing to carry.',
       },
       {
         key: 'fmAddrFault',

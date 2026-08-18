@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
 import { hasStep } from '../../drums'
 import { mulberry32 } from '../../dsp/util/rng'
-import { GROUPS, type Group, groupKeys } from '../controls'
+import { GROUPS, type Group, groupKeys, sliderFor } from '../controls'
 import { mutate, randomLook, resetGroup, rollGroup } from './roll'
 import { mine, yours } from './testBoard'
 
@@ -135,6 +135,33 @@ test('random rarely brings crackle on, and never loud', () => {
   }
   expect(on).toBeGreaterThan(0)
   expect(on / 600).toBeLessThan(0.15)
+})
+
+// A shy control on a list of choices is still shy — it sits most rolls out. But
+// the low end of a list is not the quiet end of it, so the rare roll that does
+// bring one on has to be able to reach the whole list. Reading the bottom of
+// the travel as the gentle end put four of the five effects, and most of the
+// wires on both buses, past anything a roll could hand you.
+test('a shy control on a list of choices can still reach the whole list', () => {
+  const before = mine()
+  const seen: Record<string, Set<number>> = {}
+  const keys = ['fmEffect', 'fmDataLine', 'fmAddrLine', 'chipDataLine'] as const
+  for (const k of keys) seen[k] = new Set()
+  let on = 0
+  for (let seed = 1; seed <= 600; seed++) {
+    const after = randomLook(before, mulberry32(seed))
+    for (const k of keys) {
+      seen[k]!.add(after[k])
+      if (after[k] > 0) on++
+    }
+  }
+  for (const k of keys) {
+    const def = sliderFor(k)
+    // every choice the control has, off included
+    expect(seen[k]!.size, k).toBe(def.choices!.length)
+  }
+  // and still shy: on is the exception across all four, not the rule
+  expect(on / (600 * keys.length)).toBeLessThan(0.15)
 })
 
 test('mutate does not turn crackle on from nothing', () => {

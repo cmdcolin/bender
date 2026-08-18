@@ -114,3 +114,43 @@ export function lowEnergy(x: Float32Array, hz = 120): number {
   }
   return Math.sqrt(sum / x.length)
 }
+
+// Level over time in 20 ms windows — finer than any gesture a ROM makes, and
+// coarser than anything a chip does inside a note.
+export function envelope(x: Float32Array, seconds = 0.02): Float32Array {
+  const n = Math.round(seconds * SR)
+  const out = new Float32Array(Math.floor(x.length / n))
+  for (let i = 0; i < out.length; i++)
+    out[i] = rms(x.subarray(i * n, i * n + n))
+  return out
+}
+
+/** How much of the run the chip spent quiet, as a fraction of those windows. */
+export function quiet(x: Float32Array): number {
+  const env = envelope(x)
+  const peak = env.reduce((a, v) => Math.max(a, v), 0)
+  if (peak === 0) return 1
+  return env.reduce((a, v) => a + (v < peak * 0.1 ? 1 : 0), 0) / env.length
+}
+
+/** Onsets, counted with hysteresis so one call is one burst. */
+export function bursts(x: Float32Array): number {
+  const env = envelope(x)
+  const peak = env.reduce((a, v) => Math.max(a, v), 0)
+  let count = 0
+  let on = false
+  for (const v of env) {
+    if (!on && v > peak * 0.35) {
+      count++
+      on = true
+    } else if (on && v < peak * 0.15) on = false
+  }
+  return count
+}
+
+/** How far one render sits from another, as a fraction of the second's level. */
+export function deviation(x: Float32Array, from: Float32Array): number {
+  let sum = 0
+  for (let i = 0; i < x.length; i++) sum += (x[i]! - from[i]!) ** 2
+  return Math.sqrt(sum / x.length) / rms(from)
+}

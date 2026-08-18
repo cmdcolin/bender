@@ -4,7 +4,16 @@ import { packParams } from '../../engine/params'
 import { FAULT } from '../bus'
 import { buildBender, buildChain } from '../build'
 import { BLOCK } from '../stage'
-import { makeIo, pitchHz, renderBender, rms, SR } from '../testRender'
+import {
+  bursts,
+  deviation,
+  makeIo,
+  pitchHz,
+  quiet,
+  renderBender,
+  rms,
+  SR,
+} from '../testRender'
 import { type Cpu, EFFECTS, FM_EFFECT_NAMES } from './fmEffects'
 import { romIndex } from './roms'
 
@@ -48,38 +57,6 @@ test('an effect is the busiest thing the bus ever carries', () => {
     expect(writes / 4, eff.name).toBeGreaterThan(floor)
   }
 })
-
-// 20 ms windows, which is finer than any gesture in the ROM and coarser than
-// anything the chip does inside a note.
-const envelope = (x: Float32Array) => {
-  const n = Math.round(0.02 * SR)
-  const out = new Float32Array(Math.floor(x.length / n))
-  for (let i = 0; i < out.length; i++)
-    out[i] = rms(x.subarray(i * n, i * n + n))
-  return out
-}
-
-/** How much of the run the chip spent quiet, as a fraction of those windows. */
-const quiet = (x: Float32Array) => {
-  const env = envelope(x)
-  const peak = env.reduce((a, v) => Math.max(a, v), 0)
-  return env.reduce((a, v) => a + (v < peak * 0.1 ? 1 : 0), 0) / env.length
-}
-
-/** Onsets, counted with hysteresis so one call is one burst. */
-const bursts = (x: Float32Array) => {
-  const env = envelope(x)
-  const peak = env.reduce((a, v) => Math.max(a, v), 0)
-  let count = 0
-  let on = false
-  for (const v of env) {
-    if (!on && v > peak * 0.35) {
-      count++
-      on = true
-    } else if (on && v < peak * 0.15) on = false
-  }
-  return count
-}
 
 // A cricket is nothing but key-ons, so it is where the famous bend is loudest:
 // the wire carrying the key back down cannot go low, the chip is never told the
@@ -125,12 +102,6 @@ function afterTheEffect(
     if (b >= half) out.set(io.l.subarray(0, BLOCK), (b - half) * BLOCK)
   }
   return out
-}
-
-const deviation = (x: Float32Array, from: Float32Array) => {
-  let sum = 0
-  for (let i = 0; i < x.length; i++) sum += (x[i]! - from[i]!) ** 2
-  return Math.sqrt(sum / x.length) / rms(from)
 }
 
 // There is one instrument in the register file and the effect wants it, so a
