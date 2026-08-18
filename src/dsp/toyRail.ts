@@ -3,13 +3,11 @@ import { Drunk } from './util/drift'
 import { mulberry32, type Rng } from './util/rng'
 import { flushDenormal } from './util/softclip'
 
-// Where a jammed die and its supply come to rest against each other, and how
-// fast they get there. Low enough that the chip can't run and the pitch has
-// dived most of an octave; not low enough to let the latch go.
-const LATCH_HOLD = 0.06
+// How fast a jammed die and its supply come to rest against each other. Where
+// they come to rest is a part value now — see PARTS.latchHold.
 const LATCH_PULL = 12
 
-// The voltage the chip stops running at, and where the watchdog trips.
+// The voltage the chip stops running at.
 //
 // The watchdog has to sit at or above the point the chip gives up, and it used to
 // sit well below. That inverted the whole bend: the amplitude collapse silenced
@@ -19,9 +17,9 @@ const LATCH_PULL = 12
 // gate — the chip switching off and on at one voltage — and the reboot the bend
 // is named after could not physically happen, because the current that would
 // have carried the rail down there had already been cut off by the chip going
-// quiet. A watchdog watches for the chip failing; it cannot be set below it.
-const DEAD_V = 0.2
-const WATCHDOG_V = 0.21
+// quiet. A watchdog watches for the chip failing; it cannot be set below it —
+// which is the floor on the knob that moves it, not a thing the knob can undo.
+export const DEAD_V = 0.2
 
 // The pot doing the starving is a resistor to ground, and it draws whether or
 // not the chip is singing — so a starve deep enough keeps pulling after the chip
@@ -62,41 +60,92 @@ const CAP_DECADES = 120
 // which is the wrong way round. Choke it instead and the rail leaves at whatever
 // rate the capacitance behind the point allows — so the note dives, decelerating,
 // for as long as the metal is down, and the dive is what the bend is for.
-const CLIP_STARVE = 1.2
-
-// How long one touch lasts: a hand's worth, and never twice the same. Long
-// enough to hear the rail travel, short enough that a run of them stutters.
+//
+// How long one touch lasts is a hand's worth, and never twice the same. A floor
+// and a span rather than one duration, and the knob scales both together, as a
+// ratio against this pair: shortening the mean shortens the shortest touch by as
+// much, so the spread stays a hand's spread at every setting rather than
+// collapsing to a metronome at one end. A ratio rather than two scaled numbers
+// because a ratio of one is exactly one, and the board that touches nothing here
+// has to render the same samples it always did.
 const CLIP_HOLD_MIN = 0.02
 const CLIP_HOLD_SPAN = 0.18
 
-// The contact, as something the timebase can read, and why it is not symmetric.
+// What the board is made of, as opposed to what it is being asked to do.
 //
-// Pressing down couples whatever cap the clip found onto the timing node, and
-// that cap has to charge through the contact before the clock has finished
-// moving — slow, and slower the bigger the cap. Lifting off does not discharge
-// anything: it takes the cap out of the circuit altogether, and the node is
-// left with nothing but its own resistor and the few picofarads inside the die.
-// So the clock leaves slowly and comes back at once.
-//
-// That asymmetry is the whole reason the bend reads as a dive rather than a
-// wobble. Symmetric, it would spend as long climbing as falling and the ear
-// would hear a warble; as built, the falls are what there is time to hear.
-const CLOCK_DRAG_PULL = 40
-const CLOCK_DRAG_DROP = 400
+// These were fixed for as long as there was one board. Every one of them is a
+// part somebody chose — a decoupling cap, a resistor in the supply lead, the
+// grade of the die — and a bent toy is a board whose parts are not the ones on
+// the schematic, so each is a knob now. The defaults are the numbers that were
+// compiled in, so a board that touches none of them is the board that shipped.
+export interface Parts {
+  /** Resistance in series with the cells, as a fraction of the whole knob.
+      Flat cells lose open-circuit voltage AND gain resistance; a resistor you
+      added in the lead gains only the resistance, so the rail rests where it
+      always rested and sags further the harder anything pulls on it. That
+      difference is the whole reason this is not the battery knob: fresh cells
+      behind a resistor whoosh, and never run out of voltage to whoosh from. */
+  lead: number
+  /** Where a jammed die and its supply come to rest. Low enough that the chip
+      can't run and the pitch has dived most of an octave; not low enough to let
+      the latch go. Down near nothing the scream is a growl; up near the point
+      the chip gives up it is a shriek that nearly resolves. */
+  latchHold: number
+  /** Where the watchdog trips, which cannot be under the voltage the chip gives
+      up at — see DEAD_V. Sitting right on it, the reboot is the last thing that
+      happens on the way down; well above it, the chip is reset while it is still
+      perfectly able to run and the tune never gets a chance to sag at all. */
+  watchdog: number
+  /** How hard bare metal chokes the supply. */
+  clipStarve: number
+  /** How long one touch lasts on average, in seconds. */
+  clipHold: number
+  /** How fast the found cap charges through the contact: the rate the clock
+      leaves at while the metal is down. */
+  dragPull: number
+  /** And the rate it comes back at when the metal lifts, which is not a
+      discharge but a disconnection.
 
-// The decoupling on the oscillator, as a time constant.
-//
-// One RC oscillator clocks the whole chip. The pitch is that oscillator
-// divided; the tempo is the same oscillator divided further; the envelopes are
-// counted off it too. They cannot come apart — drop the pitch a fifth and the
-// tune slows by a fifth, because there is nothing else in there keeping time.
-//
-// What can differ is how fast each end sees the rail move. The timing node has
-// its own decoupling, so a single note's current is averaged away before it
-// reaches the timebase — which is why a chord does not make the tempo stutter.
-// A sag that lasts longer than this is not averaged away by anything, and the
-// whole toy slows down with it.
-const CLOCK_DECOUPLE = 0.12
+      Pressing down couples whatever cap the clip found onto the timing node,
+      and that cap has to charge through the contact before the clock has
+      finished moving — slow, and slower the bigger the cap. Lifting off takes
+      the cap out of the circuit altogether, and the node is left with nothing
+      but its own resistor and the few picofarads inside the die. So the clock
+      leaves slowly and comes back at once.
+
+      That asymmetry is the whole reason the bend reads as a dive rather than a
+      wobble, and it is the one part here whose stock value is a tenfold ratio
+      rather than a number. Bring the release down onto the pull and the two ends
+      take the same time: the ear stops hearing dives and starts hearing a
+      warble. */
+  dragDrop: number
+  /** The decoupling on the oscillator, as a time constant.
+
+      One RC oscillator clocks the whole chip. The pitch is that oscillator
+      divided; the tempo is the same oscillator divided further; the envelopes
+      are counted off it too. They cannot come apart — drop the pitch a fifth and
+      the tune slows by a fifth, because there is nothing else in there keeping
+      time.
+
+      What can differ is how fast each end sees the rail move. The timing node
+      has its own decoupling, so a single note's current is averaged away before
+      it reaches the timebase — which is why a chord does not make the tempo
+      stutter. A sag that lasts longer than this is not averaged away by
+      anything, and the whole toy slows down with it. Take the cap off and
+      nothing is averaged: every note in a chord stumbles the beat. */
+  decouple: number
+}
+
+export const PARTS: Parts = {
+  lead: 0,
+  latchHold: 0.06,
+  watchdog: 0.21,
+  clipStarve: 1.2,
+  clipHold: 0.11,
+  dragPull: 40,
+  dragDrop: 400,
+  decouple: 0.12,
+}
 
 // The shared toy supply rail. Output current drains it in proportion to starve
 // and to how flat the cells are; when it droops past the watchdog threshold the
@@ -131,7 +180,8 @@ export class ToyRail {
   private drag = 0
   // The rail as the timebase sees it, behind its own decoupling.
   private clockV = 1
-  private readonly decouple: number
+  private decouple: number
+  private parts: Parts = { ...PARTS }
   private thresholdWalk = new Drunk()
   private clipFault: Burst
   private rng: Rng
@@ -142,17 +192,27 @@ export class ToyRail {
   ) {
     this.rng = mulberry32(seed)
     this.clipFault = new Burst(sr, 0.8)
-    this.decouple = 1 - Math.exp(-1 / (CLOCK_DECOUPLE * sr))
+    this.decouple = 1 - Math.exp(-1 / (PARTS.decouple * sr))
   }
 
-  // What the board is, as opposed to what it is being asked to do. Flat cells
-  // lose open-circuit voltage and gain internal resistance, so the rail never
-  // recovers to full, recovers slower, and sags under load with nothing starving
-  // it. Starve is the collapse; this is the floor it collapses from. Heat takes
-  // the same floor down again, and the chip's own clock tracks it, so a hot
-  // board runs flat as well as low. The reservoir doesn't change any of those
-  // resting places — only how long the rail takes to reach them. Whoever owns
-  // the tick sets all of it once a block.
+  // The parts, from whoever owns the tick, once a block alongside setBoard. The
+  // one-pole coefficient off the timing node's cap is worked out here rather
+  // than per sample for the same reason the reservoir factor is: it is an
+  // exp() on a path that runs forty-eight thousand times a second.
+  setParts(parts: Parts) {
+    this.parts = parts
+    this.decouple =
+      1 - Math.exp(-1 / (Math.max(parts.decouple, 1e-4) * this.sr))
+  }
+
+  // What the board is being asked to do. Flat cells lose open-circuit voltage
+  // and gain internal resistance, so the rail never recovers to full, recovers
+  // slower, and sags under load with nothing starving it. Starve is the
+  // collapse; this is the floor it collapses from. Heat takes the same floor
+  // down again, and the chip's own clock tracks it, so a hot board runs flat as
+  // well as low. The reservoir doesn't change any of those resting places —
+  // only how long the rail takes to reach them. Whoever owns the tick sets all
+  // of it once a block.
   setBoard(battery: number, heat = 0, latch = 0, cluster = 0, cap = 0) {
     this.battery = battery
     this.heat = heat
@@ -185,8 +245,9 @@ export class ToyRail {
       this.clipRemaining <= 0 &&
       this.clipFault.roll(clipHz / this.sr, this.cluster, this.rng)
     ) {
+      const hold = this.parts.clipHold / PARTS.clipHold
       this.clipRemaining = Math.floor(
-        (CLIP_HOLD_MIN + this.rng() * CLIP_HOLD_SPAN) * this.sr,
+        (CLIP_HOLD_MIN + this.rng() * CLIP_HOLD_SPAN) * hold * this.sr,
       )
     }
     // A touch is a starve nobody turned the knob for, so it arrives on the same
@@ -195,15 +256,15 @@ export class ToyRail {
     const touching = this.clipRemaining > 0
     if (touching) {
       this.clipRemaining--
-      choked += CLIP_STARVE * (1 - clipClock)
+      choked += this.parts.clipStarve * (1 - clipClock)
     }
 
     // The same contact, read by the timebase instead of the supply. Down is the
     // found cap charging through the clip; up is the clip leaving, which is not
-    // a discharge but a disconnection, and takes no time at all.
+    // a discharge but a disconnection.
     const pull = touching
-      ? CLOCK_DRAG_PULL / this.sr / this.slow
-      : CLOCK_DRAG_DROP / this.sr
+      ? this.parts.dragPull / this.sr / this.slow
+      : this.parts.dragDrop / this.sr
     this.drag = flushDenormal(
       this.drag + pull * ((touching ? 1 : 0) - this.drag),
     )
@@ -213,9 +274,23 @@ export class ToyRail {
     // point in question. One factor for all of it, so the cap buys time without
     // moving any resting place: a rail that used to settle in 17 ms settles in a
     // second instead, at the voltage it always settled at.
+    // Resistance in the lead is the half of flat cells that isn't the voltage:
+    // it pays the rail back slower, and it puts a drop in front of every load.
+    // That second half is a term of its own rather than a factor on the others,
+    // because on a fresh unstarved board those others are zero — the toy is
+    // asked for current and the rail does not move. A resistor is what makes
+    // current cost voltage, so it has to be what carries the load here, and it
+    // is the reason this knob whoops on every note where Batteries only ever
+    // runs down. What it does not touch is where the rail rests: with nothing
+    // drawing, no current flows, and a resistor carrying nothing drops nothing.
+    const lead = this.parts.lead
     const slow = this.slow
-    const charge = (60 * (1 - 0.35 * this.battery)) / this.sr / slow
-    const drain = (choked * 900 + this.battery * 80) / this.sr / slow
+    const charge =
+      (60 * Math.max(1 - 0.35 * this.battery - 0.55 * lead, 0.06)) /
+      this.sr /
+      slow
+    const drain =
+      (choked * 900 + this.battery * 80 + lead * 220) / this.sr / slow
     const walk = this.thresholdWalk.step(0.15, this.sr, this.rng) * 0.025
 
     // A latched die is a short across the supply that no longer cares what the
@@ -225,7 +300,8 @@ export class ToyRail {
     // escape from, which is why the note screams rather than stopping.
     if (this.latchRemaining > 0) {
       this.v = flushDenormal(
-        this.v + (LATCH_PULL / this.sr / slow) * (LATCH_HOLD - this.v),
+        this.v +
+          (LATCH_PULL / this.sr / slow) * (this.parts.latchHold - this.v),
       )
       this.latchRemaining--
       // Then the current gives out, and the watchdog finally gets the power
@@ -252,7 +328,8 @@ export class ToyRail {
       this.bootRemaining--
       return
     }
-    if (this.stress > 0 && this.v < WATCHDOG_V + 0.05 * this.heat + walk) {
+    const trip = Math.max(this.parts.watchdog, DEAD_V)
+    if (this.stress > 0 && this.v < trip + 0.05 * this.heat + walk) {
       // Sometimes it doesn't reboot cleanly. CMOS on a collapsing rail can
       // latch instead: the die jams, holds whatever it was doing and keeps
       // drawing current, so one note screams down into the floor and the

@@ -50,8 +50,13 @@ const ratio = (semitone: number) =>
 // the cheap chips left them.
 export const TONE_DUTY = [0.5, 0.25, 0.125, 0.0625]
 
-// Four notes, as the toys of the era had.
-const VOICE_TRIM = [0.86, 1.21, 0.97, 1.12]
+// Four notes, as the toys of the era had, and how far apart the four output
+// stages came out of the bin. Written as a deviation from nominal rather than
+// as the trims themselves, so the knob that scales it has a zero: all four
+// parts identical, and a chord that browns out in lockstep instead of dying a
+// voice at a time. One is the spread the board shipped with.
+const VOICE_SPREAD = [-0.14, 0.21, -0.03, 0.12]
+const trimAt = (k: number, spread: number) => 1 + VOICE_SPREAD[k]! * spread
 
 // A key voice. Silence is its envelope being down, not a sentinel note: the keys
 // reach two octaves under the toy's own bottom, and a semitone below zero is a
@@ -93,15 +98,16 @@ const CHORD_GAIN = 0.7
 // rail down.
 const LATCH_AMP = 0.85
 
-// How far a capacitor hung on the timing pin can divide the clock: four
-// octaves, which is what puts a toy melody under the bottom of its own keyboard
-// and turns its squares into something you feel rather than hear.
-const CLOCK_DRAG_MAX = 15
+// How far a capacitor hung on the timing pin can divide the clock, in octaves.
+// Four is what puts a toy melody under the bottom of its own keyboard and turns
+// its squares into something you feel rather than hear — which is the stock
+// value, not a ceiling: the knob is which cap you hung there, and the dive goes
+// as deep as the part you found.
+const dragDivisor = (octaves: number) => Math.pow(2, octaves) - 1
 
 // One small output stage carries every voice, so a chord leans on its headroom
 // rather than coming out four times louder.
-const MIXER_DRIVE = 0.35
-const mixVoices = (sum: number) => softclip(sum * MIXER_DRIVE) / MIXER_DRIVE
+const mixVoices = (sum: number, drive: number) => softclip(sum * drive) / drive
 
 // A counter can't strike a pulse narrower than one clock tick, so the narrow
 // tones widen back toward a square as the note climbs past the divider's
@@ -120,7 +126,7 @@ export class ToyChip implements Stage {
   private note = -1
   private stepClock = 0
   private env = 0
-  private voices: Voice[] = VOICE_TRIM.map(() => ({
+  private voices: Voice[] = VOICE_SPREAD.map(() => ({
     note: 0,
     phase: 0,
     env: 0,
@@ -376,6 +382,9 @@ export class ToyChip implements Stage {
     const maxHz = this.sr * 0.49
     const clipHz = p[IDX.chipClipHz]!
     const clipClock = p[IDX.chipClipClock]!
+    // What the board is doing, then what the board is made of. Both once a
+    // block: the parts are knobs like any other, and a hand on one of them is a
+    // part being swapped between blocks rather than mid-sample.
     rail.setBoard(
       battery,
       ctx.heat,
@@ -383,6 +392,19 @@ export class ToyChip implements Stage {
       cluster,
       p[IDX.chipCap]!,
     )
+    rail.setParts({
+      lead: p[IDX.chipLeadR]!,
+      latchHold: p[IDX.chipLatchHold]!,
+      watchdog: p[IDX.chipWatchdog]!,
+      clipStarve: p[IDX.chipClipBite]!,
+      clipHold: p[IDX.chipClipHold]! / 1000,
+      dragPull: p[IDX.chipClipCharge]!,
+      dragDrop: p[IDX.chipClipRelease]!,
+      decouple: p[IDX.chipDecouple]! / 1000,
+    })
+    const dragMax = dragDivisor(p[IDX.chipDragOct]!)
+    const spread = p[IDX.chipSpread]!
+    const mixDrive = p[IDX.chipMixDrive]!
 
     if (rom !== this.lastRom) {
       this.lastRom = rom
@@ -413,12 +435,11 @@ export class ToyChip implements Stage {
       // other way to move a clock and by far the larger one. Starving the rail
       // is worth a fraction of an octave before the chip stops running at all;
       // hanging a capacitor off the oscillator divides it, and dividing has no
-      // such limit. Four octaves at the top of the knob, travelling at whatever
-      // rate the found cap charges — the whole timebase going with it, so the
-      // tune, the tempo and the envelopes dive together and the melody arrives
+      // such limit. As deep as the part you hung there, travelling at whatever
+      // rate that cap charges — the whole timebase going with it, so the tune,
+      // the tempo and the envelopes dive together and the melody arrives
       // somewhere under the bottom of the keyboard.
-      if (clipClock > 0)
-        clock /= 1 + clipClock * CLOCK_DRAG_MAX * rail.clipTravel
+      if (clipClock > 0) clock /= 1 + clipClock * dragMax * rail.clipTravel
       // The toy runs on its own crystal and it wanders. Nothing pulls it back,
       // so it never settles on a ratio with the drum machine — the two lean past
       // each other and come back for as long as you leave it running.
@@ -553,7 +574,7 @@ export class ToyChip implements Stage {
         for (let k = 0; k < this.voices.length; k++) {
           const v = this.voices[k]!
           if (v.env <= ENV_FLOOR) continue
-          const trim = VOICE_TRIM[k]!
+          const trim = trimAt(k, spread)
           const hz = Math.min(
             BASE_HZ * ratio(v.note) * clock * rail.pitchFactorAt(trim),
             maxHz,
@@ -562,7 +583,7 @@ export class ToyChip implements Stage {
           v.phase = wrap1(v.phase + inc)
           keys += pulse(v.phase, duty, inc) * v.env * rail.ampFactorAt(trim)
         }
-        out = (out + mixVoices(keys)) * this.gateState
+        out = (out + mixVoices(keys, mixDrive)) * this.gateState
         if (spot === 3) out += pot * 0.4
       }
 

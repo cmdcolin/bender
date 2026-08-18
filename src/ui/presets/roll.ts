@@ -24,7 +24,7 @@ import { fromPos, toPos } from '../slider-scale'
 import { applyPreset } from './apply'
 import { inTime } from './quantize'
 import { PRESETS } from './table'
-import { CLOCK_KEYS, keepYours, YOURS } from './yours'
+import { CLOCK_KEYS, keepYours, PART_KEYS, YOURS } from './yours'
 
 // Along the control's own travel, not across its span: a log slider moves by a
 // proportion of where it sits, so a 40 ms delay comes back a few milliseconds
@@ -85,7 +85,8 @@ export function mutate(
   const next = { ...controls }
   const share = shakeShare(amount)
   for (const def of ALL_SLIDERS) {
-    if (YOURS.has(def.key) || CLOCK_KEYS.has(def.key)) continue
+    if (YOURS.has(def.key) || CLOCK_KEYS.has(def.key) || PART_KEYS.has(def.key))
+      continue
     if (def.choices) {
       if (rand() < amount * 0.5) {
         next[def.key] = def.min + Math.floor(rand() * def.choices.length)
@@ -168,6 +169,9 @@ const audible = (def: SliderDef, rand: () => number) =>
 
 // Fresh values for the controls named, and nothing else on the board moved.
 // What is yours and the clock sit this out, the same as they do under a nudge.
+// The Parts rack does not: naming it is a hand asking for it, and the reason the
+// blind dice skip the rack is that they cannot tell a dud roll from a dud board.
+// Somebody who pointed at it can.
 export function rollKeys(
   current: Controls,
   keys: Iterable<ControlKey>,

@@ -22,6 +22,21 @@ export const DEFAULT_CONTROLS = {
   chipDrift: 0,
   chipLatch: 0,
 
+  // The parts on the toy board, as opposed to what you are doing to it. Every
+  // default here is the number that used to be compiled in, so a board nobody
+  // has touched them on is the board that shipped.
+  chipLeadR: 0,
+  chipDecouple: 120,
+  chipWatchdog: 0.21,
+  chipLatchHold: 0.06,
+  chipClipBite: 1.2,
+  chipClipHold: 110,
+  chipClipCharge: 40,
+  chipClipRelease: 400,
+  chipDragOct: 4,
+  chipSpread: 1,
+  chipMixDrive: 0.35,
+
   drumLevel: 0.7,
   drumBpm: 118,
   drumSwing: 0,
@@ -29,6 +44,7 @@ export const DEFAULT_CONTROLS = {
   drumDecay: 1,
   drumBits: 7,
   drumLadder: 0,
+  drumLadderTol: 0.15,
   drumRetrigHz: 0,
   drumCross: 0,
   drumCrossAmt: 0.5,

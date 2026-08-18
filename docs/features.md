@@ -7,7 +7,7 @@ The [README](../README.md) explains how the interesting parts work and why they
 behave as they do; this is the list, for finding out whether something exists
 and what it is called.
 
-160 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 49
+172 controls in 26 groups, seven bends competing for six slots, 18 ROM tunes, 49
 presets, and one supply rail that most of it is plugged into.
 
 ## Sources
@@ -30,6 +30,7 @@ the supply underneath it.
 | Clock           | 0.05–16 ×                                                                                                                                                                    |
 | Starve          | 0–1                                                                                                                                                                          |
 | Batteries       | 0–1                                                                                                                                                                          |
+| Lead resistance | 0–1                                                                                                                                                                          |
 | Reservoir       | 0–1                                                                                                                                                                          |
 | Clip chatter    | 0–40 Hz                                                                                                                                                                      |
 | Clip on clock   | 0–1                                                                                                                                                                          |
@@ -59,6 +60,7 @@ envelope, so a hit you can hear opens a voice nothing struck.
 | Decay       | 0.25–16 ×                                               |
 | Bit depth   | 2–16 bit                                                |
 | Ladder      | 0–1                                                     |
+| Part grade  | 0–0.6                                                   |
 | Retrigger   | 0–4000 Hz                                               |
 | Cross-patch | off, kick/snare, snare/hat, kick/hat, rotate, whole kit |
 | Cross bleed | 0–1                                                     |
@@ -392,6 +394,33 @@ Gain, ahead of a dc block, soft clip and limiter that always run.
 | control | range     |
 | ------- | --------- |
 | Gain    | -60–12 dB |
+
+### Parts
+
+What the toy board is made of, rather than what you are doing to it. Every one
+of these was a number compiled into the model until somebody wanted the other
+value, and every default is the one that shipped — so a board nobody has been at
+here is the stock board. _Timing pin_ decides which sags the tempo notices.
+_Watchdog_ is where the reset chip gives up, and it cannot sit under the voltage
+the die gives up at. _Latch hold_ is what a jam sounds like. The four _Clip_
+knobs are the paperclip itself: how hard it bites, how long it stays, and the
+charge and release that make a dive a dive rather than a warble. _Clock drag_ is
+how deep the cap on the oscillator can divide. _Part spread_ is how far apart
+the four output stages came out of the bin, which is whether a chord collapses
+raggedly or all at once.
+
+| control      | range       |
+| ------------ | ----------- |
+| Timing pin   | 0.2–2000 ms |
+| Watchdog     | 0.2–0.6 V   |
+| Latch hold   | 0.01–0.19 V |
+| Clip bite    | 0–4         |
+| Clip dwell   | 3–800 ms    |
+| Clip charge  | 2–400 /s    |
+| Clip release | 2–2000 /s   |
+| Clock drag   | 0–8 oct     |
+| Part spread  | 0–4 ×       |
+| Mixer drive  | 0.02–3      |
 
 ### Ageing
 

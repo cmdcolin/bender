@@ -1,5 +1,13 @@
 import { expect, test } from 'vitest'
-import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
+import {
+  CONTROL_KEYS,
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../../controls'
+import { DEAD_V, PARTS } from '../../dsp/toyRail'
+import { mutate } from '../presets/roll'
+import { PART_KEYS } from '../presets/yours'
 import { KEY_CHOICE, MIC_CHOICE } from '../../dsp/stages/sampler'
 import { STEP_CHOICE } from '../../dsp/trigbus'
 import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
@@ -71,4 +79,51 @@ test('log sliders have a positive floor or zero minimum', () => {
   for (const def of ALL_SLIDERS) {
     if (def.curve === 'log') expect(def.min, def.key).toBeGreaterThanOrEqual(0)
   }
+})
+
+// The Parts rack is the model's own numbers on knobs. Every one of them has to
+// rest where the number was, or every saved link and every preset is a board
+// that used to sound like something else.
+test('the parts rack rests on the values the model was built with', () => {
+  const rail: Record<string, number> = {
+    chipLeadR: 0,
+    chipDecouple: PARTS.decouple * 1000,
+    chipWatchdog: PARTS.watchdog,
+    chipLatchHold: PARTS.latchHold,
+    chipClipBite: PARTS.clipStarve,
+    chipClipHold: PARTS.clipHold * 1000,
+    chipClipCharge: PARTS.dragPull,
+    chipClipRelease: PARTS.dragDrop,
+  }
+  for (const [key, want] of Object.entries(rail)) {
+    expect(DEFAULT_CONTROLS[key as ControlKey], key).toBeCloseTo(want, 9)
+  }
+  // And the floor on the watchdog is the point the chip gives up, not lower.
+  expect(sliderFor('chipWatchdog').min).toBe(DEAD_V)
+})
+
+// A roll asks for a different board, not a different model of how a board
+// works. The skip has to happen before the roll draws anything, or the same
+// seed stops meaning the same board.
+test('the blind dice leave the parts rack where the hand put it', () => {
+  const wound: Controls = {
+    ...DEFAULT_CONTROLS,
+    chipWatchdog: 0.4,
+    chipMixDrive: 1.5,
+    chipDragOct: 7,
+  }
+  const seed = () => {
+    let s = 12345
+    return () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
+  }
+  const rolled = mutate(wound, 0.6, seed())
+  for (const key of PART_KEYS) expect(rolled[key], key).toBe(wound[key])
+
+  // And the draw is unchanged by their being on the board at all: a roll from
+  // stock moves the same controls it moved before the rack existed.
+  const fromStock = mutate(DEFAULT_CONTROLS, 0.6, seed())
+  const movedElsewhere = CONTROL_KEYS.filter(
+    k => !PART_KEYS.has(k) && fromStock[k] !== DEFAULT_CONTROLS[k],
+  )
+  expect(movedElsewhere.length).toBeGreaterThan(10)
 })

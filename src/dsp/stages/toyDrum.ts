@@ -11,8 +11,10 @@ import { mulberry32, type Rng } from '../util/rng'
 
 const TAU = 2 * Math.PI
 
-// The widest word the converter has resistors for, and how far out the worst of
-// them is when the ladder knob is all the way up.
+// The widest word the converter has resistors for, and how far out the reel
+// they came off was sold as. The grade is a knob and this is where it rests: it
+// scales as a ratio against this number, so a kit nobody has re-graded renders
+// the samples it always did.
 //
 // A ladder DAC halves the weight at every rung down the word, and it does that
 // with resistors somebody bought by the reel. Each one is out by its tolerance,
@@ -124,6 +126,9 @@ export class ToyDrum implements Stage {
     // Off its own stream: the resistors were soldered on before the kit made a
     // sound, and drawing them out of the noise source would move every hit.
     const parts = mulberry32(seed ^ 0x1adde4)
+    // At the stock grade. Re-grading scales these rather than redrawing them, so
+    // which rungs are long and which are short stays soldered in and only how
+    // far out they are moves.
     for (let k = 0; k < LADDER_BITS; k++) {
       const off =
         (LADDER_FLOOR + (1 - LADDER_FLOOR) * parts()) * LADDER_TOL * (1 << k)
@@ -135,11 +140,16 @@ export class ToyDrum implements Stage {
   // Bit depth is where the word is tapped off the ladder, so shortening it hands
   // the top of the scale to a different resistor and the error changes character
   // as well as size.
-  private ladderErr(code: number, bits: number, amt: number): number {
+  private ladderErr(
+    code: number,
+    bits: number,
+    amt: number,
+    tol: number,
+  ): number {
     const word = code + (1 << (bits - 1))
     let err = 0
     for (let k = 0; k < bits; k++) if ((word >> k) & 1) err += this.trim[k]!
-    return err * amt
+    return err * amt * (tol / LADDER_TOL)
   }
 
   when(p: Float32Array) {
@@ -224,6 +234,7 @@ export class ToyDrum implements Stage {
     const bits = Math.max(Math.round(p[IDX.drumBits]!), 1)
     const q = Math.pow(2, bits - 1)
     const ladder = p[IDX.drumLadder]!
+    const ladderTol = p[IDX.drumLadderTol]!
 
     // Every row's length, read once a block: a length that moved mid-block would
     // move a playhead the panel has already drawn.
@@ -381,7 +392,7 @@ export class ToyDrum implements Stage {
             v === CLAP && this.clapsLeft > 0 ? clapBurstFall : falls[v]!
         }
         const code = Math.round(out * q)
-        out = (code + this.ladderErr(code, bits, ladder)) / q
+        out = (code + this.ladderErr(code, bits, ladder, ladderTol)) / q
         out *= rail.ampFactor
       }
 

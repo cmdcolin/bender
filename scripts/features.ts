@@ -66,6 +66,8 @@ const BLURBS: Record<string, string> = {
     'The whole instrument printed to tape, after everything else. Speed moves gap loss, head bump, hiss, wow rate and print-through together, because on a real machine they are one thing.',
   Brownout: 'The mains supply failing: sag, dropouts, crackle and hum.',
   Output: 'Gain, ahead of a dc block, soft clip and limiter that always run.',
+  Parts:
+    'What the toy board is made of, rather than what you are doing to it. Every one of these was a number compiled into the model until somebody wanted the other value, and every default is the one that shipped — so a board nobody has been at here is the stock board. *Timing pin* decides which sags the tempo notices. *Watchdog* is where the reset chip gives up, and it cannot sit under the voltage the die gives up at. *Latch hold* is what a jam sounds like. The four *Clip* knobs are the paperclip itself: how hard it bites, how long it stays, and the charge and release that make a dive a dive rather than a warble. *Clock drag* is how deep the cap on the oscillator can divide. *Part spread* is how far apart the four output stages came out of the bin, which is whether a chord collapses raggedly or all at once.',
   Ageing:
     'The slow ones. *Heat* builds with what the board is dissipating and takes the rail down with it. *Dry joints* drop a bend slot out of the path mid-note. *Re-solder* has the board rewire its own slot order while you play. *Cross-coupling* is how much the brightness bus feeds back into the supply.',
 }

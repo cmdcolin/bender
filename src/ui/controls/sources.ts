@@ -119,6 +119,15 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How flat the cells are. The rail never comes back to full, so the toy runs low and slow — pitch, tempo and the drum machine with it — and every note sags it further with nothing starving it. Far enough down and a chord alone browns the chip out.',
       },
       {
+        key: 'chipLeadR',
+        label: 'Lead resistance',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'A resistor in series with the cells. Flat cells are two things at once — a voltage that has dropped and a resistance that has climbed — and this is the second without the first: the rail still rests where it always rested, and every note has to pull its supply through the resistor to get there. So it sags on the attack and climbs back between hits, as far as the Reservoir gives it time to travel. It is the difference between a toy that is running out and a toy that whoops on every note and never runs out at all, and it is the one to reach for over Batteries if what you want is the swoop rather than the decline.',
+      },
+      {
         key: 'chipCap',
         label: 'Reservoir',
         min: 0,
@@ -311,7 +320,16 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far out the resistors in that converter are. A ladder halves its weight at every rung down the word, and a kit like this got its rungs off a reel nobody measured, so the steps come out uneven — and unevenly, because the error scales with the rung: half the tolerance of the top resistor is an enormous number of counts. That is why a cheap converter is not hiss. It is one lurch, at the code where every bit changes at once, and for a signal that code is the zero crossing — so it lands hardest on whatever is quietest, and a tail on its way out is nothing but zero crossings. Bit depth moves where the word is tapped off the ladder, so it changes the character of the error as well as the size.',
+        help: 'How much of that converter’s error you are hearing. A ladder halves its weight at every rung down the word, and a kit like this got its rungs off a reel nobody measured, so the steps come out uneven — and unevenly, because the error scales with the rung: half the tolerance of the top resistor is an enormous number of counts. That is why a cheap converter is not hiss. It is one lurch, at the code where every bit changes at once, and for a signal that code is the zero crossing — so it lands hardest on whatever is quietest, and a tail on its way out is nothing but zero crossings. Bit depth moves where the word is tapped off the ladder, so it changes the character of the error as well as the size.',
+      },
+      {
+        key: 'drumLadderTol',
+        label: 'Part grade',
+        min: 0,
+        max: 0.6,
+        step: 0.005,
+        unit: '',
+        help: 'What the reel those resistors came off was sold as — 15% is the bin this kit was built out of. Which rungs are long and which are short is soldered in and does not move; this is how far out they are, so the whole lurch scales without changing where on the signal it lands. Ladder is how much of it reaches the output; this is how bad the parts were to begin with.',
       },
       {
         key: 'drumRetrigHz',

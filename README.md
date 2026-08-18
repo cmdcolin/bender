@@ -399,6 +399,16 @@ The bends that matter:
   accompaniment and drum machine slowing together, where Starve's per-note dive
   comes out as pitch. Far enough down and a chord alone is enough to brown the
   chip out.
+- **Lead resistance** is a resistor in series with the cells, which is the half
+  of flat cells that is not the voltage. With nothing drawing, no current flows
+  and a resistor carrying nothing drops nothing — so the rail rests exactly
+  where the stock board rests, however far this is up. Play a note and it is in
+  the way: the supply sags on the attack and climbs back between hits, as far as
+  the Reservoir gives it time to travel. That is the difference worth having.
+  Batteries is a toy running out, low before you touch it and lower after. This
+  is a toy that whoops on every note and never runs out of voltage to whoop
+  from, and it is what to reach for when what you want is the swoop rather than
+  the decline.
 - **Bend spot + pot** solders a virtual pot onto the die: clock feedback,
   program counter (melody scrambling), DAC bias, or the gate line.
 - **Data line + Address line** put a knife through the two buses between the ROM
@@ -510,6 +520,67 @@ The bends that matter:
   Brownout drag the pedal down with everything else. Starve the gate circuit far
   enough and it stops needing an input at all.
 - Every feedback (delay, comb, screech filter, feedback bus) goes past unity.
+
+## Parts
+
+Everything above is a thing you are doing to a toy. This rack is what the toy
+is.
+
+Each of these was a number compiled into the model — how hard a paperclip
+chokes, where the reset chip gives up, how big the cap on the oscillator is, how
+far apart the four output stages came out of the bin. They were fixed because
+there was one board. A bent toy is a board whose parts are not the ones on the
+schematic, so they are knobs, and every one of them rests on the number that was
+compiled in: a board nobody has been at here renders the samples it always did,
+which is what keeps every saved link and every preset meaning what it meant.
+
+- **Timing pin** is the decoupling cap on the oscillator, as the time it
+  averages the rail over. One RC oscillator clocks the whole chip, so pitch,
+  tempo and envelopes cannot come apart; what this decides is which sags the
+  timebase notices at all. At stock a single note's current is gone before the
+  clock sees it, which is why a chord sags without the beat stumbling. Scrape
+  the cap off and nothing is averaged — every note in a chord trips the tune.
+  Wind it up and the timebase stops hearing the rail, so the pitch dives while
+  the tempo holds, which no chip with one oscillator in it can do and is the
+  sound of a board somebody has already been at.
+- **Watchdog** is where the reset chip decides the supply has failed. It cannot
+  go under the voltage the die stops running at — a watchdog watches for the
+  chip failing, so the bottom of the knob is that point and not a millivolt
+  lower. Sitting there, the reboot is the last thing that happens on the way
+  down and you hear the whole dive first; up at the top the toy is reset while
+  it is still perfectly able to run, and a sag it used to ride out is a toy that
+  will not stay booted.
+- **Latch hold** is where a jammed die and its supply come to rest against each
+  other. A latch is a short the chip cannot let go of and it needs some rail
+  left to hold itself in, which is why the note screams rather than stopping.
+  Low is a growl under the floor; high is a shriek that nearly resolves.
+- **Clip bite, dwell, charge and release** are the paperclip itself. Bite is how
+  hard it chokes, dwell is how long a touch lasts on average, charge is the rate
+  the clock leaves at while the metal is down, and release is the rate it comes
+  back when the metal lifts. Stock, release is ten times charge, and that
+  asymmetry is the whole reason the bend reads as a dive: pressing down has to
+  charge a cap through the contact, lifting off just takes the cap out of the
+  circuit. Bring release down onto charge and dives turn into a warble.
+- **Clock drag** is how deep the cap on the timing pin can divide, in octaves.
+  Starving the rail is worth a fraction of an octave before the chip stops
+  running at all; dividing has no such limit. Four octaves is stock — enough to
+  put the melody under the bottom of its own keyboard.
+- **Part spread** is how far apart the four output stages came out of the bin.
+  At zero the four are identical and a chord on a dying rail collapses in
+  lockstep, cleanly, all at once. Wound up they scatter, and the chord comes
+  apart over a second with the last voice still going.
+- **Mixer drive** is the headroom in the one small output stage every key voice
+  runs through. Low is a clean summing amp with room for all four; high squares
+  off on two notes, so playing harder changes the timbre instead of the level.
+- **Part grade** on the kit is what the reel those ladder resistors came off was
+  sold as. Which rungs are long and which are short is soldered in; this is how
+  far out they are.
+
+The blind dice skip this rack. A roll asks for a different board, not a
+different model of how a board works — the watchdog three hundred millivolts up
+is a toy that reboots before any sag can start, and there would be no telling a
+dud roll from a dud board. Point at the rack and ask for a roll and it rolls:
+that is a hand, and a hand can tell the difference.
 
 ## Ageing
 

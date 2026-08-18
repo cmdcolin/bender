@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import type { Controls } from '../controls'
 import { playKeys, SR } from './testRender'
-import { ToyRail } from './toyRail'
+import { DEAD_V, PARTS, ToyRail } from './toyRail'
 
 test('a starving rail collapses the voices raggedly, not in lockstep', () => {
   const rail = new ToyRail(SR)
@@ -251,4 +251,66 @@ test('a clipped board browns out without the starve knob being touched', () => {
   clean.setBoard(0, 0, 0, 0, 0.35)
   for (let i = 0; i < 6 * SR; i++) clean.tick(0.14, 0, 0, 0)
   expect(clean.rebootCount).toBe(0)
+})
+
+// The knob that started this: a resistor in the lead, which is the half of flat
+// cells that is not the voltage.
+test('lead resistance sags under load without moving where the rail rests', () => {
+  const settled = (lead: number, load: number) => {
+    const rail = new ToyRail(SR)
+    rail.setBoard(0)
+    rail.setParts({ ...PARTS, lead })
+    for (let i = 0; i < 2 * SR; i++) rail.tick(load, 0, 0)
+    return rail.v
+  }
+  // Nothing drawing: a resistor carrying no current drops no volts, so the rail
+  // rests exactly where it rests on the stock board however far the knob is up.
+  // This is the whole difference from Batteries, which is low before anything
+  // has played a note.
+  expect(settled(1, 0)).toBe(1)
+  expect(settled(0, 0)).toBe(1)
+  // Something drawing: now it is in the way. Fresh cells, no starve anywhere,
+  // and the rail is down a third on a note the stock board does not notice.
+  expect(settled(0, 0.15)).toBe(1)
+  expect(settled(0.5, 0.15)).toBeLessThan(0.7)
+})
+
+test('lead resistance drags the recovery out, so a note whoops back', () => {
+  const climb = (lead: number) => {
+    const rail = new ToyRail(SR)
+    rail.setBoard(0)
+    rail.setParts({ ...PARTS, lead })
+    rail.v = 0.4
+    let i = 0
+    for (; i < SR && rail.v < 0.9; i++) rail.tick(0, 0, 0)
+    return i
+  }
+  expect(climb(1)).toBeGreaterThan(climb(0) * 1.5)
+})
+
+// How hard the rail is starved, and how many times the watchdog trips over four
+// seconds of it. At 0.3 the stock threshold never sees a sag worth resetting
+// for; at 0.35 the rail passes it.
+const trips = (watchdog: number, starve: number) => {
+  const rail = new ToyRail(SR, 7)
+  rail.setBoard(0)
+  rail.setParts({ ...PARTS, watchdog })
+  for (let i = 0; i < 4 * SR; i++) rail.tick(0.14, starve, 0)
+  return rail.rebootCount
+}
+
+test('the watchdog cannot be wound under the voltage the chip gives up at', () => {
+  // Under the floor the panel offers, which is the point the die stops running.
+  // A threshold this low would sit beneath every sag the rail can reach and the
+  // chip would never be reset at all — so it is clamped, and a starve that
+  // trips the stock threshold still trips this one.
+  expect(trips(0.01, 0.35)).toBeGreaterThan(0)
+  expect(trips(DEAD_V, 0.35)).toBeGreaterThan(0)
+})
+
+test('a wound-up watchdog resets the toy before the dive gets going', () => {
+  // A sag the stock board rides out. Move the threshold up into it and the same
+  // starve is a toy that will not stay booted.
+  expect(trips(DEAD_V, 0.3)).toBe(0)
+  expect(trips(0.45, 0.3)).toBeGreaterThan(20)
 })
