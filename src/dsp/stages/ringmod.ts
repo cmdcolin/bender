@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { octaves } from '../util/pitch'
 import { QuadOsc } from '../util/lfo'
 
 export class RingMod implements Stage {
@@ -29,7 +30,7 @@ export class RingMod implements Stage {
       } else {
         if (mod) {
           carrier.setRate(
-            Math.min(base * Math.pow(2, mod[i]! * 4), this.sr * 0.45),
+            Math.min(base * octaves(mod[i]! * 4), this.sr * 0.45),
             this.sr,
           )
         }

@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { octaves } from '../util/pitch'
 import { QuadOsc } from '../util/lfo'
 import { flushDenormal, softclip } from '../util/softclip'
 
@@ -92,7 +93,7 @@ export class Shifter implements Stage {
     for (let i = 0; i < io.n; i++) {
       if (mod) {
         carrier.setRate(
-          Math.min(baseHz * Math.pow(2, mod[i]! * 4), this.sr * 0.4),
+          Math.min(baseHz * octaves(mod[i]! * 4), this.sr * 0.4),
           this.sr,
         )
       }

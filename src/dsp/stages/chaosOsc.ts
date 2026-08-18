@@ -1,6 +1,6 @@
 import { IDX } from '../../engine/params'
 import type { Ctx, Stage, StereoBlock } from '../stage'
-import { wrap1 } from '../util/lfo'
+import { wrap1 } from '../util/pitch'
 import { flushDenormal } from '../util/softclip'
 
 function shape(phase: number, mode: number): number {

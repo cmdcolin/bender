@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "ab": "tsx scripts/ab.ts",
     "bench": "tsx scripts/bench.ts",
     "blocks": "tsx scripts/blocks.ts",
+    "cold": "tsx scripts/cold.ts",
     "diagram": "tsx scripts/chain-svg.ts",
     "soak": "tsx scripts/soak.ts",
     "preview": "vite preview",

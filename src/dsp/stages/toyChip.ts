@@ -7,7 +7,7 @@ import { voiceMask } from '../trigbus'
 import { softclip } from '../util/softclip'
 import { Burst } from '../util/burst'
 import { Drunk } from '../util/drift'
-import { wrap1 } from '../util/lfo'
+import { octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 import { ROMS, type Rom } from './roms'
 
@@ -378,7 +378,7 @@ export class ToyChip implements Stage {
       if (drift > 0) {
         clock *= 1 + this.drift.step(0.08, this.sr, this.rng) * 0.3 * drift
       }
-      if (modClock) clock *= Math.pow(2, modClock[i]! * 3)
+      if (modClock) clock *= octaves(modClock[i]! * 3)
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
 

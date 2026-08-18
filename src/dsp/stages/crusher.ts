@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 
 // Bit depth quantizer plus a jittered sample-and-hold. The hold phases are
@@ -38,12 +39,12 @@ export class Crusher implements Stage {
       const hold = mod
         ? Math.max(
             this.sr /
-              Math.min(Math.max(srHz * Math.pow(2, mod[i]! * 4), 20), this.sr),
+              Math.min(Math.max(srHz * octaves(mod[i]! * 4), 20), this.sr),
             1,
           )
         : holdBase
       const steps = modBits
-        ? Math.pow(2, Math.min(Math.max(bits + modBits[i]! * 8, 1), 16) - 1)
+        ? octaves(Math.min(Math.max(bits + modBits[i]! * 8, 1), 16) - 1)
         : stepsBase
       this.countL -= 1
       if (this.countL <= 0) {

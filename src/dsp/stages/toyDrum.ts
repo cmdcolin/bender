@@ -6,7 +6,7 @@ import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
 import { N_DRUM_VOICES, STEP_CHOICE, voiceMask } from '../trigbus'
 import { Transient } from '../util/follower'
-import { wrap1 } from '../util/lfo'
+import { octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 
 const TAU = 2 * Math.PI
@@ -195,7 +195,7 @@ export class ToyDrum implements Stage {
       }
       // the bend: hammer the current step's trigger line at audio rate
       const retrigHz = mod
-        ? Math.min(baseRetrig * Math.pow(2, mod[i]! * 4), 8000)
+        ? Math.min(baseRetrig * octaves(mod[i]! * 4), 8000)
         : baseRetrig
       if (this.transport.drums && retrigHz > 0.5) {
         this.retrigPhase += retrigHz / this.sr
@@ -245,9 +245,7 @@ export class ToyDrum implements Stage {
       if (!rail.booting) {
         // One trimmer for the whole kit, so a wire on it moves every struck
         // voice together — two octaves either way at full depth.
-        const tune = modTune
-          ? baseTune * Math.pow(2, 2 * modTune[i]!)
-          : baseTune
+        const tune = modTune ? baseTune * octaves(2 * modTune[i]!) : baseTune
         const pf = rail.pitchFactor * tune
         if (amp[KICK]! > 0.002) {
           const hz = (40 + 90 * amp[KICK]! * amp[KICK]!) * pf

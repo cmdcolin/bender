@@ -55,12 +55,8 @@ function rms(overrides: Partial<Controls>, seconds: number): number {
   return Math.sqrt(sum / (blocks * BLOCK))
 }
 
-// Builds a chain and renders two seconds for every ROM, which is the slowest
-// test here by a distance: a second and a half on an idle machine, and past the
-// stock five-second timeout when the other twenty-eight files are running
-// beside it. The work is the point, so it gets a budget that fits it.
 test('every ROM makes sound on the default board', () => {
   ROMS.forEach((rom, i) => {
     expect(rms({ chipTune: i }, 2), rom.name).toBeGreaterThan(0.005)
   })
-}, 30_000)
+})

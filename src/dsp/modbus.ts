@@ -3,7 +3,7 @@ import { BLOCK } from './stage'
 import type { TriggerBus } from './trigbus'
 import { Chaos, Drunk } from './util/drift'
 import { Decay, Follower, coef } from './util/follower'
-import { wrap1 } from './util/lfo'
+import { wrap1 } from './util/pitch'
 import { mulberry32, type Rng } from './util/rng'
 
 // Where a patch wire can land. Ids match the mod*Dest choices.

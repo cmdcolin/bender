@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { octaves } from '../util/pitch'
 import { DelayLine } from '../util/delayline'
 import { coef as timeCoef } from '../util/follower'
 import { SineOsc } from '../util/lfo'
@@ -61,7 +62,7 @@ export class TapeDelay implements Stage {
     for (let i = 0; i < io.n; i++) {
       const delaySamples = modTime
         ? Math.min(
-            Math.max(baseDelay * Math.pow(2, 2 * modTime[i]!), 1),
+            Math.max(baseDelay * octaves(2 * modTime[i]!), 1),
             this.maxDelay - 8,
           )
         : baseDelay
@@ -72,7 +73,7 @@ export class TapeDelay implements Stage {
         wowDepth * this.wow.step(wowK) + this.flutterWalk * 0.002 * this.sr
 
       let want = (1 - brake) * (1 - railDrag * ctx.droop[i]!)
-      if (modSpeed) want *= Math.pow(2, modSpeed[i]! * 1.5)
+      if (modSpeed) want *= octaves(modSpeed[i]! * 1.5)
       this.motor += inertia * (Math.min(Math.max(want, 0), 4) - this.motor)
       // the read head runs at motor speed against a fixed write head, so the
       // gap opens while the transport is slow — that gap is the pitch dive

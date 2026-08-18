@@ -1,6 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { octaves } from '../util/pitch'
 import { Follower, coef } from '../util/follower'
 import { SineOsc } from '../util/lfo'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
@@ -321,7 +322,7 @@ export class Stompbox implements Stage {
     const v = this.v
 
     for (let i = 0; i < io.n; i++) {
-      const gain = mod ? Math.min(base * Math.pow(2, mod[i]! * 4), 4000) : base
+      const gain = mod ? Math.min(base * octaves(mod[i]! * 4), 4000) : base
       const droop = ctx.droop[i]!
       const wl = this.left.process(io.l[i]!, gain, droop, v)
       const wr = this.right.process(io.r[i]!, gain, droop, v)
