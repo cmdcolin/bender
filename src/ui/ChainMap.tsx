@@ -1,13 +1,21 @@
-import { createElement, useEffect, useState, type ReactNode } from 'react'
+import {
+  createElement,
+  useEffect,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from 'react'
 import type { Controls } from '../controls'
 import { engine } from '../engine/engine'
 import { buildMap, drawMap } from './chain-map'
+import { useStoreValue } from './ControlsContext'
 import { GROUPS } from './controls'
+import { resetGroup } from './presets'
 import { Shelf } from './Section'
 import type { El } from './svg'
 import styles from './ChainMap.module.css'
 
-const DOORS = new Set(GROUPS.map(g => g.name))
+const GROUP_BY_NAME = new Map(GROUPS.map(g => [g.name, g]))
 
 // Graphviz used to lay the map out again for any change to the string at all,
 // and it was debounced for that. Drawing it ourselves is far cheaper but not
@@ -60,32 +68,50 @@ function mount(node: El | string, key: number): ReactNode {
 export function ChainMap({
   open,
   onOpen,
+  seconds,
 }: {
   open: string | null
   onOpen: (name: string) => void
+  seconds: number
 }) {
   const controls = useSettledControls()
-  const map = buildMap(controls, { wrap: true, open: open ?? undefined })
+  // The lamps on the two toys, which is the one thing on the map that isn't in
+  // the board: what is running comes off the switches under the keys.
+  const playing: string[] = []
+  if (useStoreValue(engine.songPlaying)) playing.push('Toy keyboard')
+  if (useStoreValue(engine.drumsPlaying)) playing.push('Toy drums')
+  const map = buildMap(controls, {
+    wrap: true,
+    open: open ?? undefined,
+    playing,
+  })
+
+  // The number on a box is how far off stock that stage is sitting, and it is
+  // also the way back: pressing it puts the stage where it booted, travelling
+  // and landing in the walk like every other verb, so a mis-aimed click is one
+  // ctrl+z away. Checked before the door, because it sits over one.
+  const click = (e: MouseEvent) => {
+    const target = e.target as Element
+    const back = target.closest('[data-reset]')?.getAttribute('data-reset')
+    const group = GROUP_BY_NAME.get(
+      back ?? target.closest('[data-door]')?.getAttribute('data-door') ?? '',
+    )
+    if (!group) return
+    e.preventDefault()
+    if (back) engine.morphTo(resetGroup(group, engine.controls.get()), seconds)
+    else onOpen(group.name)
+  }
 
   return (
     <div className={open ? `${styles.map} ${styles.mapOpen}` : styles.map}>
-      <div
-        className={styles.graph}
-        onClick={e => {
-          const name = (e.target as Element)
-            .closest('[data-door]')
-            ?.getAttribute('data-door')
-          if (!name || !DOORS.has(name)) return
-          e.preventDefault()
-          onOpen(name)
-        }}
-      >
+      <div className={styles.graph} onClick={click}>
         {mount(drawMap(map), 0)}
       </div>
       <Shelf
         groups={GROUPS.filter(g => !map.doors.has(g.name))}
         open={open}
         onOpen={onOpen}
+        seconds={seconds}
       />
     </div>
   )

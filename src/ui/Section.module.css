@@ -18,16 +18,11 @@
   font-weight: 600;
 }
 
-.count {
-  font-family: var(--mono);
-  font-size: var(--fs-xs);
-  color: var(--accent);
-}
-
 /* The stage's own verbs, quiet until you go looking: the header is a label
    first, and a row of loud buttons there would fight the controls under it. */
 .verb,
-.verbOff {
+.verbOff,
+.reset {
   font-size: var(--fs-xs);
   padding: 2px 8px;
   background: none;
@@ -40,6 +35,19 @@
 .verb:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+/* Carrying the count it is about to take back to zero. It lights the way panic
+   does, not the way a roll does: what it undoes is an afternoon of turning,
+   recoverable off ctrl+z and still not a thing to press by accident. */
+.reset {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.reset:hover {
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 .verbOff {
@@ -83,13 +91,13 @@
 
 .part,
 .partOn {
+  display: inline-flex;
+  align-items: stretch;
   font-size: var(--fs-xs);
-  padding: 2px 7px;
   background: var(--bg3);
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
   border-radius: 3px;
-  cursor: pointer;
 }
 
 .part:hover {
@@ -98,14 +106,37 @@
 }
 
 .partOn {
-  background: var(--bg3);
   color: var(--fg);
   border-color: var(--fg4);
 }
 
-.partCount {
+.partName {
+  padding: 2px 7px;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* The same count the map draws on the boxes, doing the same thing: pressing it
+   puts the part back where it booted. Split off the name by a rule, because a
+   pill that opens on one end and resets on the other has to say where the line
+   between the two is. */
+.partReset {
+  padding: 2px 6px;
+  background: none;
+  border: none;
+  border-left: 1px solid var(--border);
   color: var(--accent);
-  font-family: var(--mono);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.partReset:hover {
+  background: color-mix(in srgb, var(--danger) 18%, transparent);
+  color: var(--danger);
 }
 
 .hint {

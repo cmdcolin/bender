@@ -133,6 +133,46 @@ test('the sources ride one strip, each row a door of its own', () => {
   expect(svg).toContain('Noise &amp; crackle')
 })
 
+test('a source row carries how far up its fader is, on its own travel', () => {
+  const rows = (c: Controls) =>
+    new Map(box(buildMap(c), 'sources')!.rows!.map(r => [r.name, r]))
+  const stock = rows(DEFAULT_CONTROLS)
+  expect(stock.get('Toy keyboard')!.level).toBeCloseTo(
+    DEFAULT_CONTROLS.chipLevel,
+  )
+  expect(stock.get('FM chip')!.active).toBe(false)
+  // The mic fader goes to 2 and the chip's to 1, so half up reads as half up
+  // on both rather than as twice as loud on one.
+  expect(
+    rows({ ...DEFAULT_CONTROLS, micLevel: 1 }).get('Mic & sample')!.level,
+  ).toBeCloseTo(0.5)
+})
+
+test('the two toys are framed, and only they carry a run lamp', () => {
+  const map = buildMap(DEFAULT_CONTROLS, { playing: ['Toy drums'] })
+  const rows = box(map, 'sources')!.rows!
+  expect(rows.filter(r => r.toy).map(r => r.name)).toEqual([
+    'Toy keyboard',
+    'Toy drums',
+  ])
+  expect(rows.filter(r => r.playing).map(r => r.name)).toEqual(['Toy drums'])
+})
+
+// The count is the way back as well as the reading, everywhere it is drawn: on
+// a stage of the path, on a source in the rack, and on a part on the shelf,
+// which the panel draws itself.
+test('a stage off stock draws its count as the button that puts it back', () => {
+  const board = { ...DEFAULT_CONTROLS, ringMix: 0.5, chipStarve: 0.3 }
+  const svg = serialize(drawMap(buildMap(board)))
+  expect(svg).toContain('data-reset="Ring mod"')
+  expect(svg).toContain('data-reset="Toy keyboard"')
+  expect(svg).not.toContain('data-reset="Crusher"')
+  // The README's copy takes no clicks at all, so it draws none of them.
+  expect(serialize(drawMap(buildMap(board, { live: false })))).not.toContain(
+    'data-reset',
+  )
+})
+
 test("the README's diagrams are what the chain draws today — else `pnpm diagram`", () => {
   for (const [path, svg] of Object.entries(renderDiagrams())) {
     expect(

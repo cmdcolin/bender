@@ -1,4 +1,4 @@
-import type { Controls } from '../controls'
+import type { ControlKey, Controls } from '../controls'
 import { bendAt, BENDS, sliderFor, touchedCount } from './controls'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg'
 
@@ -56,14 +56,27 @@ const SRC_GROUP: Record<number, string> = {
   10: 'Toy keyboard',
 }
 
-const SOURCE_ACTIVE: Record<string, (c: Controls) => boolean> = {
-  'Toy keyboard': c => c.chipLevel > 0,
-  'Toy drums': c => c.drumLevel > 0,
-  'FM chip': c => c.fmLevel > 0,
-  'Chaos osc': c => c.oscLevel > 0,
-  'Noise & crackle': c => c.noiseLevel > 0 || c.crackleAmp > 0,
-  'Mic & sample': c => c.micLevel > 0 || c.sampleLevel > 0,
+// What each source is turned up to, which is also whether it is in the mix at
+// all. The loudest of its levels, as a share of that fader's own travel, so the
+// mic — which goes to 2 — reads against the same wall as the chip, which goes
+// to 1.
+const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
+  'Toy keyboard': ['chipLevel'],
+  'Toy drums': ['drumLevel'],
+  'FM chip': ['fmLevel'],
+  'Chaos osc': ['oscLevel'],
+  'Noise & crackle': ['noiseLevel', 'crackleAmp'],
+  'Mic & sample': ['micLevel', 'sampleLevel'],
 }
+
+// The two the rest of the app is about: the keys you play and the grid you
+// write. They get a frame of their own at the head of the rack rather than a
+// line in a list of six, because everything on the left of the screen — the
+// keyboard, the pattern, both run switches — lands on one or the other.
+const TOYS = new Set(['Toy keyboard', 'Toy drums'])
+
+const sourceLevel = (name: string, c: Controls): number =>
+  Math.max(...SOURCE_LEVELS[name]!.map(key => c[key] / sliderFor(key).max))
 
 export interface Palette {
   bg: string
@@ -76,6 +89,8 @@ export interface Palette {
   mod: string
   /** fill behind the stage whose controls the panel is showing */
   open: string
+  /** fill under the two toys, which sit in the rack rather than beside it */
+  raise: string
 }
 
 export const PANEL: Palette = {
@@ -87,6 +102,7 @@ export const PANEL: Palette = {
   accent2: '#ffb03b',
   mod: '#5ea9d8',
   open: '#332622',
+  raise: '#242429',
 }
 
 export function groupAnchor(name: string): string {
@@ -106,6 +122,21 @@ const ROW_GAP = 9
 /** the channel the folded path's cable runs up, between the two columns */
 const COL_GAP = 28
 const STRIP_ROW_H = 17
+/** a toy's own row, framed and a lamp taller than the four under it */
+const TOY_ROW_H = 23
+/** the lip the rack carries its name on */
+const CAP_H = 12
+/** the inset a framed toy sits at inside the rack */
+const TOY_PAD = 3
+/** the run lamp on a toy's row, and the space it takes at the left */
+const LAMP_R = 2.6
+const LAMP_COL = 12
+/** the column a stage's off-stock count, and its way back, sits in — wide
+    enough that a two-digit count is inside the button it is the face of */
+const COUNT_COL = 18
+const COUNT_INSET = 6
+/** the meter bridge down the right of the source rack */
+const METER_W = 26
 const LABEL_H = 12
 /** from a wire label in the gutter to the box it feeds */
 const STUB = 14
@@ -116,12 +147,18 @@ const MARGIN = 2
 
 type Side = 'left' | 'right'
 
-/** One source in the strip that stands in for all five of them. */
+/** One source's channel in the rack that stands in for all six of them. */
 export interface MapRow {
   name: string
   count: number
   active: boolean
   open: boolean
+  /** how far its fader is up, along that fader's own travel */
+  level: number
+  /** running right now, off its own switch — the two toys only */
+  playing: boolean
+  /** one of the two toys, which get a frame and a lamp of their own */
+  toy: boolean
   /** relative to the strip's own box */
   y: number
   h: number
@@ -181,6 +218,9 @@ export interface Options {
   wrap?: boolean
   /** The stage whose controls the panel is showing, lit on the map. */
   open?: string
+  /** Sources sounding right now, which is a thing about the run switches
+      rather than about the board — the panel knows it and the README doesn't. */
+  playing?: readonly string[]
 }
 
 const midX = (n: MapNode) => n.x + n.w / 2
@@ -216,7 +256,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // collected as it is drawn rather than worked out again afterwards, which is
   // how the tape machine came to be both on the path and listed as off it. The
   // panel shelves whatever is left, so no group is left without a door.
-  const doors = new Set<string>(Object.keys(SOURCE_ACTIVE))
+  const doors = new Set<string>(Object.keys(SOURCE_LEVELS))
   const wires: MapWire[] = []
 
   const node = (
@@ -248,22 +288,31 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     })
   }
 
-  // The sources ride one strip rather than five boxes of their own: a column
-  // that is five stages longer at the top is five stages of map nobody needs.
-  const rows: MapRow[] = Object.entries(SOURCE_ACTIVE).map(
-    ([name, isLive], i) => ({
+  // The sources ride one rack rather than six boxes of their own: a column that
+  // is six stages longer at the top is six stages of map nobody needs. Inside
+  // it the two toys are framed and the other four are lines, because a rack
+  // where every channel looks alike is the stack people go hunting through for
+  // the keyboard.
+  const playing = new Set(o.playing ?? [])
+  const rows: MapRow[] = []
+  let rowY = CAP_H
+  for (const name of Object.keys(SOURCE_LEVELS)) {
+    const toy = TOYS.has(name)
+    const level = sourceLevel(name, c)
+    rows.push({
       name,
       count: live ? touchedCount(name, c) : 0,
-      active: isLive(c),
+      active: level > 0,
       open: o.open === name,
-      y: 1 + i * STRIP_ROW_H,
-      h: STRIP_ROW_H,
-    }),
-  )
-  const strip = node('sources', 'strip', 'sources', {
-    rows,
-    h: rows.length * STRIP_ROW_H + 2,
-  })
+      level,
+      playing: playing.has(name),
+      toy,
+      y: rowY,
+      h: toy ? TOY_ROW_H : STRIP_ROW_H,
+    })
+    rowY += toy ? TOY_ROW_H : STRIP_ROW_H
+  }
+  const strip = node('sources', 'strip', 'sources', { rows, h: rowY + 1 })
 
   const path: MapNode[] = [strip, node('mix', 'plain', 'mix bus')]
 
@@ -296,14 +345,27 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const fbUp = c.fbAmt > 0
   const bus = stage('Feedback bus', fbUp)
 
-  // One width for every box on the rack, cut to the longest label on it.
+  // One width for every box on the rack, cut to the longest label on it. The
+  // count column is held open whether or not anything is off stock yet: it is
+  // a button, and a rack that grows a column the first time a control moves
+  // would resize itself under every morph.
+  const countCol = live ? COUNT_COL : 0
   const boxW = Math.ceil(
     Math.max(
       MIN_W,
       ...[...path, bus].map(n =>
         n.kind === 'strip'
-          ? Math.max(...n.rows!.map(r => cellWidth(r.name, r.count)))
-          : cellWidth(n.label, n.count),
+          ? Math.max(
+              ...n.rows!.map(
+                r =>
+                  PAD_X * 2 +
+                  (r.toy ? TOY_PAD * 2 + LAMP_COL : 0) +
+                  textWidth(r.name, FONT) +
+                  METER_W +
+                  countCol,
+              ),
+            )
+          : PAD_X * 2 + textWidth(n.label, FONT) + countCol,
       ),
     ),
   )
@@ -526,14 +588,6 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
 }
 
-/** The gap between a stage's name and how far off stock it is sitting. */
-const COUNT_GAP = 5
-
-const cellWidth = (label: string, count: number) =>
-  textWidth(label, FONT) +
-  (count > 0 ? COUNT_GAP + textWidth(String(count), FONT) : 0) +
-  PAD_X * 2
-
 interface Tap {
   id: string
   label: string
@@ -640,25 +694,102 @@ function door(inner: El[], name: string | undefined, links: boolean): El[] {
   return [el('a', { href: `#${groupAnchor(name)}`, 'data-door': name }, inner)]
 }
 
-function cell(
-  label: string,
-  count: number,
+function words(
+  s: string,
   x: number,
   y: number,
   size: number,
   fill: string,
-  accent: string,
   anchor?: 'start' | 'end',
 ): El {
-  // dx, not a space: a run of spaces at the head of a tspan collapses away.
-  const kids: (El | string)[] = [label]
-  if (count > 0)
-    kids.push(el('tspan', { dx: COUNT_GAP, fill: accent }, [String(count)]))
   return el(
     'text',
     { x, y, fill, fontSize: size, textAnchor: anchor ?? 'middle' },
-    kids,
+    [s],
   )
+}
+
+// How far off stock a stage is sitting, and the way back: the number is the
+// button, in a column of its own down the right of the rack. It draws over the
+// door rather than inside it — a link inside a link is not a thing — and takes
+// the whole column as its hit box, because two digits is not a target.
+function resetButton(
+  name: string,
+  count: number,
+  right: number,
+  y: number,
+  h: number,
+  k: Palette,
+  links: boolean,
+): El[] {
+  if (count === 0) return []
+  const digits = words(
+    String(count),
+    right - COUNT_INSET,
+    baseline(y, h, FONT),
+    FONT,
+    k.accent,
+    'end',
+  )
+  if (!links) return [digits]
+  return [
+    el('g', { className: 'reset', 'data-reset': name }, [
+      el('title', {}, [
+        `${name}: ${count} control${count === 1 ? '' : 's'} moved — click to put them back where they booted, ctrl+z to bring them again`,
+      ]),
+      el('rect', {
+        className: 'hit',
+        x: right - COUNT_COL,
+        y: y + 1,
+        width: COUNT_COL,
+        height: h - 2,
+        rx: 3,
+        fill: 'transparent',
+      }),
+      digits,
+    ]),
+  ]
+}
+
+// How far up a source's fader is, under its name. A source running off its own
+// switch lights the bar, which is the map saying that what you are hearing
+// starts here.
+function levelBar(r: MapRow, right: number, cy: number, k: Palette): El[] {
+  // The empty part of the travel is drawn too, and the meters line up in a
+  // column of their own: a bar that hangs off the end of a name is an
+  // underline, and an underline says nothing about how far up anything is.
+  const [x, y] = [right - METER_W, cy - 1.5]
+  const track = el('rect', {
+    x,
+    y,
+    width: METER_W,
+    height: 3,
+    fill: k.border,
+    fillOpacity: 0.6,
+  })
+  if (r.level <= 0) return [track]
+  return [
+    track,
+    el('rect', {
+      x,
+      y,
+      width: Math.max(2, METER_W * Math.min(1, r.level)),
+      height: 3,
+      fill: r.playing ? k.accent2 : k.fg,
+      fillOpacity: r.playing ? 0.95 : 0.5,
+    }),
+  ]
+}
+
+/** Running or not, on the two toys that have a switch of their own. */
+function lamp(cx: number, cy: number, on: boolean, k: Palette): El {
+  return el('circle', {
+    cx,
+    cy,
+    r: LAMP_R,
+    fill: on ? k.accent2 : k.bg,
+    stroke: on ? k.accent2 : k.dim,
+  })
 }
 
 function drawNode(n: MapNode, k: Palette, links: boolean): El {
@@ -666,13 +797,11 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
     return el('g', { className: 'tap' }, [
       ...door(
         [
-          cell(
+          words(
             n.label,
-            0,
             n.x,
             baseline(n.y, n.h, SMALL),
             SMALL,
-            k.mod,
             k.mod,
             n.anchor,
           ),
@@ -694,9 +823,49 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
         fill: k.bg,
         stroke: k.border,
       }),
+      words(n.label, n.x + PAD_X, n.y + CAP_H - 4, SMALL, k.dim, 'start'),
     ]
-    for (const [i, r] of n.rows!.entries()) {
+    const rows = n.rows!
+    for (const [i, r] of rows.entries()) {
       const y = n.y + r.y
+      const ink = r.active || r.open ? k.fg : k.dim
+      if (r.toy) {
+        // A frame, a lamp and a fader: the two toys are machines on the rack
+        // rather than lines in a list, because the keys, the pattern and both
+        // run switches all land on one or the other of them.
+        const [bx, bw] = [n.x + TOY_PAD, n.w - TOY_PAD * 2]
+        const lit = r.open ? k.fg : r.count > 0 ? k.accent : k.border
+        const inner: El[] = [
+          el('rect', {
+            className: 'box',
+            x: bx,
+            y: y + 1,
+            width: bw,
+            height: r.h - 2,
+            rx: 3,
+            fill: r.open ? k.open : k.raise,
+            stroke: lit,
+            strokeWidth: r.open ? 2 : 1,
+          }),
+          lamp(bx + LAMP_COL / 2, y + r.h / 2, r.playing, k),
+          words(
+            r.name,
+            bx + LAMP_COL,
+            baseline(y, r.h, FONT),
+            FONT,
+            ink,
+            'start',
+          ),
+          ...levelBar(r, bx + bw - COUNT_COL, y + r.h / 2, k),
+        ]
+        parts.push(
+          el('g', { className: 'row' }, [
+            ...door(inner, r.name, links),
+            ...resetButton(r.name, r.count, bx + bw, y + 1, r.h - 2, k, links),
+          ]),
+        )
+        continue
+      }
       // The row's own fill is the lit one when it is open and a transparent one
       // when it isn't, which is what gives a row the whole of itself to click.
       const inner: El[] = [
@@ -707,20 +876,18 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
           height: r.h,
           fill: r.open ? k.open : 'transparent',
         }),
+        words(r.name, n.x + PAD_X, baseline(y, r.h, FONT), FONT, ink, 'start'),
+        ...levelBar(r, n.x + n.w - COUNT_COL, y + r.h / 2, k),
       ]
-      inner.push(
-        cell(
-          r.name,
-          r.count,
-          midX(n),
-          baseline(y, r.h, FONT),
-          FONT,
-          r.active || r.open ? k.fg : k.dim,
-          k.accent,
-        ),
+      parts.push(
+        el('g', { className: 'row' }, [
+          ...door(inner, r.name, links),
+          ...resetButton(r.name, r.count, n.x + n.w, y, r.h, k, links),
+        ]),
       )
-      parts.push(el('g', { className: 'row' }, door(inner, r.name, links)))
-      if (i > 0)
+      // Between two lines, but never under a framed toy: its own border is
+      // already the thing that ends it.
+      if (i > 0 && !rows[i - 1]!.toy)
         parts.push(
           el('line', {
             x1: n.x + 1,
@@ -746,17 +913,21 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
       stroke: n.kind === 'plain' ? k.border : lit,
       strokeWidth: n.open ? 2 : 1,
     }),
-    cell(
+    // Centred on what is left after the count's column, not on the box: the
+    // column is there on every box whether or not it holds a number, so a
+    // label centred on the box would sit off to one side of the space it has.
+    words(
       n.label,
-      n.count,
-      midX(n),
+      n.x + (n.w - (links ? COUNT_COL : 0)) / 2,
       baseline(n.y, n.h, FONT),
       FONT,
       n.kind === 'plain' ? k.dim : n.active || n.open ? k.fg : k.dim,
-      k.accent,
     ),
   ]
-  return el('g', { className: 'node' }, door(inner, n.door, links))
+  return el('g', { className: 'node' }, [
+    ...door(inner, n.door, links),
+    ...resetButton(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k, links),
+  ])
 }
 
 function drawWire(w: MapWire, links: boolean): El {

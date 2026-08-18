@@ -31,6 +31,14 @@ under it — the slot rack, the bends off the board, a bay or contact pad with
 nothing wired to it — so every control is one click from the map, on the path or
 on the shelf.
 
+The six sources ride one rack at the head of the path rather than six boxes of
+their own, and inside it the two toys are framed with a lamp and the other four
+are lines: everything on the left of the screen — the keys, the pattern grid,
+both run switches — lands on the keyboard or the drum machine, so the map says
+which one. Each channel carries a meter reading how far its own fader is up, and
+the lamp lights while that toy is running, which is the map saying that what you
+are hearing starts here.
+
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —
 runaway is a feature, held at the rails by design. A fixed safety tail (DC
@@ -619,13 +627,18 @@ ms.
 Rolling smaller than a whole board: every stage's panel has its own **roll** and
 **reset**, so you can ask one question at a time — a new spring tank under the
 board you already like, or that stage back where it booted without losing the
-rest. A roll knows a little about boards. A control the toy boots at the bottom
-of its travel is off until asked, so it stays off a third of the time rather
-than everything coming on at once; a stage you rolled comes back audible, since
-its own level and dry/wet are what make it a stage at all; and the drum machine,
-the one stage whose pattern is part of what it is, writes a fresh sixteen steps
-— kick on the downbeat, snare on the backbeat, one subdivision on the hat,
-trimmings on the rest, at the tempo you already had.
+rest. The reset needs no panel open: the number the map prints beside a stage is
+how many of its controls you have moved, and pressing that number is what puts
+them back — on a box on the path, on a source in the rack, or on a part on the
+shelf. It travels over the morph and lands in the walk like every other verb, so
+a number pressed by mistake costs one ctrl+z. A roll knows a little about
+boards. A control the toy boots at the bottom of its travel is off until asked,
+so it stays off a third of the time rather than everything coming on at once; a
+stage you rolled comes back audible, since its own level and dry/wet are what
+make it a stage at all; and the drum machine, the one stage whose pattern is
+part of what it is, writes a fresh sixteen steps — kick on the downbeat, snare
+on the backbeat, one subdivision on the hat, trimmings on the rest, at the tempo
+you already had.
 
 Above the presets are the rolls no single panel can offer, because each is about
 how the stages sit together: **rewire** shuffles the bend order and re-solders

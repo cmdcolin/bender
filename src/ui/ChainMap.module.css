@@ -49,3 +49,20 @@
 .graph a:focus-visible {
   outline: none;
 }
+
+/* The count column: a number until you go for it, a button while you are on it.
+   It lights the way panic does rather than the way a door does, because what it
+   does to the stage under it is undo your afternoon — recoverable, and still
+   not a thing to walk into blind. */
+.graph :global(.reset) {
+  cursor: pointer;
+}
+
+.graph :global(.reset):hover :global(.hit) {
+  fill: var(--danger);
+  fill-opacity: 0.22;
+}
+
+.graph :global(.reset):hover text {
+  fill: var(--danger);
+}

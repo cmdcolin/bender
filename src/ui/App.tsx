@@ -358,7 +358,7 @@ export function App() {
 
         <MidiPanel />
 
-        <ChainMap open={open} onOpen={toggle} />
+        <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
         {openGroup ? (
           <OpenGroup
             group={openGroup}

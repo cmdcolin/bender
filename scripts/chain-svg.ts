@@ -40,6 +40,7 @@ const THEMES: Record<string, Palette> = {
     accent2: '#9a6700',
     mod: '#2f6f9f',
     open: '#f6f8fa',
+    raise: '#eaeef2',
   },
   dark: {
     bg: '#161b22',
@@ -50,6 +51,7 @@ const THEMES: Record<string, Palette> = {
     accent2: '#d29922',
     mod: '#5ea9d8',
     open: '#161b22',
+    raise: '#1c222b',
   },
 }
 

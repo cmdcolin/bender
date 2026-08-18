@@ -12,6 +12,19 @@ function useTouchedCount(group: Group): number {
   return touchedCount(group, useStoreValue(engine.controls))
 }
 
+// Every stage's way back, wherever the stage is being shown from: the number of
+// controls you have moved is the button that puts them back. It travels and
+// lands in the walk like every other verb, so pressing it by mistake costs one
+// ctrl+z. The map draws its own copy of this in SVG, to the same rule.
+function putBack(group: Group, seconds: number) {
+  engine.morphTo(resetGroup(group, engine.controls.get()), seconds)
+}
+
+const putBackTitle = (group: Group, touched: number) =>
+  touched > 0
+    ? `put all ${touched} of ${group.name}'s moved controls back where they booted — ctrl+z brings them again`
+    : `${group.name} is already where it booted`
+
 // The one stage the map has open, with its controls already unfolded. The panel
 // used to stack all twenty groups as collapsed headers and scroll to whichever
 // the map pointed at; the map is the index now, so what is on screen is what
@@ -32,20 +45,17 @@ export function OpenGroup({
   useEffect(() => {
     if (el.current) scrollIntoPanel(el.current)
   }, [group.name])
-  // Both verbs go through the morph, so a stage travels the way a whole board
-  // does and lands in the walk — a roll you don't like is one ctrl+z away.
+  // Through the morph, so a stage travels the way a whole board does and lands
+  // in the walk — a roll you don't like is one ctrl+z away.
   const roll = () =>
     engine.morphTo(
       rollGroup(group, engine.controls.get(), Math.random),
       seconds,
     )
-  const reset = () =>
-    engine.morphTo(resetGroup(group, engine.controls.get()), seconds)
   return (
     <div className={styles.section} ref={el}>
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
-        {touched > 0 && <span className={styles.count}>• {touched}</span>}
         <button
           className={styles.verb}
           onClick={roll}
@@ -58,16 +68,12 @@ export function OpenGroup({
           roll
         </button>
         <button
-          className={touched > 0 ? styles.verb : styles.verbOff}
-          onClick={touched > 0 ? reset : undefined}
+          className={touched > 0 ? styles.reset : styles.verbOff}
+          onClick={() => putBack(group, seconds)}
           disabled={touched === 0}
-          title={
-            touched > 0
-              ? `put all ${touched} of this stage's moved controls back where they booted`
-              : `${group.name} is already where it booted`
-          }
+          title={putBackTitle(group, touched)}
         >
-          reset
+          {touched > 0 ? `reset ${touched}` : 'reset'}
         </button>
         <button
           className={styles.close}
@@ -97,10 +103,12 @@ export function Shelf({
   groups,
   open,
   onOpen,
+  seconds,
 }: {
   groups: Group[]
   open: string | null
   onOpen: (name: string) => void
+  seconds: number
 }) {
   if (groups.length === 0) return null
   return (
@@ -112,6 +120,7 @@ export function Shelf({
           group={g}
           on={open === g.name}
           onOpen={onOpen}
+          seconds={seconds}
         />
       ))}
     </div>
@@ -122,28 +131,43 @@ function ShelfPart({
   group,
   on,
   onOpen,
+  seconds,
 }: {
   group: Group
   on: boolean
   onOpen: (name: string) => void
+  seconds: number
 }) {
   const touched = useTouchedCount(group)
   return (
-    <button
-      className={on ? styles.partOn : styles.part}
-      aria-expanded={on}
-      onClick={() => onOpen(group.name)}
-    >
-      {group.name}
-      {touched > 0 && <span className={styles.partCount}> • {touched}</span>}
-    </button>
+    <span className={on ? styles.partOn : styles.part}>
+      <button
+        className={styles.partName}
+        aria-expanded={on}
+        onClick={() => onOpen(group.name)}
+      >
+        {group.name}
+      </button>
+      {touched > 0 && (
+        <button
+          className={styles.partReset}
+          onClick={() => putBack(group, seconds)}
+          title={putBackTitle(group, touched)}
+          aria-label={`reset ${group.name}`}
+        >
+          {touched}
+        </button>
+      )}
+    </span>
   )
 }
 
 export function PathHint() {
   return (
     <p className={styles.hint}>
-      click a stage on the path — or a part off the board — to open its controls
+      click a stage on the path — or a part off the board — to open its
+      controls. The number beside a name is how many of its controls you have
+      moved: press the number to put that stage back where it booted
     </p>
   )
 }
