@@ -88,6 +88,17 @@
   border-color: var(--accent2);
 }
 
+/* Armed with the kit stopped: nothing is being written, so the button is drawn
+   as the promise it is rather than as the filled lamp of one that is recording.
+   Amber outlined is the same amber, waiting. */
+.tapIdle {
+  composes: rom;
+  margin-left: auto;
+  color: var(--accent2);
+  border-style: dashed;
+  border-color: var(--accent2);
+}
+
 .cells {
   display: grid;
   grid-template-columns: repeat(16, 1fr);

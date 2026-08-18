@@ -128,9 +128,11 @@ playhead gives no warning of.
 **Tap in** is the other way a pattern gets written: arm it, and every pad hit or
 press of a row's name writes the step it lands on, rounded to the nearest, with
 each row taking its own column so a five-step hat lands where the hat actually
-is. It needs the kit running for there to be a step to land on, it is never on
-when you arrive, and every hit is one step in the undo walk — a hand that has
-just played the wrong drum wants that hit back and nothing else.
+is. It needs the kit running for there to be a step to land on — armed with the
+kit stopped, the button goes to an outline, because the hits still sound and
+nothing else would say the pattern isn't being kept. It is never on when you
+arrive, and every hit is one step in the undo walk — a hand that has just played
+the wrong drum wants that hit back and nothing else.
 
 ## The other chip
 

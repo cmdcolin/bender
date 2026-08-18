@@ -109,15 +109,24 @@ export function DrumGrid() {
         {/* The other way a pattern gets written: play it in rather than draw
             it. It needs the kit running for there to be a step to land on, and
             it is never on when you arrive — a machine that records you is one
-            you asked to. */}
+            you asked to.
+
+            Armed with the kit stopped is a real state and a silent one: the
+            hits still sound, so nothing about playing says the pattern isn't
+            being kept. It gets its own look rather than a word, because the
+            fix is to press play and the button next to it already says so. */}
         <button
-          className={tapping ? styles.tapOn : styles.tap}
+          className={
+            !tapping ? styles.tap : playing ? styles.tapOn : styles.tapIdle
+          }
           aria-pressed={tapping}
           onClick={() => engine.tapRecord.set(!tapping)}
           title={
-            tapping
-              ? 'pads and row names write the step they land on, rounded to the nearest. Press to stop'
-              : 'play the pattern in: arm this and every pad hit — or press of a row’s name — writes the step it lands on, rounded to the nearest. The kit has to be running for there to be a step'
+            !tapping
+              ? 'play the pattern in: arm this and every pad hit — or press of a row’s name — writes the step it lands on, rounded to the nearest. The kit has to be running for there to be a step'
+              : playing
+                ? 'pads and row names write the step they land on, rounded to the nearest. Press to stop'
+                : 'armed, but the kit is stopped — hits sound and nothing is written. Run the kit and they land on the step they arrive in'
           }
         >
           tap in
