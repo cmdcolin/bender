@@ -54,6 +54,17 @@ export const DEFAULT_CONTROLS = {
   drumBellLen: 16,
   drumAccentLen: 16,
 
+  fmLevel: 0,
+  fmVoice: 0,
+  fmBright: 0.5,
+  fmFeedback: 0,
+  fmLength: 0.4,
+  fmDataLine: 0,
+  fmDataFault: 0,
+  fmAddrLine: 0,
+  fmAddrFault: 0,
+  fmBusCut: 1,
+
   oscLevel: 0,
   oscAHz: 220,
   oscBHz: 55,

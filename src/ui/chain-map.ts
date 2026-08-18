@@ -59,6 +59,7 @@ const SRC_GROUP: Record<number, string> = {
 const SOURCE_ACTIVE: Record<string, (c: Controls) => boolean> = {
   'Toy keyboard': c => c.chipLevel > 0,
   'Toy drums': c => c.drumLevel > 0,
+  'FM chip': c => c.fmLevel > 0,
   'Chaos osc': c => c.oscLevel > 0,
   'Noise & crackle': c => c.noiseLevel > 0 || c.crackleAmp > 0,
   'Mic & sample': c => c.micLevel > 0 || c.sampleLevel > 0,

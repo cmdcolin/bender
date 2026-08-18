@@ -57,6 +57,17 @@ export const PARAM_DEFS = [
   ['drumBellLen', 'step'],
   ['drumAccentLen', 'step'],
 
+  ['fmLevel', 'slew'],
+  ['fmVoice', 'step'],
+  ['fmBright', 'slew'],
+  ['fmFeedback', 'step'],
+  ['fmLength', 'slew'],
+  ['fmDataLine', 'step'],
+  ['fmDataFault', 'step'],
+  ['fmAddrLine', 'step'],
+  ['fmAddrFault', 'step'],
+  ['fmBusCut', 'slew'],
+
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],
   ['oscBHz', 'slew'],

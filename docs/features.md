@@ -7,7 +7,7 @@ The [README](../README.md) explains how the interesting parts work and why they
 behave as they do; this is the list, for finding out whether something exists
 and what it is called.
 
-142 controls in 24 groups, seven bends competing for six slots, 18 ROM tunes, 40
+158 controls in 25 groups, seven bends competing for six slots, 18 ROM tunes, 45
 presets, and one supply rail that most of it is plugged into.
 
 ## Sources
@@ -33,6 +33,11 @@ the supply underneath it.
 | Reservoir       | 0–1                                                                                                                                                                          |
 | Clip chatter    | 0–40 Hz                                                                                                                                                                      |
 | Clip on clock   | 0–1                                                                                                                                                                          |
+| Data line       | off, D0, D1, D2, D3, D4, D5                                                                                                                                                  |
+| Data fault      | cut, to ground, to +V, bridged                                                                                                                                               |
+| Address line    | off, A0, A1, A2, A3, A4                                                                                                                                                      |
+| Address fault   | cut, to ground, to +V, bridged                                                                                                                                               |
+| Cut depth       | 0–1                                                                                                                                                                          |
 | Bend spot       | off, clock, counter, bias, gate                                                                                                                                              |
 | Bend pot        | 0–1                                                                                                                                                                          |
 | Crystal drift   | 0–1                                                                                                                                                                          |
@@ -53,9 +58,33 @@ envelope, so a hit you can hear opens a voice nothing struck.
 | Tune        | 0.25–4 ×                                                |
 | Decay       | 0.25–4 ×                                                |
 | Bit depth   | 2–16 bit                                                |
+| Ladder      | 0–1                                                     |
 | Retrigger   | 0–4000 Hz                                               |
 | Cross-patch | off, kick/snare, snare/hat, kick/hat, rotate, whole kit |
 | Cross bleed | 0–1                                                     |
+
+### FM chip
+
+The other synthesiser on the board: two operators a voice, four voices, on the
+same rail. It has no keyboard and no sequencer of its own — its key input is
+soldered onto the toy’s gate line, so it plays whatever strikes a note over
+there. Nothing about it is played, though; it is _configured_, one byte at a
+time, over a bus. Which is what _Data line_ and _Address line_ are for: a byte
+that lands wrong stays wrong until the processor writes that register again, and
+if the wire carrying the key back up cannot go low, the note never ends.
+
+| control       | range                                                         |
+| ------------- | ------------------------------------------------------------- |
+| Level         | 0–1                                                           |
+| Voice         | organ, brass, e.piano, bell, clarinet, bass, strings, marimba |
+| Brightness    | 0–1                                                           |
+| Feedback      | 0–7                                                           |
+| Note length   | 0.02–4 s                                                      |
+| Data line     | off, D0, D1, D2, D3, D4, D5, D6, D7                           |
+| Data fault    | cut, to ground, to +V, bridged                                |
+| Address line  | off, A0, A1, A2, A3, A4, A5                                   |
+| Address fault | cut, to ground, to +V, bridged                                |
+| Cut depth     | 0–1                                                           |
 
 ### Chaos osc
 
@@ -377,6 +406,7 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 ## Around the instrument
 
 - **Presets** — _dying toy_, _paperclip_, _flat batteries_, _melody scrambler_,
+  _wrong song_, _half a tune_, _stuck key_, _cut the dataline_, _gravel dac_,
   _machine gun_, _drum scream_, _crushed chip_, _tape scream_, _no-input
   squeal_, _runaway howl_, _haunted spring_, _contact crackle_, _siren chaos_,
   _acid screech_, _ground loop_, _possessed osc_, _sub stomp_, _wall of muff_,

@@ -13,7 +13,7 @@ Live: https://cmdcolin.github.io/bender/
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
+  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
 </picture>
 
 The app draws that from the chain itself — `pnpm diagram` regenerates it with
@@ -117,6 +117,65 @@ polymeter: the two line back up every eighty steps, so the pattern takes the
 best part of a minute to repeat and never sounds like it is looping. The rows
 share one clock, so nothing drifts out of time; what drifts is which steps land
 together.
+
+## The other chip
+
+The board has a second synthesiser on it, and it is not a divider. Two operators
+a voice, four voices, sine into sine — the FM chip out of a cheap keyboard from
+a few years later, sharing this one's supply.
+
+It has no keyboard and no sequencer of its own. Somebody soldered its key input
+onto the toy's gate line, so it plays whatever strikes a note over there: the
+demo song, your hands, a controller, or a drum hit that came back round the
+trigger patch. Turn the toy itself down to nothing and the ROM keeps clocking,
+because the tune is now the other chip's part. It runs off the same rail too, so
+starving the toy dives its pitch, drags its envelopes out and browns it out
+along with everything else.
+
+**Voice** picks one of eight patches, **Brightness** is how loud the modulator
+is into the carrier — the whole of the tone control on a two-operator part — and
+**Feedback** is how much of the modulator goes back into itself. Past about five
+it stops making harmonics and starts making noise, which is where these chips'
+drum sounds came from. A trigger line carries a strike and nothing else, so
+**Note length** is where something has to decide when the note ends; letting a
+key go sends the release early.
+
+### Cut the dataline
+
+Which is what the chip is here for. Nothing about this synthesiser is _played_ —
+it is configured, one byte at a time, by a processor that works out what the
+sound should be and then tells it. Every note is a handful of writes: the patch,
+the frequency, the key going down, and later the key coming up. Put a knife
+through the wires carrying those writes and the chip does not malfunction. It
+receives a byte with one bit wrong and executes it perfectly.
+
+And then it goes on executing it, because a register holds what it was last told
+until something tells it otherwise. That is the part nothing else on this board
+does. A starved rail is a sound that lasts as long as your hand is on the knob;
+a byte that landed wrong is a sound that lasts until the processor happens to
+write that register again — which might be the next note, or might be never.
+Take the knife off the bus and the damage stays: the patch registers are only
+rewritten when a knob it knows about moves, so the voice you are hearing is
+still the one the cut wires let through. Wind **Brightness** a hair and you are
+asking it for a fresh set of eight bytes, which is a fresh chance for the fault
+to land.
+
+The famous one is the key going up. A note ends because the processor writes one
+bit of one register back down and the chip sees it change — and a wire that
+cannot change is a wire the chip never sees change. Hold that line high and the
+note does not glitch or stutter; it simply never ends, and the notes after it
+arrive as changes of pitch under an envelope that never restarted. Hold it low
+instead and the key never goes down at all: a keyboard that plays nothing, which
+is the other thing that happens to these when you get it wrong.
+
+The rest of the map is worth knowing because it decides what one wire is worth.
+The nine bits of frequency do not fit on eight data lines, so the top one shares
+a byte with the key going down — cut up there and the pitch and whether the note
+happens at all move together. Volume goes out with the note as its own nibble,
+so a wire stuck in it leaves one of the four channels at the wrong level for
+good. **Address line** is the other bus: the byte arrives intact and gets filed
+under the wrong register, which is the more violent of the two, because whatever
+should have gone there never did.
 
 ## The trigger patch
 

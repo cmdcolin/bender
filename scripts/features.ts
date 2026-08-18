@@ -27,6 +27,8 @@ const BLURBS: Record<string, string> = {
     'The instrument the whole thing is named after: a square-wave divider chip running a ROM, with a tone control that taps the divider at a different width, an auto bass-chord section, and playable voices over the top. Its clock, its counter, its bias and its gate are each a place you can solder a pot onto — *Bend spot* picks which, *Bend pot* is how far. Everything from *Starve* down is the supply underneath it.',
   'Toy drums':
     'A step grid with a length per row, so a five-step hat runs against a sixteen-step kick until they line back up. *Retrigger* hammers the current step at audio rate; *Cross-patch* leans one voice’s amplifier onto another’s envelope, so a hit you can hear opens a voice nothing struck.',
+  'FM chip':
+    'The other synthesiser on the board: two operators a voice, four voices, on the same rail. It has no keyboard and no sequencer of its own — its key input is soldered onto the toy’s gate line, so it plays whatever strikes a note over there. Nothing about it is played, though; it is *configured*, one byte at a time, over a bus. Which is what *Data line* and *Address line* are for: a byte that lands wrong stays wrong until the processor writes that register again, and if the wire carrying the key back up cannot go low, the note never ends.',
   'Chaos osc':
     'Two oscillators on one starving supply. B drags A’s frequency around, the output current drains the rail, the rail drags pitch and amplitude, and the stall-and-recover cycle motorboats on its own.',
   'Noise & crackle':

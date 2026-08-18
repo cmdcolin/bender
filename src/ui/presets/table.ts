@@ -68,6 +68,71 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'wrong song',
+    blurb:
+      'A data line held high — the tune keeps its rhythm and its rests fill in',
+    patch: {
+      chipLevel: 0.9,
+      chipAccomp: 0.7,
+      chipClockX: 1.2,
+      chipDataLine: 3,
+      chipDataFault: 2,
+    },
+  },
+  {
+    name: 'half a tune',
+    blurb:
+      'An address line on the floor: the song folds into its own first half',
+    patch: {
+      chipLevel: 0.9,
+      chipAccomp: 0.5,
+      chipAddrLine: 4,
+      chipAddrFault: 1,
+      dlyMix: 0.25,
+      delayMs: 260,
+      dlyFb: 0.4,
+    },
+  },
+  {
+    name: 'stuck key',
+    blurb: 'The FM chip never told the key came up, so nothing it plays ends',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.5,
+      fmLevel: 0.8,
+      fmVoice: 1,
+      fmBright: 0.6,
+      fmLength: 0.3,
+      fmDataLine: 5,
+      fmDataFault: 2,
+    },
+  },
+  {
+    name: 'cut the dataline',
+    blurb:
+      'A trace most of the way through: the patch arrives wrong and stays wrong',
+    patch: {
+      chipLevel: 0,
+      fmLevel: 0.8,
+      fmVoice: 3,
+      fmFeedback: 5,
+      fmDataLine: 4,
+      fmDataFault: 0,
+      fmBusCut: 0.6,
+    },
+  },
+  {
+    name: 'gravel dac',
+    blurb: 'The kit’s converter built from resistors nobody measured',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBits: 5,
+      drumLadder: 0.9,
+      drumDecay: 1.6,
+    },
+  },
+  {
     name: 'machine gun',
     blurb: 'Drum machine retriggered into rolls',
     patch: {

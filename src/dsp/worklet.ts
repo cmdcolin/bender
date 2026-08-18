@@ -63,6 +63,11 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
         case 'noteOff':
           this.built.toyChip.noteOff(msg.semitone)
+          // The FM chip is on the key line rather than the message: it hears
+          // every strike the toy's gate brings out, whoever made it. What it
+          // cannot hear on a trigger line is a finger coming up, so the release
+          // is the one half that has to be handed to it directly.
+          this.built.fmChip.noteOff(msg.semitone)
           break
         case 'record':
           if (msg.on) {
