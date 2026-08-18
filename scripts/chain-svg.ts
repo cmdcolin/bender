@@ -6,6 +6,10 @@ import { serialize } from '../src/ui/svg'
 // The README's signal path, drawn by the same code the panel draws with, in a
 // pair of themes so it reads on GitHub light and dark. `pnpm diagram` rewrites
 // it; chain-map.test.ts fails if the committed copies fall behind.
+//
+// Folded, like the panel's. The source band is six boxes across now, so a
+// straight run below it is a picture three times taller than it is wide with
+// half of it empty either side.
 
 // Everything patched in, so no stage greys out as "not in the path".
 const BOARD: Controls = {
@@ -14,6 +18,7 @@ const BOARD: Controls = {
   oscLevel: 0.5,
   noiseLevel: 0.2,
   micLevel: 0.5,
+  sampleLevel: 0.7,
   ringMix: 0.5,
   crushMix: 0.5,
   distMix: 0.5,
@@ -62,7 +67,7 @@ export function renderDiagrams(): Record<string, string> {
     Object.entries(THEMES).map(([name, palette]) => [
       `img/chain-${name}.svg`,
       `<?xml version="1.0" encoding="UTF-8"?>\n${serialize(
-        drawMap(buildMap(BOARD, { palette, live: false })),
+        drawMap(buildMap(BOARD, { palette, live: false, wrap: true })),
       )}\n`,
     ]),
   )

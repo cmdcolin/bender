@@ -47,7 +47,7 @@ const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 // onto rather than the bay — mod*Src order. The rest (the bay's own LFO, the
 // supply sag, the output envelope) belong to no one stage, so they open the bay.
 const SRC_GROUP: Record<number, string> = {
-  4: 'Mic & sample',
+  4: 'Mic',
   5: 'Body contact',
   6: 'Body contact',
   7: 'Feedback bus',
@@ -56,23 +56,47 @@ const SRC_GROUP: Record<number, string> = {
   10: 'Toy keyboard',
 }
 
+// Where the mic wire is soldered, in micPatch order. Only the first of the
+// seven reaches the mix; the rest land in the middle of something.
+const MIC_TARGET = [
+  'mix',
+  // The rail is the keyboard's to own — it holds the starve knob that moves it.
+  'Toy keyboard',
+  'Chaos osc',
+  'Tape delay',
+  'Ring mod',
+  'Toy drums',
+  'Glitch buffer',
+] as const
+
 // What each source is turned up to, which is also whether it is in the mix at
 // all. The loudest of its levels, as a share of that fader's own travel, so the
-// mic — which goes to 2 — reads against the same wall as the chip, which goes
-// to 1.
+// sampler — which goes to 2 — reads against the same wall as the chip, which
+// goes to 1.
 const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Toy keyboard': ['chipLevel'],
-  'Toy drums': ['drumLevel'],
   'FM chip': ['fmLevel'],
+  'Toy drums': ['drumLevel'],
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
-  'Mic & sample': ['micLevel', 'sampleLevel'],
+  Sampler: ['sampleLevel'],
 }
 
-// The two the rest of the app is about: the keys you play and the grid you
-// write. They get a frame of their own at the head of the rack rather than a
-// line in a list of six, because everything on the left of the screen — the
-// keyboard, the pattern, both run switches — lands on one or the other.
+// The three chips on the toy board, in the order they sit on it. They share one
+// supply, and the FM chip has no keyboard and no sequencer of its own — its key
+// input is soldered onto the toy's gate line. So they get a frame around them:
+// what is inside it is one piece of hardware with three dies on it, and the
+// starve knob on the keyboard's panel bends all three.
+//
+// The FM chip sits next to the keyboard because that is where the key line
+// makes a short hop instead of a run across the row.
+const CHIP_ROW = ['Toy keyboard', 'FM chip', 'Toy drums'] as const
+
+// The three that take no supply and no trigger from anything: they start where
+// they stand, and they are the only sources on the board that do.
+const LINE_ROW = ['Chaos osc', 'Noise & crackle', 'Sampler'] as const
+
+// The two with a run switch of their own, which is what a lamp on the box is.
 const TOYS = new Set(['Toy keyboard', 'Toy drums'])
 
 const sourceLevel = (name: string, c: Controls): number =>
@@ -121,22 +145,29 @@ const PAD_X = 9
 const ROW_GAP = 9
 /** the channel the folded path's cable runs up, between the two columns */
 const COL_GAP = 28
-const STRIP_ROW_H = 17
-/** a toy's own row, framed and a lamp taller than the four under it */
-const TOY_ROW_H = 23
-/** the lip the rack carries its name on */
+/** an instrument's own box: a name and a count over a fader */
+const INST_H = 34
+const INST_GAP = 12
+/** the gap the key line runs in, wide enough to carry its own label */
+const KEY_GAP = 22
+/** the lip a frame carries its name on */
 const CAP_H = 12
-/** the inset a framed toy sits at inside the rack */
-const TOY_PAD = 3
-/** the run lamp on a toy's row, and the space it takes at the left */
+/** the inset the chips sit at inside the toy board's frame */
+const FRAME_PAD = 6
+/** the supply bar over the chips, and the trigger cables under them */
+const RAIL_H = 10
+const TRIG_H = 13
+/** from the foot of the source rows down to the bar that collects them */
+const COLLECT_H = 14
+/** from the collector to the mix bus, and from the mix bus to the fold */
+const BAND_GAP = 12
+/** the run lamp on a toy's box, and the space it takes at the left */
 const LAMP_R = 2.6
-const LAMP_COL = 12
+const LAMP_COL = 14
 /** the column a stage's off-stock count, and its way back, sits in — wide
     enough that a two-digit count is inside the button it is the face of */
 const COUNT_COL = 18
 const COUNT_INSET = 6
-/** the meter bridge down the right of the source rack */
-const METER_W = 26
 const LABEL_H = 12
 /** from a wire label in the gutter to the box it feeds */
 const STUB = 14
@@ -147,26 +178,9 @@ const MARGIN = 2
 
 type Side = 'left' | 'right'
 
-/** One source's channel in the rack that stands in for all six of them. */
-export interface MapRow {
-  name: string
-  count: number
-  active: boolean
-  open: boolean
-  /** how far its fader is up, along that fader's own travel */
-  level: number
-  /** running right now, off its own switch — the two toys only */
-  playing: boolean
-  /** one of the two toys, which get a frame and a lamp of their own */
-  toy: boolean
-  /** relative to the strip's own box */
-  y: number
-  h: number
-}
-
 export interface MapNode {
   id: string
-  kind: 'stage' | 'plain' | 'strip' | 'label'
+  kind: 'stage' | 'plain' | 'inst' | 'frame' | 'label'
   label: string
   count: number
   /** the group this opens, where it opens one */
@@ -179,8 +193,12 @@ export interface MapNode {
   h: number
   /** 'label' only: which end of the text x is */
   anchor?: 'start' | 'end'
-  /** 'strip' only */
-  rows?: MapRow[]
+  /** 'inst' only: how far its fader is up, along that fader's own travel */
+  level?: number
+  /** 'inst' only: running right now, off a switch of its own */
+  playing?: boolean
+  /** 'inst' only: has a run switch, so it carries a lamp */
+  lamp?: boolean
 }
 
 export interface MapWire {
@@ -192,7 +210,12 @@ export interface MapWire {
   color: string
   dash?: string
   door?: string
-  label?: { text: string; x: number; y: number; anchor: 'start' | 'end' }
+  label?: {
+    text: string
+    x: number
+    y: number
+    anchor: 'start' | 'middle' | 'end'
+  }
 }
 
 export interface ChainMap {
@@ -230,9 +253,8 @@ const midY = (n: MapNode) => n.y + n.h / 2
 const stack = (col: MapNode[]) =>
   col.reduce((h, n) => h + n.h + ROW_GAP, -ROW_GAP)
 
-// Where to cut the path in two. Split by height rather than by count: the
-// source strip is five rows deep and everything else is one, so cutting down
-// the middle of the list leaves one column half again as tall as the other.
+// Where to cut the path in two, by height rather than by count — which is what
+// keeps the two columns level when a box that isn't one row tall lands in one.
 function foldAt(path: MapNode[]): number {
   const taller = (n: number) =>
     Math.max(stack(path.slice(0, n)), stack(path.slice(n)))
@@ -248,6 +270,55 @@ const elbowV = (from: Point, to: Point, atY: number): Point[] =>
 
 const elbowH = (from: Point, to: Point, atX: number): Point[] =>
   from[1] === to[1] ? [from, to] : [from, [atX, from[1]], [atX, to[1]], to]
+
+// A row of boxes across a span, each as wide as its own name needs and the
+// slack shared out in proportion. Uniform widths would be cut to the longest
+// name on the row, which is 'Noise & crackle' — and three of those across is a
+// band half again as wide as the panel has to give it.
+function spread(
+  row: MapNode[],
+  x0: number,
+  span: number,
+  gaps: number[],
+  natural: (n: MapNode) => number,
+) {
+  const want = row.map(natural)
+  const total = want.reduce((a, b) => a + b, 0)
+  const between = gaps.slice(0, row.length - 1).reduce((a, b) => a + b, 0)
+  const slack = span - between - total
+  let x = x0
+  for (const [i, n] of row.entries()) {
+    n.w = want[i]! + (slack * want[i]!) / total
+    n.x = x
+    x += n.w + (gaps[i] ?? 0)
+  }
+}
+
+interface Bridge {
+  id: string
+  from: string
+  to: string
+  label: string
+}
+
+/** The trigger lines you can bridge the two toys with, where one is patched. */
+function triggerBridges(c: Controls): Bridge[] {
+  const bridges: Bridge[] = []
+  for (const [key, from, to] of [
+    ['trigToKeys', 'Toy drums', 'Toy keyboard'],
+    ['trigToDrum', 'Toy keyboard', 'Toy drums'],
+  ] as const) {
+    const choice = Math.round(c[key])
+    if (choice <= 0) continue
+    bridges.push({
+      id: key,
+      from,
+      to,
+      label: `${sliderFor(key).choices?.[choice] ?? 'trig'} trig`,
+    })
+  }
+  return bridges
+}
 
 export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const k = o.palette ?? PANEL
@@ -288,33 +359,30 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     })
   }
 
-  // The sources ride one rack rather than six boxes of their own: a column that
-  // is six stages longer at the top is six stages of map nobody needs. Inside
-  // it the two toys are framed and the other four are lines, because a rack
-  // where every channel looks alike is the stack people go hunting through for
-  // the keyboard.
+  // The sources, as the six boxes they are. Which of them is wired to which is
+  // the thing the map is here to say, and a rack of six alike rows said none of
+  // it: three of these share a supply, one of the three has no keyboard of its
+  // own, and the other three start where they stand.
   const playing = new Set(o.playing ?? [])
-  const rows: MapRow[] = []
-  let rowY = CAP_H
-  for (const name of Object.keys(SOURCE_LEVELS)) {
-    const toy = TOYS.has(name)
+  const instrument = (name: string): MapNode => {
     const level = sourceLevel(name, c)
-    rows.push({
-      name,
+    return node(nodeId(name), 'inst', name, {
       count: live ? touchedCount(name, c) : 0,
       active: level > 0,
       open: o.open === name,
+      door: name,
       level,
       playing: playing.has(name),
-      toy,
-      y: rowY,
-      h: toy ? TOY_ROW_H : STRIP_ROW_H,
+      lamp: TOYS.has(name),
+      h: INST_H,
     })
-    rowY += toy ? TOY_ROW_H : STRIP_ROW_H
   }
-  const strip = node('sources', 'strip', 'sources', { rows, h: rowY + 1 })
+  const chips = CHIP_ROW.map(instrument)
+  const lines = LINE_ROW.map(instrument)
+  const board = node('toy_board', 'frame', 'toy board — one supply')
+  const mix = node('mix', 'plain', 'mix bus')
 
-  const path: MapNode[] = [strip, node('mix', 'plain', 'mix bus')]
+  const path: MapNode[] = []
 
   const bends = bendOrder(c)
   for (const name of bends) {
@@ -345,93 +413,126 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const fbUp = c.fbAmt > 0
   const bus = stage('Feedback bus', fbUp)
 
-  // One width for every box on the rack, cut to the longest label on it. The
-  // count column is held open whether or not anything is off stock yet: it is
-  // a button, and a rack that grows a column the first time a control moves
-  // would resize itself under every morph.
+  // How wide a box has to be to hold what is written on it. The count column is
+  // held open whether or not anything is off stock yet: it is a button, and a
+  // rack that grows a column the first time a control moves would resize itself
+  // under every morph.
   const countCol = live ? COUNT_COL : 0
-  const boxW = Math.ceil(
-    Math.max(
-      MIN_W,
-      ...[...path, bus].map(n =>
-        n.kind === 'strip'
-          ? Math.max(
-              ...n.rows!.map(
-                r =>
-                  PAD_X * 2 +
-                  (r.toy ? TOY_PAD * 2 + LAMP_COL : 0) +
-                  textWidth(r.name, FONT) +
-                  METER_W +
-                  countCol,
-              ),
-            )
-          : PAD_X * 2 + textWidth(n.label, FONT) + countCol,
-      ),
-    ),
-  )
-  for (const n of [...path, bus]) n.w = boxW
+  const natural = (n: MapNode) =>
+    PAD_X * 2 + (n.lamp ? LAMP_COL : 0) + textWidth(n.label, FONT) + countCol
+  const sum = (row: MapNode[]) => row.reduce((a, n) => a + natural(n), 0)
+
+  // The trigger bridges are patch cables, so they are only in the way when one
+  // is patched — and the board's frame is only as deep as what is inside it.
+  const trigs = triggerBridges(c)
+  if (trigs.length) doors.add('Trigger patch')
 
   const cut = o.wrap ? foldAt(path) : path.length
   const [down, up] = [path.slice(0, cut), path.slice(cut)]
+  const cols = up.length ? 2 : 1
+
+  // One content width for the whole drawing, wide enough for the source band
+  // and for the folded path both, and whichever came out narrower stretches to
+  // it. The band is the usual winner: six boxes across beats two columns.
+  const chipGaps = [KEY_GAP, INST_GAP]
+  const content = Math.ceil(
+    Math.max(
+      sum(chips) + KEY_GAP + INST_GAP + FRAME_PAD * 2,
+      sum(lines) + INST_GAP * (lines.length - 1),
+      cols *
+        Math.max(
+          MIN_W,
+          ...[...path, bus].map(
+            n => PAD_X * 2 + textWidth(n.label, FONT) + countCol,
+          ),
+        ) +
+        (cols - 1) * COL_GAP,
+    ),
+  )
+  const boxW = (content - (cols - 1) * COL_GAP) / cols
+  for (const n of [...path, bus]) n.w = boxW
+  mix.w = content
+  board.w = content
+
+  // --- down the drawing -----------------------------------------------------
+
+  board.y = MARGIN
+  const railY = board.y + CAP_H + 6
+  const chipY = railY + RAIL_H
+  const trigY = chipY + INST_H + TRIG_H
+  for (const n of chips) n.y = chipY
+  board.h =
+    (trigs.length ? trigY + (trigs.length - 1) * TRIG_H + 6 : chipY + INST_H) -
+    board.y +
+    4
+
+  const lineY = board.y + board.h + BAND_GAP
+  for (const n of lines) n.y = lineY
+  const collectY = lineY + INST_H + COLLECT_H
+  mix.y = collectY + BAND_GAP
+
+  const pathTop = mix.y + mix.h + ROW_GAP
   for (const col of [down, up]) {
-    let y = MARGIN
+    let y = pathTop
     for (const n of col) {
       n.y = y
       y += n.h + ROW_GAP
     }
   }
-  const bodyBottom = MARGIN + Math.max(stack(down), stack(up))
+  const bodyBottom = pathTop + Math.max(stack(down), stack(up))
   bus.y = bodyBottom + BUS_GAP
 
+  // --- across it, at an origin of zero, so the gutters can be measured off the
+  // --- x each box has already landed on and everything shifted once after ----
+
+  spread(chips, FRAME_PAD, content - FRAME_PAD * 2, chipGaps, natural)
+  spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
+  board.x = 0
+  mix.x = 0
+  for (const n of down) n.x = 0
+  for (const n of up) n.x = boxW + COL_GAP
+  bus.x = (content - boxW) / 2
+
+  const band = [...chips, ...lines]
+  const byId = new Map([...path, ...band, mix, bus].map(n => [n.id, n]))
+
   // Where the feedback lands, and so which side of the map it comes home on.
-  const dest = FB_TARGET[Math.round(c.fbDest)] ?? 'mix'
-  const fbRow = rows.find(r => r.name === dest)
-  const fbTarget = fbRow ? strip : path.find(n => n.id === nodeId(dest))!
-  const fbSide: Side = up.includes(fbTarget) ? 'right' : 'left'
+  const fbTarget = byId.get(nodeId(FB_TARGET[Math.round(c.fbDest)] ?? 'mix'))!
+  const taps = collectTaps(c, o, { byId, doors, live })
 
-  const taps = collectTaps(c, o, {
-    strip,
-    rows,
-    byId: new Map([...path, bus].map(n => [n.id, n])),
-    doors,
-    live,
-  })
+  // Which edge of the drawing a label on this box hangs off. A box in the right
+  // column, or in the right-hand half of the band, reaches for the right — and
+  // the feedback bus takes the edge the feedback wire isn't already using.
+  const half = (n: MapNode): Side => (midX(n) > content / 2 ? 'right' : 'left')
+  const fbSide = half(fbTarget)
   const sideOf = (target: MapNode): Side =>
-    target === bus
-      ? fbSide === 'left'
-        ? 'right'
-        : 'left'
-      : up.includes(target)
-        ? 'right'
-        : 'left'
+    target === bus ? (fbSide === 'left' ? 'right' : 'left') : half(target)
 
-  const spanW = up.length ? boxW * 2 + COL_GAP : boxW
-  // A label hangs off the near edge of what it feeds, so one on the bus — which
-  // sits in from both edges of the rack — needs none of the gutter to do it.
-  const inset = (target: MapNode) => (target === bus ? (spanW - boxW) / 2 : 0)
+  // How much gutter a tap needs: its label, its run onto the box, and back off
+  // whatever the box already sits in from that edge.
+  const reach = (t: Tap, side: Side) =>
+    textWidth(t.label, SMALL) +
+    STUB -
+    (side === 'left' ? t.target.x : content - (t.target.x + t.target.w))
   const gutter = (side: Side) =>
     Math.ceil(
       Math.max(
         fbSide === side ? LANE : 0,
         ...taps
           .filter(t => sideOf(t.target) === side)
-          .map(
-            t =>
-              (fbSide === side ? LANE : 0) +
-              textWidth(t.label, SMALL) +
-              STUB -
-              inset(t.target),
-          ),
+          .map(t => (fbSide === side ? LANE : 0) + reach(t, side)),
       ),
     )
   const [leftGutter, rightGutter] = [gutter('left'), gutter('right')]
+  // Which edge each tap reaches for, settled here and carried: sideOf reads an
+  // x measured from zero, and the whole drawing is about to move right by the
+  // gutter it just sized.
+  const tapSide = new Map(taps.map(t => [t, sideOf(t.target)]))
 
   const colX = MARGIN + leftGutter
-  for (const n of down) n.x = colX
-  for (const n of up) n.x = colX + boxW + COL_GAP
-  bus.x = colX + (spanW - boxW) / 2
+  for (const n of [...path, ...band, board, mix, bus]) n.x += colX
 
-  const width = MARGIN * 2 + leftGutter + spanW + rightGutter
+  const width = MARGIN * 2 + leftGutter + content + rightGutter
   const laneX = (side: Side) =>
     side === 'left' ? MARGIN + LANE / 2 : width - MARGIN - LANE / 2
 
@@ -451,6 +552,168 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       ...rest,
     })
   }
+
+  // A run with no head on it: a supply bar is not a signal going anywhere.
+  const bar = (
+    id: string,
+    from: MapNode,
+    to: MapNode,
+    pts: Point[],
+    rest: Partial<MapWire> & { color: string },
+  ) => wire(id, from, to, pts, { ...rest, arrow: '' })
+
+  // --- inside the toy board -------------------------------------------------
+
+  // The supply: one bar over all three, because it is one rail. The starve knob
+  // that drags it sits on the keyboard's panel, and this is the only thing on
+  // the map that says the other two go with it.
+  bar(
+    'rail',
+    board,
+    board,
+    [
+      [board.x + FRAME_PAD, railY],
+      [board.x + board.w - FRAME_PAD, railY],
+    ],
+    {
+      color: k.dim,
+      dash: '1 2',
+      label: {
+        text: 'rail',
+        x: board.x + board.w - FRAME_PAD,
+        y: railY - 4,
+        anchor: 'end',
+      },
+    },
+  )
+  for (const chip of chips)
+    bar(
+      `rail-${chip.id}`,
+      board,
+      chip,
+      [
+        [midX(chip), railY],
+        [midX(chip), chipY],
+      ],
+      { color: k.dim, dash: '1 2' },
+    )
+
+  // The key line, which is solder rather than a cable you patched: the FM chip
+  // has no keyboard and no sequencer, so every note it plays arrives on the
+  // gate line the toy brings out. It sits next to the keyboard for this wire.
+  {
+    const [keys, fm] = [chips[0]!, chips[1]!]
+    wire(
+      'key-line',
+      keys,
+      fm,
+      [
+        [keys.x + keys.w, chipY + 12],
+        [fm.x, chipY + 12],
+      ],
+      {
+        color: k.accent2,
+        door: 'Toy keyboard',
+        label: {
+          text: 'key',
+          x: (keys.x + keys.w + fm.x) / 2,
+          y: chipY + 6,
+          anchor: 'middle',
+        },
+      },
+    )
+  }
+
+  // The bridges you patch yourself, under the row and in the patch colour, so
+  // nothing here reads like the soldered line above it.
+  for (const [i, t] of trigs.entries()) {
+    const [from, to] = [byId.get(nodeId(t.from))!, byId.get(nodeId(t.to))!]
+    const y = trigY + i * TRIG_H
+    wire(
+      t.id,
+      from,
+      to,
+      [
+        [midX(from), from.y + from.h],
+        [midX(from), y],
+        [midX(to), y],
+        [midX(to), to.y + to.h],
+      ],
+      {
+        color: k.mod,
+        dash: '4 3',
+        door: 'Trigger patch',
+        label: {
+          text: t.label,
+          x: (midX(from) + midX(to)) / 2,
+          y: y - 3,
+          anchor: 'middle',
+        },
+      },
+    )
+  }
+
+  // --- and out of the band --------------------------------------------------
+
+  // Everything meets on one bar and the bar feeds the mix. The board's own
+  // output comes down the channel between two of the boxes under it rather than
+  // through one of them, which is the whole reason the band is a grid.
+  const drop =
+    lines.length > 1
+      ? (lines[0]!.x + lines[0]!.w + lines[1]!.x) / 2
+      : mix.x + mix.w / 2
+  bar(
+    'board-out',
+    board,
+    mix,
+    [
+      [drop, board.y + board.h],
+      [drop, collectY],
+    ],
+    { color: k.border },
+  )
+  for (const src of lines)
+    bar(
+      `${src.id}-out`,
+      src,
+      mix,
+      [
+        [midX(src), src.y + src.h],
+        [midX(src), collectY],
+      ],
+      { color: k.border },
+    )
+  bar(
+    'collect',
+    mix,
+    mix,
+    [
+      [Math.min(drop, midX(lines[0]!)), collectY],
+      [Math.max(drop, midX(lines[lines.length - 1]!)), collectY],
+    ],
+    { color: k.border },
+  )
+  wire(
+    'collect-mix',
+    mix,
+    mix,
+    [
+      [midX(mix), collectY],
+      [midX(mix), mix.y],
+    ],
+    { color: k.border },
+  )
+  if (down.length)
+    wire(
+      'mix-path',
+      mix,
+      down[0]!,
+      [
+        [midX(down[0]!), mix.y + mix.h],
+        [midX(down[0]!), down[0]!.y],
+      ],
+      { color: k.border },
+    )
 
   // The path itself: a hop from the foot of each box to the head of the next.
   for (const col of [down, up]) {
@@ -502,7 +765,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // Home the long way, round the outside of the rack. The wire carries the
   // bus's own door, so clicking the line that runs off the output opens the
   // bus's controls without hunting for the box.
-  const fbY = fbRow ? strip.y + fbRow.y + fbRow.h / 2 : midY(fbTarget)
+  const fbY = midY(fbTarget)
   {
     const lane = laneX(fbSide)
     const [busEdge, landing] =
@@ -533,10 +796,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     )
   }
 
-  // Every wire off the patch bay, and the trigger lines between the two toys,
-  // as a label out in the gutter with a short run onto what it feeds. Both ends
-  // of a trigger line sit in the source strip, where a wire from the strip onto
-  // itself would be a loop drawn back through the middle of the path.
+  // Every wire off the patch bay, and the mic, as a label out in the gutter
+  // with a short run onto what it feeds.
   const labels: MapNode[] = []
   // Where a label would be struck through by a line already drawn: its
   // neighbours, and the run the feedback wire comes home on.
@@ -551,7 +812,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
 
   for (const tap of taps.sort((a, b) => tapY(a) - tapY(b))) {
-    const side = sideOf(tap.target)
+    const side = tapSide.get(tap)!
     const y = clear(side, tapY(tap) - LABEL_H / 2)
     const edge = side === 'left' ? tap.target.x : tap.target.x + tap.target.w
     const anchorX = edge + (side === 'left' ? -STUB : STUB)
@@ -578,7 +839,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
 
   return {
-    nodes: [...path, bus, ...labels],
+    // The frame first, so the boxes inside it draw over its edge rather than
+    // under it.
+    nodes: [board, ...band, mix, ...path, bus, ...labels],
     wires,
     doors,
     width,
@@ -596,40 +859,33 @@ interface Tap {
   /** what the wire opens: the bay it is patched at */
   wireDoor: string
   target: MapNode
-  row?: MapRow
   dash: string
 }
 
-const tapY = (t: Tap) =>
-  t.row ? t.target.y + t.row.y + t.row.h / 2 : midY(t.target)
+const tapY = (t: Tap) => midY(t.target)
 
 function collectTaps(
   c: Controls,
   o: Options,
-  ctx: {
-    strip: MapNode
-    rows: MapRow[]
-    byId: Map<string, MapNode>
-    doors: Set<string>
-    live: boolean
-  },
+  ctx: { byId: Map<string, MapNode>; doors: Set<string>; live: boolean },
 ): Tap[] {
   const taps: Tap[] = []
-  for (const [key, from, to] of [
-    ['trigToKeys', 'Toy drums', 'Toy keyboard'],
-    ['trigToDrum', 'Toy keyboard', 'Toy drums'],
-  ] as const) {
-    const choice = Math.round(c[key])
-    if (choice <= 0) continue
-    ctx.doors.add('Trigger patch')
+
+  // The mic, which is a patch point rather than a channel — so it draws as the
+  // wire it is, onto whichever of the seven places it is soldered to. Turned
+  // right down it is soldered to nothing that matters, and goes on the shelf.
+  const micTarget = ctx.byId.get(
+    nodeId(MIC_TARGET[Math.round(c.micPatch)] ?? 'mix'),
+  )
+  if (c.micLevel > 0 && micTarget) {
+    ctx.doors.add('Mic')
     taps.push({
-      id: key,
-      label: `${sliderFor(key).choices?.[choice] ?? 'trig'} trig`,
-      door: from,
-      wireDoor: 'Trigger patch',
-      target: ctx.strip,
-      row: ctx.rows.find(r => r.name === to),
-      dash: '4 3',
+      id: 'mic',
+      label: ctx.live ? `mic ${c.micLevel.toFixed(2)}` : 'mic',
+      door: 'Mic',
+      wireDoor: 'Mic',
+      target: micTarget,
+      dash: '1 3',
     })
   }
 
@@ -639,8 +895,7 @@ function collectTaps(
     const depth = c[`mod${i}Depth`]
     const dest = WIRE_TARGET[Math.round(c[`mod${i}Dest`])]
     if (src === 0 || depth === 0 || !dest) continue
-    const row = ctx.rows.find(r => r.name === dest)
-    const target = row ? ctx.strip : ctx.byId.get(nodeId(dest))
+    const target = ctx.byId.get(nodeId(dest))
     if (!target) continue
     const pickup = SRC_GROUP[src] ?? 'Patch bay'
     ctx.doors.add('Patch bay')
@@ -653,7 +908,6 @@ function collectTaps(
       door: pickup,
       wireDoor: 'Patch bay',
       target,
-      row,
       dash: '1 3',
     })
   }
@@ -751,32 +1005,32 @@ function resetButton(
   ]
 }
 
-// How far up a source's fader is, under its name. A source running off its own
-// switch lights the bar, which is the map saying that what you are hearing
-// starts here.
-function levelBar(r: MapRow, right: number, cy: number, k: Palette): El[] {
-  // The empty part of the travel is drawn too, and the meters line up in a
-  // column of their own: a bar that hangs off the end of a name is an
-  // underline, and an underline says nothing about how far up anything is.
-  const [x, y] = [right - METER_W, cy - 1.5]
+// How far up a source's fader is, along the foot of its own box. A source
+// running off its own switch lights the bar, which is the map saying that what
+// you are hearing starts here.
+function levelBar(n: MapNode, k: Palette): El[] {
+  // The empty part of the travel is drawn too: a bar that stops where the level
+  // does is a bar with nothing to read it against.
+  const [x, y, w] = [n.x + PAD_X, n.y + n.h - 11, n.w - PAD_X * 2]
   const track = el('rect', {
     x,
     y,
-    width: METER_W,
+    width: w,
     height: 3,
     fill: k.border,
     fillOpacity: 0.6,
   })
-  if (r.level <= 0) return [track]
+  const level = n.level ?? 0
+  if (level <= 0) return [track]
   return [
     track,
     el('rect', {
       x,
       y,
-      width: Math.max(2, METER_W * Math.min(1, r.level)),
+      width: Math.max(2, w * Math.min(1, level)),
       height: 3,
-      fill: r.playing ? k.accent2 : k.fg,
-      fillOpacity: r.playing ? 0.95 : 0.5,
+      fill: n.playing ? k.accent2 : k.fg,
+      fillOpacity: n.playing ? 0.95 : 0.5,
     }),
   ]
 }
@@ -811,8 +1065,33 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
       ),
     ])
   }
-  if (n.kind === 'strip') {
-    const parts: El[] = [
+  // The toy board: an outline round what is one piece of hardware, and the
+  // cheapest way on a drawing to say that three things share a supply. Dashed,
+  // because it is a boundary rather than anything signal travels along, and no
+  // door — the board is not a group, the chips inside it are.
+  if (n.kind === 'frame') {
+    return el('g', { className: 'node' }, [
+      el('rect', {
+        x: n.x,
+        y: n.y,
+        width: n.w,
+        height: n.h,
+        rx: 4,
+        fill: 'none',
+        stroke: k.border,
+        strokeDasharray: '3 2',
+      }),
+      words(n.label, n.x + PAD_X, n.y + CAP_H - 4, SMALL, k.dim, 'start'),
+    ])
+  }
+
+  // An instrument: a name and a count over how far its fader is up, and a lamp
+  // where the thing has a run switch of its own. A box rather than a line in a
+  // rack, because what a source is wired to is the point and only a box has
+  // edges for a wire to land on.
+  if (n.kind === 'inst') {
+    const lit = n.open ? k.fg : n.count > 0 ? k.accent : k.border
+    const inner: El[] = [
       el('rect', {
         className: 'box',
         x: n.x,
@@ -820,85 +1099,25 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
         width: n.w,
         height: n.h,
         rx: 3,
-        fill: k.bg,
-        stroke: k.border,
+        fill: n.open ? k.open : k.raise,
+        stroke: lit,
+        strokeWidth: n.open ? 2 : 1,
       }),
-      words(n.label, n.x + PAD_X, n.y + CAP_H - 4, SMALL, k.dim, 'start'),
+      ...(n.lamp ? [lamp(n.x + PAD_X + LAMP_R, n.y + 12, !!n.playing, k)] : []),
+      words(
+        n.label,
+        n.x + PAD_X + (n.lamp ? LAMP_COL : 0),
+        n.y + 15.5,
+        FONT,
+        n.active || n.open ? k.fg : k.dim,
+        'start',
+      ),
+      ...levelBar(n, k),
     ]
-    const rows = n.rows!
-    for (const [i, r] of rows.entries()) {
-      const y = n.y + r.y
-      const ink = r.active || r.open ? k.fg : k.dim
-      if (r.toy) {
-        // A frame, a lamp and a fader: the two toys are machines on the rack
-        // rather than lines in a list, because the keys, the pattern and both
-        // run switches all land on one or the other of them.
-        const [bx, bw] = [n.x + TOY_PAD, n.w - TOY_PAD * 2]
-        const lit = r.open ? k.fg : r.count > 0 ? k.accent : k.border
-        const inner: El[] = [
-          el('rect', {
-            className: 'box',
-            x: bx,
-            y: y + 1,
-            width: bw,
-            height: r.h - 2,
-            rx: 3,
-            fill: r.open ? k.open : k.raise,
-            stroke: lit,
-            strokeWidth: r.open ? 2 : 1,
-          }),
-          lamp(bx + LAMP_COL / 2, y + r.h / 2, r.playing, k),
-          words(
-            r.name,
-            bx + LAMP_COL,
-            baseline(y, r.h, FONT),
-            FONT,
-            ink,
-            'start',
-          ),
-          ...levelBar(r, bx + bw - COUNT_COL, y + r.h / 2, k),
-        ]
-        parts.push(
-          el('g', { className: 'row' }, [
-            ...door(inner, r.name, links),
-            ...resetButton(r.name, r.count, bx + bw, y + 1, r.h - 2, k, links),
-          ]),
-        )
-        continue
-      }
-      // The row's own fill is the lit one when it is open and a transparent one
-      // when it isn't, which is what gives a row the whole of itself to click.
-      const inner: El[] = [
-        el('rect', {
-          x: n.x + 1,
-          y,
-          width: n.w - 2,
-          height: r.h,
-          fill: r.open ? k.open : 'transparent',
-        }),
-        words(r.name, n.x + PAD_X, baseline(y, r.h, FONT), FONT, ink, 'start'),
-        ...levelBar(r, n.x + n.w - COUNT_COL, y + r.h / 2, k),
-      ]
-      parts.push(
-        el('g', { className: 'row' }, [
-          ...door(inner, r.name, links),
-          ...resetButton(r.name, r.count, n.x + n.w, y, r.h, k, links),
-        ]),
-      )
-      // Between two lines, but never under a framed toy: its own border is
-      // already the thing that ends it.
-      if (i > 0 && !rows[i - 1]!.toy)
-        parts.push(
-          el('line', {
-            x1: n.x + 1,
-            y1: y,
-            x2: n.x + n.w - 1,
-            y2: y,
-            stroke: k.border,
-          }),
-        )
-    }
-    return el('g', { className: 'node' }, parts)
+    return el('g', { className: 'node' }, [
+      ...door(inner, n.door, links),
+      ...resetButton(n.door ?? n.label, n.count, n.x + n.w, n.y, 20, k, links),
+    ])
   }
   const lit = n.open ? k.fg : n.count > 0 ? k.accent : k.border
   const inner = [

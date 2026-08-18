@@ -28,7 +28,9 @@ function checkLayout(map: ChainMap) {
     expect(n.x + n.w).toBeLessThanOrEqual(map.width)
     expect(n.y + n.h).toBeLessThanOrEqual(map.height)
   }
-  const boxes = map.nodes.filter(n => n.kind !== 'label')
+  // Frames are left out: the toy board's whole job is to contain the three
+  // boxes inside it, so it overlaps them on purpose.
+  const boxes = map.nodes.filter(n => n.kind !== 'label' && n.kind !== 'frame')
   for (const [i, a] of boxes.entries())
     for (const b of boxes.slice(i + 1))
       expect(
@@ -83,7 +85,7 @@ test('the feedback bus stays on the map at zero, greyed out', () => {
 
 test('the feedback wire lands on its destination', () => {
   const toOsc = buildMap({ ...DEFAULT_CONTROLS, fbAmt: 0.4, fbDest: 1 })
-  const home = hop(toOsc, 'Feedback_bus', 'sources')
+  const home = hop(toOsc, 'Feedback_bus', 'Chaos_osc')
   expect(home?.color).toBe(PANEL.accent2)
   expect(home?.label?.text).toBe('0.40')
   expect(hop(toOsc, 'Feedback_bus', 'mix')).toBeUndefined()
@@ -123,39 +125,71 @@ test('the open stage is lit, and nothing else is', () => {
   expect(map.nodes.filter(n => n.open)).toHaveLength(1)
 })
 
-test('the sources ride one strip, each row a door of its own', () => {
+test('each source is a box of its own, and a door of its own', () => {
   const map = buildMap(DEFAULT_CONTROLS)
-  const strip = box(map, 'sources')!
-  expect(strip.rows?.map(r => r.name)).toContain('Chaos osc')
-  expect(hop(map, 'sources', 'mix')).toBeTruthy()
+  for (const name of ['Toy keyboard', 'FM chip', 'Chaos osc', 'Sampler'])
+    expect(box(map, name.replace(/\W+/g, '_'))?.kind).toBe('inst')
+  expect(hop(map, 'Chaos_osc', 'mix')).toBeTruthy()
   const svg = serialize(drawMap(map))
   expect(svg).toContain(`href="#${groupAnchor('Chaos osc')}"`)
   expect(svg).toContain('Noise &amp; crackle')
 })
 
-test('a source row carries how far up its fader is, on its own travel', () => {
-  const rows = (c: Controls) =>
-    new Map(box(buildMap(c), 'sources')!.rows!.map(r => [r.name, r]))
-  const stock = rows(DEFAULT_CONTROLS)
-  expect(stock.get('Toy keyboard')!.level).toBeCloseTo(
-    DEFAULT_CONTROLS.chipLevel,
-  )
-  expect(stock.get('FM chip')!.active).toBe(false)
-  // The mic fader goes to 2 and the chip's to 1, so half up reads as half up
-  // on both rather than as twice as loud on one.
-  expect(
-    rows({ ...DEFAULT_CONTROLS, micLevel: 1 }).get('Mic & sample')!.level,
-  ).toBeCloseTo(0.5)
+// The three chips share one supply and one key line, and the map says so with a
+// frame round them and a wire between two of them — which is the whole reason
+// the sources stopped being six alike rows.
+test('the toy board frames its three chips, and wires the key line', () => {
+  const map = buildMap(DEFAULT_CONTROLS)
+  const frame = box(map, 'toy_board')!
+  expect(frame.kind).toBe('frame')
+  expect(frame.door).toBeUndefined()
+  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums']) {
+    const chip = box(map, id)!
+    expect(chip.x).toBeGreaterThanOrEqual(frame.x)
+    expect(chip.x + chip.w).toBeLessThanOrEqual(frame.x + frame.w)
+    expect(hop(map, 'toy_board', id)?.color).toBe(PANEL.dim)
+  }
+  // Soldered, so it is on the map whatever the board is set to — and it is the
+  // warm colour, because a patched cable is the cool one.
+  const key = hop(map, 'Toy_keyboard', 'FM_chip')!
+  expect(key.color).toBe(PANEL.accent2)
+  expect(key.dash).toBeUndefined()
+  expect(key.label?.text).toBe('key')
 })
 
-test('the two toys are framed, and only they carry a run lamp', () => {
+test('a source box carries how far up its fader is, on its own travel', () => {
+  const level = (c: Controls, id: string) => box(buildMap(c), id)!.level
+  expect(level(DEFAULT_CONTROLS, 'Toy_keyboard')).toBeCloseTo(
+    DEFAULT_CONTROLS.chipLevel,
+  )
+  expect(box(buildMap(DEFAULT_CONTROLS), 'FM_chip')!.active).toBe(false)
+  // The sampler's fader goes to 2 and the chip's to 1, so half up reads as half
+  // up on both rather than as twice as loud on one.
+  expect(level({ ...DEFAULT_CONTROLS, sampleLevel: 1 }, 'Sampler')).toBeCloseTo(
+    0.5,
+  )
+})
+
+test('only the two toys carry a run lamp', () => {
   const map = buildMap(DEFAULT_CONTROLS, { playing: ['Toy drums'] })
-  const rows = box(map, 'sources')!.rows!
-  expect(rows.filter(r => r.toy).map(r => r.name)).toEqual([
+  const insts = map.nodes.filter(n => n.kind === 'inst')
+  expect(insts.filter(n => n.lamp).map(n => n.label)).toEqual([
     'Toy keyboard',
     'Toy drums',
   ])
-  expect(rows.filter(r => r.playing).map(r => r.name)).toEqual(['Toy drums'])
+  expect(insts.filter(n => n.playing).map(n => n.label)).toEqual(['Toy drums'])
+})
+
+// The mic is the one source that does not have to reach the mix: six of its
+// seven settings solder it into the middle of something else.
+test('the mic draws as a wire onto wherever it is patched', () => {
+  expect(box(buildMap(DEFAULT_CONTROLS), 'mic')).toBeUndefined()
+  const toMix = buildMap({ ...DEFAULT_CONTROLS, micLevel: 1 })
+  expect(hop(toMix, 'mic', 'mix')).toBeTruthy()
+  expect(toMix.doors).toContain('Mic')
+  const toRail = buildMap({ ...DEFAULT_CONTROLS, micLevel: 1, micPatch: 1 })
+  expect(hop(toRail, 'mic', 'Toy_keyboard')).toBeTruthy()
+  expect(box(toRail, 'mic')?.door).toBe('Mic')
 })
 
 // The count is the way back as well as the reading, everywhere it is drawn: on
@@ -309,14 +343,19 @@ test('a wire label opens what it picks up, the wire itself the bay', () => {
 
 test('a bridged trigger line draws between the two boxes', () => {
   const stock = buildMap(DEFAULT_CONTROLS)
-  expect(box(stock, 'trigToKeys')).toBeUndefined()
+  expect(hop(stock, 'Toy_drums', 'Toy_keyboard')).toBeUndefined()
   expect(stock.doors).not.toContain('Trigger patch')
 
   const both = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1, trigToDrum: 8 })
-  expect(box(both, 'trigToKeys')?.label).toBe('kick trig')
-  expect(box(both, 'trigToDrum')?.label).toBe('the step trig')
-  expect(hop(both, 'trigToKeys', 'sources')).toBeTruthy()
-  expect(hop(both, 'trigToDrum', 'sources')).toBeTruthy()
+  const up = hop(both, 'Toy_drums', 'Toy_keyboard')!
+  const down = hop(both, 'Toy_keyboard', 'Toy_drums')!
+  expect(up.label?.text).toBe('kick trig')
+  expect(down.label?.text).toBe('the step trig')
+  // Patched rather than soldered, so it draws in the patch colour and dashed —
+  // the key line beside it is neither.
+  expect(up.color).toBe(PANEL.mod)
+  expect(up.dash).toBeTruthy()
+  expect(up.door).toBe('Trigger patch')
   expect(both.doors).toContain('Trigger patch')
 })
 
@@ -347,8 +386,10 @@ test('a wire onto the feedback amount draws onto the bus', () => {
 test('the fold halves the drawing and hands the path across', () => {
   const straight = buildMap(DEFAULT_CONTROLS, { wrap: false })
   const folded = buildMap(DEFAULT_CONTROLS, { wrap: true })
-  expect(folded.height).toBeLessThan(straight.height * 0.65)
-  expect(folded.width).toBeGreaterThan(straight.width)
+  // The source band is the same height either way, so the fold can only halve
+  // what is under it — which is still most of the drawing.
+  expect(folded.height).toBeLessThan(straight.height * 0.75)
+  expect(folded.width).toBeGreaterThanOrEqual(straight.width)
   const fold = folded.wires.find(w => w.id === 'fold')!
   expect(fold.color).toBe(PANEL.accent)
   expect(box(folded, fold.to)!.x).toBeGreaterThan(box(folded, fold.from)!.x)

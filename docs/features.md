@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 186 controls in 26 groups, seven bends competing for six slots, 18 ROM
+ruin. 186 controls in 27 groups, seven bends competing for six slots, 18 ROM
 tunes and 49 presets — and everything below comes off the control tables
 themselves, so the list cannot drift from the instrument.
 
@@ -205,24 +205,38 @@ Hiss with a colour control, and sparse crackle with a rate of its own.
 
 </details>
 
-### Mic & sample
+### Sampler
 
-A live microphone and a loaded sample. _Mic patch_ is the interesting one — the
-mic does not have to go to the mix, it can go onto the chip’s supply rail, into
-the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier,
-or a trigger line.
+A loaded audio file, looping through the chain — or, with _Struck by_ on a voice
+and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped.
 
 <details>
-<summary>6 controls</summary>
+<summary>4 controls</summary>
 
-| control   | range                                                              | what it does                                                                          |
-| --------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| Mic       | 0 to 2                                                             | Microphone gain into the patch point                                                  |
-| Mic patch | mix, chip rail, osc FM, delay fb, ring car, drum trig, glitch trig | Where the mic wire is soldered                                                        |
-| Sample    | 0 to 2                                                             | Level of the dropped audio file, looping through the chain                            |
-| Speed     | −4× to +4×                                                         | Playback speed                                                                        |
-| Struck by | off, kick, snare, hat, clap, tom, bell, any hit, key, mic          | Which trigger line drops the needle back at the top of the file                       |
-| Ending    | loop or one-shot                                                   | What happens at the end of the file: round again, or stop there and wait to be struck |
+| control   | range                                                     | what it does                                                                          |
+| --------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Level     | 0 to 2                                                    | Level of the dropped audio file, looping through the chain                            |
+| Speed     | −4× to +4×                                                | Playback speed                                                                        |
+| Struck by | off, kick, snare, hat, clap, tom, bell, any hit, key, mic | Which trigger line drops the needle back at the top of the file                       |
+| Ending    | loop or one-shot                                          | What happens at the end of the file: round again, or stop there and wait to be struck |
+
+</details>
+
+### Mic
+
+A live microphone, and the one source that does not have to reach the mix. _Mic
+patch_ is the whole of it: the wire can go onto the chip’s supply rail instead,
+or into the oscillator’s FM input, the delay’s feedback, the ring modulator’s
+carrier, or a trigger line — so a shout browns the toy out, or fires the kit,
+rather than simply being loud.
+
+<details>
+<summary>2 controls</summary>
+
+| control   | range                                                              | what it does                         |
+| --------- | ------------------------------------------------------------------ | ------------------------------------ |
+| Mic       | 0 to 2                                                             | Microphone gain into the patch point |
+| Mic patch | mix, chip rail, osc FM, delay fb, ring car, drum trig, glitch trig | Where the mic wire is soldered       |
 
 </details>
 

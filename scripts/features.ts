@@ -38,8 +38,9 @@ const BLURBS: Record<string, string> = {
     'Two oscillators on one starving supply. B drags A’s frequency around, the output current drains the rail, the rail drags pitch and amplitude, and the stall-and-recover cycle motorboats on its own.',
   'Noise & crackle':
     'Hiss with a colour control, and sparse crackle with a rate of its own.',
-  'Mic & sample':
-    'A live microphone and a loaded sample. *Mic patch* is the interesting one — the mic does not have to go to the mix, it can go onto the chip’s supply rail, into the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier, or a trigger line.',
+  Sampler:
+    'A loaded audio file, looping through the chain — or, with *Struck by* on a voice and *Ending* on one-shot, a seventh drum voice playing whatever you dropped.',
+  Mic: 'A live microphone, and the one source that does not have to reach the mix. *Mic patch* is the whole of it: the wire can go onto the chip’s supply rail instead, or into the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier, or a trigger line — so a shout browns the toy out, or fires the kit, rather than simply being loud.',
   'Slot order':
     'Which bend sits in which position, and therefore what order they run in. Fewer slots than bends, so one always sits out.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',

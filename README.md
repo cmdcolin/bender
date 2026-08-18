@@ -31,13 +31,26 @@ under it — the slot rack, the bends off the board, a bay or contact pad with
 nothing wired to it — so every control is one click from the map, on the path or
 on the shelf.
 
-The six sources ride one rack at the head of the path rather than six boxes of
-their own, and inside it the two toys are framed with a lamp and the other four
-are lines: everything on the left of the screen — the keys, the pattern grid,
-both run switches — lands on the keyboard or the drum machine, so the map says
-which one. Each channel carries a meter reading how far its own fader is up, and
-the lamp lights while that toy is running, which is the map saying that what you
-are hearing starts here.
+The sources sit across the head of the path as boxes of their own, in two rows,
+because what feeds what is the thing worth drawing. The top row is framed: the
+toy keyboard, the FM chip and the drum machine are three dies on one piece of
+hardware, sharing one supply rail — so **Starve**, a knob on the keyboard's
+panel, dives the FM chip's pitch and drags the kit's tempo with it. The FM chip
+sits next to the keyboard because it has no keyboard and no sequencer of its
+own: its key input is soldered onto the toy's gate line, drawn as the short
+solid wire between them, so it plays whatever strikes a note over there. A
+trigger bridge you patch yourself runs under the row instead, dashed and in the
+patch colour, so solder and cable never look alike.
+
+The bottom row is the three that start where they stand — chaos oscillator,
+noise and the sampler — and both rows drop onto one bar into the mix. The mic is
+not on either row: it is a wire, drawn onto whichever of the seven places **Mic
+patch** solders it to, which is the mix bus on one setting and the middle of
+something else on the other six.
+
+Each box carries a meter reading how far its own fader is up, and the two with a
+run switch carry a lamp that lights while they are running, which is the map
+saying that what you are hearing starts here.
 
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —
