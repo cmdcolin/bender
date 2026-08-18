@@ -1,8 +1,8 @@
 // The kit's half of the wire. A pad is a switch: it has no position to catch up
 // with and no ring to light, so none of the knob side's soft-takeover machinery
 // reaches over here. What is left is which pad plays which voice, how hard a hit
-// lands, and the two ways a pad gets bound — General MIDI for free, or a sweep
-// down the kit.
+// lands, and the three ways a pad gets bound — General MIDI for free, a sweep
+// down the kit, or one voice armed on its own.
 
 import { ACCENT_GAIN, DRUM_VOICES, voiceBit, type DrumVoiceKey } from '../drums'
 import { engine } from '../engine/engine'
@@ -93,6 +93,8 @@ export class PadKit {
   readonly on = createStore(read(PADS_KEY) !== '0')
   readonly bindings = createStore<PadMap>(parsePads(read(PAD_MAP_KEY)))
   readonly learn = createStore<PadLearnState | null>(null)
+  /** The one voice waiting for a pad, when a sweep would be too much. */
+  readonly armed = createStore<DrumVoiceKey | null>(null)
 
   private voiceByPad = new Map<string, number>()
   private sweep: {
@@ -108,16 +110,24 @@ export class PadKit {
   setOn(on: boolean) {
     this.on.set(on)
     write(PADS_KEY, on ? '1' : '0')
-    if (!on) this.stopLearn()
+    if (!on) this.cancel()
   }
 
   /** Hit a pad for each voice, down the kit. Any layout on any channel: a pad
       bank that isn't on channel 10, or isn't General MIDI, is exactly what this
       is for. Replaces whatever was learned before. */
   learnAll() {
+    this.armed.set(null)
     this.sweep = { keys: VOICE_KEYS, index: 0, seen: new Set() }
     this.persist({})
     this.report()
+  }
+
+  /** Wait for a pad for one voice, keeping every other pad where it is. A sweep
+      is six gestures to fix one wrong pad; this is the one gesture. */
+  arm(key: DrumVoiceKey | null) {
+    this.stopLearn()
+    this.armed.set(key)
   }
 
   stopLearn() {
@@ -125,6 +135,12 @@ export class PadKit {
       this.sweep = null
       this.learn.set(null)
     }
+  }
+
+  /** Stop waiting on the controller, whichever way it was being waited on. */
+  cancel() {
+    this.stopLearn()
+    this.armed.set(null)
   }
 
   clear(key: DrumVoiceKey) {
@@ -145,10 +161,10 @@ export class PadKit {
     return channel === GM_CHANNEL ? gmVoice(note) : null
   }
 
-  /** Waiting on a pad. A pad you are pointing at is not a pad you played, so
-      the readout must not name a voice while this holds. */
+  /** Waiting on a pad, either way. A pad you are pointing at is not a pad you
+      played, so the readout must not name a voice while this holds. */
   get binding(): boolean {
-    return this.sweep !== null
+    return this.sweep !== null || this.armed.get() !== null
   }
 
   /** A note message off the wire. True once the kit has dealt with it — struck a
@@ -168,6 +184,14 @@ export class PadKit {
       sweep.index += 1
       if (sweep.index >= sweep.keys.length) this.sweep = null
       this.report()
+      return true
+    }
+    const armed = this.armed.get()
+    if (armed !== null) {
+      if (on) {
+        this.bind(armed, { channel, note })
+        this.armed.set(null)
+      }
       return true
     }
     const voice = this.voiceFor(channel, note)

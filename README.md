@@ -715,11 +715,13 @@ onto bender's six voices, with the sticks going to the tom, the metal to the
 hat, and the wood and the cowbells to the bell. A pad bank that sends somewhere
 else — its own channel, its own notes — is what `learn pads` is for: hit a pad
 for each voice down the kit, and what you hit wins over the standard map
-wherever the two meet. A pad strikes the same trigger line the sequencer does,
-so it fires with the pattern stopped, and its velocity plays between the kit's
-own two weights: middling is a plain step, hardest is an accented one, and below
-that is a ghost note the grid has no way of asking for. Nothing is held — a drum
-has no release — so the note off a pad sends on the way up is dropped.
+wherever the two meet. One voice that came out on the wrong pad is not worth
+six: press ⚟ on its row instead, hit the pad you meant, and the other five stay
+where they are. A pad strikes the same trigger line the sequencer does, so it
+fires with the pattern stopped, and its velocity plays between the kit's own two
+weights: middling is a plain step, hardest is an accented one, and below that is
+a ghost note the grid has no way of asking for. Nothing is held — a drum has no
+release — so the note off a pad sends on the way up is dropped.
 
 Clock is the other half: the drum machine can follow the tick on the wire, and
 it does it by writing the tempo control, so the slider moves with the room

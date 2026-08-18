@@ -70,14 +70,16 @@ function Bindings() {
   )
 }
 
-// The pads, which are bound by hitting them rather than by arming a control:
-// there is nothing on the kit to press ⚟ on, and a pad bank is one gesture from
-// end to end anyway. Nothing listed here is the ordinary case — channel 10 is
-// General MIDI's drum channel and needs no binding at all.
+// The pads. They bind by being hit rather than by arming a control, so every
+// voice is listed whether it has a pad or not: the ⚟ on a row waits for one pad
+// and leaves the other five alone, which is what a single wrong hat pad wants.
+// Nothing learned at all is the ordinary case — channel 10 is General MIDI's
+// drum channel and reaches the kit with nothing set up.
 function Pads() {
   const pads = useStoreValue(midi.pads)
   const bound = useStoreValue(midi.padBindings)
   const learn = useStoreValue(midi.padLearn)
+  const armed = useStoreValue(midi.armedPad)
   const learned = VOICE_KEYS.filter(k => bound[k] !== undefined)
   if (!pads) return null
   return (
@@ -87,7 +89,7 @@ function Pads() {
           <button
             className={styles.btn}
             onClick={() => midi.learnPads()}
-            title="hit a pad for each of the kit's six voices in turn. For a pad bank that isn't on channel 10, or isn't General MIDI — the ones that are need none of this"
+            title="hit a pad for each of the kit's six voices in turn. For a pad bank that isn't on channel 10, or isn't General MIDI — the ones that are need none of this. Replaces every pad you have; the ⚟ on a row moves one"
           >
             learn pads
           </button>
@@ -102,36 +104,51 @@ function Pads() {
           </span>
         ) : null}
       </div>
+      <div className={styles.list}>
+        {VOICE_KEYS.map(key => {
+          const p = bound[key]
+          const mine = armed === key
+          return (
+            <div key={key} className={styles.bound}>
+              <span className={mine ? styles.strandedName : styles.boundName}>
+                {voiceLabel(key)}
+              </span>
+              <button
+                className={mine ? styles.modeOn : styles.mode}
+                onClick={() => midi.armPad(mine ? null : key)}
+                aria-label={`bind the ${voiceLabel(key)} to a pad`}
+                title={
+                  mine
+                    ? `hit the pad you want the ${voiceLabel(key)} on — esc to cancel`
+                    : `put the ${voiceLabel(key)} on one pad, leaving the other five where they are`
+                }
+              >
+                ⚟
+              </button>
+              <span className={p === undefined ? styles.quiet : styles.cc}>
+                {p === undefined
+                  ? `GM ch${GM_CHANNEL + 1}`
+                  : `${noteName(p.note)}${p.channel === 0 ? '' : ` ch${p.channel + 1}`}`}
+              </span>
+              {p === undefined ? null : (
+                <button
+                  className={styles.drop}
+                  onClick={() => midi.clearPad(key)}
+                  aria-label={`unbind the ${voiceLabel(key)} pad`}
+                  title={`take the ${voiceLabel(key)} off its pad`}
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
       {learned.length === 0 ? null : (
-        <>
-          <div className={styles.list}>
-            {learned.map(key => {
-              const p = bound[key]
-              if (p === undefined) return null
-              return (
-                <div key={key} className={styles.bound}>
-                  <span className={styles.boundName}>{voiceLabel(key)}</span>
-                  <span className={styles.cc}>
-                    {noteName(p.note)}
-                    {p.channel === 0 ? '' : ` ch${p.channel + 1}`}
-                  </span>
-                  <button
-                    className={styles.drop}
-                    onClick={() => midi.clearPad(key)}
-                    aria-label={`unbind the ${voiceLabel(key)} pad`}
-                    title={`take the ${voiceLabel(key)} off its pad`}
-                  >
-                    ×
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-          <button className={styles.danger} onClick={() => midi.clearPads()}>
-            clear {learned.length} pad{learned.length === 1 ? '' : 's'} — back
-            to General MIDI
-          </button>
-        </>
+        <button className={styles.danger} onClick={() => midi.clearPads()}>
+          clear {learned.length} pad{learned.length === 1 ? '' : 's'} — back to
+          General MIDI
+        </button>
       )}
     </>
   )
@@ -209,6 +226,7 @@ function Wired() {
   const notes = useStoreValue(midi.notes)
   const pads = useStoreValue(midi.pads)
   const padLearn = useStoreValue(midi.padLearn)
+  const armedPad = useStoreValue(midi.armedPad)
   const clockLock = useStoreValue(midi.clockLock)
   const lights = useStoreValue(midi.lights)
   const stranded = Object.keys(useStoreValue(midi.pickups)).length
@@ -231,24 +249,26 @@ function Wired() {
   }, [])
 
   const hint =
-    padLearn !== null
-      ? `hit the pad for ${padLearn.next === null ? 'the kit' : voiceLabel(padLearn.next)} — ${padLearn.done}/${padLearn.total} bound, esc to stop`
-      : learn !== null
-        ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
-        : armed !== null
-          ? `move a knob to take ${label(armed)} — esc to cancel`
-          : // A preset or a roll strands every bound knob at once, and only the
-            // open stage shows its own amber marks — so the count belongs here,
-            // where every binding is listed whatever stage it lives on.
-            stranded > 0
-            ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
-            : 'press ⚟ on any control, then move a knob to bind it'
+    armedPad !== null
+      ? `hit a pad to take ${voiceLabel(armedPad)} — esc to cancel`
+      : padLearn !== null
+        ? `hit the pad for ${padLearn.next === null ? 'the kit' : voiceLabel(padLearn.next)} — ${padLearn.done}/${padLearn.total} bound, esc to stop`
+        : learn !== null
+          ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
+          : armed !== null
+            ? `move a knob to take ${label(armed)} — esc to cancel`
+            : // A preset or a roll strands every bound knob at once, and only
+              // the open stage shows its own amber marks — so the count belongs
+              // here, where every binding is listed whatever stage it lives on.
+              stranded > 0
+              ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
+              : 'press ⚟ on any control, then move a knob to bind it'
 
   return (
     <>
       <div
         className={
-          armed || learn || padLearn || stranded > 0
+          armed || learn || padLearn || armedPad || stranded > 0
             ? styles.waiting
             : styles.hint
         }

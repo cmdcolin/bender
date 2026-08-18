@@ -276,6 +276,8 @@ class Midi {
   readonly pads = this.kit.on
   readonly padBindings = this.kit.bindings
   readonly padLearn = this.kit.learn
+  /** The kit's own ⚟: one voice waiting for a pad. */
+  readonly armedPad = this.kit.armed
   /** Clock ticks set the drum machine's tempo. */
   readonly clockLock = createStore(read(CLOCK_KEY) === '1')
   /** Send each bound control's value back out, so a device with lit rings shows
@@ -377,7 +379,7 @@ class Midi {
 
   arm(key: ControlKey | null) {
     this.stopLearn()
-    this.kit.stopLearn()
+    this.kit.cancel()
     this.armed.set(key)
   }
 
@@ -392,15 +394,26 @@ class Midi {
   }
 
   /** Hit a pad for each of the kit's voices in turn — for a pad bank that isn't
-      on channel 10, or isn't General MIDI. Replaces whatever was learned. */
+      on channel 10, or isn't General MIDI. Replaces every pad you have. */
   learnPads() {
     this.armed.set(null)
     this.stopLearn()
     this.kit.learnAll()
   }
 
+  /** Wait for a pad for one voice and leave the other five alone: the kit's own
+      ⚟. A sweep is six gestures to put one wrong pad right, and this is the one
+      gesture — which is what you want, because the pad that came out wrong is
+      usually the one you leaned on twice. */
+  armPad(key: DrumVoiceKey | null) {
+    this.armed.set(null)
+    this.stopLearn()
+    this.kit.arm(key)
+  }
+
+  /** Stop waiting on the kit, whichever way it was being waited on. */
   stopPadLearn() {
-    this.kit.stopLearn()
+    this.kit.cancel()
   }
 
   clearPad(key: DrumVoiceKey) {

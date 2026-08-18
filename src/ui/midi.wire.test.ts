@@ -348,6 +348,52 @@ test('a pad drives one voice at a time', () => {
   expect(midi.padBindings.get().drumSnare).toEqual({ channel: 0, note: 62 })
 })
 
+// A sweep is all six voices or nothing, and a hat that came out on the wrong pad
+// is one voice. The ⚟ on a row is the one gesture that fixes it.
+test('one voice can take a pad without redoing the kit', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  midi.learnPads()
+  send(0x90, 60, 100) // kick
+  send(0x90, 61, 100) // snare
+  midi.stopPadLearn()
+
+  midi.armPad('drumSnare')
+  send(0x90, 70, 100)
+  expect(midi.armedPad.get()).toBeNull()
+  expect(midi.padBindings.get().drumSnare).toEqual({ channel: 0, note: 70 })
+  expect(midi.padBindings.get().drumKick).toEqual({ channel: 0, note: 60 })
+  // Binding is not playing, here as much as in a sweep.
+  expect(hit).not.toHaveBeenCalled()
+  send(0x90, 70, 100)
+  expect(hit).toHaveBeenCalledWith(2, padGain(100))
+  hit.mockRestore()
+})
+
+test('a voice taking a pad takes it off whatever had it', () => {
+  midi.learnPads()
+  send(0x90, 60, 100) // kick
+  send(0x90, 61, 100) // snare
+  midi.stopPadLearn()
+  midi.armPad('drumHat')
+  send(0x90, 60, 100) // the kick's own pad
+  expect(midi.padBindings.get().drumHat).toEqual({ channel: 0, note: 60 })
+  expect(midi.padBindings.get().drumKick).toBeUndefined()
+})
+
+// Every way of waiting is the board waiting on the controller, and two at once
+// would take one message two ways.
+test('a pad and a control cannot both be waiting', () => {
+  midi.arm('filtHz')
+  midi.armPad('drumHat')
+  expect(midi.armed.get()).toBeNull()
+  midi.arm('filtHz')
+  expect(midi.armedPad.get()).toBeNull()
+  midi.learnPads()
+  midi.armPad('drumHat')
+  expect(midi.padLearn.get()).toBeNull()
+  midi.armPad(null)
+})
+
 test('with pads off, a drum note is just a note', () => {
   const hit = vi.spyOn(engine, 'drumHit')
   const note = vi.spyOn(engine, 'noteOn')
