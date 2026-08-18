@@ -190,6 +190,7 @@ class BenderProcessor extends AudioWorkletProcessor {
         peak,
         scope,
         tick: this.built.toyDrum.tick,
+        hits: this.built.toyDrum.takeFired(),
         duck: this.duck,
         rail: rail.v,
         reboots: rail.rebootCount,

@@ -118,6 +118,20 @@ best part of a minute to repeat and never sounds like it is looping. The rows
 share one clock, so nothing drifts out of time; what drifts is which steps land
 together.
 
+A row's name is the voice: press it to hear that drum without waiting for the
+playhead to reach the step you have just written. Every hit lights the name it
+struck, whichever hand or wire struck it — the pattern's own steps, a pad on a
+controller, a shout into the mic soldered to the trigger line, a bridged trigger
+patch, the retrigger bend — and all but the first of those land on steps the
+playhead gives no warning of.
+
+**Tap in** is the other way a pattern gets written: arm it, and every pad hit or
+press of a row's name writes the step it lands on, rounded to the nearest, with
+each row taking its own column so a five-step hat lands where the hat actually
+is. It needs the kit running for there to be a step to land on, it is never on
+when you arrive, and every hit is one step in the undo walk — a hand that has
+just played the wrong drum wants that hit back and nothing else.
+
 ## The other chip
 
 The board has a second synthesiser on it, and it is not a divider. Two operators

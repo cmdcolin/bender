@@ -6,7 +6,7 @@ import { beforeEach, expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { sliderFor } from './controls'
-import { ACCENT_GAIN } from '../drums'
+import { ACCENT_GAIN, hasStep } from '../drums'
 import { ccToValue, midi, padGain, velocity } from './midi'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
@@ -358,6 +358,19 @@ test('with pads off, a drum note is just a note', () => {
   midi.setPads(true)
   hit.mockRestore()
   note.mockRestore()
+})
+
+// The other half of tap in: what a pad plays lands on the grid, so a pattern can
+// be played rather than drawn.
+test('an armed pad writes the step it lands on', () => {
+  engine.setDrumsPlaying(true)
+  engine.patch({ drumKick: 0, drumSwing: 0 })
+  engine.meter.set({ ...engine.meter.get(), tick: 6 })
+  engine.tapRecord.set(true)
+  send(0x99, 36, 100)
+  expect(hasStep(engine.controls.get().drumKick, 6)).toBe(true)
+  engine.tapRecord.set(false)
+  engine.setDrumsPlaying(false)
 })
 
 // The bytes cannot tell a pad from a key, and which of the two it was is the

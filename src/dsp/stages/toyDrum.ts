@@ -107,6 +107,11 @@ export class ToyDrum implements Stage {
   // reach into the middle of one.
   private struckBits = 0
   private struckGain = 0
+  // Voices that have fired since the panel last looked. Every hit stamps it —
+  // the sequencer's, the retrigger bend's, the mic's, a bridged trigger line's,
+  // a pad's — because the grid lights for whatever strikes the kit, and all but
+  // the first of those land on steps nobody can see coming.
+  private firedSince = 0
 
   constructor(
     private readonly sr: number,
@@ -189,6 +194,7 @@ export class ToyDrum implements Stage {
         this.phase[v] = 0
       }
     }
+    this.firedSince |= bits
     ctx.trig.drumFired(i, bits, gain)
   }
 
@@ -387,9 +393,19 @@ export class ToyDrum implements Stage {
     rail.reported = loadSum / io.n
   }
 
+  /** Voices that have fired since the last read, as the bit order of a step.
+      Reading takes them: the panel is drawing one report per frame and a hit it
+      has already lit is a hit that has been seen. */
+  takeFired(): number {
+    const bits = this.firedSince
+    this.firedSince = 0
+    return bits
+  }
+
   panic() {
     this.struckBits = 0
     this.struckGain = 0
+    this.firedSince = 0
     this.env.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)

@@ -1,9 +1,12 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../../controls'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { STEPS } from '../../drums'
+import { packParams } from '../../engine/params'
+import { buildBender } from '../build'
 import {
   bin,
   lowEnergy,
+  makeIo,
   render,
   renderBender,
   rms,
@@ -286,4 +289,24 @@ test('two pads inside one block fold into one hit of both voices', () => {
   // The hat is the bright one, so the pair carries what the kick alone does not.
   expect(bin(both, 6000)).toBeGreaterThan(bin(kick, 6000) * 4)
   expect(onsets(both).length).toBe(1)
+})
+
+// The grid lights off this report, so a hit that never reaches it is a row that
+// stays dark while the kit plays.
+test('the kit reports what fired, once each', () => {
+  const built = buildBender(SR)
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0,
+    drumLevel: 1,
+    drumKick: 0,
+    drumSnare: 0,
+    drumHat: 0,
+  })
+  const io = makeIo()
+  built.toyDrum.strike(1 | (1 << 2), 1)
+  built.chain.process(io, p)
+  expect(built.toyDrum.takeFired()).toBe(1 | (1 << 2))
+  // Reading takes them: a hit the panel has already lit is one it has seen.
+  expect(built.toyDrum.takeFired()).toBe(0)
 })

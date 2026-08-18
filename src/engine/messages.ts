@@ -59,6 +59,10 @@ export interface MeterMsg {
   /** Steps the drum sequencer has clocked, for the grid's playheads: each row
       is this modulo its own length. */
   tick: number
+  /** Voices the kit has fired since the last meter, as the bit order of a step.
+      The grid lights off this, so a hit from the mic, a bridged trigger line or
+      a pad shows on the row it struck rather than only in the air. */
+  hits: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number
   /** The toy supply, 0 at the floor and 1 at full cells — the number the pitch,

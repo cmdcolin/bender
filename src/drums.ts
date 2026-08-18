@@ -91,6 +91,12 @@ export const asMask = (v: number) =>
 /** A length is a whole number of steps, and a row of no steps is not a row. */
 export const asLen = (v: number) => Math.min(Math.max(Math.round(v), 1), STEPS)
 
+/** Which of a row's steps a hit played by hand lands on: the step the kit is
+    standing on, or the next one, because a hand aiming at a step arrives either
+    side of it. `phase` is how far through the current step the hit came. */
+export const quantizeStep = (tick: number, phase: number, len: number) =>
+  (((tick + (phase >= 0.5 ? 1 : 0)) % len) + len) % len
+
 export const stepBit = (step: number) => 1 << (STEPS - 1 - step)
 export const hasStep = (mask: number, step: number) =>
   (mask & stepBit(step)) !== 0

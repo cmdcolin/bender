@@ -46,16 +46,46 @@
   gap: 6px;
 }
 
+/* The name is the voice: it is a button on every row but the accent, and
+   pressing it strikes the kit. Styled as the label it was, because a row of
+   buttons across the grid would read as more controls than there are. */
 .name,
-.nameOn {
+.nameOn,
+.nameHit {
   font-size: var(--fs-xs);
   font-family: var(--mono);
   text-align: right;
   color: var(--fg4);
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .nameOn {
   color: var(--fg2);
+}
+
+/* Struck — by the sequencer, a pad, the mic, or a bridged trigger line. The
+   same colour a closed step lamp uses, because it is the same hit. */
+.nameHit {
+  color: var(--accent);
+}
+
+/* Armed to record what you play in. It sits with the ROM buttons because it is
+   the other way a pattern gets written. */
+.tap {
+  composes: rom;
+  margin-left: auto;
+}
+
+.tapOn {
+  composes: rom;
+  margin-left: auto;
+  color: var(--bg);
+  background: var(--accent2);
+  border-color: var(--accent2);
 }
 
 .cells {

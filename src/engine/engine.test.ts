@@ -1,5 +1,6 @@
 import { beforeEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { hasStep, quantizeStep, STEPS } from '../drums'
 import { edgeScore, Engine, mergeNotes } from './engine'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
@@ -199,4 +200,76 @@ test('the note report reads only as far as its count', () => {
   expect(mergeNotes(new Set(), buffer, 2)).toEqual(new Set([3, 7]))
   expect(mergeNotes(new Set([3, 7]), buffer, 2)).toEqual(new Set([3, 7]))
   expect(mergeNotes(new Set([3, 7]), buffer, 0)).toEqual(new Set())
+})
+
+// Playing a pattern in rather than drawing it. The kit's step counter arrives
+// with the meter, so a hit lands on whatever step the meter last reported —
+// which is what these drive by hand.
+const atStep = (engine: Engine, tick: number) =>
+  engine.meter.set({ ...engine.meter.get(), tick })
+
+test('a hit played in writes the step the kit is standing on', () => {
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.patch({ drumKick: 0, drumSwing: 0 })
+  atStep(engine, 4)
+
+  // Not armed: a hit is a sound and nothing else.
+  engine.drumHit(1)
+  expect(engine.controls.get().drumKick).toBe(0)
+
+  engine.tapRecord.set(true)
+  engine.drumHit(1)
+  expect(hasStep(engine.controls.get().drumKick, 4)).toBe(true)
+})
+
+test('a hit played in with the kit stopped is only a sound', () => {
+  const engine = new Engine()
+  engine.tapRecord.set(true)
+  engine.patch({ drumKick: 0 })
+  atStep(engine, 4)
+  engine.drumHit(1)
+  expect(engine.controls.get().drumKick).toBe(0)
+})
+
+// Each row carries its own length, so a five-step hat is somewhere else in the
+// bar than a sixteen-step kick — and a hit that landed on both has to go to
+// each row's own column.
+test('a hit lands on the column each row is on', () => {
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.tapRecord.set(true)
+  engine.patch({ drumKick: 0, drumHat: 0, drumHatLen: 5, drumSwing: 0 })
+  atStep(engine, 7)
+  engine.drumHit(1 | (1 << 2))
+  expect(hasStep(engine.controls.get().drumKick, 7)).toBe(true)
+  expect(hasStep(engine.controls.get().drumHat, 2)).toBe(true)
+})
+
+// One entry in the walk per hit: a hand that has just played the wrong pad
+// wants that hit back and nothing else — including when one hit named two
+// voices.
+test('a hit played in is one step in the walk', () => {
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.tapRecord.set(true)
+  engine.patch({ drumKick: 0, drumSnare: 0, drumSwing: 0 })
+  atStep(engine, 3)
+  const before = engine.history.get().past.length
+  engine.drumHit(1 | 2)
+  expect(engine.history.get().past.length).toBe(before + 1)
+  engine.undo(0)
+  expect(engine.controls.get().drumKick).toBe(0)
+  expect(engine.controls.get().drumSnare).toBe(0)
+})
+
+test('a hit lands on the nearer step, and never off the row', () => {
+  expect(quantizeStep(4, 0.1, STEPS)).toBe(4)
+  expect(quantizeStep(4, 0.9, STEPS)).toBe(5)
+  // Round up off the end of a row and it comes round, rather than landing on a
+  // bit the mask does not have.
+  expect(quantizeStep(15, 0.9, STEPS)).toBe(0)
+  expect(quantizeStep(4, 0.6, 5)).toBe(0)
+  // Before the kit has clocked at all there is no step to be on.
+  expect(quantizeStep(-1, 0.1, STEPS)).toBe(STEPS - 1)
 })

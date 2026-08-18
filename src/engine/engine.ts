@@ -12,6 +12,7 @@ import {
   stepForward,
   type History,
 } from '../history'
+import { asLen, asMask, DRUM_VOICES, quantizeStep, stepBit } from '../drums'
 import { createStore, type Store } from '../listeners'
 import { Glide } from './glide'
 import type { FromWorklet, ToWorklet } from './messages'
@@ -24,6 +25,8 @@ export interface Meter {
   peak: number
   scope: Float32Array
   tick: number
+  /** Voices the kit fired since the last meter, as the bit order of a step. */
+  hits: number
   duck: number
   rail: number
   reboots: number
@@ -84,10 +87,14 @@ export class Engine {
       peak: 0,
       scope: new Float32Array(512),
       tick: 0,
+      hits: 0,
       duck: 0,
       rail: 1,
       reboots: 0,
     })
+  /** A hit played by hand writes the step it lands on. Off by default and never
+      remembered: a machine that is recording you is a machine you asked to. */
+  readonly tapRecord = createStore(false)
   readonly running = createStore(false)
   readonly micOn = createStore(false)
   // The two run lines, separately. The drum machine is its own box: it runs
@@ -128,7 +135,23 @@ export class Engine {
   private dirty = false
   private rafQueued = false
   private huntToken = 0
+  // The last step the kit reported and when it landed here, which is the clock a
+  // hit played by hand is quantized against. Read off the meter rather than off
+  // the message it arrives in, so there is one place the panel and the quantizer
+  // both agree the kit is standing.
+  private lastTick = -1
+  private tickAt = 0
+
   private driftTimer: ReturnType<typeof setInterval> | undefined
+
+  constructor() {
+    this.meter.subscribe(() => {
+      const tick = this.meter.get().tick
+      if (tick === this.lastTick) return
+      this.lastTick = tick
+      this.tickAt = performance.now()
+    })
+  }
 
   async start() {
     this.booting ??= this.boot()
@@ -176,6 +199,7 @@ export class Engine {
           peak: msg.peak,
           scope: msg.scope,
           tick: msg.tick,
+          hits: msg.hits,
           duck: msg.duck,
           rail: msg.rail,
           reboots: msg.reboots,
@@ -578,12 +602,44 @@ export class Engine {
     this.hold(semitone, false)
   }
 
-  // A hit on the kit that no step named: a pad on a controller, played by hand.
-  // Neither sequencer need be running — the kit answers a finger the way it
-  // answers the mic — but the kit does have to be turned up, because Level is
-  // the switch that decides the box is there at all.
+  // A hit on the kit that no step named: a pad on a controller, or the row's own
+  // name on the grid, played by hand. Neither sequencer need be running — the
+  // kit answers a finger the way it answers the mic — but the kit does have to
+  // be turned up, because Level is the switch that decides the box is there at
+  // all.
   drumHit(bits: number, gain = 1) {
-    if (bits !== 0) this.post({ kind: 'drumHit', bits, gain })
+    if (bits === 0) return
+    this.post({ kind: 'drumHit', bits, gain })
+    if (this.tapRecord.get() && this.drumsPlaying.get()) this.writeHit(bits)
+  }
+
+  // How far through the current step the hit arrived, which is what decides
+  // whether it belongs to this step or the next. The tick is a step counter and
+  // arrives with the meter, so the clock here is how long that tick has been
+  // standing — and swing is in it, because a held-back offbeat is a longer step
+  // and half of it is somewhere else.
+  private stepPhase(): number {
+    const c = this.controls.get()
+    const swing = Math.min(Math.max(c.drumSwing, 0), 0.9)
+    const span = this.lastTick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
+    const stepMs = (60000 / Math.max(c.drumBpm, 1) / 4) * span
+    return Math.min(1, (performance.now() - this.tickAt) / stepMs)
+  }
+
+  // A hit played by hand, written onto the grid. Each row takes its own column,
+  // because each carries its own length — a five-step hat is somewhere else in
+  // the bar than the kick is. One entry in the walk per hit: a hand that has
+  // just played the wrong pad wants that hit back and nothing else.
+  private writeHit(bits: number) {
+    const controls = this.controls.get()
+    const phase = this.stepPhase()
+    this.armStep()
+    for (const [v, voice] of DRUM_VOICES.entries()) {
+      if ((bits & (1 << v)) === 0) continue
+      const len = asLen(controls[voice.len])
+      const step = quantizeStep(this.lastTick, phase, len)
+      this.set(voice.key, asMask(controls[voice.key]) | stepBit(step))
+    }
   }
 
   // Striking a note that is already down is no news to anything watching, so

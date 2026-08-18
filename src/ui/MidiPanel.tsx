@@ -110,29 +110,35 @@ function Pads() {
         ) : null}
       </div>
       {learned.length === 0 ? null : (
-        <div className={styles.list}>
-          {learned.map(key => {
-            const p = bound[key]
-            if (p === undefined) return null
-            return (
-              <div key={key} className={styles.bound}>
-                <span className={styles.boundName}>{voiceLabel(key)}</span>
-                <span className={styles.cc}>
-                  {noteName(p.note)}
-                  {p.channel === 0 ? '' : ` ch${p.channel + 1}`}
-                </span>
-                <button
-                  className={styles.drop}
-                  onClick={() => midi.clearPad(key)}
-                  aria-label={`unbind the ${voiceLabel(key)} pad`}
-                  title={`take the ${voiceLabel(key)} off its pad`}
-                >
-                  ×
-                </button>
-              </div>
-            )
-          })}
-        </div>
+        <>
+          <div className={styles.list}>
+            {learned.map(key => {
+              const p = bound[key]
+              if (p === undefined) return null
+              return (
+                <div key={key} className={styles.bound}>
+                  <span className={styles.boundName}>{voiceLabel(key)}</span>
+                  <span className={styles.cc}>
+                    {noteName(p.note)}
+                    {p.channel === 0 ? '' : ` ch${p.channel + 1}`}
+                  </span>
+                  <button
+                    className={styles.drop}
+                    onClick={() => midi.clearPad(key)}
+                    aria-label={`unbind the ${voiceLabel(key)} pad`}
+                    title={`take the ${voiceLabel(key)} off its pad`}
+                  >
+                    ×
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+          <button className={styles.danger} onClick={() => midi.clearPads()}>
+            clear {learned.length} pad{learned.length === 1 ? '' : 's'} — back
+            to General MIDI
+          </button>
+        </>
       )}
     </>
   )
