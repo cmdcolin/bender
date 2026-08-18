@@ -21,6 +21,8 @@ import { GROUPS } from '../src/ui/controls'
 import type { Group, SliderDef } from '../src/ui/controls/types'
 import { STAGE_ORDER } from '../src/ui/controls/types'
 import { PRESETS } from '../src/ui/presets/table'
+import { boardHash } from '../src/ui/share'
+import { DEFAULT_CONTROLS } from '../src/controls'
 import { ROMS } from '../src/dsp/stages/roms'
 import { DRUM_VOICES } from '../src/drums'
 import pkg from '../package.json' with { type: 'json' }
@@ -95,6 +97,13 @@ const SCRIPTS: Record<string, string> = {
   min: 'release: minor',
   maj: 'release: major',
 }
+
+const LIVE = 'https://cmdcolin.github.io/bender/'
+
+// A preset as a link, written by the same function the address bar is written
+// with — so what the doc hands somebody is a board, not a screenshot of one.
+const presetUrl = (patch: Partial<typeof DEFAULT_CONTROLS>) =>
+  `${LIVE}#${boardHash('', { ...DEFAULT_CONTROLS, ...patch })}`
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -193,6 +202,13 @@ function rows(sliders: SliderDef[]): string[] {
   })
 }
 
+// The blurbs are the part worth reading straight through; the tables are the
+// part you go looking for. Folded, a stage is a screen of prose with its
+// inventory one click under it — and prettier still formats a table in here,
+// because the blank lines keep it a markdown block of its own.
+const fold = (summary: string, body: string) =>
+  `<details>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
+
 function groupSection(g: Group): string {
   const blurb = BLURBS[g.name]
   if (!blurb) {
@@ -201,7 +217,10 @@ function groupSection(g: Group): string {
     )
   }
   const table = rows(g.sliders).join('\n')
-  return `### ${g.name}\n\n${blurb}\n\n| control | range | what it does |\n| --- | --- | --- |\n${table}\n`
+  return `### ${g.name}\n\n${blurb}\n\n${fold(
+    `${g.sliders.length} control${g.sliders.length === 1 ? '' : 's'}`,
+    `| control | range | what it does |\n| --- | --- | --- |\n${table}`,
+  )}\n`
 }
 
 // Formatted here rather than left for `pnpm format`, so the committed file is
@@ -232,7 +251,7 @@ ruin. ${sliders.length} controls in ${GROUPS.length} groups, ${num(BENDS.length)
 ${ROMS.length} ROM tunes and ${PRESETS.length} presets — and everything below comes off the control
 tables themselves, so the list cannot drift from the instrument.
 
-Try it: **https://cmdcolin.github.io/bender/**
+Try it: **${LIVE}**
 
 ## The tour
 
@@ -282,7 +301,6 @@ exists and what it is called.
 
   out.push(`## Around the instrument
 
-- **Presets** — ${PRESETS.map(p => `*${p.name}*`).join(', ')}.
 - **Roll** randomises the board with a bias toward leaving something audible;
   controls marked \`shy\` come on rarely and low, so a roll does not bury the
   board under one effect.
@@ -294,6 +312,13 @@ exists and what it is called.
 - **Record to wav**, straight off the output.
 - **A live signal-path map** that greys out whatever is not in the path.
 - **Scope, meters and a rail lamp**, all fed by the meter message.
+
+### Presets
+
+${PRESETS.length} boards worth keeping. Every name is a link that opens the app with
+that board on it — a link never presses play, so it is loaded and waiting.
+
+${PRESETS.map(p => `- [**${p.name}**](${presetUrl(p.patch)}) — ${p.blurb}`).join('\n')}
 
 ### Kit voices
 
@@ -313,7 +338,12 @@ ${DRUM_VOICES.map(v => `- **${v.label}** — ${v.help}`).join('\n')}
       return `| \`pnpm ${name}\` | ${what} |`
     })
     .join('\n')
-  out.push(`| command | what it does |\n| --- | --- |\n${scriptRows}\n`)
+  out.push(
+    `${fold(
+      `${Object.keys(pkg.scripts).length} commands`,
+      `| command | what it does |\n| --- | --- |\n${scriptRows}`,
+    )}\n`,
+  )
 
   out.push(`What the performance numbers mean, and which of them are
 trustworthy, is [optimizations.md](optimizations.md). How a block gets rendered

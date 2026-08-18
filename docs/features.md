@@ -53,6 +53,9 @@ counter, its bias and its gate are each a place you can solder a pot onto —
 _Bend spot_ picks which, _Bend pot_ is how far. Everything from _Starve_ down is
 the supply underneath it.
 
+<details>
+<summary>20 controls</summary>
+
 | control         | range                                                                                                                                                                        | what it does                                                                                                       |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Level           | off to full                                                                                                                                                                  | How loud the toy keyboard chip is in the source mix                                                                |
@@ -76,6 +79,8 @@ the supply underneath it.
 | Crystal drift   | off to full                                                                                                                                                                  | How far the chip’s clock wanders off the ratio you set it to                                                       |
 | Latch-up        | off to full                                                                                                                                                                  | How often a brownout jams the chip instead of rebooting it                                                         |
 
+</details>
+
 ### Toy drums
 
 A step grid with a length per row, so a five-step hat runs against a
@@ -85,6 +90,9 @@ envelope, so a hit you can hear opens a voice nothing struck. _Address line_ and
 _Data line_ put a knife through the wires between the step counter and the
 pattern memory: the counter goes on counting and the grid goes on chasing it,
 and the machine plays somebody else’s pattern.
+
+<details>
+<summary>18 controls</summary>
 
 | control       | range                                                   | what it does                                                                                                          |
 | ------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -107,6 +115,8 @@ and the machine plays somebody else’s pattern.
 | Data fault    | cut, to ground, to +V, bridged                          | The same four, on the side carrying the word                                                                          |
 | Cut depth     | off to full                                             | How far through the trace the knife went — the cut fault is the only one that reads it                                |
 
+</details>
+
 ### FM chip
 
 The other synthesiser on the board: two operators a voice, four voices, on the
@@ -123,6 +133,9 @@ leaves nothing behind. _Effect_ is the ROM’s other job: a bird, surf, wind, a
 siren or crickets, each of them a program in the processor spraying register
 writes rather than a sample, which makes it the busiest thing the bus ever
 carries.
+
+<details>
+<summary>18 controls</summary>
 
 | control       | range                                                                                                                           | what it does                                                                                                                |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -145,11 +158,16 @@ carries.
 | Wave line     | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                                                                     | Which of the ten wires addressing the sine table the knife found                                                            |
 | Wave fault    | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the wave ROM’s address                                                                             |
 
+</details>
+
 ### Chaos osc
 
 Two oscillators on one starving supply. B drags A’s frequency around, the output
 current drains the rail, the rail drags pitch and amplitude, and the
 stall-and-recover cycle motorboats on its own.
+
+<details>
+<summary>6 controls</summary>
 
 | control   | range              | what it does                                      |
 | --------- | ------------------ | ------------------------------------------------- |
@@ -160,9 +178,14 @@ stall-and-recover cycle motorboats on its own.
 | Shape     | square, saw, pulse | Waveform of both oscillators                      |
 | Starve    | off to full        | Sags the oscillator supply                        |
 
+</details>
+
 ### Noise & crackle
 
 Hiss with a colour control, and sparse crackle with a rate of its own.
+
+<details>
+<summary>4 controls</summary>
 
 | control      | range                | what it does                                                            |
 | ------------ | -------------------- | ----------------------------------------------------------------------- |
@@ -171,12 +194,17 @@ Hiss with a colour control, and sparse crackle with a rate of its own.
 | Crackle      | off to full          | Dirty-pot contact crackle: random spikes rung through a resonant filter |
 | Crackle rate | 0 to 2000 per second | How often the contact sparks                                            |
 
+</details>
+
 ### Mic & sample
 
 A live microphone and a loaded sample. _Mic patch_ is the interesting one — the
 mic does not have to go to the mix, it can go onto the chip’s supply rail, into
 the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier,
 or a trigger line.
+
+<details>
+<summary>6 controls</summary>
 
 | control   | range                                                              | what it does                                                                          |
 | --------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
@@ -186,6 +214,8 @@ or a trigger line.
 | Speed     | −4× to +4×                                                         | Playback speed                                                                        |
 | Struck by | off, kick, snare, hat, clap, tom, bell, any hit, key, mic          | Which trigger line drops the needle back at the top of the file                       |
 | Ending    | loop or one-shot                                                   | What happens at the end of the file: round again, or stop there and wait to be struck |
+
+</details>
 
 ## Bends
 
@@ -198,13 +228,21 @@ out of the path rather than merely silencing it.
 Which bend sits in which position, and therefore what order they run in. Fewer
 slots than bends, so one always sits out.
 
+<details>
+<summary>6 controls</summary>
+
 | control  | range                                           | what it does                     |
 | -------- | ----------------------------------------------- | -------------------------------- |
 | Slot 1–6 | —, ring, crush, dist, comb, glitch, filt, shift | Which bend runs in this position |
 
+</details>
+
 ### Ring mod
 
 Amplitude modulation by a carrier, sine or square.
+
+<details>
+<summary>3 controls</summary>
 
 | control       | range           | what it does                                                    |
 | ------------- | --------------- | --------------------------------------------------------------- |
@@ -212,10 +250,15 @@ Amplitude modulation by a carrier, sine or square.
 | Carrier shape | sine or square  | Square carrier chops instead of gliding — harsh AM-radio ghosts |
 | Mix           | off to full     | Dry/wet                                                         |
 
+</details>
+
 ### Crusher
 
 Bit depth and sample rate, both down far enough to fall apart, with jitter on
 the rate.
+
+<details>
+<summary>4 controls</summary>
 
 | control | range            | what it does                   |
 | ------- | ---------------- | ------------------------------ |
@@ -224,9 +267,14 @@ the rate.
 | Jitter  | off to full      | Re-rolls each hold length      |
 | Mix     | off to full      | Dry/wet                        |
 
+</details>
+
 ### Shaper
 
 A rack of clipping circuits, with bias, a tone control and a sub octave.
+
+<details>
+<summary>6 controls</summary>
 
 | control    | range                        | what it does                                                                                                                    |
 | ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
@@ -237,9 +285,14 @@ A rack of clipping circuits, with bias, a tone control and a sub octave.
 | Sub octave | off to full                  | A flip-flop divider mixed in before the shaping — an octave down, and it mistracks on complex input like the vintage pedals did |
 | Mix        | off to full                  | Dry/wet                                                                                                                         |
 
+</details>
+
 ### Comb
 
 A tuned delay with feedback past unity — a pitch you can drive into oscillation.
+
+<details>
+<summary>4 controls</summary>
 
 | control  | range            | what it does                                                                         |
 | -------- | ---------------- | ------------------------------------------------------------------------------------ |
@@ -248,10 +301,15 @@ A tuned delay with feedback past unity — a pitch you can drive into oscillatio
 | Damping  | 500 Hz to 15 kHz | In-loop low-pass                                                                     |
 | Mix      | off to full      | Dry/wet                                                                              |
 
+</details>
+
 ### Screech filter
 
 Resonant filter with drive, taken past self-oscillation so it screams on its
 own.
+
+<details>
+<summary>5 controls</summary>
 
 | control   | range           | what it does                                                                  |
 | --------- | --------------- | ----------------------------------------------------------------------------- |
@@ -261,10 +319,15 @@ own.
 | Drive     | 0 to 36 dB      | Gain into the filter — overdriving the input fights the resonance             |
 | Mix       | off to full     | Dry/wet                                                                       |
 
+</details>
+
 ### Glitch buffer
 
 Catches slices and repeats them, sometimes reversed, sometimes transposed,
 sometimes held.
+
+<details>
+<summary>7 controls</summary>
 
 | control | range                | what it does                                                          |
 | ------- | -------------------- | --------------------------------------------------------------------- |
@@ -276,11 +339,16 @@ sometimes held.
 | Freeze  | off or hold          | Holds the current slice forever — the CD stuck on a note              |
 | Mix     | off to full          | Dry/wet                                                               |
 
+</details>
+
 ### Freq shifter
 
 Bode-style: every partial moves by the same number of Hz rather than the same
 ratio, so harmonic input comes out inharmonic. With feedback each lap shifts
 again and partials climb forever.
+
+<details>
+<summary>4 controls</summary>
 
 | control   | range           | what it does                                                                                              |
 | --------- | --------------- | --------------------------------------------------------------------------------------------------------- |
@@ -288,6 +356,8 @@ again and partials climb forever.
 | Direction | up or down      | Which sideband survives                                                                                   |
 | Feedback  | 0 to 1.1        | Each lap shifts again, so partials climb (or fall) forever — the barber pole                              |
 | Mix       | off to full     | Dry/wet                                                                                                   |
+
+</details>
 
 ## Pedals
 
@@ -300,6 +370,9 @@ a scooped tone stack; _germanium_ is the lopsided one whose bias rides down on
 the signal; _octave_ rectifies into a ringing transformer; _gate_ is misbiased
 to the edge of cutoff.
 
+<details>
+<summary>7 controls</summary>
+
 | control | range                                        | what it does                                                                                      |
 | ------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Circuit | screamer, rat, muff, germanium, octave, gate | Which dirt box is on the board                                                                    |
@@ -310,11 +383,16 @@ to the edge of cutoff.
 | Level   | −24 to +12 dB                                | Makeup gain out of the pedal                                                                      |
 | Mix     | off to full                                  | Dry/wet — at zero the pedal is off the board                                                      |
 
+</details>
+
 ### Tape delay
 
 The capstan is a real motor: it has weight, it answers the brake slowly, and
 _Supply drag_ wires it to the same dying rail as the toy, so the repeats dive in
 pitch as the board browns out.
+
+<details>
+<summary>9 controls</summary>
 
 | control     | range            | what it does                                                                              |
 | ----------- | ---------------- | ----------------------------------------------------------------------------------------- |
@@ -328,10 +406,15 @@ pitch as the board browns out.
 | Supply drag | off to full      | Wires the motor to the same dying supply as the toy                                       |
 | Return      | off to full      | How loud the echo comes back                                                              |
 
+</details>
+
 ### Spring verb
 
 Dispersive allpass cascade into short parallel combs — metallic, boingy,
 deliberately cheap.
+
+<details>
+<summary>5 controls</summary>
 
 | control | range            | what it does                                         |
 | ------- | ---------------- | ---------------------------------------------------- |
@@ -341,12 +424,17 @@ deliberately cheap.
 | Return  | off to full      | How loud the tank comes back                         |
 | Dry cut | off to full      | How much of the dry the tank swallows                |
 
+</details>
+
 ## Patch
 
 ### Patch bay
 
 Wires, each from a source to a destination at a signed depth. A wire can also
 land on another wire’s depth, which is how the bay modulates itself.
+
+<details>
+<summary>14 controls</summary>
 
 | control        | range                                                                                                                                                                                                                                             | what it does                                                                   |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -356,10 +444,15 @@ land on another wire’s depth, which is how the bay modulates itself.
 | Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth | Where the other end is soldered                                                |
 | Wire 1–4 depth | −1 to +1                                                                                                                                                                                                                                          | How hard the wire pushes                                                       |
 
+</details>
+
 ### Trigger patch
 
 The two boxes’ trigger lines, bridged. The kit can play the keys and the keys
 can play the kit.
+
+<details>
+<summary>3 controls</summary>
 
 | control        | range                                                       | what it does                                                                                  |
 | -------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -367,14 +460,21 @@ can play the kit.
 | and plays      | the note, the next step, any step, the chord                | What the hit strikes                                                                          |
 | Keys fire kit  | off, kick, snare, hat, clap, tom, bell, whole kit, the step | The wire back                                                                                 |
 
+</details>
+
 ### Body contact
 
 Two axes, for the hand on the circuit.
+
+<details>
+<summary>2 controls</summary>
 
 | control   | range       | what it does                                                                      |
 | --------- | ----------- | --------------------------------------------------------------------------------- |
 | Contact X | off to full | Left–right position on the contact pad                                            |
 | Contact Y | off to full | Top–bottom position on the contact pad — how hard you are leaning on the contacts |
+
+</details>
 
 ## Feedback
 
@@ -384,12 +484,17 @@ The output fed back in, at a loop time short enough for kHz mixer squeal — the
 block-rate global loop is far too slow for that. _Patched into_ decides where
 the return lands.
 
+<details>
+<summary>4 controls</summary>
+
 | control      | range                         | what it does                                                                   |
 | ------------ | ----------------------------- | ------------------------------------------------------------------------------ |
 | Amount       | 0 to 1.5                      | Output patched back into the source mix                                        |
 | Loop time    | 0.05 to 500 ms                | The loop’s own comb delay                                                      |
 | Tilt         | −1 to +1                      | Darkens or brightens the loop — decides which register the squeal settles into |
 | Patched into | mix, osc FM, chip rail, delay | Where the return wire is soldered                                              |
+
+</details>
 
 ## Tape
 
@@ -398,6 +503,9 @@ the return lands.
 The whole instrument printed to tape, after everything else. Speed moves gap
 loss, head bump, hiss, wow rate and print-through together, because on a real
 machine they are one thing.
+
+<details>
+<summary>10 controls</summary>
 
 | control       | range                  | what it does                                                                                          |
 | ------------- | ---------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -412,11 +520,16 @@ machine they are one thing.
 | Print-through | off to full            | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
 | Azimuth       | off to full            | Head misalignment: the right channel lags and loses top end                                           |
 
+</details>
+
 ## Master
 
 ### Brownout
 
 The mains supply failing: sag, dropouts, crackle and hum.
+
+<details>
+<summary>5 controls</summary>
 
 | control    | range          | what it does                                                                                                          |
 | ---------- | -------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -426,13 +539,20 @@ The mains supply failing: sag, dropouts, crackle and hum.
 | Ground hum | off to full    | A ground loop: mains fundamental plus rectifier buzz, louder as the supply strains, with the ripple wobbling the rail |
 | Mains      | 50 Hz or 60 Hz | Which grid you’re plugged into                                                                                        |
 
+</details>
+
 ### Output
 
 Gain, ahead of a dc block, soft clip and limiter that always run.
 
+<details>
+<summary>1 control</summary>
+
 | control | range         | what it does                                      |
 | ------- | ------------- | ------------------------------------------------- |
 | Gain    | −60 to +12 dB | Master gain before the safety clipper and limiter |
+
+</details>
 
 ### Parts
 
@@ -448,6 +568,9 @@ how deep the cap on the oscillator can divide. _Part spread_ is how far apart
 the four output stages came out of the bin, which is whether a chord collapses
 raggedly or all at once.
 
+<details>
+<summary>10 controls</summary>
+
 | control      | range                | what it does                                                                                                       |
 | ------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Timing pin   | 0.2 ms to 2 s        | The decoupling cap on the oscillator, as the time it averages the rail over                                        |
@@ -461,12 +584,17 @@ raggedly or all at once.
 | Part spread  | 0× to 4×             | How far apart the four output stages came out of the bin                                                           |
 | Mixer drive  | 0.02 to 3            | The headroom in the one small output stage every key voice runs through                                            |
 
+</details>
+
 ### Ageing
 
 The slow ones. _Heat_ builds with what the board is dissipating and takes the
 rail down with it. _Dry joints_ drop a bend slot out of the path mid-note.
 _Re-solder_ has the board rewire its own slot order while you play.
 _Cross-coupling_ is how much the brightness bus feeds back into the supply.
+
+<details>
+<summary>5 controls</summary>
 
 | control          | range       | what it does                                                                                                       |
 | ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -476,19 +604,10 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 | Re-solder        | off to full | How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin |
 | Cross-coupling   | off to full | Wires the loop’s own brightness against its supply                                                                 |
 
+</details>
+
 ## Around the instrument
 
-- **Presets** — _dying toy_, _paperclip_, _flat batteries_, _melody scrambler_,
-  _wrong song_, _half a tune_, _stuck key_, _cut the dataline_, _dawn chorus_,
-  _weather station_, _air raid_, _one long cricket_, _gravel dac_, _machine
-  gun_, _drum scream_, _crushed chip_, _tape scream_, _no-input squeal_,
-  _runaway howl_, _haunted spring_, _contact crackle_, _siren chaos_, _acid
-  screech_, _ground loop_, _possessed osc_, _sub stomp_, _wall of muff_, _dying
-  fuzz face_, _octave up_, _velcro_, _squeezed screamer_, _grief machine_,
-  _séance_, _dying walkman_, _wrong voices_, _yell into it_, _dying transport_,
-  _barber pole_, _clangour_, _touch the contacts_, _clock wobble_, _clap at it_,
-  _clap along_, _found tape_, _shed oxide_, _pinned to the oxide_, _the kit
-  plays the tune_, _call and answer_, _every hit opens it_.
 - **Roll** randomises the board with a bias toward leaving something audible;
   controls marked `shy` come on rarely and low, so a roll does not bury the
   board under one effect.
@@ -501,6 +620,111 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 - **A live signal-path map** that greys out whatever is not in the path.
 - **Scope, meters and a rail lamp**, all fed by the meter message.
 
+### Presets
+
+49 boards worth keeping. Every name is a link that opens the app with that board
+on it — a link never presses play, so it is loaded and waiting.
+
+- [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
+  — Starved rail, sagging pitch, watchdog reboots mid-tune
+- [**paperclip**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipAccomp:0.5,chipStarve:0.3,chipCap:0.6,chipClipHz:3,chipClipClock:0.45,drumLevel:0.25,brownAmt:0.25,humLevel:0.2,faultCluster:0.55)
+  — Bare metal on the timing pin — every touch dives an octave and snaps back
+- [**flat batteries**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipAccomp:0.6,chipBattery:0.75,drumLevel:0.55,drumBits:5,tapeMix:0.45,tapeHiss:0.5)
+  — Cells too far gone to hold the rail — the whole toy runs low and late
+- [**melody scrambler**](https://cmdcolin.github.io/bender/#set=chipLevel:0.9,chipClockX:2.5,chipBendSpot:2,chipBendPot:0.8,glitchProb:0.45,glitchSliceMs:90,glitchMix:0.5)
+  — Pot soldered on the program counter
+- [**wrong song**](https://cmdcolin.github.io/bender/#set=chipLevel:0.9,chipAccomp:0.7,chipClockX:1.2,chipDataLine:3,chipDataFault:2)
+  — A data line held high — the tune keeps its rhythm and its rests fill in
+- [**half a tune**](https://cmdcolin.github.io/bender/#set=chipLevel:0.9,chipAccomp:0.5,chipAddrLine:4,chipAddrFault:1,delayMs:260,dlyFb:0.4,dlyMix:0.25)
+  — An address line on the floor: the song folds into its own first half
+- [**stuck key**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.5,fmLevel:0.8,fmVoice:1,fmBright:0.6,fmLength:0.3,fmDataLine:5,fmDataFault:2)
+  — The FM chip never told the key came up, so nothing it plays ends
+- [**cut the dataline**](https://cmdcolin.github.io/bender/#set=chipLevel:0,fmLevel:0.8,fmVoice:3,fmFeedback:5,fmDataLine:4,fmBusCut:0.6)
+  — A trace most of the way through: the patch arrives wrong and stays wrong
+- [**dawn chorus**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmDataLine:3,fmBusCut:0.55)
+  — Bird calls off the effect ROM, every write of them arriving wrong
+- [**weather station**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:3,fmStrobe:0.15)
+  — Wind, with the address latch missing one pulse in seven
+- [**air raid**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:4,fmAddrLine:6,fmBusCut:0.5)
+  — A siren filed under the wrong registers as it climbs
+- [**one long cricket**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:5,fmStrobe:0.4)
+  — The key-up lands next door, so the chirps never stop being one note
+- [**gravel dac**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9)
+  — The kit’s converter built from resistors nobody measured
+- [**machine gun**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)
+  — Drum machine retriggered into rolls
+- [**drum scream**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.95,drumBpm:45,drumRetrigHz:700,bits:6,crushMix:0.5,revDecayS:3,revMix:0.3)
+  — Retrigger past audio rate — the kit becomes a pitch
+- [**crushed chip**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:2,bits:3,srHz:2600,srJitter:0.6,crushMix:0.9)
+  — Overclocked tune through a dying DAC
+- [**tape scream**](https://cmdcolin.github.io/bender/#set=chipLevel:0.5,delayMs:120,dlyFb:1.4,wowDepthMs:4,wowHz:2,flutter:0.5,dlyToneHz:3000,dlyMix:0.7)
+  — Runaway delay feedback, warped transport
+- [**no-input squeal**](https://cmdcolin.github.io/bender/#set=chipLevel:0,driveDb:26,distMode:1,distMix:0.4,fbAmt:1.35,fbDelayMs:0.6,fbTone:0.4)
+  — The mixer patched into itself, nothing at the input
+- [**runaway howl**](https://cmdcolin.github.io/bender/#set=chipLevel:0.3,glitchMix:0.3,delayMs:420,dlyFb:1.15,dlyMix:0.5,fbAmt:1.5,fbDelayMs:90,fbTone:-0.4)
+  — Long global loop through the whole board
+- [**haunted spring**](https://cmdcolin.github.io/bender/#set=chipLevel:0.45,chipClockX:0.5,noiseLevel:0.08,noiseColor:-0.5,ringHz:3.5,ringMix:0.35,revDecayS:6,revBoing:0.9,revMix:0.75,revDryCut:0.75)
+  — Slow chip through a huge dispersive tank
+- [**contact crackle**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.9,crackleRate:55,combHz:220,combFb:1.15,combMix:0.8,revMix:0.4)
+  — Dirty pot sparks ringing a screaming comb
+- [**siren chaos**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.85,oscBHz:2.2,oscXmod:900,oscStarve:0.5,ringHz:40,ringMix:0.3)
+  — Cross-modulated oscillators starving themselves
+- [**acid screech**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.7,crackleRate:22,bendSlot0:6,filtHz:320,filtRes:1.15,filtDriveDb:8,filtMix:0.9,delayMs:500,dlyFb:0.55,dlyMix:0.3)
+  — Self-oscillating filter pinged by contact sparks
+- [**ground loop**](https://cmdcolin.github.io/bender/#set=chipLevel:0.55,chipStarve:0.5,revDecayS:3,revMix:0.3,brownAmt:0.5,brownCrackle:0.4,humLevel:0.8)
+  — Bad power: hum, sag and a straining supply
+- [**possessed osc**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
+  — The feedback bus soldered onto the FM input
+- [**sub stomp**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,driveDb:18,distMode:2,distToneHz:4000,subLevel:0.9,distMix:0.8)
+  — Octave-divider fuzz under the tune
+- [**wall of muff**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,stompCircuit:2,stompDrive:34,stompTone:0.35,stompLevel:-6,stompMix:1,revDecayS:3,revMix:0.3)
+  — Two clipping stages that never let the note decay
+- [**dying fuzz face**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,stompCircuit:3,stompDrive:30,stompTone:0.4,stompBias:-0.25,stompSag:0.85,stompMix:1,delayMs:280,dlyFb:0.45,dlyMix:0.25)
+  — Germanium on a flat battery, spluttering as each note goes
+- [**octave up**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,stompCircuit:4,stompDrive:26,stompTone:0.6,stompMix:0.9,revBoing:0.7,revMix:0.35)
+  — Rectified into a ringing transformer — an octave on one note, gargle on two
+- [**velcro**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,stompCircuit:5,stompDrive:40,stompTone:0.3,stompBias:0.35,stompSag:0.8,stompLevel:-6,stompMix:1)
+  — Starved to the edge of cutoff: it gates, sputters and howls between notes
+- [**squeezed screamer**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,stompDrive:16,stompTone:0.55,stompMix:1,delayMs:320,dlyMix:0.3,mod0Src:3,mod0Dest:9,mod0Depth:0.7)
+  — The bay envelope wired onto the drive, so it digs in as it gets loud
+- [**grief machine**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,chipClockX:0.55,chipStarve:0.45,delayMs:380,dlyFb:0.5,dlyMix:0.35,revDecayS:5,revMix:0.6,brownAmt:0.3,humLevel:0.25)
+  — Half clock, browning out into a long tank
+- [**séance**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipClockX:0.7,chipBendSpot:3,chipBendPot:0.25,ringHz:6,ringMix:0.3,combHz:180,combFb:0.8,combMix:0.4,delayMs:300,flutter:0.3,dlyMix:0.3,revDecayS:4,revMix:0.5)
+  — A soldered DAC bias into a ringing comb, slowed right down
+- [**dying walkman**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,chipClockX:0.8,bits:7,srHz:9000,crushMix:0.5,delayMs:260,dlyFb:0.45,wowDepthMs:5,flutter:0.45,dlyToneHz:3500,dlyMix:0.5,revMix:0.35)
+  — A chewed tape running into a failing DAC
+- [**wrong voices**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumCross:4,drumCrossAmt:0.85,drumKick:34952,drumHat:13107,drumAccent:32896,distMix:0.35,revMix:0.25)
+  — Envelope pins bridged — the kit fires the wrong drums
+- [**yell into it**](https://cmdcolin.github.io/bender/#set=chipLevel:0,micPatch:3,driveDb:28,distMix:0.6,delayMs:220,dlyFb:0.95,dlyMix:0.7)
+  — Mic soldered into the delay feedback path — bring your mic level up
+- [**dying transport**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,delayMs:320,dlyFb:0.8,dlyToneHz:3200,tapeMotorRail:1,dlyMix:0.6,brownAmt:0.85,brownRate:3)
+  — Tape motor wired to the same failing supply as the toy
+- [**barber pole**](https://cmdcolin.github.io/bender/#set=chipLevel:0.5,bendSlot0:7,shiftHz:3,shiftFb:0.92,shiftMix:0.85,revDecayS:4,revMix:0.35)
+  — Every lap through the shifter climbs again, so nothing lands
+- [**clangour**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,bendSlot0:7,shiftHz:380,shiftMix:1,delayMs:180,dlyFb:0.45,dlyMix:0.3)
+  — Shifted far enough that the harmonics stop being harmonics
+- [**touch the contacts**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.5,crackleRate:30,bendSlot0:6,filtHz:180,filtRes:1.2,filtMix:1,mod0Src:5,mod0Depth:0.9,mod1Src:6,mod1Dest:8,mod1Depth:0.6,fbDelayMs:3)
+  — Body pad on the filter, and leaning on it opens the feedback
+- [**clock wobble**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)
+  — The bay LFO dragging the chip crystal around
+- [**clap at it**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,micPatch:5,driveDb:16,distMix:0.45,revMix:0.3)
+  — Mic on the drum trigger line: clap and it fires your pattern — bring your
+  mic level up
+- [**clap along**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumSnare:0,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
+  — Backbeat claps, shuffled hard, through four bits of DAC
+- [**found tape**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,revDecayS:1.6,revMix:0.18,tapeMix:1,tapeDrive:4,tapeHiss:0.55,tapeWow:0.3)
+  — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
+- [**shed oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35)
+  — Slow tape gone soft: dropouts, print-through, the pitch never settling
+- [**pinned to the oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,drumLevel:0.5,drumBpm:96,delayMs:180,dlyMix:0.25,tapeMix:1,tapeSpeed:2,tapeDrive:15,tapeBias:-0.85,tapeHiss:0.4,tapeWow:0.15,tapeFlutter:0.2)
+  — Underbiased and slammed — the machine as the distortion
+- [**the kit plays the tune**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,chipAccomp:0.35,drumLevel:0.6,drumBpm:104,delayMs:288,dlyMix:0.22,trigToKeys:1,trigKeysNote:1)
+  — Kick soldered onto the keyboard’s gate: one hit, one step of the ROM
+- [**call and answer**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,drumBpm:92,revDecayS:2.4,revMix:0.3,trigToKeys:2,trigKeysNote:3,trigToDrum:4)
+  — The snare strikes a chord, and every note it strikes claps back
+- [**every hit opens it**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,drumLevel:0.8,filtHz:180,filtRes:0.85,filtMix:1,mod0Src:9,mod0Depth:0.85)
+  — A wire off the kit’s trigger line onto the cutoff — shut between hits
+
 ### Kit voices
 
 - **kick** — Sine thump, pitch falling through its own envelope.
@@ -511,6 +735,9 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 - **bell** — Two detuned squares through a notch: the cowbell.
 
 ## Scripts
+
+<details>
+<summary>17 commands</summary>
 
 | command          | what it does                                                                    |
 | ---------------- | ------------------------------------------------------------------------------- |
@@ -531,6 +758,8 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 | `pnpm maj`       | release: major                                                                  |
 | `pnpm format`    | prettier                                                                        |
 | `pnpm prepare`   | points git at .githooks                                                         |
+
+</details>
 
 What the performance numbers mean, and which of them are trustworthy, is
 [optimizations.md](optimizations.md). How a block gets rendered at all is
