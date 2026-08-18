@@ -1,6 +1,9 @@
-// The shelf the wire's maps are kept on. Every map the MIDI side holds — knobs,
-// pads, the toggles either of them read — goes through here, so a browser that
-// refuses to store anything costs a binding rather than a board.
+// The shelf anything the browser keeps for us goes on. Every map the MIDI side
+// holds — knobs, pads, the toggles either of them read — goes through here, so a
+// browser that refuses to store anything costs a binding rather than a board.
+//
+// Two shelves, really: what a machine remembers about itself lasts, and what one
+// tab was in the middle of lasts as long as the tab.
 
 export function read(key: string): string | null {
   try {
@@ -15,6 +18,25 @@ export function write(key: string, value: string) {
     localStorage.setItem(key, value)
   } catch {
     // A board that will not persist its bindings is still a board.
+  }
+}
+
+// A tab's own shelf. Wiped when the tab goes, and never shared with the tab
+// beside it, which is what a thing that is true of one session and not of the
+// app wants.
+export function readSession(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+export function writeSession(key: string, value: string) {
+  try {
+    sessionStorage.setItem(key, value)
+  } catch {
+    // As above.
   }
 }
 

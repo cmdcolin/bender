@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import { engine } from './engine/engine'
 import { App } from './ui/App'
+import { keepRunState } from './ui/runState'
 import { boardFromLocation } from './ui/share'
 import './theme.css'
 
@@ -10,5 +11,9 @@ import './theme.css'
 // every reload of your own session broke into the demo song.
 const shared = boardFromLocation()
 if (shared) engine.patch(shared)
+
+// What a reload does put back is what this tab was running, which the link
+// never carried either way — see runState.
+keepRunState()
 
 createRoot(document.getElementById('root')!).render(<App />)

@@ -425,7 +425,8 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
   controls marked `shy` come on rarely and low, so a roll does not bury the
   board under one effect.
 - **Morph** travels between two boards over time rather than jumping.
-- **The board rides in the URL**, so a link is a patch.
+- **The board rides in the URL**, so a link is a patch. A link never presses
+  play; a reload of your own tab comes back running whatever it was running.
 - **MIDI in** — notes, velocity, and knobs that map onto the panel, including
   endless encoders with lit rings.
 - **Record to wav**, straight off the output.
