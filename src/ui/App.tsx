@@ -30,6 +30,9 @@ import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
 import { Tip } from './Tip'
 
+// Where a keypress belongs to the control rather than to the board.
+const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
+
 function clock(seconds: number): string {
   const s = Math.floor(seconds)
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -47,15 +50,22 @@ function clock(seconds: number): string {
 //
 // The only thing here that subscribes to the morph, deliberately: progress moves
 // every frame, and held in App it would re-render the whole panel at that rate.
+//
+// A drift travels too, and this stays the duration picker through it: the leg
+// is the drift's own length rather than the one this names, stopping it here
+// keeps the board for fifteen seconds and no longer, and the picker is the only
+// place the next roll's duration is set — so a drift must not take it away for
+// as long as it runs. Drift's own button is what stops a drift.
 function MorphControl(props: {
   seconds: MorphSeconds
+  drifting: boolean
   onSet: (s: MorphSeconds) => void
 }) {
   const progress = useSyncExternalStore(
     engine.morphProgress.subscribe,
     engine.morphProgress.get,
   )
-  if (progress !== null) {
+  if (progress !== null && !props.drifting) {
     return (
       <Tip
         text={`travelling over ${props.seconds}s — press to stop here and keep the half-way board, which is a board like any other. Grabbing a slider does the same`}
@@ -129,8 +139,12 @@ export function App() {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey)
         return
+      // A select included: space is the only way a keyboard opens one, and the
+      // panel picks a morph duration, a row length and half its choices that
+      // way. A focused button is not — space over one is still the run line,
+      // which is the point of running it over the whole window.
       const target = e.target as HTMLElement
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
+      if (TYPING.has(target.tagName)) return
       e.preventDefault()
       engine.toggleRun()
     }
@@ -159,16 +173,24 @@ export function App() {
   }
 
   return (
-    <div className={styles.app}>
-      <div
-        className={styles.left}
-        onDragOver={e => {
-          e.preventDefault()
-          setDragging(true)
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-      >
+    // The whole window takes the drop, because the hint says anywhere and a
+    // dragover nobody cancels is a drop the browser takes itself — which on the
+    // panel, half the width of the app, meant navigating away from the board.
+    // Dragleave fires on the way into a child as well, so the flag only clears
+    // for a pointer that has left the app entirely.
+    <div
+      className={styles.app}
+      onDragOver={e => {
+        e.preventDefault()
+        setDragging(true)
+      }}
+      onDragLeave={e => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+          setDragging(false)
+      }}
+      onDrop={onDrop}
+    >
+      <main className={styles.left}>
         <Scope />
         <Keys />
         <BodyPad onOpen={setOpen} />
@@ -230,9 +252,9 @@ export function App() {
           bridge the two boxes in <b>Trigger patch</b>, push any <b>Feedback</b>{' '}
           past 1
         </p>
-      </div>
+      </main>
 
-      <div className={styles.panel}>
+      <aside className={styles.panel} aria-label="the board">
         <div className={styles.masthead}>
           <span className={styles.brand}>bender</span>
           <Tip text={`bender ${versionLabel} (${gitSha})`}>
@@ -375,7 +397,11 @@ export function App() {
             the row that does, at their own width rather than stretched across
             whatever the wrap left over. */}
         <div className={styles.utils}>
-          <MorphControl seconds={morphSeconds} onSet={setMorphSeconds} />
+          <MorphControl
+            seconds={morphSeconds}
+            drifting={drifting}
+            onSet={setMorphSeconds}
+          />
           <Tip text="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes">
             <button className={styles.btnDanger} onClick={() => engine.panic()}>
               panic
@@ -397,7 +423,7 @@ export function App() {
         ) : (
           <PathHint />
         )}
-      </div>
+      </aside>
     </div>
   )
 }

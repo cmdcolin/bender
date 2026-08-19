@@ -92,7 +92,14 @@ export function DrumGrid() {
   ) as Record<DrumStepKey, number>
   const loaded = romMatching(masks)
 
-  const load = (r: DrumRom) => engine.patch(r.masks)
+  // Through the walk, like every other verb on the panel: a ROM lands on top of
+  // whatever you had drawn, and an afternoon of writing a pattern is not a thing
+  // a mis-aimed click gets to take. Written straight rather than travelled to —
+  // a pattern is sixteen bits, and there is nothing between two of them.
+  const load = (r: DrumRom) => {
+    engine.armStep()
+    engine.writeBoard({ ...engine.controls.get(), ...r.masks })
+  }
 
   return (
     <div className={styles.wrap}>
@@ -154,7 +161,10 @@ export function DrumGrid() {
         <button
           className={styles.silent}
           onClick={() => {
-            if (controls.drumLevel === 0) engine.patch({ drumLevel: 0.8 })
+            if (controls.drumLevel === 0) {
+              engine.armStep()
+              engine.set('drumLevel', 0.8)
+            }
             engine.setDrumsPlaying(true)
           }}
         >

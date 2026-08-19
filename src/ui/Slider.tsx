@@ -80,6 +80,7 @@ export function ControlSlider({ def }: { def: SliderDef }) {
             {choices.length > CHOICES_AS_BUTTONS ? (
               <select
                 className={touched ? styles.listOn : styles.list}
+                aria-label={def.label}
                 value={Math.round(value) - def.min}
                 onChange={e => pick(Number(e.currentTarget.value))}
               >
@@ -126,6 +127,13 @@ export function ControlSlider({ def }: { def: SliderDef }) {
           min={0}
           max={1000}
           value={Math.round(toPos(def, value) * 1000)}
+          // The track is a thousand positions along the travel, which is the
+          // wrong thing to read out: what the knob says is its value in its own
+          // units, off the same formatter the readout beside it uses. The label
+          // is a span rather than a <label> because it also takes a double-click
+          // back to stock, so the name has to be given here.
+          aria-label={def.label}
+          aria-valuetext={formatValue(def, value)}
           // The whole sweep is one gesture and wants one step in the walk, so it
           // arms here and the first move that changes anything takes it. A held
           // arrow key repeats, and a repeat is the same sweep continuing.

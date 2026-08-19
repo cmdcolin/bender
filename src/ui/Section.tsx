@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { groupAnchor } from './chain-map'
 import { useStoreValue } from './ControlsContext'
 import { engine } from '../engine/engine'
 import { touchedCount, type Group, type SliderDef } from './controls'
@@ -60,20 +61,26 @@ const movedIn = (sliders: SliderDef[], c: Controls) =>
 // A heading and what sits under it, with its own count and its own fold. The
 // count is the group header's promise made smaller: how many of these you have
 // moved, so a folded part still says whether anything is going on inside it.
+//
+// It counts the rows the fold will actually open to, not every control the
+// table files under the heading: a fault waiting on a wire nobody has cut is
+// not down there yet, and a heading promising eight controls that opens on four
+// is a heading nobody trusts twice. Every control you have moved is shown, so
+// the moved count is the same either way.
 function PartFold({
-  part,
+  name,
   rows,
   c,
   closed,
   onToggle,
 }: {
-  part: Part
+  name: string
   rows: SliderDef[]
   c: Controls
   closed: boolean
   onToggle: () => void
 }) {
-  const moved = movedIn(part.sliders, c)
+  const moved = movedIn(rows, c)
   return (
     <div className={styles.fold}>
       <button
@@ -82,9 +89,9 @@ function PartFold({
         onClick={onToggle}
       >
         <span className={styles.foldMark}>{closed ? '▸' : '▾'}</span>
-        <span className={styles.foldName}>{part.name}</span>
+        <span className={styles.foldName}>{name}</span>
         <span className={moved > 0 ? styles.foldMoved : styles.foldCount}>
-          {moved > 0 ? `${moved} moved` : part.sliders.length}
+          {moved > 0 ? `${moved} moved` : rows.length}
         </span>
       </button>
       {!closed && rows.map(def => <ControlSlider key={def.key} def={def} />)}
@@ -109,18 +116,21 @@ function Rows({ group }: { group: Group }) {
     setShut(s => (s.includes(name) ? s.filter(n => n !== name) : [...s, name]))
   return (
     <>
-      {blocks.map(part => {
-        const rows = part.sliders.filter(d => shown(d, c))
-        if (part.name === null)
+      {blocks.map(({ name, sliders }) => {
+        const rows = sliders.filter(d => shown(d, c))
+        if (name === null)
           return rows.map(def => <ControlSlider key={def.key} def={def} />)
+        // A heading over nothing is the same question about nothing the rows
+        // themselves wait out.
+        if (rows.length === 0) return null
         return (
           <PartFold
-            key={part.name}
-            part={part}
+            key={name}
+            name={name}
             rows={rows}
             c={c}
-            closed={shut.includes(part.name)}
-            onToggle={() => toggle(part.name!)}
+            closed={shut.includes(name)}
+            onToggle={() => toggle(name)}
           />
         )
       })}
@@ -156,7 +166,10 @@ export function OpenGroup({
       seconds,
     )
   return (
-    <div className={styles.section} ref={el}>
+    // The id every door on the map points at. The map draws its boxes as
+    // links so a keyboard reaches them at all, and a link wants somewhere to
+    // land.
+    <div className={styles.section} ref={el} id={groupAnchor(group.name)}>
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
         <Tip
