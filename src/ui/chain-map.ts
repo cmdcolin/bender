@@ -986,22 +986,37 @@ function resetButton(
     'end',
   )
   if (!links) return [digits]
+  const moved = `${count} control${count === 1 ? '' : 's'} moved`
   return [
-    el('g', { className: 'reset', 'data-reset': name }, [
-      el('title', {}, [
-        `${name}: ${count} control${count === 1 ? '' : 's'} moved — click to put them back where they booted, ctrl+z to bring them again`,
-      ]),
-      el('rect', {
-        className: 'hit',
-        x: right - COUNT_COL,
-        y: y + 1,
-        width: COUNT_COL,
-        height: h - 2,
-        rx: 3,
-        fill: 'transparent',
-      }),
-      digits,
-    ]),
+    el(
+      'g',
+      {
+        className: 'reset',
+        'data-reset': name,
+        // The doors are links, so a keyboard already reaches them. A number is
+        // a verb rather than a place and has no link to be, so it says what it
+        // is and takes a tab stop of its own — the panel offers no other way to
+        // put a stage back without opening it first.
+        role: 'button',
+        tabIndex: 0,
+        'aria-label': `put ${name} back where it booted — ${moved}`,
+      },
+      [
+        el('title', {}, [
+          `${name}: ${moved} — click to put them back where they booted, ctrl+z to bring them again`,
+        ]),
+        el('rect', {
+          className: 'hit',
+          x: right - COUNT_COL,
+          y: y + 1,
+          width: COUNT_COL,
+          height: h - 2,
+          rx: 3,
+          fill: 'transparent',
+        }),
+        digits,
+      ],
+    ),
   ]
 }
 

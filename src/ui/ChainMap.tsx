@@ -2,6 +2,7 @@ import {
   createElement,
   useEffect,
   useState,
+  type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
 } from 'react'
@@ -90,21 +91,36 @@ export function ChainMap({
   // also the way back: pressing it puts the stage where it booted, travelling
   // and landing in the walk like every other verb, so a mis-aimed click is one
   // ctrl+z away. Checked before the door, because it sits over one.
-  const click = (e: MouseEvent) => {
-    const target = e.target as Element
+  const press = (target: Element): boolean => {
     const back = target.closest('[data-reset]')?.getAttribute('data-reset')
     const group = GROUP_BY_NAME.get(
       back ?? target.closest('[data-door]')?.getAttribute('data-door') ?? '',
     )
-    if (!group) return
-    e.preventDefault()
+    if (!group) return false
     if (back) engine.morphTo(resetGroup(group, engine.controls.get()), seconds)
     else onOpen(group.name)
+    return true
+  }
+
+  const click = (e: MouseEvent) => {
+    if (press(e.target as Element)) e.preventDefault()
+  }
+
+  // A door is a link and a keyboard already works it. A number is a verb with
+  // nowhere to link to, so enter and space over one are taken here — and stopped
+  // here, because a space anywhere else on the window is the run line.
+  const key = (e: KeyboardEvent) => {
+    const target = e.target as Element
+    if (e.key !== 'Enter' && e.key !== ' ') return
+    if (!target.closest('[data-reset]')) return
+    e.preventDefault()
+    e.stopPropagation()
+    press(target)
   }
 
   return (
     <div className={open ? `${styles.map} ${styles.mapOpen}` : styles.map}>
-      <div className={styles.graph} onClick={click}>
+      <div className={styles.graph} onClick={click} onKeyDown={key}>
         {mount(drawMap(map), 0)}
       </div>
       <Shelf

@@ -20,6 +20,14 @@ export function fromPos(def: SliderDef, pos: number): number {
   return v
 }
 
+// Significant figures rather than decimal places: 8 kHz wants none and a mix
+// wants two, and a readout that gave both the same is either noise at the top or
+// a number that will not move at the bottom.
+//
+// Which is the other half of it — a step finer than the printed place is a knob
+// you can turn while the number sits still, so a control stepping in
+// thousandths gets the third place to show it. The tiers above it are all
+// coarser than their own step by a wide margin and mean to be.
 export function formatValue(def: SliderDef, value: number): string {
   if (def.choices)
     return def.choices[Math.round(value) - def.min] ?? String(value)
@@ -29,6 +37,6 @@ export function formatValue(def: SliderDef, value: number): string {
       ? value.toFixed(0)
       : abs >= 10
         ? value.toFixed(1)
-        : value.toFixed(2)
+        : value.toFixed(def.step < 0.01 ? 3 : 2)
   return def.unit ? `${text} ${def.unit}` : text
 }
