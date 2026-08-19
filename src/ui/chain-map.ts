@@ -82,22 +82,22 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   Sampler: ['sampleLevel'],
 }
 
-// The three chips on the toy board, in the order they sit on it. They share one
-// supply, and the FM chip has no keyboard and no sequencer of its own — its key
-// input is soldered onto the toy's gate line. So they get a frame around them:
-// what is inside it is one piece of hardware with three dies on it, and the
-// starve knob on the keyboard's panel bends all three.
-//
-// The FM chip sits next to the keyboard because that is where the key line
-// makes a short hop instead of a run across the row.
-const CHIP_ROW = ['Toy keyboard', 'FM chip', 'Toy drums'] as const
+// The two you play, side by side across the head of the toy board. They are the
+// pair: two machines with a run switch, a pattern and a set of keys each.
+const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
+
+// And the one you don't. The FM chip has no keyboard and no sequencer of its
+// own — its key input is soldered onto the toy's gate line — so it hangs under
+// the keyboard rather than standing beside it, indented, on the end of that
+// wire. All three are inside the frame because all three are one piece of
+// hardware on one supply, which is what the frame and its rail are there to
+// say; the starve knob on the keyboard's panel bends every one of them.
+const FM_CHIP = 'FM chip'
+const CHIP_ROW = [...TOY_ROW, FM_CHIP] as const
 
 // The three that take no supply and no trigger from anything: they start where
 // they stand, and they are the only sources on the board that do.
 const LINE_ROW = ['Chaos osc', 'Noise & crackle', 'Sampler'] as const
-
-// The two with a run switch of their own, which is what a lamp on the box is.
-const TOYS = new Set(['Toy keyboard', 'Toy drums'])
 
 const sourceLevel = (name: string, c: Controls): number =>
   Math.max(...SOURCE_LEVELS[name]!.map(key => c[key] / sliderFor(key).max))
@@ -148,8 +148,12 @@ const COL_GAP = 28
 /** an instrument's own box: a name and a count over a fader */
 const INST_H = 34
 const INST_GAP = 12
-/** the gap the key line runs in, wide enough to carry its own label */
+/** the lane under the toys that the key line and any trigger bridges drop
+    through, wide enough to carry their labels */
 const KEY_GAP = 22
+/** how far under the keyboard the FM chip is set in, so the two read as a
+    machine and the thing hanging off it rather than as two machines */
+const FM_INSET = 24
 /** the lip a frame carries its name on */
 const CAP_H = 12
 /** the inset the chips sit at inside the toy board's frame */
@@ -161,9 +165,9 @@ const TRIG_H = 13
 const COLLECT_H = 14
 /** from the collector to the mix bus, and from the mix bus to the fold */
 const BAND_GAP = 12
-/** the run lamp on a toy's box, and the space it takes at the left */
-const LAMP_R = 2.6
-const LAMP_COL = 14
+/** a source's own glyph, and the column it sits in at the left of its box */
+const ICON = 12
+const ICON_COL = 16
 /** the column a stage's off-stock count, and its way back, sits in — wide
     enough that a two-digit count is inside the button it is the face of */
 const COUNT_COL = 18
@@ -197,8 +201,6 @@ export interface MapNode {
   level?: number
   /** 'inst' only: running right now, off a switch of its own */
   playing?: boolean
-  /** 'inst' only: has a run switch, so it carries a lamp */
-  lamp?: boolean
 }
 
 export interface MapWire {
@@ -294,6 +296,17 @@ function spread(
   }
 }
 
+// A row of boxes at one width across a span, which is what a rack looks like.
+// Only for rows short enough that the longest name still fits the share it
+// gets — three across at panel width is not, which is what spread() is for.
+function even(row: MapNode[], x0: number, span: number, gap: number) {
+  const w = (span - gap * (row.length - 1)) / row.length
+  for (const [i, n] of row.entries()) {
+    n.w = w
+    n.x = x0 + i * (w + gap)
+  }
+}
+
 interface Bridge {
   id: string
   from: string
@@ -373,13 +386,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       door: name,
       level,
       playing: playing.has(name),
-      lamp: TOYS.has(name),
       h: INST_H,
     })
   }
-  const chips = CHIP_ROW.map(instrument)
+  const toys = TOY_ROW.map(instrument)
+  const fm = instrument(FM_CHIP)
+  const chips = [...toys, fm]
   const lines = LINE_ROW.map(instrument)
-  const board = node('toy_board', 'frame', 'toy board — one supply')
+  const board = node('toy_board', 'frame', 'toy board')
   const mix = node('mix', 'plain', 'mix bus')
 
   const path: MapNode[] = []
@@ -419,7 +433,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // under every morph.
   const countCol = live ? COUNT_COL : 0
   const natural = (n: MapNode) =>
-    PAD_X * 2 + (n.lamp ? LAMP_COL : 0) + textWidth(n.label, FONT) + countCol
+    PAD_X * 2 +
+    (n.kind === 'inst' ? ICON_COL : 0) +
+    textWidth(n.label, FONT) +
+    countCol
   const sum = (row: MapNode[]) => row.reduce((a, n) => a + natural(n), 0)
 
   // The trigger bridges are patch cables, so they are only in the way when one
@@ -434,10 +451,12 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // One content width for the whole drawing, wide enough for the source band
   // and for the folded path both, and whichever came out narrower stretches to
   // it. The band is the usual winner: six boxes across beats two columns.
-  const chipGaps = [KEY_GAP, INST_GAP]
   const content = Math.ceil(
     Math.max(
-      sum(chips) + KEY_GAP + INST_GAP + FRAME_PAD * 2,
+      sum(toys) + INST_GAP + FRAME_PAD * 2,
+      // The FM chip sits in what is left of the keyboard's column after the
+      // inset, so a keyboard cut to its own name can still be too narrow for it.
+      (natural(fm) + FM_INSET) * 2 + INST_GAP + FRAME_PAD * 2,
       sum(lines) + INST_GAP * (lines.length - 1),
       cols *
         Math.max(
@@ -459,12 +478,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   board.y = MARGIN
   const railY = board.y + CAP_H + 6
   const chipY = railY + RAIL_H
-  const trigY = chipY + INST_H + TRIG_H
-  for (const n of chips) n.y = chipY
-  board.h =
-    (trigs.length ? trigY + (trigs.length - 1) * TRIG_H + 6 : chipY + INST_H) -
-    board.y +
-    4
+  for (const n of toys) n.y = chipY
+  // The lane under the toys: the key line drops through it into the FM chip,
+  // and any trigger bridge you have patched runs across it on the way. The
+  // chip is pushed down by whatever is in there, so a bridge never lands on it.
+  const laneY = chipY + INST_H
+  const trigY = laneY + TRIG_H
+  fm.y = laneY + KEY_GAP + trigs.length * TRIG_H
+  board.h = fm.y + INST_H - board.y + 4
 
   const lineY = board.y + board.h + BAND_GAP
   for (const n of lines) n.y = lineY
@@ -485,7 +506,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // --- across it, at an origin of zero, so the gutters can be measured off the
   // --- x each box has already landed on and everything shifted once after ----
 
-  spread(chips, FRAME_PAD, content - FRAME_PAD * 2, chipGaps, natural)
+  even(toys, FRAME_PAD, content - FRAME_PAD * 2, INST_GAP)
+  fm.x = toys[0]!.x + FM_INSET
+  fm.w = toys[0]!.w - FM_INSET
   spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
   board.x = 0
   mix.x = 0
@@ -579,50 +602,53 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       color: k.dim,
       dash: '1 2',
       label: {
-        text: 'rail',
+        text: 'shared supply',
         x: board.x + board.w - FRAME_PAD,
         y: railY - 4,
         anchor: 'end',
       },
     },
   )
-  for (const chip of chips)
+  // Droppers onto the two boxes the bar is over. The FM chip takes the same
+  // supply and has no dropper of its own: it is under the keyboard, inside the
+  // frame, and a dotted line reaching it would have to cross the row to do it.
+  for (const toy of toys)
     bar(
-      `rail-${chip.id}`,
+      `rail-${toy.id}`,
       board,
-      chip,
+      toy,
       [
-        [midX(chip), railY],
-        [midX(chip), chipY],
+        [midX(toy), railY],
+        [midX(toy), chipY],
       ],
       { color: k.dim, dash: '1 2' },
     )
 
   // The key line, which is solder rather than a cable you patched: the FM chip
   // has no keyboard and no sequencer, so every note it plays arrives on the
-  // gate line the toy brings out. It sits next to the keyboard for this wire.
-  {
-    const [keys, fm] = [chips[0]!, chips[1]!]
-    wire(
-      'key-line',
-      keys,
-      fm,
-      [
-        [keys.x + keys.w, chipY + 12],
-        [fm.x, chipY + 12],
-      ],
-      {
-        color: k.accent2,
-        door: 'Toy keyboard',
-        label: {
-          text: 'key',
-          x: (keys.x + keys.w + fm.x) / 2,
-          y: chipY + 6,
-          anchor: 'middle',
-        },
+  // gate line the toy brings out. It drops straight out of the keyboard's foot
+  // into the chip hanging under it, which is the shape of the thing.
+  wire(
+    'key-line',
+    toys[0]!,
+    fm,
+    [
+      [midX(fm), laneY],
+      [midX(fm), fm.y],
+    ],
+    {
+      color: k.accent2,
+      door: 'Toy keyboard',
+      // Just over the chip rather than mid-drop: the middle of the lane is
+      // where the trigger bridges cross, and a label there lands on one.
+      label: {
+        text: 'key',
+        x: midX(fm) + 4,
+        y: fm.y - 4,
+        anchor: 'start',
       },
-    )
-  }
+    },
+  )
 
   // The bridges you patch yourself, under the row and in the patch colour, so
   // nothing here reads like the soldered line above it.
@@ -1050,18 +1076,122 @@ function levelBar(n: MapNode, k: Palette): El[] {
   ]
 }
 
-/** Running or not, on the two toys that have a switch of their own. */
-function lamp(cx: number, cy: number, on: boolean, k: Palette): El {
-  return el('circle', {
-    cx,
-    cy,
-    r: LAMP_R,
-    fill: on ? k.accent2 : k.bg,
-    stroke: on ? k.accent2 : k.dim,
-  })
+// What each source is, drawn rather than spelt: a 12px glyph in the left of its
+// own box, so the six read as six different machines before the names are. It
+// carries the run state too — the two toys with a switch of their own light
+// their glyph while they play, which is one marker doing the work of two.
+const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
+  'Toy keyboard': (x, y, c) => [
+    el('rect', {
+      x,
+      y: y + 2,
+      width: ICON,
+      height: 8,
+      rx: 1,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('path', {
+      d: `M ${x + 4} ${y + 6.6} V ${y + 10} M ${x + 8} ${y + 6.6} V ${y + 10}`,
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('rect', { x: x + 3.1, y: y + 2, width: 1.8, height: 4.6, fill: c }),
+    el('rect', { x: x + 7.1, y: y + 2, width: 1.8, height: 4.6, fill: c }),
+  ],
+  'FM chip': (x, y, c) => [
+    el('rect', {
+      x: x + 2.5,
+      y: y + 1.5,
+      width: 7,
+      height: 9,
+      rx: 0.8,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('path', {
+      d: [3, 6, 9]
+        .map(dy => `M ${x} ${y + dy} h 2.5 M ${x + 9.5} ${y + dy} h 2.5`)
+        .join(' '),
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('circle', { cx: x + 4.3, cy: y + 3.3, r: 0.7, fill: c }),
+  ],
+  'Toy drums': (x, y, c) => [
+    el('circle', {
+      cx: x + 5,
+      cy: y + 7,
+      r: 4,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('circle', { cx: x + 5, cy: y + 7, r: 1.3, fill: c }),
+    el('path', {
+      d: `M ${x + 11.5} ${y + 1} L ${x + 7.4} ${y + 4.6}`,
+      stroke: c,
+      strokeWidth: 1.1,
+      strokeLinecap: 'round',
+    }),
+  ],
+  'Chaos osc': (x, y, c) => [
+    el('path', {
+      d: `M ${x} ${y + 8} L ${x + 2} ${y + 3} L ${x + 3.7} ${y + 10} L ${x + 5.8} ${y + 1.6} L ${x + 7.7} ${y + 9} L ${x + 9.3} ${y + 4} L ${x + ICON} ${y + 7}`,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 1,
+      strokeLinejoin: 'round',
+    }),
+  ],
+  'Noise & crackle': (x, y, c) => [
+    el('path', {
+      d: (
+        [
+          [0.8, 3.2],
+          [3.4, 1.4],
+          [2.2, 6.4],
+          [5.4, 4.4],
+          [4.6, 9.4],
+          [7.8, 2.6],
+          [8.2, 7.4],
+          [11, 5],
+          [10.4, 9.6],
+        ] as Point[]
+      )
+        .map(([dx, dy]) => `M ${x + dx} ${y + dy} a 0.8 0.8 0 1 0 0.01 0`)
+        .join(' '),
+      fill: c,
+    }),
+  ],
+  Sampler: (x, y, c) => [
+    el('path', {
+      d: [3.4, 8, 5, 10.4, 6, 2.8]
+        .map((h, i) => `M ${x + 1.2 + i * 2} ${y + 6 - h / 2} v ${h}`)
+        .join(' '),
+      stroke: c,
+      strokeWidth: 1,
+      strokeLinecap: 'round',
+    }),
+  ],
 }
 
-function drawNode(n: MapNode, k: Palette, links: boolean): El {
+function glyph(n: MapNode, k: Palette): El[] {
+  const draw = GLYPH[n.label]
+  if (!draw) return []
+  const c = n.playing ? k.accent2 : n.active || n.open ? k.fg : k.dim
+  return [
+    el(
+      'g',
+      { className: 'glyph' },
+      draw(n.x + PAD_X, n.y + (INST_H - ICON) / 2 - 4, c),
+    ),
+  ]
+}
+
+export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   if (n.kind === 'label') {
     return el('g', { className: 'tap' }, [
       ...door(
@@ -1100,10 +1230,10 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
     ])
   }
 
-  // An instrument: a name and a count over how far its fader is up, and a lamp
-  // where the thing has a run switch of its own. A box rather than a line in a
-  // rack, because what a source is wired to is the point and only a box has
-  // edges for a wire to land on.
+  // An instrument: a glyph of the machine it is, then a name and a count over
+  // how far its fader is up. A box rather than a line in a rack, because what a
+  // source is wired to is the point and only a box has edges for a wire to
+  // land on.
   if (n.kind === 'inst') {
     const lit = n.open ? k.fg : n.count > 0 ? k.accent : k.border
     const inner: El[] = [
@@ -1118,10 +1248,10 @@ function drawNode(n: MapNode, k: Palette, links: boolean): El {
         stroke: lit,
         strokeWidth: n.open ? 2 : 1,
       }),
-      ...(n.lamp ? [lamp(n.x + PAD_X + LAMP_R, n.y + 12, !!n.playing, k)] : []),
+      ...glyph(n, k),
       words(
         n.label,
-        n.x + PAD_X + (n.lamp ? LAMP_COL : 0),
+        n.x + PAD_X + ICON_COL,
         n.y + 15.5,
         FONT,
         n.active || n.open ? k.fg : k.dim,

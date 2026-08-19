@@ -50,26 +50,34 @@ And a pick with more than six choices folds into a list — sixteen decay rates
 make a paragraph of buttons, while the four things a knife does to a trace still
 read as a row, so they stay one.
 
-The sources sit across the head of the path as boxes of their own, in two rows,
-because what feeds what is the thing worth drawing. The top row is framed: the
-toy keyboard, the FM chip and the drum machine are three dies on one piece of
-hardware, sharing one supply rail — so **Starve**, a knob on the keyboard's
-panel, dives the FM chip's pitch and drags the kit's tempo with it. The FM chip
-sits next to the keyboard because it has no keyboard and no sequencer of its
-own: its key input is soldered onto the toy's gate line, drawn as the short
-solid wire between them, so it plays whatever strikes a note over there. A
-trigger bridge you patch yourself runs under the row instead, dashed and in the
-patch colour, so solder and cable never look alike.
+The sources sit at the head of the path as boxes of their own, because what
+feeds what is the thing worth drawing. A dashed frame holds the three that are
+one piece of hardware: the toy keyboard, the drum machine and the FM chip are
+three dies sharing one supply, drawn as a dotted bar across the top of the frame
+— so **Starve**, a knob on the keyboard's panel, dives the FM chip's pitch and
+drags the kit's tempo with it.
 
-The bottom row is the three that start where they stand — chaos oscillator,
-noise and the sampler — and both rows drop onto one bar into the mix. The mic is
-not on either row: it is a wire, drawn onto whichever of the seven places **Mic
+Inside the frame the two machines you play sit side by side at one width, and
+the FM chip hangs under the keyboard, set in from its edge, on the end of the
+key line. That is the shape of the thing: the chip has no keyboard and no
+sequencer of its own, and its key input is soldered onto the toy's gate line, so
+it plays whatever strikes a note up there. A trigger bridge you patch yourself
+runs across the lane between them, dashed and in the patch colour, so solder and
+cable never look alike — and the chip drops far enough to stay clear of however
+many you have patched.
+
+Under the frame are the three that start where they stand — chaos oscillator,
+noise and the sampler — and both bands drop onto one bar into the mix. The mic
+is on neither: it is a wire, drawn onto whichever of the seven places **Mic
 patch** solders it to, which is the mix bus on one setting and the middle of
 something else on the other six.
 
-Each box carries a meter reading how far its own fader is up, and the two with a
-run switch carry a lamp that lights while they are running, which is the map
-saying that what you are hearing starts here.
+Each box carries a glyph of the machine it is — a keyboard, a chip, a drum, a
+scribbled wave, a speckle, a waveform — so the band reads as six different
+machines before any of the names do. Under the name is a meter reading how far
+that source's own fader is up, and on the two with a run switch, glyph and meter
+both light while they play: the map saying that what you are hearing starts
+here.
 
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —

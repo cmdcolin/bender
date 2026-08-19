@@ -5,6 +5,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import {
   buildMap,
   drawMap,
+  drawNode,
   groupAnchor,
   PANEL,
   type ChainMap,
@@ -147,14 +148,48 @@ test('the toy board frames its three chips, and wires the key line', () => {
     const chip = box(map, id)!
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)
     expect(chip.x + chip.w).toBeLessThanOrEqual(frame.x + frame.w)
-    expect(hop(map, 'toy_board', id)?.color).toBe(PANEL.dim)
   }
+  // The bar is over the two boxes it can reach. The chip under one of them
+  // takes the same supply and says so by being inside the frame.
+  for (const id of ['Toy_keyboard', 'Toy_drums'])
+    expect(hop(map, 'toy_board', id)?.color).toBe(PANEL.dim)
+  expect(hop(map, 'toy_board', 'FM_chip')).toBeUndefined()
   // Soldered, so it is on the map whatever the board is set to — and it is the
   // warm colour, because a patched cable is the cool one.
   const key = hop(map, 'Toy_keyboard', 'FM_chip')!
   expect(key.color).toBe(PANEL.accent2)
   expect(key.dash).toBeUndefined()
   expect(key.label?.text).toBe('key')
+})
+
+// The pairing is the point: the two machines you play are one row at one width,
+// and the chip with no keyboard of its own hangs under the keyboard on the key
+// line rather than standing beside them as a third peer.
+test('the two toys pair across the top, with the FM chip set in under one', () => {
+  const map = buildMap(DEFAULT_CONTROLS)
+  const keys = box(map, 'Toy_keyboard')!
+  const drums = box(map, 'Toy_drums')!
+  const fm = box(map, 'FM_chip')!
+  expect(keys.y).toBe(drums.y)
+  expect(keys.w).toBeCloseTo(drums.w)
+  expect(keys.x + keys.w).toBeLessThanOrEqual(drums.x)
+  // Under the keyboard, inside its column, and inset from its left edge.
+  expect(fm.y).toBeGreaterThan(keys.y + keys.h)
+  expect(fm.x).toBeGreaterThan(keys.x)
+  expect(fm.x + fm.w).toBeCloseTo(keys.x + keys.w)
+})
+
+// A bridge you patch runs across the lane the key line drops through, so the
+// chip has to move down out of its way rather than be drawn over.
+test('a patched trigger bridge pushes the FM chip clear of it', () => {
+  const plain = buildMap(DEFAULT_CONTROLS)
+  const bridged = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1 })
+  expect(box(bridged, 'FM_chip')!.y).toBeGreaterThan(box(plain, 'FM_chip')!.y)
+  const trig = hop(bridged, 'Toy_drums', 'Toy_keyboard')!
+  expect(trig.color).toBe(PANEL.mod)
+  expect(box(bridged, 'FM_chip')!.y).toBeGreaterThan(
+    box(bridged, 'Toy_keyboard')!.y + box(bridged, 'Toy_keyboard')!.h,
+  )
 })
 
 test('a source box carries how far up its fader is, on its own travel', () => {
@@ -170,14 +205,18 @@ test('a source box carries how far up its fader is, on its own travel', () => {
   )
 })
 
-test('only the two toys carry a run lamp', () => {
+// Every source draws its own glyph, and the one that is running draws it in the
+// warm colour — which is the only thing on the box that says so since the run
+// lamp became the glyph itself.
+test('each source box carries its own glyph, lit while it plays', () => {
   const map = buildMap(DEFAULT_CONTROLS, { playing: ['Toy drums'] })
   const insts = map.nodes.filter(n => n.kind === 'inst')
-  expect(insts.filter(n => n.lamp).map(n => n.label)).toEqual([
-    'Toy keyboard',
-    'Toy drums',
-  ])
   expect(insts.filter(n => n.playing).map(n => n.label)).toEqual(['Toy drums'])
+  for (const n of insts) {
+    const svg = serialize(drawNode(n, PANEL, false))
+    expect(svg).toContain('class="glyph"')
+    expect(svg.includes(PANEL.accent2)).toBe(n.playing === true)
+  }
 })
 
 // The mic is the one source that does not have to reach the mix: six of its

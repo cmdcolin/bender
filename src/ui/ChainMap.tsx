@@ -76,8 +76,8 @@ export function ChainMap({
   seconds: number
 }) {
   const controls = useSettledControls()
-  // The lamps on the two toys, which is the one thing on the map that isn't in
-  // the board: what is running comes off the switches under the keys.
+  // Which of the two toys is sounding, which is the one thing on the map that
+  // isn't in the board: what is running comes off the switches under the keys.
   const playing: string[] = []
   if (useStoreValue(engine.songPlaying)) playing.push('Toy keyboard')
   if (useStoreValue(engine.drumsPlaying)) playing.push('Toy drums')
