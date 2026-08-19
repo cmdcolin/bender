@@ -1,6 +1,10 @@
 import { memo, useEffect, useState, useSyncExternalStore } from 'react'
 import { engine } from '../engine/engine'
-import { useStoreValue } from './ControlsContext'
+import {
+  useBoardValue,
+  useControlValue,
+  useStoreValue,
+} from './ControlsContext'
 import {
   asLen,
   DRUM_ROMS,
@@ -14,7 +18,6 @@ import {
   voiceBit,
   type DrumRom,
   type DrumRow,
-  type DrumStepKey,
 } from '../drums'
 import styles from './DrumGrid.module.css'
 import { Tip } from './Tip'
@@ -81,16 +84,17 @@ function useStruck(): number {
 // Shift-click a step to end a row there; the badge on the right says where it
 // ends, and puts the row back to sixteen.
 export function DrumGrid() {
-  const controls = useStoreValue(engine.controls)
   const playing = useStoreValue(engine.drumsPlaying)
   const tapping = useStoreValue(engine.tapRecord)
   const tick = usePlayTick()
   const struck = useStruck()
-  const live = playing && controls.drumLevel > 0
-  const masks = Object.fromEntries(
-    GRID_ROWS.map(r => [r.key, controls[r.key]]),
-  ) as Record<DrumStepKey, number>
-  const loaded = romMatching(masks)
+  // Two figures rather than the board: the grid is open while a morph travels,
+  // and taking the whole of it would rebuild seven rows and their hundred and
+  // twelve cells on every frame of one. A board carries every mask a ROM is
+  // matched on, so the name is all this needs back.
+  const level = useControlValue('drumLevel')
+  const loaded = useBoardValue(c => romMatching(c)?.name)
+  const live = playing && level > 0
 
   // Through the walk, like every other verb on the panel: a ROM lands on top of
   // whatever you had drawn, and an afternoon of writing a pattern is not a thing
@@ -107,7 +111,7 @@ export function DrumGrid() {
         {DRUM_ROMS.map(r => (
           <Tip key={r.name} text={r.blurb}>
             <button
-              className={loaded === r ? styles.romOn : styles.rom}
+              className={loaded === r.name ? styles.romOn : styles.rom}
               onClick={() => load(r)}
             >
               {r.name}
@@ -161,14 +165,14 @@ export function DrumGrid() {
         <button
           className={styles.silent}
           onClick={() => {
-            if (controls.drumLevel === 0) {
+            if (level === 0) {
               engine.armStep()
               engine.set('drumLevel', 0.8)
             }
             engine.setDrumsPlaying(true)
           }}
         >
-          {controls.drumLevel === 0
+          {level === 0
             ? 'the kit is turned down — bring Level up and run it'
             : 'the kit is stopped — run it'}
         </button>
@@ -186,9 +190,8 @@ function Row({
   tick: number | null
   lit: boolean
 }) {
-  const controls = useStoreValue(engine.controls)
-  const mask = controls[row.key]
-  const len = asLen(controls[row.len])
+  const mask = useControlValue(row.key)
+  const len = asLen(useControlValue(row.len))
   const accent = row.key === 'drumAccent'
   // Each row's own playhead: the counter is steps clocked, so a short row is
   // round again while the long ones are still in the bar.

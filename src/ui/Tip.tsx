@@ -8,6 +8,7 @@ import {
 import {
   cloneElement,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useId,
@@ -155,14 +156,22 @@ function Bubble(props: { anchor: HTMLElement; id: string; text: ReactNode }) {
     middleware: [offset(6), flip({ padding: 8 }), shift({ padding: 8 })],
     whileElementsMounted: autoUpdate,
   })
+  // Shown from the ref rather than an effect: a popover that is not open is
+  // display:none, and floating-ui measures a box of nothing. Held across
+  // renders for the same reason the anchor's ref is — an inline one is a fresh
+  // ref every render, and every render here is floating-ui landing a measured
+  // position, so the bubble would hand itself back and forth and tear down and
+  // rebuild autoUpdate's observers each time round.
+  const setFloating = useCallback(
+    (el: HTMLElement | null) => {
+      el?.showPopover()
+      refs.setFloating(el)
+    },
+    [refs],
+  )
   return (
     <div
-      // Shown from the ref rather than an effect: a popover that is not open
-      // is display:none, and floating-ui measures a box of nothing.
-      ref={el => {
-        el?.showPopover()
-        refs.setFloating(el)
-      }}
+      ref={setFloating}
       popover="manual"
       id={props.id}
       role="tooltip"

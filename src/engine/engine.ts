@@ -388,7 +388,13 @@ export class Engine {
   stopDrift() {
     if (this.driftTimer !== undefined) clearInterval(this.driftTimer)
     this.driftTimer = undefined
-    if (this.drifting.get()) this.drifting.set(false)
+    if (!this.drifting.get()) return
+    this.drifting.set(false)
+    // The leg in flight goes with the timer. Stopping says it keeps the board
+    // wherever it has got to, and a leg left travelling would spend another
+    // twelve seconds carrying it somewhere you did not ask for — which is the
+    // drift still running by any name you would use for it.
+    this.cancelMorph()
   }
 
   /** Cancel a hunt in flight and leave whatever board is playing on the board. */

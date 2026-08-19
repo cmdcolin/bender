@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useStoreValue } from './ControlsContext'
+import { useControlValue, useStoreValue } from './ControlsContext'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
 import { engine } from '../engine/engine'
 import { AUTOMAP_KEYS, DEVICE_PROFILES, midi, type DeviceProfile } from './midi'
@@ -17,14 +17,15 @@ function Bindings() {
   const pickups = useStoreValue(midi.pickups)
   // Walked in signal-path order rather than bind order, so a row doesn't move
   // under the pointer as bindings come and go.
-  const bound = ALL_SLIDERS.filter(s => bindings[s.key] !== undefined)
+  const bound = ALL_SLIDERS.flatMap(s => {
+    const b = bindings[s.key]
+    return b === undefined ? [] : [{ slider: s, binding: b }]
+  })
   if (bound.length === 0) return null
   return (
     <>
       <div className={styles.list}>
-        {bound.map(s => {
-          const b = bindings[s.key]
-          if (b === undefined) return null
+        {bound.map(({ slider: s, binding: b }) => {
           const stranded = pickups[s.key] !== undefined
           return (
             <div key={s.key} className={styles.bound}>
@@ -169,7 +170,7 @@ function Wire() {
   const notes = useStoreValue(midi.notes)
   const pads = useStoreValue(midi.pads)
   const running = useStoreValue(engine.running)
-  const level = useStoreValue(engine.controls).drumLevel
+  const level = useControlValue('drumLevel')
   return (
     <>
       {/* Notes reach the chip through the audio engine, and a suspended engine

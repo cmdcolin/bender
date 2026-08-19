@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { groupAnchor } from './chain-map'
-import { useStoreValue } from './ControlsContext'
+import { useBoardValue } from './ControlsContext'
 import { engine } from '../engine/engine'
 import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
@@ -11,8 +11,11 @@ import { ControlSlider } from './Slider'
 import styles from './Section.module.css'
 import { Tip } from './Tip'
 
+// A count rather than the board it is counted off, so the eight parts on the
+// shelf sit still through a morph instead of each recounting its group sixty
+// times a second to print the same number.
 function useTouchedCount(group: Group): number {
-  return touchedCount(group, useStoreValue(engine.controls))
+  return useBoardValue(c => touchedCount(group, c))
 }
 
 // Every stage's way back, wherever the stage is being shown from: the number of
@@ -70,17 +73,15 @@ const movedIn = (sliders: SliderDef[], c: Controls) =>
 function PartFold({
   name,
   rows,
-  c,
   closed,
   onToggle,
 }: {
   name: string
   rows: SliderDef[]
-  c: Controls
   closed: boolean
   onToggle: () => void
 }) {
-  const moved = movedIn(rows, c)
+  const moved = useBoardValue(c => movedIn(rows, c))
   return (
     <div className={styles.fold}>
       <button
@@ -104,12 +105,26 @@ function PartFold({
 // the group — and one holding a control you have moved starts open anyway, since
 // a panel that hides what you set is a panel lying about the board.
 function Rows({ group }: { group: Group }) {
-  const c = useStoreValue(engine.controls)
   const blocks = parts(group)
+  // Which rows have anything to act on, as a string rather than the board they
+  // are read off: a stage stands open through morphs and drags, and taking the
+  // board would rebuild every row in it sixty times a second — where what the
+  // list actually turns on is a row arriving or leaving, which is rare. The
+  // rows themselves each hold their own control and move on their own.
+  const shownKeys = useBoardValue(c =>
+    group.sliders
+      .filter(d => shown(d, c))
+      .map(d => d.key)
+      .join(','),
+  )
+  const visible = new Set(shownKeys.split(','))
   const [shut, setShut] = useState<readonly string[]>(() =>
     (group.folded ?? []).filter(
       name =>
-        movedIn(blocks.find(b => b.name === name)?.sliders ?? [], c) === 0,
+        movedIn(
+          blocks.find(b => b.name === name)?.sliders ?? [],
+          engine.controls.get(),
+        ) === 0,
     ),
   )
   const toggle = (name: string) =>
@@ -117,7 +132,7 @@ function Rows({ group }: { group: Group }) {
   return (
     <>
       {blocks.map(({ name, sliders }) => {
-        const rows = sliders.filter(d => shown(d, c))
+        const rows = sliders.filter(d => visible.has(d.key))
         if (name === null)
           return rows.map(def => <ControlSlider key={def.key} def={def} />)
         // A heading over nothing is the same question about nothing the rows
@@ -128,7 +143,6 @@ function Rows({ group }: { group: Group }) {
             key={name}
             name={name}
             rows={rows}
-            c={c}
             closed={shut.includes(name)}
             onToggle={() => toggle(name)}
           />

@@ -17,7 +17,10 @@ import { boardFromLocation, boardUrl } from './share'
 export function useBoardUrl() {
   useEffect(() => {
     let id: ReturnType<typeof setTimeout>
-    let last = ''
+    // What the bar already says, so a load only writes when the board does not
+    // already encode to it — a link that arrived in the old query form still
+    // gets rewritten as a hash, because that is a different string.
+    let last = window.location.href
     const write = () => {
       clearTimeout(id)
       id = setTimeout(() => {

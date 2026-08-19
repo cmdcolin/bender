@@ -42,11 +42,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.tag {
-  font-size: var(--fs-xs);
-  color: var(--fg4);
-}
-
 /* Every row of verbs in the panel is the same row: buttons at their own width,
    wrapping when they run out. Nothing stretches to fill a line, so a button's
    width says how long its label is and nothing else — a row that wrapped used

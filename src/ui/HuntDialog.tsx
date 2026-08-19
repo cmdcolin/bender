@@ -71,8 +71,8 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
             ))}
           </div>
           <p className={styles.line}>
-            Six rolled boards, played one after another for a second and a half
-            each. What you are hearing is the audition, not a fault.
+            {step?.of ?? 6} rolled boards, played one after another for a second
+            and a half each. What you are hearing is the audition, not a fault.
           </p>
           <p className={styles.line}>
             The limiter is the judge. It keeps whichever board kept arriving at
