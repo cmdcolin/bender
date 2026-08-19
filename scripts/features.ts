@@ -80,7 +80,7 @@ const BLURBS: Record<string, string> = {
 const SCRIPTS: Record<string, string> = {
   dev: 'the app',
   build: 'typecheck and bundle',
-  test: 'the suite, including a torture test that pins every feedback past unity at once',
+  test: 'the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom',
   typecheck: 'types only',
   bench: 'what the chain costs per block, stage by stage',
   blocks:

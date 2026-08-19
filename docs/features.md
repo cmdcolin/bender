@@ -764,25 +764,25 @@ on it — a link never presses play, so it is loaded and waiting.
 <details>
 <summary>17 commands</summary>
 
-| command          | what it does                                                                    |
-| ---------------- | ------------------------------------------------------------------------------- |
-| `pnpm dev`       | the app                                                                         |
-| `pnpm build`     | typecheck and bundle                                                            |
-| `pnpm ab`        | this tree against a git ref, as a paired comparison                             |
-| `pnpm bench`     | what the chain costs per block, stage by stage                                  |
-| `pnpm blocks`    | the distribution — p50 to p99.9, and how many blocks went over budget           |
-| `pnpm cold`      | the first seconds, before anything has tiered up                                |
-| `pnpm diagram`   | re-renders the README's signal path                                             |
-| `pnpm features`  | rewrites docs/features.md — this file                                           |
-| `pnpm soak`      | whether any stage gets slower the longer it runs                                |
-| `pnpm preview`   | serves the built bundle                                                         |
-| `pnpm test`      | the suite, including a torture test that pins every feedback past unity at once |
-| `pnpm typecheck` | types only                                                                      |
-| `pnpm pat`       | release: patch                                                                  |
-| `pnpm min`       | release: minor                                                                  |
-| `pnpm maj`       | release: major                                                                  |
-| `pnpm format`    | prettier                                                                        |
-| `pnpm prepare`   | points git at .githooks                                                         |
+| command          | what it does                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| `pnpm dev`       | the app                                                                                             |
+| `pnpm build`     | typecheck and bundle                                                                                |
+| `pnpm ab`        | this tree against a git ref, as a paired comparison                                                 |
+| `pnpm bench`     | what the chain costs per block, stage by stage                                                      |
+| `pnpm blocks`    | the distribution — p50 to p99.9, and how many blocks went over budget                               |
+| `pnpm cold`      | the first seconds, before anything has tiered up                                                    |
+| `pnpm diagram`   | re-renders the README's signal path                                                                 |
+| `pnpm features`  | rewrites docs/features.md — this file                                                               |
+| `pnpm soak`      | whether any stage gets slower the longer it runs                                                    |
+| `pnpm preview`   | serves the built bundle                                                                             |
+| `pnpm test`      | the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom |
+| `pnpm typecheck` | types only                                                                                          |
+| `pnpm pat`       | release: patch                                                                                      |
+| `pnpm min`       | release: minor                                                                                      |
+| `pnpm maj`       | release: major                                                                                      |
+| `pnpm format`    | prettier                                                                                            |
+| `pnpm prepare`   | points git at .githooks                                                                             |
 
 </details>
 

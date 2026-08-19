@@ -1018,7 +1018,12 @@ pnpm dev
 
 `pnpm test` runs the DSP suite, including a torture test that slams every param
 — all feedbacks pinned past unity at once — and asserts nothing non-finite or
-past the limiter ever leaves the chain.
+past the limiter ever leaves the chain. It also runs the panel in jsdom, where
+what is under test is the sentences the panel makes rather than a signal: that a
+fold counts the rows it opens to, that a ROM lands in the walk so ctrl+z takes
+it back, that a drag anywhere on the window is a drag the app has taken. The
+engine reaches for an AudioContext on the way up and gets a silent one — see
+`src/ui/testDom.ts`.
 
 `pnpm bench` renders offline and says what the chain costs per block, stage by
 stage. The worklet gets 2.7 ms to fill 2.7 ms of audio, so the number that
