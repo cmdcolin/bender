@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useState,
   useSyncExternalStore,
@@ -11,6 +12,7 @@ import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
 import { GROUPS } from './controls'
+import { HuntDialog } from './HuntDialog'
 import { Keys } from './Keys'
 import { MidiPanel } from './MidiPanel'
 import {
@@ -111,8 +113,12 @@ export function App() {
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
   const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
   const walk = useStoreValue(engine.history)
-  const hunting = useStoreValue(engine.hunting)
   const drifting = useStoreValue(engine.drifting)
+  // Whether the last hunt reached the end and kept a board, as against being
+  // called off, which is what the dialog stays up to say. A hunt that was
+  // stopped by hand needs no note: you are holding the answer.
+  const [landed, setLanded] = useState(false)
+  const dismissLanded = useCallback(() => setLanded(false), [])
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
@@ -343,22 +349,26 @@ export function App() {
             </Tip>
           ))}
           {/* The one roll that listens to what it rolled. It plays its way
-              through the candidates, so it takes as long as it takes. */}
-          <Tip text="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. Click again, or touch anything else, to call it off and keep what is playing">
+              through the candidates, so it takes as long as it takes, and the
+              dialog it puts up is where it says so and where it is stopped. */}
+          <Tip text="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. A dialog says which board it is on while it listens, and stops it there">
             <button
               className={styles.btn}
               onClick={() => {
-                if (hunting) engine.stopHunt()
-                else
-                  void engine.hunt(
-                    huntCandidates(engine.controls.get(), Math.random),
-                  )
+                setLanded(false)
+                void engine
+                  .hunt(huntCandidates(engine.controls.get(), Math.random))
+                  .then(best => setLanded(best !== null))
               }}
             >
-              {hunting ? 'listening…' : 'hunt an edge'}
+              hunt an edge
             </button>
           </Tip>
         </div>
+        {/* What the hunt is doing while it does it, and the only way to call
+            it off: eight seconds of the board playing six strangers reads as a
+            fault unless something says otherwise. */}
+        <HuntDialog landed={landed} onDismiss={dismissLanded} />
 
         {/* How a board arrives, and how to stop one that has arrived badly.
             Below the rolls because neither one picks a board — they sit out of

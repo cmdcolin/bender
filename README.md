@@ -872,10 +872,12 @@ like everything further past it, and the edge itself is the board that keeps
 arriving there and backing off — so what it looks for is how _unevenly_ the
 limiter works rather than how hard. You hear it going through them, which is the
 honest version of the thing: a board can only be judged by playing it, so a
-search for one has to be audible. Touch anything, or press it again, and it
-stops where it is and keeps what is playing. The boards it tried on the way are
-not in the walk — the whole hunt banks one entry, the board you were on when it
-started.
+search for one has to be audible. A dialog stands over the board while it
+listens, saying which candidate of the six is playing — eight seconds of the
+board cutting to strangers reads as a fault unless something says otherwise —
+and its button, or escape, stops the hunt where it is and keeps what is playing.
+The boards it tried on the way are not in the walk — the whole hunt banks one
+entry, the board you were on when it started.
 
 **Drift** is mutate on a timer: every fifteen seconds the board sets off for
 somewhere near where it stands, travelling most of the way there before it

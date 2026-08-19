@@ -122,6 +122,25 @@ test('a hunt banks one step, keeps a winner, and gives way to a hand', async () 
   expect(engine.controls.get().dlyFb).toBe(landed!.dlyFb)
 })
 
+// The dialog counts the candidates off, so the count has to be there to read
+// while a board is playing and gone once the hunt is over either way.
+test('a hunt says which candidate it is on, and stops saying when it ends', async () => {
+  const engine = new Engine()
+  const seen: string[] = []
+  engine.huntStep.subscribe(() => {
+    const step = engine.huntStep.get()
+    seen.push(step ? `${step.board}/${step.of}` : 'none')
+  })
+  await engine.hunt([board({ dlyFb: 0.4 }), board({ dlyFb: 0.9 })], 20)
+  expect(seen).toEqual(['1/2', '2/2', 'none'])
+
+  const stopped = engine.hunt([board({ dlyFb: 0.5 })], 40)
+  expect(engine.huntStep.get()).toEqual({ board: 1, of: 1 })
+  engine.stopHunt()
+  expect(engine.huntStep.get()).toBe(null)
+  await stopped
+})
+
 test('anything you touch calls a hunt off and keeps what is playing', async () => {
   const engine = new Engine()
   const hunt = engine.hunt([board({ dlyFb: 0.4 }), board({ dlyFb: 0.9 })], 40)

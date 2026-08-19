@@ -123,6 +123,11 @@ export class Engine {
   readonly history = createStore<History<Controls>>(EMPTY_HISTORY)
   /** True while a hunt is auditioning boards, so its button can say so. */
   readonly hunting = createStore(false)
+  // Which candidate the hunt is on, one-based, and how many there are — the
+  // panel says so while it listens, because a hunt is eight seconds of the
+  // board cutting to strangers and the only thing that makes that read as work
+  // rather than as a fault is a count going up. Null between hunts.
+  readonly huntStep = createStore<{ board: number; of: number } | null>(null)
   /** True while the board is nudging itself along on a timer. */
   readonly drifting = createStore(false)
   // Which semitones are down under a hand: the on-screen keys, the computer
@@ -343,8 +348,9 @@ export class Engine {
     this.hunting.set(true)
     let best: Controls | null = null
     let bestScore = -Infinity
-    for (const board of candidates) {
+    for (const [i, board] of candidates.entries()) {
       if (token !== this.huntToken) return null
+      this.huntStep.set({ board: i + 1, of: candidates.length })
       this.writeLive(board)
       const score = await this.audition(holdMs, token)
       if (token !== this.huntToken) return null
@@ -354,6 +360,7 @@ export class Engine {
       }
     }
     this.hunting.set(false)
+    this.huntStep.set(null)
     if (best) this.writeLive(best)
     return best
   }
@@ -389,6 +396,7 @@ export class Engine {
     if (!this.hunting.get()) return
     this.huntToken++
     this.hunting.set(false)
+    this.huntStep.set(null)
   }
 
   // A board straight onto the rails with no step banked: the hunt owns its own
