@@ -54,7 +54,8 @@
 }
 
 /* The parts no wire reaches, under the drawing rather than in it. The label
-   takes a row of its own so the parts wrap under it as one block. */
+   leads the row rather than taking one of its own: a whole line of panel height
+   for two words is a line the parts themselves wanted. */
 .shelf {
   display: flex;
   flex-wrap: wrap;
@@ -64,7 +65,6 @@
 }
 
 .shelfLabel {
-  width: 100%;
   font-size: var(--fs-xs);
   color: var(--fg4);
 }
@@ -141,17 +141,9 @@
 }
 
 .foldHead {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
   padding: 4px 2px;
-  background: none;
-  border: none;
   color: var(--fg3);
-  font: inherit;
   font-size: var(--fs-sm);
-  text-align: left;
   cursor: pointer;
 }
 
@@ -159,17 +151,14 @@
   color: var(--fg);
 }
 
-.foldMark {
+.foldHead::marker {
   color: var(--fg4);
-  font-size: var(--fs-xs);
 }
 
-.foldName {
-  flex: 1;
-}
-
+/* Over on the right, where the readout of every row it opens onto sits. */
 .foldCount,
 .foldMoved {
+  float: right;
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
   color: var(--fg4);

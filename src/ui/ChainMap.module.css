@@ -18,7 +18,16 @@
    cropping it. Not a step further — a map whose labels have gone to 6px has
    stopped being the index it is there to be. */
 .mapOpen .graph svg {
-  max-height: 44vh;
+  max-height: 40vh;
+}
+
+/* Stacked under the toy rather than beside it, the panel has the document's own
+   scroll to grow into — so the path stops rationing height and draws at full
+   size, which on a narrow screen is the only way around the board there is. */
+@media (max-width: 760px) {
+  .mapOpen .graph svg {
+    max-height: none;
+  }
 }
 
 .graph a {

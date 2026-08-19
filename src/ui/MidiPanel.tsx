@@ -386,7 +386,6 @@ export function MidiPanel() {
   const status = useStoreValue(midi.status)
   const bindings = useStoreValue(midi.bindings)
   const stranded = Object.keys(useStoreValue(midi.pickups)).length
-  const [open, setOpen] = useState(false)
   const count = Object.keys(bindings).length
 
   const summary =
@@ -407,14 +406,15 @@ export function MidiPanel() {
             ? 'asking…'
             : 'off — press to connect a controller'
 
+  // A disclosure, which the browser already has: <details> keeps the open state,
+  // draws its own marker and works from the keyboard, so none of that is written
+  // here. Unconnected the summary wears a border, because folded away and with
+  // nothing wired it is the only way to reach the wire at all.
   return (
-    <div className={styles.panel}>
-      <button
+    <details className={styles.panel}>
+      <summary
         className={status === 'ready' ? styles.header : styles.headerCall}
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
       >
-        <span className={styles.caret}>{open ? '▾' : '▸'}</span>
         <span className={styles.title}>midi</span>
         <span
           className={
@@ -427,8 +427,8 @@ export function MidiPanel() {
         >
           {summary}
         </span>
-      </button>
-      {!open ? null : status === 'ready' ? (
+      </summary>
+      {status === 'ready' ? (
         <Wired />
       ) : status === 'unsupported' ? (
         <div className={styles.hint}>
@@ -447,6 +447,6 @@ export function MidiPanel() {
           </span>
         </div>
       )}
-    </div>
+    </details>
   )
 }

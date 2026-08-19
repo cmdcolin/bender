@@ -21,11 +21,15 @@
   background: var(--bg2);
 }
 
-.masthead {
+/* The nameplate, and the two verbs that are about no board in particular: how
+   the next one arrives and how to shut this one up. They share the row because
+   neither the brand nor a duration picker earns a line of its own, and top
+   right is where a plate's panic button belongs anyway. */
+.head {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  padding: 0 0 6px;
+  padding-bottom: 6px;
 }
 
 .brand {
@@ -48,8 +52,7 @@
    to hand its last two buttons the whole leftover width and read as a
    different, more important kind of button. */
 .actions,
-.dice,
-.utils {
+.dice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -75,7 +78,11 @@
   composes: actionDanger from './button.module.css';
 }
 
-select.btn {
+/* The duration picker and panic sit at the far end of the nameplate row, which
+   is what pushes them there. */
+.morph {
+  composes: btn;
+  margin-left: auto;
   text-align: center;
   appearance: none;
 }
@@ -90,6 +97,7 @@ select.btn {
   position: relative;
   overflow: hidden;
   min-width: 92px;
+  margin-left: auto;
 }
 
 .flightFill {

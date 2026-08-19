@@ -3,27 +3,24 @@
   padding: 2px 0 5px;
 }
 
+/* The disclosure's own row: a line of text, so it is left as one — the browser
+   draws the caret, holds the open state and works the keyboard. Laying it out
+   with flex would take the marker away again, which is what the hand-drawn
+   ▸ was for. */
 .header {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  width: 100%;
   padding: 3px 2px;
-  background: none;
-  border: none;
   color: var(--fg);
   font-size: var(--fs-lg);
-  text-align: left;
   cursor: pointer;
+}
+
+.header::marker {
+  color: var(--fg4);
 }
 
 .title {
   font-weight: 600;
-}
-
-.caret {
-  font-size: var(--fs-xs);
-  color: var(--fg4);
+  margin-right: 6px;
 }
 
 /* Folded away and unconnected, this row is the only way to reach the wire — so

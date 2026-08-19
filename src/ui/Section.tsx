@@ -70,33 +70,33 @@ const movedIn = (sliders: SliderDef[], c: Controls) =>
 // not down there yet, and a heading promising eight controls that opens on four
 // is a heading nobody trusts twice. Every control you have moved is shown, so
 // the moved count is the same either way.
+//
+// A <details>, which is what this is: the browser draws the caret, works the
+// keyboard, and owns which way the fold is sitting once it has been handed a way
+// to start. Nothing here tracks that — a fold is the one piece of the panel that
+// is about the panel rather than about the board.
 function PartFold({
   name,
   rows,
-  closed,
-  onToggle,
+  startOpen,
 }: {
   name: string
   rows: SliderDef[]
-  closed: boolean
-  onToggle: () => void
+  startOpen: boolean
 }) {
   const moved = useBoardValue(c => movedIn(rows, c))
   return (
-    <div className={styles.fold}>
-      <button
-        className={styles.foldHead}
-        aria-expanded={!closed}
-        onClick={onToggle}
-      >
-        <span className={styles.foldMark}>{closed ? '▸' : '▾'}</span>
-        <span className={styles.foldName}>{name}</span>
+    <details className={styles.fold} open={startOpen}>
+      <summary className={styles.foldHead}>
+        {name}
         <span className={moved > 0 ? styles.foldMoved : styles.foldCount}>
           {moved > 0 ? `${moved} moved` : rows.length}
         </span>
-      </button>
-      {!closed && rows.map(def => <ControlSlider key={def.key} def={def} />)}
-    </div>
+      </summary>
+      {rows.map(def => (
+        <ControlSlider key={def.key} def={def} />
+      ))}
+    </details>
   )
 }
 
@@ -118,17 +118,22 @@ function Rows({ group }: { group: Group }) {
       .join(','),
   )
   const visible = new Set(shownKeys.split(','))
-  const [shut, setShut] = useState<readonly string[]>(() =>
-    (group.folded ?? []).filter(
-      name =>
-        movedIn(
-          blocks.find(b => b.name === name)?.sliders ?? [],
-          engine.controls.get(),
-        ) === 0,
-    ),
+  // Settled the once, on the way in: the fold itself belongs to the browser from
+  // there, and a heading that reopened under a morph because the board had moved
+  // would be the panel taking a hand off the knob you were turning.
+  const [startOpen] = useState(
+    () =>
+      new Set(
+        blocks
+          .filter(
+            b =>
+              b.name !== null &&
+              (!(group.folded ?? []).includes(b.name) ||
+                movedIn(b.sliders, engine.controls.get()) > 0),
+          )
+          .map(b => b.name),
+      ),
   )
-  const toggle = (name: string) =>
-    setShut(s => (s.includes(name) ? s.filter(n => n !== name) : [...s, name]))
   return (
     <>
       {blocks.map(({ name, sliders }) => {
@@ -143,8 +148,7 @@ function Rows({ group }: { group: Group }) {
             key={name}
             name={name}
             rows={rows}
-            closed={shut.includes(name)}
-            onToggle={() => toggle(name)}
+            startOpen={startOpen.has(name)}
           />
         )
       })}
@@ -293,12 +297,14 @@ function ShelfPart({
   )
 }
 
+// One line, because it is the line you read once. It used to spend four of them
+// on the same two sentences, which is a fifth of a short screen's panel held
+// open for a note nobody needs twice.
 export function PathHint() {
   return (
     <p className={styles.hint}>
-      click a stage on the path — or a part off the board — to open its
-      controls. The number beside a name is how many of its controls you have
-      moved: press the number to put that stage back where it booted
+      click a stage for its controls — the number on it is how many you have
+      moved, and puts them back
     </p>
   )
 }

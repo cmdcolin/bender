@@ -89,7 +89,7 @@ function MorphControl(props: {
       }
     >
       <select
-        className={styles.btn}
+        className={styles.morph}
         value={props.seconds}
         onChange={e => {
           const picked = MORPH_SECONDS.find(s => String(s) === e.target.value)
@@ -255,10 +255,24 @@ export function App() {
       </main>
 
       <aside className={styles.panel} aria-label="the board">
-        <div className={styles.masthead}>
+        {/* The nameplate, and beside it how a board arrives and how to stop one
+            that has arrived badly. Neither of those picks a board, so they stay
+            out of the rows that do — and a duration picker is not worth a line
+            of the panel's height on its own. */}
+        <div className={styles.head}>
           <span className={styles.brand}>bender</span>
           <Tip text={`bender ${versionLabel} (${gitSha})`}>
             <span className={styles.version}>{versionLabel}</span>
+          </Tip>
+          <MorphControl
+            seconds={morphSeconds}
+            drifting={drifting}
+            onSet={setMorphSeconds}
+          />
+          <Tip text="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes">
+            <button className={styles.btnDanger} onClick={() => engine.panic()}>
+              panic
+            </button>
           </Tip>
         </div>
 
@@ -391,23 +405,6 @@ export function App() {
             it off: eight seconds of the board playing six strangers reads as a
             fault unless something says otherwise. */}
         <HuntDialog landed={landed} onDismiss={dismissLanded} />
-
-        {/* How a board arrives, and how to stop one that has arrived badly.
-            Below the rolls because neither one picks a board — they sit out of
-            the row that does, at their own width rather than stretched across
-            whatever the wrap left over. */}
-        <div className={styles.utils}>
-          <MorphControl
-            seconds={morphSeconds}
-            drifting={drifting}
-            onSet={setMorphSeconds}
-          />
-          <Tip text="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes">
-            <button className={styles.btnDanger} onClick={() => engine.panic()}>
-              panic
-            </button>
-          </Tip>
-        </div>
 
         <Presets morphSeconds={morphSeconds} />
 

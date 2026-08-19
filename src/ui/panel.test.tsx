@@ -30,7 +30,14 @@ const countRows = (head: HTMLElement) => {
   )
 }
 
-const knife = () => screen.getByRole('button', { name: /knife on the bus/ })
+// A fold is a <details>, so its heading is the summary rather than a button.
+const knife = () => {
+  const head = [...document.querySelectorAll('summary')].find(s =>
+    /knife on the bus/.test(s.textContent ?? ''),
+  )
+  if (!head) throw new Error('no knife fold')
+  return head as HTMLElement
+}
 const said = (head: HTMLElement) => Number(head.textContent!.replace(/\D/g, ''))
 
 const openFmChip = () =>
