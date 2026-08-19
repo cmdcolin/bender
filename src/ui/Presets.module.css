@@ -41,3 +41,10 @@
 .label {
   position: relative;
 }
+
+/* The chip that opens the rest of the catalog, and shuts it again. Quiet,
+   because it names no board — it sits at the end of the row rather than in a
+   line of its own so the fold doesn't cost a whole row of height. */
+.more {
+  composes: chipQuiet from './button.module.css';
+}

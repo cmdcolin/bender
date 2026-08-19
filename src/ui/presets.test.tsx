@@ -168,3 +168,46 @@ test('re-grabbing a chip carries on along the same road', () => {
   for (const key of Object.keys(first.patch) as (keyof typeof from)[])
     expect(engine.controls.get()[key]).toBeCloseTo(from[key], 5)
 })
+
+// Forty-five chips is a wall, so the row shows a dozen and the rest arrive when
+// you ask for them.
+const COLLAPSED = 12 // how many the row shows shut, from Presets.tsx
+const toggle = () => screen.getByRole('button', { name: /show|hide/ })
+const chips = () =>
+  screen.getAllByRole('button').filter(b => b !== toggle()).length
+
+test('the row starts folded and opens on ask', () => {
+  render(<Presets morphSeconds={0} />)
+  expect(chips()).toBe(COLLAPSED)
+  expect(toggle().textContent).toBe(`show ${PRESETS.length - COLLAPSED} more`)
+
+  act(() => fireEvent.click(toggle(), { detail: 1 }))
+  expect(chips()).toBe(PRESETS.length)
+  expect(toggle().textContent).toBe('hide')
+
+  act(() => fireEvent.click(toggle(), { detail: 1 }))
+  expect(chips()).toBe(COLLAPSED)
+})
+
+// The fill is the only thing saying which board you are on, so folding the row
+// must not take the chip you are standing on away with it.
+test('the chip you are standing on survives the fold', () => {
+  const past = PRESETS[COLLAPSED + 5]!
+  render(<Presets morphSeconds={0} />)
+  act(() => fireEvent.click(toggle(), { detail: 1 }))
+  act(() =>
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(past.name) }),
+      {
+        detail: 0,
+      },
+    ),
+  )
+  act(() => fireEvent.click(toggle(), { detail: 1 }))
+
+  screen.getByRole('button', { name: new RegExp(past.name) })
+  expect(chips()).toBe(COLLAPSED + 1)
+  expect(toggle().textContent).toBe(
+    `show ${PRESETS.length - COLLAPSED - 1} more`,
+  )
+})

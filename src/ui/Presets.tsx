@@ -16,6 +16,10 @@ const DRAG_SLOP = 4
 // carries on past either edge.
 const DRAG_FULL = 140
 
+// How many chips the row shows before you ask for the rest. Enough to browse
+// without the panel's first screen being nothing but presets.
+const COLLAPSED = 12
+
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
 // How far along one preset's road the board is standing, and which road that
@@ -149,12 +153,23 @@ function PresetChip(props: {
 export function Presets(props: { morphSeconds: MorphSeconds }) {
   const controls = useStoreValue(engine.controls)
   const [scrub, setScrub] = useState<Scrub | null>(null)
+  const [open, setOpen] = useState(false)
   const held =
     scrub !== null && sameControls(controls, scrub.produced) ? scrub : null
 
+  const shown = open ? PRESETS : PRESETS.slice(0, COLLAPSED)
+  // The chip you are standing on stays on the row even when it lives past the
+  // fold: its fill is the only thing saying which board this is, and folding it
+  // away would leave the row claiming you are on none of them.
+  const stray =
+    held !== null && !shown.some(p => p.name === held.name)
+      ? PRESETS.find(p => p.name === held.name)
+      : undefined
+  const rest = PRESETS.length - shown.length - (stray ? 1 : 0)
+
   return (
     <div className={styles.presets}>
-      {PRESETS.map(p => (
+      {[...shown, ...(stray ? [stray] : [])].map(p => (
         <PresetChip
           key={p.name}
           def={p}
@@ -163,6 +178,13 @@ export function Presets(props: { morphSeconds: MorphSeconds }) {
           onScrub={setScrub}
         />
       ))}
+      <button
+        className={styles.more}
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        {open ? 'hide' : `show ${rest} more`}
+      </button>
     </div>
   )
 }
