@@ -129,3 +129,52 @@
   font-size: var(--fs-sm);
   color: var(--fg4);
 }
+
+/* A heading inside one stage's controls, for a stage with more of them than a
+   flat list can carry. The everyday knobs stay loose at the top; everything
+   under a heading folds, and the heading says how many controls are down there
+   — or how many of them you have moved, which is the group header's count made
+   small enough to sit on a part. */
+.fold {
+  border-top: 1px solid var(--border-quiet);
+  margin-top: 4px;
+}
+
+.foldHead {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 4px 2px;
+  background: none;
+  border: none;
+  color: var(--fg3);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.foldHead:hover {
+  color: var(--fg);
+}
+
+.foldMark {
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+}
+
+.foldName {
+  flex: 1;
+}
+
+.foldCount,
+.foldMoved {
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg4);
+}
+
+.foldMoved {
+  color: var(--accent);
+}

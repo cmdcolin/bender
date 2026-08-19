@@ -105,3 +105,21 @@
   color: #100c0b;
   border-color: var(--accent);
 }
+
+/* The same one-of-a-set as .choice, folded up into a list — for a set too long
+   to lay out on the row, where a wall of buttons stops being something you can
+   read across. Composed from the shared kind rather than restyled, so a picked
+   value looks picked whichever shape it came in. */
+.list {
+  composes: pick from './button.module.css';
+}
+
+.listOn {
+  composes: pickOn from './button.module.css';
+}
+
+select.list,
+select.listOn {
+  font-family: inherit;
+  max-width: 100%;
+}

@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { useStoreValue } from './ControlsContext'
 import { engine } from '../engine/engine'
-import { touchedCount, type Group } from './controls'
+import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
 import { resetGroup, rollGroup } from './presets'
 import { scrollIntoPanel } from './reveal'
@@ -25,6 +26,107 @@ const putBackTitle = (group: Group, touched: number) =>
   touched > 0
     ? `put all ${touched} of ${group.name}'s moved controls back where they booted — ctrl+z brings them again`
     : `${group.name} is already where it booted`
+
+// A control the panel has a reason to draw: one with something to act on, or one
+// your hand has already moved. A fault picks what happened to a wire nobody has
+// cut, and that row is a question about nothing — but a value you set and then
+// unwired is yours, and never vanishes out from under you.
+function shown(def: SliderDef, c: Controls): boolean {
+  return !def.needs || def.needs(c) || c[def.key] !== DEFAULT_CONTROLS[def.key]
+}
+
+interface Part {
+  name: string | null
+  sliders: SliderDef[]
+}
+
+// The group's controls in table order, cut at every heading a control names.
+// Anything naming none comes back under `null`, which is the block above the
+// first heading — a stage's everyday knobs, and for most stages the whole of it.
+function parts(group: Group): Part[] {
+  const out: Part[] = []
+  for (const def of group.sliders) {
+    const name = def.part ?? null
+    const last = out[out.length - 1]
+    if (last?.name === name) last.sliders.push(def)
+    else out.push({ name, sliders: [def] })
+  }
+  return out
+}
+
+const movedIn = (sliders: SliderDef[], c: Controls) =>
+  sliders.filter(d => c[d.key] !== DEFAULT_CONTROLS[d.key]).length
+
+// A heading and what sits under it, with its own count and its own fold. The
+// count is the group header's promise made smaller: how many of these you have
+// moved, so a folded part still says whether anything is going on inside it.
+function PartFold({
+  part,
+  rows,
+  c,
+  closed,
+  onToggle,
+}: {
+  part: Part
+  rows: SliderDef[]
+  c: Controls
+  closed: boolean
+  onToggle: () => void
+}) {
+  const moved = movedIn(part.sliders, c)
+  return (
+    <div className={styles.fold}>
+      <button
+        className={styles.foldHead}
+        aria-expanded={!closed}
+        onClick={onToggle}
+      >
+        <span className={styles.foldMark}>{closed ? '▸' : '▾'}</span>
+        <span className={styles.foldName}>{part.name}</span>
+        <span className={moved > 0 ? styles.foldMoved : styles.foldCount}>
+          {moved > 0 ? `${moved} moved` : part.sliders.length}
+        </span>
+      </button>
+      {!closed && rows.map(def => <ControlSlider key={def.key} def={def} />)}
+    </div>
+  )
+}
+
+// A long stage in the shape its own table gives it: the everyday knobs on top,
+// and the rest behind headings you press. Which headings start shut comes off
+// the group — and one holding a control you have moved starts open anyway, since
+// a panel that hides what you set is a panel lying about the board.
+function Rows({ group }: { group: Group }) {
+  const c = useStoreValue(engine.controls)
+  const blocks = parts(group)
+  const [shut, setShut] = useState<readonly string[]>(() =>
+    (group.folded ?? []).filter(
+      name =>
+        movedIn(blocks.find(b => b.name === name)?.sliders ?? [], c) === 0,
+    ),
+  )
+  const toggle = (name: string) =>
+    setShut(s => (s.includes(name) ? s.filter(n => n !== name) : [...s, name]))
+  return (
+    <>
+      {blocks.map(part => {
+        const rows = part.sliders.filter(d => shown(d, c))
+        if (part.name === null)
+          return rows.map(def => <ControlSlider key={def.key} def={def} />)
+        return (
+          <PartFold
+            key={part.name}
+            part={part}
+            rows={rows}
+            c={c}
+            closed={shut.includes(part.name)}
+            onToggle={() => toggle(part.name!)}
+          />
+        )
+      })}
+    </>
+  )
+}
 
 // The one stage the map has open, with its controls already unfolded. The panel
 // used to stack all twenty groups as collapsed headers and scroll to whichever
@@ -89,9 +191,7 @@ export function OpenGroup({
       </div>
       <div className={styles.body}>
         {group.editor?.kind === 'drums' && <DrumGrid />}
-        {group.sliders.map(def => (
-          <ControlSlider key={def.key} def={def} />
-        ))}
+        <Rows key={group.name} group={group} />
       </div>
     </div>
   )

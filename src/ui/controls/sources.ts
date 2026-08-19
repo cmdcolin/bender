@@ -53,6 +53,14 @@ const DECAY_CHOICES = [
   }),
 ]
 
+// Cut depth is how far through a trace the knife went, and the cut fault is the
+// only one of the four that reads it — so the row waits until one of the chip's
+// three buses has a wire on it with that fault picked.
+const cutSomewhere = (c: Controls) =>
+  (c.fmDataLine > 0 && c.fmDataFault === 0) ||
+  (c.fmAddrLine > 0 && c.fmAddrFault === 0) ||
+  (c.fmWaveLine > 0 && c.fmWaveFault === 0)
+
 export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Toy keyboard',
@@ -455,6 +463,7 @@ export const SOURCE_GROUPS: Group[] = [
   {
     name: 'FM chip',
     place: 'Sources',
+    folded: ['inside the patch', 'knife on the bus'],
     sliders: [
       {
         key: 'fmLevel',
@@ -495,36 +504,6 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How much of the modulator goes back into itself, three bits of it as the part had. Past about five the operator stops making harmonics and starts making noise, which is where the chip’s own drum sounds came from.',
       },
       {
-        key: 'fmModRatio',
-        label: 'Mod ratio',
-        min: 0,
-        max: RATIO_CHOICES.length - 1,
-        step: 1,
-        unit: '',
-        choices: RATIO_CHOICES,
-        help: 'What the modulator runs at against the note, as a multiple of it. This and *Brightness* are the whole of two-operator FM: the ratio picks which harmonics the modulator can put there and brightness decides how many of them arrive. Whole numbers stay in tune with the note and land on its own harmonics — 1 for a fuller version of the same tone, 2 and 3 for reed and brass, 7 upward for bells and metal. The table is the part’s own, so it stops being a scale near the top and repeats: there is no 11 or 13 on this chip, and nothing between the steps, because a ratio here is four bits of a flags byte and nothing finer exists. Left at *as patched*, the voice keeps whatever it shipped with.',
-      },
-      {
-        key: 'fmCarRatio',
-        label: 'Car ratio',
-        min: 0,
-        max: RATIO_CHOICES.length - 1,
-        step: 1,
-        unit: '',
-        choices: RATIO_CHOICES,
-        help: 'The same table on the carrier, which moves the note itself rather than its colour — the operator you hear is the one running at this multiple, so 2 is the same patch an octave up. Set both ratios and what matters is the interval between them: 1 against 2 is a hollow octave, 2 against 3 a fifth, and anything where the modulator is not a whole multiple of the carrier makes sidebands that are not harmonics of anything, which is the clangorous end of the chip.',
-      },
-      {
-        key: 'fmModDecay',
-        label: 'Mod decay',
-        min: 0,
-        max: DECAY_CHOICES.length - 1,
-        step: 1,
-        unit: '',
-        choices: DECAY_CHOICES,
-        help: 'How long the modulator takes to fall away, which is what makes an FM note a bell or an organ: a bright attack that collapses to a sine in eighty milliseconds is a struck thing, and one that never collapses is a blown one. Sixteen rates, because the register holds four bits of it, and they are counted off the same divider as the tempo and the pitch — so starving the rail stretches this along with everything else and the times printed here are the times on a board with its supply intact.',
-      },
-      {
         key: 'fmLength',
         label: 'Note length',
         min: 0.02,
@@ -556,7 +535,41 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board. Each is a little program in the processor firing register writes at the synthesiser, hundreds a second on the weather, which makes an effect far and away the busiest thing the bus ever carries. A note is four writes; a bird call never stops, so a cut line lands on every one of them and the corruption never lets up while the gesture keeps its own time. It borrows the fourth channel and the patch registers to do it, so the keyboard is down to three voices and plays in the effect’s voice — until you let the button go and the processor sends the voice again. Which is also why *Voice*, *Bright* and *Feedback* sit still while a script runs: the driver has one instrument to select and the effect is holding it, so those knobs only land once the button comes up.',
       },
       {
+        key: 'fmModRatio',
+        part: 'inside the patch',
+        label: 'Mod ratio',
+        min: 0,
+        max: RATIO_CHOICES.length - 1,
+        step: 1,
+        unit: '',
+        choices: RATIO_CHOICES,
+        help: 'What the modulator runs at against the note, as a multiple of it. This and *Brightness* are the whole of two-operator FM: the ratio picks which harmonics the modulator can put there and brightness decides how many of them arrive. Whole numbers stay in tune with the note and land on its own harmonics — 1 for a fuller version of the same tone, 2 and 3 for reed and brass, 7 upward for bells and metal. The table is the part’s own, so it stops being a scale near the top and repeats: there is no 11 or 13 on this chip, and nothing between the steps, because a ratio here is four bits of a flags byte and nothing finer exists. Left at *as patched*, the voice keeps whatever it shipped with.',
+      },
+      {
+        key: 'fmCarRatio',
+        part: 'inside the patch',
+        label: 'Car ratio',
+        min: 0,
+        max: RATIO_CHOICES.length - 1,
+        step: 1,
+        unit: '',
+        choices: RATIO_CHOICES,
+        help: 'The same table on the carrier, which moves the note itself rather than its colour — the operator you hear is the one running at this multiple, so 2 is the same patch an octave up. Set both ratios and what matters is the interval between them: 1 against 2 is a hollow octave, 2 against 3 a fifth, and anything where the modulator is not a whole multiple of the carrier makes sidebands that are not harmonics of anything, which is the clangorous end of the chip.',
+      },
+      {
+        key: 'fmModDecay',
+        part: 'inside the patch',
+        label: 'Mod decay',
+        min: 0,
+        max: DECAY_CHOICES.length - 1,
+        step: 1,
+        unit: '',
+        choices: DECAY_CHOICES,
+        help: 'How long the modulator takes to fall away, which is what makes an FM note a bell or an organ: a bright attack that collapses to a sine in eighty milliseconds is a struck thing, and one that never collapses is a blown one. Sixteen rates, because the register holds four bits of it, and they are counted off the same divider as the tempo and the pitch — so starving the rail stretches this along with everything else and the times printed here are the times on a board with its supply intact.',
+      },
+      {
         key: 'fmDataLine',
+        part: 'knife on the bus',
         label: 'Data line',
         min: 0,
         max: 8,
@@ -568,6 +581,8 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmDataFault',
+        part: 'knife on the bus',
+        needs: c => c.fmDataLine > 0,
         label: 'Data fault',
         min: 0,
         max: FAULT_NAMES.length - 1,
@@ -578,6 +593,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmAddrLine',
+        part: 'knife on the bus',
         label: 'Address line',
         min: 0,
         max: 6,
@@ -589,6 +605,8 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmAddrFault',
+        part: 'knife on the bus',
+        needs: c => c.fmAddrLine > 0,
         label: 'Address fault',
         min: 0,
         max: FAULT_NAMES.length - 1,
@@ -598,26 +616,8 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'The same four things, on the address side. A0 held low files every odd register on top of the even one below it, so the four channels stop having frequencies of their own; the higher lines throw whole banks on top of each other.',
       },
       {
-        key: 'fmBusCut',
-        label: 'Cut depth',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the bit holds whatever was last on it. Back it off and the line still carries some of the time, so most writes land and the occasional one does not: a patch that is nearly right, a note in ten that hangs.',
-      },
-      {
-        key: 'fmStrobe',
-        label: 'Strobe slip',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        shy: true,
-        help: 'The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught. Nothing is corrupted here — both bytes arrive intact and the latch simply does not clock, so a perfectly good value commits to whichever register the last pulse that landed had named. Which is a fault no cut wire can imitate: every byte involved is right, and they are only paired one write late. Turn it up and the latch slips further, because a latch that misses holds rather than skips — two misses running is two writes of lag, and a strobe that never lands is the whole run piling into one register. It bites hardest on the effects, where the processor writes the same short run of registers hundreds of times a second: shift that by one and every frequency byte lands in the register carrying the key.',
-      },
-      {
         key: 'fmWaveLine',
+        part: 'knife on the bus',
         label: 'Wave line',
         min: 0,
         max: 10,
@@ -629,6 +629,8 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmWaveFault',
+        part: 'knife on the bus',
+        needs: c => c.fmWaveLine > 0,
         label: 'Wave fault',
         min: 0,
         max: FAULT_NAMES.length - 1,
@@ -637,6 +639,28 @@ export const SOURCE_GROUPS: Group[] = [
         shy: true,
         choices: FAULT_NAMES,
         help: 'The same four things, on the wave ROM’s address. Cut is the strange one: a severed trace is a pin nothing drives again, so it holds the last phase bit that reached it and every read after that comes back with that bit stale — the line stops being part of the wave at all. Back the cut depth off and the trace still conducts sometimes, so the bit is right on some reads and stale on others and the wave flickers between two shapes at the rate the operators come round. To ground and to +V nail it for every read, which is a waveform rather than a fault.',
+      },
+      {
+        key: 'fmBusCut',
+        part: 'knife on the bus',
+        needs: cutSomewhere,
+        label: 'Cut depth',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the bit holds whatever was last on it. Back it off and the line still carries some of the time, so most writes land and the occasional one does not: a patch that is nearly right, a note in ten that hangs.',
+      },
+      {
+        key: 'fmStrobe',
+        part: 'knife on the bus',
+        label: 'Strobe slip',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught. Nothing is corrupted here — both bytes arrive intact and the latch simply does not clock, so a perfectly good value commits to whichever register the last pulse that landed had named. Which is a fault no cut wire can imitate: every byte involved is right, and they are only paired one write late. Turn it up and the latch slips further, because a latch that misses holds rather than skips — two misses running is two writes of lag, and a strobe that never lands is the whole run piling into one register. It bites hardest on the effects, where the processor writes the same short run of registers hundreds of times a second: shift that by one and every frequency byte lands in the register carrying the key.',
       },
     ],
   },

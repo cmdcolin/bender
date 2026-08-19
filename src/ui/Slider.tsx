@@ -57,11 +57,19 @@ function Bind({ def }: { def: SliderDef }) {
   )
 }
 
+// Where a row of picks stops being a row you can read. Up to this many, the
+// choices are all on screen and taking one is a single press; past it they wrap
+// into a paragraph of buttons and the panel turns into a wall — a sixteen-rate
+// decay table is a list to go down, not a keypad.
+const CHOICES_AS_BUTTONS = 6
+
 export function ControlSlider({ def }: { def: SliderDef }) {
   const value = useControlValue(def.key)
   const touched = value !== DEFAULT_CONTROLS[def.key]
 
   if (def.choices) {
+    const choices = def.choices
+    const pick = (i: number) => write(def.key, def.min + i)
     return (
       <Tip text={def.help}>
         <div className={styles.row}>
@@ -69,20 +77,33 @@ export function ControlSlider({ def }: { def: SliderDef }) {
             {def.label}
           </span>
           <span className={styles.choices}>
-            {def.choices.map((c, i) => {
-              const v = def.min + i
-              return (
+            {choices.length > CHOICES_AS_BUTTONS ? (
+              <select
+                className={touched ? styles.listOn : styles.list}
+                value={Math.round(value) - def.min}
+                onChange={e => pick(Number(e.currentTarget.value))}
+              >
+                {choices.map((c, i) => (
+                  <option key={`${i}${c}`} value={i}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              choices.map((c, i) => (
                 <button
                   key={c}
                   className={
-                    Math.round(value) === v ? styles.choiceOn : styles.choice
+                    Math.round(value) - def.min === i
+                      ? styles.choiceOn
+                      : styles.choice
                   }
-                  onClick={() => write(def.key, v)}
+                  onClick={() => pick(i)}
                 >
                   {c}
                 </button>
-              )
-            })}
+              ))
+            )}
             <Bind def={def} />
           </span>
         </div>
