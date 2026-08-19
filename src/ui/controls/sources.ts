@@ -1,5 +1,5 @@
 import type { Controls } from '../../controls'
-import { FAULT_NAMES, lineNames } from '../../dsp/bus'
+import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import { fallSecs, FM_VOICE_NAMES, MULT } from '../../dsp/stages/fmVoices'
 import {
@@ -54,17 +54,33 @@ const DECAY_CHOICES = [
 ]
 
 // Cut depth is how far through a trace the knife went, and the cut fault is the
-// only one of the four that reads it — so the row waits until one of the chip's
-// three buses has a wire on it with that fault picked.
-const cutSomewhere = (c: Controls) =>
-  (c.fmDataLine > 0 && c.fmDataFault === 0) ||
-  (c.fmAddrLine > 0 && c.fmAddrFault === 0) ||
-  (c.fmWaveLine > 0 && c.fmWaveFault === 0)
+// only one of the four that reads it — so the row waits until one of a chip's
+// buses has a wire on it with that fault picked. One depth serves every bus on
+// a chip, which is why it asks about all of them rather than one.
+const cutOn =
+  (...buses: [line: keyof Controls, fault: keyof Controls][]) =>
+  (c: Controls) =>
+    buses.some(([line, fault]) => c[line] > 0 && c[fault] === FAULT.cut)
+
+const fmCutSomewhere = cutOn(
+  ['fmDataLine', 'fmDataFault'],
+  ['fmAddrLine', 'fmAddrFault'],
+  ['fmWaveLine', 'fmWaveFault'],
+)
+const chipCutSomewhere = cutOn(
+  ['chipDataLine', 'chipDataFault'],
+  ['chipAddrLine', 'chipAddrFault'],
+)
+const drumCutSomewhere = cutOn(
+  ['drumDataLine', 'drumDataFault'],
+  ['drumAddrLine', 'drumAddrFault'],
+)
 
 export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Toy keyboard',
     place: 'Sources',
+    folded: ['the supply underneath', 'knife on the bus'],
     sliders: [
       {
         key: 'chipLevel',
@@ -122,111 +138,6 @@ export const SOURCE_GROUPS: Group[] = [
         },
       },
       {
-        key: 'chipStarve',
-        label: 'Starve',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip — the tune keeps restarting. One oscillator clocks the whole chip, so a sag that lasts takes the tempo down with the pitch: the tune slurs and slows together, the way a tape does. A dip inside a single note is too quick for the timing pin to notice, which is why a chord sags without the beat stumbling.',
-      },
-      {
-        key: 'chipBattery',
-        label: 'Batteries',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        help: 'How flat the cells are. The rail never comes back to full, so the toy runs low and slow — pitch, tempo and the drum machine with it — and every note sags it further with nothing starving it. Far enough down and a chord alone browns the chip out.',
-      },
-      {
-        key: 'chipLeadR',
-        label: 'Lead resistance',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        help: 'A resistor in series with the cells. Flat cells are two things at once — a voltage that has dropped and a resistance that has climbed — and this is the second without the first: the rail still rests where it always rested, and every note has to pull its supply through the resistor to get there. So it sags on the attack and climbs back between hits, as far as the Reservoir gives it time to travel. It is the difference between a toy that is running out and a toy that whoops on every note and never runs out at all, and it is the one to reach for over Batteries if what you want is the swoop rather than the decline.',
-      },
-      {
-        key: 'chipCap',
-        label: 'Reservoir',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        help: 'How much of the board’s own capacitance sits behind whatever the starve is pulling on. It moves no voltage — it decides how long the rail takes to get there. At zero the supply settles inside a millisecond and starve is a step you land on; wound up, the same starve takes a third of a second to fall and you hear the whole dive, slowing as it goes. Everything on the rail goes with it: pitch, tempo, envelopes. Far enough up and the reboot stops snapping the rail back at all, so the tune is struck high, dragged down, cut off, and struck high again.',
-      },
-      {
-        key: 'chipClipHz',
-        label: 'Clip chatter',
-        min: 0,
-        max: 40,
-        step: 0.1,
-        unit: 'Hz',
-        help: 'Bare metal dragged across the pads, and how often it finds one. Each touch chokes hard for a few tens of milliseconds and lets go, and what it chokes leaves at whatever rate the Reservoir allows — so this is the dive that repeats without you doing anything. A choke rather than a short: crash the rail to ground instead and the pitch is simply gone and then simply back, two steps with the dive missing. It is a hand holding a paperclip rather than a switch, so the rate is an average and the fault cluster decides how much it bunches.',
-      },
-      {
-        key: 'chipClipClock',
-        label: 'Clip on clock',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        help: 'Whether the clip lands on the timing pin instead of the supply — and it is the difference between a sag and a dive. Starving the rail is worth two thirds of an octave before the chip stops running at all; a capacitor hung on the oscillator divides the clock instead, and division has no such ceiling. Four octaves at the top, travelling at whatever rate the Reservoir charges, with the whole timebase going along: tune, tempo and envelopes together, the melody arriving somewhere under the bottom of its own keyboard. Needs Clip chatter to have something to land with.',
-      },
-      {
-        key: 'chipDataLine',
-        label: 'Data line',
-        min: 0,
-        max: ROM_DATA_LINES,
-        step: 1,
-        unit: '',
-        choices: lineNames('D', ROM_DATA_LINES),
-        shy: true,
-        help: 'Which wire between the ROM and the divider the knife found. The chip stores a note code rather than a pitch, so the low lines are small intervals and the high ones are octaves — D0 is a semitone, D2 a major third, D5 the better part of three octaves. Nothing about it is random: one wire wrong is the same wrong note every time that step comes round, so the song keeps its rhythm and its shape and becomes a different song.',
-      },
-      {
-        key: 'chipDataFault',
-        label: 'Data fault',
-        min: 0,
-        max: FAULT_NAMES.length - 1,
-        step: 1,
-        unit: '',
-        choices: FAULT_NAMES,
-        help: 'What happened to the wire. Cut leaves the pin floating, so the bit goes stale and carries whatever the word before had in it. To ground takes that bit out of every note the chip reads. To +V puts it into every note — including the ones that were not notes, because a rest is only a code, and a code with a bit forced into it is a pitch. Bridged solders the line to its neighbour so the two can no longer disagree, and the melody comes out in clumps.',
-      },
-      {
-        key: 'chipAddrLine',
-        label: 'Address line',
-        min: 0,
-        max: ROM_ADDR_LINES,
-        step: 1,
-        unit: '',
-        choices: lineNames('A', ROM_ADDR_LINES),
-        shy: true,
-        help: 'Which wire between the program counter and the ROM the knife found. The counter still counts and the tempo never moves; the ROM is simply handed the wrong step. A0 plays the tune in swapped pairs, A3 held low locks it into the bottom eight steps for good, and a line this ROM never drives does nothing at all — a sixteen-step song has no A4 for you to find.',
-      },
-      {
-        key: 'chipAddrFault',
-        label: 'Address fault',
-        min: 0,
-        max: FAULT_NAMES.length - 1,
-        step: 1,
-        unit: '',
-        choices: FAULT_NAMES,
-        help: 'The same four things, on the address side. Cut leaves the step stale, so the tune stutters on notes it has already played; ground and +V nail that address bit for every read, which folds the song into half of itself; bridged ties two addresses together and the melody arrives in clumps of two and four.',
-      },
-      {
-        key: 'chipBusCut',
-        label: 'Cut depth',
-        min: 0,
-        max: 1,
-        step: 0.01,
-        unit: '',
-        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the pin floats for good: the bit holds whatever the last word left on it and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the bit is right on some reads and a word old on others, and the melody flickers between two versions of itself.',
-      },
-      {
         key: 'chipBendSpot',
         label: 'Bend spot',
         min: 0,
@@ -238,6 +149,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipBendPot',
+        needs: c => c.chipBendSpot > 0,
         label: 'Bend pot',
         min: 0,
         max: 1,
@@ -255,7 +167,69 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How far the chip’s clock wanders off the ratio you set it to. The toy runs on its own crystal, so it drifts against the drum machine and never quite locks — two rates a hair apart, phasing in and out for as long as you leave it.',
       },
       {
+        key: 'chipStarve',
+        part: 'the supply underneath',
+        label: 'Starve',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip — the tune keeps restarting. One oscillator clocks the whole chip, so a sag that lasts takes the tempo down with the pitch: the tune slurs and slows together, the way a tape does. A dip inside a single note is too quick for the timing pin to notice, which is why a chord sags without the beat stumbling.',
+      },
+      {
+        key: 'chipBattery',
+        part: 'the supply underneath',
+        label: 'Batteries',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How flat the cells are. The rail never comes back to full, so the toy runs low and slow — pitch, tempo and the drum machine with it — and every note sags it further with nothing starving it. Far enough down and a chord alone browns the chip out.',
+      },
+      {
+        key: 'chipLeadR',
+        part: 'the supply underneath',
+        label: 'Lead resistance',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'A resistor in series with the cells. Flat cells are two things at once — a voltage that has dropped and a resistance that has climbed — and this is the second without the first: the rail still rests where it always rested, and every note has to pull its supply through the resistor to get there. So it sags on the attack and climbs back between hits, as far as the Reservoir gives it time to travel. It is the difference between a toy that is running out and a toy that whoops on every note and never runs out at all, and it is the one to reach for over Batteries if what you want is the swoop rather than the decline.',
+      },
+      {
+        key: 'chipCap',
+        part: 'the supply underneath',
+        label: 'Reservoir',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much of the board’s own capacitance sits behind whatever the starve is pulling on. It moves no voltage — it decides how long the rail takes to get there. At zero the supply settles inside a millisecond and starve is a step you land on; wound up, the same starve takes a third of a second to fall and you hear the whole dive, slowing as it goes. Everything on the rail goes with it: pitch, tempo, envelopes. Far enough up and the reboot stops snapping the rail back at all, so the tune is struck high, dragged down, cut off, and struck high again.',
+      },
+      {
+        key: 'chipClipHz',
+        part: 'the supply underneath',
+        label: 'Clip chatter',
+        min: 0,
+        max: 40,
+        step: 0.1,
+        unit: 'Hz',
+        help: 'Bare metal dragged across the pads, and how often it finds one. Each touch chokes hard for a few tens of milliseconds and lets go, and what it chokes leaves at whatever rate the Reservoir allows — so this is the dive that repeats without you doing anything. A choke rather than a short: crash the rail to ground instead and the pitch is simply gone and then simply back, two steps with the dive missing. It is a hand holding a paperclip rather than a switch, so the rate is an average and the fault cluster decides how much it bunches.',
+      },
+      {
+        key: 'chipClipClock',
+        needs: c => c.chipClipHz > 0,
+        part: 'the supply underneath',
+        label: 'Clip on clock',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Whether the clip lands on the timing pin instead of the supply — and it is the difference between a sag and a dive. Starving the rail is worth two thirds of an octave before the chip stops running at all; a capacitor hung on the oscillator divides the clock instead, and division has no such ceiling. Four octaves at the top, travelling at whatever rate the Reservoir charges, with the whole timebase going along: tune, tempo and envelopes together, the melody arriving somewhere under the bottom of its own keyboard. Needs Clip chatter to have something to land with.',
+      },
+      {
         key: 'chipLatch',
+        part: 'the supply underneath',
         label: 'Latch-up',
         min: 0,
         max: 1,
@@ -263,11 +237,71 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         help: 'How often a brownout jams the chip instead of rebooting it. A latched CMOS die holds whatever note was sounding and keeps drawing current, so it screams one note into the floor until the rail gives out under it and the watchdog gets its power cycle.',
       },
+      {
+        key: 'chipDataLine',
+        part: 'knife on the bus',
+        label: 'Data line',
+        min: 0,
+        max: ROM_DATA_LINES,
+        step: 1,
+        unit: '',
+        choices: lineNames('D', ROM_DATA_LINES),
+        shy: true,
+        help: 'Which wire between the ROM and the divider the knife found. The chip stores a note code rather than a pitch, so the low lines are small intervals and the high ones are octaves — D0 is a semitone, D2 a major third, D5 the better part of three octaves. Nothing about it is random: one wire wrong is the same wrong note every time that step comes round, so the song keeps its rhythm and its shape and becomes a different song.',
+      },
+      {
+        key: 'chipDataFault',
+        needs: c => c.chipDataLine > 0,
+        part: 'knife on the bus',
+        label: 'Data fault',
+        min: 0,
+        max: FAULT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FAULT_NAMES,
+        help: 'What happened to the wire. Cut leaves the pin floating, so the bit goes stale and carries whatever the word before had in it. To ground takes that bit out of every note the chip reads. To +V puts it into every note — including the ones that were not notes, because a rest is only a code, and a code with a bit forced into it is a pitch. Bridged solders the line to its neighbour so the two can no longer disagree, and the melody comes out in clumps.',
+      },
+      {
+        key: 'chipAddrLine',
+        part: 'knife on the bus',
+        label: 'Address line',
+        min: 0,
+        max: ROM_ADDR_LINES,
+        step: 1,
+        unit: '',
+        choices: lineNames('A', ROM_ADDR_LINES),
+        shy: true,
+        help: 'Which wire between the program counter and the ROM the knife found. The counter still counts and the tempo never moves; the ROM is simply handed the wrong step. A0 plays the tune in swapped pairs, A3 held low locks it into the bottom eight steps for good, and a line this ROM never drives does nothing at all — a sixteen-step song has no A4 for you to find.',
+      },
+      {
+        key: 'chipAddrFault',
+        needs: c => c.chipAddrLine > 0,
+        part: 'knife on the bus',
+        label: 'Address fault',
+        min: 0,
+        max: FAULT_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FAULT_NAMES,
+        help: 'The same four things, on the address side. Cut leaves the step stale, so the tune stutters on notes it has already played; ground and +V nail that address bit for every read, which folds the song into half of itself; bridged ties two addresses together and the melody arrives in clumps of two and four.',
+      },
+      {
+        key: 'chipBusCut',
+        needs: chipCutSomewhere,
+        part: 'knife on the bus',
+        label: 'Cut depth',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the pin floats for good: the bit holds whatever the last word left on it and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the bit is right on some reads and a word old on others, and the melody flickers between two versions of itself.',
+      },
     ],
   },
   {
     name: 'Toy drums',
     place: 'Sources',
+    folded: ['the converter', 'triggers and cross-patch', 'knife on the bus'],
     editor: {
       kind: 'drums',
       keys: GRID_ROWS.flatMap(r => [r.key, r.len]),
@@ -324,6 +358,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumBits',
+        part: 'the converter',
         label: 'Bit depth',
         min: 2,
         max: 16,
@@ -336,6 +371,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumLadder',
+        part: 'the converter',
         label: 'Ladder',
         min: 0,
         max: 1,
@@ -345,6 +381,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumLadderTol',
+        part: 'the converter',
         label: 'Part grade',
         min: 0,
         max: 0.6,
@@ -354,6 +391,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumOverflow',
+        part: 'the converter',
         label: 'Overflow',
         min: 0,
         max: 1,
@@ -364,6 +402,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumRetrigHz',
+        part: 'triggers and cross-patch',
         label: 'Retrigger',
         min: 0,
         max: 4000,
@@ -374,6 +413,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumTrigFloor',
+        part: 'triggers and cross-patch',
         label: 'Trigger floor',
         min: 0,
         max: 1,
@@ -383,6 +423,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumCross',
+        part: 'triggers and cross-patch',
         label: 'Cross-patch',
         min: 0,
         max: 5,
@@ -400,6 +441,8 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumCrossAmt',
+        needs: c => c.drumCross > 0,
+        part: 'triggers and cross-patch',
         label: 'Cross bleed',
         min: 0,
         max: 1,
@@ -409,6 +452,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumAddrLine',
+        part: 'knife on the bus',
         label: 'Address line',
         min: 0,
         max: ADDR_LINES,
@@ -420,6 +464,8 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumAddrFault',
+        needs: c => c.drumAddrLine > 0,
+        part: 'knife on the bus',
         label: 'Address fault',
         min: 0,
         max: FAULT_NAMES.length - 1,
@@ -430,6 +476,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumDataLine',
+        part: 'knife on the bus',
         label: 'Data line',
         min: 0,
         max: N_DRUM_VOICES,
@@ -441,6 +488,8 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumDataFault',
+        needs: c => c.drumDataLine > 0,
+        part: 'knife on the bus',
         label: 'Data fault',
         min: 0,
         max: FAULT_NAMES.length - 1,
@@ -451,6 +500,8 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumBusCut',
+        needs: drumCutSomewhere,
+        part: 'knife on the bus',
         label: 'Cut depth',
         min: 0,
         max: 1,
@@ -511,7 +562,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: 's',
         curve: 'log',
-        help: 'How long the processor waits before writing the key back up. A trigger line carries a strike and nothing else, so the length of the note is a decision something has to make and this is where it is made. Your hand overrides it — letting a key go sends the release early — and a cut data line overrides it the other way, by making sure the write never lands.',
+        help: 'How long the processor waits before writing the key back up, for a note nothing is holding: the demo song, a drum hit through the trigger patch, a kit line clipped on below. Those arrive as an edge and nothing else, so the length is a decision something has to make and this is where it is made. Your own hands are the exception — the gate says the key is still down, so the processor holds the note and writes it up when you let go, however long that is. What a held note does meanwhile is the patch’s business: four of the eight wait for the key, and the struck ones decay whatever your finger is doing. A cut data line overrides the lot, by making sure the write never lands.',
       },
       {
         key: 'fmStruck',
@@ -643,7 +694,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'fmBusCut',
         part: 'knife on the bus',
-        needs: cutSomewhere,
+        needs: fmCutSomewhere,
         label: 'Cut depth',
         min: 0,
         max: 1,

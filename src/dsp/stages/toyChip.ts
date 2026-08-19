@@ -153,6 +153,9 @@ export class ToyChip implements Stage {
   // over to mean "nothing struck".
   private keyPending = false
   private keyNote = 0
+  // Whether a hand is still on the key the gate is about to report. The ROM and
+  // a trigger line strike and let go in the same instant; a finger does not.
+  private keyHeldPending = false
   private lastTiming = 0
   private envDecay = 1
   // The last block's accompaniment level, kept for the note report: bass and
@@ -192,6 +195,7 @@ export class ToyChip implements Stage {
   // has always done and what a controller's velocity is.
   noteOn(semitone: number, gain = 1) {
     this.strike(semitone, gain).held = true
+    this.keyHeldPending = true
   }
 
   // A voice struck and let go. The keys hold theirs down; a trigger line
@@ -204,6 +208,7 @@ export class ToyChip implements Stage {
     v.started = this.voiceClock++
     this.keyNote = semitone
     this.keyPending = true
+    this.keyHeldPending = false
     return v
   }
 
@@ -604,7 +609,7 @@ export class ToyChip implements Stage {
       // it or not: a note struck is a note struck, whether the ROM struck it,
       // your hand struck it or a drum hit came back round and struck it.
       if (this.keyPending) {
-        ctx.trig.keyStruck(i, this.keyNote)
+        ctx.trig.keyStruck(i, this.keyNote, this.keyHeldPending)
         this.keyPending = false
       }
       io.l[i]! += out

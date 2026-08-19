@@ -32,17 +32,23 @@ nothing wired to it — so every control is one click from the map, on the path 
 on the shelf.
 
 A stage opens as one list of controls, which is the right shape for a stage
-until it has eighteen of them. A long one carries headings you press instead:
-the FM chip opens on the seven knobs you play it with, and the patch table and
-the bus bends sit folded under headings saying how many controls are down there
-— or how many of those you have moved, in which case the heading opens with the
-panel, since a fold that hid something you set would be a panel lying about the
-board. Rows arrive as they get something to act on: a fault picks what happened
-to a wire, so it waits for a wire to be cut, and cut depth waits until one of
-them is cut rather than grounded. A control you moved and then unwired stays on
-screen, because a value you set is yours. And a pick with more than six choices
-folds into a list — sixteen decay rates make a paragraph of buttons, while the
-four things a knife does to a trace still read as a row, so they stay one.
+until it has twenty of them. The three big ones carry headings you press
+instead. The FM chip opens on the knobs you play it with and folds the patch
+table and the bus bends away; the keyboard keeps its ROM, its clock and the pot
+on the die out, with the supply underneath it and the knife on its bus behind
+headings; the kit shows the grid and the five knobs that shape a hit, and folds
+its converter, its trigger tricks and its own bus. A heading says how many
+controls are down there — or how many of those you have moved, in which case it
+opens with the panel, since a fold that hid something you set would be a panel
+lying about the board.
+
+Rows arrive as they get something to act on. A fault picks what happened to a
+wire, so it waits for a wire to be cut; cut depth waits until one of them is cut
+rather than grounded; the bend pot waits for a spot to be soldered to. A control
+you moved and then unwired stays on screen, because a value you set is yours.
+And a pick with more than six choices folds into a list — sixteen decay rates
+make a paragraph of buttons, while the four things a knife does to a trace still
+read as a row, so they stay one.
 
 The sources sit across the head of the path as boxes of their own, in two rows,
 because what feeds what is the thing worth drawing. The top row is framed: the
@@ -226,9 +232,18 @@ and browns it out along with everything else.
 is into the carrier — the whole of the tone control on a two-operator part — and
 **Feedback** is how much of the modulator goes back into itself. Past about five
 it stops making harmonics and starts making noise, which is where these chips'
-drum sounds came from. A trigger line carries a strike and nothing else, so
-**Note length** is where something has to decide when the note ends; letting a
-key go sends the release early.
+drum sounds came from.
+
+A gate line carries a level, not only an edge, and the driver on this chip reads
+both. Under your own hands the note is held: the key is still down, so the
+processor waits and writes the key back up when you let go — which is why the FM
+chip holds a chord the way the toy does, however long you sit on it. Everything
+else arriving on that wire is an edge and nothing more — the demo song, a drum
+hit through the trigger patch, a kit line clipped on at **Struck by** — and an
+edge says nothing about when to stop, so **Note length** is where that gets
+decided. What a held note actually does is still the patch's business: four of
+the eight wait for the key, and the struck four — e.piano, bell, bass, marimba —
+decay on their own whatever your finger is doing.
 
 Three more, under _inside the patch_, open the patch up rather than picking one.
 **Mod ratio** and **Car ratio** are what each operator runs at against the note,

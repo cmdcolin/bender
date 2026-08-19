@@ -572,8 +572,16 @@ export class FmChip implements Stage {
       // board strikes: the demo song, your hands, a controller, or a drum hit
       // that came back round. Somebody soldered it onto this chip's key input,
       // so the two boxes play the same part.
+      //
+      // A gate carries a level as well as an edge, and the driver reads it: a
+      // key with a hand still on it is a note nothing has to guess the length
+      // of, so the processor holds it and writes the key back up when the hand
+      // comes off. Everything else on that wire — the ROM's tune, a drum hit
+      // through the patch — is an edge and nothing more, and an edge is where
+      // *Note length* comes in.
       const struck = ctx.trig.key[i]!
-      if (struck !== 0) this.keyOn(struck - 128, lengthSamples)
+      if (struck !== 0)
+        this.keyOn(struck - 128, ctx.trig.keyHeld[i]! > 0 ? 0 : lengthSamples)
 
       // And the kit's own lines, for whoever clipped them on here as well. The
       // kit is wired behind this chip in the source order, so what arrives is

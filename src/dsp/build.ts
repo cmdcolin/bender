@@ -32,6 +32,12 @@ export interface BuiltChain {
       from outside the audio thread: the panel draws it, and a test asks it
       whether the watchdog tripped. */
   rail: ToyRail
+  /** A key let go of, which reaches two chips. The strike travels the gate line
+      on its own, so nobody has to hand it anywhere; a finger coming up is the
+      half of a note no wire between them carries, and both ends need it — the
+      toy to drop the voice it is holding, the FM chip to write the key back up
+      on a note it was told to hold. */
+  noteOff(semitone: number): void
 }
 
 // One seed for the whole instrument, drawn from it for each part that needs its
@@ -72,7 +78,19 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   ]
   chain.pedals = [new Stompbox(sr), new TapeDelay(sr), new SpringVerb(sr)]
   chain.post = [new Brownout(sr, next()), new Tape(sr)]
-  return { chain, toyChip, toyDrum, fmChip, sampler, transport, rail }
+  return {
+    chain,
+    toyChip,
+    toyDrum,
+    fmChip,
+    sampler,
+    transport,
+    rail,
+    noteOff(semitone: number) {
+      toyChip.noteOff(semitone)
+      fmChip.noteOff(semitone)
+    },
+  }
 }
 
 // Offline rendering (tests): both ROM sequencers run from the first sample.

@@ -8,6 +8,7 @@ import {
   bin,
   lowEnergy,
   makeIo,
+  playHeldKey,
   playKeys,
   render,
   rms,
@@ -71,13 +72,11 @@ test('two operators, so the modulator piles harmonics onto the note', () => {
 
 // The bend the FM keyboards are known for. A note ends because the processor
 // writes one bit of one register back down and the chip sees it change; a wire
-// that cannot change is a wire the chip never sees change.
+// that cannot change is a wire the chip never sees change. Played by hand and
+// let go of a third of the way in, so what ends the note is the release write
+// and nothing else.
 const sustained = (o: Partial<Controls>) =>
-  playKeys(
-    { ...FM_ONLY, fmVoice: 0, fmLength: 0.3, ...o },
-    chip => chip.noteOn(0),
-    2,
-  )
+  playHeldKey({ ...FM_ONLY, fmVoice: 0, ...o }, 0, 0.3, 2)
 const late = (x: Float32Array) => rms(x.subarray(Math.round(1.5 * SR)))
 
 test('a key line that cannot go low is a note that never ends', () => {
@@ -95,6 +94,25 @@ test('a key line that cannot go low is a note that never ends', () => {
 test('a key line that cannot go high is a keyboard that never plays', () => {
   const dead = sustained({ fmDataLine: KEY_LINE, fmDataFault: FAULT.ground })
   expect(rms(dead)).toBe(0)
+})
+
+// Note length is what a strike gets, because a strike is all a trigger line
+// carries. A hand is the one thing on that wire the gate can still see, so the
+// processor lets it decide instead — and a sustaining patch rings for as long as
+// the finger is down, well past a length it would have used.
+test('a key held is a note held, however short Note length is', () => {
+  const held = playHeldKey({ ...FM_ONLY, fmVoice: 0, fmLength: 0.2 }, 0, 1.2, 2)
+  const under = rms(held.subarray(Math.round(0.8 * SR), Math.round(1.1 * SR)))
+  expect(under).toBeGreaterThan(0.05)
+  // and it is the finger that ends it: what is left half a second after the key
+  // came up is the organ's own release and nothing playing.
+  expect(rms(held.subarray(Math.round(1.8 * SR)))).toBeLessThan(under / 20)
+})
+
+test('the demo song gets Note length, since nothing is holding those keys', () => {
+  const short = rms(render({ ...FM_ONLY, fmVoice: 0, fmLength: 0.05 }, 2))
+  const long = rms(render({ ...FM_ONLY, fmVoice: 0, fmLength: 2 }, 2))
+  expect(long).toBeGreaterThan(short * 1.5)
 })
 
 // Two param sets, swapped halfway, so the second half is the board after the

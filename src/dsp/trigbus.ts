@@ -37,6 +37,12 @@ export class TriggerBus {
   drumGain = new Float32Array(BLOCK)
   /** A note the keyboard struck this block, biased; 0 where it struck nothing. */
   readonly key = new Float32Array(BLOCK)
+  /** Whether a hand is still on that key. A gate line carries a level and not
+      just an edge, so the one thing it can say that a trigger line cannot is
+      that the note has not been let go of yet — which is the difference between
+      a key and a drum hit, and what tells the chip on the other end of the wire
+      whether to decide the length of the note itself. */
+  readonly keyHeld = new Float32Array(BLOCK)
 
   private pendBits = new Float32Array(BLOCK)
   private pendGain = new Float32Array(BLOCK)
@@ -46,8 +52,9 @@ export class TriggerBus {
     this.pendGain[i] = gain
   }
 
-  keyStruck(i: number, semitone: number) {
+  keyStruck(i: number, semitone: number, held = false) {
     this.key[i] = semitone + KEY_BIAS
+    this.keyHeld[i] = held ? 1 : 0
   }
 
   // Once a block, from the chain: last block's kit hits become the readable
@@ -62,6 +69,7 @@ export class TriggerBus {
     this.pendBits.fill(0, 0, n)
     this.pendGain.fill(0, 0, n)
     this.key.fill(0, 0, n)
+    this.keyHeld.fill(0, 0, n)
   }
 
   panic() {
@@ -70,5 +78,6 @@ export class TriggerBus {
     this.pendBits.fill(0)
     this.pendGain.fill(0)
     this.key.fill(0)
+    this.keyHeld.fill(0)
   }
 }

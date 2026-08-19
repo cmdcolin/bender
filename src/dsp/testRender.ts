@@ -34,6 +34,10 @@ export function renderBender(
   seconds: number,
   setup?: (built: BuiltChain) => void,
   micFill?: (mic: Float32Array, offset: number) => void,
+  // Something happening part way through, with the seconds so far — a finger
+  // coming up, which is the one gesture a script run before the render cannot
+  // make, and the one the chips are told about rather than reading off a wire.
+  each?: (built: BuiltChain, secs: number) => void,
 ): Float32Array {
   const built = buildBender(SR)
   setup?.(built)
@@ -43,11 +47,35 @@ export function renderBender(
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   const out = new Float32Array(blocks * BLOCK)
   for (let b = 0; b < blocks; b++) {
+    each?.(built, (b * BLOCK) / SR)
     micFill?.(mic, b * BLOCK)
     built.chain.process(io, p, micFill ? mic : undefined)
     out.set(io.l.subarray(0, BLOCK), b * BLOCK)
   }
   return out
+}
+
+// A key held for a while and let go, which is the gesture the FM chip reads off
+// the gate rather than off *Note length*. The release reaches both chips, the
+// way the worklet hands it over when your finger comes up.
+export const playHeldKey = (
+  overrides: Partial<Controls>,
+  semitone: number,
+  holdSecs: number,
+  seconds: number,
+) => {
+  let released = false
+  return renderBender(
+    overrides,
+    seconds,
+    built => built.toyChip.noteOn(semitone),
+    undefined,
+    (built, secs) => {
+      if (secs < holdSecs || released) return
+      built.noteOff(semitone)
+      released = true
+    },
+  )
 }
 
 // Play the keyboard with the ROM sequencer stopped, so only the keys sound.
