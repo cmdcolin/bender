@@ -31,6 +31,19 @@ under it — the slot rack, the bends off the board, a bay or contact pad with
 nothing wired to it — so every control is one click from the map, on the path or
 on the shelf.
 
+A stage opens as one list of controls, which is the right shape for a stage
+until it has eighteen of them. A long one carries headings you press instead:
+the FM chip opens on the seven knobs you play it with, and the patch table and
+the bus bends sit folded under headings saying how many controls are down there
+— or how many of those you have moved, in which case the heading opens with the
+panel, since a fold that hid something you set would be a panel lying about the
+board. Rows arrive as they get something to act on: a fault picks what happened
+to a wire, so it waits for a wire to be cut, and cut depth waits until one of
+them is cut rather than grounded. A control you moved and then unwired stays on
+screen, because a value you set is yours. And a pick with more than six choices
+folds into a list — sixteen decay rates make a paragraph of buttons, while the
+four things a knife does to a trace still read as a row, so they stay one.
+
 The sources sit across the head of the path as boxes of their own, in two rows,
 because what feeds what is the thing worth drawing. The top row is framed: the
 toy keyboard, the FM chip and the drum machine are three dies on one piece of
@@ -217,18 +230,19 @@ drum sounds came from. A trigger line carries a strike and nothing else, so
 **Note length** is where something has to decide when the note ends; letting a
 key go sends the release early.
 
-Three more open the patch itself up rather than picking one. **Mod ratio** and
-**Car ratio** are what each operator runs at against the note, off the part's
-own multiplier table — the modulator's ratio picks which harmonics it can put
-there, the carrier's moves the note, and the interval between the two is the
-whole character of a two-operator sound. **Mod decay** is how fast the modulator
-falls away, which is the difference between a struck thing and a blown one: a
-bright attack collapsing to a sine in eighty milliseconds is a bell, and one
-that never collapses is an organ. All three are four bits each, because that is
-what the registers hold — the table stops being a scale near the top and
-repeats, there is no detune anywhere on the chip, and every one of them rides
-out in the same eight bytes as the rest of the patch. Which makes them three
-more knobs whose whole job is to hand a cut wire a fresh write to ruin.
+Three more, under _inside the patch_, open the patch up rather than picking one.
+**Mod ratio** and **Car ratio** are what each operator runs at against the note,
+off the part's own multiplier table — the modulator's ratio picks which
+harmonics it can put there, the carrier's moves the note, and the interval
+between the two is the whole character of a two-operator sound. **Mod decay** is
+how fast the modulator falls away, which is the difference between a struck
+thing and a blown one: a bright attack collapsing to a sine in eighty
+milliseconds is a bell, and one that never collapses is an organ. All three are
+four bits each, because that is what the registers hold — the table stops being
+a scale near the top and repeats, there is no detune anywhere on the chip, and
+every one of them rides out in the same eight bytes as the rest of the patch.
+Which makes them three more knobs whose whole job is to hand a cut wire a fresh
+write to ruin.
 
 ### Cut the dataline
 
