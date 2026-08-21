@@ -5,7 +5,7 @@ import type { Glide } from '../engine/glide'
 import { useStoreValue } from './ControlsContext'
 import type { MorphSeconds } from './morph'
 import { PRESETS, presetPath, type PresetDef } from './presets'
-import styles from './Presets.module.css'
+import styles from './PresetRow.module.css'
 import { Tip } from './Tip'
 
 // Far enough that an ordinary click can wobble without scrubbing the board.

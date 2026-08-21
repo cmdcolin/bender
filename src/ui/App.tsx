@@ -22,8 +22,8 @@ import {
   saveMorph,
   type MorphSeconds,
 } from './morph'
-import { Presets } from './Presets'
 import { huntCandidates, mutate, randomLook, SCENARIOS } from './presets'
+import { Presets } from './PresetRow'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { useBoardUrl } from './useBoardUrl'
