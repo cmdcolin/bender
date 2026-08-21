@@ -69,6 +69,33 @@ test('a row arrives once it has something to act on', () => {
   expect(knife().textContent).toContain('1 moved')
 })
 
+// A knife on a bus is three controls that only mean anything together, and most
+// of the combinations are a wire you can cut and hear nothing. The row of named
+// cuts is the way in: one press wires one, the rows under it say which controls
+// that was, and pressing another is that cut rather than the two of them at once.
+test('a named cut wires itself, and the next one replaces it', () => {
+  openFmChip()
+  fireEvent.click(knife())
+
+  fireEvent.click(screen.getByRole('button', { name: 'the note never ends' }))
+  expect(engine.controls.get().fmDataLine).toBeGreaterThan(0)
+  // The chip boots silent and has no keyboard of its own, so a cut you cannot
+  // hear would be the whole of what the press did.
+  expect(engine.controls.get().fmLevel).toBeGreaterThan(0)
+
+  fireEvent.click(screen.getByRole('button', { name: 'no fundamental' }))
+  expect(engine.controls.get().fmDataLine).toBe(DEFAULT_CONTROLS.fmDataLine)
+  expect(engine.controls.get().fmWaveLine).toBeGreaterThan(0)
+
+  // Shut again, the heading names the knife rather than counting the controls
+  // it moved: which cut is on the bus is the thing worth reading from outside.
+  expect(knife().textContent).toContain('no fundamental')
+
+  fireEvent.click(screen.getByRole('button', { name: 'none' }))
+  expect(engine.controls.get().fmWaveLine).toBe(DEFAULT_CONTROLS.fmWaveLine)
+  expect(engine.controls.get().fmLevel).toBeGreaterThan(0)
+})
+
 // Every knob says what it is and where it stands, in its own units.
 test('a slider carries its name and its own units', () => {
   render(

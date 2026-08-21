@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { mulberry32 } from '../../dsp/util/rng'
 import { BENDS, BEND_SLOT_KEYS } from '../controls'
+import { CUTS, cutStands, cutWired } from './cuts'
 import { SCENARIOS } from './scenarios'
 import { mine, yours } from './testBoard'
 
@@ -15,6 +16,25 @@ test('the cross-cutting rolls keep the song, the pattern and your levels', () =>
       expect(yours(after), scenario.name).toEqual(yours(before))
       expect(after.drumBpm, scenario.name).toBe(before.drumBpm)
     }
+  }
+})
+
+// The blind dice hardly ever wire a bus, and a wire drawn at random is as
+// likely to be one the ROM never drives as one you can hear. This roll draws
+// from the panel's own list instead, so what it hands over is always a knife
+// somebody found.
+test('the knife roll always lands on named cuts', () => {
+  const before = mine()
+  for (let seed = 1; seed <= 20; seed++) {
+    const after = scenarioNamed('knife')(before, mulberry32(seed))
+    const standing = CUTS.filter(c => cutStands(c, after))
+    const wired = new Set(
+      CUTS.filter(c => cutWired(c.group, c.part, after)).map(c => c.group),
+    )
+    expect(standing.length, `seed ${seed}`).toBeGreaterThan(0)
+    // Every chip it touched is standing on one of the cuts rather than on the
+    // wreckage of two.
+    expect(new Set(standing.map(c => c.group)), `seed ${seed}`).toEqual(wired)
   }
 })
 

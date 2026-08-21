@@ -167,3 +167,28 @@
 .foldMoved {
   color: var(--accent);
 }
+
+/* The knives one press of a chip wires, above the rows they move. Quiet, and
+   inside the fold rather than on the heading: a row of named glitches on a
+   heading you have not opened is a promise about controls you cannot see. */
+.cuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 2px 0 6px;
+}
+
+.cut {
+  composes: chip from './button.module.css';
+}
+
+/* Lit while the board is standing on this one, so the row says which knife is
+   on the bus as well as which are on offer. */
+.cutOn {
+  composes: cut;
+  composes: chipOn from './button.module.css';
+}
+
+.cutOff {
+  composes: chipOff from './button.module.css';
+}

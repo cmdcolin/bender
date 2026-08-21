@@ -13,7 +13,7 @@ Live: https://cmdcolin.github.io/bender/
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
+  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
 </picture>
 
 The app draws that from the chain itself — `pnpm diagram` regenerates it with
@@ -49,6 +49,18 @@ you moved and then unwired stays on screen, because a value you set is yours.
 And a pick with more than six choices folds into a list — sixteen decay rates
 make a paragraph of buttons, while the four things a knife does to a trace still
 read as a row, so they stay one.
+
+A knife on a bus is three of those rows working together — which wire, what
+happened to it, and how far through the trace the blade went — and most of the
+combinations you can set are a wire you can cut and hear nothing. So each of the
+three chips opens its bus heading on a row of named cuts: **machine-gun**,
+**half a tune**, **the note never ends**, sixteen of them in all. One press
+wires one, and a chip that was sitting silent comes up, because a cut you cannot
+hear teaches nothing. The rows underneath then say which controls that was,
+which makes the row a way of reading the settings as much as a way of skipping
+them — press the next one and it is that cut rather than the two at once, and
+**none** takes the knife back off and leaves the rest of the stage where your
+hand put it.
 
 The sources sit at the head of the path as boxes of their own, because what
 feeds what is the thing worth drawing. A dashed frame holds the three that are
@@ -643,7 +655,8 @@ The bends that matter:
   through it went. All the way and the bit stays where it froze; back it off and
   the trace still carries some of the time, so the bit is right on some reads
   and a word old on others and the melody flickers between two versions of
-  itself.
+  itself. The row of named cuts above these controls is five of the combinations
+  worth hearing, one press each.
 
 - **Retrigger** hammers the drum machine's trigger line; past ~40 Hz the
   retrigger period becomes the pitch and the kit screams.

@@ -20,6 +20,7 @@ import { BENDS } from '../src/ui/controls/bends'
 import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls'
 import type { Group, SliderDef } from '../src/ui/controls/types'
 import { STAGE_ORDER } from '../src/ui/controls/types'
+import { CUTS } from '../src/ui/presets/cuts'
 import { PRESETS } from '../src/ui/presets/table'
 import { boardHash } from '../src/ui/share'
 import { DEFAULT_CONTROLS } from '../src/controls'
@@ -61,6 +62,8 @@ const BLURBS: Record<string, string> = {
     'Each circuit is its own model rather than one circuit with a knob on it. *Screamer* clips inside the feedback loop so the dry note walks under it; *rat* clips to ground behind a slew-limited op-amp; *muff* is two clipping stages and a scooped tone stack; *germanium* is the lopsided one whose bias rides down on the signal; *octave* rectifies into a ringing transformer; *gate* is misbiased to the edge of cutoff.',
   'Tape delay':
     'The capstan is a real motor: it has weight, it answers the brake slowly, and *Supply drag* wires it to the same dying rail as the toy, so the repeats dive in pitch as the board browns out.',
+  'Delay pedal':
+    'The normal box on a board of abused ones, and the one thing here that behaves. *Standard* moves its time by crossing between two read heads rather than dragging one, so the repeats already in the buffer keep their pitch while your hand is on the knob \u2014 which is the whole difference between this and the tape machine next to it. *Analog* is a bucket brigade, and the clock that sets the delay is also what sets the bandwidth, so long is muddy by construction and the compander breathes behind the repeats. *Reverse* plays each window backwards, relocking at the seam.',
   'Spring verb':
     'Dispersive allpass cascade into short parallel combs — metallic, boingy, deliberately cheap.',
   'Patch bay':
@@ -229,6 +232,20 @@ carrying ${STEPS} steps and a length of its own. That is ${n} more controls, and
 ride in a link like the rest.\n`
 }
 
+// The knives the panel offers on this group's buses by name. A bus fault is
+// three controls that only mean anything together and most of the combinations
+// are a wire you can cut and hear nothing, so the panel keeps a row of the ones
+// worth hearing — and the doc lists the same row, off the same table.
+function cuts(g: Group): string {
+  const mine = CUTS.filter(c => c.group === g.name)
+  const [first] = mine
+  if (!first) return ''
+  const lines = mine.map(c => `- **${c.name}**: ${c.blurb}`).join('\n')
+  return `\nNamed cuts, one press each under *${first.part}*, which is where the
+panel keeps them too — the knife goes on and the rows under it say which
+controls that was:\n\n${lines}\n`
+}
+
 function groupSection(g: Group): string {
   const blurb = BLURBS[g.name]
   if (!blurb) {
@@ -239,7 +256,7 @@ function groupSection(g: Group): string {
   const table = rows(g.sliders).join('\n')
   // The doc tells people a roll leaves the shy ones alone, so it had better say
   // which those are.
-  return `### ${g.name}\n\n${blurb}\n${grid(g)}\n${fold(
+  return `### ${g.name}\n\n${blurb}\n${grid(g)}${cuts(g)}\n${fold(
     `${g.sliders.length} control${g.sliders.length === 1 ? '' : 's'}`,
     `| control | range | what it does |\n| --- | --- | --- |\n${table}`,
   )}\n`
@@ -270,8 +287,8 @@ function build(): string {
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. ${sliders.length} knobs and switches in ${GROUPS.length} groups, ${num(BENDS.length)} bends competing for ${num(slots)} slots,
-${ROMS.length} ROM tunes and ${PRESETS.length} presets — and everything below comes off the control
-tables themselves, so the list cannot drift from the instrument.
+${ROMS.length} ROM tunes, ${PRESETS.length} presets and ${CUTS.length} named cuts — and everything below comes off
+the control tables themselves, so the list cannot drift from the instrument.
 
 Try it: **${LIVE}**
 
@@ -297,7 +314,11 @@ renders it with the same layout the app uses.
 - **Put a knife through the bus.** Cut, ground, bridge or pull up a data or
   address line — on the toy, on the drum machine, or on the FM chip — and the
   wrong byte lands. On the FM chip it *stays* wrong until the processor writes
-  that register again.
+  that register again. Which wire and what happened to it are three controls
+  that only mean anything together, so each chip's *knife on the bus* opens on a
+  row of named cuts: press **machine-gun** or **the note never ends** and the
+  controls under it say what that was. **Random knife** in the dice row draws
+  from the same table.
 - **${cap(num(BENDS.length))} bends, ${num(slots)} slots.** You pick which are on the board and in what
   order, so one always sits out. A mix at zero takes the stage out of the path
   rather than merely silencing it.

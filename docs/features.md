@@ -4,8 +4,8 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 190 knobs and switches in 28 groups, seven bends competing for six slots,
-18 ROM tunes and 45 presets — and everything below comes off the control tables
-themselves, so the list cannot drift from the instrument.
+18 ROM tunes, 45 presets and 19 named cuts — and everything below comes off the
+control tables themselves, so the list cannot drift from the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/**
 
@@ -31,7 +31,11 @@ renders it with the same layout the app uses.
 - **Put a knife through the bus.** Cut, ground, bridge or pull up a data or
   address line — on the toy, on the drum machine, or on the FM chip — and the
   wrong byte lands. On the FM chip it _stays_ wrong until the processor writes
-  that register again.
+  that register again. Which wire and what happened to it are three controls
+  that only mean anything together, so each chip's _knife on the bus_ opens on a
+  row of named cuts: press **machine-gun** or **the note never ends** and the
+  controls under it say what that was. **Random knife** in the dice row draws
+  from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
@@ -66,6 +70,24 @@ an auto bass-chord section, and playable voices over the top. Its clock, its
 counter, its bias and its gate are each a place you can solder a pot onto —
 _Bend spot_ picks which, _Bend pot_ is how far. Everything from _Starve_ down is
 the supply underneath it.
+
+Named cuts, one press each under _knife on the bus_, which is where the panel
+keeps them too — the knife goes on and the rows under it say which controls that
+was:
+
+- **rests fill in**: A note wire held high — the song keeps its rhythm and its
+  silences become notes
+- **melody in clumps**: Two note wires soldered to each other, so the tune lands
+  on a lattice instead of on its own intervals
+- **the tune in the bass**: The two wires carrying the big intervals soldered to
+  each other — a note asking for one of them gets neither, and the melody keeps
+  its shape an octave or two underneath itself
+- **half a tune**: The top address wire on the floor — the song folds into its
+  own first half and stays there
+- **every step twice**: The bottom address wire low — the counter counts as it
+  always did and the ROM hands back each step twice
+- **two songs at once**: A trace half cut — most steps arrive, the rest come
+  back stale, and the melody flickers between two versions of itself
 
 <details>
 <summary>20 controls</summary>
@@ -110,6 +132,21 @@ leaves it out: seven rows (the six voices and an accent), each carrying 16 steps
 and a length of its own. That is 14 more controls, and they ride in a link like
 the rest.
 
+Named cuts, one press each under _knife on the bus_, which is where the panel
+keeps them too — the knife goes on and the rows under it say which controls that
+was:
+
+- **machine-gun**: The hat’s trigger wire held high — it fires on every step the
+  machine fetches, and everything soldered to the trigger bus hears it
+- **what both rows agree on**: Kick and snare soldered together — a busy pattern
+  thins to the steps the pair have in common
+- **every step twice**: The bottom address wire low — the playhead runs the bar
+  you wrote and the memory answers with half of it, twice over
+- **back half of the bar**: The top address wire high — you get the second half
+  of the pattern and never the first
+- **coming apart**: A trace half cut — most fetches land, the occasional one
+  does not, and the pattern comes apart a step at a time
+
 <details>
 <summary>18 controls</summary>
 
@@ -152,6 +189,30 @@ leaves nothing behind. _Effect_ is the ROM’s other job: a bird, surf, wind, a
 siren or crickets, each of them a program in the processor spraying register
 writes rather than a sample, which makes it the busiest thing the bus ever
 carries.
+
+Named cuts, one press each under _knife on the bus_, which is where the panel
+keeps them too — the knife goes on and the rows under it say which controls that
+was:
+
+- **the note never ends**: The bit carrying the key coming back up cannot go
+  low, so nothing the chip is told to play ever stops
+- **sub, not bells**: The top two octave bits soldered together, so the chip
+  cannot be told a high octave unless it asks for the very top — every voice
+  lands in the bottom of its range and the sub comes up with it
+- **the bottom of every octave**: The bottom bit of every byte on the floor: the
+  frequency loses its top bit, the operators lose the bottom of their
+  multipliers, and a chip that was ringing sits down
+- **a patch nearly right**: A byte wire half cut — most writes land and the odd
+  one arrives stale, so patches come out wrong and stay wrong
+- **wrong register**: Every odd register filed on top of the even one below it —
+  the four voices stop having frequencies of their own
+- **octave up, with a cliff**: The wire that mirrors the quarter wave held, so
+  the quarter simply runs twice — the note is right and the wave has a step in
+  it
+- **no fundamental**: The sign bit of the sine table nailed — a rectified wave,
+  all octave and nothing underneath it
+- **one write late**: The latch misses often enough that every byte commits to
+  the register the write before it named
 
 <details>
 <summary>18 controls</summary>

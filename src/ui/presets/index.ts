@@ -4,3 +4,14 @@ export { PRESETS, type PresetDef } from './table'
 export { applyPreset, presetPath } from './apply'
 export { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll'
 export { huntCandidates, SCENARIOS, type ScenarioDef } from './scenarios'
+export {
+  applyCut,
+  CUTS,
+  cutOff,
+  cutSays,
+  cutsFor,
+  cutStands,
+  cutWired,
+  partKeys,
+  type CutDef,
+} from './cuts'

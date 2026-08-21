@@ -8,6 +8,7 @@ import {
   snapToStep,
 } from '../controls'
 import { fromPos } from '../slider-scale'
+import { applyCut, CUTS, type CutDef } from './cuts'
 import { inTime } from './quantize'
 import { rollGroup, rollKeys } from './roll'
 import { CLOCK_KEYS, YOURS } from './yours'
@@ -69,6 +70,21 @@ function oneBend(current: Controls, rand: () => number): Controls {
   // a dry/wet of zero.
   next[bend.mix] = snapToStep(sliderFor(bend.mix), 0.6 + rand() * 0.4)
   return next
+}
+
+// A knife on a bus, off the panel's own list of the ones worth hearing. The
+// blind dice leave these wires alone — they are shy, and a wire picked at random
+// is as likely to be one this ROM never drives as one you can hear — so this is
+// the roll that names them, and it draws from the same table the panels do
+// rather than from the width of a bus. Half the time it wires a second chip as
+// well, which is the one thing the panels cannot do from where they sit: two
+// machines reading somebody else's bytes at once.
+function knife(current: Controls, rand: () => number): Controls {
+  const draw = (from: CutDef[]) => from[Math.floor(rand() * from.length)]!
+  const first = draw(CUTS)
+  const board = applyCut(first, current)
+  const elsewhere = CUTS.filter(c => c.group !== first.group)
+  return rand() < 0.5 ? applyCut(draw(elsewhere), board) : board
 }
 
 // Where a control has to sit for the board to be on the edge of running away:
@@ -237,6 +253,13 @@ export const SCENARIOS: ScenarioDef[] = [
     label: 'random one bend',
     blurb: 'Clear the slots down to a single bend and roll that one hard',
     roll: oneBend,
+  },
+  {
+    name: 'knife',
+    label: 'random knife',
+    blurb:
+      'A named cut on one chip’s bus, and half the time a second on another — the wires the blind dice leave alone',
+    roll: knife,
   },
   {
     name: 'wreck it',

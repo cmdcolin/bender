@@ -6,7 +6,17 @@ import { engine } from '../engine/engine'
 import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
 import { Mixer } from './Mixer'
-import { resetGroup, rollGroup } from './presets'
+import {
+  applyCut,
+  cutOff,
+  cutSays,
+  cutsFor,
+  cutStands,
+  cutWired,
+  type CutDef,
+  resetGroup,
+  rollGroup,
+} from './presets'
 import { scrollIntoPanel } from './reveal'
 import { ControlSlider } from './Slider'
 import styles from './Section.module.css'
@@ -62,6 +72,66 @@ function parts(group: Group): Part[] {
 const movedIn = (sliders: SliderDef[], c: Controls) =>
   sliders.filter(d => c[d.key] !== DEFAULT_CONTROLS[d.key]).length
 
+// The cuts on offer under one heading, each of them one press of a knife the
+// board has a name for. A row of chips rather than rows of its own, because
+// nothing here is a control: pressing one moves the controls underneath, which
+// is the whole of what it is for — the settings are hard to read cold, and this
+// is the way in that leaves them on screen saying what they became.
+function CutRow({
+  cuts,
+  group,
+  part,
+  standing,
+  seconds,
+}: {
+  cuts: CutDef[]
+  group: Group
+  part: string
+  standing: string
+  seconds: number
+}) {
+  const wired = useBoardValue(c => cutWired(group.name, part, c))
+  return (
+    <div className={styles.cuts}>
+      {cuts.map(cut => (
+        <Tip
+          key={cut.name}
+          text={`${cut.blurb}. One press: ${cutSays(cut)} — which is where it lands in the rows under here`}
+        >
+          <button
+            className={standing === cut.name ? styles.cutOn : styles.cut}
+            onClick={() =>
+              engine.morphTo(applyCut(cut, engine.controls.get()), seconds)
+            }
+          >
+            {cut.name}
+          </button>
+        </Tip>
+      ))}
+      <Tip
+        text={
+          wired
+            ? `take the knife off ${group.name}'s buses and leave the rest of the stage alone`
+            : `there is no knife on ${group.name}'s buses`
+        }
+      >
+        <button
+          className={wired ? styles.cut : styles.cutOff}
+          disabled={!wired}
+          onClick={() =>
+            engine.morphTo(
+              cutOff(group.name, part, engine.controls.get()),
+              seconds,
+            )
+          }
+        >
+          none
+        </button>
+      </Tip>
+    </div>
+  )
+}
+
 // A heading and what sits under it, with its own count and its own fold. The
 // count is the group header's promise made smaller: how many of these you have
 // moved, so a folded part still says whether anything is going on inside it.
@@ -79,21 +149,51 @@ const movedIn = (sliders: SliderDef[], c: Controls) =>
 function PartFold({
   name,
   rows,
+  group,
+  seconds,
   startOpen,
 }: {
   name: string
   rows: SliderDef[]
+  group: Group
+  seconds: number
   startOpen: boolean
 }) {
   const moved = useBoardValue(c => movedIn(rows, c))
+  const cuts = cutsFor(group.name, name)
+  // A cut has a name, and a name says more than a count of the controls it
+  // moved: a shut fold reading 'machine-gun' is the heading telling you which
+  // knife is on the bus without your having to open it and read three rows.
+  const standing = useBoardValue(
+    c => cuts.find(cut => cutStands(cut, c))?.name ?? '',
+  )
+  const says =
+    standing === ''
+      ? moved > 0
+        ? `${moved} moved`
+        : `${rows.length}`
+      : standing
   return (
     <details className={styles.fold} open={startOpen}>
       <summary className={styles.foldHead}>
         {name}
-        <span className={moved > 0 ? styles.foldMoved : styles.foldCount}>
-          {moved > 0 ? `${moved} moved` : rows.length}
+        <span
+          className={
+            standing !== '' || moved > 0 ? styles.foldMoved : styles.foldCount
+          }
+        >
+          {says}
         </span>
       </summary>
+      {cuts.length > 0 && (
+        <CutRow
+          cuts={cuts}
+          group={group}
+          part={name}
+          standing={standing}
+          seconds={seconds}
+        />
+      )}
       {rows.map(def => (
         <ControlSlider key={def.key} def={def} />
       ))}
@@ -105,7 +205,7 @@ function PartFold({
 // and the rest behind headings you press. Which headings start shut comes off
 // the group — and one holding a control you have moved starts open anyway, since
 // a panel that hides what you set is a panel lying about the board.
-function Rows({ group }: { group: Group }) {
+function Rows({ group, seconds }: { group: Group; seconds: number }) {
   const blocks = parts(group)
   // Which rows have anything to act on, as a string rather than the board they
   // are read off: a stage stands open through morphs and drags, and taking the
@@ -149,6 +249,8 @@ function Rows({ group }: { group: Group }) {
             key={name}
             name={name}
             rows={rows}
+            group={group}
+            seconds={seconds}
             startOpen={startOpen.has(name)}
           />
         )
@@ -224,7 +326,7 @@ export function OpenGroup({
       <div className={styles.body}>
         {group.editor?.kind === 'drums' && <DrumGrid />}
         {group.editor?.kind === 'mixer' && <Mixer />}
-        <Rows key={group.name} group={group} />
+        <Rows key={group.name} group={group} seconds={seconds} />
       </div>
     </div>
   )
