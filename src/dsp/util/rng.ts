@@ -34,10 +34,25 @@ function polar(rng: Rng): Rng {
 // the head it feeds.
 const NOISE_BITS = 15
 const NOISE_MASK = (1 << NOISE_BITS) - 1
-const NOISE = Float32Array.from(
-  { length: 1 << NOISE_BITS },
-  polar(mulberry32(0x1f5)),
+const NOISE = centred(
+  Float32Array.from({ length: 1 << NOISE_BITS }, polar(mulberry32(0x1f5))),
 )
+
+// Drawn once and read for the life of the process, so whatever the table
+// averages to is a dc offset on every draw rather than an error that washes out
+// with more of them. Thirty-two thousand gaussians land about a three-hundredth
+// of a deviation off zero. That is nothing under a hiss and it is everything
+// under a one-pole at 0.12 Hz: the tape's slow drift averages sixty thousand
+// draws, so it converged on the offset and stayed there — a transport that was
+// meant to wander either way instead sat pinned against the far end of its
+// travel, which is a tuning error rather than a drift.
+function centred(table: Float32Array): Float32Array {
+  let sum = 0
+  for (const v of table) sum += v
+  const mean = sum / table.length
+  for (let i = 0; i < table.length; i++) table[i]! -= mean
+  return table
+}
 
 // A draw is a scrambled index into that table rather than a walk along it. A
 // fixed stride would repeat every 0.68 s, which on a quiet passage is a hiss
