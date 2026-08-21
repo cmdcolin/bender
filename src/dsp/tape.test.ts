@@ -231,12 +231,19 @@ test('record level compresses without running away — makeup holds it near unit
   }
 })
 
+// Read off the sampler's sine rather than the oscillator's square. A square
+// through a wobbling head has ringing on its edges, and once the flutter grain
+// is real that ringing crosses zero more than once on the way past — so the
+// period estimate reads a cycle that never happened, and one seed in five came
+// back with four times the wander the transport was actually doing.
 test('the transport wobbles the pitch, and holds it dead steady when wound down', () => {
   const at = (w: number) =>
     wander(
-      render(
+      renderBender(
         {
-          ...TONE,
+          chipLevel: 0,
+          drumLevel: 0,
+          sampleLevel: 1,
           tapeHiss: 0,
           tapeMix: 1,
           tapeWow: w,
@@ -244,7 +251,8 @@ test('the transport wobbles the pitch, and holds it dead steady when wound down'
           tapeSpeed: 0,
         },
         4,
-      ).l,
+        b => b.sampler.setBuffer(sine(220, 1, 0.6)),
+      ),
     )
   // Wound down it is steady to the floor of the measurement itself, which is
   // where a sample-rate estimate of a 220 Hz period bottoms out.
@@ -571,6 +579,51 @@ test('the squeal wobbles whatever is already on the tape', () => {
   }
   expect(sideband(1)).toBeGreaterThan(-35)
   expect(sideband(0)).toBeLessThan(-100)
+})
+
+// Scrape flutter and the squeal are one mechanism. The free span between the
+// guides is a resonator whose damping falls as the tape starts to move: under
+// the line, friction rattles it and what you get is a band of grain around its
+// note; over the line, the damping has gone negative and the same span takes
+// off. So the flutter knob's grain sits where the squeal's note sits, and moves
+// down the band with speed the way that note does — and a healthy span still
+// only modulates the tape, so a machine with nothing playing stays silent
+// however far flutter is wound.
+test('flutter is the same span the squeal is, below its threshold', () => {
+  const board: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0,
+    sampleLevel: 1,
+    tapeMix: 1,
+    tapeHiss: 0,
+    tapeWow: 0,
+  }
+  const load = (b: BuiltChain) => b.sampler.setBuffer(sine(1000, 1, 0.35))
+  // Energy in a band, against the tone that is carrying it.
+  const at = (over: Partial<Controls>, centre: number) => {
+    const out = renderBender({ ...board, ...over }, 8, load).subarray(2 * SR)
+    let band = 0
+    for (let f = centre - 200; f <= centre + 200; f += 25)
+      band += bin(out, f) ** 2
+    return db(Math.sqrt(band) / bin(out, 1000))
+  }
+  // At 7½ ips the span sings at 2.4 kHz, so the grain lands 2.4 kHz off the
+  // kilocycle. It comes up with the knob and is nothing at all without it.
+  const grain = (tapeFlutter: number) => at({ tapeFlutter }, 3400)
+  expect(grain(0)).toBeLessThan(-100)
+  expect(grain(1)).toBeGreaterThan(grain(0.25) + 6)
+  expect(grain(1)).toBeGreaterThan(-55)
+
+  // And the whole band moves with the speed, because the span is what tightens.
+  const tilt = (tapeSpeed: number) =>
+    at({ tapeFlutter: 1, tapeSpeed }, 2500) -
+    at({ tapeFlutter: 1, tapeSpeed }, 4400)
+  expect(tilt(0)).toBeGreaterThan(tilt(2) + 8)
+
+  // A span that is only resonating does not carry across a studio.
+  expect(
+    rms(renderBender({ ...board, sampleLevel: 0, tapeFlutter: 1 }, 3)),
+  ).toBe(0)
 })
 
 // A tape that is only starting to go off squeals in waves, because whether the

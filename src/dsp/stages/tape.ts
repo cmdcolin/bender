@@ -84,6 +84,13 @@ const SQ_WANDER = 0.09
 const SQ_TENSION = 0.8
 const SQ_SLIP = -0.6
 const SQ_GRIP = 0.9
+/** where a healthy tape's span sits: far enough into damping that tension can
+    never talk it into taking off, so what comes off it is a band of grain
+    around its note rather than a note. That grain is scrape flutter, which is
+    the same span, the same friction and the same resonance as the squeal —
+    only under it rather than over. How much of it there is is the seed. */
+const SCRAPE_BITE = -2
+const SCRAPE_SEED = 0.5
 /** The two ways out: the tape's own speed wobbling at the squeal rate, in ms,
     and the machine screaming into the room. */
 const SQ_FM_MS = 0.08
@@ -145,6 +152,7 @@ class TapeHead {
   private ripLow = 0
   private ripBand = 0
   private dropLeft = 0
+  private dropWait = 0
   private dropDepth = 0
   private dropEnv = 0
   private gauss: Rng
@@ -157,11 +165,13 @@ class TapeHead {
     this.rng = mulberry32((draw() * 0x1_0000_0000) >>> 0)
   }
 
-  // azGap is what the azimuth error alone costs this head's top end; the
-  // dropouts are the head's own, because oxide sheds in patches and a patch
-  // sits on one track. Shared, every dropout was a mono event landing on both
-  // channels at once, which is the one thing a hole in the oxide never is.
-  process(x: number, delay: number, azGap: number, s: Settings): number {
+  // gapBase is this head's replay corner with the azimuth error already in it,
+  // settled once a block rather than multiplied out forty-eight thousand times
+  // in each channel. The dropouts are the head's own, because oxide sheds in
+  // patches and a patch sits on one track: shared, every dropout was a mono
+  // event landing on both channels at once, which is the one thing a hole in
+  // the oxide never is.
+  process(x: number, delay: number, gapBase: number, s: Settings): number {
     const xd = x * s.drive
     this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
     const pre = this.pre
@@ -237,6 +247,12 @@ class TapeHead {
     this.line.write(printed + hiss)
 
     let y = this.line.readHermite(delay)
+    // A spool prints both ways: the wrap below arrives after the note and the
+    // wrap above arrives before it, and the pre-echo is the one that turns
+    // heads. There is no having it here. A ghost that arrives early needs the
+    // head delay to be a whole wrap deep — 900 ms at 3¾ ips — and that latency
+    // would land on the entire board rather than on the tape. Left out on
+    // purpose rather than missed.
     if (s.printGain > 0) {
       const through = this.line.readHermite(delay + s.printDelay)
       this.print = flushDenormal(
@@ -244,15 +260,28 @@ class TapeHead {
       )
       y += this.print * s.printGain
     }
-    if (s.dropAmt > 0 && this.dropLeft <= 0 && this.rng() < s.dropProb) {
-      this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * s.dropSr)
-      this.dropDepth = 0.3 + 0.7 * this.rng()
+    let drop = 0
+    if (s.dropAmt > 0) {
+      // When the next patch of shed oxide arrives, not whether this sample is
+      // it. Rolling a die every sample against a probability of three in a
+      // sample rate is a Poisson process written the expensive way round — the
+      // gaps between the arrivals are exponential, so one draw and a log settle
+      // the whole gap and the samples in between cost a decrement. A head was
+      // paying for a random number forty-eight thousand times a second to say
+      // no forty-eight thousand times.
+      if (this.dropLeft > 0) this.dropLeft--
+      else if (--this.dropWait <= 0) {
+        this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * s.dropSr)
+        this.dropDepth = 0.3 + 0.7 * this.rng()
+        this.dropWait = Math.ceil(-Math.log(1 - this.rng()) / s.dropProb)
+      }
+      this.dropEnv = flushDenormal(
+        this.dropEnv +
+          s.dropCoef *
+            ((this.dropLeft > 0 ? this.dropDepth : 0) - this.dropEnv),
+      )
+      drop = this.dropEnv
     }
-    if (this.dropLeft > 0) this.dropLeft--
-    this.dropEnv = flushDenormal(
-      this.dropEnv +
-        s.dropCoef * ((this.dropLeft > 0 ? this.dropDepth : 0) - this.dropEnv),
-    )
     // Oxide sheds highs before it sheds level — the tell that separates a
     // dropout from a power cut.
     // Short wavelengths demagnetise themselves. Two domains a wavelength apart
@@ -267,15 +296,11 @@ class TapeHead {
     // wavelength missing — so it rides the replay corner rather than paying for
     // a filter of its own. `rec` is a difference of two clipped values, so what
     // it can carry is bounded by 2 and this can never turn the corner over.
-    const gc =
-      s.gapCoef *
-      azGap *
-      (1 - 0.75 * this.dropEnv) *
-      (1 - s.erase * this.magEnv)
+    const gc = gapBase * (1 - 0.75 * drop) * (1 - s.erase * this.magEnv)
     this.gap = flushDenormal(this.gap + gc * (y - this.gap))
     this.gap2 = flushDenormal(this.gap2 + gc * (this.gap - this.gap2))
     y = this.gap2
-    const dropGain = 1 - 0.9 * this.dropEnv
+    const dropGain = 1 - 0.9 * drop
 
     if (s.bump === 0) return y * dropGain
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
@@ -311,6 +336,7 @@ class TapeHead {
     this.ripLow = 0
     this.ripBand = 0
     this.dropLeft = 0
+    this.dropWait = 0
     this.dropDepth = 0
     this.dropEnv = 0
   }
@@ -325,7 +351,6 @@ export class Tape implements Stage {
   private dryL: DelayLine
   private dryR: DelayLine
   private driftY = 0
-  private scrapeY = 0
   private wow = new SineOsc()
   private wow2 = new SineOsc()
   private flut = new SineOsc()
@@ -448,23 +473,30 @@ export class Tape implements Stage {
     s.printCoef = lpCoef(2500, this.sr)
 
     const azimuth = p[IDX.tapeAzimuth]! * AZIMUTH_MAX
-    const azGap = 1 - (0.45 * azimuth) / AZIMUTH_MAX
+    const gapL = s.gapCoef
+    const gapR = s.gapCoef * (1 - (0.45 * azimuth) / AZIMUTH_MAX)
     const wowAmt = p[IDX.tapeWow]! * sp.wobble
     const flutAmt = p[IDX.tapeFlutter]! * sp.wobble
     const driftCoef = lpCoef(0.12, this.sr)
-    const scrapeCoef = lpCoef(120, this.sr)
     const msToSamples = this.sr / 1000
     const wowK = SineOsc.rate(sp.wowHz, this.sr)
     const wow2K = SineOsc.rate(sp.wowHz * 0.37, this.sr)
     const flutK = SineOsc.rate(sp.flutHz, this.sr)
     const flut2K = SineOsc.rate(sp.flutHz * 1.54, this.sr)
     const sqAmt = p[IDX.tapeSqueal]!
+    const sqOn = sqAmt > 0
+    const spanOn = sqOn || flutAmt > 0
     // The coefficient is scaled per sample rather than resolved, since a
     // resonance that has to call a sine to wander is one the transport can't
     // afford to have wandering.
     const sqF =
       2 * Math.sin((Math.PI * Math.min(sp.squealHz, this.sr * 0.15)) / this.sr)
-    const sqGrip = SQ_SLIP + sqAmt * (SQ_GRIP - SQ_SLIP)
+    const sqGrip = sqOn ? SQ_SLIP + sqAmt * (SQ_GRIP - SQ_SLIP) : SCRAPE_BITE
+    const spanSeed = SQ_SEED + flutAmt * SCRAPE_SEED
+    // A span that is merely resonating does not carry across a studio; one that
+    // has taken off does. It is also what keeps a machine with nothing playing
+    // and the hiss down silent, which flutter has no business changing.
+    const sqBleed = sqOn ? SQ_BLEED : 0
     const sqFm = SQ_FM_MS * msToSamples
 
     for (let i = 0; i < io.n; i++) {
@@ -472,28 +504,27 @@ export class Tape implements Stage {
         this.driftY + driftCoef * (this.gauss() - this.driftY),
       )
       const drift = this.driftY * 260
-      this.scrapeY = flushDenormal(
-        this.scrapeY + scrapeCoef * (this.gauss() - this.scrapeY),
-      )
-      const scrape = this.scrapeY
       const tension = Math.min(Math.max(drift, -1), 1)
 
-      // Sticky shed. The binder has gone off, so the tape grabs the head,
-      // stretches, lets go and grabs again — and friction falls as it starts to
-      // move, which is a damping term that is negative while the span is nearly
-      // still and positive once it is running. A resonator wired that way needs
-      // no exciting: it takes off on its own and settles into a limit cycle,
-      // which is what a squeal is. Nothing here plays a screech; the screech is
-      // what a friction curve with the wrong slope on it does.
-      let squeal = 0
-      if (sqAmt > 0) {
+      // The free span between the guides, which is one piece of the machine and
+      // so one resonator. Friction falls as the tape starts to move, which is a
+      // damping term that gets smaller the harder the span is gripping — under
+      // the line it is a resonance the friction rattles, and over it the
+      // damping has gone negative and the span takes off on its own and settles
+      // into a limit cycle.
+      //
+      // Those are scrape flutter and a squeal, and they are the same thing.
+      // Nothing here plays either one: what comes out is where the friction
+      // curve's slope put the damping.
+      let span = 0
+      if (spanOn) {
         const f = sqF * (1 + SQ_WANDER * tension)
         const bite = sqGrip + SQ_TENSION * tension
         const damp = SQ_MU * (this.sqBand * this.sqBand * SQ_SAT - bite)
         this.sqLow = flushDenormal(this.sqLow + f * this.sqBand)
-        const high = this.gauss() * SQ_SEED - this.sqLow - damp * this.sqBand
+        const high = this.gauss() * spanSeed - this.sqLow - damp * this.sqBand
         this.sqBand = flushDenormal(this.sqBand + f * high)
-        squeal = this.sqBand
+        span = this.sqBand
       }
 
       const wobbleMs =
@@ -503,23 +534,20 @@ export class Tape implements Stage {
         flutAmt *
           0.16 *
           (0.6 * this.flut.step(flutK) + 0.4 * this.flut2.step(flut2K)) +
-        tension * 0.9 * wowAmt +
-        scrape * 0.02 * flutAmt
-      // The squeal is the tape's speed past the head, so it lands on the head
-      // delay with the rest of the transport — everything already recorded
-      // wobbles at the squeal's rate, which is why a machine doing this sounds
-      // wrong on material that has none of it in it.
-      const d = Math.max(
-        this.nominal + wobbleMs * msToSamples + squeal * sqFm,
-        4,
-      )
+        tension * 0.9 * wowAmt
+      // What the span does is the tape's own speed past the head, so it lands on
+      // the head delay with the rest of the transport. Under the line that is
+      // the grain flutter puts on everything; over it, everything already
+      // recorded wobbles at the squeal's rate — which is why a machine going
+      // off sounds wrong on material that has none of it in it.
+      const d = Math.max(this.nominal + wobbleMs * msToSamples + span * sqFm, 4)
 
       const inL = io.l[i]!
       const inR = io.r[i]!
       this.dryL.write(inL)
       this.dryR.write(inR)
-      const wetL = this.headL.process(inL, d, 1, s)
-      const wetR = this.headR.process(inR, d + azimuth, azGap, s)
+      const wetL = this.headL.process(inL, d, gapL, s)
+      const wetR = this.headR.process(inR, d + azimuth, gapR, s)
 
       // The dry side runs down the same nominal delay, so the blend only combs
       // when the transport actually wobbles.
@@ -527,7 +555,7 @@ export class Tape implements Stage {
       // to itself and a zero fraction: nothing here to clamp or floor.
       // And the other way out is the room: a machine doing this is audible
       // across a studio, so it arrives past the heads rather than through them.
-      const scream = squeal * SQ_BLEED
+      const scream = span * sqBleed
       io.l[i] =
         this.dryL.readAt(this.nominal, 0) * (1 - mix) + (wetL + scream) * mix
       io.r[i] =
@@ -541,7 +569,6 @@ export class Tape implements Stage {
     this.dryL.reset()
     this.dryR.reset()
     this.driftY = 0
-    this.scrapeY = 0
     this.wow.reset()
     this.wow2.reset()
     this.flut.reset()

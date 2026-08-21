@@ -919,6 +919,17 @@ right channel and eats its top end, so the take collapses badly to mono. Wow is
 capstan eccentricity plus a slow drift that never lets the pitch settle; flutter
 is the fast wobble plus the scrape of tape dragging past the head.
 
+That scrape is the same part of the machine the squeal is. The free span between
+the guides is a resonator, and friction falls as the tape starts to move — a
+damping term that gets smaller the harder the span grips. Under the line,
+friction rattles the span and what comes off it is a band of grain around its
+note; over the line the damping has gone negative and the span takes off on its
+own. **Flutter** is one side of that and **Squeal** is the other, so the grain
+sits on the note the machine would scream at, and moves down the band with the
+speed the way that note does. A span that is only resonating still modulates the
+tape rather than radiating, which is why winding flutter up on a machine with
+nothing playing changes nothing you can hear.
+
 **Squeal** is the tape going off. The binder has broken down, so the tape grabs
 the head, stretches, lets go and grabs again — and friction falls as the span
 starts to move, which is a damping term that is negative while it is nearly

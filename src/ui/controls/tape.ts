@@ -95,7 +95,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head.',
+        help: 'The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head. That grain is the free span between the guides resonating, which is the same span, the same friction and the same resonance the Squeal knob takes over the edge: this is under the line, where friction only rattles it. So the grain sits on the note the machine would scream at, and moves down the band with the speed the way that note does.',
       },
       {
         key: 'tapeDrop',
