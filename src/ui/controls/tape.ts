@@ -50,7 +50,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the field the medium is already carrying sits the record curve off centre. A clipper on its own is symmetrical: both halves of a wave meet the same shape, so it makes a third harmonic and never a second, which is the sound of something breaking up rather than of something warm. Tape is not symmetrical — it arrives at the gap magnetised, by more of it the harder it has been driven, and the two halves saturate against different amounts of that. The difference is the second harmonic, and because the offset rides the level rather than the note, it blooms up as you play into it and lets go when you back off. Under-bias leaves more of the field behind, so this and the bias multiply.',
+        help: 'How far the field the medium is already carrying sits the record curve off centre. A clipper on its own is symmetrical: both halves of a wave meet the same shape, so it makes a third harmonic and never a second, which is the sound of something breaking up rather than of something warm. Tape is not symmetrical — it arrives at the gap magnetised, by more of it the harder it has been driven, and the two halves saturate against different amounts of that. The difference is the second harmonic, and because the offset rides the level rather than the note, it blooms up as you play into it and lets go when you back off. Remanence is what the medium keeps, so it keeps it: the bloom lights in a couple of milliseconds and takes a twentieth of a second to go out, which is why a quiet phrase behind a loud one is still warm. Under-bias leaves more of the field behind, so this and the bias multiply.',
       },
       {
         key: 'tapeBump',
@@ -59,7 +59,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1.5,
         step: 0.01,
         unit: '',
-        help: 'The lift where the wavelength going past the replay head is the size of the head — a resonance a head has by being a head, down at the bottom of the band, and the low end every tape machine adds without being asked. Speed moves where it sits, because a wavelength is a distance and a faster tape lays it out longer; this is how much of it comes back. Stock is the machine as it was built, and winding it up is the tape’s own bottom octave rather than a tone control.',
+        help: 'The lift where the wavelength going past the replay head is the size of the head — a resonance a head has by being a head, down at the bottom of the band, and the low end every tape machine adds without being asked. Flux comes back round the core a second time, so the response ripples on up the band with the next one inverted — the lift is paid for by a scoop above it, and that pair is the shape of a real machine’s bottom octave rather than one peak on a flat line. Speed moves where both of them sit, because a wavelength is a distance and a faster tape lays it out longer; this is how much of them comes back. Stock is the machine as it was built.',
       },
       {
         key: 'tapeHiss',

@@ -408,6 +408,53 @@ test('the head bump is the low end, and its stock is the machine', () => {
   expect(DEFAULT_CONTROLS.tapeBump).toBe(0.5)
 })
 
+// A head bump is not one peak on a flat line. Flux comes back round the core a
+// second time, so the response ripples on up the band with the next one
+// inverted — the lift at the bottom is paid for by a scoop above it. Where both
+// of them sit is the speed's business and not the knob's, so at 3¾ ips the
+// scoop lands on the frequency 7½ ips was lifting.
+test('the head bump is a lift and the scoop that pays for it', () => {
+  const at = (hz: number, tapeSpeed: number) =>
+    response(hz, { tapeSpeed, tapeBump: 1 })
+  expect(at(40, 1)).toBeGreaterThan(3)
+  expect(at(100, 1)).toBeLessThan(-1)
+  expect(Math.abs(at(500, 1))).toBeLessThan(0.5)
+  expect(at(57, 1)).toBeGreaterThan(2)
+  expect(at(57, 0)).toBeLessThan(-0.5)
+})
+
+// Remanence is what the medium keeps. The bloom is not a reading of the note
+// being played, then — it comes up with the loud part and is still lit for the
+// quiet one behind it, and lets go over a breath rather than over a cycle.
+// Tracked at one speed both ways it sat near the average of a rectified wave
+// instead, which is a knob that pumps in and out of every hit.
+test('the bloom hangs on after the passage that lit it', () => {
+  const board: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0,
+    sampleLevel: 1,
+    sampleMode: 1,
+    ...STEADY,
+    tapeMix: 1,
+    tapeHyst: 1,
+    tapeDrive: 6,
+  }
+  // A loud third of a second, then a quiet tail of the same tone.
+  const h2 = (loud: number, from: number, to: number) => {
+    const out = renderBender(board, 1.2, b => {
+      const buf = sine(220, 1.2, 1)
+      for (let i = 0; i < buf.length; i++)
+        buf[i] = buf[i]! * (i < 0.3 * SR ? loud : 0.12)
+      b.sampler.setBuffer(buf)
+    })
+    const w = out.subarray(Math.round(from * SR), Math.round(to * SR))
+    return db(bin(w, 440) / bin(w, 220))
+  }
+  const cold = h2(0.12, 0.32, 0.42)
+  expect(h2(0.9, 0.32, 0.42)).toBeGreaterThan(cold + 3)
+  expect(h2(0.9, 0.6, 0.9)).toBeCloseTo(h2(0.12, 0.6, 0.9), 1)
+})
+
 test('tape off leaves the board bit-identical', () => {
   const look: Partial<Controls> = { chipLevel: 0.6, dlyMix: 0.3, revMix: 0.2 }
   expect(render({ ...look, tapeMix: 0 }, 1).l).toEqual(render(look, 1).l)

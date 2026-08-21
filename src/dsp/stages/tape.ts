@@ -51,6 +51,16 @@ const AZIMUTH_MAX = 48
 /** how far above the -3 dB knee a pair of poles has to sit to still cross it
     there, `1/sqrt(sqrt(2)-1)`. */
 const GAP_POLE = 1.5538
+/** where the contour effect's next ripple sits above the head bump, and how
+    much of it comes back — inverted, so the bottom octave is a lift and a
+    scoop rather than a lump. */
+const RIPPLE_RATIO = 2.2
+const RIPPLE_DEPTH = 0.4
+/** how much of the record level the makeup gives back. All of it and the knob
+    would be a tone control; none and it would be a fader. This much leaves the
+    machine at unity where the record level is, and lets what the oxide took off
+    either end of the travel be the thing you hear. */
+const MAKEUP_POW = 0.74
 
 interface Settings {
   drive: number
@@ -66,9 +76,13 @@ interface Settings {
   hissCoef: number
   modNoise: number
   envCoef: number
+  magAtk: number
+  magRel: number
   gapCoef: number
   bumpF: number
   bumpQ: number
+  ripple: number
+  ripF: number
   printGain: number
   printDelay: number
   printCoef: number
@@ -96,6 +110,8 @@ class TapeHead {
   private magEnv = 0
   private bumpLow = 0
   private bumpBand = 0
+  private ripLow = 0
+  private ripBand = 0
   private gauss: Rng
 
   constructor(sr: number, seed: number) {
@@ -139,8 +155,17 @@ class TapeHead {
       offset === 0
         ? softclip(field)
         : softclip(field + offset) - softclip(offset)
+    // Domains flip as fast as the field asks them to and then stay flipped —
+    // that is what remanence is — so this rises in a couple of milliseconds and
+    // lets go over a twentieth of a second. Tracked at one speed both ways it
+    // sat near the average of a rectified wave, which is a bloom that follows
+    // the note; riding the peak and hanging after it is a bloom that follows the
+    // playing, and it stays lit through the gap between two hits instead of
+    // pumping in and out of every one.
+    const mag = Math.abs(rec)
     this.magEnv = flushDenormal(
-      this.magEnv + s.envCoef * (Math.abs(rec) - this.magEnv),
+      this.magEnv +
+        (mag > this.magEnv ? s.magAtk : s.magRel) * (mag - this.magEnv),
     )
     this.de = flushDenormal(this.de + s.deCoef * (rec - this.de))
     const de = this.de
@@ -173,7 +198,15 @@ class TapeHead {
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
     const high = y - this.bumpLow - s.bumpQ * this.bumpBand
     this.bumpBand = flushDenormal(this.bumpBand + s.bumpF * high)
-    return y + s.bump * this.bumpBand * s.bumpQ
+    // The contour effect does not stop at the bump. Flux comes back round the
+    // head core a second time and the response ripples on up the band, the next
+    // one inverted and smaller — so the lift at the bottom is paid for by a
+    // scoop in the low mids, which is the shape of a real machine's bottom
+    // octave rather than one clean peak sitting on a flat line.
+    this.ripLow = flushDenormal(this.ripLow + s.ripF * this.ripBand)
+    const ripHigh = y - this.ripLow - s.bumpQ * this.ripBand
+    this.ripBand = flushDenormal(this.ripBand + s.ripF * ripHigh)
+    return y + s.bumpQ * (s.bump * this.bumpBand - s.ripple * this.ripBand)
   }
 
   reset() {
@@ -189,6 +222,8 @@ class TapeHead {
     this.magEnv = 0
     this.bumpLow = 0
     this.bumpBand = 0
+    this.ripLow = 0
+    this.ripBand = 0
   }
 }
 
@@ -226,9 +261,13 @@ export class Tape implements Stage {
     hissCoef: 0,
     modNoise: 1.8,
     envCoef: 0,
+    magAtk: 0,
+    magRel: 0,
     gapCoef: 0,
     bumpF: 0,
     bumpQ: 1 / 1.2,
+    ripple: 0,
+    ripF: 0,
     printGain: 0,
     printDelay: 0,
     printCoef: 0,
@@ -270,7 +309,7 @@ export class Tape implements Stage {
     )
     const s = this.s
     s.drive = drive
-    s.makeup = Math.pow(drive, -0.8)
+    s.makeup = Math.pow(drive, -MAKEUP_POW)
     // Record and replay have to be each other's inverse, or the machine at rest
     // colours a signal it never touched. A shelf that lifts the top by `g` from
     // a corner inverts to a shelf that cuts it by `g` from a corner `g` times
@@ -292,8 +331,12 @@ export class Tape implements Stage {
     s.hiss = p[IDX.tapeHiss]! * sp.hiss * 0.006
     s.hissCoef = lpCoef(1500, this.sr)
     s.envCoef = lpCoef(12, this.sr)
+    s.magAtk = lpCoef(60, this.sr)
+    s.magRel = lpCoef(2.5, this.sr)
     s.gapCoef = lpCoef(gapHz, this.sr)
     s.bumpF = 2 * Math.sin((Math.PI * sp.bumpHz) / this.sr)
+    s.ripple = s.bump * RIPPLE_DEPTH
+    s.ripF = 2 * Math.sin((Math.PI * sp.bumpHz * RIPPLE_RATIO) / this.sr)
     s.printGain = p[IDX.tapePrint]! * 0.05
     s.printDelay = (sp.printMs / 1000) * this.sr
     s.printCoef = lpCoef(2500, this.sr)

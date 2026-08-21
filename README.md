@@ -880,17 +880,24 @@ symmetrical: it arrives at the gap already magnetised, by more of it the harder
 it has been driven, so the curve sits off centre and the two halves of a wave
 saturate against different amounts of it. That difference is the second harmonic
 — and because the offset rides the level rather than the note, it blooms up as
-you play into the machine and lets go again when you back off. Under-bias leaves
-more of the field behind, so bias and this multiply. It ships wound partway on,
-because a tape machine that has to be asked to sound like tape is one nobody
-asks.
+you play into the machine and lets go again when you back off. Remanence is what
+the medium keeps, so it keeps it: the offset lights in a couple of milliseconds
+and takes a twentieth of a second to go out, which is why a quiet phrase behind
+a loud one comes back warm and why the bloom does not pump in and out of every
+hit. Under-bias leaves more of the field behind, so bias and this multiply. It
+ships wound partway on, because a tape machine that has to be asked to sound
+like tape is one nobody asks.
 
 **Head bump** is the other half: the lift where the wavelength going past the
 replay head is the size of the head, which is the low end every machine adds
-without being told to. Speed still decides where it sits — a wavelength is a
-distance and a faster tape lays it out longer — and this is how much of it comes
-back. Stock is the amount the machine was built with, so a board that never
-touches it is the machine as it was.
+without being told to. It is not one peak on a flat line, either — flux comes
+back round the core a second time and the response ripples on up the band with
+the next one inverted, so the lift at the bottom is paid for by a scoop in the
+low mids. Speed decides where the pair of them sits — a wavelength is a distance
+and a faster tape lays it out longer, so at 3¾ ips the scoop lands on the
+frequency 7½ ips was lifting — and this is how much of them comes back. Stock is
+the amount the machine was built with, so a board that never touches it is the
+machine as it was.
 
 The failures are the point. **Dropouts** shed highs before they shed level,
 which is what separates oxide from a power cut. **Print-through** is the layer
