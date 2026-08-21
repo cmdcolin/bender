@@ -83,7 +83,11 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Screech(sr),
     new Shifter(sr),
   ]
-  chain.pedals = [new Stompbox(sr), new TapeDelay(sr), new SpringVerb(sr)]
+  chain.pedals = [
+    new Stompbox(sr),
+    new TapeDelay(sr, next()),
+    new SpringVerb(sr),
+  ]
   chain.post = [new Brownout(sr, next()), new Tape(sr, next())]
   return {
     chain,
