@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { bin } from './testRender'
+import { bin, renderBender, sine } from './testRender'
 import { packParams } from '../engine/params'
-import { buildChain } from './build'
+import { buildChain, type BuiltChain } from './build'
 import { BLOCK, type StereoBlock } from './stage'
 
 const SR = 48000
@@ -68,6 +68,30 @@ function wander(x: Float32Array): number {
   return (sd / mean) * 100
 }
 
+// What the machine does to one frequency, in dB against the same tone with the
+// tape out of circuit — so whatever the source did cancels and what is left is
+// the machine. The sampler is the one thing on the board that plays a clean
+// sine, and a whole number of cycles in a one-second loop comes round without a
+// splice to hear.
+function response(hz: number, over: Partial<Controls> = {}): number {
+  const board: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0,
+    sampleLevel: 1,
+    tapeHiss: 0,
+    tapeWow: 0,
+    tapeFlutter: 0,
+    tapeDrive: 0,
+    tapeHyst: 0,
+    tapeBump: 0,
+    ...over,
+  }
+  const load = (b: BuiltChain) => b.sampler.setBuffer(sine(hz, 1, 0.06))
+  const at = (mix: number) =>
+    bin(renderBender({ ...board, tapeMix: mix }, 2, load).subarray(SR), hz)
+  return db(at(1) / at(0))
+}
+
 const SILENT: Partial<Controls> = { chipLevel: 0, drumLevel: 0 }
 const TONE: Partial<Controls> = {
   chipLevel: 0,
@@ -112,6 +136,37 @@ test('speed sets how much top end survives the head gap', () => {
   expect(at(2)).toBeLessThan(
     bright(render({ ...TONE, ...STEADY }, 1).l.subarray(SR / 2)),
   )
+})
+
+// Record and replay are one shelf and its inverse. Run both from the same
+// corner — which is the obvious thing to write and what this did for a long
+// time — and they do not cancel: what is left over is a couple of dB sitting on
+// 1.2 kHz, so a machine at rest handed back every board with a presence lift
+// nobody had asked it for. Below the head gap there is nothing left for the tape
+// to do, so a tone down there has to come back the level it went in at.
+test('the record and replay curves cancel below the head gap', () => {
+  for (const hz of [50, 120, 300, 700, 1200, 2000])
+    expect(Math.abs(response(hz, { tapeSpeed: 2 })), `${hz} Hz`).toBeLessThan(
+      0.4,
+    )
+})
+
+// Gap loss is flat and then a cliff — a wavelength either fits across the gap
+// or it cancels in it. A single pole is a tone control instead: it starts
+// taking the top off the midrange an octave early and still passes 20 kHz at
+// 3¾ ips, where a real machine has nothing up there at all.
+test('the head gap is a cliff rather than a tone control', () => {
+  const slow = (hz: number) => response(hz, { tapeSpeed: 0 })
+  const [flat, knee, over, gone] = [
+    slow(2000),
+    slow(4000),
+    slow(8000),
+    slow(16000),
+  ]
+  expect(Math.abs(flat)).toBeLessThan(1)
+  expect(gone).toBeLessThan(-9)
+  // An octave further past the knee costs more than the octave before it did.
+  expect(gone - over).toBeLessThan(over - knee)
 })
 
 // At 15 ips the head gap already sits past the programme, so bias can't work

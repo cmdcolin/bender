@@ -12,7 +12,7 @@ import { gaussian, mulberry32, type Rng } from '../util/rng'
 // means more hiss and slower wow; and a spool wrap takes longer to come round.
 const SPEED = [
   {
-    gapHz: 6500,
+    gapHz: 5000,
     bumpHz: 26,
     hiss: 1.7,
     wowHz: 0.55,
@@ -21,7 +21,7 @@ const SPEED = [
     printMs: 900,
   },
   {
-    gapHz: 12000,
+    gapHz: 10000,
     bumpHz: 38,
     hiss: 1,
     wowHz: 0.8,
@@ -47,13 +47,17 @@ const NOMINAL_MS = 10
 const HYST_MAX = 1.5
 const LINE_MS = NOMINAL_MS + 900 + 20
 const EMPH_HZ = 1200
-const AZIMUTH_MAX = 40
+const AZIMUTH_MAX = 48
+/** how far above the -3 dB knee a pair of poles has to sit to still cross it
+    there, `1/sqrt(sqrt(2)-1)`. */
+const GAP_POLE = 1.5538
 
 interface Settings {
   drive: number
   makeup: number
   emph: number
   emphCoef: number
+  deCoef: number
   remanence: number
   bump: number
   tilt: number
@@ -86,6 +90,7 @@ class TapeHead {
   private tiltY = 0
   private hissY = 0
   private gap = 0
+  private gap2 = 0
   private print = 0
   private env = 0
   private magEnv = 0
@@ -137,7 +142,7 @@ class TapeHead {
     this.magEnv = flushDenormal(
       this.magEnv + s.envCoef * (Math.abs(rec) - this.magEnv),
     )
-    this.de = flushDenormal(this.de + s.emphCoef * (rec - this.de))
+    this.de = flushDenormal(this.de + s.deCoef * (rec - this.de))
     const de = this.de
     const played = (de + (rec - de) / (1 + s.emph)) * s.makeup
     this.tiltY = flushDenormal(this.tiltY + s.tiltCoef * (played - this.tiltY))
@@ -160,8 +165,10 @@ class TapeHead {
       )
       y += this.print * s.printGain
     }
-    this.gap = flushDenormal(this.gap + s.gapCoef * gapScale * (y - this.gap))
-    y = this.gap
+    const gc = s.gapCoef * gapScale
+    this.gap = flushDenormal(this.gap + gc * (y - this.gap))
+    this.gap2 = flushDenormal(this.gap2 + gc * (this.gap - this.gap2))
+    y = this.gap2
 
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
     const high = y - this.bumpLow - s.bumpQ * this.bumpBand
@@ -176,6 +183,7 @@ class TapeHead {
     this.tiltY = 0
     this.hissY = 0
     this.gap = 0
+    this.gap2 = 0
     this.print = 0
     this.env = 0
     this.magEnv = 0
@@ -209,6 +217,7 @@ export class Tape implements Stage {
     makeup: 1,
     emph: 1.2,
     emphCoef: 0,
+    deCoef: 0,
     remanence: 0,
     bump: 0.5,
     tilt: 0,
@@ -249,11 +258,30 @@ export class Tape implements Stage {
     // Under-bias records hotter highs and distorts sooner; over-bias is duller
     // and squashes. One knob, the two moving against each other.
     const drive = Math.pow(10, p[IDX.tapeDrive]! / 20) * (1 - 0.45 * bias)
-    const gapHz = Math.min(sp.gapHz * Math.pow(2, -bias * 0.5), this.sr * 0.45)
+    // Gap loss is flat and then a cliff — a wavelength either fits across the
+    // gap or it cancels in it — so the knee is where the two poles cross -3 dB
+    // and the fall past it is 12 dB an octave. One pole was 6, which is a tone
+    // control: it took the top off the midrange an octave early and still let
+    // 20 kHz through at 3¾ ips, where a real machine has nothing up there at
+    // all. Two is what makes the speed switch a different machine.
+    const gapHz = Math.min(
+      sp.gapHz * Math.pow(2, -bias * 0.5) * GAP_POLE,
+      this.sr * 0.47,
+    )
     const s = this.s
     s.drive = drive
     s.makeup = Math.pow(drive, -0.8)
-    s.emphCoef = lpCoef(EMPH_HZ, this.sr)
+    // Record and replay have to be each other's inverse, or the machine at rest
+    // colours a signal it never touched. A shelf that lifts the top by `g` from
+    // a corner inverts to a shelf that cuts it by `g` from a corner `g` times
+    // lower — run both from the same corner, as this did, and what is left over
+    // is a 2 dB lump sitting on 1.2 kHz, which is the one part of the band that
+    // could least afford one. Written out as poles rather than as corners, the
+    // two cancel to the bit.
+    const g = 1 + s.emph
+    const a = 1 - lpCoef(EMPH_HZ, this.sr)
+    s.emphCoef = 1 - a
+    s.deCoef = 1 - (g * a) / (g + (1 - a) * (1 - g))
     // How far off centre the remanence sits the curve, per unit of level the
     // medium is carrying. Under-bias leaves more of the field behind, which is
     // the other half of why an underbiased tape is the one that crunches.
@@ -327,7 +355,7 @@ export class Tape implements Stage {
         this.headR.process(
           inR,
           d + azimuth,
-          gapScale * (1 - (0.35 * azimuth) / AZIMUTH_MAX),
+          gapScale * (1 - (0.45 * azimuth) / AZIMUTH_MAX),
           s,
         ) * dropGain
 

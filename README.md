@@ -850,16 +850,23 @@ what it went down on.
 
 Signal crosses the record head through a pre-emphasis curve and comes back
 through its inverse, so the highs saturate first and transients round off before
-anything sounds distorted. Hiss lands on the medium rather than in the mix — the
-replay head colours it, the speed sets how loud it is, and it breathes a little
-with the signal, the way biased oxide does.
+anything sounds distorted. Its inverse exactly: a shelf that lifts the top by a
+factor from one corner comes back as a shelf that cuts it by the same factor
+from a corner that far below, and running both from the same corner instead
+leaves a couple of dB sitting on 1.2 kHz — a presence lift the machine was
+adding to every board that went through it. What colours the signal is the
+medium and the heads, and nothing else does. Hiss lands on the medium rather
+than in the mix — the replay head colours it, the speed sets how loud it is, and
+it breathes a little with the signal, the way biased oxide does.
 
 **Speed** moves the machine as one part rather than one knob among ten. The head
-gap loses highs at a wavelength, so a slower tape loses them lower; the replay
-bump sits at a wavelength too, so it drops with speed; less tape past the head
-per second means more hiss and slower wow; and a spool wrap takes longer to come
-back round, which sets how far behind the print-through ghost arrives. 3¾ ips is
-dark, noisy and unsteady. 15 ips is nearly a wire.
+gap loses highs at a wavelength — flat, and then a cliff, because a wavelength
+either fits across the gap or cancels in it — so a slower tape loses them lower
+and falls off faster; the replay bump sits at a wavelength too, so it drops with
+speed; less tape past the head per second means more hiss and slower wow; and a
+spool wrap takes longer to come back round, which sets how far behind the
+print-through ghost arrives. 3¾ ips is dark, noisy and unsteady. 15 ips is
+nearly a wire.
 
 **Bias** runs underbiased-bright-and-crunchy to overbiased-dull-and-squashed,
 distortion and top end moving against each other. It carries its own record tilt
