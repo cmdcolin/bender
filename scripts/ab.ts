@@ -14,6 +14,14 @@
 // code lands on different pages, and the fast run is whichever process got
 // lucky, not whichever tree is faster.
 //
+// The other thing that moves the number is the board itself. It is a chaotic
+// system with a feedback bus round it, so which regime it settles into — and
+// how much work that regime costs — is the boot seed's call, and two seeds came
+// back 22% apart on one tree. blocks.ts pools four boots for that reason, which
+// is what makes a change that inserts a call into the seed draw readable here
+// at all: without it, reseeding the board reads as a regression it had nothing
+// to do with.
+//
 // So this doesn't compare two numbers. It runs the two trees alternately, pair
 // by pair, and asks how often the new one won. That question survives a shared
 // box, because both sides of a pair meet the same box. `pnpm ab HEAD` measures
