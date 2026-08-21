@@ -405,7 +405,8 @@ export class Tape implements Stage {
     // The coefficient is scaled per sample rather than resolved, since a
     // resonance that has to call a sine to wander is one the transport can't
     // afford to have wandering.
-    const sqF = 2 * Math.sin((Math.PI * sp.squealHz) / this.sr)
+    const sqF =
+      2 * Math.sin((Math.PI * Math.min(sp.squealHz, this.sr * 0.15)) / this.sr)
     const sqGrip = SQ_SLIP + sqAmt * (SQ_GRIP - SQ_SLIP)
     const sqFm = SQ_FM_MS * msToSamples
 
