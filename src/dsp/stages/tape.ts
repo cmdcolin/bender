@@ -152,7 +152,7 @@ class TapeHead {
   private ripLow = 0
   private ripBand = 0
   private dropLeft = 0
-  private dropWait = 0
+  private dropWait = -1
   private dropDepth = 0
   private dropEnv = 0
   private gauss: Rng
@@ -269,11 +269,17 @@ class TapeHead {
       // the whole gap and the samples in between cost a decrement. A head was
       // paying for a random number forty-eight thousand times a second to say
       // no forty-eight thousand times.
+      //
+      // The first gap is drawn rather than served. A counter that starts at
+      // nought is a counter already expired, so every take opened on a dropout
+      // — on both heads at once and at whatever the knob was, which is a hole
+      // in the oxide arriving exactly where a hole in the oxide never does.
       if (this.dropLeft > 0) this.dropLeft--
+      else if (this.dropWait < 0) this.dropWait = this.nextGap(s.dropProb)
       else if (--this.dropWait <= 0) {
         this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * s.dropSr)
         this.dropDepth = 0.3 + 0.7 * this.rng()
-        this.dropWait = Math.ceil(-Math.log(1 - this.rng()) / s.dropProb)
+        this.dropWait = this.nextGap(s.dropProb)
       }
       this.dropEnv = flushDenormal(
         this.dropEnv +
@@ -320,6 +326,12 @@ class TapeHead {
     )
   }
 
+  // Samples to the next arrival. At least one, so a counter below zero means
+  // one that has never been drawn rather than one that has run out.
+  private nextGap(prob: number): number {
+    return Math.max(1, Math.ceil(-Math.log(1 - this.rng()) / prob))
+  }
+
   reset() {
     this.line.reset()
     this.pre = 0
@@ -336,7 +348,7 @@ class TapeHead {
     this.ripLow = 0
     this.ripBand = 0
     this.dropLeft = 0
-    this.dropWait = 0
+    this.dropWait = -1
     this.dropDepth = 0
     this.dropEnv = 0
   }

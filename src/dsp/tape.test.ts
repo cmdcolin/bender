@@ -7,8 +7,8 @@ import { BLOCK, type StereoBlock } from './stage'
 
 const SR = 48000
 
-function render(overrides: Partial<Controls>, seconds: number) {
-  const chain = buildChain(SR)
+function render(overrides: Partial<Controls>, seconds: number, seed = 1) {
+  const chain = buildChain(SR, seed)
   const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
   const io: StereoBlock = {
     l: new Float32Array(BLOCK),
@@ -300,6 +300,34 @@ test('a dropout lands on one track rather than on both', () => {
   // are the same piece of tape.
   expect(apart(0)).toBe(0)
   expect(apart(1)).toBeGreaterThan(6)
+})
+
+// The gap to the first patch is drawn like every other gap. Held at nought, the
+// counter was one that had already expired, so every take opened on a dropout —
+// on both heads at once and at whatever the knob said, which is the one place a
+// hole in the oxide never lands. The windows above all start a second in and saw
+// none of it.
+test('a take does not open on a dropout', () => {
+  const opening = (x: Float32Array) => rms(x.subarray(240, 2640))
+  let clean = 0
+  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+    const shed = render(
+      { ...TONE, ...STEADY, tapeMix: 1, tapeDrop: 1 },
+      2,
+      seed,
+    )
+    const whole = render(
+      { ...TONE, ...STEADY, tapeMix: 1, tapeDrop: 0 },
+      2,
+      seed,
+    )
+    if (db(opening(shed.l) / opening(whole.l)) > -0.5) clean++
+    if (db(opening(shed.r) / opening(whole.r)) > -0.5) clean++
+  }
+  // A gap averaging a third of a second lands inside the first fifty
+  // milliseconds about one take in seven, so one or two of the sixteen are a
+  // real arrival. All sixteen was the counter.
+  expect(clean).toBeGreaterThan(12)
 })
 
 test('print-through leaves a ghost one spool wrap behind the signal', () => {
