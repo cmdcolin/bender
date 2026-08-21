@@ -64,6 +64,10 @@ const RIPPLE_DEPTH = 0.4
     machine at unity where the record level is, and lets what the oxide took off
     either end of the travel be the thing you hear. */
 const MAKEUP_POW = 0.74
+/** how much of the replay corner the medium erases off itself per unit of field
+    it is carrying. Under 0.5 by construction: what the domains have been
+    through is bounded by 2, so this cannot turn the corner over. */
+const ERASE = 0.45
 /** How sharply friction falls off as the span starts moving, how far the cycle
     runs before it climbs back out, and the draught of noise that starts it.
     `mu` is the character: small sings, large rasps. */
@@ -102,6 +106,7 @@ interface Settings {
   magAtk: number
   magRel: number
   gapCoef: number
+  erase: number
   dropAmt: number
   dropProb: number
   dropCoef: number
@@ -250,7 +255,23 @@ class TapeHead {
     )
     // Oxide sheds highs before it sheds level — the tell that separates a
     // dropout from a power cut.
-    const gc = s.gapCoef * azGap * (1 - 0.75 * this.dropEnv)
+    // Short wavelengths demagnetise themselves. Two domains a wavelength apart
+    // pointing opposite ways are each sitting in the other's field, and the
+    // harder the tape has been driven the more field there is to sit in — so
+    // the top of the band has ten or fifteen dB less headroom than the bottom,
+    // and a machine played into hard goes dull before it goes loud. That is
+    // most of why tape takes the fizz off a cymbal and a clipper does not.
+    //
+    // It happens where the signal is recorded, not where it is read, but a
+    // wavelength lost at the gap and a wavelength never written are the same
+    // wavelength missing — so it rides the replay corner rather than paying for
+    // a filter of its own. `rec` is a difference of two clipped values, so what
+    // it can carry is bounded by 2 and this can never turn the corner over.
+    const gc =
+      s.gapCoef *
+      azGap *
+      (1 - 0.75 * this.dropEnv) *
+      (1 - s.erase * this.magEnv)
     this.gap = flushDenormal(this.gap + gc * (y - this.gap))
     this.gap2 = flushDenormal(this.gap2 + gc * (this.gap - this.gap2))
     y = this.gap2
@@ -330,6 +351,7 @@ export class Tape implements Stage {
     magAtk: 0,
     magRel: 0,
     gapCoef: 0,
+    erase: ERASE,
     dropAmt: 0,
     dropProb: 0,
     dropCoef: 0,
@@ -406,7 +428,7 @@ export class Tape implements Stage {
     // the other half of why an underbiased tape is the one that crunches.
     s.remanence = p[IDX.tapeHyst]! * HYST_MAX * (1 - 0.35 * bias)
     s.bump = p[IDX.tapeBump]!
-    s.tilt = -bias * 0.6
+    s.tilt = -bias * 0.85
     s.tiltCoef = lpCoef(3000, this.sr)
     s.hiss = p[IDX.tapeHiss]! * sp.hiss * 0.006
     s.hissCoef = lpCoef(1500, this.sr)

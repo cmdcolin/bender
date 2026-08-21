@@ -73,7 +73,11 @@ function wander(x: Float32Array): number {
 // the machine. The sampler is the one thing on the board that plays a clean
 // sine, and a whole number of cycles in a one-second loop comes round without a
 // splice to hear.
-function response(hz: number, over: Partial<Controls> = {}): number {
+function response(
+  hz: number,
+  over: Partial<Controls> = {},
+  amp = 0.06,
+): number {
   const board: Partial<Controls> = {
     chipLevel: 0,
     drumLevel: 0,
@@ -86,7 +90,7 @@ function response(hz: number, over: Partial<Controls> = {}): number {
     tapeBump: 0,
     ...over,
   }
-  const load = (b: BuiltChain) => b.sampler.setBuffer(sine(hz, 1, 0.06))
+  const load = (b: BuiltChain) => b.sampler.setBuffer(sine(hz, 1, amp))
   const at = (mix: number) =>
     bin(renderBender({ ...board, tapeMix: mix }, 2, load).subarray(SR), hz)
   return db(at(1) / at(0))
@@ -169,9 +173,33 @@ test('the head gap is a cliff rather than a tone control', () => {
   expect(gone - over).toBeLessThan(over - knee)
 })
 
+// Short wavelengths demagnetise themselves: two domains a wavelength apart
+// pointing opposite ways each sit in the other's field, and the harder the tape
+// has been driven the more field there is to sit in. So the top of the band has
+// ten or fifteen dB less headroom than the bottom, and a machine played into
+// hard goes dull before it goes loud — most of why tape takes the fizz off a
+// cymbal where a clipper only adds to it. Wound down, the same machine at the
+// same settings is nearly a wire.
+test('the top of the band has less headroom than the bottom', () => {
+  const at = (hz: number, amp: number) => response(hz, { tapeSpeed: 2 }, amp)
+  const quiet = [at(500, 0.02), at(10000, 0.02)]
+  const loud = [at(500, 0.8), at(10000, 0.8)]
+  expect(Math.abs(quiet[0]!)).toBeLessThan(0.5)
+  expect(quiet[1]!).toBeGreaterThan(-2)
+  // The bottom keeps what it had; the top loses ten dB more than the bottom did.
+  expect(loud[0]!).toBeGreaterThan(-3)
+  expect(loud[0]! - loud[1]!).toBeGreaterThan(10)
+})
+
 // At 15 ips the head gap already sits past the programme, so bias can't work
 // through the gap corner alone — it needs its own record tilt or the knob
-// inverts at the fast speed.
+// inverts at the fast speed. Self-erasure pushes the same way, since under-bias
+// records hotter and hotter is what the medium erases off itself, so the tilt
+// has to beat both.
+//
+// Every step has to be audibly darker rather than merely measurably darker: the
+// knob went flat to within half a percent at 15 ips once, and a test that only
+// asked for a decrease called that passing.
 test('bias runs bright to dull at every speed', () => {
   for (const speed of [0, 1, 2]) {
     const steps = [-1, -0.5, 0, 0.5, 1].map(bias =>
@@ -183,7 +211,10 @@ test('bias runs bright to dull at every speed', () => {
       ),
     )
     for (let i = 1; i < steps.length; i++)
-      expect(steps[i]!).toBeLessThan(steps[i - 1]!)
+      expect(
+        steps[i]! / steps[i - 1]!,
+        `speed ${speed} step ${i}`,
+      ).toBeLessThan(0.985)
   }
 })
 

@@ -868,10 +868,20 @@ spool wrap takes longer to come back round, which sets how far behind the
 print-through ghost arrives. 3¾ ips is dark, noisy and unsteady. 15 ips is
 nearly a wire.
 
+The top of the band has less headroom than the bottom, the way it does on tape.
+Short wavelengths demagnetise themselves — two domains a wavelength apart
+pointing opposite ways are each sitting in the other's field, and the harder the
+tape has been driven the more field there is to sit in — so a machine played
+into hard goes dull before it goes loud. Wound down, the same machine at the
+same settings is nearly a wire. That is most of why tape takes the fizz off a
+cymbal where a clipper only adds to it.
+
 **Bias** runs underbiased-bright-and-crunchy to overbiased-dull-and-squashed,
 distortion and top end moving against each other. It carries its own record tilt
 rather than leaning on the head gap alone — at 15 ips the gap already sits past
-the programme, so a gap-only model inverts the knob at the fast speed.
+the programme, so a gap-only model inverts the knob at the fast speed, and
+self-erasure pushes the same way since under-bias records hotter and hotter is
+what the medium erases off itself.
 
 **Hysteresis** is the half of tape a clipper cannot do. A symmetrical saturator
 makes a third harmonic and a fifth and never a second, which is the sound of
