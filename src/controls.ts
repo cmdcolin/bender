@@ -234,6 +234,7 @@ export const DEFAULT_CONTROLS = {
   tapeAzimuth: 0,
   tapeHyst: 0.3,
   tapeBump: 0.5,
+  tapeSqueal: 0,
 
   heatAmt: 0,
   faultCluster: 0,

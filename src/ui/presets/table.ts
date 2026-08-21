@@ -586,7 +586,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'shed oxide',
     blurb:
-      'Slow tape gone soft: dropouts, print-through, the pitch never settling',
+      'Slow tape gone soft: dropouts, print-through, a squeal that comes and goes',
     patch: {
       chipLevel: 0.7,
       tapeMix: 1,
@@ -597,6 +597,7 @@ export const PRESETS: PresetDef[] = [
       tapeWow: 0.8,
       tapeFlutter: 0.7,
       tapeDrop: 0.6,
+      tapeSqueal: 0.45,
       tapePrint: 0.7,
       tapeAzimuth: 0.35,
       chipStarve: 0.2,

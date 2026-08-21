@@ -19,6 +19,7 @@ const SPEED = [
     flutHz: 5,
     wobble: 1.7,
     printMs: 900,
+    squealHz: 1500,
   },
   {
     gapHz: 10000,
@@ -28,6 +29,7 @@ const SPEED = [
     flutHz: 6.8,
     wobble: 1,
     printMs: 450,
+    squealHz: 2400,
   },
   {
     gapHz: 19000,
@@ -37,6 +39,7 @@ const SPEED = [
     flutHz: 9.5,
     wobble: 0.6,
     printMs: 225,
+    squealHz: 3400,
   },
 ]
 
@@ -61,6 +64,26 @@ const RIPPLE_DEPTH = 0.4
     machine at unity where the record level is, and lets what the oxide took off
     either end of the travel be the thing you hear. */
 const MAKEUP_POW = 0.74
+/** How sharply friction falls off as the span starts moving, how far the cycle
+    runs before it climbs back out, and the draught of noise that starts it.
+    `mu` is the character: small sings, large rasps. */
+const SQ_MU = 0.14
+const SQ_SAT = 0.25
+const SQ_SEED = 3e-4
+/** What tension does to it: a few percent on the note, and the whole of whether
+    it takes off at all. The knob sets the bite the tape has on the head with
+    nothing else happening, tension swings it either side, and the size of the
+    cycle goes as the root of what is left — so the knob reads as how often the
+    machine screams as much as how loudly, and a tape that is only going off
+    squeals in waves the drift's own minutes long. */
+const SQ_WANDER = 0.09
+const SQ_TENSION = 0.8
+const SQ_SLIP = -0.6
+const SQ_GRIP = 0.9
+/** The two ways out: the tape's own speed wobbling at the squeal rate, in ms,
+    and the machine screaming into the room. */
+const SQ_FM_MS = 0.08
+const SQ_BLEED = 0.06
 
 interface Settings {
   drive: number
@@ -170,16 +193,28 @@ class TapeHead {
     this.de = flushDenormal(this.de + s.deCoef * (rec - this.de))
     const de = this.de
     const played = (de + (rec - de) / (1 + s.emph)) * s.makeup
-    this.tiltY = flushDenormal(this.tiltY + s.tiltCoef * (played - this.tiltY))
-    const printed = played + s.tilt * (played - this.tiltY)
+    // The record tilt and the hiss are both a knob at rest for most boards, and
+    // a head runs whatever is here forty-eight thousand times a second in each
+    // channel. Both branches go the same way for the whole of a take, which is
+    // the one shape a predictor gets right every time.
+    let printed = played
+    if (s.tilt !== 0) {
+      this.tiltY = flushDenormal(
+        this.tiltY + s.tiltCoef * (played - this.tiltY),
+      )
+      printed = played + s.tilt * (played - this.tiltY)
+    }
 
-    this.env = flushDenormal(
-      this.env + s.envCoef * (Math.abs(printed) - this.env),
-    )
-    const n = this.gauss()
-    this.hissY = flushDenormal(this.hissY + s.hissCoef * (n - this.hissY))
-    const hiss =
-      (n + 0.8 * (n - 2 * this.hissY)) * s.hiss * (1 + s.modNoise * this.env)
+    let hiss = 0
+    if (s.hiss > 0) {
+      this.env = flushDenormal(
+        this.env + s.envCoef * (Math.abs(printed) - this.env),
+      )
+      const n = this.gauss()
+      this.hissY = flushDenormal(this.hissY + s.hissCoef * (n - this.hissY))
+      hiss =
+        (n + 0.8 * (n - 2 * this.hissY)) * s.hiss * (1 + s.modNoise * this.env)
+    }
     this.line.write(printed + hiss)
 
     let y = this.line.readHermite(delay)
@@ -195,6 +230,7 @@ class TapeHead {
     this.gap2 = flushDenormal(this.gap2 + gc * (this.gap - this.gap2))
     y = this.gap2
 
+    if (s.bump === 0) return y
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
     const high = y - this.bumpLow - s.bumpQ * this.bumpBand
     this.bumpBand = flushDenormal(this.bumpBand + s.bumpF * high)
@@ -244,6 +280,8 @@ export class Tape implements Stage {
   private dropLeft = 0
   private dropDepth = 0
   private dropEnv = 0
+  private sqLow = 0
+  private sqBand = 0
   private nominal: number
   private rng: Rng
   private gauss: Rng
@@ -273,14 +311,23 @@ export class Tape implements Stage {
     printCoef: 0,
   }
 
-  constructor(private readonly sr: number) {
-    this.headL = new TapeHead(sr, 909)
-    this.headR = new TapeHead(sr, 4242)
+  // Four streams off one seed, the way every other seeded part of the board
+  // draws its own — the tape had four numbers written into it instead, so two
+  // takes of one board came back with the same hiss on them, the same dropouts
+  // in the same places and the machine going off at the same moment.
+  constructor(
+    private readonly sr: number,
+    seed = 1,
+  ) {
+    const draw = mulberry32(seed)
+    const next = () => (draw() * 0x1_0000_0000) >>> 0
+    this.headL = new TapeHead(sr, next())
+    this.headR = new TapeHead(sr, next())
     this.nominal = Math.round((NOMINAL_MS / 1000) * sr)
     this.dryL = new DelayLine(this.nominal + 4)
     this.dryR = new DelayLine(this.nominal + 4)
-    this.rng = mulberry32(1717)
-    this.gauss = gaussian(mulberry32(2323))
+    this.rng = mulberry32(next())
+    this.gauss = gaussian(mulberry32(next()))
   }
 
   when(p: Float32Array) {
@@ -354,6 +401,13 @@ export class Tape implements Stage {
     const wow2K = SineOsc.rate(sp.wowHz * 0.37, this.sr)
     const flutK = SineOsc.rate(sp.flutHz, this.sr)
     const flut2K = SineOsc.rate(sp.flutHz * 1.54, this.sr)
+    const sqAmt = p[IDX.tapeSqueal]!
+    // The coefficient is scaled per sample rather than resolved, since a
+    // resonance that has to call a sine to wander is one the transport can't
+    // afford to have wandering.
+    const sqF = 2 * Math.sin((Math.PI * sp.squealHz) / this.sr)
+    const sqGrip = SQ_SLIP + sqAmt * (SQ_GRIP - SQ_SLIP)
+    const sqFm = SQ_FM_MS * msToSamples
 
     for (let i = 0; i < io.n; i++) {
       this.driftY = flushDenormal(
@@ -364,6 +418,26 @@ export class Tape implements Stage {
         this.scrapeY + scrapeCoef * (this.gauss() - this.scrapeY),
       )
       const scrape = this.scrapeY
+      const tension = Math.min(Math.max(drift, -1), 1)
+
+      // Sticky shed. The binder has gone off, so the tape grabs the head,
+      // stretches, lets go and grabs again — and friction falls as it starts to
+      // move, which is a damping term that is negative while the span is nearly
+      // still and positive once it is running. A resonator wired that way needs
+      // no exciting: it takes off on its own and settles into a limit cycle,
+      // which is what a squeal is. Nothing here plays a screech; the screech is
+      // what a friction curve with the wrong slope on it does.
+      let squeal = 0
+      if (sqAmt > 0) {
+        const f = sqF * (1 + SQ_WANDER * tension)
+        const bite = sqGrip + SQ_TENSION * tension
+        const damp = SQ_MU * (this.sqBand * this.sqBand * SQ_SAT - bite)
+        this.sqLow = flushDenormal(this.sqLow + f * this.sqBand)
+        const high = this.gauss() * SQ_SEED - this.sqLow - damp * this.sqBand
+        this.sqBand = flushDenormal(this.sqBand + f * high)
+        squeal = this.sqBand
+      }
+
       const wobbleMs =
         wowAmt *
           1.6 *
@@ -371,9 +445,16 @@ export class Tape implements Stage {
         flutAmt *
           0.16 *
           (0.6 * this.flut.step(flutK) + 0.4 * this.flut2.step(flut2K)) +
-        Math.min(Math.max(drift, -1), 1) * 0.9 * wowAmt +
+        tension * 0.9 * wowAmt +
         scrape * 0.02 * flutAmt
-      const d = Math.max(this.nominal + wobbleMs * msToSamples, 4)
+      // The squeal is the tape's speed past the head, so it lands on the head
+      // delay with the rest of the transport — everything already recorded
+      // wobbles at the squeal's rate, which is why a machine doing this sounds
+      // wrong on material that has none of it in it.
+      const d = Math.max(
+        this.nominal + wobbleMs * msToSamples + squeal * sqFm,
+        4,
+      )
 
       if (dropAmt > 0 && this.dropLeft <= 0 && this.rng() < dropProb) {
         this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * this.sr)
@@ -406,8 +487,13 @@ export class Tape implements Stage {
       // when the transport actually wobbles.
       // The dry tap is a whole number of samples and never moves, so it splits
       // to itself and a zero fraction: nothing here to clamp or floor.
-      io.l[i] = this.dryL.readAt(this.nominal, 0) * (1 - mix) + wetL * mix
-      io.r[i] = this.dryR.readAt(this.nominal, 0) * (1 - mix) + wetR * mix
+      // And the other way out is the room: a machine doing this is audible
+      // across a studio, so it arrives past the heads rather than through them.
+      const scream = squeal * SQ_BLEED
+      io.l[i] =
+        this.dryL.readAt(this.nominal, 0) * (1 - mix) + (wetL + scream) * mix
+      io.r[i] =
+        this.dryR.readAt(this.nominal, 0) * (1 - mix) + (wetR + scream) * mix
     }
   }
 
@@ -425,5 +511,7 @@ export class Tape implements Stage {
     this.dropLeft = 0
     this.dropDepth = 0
     this.dropEnv = 0
+    this.sqLow = 0
+    this.sqBand = 0
   }
 }

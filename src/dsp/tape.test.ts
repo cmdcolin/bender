@@ -225,9 +225,13 @@ test('the transport wobbles the pitch, and holds it dead steady when wound down'
   expect(at(1)).toBeLessThan(3)
 })
 
+// Eight seconds because the reading is the deepest window in the render, which
+// is one draw off a random process rather than an average of it: a shorter take
+// reports whichever dropout happened to land in it, and rank the seed
+// differently and the number moves by 6 dB without the model having changed.
 test('dropouts dip the level, and shed highs on the way down', () => {
   const quietest = (drop: number) => {
-    const { l } = render({ ...TONE, ...STEADY, tapeMix: 1, tapeDrop: drop }, 6)
+    const { l } = render({ ...TONE, ...STEADY, tapeMix: 1, tapeDrop: drop }, 8)
     let min = Infinity
     for (let i = SR; i + 1200 < l.length; i += 600)
       min = Math.min(min, rms(l.subarray(i, i + 1200)))
@@ -453,6 +457,83 @@ test('the bloom hangs on after the passage that lit it', () => {
   const cold = h2(0.12, 0.32, 0.42)
   expect(h2(0.9, 0.32, 0.42)).toBeGreaterThan(cold + 3)
   expect(h2(0.9, 0.6, 0.9)).toBeCloseTo(h2(0.12, 0.6, 0.9), 1)
+})
+
+// Nothing here plays a screech. The friction curve has the wrong slope on it,
+// which is a damping term that is negative while the span is nearly still, and
+// a resonator wired that way takes off on its own — so what comes out is a
+// limit cycle rather than a sample, and the note it lands on is the speed's.
+test('a machine with nothing playing screams at the note the span holds', () => {
+  const sung = (tapeSpeed: number) => {
+    const out = renderBender(
+      { ...SILENT, ...STEADY, tapeMix: 1, tapeSqueal: 1, tapeSpeed },
+      4,
+    ).subarray(2 * SR)
+    let best = 0
+    let hz = 0
+    for (let f = 600; f < 6000; f += 25)
+      if (bin(out, f) > best) {
+        best = bin(out, f)
+        hz = f
+      }
+    return hz
+  }
+  // Within a tenth of the note the span holds, because tension wanders it by a
+  // few percent and a squeal that sat dead on a frequency would be an oscillator.
+  for (const [tapeSpeed, want] of [
+    [0, 1500],
+    [1, 2400],
+    [2, 3400],
+  ] as const) {
+    expect(sung(tapeSpeed) / want, `${want} Hz`).toBeGreaterThan(0.89)
+    expect(sung(tapeSpeed) / want, `${want} Hz`).toBeLessThan(1.11)
+  }
+  expect(rms(renderBender({ ...SILENT, ...STEADY, tapeMix: 1 }, 4))).toBe(0)
+})
+
+// The other way it gets out. What is squealing is the tape's own speed past the
+// head, so everything already recorded wobbles at the same rate — which is why
+// a machine doing this sounds wrong on material with none of it in it, and why
+// turning the tape down is the only knob that makes it go away.
+test('the squeal wobbles whatever is already on the tape', () => {
+  const board: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0,
+    sampleLevel: 1,
+    ...STEADY,
+    tapeMix: 1,
+    tapeSpeed: 1,
+  }
+  const sideband = (tapeSqueal: number) => {
+    const out = renderBender({ ...board, tapeSqueal }, 4, b =>
+      b.sampler.setBuffer(sine(1000, 1, 0.35)),
+    ).subarray(2 * SR)
+    // 2.4 kHz either side of the kilocycle, the lower one folded back up.
+    return db(Math.max(bin(out, 3400), bin(out, 1400)) / bin(out, 1000))
+  }
+  expect(sideband(1)).toBeGreaterThan(-40)
+  expect(sideband(0)).toBeLessThan(-100)
+})
+
+// A tape that is only starting to go off squeals in waves, because whether the
+// span takes off at all is tension's call and the drift takes minutes over it.
+// Wound all the way up the tape bites hard enough that tension can no longer
+// talk it out of it, and the machine simply screams.
+test('a squeal comes and goes until the knob stops letting it', () => {
+  const spread = (tapeSqueal: number) => {
+    const out = renderBender(
+      { ...SILENT, ...STEADY, tapeMix: 1, tapeSqueal },
+      6,
+    )
+    const peaks: number[] = []
+    for (let t = 0; t + 0.5 <= 6; t += 0.5) {
+      const w = out.subarray(t * SR, (t + 0.5) * SR)
+      peaks.push(w.reduce((a, v) => Math.max(a, Math.abs(v)), 0))
+    }
+    return db(Math.max(...peaks) / Math.min(...peaks))
+  }
+  expect(spread(0.25)).toBeGreaterThan(25)
+  expect(spread(1)).toBeLessThan(10)
 })
 
 test('tape off leaves the board bit-identical', () => {

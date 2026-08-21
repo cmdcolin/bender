@@ -907,6 +907,22 @@ mono. Wow is capstan eccentricity plus a slow drift that never lets the pitch
 settle; flutter is the fast wobble plus the scrape of tape dragging past the
 head.
 
+**Squeal** is the tape going off. The binder has broken down, so the tape grabs
+the head, stretches, lets go and grabs again — and friction falls as the span
+starts to move, which is a damping term that is negative while it is nearly
+still and positive once it is running. A resonator wired that way needs no
+exciting. It takes off on its own and settles into a limit cycle, and that limit
+cycle is the squeal: nothing here plays a screech, the screech is what a
+friction curve with the wrong slope on it does. Speed sets the note, because a
+faster tape pulls the span tighter. Tension decides whether it takes off at all,
+so the knob reads as how often the machine screams as much as how loudly — a
+tape only starting to go off squeals in waves as long as the drift, and one
+wound all the way up bites hard enough that tension can no longer talk it out of
+it. And you hear it twice. The machine screams into the room, and everything
+already on the tape wobbles at the same rate, because the thing squealing is the
+tape's own speed past the head — which is why a machine doing this sounds wrong
+on material with none of it in it.
+
 The dry side runs down the same nominal head delay as the wet, so **To tape**
 only combs once the transport actually wobbles.
 

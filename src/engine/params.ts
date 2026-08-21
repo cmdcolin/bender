@@ -232,6 +232,7 @@ export const PARAM_DEFS = [
   ['tapeAzimuth', 'slew'],
   ['tapeHyst', 'slew'],
   ['tapeBump', 'slew'],
+  ['tapeSqueal', 'slew'],
 
   ['heatAmt', 'slew'],
   ['faultCluster', 'slew'],

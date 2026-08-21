@@ -62,6 +62,15 @@ export const TAPE_GROUPS: Group[] = [
         help: 'The lift where the wavelength going past the replay head is the size of the head — a resonance a head has by being a head, down at the bottom of the band, and the low end every tape machine adds without being asked. Flux comes back round the core a second time, so the response ripples on up the band with the next one inverted — the lift is paid for by a scoop above it, and that pair is the shape of a real machine’s bottom octave rather than one peak on a flat line. Speed moves where both of them sit, because a wavelength is a distance and a faster tape lays it out longer; this is how much of them comes back. Stock is the machine as it was built.',
       },
       {
+        key: 'tapeSqueal',
+        label: 'Squeal',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Sticky shed. The binder has gone off, so the tape grabs the head, stretches, lets go and grabs again — and friction falls as it starts to move, which is a damping that is negative while the span is nearly still and positive once it is running. A resonator wired that way needs no exciting: it takes off on its own and settles into a limit cycle, which is what a squeal is. Speed sets the note, because a faster tape pulls the span tighter, and tension decides how hard it takes off, so it comes and goes in waves rather than holding one. You hear it twice — the machine screaming, and everything already on the tape wobbling at the same rate, because the thing squealing is the tape’s own speed past the head.',
+      },
+      {
         key: 'tapeHiss',
         label: 'Hiss',
         min: 0,

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 189 knobs and switches in 28 groups, seven bends competing for six slots,
+ruin. 190 knobs and switches in 28 groups, seven bends competing for six slots,
 18 ROM tunes and 45 presets — and everything below comes off the control tables
 themselves, so the list cannot drift from the instrument.
 
@@ -564,7 +564,7 @@ loss, head bump, hiss, wow rate and print-through together, because on a real
 machine they are one thing.
 
 <details>
-<summary>12 controls</summary>
+<summary>13 controls</summary>
 
 | control       | range                  | what it does                                                                                          |
 | ------------- | ---------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -574,6 +574,7 @@ machine they are one thing.
 | Bias          | −1 to +1               | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
 | Hysteresis    | off to full            | How far the field the medium is already carrying sits the record curve off centre                     |
 | Head bump     | 0 to 1.5               | The lift where the wavelength going past the replay head is the size of the head                      |
+| Squeal        | off to full            | Sticky shed                                                                                           |
 | Hiss          | off to full            | Noise laid on the medium, not on the mix                                                              |
 | Wow           | off to full            | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
 | Flutter       | off to full            | The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head           |
@@ -767,8 +768,8 @@ on it — a link never presses play, so it is loaded and waiting.
   — Claps on two and four, shuffled hard, through four bits of DAC
 - [**found tape**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,revDecayS:1.6,revMix:0.18,tapeMix:1,tapeDrive:4,tapeHiss:0.55,tapeWow:0.3)
   — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
-- [**shed oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35)
-  — Slow tape gone soft: dropouts, print-through, the pitch never settling
+- [**shed oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35,tapeSqueal:0.45)
+  — Slow tape gone soft: dropouts, print-through, a squeal that comes and goes
 - [**pinned**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,drumLevel:0.5,drumBpm:96,delayMs:180,dlyMix:0.25,tapeMix:1,tapeSpeed:2,tapeDrive:15,tapeBias:-0.85,tapeHiss:0.4,tapeWow:0.15,tapeFlutter:0.2)
   — Underbiased and slammed — the machine as the distortion
 - [**kit on keys**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,chipAccomp:0.35,drumLevel:0.6,drumBpm:104,delayMs:288,dlyMix:0.22,trigToKeys:1,trigKeysNote:1)

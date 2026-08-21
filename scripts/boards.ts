@@ -58,6 +58,7 @@ export const HEAVY: Partial<Controls> = {
   revMix: 0.4,
   tapeMix: 0.7,
   tapeDrop: 0.3,
+  tapeSqueal: 0.6,
   tapePrint: 0.5,
   tapeAzimuth: 0.3,
   brownAmt: 0.4,
