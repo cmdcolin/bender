@@ -12,6 +12,7 @@
     "cold": "tsx scripts/cold.ts",
     "diagram": "tsx scripts/chain-svg.ts",
     "features": "tsx scripts/features.ts",
+    "knife": "tsx scripts/knife.ts",
     "soak": "tsx scripts/soak.ts",
     "preview": "vite preview",
     "test": "vitest run",

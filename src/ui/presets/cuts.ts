@@ -115,6 +115,17 @@ export const CUTS: CutDef[] = [
   {
     group: 'Toy drums',
     part: KNIFE,
+    name: 'kick on every step',
+    blurb:
+      'The same knife one wire along — the kick fires on every step the machine fetches, and the bar goes under everything else rather than over it',
+    patch: {
+      drumDataLine: pick('drumDataLine', 'D0'),
+      drumDataFault: pick('drumDataFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Toy drums',
+    part: KNIFE,
     name: 'what both rows agree on',
     blurb:
       'Kick and snare soldered together — a busy pattern thins to the steps the pair have in common',

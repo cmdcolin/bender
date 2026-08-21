@@ -472,7 +472,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four things a knife does to any trace, on the side that chooses the step. Cut leaves the wire floating and the bit goes stale, carrying whatever the fetch before left on it, so the pattern flickers between two versions of itself. Bridged solders it to its neighbour and the steps collapse onto a lattice.',
+        help: 'The same four things a knife does to any trace, on the side that chooses the step. Cut leaves the wire floating and the bit goes stale, carrying whatever the fetch before left on it — and on this machine the fetch before is usually the row above asking for the same step, so a cut wants to be most of the way through before the pattern moves at all. Bridged solders it to its neighbour and the steps collapse onto a lattice.',
       },
       {
         key: 'drumDataLine',
@@ -507,7 +507,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the wire holds whatever was last on it. Back it off and it still conducts sometimes: most fetches land, the occasional one does not, and the pattern comes apart a step at a time rather than all at once.',
+        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the wire holds whatever was last on it, and every fetch after that is a step old. Back it off and it bites less here than it does anywhere else on the board: every row fetches its own step through these same wires inside one tick, so a floating bit is mostly holding the value it was about to be handed anyway. What is left is the odd fetch at the turn of a step, and mostly on the kick, which is the row that reads first — the pattern comes apart a step at a time rather than flickering between two of itself.',
       },
     ],
   },

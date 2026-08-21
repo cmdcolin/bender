@@ -95,6 +95,8 @@ const SCRIPTS: Record<string, string> = {
   soak: 'whether any stage gets slower the longer it runs',
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
+  knife:
+    'sweeps every wire and fault on all five buses and reports which you can hear',
   preview: 'serves the built bundle',
   format: 'prettier',
   prepare: 'points git at .githooks',
