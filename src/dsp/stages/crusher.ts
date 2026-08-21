@@ -14,8 +14,11 @@ export class Crusher implements Stage {
   private countR: number
   private rng: Rng
 
-  constructor(private readonly sr: number) {
-    this.rng = mulberry32(404)
+  constructor(
+    private readonly sr: number,
+    seed = 404,
+  ) {
+    this.rng = mulberry32(seed)
     this.countR = 2
   }
 

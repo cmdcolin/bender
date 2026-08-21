@@ -44,6 +44,10 @@ export interface BuiltChain {
 // own stream. A build seeded the same way renders the same audio, which is what
 // the tests hold; the worklet seeds itself off the clock, so two takes of one
 // board are two takes rather than the same file twice.
+//
+// Every part that holds an Rng draws here. A stream written into a stage
+// instead is a stage that sounds the same on every boot of the instrument —
+// which for the noise source is the whole of what it was for.
 export function buildBender(sr: number, seed = 1): BuiltChain {
   const draw = mulberry32(seed)
   const next = () => (draw() * 0x1_0000_0000) >>> 0
@@ -64,7 +68,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     toyDrum,
     fmChip,
     new ChaosOsc(sr),
-    new Noise(sr),
+    new Noise(sr, next()),
     sampler,
   ]
   // ids match the bendSlot choices: 1 ring, 2 crush, 3 dist, 4 comb, 5 glitch,
@@ -72,7 +76,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   chain.bendById = [
     undefined,
     new RingMod(sr),
-    new Crusher(sr),
+    new Crusher(sr, next()),
     new Clipper(sr),
     new Comb(sr),
     new GlitchBuf(sr, next()),

@@ -13,8 +13,11 @@ export class Noise implements Stage {
   private ring2 = 0
   private rng: Rng
 
-  constructor(private readonly sr: number) {
-    this.rng = mulberry32(303)
+  constructor(
+    private readonly sr: number,
+    seed = 303,
+  ) {
+    this.rng = mulberry32(seed)
   }
 
   when(p: Float32Array) {
