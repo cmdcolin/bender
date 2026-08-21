@@ -102,6 +102,10 @@ interface Settings {
   magAtk: number
   magRel: number
   gapCoef: number
+  dropAmt: number
+  dropProb: number
+  dropCoef: number
+  dropSr: number
   bumpF: number
   bumpQ: number
   ripple: number
@@ -135,14 +139,24 @@ class TapeHead {
   private bumpBand = 0
   private ripLow = 0
   private ripBand = 0
+  private dropLeft = 0
+  private dropDepth = 0
+  private dropEnv = 0
   private gauss: Rng
+  private rng: Rng
 
   constructor(sr: number, seed: number) {
     this.line = new DelayLine((LINE_MS / 1000) * sr + 8)
-    this.gauss = gaussian(mulberry32(seed))
+    const draw = mulberry32(seed)
+    this.gauss = gaussian(mulberry32((draw() * 0x1_0000_0000) >>> 0))
+    this.rng = mulberry32((draw() * 0x1_0000_0000) >>> 0)
   }
 
-  process(x: number, delay: number, gapScale: number, s: Settings): number {
+  // azGap is what the azimuth error alone costs this head's top end; the
+  // dropouts are the head's own, because oxide sheds in patches and a patch
+  // sits on one track. Shared, every dropout was a mono event landing on both
+  // channels at once, which is the one thing a hole in the oxide never is.
+  process(x: number, delay: number, azGap: number, s: Settings): number {
     const xd = x * s.drive
     this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
     const pre = this.pre
@@ -225,12 +239,24 @@ class TapeHead {
       )
       y += this.print * s.printGain
     }
-    const gc = s.gapCoef * gapScale
+    if (s.dropAmt > 0 && this.dropLeft <= 0 && this.rng() < s.dropProb) {
+      this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * s.dropSr)
+      this.dropDepth = 0.3 + 0.7 * this.rng()
+    }
+    if (this.dropLeft > 0) this.dropLeft--
+    this.dropEnv = flushDenormal(
+      this.dropEnv +
+        s.dropCoef * ((this.dropLeft > 0 ? this.dropDepth : 0) - this.dropEnv),
+    )
+    // Oxide sheds highs before it sheds level — the tell that separates a
+    // dropout from a power cut.
+    const gc = s.gapCoef * azGap * (1 - 0.75 * this.dropEnv)
     this.gap = flushDenormal(this.gap + gc * (y - this.gap))
     this.gap2 = flushDenormal(this.gap2 + gc * (this.gap - this.gap2))
     y = this.gap2
+    const dropGain = 1 - 0.9 * this.dropEnv
 
-    if (s.bump === 0) return y
+    if (s.bump === 0) return y * dropGain
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
     const high = y - this.bumpLow - s.bumpQ * this.bumpBand
     this.bumpBand = flushDenormal(this.bumpBand + s.bumpF * high)
@@ -242,7 +268,10 @@ class TapeHead {
     this.ripLow = flushDenormal(this.ripLow + s.ripF * this.ripBand)
     const ripHigh = y - this.ripLow - s.bumpQ * this.ripBand
     this.ripBand = flushDenormal(this.ripBand + s.ripF * ripHigh)
-    return y + s.bumpQ * (s.bump * this.bumpBand - s.ripple * this.ripBand)
+    return (
+      (y + s.bumpQ * (s.bump * this.bumpBand - s.ripple * this.ripBand)) *
+      dropGain
+    )
   }
 
   reset() {
@@ -260,6 +289,9 @@ class TapeHead {
     this.bumpBand = 0
     this.ripLow = 0
     this.ripBand = 0
+    this.dropLeft = 0
+    this.dropDepth = 0
+    this.dropEnv = 0
   }
 }
 
@@ -277,13 +309,9 @@ export class Tape implements Stage {
   private wow2 = new SineOsc()
   private flut = new SineOsc()
   private flut2 = new SineOsc()
-  private dropLeft = 0
-  private dropDepth = 0
-  private dropEnv = 0
   private sqLow = 0
   private sqBand = 0
   private nominal: number
-  private rng: Rng
   private gauss: Rng
   private readonly s: Settings = {
     drive: 1,
@@ -302,6 +330,10 @@ export class Tape implements Stage {
     magAtk: 0,
     magRel: 0,
     gapCoef: 0,
+    dropAmt: 0,
+    dropProb: 0,
+    dropCoef: 0,
+    dropSr: 0,
     bumpF: 0,
     bumpQ: 1 / 1.2,
     ripple: 0,
@@ -311,10 +343,12 @@ export class Tape implements Stage {
     printCoef: 0,
   }
 
-  // Four streams off one seed, the way every other seeded part of the board
+  // Every stream off one seed, the way every other seeded part of the board
   // draws its own — the tape had four numbers written into it instead, so two
   // takes of one board came back with the same hiss on them, the same dropouts
-  // in the same places and the machine going off at the same moment.
+  // in the same places and the machine going off at the same moment. The heads
+  // take a seed each and split it again, since a head owns both its hiss and
+  // its own shed oxide.
   constructor(
     private readonly sr: number,
     seed = 1,
@@ -326,7 +360,6 @@ export class Tape implements Stage {
     this.nominal = Math.round((NOMINAL_MS / 1000) * sr)
     this.dryL = new DelayLine(this.nominal + 4)
     this.dryR = new DelayLine(this.nominal + 4)
-    this.rng = mulberry32(next())
     this.gauss = gaussian(mulberry32(next()))
   }
 
@@ -381,6 +414,10 @@ export class Tape implements Stage {
     s.magAtk = lpCoef(60, this.sr)
     s.magRel = lpCoef(2.5, this.sr)
     s.gapCoef = lpCoef(gapHz, this.sr)
+    s.dropAmt = p[IDX.tapeDrop]!
+    s.dropProb = (s.dropAmt * 3) / this.sr
+    s.dropCoef = lpCoef(120, this.sr)
+    s.dropSr = this.sr
     s.bumpF = 2 * Math.sin((Math.PI * sp.bumpHz) / this.sr)
     s.ripple = s.bump * RIPPLE_DEPTH
     s.ripF = 2 * Math.sin((Math.PI * sp.bumpHz * RIPPLE_RATIO) / this.sr)
@@ -389,11 +426,9 @@ export class Tape implements Stage {
     s.printCoef = lpCoef(2500, this.sr)
 
     const azimuth = p[IDX.tapeAzimuth]! * AZIMUTH_MAX
+    const azGap = 1 - (0.45 * azimuth) / AZIMUTH_MAX
     const wowAmt = p[IDX.tapeWow]! * sp.wobble
     const flutAmt = p[IDX.tapeFlutter]! * sp.wobble
-    const dropAmt = p[IDX.tapeDrop]!
-    const dropProb = (dropAmt * 3) / this.sr
-    const dropCoef = lpCoef(120, this.sr)
     const driftCoef = lpCoef(0.12, this.sr)
     const scrapeCoef = lpCoef(120, this.sr)
     const msToSamples = this.sr / 1000
@@ -457,32 +492,12 @@ export class Tape implements Stage {
         4,
       )
 
-      if (dropAmt > 0 && this.dropLeft <= 0 && this.rng() < dropProb) {
-        this.dropLeft = Math.floor((0.004 + this.rng() * 0.05) * this.sr)
-        this.dropDepth = 0.3 + 0.7 * this.rng()
-      }
-      if (this.dropLeft > 0) this.dropLeft--
-      this.dropEnv = flushDenormal(
-        this.dropEnv +
-          dropCoef * ((this.dropLeft > 0 ? this.dropDepth : 0) - this.dropEnv),
-      )
-      // Oxide sheds highs before it sheds level — the tell that separates a
-      // dropout from a power cut.
-      const gapScale = 1 - 0.75 * this.dropEnv
-      const dropGain = 1 - 0.9 * this.dropEnv
-
       const inL = io.l[i]!
       const inR = io.r[i]!
       this.dryL.write(inL)
       this.dryR.write(inR)
-      const wetL = this.headL.process(inL, d, gapScale, s) * dropGain
-      const wetR =
-        this.headR.process(
-          inR,
-          d + azimuth,
-          gapScale * (1 - (0.45 * azimuth) / AZIMUTH_MAX),
-          s,
-        ) * dropGain
+      const wetL = this.headL.process(inL, d, 1, s)
+      const wetR = this.headR.process(inR, d + azimuth, azGap, s)
 
       // The dry side runs down the same nominal delay, so the blend only combs
       // when the transport actually wobbles.
@@ -509,9 +524,6 @@ export class Tape implements Stage {
     this.wow2.reset()
     this.flut.reset()
     this.flut2.reset()
-    this.dropLeft = 0
-    this.dropDepth = 0
-    this.dropEnv = 0
     this.sqLow = 0
     this.sqBand = 0
   }

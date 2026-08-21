@@ -241,6 +241,28 @@ test('dropouts dip the level, and shed highs on the way down', () => {
   expect(db(quietest(1) / quietest(0))).toBeLessThan(-10)
 })
 
+// Oxide sheds in patches, and a patch sits on one track. Held on the transport
+// rather than on the heads, every dropout was a mono event arriving on both
+// channels at once, which is the one thing a hole in the oxide never is.
+test('a dropout lands on one track rather than on both', () => {
+  const apart = (tapeDrop: number) => {
+    const { l, r } = render({ ...TONE, ...STEADY, tapeMix: 1, tapeDrop }, 8)
+    let worst = 0
+    for (let i = SR; i + 1200 < l.length; i += 600)
+      worst = Math.max(
+        worst,
+        Math.abs(
+          db(rms(l.subarray(i, i + 1200)) / rms(r.subarray(i, i + 1200))),
+        ),
+      )
+    return worst
+  }
+  // With nothing shedding and the heads square with each other, the two tracks
+  // are the same piece of tape.
+  expect(apart(0)).toBe(0)
+  expect(apart(1)).toBeGreaterThan(6)
+})
+
 test('print-through leaves a ghost one spool wrap behind the signal', () => {
   const ghost = (print: number) => {
     const chain = buildChain(SR)
@@ -504,14 +526,19 @@ test('the squeal wobbles whatever is already on the tape', () => {
     tapeMix: 1,
     tapeSpeed: 1,
   }
+  // Read as a band rather than as a bin: tension wanders the squeal by a few
+  // percent, so its sidebands smear over a couple of hundred Hz and one bin
+  // reports where the note happened to sit for that take. The band is 2.4 kHz
+  // above the kilocycle and clear of its harmonics either side.
   const sideband = (tapeSqueal: number) => {
-    const out = renderBender({ ...board, tapeSqueal }, 4, b =>
+    const out = renderBender({ ...board, tapeSqueal }, 8, b =>
       b.sampler.setBuffer(sine(1000, 1, 0.35)),
     ).subarray(2 * SR)
-    // 2.4 kHz either side of the kilocycle, the lower one folded back up.
-    return db(Math.max(bin(out, 3400), bin(out, 1400)) / bin(out, 1000))
+    let band = 0
+    for (let f = 3200; f <= 3600; f += 25) band += bin(out, f) ** 2
+    return db(Math.sqrt(band) / bin(out, 1000))
   }
-  expect(sideband(1)).toBeGreaterThan(-40)
+  expect(sideband(1)).toBeGreaterThan(-35)
   expect(sideband(0)).toBeLessThan(-100)
 })
 
@@ -520,20 +547,25 @@ test('the squeal wobbles whatever is already on the tape', () => {
 // Wound all the way up the tape bites hard enough that tension can no longer
 // talk it out of it, and the machine simply screams.
 test('a squeal comes and goes until the knob stops letting it', () => {
+  // Twenty-four seconds because whether the span takes off is tension's call
+  // and tension turns over about once a second: six seconds is four or five
+  // draws off a random process, and a take that spent all of them on one side
+  // reads as a knob that does nothing.
+  const secs = 24
   const spread = (tapeSqueal: number) => {
     const out = renderBender(
       { ...SILENT, ...STEADY, tapeMix: 1, tapeSqueal },
-      6,
+      secs,
     )
     const peaks: number[] = []
-    for (let t = 0; t + 0.5 <= 6; t += 0.5) {
+    for (let t = 0; t + 0.5 <= secs; t += 0.5) {
       const w = out.subarray(t * SR, (t + 0.5) * SR)
       peaks.push(w.reduce((a, v) => Math.max(a, Math.abs(v)), 0))
     }
     return db(Math.max(...peaks) / Math.min(...peaks))
   }
   expect(spread(0.25)).toBeGreaterThan(25)
-  expect(spread(1)).toBeLessThan(10)
+  expect(spread(1)).toBeLessThan(15)
 })
 
 test('tape off leaves the board bit-identical', () => {

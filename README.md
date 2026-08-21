@@ -900,12 +900,14 @@ the amount the machine was built with, so a board that never touches it is the
 machine as it was.
 
 The failures are the point. **Dropouts** shed highs before they shed level,
-which is what separates oxide from a power cut. **Print-through** is the layer
-wound underneath bleeding through, a dull ghost one wrap behind. **Azimuth**
-lags the right channel and eats its top end, so the take collapses badly to
-mono. Wow is capstan eccentricity plus a slow drift that never lets the pitch
-settle; flutter is the fast wobble plus the scrape of tape dragging past the
-head.
+which is what separates oxide from a power cut — and they land on one track at a
+time, because oxide sheds in patches and a patch sits where it sits. Held on the
+transport instead, every dropout arrived on both channels at once, which is the
+one thing a hole in the tape never is. **Print-through** is the layer wound
+underneath bleeding through, a dull ghost one wrap behind. **Azimuth** lags the
+right channel and eats its top end, so the take collapses badly to mono. Wow is
+capstan eccentricity plus a slow drift that never lets the pitch settle; flutter
+is the fast wobble plus the scrape of tape dragging past the head.
 
 **Squeal** is the tape going off. The binder has broken down, so the tape grabs
 the head, stretches, lets go and grabs again — and friction falls as the span

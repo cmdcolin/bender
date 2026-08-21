@@ -104,7 +104,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Shed oxide. Highs go before level does, which is what makes these sound like tape rather than like the power cutting.',
+        help: 'Shed oxide. Highs go before level does, which is what makes these sound like tape rather than like the power cutting — and a patch of it sits on one track, so a dropout takes a channel with it rather than the whole record.',
       },
       {
         key: 'tapePrint',
