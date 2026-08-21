@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { engine } from '../engine/engine'
-import { boardFromLocation, boardUrl } from './share'
+import { boardFrom, boardFromLocation, boardUrl } from './share'
 
 // The address bar as a mirror of the board: every control that is off stock is
 // in the url's hash at all times, so a reload keeps the board and copying out of the
@@ -38,8 +38,15 @@ export function useBoardUrl() {
     // next write paints over what was pasted. replaceState does not fire the
     // event, so our own writes cannot come back round.
     const read = () => {
-      const board = boardFromLocation()
-      if (board) engine.patch(board)
+      // The whole board the hash names, not a patch over the one already here:
+      // a link says stock about every control it does not list, and merging
+      // left the tab holding a board neither url describes.
+      //
+      // A hash naming nothing is the stock board rather than nothing to do: a
+      // stock board writes no param at all, so stepping back off a link lands
+      // on a bare url — and that url loaded fresh opens stock. Reading it as
+      // "leave the board alone" made the same address mean two boards.
+      engine.patch(boardFrom(boardFromLocation() ?? {}, engine.controls.get()))
     }
 
     write()

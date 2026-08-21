@@ -1,0 +1,65 @@
+/* A strip of the desk: the fader row as it is drawn anywhere else, with the
+   channel's own meter laid along the foot of it. The bar is positioned over the
+   row rather than given a row of its own — eight channels each two lines tall is
+   the whole panel spent on a mixer, and what a meter is for is being glanceable
+   beside the thing it is about. */
+.strip {
+  position: relative;
+}
+
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--bg3);
+  border-radius: 1px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* The sum of the strips above it, which has no fader of its own: what the bus
+   is turned up to is the seven faders, and what it is doing is this. Its own
+   knob is the row under it. */
+.bus {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(5.7rem, 1fr) minmax(
+      4.6rem,
+      auto
+    );
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 3px;
+  padding-top: 5px;
+  border-top: 1px solid var(--border-quiet);
+}
+
+.busName {
+  font-size: var(--fs-sm);
+  color: var(--fg3);
+}
+
+.busTrack {
+  composes: track;
+  position: relative;
+  height: 6px;
+  border-radius: 2px;
+}
+
+.busPeak {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

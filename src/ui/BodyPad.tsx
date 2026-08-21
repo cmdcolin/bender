@@ -1,6 +1,6 @@
 import { useState, type PointerEvent } from 'react'
 import { engine } from '../engine/engine'
-import { useStoreValue } from './ControlsContext'
+import { useBoardValue, useControlValue } from './ControlsContext'
 import { groupFor, sliderFor } from './controls'
 import styles from './BodyPad.module.css'
 
@@ -21,16 +21,26 @@ function resistance(x: number, y: number): string {
 // body becomes the resistor. Wire an axis to something in the patch bay first,
 // or the pad does nothing — which is also true of the real thing.
 export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
-  const controls = useStoreValue(engine.controls)
+  // Three figures rather than the board. The pad sits beside the keys through
+  // every morph, and taking the whole board would redraw it — and the tip on
+  // every wire under it — sixty times a second to print the same two contacts.
+  // The wires are a string for the same reason: a fresh array each call is a
+  // new value every frame, whatever it says.
+  const x = useControlValue('bodyX')
+  const y = useControlValue('bodyY')
+  const soldered = useBoardValue(c =>
+    ([0, 1, 2, 3] as const)
+      .flatMap(i => {
+        const src = Math.round(c[`mod${i}Src`])
+        if (src !== 5 && src !== 6) return []
+        return [
+          `body ${src === 5 ? 'X' : 'Y'} → ${DEST_LABELS[Math.round(c[`mod${i}Dest`])]}`,
+        ]
+      })
+      .join('\n'),
+  )
+  const wires = soldered ? soldered.split('\n') : []
   const [held, setHeld] = useState(false)
-
-  const wires = ([0, 1, 2, 3] as const).flatMap(i => {
-    const src = Math.round(controls[`mod${i}Src`])
-    if (src !== 5 && src !== 6) return []
-    return [
-      `body ${src === 5 ? 'X' : 'Y'} → ${DEST_LABELS[Math.round(controls[`mod${i}Dest`])]}`,
-    ]
-  })
 
   const track = (e: PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -62,19 +72,16 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
         <span className={styles.contact} style={{ left: '93%' }} />
         {held && (
           <>
-            <span
-              className={styles.vline}
-              style={{ left: `${controls.bodyX * 100}%` }}
-            />
+            <span className={styles.vline} style={{ left: `${x * 100}%` }} />
             <span
               className={styles.hline}
-              style={{ top: `${(1 - controls.bodyY) * 100}%` }}
+              style={{ top: `${(1 - y) * 100}%` }}
             />
             <span
               className={styles.dot}
               style={{
-                left: `${controls.bodyX * 100}%`,
-                top: `${(1 - controls.bodyY) * 100}%`,
+                left: `${x * 100}%`,
+                top: `${(1 - y) * 100}%`,
               }}
             />
           </>
@@ -83,7 +90,7 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
       </div>
       <div className={styles.readout}>
         <span className={held ? styles.ohmsOn : styles.ohms}>
-          {held ? resistance(controls.bodyX, controls.bodyY) : '∞ Ω'}
+          {held ? resistance(x, y) : '∞ Ω'}
         </span>
         {wires.length > 0 ? (
           wires.map(w => (

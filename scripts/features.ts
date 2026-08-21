@@ -17,7 +17,7 @@ import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { format, resolveConfig } from 'prettier'
 import { BENDS } from '../src/ui/controls/bends'
-import { ALL_SLIDERS, GROUPS } from '../src/ui/controls'
+import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls'
 import type { Group, SliderDef } from '../src/ui/controls/types'
 import { STAGE_ORDER } from '../src/ui/controls/types'
 import { PRESETS } from '../src/ui/presets/table'
@@ -41,6 +41,8 @@ const BLURBS: Record<string, string> = {
   Sampler:
     'A loaded audio file, looping through the chain — or, with *Struck by* on a voice and *Ending* on one-shot, a seventh drum voice playing whatever you dropped.',
   Mic: 'A live microphone, and the one source that does not have to reach the mix. *Mic patch* is the whole of it: the wire can go onto the chip’s supply rail instead, or into the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier, or a trigger line — so a shout browns the toy out, or fires the kit, rather than simply being loud.',
+  'Mix bus':
+    'The desk the six sources meet at, and the only place their balance against each other is a thing you can see. Every fader is drawn here as well as on its own machine’s panel — under the machine’s name rather than the word *Level*, which six of them carry — with a meter beside it reading what that channel is actually putting on the bus, and the bus’s own meter under the lot. A fader says how far it is up; it does not say whether anything is coming out. The FM chip is the reason: it boots at zero, it has no keyboard of its own, and turned up on a toy nothing is striking it is a channel at three quarters and silence. *Bus drive* is the desk’s own knob — the summing amp, a wire at unity and the one saturation ahead of the bends anywhere off it.',
   'Slot order':
     'Which bend sits in which position, and therefore what order they run in. Fewer slots than bends, so one always sits out.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
@@ -212,9 +214,14 @@ const fold = (summary: string, body: string) =>
 // A group whose widget is not a row of sliders says so above the fold, because
 // the table below cannot: the pattern is sixteen bits and a length per row, and
 // counting only the sliders leaves the loudest half of the drum machine off the
-// inventory entirely.
+// inventory entirely. The desk has the opposite problem — every fader on it is
+// already counted, under the machine it belongs to.
 function grid(g: Group): string {
-  if (!g.editor) return ''
+  if (g.editor?.kind === 'mixer')
+    return `\nThe desk is a widget rather than a row of sliders, and the ${num(CHANNELS.length)} faders
+on it are counted under the machines they belong to rather than here: a fader is
+the first knob on its own machine's panel and one strip of this one.\n`
+  if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table
 below leaves it out: ${num(GRID_ROWS.length)} rows (the ${num(DRUM_VOICES.length)} voices and an accent), each

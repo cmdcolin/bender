@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 186 knobs and switches in 27 groups, seven bends competing for six slots,
+ruin. 189 knobs and switches in 28 groups, seven bends competing for six slots,
 18 ROM tunes and 45 presets — and everything below comes off the control tables
 themselves, so the list cannot drift from the instrument.
 
@@ -247,6 +247,32 @@ rather than simply being loud.
 | --------- | ------------------------------------------------------------------ | ------------------------------------ |
 | Mic       | 0 to 2                                                             | Microphone gain into the patch point |
 | Mic patch | mix, chip rail, osc FM, delay fb, ring car, drum trig, glitch trig | Where the mic wire is soldered       |
+
+</details>
+
+### Mix bus
+
+The desk the six sources meet at, and the only place their balance against each
+other is a thing you can see. Every fader is drawn here as well as on its own
+machine’s panel — under the machine’s name rather than the word _Level_, which
+six of them carry — with a meter beside it reading what that channel is actually
+putting on the bus, and the bus’s own meter under the lot. A fader says how far
+it is up; it does not say whether anything is coming out. The FM chip is the
+reason: it boots at zero, it has no keyboard of its own, and turned up on a toy
+nothing is striking it is a channel at three quarters and silence. _Bus drive_
+is the desk’s own knob — the summing amp, a wire at unity and the one saturation
+ahead of the bends anywhere off it.
+
+The desk is a widget rather than a row of sliders, and the seven faders on it
+are counted under the machines they belong to rather than here: a fader is the
+first knob on its own machine's panel and one strip of this one.
+
+<details>
+<summary>1 control</summary>
+
+| control   | range         | what it does                            |
+| --------- | ------------- | --------------------------------------- |
+| Bus drive | −12 to +24 dB | The summing amp the six of them meet in |
 
 </details>
 
@@ -538,7 +564,7 @@ loss, head bump, hiss, wow rate and print-through together, because on a real
 machine they are one thing.
 
 <details>
-<summary>10 controls</summary>
+<summary>12 controls</summary>
 
 | control       | range                  | what it does                                                                                          |
 | ------------- | ---------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -546,6 +572,8 @@ machine they are one thing.
 | Speed         | 3¾ ips, 7½ ips, 15 ips | Moves the whole machine at once                                                                       |
 | Level         | −12 to +15 dB          | Record level                                                                                          |
 | Bias          | −1 to +1               | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
+| Hysteresis    | off to full            | How far the field the medium is already carrying sits the record curve off centre                     |
+| Head bump     | 0 to 1.5               | The lift where the wavelength going past the replay head is the size of the head                      |
 | Hiss          | off to full            | Noise laid on the medium, not on the mix                                                              |
 | Wow           | off to full            | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
 | Flutter       | off to full            | The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head           |

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { IDX, N_PARAMS, PARAM_DEFS, packParams } from '../engine/params'
-import { ALL_SLIDERS, EDITOR_KEYS, sliderFor } from '../ui/controls'
+import { EDITOR_KEYS, sliderFor } from '../ui/controls'
 import { buildChain } from './build'
 import { Smoother } from './smoother'
 import { BLOCK, type StereoBlock } from './stage'

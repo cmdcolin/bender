@@ -13,13 +13,8 @@ import {
   sliderFor,
   snapToStep,
 } from '../controls'
-import {
-  type DrumLenKey,
-  type DrumStepKey,
-  GRID_ROWS,
-  STEPS,
-  stepBit,
-} from '../../drums'
+import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums'
+import { randomPattern } from '../../drum-moves'
 import { fromPos, toPos } from '../slider-scale'
 import { applyPreset } from './apply'
 import { inTime } from './quantize'
@@ -189,44 +184,6 @@ export function rollKeys(
   return inTime(next, k => moved.has(k))
 }
 
-// A sixteen-step pattern that still reads as a pattern: the kick owns the
-// downbeat, the snare answers on the backbeat, the hat runs one subdivision,
-// and the rest are trimmings. Rolling every step independently gives you noise
-// on a grid, which is the one thing the plugboard already lets you draw by hand.
-function rollPattern(rand: () => number): Record<DrumStepKey, number> {
-  const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
-  const every = (n: number, from = 0) => {
-    let mask = 0
-    for (let s = from; s < STEPS; s += n) mask |= stepBit(s)
-    return mask
-  }
-
-  let kick = stepBit(0)
-  if (rand() < 0.8) kick |= stepBit(8)
-  for (const step of [3, 6, 10, 11, 14])
-    if (rand() < 0.22) kick |= stepBit(step)
-
-  let snare = rand() < 0.85 ? stepBit(4) | stepBit(12) : stepBit(12)
-  if (rand() < 0.3) snare |= stepBit(pick([7, 10, 14, 15]))
-
-  const hat = rand() < 0.2 ? 0 : every(pick([1, 2, 2, 4]), rand() < 0.2 ? 1 : 0)
-
-  return {
-    drumKick: kick,
-    drumSnare: snare,
-    drumHat: hat,
-    drumClap: rand() < 0.3 ? snare & (stepBit(4) | stepBit(12)) : 0,
-    drumTom: rand() < 0.3 ? stepBit(13) | stepBit(14) | stepBit(15) : 0,
-    drumBell: rand() < 0.2 ? stepBit(0) | stepBit(3) | stepBit(6) : 0,
-    drumAccent: pick([
-      every(8),
-      every(4),
-      stepBit(0),
-      stepBit(4) | stepBit(12),
-    ]),
-  }
-}
-
 // One row running against the others, about half the time. A fresh length on
 // every row is six patterns none of which is the one you hear, so the kick keeps
 // its bar and one of the trimmings drifts against it — and the lengths that read
@@ -252,11 +209,12 @@ export function rollGroup(
   current: Controls,
   rand: () => number,
 ): Controls {
-  const next = rollKeys(
-    current,
-    group.sliders.map(s => s.key),
-    rand,
-  )
+  // Everything the group draws, borrowed faders included: a roll on the mix bus
+  // is a roll of the balance, and a desk that rolled only its own summing amp
+  // would be a dice that left the one thing the panel is about exactly where it
+  // stood. The kit's own grid comes off the bottom of this function instead —
+  // no step of it has a slider, so rollKeys walks straight past them.
+  const next = rollKeys(current, groupKeys(group), rand)
   // Pressing the dice on the crackle is asking for crackle: the shy controls of
   // the stage you pointed at roll the way the rest of the board's do. Shy is
   // about what a roll of the whole board hands you unasked.
@@ -268,7 +226,7 @@ export function rollGroup(
   const mix = group.sliders.find(s => s.role === 'mix')
   if (mix && next[mix.key] === mix.min) next[mix.key] = audible(mix, rand)
   if (group.editor?.kind !== 'drums') return next
-  return { ...next, ...rollPattern(rand), ...rollLengths(rand) }
+  return { ...next, ...randomPattern(rand), ...rollLengths(rand) }
 }
 
 /** Every control the stage owns, back where it booted. */

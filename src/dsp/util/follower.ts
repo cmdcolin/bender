@@ -43,7 +43,7 @@ export class Transient {
   private readonly slowR: number
   private readonly lockout: number
 
-  constructor(private readonly sr: number) {
+  constructor(sr: number) {
     this.fastA = coef(0.002, sr)
     this.fastR = coef(0.02, sr)
     this.slowA = coef(0.15, sr)

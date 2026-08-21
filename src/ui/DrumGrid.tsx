@@ -1,4 +1,11 @@
-import { memo, useEffect, useState, useSyncExternalStore } from 'react'
+import {
+  memo,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type RefObject,
+} from 'react'
 import { engine } from '../engine/engine'
 import {
   useBoardValue,
@@ -14,11 +21,12 @@ import {
   STEPS,
   hasStep,
   romMatching,
-  toggleStep,
+  stepBit,
   voiceBit,
   type DrumRom,
   type DrumRow,
 } from '../drums'
+import { DRUM_MOVES, masksOf, type DrumMove } from '../drum-moves'
 import styles from './DrumGrid.module.css'
 import { Tip } from './Tip'
 
@@ -75,6 +83,13 @@ function useStruck(): number {
   return lit
 }
 
+// What a drag across the grid is writing. Held in a ref rather than in state
+// because the grid draws none of it: the direction is settled on the way down —
+// a drag off a dark step writes the steps it crosses, one off a lit step wipes
+// them — and every cell it reaches afterwards writes the same way. A drag that
+// decided per cell would be a hand rubbing a row out and back in again.
+type Paint = RefObject<boolean | null>
+
 // The pattern, as the plugboard it is: a row per voice, a column per step, and
 // the accent row underneath deciding how hard each column lands. The ROM
 // buttons write into the same masks, so a factory pattern is a starting point
@@ -95,6 +110,22 @@ export function DrumGrid() {
   const level = useControlValue('drumLevel')
   const loaded = useBoardValue(c => romMatching(c)?.name)
   const live = playing && level > 0
+  const paint = useRef<boolean | null>(null)
+  // A drag ends wherever the hand lets go, which is often not over a cell — so
+  // the release is heard on the window rather than on the button. Without it
+  // the direction outlives the gesture, and the next press anywhere on the page
+  // dragged over the grid would carry on drawing the run before it.
+  useEffect(() => {
+    const done = () => {
+      paint.current = null
+    }
+    window.addEventListener('pointerup', done)
+    window.addEventListener('pointercancel', done)
+    return () => {
+      window.removeEventListener('pointerup', done)
+      window.removeEventListener('pointercancel', done)
+    }
+  }, [])
 
   // Through the walk, like every other verb on the panel: a ROM lands on top of
   // whatever you had drawn, and an afternoon of writing a pattern is not a thing
@@ -103,6 +134,23 @@ export function DrumGrid() {
   const load = (r: DrumRom) => {
     engine.armStep()
     engine.writeBoard({ ...engine.controls.get(), ...r.masks })
+  }
+
+  // The moves land the same way a ROM does, and for the same reason: one entry
+  // in the walk, so a fill you don't like is one ctrl+z away from the bar you
+  // spent the afternoon on.
+  const play = (move: DrumMove, back: boolean) => {
+    const board = engine.controls.get()
+    engine.armStep()
+    engine.writeBoard({
+      ...board,
+      ...move.play({
+        masks: masksOf(board),
+        lens: board,
+        rand: Math.random,
+        back,
+      }),
+    })
   }
 
   return (
@@ -148,6 +196,23 @@ export function DrumGrid() {
         </Tip>
       </div>
 
+      {/* What the machine will do to a pattern that a hand drawing sixteen
+          contacts at a time will not. They read as verbs rather than as ROMs
+          because none of them is a place you can be: a ROM is where the grid
+          is, a move is something that happened to it. */}
+      <div className={styles.moves}>
+        {DRUM_MOVES.map(move => (
+          <Tip key={move.name} text={move.blurb}>
+            <button
+              className={styles.move}
+              onClick={e => play(move, e.shiftKey)}
+            >
+              {move.name}
+            </button>
+          </Tip>
+        ))}
+      </div>
+
       <div className={styles.grid}>
         {GRID_ROWS.map((row, v) => (
           <Row
@@ -155,6 +220,7 @@ export function DrumGrid() {
             row={row}
             tick={live ? tick : null}
             lit={(struck & voiceBit(v)) !== 0}
+            paint={paint}
           />
         ))}
       </div>
@@ -185,10 +251,12 @@ function Row({
   row,
   tick,
   lit,
+  paint,
 }: {
   row: DrumRow
   tick: number | null
   lit: boolean
+  paint: Paint
 }) {
   const mask = useControlValue(row.key)
   const len = asLen(useControlValue(row.len))
@@ -229,6 +297,7 @@ function Row({
               key={s}
               row={row}
               step={s}
+              paint={paint}
               className={cellClass({
                 accent,
                 on: hasStep(mask, s),
@@ -237,7 +306,6 @@ function Row({
                 past: s >= len,
               })}
               on={hasStep(mask, s)}
-              mask={mask}
             />
           ))}
         </div>
@@ -278,22 +346,66 @@ const Cell = memo(function Cell(props: {
   step: number
   className: string
   on: boolean
-  mask: number
+  paint: Paint
 }) {
-  const { row, step } = props
+  const { row, step, paint } = props
+  // The mask as it stands, not as it stood when this cell last drew: a drag
+  // writes a cell per event, and folding a bit into a rendered copy would make
+  // every step of the run depend on React having caught up in between.
+  const write = (on: boolean) => {
+    const mask = engine.controls.get()[row.key]
+    engine.set(row.key, on ? mask | stepBit(step) : mask & ~stepBit(step))
+  }
   return (
     <Tip
-      text={`shift-click to bring the ${row.label} row round after step ${step + 1}`}
+      text={`drag across the grid to draw a run of steps — shift-click to bring the ${row.label} row round after step ${step + 1}`}
     >
       <button
         className={props.className}
         aria-label={`${row.label} step ${step + 1}`}
         aria-pressed={props.on}
-        onClick={e =>
-          e.shiftKey
-            ? engine.set(row.len, step + 1)
-            : engine.set(row.key, toggleStep(props.mask, step))
-        }
+        // The press writes on the way down rather than on the click, because
+        // this is where a drag starts and the step under the finger is the one
+        // that says which way the drag writes.
+        onPointerDown={e => {
+          // The left button, a finger or a pen. A right-click is on its way to
+          // the browser's own menu and has no business closing a contact.
+          if (e.button === 0) {
+            // A touch captures the pointer to the element it landed on, and a
+            // captured pointer never enters another cell. Handing it straight
+            // back is what makes a finger across the grid a drag at all.
+            if (e.currentTarget.hasPointerCapture(e.pointerId))
+              e.currentTarget.releasePointerCapture(e.pointerId)
+            engine.armStep()
+            if (e.shiftKey) {
+              paint.current = null
+              engine.set(row.len, step + 1)
+            } else {
+              paint.current = !props.on
+              write(!props.on)
+            }
+          }
+        }}
+        // The rest of the drag. `buttons` is what says the hand is still down:
+        // a mouse crossing the grid on its way somewhere else reports none, and
+        // a finger that has lifted sends no more of these at all.
+        onPointerEnter={e => {
+          if (
+            (e.buttons & 1) !== 0 &&
+            paint.current !== null &&
+            paint.current !== props.on
+          )
+            write(paint.current)
+        }}
+        // Keyboard only — a click a pointer made was already written on the way
+        // down, and a button worked by Enter or the space bar reports no detail.
+        onClick={e => {
+          if (e.detail === 0) {
+            engine.armStep()
+            if (e.shiftKey) engine.set(row.len, step + 1)
+            else write(!props.on)
+          }
+        }}
       />
     </Tip>
   )

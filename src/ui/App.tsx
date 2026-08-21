@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type DragEvent,
@@ -32,6 +33,16 @@ import { Tip } from './Tip'
 
 // Where a keypress belongs to the control rather than to the board.
 const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
+
+// The limiter's whole travel is one decibel, and the bar is scaled to it: the
+// soft clip runs ahead of the limiter and bounds the output to ±1, so a limiter
+// sitting at −1 dBFS never has more than that to give back and a reading of
+// 0.109 is a board pinned flat. Anything scaled as though gain reduction could
+// reach unity would leave the button a tenth full at the worst it ever gets.
+//
+// How fast it empties is what makes one kick's worth visible at all.
+const DUCK_FULL = 0.109
+const DUCK_FALL = 0.9
 
 function clock(seconds: number): string {
   const s = Math.floor(seconds)
@@ -102,6 +113,53 @@ function MorphControl(props: {
           <option key={s} value={s}>{`morph: ${MORPH_LABELS[s]}`}</option>
         ))}
       </select>
+    </Tip>
+  )
+}
+
+// How hard the safety limiter is leaning, laid into the button it is about.
+//
+// The limiter is the one thing on the board that knows a board is running away.
+// It has always known — the hunt judges six strangers off it — and the panel has
+// never said so, which left panic as a button you press once you have decided
+// for yourself that this is a howl rather than the sound you asked for. Filling
+// as the ceiling arrives, it is the panel saying which of the two it is.
+//
+// Gain reduction rather than level: the scope over on the left already draws
+// peak, and peak has no more to say once everything is pinned flat against the
+// same ceiling. Written straight to the DOM off the meter, like the rail lamp —
+// a React render every 16 ms to move one bar is a render the board can feel.
+function Panic() {
+  const bar = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    let raf = 0
+    let held = 0
+    // What the bar is already painted. A board that is not being leaned on is
+    // most boards most of the time, and this loop runs for as long as the panel
+    // is up: an empty bar written again sixty times a second is sixty style
+    // writes to say what the last one said.
+    let painted = ''
+    const draw = () => {
+      raf = requestAnimationFrame(draw)
+      // The same fall every meter with a needle in it has, for the same reason:
+      // the reading is the mean over sixteen milliseconds, and a limiter caught
+      // by one kick is one frame of full bar and then nothing.
+      held = Math.max(engine.meter.get().duck, held * DUCK_FALL)
+      const width = `scaleX(${Math.min(held / DUCK_FULL, 1)})`
+      if (bar.current && painted !== width) {
+        painted = width
+        bar.current.style.transform = width
+      }
+    }
+    raf = requestAnimationFrame(draw)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+  return (
+    <Tip text="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes. It fills as the safety limiter leans on the output, which is the one thing on the board that can tell a howl from a sound you asked for">
+      <button className={styles.btnDanger} onClick={() => engine.panic()}>
+        <span ref={bar} className={styles.duck} />
+        <span className={styles.duckLabel}>panic</span>
+      </button>
     </Tip>
   )
 }
@@ -269,11 +327,7 @@ export function App() {
             drifting={drifting}
             onSet={setMorphSeconds}
           />
-          <Tip text="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes">
-            <button className={styles.btnDanger} onClick={() => engine.panic()}>
-              panic
-            </button>
-          </Tip>
+          <Panic />
         </div>
 
         <div className={styles.actions}>

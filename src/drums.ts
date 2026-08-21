@@ -107,16 +107,20 @@ export const hasStep = (mask: number, step: number) =>
   (mask & stepBit(step)) !== 0
 export const toggleStep = (mask: number, step: number) => mask ^ stepBit(step)
 
+/** The pattern itself: a mask per row, and the length each row runs to. The two
+    halves travel together through everything that rewrites a pattern. */
+export type DrumMasks = Record<DrumStepKey, number>
+export type DrumLens = Record<DrumLenKey, number>
+
 export interface DrumRom {
   name: string
   blurb: string
-  masks: Record<DrumStepKey, number>
+  masks: DrumMasks
 }
 
-const EMPTY = Object.fromEntries(GRID_ROWS.map(r => [r.key, 0])) as Record<
-  DrumStepKey,
-  number
->
+export const EMPTY_MASKS: DrumMasks = Object.fromEntries(
+  GRID_ROWS.map(r => [r.key, 0]),
+) as DrumMasks
 
 const rom = (
   name: string,
@@ -125,7 +129,7 @@ const rom = (
 ): DrumRom => ({
   name,
   blurb,
-  masks: { ...EMPTY, ...masks },
+  masks: { ...EMPTY_MASKS, ...masks },
 })
 
 // The factory patterns, in the order the buttons sit above the grid. They are
@@ -200,9 +204,7 @@ export const DRUM_ROMS: DrumRom[] = [
   rom('clear', 'Wipe every voice and write your own', {}),
 ]
 
-export function romMatching(
-  masks: Record<DrumStepKey, number>,
-): DrumRom | undefined {
+export function romMatching(masks: DrumMasks): DrumRom | undefined {
   return DRUM_ROMS.find(r =>
     GRID_ROWS.every(row => r.masks[row.key] === masks[row.key]),
   )

@@ -115,6 +115,10 @@ export const DEFAULT_CONTROLS = {
   sampleTrig: 0,
   sampleMode: 0,
 
+  // The bus the six of them sum onto, and the one thing about it that is not
+  // one of their faders.
+  mixDrive: 0,
+
   bendSlot0: 1,
   bendSlot1: 2,
   bendSlot2: 3,
@@ -228,6 +232,8 @@ export const DEFAULT_CONTROLS = {
   tapeDrop: 0,
   tapePrint: 0,
   tapeAzimuth: 0,
+  tapeHyst: 0.3,
+  tapeBump: 0.5,
 
   heatAmt: 0,
   faultCluster: 0,
@@ -241,8 +247,6 @@ export const DEFAULT_CONTROLS = {
 export type Controls = typeof DEFAULT_CONTROLS
 export type ControlKey = keyof Controls
 export const CONTROL_KEYS = Object.keys(DEFAULT_CONTROLS) as ControlKey[]
-
-export const atRest = (v: number, k: ControlKey) => v === DEFAULT_CONTROLS[k]
 
 export const sameControls = (a: Controls, b: Controls) =>
   CONTROL_KEYS.every(k => a[k] === b[k])

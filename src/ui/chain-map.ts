@@ -93,7 +93,6 @@ const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
 // hardware on one supply, which is what the frame and its rail are there to
 // say; the starve knob on the keyboard's panel bends every one of them.
 const FM_CHIP = 'FM chip'
-const CHIP_ROW = [...TOY_ROW, FM_CHIP] as const
 
 // The three that take no supply and no trigger from anything: they start where
 // they stand, and they are the only sources on the board that do.
@@ -394,7 +393,22 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const chips = [...toys, fm]
   const lines = LINE_ROW.map(instrument)
   const board = node('toy_board', 'frame', 'toy board')
-  const mix = node('mix', 'plain', 'mix bus')
+  // The bus is a stage like any other: it has a door, a count and a way back,
+  // because what the six faders are set to against each other is a setting of
+  // the board and was the one the panel had nowhere to show. Its id stays 'mix'
+  // — the feedback return and the mic wire both name it by that.
+  doors.add('Mix bus')
+  const mix = node('mix', 'stage', 'mix bus', {
+    count: live ? touchedCount('Mix bus', c) : 0,
+    // Only the first of the mic's seven solder points is the mix — the rest land
+    // in the middle of something, and a shout browning the toy out is not a
+    // channel on this desk.
+    active:
+      [...lines, ...chips].some(n => n.active) ||
+      (c.micLevel > 0 && Math.round(c.micPatch) === 0),
+    open: o.open === 'Mix bus',
+    door: 'Mix bus',
+  })
 
   const path: MapNode[] = []
 
@@ -521,7 +535,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // Where the feedback lands, and so which side of the map it comes home on.
   const fbTarget = byId.get(nodeId(FB_TARGET[Math.round(c.fbDest)] ?? 'mix'))!
-  const taps = collectTaps(c, o, { byId, doors, live })
+  const taps = collectTaps(c, { byId, doors, live })
 
   // Which edge of the drawing a label on this box hangs off. A box in the right
   // column, or in the right-hand half of the band, reaches for the right — and
@@ -892,7 +906,6 @@ const tapY = (t: Tap) => midY(t.target)
 
 function collectTaps(
   c: Controls,
-  o: Options,
   ctx: { byId: Map<string, MapNode>; doors: Set<string>; live: boolean },
 ): Tap[] {
   const taps: Tap[] = []

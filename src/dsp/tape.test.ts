@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { bin } from './testRender'
 import { packParams } from '../engine/params'
 import { buildChain } from './build'
 import { BLOCK, type StereoBlock } from './stage'
@@ -246,6 +247,110 @@ test('the machine at rest colours but does not wreck the signal', () => {
   expect(db(rms(err) / rms(dry.l.subarray(SR / 2, SR / 2 + n)))).toBeLessThan(
     -12,
   )
+})
+
+// Warmth, as against crunch. A symmetrical clipper makes the third harmonic and
+// the fifth and never the second — so the second is the whole of what the
+// hysteresis knob is for, and a square wave is the test that cannot be fooled:
+// it has no even harmonics of its own to borrow one from.
+test('hysteresis puts a second harmonic on a wave that has none', () => {
+  const at = (tapeHyst: number) => {
+    const { l } = render(
+      { ...TONE, ...STEADY, tapeMix: 1, tapeDrive: 6, tapeHyst },
+      2,
+    )
+    const played = l.subarray(SR)
+    return bin(played, 440) / bin(played, 220)
+  }
+  expect(db(at(0))).toBeLessThan(-60)
+  expect(db(at(0.3))).toBeGreaterThan(-40)
+  expect(at(1)).toBeGreaterThan(at(0.3))
+  expect(at(0.3)).toBeGreaterThan(at(0.1))
+})
+
+// It rides the level rather than the note: the same board played quietly is the
+// same board without the bloom, which is what separates this from a knob that
+// simply adds a harmonic.
+test('the bloom comes up with how hard the tape is driven', () => {
+  const at = (oscLevel: number) => {
+    const { l } = render(
+      { ...TONE, ...STEADY, oscLevel, tapeMix: 1, tapeHyst: 1 },
+      2,
+    )
+    const played = l.subarray(SR)
+    return bin(played, 440) / bin(played, 220)
+  }
+  expect(at(0.7)).toBeGreaterThan(at(0.08) * 2)
+})
+
+// The record level makes its own gain up on the way out, so a head driven twice
+// as hard plays back at about the same level — which is why how much the medium
+// is carrying has to be read off what the record head wrote and not off what
+// came back from the replay head. Read off the playback side, the knob ran
+// backwards: the harder the tape was hit the less it bloomed.
+//
+// Right at the top it does turn over, and that is the medium rather than the
+// model — past saturation both halves of the wave are flat against the same
+// ceiling and there is no asymmetry left to hear. What has to hold is the climb
+// through the range the knob is actually used over, and that the top of it is
+// still nothing like the bottom.
+test('the bloom climbs with the record level rather than falling away', () => {
+  const at = (tapeDrive: number) => {
+    const { l } = render(
+      { ...TONE, ...STEADY, tapeMix: 1, tapeHyst: 0.3, tapeDrive },
+      2,
+    )
+    const played = l.subarray(SR)
+    return bin(played, 440) / bin(played, 220)
+  }
+  const [cold, mid, stock] = [at(-12), at(0), at(6)]
+  expect(cold).toBeLessThan(mid)
+  expect(mid).toBeLessThan(stock)
+  expect(db(stock / cold)).toBeGreaterThan(15)
+  expect(at(15)).toBeGreaterThan(cold)
+})
+
+// Turned off, the head is the symmetrical clipper it always was — so a board
+// that never asked for warmth is bit-identical to the machine before it had a
+// knob for it.
+test('hysteresis at zero leaves the record head symmetrical', () => {
+  const board: Partial<Controls> = {
+    ...TONE,
+    ...STEADY,
+    tapeMix: 1,
+    tapeDrive: 12,
+  }
+  const off = render({ ...board, tapeHyst: 0 }, 1).l
+  expect(render({ ...board, tapeHyst: 0.5 }, 1).l).not.toEqual(off)
+  const quiet = render({ ...board, tapeHyst: 0, oscLevel: 0 }, 1).l
+  expect(rms(quiet)).toBe(0)
+})
+
+// The bump is a resonance the head has by being a head, so its frequency is the
+// speed's and only its size is yours — and stock has to be exactly the fixed
+// amount the machine was built with, or every board that ever used the tape
+// comes back a different board.
+test('the head bump is the low end, and its stock is the machine', () => {
+  const low = (tapeBump: number) => {
+    const { l } = render(
+      {
+        ...SILENT,
+        oscLevel: 0.5,
+        oscAHz: 38,
+        oscShape: 1,
+        ...STEADY,
+        tapeMix: 1,
+        tapeSpeed: 1,
+        tapeHyst: 0,
+        tapeBump,
+      },
+      2,
+    )
+    return bin(l.subarray(SR), 38)
+  }
+  expect(low(0)).toBeLessThan(low(0.5))
+  expect(low(0.5)).toBeLessThan(low(1.5))
+  expect(DEFAULT_CONTROLS.tapeBump).toBe(0.5)
 })
 
 test('tape off leaves the board bit-identical', () => {

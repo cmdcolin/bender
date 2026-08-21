@@ -6,26 +6,33 @@
 /* The path draws at whatever height the layout came out and the panel scrolls
    it with everything else — a scroll box of its own only ever clipped the chain
    and trapped the wheel. The drawing is sized in the same units the panel is,
-   so it only ever scales down and the labels stay put. */
+   so it only ever scales down and the labels stay put.
+
+   What it gives back on a short screen it gives back always, open or not. The
+   ration used to arrive at the click, which on an 820px screen took a third of
+   the map away the instant you opened a stage: the box you had just aimed at
+   shrank and slid out from under the pointer, and a map that rescales when you
+   press it reads as the press having done something to the path. It lights a
+   door and nothing else. The size is picked to leave room for what that door
+   opens — the viewBox scaling the drawing down rather than cropping it.
+
+   The floor is what stops that being a licence: 400px is the drawing at 0.85,
+   which is 8.5px labels, and a map whose labels have gone to 6px has stopped
+   being the index it is there to be. A 720px screen hits the floor and scrolls
+   the last of the stage into view instead, which is a thing the panel does
+   anyway and reads as one. */
 .graph svg {
   display: block;
   max-width: 100%;
   height: auto;
-}
-
-/* With a stage open the map is the index, not the work: it gives back what it
-   can spare on a short screen, the viewBox scaling the drawing down rather than
-   cropping it. Not a step further — a map whose labels have gone to 6px has
-   stopped being the index it is there to be. */
-.mapOpen .graph svg {
-  max-height: 40vh;
+  max-height: max(400px, 40vh);
 }
 
 /* Stacked under the toy rather than beside it, the panel has the document's own
    scroll to grow into — so the path stops rationing height and draws at full
    size, which on a narrow screen is the only way around the board there is. */
 @media (max-width: 760px) {
-  .mapOpen .graph svg {
+  .graph svg {
     max-height: none;
   }
 }

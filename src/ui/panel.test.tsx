@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
+import { GRID_ROWS, hasStep } from '../drums'
 import { engine } from '../engine/engine'
 import { App } from './App'
 import { GROUPS } from './controls'
@@ -100,6 +101,97 @@ test('a drum ROM lands in the walk, and ctrl+z takes it back', () => {
 
   act(() => engine.undo(0))
   expect(engine.controls.get().drumKick).toBe(mine)
+})
+
+// Sixteen contacts closed one at a time is sixteen presses. A hand draws a run
+// of steps by dragging across them, and the whole drag is one thing that
+// happened: one entry in the walk, however many steps it wrote.
+test('a drag across the grid draws a run of steps, and one undo takes it back', () => {
+  render(
+    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
+  )
+  const cell = (step: number) =>
+    screen.getByRole('button', { name: `tom step ${step + 1}` })
+
+  fireEvent.pointerDown(cell(1))
+  for (const step of [2, 3, 4])
+    fireEvent.pointerOver(cell(step), { buttons: 1 })
+  const drawn = engine.controls.get().drumTom
+  for (const step of [1, 2, 3, 4])
+    expect(hasStep(drawn, step), `${step}`).toBe(true)
+
+  act(() => engine.undo(0))
+  expect(engine.controls.get().drumTom).toBe(DEFAULT_CONTROLS.drumTom)
+})
+
+// Which way the drag writes is settled by the step it started on, not by each
+// step it reaches: a drag off a lit step that decided per cell would rub the row
+// out and straight back in again.
+test('a drag off a step already written wipes the run it crosses', () => {
+  render(
+    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
+  )
+  const cell = (step: number) =>
+    screen.getByRole('button', { name: `hat step ${step + 1}` })
+
+  fireEvent.pointerDown(cell(2))
+  for (const step of [3, 4, 5, 6])
+    fireEvent.pointerOver(cell(step), { buttons: 1 })
+  const left = engine.controls.get().drumHat
+  for (const step of [2, 3, 4, 5, 6])
+    expect(hasStep(left, step), `${step}`).toBe(false)
+})
+
+// A pointer crossing the grid on its way somewhere else is not a hand drawing.
+test('a pointer with nothing held down writes nothing', () => {
+  render(
+    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
+  )
+  const before = engine.controls.get().drumTom
+  fireEvent.pointerOver(screen.getByRole('button', { name: 'tom step 5' }), {
+    buttons: 0,
+  })
+  expect(engine.controls.get().drumTom).toBe(before)
+})
+
+// A drag is over when the hand lets go, wherever it lets go. The direction
+// outliving the gesture meant the next press anywhere on the page — a ROM
+// button a centimetre above the grid — carried on drawing the run before it.
+test('a drag that began off the grid draws nothing on it', () => {
+  render(
+    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
+  )
+  const cell = (step: number) =>
+    screen.getByRole('button', { name: `tom step ${step + 1}` })
+
+  fireEvent.pointerDown(cell(0))
+  fireEvent.pointerOver(cell(1), { buttons: 1 })
+  fireEvent.pointerUp(window)
+  const drawn = engine.controls.get().drumTom
+
+  fireEvent.pointerDown(screen.getByRole('button', { name: 'rock' }))
+  for (const step of [4, 5, 6])
+    fireEvent.pointerOver(cell(step), { buttons: 1 })
+  expect(engine.controls.get().drumTom).toBe(drawn)
+})
+
+// The moves rewrite the grid and nothing else about the kit, and they land in
+// the walk the way the ROM buttons do.
+test('a turnaround writes the end of the bar, keeps the tempo, and takes back', () => {
+  render(
+    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
+  )
+  act(() => engine.set('drumBpm', 96))
+  const before = engine.controls.get()
+
+  fireEvent.click(screen.getByRole('button', { name: 'turnaround' }))
+  const after = engine.controls.get()
+  expect(after.drumBpm).toBe(96)
+  expect(GRID_ROWS.some(row => after[row.key] !== before[row.key])).toBe(true)
+
+  act(() => engine.undo(0))
+  for (const row of GRID_ROWS)
+    expect(engine.controls.get()[row.key], row.key).toBe(before[row.key])
 })
 
 // The hint says anywhere, and a dragover nobody cancels is a drop the browser

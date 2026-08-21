@@ -56,6 +56,9 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   // After the kit, because the kit assigns the rail's reported load and the FM
   // chip adds its own to it: one supply, two chips drawing on it.
   const fmChip = new FmChip(sr, rail)
+  // In SOURCE_TAPS order, which is the order their meter taps come home in — a
+  // test holds the two lists together, because the panel reads a channel off
+  // its slot number and a source in the wrong one would meter as its neighbour.
   chain.sources = [
     toyChip,
     toyDrum,

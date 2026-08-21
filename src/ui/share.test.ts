@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { sliderFor } from './controls'
 import {
+  boardFrom,
   boardFromUrl,
   boardHash,
   decodeControls,
@@ -41,6 +42,33 @@ test('a link from another version drops what it no longer names', () => {
   expect(decodeControls('filtRes:1.2,retiredKnob:3,filtHz:900')).toEqual({
     filtRes: 1.2,
     filtHz: 900,
+  })
+})
+
+test('a name Object lends every object is not a control', () => {
+  // `in` says yes to all of these, and each one used to reach a slider lookup
+  // that throws — which on a load is the whole app rather than one bad name.
+  expect(decodeControls('toString:1,constructor:2,__proto__:3')).toEqual({})
+  expect(boardFromUrl('', '#set=toString:1')).toBeNull()
+  expect(boardFromUrl('', '#set=toString:1,dlyFb:1.4')).toEqual({ dlyFb: 1.4 })
+})
+
+test('a link is a whole board, so what it leaves out is back at stock', () => {
+  const on: Controls = { ...DEFAULT_CONTROLS, dlyFb: 1.4, filtRes: 1.2 }
+  const arriving = boardFromUrl('', '#set=combFb:0.9') ?? {}
+  expect(boardFrom(arriving, on)).toEqual({
+    ...DEFAULT_CONTROLS,
+    combFb: 0.9,
+  })
+})
+
+test('the pad your finger is on survives a link arriving', () => {
+  const held: Controls = { ...DEFAULT_CONTROLS, bodyX: 0.7, bodyY: 0.3 }
+  expect(boardFrom({ combFb: 0.9 }, held)).toEqual({
+    ...DEFAULT_CONTROLS,
+    combFb: 0.9,
+    bodyX: 0.7,
+    bodyY: 0.3,
   })
 })
 

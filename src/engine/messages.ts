@@ -81,6 +81,12 @@ export interface MeterMsg {
       report's. */
   notes: Int16Array
   noteCount: number
+  /** What each source, the mic and the mix bus itself have peaked at since the
+      last meter — the chain's taps, in `SOURCE_TAPS` order with the mic and the
+      bus above them. The worklet's own buffer, cleared the moment it is posted
+      — the serializer copies it on the way across, so what arrives is this
+      read and nothing of the next one. */
+  taps: Float32Array
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

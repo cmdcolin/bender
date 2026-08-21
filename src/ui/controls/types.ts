@@ -52,9 +52,23 @@ export interface Group {
   name: string
   place: StagePlace
   sliders: SliderDef[]
-  /** Controls a widget of the group's own turns, because a row of sliders is
-      the wrong shape for them. */
-  editor?: { kind: 'drums'; keys: ControlKey[] }
+  /** A widget of the group's own, because a row of sliders is the wrong shape
+      for what it turns: a plugboard for the kit, a desk for the mix bus. The
+      kit's own controls have no slider anywhere and so are named here; the
+      desk's are other groups' faders, which is what `borrows` is for. */
+  editor?: { kind: 'drums'; keys: ControlKey[] } | { kind: 'mixer' }
+  /** Controls another group owns that this one counts, resets and rolls as its
+      own, because they are about this one too. A fader belongs to its machine —
+      it is the first knob on the FM chip's panel, where a hand reaching for the
+      FM chip will find it — and it is also one of six on the desk they all meet
+      at, which is the only place their balance against each other is a thing you
+      can see. Whoever owns the key names it, and the board still has exactly one
+      widget per control, because only one group is ever open.
+
+      Not the same list as what the widget draws: the desk draws every fader
+      that reaches the bus, and borrows the ones that are the board's rather
+      than yours. */
+  borrows?: readonly ControlKey[]
   /** Which of the group's headings open folded, so a long panel opens on the
       instrument and what you can do to it with a knife is one press away. A
       heading holding something you have moved opens anyway. */

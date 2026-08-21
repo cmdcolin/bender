@@ -60,8 +60,6 @@ const THEMES: Record<string, Palette> = {
   },
 }
 
-export const DIAGRAMS = Object.keys(THEMES).map(name => `img/chain-${name}.svg`)
-
 export function renderDiagrams(): Record<string, string> {
   return Object.fromEntries(
     Object.entries(THEMES).map(([name, palette]) => [

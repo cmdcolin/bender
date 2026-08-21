@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { sameControls, type Controls } from '../controls'
 import { engine } from '../engine/engine'
 import type { Glide } from '../engine/glide'
-import { useStoreValue } from './ControlsContext'
+import { useBoardValue } from './ControlsContext'
 import type { MorphSeconds } from './morph'
 import { PRESETS, presetPath, type PresetDef } from './presets'
 import styles from './PresetRow.module.css'
@@ -150,12 +150,19 @@ function PresetChip(props: {
 // The row subscribes to the board itself rather than taking it as a prop: the
 // fill is the only thing here that reads it, and holding it a level up would
 // redraw the panel every frame a morph is in flight.
+//
+// One flag off the board rather than the board, for the same reason: what the
+// row asks is whether the last step's board is still the one playing, and that
+// answer changes once a gesture. Taking the whole board instead put every chip
+// and its tip back through React on every frame of a thirty-second morph, to
+// arrive at the same row.
 export function Presets(props: { morphSeconds: MorphSeconds }) {
-  const controls = useStoreValue(engine.controls)
   const [scrub, setScrub] = useState<Scrub | null>(null)
   const [open, setOpen] = useState(false)
-  const held =
-    scrub !== null && sameControls(controls, scrub.produced) ? scrub : null
+  const standing = useBoardValue(c =>
+    scrub === null ? false : sameControls(c, scrub.produced),
+  )
+  const held = standing ? scrub : null
 
   const shown = open ? PRESETS : PRESETS.slice(0, COLLAPSED)
   // The chip you are standing on stays on the row even when it lives past the

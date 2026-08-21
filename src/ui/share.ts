@@ -46,7 +46,10 @@ export function decodeControls(encoded: string): Partial<Controls> {
     const at = part.indexOf(':')
     if (at <= 0) continue
     const key = part.slice(0, at) as ControlKey
-    if (!(key in DEFAULT_CONTROLS) || PRIVATE.has(key)) continue
+    // Own keys only: `in` also answers yes to every name Object's prototype
+    // carries, so `#set=toString:1` used to get past here and take the whole
+    // app down on the way to a slider that was never going to exist.
+    if (!Object.hasOwn(DEFAULT_CONTROLS, key) || PRIVATE.has(key)) continue
     const raw = part.slice(at + 1).trim()
     const v = Number(raw)
     if (raw === '' || !Number.isFinite(v)) continue
@@ -94,6 +97,23 @@ export function boardFromUrl(
   if (raw === null) return null
   const patch = decodeControls(raw)
   return Object.keys(patch).length > 0 ? patch : null
+}
+
+// The whole board a link names, not just the controls it lists. Everything it
+// leaves out is at stock — that is what makes a link a board rather than an
+// edit — so a hash arriving in a tab that is already on a board has to put the
+// rest back, or the board on screen is neither the one the link names nor the
+// one it replaced. A load gets this for free by starting from stock; a
+// hashchange does not.
+//
+// Your finger is the exception, because the link never carried it either way.
+export function boardFrom(
+  patch: Partial<Controls>,
+  current: Controls,
+): Controls {
+  const next: Controls = { ...DEFAULT_CONTROLS, ...patch }
+  for (const key of PRIVATE) next[key] = current[key]
+  return next
 }
 
 export function boardUrl(c: Controls): string {

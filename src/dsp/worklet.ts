@@ -191,9 +191,14 @@ class BenderProcessor extends AudioWorkletProcessor {
         reboots: rail.rebootCount,
         notes: this.chipNotes,
         noteCount: sounding,
+        // The chain's own buffer, posted untransferred like the scope and the
+        // note report, and cleared here — the peaks are held between reads, so
+        // whoever reads them is the only thing that may clear them.
+        taps: this.built.chain.taps,
       })
       this.peak = 0
       this.duck = 0
+      this.built.chain.taps.fill(0)
     }
     return true
   }

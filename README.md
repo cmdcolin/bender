@@ -79,6 +79,26 @@ that source's own fader is up, and on the two with a run switch, glyph and meter
 both light while they play: the map saying that what you are hearing starts
 here.
 
+That meter is the fader, though, and how far a fader is up is a different
+question from whether anything is coming out of the machine under it. So the
+**mix bus** — the box both bands drop onto, and for a long time the one thing on
+the map that opened nothing — opens like any other stage, onto the desk. Every
+source's fader on one screen, under the name of its machine rather than the word
+_Level_ that six of them carry; a meter along the foot of each row reading what
+that channel is actually putting on the bus, drawn off the audio thread's own
+taps rather than off the knob; and the bus's own meter under the lot, read where
+the faders meet rather than at the output, so it says which channel is eating
+the headroom rather than what the limiter did about it.
+
+Which is how you find out that the FM chip has been sitting at three quarters
+and silent, because nothing over on the toy was striking a note for it to play.
+A fader lies in three ways — the chip nothing has struck, the sampler with no
+file in it, the channel behind a bend that has stopped passing — and all three
+of them read as a fader three quarters up. **Bus drive** is the desk's own knob:
+the summing amp the six of them meet in, a wire at unity and the one saturation
+ahead of the bends anywhere off it, with the feedback return landing on the same
+bus, so a howl saturates in the amp it is coming back through.
+
 The whole chain runs inside a single worklet `process()`, so the global feedback
 loop is tight enough to squeal and every feedback path saturates in-loop —
 runaway is a feature, held at the rails by design. A fixed safety tail (DC
@@ -175,6 +195,27 @@ polymeter: the two line back up every eighty steps, so the pattern takes the
 best part of a minute to repeat and never sounds like it is looping. The rows
 share one clock, so nothing drifts out of time; what drifts is which steps land
 together.
+
+Drawing a run of steps is a drag rather than sixteen presses: press a step and
+pull across the grid, and every cell the pointer crosses goes the way the first
+one went — off a dark step it writes, off a lit one it wipes. The whole drag is
+one entry in the undo walk, however many steps it turned over.
+
+Beside the factory patterns is a row of verbs that rewrite whatever is on the
+grid, none of which touches the tempo or the tone you dialled. **Roll** writes a
+pattern nobody has heard: a feel picked at random — four on the floor, a
+backbeat, a break, halftime, or hits spread as evenly as whole steps allow the
+Euclidean way — with its trimmings, and a fill often enough that you hear the
+bar end. **Vary** keeps the bar you wrote and does two or three small things to
+it: a hit a step to one side, a ghost between the beats, one hit gone, an accent
+somewhere else. **Turnaround** drops a fill over the end of the bar — a tom
+roll, a snare roll, the first beat stuttered, claps trading with the snare, or a
+hole with one hit at the bottom of it — and leaves what comes before it exactly
+as it was. **Shift** turns every row one step later, each within its own length,
+so a pattern you like lands somewhere else against the beat; shift-click turns
+it back. **Half** and **double** stretch the bar over twice the time or squeeze
+it into half of itself and say it twice. Every one of them is a single entry in
+the walk, so the bar you had is one ctrl+z away.
 
 A row's name is the voice: press it to hear that drum without waiting for the
 playhead to reach the step you have just written. Every hit lights the name it
@@ -824,6 +865,25 @@ dark, noisy and unsteady. 15 ips is nearly a wire.
 distortion and top end moving against each other. It carries its own record tilt
 rather than leaning on the head gap alone — at 15 ips the gap already sits past
 the programme, so a gap-only model inverts the knob at the fast speed.
+
+**Hysteresis** is the half of tape a clipper cannot do. A symmetrical saturator
+makes a third harmonic and a fifth and never a second, which is the sound of
+something breaking up rather than of something warm. The medium is not
+symmetrical: it arrives at the gap already magnetised, by more of it the harder
+it has been driven, so the curve sits off centre and the two halves of a wave
+saturate against different amounts of it. That difference is the second harmonic
+— and because the offset rides the level rather than the note, it blooms up as
+you play into the machine and lets go again when you back off. Under-bias leaves
+more of the field behind, so bias and this multiply. It ships wound partway on,
+because a tape machine that has to be asked to sound like tape is one nobody
+asks.
+
+**Head bump** is the other half: the lift where the wavelength going past the
+replay head is the size of the head, which is the low end every machine adds
+without being told to. Speed still decides where it sits — a wavelength is a
+distance and a faster tape lays it out longer — and this is how much of it comes
+back. Stock is the amount the machine was built with, so a board that never
+touches it is the machine as it was.
 
 The failures are the point. **Dropouts** shed highs before they shed level,
 which is what separates oxide from a power cut. **Print-through** is the layer

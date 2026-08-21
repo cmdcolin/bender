@@ -119,7 +119,7 @@ export function ChainMap({
   }
 
   return (
-    <div className={open ? `${styles.map} ${styles.mapOpen}` : styles.map}>
+    <div className={styles.map}>
       <div className={styles.graph} onClick={click} onKeyDown={key}>
         {mount(drawMap(map), 0)}
       </div>

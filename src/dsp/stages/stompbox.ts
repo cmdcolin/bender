@@ -7,8 +7,8 @@ import { SineOsc } from '../util/lfo'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
 import { flushDenormal, softclip } from '../util/softclip'
 
-// Ids match the stompCircuit choices.
-const SCREAMER = 0
+// Ids match the stompCircuit choices, from 1: the screamer is 0 and it is the
+// default arm of both switches, so it never needs naming.
 const RAT = 1
 const MUFF = 2
 const GERMANIUM = 3
@@ -100,7 +100,7 @@ class Box {
   private readonly loadCoef: number
   private readonly scoopCoef: number
 
-  constructor(private readonly sr: number) {
+  constructor(sr: number) {
     this.envA = coef(0.004, sr)
     this.envR = coef(0.12, sr)
     this.dragA = coef(0.02, sr)

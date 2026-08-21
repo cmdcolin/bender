@@ -1,4 +1,4 @@
-import { IDX } from '../engine/params'
+import { IDX, MAX_SOURCES, N_TAPS, TAP_BUS, TAP_MIC } from '../engine/params'
 import { DEST, ModBus } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
 import { Thermal } from './thermal'
@@ -93,6 +93,9 @@ export class Chain {
   // per bend id for the duplicates. Nothing in process() allocates: a Set and a
   // spread per block is 375 collections a second on the audio thread.
   private readonly slots = new Float32Array(6)
+  // The bus as each source found it, so the next one's difference is its own
+  // channel and nothing else's.
+  private readonly tapPrev = new Float32Array(BLOCK)
   private thermal: Thermal
   private relayBurst: Burst
   private rng: Rng
@@ -111,6 +114,14 @@ export class Chain {
    * merely loud, or already pinned flat against the ceiling.
    */
   duck = 0
+
+  /**
+   * How loud each source, the mic and the bus itself have been since the last
+   * read, held at the peak rather than averaged — a kick every half second is
+   * a channel doing something, and a mean over that window says it is nearly
+   * silent. Whoever reads it clears it; nothing in the audio path reads it.
+   */
+  readonly taps = new Float32Array(N_TAPS)
 
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
@@ -184,6 +195,8 @@ export class Chain {
     this.order = [0, 1, 2, 3, 4, 5]
     this.fbShift = 0
     this.limitEnv = 0
+    this.taps.fill(0)
+    this.tapPrev.fill(0)
   }
 
   process(io: StereoBlock, p: Float32Array, mic?: Float32Array) {
@@ -191,7 +204,14 @@ export class Chain {
     const ctx = this.ctx
 
     const micLevel = p[IDX.micLevel]!
-    for (let i = 0; i < n; i++) ctx.mic[i] = micLevel * (mic?.[i] ?? 0)
+    let micPeak = 0
+    for (let i = 0; i < n; i++) {
+      const v = micLevel * (mic?.[i] ?? 0)
+      ctx.mic[i] = v
+      const a = v < 0 ? -v : v
+      if (a > micPeak) micPeak = a
+    }
+    if (micPeak > this.taps[TAP_MIC]!) this.taps[TAP_MIC] = micPeak
 
     // Supply droop and the mod lanes are built from last block's buses, then
     // the supplies are handed back to whoever owns them at their stock values.
@@ -229,9 +249,77 @@ export class Chain {
       }
     }
 
-    for (const s of this.sources) {
-      if (!s.when || s.when(p, ctx)) s.process(io, p, ctx)
+    // Each source's own channel, taken as the difference it made to the sum
+    // rather than from inside the stage: every one of them adds into the bus,
+    // so the difference is what that machine put there, and no stage has to be
+    // taught to meter itself. A source its own `when` skipped added nothing, so
+    // it costs nothing to leave out — which on a stock board is four of the six.
+    //
+    // The left channel alone, because a meter is a glance: five of the six write
+    // the same sample to both, and the noise is the one that does not, so it
+    // reads a hair under what it is really putting on the bus.
+    //
+    // Copied by hand rather than through subarray: a view is an object, and an
+    // object per block is 375 of them a second on the thread that cannot afford
+    // a collection.
+    const prev = this.tapPrev
+    for (let i = 0; i < n; i++) prev[i] = io.l[i]!
+    for (let k = 0; k < this.sources.length; k++) {
+      const s = this.sources[k]!
+      if (!s.when || s.when(p, ctx)) {
+        s.process(io, p, ctx)
+        let peak = 0
+        for (let i = 0; i < n; i++) {
+          const l = io.l[i]!
+          const d = l - prev[i]!
+          const a = d < 0 ? -d : d
+          if (a > peak) peak = a
+          prev[i] = l
+        }
+        // There are six slots and the instrument is built with six sources; a
+        // seventh would still sound, and a test holds the two numbers together
+        // rather than letting a stray channel land on the mic's meter.
+        if (k < MAX_SOURCES && peak > this.taps[k]!) this.taps[k] = peak
+      }
     }
+
+    // The summing amp the six of them meet in. Every desk has one and it is
+    // never a wire: at unity it is skipped outright, because a soft clipper
+    // asked to pass a bus that already peaks at 0.6 is a decibel of squash
+    // nobody dialled in. Wound up it is the one saturation upstream of the
+    // bends, so the whole board is driven into them together instead of each
+    // stage being driven on its own — and the feedback return lands here, so
+    // a howl saturates in the amp it is coming back through.
+    const driveDb = p[IDX.mixDrive]!
+    let busPeak = 0
+    if (driveDb === 0) {
+      for (let i = 0; i < n; i++) {
+        const l = io.l[i]!
+        const r = io.r[i]!
+        const a = Math.max(l < 0 ? -l : l, r < 0 ? -r : r)
+        if (a > busPeak) busPeak = a
+      }
+    } else {
+      const g = Math.pow(10, driveDb / 20)
+      // Half the gain given back, which is what keeps this a drive rather than a
+      // fader. Give it all back and a wound-up bus is a squared-off wave at a
+      // twentieth of the level, which reads as the knob being broken; give none
+      // of it back and it is a volume control that happens to distort. At a
+      // half, the bus comes up a couple of decibels through the middle of the
+      // travel and holds there at the top, while the crest factor falls from
+      // nearly three to just over one — louder for a while, denser all the way,
+      // which is what a hand on a drive knob is asking for.
+      const makeup = Math.pow(g, -0.5)
+      for (let i = 0; i < n; i++) {
+        const l = softclip(io.l[i]! * g) * makeup
+        const r = softclip(io.r[i]! * g) * makeup
+        io.l[i] = l
+        io.r[i] = r
+        const a = Math.max(l < 0 ? -l : l, r < 0 ? -r : r)
+        if (a > busPeak) busPeak = a
+      }
+    }
+    if (busPeak > this.taps[TAP_BUS]!) this.taps[TAP_BUS] = busPeak
 
     this.runBends(io, p, n, cluster)
 

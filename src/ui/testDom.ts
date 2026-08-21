@@ -47,6 +47,11 @@ function stubLayout() {
   Element.prototype.scrollIntoView ??= () => {}
   Element.prototype.scrollTo ??= () => {}
   HTMLCanvasElement.prototype.getContext = () => null
+  // The drum grid hands a captured touch pointer straight back, so a finger
+  // dragged across it reaches cells other than the one it landed on. jsdom has
+  // pointer events and neither half of pointer capture.
+  Element.prototype.hasPointerCapture ??= () => false
+  Element.prototype.releasePointerCapture ??= () => {}
 }
 
 // The engine is a module singleton, so one test's turning is the next one's

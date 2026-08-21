@@ -6,6 +6,7 @@ import {
 import { BEND_GROUPS } from './bends'
 import { FEEDBACK_GROUPS } from './feedback'
 import { MASTER_GROUPS } from './master'
+import { MIX_GROUPS } from './mix'
 import { PATCH_GROUPS } from './patch'
 import { PEDAL_GROUPS } from './pedals'
 import { SOURCE_GROUPS } from './sources'
@@ -13,6 +14,7 @@ import { TAPE_GROUPS } from './tape'
 import type { Group, SliderDef } from './types'
 
 export { BENDS, BEND_SLOT_KEYS, bendAt } from './bends'
+export { CHANNELS, type Channel } from './mix'
 export {
   STAGE_ORDER,
   type Group,
@@ -24,6 +26,7 @@ export {
 // lays them out.
 export const GROUPS: Group[] = [
   ...SOURCE_GROUPS,
+  ...MIX_GROUPS,
   ...BEND_GROUPS,
   ...PEDAL_GROUPS,
   ...PATCH_GROUPS,
@@ -33,8 +36,11 @@ export const GROUPS: Group[] = [
 ]
 
 export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
+/** The grid's controls, which are sixteen bits or a step count rather than
+    anything a slider turns. The desk's widget names no keys of its own — the
+    faders on it belong to the machines they came from. */
 export const EDITOR_KEYS = new Set<ControlKey>(
-  GROUPS.flatMap(g => g.editor?.keys ?? []),
+  GROUPS.flatMap(g => (g.editor?.kind === 'drums' ? g.editor.keys : [])),
 )
 
 // Settled once, by name. The drawing asks after all twenty groups' keys every
@@ -43,11 +49,16 @@ export const EDITOR_KEYS = new Set<ControlKey>(
 const KEYS_BY_GROUP = new Map<string, readonly ControlKey[]>(
   GROUPS.map(g => [
     g.name,
-    [...g.sliders.map(s => s.key), ...(g.editor?.keys ?? [])],
+    [
+      ...g.sliders.map(s => s.key),
+      ...(g.editor?.kind === 'drums' ? g.editor.keys : []),
+      ...(g.borrows ?? []),
+    ],
   ]),
 )
 
-/** Every control a group owns, whatever kind of widget turns it. */
+/** Every control a group draws, whatever kind of widget turns it and whoever
+    owns it — which is what its count, its reset and its roll are all about. */
 export function groupKeys(group: Group | string): readonly ControlKey[] {
   return KEYS_BY_GROUP.get(typeof group === 'string' ? group : group.name) ?? []
 }

@@ -63,9 +63,21 @@ function Bind({ def }: { def: SliderDef }) {
 // decay table is a list to go down, not a keypad.
 const CHOICES_AS_BUTTONS = 6
 
-export function ControlSlider({ def }: { def: SliderDef }) {
+// `label` overrides the name the row prints, for a control drawn somewhere its
+// own name says nothing: the mixer gathers seven faders and six of them are
+// called *Level*, so on the desk each one is called the machine it belongs to.
+// Everything else about the row is the same row, deliberately — the same
+// tooltip, the same double-click back to stock, the same knob it is bound to.
+export function ControlSlider({
+  def,
+  label = def.label,
+}: {
+  def: SliderDef
+  label?: string
+}) {
   const value = useControlValue(def.key)
   const touched = value !== DEFAULT_CONTROLS[def.key]
+  const action = def.action
 
   if (def.choices) {
     const choices = def.choices
@@ -74,13 +86,13 @@ export function ControlSlider({ def }: { def: SliderDef }) {
       <Tip text={def.help}>
         <div className={styles.row}>
           <span className={touched ? styles.labelTouched : styles.label}>
-            {def.label}
+            {label}
           </span>
           <span className={styles.choices}>
             {choices.length > CHOICES_AS_BUTTONS ? (
               <select
                 className={touched ? styles.listOn : styles.list}
-                aria-label={def.label}
+                aria-label={label}
                 value={Math.round(value) - def.min}
                 onChange={e => pick(Number(e.currentTarget.value))}
               >
@@ -119,7 +131,7 @@ export function ControlSlider({ def }: { def: SliderDef }) {
           className={touched ? styles.labelTouched : styles.label}
           onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
         >
-          {def.label}
+          {label}
         </span>
         <input
           className={styles.track}
@@ -132,7 +144,7 @@ export function ControlSlider({ def }: { def: SliderDef }) {
           // units, off the same formatter the readout beside it uses. The label
           // is a span rather than a <label> because it also takes a double-click
           // back to stock, so the name has to be given here.
-          aria-label={def.label}
+          aria-label={label}
           aria-valuetext={formatValue(def, value)}
           // The whole sweep is one gesture and wants one step in the walk, so it
           // arms here and the first move that changes anything takes it. A held
@@ -149,21 +161,18 @@ export function ControlSlider({ def }: { def: SliderDef }) {
         />
         <span className={styles.readout}>
           {formatValue(def, value)}
-          {def.action && (
-            <Tip text={def.action.title}>
+          {action && (
+            <Tip text={action.title}>
               <button
                 className={styles.action}
                 onClick={() =>
                   write(
                     def.key,
-                    snapToStep(
-                      def,
-                      def.action!.value(engine.controls.get(), def),
-                    ),
+                    snapToStep(def, action.value(engine.controls.get(), def)),
                   )
                 }
               >
-                {def.action.label}
+                {action.label}
               </button>
             </Tip>
           )}

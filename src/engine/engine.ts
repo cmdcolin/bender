@@ -23,7 +23,7 @@ import {
 import { createStore, type Store } from '../listeners'
 import { Glide } from './glide'
 import type { FromWorklet, ToWorklet } from './messages'
-import { packParams } from './params'
+import { N_TAPS, packParams } from './params'
 import { encodeWav } from './wav'
 
 const REC_MAX_S = 600 // a take stops itself at ten minutes
@@ -37,6 +37,10 @@ export interface Meter {
   duck: number
   rail: number
   reboots: number
+  /** What each source, the mic and the bus peaked at over the last meter — see
+      the chain's taps. Read by the mixer's meters, which draw straight to the
+      DOM off it rather than through a render. */
+  taps: Float32Array
 }
 
 // What a board on the edge of running away sounds like from the main thread.
@@ -98,6 +102,7 @@ export class Engine {
       duck: 0,
       rail: 1,
       reboots: 0,
+      taps: new Float32Array(N_TAPS),
     })
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
@@ -215,6 +220,7 @@ export class Engine {
           duck: msg.duck,
           rail: msg.rail,
           reboots: msg.reboots,
+          taps: msg.taps,
         })
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }

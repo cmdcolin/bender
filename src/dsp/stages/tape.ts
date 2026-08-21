@@ -41,6 +41,10 @@ const SPEED = [
 ]
 
 const NOMINAL_MS = 10
+/** how far off centre a fully wound Hysteresis can sit the record curve, as a
+    share of the level the medium is carrying. Past about this the second
+    harmonic stops being a bloom and starts being the note. */
+const HYST_MAX = 1.5
 const LINE_MS = NOMINAL_MS + 900 + 20
 const EMPH_HZ = 1200
 const AZIMUTH_MAX = 40
@@ -50,6 +54,8 @@ interface Settings {
   makeup: number
   emph: number
   emphCoef: number
+  remanence: number
+  bump: number
   tilt: number
   tiltCoef: number
   hiss: number
@@ -64,10 +70,10 @@ interface Settings {
   printCoef: number
 }
 
-// One channel of tape: record head (pre-emphasis → saturation → de-emphasis),
-// the oxide itself (hiss laid on the medium, so playback colours it), then the
-// replay head (gap loss, head bump) and the layer bleeding through from the
-// wrap underneath.
+// One channel of tape: record head (pre-emphasis → saturation against a
+// magnetised oxide → de-emphasis), the medium itself (hiss laid on it, so
+// playback colours it), then the replay head (gap loss, head bump) and the layer
+// bleeding through from the wrap underneath.
 //
 // Its six one-poles are six doubles on this object rather than six objects
 // holding one double each. A head runs all of them every sample, so the old
@@ -82,6 +88,7 @@ class TapeHead {
   private gap = 0
   private print = 0
   private env = 0
+  private magEnv = 0
   private bumpLow = 0
   private bumpBand = 0
   private gauss: Rng
@@ -95,7 +102,41 @@ class TapeHead {
     const xd = x * s.drive
     this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
     const pre = this.pre
-    const rec = softclip(pre + (1 + s.emph) * (xd - pre))
+    // The field the gap presents to the oxide, and the curve it meets there.
+    //
+    // A clipper on its own is odd: both halves of a wave meet the same shape, so
+    // it makes a third harmonic and a fifth and never a second — which is the
+    // sound of something breaking up rather than of something warm. Tape is not
+    // odd. The medium arrives at the gap already magnetised, by more of it the
+    // harder it has been driven, and that remanence sits the curve off centre:
+    // the two halves of the wave saturate against different amounts of it and
+    // come out different shapes. That difference is the second harmonic, and
+    // because the offset rides the programme envelope rather than the note, it
+    // blooms up with the level and goes away again when you back off.
+    //
+    // What the offset does to the operating point is the sound; the dc it also
+    // leaves is not, and would come off headroom the rest of the take needs. So
+    // the curve is read at the offset and taken back off there, which is a
+    // second call into the clipper and the only per-sample cost this knob has.
+    //
+    // How much the medium is carrying is measured off the clipper's own output
+    // rather than off what comes back from the replay head: the record level
+    // makes up its gain on the way out, so a head being driven twice as hard
+    // plays back at the same level, and reading the offset from there would have
+    // meant a tape that blooms *less* the harder you hit it. What the domains
+    // have been through is `rec`, which is a difference of two clipped values
+    // and so bounded by ±2 rather than ±1 — the loop closes on itself all the
+    // same, because the further off centre the offset sits the curve, the
+    // smaller the difference either half of the wave comes back as.
+    const field = pre + (1 + s.emph) * (xd - pre)
+    const offset = s.remanence * this.magEnv
+    const rec =
+      offset === 0
+        ? softclip(field)
+        : softclip(field + offset) - softclip(offset)
+    this.magEnv = flushDenormal(
+      this.magEnv + s.envCoef * (Math.abs(rec) - this.magEnv),
+    )
     this.de = flushDenormal(this.de + s.emphCoef * (rec - this.de))
     const de = this.de
     const played = (de + (rec - de) / (1 + s.emph)) * s.makeup
@@ -125,7 +166,7 @@ class TapeHead {
     this.bumpLow = flushDenormal(this.bumpLow + s.bumpF * this.bumpBand)
     const high = y - this.bumpLow - s.bumpQ * this.bumpBand
     this.bumpBand = flushDenormal(this.bumpBand + s.bumpF * high)
-    return y + 0.5 * this.bumpBand * s.bumpQ
+    return y + s.bump * this.bumpBand * s.bumpQ
   }
 
   reset() {
@@ -137,6 +178,7 @@ class TapeHead {
     this.gap = 0
     this.print = 0
     this.env = 0
+    this.magEnv = 0
     this.bumpLow = 0
     this.bumpBand = 0
   }
@@ -167,6 +209,8 @@ export class Tape implements Stage {
     makeup: 1,
     emph: 1.2,
     emphCoef: 0,
+    remanence: 0,
+    bump: 0.5,
     tilt: 0,
     tiltCoef: 0,
     hiss: 0,
@@ -210,6 +254,11 @@ export class Tape implements Stage {
     s.drive = drive
     s.makeup = Math.pow(drive, -0.8)
     s.emphCoef = lpCoef(EMPH_HZ, this.sr)
+    // How far off centre the remanence sits the curve, per unit of level the
+    // medium is carrying. Under-bias leaves more of the field behind, which is
+    // the other half of why an underbiased tape is the one that crunches.
+    s.remanence = p[IDX.tapeHyst]! * HYST_MAX * (1 - 0.35 * bias)
+    s.bump = p[IDX.tapeBump]!
     s.tilt = -bias * 0.6
     s.tiltCoef = lpCoef(3000, this.sr)
     s.hiss = p[IDX.tapeHiss]! * sp.hiss * 0.006

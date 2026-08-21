@@ -19,6 +19,20 @@
   composes: pickOn from './button.module.css';
 }
 
+/* The verbs that rewrite whatever the ROM row loaded. Chips rather than picks:
+   a ROM is a place the grid can be in and shows as the one it is in, while a
+   move is something that happened to it and has no state to be in at all. */
+.moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+
+.move {
+  composes: chip from './button.module.css';
+}
+
 .grid {
   display: flex;
   flex-direction: column;
@@ -105,8 +119,11 @@
   background: var(--bg2);
   cursor: pointer;
   /* A step is a contact, not a word: no double-tap zoom, and no 300 ms wait to
-     find out whether the tap was one. */
-  touch-action: manipulation;
+     find out whether the tap was one. Sideways is ours — that is a hand drawing
+     a run of steps, and a browser that took it for a pan would leave the grid
+     the one place on the panel you cannot draw. Up and down stays the page's,
+     because a grid that swallowed a scroll would trap a phone on it. */
+  touch-action: pan-y;
 }
 
 .cell:hover,

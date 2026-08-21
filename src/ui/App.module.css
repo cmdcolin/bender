@@ -74,8 +74,29 @@
   composes: actionOff from './button.module.css';
 }
 
+/* Panic, with the one reading on the board that is about panic laid into it:
+   how hard the safety limiter is leaning. The fill is behind the word rather
+   than beside it because the head has no room for a gauge and does not need one
+   — what the number is for is knowing whether this is the button to press, and a
+   button that fills up as the board arrives at the ceiling says that without
+   spending a line on saying it. */
 .btnDanger {
   composes: actionDanger from './button.module.css';
+  position: relative;
+  overflow: hidden;
+}
+
+.duck {
+  position: absolute;
+  inset: 0;
+  background: var(--danger);
+  opacity: 0.3;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.duckLabel {
+  position: relative;
 }
 
 /* The duration picker and panic sit at the far end of the nameplate row, which

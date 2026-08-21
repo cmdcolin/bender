@@ -5,6 +5,7 @@ import { useBoardValue } from './ControlsContext'
 import { engine } from '../engine/engine'
 import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
+import { Mixer } from './Mixer'
 import { resetGroup, rollGroup } from './presets'
 import { scrollIntoPanel } from './reveal'
 import { ControlSlider } from './Slider'
@@ -222,6 +223,7 @@ export function OpenGroup({
       </div>
       <div className={styles.body}>
         {group.editor?.kind === 'drums' && <DrumGrid />}
+        {group.editor?.kind === 'mixer' && <Mixer />}
         <Rows key={group.name} group={group} />
       </div>
     </div>

@@ -115,6 +115,8 @@ export const PARAM_DEFS = [
   ['sampleTrig', 'step'],
   ['sampleMode', 'step'],
 
+  ['mixDrive', 'ramp'],
+
   ['bendSlot0', 'step'],
   ['bendSlot1', 'step'],
   ['bendSlot2', 'step'],
@@ -228,6 +230,8 @@ export const PARAM_DEFS = [
   ['tapeDrop', 'slew'],
   ['tapePrint', 'slew'],
   ['tapeAzimuth', 'slew'],
+  ['tapeHyst', 'slew'],
+  ['tapeBump', 'slew'],
 
   ['heatAmt', 'slew'],
   ['faultCluster', 'slew'],
@@ -252,6 +256,36 @@ export const IDX = Object.fromEntries(
 export const SMOOTH_SEC: Float32Array = Float32Array.from(
   PARAM_DEFS.map(([, s]) => (s === 'step' ? 0 : s === 'slew' ? 0.01 : 0.003)),
 )
+
+// The meter taps that come back the other way, in one buffer so the worklet
+// posts one thing: a slot per source in the order the chain sums them, then the
+// mic, then the bus itself.
+//
+// A fader says how far it is up. It does not say whether anything is coming out
+// of that machine — the FM chip is silent until something over on the toy
+// strikes a note, a sampler with no file in it is a fader wired to nothing, and
+// a channel at 0.8 behind a bend that has stopped passing is a fader lying
+// outright. Those are the ways a level control lies, and the only cure is
+// reading the bus.
+//
+// The order is the order the chain wires them onto the bus, named by the label
+// each stage carries, so the mixer on the panel and the summing on the audio
+// thread come off one list rather than two that agree for now.
+export const SOURCE_TAPS = [
+  'toyChip',
+  'toyDrum',
+  'fmChip',
+  'chaosOsc',
+  'noise',
+  'sampler',
+] as const
+
+export type SourceTap = (typeof SOURCE_TAPS)[number]
+
+export const MAX_SOURCES = SOURCE_TAPS.length
+export const TAP_MIC = MAX_SOURCES
+export const TAP_BUS = MAX_SOURCES + 1
+export const N_TAPS = MAX_SOURCES + 2
 
 export function packParams(values: Controls): Float32Array {
   const out = new Float32Array(N_PARAMS)
