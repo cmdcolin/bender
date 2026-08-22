@@ -16,16 +16,23 @@
    door and nothing else. The size is picked to leave room for what that door
    opens — the viewBox scaling the drawing down rather than cropping it.
 
-   The floor is what stops that being a licence: 400px is the drawing at 0.85,
+   The floor is what stops that being a licence: 450px is the drawing at 0.85,
    which is 8.5px labels, and a map whose labels have gone to 6px has stopped
    being the index it is there to be. A 720px screen hits the floor and scrolls
    the last of the stage into view instead, which is a thing the panel does
-   anyway and reads as one. */
+   anyway and reads as one.
+
+   It was 400px while the drawing was shorter. What made it taller is the parts
+   that used to sit on a shelf underneath — the rack, the bends in none of its
+   slots, the bay and the pad — moving onto the drawing itself, and the shelf
+   they have left is a row the panel no longer draws. So most of the fifty
+   pixels come back, and what the map is holding for them is the whole index
+   rather than most of it. */
 .graph svg {
   display: block;
   max-width: 100%;
   height: auto;
-  max-height: max(400px, 40vh);
+  max-height: max(450px, 40vh);
 }
 
 /* Stacked under the toy rather than beside it, the panel has the document's own

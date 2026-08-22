@@ -334,11 +334,14 @@ export function OpenGroup({
   )
 }
 
-// The parts the drawing has no wire for: the slot rack, any bend sitting in no
-// slot, and a patch bay or body pad with nothing soldered to it. They sit on a
-// shelf under the map, because "nothing is wired to this" is a hard thing to
-// say inside a picture made of wires — and the map is the panel's only index,
-// so a part it can't hold still needs somewhere to be picked up from.
+// Whatever the drawing found no door for. "Nothing is wired to this" is a hard
+// thing to say inside a picture made of wires, and this used to be where it was
+// said: the slot rack, the bends in no slot, a bay or contact pad with nothing
+// soldered to it. The drawing says all of that itself now — the rack carries
+// what is in none of its slots, the lane between the toys says when neither
+// fires the other, and the bay and the pad sit at the foot — so nothing is
+// expected here. It stays because the map is the panel's only index, and a
+// group with no door on it would otherwise have no way in at all.
 export function Shelf({
   groups,
   open,

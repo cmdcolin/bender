@@ -13,7 +13,7 @@ Live: https://cmdcolin.github.io/bender/
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, run through six reorderable bend slots, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix and a patch wire from the bay LFO onto the screech filter" src="img/chain-light.svg" width="420">
+  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, which runs into the slot rack carrying the one bend that is in none of its six slots, then through the bends themselves, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, then a dc block, soft clip and limiter, with the feedback bus wired from the output back to the mix, a patch wire from the bay LFO onto the screech filter, and the patch bay and contact pad at the foot" src="img/chain-light.svg" width="420">
 </picture>
 
 The app draws that from the chain itself — `pnpm diagram` regenerates it with
@@ -25,11 +25,25 @@ node **Patched into** picks, and patch-bay wires ride over the top, dotted, from
 what they pick up onto what they push. Click a node to open its controls; click
 a wire for the bay, or its label for whatever that end is clipped onto.
 
-Six slots, seven bends — you pick which ones are on the board. The drawing
-reports which stages it found a door for, and the parts left over sit on a shelf
-under it — the slot rack, the bends off the board, a bay or contact pad with
-nothing wired to it — so every control is one click from the map, on the path or
-on the shelf.
+Six slots, seven bends — you pick which ones are on the board, and the one you
+did not pick is drawn where it actually is. The rack heads the run: the signal
+walks into it before it walks the slots, and whatever is in none of them rides
+in it as a loose chip, dashed, with nothing soldered to either end. Click the
+rack for the slot order, a chip for that bend's own controls. An empty rack says
+so and carries all seven.
+
+The parts that are on the board without being stages of the path are drawn where
+they sit rather than listed underneath. The name on the toy board's frame opens
+what the board is made of; the row the rack's name is on carries its wear, which
+is the one thing on the board that rewrites the drawing while you play. The lane
+between the two toys says when neither is bridged to the other. The mic stays on
+the map at any level, greyed at none, drawn as the wire it is onto whichever of
+its seven solder points it is at — and onto the chip in the rack, greyed, when
+what you soldered it to is in none of the slots. The patch bay and the contact
+pad sit at the foot with the feedback bus, where everything that goes round the
+path rather than along it is, with the one wire between them, since the pad
+reaches the board through the bay and nowhere else. So every control on the
+instrument is one click from the map.
 
 A stage opens as one list of controls, which is the right shape for a stage
 until it has twenty of them. The three big ones carry headings you press

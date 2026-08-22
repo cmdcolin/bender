@@ -63,9 +63,9 @@ function mount(node: El | string, key: number): ReactNode {
 // The signal path: live bend order, the feedback wire, and each stage a door
 // into its controls. The map is the panel's index — clicking a box is what puts
 // a stage's knobs on screen — so it draws folded into two columns, which is what
-// keeps it and the stage it opens on screen together. Whatever the drawing found
-// no door for goes on the shelf underneath, which is why the index is complete:
-// every group is either on the path or on the shelf.
+// keeps it and the stage it opens on screen together. The drawing has somewhere
+// for every part of the board now, wired or not, so the shelf under it is the
+// backstop rather than a list: what lands there is a group the drawing forgot.
 export function ChainMap({
   open,
   onOpen,

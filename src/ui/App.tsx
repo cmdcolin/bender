@@ -175,8 +175,9 @@ export function App() {
   const sampleName = useStoreValue(engine.sampleName)
   const [dragging, setDragging] = useState(false)
   // Which stage's controls the panel is showing. The map is the way in — every
-  // group has a door on it, stages in the path and the rest on the shelf under
-  // it — so one stage is open at a time and the rest of the panel stays the map.
+  // group has a door on it, the stages along the path and the rest of the board
+  // drawn where it sits — so one stage is open at a time and the rest of the
+  // panel stays the map.
   const [open, setOpen] = useState<string | null>(null)
   const openGroup = GROUPS.find(g => g.name === open)
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))

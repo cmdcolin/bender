@@ -10,7 +10,7 @@ import {
   PANEL,
   type ChainMap,
 } from './chain-map'
-import { GROUPS } from './controls'
+import { BENDS, GROUPS } from './controls'
 import { serialize } from './svg'
 
 const hop = (map: ChainMap, from: string, to: string) =>
@@ -29,9 +29,11 @@ function checkLayout(map: ChainMap) {
     expect(n.x + n.w).toBeLessThanOrEqual(map.width)
     expect(n.y + n.h).toBeLessThanOrEqual(map.height)
   }
-  // Frames are left out: the toy board's whole job is to contain the three
-  // boxes inside it, so it overlaps them on purpose.
-  const boxes = map.nodes.filter(n => n.kind !== 'label' && n.kind !== 'frame')
+  // Frames and chips are left out: the toy board's whole job is to contain the
+  // three boxes inside it, and the rack's is to carry the bends in none of its
+  // slots, so both overlap what they hold on purpose.
+  const inside = new Set(['label', 'frame', 'chip'])
+  const boxes = map.nodes.filter(n => !inside.has(n.kind))
   for (const [i, a] of boxes.entries())
     for (const b of boxes.slice(i + 1))
       expect(
@@ -56,14 +58,15 @@ test('the path is drawn, wired and inside its own box', () => {
   }
 })
 
-test('bend slots draw in their live order', () => {
+test('bend slots draw in their live order, under the rack they sit in', () => {
   const map = buildMap({
     ...DEFAULT_CONTROLS,
     bendSlot0: 5,
     bendSlot1: 1,
     bendSlot2: 0,
   })
-  expect(hop(map, 'mix', 'Glitch_buffer')).toBeTruthy()
+  expect(hop(map, 'mix', 'rack')).toBeTruthy()
+  expect(hop(map, 'rack', 'Glitch_buffer')).toBeTruthy()
   expect(hop(map, 'Glitch_buffer', 'Ring_mod')).toBeTruthy()
 })
 
@@ -143,7 +146,9 @@ test('the toy board frames its three chips, and wires the key line', () => {
   const map = buildMap(DEFAULT_CONTROLS)
   const frame = box(map, 'toy_board')!
   expect(frame.kind).toBe('frame')
-  expect(frame.door).toBeUndefined()
+  // The name on its lip opens the parts the outline is round — the ones that
+  // are hardware rather than a stage, and so have no box of their own.
+  expect(frame.door).toBe('Board parts')
   for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums']) {
     const chip = box(map, id)!
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)
@@ -220,15 +225,38 @@ test('each source box carries its own glyph, lit while it plays', () => {
 })
 
 // The mic is the one source that does not have to reach the mix: six of its
-// seven settings solder it into the middle of something else.
+// seven settings solder it into the middle of something else. Turned right
+// down it is still soldered there, so it stays on the map greyed rather than
+// leaving the panel with no way in — the rule the feedback bus already follows.
 test('the mic draws as a wire onto wherever it is patched', () => {
-  expect(box(buildMap(DEFAULT_CONTROLS), 'mic')).toBeUndefined()
+  const off = buildMap(DEFAULT_CONTROLS)
+  expect(box(off, 'mic')?.label).toBe('mic')
+  expect(box(off, 'mic')?.active).toBe(false)
+  expect(hop(off, 'mic', 'mix')?.color).toBe(PANEL.dim)
+  expect(off.doors).toContain('Mic')
   const toMix = buildMap({ ...DEFAULT_CONTROLS, micLevel: 1 })
-  expect(hop(toMix, 'mic', 'mix')).toBeTruthy()
-  expect(toMix.doors).toContain('Mic')
+  expect(box(toMix, 'mic')?.label).toBe('mic 1.00')
+  expect(hop(toMix, 'mic', 'mix')?.color).toBe(PANEL.mod)
   const toRail = buildMap({ ...DEFAULT_CONTROLS, micLevel: 1, micPatch: 1 })
   expect(hop(toRail, 'mic', 'Toy_keyboard')).toBeTruthy()
   expect(box(toRail, 'mic')?.door).toBe('Mic')
+})
+
+// Soldered onto a bend in none of the slots, the wire has somewhere to go all
+// the same: in through the rack's edge, onto the chip riding in it — greyed,
+// because nothing runs through what it is soldered to.
+test('a mic on a bend that is in no slot lands on it in the rack', () => {
+  const map = buildMap({
+    ...DEFAULT_CONTROLS,
+    micLevel: 0.5,
+    micPatch: 4,
+    bendSlot0: 0,
+  })
+  expect(box(map, 'Ring_mod')?.kind).toBe('chip')
+  expect(hop(map, 'mic', 'Ring_mod')?.color).toBe(PANEL.dim)
+  expect(box(map, 'mic')?.active).toBe(false)
+  // The label still hangs in the gutter, off the box the wire goes in through.
+  expect(box(map, 'mic')!.x).toBeLessThan(box(map, 'rack')!.x)
 })
 
 // The count is the way back as well as the reading, everywhere it is drawn: on
@@ -254,10 +282,28 @@ test("the README's diagrams are what the chain draws today — else `pnpm diagra
   }
 })
 
-test('the shifter draws when it is in a slot', () => {
-  expect(
-    hop(buildMap({ ...DEFAULT_CONTROLS, bendSlot0: 7 }), 'mix', 'Freq_shifter'),
-  ).toBeTruthy()
+// Six slots and seven bends, so one is always in none of them. The rack heads
+// the run and carries those, each a door of its own — which is what stops a
+// stage that is on the board and not in the path from going missing off the map.
+test('the rack heads the run and carries the bends in no slot', () => {
+  const map = buildMap({ ...DEFAULT_CONTROLS, bendSlot0: 7 })
+  expect(box(map, 'rack')?.door).toBe('Slot order')
+  expect(hop(map, 'rack', 'Freq_shifter')).toBeTruthy()
+  const ring = box(map, 'Ring_mod')!
+  expect(ring.kind).toBe('chip')
+  expect(ring.door).toBe('Ring mod')
+  expect(map.doors).toContain('Ring mod')
+  // Inside the rack, which is the only place a box may sit over another one.
+  const rack = box(map, 'rack')!
+  expect(ring.y).toBeGreaterThan(rack.y)
+  expect(ring.y + ring.h).toBeLessThanOrEqual(rack.y + rack.h)
+})
+
+// The one part of the drawing wear rewrites is the rack — the joints under the
+// slots open mid-note and the board re-solders two of them behind your back —
+// so that is the row it reads off.
+test('the rack row carries the wear on the board', () => {
+  expect(box(buildMap(DEFAULT_CONTROLS), 'wear')?.door).toBe('Wear')
 })
 
 test('a patch wire draws onto the group it is soldered to', () => {
@@ -330,6 +376,16 @@ const BOARDS: Record<string, Controls> = {
   },
 }
 
+// The map is the panel's only index, and the shelf under it is what a drawing
+// that missed something looks like. Nothing on the board is off it now: the
+// rack carries the bends in none of its slots, the lane under the toys says
+// when nothing is bridged, the frame's lip opens the parts inside it, the mic
+// draws at any level, and the bay and the pad sit at the foot with the loom.
+test.each(Object.entries(BOARDS))('every group has a door: %s', (_, board) => {
+  const { doors } = buildMap(board, { wrap: true })
+  for (const g of GROUPS) expect(doors).toContain(g.name)
+})
+
 // A door the map claims but never draws is worse than no door at all: the panel
 // shelves what the doors leave out, so the group would go missing from both.
 test.each(Object.entries(BOARDS))('every door is drawn: %s', (_, board) => {
@@ -348,25 +404,24 @@ test.each(Object.entries(BOARDS))(
   (_, board) => checkLayout(buildMap(board, { wrap: false })),
 )
 
-test('the doors are what the path reaches, and only that', () => {
-  const { doors } = buildMap(DEFAULT_CONTROLS)
-  expect(doors).toContain('Tape machine')
-  expect(doors).toContain('Ring mod')
-  expect(doors).not.toContain('Freq shifter')
-  expect(doors).not.toContain('Slot order')
-  expect(doors).not.toContain('Body contact')
+// What is in a slot is a stage of the path; what is in none of them is a chip
+// in the rack. Every bend is one or the other, whatever the slots are set to.
+test('a bend is a stage of the path or a chip in the rack, never neither', () => {
+  for (const board of Object.values(BOARDS)) {
+    const map = buildMap(board)
+    for (const bend of BENDS) {
+      const drawn = box(map, bend.group.replace(/\W+/g, '_'))!
+      expect(['stage', 'chip']).toContain(drawn.kind)
+    }
+  }
 })
 
-test('a slotted bend leaves the shelf', () => {
-  expect(buildMap({ ...DEFAULT_CONTROLS, bendSlot0: 7 }).doors).toContain(
-    'Freq shifter',
-  )
-})
-
-test('an empty rack says so in the path, and opens the slot order', () => {
+test('an empty rack says so in the path, and every bend rides in it', () => {
   const map = buildMap(BOARDS.bare!)
-  expect(box(map, 'no_bends')?.door).toBe('Slot order')
-  expect(map.doors).toContain('Slot order')
+  const rack = box(map, 'rack')!
+  expect(rack.label).toBe('no bends patched')
+  expect(rack.door).toBe('Slot order')
+  expect(map.nodes.filter(n => n.kind === 'chip')).toHaveLength(BENDS.length)
 })
 
 test('a wire label opens what it picks up, the wire itself the bay', () => {
@@ -383,7 +438,9 @@ test('a wire label opens what it picks up, the wire itself the bay', () => {
 test('a bridged trigger line draws between the two boxes', () => {
   const stock = buildMap(DEFAULT_CONTROLS)
   expect(hop(stock, 'Toy_drums', 'Toy_keyboard')).toBeUndefined()
-  expect(stock.doors).not.toContain('Trigger patch')
+  // Nothing bridged, so the lane the bridges would run across says so rather
+  // than the part coming off the map.
+  expect(box(stock, 'no_trig')?.door).toBe('Trigger patch')
 
   const both = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1, trigToDrum: 8 })
   const up = hop(both, 'Toy_drums', 'Toy_keyboard')!
@@ -396,6 +453,42 @@ test('a bridged trigger line draws between the two boxes', () => {
   expect(up.dash).toBeTruthy()
   expect(up.door).toBe('Trigger patch')
   expect(both.doors).toContain('Trigger patch')
+  expect(box(both, 'no_trig')).toBeUndefined()
+})
+
+// The bay and the pad are bolted to the board whether or not you have patched
+// anything, the same as the feedback bus, so they sit at the foot of the
+// drawing — where everything that goes round the path rather than along it is —
+// with the one wire between them, since the pad reaches the board through the
+// bay and nowhere else.
+test('the bay and the pad sit at the foot, greyed until a wire is in one', () => {
+  const off = buildMap(DEFAULT_CONTROLS)
+  expect(box(off, 'Patch_bay')?.active).toBe(false)
+  expect(box(off, 'Body_contact')?.active).toBe(false)
+  expect(hop(off, 'Body_contact', 'Patch_bay')?.color).toBe(PANEL.dim)
+  expect(box(off, 'Patch_bay')!.y).toBeGreaterThan(box(off, 'Feedback_bus')!.y)
+
+  const wired = buildMap({
+    ...DEFAULT_CONTROLS,
+    mod0Src: 5,
+    mod0Dest: 6,
+    mod0Depth: 0.8,
+  })
+  expect(box(wired, 'Patch_bay')?.active).toBe(true)
+  expect(box(wired, 'Body_contact')?.active).toBe(true)
+  expect(hop(wired, 'Body_contact', 'Patch_bay')?.color).toBe(PANEL.mod)
+})
+
+// A wire onto another wire's depth lands in the bay rather than on any stage,
+// which used to be a wire the map could not draw at all.
+test("a wire onto another wire's depth draws onto the bay itself", () => {
+  const map = buildMap({
+    ...DEFAULT_CONTROLS,
+    mod0Src: 1,
+    mod0Dest: 18,
+    mod0Depth: 0.5,
+  })
+  expect(hop(map, 'wire0', 'Patch_bay')).toBeTruthy()
 })
 
 test('a wire off a trigger line opens the box it picks up from', () => {
