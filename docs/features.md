@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 196 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 197 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 49 presets and 20 named cuts — and everything below comes off the
 control tables themselves, so the list cannot drift from the instrument.
 
