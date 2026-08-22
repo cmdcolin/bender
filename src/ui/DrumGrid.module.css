@@ -41,7 +41,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 3.2rem 1fr 1.3rem;
+  grid-template-columns: 4.4rem 1fr 1.3rem;
   align-items: center;
   gap: 6px;
 }
@@ -73,14 +73,22 @@
   color: var(--accent);
 }
 
+/* The number the pad answers to, printed on the row the way the toy printed its
+   letters on the keys. Dimmer than the name: it is how to reach the voice, not
+   what the voice is. */
+.padKey {
+  opacity: 0.55;
+  margin-right: 0.4em;
+}
+
 /* Armed to record what you play in. It sits with the ROM buttons because it is
    the other way a pattern gets written. */
-.tap {
+.rec {
   composes: rom;
   margin-left: auto;
 }
 
-.tapOn {
+.recOn {
   composes: rom;
   margin-left: auto;
   color: var(--bg);
@@ -91,7 +99,7 @@
 /* Armed with the kit stopped: nothing is being written, so the button is drawn
    as the promise it is rather than as the filled lamp of one that is recording.
    Amber outlined is the same amber, waiting. */
-.tapIdle {
+.recIdle {
   composes: rom;
   margin-left: auto;
   color: var(--accent2);

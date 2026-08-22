@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { hasStep, quantizeStep, STEPS } from '../drums'
 import { edgeScore, Engine, mergeNotes } from './engine'
@@ -237,14 +237,14 @@ test('a hit played in writes the step the kit is standing on', () => {
   engine.drumHit(1)
   expect(engine.controls.get().drumKick).toBe(0)
 
-  engine.tapRecord.set(true)
+  engine.drumRecord.set(true)
   engine.drumHit(1)
   expect(hasStep(engine.controls.get().drumKick, 4)).toBe(true)
 })
 
 test('a hit played in with the kit stopped is only a sound', () => {
   const engine = new Engine()
-  engine.tapRecord.set(true)
+  engine.drumRecord.set(true)
   engine.patch({ drumKick: 0 })
   atStep(engine, 4)
   engine.drumHit(1)
@@ -257,7 +257,7 @@ test('a hit played in with the kit stopped is only a sound', () => {
 test('a hit lands on the column each row is on', () => {
   const engine = new Engine()
   engine.setDrumsPlaying(true)
-  engine.tapRecord.set(true)
+  engine.drumRecord.set(true)
   engine.patch({ drumKick: 0, drumHat: 0, drumHatLen: 5, drumSwing: 0 })
   atStep(engine, 7)
   engine.drumHit(1 | (1 << 2))
@@ -271,7 +271,7 @@ test('a hit lands on the column each row is on', () => {
 test('a hit played in is one step in the walk', () => {
   const engine = new Engine()
   engine.setDrumsPlaying(true)
-  engine.tapRecord.set(true)
+  engine.drumRecord.set(true)
   engine.patch({ drumKick: 0, drumSnare: 0, drumSwing: 0 })
   atStep(engine, 3)
   const before = engine.history.get().past.length
@@ -297,10 +297,39 @@ test('a hit lands on the nearer step, and never off the row', () => {
 // leave nothing armed either: an arm that no write ever commits sits there and
 // swallows the next gesture's board, banking one from before whatever happened
 // in between.
+// The clock a hit is quantized against is the last step the meter reported and
+// how long ago that was. When the report is older than a whole step there is no
+// "how far through" to read — the meter stopped, the tab went to the background,
+// or nothing has clocked at all yet — and rounding that up put every hit one
+// step to the right of the playhead you were aiming at.
+test('a hit lands on the reported step when the clock has gone stale', () => {
+  const now = vi.spyOn(performance, 'now')
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.drumRecord.set(true)
+  engine.patch({ drumKick: 0, drumSnare: 0, drumSwing: 0, drumBpm: 120 })
+
+  // A step at 120 bpm is 125 ms. This report is five seconds old.
+  now.mockReturnValue(1000)
+  atStep(engine, 4)
+  now.mockReturnValue(6000)
+  engine.drumHit(1)
+  expect(hasStep(engine.controls.get().drumKick, 4)).toBe(true)
+  expect(hasStep(engine.controls.get().drumKick, 5)).toBe(false)
+
+  // Past the middle of a step that is genuinely running, it still rounds up to
+  // the next one — which is the whole point of reading the phase at all.
+  now.mockReturnValue(10000)
+  atStep(engine, 8)
+  now.mockReturnValue(10000 + 80)
+  engine.drumHit(2)
+  expect(hasStep(engine.controls.get().drumSnare, 9)).toBe(true)
+})
+
 test('a hit that writes nothing arms nothing', () => {
   const engine = new Engine()
   engine.setDrumsPlaying(true)
-  engine.tapRecord.set(true)
+  engine.drumRecord.set(true)
   engine.patch({ drumKick: 0, drumSwing: 0 })
   atStep(engine, 4)
   engine.drumHit(1)
@@ -314,4 +343,8 @@ test('a hit that writes nothing arms nothing', () => {
   engine.set('revMix', 0.3)
   engine.undo(0)
   expect(engine.controls.get().dlyFb).toBe(0.9)
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })

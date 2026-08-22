@@ -236,14 +236,30 @@ controller, a shout into the mic soldered to the trigger line, a bridged trigger
 patch, the retrigger bend — and all but the first of those land on steps the
 playhead gives no warning of.
 
-**Tap in** is the other way a pattern gets written: arm it, and every pad hit or
-press of a row's name writes the step it lands on, rounded to the nearest, with
-each row taking its own column so a five-step hat lands where the hat actually
-is. It needs the kit running for there to be a step to land on — armed with the
-kit stopped, the button goes to an outline, because the hits still sound and
-nothing else would say the pattern isn't being kept. It is never on when you
-arrive, and every hit is one step in the undo walk — a hand that has just played
-the wrong drum wants that hit back and nothing else.
+The kit is played on the number row, one key a voice, in the order the rows sit:
+<kbd>1</kbd> is the kick and <kbd>6</kbd> the cowbell, and the number each voice
+answers to is printed on its row the way the toy printed letters on its keys.
+They work wherever the panel happens to be, as the keyboard's letters do, and
+they are how you play a bar rather than click one drum at a time. A held key is
+one hit — the kit has a bend for hammering a step at audio rate and it is not
+the operating system's key repeat.
+
+**Record** is the other way a pattern gets written: arm it, and every hit — a
+number key, a press of a row's name, a pad on a controller — writes the step it
+lands on, rounded to the nearest, with each row taking its own column so a
+five-step hat lands where the hat actually is. It needs the kit running for
+there to be a step to land on — armed with the kit stopped, the button goes to
+an outline, because the hits still sound and nothing else would say the pattern
+isn't being kept. It is never on when you arrive, and every hit is one step in
+the undo walk — a hand that has just played the wrong drum wants that hit back
+and nothing else.
+
+Which step a hit lands on is read off the kit's own step counter and how long
+ago that step arrived, so swing is in it: a held-back offbeat is a longer step,
+and half of it is somewhere else. A report older than a whole step is not a step
+nearly over but a clock nobody is reading — the tab in the background, the meter
+stopped, nothing clocked yet — and a hit then lands on the step the kit last
+said it was standing on rather than the one after it.
 
 ### Cut the pattern bus
 

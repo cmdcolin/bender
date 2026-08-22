@@ -27,6 +27,7 @@ import {
   type DrumRow,
 } from '../drums'
 import { DRUM_MOVES, masksOf, type DrumMove } from '../drum-moves'
+import { padKeyFor } from './drumKeys'
 import styles from './DrumGrid.module.css'
 import { Tip } from './Tip'
 
@@ -100,7 +101,7 @@ type Paint = RefObject<boolean | null>
 // ends, and puts the row back to sixteen.
 export function DrumGrid() {
   const playing = useStoreValue(engine.drumsPlaying)
-  const tapping = useStoreValue(engine.tapRecord)
+  const armed = useStoreValue(engine.drumRecord)
   const tick = usePlayTick()
   const struck = useStruck()
   // Two figures rather than the board: the grid is open while a morph travels,
@@ -177,21 +178,21 @@ export function DrumGrid() {
             fix is to press play and the button next to it already says so. */}
         <Tip
           text={
-            !tapping
-              ? 'play the pattern in: arm this and every pad hit — or press of a row’s name — writes the step it lands on, rounded to the nearest. The kit has to be running for there to be a step'
+            !armed
+              ? 'play the pattern in: arm this and every hit — the number keys, a row’s name, a pad on a controller — writes the step it lands on, rounded to the nearest. The kit has to be running for there to be a step'
               : playing
-                ? 'pads and row names write the step they land on, rounded to the nearest. Press to stop'
+                ? 'every hit writes the step it lands on, rounded to the nearest. Press to stop'
                 : 'armed, but the kit is stopped — hits sound and nothing is written. Run the kit and they land on the step they arrive in'
           }
         >
           <button
             className={
-              !tapping ? styles.tap : playing ? styles.tapOn : styles.tapIdle
+              !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
             }
-            aria-pressed={tapping}
-            onClick={() => engine.tapRecord.set(!tapping)}
+            aria-pressed={armed}
+            onClick={() => engine.drumRecord.set(!armed)}
           >
-            tap in
+            record
           </button>
         </Tip>
       </div>
@@ -279,7 +280,7 @@ function Row({
           </span>
         ) : (
           <Tip
-            text={`press to hear the ${row.label} — with tap in armed and the kit running, it writes the step it lands on`}
+            text={`press to hear the ${row.label}, or play it on the ${padKeyFor(voice)} key — with record armed and the kit running, it writes the step it lands on`}
           >
             <button
               className={
@@ -287,6 +288,7 @@ function Row({
               }
               onClick={() => engine.drumHit(voiceBit(voice))}
             >
+              <span className={styles.padKey}>{padKeyFor(voice)}</span>
               {row.label}
             </button>
           </Tip>

@@ -106,7 +106,7 @@ export class Engine {
     })
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
-  readonly tapRecord = createStore(false)
+  readonly drumRecord = createStore(false)
   readonly running = createStore(false)
   readonly micOn = createStore(false)
   // The two run lines, separately. The drum machine is its own box: it runs
@@ -637,7 +637,7 @@ export class Engine {
   drumHit(bits: number, gain = 1) {
     if (bits === 0) return
     this.post({ kind: 'drumHit', bits, gain })
-    if (this.tapRecord.get() && this.drumsPlaying.get()) this.writeHit(bits)
+    if (this.drumRecord.get() && this.drumsPlaying.get()) this.writeHit(bits)
   }
 
   // How far through the current step the hit arrived, which is what decides
@@ -645,12 +645,21 @@ export class Engine {
   // arrives with the meter, so the clock here is how long that tick has been
   // standing — and swing is in it, because a held-back offbeat is a longer step
   // and half of it is somewhere else.
+  //
+  // A report older than a whole step is not a step nearly over, it is a clock
+  // nobody is reading: the tab went to the background, the meter stopped, the
+  // audio never started. Clamping that to 1 said "just about to turn over" and
+  // put every hit one step to the right of the playhead — including the first
+  // hit of a session, where the last report was at time zero. What is actually
+  // known then is the step the kit last said it was standing on, so a stale
+  // clock rounds to that rather than past it.
   private stepPhase(): number {
     const c = this.controls.get()
     const swing = Math.min(Math.max(c.drumSwing, 0), 0.9)
     const span = this.lastTick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
     const stepMs = (60000 / Math.max(c.drumBpm, 1) / 4) * span
-    return Math.min(1, (performance.now() - this.tickAt) / stepMs)
+    const since = performance.now() - this.tickAt
+    return since < stepMs ? since / stepMs : 0
   }
 
   // A hit played by hand, written onto the grid. Each row takes its own column,

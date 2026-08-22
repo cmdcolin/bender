@@ -13,6 +13,7 @@ import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
 import { GROUPS } from './controls'
+import { useDrumKeys } from './drumKeys'
 import { HuntDialog } from './HuntDialog'
 import { Keys } from './Keys'
 import { MidiPanel } from './MidiPanel'
@@ -190,6 +191,7 @@ export function App() {
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
+  useDrumKeys()
 
   // Space is the run/stop line over both machines, wherever the focus is; the
   // keypress itself is the gesture that takes the audio context live.
@@ -272,6 +274,9 @@ export function App() {
               {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
             </button>
           </Tip>
+          {/* Named for what it records, because the kit has a record button of
+              its own now and one of them writes a file while the other writes
+              the pattern. */}
           <Tip text="record the output to a wav file — stopping saves it">
             <button
               className={recording ? styles.recBtnOn : styles.ioBtn}
@@ -279,7 +284,9 @@ export function App() {
                 recording ? engine.stopRecording() : engine.startRecording()
               }
             >
-              {recording ? `■ stop & save ${clock(recSeconds)}` : '● record'}
+              {recording
+                ? `■ stop & save ${clock(recSeconds)}`
+                : '● record wav'}
             </button>
           </Tip>
           <button
@@ -305,10 +312,10 @@ export function App() {
           <span className={styles.kbd}>space</span> runs both), or play keys
           with <span className={styles.kbd}>a s d f …</span> (
           <span className={styles.kbd}>z</span>{' '}
-          <span className={styles.kbd}>x</span> for octaves) — turn up{' '}
-          <b>Starve</b> until the toy reboots, solder the <b>Bend spot</b> pot,
-          bridge the two boxes in <b>Trigger patch</b>, push any <b>Feedback</b>{' '}
-          past 1
+          <span className={styles.kbd}>x</span> for octaves) and the kit with{' '}
+          <span className={styles.kbd}>1 … 6</span> — turn up <b>Starve</b>{' '}
+          until the toy reboots, solder the <b>Bend spot</b> pot, bridge the two
+          boxes in <b>Trigger patch</b>, push any <b>Feedback</b> past 1
         </p>
       </main>
 
