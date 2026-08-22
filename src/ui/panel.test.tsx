@@ -113,6 +113,37 @@ test('the mod depth waits for the mode that uses it', () => {
   expect(screen.getByRole('slider', { name: 'Mod depth' })).toBeTruthy()
 })
 
+// The kit had no pads: the only thing a hand could strike unaided was one row's
+// name at a time, which is enough to hear a voice and nowhere near enough to
+// play a bar in. The number row is the kit's keys, and it answers wherever the
+// panel happens to be — the same as the toy keyboard's letters do.
+test('a number key strikes the kit, and writes it when record is armed', () => {
+  render(<App />)
+  act(() => {
+    engine.setDrumsPlaying(true)
+    engine.patch({ drumKick: 0, drumSnare: 0, drumSwing: 0 })
+    engine.meter.set({ ...engine.meter.get(), tick: 0 })
+  })
+
+  // Unarmed, a pad is a sound and nothing else — as it is on every other wire
+  // into the trigger line.
+  fireEvent.keyDown(window, { key: '1', code: 'Digit1' })
+  expect(engine.controls.get().drumKick).toBe(0)
+
+  act(() => engine.drumRecord.set(true))
+  fireEvent.keyDown(window, { key: '2', code: 'Digit2' })
+  expect(hasStep(engine.controls.get().drumSnare, 0)).toBe(true)
+
+  // A digit typed into a control belongs to the control. The panel picks a row
+  // length and a morph duration by keyboard, and a kick under every one of
+  // those would make the kit unplayable from the panel.
+  const box = document.createElement('input')
+  document.body.append(box)
+  fireEvent.keyDown(box, { key: '1', code: 'Digit1' })
+  expect(engine.controls.get().drumKick).toBe(0)
+  box.remove()
+})
+
 // Every knob says what it is and where it stands, in its own units.
 test('a slider carries its name and its own units', () => {
   render(
