@@ -715,7 +715,12 @@ export class Engine {
       const len = asTuneLen(this.controls.get().tuneLen)
       const to = this.tuneStep()
       const held: Partial<Controls> = {}
-      for (let i = 1; i < len; i++) {
+      // Let go on the step it struck on and the note is that step and no more.
+      // The counter says where the memory is, not how many times it has been
+      // round, so a key down for no time and one down for exactly a bar are the
+      // same reading — and of the two, filling the whole memory with holds off a
+      // tap is the one that ruins what you played.
+      for (let i = 1; i < len && to !== from; i++) {
         const at = (from + i) % len
         if (at === to || this.controls.get()[this.stepKey(at)] !== REST) break
         held[this.stepKey(at)] = HOLD

@@ -147,7 +147,16 @@
   border-left-color: var(--fg);
 }
 
-.under {
+/* Where the counter is standing. The kit's grid draws this as a ring on seven
+   cells and it reads as a playhead; twenty-four of them read as a column of
+   content instead, so the empty part of the column is a band the lit part sits
+   in, and only the note actually under the head takes the ring. */
+.cell.under {
+  background: var(--bg3);
+}
+
+.headOn.under,
+.holdOn.under {
   box-shadow: inset 0 0 0 1px var(--fg);
 }
 

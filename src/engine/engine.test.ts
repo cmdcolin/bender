@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { hasStep, quantizeStep, STEPS } from '../drums'
-import { HOLD, REST } from '../tune'
+import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
 import { edgeScore, Engine, mergeNotes } from './engine'
 
@@ -407,6 +407,23 @@ test('a key held across steps comes out as one long note', () => {
   engine.undo(0)
   expect(engine.controls.get().tuneStep2).toBe(REST)
   expect(engine.controls.get().tuneStep3).toBe(REST)
+})
+
+// A tap is a note on one step. The counter says where the memory is standing and
+// not how many times it has been round, so letting go on the step you struck on
+// reads the same as holding one for exactly a bar — and filling every step with
+// holds off a tap is the wrong half of that to guess.
+test('a note struck and let go inside one step is one step long', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.tuneRecord.set(true)
+  atTuneStep(engine, 6)
+  engine.noteOn(4)
+  engine.noteOff(4)
+
+  expect(engine.controls.get().tuneStep6).toBe(4)
+  for (const key of TUNE_STEP_KEYS)
+    if (key !== 'tuneStep6') expect(engine.controls.get()[key]).toBe(REST)
 })
 
 // A note somebody else played is not this note's to lengthen: the run of holds
