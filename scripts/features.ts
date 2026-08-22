@@ -336,9 +336,9 @@ renders it with the same layout the app uses.
 - **A link is a patch.** The whole board rides in the URL. Roll the dice, morph
   between two boards, play it over MIDI, record it to wav.
 
-The [README](../README.md) explains how the interesting parts work and why they
-behave as they do. What follows is the list, for finding out whether something
-exists and what it is called.
+[Bends](BENDS.md) explains how the interesting parts work and why they behave
+as they do. What follows is the list, for finding out whether something exists
+and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it wherever you want it, and a
