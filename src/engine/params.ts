@@ -42,6 +42,27 @@ export const PARAM_DEFS = [
   ['chipSpread', 'slew'],
   ['chipMixDrive', 'slew'],
 
+  // The memory's steps are notes rather than amounts: there is nothing between
+  // two of them, exactly as there is nothing between two step masks.
+  ['tuneStep0', 'step'],
+  ['tuneStep1', 'step'],
+  ['tuneStep2', 'step'],
+  ['tuneStep3', 'step'],
+  ['tuneStep4', 'step'],
+  ['tuneStep5', 'step'],
+  ['tuneStep6', 'step'],
+  ['tuneStep7', 'step'],
+  ['tuneStep8', 'step'],
+  ['tuneStep9', 'step'],
+  ['tuneStep10', 'step'],
+  ['tuneStep11', 'step'],
+  ['tuneStep12', 'step'],
+  ['tuneStep13', 'step'],
+  ['tuneStep14', 'step'],
+  ['tuneStep15', 'step'],
+  ['tuneLen', 'step'],
+  ['tuneRate', 'slew'],
+
   ['drumLevel', 'slew'],
   ['drumBpm', 'slew'],
   ['drumSwing', 'slew'],

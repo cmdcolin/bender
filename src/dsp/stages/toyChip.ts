@@ -16,8 +16,22 @@ import {
   ROM_ADDR_LINES,
   ROM_DATA_LINES,
   ROMS,
+  YOURS,
   type Rom,
 } from './roms'
+import {
+  asTuneLen,
+  decodeTune,
+  encodeTune,
+  HOLD,
+  isNote,
+  keyOf,
+  REST,
+  TUNE_STEP_KEYS,
+  TUNE_STEPS,
+} from '../../tune'
+
+const TUNE_IDX = TUNE_STEP_KEYS.map(k => IDX[k])
 
 const BASE_HZ = 220
 const ENV_FLOOR = 0.003
@@ -86,8 +100,8 @@ const pitchClass = (n: number) => ((n % 12) + 12) % 12
 
 // Each ROM declares its own key, so the triads land in the song's key rather
 // than wherever the note numbers happen to start.
-const triadsFor = (rom: Rom) =>
-  (rom.minor ? MINOR_TRIADS : MAJOR_TRIADS).map(t => t.map(n => n + rom.key))
+const triadsFor = (song: { key: number; minor?: boolean }) =>
+  (song.minor ? MINOR_TRIADS : MAJOR_TRIADS).map(t => t.map(n => n + song.key))
 
 const BASS_TRIM = 1.05
 const CHORD_TRIM = [0.9, 1.15, 1]
@@ -123,8 +137,22 @@ export class ToyChip implements Stage {
   label = 'toyChip'
   private phase = 0
   private pos = 0
-  private note = -1
+  // What the melody oscillator is on, or REST for nothing. A sentinel rather
+  // than a negative number, because the memory reaches two octaves under the
+  // chip's bottom A and a note below zero is a note like any other.
+  private note: number = REST
   private stepClock = 0
+  // The steps being played this block and how many of them come round: the
+  // ROM's own table, or the memory's. Filled in place from the params rather
+  // than built, because an array built per block is garbage per block on the
+  // one thread that cannot collect it.
+  private mine = new Array<number>(TUNE_STEPS).fill(REST)
+  private yours = false
+  private len = 1
+  // What the memory held when its key was last worked out. The accompaniment
+  // needs a key and yours is read off the notes, so it is worked out when they
+  // change rather than every block.
+  private mineStamp = NaN
   private env = 0
   private voices: Voice[] = VOICE_SPREAD.map(() => ({
     note: 0,
@@ -228,7 +256,7 @@ export class ToyChip implements Stage {
   soundingNotes(out: Int16Array): number {
     let n = 0
     if (this.rail.booting || this.rail.dead) return n
-    if (this.transport.tune && this.note >= 0 && this.env > ENV_FLOOR)
+    if (this.transport.tune && isNote(this.note) && this.env > ENV_FLOOR)
       out[n++] = this.note
     if (this.accompLevel > 0) {
       if (this.bassEnv > ENV_FLOOR) out[n++] = this.bassNote
@@ -241,6 +269,19 @@ export class ToyChip implements Stage {
 
   /** How many notes `soundingNotes` can report at once. */
   static readonly MAX_SOUNDING = 9
+
+  /** Where the tune's counter is standing, and how far through that step it has
+      got. The panel quantizes a note you play in against these: the memory runs
+      on the chip's own clock, and every bend that drags that clock — the pot on
+      the timing pin, a flat rail, the crystal wandering — is already in them,
+      which nothing on the other thread could work out for itself. */
+  get tunePos() {
+    return this.pos
+  }
+
+  get tuneFrac() {
+    return Math.min(Math.max(this.stepClock, 0), 1)
+  }
 
   // Retrigger the note if it is already up, else take a silent voice; failing
   // that steal, preferring a released voice and the oldest within its group.
@@ -268,14 +309,21 @@ export class ToyChip implements Stage {
   private readRom(tune: number[], pos: number): number {
     const addr =
       this.addrBus.read(pos, this.addrLine, this.addrFault, this.busCut) %
-      tune.length
+      this.len
+    const step = tune[addr]!
     const word = this.dataBus.read(
-      encodeStep(tune[addr]!),
+      this.yours ? encodeTune(step) : encodeStep(step),
       this.dataLine,
       this.dataFault,
       this.busCut,
     )
-    return decodeStep(word)
+    // Both banks come back in the memory's vocabulary, so nothing downstream
+    // has to know which of the two it is reading. The ROM's own spelling — -1
+    // for a rest, -2 for a hold — only works because its steps never go below
+    // the chip's bottom A, and yours do.
+    if (this.yours) return decodeTune(word)
+    const rom = decodeStep(word)
+    return rom === -1 ? REST : rom === -2 ? HOLD : rom
   }
 
   // Pressing play drops the needle on step 0. Coming back from a brownout is
@@ -284,12 +332,11 @@ export class ToyChip implements Stage {
   // from the top. Rebooting into bar one every time is what made a starving chip
   // sound like a loop.
   private restart(tune: number[], junk = false) {
-    this.pos =
-      junk && this.rng() < 0.6 ? Math.floor(this.rng() * tune.length) : 0
+    this.pos = junk && this.rng() < 0.6 ? Math.floor(this.rng() * this.len) : 0
     this.stepClock = junk ? this.rng() : 0
     const step = this.readRom(tune, this.pos)
-    this.note = step >= 0 ? step : -1
-    this.env = step >= 0 ? 1 : 0
+    this.note = isNote(step) ? step : REST
+    this.env = isNote(step) ? 1 : 0
     this.chord = this.triads[0]!
     this.bassFifth = false
   }
@@ -323,9 +370,9 @@ export class ToyChip implements Stage {
       // The kit clocks the tune: one hit, one step of the ROM, so a sixteen-step
       // pattern plays the melody and the kick decides where the beat is.
       case 1: {
-        this.pos = (this.pos + 1) % tune.length
+        this.pos = (this.pos + 1) % this.len
         const step = this.readRom(tune, this.pos)
-        if (step >= 0) {
+        if (isNote(step)) {
           this.note = step
           this.harmonize(step)
           this.strike(step, gain)
@@ -336,22 +383,41 @@ export class ToyChip implements Stage {
         return
       }
       case 2: {
-        const step = this.readRom(tune, Math.floor(this.rng() * tune.length))
-        if (step >= 0) this.strike(step, gain)
+        const step = this.readRom(tune, Math.floor(this.rng() * this.len))
+        if (isNote(step)) this.strike(step, gain)
         return
       }
       case 3:
         this.strike(this.chord[Math.floor(this.rng() * 3)]!, gain)
         return
       default:
-        this.strike(this.note >= 0 ? this.note : this.chord[0]!, gain)
+        this.strike(isNote(this.note) ? this.note : this.chord[0]!, gain)
     }
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.chipLevel]!
-    const rom = ROMS[Math.round(p[IDX.chipTune]!)] ?? ROMS[0]!
-    const tune = rom.steps
+    // The nineteenth tune is the one you played in. It is not in the bank —
+    // the bank is what the chip shipped with — so it arrives as sixteen params
+    // and is copied into an array this owns, and from there down nothing in the
+    // stage knows which of the two it is playing.
+    const pick = Math.round(p[IDX.chipTune]!)
+    this.yours = pick === YOURS
+    const rom = ROMS[pick] ?? ROMS[0]!
+    const tune = this.yours ? this.mine : rom.steps
+    const stepHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
+    let stamp = 0
+    if (this.yours) {
+      this.len = asTuneLen(p[IDX.tuneLen]!)
+      stamp = this.len
+      for (let i = 0; i < TUNE_STEPS; i++) {
+        const step = p[TUNE_IDX[i]!]!
+        this.mine[i] = step
+        stamp = (stamp * 31 + step) % 0x7fffffff
+      }
+    } else {
+      this.len = rom.steps.length
+    }
     const clockX = p[IDX.chipClockX]!
     const baseStarve = p[IDX.chipStarve]!
     const battery = p[IDX.chipBattery]!
@@ -411,8 +477,19 @@ export class ToyChip implements Stage {
     const spread = p[IDX.chipSpread]!
     const mixDrive = p[IDX.chipMixDrive]!
 
-    if (rom !== this.lastRom) {
+    // Which key the backing plays in. A ROM says so; a melody you played in
+    // does not, so it is read off the notes — and only when they change, since
+    // reading it is a walk over the memory and a fresh set of triads.
+    if (this.yours) {
+      if (stamp !== this.mineStamp) {
+        this.mineStamp = stamp
+        this.lastRom = undefined
+        this.triads = triadsFor(keyOf(this.mine.slice(0, this.len)))
+        this.chord = this.triads[0]!
+      }
+    } else if (rom !== this.lastRom) {
       this.lastRom = rom
+      this.mineStamp = NaN
       this.triads = triadsFor(rom)
       this.chord = this.triads[0]!
     }
@@ -458,7 +535,7 @@ export class ToyChip implements Stage {
       // sequencer — the run/stop line freezes it where it stands, and so does a
       // latched die: the counter stops clocking and the note it was on stays on
       if (this.transport.tune && !latched) {
-        this.stepClock += (rom.stepHz * timing) / this.sr
+        this.stepClock += (stepHz * timing) / this.sr
       }
       if (this.stepClock >= 1) {
         this.stepClock -= 1
@@ -468,20 +545,19 @@ export class ToyChip implements Stage {
           spot === 2 &&
           this.counterFault.roll(pot * 0.7, cluster, this.rng)
         ) {
-          next =
-            this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * tune.length)
+          next = this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * this.len)
         }
-        this.pos = next % tune.length
-        // -2 holds whatever is ringing; -1 drops the voice; anything else strikes
+        this.pos = next % this.len
+        // A hold keeps whatever is ringing; a rest drops the voice; a note strikes
         const step = this.readRom(tune, this.pos)
-        if (step >= 0) {
+        if (isNote(step)) {
           this.note = step
           this.env = 1
           this.keyNote = step
           this.keyPending = true
           this.harmonize(step)
-        } else if (step === -1) {
-          this.note = -1
+        } else if (step === REST) {
+          this.note = REST
         }
 
         this.oomPah()
@@ -512,7 +588,7 @@ export class ToyChip implements Stage {
       // everything else it froze.
       if (timing !== this.lastTiming) {
         this.lastTiming = timing
-        this.envDecay = Math.exp(-(0.8 * rom.stepHz * timing) / this.sr)
+        this.envDecay = Math.exp(-(0.8 * stepHz * timing) / this.sr)
       }
       const envDecay = latched ? 1 : this.envDecay
       this.env = fade(this.env, envDecay)
@@ -527,8 +603,8 @@ export class ToyChip implements Stage {
 
       let out = 0
       if (!rail.booting && !rail.dead) {
-        const note = this.transport.tune ? this.note : -1
-        if (note >= 0 && this.env > ENV_FLOOR) {
+        const note = this.transport.tune ? this.note : REST
+        if (isNote(note) && this.env > ENV_FLOOR) {
           const hz = Math.min(
             BASE_HZ * ratio(note) * clock * rail.pitchFactor,
             maxHz,
@@ -620,7 +696,7 @@ export class ToyChip implements Stage {
   panic() {
     this.dataBus.reset()
     this.addrBus.reset()
-    this.note = -1
+    this.note = REST
     this.phase = 0
     this.env = 0
     this.bassEnv = 0

@@ -178,6 +178,12 @@ export const ROMS: Rom[] = [
 
 export const ROM_NAMES = ROMS.map(r => r.name)
 
+// The bank is what the chip shipped with, and the memory is not in it: the
+// melody you played in sits one past the end of the bank, so picking a tune
+// picks yours the same way it picks für Elise. See tune.ts for what is in it.
+export const YOURS = ROMS.length
+export const TUNE_NAMES = [...ROM_NAMES, 'yours']
+
 export function romIndex(name: string): number {
   const i = ROMS.findIndex(r => r.name === name)
   if (i < 0) throw new Error(`no ROM named ${name}`)

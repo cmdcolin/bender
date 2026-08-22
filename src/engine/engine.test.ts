@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { hasStep, quantizeStep, STEPS } from '../drums'
+import { HOLD, REST } from '../tune'
+import { YOURS } from '../dsp/stages/roms'
 import { edgeScore, Engine, mergeNotes } from './engine'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
@@ -343,6 +345,113 @@ test('a hit that writes nothing arms nothing', () => {
   engine.set('revMix', 0.3)
   engine.undo(0)
   expect(engine.controls.get().dlyFb).toBe(0.9)
+})
+
+// The melody memory: the same gesture on the other machine. Where the chip's
+// own counter is standing arrives with the meter — the tune runs on the chip's
+// clock and every bend that drags it is already in there — so these drive it by
+// hand the way the kit's tests drive the step counter.
+const atTuneStep = (engine: Engine, tunePos: number, tuneFrac = 0) =>
+  engine.meter.set({ ...engine.meter.get(), tunePos, tuneFrac })
+
+test('a note played in writes the step the chip is standing on', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  atTuneStep(engine, 4)
+
+  // Not armed: a note is a sound and nothing else.
+  engine.noteOn(7)
+  engine.noteOff(7)
+  expect(engine.controls.get().tuneStep4).toBe(REST)
+
+  engine.tuneRecord.set(true)
+  engine.noteOn(7)
+  expect(engine.controls.get().tuneStep4).toBe(7)
+
+  // Past the middle of a step and it belongs to the next one, the same as a
+  // hit on the kit does.
+  atTuneStep(engine, 8, 0.7)
+  engine.noteOn(9)
+  expect(engine.controls.get().tuneStep9).toBe(9)
+})
+
+test('a note played in with the tune stopped is only a sound', () => {
+  const engine = new Engine()
+  engine.tuneRecord.set(true)
+  atTuneStep(engine, 4)
+  engine.noteOn(7)
+  expect(engine.controls.get().tuneStep4).toBe(REST)
+})
+
+// A key held across steps is one long note, which the memory spells as the step
+// it struck on followed by holds — and the whole note is one entry in the walk,
+// head and tail, so undo takes back the note rather than half of it.
+test('a key held across steps comes out as one long note', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.tuneRecord.set(true)
+  const before = engine.history.get().past.length
+
+  atTuneStep(engine, 2)
+  engine.noteOn(5)
+  atTuneStep(engine, 5)
+  engine.noteOff(5)
+
+  expect(engine.controls.get().tuneStep2).toBe(5)
+  expect(engine.controls.get().tuneStep3).toBe(HOLD)
+  expect(engine.controls.get().tuneStep4).toBe(HOLD)
+  // The step it was let go on is where the note ended, not part of it.
+  expect(engine.controls.get().tuneStep5).toBe(REST)
+  expect(engine.history.get().past.length).toBe(before + 1)
+
+  engine.undo(0)
+  expect(engine.controls.get().tuneStep2).toBe(REST)
+  expect(engine.controls.get().tuneStep3).toBe(REST)
+})
+
+// A note somebody else played is not this note's to lengthen: the run of holds
+// stops at the first step already carrying something.
+test('holds stop at a step that is already written', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.tuneRecord.set(true)
+  engine.patch({ tuneStep4: 12 })
+
+  atTuneStep(engine, 2)
+  engine.noteOn(5)
+  atTuneStep(engine, 6)
+  engine.noteOff(5)
+
+  expect(engine.controls.get().tuneStep3).toBe(HOLD)
+  expect(engine.controls.get().tuneStep4).toBe(12)
+  expect(engine.controls.get().tuneStep5).toBe(REST)
+})
+
+// Recording into a memory the chip is not playing is the one state where every
+// light says it is working and nothing you play comes back.
+test('arming the memory puts the chip on it, and undo puts the song back', () => {
+  const engine = new Engine()
+  expect(engine.controls.get().chipTune).toBe(DEFAULT_CONTROLS.chipTune)
+
+  engine.armTuneRecord(true)
+  expect(engine.tuneRecord.get()).toBe(true)
+  expect(engine.controls.get().chipTune).toBe(YOURS)
+
+  engine.undo(0)
+  expect(engine.controls.get().chipTune).toBe(DEFAULT_CONTROLS.chipTune)
+})
+
+// The octave switch reaches past what six wires can file, and a note it cannot
+// hold is filed as the same note an octave nearer rather than as nothing.
+test('a note past the memory’s reach is filed an octave nearer', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.tuneRecord.set(true)
+  atTuneStep(engine, 0)
+  engine.noteOn(51)
+  const step = engine.controls.get().tuneStep0
+  expect(step).toBeLessThan(51)
+  expect((51 - step) % 12).toBe(0)
 })
 
 afterEach(() => {

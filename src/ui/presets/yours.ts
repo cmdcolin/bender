@@ -1,6 +1,7 @@
 import type { ControlKey, Controls } from '../../controls'
 import { HOLD_KEYS } from '../controls'
 import { GRID_ROWS } from '../../drums'
+import { TUNE_STEP_KEYS } from '../../tune'
 
 // What a morph holds is yours during the trip; this is what is yours over the
 // whole gesture. On top of the levels and contacts you have your hands on, what
@@ -12,11 +13,18 @@ import { GRID_ROWS } from '../../drums'
 // circuit, so swapping the tune under it changes the one thing you were using to
 // judge the change. Several used to, and auditioning a row of them meant losing
 // the song you were listening to as well as the board. A test holds the line.
+//
+// The melody memory goes with it, steps and all, and so does the rate it plays
+// back at: a tune you sat down and played in is the last thing on the board a
+// roll of the dice gets to rewrite.
 export const YOURS = new Set<ControlKey>([
   ...HOLD_KEYS,
   'sampleLevel',
   'chipTune',
   ...GRID_ROWS.flatMap(r => [r.key, r.len]),
+  ...TUNE_STEP_KEYS,
+  'tuneLen',
+  'tuneRate',
 ])
 
 export const keepYours = (

@@ -36,12 +36,14 @@ export const GROUPS: Group[] = [
 ]
 
 export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
-/** The grid's controls, which are sixteen bits or a step count rather than
-    anything a slider turns. The desk's widget names no keys of its own — the
-    faders on it belong to the machines they came from. */
-export const EDITOR_KEYS = new Set<ControlKey>(
-  GROUPS.flatMap(g => (g.editor?.kind === 'drums' ? g.editor.keys : [])),
-)
+// The controls a widget of the group's own turns, rather than a slider: sixteen
+// bits and a step count on the kit, a note per step on the memory. The desk's
+// widget names no keys of its own — the faders on it belong to the machines
+// they came from.
+const editorKeys = (g: Group) =>
+  g.editor !== undefined && g.editor.kind !== 'mixer' ? g.editor.keys : []
+
+export const EDITOR_KEYS = new Set<ControlKey>(GROUPS.flatMap(editorKeys))
 
 // Settled once, by name. The drawing asks after all twenty groups' keys every
 // time it is built and the panel asks again per part on the shelf per render,
@@ -49,11 +51,7 @@ export const EDITOR_KEYS = new Set<ControlKey>(
 const KEYS_BY_GROUP = new Map<string, readonly ControlKey[]>(
   GROUPS.map(g => [
     g.name,
-    [
-      ...g.sliders.map(s => s.key),
-      ...(g.editor?.kind === 'drums' ? g.editor.keys : []),
-      ...(g.borrows ?? []),
-    ],
+    [...g.sliders.map(s => s.key), ...editorKeys(g), ...(g.borrows ?? [])],
   ]),
 )
 

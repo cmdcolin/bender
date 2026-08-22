@@ -150,6 +150,49 @@ as it decays out of the mix, and a chip that browns out goes dark. Notes played
 past either end of the drawn three octaves put a mark at that end, which is what
 the octave switch is for.
 
+### The melody memory
+
+The toys had a record button, and what it wrote went into the same memory the
+demo song came out of. So does this one. **Rec** on the deck — or **record** on
+the roll — arms it, and every key you press after that is filed on the step the
+chip is standing on: the on-screen keys, the letter keys, a controller. Arming
+puts the memory on, because a memory the chip is not playing records in silence
+and every light on the panel still says it is working.
+
+It is not a sequencer of its own. It is the nineteenth entry on the **Tune**
+selector, one past the eighteen in the ROM bank, and from there down nothing in
+the chip knows the difference: it runs off the same counter at the rate **Memory
+rate** sets, the auto bass-chord walks under it, the clock bend drags it, a
+brownout restarts it from the middle of itself, and the knife on the ROM bus
+mangles it exactly as it mangles für Elise. Bridge the kit onto the key line
+with **Struck by → the kit clocks the tune** and the drum machine clocks your
+melody instead of the crystal.
+
+The **piano roll** on the keyboard's panel is that memory drawn: a row per
+pitch, a column per step, and the same shape as the kit's grid one floor up,
+because the two machines keep what you wrote the same way. Click a cell to put a
+note on a step, drag across to draw a line, click a note again to take it off,
+and shift-click a step to hold whatever the step before it struck. A held note
+is one bar across the steps it covers rather than a note and then three dark
+cells — which is what the memory means by a hold, and what a key held across
+steps writes when you play one in. Two octaves are drawn at a time and the
+arrows move the window; the memory carries its own length, so a four-step phrase
+comes round four times against a sixteen-step pattern.
+
+A step is a note, a rest, or a hold, filed as one word on the same six wires the
+ROM uses. Sixty-two of the sixty-four codes are pitches, which is a little over
+five octaves and rather less than the octave switch can reach — so a note played
+at the far ends of that switch comes back an octave nearer rather than as the
+wrong note or as no note at all. The accompaniment needs a key and a melody you
+played in does not name one, so it takes the lowest note you played as the
+tonic, and reads minor off whether a flat third is in there.
+
+The memory is yours in the sense the pattern is: neither a random roll, a
+mutate, a preset nor a morph will touch it, it rides in the link with everything
+else on the board, and every note you play in is one entry in the undo walk —
+head and holds together, so a note you did not mean is one ctrl+z away rather
+than two.
+
 **Tone** taps the divider chain at a different pulse width — 1/2, 1/4, 1/8,
 1/16. Narrow taps null different harmonics and thin out; nothing levels them
 back up, exactly as the chips left it. A counter can't strike a pulse narrower
@@ -1081,7 +1124,9 @@ The chip's ROM bank holds eighteen demo songs, each with its own sequencer rate:
 four factory doodles, eight public-domain tunes every cheap keyboard shipped
 (Für Elise, Ode to Joy, Rondo alla Turca, William Tell…), and six slow ones in
 minor and modal keys — Gymnopédie, Gnossienne, Sakura, Dies Irae, Chopin's
-funeral march, Greensleeves — where a starving rail stops being funny.
+funeral march, Greensleeves — where a starving rail stops being funny. One past
+the end of the bank is **yours**, the melody memory, which is a tune like any
+other once you have played something into it.
 
 The toy and the drum box are two machines sharing a desk and a power strip, so
 they have a run switch each: **play demo song** runs the chip's ROM sequencer,
@@ -1094,7 +1139,10 @@ with it, because the rail is what the two machines share whether anybody asked
 for it. The trigger patch is the part you do ask for, and a bridged line fires
 whichever box it lands on with that box's own sequencer stopped.
 
-**Record** writes the output to a 16-bit stereo wav; stopping saves the take.
+**Record wav** writes the output to a 16-bit stereo wav; stopping saves the
+take. It is named for what it records because the other two record buttons on
+the board — the kit's and the keyboard's — write what you play rather than what
+comes out.
 
 ## The controller
 

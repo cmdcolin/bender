@@ -63,6 +63,11 @@ export interface MeterMsg {
       The grid lights off this, so a hit from the mic, a bridged trigger line or
       a pad shows on the row it struck rather than only in the air. */
   hits: number
+  /** Where the tune's step counter is standing, and how far through that step
+      it has got — the clock a note played into the memory is quantized against.
+      The chip's own, because every bend that drags it is in there. */
+  tunePos: number
+  tuneFrac: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number
   /** The toy supply, 0 at the floor and 1 at full cells — the number the pitch,

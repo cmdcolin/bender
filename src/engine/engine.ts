@@ -21,6 +21,15 @@ import {
   type DrumStepKey,
 } from '../drums'
 import { createStore, type Store } from '../listeners'
+import {
+  asTuneLen,
+  foldNote,
+  HOLD,
+  REST,
+  TUNE_STEP_KEYS,
+  type TuneStepKey,
+} from '../tune'
+import { YOURS } from '../dsp/stages/roms'
 import { Glide } from './glide'
 import type { FromWorklet, ToWorklet } from './messages'
 import { N_TAPS, packParams } from './params'
@@ -34,6 +43,10 @@ export interface Meter {
   tick: number
   /** Voices the kit fired since the last meter, as the bit order of a step. */
   hits: number
+  /** Where the tune's own counter is standing and how far through that step,
+      which is the clock a note played into the memory lands on. */
+  tunePos: number
+  tuneFrac: number
   duck: number
   rail: number
   reboots: number
@@ -99,6 +112,8 @@ export class Engine {
       scope: new Float32Array(512),
       tick: 0,
       hits: 0,
+      tunePos: 0,
+      tuneFrac: 0,
       duck: 0,
       rail: 1,
       reboots: 0,
@@ -107,6 +122,9 @@ export class Engine {
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
   readonly drumRecord = createStore(false)
+  /** And the same switch on the keyboard: what you play goes into the memory,
+      on the step the chip is standing on. Off by default, for the same reason. */
+  readonly tuneRecord = createStore(false)
   readonly running = createStore(false)
   readonly micOn = createStore(false)
   // The two run lines, separately. The drum machine is its own box: it runs
@@ -217,6 +235,8 @@ export class Engine {
           scope: msg.scope,
           tick: msg.tick,
           hits: msg.hits,
+          tunePos: msg.tunePos,
+          tuneFrac: msg.tuneFrac,
           duck: msg.duck,
           rail: msg.rail,
           reboots: msg.reboots,
@@ -622,11 +642,86 @@ export class Engine {
   noteOn(semitone: number, gain = 1) {
     this.post({ kind: 'noteOn', semitone, gain })
     this.hold(semitone, true)
+    if (this.tuneRecord.get() && this.songPlaying.get())
+      this.writeNote(semitone)
   }
 
   noteOff(semitone: number) {
     this.post({ kind: 'noteOff', semitone })
     this.hold(semitone, false)
+    if (this.tuneRecord.get() && this.songPlaying.get())
+      this.writeHeld(semitone)
+  }
+
+  // Arming the memory puts it on: recording into a memory the chip is not
+  // playing is the one state where every light says it is working and nothing
+  // you play comes back. Which tune was up is a control like any other, so the
+  // walk has it and one undo puts the demo song back.
+  armTuneRecord(on: boolean) {
+    if (on && this.controls.get().chipTune !== YOURS) {
+      this.armStep()
+      this.set('chipTune', YOURS)
+    }
+    this.tuneRecord.set(on)
+  }
+
+  // Where each key that is down struck, so that letting it go can spell the
+  // note's length out in holds. A map because a hand plays chords, and the toy
+  // sounds four of them.
+  private struckAt = new Map<number, number>()
+
+  /** Which step of the memory a note played now belongs to. The counter and how
+      far through its step it is both arrive with the meter, which is at most one
+      meter old — a few percent of a step at the rates a tune runs at. */
+  private tuneStep(): number {
+    const m = this.meter.get()
+    return quantizeStep(
+      m.tunePos,
+      m.tuneFrac,
+      asTuneLen(this.controls.get().tuneLen),
+    )
+  }
+
+  private stepKey(step: number): TuneStepKey {
+    return TUNE_STEP_KEYS[step % TUNE_STEP_KEYS.length]!
+  }
+
+  // A note played by hand, filed on the step the chip is standing on. One entry
+  // in the walk per note, the same as a hit on the kit: a hand that has just
+  // played the wrong note wants that note back and nothing else.
+  private writeNote(semitone: number) {
+    const step = this.tuneStep()
+    this.struckAt.set(semitone, step)
+    const key = this.stepKey(step)
+    const note = foldNote(semitone)
+    if (this.controls.get()[key] !== note) {
+      this.armStep()
+      this.set(key, note)
+    }
+  }
+
+  // The rest of the note. A key held across steps is one long note, which the
+  // memory spells as the step it struck on followed by holds — and its length is
+  // only known when the key comes up, so that is when the holds are written.
+  //
+  // Written without banking a step of its own, so the whole note is one entry in
+  // the walk: undo takes back the note rather than its tail, and then its head.
+  // A step already carrying something is where the run stops — a note somebody
+  // else played is not this note's to lengthen.
+  private writeHeld(semitone: number) {
+    const from = this.struckAt.get(semitone)
+    if (from !== undefined) {
+      this.struckAt.delete(semitone)
+      const len = asTuneLen(this.controls.get().tuneLen)
+      const to = this.tuneStep()
+      const held: Partial<Controls> = {}
+      for (let i = 1; i < len; i++) {
+        const at = (from + i) % len
+        if (at === to || this.controls.get()[this.stepKey(at)] !== REST) break
+        held[this.stepKey(at)] = HOLD
+      }
+      if (Object.keys(held).length > 0) this.patch(held)
+    }
   }
 
   // A hit on the kit that no step named: a pad on a controller, or the row's own

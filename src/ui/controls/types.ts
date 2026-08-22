@@ -56,7 +56,10 @@ export interface Group {
       for what it turns: a plugboard for the kit, a desk for the mix bus. The
       kit's own controls have no slider anywhere and so are named here; the
       desk's are other groups' faders, which is what `borrows` is for. */
-  editor?: { kind: 'drums'; keys: ControlKey[] } | { kind: 'mixer' }
+  editor?:
+    | { kind: 'drums'; keys: ControlKey[] }
+    | { kind: 'roll'; keys: ControlKey[] }
+    | { kind: 'mixer' }
   /** Controls another group owns that this one counts, resets and rolls as its
       own, because they are about this one too. A fader belongs to its machine —
       it is the first knob on the FM chip's panel, where a hand reaching for the

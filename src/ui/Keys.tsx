@@ -69,6 +69,11 @@ export function Keys() {
   // wins and the toy's is what is left.
   const keysDown = useStoreValue(engine.keysDown)
   const chipNotes = useStoreValue(engine.chipNotes)
+  // The memory's own switch, on the deck rather than only on the roll: arming
+  // it is something you do with your hands already on the keys, and the roll is
+  // one panel away behind whatever stage is open.
+  const recording = useStoreValue(engine.tuneRecord)
+  const tunePlaying = useStoreValue(engine.songPlaying)
   const isDown = (key: number) => held.has(at(key))
   const litBy = (key: number): Lit =>
     keysDown.has(at(key)) ? 'hand' : chipNotes.has(at(key)) ? 'chip' : 'dark'
@@ -214,6 +219,29 @@ export function Keys() {
                 battery light: a note that comes out flat, quiet or not at all is
                 that number falling. */}
             <RailLamp />
+            <Tip
+              text={
+                !recording
+                  ? 'record what you play into the toy’s melody memory — sixteen steps, on the step the chip is standing on. It puts the memory on, and the tune has to be running for there to be a step. The piano roll is on the keyboard’s own panel'
+                  : tunePlaying
+                    ? 'every key you press is going into the memory. Press to stop'
+                    : 'armed, but the tune is stopped — the keys sound and nothing is written. Press play demo song and they land on the step they arrive in'
+              }
+            >
+              <button
+                className={
+                  !recording
+                    ? styles.rec
+                    : tunePlaying
+                      ? styles.recOn
+                      : styles.recIdle
+                }
+                aria-pressed={recording}
+                onClick={() => engine.armTuneRecord(!recording)}
+              >
+                rec
+              </button>
+            </Tip>
             <Tip text="latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down">
               <button
                 className={hold ? styles.holdOn : styles.hold}

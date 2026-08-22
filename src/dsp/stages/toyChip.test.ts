@@ -5,6 +5,7 @@ import { buildBender, buildChain, type BuiltChain } from '../build'
 import { BLOCK } from '../stage'
 import {
   bin,
+  deviation,
   makeIo,
   pitchHz,
   playKeys,
@@ -14,6 +15,13 @@ import {
   tail,
 } from '../testRender'
 import { ToyChip } from './toyChip'
+import { YOURS } from './roms'
+import { HOLD, REST, TUNE_STEP_KEYS } from '../../tune'
+
+// A memory written out as the controls that carry it. Anything not named is a
+// step with nothing on it.
+const memory = (steps: Record<number, number>): Partial<Controls> =>
+  Object.fromEntries(TUNE_STEP_KEYS.map((key, i) => [key, steps[i] ?? REST]))
 
 // The board boots with the drum machine running too; these takes measure the
 // chip's own tune, so they mute it.
@@ -195,4 +203,72 @@ test('a struck key is sounding until it decays, and a silent chip reports none',
   for (let b = 0; b < Math.ceil((4 * SR) / BLOCK); b++)
     built.chain.process(io, p)
   expect(sounding()).toEqual([])
+})
+
+// The memory is a tune like any other once it is in there: the chip plays it off
+// the same counter, at the rate its own knob says rather than a ROM's.
+test('the chip plays the melody you played into it', () => {
+  const held = (note: number) =>
+    pitchHz(
+      render(
+        {
+          ...CHIP_ONLY,
+          chipLevel: 1,
+          chipTune: YOURS,
+          tuneRate: 0.5,
+          ...memory({ 0: note, 1: HOLD, 2: HOLD, 3: HOLD }),
+        },
+        1,
+      ),
+    )
+  // An octave apart in the memory is an octave apart out of the speaker.
+  expect(held(12)).toBeGreaterThan(held(0) * 1.8)
+  expect(held(12)).toBeLessThan(held(0) * 2.2)
+})
+
+// An empty memory is a memory, not a fault: the counter clocks through sixteen
+// rests and the chip sits there, the way it does under a ROM's rests.
+test('an empty memory plays nothing and breaks nothing', () => {
+  const out = render(
+    { ...CHIP_ONLY, chipLevel: 1, chipTune: YOURS, ...memory({}) },
+    0.5,
+  )
+  expect(rms(out)).toBeLessThan(1e-6)
+  expect(out.every(Number.isFinite)).toBe(true)
+})
+
+// The memory reaches under the chip's own bottom A, where a ROM never went —
+// the drawn keyboard starts nine semitones below it. A note down there has to
+// come out as a low note rather than as one of the two codes that are not notes.
+test('the memory holds notes under the chip’s bottom A', () => {
+  const low = pitchHz(
+    render(
+      {
+        ...CHIP_ONLY,
+        chipLevel: 1,
+        chipTune: YOURS,
+        tuneRate: 0.5,
+        ...memory({ 0: -12, 1: HOLD, 2: HOLD, 3: HOLD }),
+      },
+      1,
+    ),
+  )
+  expect(low).toBeGreaterThan(80)
+  expect(low).toBeLessThan(140)
+})
+
+// Same six wires, same knife. What separates a bus fault from every other bend
+// on the board is that it leaves the chip working perfectly and changes what it
+// is told — so your tune comes out wrong in time, rather than not at all.
+test('the knife on the ROM bus reaches your tune too', () => {
+  // Long enough at this rate for the whole sixteen to come round twice.
+  const song = { ...CHIP_ONLY, chipLevel: 1, chipTune: YOURS, tuneRate: 16 }
+  const notes = memory({ 0: 0, 4: 7, 8: 12, 12: 7 })
+  const clean = render({ ...song, ...notes }, 2)
+  const cut = render(
+    { ...song, ...notes, chipDataLine: 3, chipDataFault: 2 },
+    2,
+  )
+  expect(rms(cut)).toBeGreaterThan(0)
+  expect(deviation(cut, clean)).toBeGreaterThan(0.05)
 })

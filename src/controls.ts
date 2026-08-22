@@ -37,6 +37,29 @@ export const DEFAULT_CONTROLS = {
   chipSpread: 1,
   chipMixDrive: 0.35,
 
+  // The melody memory: sixteen steps of what you played, filed the way the demo
+  // songs are so the chip plays yours off the same counter. -128 is a step with
+  // nothing on it, -127 one that holds whatever the step before struck; anything
+  // else is a semitone above the chip's bottom A. See tune.ts.
+  tuneStep0: -128,
+  tuneStep1: -128,
+  tuneStep2: -128,
+  tuneStep3: -128,
+  tuneStep4: -128,
+  tuneStep5: -128,
+  tuneStep6: -128,
+  tuneStep7: -128,
+  tuneStep8: -128,
+  tuneStep9: -128,
+  tuneStep10: -128,
+  tuneStep11: -128,
+  tuneStep12: -128,
+  tuneStep13: -128,
+  tuneStep14: -128,
+  tuneStep15: -128,
+  tuneLen: 16,
+  tuneRate: 3.2,
+
   drumLevel: 0.7,
   drumBpm: 118,
   drumSwing: 0,

@@ -5,10 +5,15 @@ import { fallSecs, FM_VOICE_NAMES, MULT } from '../../dsp/stages/fmVoices'
 import {
   ROM_ADDR_LINES,
   ROM_DATA_LINES,
-  ROM_NAMES,
   ROMS,
+  TUNE_NAMES,
+  YOURS,
 } from '../../dsp/stages/roms'
 import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
+import { TUNE_STEP_KEYS } from '../../tune'
+
+/** True while the chip is playing the memory rather than one of its own songs. */
+const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS
 import type { Group, SliderDef } from './types'
 
 // The toy has no sync input, so locking it to the kit means picking the crystal
@@ -81,6 +86,14 @@ export const SOURCE_GROUPS: Group[] = [
     name: 'Toy keyboard',
     place: 'Sources',
     folded: ['the supply underneath', 'knife on the bus'],
+    // The memory, drawn as the piano roll it is. Its steps have no slider
+    // anywhere, exactly as the kit's grid has none, so this is where they are
+    // named — for the reset that puts them back and the count that says how
+    // many of them you have written.
+    editor: {
+      kind: 'roll',
+      keys: [...TUNE_STEP_KEYS, 'tuneLen'],
+    },
     sliders: [
       {
         key: 'chipLevel',
@@ -94,13 +107,24 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipTune',
-        label: 'Tune ROM',
+        label: 'Tune',
         min: 0,
-        max: ROM_NAMES.length - 1,
+        max: TUNE_NAMES.length - 1,
         step: 1,
         unit: '',
-        choices: ROM_NAMES,
-        help: 'Which demo song the chip plays from ROM. Each ROM carries its own sequencer rate, so the clock and the starve bend hit them differently.',
+        choices: TUNE_NAMES,
+        help: 'Which song the chip plays: one of the eighteen in its ROM, or yours — the melody memory above, which is a tune like any other once it is in there. Each ROM carries its own sequencer rate, so the clock and the starve bend hit them differently; yours runs at the rate under this.',
+      },
+      {
+        key: 'tuneRate',
+        label: 'Memory rate',
+        min: 0.2,
+        max: 24,
+        step: 0.1,
+        unit: 'Hz',
+        curve: 'log',
+        needs: playingYours,
+        help: 'How fast the memory plays its steps back, which the ROM songs each carry for themselves. It is a rate rather than a tempo because it is the same clock the envelopes come off — wind it up and the notes shorten with it, exactly as they do on the ROM that runs at nine.',
       },
       {
         key: 'chipTone',

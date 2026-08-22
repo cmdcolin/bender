@@ -119,10 +119,12 @@ test('the mod depth waits for the mode that uses it', () => {
 // panel happens to be — the same as the toy keyboard's letters do.
 test('a number key strikes the kit, and writes it when record is armed', () => {
   render(<App />)
+  // Thirty to the bar, so a step is half a second: the hit is quantized against
+  // how long ago the kit's last step arrived, and a render in jsdom is easily
+  // half of one at a musical tempo.
   act(() => {
     engine.setDrumsPlaying(true)
-    engine.patch({ drumKick: 0, drumSnare: 0, drumSwing: 0 })
-    engine.meter.set({ ...engine.meter.get(), tick: 0 })
+    engine.patch({ drumKick: 0, drumSnare: 0, drumSwing: 0, drumBpm: 30 })
   })
 
   // Unarmed, a pad is a sound and nothing else — as it is on every other wire
@@ -130,9 +132,12 @@ test('a number key strikes the kit, and writes it when record is armed', () => {
   fireEvent.keyDown(window, { key: '1', code: 'Digit1' })
   expect(engine.controls.get().drumKick).toBe(0)
 
-  act(() => engine.drumRecord.set(true))
+  act(() => {
+    engine.drumRecord.set(true)
+    engine.meter.set({ ...engine.meter.get(), tick: 3 })
+  })
   fireEvent.keyDown(window, { key: '2', code: 'Digit2' })
-  expect(hasStep(engine.controls.get().drumSnare, 0)).toBe(true)
+  expect(hasStep(engine.controls.get().drumSnare, 3)).toBe(true)
 
   // A digit typed into a control belongs to the control. The panel picks a row
   // length and a morph duration by keyboard, and a kick under every one of

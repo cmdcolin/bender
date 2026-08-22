@@ -6,6 +6,9 @@ import {
 } from '../controls'
 import { EDITOR_KEYS, sliderFor, snapToStep } from './controls'
 import { asLen, asMask, LEN_KEYS } from '../drums'
+import { asTuneLen, asTuneStep, TUNE_STEP_KEYS } from '../tune'
+
+const TUNE_KEYS = new Set<ControlKey>(TUNE_STEP_KEYS)
 
 // A board as a link: every control that is off stock, by name, so a link keeps
 // working when the param table grows or its order changes. Names cost more
@@ -53,13 +56,19 @@ export function decodeControls(encoded: string): Partial<Controls> {
     const raw = part.slice(at + 1).trim()
     const v = Number(raw)
     if (raw === '' || !Number.isFinite(v)) continue
-    // The grid's controls have no slider to snap to: a pattern is sixteen bits
-    // or nothing, and a row's length is a whole number of steps it can play.
+    // The controls a widget turns have no slider to snap to, and they are not
+    // all the same shape: a pattern is sixteen bits or nothing, a row's length
+    // is a whole number of steps it can play, and a step of the memory is a
+    // note, a rest or a hold.
     out[key] = LEN_KEYS.has(key)
       ? asLen(v)
-      : EDITOR_KEYS.has(key)
-        ? asMask(v)
-        : snapToStep(sliderFor(key), v)
+      : TUNE_KEYS.has(key)
+        ? asTuneStep(v)
+        : key === 'tuneLen'
+          ? asTuneLen(v)
+          : EDITOR_KEYS.has(key)
+            ? asMask(v)
+            : snapToStep(sliderFor(key), v)
   }
   return out
 }

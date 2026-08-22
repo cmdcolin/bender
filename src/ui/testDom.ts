@@ -55,12 +55,19 @@ function stubLayout() {
 }
 
 // The engine is a module singleton, so one test's turning is the next one's
-// starting board unless it is put back.
+// starting board unless it is put back. The switches beside the board go with
+// it: a test that left the kit running is a test that renames the button the
+// next one is looking for, and one that left a memory armed is a test that
+// records the next one's keypresses.
 function resetBoard() {
   engine.stopDrift()
   engine.stopHunt()
   engine.writeBoard({ ...DEFAULT_CONTROLS })
   engine.history.set(EMPTY_HISTORY)
+  engine.setSongPlaying(false)
+  engine.setDrumsPlaying(false)
+  engine.drumRecord.set(false)
+  engine.tuneRecord.set(false)
 }
 
 beforeAll(() => {

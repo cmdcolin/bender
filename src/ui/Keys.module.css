@@ -268,6 +268,9 @@
    caps on a flat cap, and it goes down when you press it. */
 .hold,
 .holdOn,
+.rec,
+.recOn,
+.recIdle,
 .octave,
 .octaveOn {
   font-size: var(--fs-xs);
@@ -288,12 +291,17 @@
 }
 
 .hold:hover,
+.rec:hover,
+.recIdle:hover,
 .octave:hover {
   background: #44444f;
   color: var(--fg);
 }
 
 .hold:active,
+.rec:active,
+.recOn:active,
+.recIdle:active,
 .octave:active,
 .holdOn:active,
 .octaveOn:active {
@@ -315,4 +323,19 @@
   .grille {
     display: none;
   }
+}
+
+/* Recording into the memory, and armed with the tune stopped — the same two
+   states the roll draws, in the deck's own amber rather than the panel's, so a
+   switch on the toy looks like part of the toy. */
+.recOn {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #2a0d04;
+}
+
+.recIdle {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  border-style: dashed;
 }

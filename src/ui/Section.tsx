@@ -6,6 +6,7 @@ import { engine } from '../engine/engine'
 import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
 import { Mixer } from './Mixer'
+import { TuneRoll } from './TuneRoll'
 import {
   applyCut,
   cutOff,
@@ -325,6 +326,7 @@ export function OpenGroup({
       </div>
       <div className={styles.body}>
         {group.editor?.kind === 'drums' && <DrumGrid />}
+        {group.editor?.kind === 'roll' && <TuneRoll />}
         {group.editor?.kind === 'mixer' && <Mixer />}
         <Rows key={group.name} group={group} seconds={seconds} />
       </div>
