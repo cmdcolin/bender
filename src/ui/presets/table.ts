@@ -1,5 +1,6 @@
 import type { Controls } from '../../controls'
 import { DRUM_ROMS } from '../../drums'
+import { DEST } from '../../dsp/modbus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 
 export interface PresetDef {
@@ -664,6 +665,58 @@ export const PRESETS: PresetDef[] = [
       mod0Src: 9,
       mod0Dest: 0,
       mod0Depth: 0.85,
+    },
+  },
+  {
+    name: 'slapback',
+    blurb: 'The plain box, set the plain way — one repeat, close behind',
+    patch: {
+      chipLevel: 0.8,
+      drumLevel: 0.5,
+      echoLevel: 0.45,
+      echoMs: 110,
+      echoFb: 0.15,
+      echoToneHz: 6000,
+    },
+  },
+  {
+    name: 'bucket brigade',
+    blurb: 'Every lap through the chips comes back darker than the last',
+    patch: {
+      chipLevel: 0.75,
+      drumLevel: 0.45,
+      echoMode: 1,
+      echoLevel: 0.6,
+      echoMs: 480,
+      echoFb: 0.72,
+      echoToneHz: 5000,
+    },
+  },
+  {
+    name: 'played backwards',
+    blurb: 'Half a second at a time, each one handed back the other way round',
+    patch: {
+      chipLevel: 0.8,
+      echoMode: 2,
+      echoLevel: 0.75,
+      echoMs: 500,
+      echoFb: 0.35,
+      revMix: 0.25,
+    },
+  },
+  {
+    name: 'seasick',
+    blurb:
+      'A wire off the bay onto the pedal’s time — the repeats never settle',
+    patch: {
+      chipLevel: 0.75,
+      echoLevel: 0.6,
+      echoMs: 300,
+      echoFb: 0.55,
+      modLfoHz: 0.35,
+      mod0Src: 1,
+      mod0Dest: DEST.echoMs,
+      mod0Depth: 0.3,
     },
   },
 ]

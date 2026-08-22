@@ -29,19 +29,25 @@ export const DEST = {
   wDepth1: 18,
   wDepth2: 19,
   wDepth3: 20,
+  // Past the depth lanes rather than before them: an id is what a saved board
+  // and a shared link name a destination by, so a lane added in the middle
+  // would land every wire on this board's neighbour of the one it was patched
+  // to. New lanes go on the end, wherever the end happens to be.
+  echoMs: 21,
 } as const
-export const N_DEST = 21
+export const N_DEST = 22
 
-// The lanes a wire can land on that aren't a stage: another wire's own depth.
-// In wire order, so wire i's depth is DEPTH_DEST[i], and last in the id order so
-// a lane is a depth lane exactly when it sits at or past the first of them.
+// The lanes a wire can land on that aren't a stage: another wire's own depth,
+// in wire order, so wire i's depth is DEPTH_DEST[i]. They were once the last
+// four ids and a depth lane was anything at or past the first of them; they are
+// four contiguous ids now, and asked for by name.
 const DEPTH_DEST = [
   DEST.wDepth0,
   DEST.wDepth1,
   DEST.wDepth2,
   DEST.wDepth3,
 ] as const
-const onDepth = (dest: number) => dest >= DEPTH_DEST[0]
+const onDepth = (dest: number) => dest >= DEST.wDepth0 && dest <= DEST.wDepth3
 
 // Ids match the mod*Src choices.
 const SRC = {

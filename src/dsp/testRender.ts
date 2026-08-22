@@ -34,10 +34,11 @@ export function renderBender(
   seconds: number,
   setup?: (built: BuiltChain) => void,
   micFill?: (mic: Float32Array, offset: number) => void,
-  // Something happening part way through, with the seconds so far — a finger
-  // coming up, which is the one gesture a script run before the render cannot
-  // make, and the one the chips are told about rather than reading off a wire.
-  each?: (built: BuiltChain, secs: number) => void,
+  // Something happening part way through, with the seconds so far and the board
+  // as the worklet holds it — a finger coming up, which the chips are told about
+  // rather than reading off a wire, or a hand on a knob, which is the other
+  // gesture a script run before the render cannot make.
+  each?: (built: BuiltChain, secs: number, p: Float32Array) => void,
 ): Float32Array {
   const built = buildBender(SR)
   setup?.(built)
@@ -47,7 +48,7 @@ export function renderBender(
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   const out = new Float32Array(blocks * BLOCK)
   for (let b = 0; b < blocks; b++) {
-    each?.(built, (b * BLOCK) / SR)
+    each?.(built, (b * BLOCK) / SR, p)
     micFill?.(mic, b * BLOCK)
     built.chain.process(io, p, micFill ? mic : undefined)
     out.set(io.l.subarray(0, BLOCK), b * BLOCK)

@@ -55,7 +55,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as ControlKey,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 20,
+          max: 21,
           step: 1,
           unit: '',
           choices: [
@@ -80,8 +80,9 @@ export const PATCH_GROUPS: Group[] = [
             'wire 2 depth',
             'wire 3 depth',
             'wire 4 depth',
+            'echo time',
           ],
-          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on the board, so a wire there reaches everything powered from it at once — a drum hit browns the chip out on every kick, and the watchdog does the rest. The last four land on a wire’s own depth, so one wire decides how hard another pushes — two wires that modulate each other stop being two modulations and start being one that neither of them wrote.',
+          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on the board, so a wire there reaches everything powered from it at once — a drum hit browns the chip out on every kick, and the watchdog does the rest. Four of them land on a wire’s own depth, so one wire decides how hard another pushes — two wires that modulate each other stop being two modulations and start being one that neither of them wrote.',
         },
         {
           key: `mod${i}Depth` as ControlKey,

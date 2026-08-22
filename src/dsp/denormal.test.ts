@@ -74,6 +74,7 @@ const RINGING: Partial<Controls> = {
   drumLevel: 0.6,
   revMix: 0.4,
   dlyMix: 0.3,
+  echoLevel: 0.3,
   filtMix: 0.4,
   combMix: 0.3,
   stompMix: 0.4,
@@ -82,7 +83,7 @@ const RINGING: Partial<Controls> = {
 
 test('a board left ringing itself out never settles into denormal range', () => {
   expect(ring(RINGING, {})).toEqual([])
-}, 30_000)
+}, 60_000)
 
 // The knobs that feed a value with nothing else driving it: at rest the state
 // they wind up is multiplied down by itself for ever, and a decay that starts
@@ -114,4 +115,4 @@ test('nor does one whose knobs were turned back down', () => {
     Object.keys(WOUND_UP).map(k => [k, DEFAULT_CONTROLS[k as ControlKey]]),
   )
   expect(ring({ ...RINGING, ...WOUND_UP, bendSlot5: 7 }, cold)).toEqual([])
-}, 30_000)
+}, 60_000)

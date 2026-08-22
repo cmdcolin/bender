@@ -10,6 +10,7 @@ import { mutate } from '../presets/roll'
 import { PART_KEYS } from '../presets/yours'
 import { KEY_CHOICE, MIC_CHOICE } from '../../dsp/stages/sampler'
 import { STEP_CHOICE } from '../../dsp/trigbus'
+import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo'
 import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
 
 // A slot's choices are derived from the table, so the counts can't drift. What
@@ -73,6 +74,16 @@ test('the trigger tails decode the choice they name', () => {
   expect(at('trigToDrum', STEP_CHOICE)).toBe('the step')
   expect(at('sampleTrig', KEY_CHOICE)).toBe('key')
   expect(at('sampleTrig', MIC_CHOICE)).toBe('mic')
+})
+
+// The legend comes off the box, so the labels cannot drift from the modes. What
+// a list of keys cannot promise is that the box numbered them in the order it
+// wrote them down — and the switch hands the stage a position, not a name.
+test('the mode switch numbers its positions the way the box reads them', () => {
+  expect(sliderFor('echoMode').choices).toEqual(ECHO_MODE_NAMES)
+  for (const [name, at] of Object.entries(ECHO_MODE)) {
+    expect(ECHO_MODE_NAMES[at], name).toBe(name)
+  }
 })
 
 test('log sliders have a positive floor or zero minimum', () => {

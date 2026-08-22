@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
+import { ECHO_MODE } from '../dsp/stages/echo'
 import { GRID_ROWS, hasStep } from '../drums'
 import { engine } from '../engine/engine'
 import { App } from './App'
@@ -94,6 +95,22 @@ test('a named cut wires itself, and the next one replaces it', () => {
   fireEvent.click(screen.getByRole('button', { name: 'none' }))
   expect(engine.controls.get().fmWaveLine).toBe(DEFAULT_CONTROLS.fmWaveLine)
   expect(engine.controls.get().fmLevel).toBeGreaterThan(0)
+})
+
+// A control the stage has nothing to act on yet stays off the panel — but only
+// until your hand has been on it, because a knob you have set is a knob you get
+// to see whatever the switch beside it says.
+test('the mod depth waits for the mode that uses it', () => {
+  render(
+    <OpenGroup group={group('Delay pedal')} onClose={() => {}} seconds={0} />,
+  )
+  expect(screen.queryByRole('slider', { name: 'Mod depth' })).toBeNull()
+  act(() => engine.set('echoMode', ECHO_MODE.modulate))
+  expect(screen.getByRole('slider', { name: 'Mod depth' })).toBeTruthy()
+  act(() => engine.set('echoMode', ECHO_MODE.standard))
+  expect(screen.queryByRole('slider', { name: 'Mod depth' })).toBeNull()
+  act(() => engine.set('echoMod', 0.8))
+  expect(screen.getByRole('slider', { name: 'Mod depth' })).toBeTruthy()
 })
 
 // Every knob says what it is and where it stands, in its own units.

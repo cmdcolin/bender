@@ -55,6 +55,8 @@ export const HEAVY: Partial<Controls> = {
   dlyMix: 0.5,
   wowDepthMs: 3,
   flutter: 0.4,
+  echoLevel: 0.5,
+  echoMode: 1,
   revMix: 0.4,
   tapeMix: 0.7,
   tapeDrop: 0.3,

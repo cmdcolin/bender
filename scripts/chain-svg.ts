@@ -27,6 +27,7 @@ const BOARD: Controls = {
   filtMix: 0.5,
   stompMix: 0.5,
   dlyMix: 0.4,
+  echoLevel: 0.4,
   revMix: 0.3,
   brownAmt: 0.3,
   fbAmt: 0.45,

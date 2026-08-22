@@ -6,6 +6,7 @@ import { Brownout } from './stages/brownout'
 import { ChaosOsc } from './stages/chaosOsc'
 import { Comb } from './stages/comb'
 import { Crusher } from './stages/crusher'
+import { Echo } from './stages/echo'
 import { FmChip } from './stages/fmChip'
 import { GlitchBuf } from './stages/glitchBuf'
 import { Noise } from './stages/noise'
@@ -86,6 +87,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   chain.pedals = [
     new Stompbox(sr),
     new TapeDelay(sr, next()),
+    new Echo(sr),
     new SpringVerb(sr),
   ]
   chain.post = [new Brownout(sr, next()), new Tape(sr, next())]

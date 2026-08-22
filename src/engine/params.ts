@@ -182,6 +182,13 @@ export const PARAM_DEFS = [
   ['tapeMotorRail', 'slew'],
   ['dlyMix', 'slew'],
 
+  ['echoMode', 'step'],
+  ['echoMs', 'step'],
+  ['echoFb', 'ramp'],
+  ['echoToneHz', 'slew'],
+  ['echoMod', 'slew'],
+  ['echoLevel', 'slew'],
+
   ['revDecayS', 'slew'],
   ['revToneHz', 'slew'],
   ['revBoing', 'slew'],

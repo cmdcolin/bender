@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 190 knobs and switches in 28 groups, seven bends competing for six slots,
-18 ROM tunes, 45 presets and 19 named cuts — and everything below comes off the
+ruin. 196 knobs and switches in 29 groups, seven bends competing for six slots,
+18 ROM tunes, 49 presets and 20 named cuts — and everything below comes off the
 control tables themselves, so the list cannot drift from the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/**
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 21 destinations — and the
+- **A patch bay that modulates itself.** Four wires, 22 destinations — and the
   last four of those destinations are the other wires' depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -138,6 +138,9 @@ was:
 
 - **machine-gun**: The hat’s trigger wire held high — it fires on every step the
   machine fetches, and everything soldered to the trigger bus hears it
+- **kick on every step**: The same knife one wire along — the kick fires on
+  every step the machine fetches, and the bar goes under everything else rather
+  than over it
 - **what both rows agree on**: Kick and snare soldered together — a busy pattern
   thins to the steps the pair have in common
 - **every step twice**: The bottom address wire low — the playhead runs the bar
@@ -528,6 +531,31 @@ pitch as the board browns out.
 
 </details>
 
+### Delay pedal
+
+The normal box on a board of abused ones, and the one thing here that behaves.
+_Standard_ moves its time by crossing between two read heads rather than
+dragging one, so the repeats already in the buffer keep their pitch while your
+hand is on the knob — which is the whole difference between this and the tape
+machine next to it. _Analog_ is a bucket brigade, and the clock that sets the
+delay is also what sets the bandwidth, so long is muddy by construction and the
+compander breathes behind the repeats. _Reverse_ plays each window backwards,
+relocking at the seam.
+
+<details>
+<summary>6 controls</summary>
+
+| control   | range                               | what it does                                                         |
+| --------- | ----------------------------------- | -------------------------------------------------------------------- |
+| Mode      | standard, analog, reverse, modulate | Which delay the box is being                                         |
+| Time      | 20 ms to 2 s                        | Delay time                                                           |
+| Feedback  | 0 to 1.1                            | How much of the repeat goes back in                                  |
+| Tone      | 800 Hz to 16 kHz                    | High cut in the loop, so each lap comes back darker than the last    |
+| Mod depth | off to full                         | How far the read head swings, up to six milliseconds at 0.7 Hz       |
+| E. level  | off to full                         | How loud the echo comes back, and at zero the pedal is off the board |
+
+</details>
+
 ### Spring verb
 
 Dispersive allpass cascade into short parallel combs — metallic, boingy,
@@ -556,13 +584,13 @@ land on another wire’s depth, which is how the bay modulates itself.
 <details>
 <summary>14 controls</summary>
 
-| control        | range                                                                                                                                                                                                                                             | what it does                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                    | The bay’s own oscillator, free-running                                         |
-| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                             | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
-| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                        | What the wire picks up                                                         |
-| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth | Where the other end is soldered                                                |
-| Wire 1–4 depth | −1 to +1                                                                                                                                                                                                                                          | How hard the wire pushes                                                       |
+| control        | range                                                                                                                                                                                                                                                        | what it does                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                               | The bay’s own oscillator, free-running                                         |
+| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                        | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
+| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                   | What the wire picks up                                                         |
+| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time | Where the other end is soldered                                                |
+| Wire 1–4 depth | −1 to +1                                                                                                                                                                                                                                                     | How hard the wire pushes                                                       |
 
 </details>
 
@@ -745,7 +773,7 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 
 ### Presets
 
-45 boards worth keeping. Every name is a link that opens the app with that board
+49 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -839,6 +867,14 @@ on it — a link never presses play, so it is loaded and waiting.
   — The snare strikes a chord, and every note it strikes claps back
 - [**hit gate**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,drumLevel:0.8,filtHz:180,filtRes:0.85,filtMix:1,mod0Src:9,mod0Depth:0.85)
   — A wire off the kit’s trigger line onto the cutoff — shut between hits
+- [**slapback**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,drumLevel:0.5,echoMs:110,echoFb:0.15,echoToneHz:6000,echoLevel:0.45)
+  — The plain box, set the plain way — one repeat, close behind
+- [**bucket brigade**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6)
+  — Every lap through the chips comes back darker than the last
+- [**played backwards**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,echoMode:2,echoMs:500,echoLevel:0.75,revMix:0.25)
+  — Half a second at a time, each one handed back the other way round
+- [**seasick**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,echoMs:300,echoFb:0.55,echoLevel:0.6,modLfoHz:0.35,mod0Src:1,mod0Dest:21,mod0Depth:0.3)
+  — A wire off the bay onto the pedal’s time — the repeats never settle
 
 ### Kit voices
 
@@ -852,7 +888,7 @@ on it — a link never presses play, so it is loaded and waiting.
 ## Scripts
 
 <details>
-<summary>17 commands</summary>
+<summary>18 commands</summary>
 
 | command          | what it does                                                                                        |
 | ---------------- | --------------------------------------------------------------------------------------------------- |
@@ -864,6 +900,7 @@ on it — a link never presses play, so it is loaded and waiting.
 | `pnpm cold`      | the first seconds, before anything has tiered up                                                    |
 | `pnpm diagram`   | re-renders the README's signal path                                                                 |
 | `pnpm features`  | rewrites docs/features.md — this file                                                               |
+| `pnpm knife`     | sweeps every wire and fault on all five buses and reports which you can hear                        |
 | `pnpm soak`      | whether any stage gets slower the longer it runs                                                    |
 | `pnpm preview`   | serves the built bundle                                                                             |
 | `pnpm test`      | the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom |

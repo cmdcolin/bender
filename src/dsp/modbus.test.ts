@@ -148,6 +148,56 @@ test('a held wire on the delay time is the same as turning the knob there', () =
   expect(rms(diff)).toBeLessThan(0.01 * rms(byHand))
 })
 
+test('and the delay pedal answers a wire of its own', () => {
+  const pedal: Partial<Controls> = {
+    chipLevel: 0.8,
+    echoMs: 350,
+    echoFb: 0.6,
+    echoLevel: 1,
+  }
+  const wired = render(
+    { ...pedal, bodyX: 1, mod0Src: 5, mod0Dest: DEST.echoMs, mod0Depth: 1 },
+    2,
+  )
+  const byHand = render({ ...pedal, echoMs: 1400 }, 2)
+  const diff = wired.map((v, i) => v - byHand[i]!)
+  expect(rms(diff)).toBeLessThan(0.01 * rms(byHand))
+})
+
+// The four depth lanes used to be the last ids on the bus, and that was how the
+// bay knew one when it saw one. They have a stage sitting past them now, so this
+// is the half of that which the board can hear: a wire landing on a depth lane
+// has to stay inside the bay rather than being handed to a stage.
+test('a wire onto another wire’s depth still lands in the bay', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0.8,
+    bendSlot0: 6,
+    filtHz: 200,
+    filtRes: 0.4,
+    filtMix: 1,
+    bodyX: 1,
+    bodyY: 1,
+  }
+  const byHand = render(
+    { ...look, mod0Src: 5, mod0Dest: DEST.filtHz, mod0Depth: 1 },
+    0.5,
+  )
+  // The same push, except that the depth it pushes at is the other wire's doing.
+  const byWire = render(
+    {
+      ...look,
+      mod0Src: 5,
+      mod0Dest: DEST.filtHz,
+      mod0Depth: 0,
+      mod1Src: 6,
+      mod1Dest: DEST.wDepth0,
+      mod1Depth: 1,
+    },
+    0.5,
+  )
+  expect(byWire).toEqual(byHand)
+})
+
 test('every wire in the bay is the same wire', () => {
   const look: Partial<Controls> = {
     chipLevel: 0.8,

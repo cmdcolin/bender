@@ -184,6 +184,13 @@ export const DEFAULT_CONTROLS = {
   tapeMotorRail: 0,
   dlyMix: 0,
 
+  echoMode: 0,
+  echoMs: 350,
+  echoFb: 0.35,
+  echoToneHz: 8000,
+  echoMod: 0.3,
+  echoLevel: 0,
+
   revDecayS: 2,
   revToneHz: 4000,
   revBoing: 0.5,
