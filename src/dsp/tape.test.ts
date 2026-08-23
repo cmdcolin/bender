@@ -180,15 +180,36 @@ test('the head gap is a cliff rather than a tone control', () => {
 // hard goes dull before it goes loud — most of why tape takes the fizz off a
 // cymbal where a clipper only adds to it. Wound down, the same machine at the
 // same settings is nearly a wire.
+//
+// It is a wavelength that demagnetises itself, so a faster tape lays that
+// wavelength out longer and keeps more of it: the whole point of the speed
+// switch is that a machine you can afford to run fast is one you can afford to
+// hit. Asserted at both ends of the switch rather than at one speed, because
+// scaling the replay *coefficient* instead of the corner cost the fastest tape
+// the most — a 2.2× overshoot at 15 ips against 1.3× at 3¾ — and squeezed the
+// three machines together at 18.6, 12.7 and 11.1 dB, where the wavelength says
+// they should be far apart. 15 ips leant on came back darker at 10 kHz than 3¾
+// does at rest, which is not a speed switch worth having.
 test('the top of the band has less headroom than the bottom', () => {
-  const at = (hz: number, amp: number) => response(hz, { tapeSpeed: 2 }, amp)
-  const quiet = [at(500, 0.02), at(10000, 0.02)]
-  const loud = [at(500, 0.8), at(10000, 0.8)]
-  expect(Math.abs(quiet[0]!)).toBeLessThan(0.5)
-  expect(quiet[1]!).toBeGreaterThan(-2)
-  // The bottom keeps what it had; the top loses ten dB more than the bottom did.
-  expect(loud[0]!).toBeGreaterThan(-3)
-  expect(loud[0]! - loud[1]!).toBeGreaterThan(10)
+  const extra = (tapeSpeed: number) => {
+    const at = (hz: number, amp: number) => response(hz, { tapeSpeed }, amp)
+    const quiet = [at(500, 0.02), at(10000, 0.02)]
+    const loud = [at(500, 0.8), at(10000, 0.8)]
+    // Wound down it is nearly a wire, and the bottom keeps what it had either
+    // way — whatever the top loses, it loses on its own.
+    expect(Math.abs(quiet[0]!), `${tapeSpeed} quiet`).toBeLessThan(0.5)
+    expect(loud[0]!, `${tapeSpeed} loud`).toBeGreaterThan(-3)
+    return loud[0]! - loud[1]!
+  }
+  const [slow, mid, fast] = [extra(0), extra(1), extra(2)]
+  expect(slow).toBeGreaterThan(10)
+  expect(mid).toBeLessThan(slow)
+  expect(fast).toBeLessThan(mid)
+  // And far apart rather than merely in order: a tape running four times as
+  // fast keeps most of its top end through the same beating.
+  expect(fast).toBeLessThan(8)
+  // And a fast machine at rest still has its top end to lose.
+  expect(response(10000, { tapeSpeed: 2 }, 0.02)).toBeGreaterThan(-2)
 })
 
 // At 15 ips the head gap already sits past the programme, so bias can't work

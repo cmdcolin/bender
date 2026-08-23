@@ -121,7 +121,6 @@ interface Settings {
   envCoef: number
   magAtk: number
   magRel: number
-  gapCoef: number
   erase: number
   dropAmt: number
   dropProb: number
@@ -174,13 +173,14 @@ class TapeHead {
     this.rng = mulberry32((draw() * 0x1_0000_0000) >>> 0)
   }
 
-  // gapBase is this head's replay corner with the azimuth error already in it,
-  // settled once a block rather than multiplied out forty-eight thousand times
-  // in each channel. The dropouts are the head's own, because oxide sheds in
-  // patches and a patch sits on one track: shared, every dropout was a mono
-  // event landing on both channels at once, which is the one thing a hole in
-  // the oxide never is.
-  process(x: number, delay: number, gapBase: number, s: Settings): number {
+  // gapLog is the log of this head's replay pole with the azimuth error already
+  // in it — `-2*pi*f/sr`, which is the corner in the units the erase and the
+  // dropouts want to move it in. Settled once a block rather than taken forty-
+  // eight thousand times in each channel. The dropouts are the head's own,
+  // because oxide sheds in patches and a patch sits on one track: shared, every
+  // dropout was a mono event landing on both channels at once, which is the one
+  // thing a hole in the oxide never is.
+  process(x: number, delay: number, gapLog: number, s: Settings): number {
     const xd = x * s.drive
     this.pre = flushDenormal(this.pre + s.emphCoef * (xd - this.pre))
     const pre = this.pre
@@ -311,7 +311,20 @@ class TapeHead {
     // wavelength missing — so it rides the replay corner rather than paying for
     // a filter of its own. `rec` is a difference of two clipped values, so what
     // it can carry is bounded by 2 and this can never turn the corner over.
-    const gc = gapBase * (1 - 0.75 * drop) * (1 - s.erase * this.magEnv)
+    //
+    // Both of them move the corner, so both are a power of the pole rather than
+    // a scale of the coefficient. `1 - c` is `exp(-2*pi*f/sr)`, so raising it
+    // to `k` is a corner of `k * f` exactly, where multiplying `c` by `k` is
+    // only that for corners far below the sample rate. The replay corner is not
+    // one of those: at 15 ips it sits at 22 kHz, where the coefficient is 0.95
+    // and has almost nowhere left to go, so scaling it overshot by 2.2× there
+    // against 1.3× at 3¾ — hardest on the tape with the most to lose. It took a
+    // 15 ips machine played hard to a 5.6 kHz corner where the erase had asked
+    // for 12.4, darker at 10 kHz than a 3¾ machine sitting at rest, and left
+    // the three speeds within 7 dB of each other where the wavelength wants
+    // them 11 apart. The switch is supposed to be three machines.
+    const k = (1 - 0.75 * drop) * (1 - s.erase * this.magEnv)
+    const gc = 1 - Math.exp(k * gapLog)
     this.gap = flushDenormal(this.gap + gc * (y - this.gap))
     this.gap2 = flushDenormal(this.gap2 + gc * (this.gap - this.gap2))
     y = this.gap2
@@ -396,7 +409,6 @@ export class Tape implements Stage {
     envCoef: 0,
     magAtk: 0,
     magRel: 0,
-    gapCoef: 0,
     erase: ERASE,
     dropAmt: 0,
     dropProb: 0,
@@ -481,7 +493,6 @@ export class Tape implements Stage {
     s.envCoef = lpCoef(12, this.sr)
     s.magAtk = lpCoef(60, this.sr)
     s.magRel = lpCoef(2.5, this.sr)
-    s.gapCoef = lpCoef(gapHz, this.sr)
     s.dropAmt = p[IDX.tapeDrop]!
     s.dropProb = (s.dropAmt * 3) / this.sr
     s.dropCoef = lpCoef(120, this.sr)
@@ -494,8 +505,8 @@ export class Tape implements Stage {
     s.printCoef = lpCoef(2500, this.sr)
 
     const azimuth = p[IDX.tapeAzimuth]! * AZIMUTH_MAX
-    const gapL = s.gapCoef
-    const gapR = s.gapCoef * (1 - (0.45 * azimuth) / AZIMUTH_MAX)
+    const gapL = Math.log(1 - lpCoef(gapHz, this.sr))
+    const gapR = gapL * (1 - (0.45 * azimuth) / AZIMUTH_MAX)
     const wowAmt = p[IDX.tapeWow]! * sp.wobble
     const flutAmt = p[IDX.tapeFlutter]! * sp.wobble
     const driftCoef = lpCoef(0.12, this.sr)
