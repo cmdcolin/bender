@@ -231,6 +231,28 @@ test('record level compresses without running away — makeup holds it near unit
   }
 })
 
+// The knob that is meant to buy distortion must not spend level to do it. The
+// makeup was a power of the record level, which gives it back to small signals
+// and to nothing else: the clipper's ceiling does not move, so scaling it down
+// afterwards dropped the replay ceiling as the knob went up — 5 dB at stock and
+// 11 at the top. Anything already pinned by the time it reaches the machine is
+// by definition over that ceiling, so the whole of a board being played hard
+// came off the tape at whatever the knob had left, and turning the knob up to
+// hear the machine work turned the machine down.
+test('a record level wound up buys distortion and not silence', () => {
+  const hot = { ...SILENT, sampleLevel: 1, ...STEADY, tapeHyst: 0 }
+  const load = (b: BuiltChain) => b.sampler.setBuffer(sine(220, 1, 0.9))
+  const at = (over: Partial<Controls>) =>
+    rms(renderBender({ ...hot, ...over }, 2, load).subarray(SR))
+  const dry = at({ tapeMix: 0 })
+  const levels = [-12, -6, 0, 6, 12, 15].map(tapeDrive =>
+    db(at({ tapeMix: 1, tapeDrive }) / dry),
+  )
+  for (const [i, level] of levels.entries())
+    expect(level, `${[-12, -6, 0, 6, 12, 15][i]} dB`).toBeGreaterThan(-4)
+  expect(Math.max(...levels) - Math.min(...levels)).toBeLessThan(2)
+})
+
 // Read off the sampler's sine rather than the oscillator's square. A square
 // through a wobbling head has ringing on its edges, and once the flutter grain
 // is real that ringing crosses zero more than once on the way past — so the

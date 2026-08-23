@@ -59,11 +59,20 @@ const GAP_POLE = 1.5538
     scoop rather than a lump. */
 const RIPPLE_RATIO = 2.2
 const RIPPLE_DEPTH = 0.4
-/** how much of the record level the makeup gives back. All of it and the knob
-    would be a tone control; none and it would be a fader. This much leaves the
-    machine at unity where the record level is, and lets what the oxide took off
-    either end of the travel be the thing you hear. */
-const MAKEUP_POW = 0.74
+/** the level the machine is lined up at, which is where the board's own safety
+    clipper has already pinned anything being played hard. The makeup is what
+    the oxide took off a tone this loud, so a tone this loud comes back at the
+    same level wherever the record knob sits, and the knob is exactly a wire at
+    rest.
+
+    A power of the record level was the makeup before, and it gives its gain
+    back to small signals and to nothing else — the clipper's ceiling does not
+    move, so scaling it down afterwards dropped the replay ceiling as the knob
+    went up: 5 dB at stock and 11 at the top. Everything loud enough to be worth
+    printing is over that ceiling by definition, so a board being played hard
+    came off the tape at whatever the knob had left of it, and winding the knob
+    up to hear the machine work wound the machine down. */
+const REPLAY_REF = 0.891
 /** how much of the replay corner the medium erases off itself per unit of field
     it is carrying. Under 0.5 by construction: what the domains have been
     through is bounded by 2, so this cannot turn the corner over. */
@@ -448,7 +457,7 @@ export class Tape implements Stage {
     )
     const s = this.s
     s.drive = drive
-    s.makeup = Math.pow(drive, -MAKEUP_POW)
+    s.makeup = softclip(REPLAY_REF) / softclip(REPLAY_REF * drive)
     // Record and replay have to be each other's inverse, or the machine at rest
     // colours a signal it never touched. A shelf that lifts the top by `g` from
     // a corner inverts to a shelf that cuts it by `g` from a corner `g` times
