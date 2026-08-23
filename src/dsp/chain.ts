@@ -12,6 +12,10 @@ import { DelayLine } from './util/delayline'
 
 const LIMIT_CEIL = 0.891 // −1 dBFS
 
+/** where the summing amp is lined up: the level a busy bus already peaks at,
+    and so the level the drive knob is being asked to do something to. */
+const BUS_REF = 0.6
+
 const SLOT_IDX = [
   IDX.bendSlot0,
   IDX.bendSlot1,
@@ -301,15 +305,19 @@ export class Chain {
       }
     } else {
       const g = Math.pow(10, driveDb / 20)
-      // Half the gain given back, which is what keeps this a drive rather than a
-      // fader. Give it all back and a wound-up bus is a squared-off wave at a
-      // twentieth of the level, which reads as the knob being broken; give none
-      // of it back and it is a volume control that happens to distort. At a
-      // half, the bus comes up a couple of decibels through the middle of the
-      // travel and holds there at the top, while the crest factor falls from
-      // nearly three to just over one — louder for a while, denser all the way,
-      // which is what a hand on a drive knob is asking for.
-      const makeup = Math.pow(g, -0.5)
+      // What the amp took off a bus already sitting at the reference, given
+      // back — so a bus that loud comes out that loud wherever the knob is, and
+      // what the travel buys is density rather than level. The crest factor
+      // still falls from nearly three to just over one.
+      //
+      // Half the gain back was the rule before, and half of a fixed ceiling is
+      // still a fixed ceiling: the amp's own maximum fell a decibel for every
+      // two on the knob, twelve of them by the top. So the knob peaked at +6
+      // and was a fader above it, and since this is the one saturation upstream
+      // of the bends — and where the feedback return lands — a board wound up
+      // to slam them arrived twelve dB down instead, which is the opposite of
+      // what a hand on a drive knob is asking for.
+      const makeup = softclip(BUS_REF) / softclip(BUS_REF * g)
       for (let i = 0; i < n; i++) {
         const l = softclip(io.l[i]! * g) * makeup
         const r = softclip(io.r[i]! * g) * makeup

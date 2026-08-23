@@ -121,6 +121,22 @@ test('the bus drive is a wire at unity and a saturator off it', () => {
   expect(rms(render({ ...board, mixDrive: -12 }))).toBeLessThan(rms(flat))
 })
 
+// Half the gain given back was the rule here for a long time, and half of a
+// fixed ceiling is still a fixed ceiling: the amp's own maximum came down a
+// decibel for every two on the knob, so the bus peaked at +6 and was a fader
+// above it — six dB down by the top, on the one saturation upstream of the
+// bends and the one the feedback return lands in. A board wound up to slam them
+// arrived quieter instead. The travel has to buy density the whole way without
+// ever spending level to do it.
+test('the bus drive is denser all the way up and never quieter', () => {
+  const board: Partial<Controls> = { chipLevel: 0.9, drumLevel: 0.9 }
+  const up = [0, 6, 12, 18, 24].map(mixDrive => render({ ...board, mixDrive }))
+  for (let i = 1; i < up.length; i++) {
+    expect(rms(up[i]!), `${i}`).toBeGreaterThan(rms(up[i - 1]!))
+    expect(crest(up[i]!), `${i}`).toBeLessThan(crest(up[i - 1]!))
+  }
+})
+
 // Nothing reads the taps on the audio thread, and a panic is the board going
 // quiet — a meter left holding the peak of a howl that has been killed is the
 // one number on the panel still saying the howl is there.
