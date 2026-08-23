@@ -274,11 +274,64 @@ test('a record level wound up buys distortion and not silence', () => {
   expect(Math.max(...levels) - Math.min(...levels)).toBeLessThan(2)
 })
 
+// A dropout is a hole in the oxide: it takes signal away and it does nothing
+// else. It has no business making a noise of its own, and none whatever making
+// one that gets louder as a different knob goes up.
+//
+// It did both. Hysteresis sits the record curve off centre, and a compressive
+// curve read off centre leaves a mean behind — one that rides the programme
+// envelope, so it wanders at a few Hz rather than sitting still. The head
+// handed that to the replay side along with the signal, the dropouts multiplied
+// what the head handed over, and so every hole in the oxide stepped the mean and
+// the board's blocker turned each step into a thump: eight dB of sub-40 Hz on a
+// tone that had none in it, keyed to a warmth control.
+test('a dropout takes signal away without thumping', () => {
+  const under40 = (x: Float32Array) => {
+    const c = 1 - Math.exp((-2 * Math.PI * 40) / SR)
+    let y = 0
+    let peak = 0
+    for (let i = 0; i < x.length; i++) {
+      y += c * (x[i]! - y)
+      peak = Math.max(peak, Math.abs(y))
+    }
+    return db(peak)
+  }
+  const at = (tapeHyst: number) =>
+    under40(
+      renderBender(
+        {
+          ...SILENT,
+          sampleLevel: 1,
+          ...STEADY,
+          tapeMix: 1,
+          tapeDrop: 1,
+          tapeBump: 0,
+          tapeHyst,
+        },
+        4,
+        b => b.sampler.setBuffer(sine(800, 1, 0.7)),
+      ).subarray(SR),
+    )
+  // Whatever low end a dropout makes by being a dropout is the floor. Winding
+  // the curve off centre must not add to it.
+  const floor = at(0)
+  expect(at(0.3), 'stock').toBeLessThan(floor + 1)
+  expect(at(1), 'wound up').toBeLessThan(floor + 1)
+})
+
 // Read off the sampler's sine rather than the oscillator's square. A square
 // through a wobbling head has ringing on its edges, and once the flutter grain
 // is real that ringing crosses zero more than once on the way past — so the
 // period estimate reads a cycle that never happened, and one seed in five came
 // back with four times the wander the transport was actually doing.
+//
+// Twelve seconds because the reading is a spread, and a spread wants enough of
+// the slowest thing in it to have happened. Wow at 3¾ ips is a 1.8 second cycle
+// and the drift under it is minutes long: at four seconds the number had not
+// settled — 3.17, then 2.41 by eight and 1.93 by sixteen — so the bound below
+// was sitting on the sampling error rather than on the transport, and anything
+// that moved where the zero crossings landed moved it by a decibel of wow that
+// was never there.
 test('the transport wobbles the pitch, and holds it dead steady when wound down', () => {
   const at = (w: number) =>
     wander(
@@ -293,7 +346,7 @@ test('the transport wobbles the pitch, and holds it dead steady when wound down'
           tapeFlutter: w,
           tapeSpeed: 0,
         },
-        4,
+        12,
         b => b.sampler.setBuffer(sine(220, 1, 0.6)),
       ),
     )

@@ -44,6 +44,21 @@ const SPEED = [
 ]
 
 const NOMINAL_MS = 10
+/** where the replay head stops following the medium. A head reads the rate the
+    flux changes rather than the flux, so whatever dc the tape is carrying, none
+    of it reaches the replay amp — and it has to come off here rather than at the
+    end of the board, because between the two sit a dropout and a head bump that
+    would otherwise both be working on it.
+
+    The same corner the board's own blocker runs, and for the same reason a
+    coupling stage picks one: low enough to leave the bottom of the band alone —
+    0.6 dB off the slowest head bump at 26 Hz — and high enough to settle. Lower
+    is not safer here. A 2 Hz corner removes the same dc, being a mean that rides
+    a 2.5 Hz release, but takes 80 ms to let go of it against 16, and since the
+    board's blocker is downstream of this one the slower of the two is what the
+    board settles at. At 2 Hz a burst left 40 dB of subsonic behind it a twentieth
+    of a second after it stopped; here there is nothing above -100. */
+const HEAD_DC_HZ = 10
 /** how far off centre a fully wound Hysteresis can sit the record curve, as a
     share of the level the medium is carrying. Past about this the second
     harmonic stops being a bloom and starts being the note. */
@@ -126,6 +141,7 @@ interface Settings {
   dropProb: number
   dropCoef: number
   dropSr: number
+  headDc: number
   bumpF: number
   bumpQ: number
   ripple: number
@@ -163,6 +179,8 @@ class TapeHead {
   private dropWait = -1
   private dropDepth = 0
   private dropEnv = 0
+  private dcX = 0
+  private dcY = 0
   private gauss: Rng
   private rng: Rng
 
@@ -269,6 +287,22 @@ class TapeHead {
       )
       y += this.print * s.printGain
     }
+    // What the medium is carrying and what the head can read are not the same
+    // signal. Hysteresis sits the record curve off centre, and a compressive
+    // curve read off centre leaves a mean behind — one that rides the programme
+    // envelope, so it wanders at a few Hz rather than sitting still. Eight dB of
+    // the head's output was that at stock and ten at the top of the knob, and
+    // the board's own blocker binned all of it at the end of the run.
+    //
+    // Which cost nothing until something downstream touched it: the dropouts
+    // multiply what the head read, so every hole in the oxide stepped that dc
+    // and the blocker turned each step into a thump — 11 dB of 40 Hz on a tone
+    // that had none in it, and louder the more Hysteresis was wound in, which
+    // are two knobs with nothing to do with each other.
+    const dcY = y - this.dcX + s.headDc * this.dcY
+    this.dcX = y
+    this.dcY = flushDenormal(dcY)
+    y = dcY
     let drop = 0
     if (s.dropAmt > 0) {
       // When the next patch of shed oxide arrives, not whether this sample is
@@ -414,6 +448,7 @@ export class Tape implements Stage {
     dropProb: 0,
     dropCoef: 0,
     dropSr: 0,
+    headDc: 0,
     bumpF: 0,
     bumpQ: 1 / 1.2,
     ripple: 0,
@@ -497,6 +532,7 @@ export class Tape implements Stage {
     s.dropProb = (s.dropAmt * 3) / this.sr
     s.dropCoef = lpCoef(120, this.sr)
     s.dropSr = this.sr
+    s.headDc = 1 - (2 * Math.PI * HEAD_DC_HZ) / this.sr
     s.bumpF = 2 * Math.sin((Math.PI * sp.bumpHz) / this.sr)
     s.ripple = s.bump * RIPPLE_DEPTH
     s.ripF = 2 * Math.sin((Math.PI * sp.bumpHz * RIPPLE_RATIO) / this.sr)
