@@ -21,6 +21,7 @@ import {
   type DrumStepKey,
 } from '../drums'
 import { createStore, type Store } from '../listeners'
+import { LOAD_SECONDS, roll, type Pool } from './archive'
 import {
   asTuneLen,
   foldNote,
@@ -135,6 +136,12 @@ export class Engine {
   readonly recording = createStore(false)
   readonly recSeconds = createStore(0)
   readonly sampleName = createStore<string | null>(null)
+  /** What a roll off archive.org is doing, or null when it is not doing one. */
+  readonly archiveStep = createStore<string | null>(null)
+  /** Where the sample on the tape came from, so the panel can credit it. */
+  readonly archiveSource = createStore<{ id: string; title: string } | null>(
+    null,
+  )
   // How far a morph has got, 0..1, or null when none is running. A store rather
   // than a value passed down because it moves at the frame rate: subscribed to
   // by the one button that draws it, so a 30s morph costs that button per frame
@@ -167,6 +174,7 @@ export class Engine {
   private booting: Promise<void> | undefined
   private node: AudioWorkletNode | null = null
   private micStream: MediaStream | null = null
+  private archiveRoll: AbortController | null = null
   private dirty = false
   private rafQueued = false
   private huntToken = 0
@@ -534,16 +542,69 @@ export class Engine {
   }
 
   async loadSample(file: File) {
+    await this.decodeOnto(await file.arrayBuffer(), file.name)
+  }
+
+  // Whatever the bytes came from, the tape takes them the same way: folded to
+  // mono, and cut to a length that is a sample rather than an outage — decoded
+  // to float32 a half-hour broadcast is 345 MB, and it would go straight across
+  // to the audio thread.
+  private async decodeOnto(data: ArrayBuffer, name: string) {
     if (!this.ctx) return
-    const buf = await this.ctx.decodeAudioData(await file.arrayBuffer())
-    const mono = new Float32Array(buf.length)
+    const buf = await this.ctx.decodeAudioData(data)
+    const frames = Math.min(
+      buf.length,
+      Math.round(LOAD_SECONDS * buf.sampleRate),
+    )
+    const mono = new Float32Array(frames)
     for (let ch = 0; ch < buf.numberOfChannels; ch++) {
-      const data = buf.getChannelData(ch)
-      for (let i = 0; i < buf.length; i++)
-        mono[i]! += data[i]! / buf.numberOfChannels
+      const chan = buf.getChannelData(ch)
+      for (let i = 0; i < frames; i++)
+        mono[i]! += chan[i]! / buf.numberOfChannels
     }
     this.post({ kind: 'sample', mono }, [mono.buffer])
-    this.sampleName.set(file.name)
+    this.sampleName.set(name)
+  }
+
+  /**
+   * A sample rolled off archive.org, so there is something on the tape without
+   * you going and finding a file. One roll at a time: a second click while one
+   * is in the air cancels the first rather than racing it onto the sampler.
+   */
+  async rollSample(pool: Pool) {
+    if (!this.ctx) return
+    this.archiveRoll?.abort()
+    const ctl = new AbortController()
+    this.archiveRoll = ctl
+    this.archiveStep.set(`searching ${pool.label}…`)
+    try {
+      const got = await roll({
+        pool,
+        rng: Math.random,
+        signal: ctl.signal,
+        onStep: m => {
+          if (!ctl.signal.aborted) this.archiveStep.set(m)
+        },
+      })
+      if (ctl.signal.aborted) return
+      if (!got) {
+        this.archiveStep.set(`nothing came back from ${pool.label}`)
+        return
+      }
+      await this.decodeOnto(got.data, got.title)
+      this.archiveSource.set({ id: got.id, title: got.title })
+      this.archiveStep.set(null)
+    } catch {
+      if (!ctl.signal.aborted) this.archiveStep.set('that one would not decode')
+    } finally {
+      if (this.archiveRoll === ctl) this.archiveRoll = null
+    }
+  }
+
+  cancelRoll() {
+    this.archiveRoll?.abort()
+    this.archiveRoll = null
+    this.archiveStep.set(null)
   }
 
   private take: { l: Float32Array; r: Float32Array }[] = []

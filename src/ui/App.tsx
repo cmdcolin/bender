@@ -31,6 +31,7 @@ import { OpenGroup, PathHint } from './Section'
 import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
 import { Tip } from './Tip'
+import { POOLS, detailsUrl } from '../engine/archive'
 
 // Where a keypress belongs to the control rather than to the board.
 const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
@@ -173,7 +174,10 @@ export function App() {
   const recording = useStoreValue(engine.recording)
   const recSeconds = useStoreValue(engine.recSeconds)
   const sampleName = useStoreValue(engine.sampleName)
+  const archiveStep = useStoreValue(engine.archiveStep)
+  const archiveSource = useStoreValue(engine.archiveSource)
   const [dragging, setDragging] = useState(false)
+  const [pool, setPool] = useState(0)
   // Which stage's controls the panel is showing. The map is the way in — every
   // group has a door on it, the stages along the path and the rest of the board
   // drawn where it sits — so one stage is open at a time and the rest of the
@@ -301,7 +305,48 @@ export function App() {
               ? `sample: ${sampleName}`
               : 'drop an audio file anywhere'}
           </span>
+          {/* Finding a file is the slowest part of putting something on the
+              tape, so the board will go and find one. A pool is a search, and
+              the die picks out of it. */}
+          <Tip text="pull a random recording off archive.org straight onto the sampler — then bring the sampler's Level up">
+            <button
+              className={styles.ioBtn}
+              onClick={() =>
+                archiveStep
+                  ? engine.cancelRoll()
+                  : engine.rollSample(POOLS[pool]!)
+              }
+            >
+              {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
+            </button>
+          </Tip>
+          <Tip text={POOLS[pool]!.blurb}>
+            <select
+              className={styles.pool}
+              value={pool}
+              onChange={e => setPool(Number(e.target.value))}
+            >
+              {POOLS.map((p, i) => (
+                <option key={p.label} value={i}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </Tip>
         </div>
+        {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
+        {!archiveStep && archiveSource && (
+          <p className={styles.credit}>
+            from{' '}
+            <a
+              href={detailsUrl(archiveSource.id)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              archive.org/{archiveSource.id}
+            </a>
+          </p>
+        )}
         <p className={styles.hint}>
           {!running && (
             <b className={styles.warn}>

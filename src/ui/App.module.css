@@ -189,6 +189,33 @@
   border-color: var(--accent);
 }
 
+.pool {
+  font-size: var(--fs-xs);
+  padding: 3px 4px;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* The roll's own line: what it is doing while it does it, and what it came back
+   with once it has. Its own colour, so a wait reads as the app working rather
+   than as the board saying something. */
+.rolling {
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}
+
+.credit {
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.credit a {
+  color: var(--fg3);
+}
+
 .hint {
   font-size: var(--fs-sm);
   color: var(--fg3);
