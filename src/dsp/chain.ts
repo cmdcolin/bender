@@ -9,6 +9,7 @@ import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole'
 import { mulberry32, type Rng } from './util/rng'
 import { flushDenormal, softclip } from './util/softclip'
 import { DelayLine } from './util/delayline'
+import { LoopAmp, ampVoicing, type AmpVoicing } from './util/loopamp'
 
 const LIMIT_CEIL = 0.891 // −1 dBFS
 
@@ -75,6 +76,109 @@ class Joint {
   }
 }
 
+// How many send/return loops the desk has. One is a squeal: a single delay
+// round a single saturation settles into a mode and stays in it. Three
+// cross-fed is a different instrument — a ring of coupled nonlinear delays has
+// no mode to settle into, so it hunts, bifurcates and falls over on its own,
+// which is what people are actually doing when they play a mixer with nothing
+// plugged into it.
+const N_LOOPS = 3
+
+// One channel strip of the no-input desk: a send off the output bus, a tilt, a
+// delay standing for however long that patch cord and its circuit take, and the
+// amplifier it all comes back through.
+//
+// The amp is the loop's own, not a shared one, because blocking and slew both
+// carry state that is about *this* loop's history — two loops through one amp
+// would cut each other off, which is a thing a desk with one shared bus amp
+// does and a desk with three returns does not.
+class DeskLoop {
+  private readonly lineL: DelayLine
+  private readonly lineR: DelayLine
+  private readonly ampL = new LoopAmp()
+  private readonly ampR = new LoopAmp()
+  private readonly tiltLpL = new OnePoleLP()
+  private readonly tiltLpR = new OnePoleLP()
+  private tilt = 0
+  private tiltCoef = 0
+  private delay = 1
+  /** Fader up and a line to come back down: what makes this strip exist. */
+  on = false
+  amt = 0
+  combG = 0
+  /** This sample's read off the line, taken before anything writes, so a ring
+      of them all see the same instant rather than each other's next one. */
+  dL = 0
+  dR = 0
+  /** This sample's return, which is what the bus sums and what the line keeps. */
+  wL = 0
+  wR = 0
+
+  constructor(sr: number) {
+    this.lineL = new DelayLine(0.5 * sr + 4)
+    this.lineR = new DelayLine(0.5 * sr + 4)
+  }
+
+  open(amt: number, ms: number, tilt: number, sr: number) {
+    this.on = amt > 0
+    this.setAmt(amt)
+    this.delay = Math.max((ms / 1000) * sr, 1)
+    this.tilt = tilt
+    this.tiltCoef = lpCoef(800, sr)
+  }
+
+  setAmt(amt: number) {
+    this.amt = amt
+    this.combG = Math.min(amt, 1.05)
+  }
+
+  read() {
+    this.dL = this.lineL.read(this.delay)
+    this.dR = this.lineR.read(this.delay)
+  }
+
+  // The send, tilted: which end of the band this strip gives back decides which
+  // register it screams in, and three strips tilted differently is three squeals
+  // that never quite agree.
+  private send(x: number, lp: OnePoleLP): number {
+    const y = x * this.amt
+    const low = lp.process(y, this.tiltCoef)
+    if (this.tilt > 0) return y + this.tilt * (y - 2 * low)
+    if (this.tilt < 0) return y + -this.tilt * (2 * low - y)
+    return y
+  }
+
+  run(
+    l: number,
+    r: number,
+    retL: number,
+    retR: number,
+    rail: number,
+    v: AmpVoicing,
+  ) {
+    const inL = this.send(l, this.tiltLpL) + this.combG * retL
+    const inR = this.send(r, this.tiltLpR) + this.combG * retR
+    this.wL = this.ampL.process(inL, rail, v)
+    this.wR = this.ampR.process(inR, rail, v)
+    this.lineL.write(this.wL)
+    this.lineR.write(this.wR)
+  }
+
+  reset() {
+    this.lineL.reset()
+    this.lineR.reset()
+    this.ampL.reset()
+    this.ampR.reset()
+    this.tiltLpL.reset()
+    this.tiltLpR.reset()
+    this.on = false
+    this.dL = 0
+    this.dR = 0
+    this.wL = 0
+    this.wR = 0
+  }
+}
+
 // The full signal path in one place: sources sum (plus feedback return and
 // mic), reorderable bend slots, fixed pedals, brownout, then the always-on
 // safety tail: dc block → softclip → feedback tap → limiter.
@@ -84,13 +188,18 @@ export class Chain {
   private readonly fbRetR = new Float32Array(BLOCK)
   private readonly dcL = new DcBlocker()
   private readonly dcR = new DcBlocker()
-  private readonly fbTiltLpL = new OnePoleLP()
-  private readonly fbTiltLpR = new OnePoleLP()
   private readonly brightLp = new OnePoleLP()
   private readonly hfEnv = new Follower()
   private readonly allEnv = new Follower()
-  private fbCombL: DelayLine
-  private fbCombR: DelayLine
+  private readonly loops: DeskLoop[]
+  /** Which strip each one's Cross send lands on, settled once a block. */
+  private readonly across = new Int32Array(N_LOOPS)
+  // The supply the return amps share, and how loaded they are having it. The
+  // desk is on the same board as everything else, so Starve and Brownout pull
+  // it down from under them as well.
+  private readonly deskEnv = new Follower()
+  private deskRail = 1
+  private deskLast = 0
   private outEnv = new Follower()
   private limitEnv = 0
   // The six slot params, read once a block into a buffer this owns, and one bit
@@ -151,8 +260,7 @@ export class Chain {
       mod: new ModBus(sr, seed ^ 0x51f),
       trig: new TriggerBus(),
     }
-    this.fbCombL = new DelayLine(0.5 * sr + 4)
-    this.fbCombR = new DelayLine(0.5 * sr + 4)
+    this.loops = Array.from({ length: N_LOOPS }, () => new DeskLoop(sr))
     this.thermal = new Thermal(sr)
     this.rng = mulberry32(seed ^ 0x9e37)
     this.relayBurst = new Burst(sr, 3)
@@ -176,13 +284,10 @@ export class Chain {
     this.fbRetR.fill(0)
     this.dcL.reset()
     this.dcR.reset()
-    this.fbTiltLpL.reset()
-    this.fbTiltLpR.reset()
     this.brightLp.reset()
     this.hfEnv.reset()
     this.allEnv.reset()
-    this.fbCombL.reset()
-    this.fbCombR.reset()
+    for (const lp of this.loops) lp.reset()
     this.outEnv.reset()
     this.ctx.mod.panic()
     this.ctx.trig.panic()
@@ -199,6 +304,9 @@ export class Chain {
     this.order = [0, 1, 2, 3, 4, 5]
     this.fbShift = 0
     this.limitEnv = 0
+    this.deskEnv.reset()
+    this.deskRail = 1
+    this.deskLast = 0
     this.taps.fill(0)
     this.tapPrev.fill(0)
   }
@@ -475,43 +583,120 @@ export class Chain {
     }
   }
 
-  // Post-softclip tap → gain → tilt → per-sample saturated comb → next block's
-  // return. The comb is where kHz mixer squeal lives; the block-rate global
-  // loop alone is too slow for it.
+  // The no-input desk. Each strip takes a send off the post-softclip tap, tilts
+  // it, recirculates it through its own delay and its own amplifier, and drops
+  // the return on the bus for next block. The delay is where kHz mixer squeal
+  // lives; the block-rate loop round the whole board is far too slow for it.
+  //
+  // What makes three strips more than three times one is Cross. At rest each
+  // recirculates itself, which is the single loop this was for years. Wound up,
+  // each one recirculates its *neighbour* instead, and three delays passing a
+  // saturated signal round a ring is a system with no fixed point to find: it
+  // climbs into one mode, sits there, and falls out of it into another without
+  // anything being touched. The strips have to read before any of them writes,
+  // or the ring is really a chain and the last one is hearing the future.
   private computeFeedback(io: StereoBlock, p: Float32Array) {
     const { n } = io
     const base = p[IDX.fbAmt]!
     const modAmt = this.ctx.mod.read(DEST.fbAmt)
-    if (base <= 0 && !modAmt) {
+    const loops = this.loops
+    loops[0]!.open(base, p[IDX.fbDelayMs]!, p[IDX.fbTone]!, this.sr)
+    loops[1]!.open(p[IDX.fb2Amt]!, p[IDX.fb2Ms]!, p[IDX.fb2Tone]!, this.sr)
+    loops[2]!.open(p[IDX.fb3Amt]!, p[IDX.fb3Ms]!, p[IDX.fb3Tone]!, this.sr)
+    // A wire on the amount can bring the first strip up from a fader that is
+    // all the way down, so the desk is running whenever anything could open it.
+    if (modAmt) loops[0]!.on = true
+
+    let live = 0
+    for (const lp of loops) if (lp.on) live++
+    if (live === 0) {
       this.fbRetL.fill(0)
       this.fbRetR.fill(0)
       return
     }
-    const tilt = p[IDX.fbTone]!
-    const tiltCoef = lpCoef(800, this.sr)
-    const combDelay = Math.max((p[IDX.fbDelayMs]! / 1000) * this.sr, 1)
-    for (let i = 0; i < n; i++) {
-      const amt = modAmt
-        ? Math.min(Math.max(base + modAmt[i]! * 1.5, 0), 1.5)
-        : base
-      const combG = Math.min(amt, 1.05)
-      let xl = io.l[i]! * amt
-      let xr = io.r[i]! * amt
-      const lpL = this.fbTiltLpL.process(xl, tiltCoef)
-      const lpR = this.fbTiltLpR.process(xr, tiltCoef)
-      if (tilt > 0) {
-        xl += tilt * (xl - 2 * lpL)
-        xr += tilt * (xr - 2 * lpR)
-      } else if (tilt < 0) {
-        xl += -tilt * (2 * lpL - xl)
-        xr += -tilt * (2 * lpR - xr)
+
+    // Which strip each one is patched across to. A send into a channel whose
+    // fader is down is a loop that is simply cut, so Cross skips the strips that
+    // aren't there and lands on the next one that is — and with only one strip
+    // up it comes back to itself, because there is nothing to cross to.
+    const across = this.across
+    for (let k = 0; k < N_LOOPS; k++) {
+      let j = k
+      for (let hop = 1; hop <= N_LOOPS; hop++) {
+        const cand = (k + hop) % N_LOOPS
+        if (loops[cand]!.on) {
+          j = cand
+          break
+        }
       }
-      const wl = softclip(xl + combG * this.fbCombL.read(combDelay))
-      const wr = softclip(xr + combG * this.fbCombR.read(combDelay))
-      this.fbCombL.write(wl)
-      this.fbCombR.write(wr)
-      this.fbRetL[i] = wl
-      this.fbRetR[i] = wr
+      across[k] = j
+    }
+    const cross = p[IDX.fbCross]!
+    const near = 1 - cross
+    const sag = p[IDX.fbSag]!
+    // Current goes the instant it is asked for; it comes back through whatever
+    // is feeding the reservoir. Held at one rate both ways the rail found a
+    // level and sat on it, which is a compressor on the desk. Dumping in
+    // milliseconds and refilling over a third of a second is not a level at
+    // all: the loop screams, takes the supply out from under itself, dies, and
+    // has to wait to be able to do it again.
+    const railFall = coef(0.008, this.sr)
+    const railRise = coef(0.35, this.sr)
+    const deskA = coef(0.004, this.sr)
+    const deskR = coef(0.12, this.sr)
+    const amp = ampVoicing(
+      p[IDX.fbRails]!,
+      p[IDX.fbAsym]!,
+      p[IDX.fbSlew]!,
+      p[IDX.fbBlock]!,
+      this.sr,
+    )
+
+    for (let i = 0; i < n; i++) {
+      if (modAmt) {
+        loops[0]!.setAmt(Math.min(Math.max(base + modAmt[i]! * 1.5, 0), 1.5))
+      }
+      const l = io.l[i]!
+      const r = io.r[i]!
+      // What the amps are drawing, and what is left of the rail to draw it
+      // from. Read off what the desk itself put out last sample rather than off
+      // the bus: the bus is everything, and what loads this supply is these
+      // three amplifiers. The draw saturates rather than clipping, so a desk
+      // being played hard keeps answering how hard rather than pinning on the
+      // floor.
+      let rail = 1
+      if (sag > 0) {
+        const draw = this.deskEnv.process(this.deskLast, deskA, deskR) * 3
+        const want =
+          1 - sag * Math.min(Math.max(draw / (1 + draw), this.ctx.droop[i]!), 1)
+        this.deskRail = flushDenormal(
+          this.deskRail +
+            (want < this.deskRail ? railFall : railRise) *
+              (want - this.deskRail),
+        )
+        rail = Math.max(this.deskRail, 0.05)
+      }
+      for (const lp of loops) if (lp.on) lp.read()
+      let sumL = 0
+      let sumR = 0
+      for (let k = 0; k < N_LOOPS; k++) {
+        const lp = loops[k]!
+        if (!lp.on) continue
+        const other = loops[across[k]!]!
+        lp.run(
+          l,
+          r,
+          near * lp.dL + cross * other.dL,
+          near * lp.dR + cross * other.dR,
+          rail,
+          amp,
+        )
+        sumL += lp.wL
+        sumR += lp.wR
+      }
+      this.deskLast = 0.5 * (sumL + sumR)
+      this.fbRetL[i] = sumL
+      this.fbRetR[i] = sumR
     }
   }
 }

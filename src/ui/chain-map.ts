@@ -476,7 +476,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // The bus is soldered to the board whether or not it is turned up, so it
   // stays on the map — greyed at zero, like any other stage sitting at no mix.
-  const fbUp = c.fbAmt > 0
+  const fbUp = c.fbAmt > 0 || c.fb2Amt > 0 || c.fb3Amt > 0
   const bus = stage('Feedback bus', fbUp)
 
   // The two fittings the path runs past rather than through: the bay, whose

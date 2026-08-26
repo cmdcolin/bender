@@ -311,6 +311,31 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'the desk lets go',
+    blurb:
+      'Three cross-fed loops through amps that block — erupts and dies on its own',
+    patch: {
+      chipLevel: 0,
+      crackleAmp: 0.2,
+      fbAmt: 1.2,
+      fbDelayMs: 5,
+      fbTone: 0.3,
+      fb2Amt: 1.1,
+      fb2Ms: 37,
+      fb2Tone: -0.4,
+      fb3Amt: 1,
+      fb3Ms: 121,
+      fb3Tone: 0.1,
+      fbCross: 0.55,
+      fbRails: 1,
+      fbAsym: 0.4,
+      fbSlew: 0.35,
+      fbBlock: 0.9,
+      fbSag: 0.5,
+      mixDrive: 8,
+    },
+  },
+  {
     name: 'divider fuzz',
     blurb: 'A flip-flop octave under the tune, clipped along with it',
     patch: {

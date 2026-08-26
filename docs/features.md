@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 197 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 49 presets and 20 named cuts — and everything below comes off the
+ruin. 209 knobs and switches in 29 groups, seven bends competing for six slots,
+18 ROM tunes, 50 presets and 20 named cuts — and everything below comes off the
 control tables themselves, so the list cannot drift from the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/**
@@ -634,14 +634,26 @@ block-rate global loop is far too slow for that. _Patched into_ decides where
 the return lands.
 
 <details>
-<summary>4 controls</summary>
+<summary>16 controls</summary>
 
-| control      | range                         | what it does                                                                   |
-| ------------ | ----------------------------- | ------------------------------------------------------------------------------ |
-| Amount       | 0 to 1.5                      | Output patched back into the source mix                                        |
-| Loop time    | 0.05 to 500 ms                | The loop’s own comb delay                                                      |
-| Tilt         | −1 to +1                      | Darkens or brightens the loop — decides which register the squeal settles into |
-| Patched into | mix, osc FM, chip rail, delay | Where the return wire is soldered                                              |
+| control      | range                         | what it does                                                                            |
+| ------------ | ----------------------------- | --------------------------------------------------------------------------------------- |
+| Amount       | 0 to 1.5                      | Output patched back into the source mix                                                 |
+| Loop time    | 0.05 to 500 ms                | The loop’s own comb delay                                                               |
+| Tilt         | −1 to +1                      | Darkens or brightens the loop — decides which register the squeal settles into          |
+| Patched into | mix, osc FM, chip rail, delay | Where the return wire is soldered                                                       |
+| Cross        | off to full                   | Sends each strip round the next one’s delay instead of its own                          |
+| Strip 2      | 0 to 1.5                      | A second send and return, on its own fader                                              |
+| Strip 2 time | 0.05 to 500 ms                | How long strip 2’s cord and its circuit take                                            |
+| Strip 2 tilt | −1 to +1                      | Strip 2’s own tilt                                                                      |
+| Strip 3      | 0 to 1.5                      | The third send and return                                                               |
+| Strip 3 time | 0.05 to 500 ms                | How long strip 3’s cord takes                                                           |
+| Strip 3 tilt | −1 to +1                      | Strip 3’s own tilt                                                                      |
+| Rails        | off to full                   | How hard the return amps hit their supply                                               |
+| Rail balance | −1 to +1                      | How far apart the two supplies are                                                      |
+| Slew         | off to full                   | How slow the return amps are                                                            |
+| Supply       | off to full                   | How far the return amps pull their own rail down                                        |
+| Blocking     | off to full                   | The coupling cap into the return amp, and what happens when it is driven past its rails |
 
 </details>
 
@@ -774,7 +786,7 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 
 ### Presets
 
-49 boards worth keeping. Every name is a link that opens the app with that board
+50 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -821,6 +833,8 @@ on it — a link never presses play, so it is loaded and waiting.
   — Bad power: hum, sag and a straining supply
 - [**fm howl**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
   — The feedback bus soldered onto the FM input
+- [**the desk lets go**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.2,mixDrive:8,fbAmt:1.2,fbTone:0.3,fb2Amt:1.1,fb2Tone:-0.4,fb3Amt:1,fb3Tone:0.1,fbCross:0.55,fbRails:1,fbAsym:0.4,fbSlew:0.35,fbBlock:0.9,fbSag:0.5)
+  — Three cross-fed loops through amps that block — erupts and dies on its own
 - [**divider fuzz**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,driveDb:18,distMode:2,distToneHz:4000,subLevel:0.9,distMix:0.8)
   — A flip-flop octave under the tune, clipped along with it
 - [**wall of muff**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,stompCircuit:2,stompDrive:34,stompTone:0.35,stompLevel:-6,stompMix:1,revDecayS:3,revMix:0.3)
