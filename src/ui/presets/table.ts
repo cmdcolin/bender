@@ -311,6 +311,23 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'the loop eats itself',
+    blurb:
+      'Blank tape under the toy — bring the sampler up and hear it come round worse',
+    patch: {
+      chipLevel: 0.7,
+      loopRec: 1,
+      loopErase: 0.12,
+      loopSecs: 4,
+      tapeMix: 1,
+      tapeSpeed: 0,
+      tapeHiss: 0.5,
+      tapeDrop: 0.45,
+      tapeWow: 0.35,
+      tapeDrive: 5,
+    },
+  },
+  {
     name: 'the desk lets go',
     blurb:
       'Three cross-fed loops through amps that block — erupts and dies on its own',

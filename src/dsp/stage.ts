@@ -33,6 +33,13 @@ export interface Ctx {
    * Two buses that disagree are what let the board argue with itself.
    */
   bright: Float32Array
+  /**
+   * Last block's output, mono, taken where the feedback bus is tapped: past the
+   * dc blocker and the safety clipper, before the limiter. What a record head
+   * laid across the board's own output would be hearing — which is a block
+   * behind, the way two heads an inch apart on a loop are.
+   */
+  out: Float32Array
   /** 0 cold, 1 as hot as the board gets. Block rate: it moves over minutes. */
   heat: number
   /**

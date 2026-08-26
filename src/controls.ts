@@ -137,6 +137,9 @@ export const DEFAULT_CONTROLS = {
   sampleSpeed: 1,
   sampleTrig: 0,
   sampleMode: 0,
+  loopRec: 0,
+  loopErase: 1,
+  loopSecs: 4,
 
   // The bus the six of them sum onto, and the one thing about it that is not
   // one of their faders.

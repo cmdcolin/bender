@@ -135,6 +135,9 @@ export const PARAM_DEFS = [
   ['sampleSpeed', 'slew'],
   ['sampleTrig', 'step'],
   ['sampleMode', 'step'],
+  ['loopRec', 'slew'],
+  ['loopErase', 'slew'],
+  ['loopSecs', 'step'],
 
   ['mixDrive', 'ramp'],
 

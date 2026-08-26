@@ -253,6 +253,7 @@ export class Chain {
       sag: new Float32Array(BLOCK),
       droop: new Float32Array(BLOCK),
       env: new Float32Array(BLOCK),
+      out: new Float32Array(BLOCK),
       step: new Float32Array(BLOCK),
       bright: new Float32Array(BLOCK),
       heat: 0,
@@ -295,6 +296,7 @@ export class Chain {
     this.ctx.sag.fill(0)
     this.ctx.droop.fill(0)
     this.ctx.env.fill(0)
+    this.ctx.out.fill(0)
     this.ctx.step.fill(0)
     this.ctx.bright.fill(0)
     this.ctx.heat = 0
@@ -463,6 +465,9 @@ export class Chain {
         envA,
         envR,
       )
+      // For next block, so a record head somewhere back up the path can lay
+      // down what the board put out down here.
+      ctx.out[i] = 0.5 * (l + r)
       // The brightness bus, for next block: how much of what is going round is
       // top end. A loop feeding on itself climbs; a loop choking on its own
       // supply falls.

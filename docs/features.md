@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 209 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 50 presets and 20 named cuts — and everything below comes off the
+ruin. 212 knobs and switches in 29 groups, seven bends competing for six slots,
+18 ROM tunes, 51 presets and 20 named cuts — and everything below comes off the
 control tables themselves, so the list cannot drift from the instrument.
 
 Try it: **https://cmdcolin.github.io/bender/**
@@ -286,14 +286,17 @@ A loaded audio file, looping through the chain — or, with _Struck by_ on a voi
 and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped.
 
 <details>
-<summary>4 controls</summary>
+<summary>7 controls</summary>
 
-| control   | range                                                     | what it does                                                                          |
-| --------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Level     | 0 to 2                                                    | Level of the dropped audio file, looping through the chain                            |
-| Speed     | −4× to +4×                                                | Playback speed                                                                        |
-| Struck by | off, kick, snare, hat, clap, tom, bell, any hit, key, mic | Which trigger line drops the needle back at the top of the file                       |
-| Ending    | loop or one-shot                                          | What happens at the end of the file: round again, or stop there and wait to be struck |
+| control    | range                                                     | what it does                                                                                            |
+| ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Level      | 0 to 2                                                    | Level of the dropped audio file, looping through the chain                                              |
+| Speed      | −4× to +4×                                                | Playback speed                                                                                          |
+| Struck by  | off, kick, snare, hat, clap, tom, bell, any hit, key, mic | Which trigger line drops the needle back at the top of the file                                         |
+| Ending     | loop or one-shot                                          | What happens at the end of the file: round again, or stop there and wait to be struck                   |
+| Record     | off to full                                               | How much of the board’s own output the record head lays back down, on the spot the play head is reading |
+| Erase      | off to full                                               | How much of what is already on the tape the erase head takes off on the way past                        |
+| Blank tape | 0.25 to 20 s                                              | How long a reel to thread when you arm the record head with nothing loaded                              |
 
 </details>
 
@@ -786,7 +789,7 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 
 ### Presets
 
-50 boards worth keeping. Every name is a link that opens the app with that board
+51 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -833,6 +836,8 @@ on it — a link never presses play, so it is loaded and waiting.
   — Bad power: hum, sag and a straining supply
 - [**fm howl**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
   — The feedback bus soldered onto the FM input
+- [**the loop eats itself**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,loopRec:1,loopErase:0.12,tapeMix:1,tapeSpeed:0,tapeDrive:5,tapeHiss:0.5,tapeWow:0.35,tapeDrop:0.45)
+  — Blank tape under the toy — bring the sampler up and hear it come round worse
 - [**the desk lets go**](https://cmdcolin.github.io/bender/#set=chipLevel:0,crackleAmp:0.2,mixDrive:8,fbAmt:1.2,fbTone:0.3,fb2Amt:1.1,fb2Tone:-0.4,fb3Amt:1,fb3Tone:0.1,fbCross:0.55,fbRails:1,fbAsym:0.4,fbSlew:0.35,fbBlock:0.9,fbSag:0.5)
   — Three cross-fed loops through amps that block — erupts and dies on its own
 - [**divider fuzz**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,driveDb:18,distMode:2,distToneHz:4000,subLevel:0.9,distMix:0.8)
