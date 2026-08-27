@@ -51,6 +51,9 @@ const OFF_BOARD = 'in no slot'
 /** the door the rack carries onto the solder under its slots */
 const SOLDER = 'solder'
 
+/** what the empty trigger lane calls itself, which is also its door */
+const NO_TRIG = 'no trig patched'
+
 // A wire's label names what it picks up, so it opens the thing it is clipped
 // onto rather than the bay — mod*Src order. The rest (the bay's own LFO, the
 // supply sag, the output envelope) belong to no one stage, so they open the bay.
@@ -602,7 +605,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // patched across it, and — when you have patched none — that there are none.
   const laneY = chipY + INST_H
   const trigY = laneY + TRIG_H
-  board.h = laneY + Math.max(LABEL_H, trigs.length * TRIG_H) - board.y + 4
+  board.h = laneY + Math.max(CHIP_H, trigs.length * TRIG_H) - board.y + 4
 
   const lineY = board.y + board.h + BAND_GAP
   for (const n of lines) n.y = lineY
@@ -840,18 +843,27 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // map for the panel to list underneath.
   const notes: MapNode[] = []
   // Neither toy fires the other, and the lane they would be bridged across is
-  // empty — so the lane says so, the way the rack says an empty rack.
-  if (trigs.length === 0)
+  // empty — so the lane says so, the way the rack says an empty rack. A chip
+  // rather than a line of text, because it is a door: the drawing writes plain
+  // words on itself too, and a reader who has to press one to find out which is
+  // which has been told nothing by either.
+  if (trigs.length === 0) {
+    const w = textWidth(NO_TRIG, SMALL) + CHIP_PAD * 2
     notes.push(
-      node('no_trig', 'label', 'no trig patched', {
+      node('no_trig', 'chip', NO_TRIG, {
         door: 'Trigger patch',
         active: false,
-        x: midX(toys[1]!),
-        y: laneY,
-        w: textWidth('no trig patched', SMALL),
-        h: LABEL_H,
+        open: o.open === 'Trigger patch',
+        x: midX(toys[1]!) - w / 2,
+        // Clear of the box above it: a line of text could start at the lane's
+        // own top, and an outline starting there would run along the foot of
+        // the drums as if it were part of them.
+        y: laneY + 1,
+        w,
+        h: CHIP_H - 2,
       }),
     )
+  }
 
   // The bridges you patch yourself, under the row and in the patch colour, so
   // nothing here reads like the soldered line above it.

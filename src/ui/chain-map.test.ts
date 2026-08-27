@@ -444,8 +444,10 @@ test('an empty rack says so in the path, and every bend rides in it', () => {
   const rack = box(map, 'rack')!
   expect(rack.label).toBe('no bends patched')
   expect(rack.door).toBe('Slot order')
+  // Every bend, and only the bends: the rack's own doors are chips too.
+  const bends = new Set<string>(BENDS.map(b => b.group))
   expect(
-    map.nodes.filter(n => n.kind === 'chip' && n.id !== 'solder'),
+    map.nodes.filter(n => n.kind === 'chip' && bends.has(n.door ?? '')),
   ).toHaveLength(BENDS.length)
 })
 
@@ -464,8 +466,11 @@ test('a bridged trigger line draws between the two boxes', () => {
   const stock = buildMap(DEFAULT_CONTROLS)
   expect(hop(stock, 'Toy_drums', 'Toy_keyboard')).toBeUndefined()
   // Nothing bridged, so the lane the bridges would run across says so rather
-  // than the part coming off the map.
-  expect(box(stock, 'no_trig')?.door).toBe('Trigger patch')
+  // than the part coming off the map — as a chip, because it is a door and the
+  // drawing keeps its plain captions in plain text.
+  const note = box(stock, 'no_trig')!
+  expect(note.door).toBe('Trigger patch')
+  expect(note.kind).toBe('chip')
 
   const both = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1, trigToDrum: 8 })
   const up = hop(both, 'Toy_drums', 'Toy_keyboard')!
