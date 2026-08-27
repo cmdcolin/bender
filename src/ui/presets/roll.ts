@@ -170,23 +170,39 @@ const audible = (def: SliderDef, rand: () => number) =>
 //
 // `named` says the hand pointed at these controls in particular rather than at
 // a board they happen to be on, which is the one case a shy control rolls like
-// any other — pressing the dice on the crackle is asking for crackle.
+// any other — pressing the dice on the crackle is asking for crackle. It is
+// also the one that has to land somewhere you weren't: every control the toy
+// boots off stays off a third of the time, which is what stops a board roll
+// turning the lot on at once, and over a handful that all boot off it stacks.
+// Pressing roll on a fold of four left the board exactly where it stood one
+// press in thirty-seven, which reads as the panel not answering — so a named
+// roll goes again rather than hand one back. Bounded, because a set with
+// nothing in it that can move would never come back.
+const ROLL_TRIES = 5
+
 export function rollKeys(
   current: Controls,
   keys: Iterable<ControlKey>,
   rand: () => number,
   named = false,
 ): Controls {
-  const next = { ...current }
-  const moved = new Set<ControlKey>()
-  for (const key of keys) {
-    if (YOURS.has(key) || CLOCK_KEYS.has(key)) continue
-    const def = SLIDER_BY_KEY.get(key)
-    if (!def) continue
-    next[key] = rollValue(def, rand, named)
-    moved.add(key)
+  const once = () => {
+    const next = { ...current }
+    const moved = new Set<ControlKey>()
+    for (const key of keys) {
+      if (YOURS.has(key) || CLOCK_KEYS.has(key)) continue
+      const def = SLIDER_BY_KEY.get(key)
+      if (!def) continue
+      next[key] = rollValue(def, rand, named)
+      moved.add(key)
+    }
+    return { board: inTime(next, k => moved.has(k)), moved }
   }
-  return inTime(next, k => moved.has(k))
+  const stirred = (r: ReturnType<typeof once>) =>
+    [...r.moved].some(k => r.board[k] !== current[k])
+  let roll = once()
+  for (let i = 1; named && i < ROLL_TRIES && !stirred(roll); i++) roll = once()
+  return roll.board
 }
 
 /** The controls named, back where they booted, and nothing else moved. */

@@ -3,7 +3,7 @@ import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
 import { hasStep } from '../../drums'
 import { mulberry32 } from '../../dsp/util/rng'
 import { GROUPS, type Group, groupKeys, sliderFor } from '../controls'
-import { mutate, randomLook, resetGroup, rollGroup } from './roll'
+import { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll'
 import { mine, yours } from './testBoard'
 
 const groupNamed = (name: string): Group =>
@@ -246,4 +246,25 @@ test('resetting the kit wipes the pattern it owns', () => {
   const after = resetGroup(groupNamed('Toy drums'), mine())
   expect(after.drumKick).toBe(DEFAULT_CONTROLS.drumKick)
   expect(after.drumClap).toBe(DEFAULT_CONTROLS.drumClap)
+})
+
+// A fold's roll button names the controls under one heading, and the panel
+// shows only the rows with something to act on — so on a stock FM chip it is
+// pointed at four, three of them a choice of which line to cut. Every control
+// the toy boots off stays off a third of the time under a roll, which over four
+// of them left the board exactly where it stood one press in thirty-seven: the
+// button pressed, the panel silent, nothing to say why.
+test('a roll you pointed at lands somewhere you were not', () => {
+  const rows = groupNamed('FM chip')
+    .sliders.filter(s => s.part === 'knife on the bus')
+    .filter(s => !s.needs || s.needs(DEFAULT_CONTROLS))
+    .map(s => s.key)
+  expect(rows.length).toBeGreaterThan(0)
+  for (let seed = 1; seed <= 200; seed++) {
+    const after = rollKeys(DEFAULT_CONTROLS, rows, mulberry32(seed), true)
+    expect(
+      rows.some(k => after[k] !== DEFAULT_CONTROLS[k]),
+      `seed ${seed}`,
+    ).toBe(true)
+  }
 })

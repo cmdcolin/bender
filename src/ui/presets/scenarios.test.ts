@@ -77,7 +77,7 @@ test('wreck it winds up everything that can run away', () => {
   const roll = scenarioNamed('wreck it')
   for (let seed = 1; seed <= 20; seed++) {
     const after = roll(mine(), mulberry32(seed))
-    expect(after.fbAmt).toBeGreaterThan(0.9)
+    expect(after.fbAmt).toBeGreaterThan(1)
     expect(after.dlyFb).toBeGreaterThan(1)
     expect(after.bits).toBeLessThan(8)
   }

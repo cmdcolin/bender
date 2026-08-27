@@ -92,7 +92,11 @@ function knife(current: Controls, rand: () => number): Controls {
 // Positions on the travel rather than values, so the table says "near the top"
 // and the slider says what that means.
 const WRECK: [ControlKey, number, number][] = [
-  ['fbAmt', 0.65, 1],
+  // Past unity, not merely high: the loop is the one on this list that decides
+  // whether the board runs away at all, and two thirds of its travel is exactly
+  // 1.0. A floor under that is a wreck whose global feedback dies away, which
+  // is the one thing the roll is named for.
+  ['fbAmt', 0.7, 1],
   ['fbDelayMs', 0, 0.6],
   ['dlyFb', 0.7, 1],
   ['dlyMix', 0.3, 0.7],
