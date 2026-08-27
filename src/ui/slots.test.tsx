@@ -136,3 +136,50 @@ test('the panel draws no position dropdowns', () => {
   expect(screen.queryAllByRole('slider', { name: /^Position/ })).toHaveLength(0)
   expect(groupKeys(rack())).toContain('bendSlot0')
 })
+
+// What Solder does, which is the one thing about the chain that no control on
+// the board records: the rack is set one way and the board is running another.
+const live = (walk: number[], dropped: number) =>
+  engine.meter.set({
+    ...engine.meter.get(),
+    walk: Uint8Array.from(walk),
+    dropped,
+  })
+
+// Every bend up, because a stage you cannot hear has a better reason to say so
+// than to say where it is sitting — the row has one thing to tell you and the
+// rack spends it on the nearer truth.
+const audible = () => ({
+  ...DEFAULT_CONTROLS,
+  ...Object.fromEntries(BENDS.map(b => [b.mix, 1])),
+})
+
+test('a re-soldered position says where the board has it', () => {
+  engine.controls.set(audible())
+  live([2, 1, 0, 3, 4, 5], 0)
+  openRack()
+  const rows = screen.getAllByRole('listitem')
+  expect(rows[0]!.textContent).toContain('now 3')
+  expect(rows[2]!.textContent).toContain('now 1')
+  // Untouched by the relay, so it says nothing at all.
+  expect(rows[1]!.textContent).not.toContain('now')
+})
+
+test('an open joint says the stage is out of the path', () => {
+  engine.controls.set(audible())
+  live([0, 1, 2, 3, 4, 5], 1 << 1)
+  openRack()
+  expect(screen.getAllByRole('listitem')[1]!.textContent).toContain('dropped')
+})
+
+// A bend named twice runs where the signal meets it first, and the relay is
+// what decides which one that is — so the rack has to read the duplicate off
+// the walk rather than off its own rows.
+test('which copy of a doubled bend is dead follows the walk', () => {
+  engine.controls.set({ ...audible(), bendSlot3: DEFAULT_CONTROLS.bendSlot0 })
+  live([3, 1, 2, 0, 4, 5], 0)
+  openRack()
+  const rows = screen.getAllByRole('listitem')
+  expect(rows[3]!.textContent).not.toContain('already above')
+  expect(rows[0]!.textContent).toContain('already above')
+})

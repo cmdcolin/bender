@@ -201,6 +201,8 @@ class BenderProcessor extends AudioWorkletProcessor {
         // note report, and cleared here — the peaks are held between reads, so
         // whoever reads them is the only thing that may clear them.
         taps: this.built.chain.taps,
+        walk: this.built.chain.walk,
+        dropped: this.built.chain.dropped,
         sampleSecs: sampler.frames / sampleRate,
         samplePos: sampler.head,
         samplePlaying: sampler.rolling,

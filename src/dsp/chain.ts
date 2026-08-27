@@ -218,6 +218,21 @@ export class Chain {
   // sit on top of the params rather than in them, so the settings on screen stay
   // the settings you gave it — the order and the routing are what moved.
   private order = [0, 1, 2, 3, 4, 5]
+  /**
+   * What the chain is actually doing, as against what it was set to. Both of
+   * the Solder controls rewrite the path from inside the audio thread — the
+   * relay swaps two positions and a dry joint drops one out mid-note — and
+   * neither of them touches a control, so the panel has no other way to know.
+   * A rack drawn off the board alone is a drawing of the chain you asked for
+   * while a different one plays.
+   *
+   * `walk[k]` is the position the signal reads at its kth step, and bit k of
+   * `dropped` says that step's joint was open for this block. Both are read
+   * every block and posted with the meter; nothing in the audio path reads
+   * them.
+   */
+  readonly walk = Uint8Array.from(SLOT_IDX.map((_, i) => i))
+  dropped = 0
   private fbShift = 0
 
   /**
@@ -304,6 +319,8 @@ export class Chain {
     this.relayBurst.reset()
     for (const j of this.joints) j.reset()
     this.order = [0, 1, 2, 3, 4, 5]
+    this.walk.set(this.order)
+    this.dropped = 0
     this.fbShift = 0
     this.limitEnv = 0
     this.deskEnv.reset()
@@ -562,7 +579,9 @@ export class Chain {
     const slots = this.slots
     for (let i = 0; i < SLOT_IDX.length; i++) slots[i] = p[SLOT_IDX[i]!]!
     let seen = 0
+    let dropped = 0
     for (let k = 0; k < SLOT_IDX.length; k++) {
+      this.walk[k] = this.order[k]!
       const id = Math.round(slots[this.order[k]!]!)
       const first = id > 0 && !(seen & (1 << id))
       if (id > 0) seen |= 1 << id
@@ -583,9 +602,13 @@ export class Chain {
         io.l[0]! += click
         io.r[0]! += click
       }
-      if (!passing) continue
+      if (!passing) {
+        dropped |= 1 << k
+        continue
+      }
       if (!s.when || s.when(p, this.ctx)) s.process(io, p, this.ctx)
     }
+    this.dropped = dropped
   }
 
   // The no-input desk. Each strip takes a send off the post-softclip tap, tilts

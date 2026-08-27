@@ -57,6 +57,11 @@ export interface Meter {
       the chain's taps. Read by the mixer's meters, which draw straight to the
       DOM off it rather than through a render. */
   taps: Float32Array
+  /** Which position the chain is running at each step of its walk, and which
+      steps have a joint open — what Solder is doing to the path, which no
+      control on the board says. See the chain's own walk. */
+  walk: Uint8Array
+  dropped: number
   /** The reel the sampler is playing: its length in seconds (0 with nothing
       threaded), where the head stands over it, whether it is turning, and its
       envelope. Read by the reel, which draws off it every frame. */
@@ -132,6 +137,8 @@ export class Engine {
       rail: 1,
       reboots: 0,
       taps: new Float32Array(N_TAPS),
+      walk: Uint8Array.from([0, 1, 2, 3, 4, 5]),
+      dropped: 0,
       sampleSecs: 0,
       samplePos: 0,
       samplePlaying: false,
@@ -268,6 +275,8 @@ export class Engine {
           rail: msg.rail,
           reboots: msg.reboots,
           taps: msg.taps,
+          walk: msg.walk,
+          dropped: msg.dropped,
           sampleSecs: msg.sampleSecs,
           samplePos: msg.samplePos,
           samplePlaying: msg.samplePlaying,

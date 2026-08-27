@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../controls'
-import { render, renderBender, rms } from './testRender'
+import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { packParams } from '../engine/params'
+import { buildChain } from './build'
+import { makeIo, render, renderBender, rms, SR } from './testRender'
 
 test('all-mixes-zero equals no bends: same output with slots emptied', () => {
   const base: Partial<Controls> = { chipLevel: 0.5 }
@@ -83,4 +85,46 @@ test('each machine runs on its own run line', () => {
   // Neither is the other: the kit on its own has no sustained tone in it, and
   // the tune on its own has no step of the pattern.
   expect(runLines(false, true)).not.toEqual(runLines(true, false))
+})
+
+// The two Solder controls rewrite the path from inside the audio thread and
+// touch no control on their way, so the walk they leave behind is the only
+// account of what actually ran.
+test('the chain reports the walk it took, not the one it was set', () => {
+  const chain = buildChain(SR)
+  const io = makeIo()
+  const p = packParams({ ...DEFAULT_CONTROLS, chipLevel: 0.5 })
+  chain.process(io, p)
+  expect([...chain.walk]).toEqual([0, 1, 2, 3, 4, 5])
+  expect(chain.dropped).toBe(0)
+
+  const relay = buildChain(SR)
+  const hot = packParams({ ...DEFAULT_CONTROLS, chipLevel: 0.5, relayRate: 1 })
+  let swapped = false
+  for (let b = 0; b < 400 && !swapped; b++) {
+    relay.process(io, hot)
+    swapped = [...relay.walk].join('') !== '012345'
+  }
+  expect(swapped).toBe(true)
+  // A swap, not a loss: every position is still somewhere in the walk.
+  expect([...relay.walk].sort()).toEqual([0, 1, 2, 3, 4, 5])
+})
+
+test('a cold joint reports the step it opened', () => {
+  const chain = buildChain(SR)
+  const io = makeIo()
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0.5,
+    jointChatter: 0.9,
+  })
+  let open = 0
+  for (let b = 0; b < 400 && open === 0; b++) {
+    chain.process(io, p)
+    open = chain.dropped
+  }
+  expect(open).toBeGreaterThan(0)
+  // Only steps with a bend soldered into them: the sixth slot boots empty and
+  // an empty socket has no joint to break.
+  expect(open & (1 << 5)).toBe(0)
 })

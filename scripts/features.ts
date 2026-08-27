@@ -48,7 +48,7 @@ const BLURBS: Record<string, string> = {
   'Signal chain':
     'The order the bends run in — six positions the sound walks top to bottom on its way from the mix bus to the pedals, one bend to a position. Drag a box to move it, or take it with the arrow keys; drag or press the one riding off the board to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds. Seven bends for six positions, so one always sits out. This is the half of the path you arrange — the pedals downstream are four boxes soldered to the board in one order, and only their own mixes take them out of it.',
   Solder:
-    'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it.',
+    'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it. Neither writes to a control — the settings stay exactly where you left them and the path moves underneath — so the rack on the Signal chain panel is where you watch it happen.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
   Crusher:
     'Bit depth and sample rate, both down far enough to fall apart, with jitter on the rate.',
@@ -247,7 +247,11 @@ a shelf under it. The ${num(g.sliders.length)} controls in the table below are t
 writes — it draws them, so the panel does not draw them a second time as
 dropdowns. Order is only half of what the path is: a bend can sit in a position
 and still be inaudible, either because its own dry/wet is at zero or because it
-already ran higher up, and the row it is on says which.\n`
+already ran higher up, and the row it is on says which. The rows also read back
+what *Solder* is doing to the path while you play — a position the relay has
+moved says where the board is running it, and one whose joint has opened says it
+is out of the path altogether. Neither of those is a control, so this is the
+only place either of them can be seen.\n`
   if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table

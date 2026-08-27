@@ -105,6 +105,12 @@ export interface MeterMsg {
       — the serializer copies it on the way across, so what arrives is this
       read and nothing of the next one. */
   taps: Float32Array
+  /** What the bend rack is actually running, which is not what its six controls
+      say whenever Solder is up: `walk[k]` is the position the signal reads at
+      its kth step, and bit k of `dropped` says that step's joint was open. The
+      chain's own buffer, posted untransferred like the scope. */
+  walk: Uint8Array
+  dropped: number
   /** The reel: how long it is in seconds (0 with no tape threaded), where the
       play head stands over the whole of it, whether it is turning, and what is
       on it. The envelope is the sampler's own buffer, posted untransferred like

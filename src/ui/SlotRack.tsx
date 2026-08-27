@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Controls } from '../controls'
 import { engine } from '../engine/engine'
-import { useBoardValue } from './ControlsContext'
+import { useBoardValue, useMeterValue } from './ControlsContext'
 import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls'
 import styles from './SlotRack.module.css'
 
@@ -57,12 +57,46 @@ export function SlotRack() {
     if (row instanceof HTMLElement) row.focus()
   }, [land])
 
+  // What the chain is running, as against what it is set to. Solder rewrites the
+  // path from inside the audio thread — the relay swaps two positions, a dry
+  // joint drops one out mid-note — and it writes to no control, so the rack has
+  // to be told. Read as one string, so a board with the solder cold hears about
+  // none of it: the walk stands still and nothing here renders again.
+  const live = useMeterValue(m => `${m.walk.join('')}:${m.dropped}`)
+  const [order, openMask] = live.split(':')
+  const walk = order!.split('').map(Number)
+  const dropped = Number(openMask)
+
+  // Which step of the walk each position is being read at, and which positions
+  // are the ones actually heard — a bend named twice runs only where the signal
+  // meets it first, and *where it meets it first* is the walk's order, not the
+  // rack's. At rest the two are the same and this is the plain reading.
+  const stepOf = walk.reduce<number[]>((at, slot, k) => {
+    at[slot] = k
+    return at
+  }, [])
   const seen = new Set<number>()
+  const runs = new Set<number>()
+  for (const slot of walk) {
+    const id = slots[slot]!
+    if (id > 0 && !seen.has(id)) {
+      seen.add(id)
+      runs.add(slot)
+    }
+  }
+
   const rows = slots.map((id, i) => {
     const bend = bendAt(id)
-    const dupe = bend !== undefined && seen.has(id)
-    if (bend !== undefined) seen.add(id)
-    return { i, id, bend, dupe, mix: bend ? mixOf[id - 1]! : 0 }
+    const step = stepOf[i] ?? i
+    return {
+      i,
+      id,
+      bend,
+      dupe: bend !== undefined && !runs.has(i),
+      open: (dropped & (1 << step)) !== 0,
+      step,
+      mix: bend ? mixOf[id - 1]! : 0,
+    }
   })
   const loose = BENDS.map((b, i) => ({ bend: b, id: i + 1 })).filter(
     b => !seen.has(b.id),
@@ -127,26 +161,37 @@ export function SlotRack() {
       <ol className={styles.slots} ref={list}>
         {rows.map(row => {
           const off = row.bend === undefined
-          const quiet = off || row.dupe || row.mix === 0
+          // Where the board has this position right now, which is its own
+          // place until the relay moves it.
+          const moved = !off && row.step !== row.i
+          const quiet = off || row.open || row.dupe || row.mix === 0
           const title = off
             ? `Position ${row.i + 1} is empty — nothing runs here.`
-            : row.dupe
-              ? `${row.bend!.group} already sits earlier in the chain, so this position does nothing — a bend only runs at its first one.`
-              : row.mix === 0
-                ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
-                : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it, or take it with the arrow keys.`
-          // What the row of dry/wet faders under the rack used to be for. A
-          // stage can be in the path and inaudible two ways, and both of them
-          // are why a position you just filled changed nothing — so the rack
-          // says which, on the row, rather than sending you to a fader to
-          // work it out.
+            : row.open
+              ? `${row.bend!.group} — the joint under it is open, so it is out of the path altogether until the solder comes back.`
+              : row.dupe
+                ? `${row.bend!.group} already sits earlier in the chain, so this position does nothing — a bend only runs at its first one.`
+                : row.mix === 0
+                  ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
+                  : moved
+                    ? `${row.bend!.group} is set to position ${row.i + 1}, and the board has re-soldered it to ${row.step + 1}. Re-solder is what moves it; the settings are still yours.`
+                    : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it, or take it with the arrow keys.`
+          // What the row of dry/wet faders under the rack used to be for, and
+          // what no control on the board can say. A stage can be in the path
+          // and inaudible, or somewhere other than where you put it, and both
+          // are why a rack you have read carefully is not what you can hear.
+          // Whichever is true of it now, said on the row it is about.
           const tag = off
             ? ''
-            : row.dupe
-              ? 'already above'
-              : row.mix === 0
-                ? 'silent'
-                : ''
+            : row.open
+              ? 'dropped'
+              : row.dupe
+                ? 'already above'
+                : row.mix === 0
+                  ? 'silent'
+                  : moved
+                    ? `now ${row.step + 1}`
+                    : ''
           return (
             <li
               key={row.i}

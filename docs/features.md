@@ -385,7 +385,11 @@ under it. The six controls in the table below are the ones the rack writes — i
 draws them, so the panel does not draw them a second time as dropdowns. Order is
 only half of what the path is: a bend can sit in a position and still be
 inaudible, either because its own dry/wet is at zero or because it already ran
-higher up, and the row it is on says which.
+higher up, and the row it is on says which. The rows also read back what
+_Solder_ is doing to the path while you play — a position the relay has moved
+says where the board is running it, and one whose joint has opened says it is
+out of the path altogether. Neither of those is a control, so this is the only
+place either of them can be seen.
 
 Named settings, one press each at the head of the panel — the stage goes back to
 stock and the setting is written over it, so the rows underneath say what it
@@ -425,7 +429,9 @@ What the slots are held in by. _Dry joints_ drops the bend on a slot out of the
 path mid-note — a click on the way out, another on the way back, and whatever it
 was ringing left mid-ring. _Re-solder_ swaps two slots outright while you play,
 or moves the feedback return to a different pin, so the order changes with
-nobody’s hand on it.
+nobody’s hand on it. Neither writes to a control — the settings stay exactly
+where you left them and the path moves underneath — so the rack on the Signal
+chain panel is where you watch it happen.
 
 <details>
 <summary>2 controls</summary>

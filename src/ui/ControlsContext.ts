@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import type { ControlKey, Controls } from '../controls'
-import { engine } from '../engine/engine'
+import { engine, type Meter } from '../engine/engine'
 
 // One figure read off the board, rather than the board. Every write hands the
 // store a fresh object — and a morph writes one per animation frame for as long
@@ -21,6 +21,19 @@ export function useBoardValue<T extends string | number | boolean | undefined>(
 
 export function useControlValue(key: ControlKey): number {
   return useBoardValue(c => c[key])
+}
+
+// The same bargain against the meter, which posts a fresh object every frame
+// for as long as the audio thread runs. A component that takes the whole meter
+// to read one figure off it redraws at frame rate for ever; one that reads a
+// figure only hears the frames that moved it — and on a board with nothing
+// wrong, most of what the meter carries does not move at all.
+export function useMeterValue<T extends string | number | boolean | undefined>(
+  read: (m: Meter) => T,
+): T {
+  return useSyncExternalStore(engine.meter.subscribe, () =>
+    read(engine.meter.get()),
+  )
 }
 
 export function useStoreValue<T>(store: {
