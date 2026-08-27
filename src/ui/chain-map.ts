@@ -49,9 +49,6 @@ const SRC_LABEL = sliderFor('mod0Src').choices ?? []
     its own — and out of the path, which is the thing worth saying. */
 const OFF_BOARD = 'in no slot'
 
-/** the door the rack carries onto the solder under its slots */
-const SOLDER = 'solder'
-
 /** what the empty trigger lane calls itself, which is also its door */
 const NO_TRIG = 'no trig patched'
 
@@ -217,9 +214,6 @@ export interface MapNode {
   h: number
   /** 'label' only: which end of the text x is */
   anchor?: 'start' | 'end'
-  /** 'rack' only: the column its solder chip takes at the left, which the name
-      centres clear of */
-  lead?: number
   /** 'inst' only: how far its fader is up, along that fader's own travel */
   level?: number
   /** 'inst' only: running right now, off a switch of its own */
@@ -435,32 +429,24 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // The rack itself, at the head of the run rather than on a shelf under the
   // drawing: the signal walks into it before it walks the slots. Six slots and
-  // seven bends, so one is always in none of them — those ride in the rack as
-  // loose chips, each a door of its own, which is where a stage that is on the
-  // board and not in the path belongs.
+  // seven bends, so one is always in none of them — those ride at the head of
+  // the path as loose chips, each a door of its own, which is where a stage
+  // that is on the board and not in the path belongs.
   const bends = bendOrder(c)
   const loose = BENDS.filter(b => !bends.includes(b.group))
   const chipW = loose.map(b => textWidth(b.label, SMALL) + CHIP_PAD * 2)
-  // An empty rack says so on its own line, so the chips under it need no
-  // caption to say what they are: with nothing in any slot, every bend on the
-  // board is one of them.
+  // With nothing in any slot, every bend on the board is a loose chip, which
+  // is plain enough without a caption saying so.
   const capW = bends.length ? textWidth(OFF_BOARD, SMALL) + 6 : 0
-  // And the solder under those slots, which is the one thing on the board that
-  // rewrites the drawing: a joint opens mid-note and takes its stage out of the
-  // path, and the board swaps two of them behind your back. So it reads off the
-  // row it rewrites — as a chip, in the grammar the drawing already uses for
-  // everything you can press, rather than as a word beside the reset column.
-  doors.add('Solder')
   for (const b of loose) doors.add(b.group)
-  const solderW = textWidth(SOLDER, SMALL) + CHIP_PAD * 2
-  // A box like any other on the path, but not a door onto one: which bend runs
-  // where is Signal order's to open, off the foot of the drawing, the same way
-  // Wear opens what the board's ageing is doing rather than any one stage.
+  // No box of its own, and no door: which bend runs where is Signal order's to
+  // open, off the foot of the drawing. What's left of the rack is a place to
+  // anchor the loose chips and the run down to the first bend — nothing worth
+  // drawing a frame around.
   const rack = node(
     'rack',
     'rack',
     bends.length ? 'signal chain' : 'no bends patched',
-    { lead: solderW + PAD_X },
   )
   path.push(rack)
   for (const name of bends) {
@@ -515,12 +501,16 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       i => SRC_GROUP[Math.round(c[`mod${i}Src`])] === 'Body contact',
     ),
   )
-  // Heat, the burst rate every fault on the board rolls against, and the loop
-  // wired to its own supply: nothing here is about one stage, so none of it has
-  // a box to hang off.
+  // Heat, the burst rate every fault on the board rolls against, the loop
+  // wired to its own supply, and the solder under the bend slots: nothing here
+  // is about one stage, so none of it has a box to hang off.
   const wear = stage(
     'Wear',
-    c.heatAmt > 0 || c.faultCluster > 0 || c.couple > 0,
+    c.heatAmt > 0 ||
+      c.faultCluster > 0 ||
+      c.couple > 0 ||
+      c.jointChatter > 0 ||
+      c.relayRate > 0,
   )
   const order = stage('Signal order', touchedCount('Signal order', c) > 0)
   // Pad then bay, left to right, because that is the way the one wire between
@@ -563,10 +553,11 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           // Whatever the widest chip in the rack needs beside the caption: a
           // column cut to the names on the path would spill them out of it.
           PAD_X * 2 + capW + Math.max(0, ...chipW),
-          ...[...path, bus].map(
-            n =>
-              PAD_X * 2 + (n.lead ?? 0) + textWidth(n.label, FONT) + countCol,
-          ),
+          // The rack draws no box of its own, so its label costs no width —
+          // only the stages actually on the path do.
+          ...[...path, bus]
+            .filter(n => n.kind !== 'rack')
+            .map(n => PAD_X * 2 + textWidth(n.label, FONT) + countCol),
         ) +
         (cols - 1) * COL_GAP,
     ),
@@ -667,7 +658,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
 
   // What the rack is carrying, drawn inside it now that it has landed: the
-  // solder its slots sit on, the bends in none of them, and what to call those.
+  // bends in none of its slots, and what to call those.
   const loosePart = new Map(
     rackChips.map(ch => [
       ch.group,
@@ -694,23 +685,6 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         anchor: 'start',
       }),
     )
-  // At the left of the name row, the far side of the box from the count — which
-  // is the button that puts the slots back, and not a thing to land on by
-  // missing something else.
-  parts.push(
-    node('solder', 'chip', SOLDER, {
-      door: 'Solder',
-      // Lit while the joints are actually chattering or the board is swapping
-      // slots, which is the map saying why the order keeps moving on its own.
-      active: c.jointChatter > 0 || c.relayRate > 0,
-      open: o.open === 'Solder',
-      x: rack.x + PAD_X,
-      y: rack.y + (BOX_H - CHIP_H) / 2 + 1,
-      w: solderW,
-      h: CHIP_H - 2,
-    }),
-  )
-
   const band = [...chips, ...lines]
   const byId = new Map(
     [...path, ...band, ...foot, mix, bus].map(n => [n.id, n]),
@@ -1536,47 +1510,12 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
     ])
   }
 
-  // The rack the bends sit in: a box on the path like any other, with the row
-  // the bends in none of its slots ride in under its name. One box round both
-  // rows, so the run down to the first bend passes it rather than through it.
-  if (n.kind === 'rack') {
-    const lead = n.lead ?? 0
-    const inner = [
-      el('rect', {
-        className: 'box',
-        x: n.x,
-        y: n.y,
-        width: n.w,
-        height: n.h,
-        rx: 4,
-        fill: n.open ? k.open : k.bg,
-        stroke: n.open ? k.fg : n.count > 0 ? k.accent : k.border,
-        strokeWidth: n.open ? 2 : 1,
-      }),
-      // Centred on what is left between the solder chip and the count column,
-      // so the name reads as the middle of the space it has rather than as
-      // shoved off one side of the box.
-      words(
-        n.label,
-        n.x + lead + (n.w - lead - (links ? COUNT_COL : 0)) / 2,
-        baseline(n.y, BOX_H, FONT),
-        FONT,
-        k.fg,
-      ),
-    ]
-    return el('g', { className: 'node' }, [
-      ...door(inner, n.door, links),
-      ...resetButton(
-        n.door ?? n.label,
-        n.count,
-        n.x + n.w,
-        n.y,
-        BOX_H,
-        k,
-        links,
-      ),
-    ])
-  }
+  // The rack the bends sit in: no box of its own any more — ordering used to
+  // open here and now opens off Signal order at the foot of the drawing, so
+  // there is nothing left on this node worth a frame or a name. What it
+  // carries — the bends in none of its slots — draws as its own chips,
+  // positioned off this node's now-invisible bounds.
+  if (n.kind === 'rack') return el('g', { className: 'node' }, [])
 
   // A chip riding in the rack: a short name in a dashed outline, because there
   // is nothing soldered to either end of it. A bend in none of the slots is one;
