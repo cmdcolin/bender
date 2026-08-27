@@ -372,17 +372,20 @@ silencing it.
 
 The order the bends run in — six positions the sound walks top to bottom on its
 way from the mix bus to the pedals, one bend to a position. Drag a box to move
-it; drag the one riding off the board into a position to bring it in. Order is
-most of what a chain of effects sounds like: a crusher into a filter and a
-filter into a crusher are the same two stages and two different sounds. Seven
-bends for six positions, so one always sits out.
+it, or take it with the arrow keys; drag or press the one riding off the board
+to bring it in. Order is most of what a chain of effects sounds like: a crusher
+into a filter and a filter into a crusher are the same two stages and two
+different sounds. Seven bends for six positions, so one always sits out. This is
+the half of the path you arrange — the pedals downstream are four boxes soldered
+to the board in one order, and only their own mixes take them out of it.
 
-The rack is the chain itself: a row per position, dragged to reorder, with the
-bend riding off the board on a shelf under it. The six selects below do the same
-writing for the keyboard, and each bend's dry/wet sits under those — the order
-is only half of what the path is, since a stage in slot 2 with its mix at zero
-sits in the chain playing silent. Those seven faders are counted under the bends
-they belong to.
+The rack is the chain itself and the whole of the panel: a row per position,
+dragged or arrow-keyed to reorder, with whatever is in no position on a shelf
+under it. The six controls in the table below are the ones the rack writes — it
+draws them, so the panel does not draw them a second time as dropdowns. Order is
+only half of what the path is: a bend can sit in a position and still be
+inaudible, either because its own dry/wet is at zero or because it already ran
+higher up, and the row it is on says which.
 
 Named settings, one press each at the head of the panel — the stage goes back to
 stock and the setting is written over it, so the rows underneath say what it
@@ -557,6 +560,11 @@ again and partials climb forever.
 </details>
 
 ## Pedals
+
+Four boxes after the bends, and unlike the bends they do not move: the order
+below is the order the signal meets them, and nothing on the board changes it.
+What a pedal has instead is its own return — at zero it is on the board and out
+of the path.
 
 ### Stompbox
 

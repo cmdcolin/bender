@@ -471,6 +471,12 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     path.push(stage(name, mixKey ? c[mixKey] > 0 : true))
   }
 
+  // Where the rack ends. Everything above this walks in the order you put it
+  // in; everything below is soldered down in the order it is drawn, and without
+  // something said between them the two runs are one run of identical boxes and
+  // the reorderable half of the board looks like the fixed half.
+  path.push(node('pedals', 'plain', 'pedals, in this fixed order'))
+
   for (const [name, active] of [
     ['Stompbox', c.stompMix > 0],
     ['Tape delay', c.dlyMix > 0],

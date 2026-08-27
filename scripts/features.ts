@@ -46,7 +46,7 @@ const BLURBS: Record<string, string> = {
   'Mix bus':
     'The desk the six sources meet at, and the only place their balance against each other is a thing you can see. Every fader is drawn here as well as on its own machine’s panel, under the machine’s name, with a meter beside it reading what that channel is putting on the bus and the bus’s own meter under the lot. A fader says how far it is up, not whether anything is coming out — the FM chip is the reason: it boots at zero, it has no keyboard of its own, and turned up on a toy nothing is striking it is three quarters and silence. *Bus drive* is the summing amp: a wire at unity, and the one saturation ahead of the bends.',
   'Signal chain':
-    'The order the bends run in — six positions the sound walks top to bottom on its way from the mix bus to the pedals, one bend to a position. Drag a box to move it; drag the one riding off the board into a position to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds. Seven bends for six positions, so one always sits out.',
+    'The order the bends run in — six positions the sound walks top to bottom on its way from the mix bus to the pedals, one bend to a position. Drag a box to move it, or take it with the arrow keys; drag or press the one riding off the board to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds. Seven bends for six positions, so one always sits out. This is the half of the path you arrange — the pedals downstream are four boxes soldered to the board in one order, and only their own mixes take them out of it.',
   Solder:
     'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
@@ -241,12 +241,13 @@ function grid(g: Group): string {
 are counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.\n`
   if (g.editor?.kind === 'slots')
-    return `\nThe rack is the chain itself: a row per position, dragged to
-reorder, with the bend riding off the board on a shelf under it. The six
-selects below do the same writing for the keyboard, and each bend's
-dry/wet sits under those — the order is only half of what the path is, since a stage in
-slot 2 with its mix at zero sits in the chain playing silent. Those ${num(BENDS.length)} faders
-are counted under the bends they belong to.\n`
+    return `\nThe rack is the chain itself and the whole of the panel: a row per
+position, dragged or arrow-keyed to reorder, with whatever is in no position on
+a shelf under it. The ${num(g.sliders.length)} controls in the table below are the ones the rack
+writes — it draws them, so the panel does not draw them a second time as
+dropdowns. Order is only half of what the path is: a bend can sit in a position
+and still be inaudible, either because its own dry/wet is at zero or because it
+already ran higher up, and the row it is on says which.\n`
   if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table
@@ -406,6 +407,14 @@ the board rather than joining it.
     if (place === 'Bends') {
       out.push(
         `${cap(num(BENDS.length))} for ${num(GROUPS.find(g => g.name === 'Signal chain')!.sliders.length)} slots, so one always sits out, and the slots are ordered. Each has a mix, and a mix at zero takes the stage out of the path rather than merely silencing it.\n`,
+      )
+    }
+    // The bends are a rack and the pedals are a board, and every drawing of the
+    // path runs them together as one row of boxes. Said once, where the second
+    // half starts.
+    if (place === 'Pedals') {
+      out.push(
+        `${cap(num(groups.length))} boxes after the bends, and unlike the bends they do not move: the order below is the order the signal meets them, and nothing on the board changes it. What a pedal has instead is its own return — at zero it is on the board and out of the path.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))

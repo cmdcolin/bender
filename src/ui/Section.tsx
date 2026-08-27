@@ -73,6 +73,7 @@ function parts(group: Group): Part[] {
   const out: Part[] = []
   for (const def of group.sliders) {
     if ((group.lead ?? []).includes(def.key)) continue
+    if ((group.handled ?? []).includes(def.key)) continue
     const name = def.part ?? null
     const last = out[out.length - 1]
     if (last?.name === name) last.sliders.push(def)
@@ -547,9 +548,10 @@ export function PathHint() {
       </p>
       <p className={styles.hintPath}>
         the drawing is the path the sound takes: the sources sum onto the mix
-        bus, walk the <em>signal chain</em> — six effects in whatever order you
-        put them, and the order is most of what they sound like — then the
-        pedals, the tape and out
+        bus, walk the <em>signal chain</em> — six positions you put the bends
+        into in whatever order you like, and the order is most of what they
+        sound like — and then the pedals, which are four boxes bolted down in
+        one order you cannot change, the tape and out
       </p>
     </>
   )

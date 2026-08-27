@@ -88,6 +88,14 @@ export interface Group {
     | { kind: 'patch' }
     | { kind: 'trigger' }
     | { kind: 'mic' }
+  /** Controls the group's own widget turns, so the panel draws no row for them.
+      The definitions stay in `sliders` — they are what a roll, a reset, a rig
+      and the URL all go through, and what names the choices a widget offers —
+      but a second copy of the widget as a stack of dropdowns underneath is one
+      way in too many, and reads as more board than there is.
+
+      Not `lead`, which moves a row above the widget. This removes it. */
+  handled?: readonly ControlKey[]
   /** Sliders the panel draws above the editor rather than under it. A widget
       the size of a piano roll pushes the row naming which song the chip plays
       far enough down that you stop finding it, and that row is the first thing

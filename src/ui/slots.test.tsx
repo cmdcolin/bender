@@ -3,14 +3,15 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
-import { BENDS, bendAt, GROUPS } from './controls'
+import { BENDS, bendAt, GROUPS, groupKeys } from './controls'
 import { applyRig, rigsFor } from './presets'
 import { OpenGroup } from './Section'
 import './testDom'
 
-// The rack: a row per position, dragged to reorder, with the six selects under
-// it doing the same writing for the keyboard. A bend can be in a position and
-// still inaudible, and the row says so rather than a fader under it.
+// The rack, which is the whole of the Signal chain panel: a row per position,
+// dragged or arrow-keyed to reorder, with whatever is in no position on a shelf
+// under it. A bend can be in a position and still inaudible, and the row says
+// which way rather than a fader underneath.
 
 const rack = () => {
   const g = GROUPS.find(g => g.name === 'Signal chain')
@@ -95,4 +96,43 @@ test('a drag that never lands changes nothing', () => {
   fireEvent.dragStart(rows[1]!)
   fireEvent.dragEnd(rows[1]!)
   expect(rowNames()).toEqual(before)
+})
+
+// The same move without a mouse. The rack replaced six dropdowns, and a rack
+// only a pointer can work would have taken the chain's order away from the
+// keyboard along with them.
+test('the arrow keys carry a bend up the chain', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS })
+  openRack()
+  fireEvent.keyDown(screen.getAllByRole('listitem')[2]!, { key: 'ArrowUp' })
+  const after = engine.controls.get()
+  expect(bendAt(after.bendSlot1)?.group).toBe('Clipper')
+  expect(bendAt(after.bendSlot2)?.group).toBe('Crusher')
+})
+
+test('delete takes a bend off the board', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS })
+  openRack()
+  fireEvent.keyDown(screen.getAllByRole('listitem')[0]!, { key: 'Delete' })
+  expect(engine.controls.get().bendSlot0).toBe(0)
+  expect(screen.getByTitle(/Ring mod is in no position/)).toBeTruthy()
+})
+
+// Pressing a loose bend rather than dragging it: it takes the first position
+// nothing is in, which after the delete above is the one just emptied.
+test('a loose bend can be pressed into the first empty position', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS, bendSlot0: 0 })
+  openRack()
+  fireEvent.click(screen.getByTitle(/Ring mod is in no position/))
+  expect(bendAt(engine.controls.get().bendSlot0)?.group).toBe('Ring mod')
+})
+
+// The six dropdowns the rack was drawn over. They are still the controls a
+// roll, a rig and the URL all go through — the panel just stopped drawing a
+// second way to turn them.
+test('the panel draws no position dropdowns', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS })
+  openRack()
+  expect(screen.queryAllByRole('slider', { name: /^Position/ })).toHaveLength(0)
+  expect(groupKeys(rack())).toContain('bendSlot0')
 })
