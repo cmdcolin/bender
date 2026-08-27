@@ -6,7 +6,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { encodeControls } from '../src/ui/share'
 
 // The README's one picture: the panel drawn big on the left, and the whole app
-// beside it with the panel ringed in red where it actually sits. `pnpm figure`
+// small beside it with the panel ringed in red where it actually sits. `pnpm figure`
 // rewrites docs/img/panel-callout.jpg from the app as it is now, so the shot
 // never drifts from the board — no hand-cropping to redo.
 //
@@ -28,47 +28,15 @@ const DPR = 2
 
 const PAD = 24
 const GAP = 40
-const PANEL_H = 820
-const APP_W = 1020
+const PANEL_H = 1240
+const APP_W = 700
 const BG = '#131316'
 const RING = '#ff3b30'
 
-// A board with something on it. Stock, the panel is a column of grey boxes and
-// the picture says nothing about what the app does, so this patches bends,
-// pedals, the tape and three wires of the bay — the drawing then carries move
-// counts, wire depths and the feedback loop, which is the reason for the shot.
-const BOARD: Controls = {
-  ...DEFAULT_CONTROLS,
-  chipStarve: 0.5,
-  ringMix: 0.6,
-  ringHz: 120,
-  crushMix: 0.5,
-  bits: 5,
-  filtMix: 0.7,
-  filtHz: 800,
-  filtRes: 0.6,
-  glitchMix: 0.4,
-  glitchProb: 0.3,
-  combMix: 0.5,
-  combHz: 220,
-  driveDb: 12,
-  distMix: 0.8,
-  dlyMix: 0.4,
-  revMix: 0.35,
-  tapeMix: 0.6,
-  tapeWow: 0.3,
-  fbAmt: 0.7,
-  fbDelayMs: 40,
-  mod0Src: 1,
-  mod0Dest: 0,
-  mod0Depth: 0.7,
-  mod1Src: 2,
-  mod1Dest: 13,
-  mod1Depth: -0.5,
-  mod2Src: 3,
-  mod2Dest: 6,
-  mod2Depth: 0.4,
-}
+// The stock board: every bend, pedal and wire off, so the drawing is the chain
+// itself and nothing else. The picture is there to show the shape of the
+// signal path, not a patch.
+const BOARD: Controls = { ...DEFAULT_CONTROLS }
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 

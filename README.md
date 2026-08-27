@@ -11,15 +11,13 @@ Real-time in the browser, on one AudioWorklet.
 
 ## The signal path
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, which runs into the slot rack that orders the bends, then through the bends themselves, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, with the feedback bus wired from output back to the mix" src="img/chain-light.svg" width="420">
-</picture>
+The panel is a live drawing of the chain: sources sum into the mix bus, which
+runs through the slot rack that orders the bends, then the pedals, the tape
+machine and the output, with the feedback bus wired back from output to mix.
+Click a box to open its controls, and the drawing itself changes as you patch
+the board.
 
-The panel is a live drawing of this chain: click a box to open its controls, and
-the drawing itself changes as you patch the board.
-
-![The panel drawn large on the left and the whole app beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the six bend slots beside the pedals and the tape machine, patch wires labelled with their depths arching in from the LFO and the envelope, and the feedback bus running back under the whole run](docs/img/panel-callout.jpg)
+![The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the six bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run](docs/img/panel-callout.jpg)
 
 Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 
