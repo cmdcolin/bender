@@ -175,23 +175,38 @@ export function Presets(props: { morphSeconds: MorphSeconds }) {
   const rest = PRESETS.length - shown.length - (stray ? 1 : 0)
 
   return (
-    <div className={styles.presets}>
-      {[...shown, ...(stray ? [stray] : [])].map(p => (
-        <PresetChip
-          key={p.name}
-          def={p}
-          scrub={held?.name === p.name ? held : null}
-          morphSeconds={props.morphSeconds}
-          onScrub={setScrub}
-        />
-      ))}
-      <button
-        className={styles.more}
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-      >
-        {open ? 'hide' : `show ${rest} more`}
-      </button>
-    </div>
+    <section className={styles.section} aria-label="presets">
+      {/* A heading, because the row had none and needed one more than anything
+          else on the panel did. Fifty-one named boards is one of the two ways
+          the board arrives, and unlabelled — in the same chip the MIDI switches
+          and the stage verbs wear, directly under two rows of randomisers — it
+          read as more randomisers.
+
+          The drag is on the heading rather than on the chips: it is the best
+          thing the row does and it lived in a tooltip, so nobody found it, and
+          fifty-one chips is the wrong place to say a thing once. */}
+      <div className={styles.head}>
+        <span className={styles.title}>presets</span>
+        <span className={styles.hint}>drag one sideways to stop part way</span>
+        <button
+          className={styles.more}
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+        >
+          {open ? 'hide' : `show ${rest} more`}
+        </button>
+      </div>
+      <div className={styles.presets}>
+        {[...shown, ...(stray ? [stray] : [])].map(p => (
+          <PresetChip
+            key={p.name}
+            def={p}
+            scrub={held?.name === p.name ? held : null}
+            morphSeconds={props.morphSeconds}
+            onScrub={setScrub}
+          />
+        ))}
+      </div>
+    </section>
   )
 }

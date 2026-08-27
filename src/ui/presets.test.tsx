@@ -169,6 +169,17 @@ test('re-grabbing a chip carries on along the same road', () => {
     expect(engine.controls.get()[key]).toBeCloseTo(from[key], 5)
 })
 
+// The row is one of the two ways a board arrives and it went unlabelled, in the
+// same chip the MIDI switches wear, under two rows of randomisers — so it read
+// as more randomisers. And the drag above is the best thing it does, and lived
+// only in a tooltip on a chip you had to already be pointing at.
+test('the row says what it is and what it does', () => {
+  render(<Presets morphSeconds={0} />)
+  const head = screen.getByLabelText('presets')
+  expect(head.textContent).toMatch(/^presets/)
+  expect(head.textContent).toMatch(/drag one sideways/)
+})
+
 // Forty-five chips is a wall, so the row shows a dozen and the rest arrive when
 // you ask for them.
 const COLLAPSED = 12 // how many the row shows shut, from Presets.tsx

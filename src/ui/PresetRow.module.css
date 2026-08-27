@@ -1,3 +1,32 @@
+/* The heading the row never had, drawn to the same rule every other heading in
+   the panel is: a title, and the section's own verbs at the far end of it. */
+.section {
+  border-top: 1px solid var(--border-quiet);
+  padding-top: 4px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 2px;
+  color: var(--fg);
+  font-size: var(--fs-lg);
+}
+
+.title {
+  font-weight: 600;
+}
+
+/* Where the drag is said. It is the best thing the row does — stopping part way
+   to a preset is where the sounds between two boards live — and it was written
+   down only in a tooltip, on a chip you have to already be pointing at. */
+.hint {
+  flex: 1;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
 .presets {
   display: flex;
   flex-wrap: wrap;
@@ -5,10 +34,18 @@
   padding-bottom: 5px;
 }
 
-/* pan-y so a vertical scroll over the row still scrolls the panel: the chip
+/* A pick and not a chip: a set where exactly one is on is what this row is, and
+   the pill it wore is the shape the panel uses for a tag rather than for a
+   switch you throw — which is half of why fifty-one of them read as filtering
+   rather than as choosing. The other half is that they sat at the size of a
+   caption, so this one set of picks is a step up from the rest. It is one of
+   the two ways a board arrives; the ROM picks inside an open stage are not.
+
+   pan-y so a vertical scroll over the row still scrolls the panel: the chip
    only claims the sideways drag. */
 .preset {
-  composes: chip from './button.module.css';
+  composes: pick from './button.module.css';
+  font-size: var(--fs-sm);
   position: relative;
   overflow: hidden;
   touch-action: pan-y;
@@ -23,7 +60,7 @@
    else moves the board. */
 .presetOn {
   composes: preset;
-  composes: chipOn from './button.module.css';
+  composes: pickOn from './button.module.css';
 }
 
 /* How far along this preset the board is standing. A transform on a full-width
@@ -42,9 +79,10 @@
   position: relative;
 }
 
-/* The chip that opens the rest of the catalog, and shuts it again. Quiet,
-   because it names no board — it sits at the end of the row rather than in a
-   line of its own so the fold doesn't cost a whole row of height. */
+/* What opens the rest of the catalog, and shuts it again. On the heading now
+   rather than trailing the chips, where it was the fifty-second thing in a row
+   of boards and named none of them. Quiet, the way every verb on a heading in
+   this panel is: the heading is a label first. */
 .more {
   composes: chipQuiet from './button.module.css';
 }
