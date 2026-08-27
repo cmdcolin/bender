@@ -83,6 +83,7 @@ export interface Group {
     | { kind: 'drums'; keys: ControlKey[] }
     | { kind: 'roll'; keys: ControlKey[] }
     | { kind: 'mixer' }
+    | { kind: 'slots' }
     | { kind: 'feedback' }
   /** Sliders the panel draws above the editor rather than under it. A widget
       the size of a piano roll pushes the row naming which song the chip plays

@@ -31,6 +31,10 @@ export const BEND_GROUPS: Group[] = [
   {
     name: 'Slot order',
     place: 'Bends',
+    // The picture drawn above these rows, in SlotRack: a box per slot in
+    // signal order and the odd bend out riding loose beside them, so the
+    // six selects below read as a rack rather than a wall of dropdowns.
+    editor: { kind: 'slots' },
     sliders: BEND_SLOT_KEYS.map((key, i) => ({
       key,
       label: `Slot ${i + 1}`,

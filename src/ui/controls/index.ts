@@ -43,7 +43,8 @@ export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
 const editorKeys = (g: Group) =>
   g.editor !== undefined &&
   g.editor.kind !== 'mixer' &&
-  g.editor.kind !== 'feedback'
+  g.editor.kind !== 'feedback' &&
+  g.editor.kind !== 'slots'
     ? g.editor.keys
     : []
 

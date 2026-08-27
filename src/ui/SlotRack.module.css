@@ -1,0 +1,24 @@
+/* The rack as a picture rather than six identical selects: a bend per box,
+   stacked in the order the signal walks them, with whatever didn't make the
+   cut drawn loose to the side. The rows of selects under it still do the
+   writing — this is only what makes reading them worth doing. */
+.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 2px 0 8px;
+}
+
+.caption {
+  font-size: var(--fs-xs);
+  fill: var(--fg4);
+}
+
+.num {
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-size: var(--fs-sm);
+}
