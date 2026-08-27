@@ -73,6 +73,11 @@ export class Sampler implements Stage {
   readonly peaks = new Float32Array(PEAK_BINS)
   private binMax = 0
   private binAt = -1
+  // Where the window actually stood at the end of the last block, as fractions
+  // of the reel. The knobs are only half the answer once a wire is on the
+  // markers, and the panel draws the tape rather than the controls.
+  private winIn = 0
+  private winOut = 1
 
   constructor(sr: number) {
     this.micTrig = new Transient(sr)
@@ -92,6 +97,18 @@ export class Sampler implements Stage {
   /** Whether the reel is turning, as against a one-shot that has run out. */
   get rolling(): boolean {
     return this.playing
+  }
+
+  // The stretch of reel that came round last block, which is what the two knobs
+  // say until a wire lands on them and what the wire says after that. A stage
+  // the level has skipped keeps the last one: the tape stopped, and this is
+  // where it stopped.
+  get windowIn(): number {
+    return this.winIn
+  }
+
+  get windowOut(): number {
+    return this.winOut
   }
 
   // The envelope comes in already worked out where there is somewhere better to
@@ -248,6 +265,9 @@ export class Sampler implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
+
+    this.winIn = from / n
+    this.winOut = to / n
   }
 
   panic() {

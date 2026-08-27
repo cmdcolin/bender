@@ -205,6 +205,8 @@ class BenderProcessor extends AudioWorkletProcessor {
         samplePos: sampler.head,
         samplePlaying: sampler.rolling,
         samplePeaks: sampler.peaks,
+        sampleIn: sampler.windowIn,
+        sampleOut: sampler.windowOut,
       })
       this.peak = 0
       this.duck = 0

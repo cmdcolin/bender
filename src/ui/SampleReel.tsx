@@ -86,8 +86,18 @@ export function SampleReel() {
       }
       const m = engine.meter.get()
       const c = engine.controls.get()
-      const from = Math.min(c.loopIn, c.loopOut)
-      const to = Math.max(c.loopIn, c.loopOut)
+      // Two windows, and they are the same window until a wire off the bay
+      // lands on the markers. What is lit is the tape that came round last
+      // block, because that is what you are hearing; the handles stay on the
+      // knobs, because that is what your hand set and what it can grab. A wire
+      // running is the pair coming apart, which is what a wire looks like
+      // everywhere else on the board.
+      const from = m.sampleIn
+      const to = m.sampleOut
+      const handles = [
+        Math.min(c.loopIn, c.loopOut),
+        Math.max(c.loopIn, c.loopOut),
+      ] as const
       const mid = h / 2
       const bw = Math.max(Math.round(w / PEAK_BINS), 1)
 
@@ -113,10 +123,8 @@ export function SampleReel() {
       // The markers, each with a shoulder at top and bottom turned into the
       // window — which is what says which side of the line the loop is on.
       g.fillStyle = '#ffb03b'
-      for (const [at, side] of [
-        [from, 1],
-        [to, -1],
-      ] as const) {
+      for (const [i, at] of handles.entries()) {
+        const side = i === 0 ? 1 : -1
         const x = Math.round(at * w)
         g.fillRect(x - dpr, 0, 2 * dpr, h)
         g.fillRect(x - dpr, 0, side * 7 * dpr, 4 * dpr)

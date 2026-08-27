@@ -206,3 +206,31 @@ test('a loop over the whole reel comes round at the end of it', () => {
   const spread = 20 * Math.log10(Math.sqrt(band) / bin(out, 200))
   expect(spread).toBeLessThan(-120)
 })
+
+// The reel draws the tape rather than the two knobs, so a wire off the bay onto
+// the markers has to reach the drawing. It used to sit still while the loop
+// jumped around the recording underneath it.
+test('an unwired board reports the window its knobs are set to', () => {
+  let at: [number, number] = [-1, -1]
+  renderBender(
+    { ...PLAYING, loopIn: 0.25, loopOut: 0.75 },
+    0.5,
+    b => b.sampler.setBuffer(twoTone()),
+    undefined,
+    b => (at = [b.sampler.windowIn, b.sampler.windowOut]),
+  )
+  expect(at[0]).toBeCloseTo(0.25, 4)
+  expect(at[1]).toBeCloseTo(0.75, 4)
+})
+
+test('a wire on the slide moves the window the reel reports', () => {
+  const seen: number[] = []
+  renderBender(
+    { ...WIRED, loopOut: 0.2, mod0Dest: DEST.loopSlide, mod0Depth: 1 },
+    2,
+    b => b.sampler.setBuffer(twoTone()),
+    undefined,
+    b => seen.push(b.sampler.windowIn),
+  )
+  expect(Math.max(...seen) - Math.min(...seen)).toBeGreaterThan(0.2)
+})

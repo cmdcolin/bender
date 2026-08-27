@@ -114,6 +114,11 @@ export interface MeterMsg {
   samplePos: number
   samplePlaying: boolean
   samplePeaks: Float32Array
+  /** The stretch of reel that came round last block, 0..1 over the whole of
+      it. Not the two knobs: a wire off the bay onto the markers moves the
+      window per sample, and the reel draws the tape rather than the controls. */
+  sampleIn: number
+  sampleOut: number
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

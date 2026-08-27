@@ -63,6 +63,10 @@ export interface Meter {
   samplePos: number
   samplePlaying: boolean
   samplePeaks: Float32Array
+  /** The stretch of reel that came round last block. The two knobs until a wire
+      off the bay lands on the markers, and the wire's answer after that. */
+  sampleIn: number
+  sampleOut: number
 }
 
 // What a board on the edge of running away sounds like from the main thread.
@@ -131,6 +135,8 @@ export class Engine {
       samplePos: 0,
       samplePlaying: false,
       samplePeaks: new Float32Array(PEAK_BINS),
+      sampleIn: 0,
+      sampleOut: 1,
     })
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
@@ -265,6 +271,8 @@ export class Engine {
           samplePos: msg.samplePos,
           samplePlaying: msg.samplePlaying,
           samplePeaks: msg.samplePeaks,
+          sampleIn: msg.sampleIn,
+          sampleOut: msg.sampleOut,
         })
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
