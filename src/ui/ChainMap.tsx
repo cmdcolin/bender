@@ -10,7 +10,7 @@ import type { Controls } from '../controls'
 import { engine } from '../engine/engine'
 import { buildMap, drawMap } from './chain-map'
 import { useStoreValue } from './ControlsContext'
-import { GROUPS } from './controls'
+import { GROUPS, groupKeys } from './controls'
 import { resetGroup } from './presets'
 import { Shelf } from './Section'
 import type { El } from './svg'
@@ -97,7 +97,12 @@ export function ChainMap({
       back ?? target.closest('[data-door]')?.getAttribute('data-door') ?? '',
     )
     if (!group) return false
-    if (back) engine.morphTo(resetGroup(group, engine.controls.get()), seconds)
+    if (back)
+      engine.morphTo(
+        resetGroup(group, engine.controls.get()),
+        seconds,
+        new Set(groupKeys(group)),
+      )
     else onOpen(group.name)
     return true
   }

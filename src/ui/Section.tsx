@@ -3,7 +3,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { groupAnchor } from './chain-map'
 import { useBoardValue } from './ControlsContext'
 import { engine } from '../engine/engine'
-import { touchedCount, type Group, type SliderDef } from './controls'
+import { groupKeys, touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
 import { MicPatch } from './MicPatch'
@@ -46,7 +46,11 @@ function useTouchedCount(group: Group): number {
 // lands in the walk like every other verb, so pressing it by mistake costs one
 // ctrl+z. The map draws its own copy of this in SVG, to the same rule.
 function putBack(group: Group, seconds: number) {
-  engine.morphTo(resetGroup(group, engine.controls.get()), seconds)
+  engine.morphTo(
+    resetGroup(group, engine.controls.get()),
+    seconds,
+    new Set(groupKeys(group)),
+  )
 }
 
 const putBackTitle = (group: Group, touched: number) =>
@@ -147,7 +151,11 @@ function PartVerbs({
           className={moved > 0 ? styles.partReset : styles.partOff}
           disabled={moved === 0}
           onClick={() =>
-            engine.morphTo(resetKeys(engine.controls.get(), keys), seconds)
+            engine.morphTo(
+              resetKeys(engine.controls.get(), keys),
+              seconds,
+              new Set(keys),
+            )
           }
         >
           {moved > 0 ? `reset ${moved}` : 'reset'}

@@ -31,9 +31,12 @@ export class Glide {
   constructor(
     private readonly from: Controls,
     private readonly to: Controls,
+    // Keys HOLD_KEYS would otherwise shield — set by a caller that means to
+    // change one of them on purpose, such as a reset that owns outGain.
+    forceKeys: ReadonlySet<ControlKey> = new Set(),
   ) {
     const moved = CONTROL_KEYS.filter(
-      k => !HOLD_KEYS.has(k) && from[k] !== to[k],
+      k => (forceKeys.has(k) || !HOLD_KEYS.has(k)) && from[k] !== to[k],
     )
     this.travel = moved.filter(k => !CUT_KEYS.has(k))
     this.switching = moved.filter(k => CUT_KEYS.has(k))

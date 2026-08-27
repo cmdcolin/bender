@@ -45,6 +45,18 @@ test('never touches the volume, the mic or the pad under your finger', () => {
   }
 })
 
+test('a caller that owns one can force it through, like a reset on its own group', () => {
+  const from = board({ outGain: 0.2, bodyX: 0.9 })
+  const glide = new Glide(
+    from,
+    board({ outGain: 1, bodyX: 0 }),
+    new Set(['outGain']),
+  )
+  expect(glide.at(from, 1).outGain).toBe(1)
+  // Forcing outGain does not drag bodyX along with it.
+  expect(glide.at(from, 1).bodyX).toBe(0.9)
+})
+
 test('a hand on a slider the morph is not moving survives it', () => {
   const from = board({ dlyFb: 0 })
   const glide = new Glide(from, board({ dlyFb: 1 }))

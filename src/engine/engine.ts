@@ -391,10 +391,10 @@ export class Engine {
   // Every whole-board verb — a preset, random, mutate, reset — comes through
   // here, so the walk covers all of them without each caller having to remember
   // to bank one.
-  morphTo(target: Controls, seconds = 1) {
+  morphTo(target: Controls, seconds = 1, forceKeys?: ReadonlySet<ControlKey>) {
     this.stopHunt()
     this.bank()
-    this.travel(target, seconds)
+    this.travel(target, seconds, forceKeys)
   }
 
   // Audition a row of boards and keep the one nearest the edge of running away.
@@ -520,9 +520,13 @@ export class Engine {
   // off from the *live* controls, so rolls chain: hitting random again halfway
   // through a morph leaves from where the board actually is rather than snapping
   // back to the last resting board first.
-  private travel(target: Controls, seconds: number) {
+  private travel(
+    target: Controls,
+    seconds: number,
+    forceKeys?: ReadonlySet<ControlKey>,
+  ) {
     this.cancelMorph()
-    const glide = new Glide(this.controls.get(), target)
+    const glide = new Glide(this.controls.get(), target, forceKeys)
     const land = () => {
       this.cancelMorph()
       this.controls.set(glide.at(this.controls.get(), 1))
