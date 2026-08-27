@@ -158,7 +158,11 @@ export function SlotRack() {
             title={`${bend.group} is in no position, so the signal never reaches it. Drag it onto one to bring it into the chain.`}
             draggable
             onDragStart={e => {
+              // Both types: the private one is what the rack reads, and a
+              // plain-text payload is what some browsers want to see before
+              // they will let a drop happen at all.
               e.dataTransfer.setData('text/bend', String(id))
+              e.dataTransfer.setData('text/plain', bend.group)
               setHeld(OFF)
             }}
             onDragEnd={() => {
