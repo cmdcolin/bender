@@ -12,6 +12,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        shy: true,
         help: 'The master supply sags under load: loud passages collapse and pump like a dying battery.',
       },
       {
@@ -21,6 +22,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 50,
         step: 0.5,
         unit: 'Hz',
+        shy: true,
         help: 'Random full dropouts — a loose power jack.',
       },
       {
@@ -108,6 +110,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 4,
         step: 0.05,
         unit: '',
+        shy: true,
         help: 'How hard bare metal chokes the supply when it lands. Low is a lean on the pitch; high is a full brownout on every touch. Crank it and each contact trips the watchdog, so Clip chatter becomes a reboot machine.',
       },
       {

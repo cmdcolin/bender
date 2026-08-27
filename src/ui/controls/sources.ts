@@ -215,6 +215,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        shy: true,
         help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip. One oscillator clocks the whole chip, so a sag that lasts slurs and slows the tune together, the way a tape does.',
       },
       {
@@ -225,6 +226,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        shy: true,
         help: 'How flat the cells are. The rail never comes back to full, so the toy runs low and slow — pitch, tempo and the drum machine with it — and every note sags it further with nothing starving it. Far enough down and a chord alone browns the chip out.',
       },
       {
@@ -276,6 +278,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        shy: true,
         help: 'How often a brownout jams the chip instead of rebooting it. A latched CMOS die holds whatever note was sounding and keeps drawing current, so it screams one note into the floor until the rail gives out under it and the watchdog gets its power cycle.',
       },
       {
