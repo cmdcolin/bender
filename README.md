@@ -1,64 +1,34 @@
 # bender
 
-A virtual toy keyboard and drum machine run on a modelled supply rail; you
-starve the rail, solder a pot onto the die, patch a microphone into the circuit,
-and listen to what falls out. Nothing here plays a "glitch sample" — the
-reboots, pitch dives and screams emerge from the mechanisms.
-
-Real-time in the browser, on one AudioWorklet.
+A virtual toy keyboard and drum machine on a modelled supply rail. Starve the
+rail, solder a pot onto the die, listen to what falls out. Nothing plays a
+"glitch sample" — the reboots and pitch dives come out of the mechanisms.
 
 **Live: https://cmdcolin.github.io/bender/**
 
 ## The signal path
 
-The panel is a live drawing of the chain: sources sum into the mix bus, which
-runs through the slot rack that orders the bends, then the pedals, the tape
-machine and the output, with the feedback bus wired back from output to mix.
-Click a box to open its controls, and the drawing itself changes as you patch
-the board.
+The panel draws the chain live: sources into the mix bus, through the bend
+slots, the pedals, the tape machine, out, and the feedback bus back again. Click
+a box for its controls. The drawing changes as you patch.
 
-![The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the six bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run](docs/img/panel-callout.jpg)
+![The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run](docs/img/panel-callout.jpg)
 
 Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 
 ## Features
 
-- A toy keyboard, a drum machine and an FM chip sharing one starvable power
-  supply — everything downstream of it dives, slows and reboots together.
-- **Bends**: real hardware faults patched onto actual bus lines and rail nodes,
-  not effects. Cut, ground, bridge or pull up a data or address line and the
-  wrong byte lands. See [Bends](docs/BENDS.md) for the tour.
-- Six reorderable bend slots, four pedals, a four-wire patch bay that modulates
-  its own depths, three feedback loops, five slow "ageing" mechanisms, and a
-  tape machine as the final stage.
-- A melody memory with its own piano roll, and a sixteen-step drum machine with
-  polymeter and pattern-rewriting rolls. Play both from the computer keyboard,
-  the screen, or a controller.
-- **A sampler that is also the tape.** Drop an audio file in, or roll one off
-  archive.org, and play it at any speed either way round. Arm the record head
-  and the board lays its own output back onto the reel, so what comes past next
-  lap has been through the whole chain again — a bend in the path makes the loop
-  diverge rather than fade. The reel is drawn: drag its two markers to trim the
-  loop, drag the tape to move the head.
-- A microphone into the mix, or soldered into the middle of the board — the
-  chip's rail, an oscillator's FM input, the delay's feedback — and a body
-  contact pad wired anywhere in the bay.
-- 51 presets, 20 named cuts, and dice that roll a whole board, one stage, or a
-  knife. **Morph** travels between two boards over up to thirty seconds instead
-  of cutting, **hunt** auditions boards and keeps the one nearest the edge,
-  **drift** never lets the board arrive anywhere, and ctrl+z walks back through
-  every board you have been on.
-- The panel _is_ the signal path: a live drawing that redraws as you patch, with
-  a desk, meters, a scope and a rail lamp beside it.
-- The whole board — settings, pattern and melody — lives in the URL, so a link
-  is a patch: packed into a couple of dozen characters by default, or spelled
-  out as `#set=chipStarve:0.8,dlyFb:0.6` when you would rather program the board
-  by typing at the address bar. Record the output to wav.
-- Everything runs inside one audio callback with a fixed safety tail, so no
-  setting can blow up the output.
+- Simulates circuit bending toy keyboard, toy drum machine, and basic FM synth
+- Effects, including tape delay and guitar-pedal styles
+- A patch bay where modulators can modulate other modulators
+- Buttons to easily randomize all the settings
+- Connect MIDI controller via WebMIDI (works with Chrome, Firefox Nightly)
+- Shareable URLs
 
-See [docs/features.md](docs/features.md) for every control, generated straight
-from the app's own tables.
+Uses AudioWorklet API...surpringly powerful and fast
+https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet
+
+See full feature list - [docs/features.md](docs/features.md)
 
 ## Run
 
