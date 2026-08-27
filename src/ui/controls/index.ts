@@ -44,7 +44,8 @@ const editorKeys = (g: Group) =>
   g.editor !== undefined &&
   g.editor.kind !== 'mixer' &&
   g.editor.kind !== 'feedback' &&
-  g.editor.kind !== 'slots'
+  g.editor.kind !== 'slots' &&
+  g.editor.kind !== 'patch'
     ? g.editor.keys
     : []
 

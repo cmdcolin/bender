@@ -85,6 +85,7 @@ export interface Group {
     | { kind: 'mixer' }
     | { kind: 'slots' }
     | { kind: 'feedback' }
+    | { kind: 'patch' }
   /** Sliders the panel draws above the editor rather than under it. A widget
       the size of a piano roll pushes the row naming which song the chip plays
       far enough down that you stop finding it, and that row is the first thing

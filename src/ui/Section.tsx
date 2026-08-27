@@ -7,6 +7,7 @@ import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
 import { Mixer } from './Mixer'
+import { PatchBay } from './PatchBay'
 import { SlotRack } from './SlotRack'
 import { TuneRoll } from './TuneRoll'
 import {
@@ -411,6 +412,7 @@ export function OpenGroup({
         {group.editor?.kind === 'mixer' && <Mixer />}
         {group.editor?.kind === 'feedback' && <FeedbackLoops />}
         {group.editor?.kind === 'slots' && <SlotRack />}
+        {group.editor?.kind === 'patch' && <PatchBay />}
         <Rows key={group.name} group={group} seconds={seconds} />
       </div>
     </div>

@@ -6,6 +6,10 @@ export const PATCH_GROUPS: Group[] = [
   {
     name: 'Patch bay',
     place: 'Patch',
+    // The picture drawn above these rows, in PatchBay: a box-to-box lead per
+    // wire, so the four rows of source/destination pairs read as a bay
+    // rather than as forty-nine choices to cross-reference by hand.
+    editor: { kind: 'patch' },
     sliders: [
       {
         key: 'modLfoHz',

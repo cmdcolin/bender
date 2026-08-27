@@ -1,0 +1,19 @@
+/* The bay as four wires drawn rather than twelve rows read: source into
+   destination, colour for the sign, dash for depth at zero or nothing
+   plugged in, and a curved lead where a wire's other end is another wire's
+   own depth — the one thing here that closes a loop on itself. */
+.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 2px 0 8px;
+}
+
+.label {
+  font-size: var(--fs-xs);
+}
+
+.num {
+  font-size: var(--fs-xs);
+  fill: var(--fg4);
+}
