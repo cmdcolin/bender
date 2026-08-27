@@ -240,6 +240,11 @@ function grid(g: Group): string {
     return `\nThe desk is a widget rather than a row of sliders, and its ${num(CHANNELS.length)} faders
 are counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.\n`
+  if (g.editor?.kind === 'slots')
+    return `\nThe rack draws the chain as a picture and carries each bend's
+dry/wet under it — the order is only half of what the path is, since a stage in
+slot 2 with its mix at zero sits in the chain playing silent. Those ${num(BENDS.length)} faders
+are counted under the bends they belong to.\n`
   if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table
@@ -314,7 +319,7 @@ function build(): string {
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. ${sliders.length} knobs and switches in ${GROUPS.length} groups, ${num(BENDS.length)} bends competing for ${num(slots)} slots,
-${ROMS.length} ROM tunes, ${PRESETS.length} presets, ${RIGS.length} desk settings and ${CUTS.length} named cuts — and everything
+${ROMS.length} ROM tunes, ${PRESETS.length} presets, ${RIGS.length} stage settings and ${CUTS.length} named cuts — and everything
 below comes off
 the control tables themselves, so the list cannot drift from the instrument.
 

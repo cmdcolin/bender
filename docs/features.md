@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 215 knobs and switches in 30 groups, seven bends competing for six slots,
-18 ROM tunes, 52 presets, 8 desk settings and 20 named cuts — and everything
+18 ROM tunes, 52 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -372,6 +372,34 @@ silencing it.
 
 Which bend sits in which position, and therefore what order they run in. Fewer
 slots than bends, so one always sits out.
+
+The rack draws the chain as a picture and carries each bend's dry/wet under it —
+the order is only half of what the path is, since a stage in slot 2 with its mix
+at zero sits in the chain playing silent. Those seven faders are counted under
+the bends they belong to.
+
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
+
+- **crush, then filter**: A five-bit decimator with the filter after it —
+  everything the crusher folded down comes back through 900 Hz, so the aliasing
+  is inside the growl rather than on top of it
+- **filter, then crush**: The same two stages the other way round: the filter
+  picks a band and the crusher folds _that_ down, so the aliases land above the
+  filter and nothing takes them off again — the pair to hear against the one
+  before it
+- **fuzz into the comb**: Fuzz first, so the comb is given a wave that is
+  already square and rings on its harmonics — a tuned string plucked by a
+  distortion pedal
+- **comb into the fuzz**: The comb first, so what reaches the fuzz is a handful
+  of loud resonant peaks — they intermodulate against each other in the clipper
+  and come out as a chord nothing played
+- **chopped, then rung**: The stutter ahead of the comb, so every repeat arrives
+  at the string as a fresh pluck and the ring restarts with it
+- **rung, then chopped**: The stutter after the comb, so what gets sliced and
+  played backwards is the ring itself — the same two stages, and the repeats now
+  cut across the decay instead of starting it
 
 <details>
 <summary>6 controls</summary>

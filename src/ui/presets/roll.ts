@@ -104,6 +104,8 @@ export function mutate(
 // you can't pick out is worth less than a stage that isn't there.
 const MAX_WET_BENDS = 3
 
+const MIXES = new Set<ControlKey>(BENDS.map(b => b.mix))
+
 function thinOut(next: Controls, rand: () => number): Controls {
   const wet = BENDS.filter(b => next[b.mix] > sliderFor(b.mix).min)
   for (let i = wet.length - 1; i > 0; i--) {
@@ -246,6 +248,12 @@ export function rollGroup(
   // stood. The kit's own grid comes off the bottom of this function instead —
   // no step of it has a slider, so rollKeys walks straight past them.
   const next = rollKeys(current, groupKeys(group), rand)
+  // The rack borrows every bend's dry/wet, so its own dice can wet all seven at
+  // once — which is the porridge the blind dice are thinned to avoid, arrived at
+  // from the one panel where the order of the chain is the thing you are trying
+  // to hear. Thinned the same way, and only where a roll covers more than one of
+  // them: a bend's own panel rolling its own mix is not a chain.
+  if (groupKeys(group).filter(k => MIXES.has(k)).length > 1) thinOut(next, rand)
   // Pressing the dice on the crackle is asking for crackle: the shy controls of
   // the stage you pointed at roll the way the rest of the board's do. Shy is
   // about what a roll of the whole board hands you unasked.

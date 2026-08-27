@@ -22,3 +22,18 @@
 .label {
   font-size: var(--fs-sm);
 }
+
+/* The mixes under the six selects, fenced off by a rule: the rows above say
+   what the chain is and these say how much of the board goes down it. */
+.mixes {
+  border-top: 1px solid var(--border-quiet);
+  margin-top: 6px;
+  padding-top: 4px;
+}
+
+.mixHead {
+  display: block;
+  padding: 2px 2px 4px;
+  color: var(--fg3);
+  font-size: var(--fs-sm);
+}

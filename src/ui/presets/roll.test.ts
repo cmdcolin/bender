@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
 import { hasStep } from '../../drums'
 import { mulberry32 } from '../../dsp/util/rng'
-import { GROUPS, type Group, groupKeys, sliderFor } from '../controls'
+import { BENDS, GROUPS, type Group, groupKeys, sliderFor } from '../controls'
 import { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll'
 import { mine, yours } from './testBoard'
 
@@ -266,5 +266,16 @@ test('a roll you pointed at lands somewhere you were not', () => {
       rows.some(k => after[k] !== DEFAULT_CONTROLS[k]),
       `seed ${seed}`,
     ).toBe(true)
+  }
+})
+
+// The rack borrows all seven dry/wets, so without thinning its own dice hand
+// back six bends half there and none of them the thing you are hearing.
+test('the slot rack rolls a chain you can pick apart', () => {
+  const rack = GROUPS.find(g => g.name === 'Slot order')!
+  const rand = mulberry32(9)
+  for (let i = 0; i < 40; i++) {
+    const rolled = rollGroup(rack, DEFAULT_CONTROLS, rand)
+    expect(BENDS.filter(b => rolled[b.mix] > 0).length).toBeLessThanOrEqual(3)
   }
 })

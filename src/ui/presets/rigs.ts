@@ -1,5 +1,9 @@
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { choiceValue, groupKeys } from '../controls'
+import {
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../../controls'
+import { choiceValue, groupKeys, sliderFor } from '../controls'
 
 // A whole stage set up, where a cut is three controls under one heading. Some
 // machines only say anything with every knob on the panel pointing the same
@@ -20,6 +24,31 @@ export interface RigDef {
 // machine that boots silent, and a rig you cannot hear teaches nothing. Only
 // the stage's own controls go back to stock when one lands, so what a rig
 // brings up elsewhere stays yours to turn down.
+const EMPTY = '\u2014'
+
+/** A bend by the short name the slot wears, off the slots' own choice list. */
+const slot = (label: string) => choiceValue('bendSlot0', label)
+
+// The settings the ordering rigs are demonstrated with, shared by both halves
+// of each pair, because the pair is only worth pressing twice if the one thing
+// that differs between them is which stage came first.
+const CRUSH = { bits: 5, srHz: 6000, crushMix: 1 }
+const FILTER = { filtHz: 900, filtRes: 1.05, filtDriveDb: 6, filtMix: 1 }
+const FUZZ = {
+  distMode: choiceValue('distMode', 'fuzz'),
+  driveDb: 30,
+  distToneHz: 6000,
+  distMix: 1,
+}
+const COMB = { combHz: 220, combFb: 0.95, combDampHz: 5000, combMix: 0.8 }
+const GLITCH = {
+  glitchProb: 0.8,
+  glitchSliceMs: 90,
+  glitchRepeat: 4,
+  glitchRevProb: 0.4,
+  glitchMix: 1,
+}
+
 export const RIGS: RigDef[] = [
   {
     group: 'Feedback bus',
@@ -145,24 +174,142 @@ export const RIGS: RigDef[] = [
       fbSag: 0.3,
     },
   },
+  {
+    group: 'Slot order',
+    name: 'crush, then filter',
+    blurb:
+      'A five-bit decimator with the filter after it — everything the crusher folded down comes back through 900 Hz, so the aliasing is inside the growl rather than on top of it',
+    patch: {
+      bendSlot0: slot('crush'),
+      bendSlot1: slot('filt'),
+      bendSlot2: slot(EMPTY),
+      bendSlot3: slot(EMPTY),
+      bendSlot4: slot(EMPTY),
+      bendSlot5: slot(EMPTY),
+      ...CRUSH,
+      ...FILTER,
+    },
+  },
+  {
+    group: 'Slot order',
+    name: 'filter, then crush',
+    blurb:
+      'The same two stages the other way round: the filter picks a band and the crusher folds *that* down, so the aliases land above the filter and nothing takes them off again — the pair to hear against the one before it',
+    patch: {
+      bendSlot0: slot('filt'),
+      bendSlot1: slot('crush'),
+      bendSlot2: slot(EMPTY),
+      bendSlot3: slot(EMPTY),
+      bendSlot4: slot(EMPTY),
+      bendSlot5: slot(EMPTY),
+      ...CRUSH,
+      ...FILTER,
+    },
+  },
+  {
+    group: 'Slot order',
+    name: 'fuzz into the comb',
+    blurb:
+      'Fuzz first, so the comb is given a wave that is already square and rings on its harmonics — a tuned string plucked by a distortion pedal',
+    patch: {
+      bendSlot0: slot('dist'),
+      bendSlot1: slot('comb'),
+      bendSlot2: slot(EMPTY),
+      bendSlot3: slot(EMPTY),
+      bendSlot4: slot(EMPTY),
+      bendSlot5: slot(EMPTY),
+      ...FUZZ,
+      ...COMB,
+    },
+  },
+  {
+    group: 'Slot order',
+    name: 'comb into the fuzz',
+    blurb:
+      'The comb first, so what reaches the fuzz is a handful of loud resonant peaks — they intermodulate against each other in the clipper and come out as a chord nothing played',
+    patch: {
+      bendSlot0: slot('comb'),
+      bendSlot1: slot('dist'),
+      bendSlot2: slot(EMPTY),
+      bendSlot3: slot(EMPTY),
+      bendSlot4: slot(EMPTY),
+      bendSlot5: slot(EMPTY),
+      ...FUZZ,
+      ...COMB,
+    },
+  },
+  {
+    group: 'Slot order',
+    name: 'chopped, then rung',
+    blurb:
+      'The stutter ahead of the comb, so every repeat arrives at the string as a fresh pluck and the ring restarts with it',
+    patch: {
+      bendSlot0: slot('glitch'),
+      bendSlot1: slot('comb'),
+      bendSlot2: slot(EMPTY),
+      bendSlot3: slot(EMPTY),
+      bendSlot4: slot(EMPTY),
+      bendSlot5: slot(EMPTY),
+      ...GLITCH,
+      ...COMB,
+    },
+  },
+  {
+    group: 'Slot order',
+    name: 'rung, then chopped',
+    blurb:
+      'The stutter after the comb, so what gets sliced and played backwards is the ring itself — the same two stages, and the repeats now cut across the decay instead of starting it',
+    patch: {
+      bendSlot0: slot('comb'),
+      bendSlot1: slot('glitch'),
+      bendSlot2: slot(EMPTY),
+      bendSlot3: slot(EMPTY),
+      bendSlot4: slot(EMPTY),
+      bendSlot5: slot(EMPTY),
+      ...GLITCH,
+      ...COMB,
+    },
+  },
 ]
 
 export const rigsFor = (group: string): RigDef[] =>
   RIGS.filter(r => r.group === group)
 
-// The stage back where it booted and the rig written over it, so pressing a
-// second rig is that rig rather than whatever the first one left standing.
-// Anything the rig reaches for outside the stage is left where it lands.
+// What a rig puts back before it writes: its own stage, and whatever the rest of
+// the row reaches for outside it, so pressing a second rig is that rig rather
+// than that rig plus what the first one left lying about — a chain named
+// *filter, then crush* with the previous chain's comb still wet is not the thing
+// it says it is.
+//
+// A level is the exception. Bringing a machine up is how a rig soldered to a
+// chip that boots silent gets heard at all, and turning a machine off again is
+// not the row's to do: it is the one control on the board that is only ever
+// about whether you can hear something.
+const CLEARS = new Map<string, ControlKey[]>()
+
+function clears(group: string): ControlKey[] {
+  let keys = CLEARS.get(group)
+  if (!keys) {
+    const set = new Set<ControlKey>(groupKeys(group))
+    for (const rig of rigsFor(group))
+      for (const key of Object.keys(rig.patch) as ControlKey[])
+        if (sliderFor(key).role !== 'level') set.add(key)
+    keys = [...set]
+    CLEARS.set(group, keys)
+  }
+  return keys
+}
+
 export function applyRig(rig: RigDef, current: Controls): Controls {
   const next = { ...current }
-  for (const key of groupKeys(rig.group)) next[key] = DEFAULT_CONTROLS[key]
+  for (const key of clears(rig.group)) next[key] = DEFAULT_CONTROLS[key]
   return { ...next, ...rig.patch }
 }
 
-/** Whether the stage is sitting exactly where this rig puts it. What the rig
-    reaches for elsewhere doesn't count: bringing the toy's fader back down
-    leaves the desk still wired the way the rig wired it. */
+/** Whether the board is sitting exactly where this rig puts it — over the same
+    controls the rig would clear, so a machine you have since turned down still
+    leaves the rig standing and a mix you have moved does not. */
 export const rigStands = (rig: RigDef, c: Controls): boolean =>
-  groupKeys(rig.group).every(
+  clears(rig.group).every(
     key => c[key] === (rig.patch[key] ?? DEFAULT_CONTROLS[key]),
   )

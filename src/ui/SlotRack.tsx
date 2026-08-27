@@ -1,5 +1,6 @@
 import { useBoardValue } from './ControlsContext'
-import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls'
+import { BENDS, BEND_SLOT_KEYS, bendAt, sliderFor } from './controls'
+import { ControlSlider } from './Slider'
 import styles from './SlotRack.module.css'
 
 const BOX_X = 6
@@ -152,5 +153,42 @@ export function SlotRack() {
         </>
       )}
     </svg>
+  )
+}
+
+// The other half of the chain: a dry/wet per bend that is actually in a slot,
+// in the order the signal meets them. The selects above say what the path is,
+// and these say how much of the board goes down it — a stage in slot 2 at a mix
+// of zero is in the path and silent, which is the one thing the rack cannot
+// draw and the commonest reason a slot you just filled changed nothing.
+//
+// Each fader is called the bend it belongs to rather than *Mix*, the way the
+// desk calls six faders called *Level* by their machines. It is the same
+// control as the one on that bend's own panel, and only one panel is ever open.
+export function SlotMixes() {
+  const raw = useBoardValue(c => BEND_SLOT_KEYS.map(k => c[k]).join(','))
+  const seen = new Set<number>()
+  const rows = raw
+    .split(',')
+    .map(Number)
+    .flatMap(v => {
+      const id = Math.round(v)
+      const bend = bendAt(id)
+      if (!bend || seen.has(id)) return []
+      seen.add(id)
+      return [bend]
+    })
+  if (rows.length === 0) return null
+  return (
+    <div className={styles.mixes}>
+      <span className={styles.mixHead}>how wet each one is</span>
+      {rows.map(bend => (
+        <ControlSlider
+          key={bend.mix}
+          def={sliderFor(bend.mix)}
+          label={bend.group}
+        />
+      ))}
+    </div>
   )
 }
