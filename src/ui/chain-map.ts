@@ -707,7 +707,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // Where the feedback lands, and so which side of the map it comes home on.
   const fbTarget = byId.get(nodeId(FB_TARGET[Math.round(c.fbDest)] ?? 'mix'))!
-  const taps = collectTaps(c, { byId, doors, live, loosePart, rack })
+  const taps = collectTaps(c, { byId, doors, live, loosePart, rack, foot })
 
   // Which edge of the drawing a label on this box hangs off. A box in the right
   // column, or in the right-hand half of the band, reaches for the right — and
@@ -1160,9 +1160,18 @@ function collectTaps(
         slots, and the box a wire onto one has to come in through */
     loosePart: Map<string, MapNode>
     rack: MapNode
+    /** pad, bay and wear, packed side by side with no gutter of their own — a
+        wire landing on one of them needs the whole row's outer edge to clear,
+        not just the box it lands on, or its label draws over a neighbour. */
+    foot: MapNode[]
   },
 ): Tap[] {
   const taps: Tap[] = []
+  const [first, last] = [ctx.foot[0], ctx.foot[ctx.foot.length - 1]]
+  const footEdge = (n: MapNode): MapNode =>
+    ctx.foot.includes(n) && first && last
+      ? { ...n, x: first.x, w: last.x + last.w - first.x }
+      : n
 
   // The mic, which is a patch point rather than a channel — so it draws as the
   // wire it is, onto whichever of the seven places it is soldered to. Turned
@@ -1176,7 +1185,7 @@ function collectTaps(
   const onPath = ctx.byId.get(nodeId(micPoint))
   const inRack = ctx.loosePart.get(micPoint)
   const mic = onPath
-    ? { target: onPath, edge: onPath, active: c.micLevel > 0 }
+    ? { target: onPath, edge: footEdge(onPath), active: c.micLevel > 0 }
     : inRack
       ? { target: inRack, edge: ctx.rack, active: false }
       : undefined
@@ -1211,7 +1220,7 @@ function collectTaps(
       door: pickup,
       wireDoor: 'Patch bay',
       target,
-      edge: target,
+      edge: footEdge(target),
       dash: '1 3',
       active: true,
     })
