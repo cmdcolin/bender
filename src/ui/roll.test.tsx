@@ -134,6 +134,40 @@ test('with the memory in mono a step keeps the last note written', () => {
 
 // The switch sits with the tune picker above the roll, and like the rate under
 // it, it is only there when the chip is on your own memory.
+// Mono is one word a step, so a step you draw on comes out holding one note:
+// the stacked chips do not keep a chord under it waiting for the switch.
+test('drawing in mono takes the stacked notes off the step', () => {
+  openKeyboard()
+  act(() =>
+    engine.patch({
+      tuneStep0: 3,
+      tuneStackA0: 7,
+      tuneStackB0: 10,
+      tunePoly: 0,
+    }),
+  )
+  fireEvent.pointerDown(cell('D4 step 1'), { button: 0 })
+  const c = engine.controls.get()
+  expect([c.tuneStep0, c.tuneStackA0, c.tuneStackB0]).toEqual([5, REST, REST])
+
+  // And a faint note is taken off by the click that would take off any other.
+  act(() => engine.set('tuneStackA0', 7))
+  fireEvent.pointerDown(cell('E4 step 1'), { button: 0 })
+  expect(engine.controls.get().tuneStackA0).toBe(REST)
+})
+
+// The lanes the chip is not reading are still drawn — they are written, and the
+// switch gives them back — but they cannot look like the lane that is playing.
+test('mono draws the stacked notes faint', () => {
+  openKeyboard()
+  act(() => engine.patch({ tuneStackA0: 3, tunePoly: 0 }))
+  expect(lit('C4 step 1')).toBe(true)
+  expect(cell('C4 step 1').className).toMatch(/ghost/)
+
+  act(() => engine.set('tunePoly', 1))
+  expect(cell('C4 step 1').className).not.toMatch(/ghost/)
+})
+
 test('the poly switch says which memory the chip is reading', () => {
   act(() => engine.set('chipTune', YOURS))
   openKeyboard()

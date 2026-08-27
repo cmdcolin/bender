@@ -202,7 +202,7 @@ export function TuneRoll() {
         </Tip>
       </div>
 
-      <Tip text="Click a cell to put that note on that step, and drag across to draw a line. Click a note again to take it off, and shift-click a step to hold whatever the step before it struck. Three notes fit on a step while the memory is in poly: the first goes to the melody lane and the rest to the chips stacked on it.">
+      <Tip text="Click a cell to put that note on that step, and drag across to draw a line. Click a note again to take it off, and shift-click a step to hold whatever the step before it struck. Three notes fit on a step while the memory is in poly: the first goes to the melody lane and the rest to the chips stacked on it. In mono the chip reads the melody lane alone, so the stacked notes draw faint and a step you write on loses them.">
         <div className={styles.grid}>
           {notes.map(note => (
             <div key={note} className={styles.row}>
@@ -211,11 +211,9 @@ export function TuneRoll() {
               </span>
               <div className={styles.cells}>
                 {Array.from({ length: TUNE_STEPS }, (_, s) => {
-                  const bar = bars
-                    .map(lane => lane[s]!)
-                    .find(b => b.note === note)
-                  const on = bar !== undefined
-                  const head = bar?.head === true
+                  const lane = bars.findIndex(l => l[s]!.note === note)
+                  const on = lane >= 0
+                  const head = on && bars[lane]![s]!.head
                   return (
                     <Cell
                       key={s}
@@ -228,6 +226,7 @@ export function TuneRoll() {
                       className={cellClass({
                         on,
                         head,
+                        ghost: on && !poly && lane > 0,
                         sharp: isSharp(note),
                         beat: s % 4 === 0,
                         under: s === under,
@@ -267,7 +266,11 @@ const Cell = memo(function Cell(props: {
   const write = (value: number) => {
     const c = engine.controls.get()
     const held = laneOf(c, step, note)
-    const lane = held >= 0 ? held : laneForNote(c, step, note, poly)
+    const lane = poly
+      ? held >= 0
+        ? held
+        : laneForNote(c, step, note, true)
+      : 0
     const key = TUNE_LANE_KEYS[lane]![step]!
     // Drawing on the roll puts the chip on the memory, the way arming record
     // does. A note written into a memory nothing is playing is a note you drew
@@ -277,6 +280,17 @@ const Cell = memo(function Cell(props: {
     // both it and the note, since the pair land as one entry in the walk.
     if (Math.round(c.chipTune) !== YOURS) engine.set('chipTune', YOURS)
     engine.set(key, value)
+    // In mono the memory is one word a step, so a step you draw on comes out
+    // holding one note: whatever the stacked chips were keeping there goes with
+    // the write rather than sitting under it as a chord that comes back the
+    // moment somebody flips the switch. Drag across the roll and the chords go
+    // with the line you are drawing.
+    if (!poly) {
+      for (const keys of TUNE_LANE_KEYS.slice(1)) {
+        const stacked = keys[step]!
+        if (c[stacked] !== REST) engine.set(stacked, REST)
+      }
+    }
   }
   const put = (shift: boolean) => write(shift ? HOLD : props.head ? REST : note)
   return (
@@ -315,6 +329,7 @@ const Cell = memo(function Cell(props: {
 function cellClass(s: {
   on: boolean
   head: boolean
+  ghost: boolean
   sharp: boolean
   beat: boolean
   under: boolean
@@ -323,6 +338,7 @@ function cellClass(s: {
 }): string {
   return [
     s.on ? (s.head ? styles.headOn : styles.holdOn) : styles.cell,
+    s.ghost && styles.ghost,
     s.sharp && styles.sharp,
     s.beat && styles.beat,
     s.under && styles.under,

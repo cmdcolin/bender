@@ -143,6 +143,14 @@
   box-shadow: inset 0 0 0 1px var(--fg);
 }
 
+/* A note on a chip the memory is not reading: written, drawn, and not playing.
+   The roll is what you are hearing, so a lane the mono switch has turned off
+   cannot look like the lane that is on — and it is still there, because
+   flipping back to poly gives it you again. */
+.ghost {
+  opacity: 0.35;
+}
+
 /* Past the memory's own length: still a step you can write, but the counter
    comes round before it gets here. */
 .past {
