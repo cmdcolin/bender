@@ -51,6 +51,11 @@
   left: auto;
   right: 12px;
   top: 44px;
+  /* Shown, not modal (see the comment above MidiDialog), so it never reaches
+     the top layer: without this it paints at the same stack level as later
+     siblings like the preset buttons, which then win by DOM order and show
+     through. */
+  z-index: 10;
   margin: 0;
   max-width: min(440px, calc(100vw - 24px));
   max-height: calc(100vh - 88px);
