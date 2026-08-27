@@ -313,9 +313,14 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'the loop eats itself',
     blurb:
-      'Blank tape under the toy — bring the sampler up and hear it come round worse',
+      'Blank tape under the toy, coming round worse every lap — press play and watch the reel',
     patch: {
       chipLevel: 0.7,
+      // Named, so it arrives on one press. A fader is yours and a preset keeps
+      // what is yours — until it names it, which is the whole of the rule. This
+      // one has to: a tape machine whose output is down is a preset that sounds
+      // like the board without it, and the blurb used to have to say so.
+      sampleLevel: 1,
       loopRec: 1,
       loopErase: 0.12,
       loopSecs: 4,
@@ -744,6 +749,30 @@ export const PRESETS: PresetDef[] = [
       echoMs: 500,
       echoFb: 0.35,
       revMix: 0.25,
+    },
+  },
+  {
+    // The three lanes the bay grew onto the tape, on the one board that needs no
+    // file dropped in: the reel threads itself blank, the toy plays onto it, and
+    // a wire walks a half-second window over the four seconds it laid down. What
+    // it plays back is somewhere the board has been rather than where it is.
+    name: 'wandering loop',
+    blurb:
+      'A blank reel, a short loop walking over what the toy put on it — press play',
+    patch: {
+      chipLevel: 0.7,
+      chipAccomp: 0.45,
+      sampleLevel: 1,
+      loopRec: 0.7,
+      loopErase: 0.3,
+      loopSecs: 4,
+      loopIn: 0,
+      loopOut: 0.14,
+      modLfoHz: 0.06,
+      mod0Src: 1,
+      mod0Dest: DEST.loopSlide,
+      mod0Depth: 0.9,
+      tapeMix: 0.6,
     },
   },
   {

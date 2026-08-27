@@ -1,9 +1,5 @@
 import { expect, test } from 'vitest'
-import {
-  DEFAULT_CONTROLS,
-  type ControlKey,
-  type Controls,
-} from '../../controls'
+import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
 import { GRID_ROWS } from '../../drums'
 import { HOLD_KEYS } from '../controls'
 import { applyPreset, presetPath } from './apply'
@@ -72,21 +68,42 @@ test('a preset dragged to either end is a board you already had', () => {
 
 // The pattern is left out: two presets name it, and a step mask cannot be half
 // written, so those cut theirs in at the midpoint of the drag like any other
-// mode. The song and the levels no preset names at all, so they hold the whole
-// way across.
-test('a preset dragged part way still leaves the song and the levels alone', () => {
+// mode. What is yours holds the whole way across — unless the preset names it,
+// which is the one thing that makes it the preset's to move. The tape presets
+// name the sampler's fader, because a tape machine whose output is down is a
+// preset that sounds like the board without it.
+const YOURS_ON_A_DRAG = [
+  'chipTune',
+  'outGain',
+  'micLevel',
+  'sampleLevel',
+] as const
+
+test('a preset dragged part way still leaves what is yours alone', () => {
   const before = mine()
-  const held = (c: Controls) => [
-    c.chipTune,
-    c.outGain,
-    c.micLevel,
-    c.sampleLevel,
-  ]
   for (const preset of PRESETS) {
+    const held = YOURS_ON_A_DRAG.filter(k => !(k in preset.patch))
+    expect(held.length, preset.name).toBeGreaterThan(2)
     for (const t of [0.1, 0.5, 0.9]) {
       const part = presetPath(preset, before).at(before, t)
-      expect(held(part), `${preset.name} at ${t}`).toEqual(held(before))
+      expect(
+        held.map(k => part[k]),
+        `${preset.name} at ${t}`,
+      ).toEqual(held.map(k => before[k]))
     }
+  }
+})
+
+// And the other half of the rule: one that names a fader of yours gets it, or
+// the line of the catalog is a board you cannot hear on one press.
+test('a preset that names the sampler brings its fader up', () => {
+  const before = { ...mine(), sampleLevel: 0 }
+  const named = PRESETS.filter(p => 'sampleLevel' in p.patch)
+  expect(named.length).toBeGreaterThan(1)
+  for (const preset of named) {
+    expect(applyPreset(preset, before).sampleLevel, preset.name).toBe(
+      preset.patch.sampleLevel,
+    )
   }
 })
 
@@ -120,6 +137,20 @@ test('every preset that names the delay pedal is one you can hear it on', () => 
   for (const preset of named) {
     const wet = rms(render(preset.patch, 3))
     const dry = rms(render({ ...preset.patch, echoLevel: 0 }, 3))
+    expect(wet, preset.name).toBeGreaterThan(1.02 * dry)
+  }
+})
+
+// A preset naming the record head is a preset whose point is the tape. Render
+// it with the sampler in and with its fader down: a board that measures the
+// same either way is a line of the catalog advertising a reel nobody hears.
+// Long enough for the reel to have come round, or the take is all first lap.
+test('every preset that names the record head is one you can hear the tape on', () => {
+  const named = PRESETS.filter(p => p.patch.loopRec)
+  expect(named.length).toBeGreaterThan(1)
+  for (const preset of named) {
+    const wet = rms(render(preset.patch, 8))
+    const dry = rms(render({ ...preset.patch, sampleLevel: 0 }, 8))
     expect(wet, preset.name).toBeGreaterThan(1.02 * dry)
   }
 })
