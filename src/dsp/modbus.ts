@@ -34,8 +34,15 @@ export const DEST = {
   // would land every wire on this board's neighbour of the one it was patched
   // to. New lanes go on the end, wherever the end happens to be.
   echoMs: 21,
+  // The tape's own three. Everything else on the board dives with the rail and
+  // the sampler did not — it was the one source with a speed control nothing in
+  // the bay could reach, so a starve took the toy, the kit and the FM chip down
+  // and left the tape running at exactly the speed you set it.
+  sampleSpeed: 22,
+  loopSlide: 23,
+  loopSpan: 24,
 } as const
-export const N_DEST = 22
+export const N_DEST = 25
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth,
 // in wire order, so wire i's depth is DEPTH_DEST[i]. They were once the last

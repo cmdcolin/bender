@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest'
 import type { Controls } from '../controls'
+import { DEST } from './modbus'
 import { peaksOf, PEAK_BINS } from './stages/sampler'
-import { SR, renderBender, rms } from './testRender'
+import { bin, deviation, sine, SR, renderBender, rms } from './testRender'
 
 const REEL_S = 1
 
@@ -118,4 +119,90 @@ test('the envelope follows the tape as the record head rewrites it', () => {
     b => (peaks = b.sampler.peaks),
   )
   expect(Math.max(...peaks!)).toBeLessThan(0.1)
+})
+
+// The tape's three lanes in the bay. Everything else on the board dives with
+// the rail; before these the sampler was the one source a starve could not
+// reach.
+const WIRED = { ...PLAYING, mod0Src: 1, modLfoHz: 0.5 }
+
+test('a wire on the capstan drags the tape and leaves the direction alone', () => {
+  const free = played({}, 2)
+  const dragged = renderBender(
+    { ...WIRED, mod0Dest: DEST.sampleSpeed, mod0Depth: 1 },
+    2,
+    b => b.sampler.setBuffer(twoTone()),
+  )
+  expect(deviation(dragged, free)).toBeGreaterThan(0.1)
+})
+
+// A capstan is a multiplier, so a transport parked at the stop stays parked
+// however hard anything pushes it.
+test('a wire on the capstan cannot start a frozen tape', () => {
+  const frozen = renderBender(
+    { ...WIRED, sampleSpeed: 0, mod0Dest: DEST.sampleSpeed, mod0Depth: 1 },
+    0.5,
+    b => b.sampler.setBuffer(twoTone()),
+  )
+  // Parked on frame zero, which is the head of the 200 Hz half: a dc-ish hold
+  // rather than a tape going anywhere.
+  expect(highEnergy(frozen)).toBeLessThan(1e-4)
+})
+
+test('a wire on the slide walks the window along the recording', () => {
+  const still = played({ loopOut: 0.05 }, 2)
+  const walked = renderBender(
+    { ...WIRED, loopOut: 0.05, mod0Dest: DEST.loopSlide, mod0Depth: 1 },
+    2,
+    b => b.sampler.setBuffer(twoTone()),
+  )
+  // A window that never leaves the first twentieth of the reel is 200 Hz for
+  // the whole render; one walked across it reaches the 2 kHz half.
+  expect(highEnergy(walked)).toBeGreaterThan(highEnergy(still) * 4)
+})
+
+test('a wire on the span opens and closes the window', () => {
+  const fixed = played({ loopOut: 0.5 }, 2)
+  const breathing = renderBender(
+    { ...WIRED, loopOut: 0.5, mod0Dest: DEST.loopSpan, mod0Depth: 1 },
+    2,
+    b => b.sampler.setBuffer(twoTone()),
+  )
+  expect(deviation(breathing, fixed)).toBeGreaterThan(0.1)
+})
+
+test('an unwired bay leaves the tape exactly where it was', () => {
+  const bare = played({}, 1)
+  const wired = renderBender(
+    {
+      ...PLAYING,
+      mod0Src: 1,
+      modLfoHz: 4,
+      mod0Depth: 1,
+      mod0Dest: DEST.filtHz,
+    },
+    1,
+    b => b.sampler.setBuffer(twoTone()),
+  )
+  expect(wired).toEqual(bare)
+})
+
+// The markers at the ends of the reel are the whole reel, to the frame. An out
+// point held two frames short of the end is a full-reel loop that splices early
+// — inaudible on a drum break and a click once a lap on a tone, which is how it
+// got past a suite that only ever asked whether the right half was playing.
+test('a loop over the whole reel comes round at the end of it', () => {
+  // A whole number of cycles, so a correct lap is one unbroken tone and a
+  // splice two frames early is a phase jump once a second.
+  const reel = sine(200, REEL_S, 0.5)
+  const out = renderBender({ ...PLAYING }, REEL_S * 4, b =>
+    b.sampler.setBuffer(reel),
+  ).subarray(SR)
+  // Nothing up here but the splice: the bus and the master put a third
+  // harmonic on the tone at −34 dB and nothing at all at 3 kHz. A seamless lap
+  // measures −165 dB, and a lap two frames short measures −88.
+  let band = 0
+  for (let f = 3000; f <= 4000; f += 50) band += bin(out, f) ** 2
+  const spread = 20 * Math.log10(Math.sqrt(band) / bin(out, 200))
+  expect(spread).toBeLessThan(-120)
 })

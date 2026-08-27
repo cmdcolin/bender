@@ -55,7 +55,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as ControlKey,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 21,
+          max: 24,
           step: 1,
           unit: '',
           choices: [
@@ -81,8 +81,11 @@ export const PATCH_GROUPS: Group[] = [
             'wire 3 depth',
             'wire 4 depth',
             'echo time',
+            'tape speed (sampler)',
+            'loop slide',
+            'loop span',
           ],
-          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on the board, so a wire there reaches everything powered from it at once — a drum hit browns the chip out on every kick, and the watchdog does the rest. Four of them land on a wire’s own depth, so one wire decides how hard another pushes — two wires that modulate each other stop being two modulations and start being one that neither of them wrote.',
+          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on the board, so a wire there reaches everything powered from it at once — a drum hit browns the chip out on every kick, and the watchdog does the rest. Four of them land on a wire’s own depth, so one wire decides how hard another pushes — two wires that modulate each other stop being two modulations and start being one that neither of them wrote. The last three are the sampler’s: the capstan the reel is on, which drags its pitch the way a starve drags the toy’s and leaves the direction alone, and then the two markers — *slide* walks the window along the recording, *span* opens and closes it. Markers are marks on the tape rather than a hand on the transport, so the head plays on where it stands until the window has left it behind, which is why a wire on the slide reads as the loop jumping around the recording rather than as a scrub.',
         },
         {
           key: `mod${i}Depth` as ControlKey,

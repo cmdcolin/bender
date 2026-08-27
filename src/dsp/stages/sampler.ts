@@ -1,5 +1,7 @@
 import { IDX } from '../../engine/params'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { octaves } from '../util/pitch'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus'
 import { Transient } from '../util/follower'
 import { softclip } from '../util/softclip'
@@ -19,6 +21,16 @@ export const PEAK_BINS = 256
 // tone rather than a loop, and this board is happy to make one — what it must
 // not do is divide by nothing.
 const MIN_WINDOW = 2
+
+// The two markers as frames. They round outward — the in point down, the out
+// point up — so a window is never narrower than the tape you asked for, and
+// only the in point is held back from the end: an out point clamped off the end
+// of the reel is a full-reel loop that splices two frames early, which is a
+// click once a lap on material that had none.
+const frameIn = (at: number, n: number) =>
+  Math.min(Math.max(Math.floor(at * n), 0), n - MIN_WINDOW)
+const frameOut = (at: number, n: number, from: number) =>
+  Math.min(Math.max(Math.ceil(at * n), from + MIN_WINDOW), n)
 
 /** The envelope of a clip in `PEAK_BINS` bins, for whatever draws the reel. */
 export function peaksOf(
@@ -143,16 +155,41 @@ export class Sampler implements Stage {
     const oneShot = Math.round(p[IDX.sampleMode]!) === 1
     const erase = p[IDX.loopErase]!
 
-    // The stretch of reel between the two markers, in frames. Dragged past each
-    // other they swap rather than collapse, which is what a pair of markers on
-    // one line does — you asked for the tape between them either way.
+    // The stretch of reel between the two markers, as fractions. Dragged past
+    // each other they swap rather than collapse, which is what a pair of
+    // markers on one line does — you asked for the tape between them either
+    // way.
     const lo = Math.min(p[IDX.loopIn]!, p[IDX.loopOut]!)
     const hi = Math.max(p[IDX.loopIn]!, p[IDX.loopOut]!)
-    const from = Math.min(Math.max(Math.floor(lo * n), 0), n - MIN_WINDOW)
-    const to = Math.min(Math.max(Math.ceil(hi * n), from + MIN_WINDOW), n)
-    const span = to - from
+
+    // The three wires the bay can land on the tape. Read once; a block with
+    // none of them wired walks the same loop it always did, with the window
+    // worked out ahead of it.
+    const modSpeed = ctx.mod.read(DEST.sampleSpeed)
+    const modSlide = ctx.mod.read(DEST.loopSlide)
+    const modSpan = ctx.mod.read(DEST.loopSpan)
+    const marked = modSlide !== null || modSpan !== null
+    let from = frameIn(lo, n)
+    let to = frameOut(hi, n, from)
+    let span = to - from
 
     for (let i = 0; i < io.n; i++) {
+      // Markers are marks on the tape rather than a hand on the transport, so
+      // moving them does not drag the head: it plays on where it stands until
+      // the window it was in has left it behind, and the wrap below is what
+      // catches it. Which is why a wire on the slide reads as the loop jumping
+      // around the recording rather than as a scrub.
+      if (marked) {
+        const stretch = modSpan ? octaves(modSpan[i]! * 2) : 1
+        const width = Math.min((hi - lo) * stretch, 1)
+        const walk = modSlide
+          ? Math.min(Math.max(modSlide[i]!, -lo), 1 - lo - width)
+          : 0
+        from = frameIn(lo + walk, n)
+        to = frameOut(lo + walk + width, n, from)
+        span = to - from
+      }
+
       if (trig > 0 && this.struck(trig, ctx, i)) {
         // Backwards, a hit drops the needle at the other end of the window.
         this.pos = speed < 0 ? to - 1 : from
@@ -198,7 +235,13 @@ export class Sampler implements Stage {
       // Off the end of the window is where a loop comes round and a one-shot
       // stops. A one-shot with nothing wired to it is a file that plays once
       // when you drop it.
-      const next = this.pos + speed
+      //
+      // A wire on the speed multiplies rather than adds, because that is what a
+      // wire on a capstan does: it drags the transport the tape is already on,
+      // so a starve dives the pitch and leaves the direction alone — and a
+      // motor parked at the stop stays parked however hard anything pushes it.
+      const next =
+        this.pos + (modSpeed ? speed * octaves(modSpeed[i]! * 2) : speed)
       if (oneShot && (next >= to || next < from)) this.playing = false
       this.pos = from + ((((next - from) % span) + span) % span)
 
