@@ -48,8 +48,26 @@ renders it with the same layout the app uses.
 - **The board ages while you play.** Heat builds off whatever you are making it
   dissipate, dry joints drop a bend out of the path mid-note, and _Re-solder_
   rewires the slot order on its own.
-- **A link is a patch.** The whole board rides in the URL. Roll the dice, morph
-  between two boards, play it over MIDI, record it to wav.
+- **The sampler is the tape.** Drop an audio file anywhere on the page, or roll
+  one off archive.org, and it plays at any speed either way round. Arm _Record_
+  and the board lays its own output back onto the reel on the spot the play head
+  is reading: what comes past next lap has been through the mix bus, the bends,
+  the pedals and the tape machine, and then goes through all of them again.
+  Nothing stands in for generation loss — the loop really is re-recorded every
+  lap, which is why a bend in the path makes it diverge rather than fade. The
+  reel is drawn under the keys, redrawn off the tape as the head reads it: drag
+  its two markers to trim the loop, drag the tape itself to move the head.
+- **A microphone into the middle of the board.** _Mic patch_ is not a channel —
+  on one setting the mic reaches the mix, and on the other six it is soldered
+  onto the chip's rail, an oscillator's FM input or the delay's feedback. The
+  body contact pad is the same idea with your finger as the resistor.
+- **Boards, rather than settings.** 51 presets and dice that roll the whole
+  board, one stage, or a knife; **morph** travels between two boards over up to
+  thirty seconds instead of cutting to one; **hunt** auditions six candidates
+  and keeps the one closest to the edge; **drift** nudges the board along on a
+  timer. Every one of those lands in a walk you can ctrl+z back down.
+- **A link is a patch.** The whole board rides in the URL. Play it over MIDI,
+  record it to wav.
 
 [Bends](BENDS.md) explains how the interesting parts work and why they behave as
 they do. What follows is the list, for finding out whether something exists and
@@ -779,14 +797,33 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 
 - **Roll** randomises the board with a bias toward leaving something audible;
   the controls marked † come on rarely and low, so a roll does not bury the
-  board under one effect.
-- **Morph** travels between two boards over time rather than jumping.
+  board under one effect. **Mutate** shakes the board you have rather than
+  replacing it, and each stage has dice of its own.
+- **Morph** travels between two boards over time rather than jumping, and
+  pressing it mid-flight keeps the half-way board — which is a board like any
+  other. **Hunt** auditions candidates and keeps whichever spends the most time
+  arriving at the limiter and backing off, which is what the edge sounds like
+  from outside. **Drift** sets the board off for somewhere near where it stands
+  every fifteen seconds and never lets it arrive, so it keeps moving rather than
+  being replaced — and banks none of it, so the board you set drifting is still
+  one undo away.
+- **The walk**: every gesture that lands a board — a preset, a roll, a stage
+  reset, a sweep of one knob — is a step, and ctrl+z and ctrl+shift+z go back
+  and forward through them.
 - **The board rides in the URL**, so a link is a patch. A link never presses
   play; a reload of your own tab comes back running whatever it was running.
+- **Play it from the computer keyboard** — `a s d f` for the keys, `z` and `x`
+  for octaves, `1`–`6` for the kit, space for both machines.
 - **MIDI in** — notes, velocity, and knobs that map onto the panel, including
   endless encoders with lit rings.
 - **Record to wav**, straight off the output.
-- **A live signal-path map** that greys out whatever is not in the path.
+- **A live signal-path map** that greys out whatever is not in the path, and is
+  the way into every stage's controls.
+- **A desk** with every source's fader and a meter beside it, because how far a
+  fader is up and whether anything is coming out of that machine are not the
+  same question.
+- **The reel**, drawn off the tape as it plays: the loop's two markers, the play
+  head and which way it is going.
 - **Scope, meters and a rail lamp**, all fed by the meter message.
 
 ### Presets

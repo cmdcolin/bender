@@ -25,13 +25,32 @@ the drawing itself changes as you patch the board. Full explanation in
 - A toy keyboard, a drum machine and an FM chip sharing one starvable power
   supply — everything downstream of it dives, slows and reboots together.
 - **Bends**: real hardware faults patched onto actual bus lines and rail nodes,
-  not effects. See [Bends](docs/BENDS.md) for the tour.
-- Six reorderable bend slots, a four-wire patch bay, MIDI, five slow "ageing"
-  mechanisms, and a tape machine as the final stage.
+  not effects. Cut, ground, bridge or pull up a data or address line and the
+  wrong byte lands. See [Bends](docs/BENDS.md) for the tour.
+- Six reorderable bend slots, four pedals, a four-wire patch bay that modulates
+  its own depths, three feedback loops, five slow "ageing" mechanisms, and a
+  tape machine as the final stage.
 - A melody memory with its own piano roll, and a sixteen-step drum machine with
-  polymeter and pattern-rewriting rolls.
+  polymeter and pattern-rewriting rolls. Play both from the computer keyboard,
+  the screen, or a controller.
+- **A sampler that is also the tape.** Drop an audio file in, or roll one off
+  archive.org, and play it at any speed either way round. Arm the record head
+  and the board lays its own output back onto the reel, so what comes past next
+  lap has been through the whole chain again — a bend in the path makes the loop
+  diverge rather than fade. The reel is drawn: drag its two markers to trim the
+  loop, drag the tape to move the head.
+- A microphone into the mix, or soldered into the middle of the board — the
+  chip's rail, an oscillator's FM input, the delay's feedback — and a body
+  contact pad wired anywhere in the bay.
+- 51 presets, 20 named cuts, and dice that roll a whole board, one stage, or a
+  knife. **Morph** travels between two boards over up to thirty seconds instead
+  of cutting, **hunt** auditions boards and keeps the one nearest the edge,
+  **drift** never lets the board arrive anywhere, and ctrl+z walks back through
+  every board you have been on.
+- The panel _is_ the signal path: a live drawing that redraws as you patch, with
+  a desk, meters, a scope and a rail lamp beside it.
 - The whole board — settings, pattern and melody — lives in the URL, so a link
-  is a patch.
+  is a patch. Record the output to wav.
 - Everything runs inside one audio callback with a fixed safety tail, so no
   setting can blow up the output.
 
