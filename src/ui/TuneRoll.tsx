@@ -112,6 +112,14 @@ export function TuneRoll() {
 
   const shift = (by: number) => setBase(b => clampBase(b + by))
 
+  // Whether the memory holds anything the window is not showing. The roll draws
+  // two octaves of a memory that reaches five, so a note written outside them —
+  // played in off the octave switch, or arrived on a link — is a note you would
+  // otherwise edit around without ever seeing it.
+  const written = lanes.flat().filter(isNote)
+  const above = written.some(n => n > base + ROWS - 1)
+  const below = written.some(n => n < base)
+
   // Top row is the highest note, the way every roll and every stave is drawn.
   const notes = Array.from({ length: ROWS }, (_, i) => base + ROWS - 1 - i)
 
@@ -155,18 +163,30 @@ export function TuneRoll() {
           </button>
         </Tip>
         <span className={styles.spacer} />
-        <Tip text="Move the window down an octave — the memory reaches further than the two octaves drawn.">
+        <Tip
+          text={
+            below
+              ? 'Move the window down an octave. Lit because there are notes down there: the memory reaches five octaves and the roll draws two of them.'
+              : 'Move the window down an octave — the memory reaches further than the two octaves drawn.'
+          }
+        >
           <button
-            className={styles.octave}
+            className={below ? styles.octaveMore : styles.octave}
             onClick={() => shift(-12)}
             aria-label="window down an octave"
           >
             ▾
           </button>
         </Tip>
-        <Tip text="Move the window up an octave.">
+        <Tip
+          text={
+            above
+              ? 'Move the window up an octave. Lit because there are notes up there.'
+              : 'Move the window up an octave.'
+          }
+        >
           <button
-            className={styles.octave}
+            className={above ? styles.octaveMore : styles.octave}
             onClick={() => shift(12)}
             aria-label="window up an octave"
           >

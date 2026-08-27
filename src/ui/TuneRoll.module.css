@@ -51,6 +51,15 @@
   min-width: 1.4rem;
 }
 
+/* There are notes this way that the window is not drawing. The arrow is the
+   only way to them, so it says so rather than leaving you to find them by
+   pressing it. */
+.octaveMore {
+  composes: octave;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .grid {
   display: flex;
   flex-direction: column;

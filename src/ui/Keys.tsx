@@ -222,7 +222,7 @@ export function Keys() {
             <Tip
               text={
                 !recording
-                  ? 'record what you play into the toy’s melody memory — sixteen steps, on the step the chip is standing on. It puts the memory on, and the tune has to be running for there to be a step. The piano roll is on the keyboard’s own panel'
+                  ? 'record what you play into the toy’s melody memory — thirty-two steps, three notes to a step, on the step the chip is standing on. It puts the memory on, and the tune has to be running for there to be a step. The piano roll is on the keyboard’s own panel'
                   : tunePlaying
                     ? 'every key you press is going into the memory. Press to stop'
                     : 'armed, but the tune is stopped — the keys sound and nothing is written. Press play your tune and they land on the step they arrive in'

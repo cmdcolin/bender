@@ -81,6 +81,28 @@ test('clear wipes every step, and one undo puts them back', () => {
   expect(engine.controls.get().tuneStep5).toBe(7)
 })
 
+// A note outside the two octaves drawn is a note you would edit around without
+// ever seeing it, and the arrow is the only way to it.
+test('the octave arrows say when there are notes out there', () => {
+  openKeyboard()
+  const up = () => screen.getByRole('button', { name: 'window up an octave' })
+  const down = () =>
+    screen.getByRole('button', { name: 'window down an octave' })
+  expect(up().className).not.toMatch(/octaveMore/)
+
+  // An octave above the window an empty memory opens on.
+  act(() => engine.set('tuneStep0', 20))
+  expect(up().className).toMatch(/octaveMore/)
+  expect(down().className).not.toMatch(/octaveMore/)
+
+  // The window moves to it and the arrow goes quiet; a note left behind under
+  // the window lights the other one.
+  act(() => engine.set('tuneStep1', -9))
+  fireEvent.click(up())
+  expect(up().className).not.toMatch(/octaveMore/)
+  expect(down().className).toMatch(/octaveMore/)
+})
+
 // The roll reaches further than the two octaves it draws, and the octave
 // buttons are the only way to the rest of it.
 test('the window moves an octave at a time', () => {
