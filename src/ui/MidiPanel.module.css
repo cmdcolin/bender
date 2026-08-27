@@ -1,52 +1,94 @@
-.panel {
-  border-top: 1px solid var(--border-quiet);
-  padding: 2px 0 5px;
+/* The button in the nameplate row, and what it opens.
+
+   It was a section of the panel — a disclosure with a row of its own, and while
+   nothing was connected that row wore an accent border across the whole width,
+   which made a permanent advertisement for hardware most sessions never plug in
+   the loudest thing on the board after panic. It is also not a stage: the panel
+   under the map is the board, and this is the wire into it.
+
+   So it costs nothing until it is asked for, and what stays outside is the
+   status. That part has to: a stranded knob is a knob gone inert, and a board
+   whose knobs have all gone quiet with nothing on screen saying why is the one
+   failure this is here to prevent. */
+.tab {
+  composes: action from './button.module.css';
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
-/* The disclosure's own row: a line of text, so it is left as one — the browser
-   draws the caret, holds the open state and works the keyboard. Laying it out
-   with flex would take the marker away again, which is what the hand-drawn
-   ▸ was for. */
-.header {
-  padding: 3px 2px;
-  color: var(--fg);
+/* Lit once there is a wire, and not while there isn't — which is the way round
+   it used to be. */
+.tabOn {
+  composes: tab;
+  composes: actionOn from './button.module.css';
+}
+
+/* Amber, the colour a waiting knob is drawn in everywhere else on the board. */
+.tabWaiting {
+  composes: tab;
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
+.tabNote {
+  font-size: var(--fs-xs);
+  font-family: var(--mono);
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* Shown and not modal, so it sits over the panel rather than taking it: the
+   mark that binds a control is on the control, in whatever stage is open behind
+   this. In the panel's own corner rather than centred, for the same reason —
+   centred it would sit on the stage you are reaching past it for. */
+.card {
+  position: fixed;
+  /* left, explicitly, because the UA sheet sets inset-inline-start: 0 on every
+     dialog and leaving it there over-constrains the box: with both sides fixed
+     and a width, the start edge wins and the card opens in the far corner of
+     the window from the button that opened it. */
+  left: auto;
+  right: 12px;
+  top: 44px;
+  margin: 0;
+  max-width: min(440px, calc(100vw - 24px));
+  max-height: calc(100vh - 88px);
+  overflow-y: auto;
+  padding: 8px 10px 10px;
+  background: var(--bg2);
+  color: var(--fg2);
+  border: 1px solid var(--border-hover);
+  border-radius: 5px;
+  box-shadow: 0 8px 28px #000a;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-bottom: 4px;
+}
+
+.cardTitle {
+  flex: 1;
   font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.close {
+  background: none;
+  border: none;
+  color: var(--fg4);
+  font-size: var(--fs-lg);
+  line-height: 1;
+  padding: 0 2px;
   cursor: pointer;
 }
 
-.header::marker {
-  color: var(--fg4);
-}
-
-.title {
-  font-weight: 600;
-  margin-right: 6px;
-}
-
-/* Folded away and unconnected, this row is the only way to reach the wire — so
-   it is drawn as the button it is rather than as a heading, which is how it
-   went unfound.
-
-   As wide as its words and no wider, and a size down. It spanned the panel in
-   the accent colour, which made the loudest thing on the board after panic a
-   permanent advertisement for hardware most sessions never plug in — and it is
-   the *unconnected* state, so that is every session, forever. Findable is what
-   the border is for and a button-sized button is still findable. Connected, it
-   goes back to being the heading it is: there is something under it then.
-
-   width rather than display: a summary draws its own marker off `list-item`,
-   and laying this out any other way takes the marker back off it. */
-.headerCall {
-  composes: header;
-  width: fit-content;
-  font-size: var(--fs-sm);
-  border: 1px solid var(--accent);
-  border-radius: 3px;
-  padding: 2px 8px 2px 4px;
-}
-
-.headerCall .quiet {
-  color: var(--accent);
+.close:hover {
+  color: var(--fg);
 }
 
 /* Raw bytes, which are only ever read a character at a time. */
@@ -56,23 +98,10 @@
   color: var(--accent);
 }
 
-.live {
-  font-family: var(--mono);
-  font-size: var(--fs-xs);
-  color: var(--accent);
-}
-
 .quiet {
   font-family: var(--mono);
   font-size: var(--fs-xs);
   color: var(--fg4);
-}
-
-/* Knobs gone inert, said from the folded-up header. Amber is what a waiting
-   knob is drawn in everywhere else on the board. */
-.waitingTag {
-  composes: quiet;
-  color: var(--accent2);
 }
 
 .row {

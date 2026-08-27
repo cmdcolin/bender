@@ -378,56 +378,108 @@ function Wired() {
   )
 }
 
-// The wire, folded away until there is one. Everything it offers is meaningless
-// without a controller plugged in, and the panel's other sections are the board
-// itself — so this opens on a press rather than taking a stage's worth of room
-// from them.
+// The wire, behind a button in the nameplate row. Everything it offers is
+// meaningless without a controller plugged in, and it is not a stage of the
+// board — so it takes no room in the panel at all until you ask for it, which
+// is what a row of it was costing the stage under the map.
+//
+// What stays outside is the status, and only the status, because the status is
+// the half that is live: a stranded knob is a knob gone inert, and a board whose
+// knobs have all gone quiet with nothing on screen saying why is the one thing
+// this must never become. Managing them — unbinding, encoder mode, pads,
+// profiles — is sit-down work with no reason to be on screen while you play.
 export function MidiPanel() {
   const status = useStoreValue(midi.status)
   const bindings = useStoreValue(midi.bindings)
   const stranded = Object.keys(useStoreValue(midi.pickups)).length
   const count = Object.keys(bindings).length
+  const [open, setOpen] = useState(false)
 
-  const summary =
+  const note =
     status === 'ready'
       ? count === 0
         ? 'connected'
-        : // Folded away is where this panel usually sits, so a stranded knob has
-          // to be visible from the outside or the header is telling a half-truth
-          // about a board whose knobs have all gone inert.
-          stranded > 0
-          ? `${count} bound · ${stranded} waiting`
+        : stranded > 0
+          ? `${stranded} waiting`
           : `${count} bound`
       : status === 'unsupported'
-        ? 'not in this browser'
+        ? 'n/a'
         : status === 'denied'
           ? 'refused'
           : status === 'requesting'
             ? 'asking…'
-            : 'off — connect a controller'
+            : null
 
-  // A disclosure, which the browser already has: <details> keeps the open state,
-  // draws its own marker and works from the keyboard, so none of that is written
-  // here. Unconnected the summary wears a border, because folded away and with
-  // nothing wired it is the only way to reach the wire at all.
   return (
-    <details className={styles.panel}>
-      <summary
-        className={status === 'ready' ? styles.header : styles.headerCall}
+    <>
+      <Tip
+        text={
+          status === 'ready'
+            ? stranded > 0
+              ? `${stranded} bound knob${stranded === 1 ? ' is' : 's are'} out of step with the board and doing nothing until you sweep each through its value. Press for the bindings, the pads and the wire`
+              : 'the bindings you have made, the pads, and what the wire is carrying'
+            : 'play the board from a MIDI controller: bind any control to a knob, the kit to a pad bank, the keys to a keybed'
+        }
       >
-        <span className={styles.title}>midi</span>
-        <span
+        <button
           className={
-            stranded > 0 && status === 'ready'
-              ? styles.waitingTag
+            stranded > 0
+              ? styles.tabWaiting
               : status === 'ready'
-                ? styles.live
-                : styles.quiet
+                ? styles.tabOn
+                : styles.tab
           }
+          aria-expanded={open}
+          onClick={() => setOpen(o => !o)}
         >
-          {summary}
-        </span>
-      </summary>
+          midi
+          {note === null ? null : (
+            <span className={styles.tabNote}>{note}</span>
+          )}
+        </button>
+      </Tip>
+      {open && <MidiDialog onClose={() => setOpen(false)} />}
+    </>
+  )
+}
+
+// Shown rather than modal. Binding a control is not done in here — every slider
+// row in an open stage carries its own ⚟ — so a dialog that took the panel away
+// would be a dialog you have to close to use what it is about. Non-modal, the
+// list of what is bound stays up while you reach past it and bind another.
+//
+// Which also means nothing traps the focus, so escape is taken by hand: a
+// non-modal dialog gets no `cancel` event.
+function MidiDialog(props: { onClose: () => void }) {
+  const status = useStoreValue(midi.status)
+  const { onClose } = props
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <dialog
+      ref={el => {
+        if (el && !el.open) el.show()
+      }}
+      aria-label="midi"
+      className={styles.card}
+    >
+      <div className={styles.cardHead}>
+        <span className={styles.cardTitle}>midi</span>
+        <button
+          className={styles.close}
+          onClick={onClose}
+          aria-label="close midi"
+        >
+          ×
+        </button>
+      </div>
       {status === 'ready' ? (
         <Wired />
       ) : status === 'unsupported' ? (
@@ -437,7 +489,15 @@ export function MidiPanel() {
         </div>
       ) : (
         <div className={styles.row}>
-          <button className={styles.btn} onClick={() => midi.enable()}>
+          {/* Focus lands here rather than on the close, which is what opening a
+              dialog gives it by default: the close is first in the markup
+              because it belongs to the heading, and it is the last thing you
+              opened this to press. */}
+          <button
+            className={styles.btn}
+            autoFocus
+            onClick={() => midi.enable()}
+          >
             connect a controller
           </button>
           <span className={styles.hint}>
@@ -447,6 +507,6 @@ export function MidiPanel() {
           </span>
         </div>
       )}
-    </details>
+    </dialog>
   )
 }

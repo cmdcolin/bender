@@ -383,6 +383,11 @@ export function App() {
             drifting={drifting}
             onSet={setMorphSeconds}
           />
+          {/* Beside them because it is the same kind of thing: about the board
+              as a whole rather than about any one stage of it. It was a section
+              of the panel, which is where the board's own stages live and where
+              the wire into them does not belong. */}
+          <MidiPanel />
           <Panic />
         </div>
 
@@ -469,8 +474,6 @@ export function App() {
         <HuntDialog landed={landed} onDismiss={dismissLanded} />
 
         <Presets morphSeconds={morphSeconds} />
-
-        <MidiPanel />
 
         <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
         {openGroup ? (

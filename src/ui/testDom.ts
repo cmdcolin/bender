@@ -69,6 +69,22 @@ function stubLayout() {
   HTMLElement.prototype.hidePopover ??= function (this: HTMLElement) {
     this.style.display = ''
   }
+  // And <dialog>, of which jsdom has the element and none of the three calls
+  // that open or shut one. The panel opens two: the hunt takes the board for
+  // the eight seconds it runs and is modal for it, and the midi card is shown
+  // rather than modal so the stage behind it stays reachable. Only `open`
+  // separates them here — the top layer and the inertness a modal puts on the
+  // rest of the page are things jsdom has no notion of either way.
+  HTMLDialogElement.prototype.show ??= function (this: HTMLDialogElement) {
+    this.open = true
+  }
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    this.open = true
+  }
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+    this.open = false
+    this.dispatchEvent(new Event('close'))
+  }
 }
 
 // The engine is a module singleton, so one test's turning is the next one's
