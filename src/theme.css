@@ -9,6 +9,10 @@
   --fg4: #5c5c63;
   --accent: #ff5d3b;
   --accent2: #ffb03b;
+  /* The other direction. Nothing else on the board is cold, which is the point:
+     where a travel runs backwards below the middle, the two halves have to be
+     tellable apart at a glance rather than by reading the sign. */
+  --cool: #49b6ff;
   --danger: #ff3355;
   --border: #2c2c31;
   --border-quiet: #202024;

@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { useControlValue, useStoreValue } from './ControlsContext'
@@ -55,6 +56,20 @@ function Bind({ def }: { def: SliderDef }) {
       </Tip>
     </>
   )
+}
+
+// How much of the travel either side of a split's turn belongs to the turn
+// itself. The knob pulls to it under the hand, because two values a hair apart
+// across the turn are not a hair apart in what you hear, and a stop you can
+// only hit by luck is a stop that isn't there.
+const DETENT = 0.02
+
+function pull(def: SliderDef, pos: number): number {
+  const split = def.split
+  if (!split) return fromPos(def, pos)
+  return Math.abs(pos - toPos(def, split.at)) < DETENT
+    ? split.at
+    : fromPos(def, pos)
 }
 
 // Where a row of picks stops being a row you can read. Up to this many, the
@@ -124,42 +139,109 @@ export function ControlSlider({
     )
   }
 
+  const split = def.split
+  const pos = toPos(def, value)
+  const turn = split ? toPos(def, split.at) : 0
+  // Which half of the travel the knob is standing in: below the turn, above it,
+  // or on it. Everything the row draws about direction comes off this.
+  const way = split ? Math.sign(value - split.at) : 0
+
+  const track = (
+    <input
+      className={split ? styles.splitTrack : styles.track}
+      type="range"
+      min={0}
+      max={1000}
+      value={Math.round(pos * 1000)}
+      // The track is a thousand positions along the travel, which is the
+      // wrong thing to read out: what the knob says is its value in its own
+      // units, off the same formatter the readout beside it uses. The label
+      // is a span rather than a <label> because it also takes a double-click
+      // back to stock, so the name has to be given here.
+      aria-label={label}
+      aria-valuetext={formatValue(def, value)}
+      // The whole sweep is one gesture and wants one step in the walk, so it
+      // arms here and the first move that changes anything takes it. A held
+      // arrow key repeats, and a repeat is the same sweep continuing.
+      onPointerDown={() => engine.armStep()}
+      onKeyDown={e => {
+        if (!e.repeat) engine.armStep()
+      }}
+      onChange={e => {
+        engine.set(
+          def.key,
+          snapToStep(def, pull(def, Number(e.currentTarget.value) / 1000)),
+        )
+      }}
+      onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
+    />
+  )
+
   return (
     <Tip text={def.help}>
-      <div className={styles.row}>
+      <div className={split ? styles.rowSplit : styles.row}>
         <span
           className={touched ? styles.labelTouched : styles.label}
           onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
         >
           {label}
         </span>
-        <input
-          className={styles.track}
-          type="range"
-          min={0}
-          max={1000}
-          value={Math.round(toPos(def, value) * 1000)}
-          // The track is a thousand positions along the travel, which is the
-          // wrong thing to read out: what the knob says is its value in its own
-          // units, off the same formatter the readout beside it uses. The label
-          // is a span rather than a <label> because it also takes a double-click
-          // back to stock, so the name has to be given here.
-          aria-label={label}
-          aria-valuetext={formatValue(def, value)}
-          // The whole sweep is one gesture and wants one step in the walk, so it
-          // arms here and the first move that changes anything takes it. A held
-          // arrow key repeats, and a repeat is the same sweep continuing.
-          onPointerDown={() => engine.armStep()}
-          onKeyDown={e => {
-            if (!e.repeat) engine.armStep()
-          }}
-          onChange={e => {
-            const pos = Number(e.currentTarget.value) / 1000
-            engine.set(def.key, snapToStep(def, fromPos(def, pos)))
-          }}
-          onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
-        />
-        <span className={styles.readout}>
+        {split ? (
+          <span
+            className={styles.split}
+            style={
+              {
+                '--turn': `${turn * 100}%`,
+                '--way':
+                  way < 0
+                    ? 'var(--cool)'
+                    : way > 0
+                      ? 'var(--accent)'
+                      : 'var(--fg3)',
+              } as CSSProperties
+            }
+          >
+            {/* The travel drawn as the two things it is: a bed painted cold
+                below the turn and hot above it, the throw filled from the turn
+                out to where the knob is standing rather than from the far end,
+                and the turn itself marked. A knob sitting a hair the wrong side
+                of the middle now reads as the wrong side rather than as nearly
+                nothing. */}
+            <span className={styles.bed}>
+              <span
+                className={styles.throw}
+                style={{
+                  left: `${Math.min(pos, turn) * 100}%`,
+                  width: `${Math.abs(pos - turn) * 100}%`,
+                }}
+              />
+              <span className={styles.turn} />
+            </span>
+            {track}
+            <span className={styles.ends}>
+              <span className={way < 0 ? styles.endBack : styles.end}>
+                ◀ {split.below}
+              </span>
+              <span className={way === 0 ? styles.endMid : styles.end}>
+                {split.mid}
+              </span>
+              <span className={way > 0 ? styles.endFwd : styles.end}>
+                {split.above} ▶
+              </span>
+            </span>
+          </span>
+        ) : (
+          track
+        )}
+        <span
+          className={
+            way < 0
+              ? styles.readoutBack
+              : way > 0
+                ? styles.readoutFwd
+                : styles.readout
+          }
+        >
           {formatValue(def, value)}
           {action && (
             <Tip text={action.title}>

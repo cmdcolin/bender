@@ -880,6 +880,7 @@ export const SOURCE_GROUPS: Group[] = [
           v === 0
             ? 'frozen'
             : `${Math.abs(v).toFixed(2)}× ${v < 0 ? 'reverse' : 'forward'}`,
+        split: { at: 0, below: 'reverse', above: 'forward', mid: 'stop' },
         action: {
           label: 'stop',
           title:

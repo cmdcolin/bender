@@ -369,3 +369,25 @@ test('a fold with nothing moved under it offers no way back', () => {
   fireEvent.click(knife())
   expect((inFold(knife(), /^reset$/) as HTMLButtonElement).disabled).toBe(true)
 })
+
+// A travel whose middle is a stop and whose bottom half is backwards. The knob
+// pulls to the stop, because the values a hair either side of it are a tape
+// going one way and a tape going the other, and landing on neither by dragging
+// past is the thing that made the change too quiet to notice.
+const speed = () => {
+  render(<OpenGroup group={group('Sampler')} onClose={() => {}} seconds={1} />)
+  return screen.getByRole('slider', { name: 'Speed' })
+}
+
+test('a split travel pulls to its turn and says which side it is on', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  const knob = speed()
+
+  fireEvent.change(knob, { target: { value: '505' } })
+  expect(engine.controls.get().sampleSpeed).toBe(0)
+  expect(knob.getAttribute('aria-valuetext')).toBe('frozen')
+
+  fireEvent.change(knob, { target: { value: '300' } })
+  expect(engine.controls.get().sampleSpeed).toBeLessThan(0)
+  expect(knob.getAttribute('aria-valuetext')).toBe('1.60× reverse')
+})

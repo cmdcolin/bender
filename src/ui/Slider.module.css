@@ -123,3 +123,138 @@ select.listOn {
   font-family: inherit;
   max-width: 100%;
 }
+
+/* A row whose knob has a caption under it, and so is a line taller than the
+   rest of the panel. The label and readout stay on the track rather than
+   centring against the captions too. */
+.rowSplit {
+  composes: row;
+  align-items: start;
+}
+
+.rowSplit .label,
+.rowSplit .labelTouched,
+.rowSplit .readout,
+.rowSplit .readoutBack,
+.rowSplit .readoutFwd {
+  padding-top: 1px;
+}
+
+/* A travel whose halves are two different things: the bed under the knob, the
+   knob, and the names of both ends under it. */
+.split {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.bed {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 8px;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--cool) 22%, var(--bg3)) 0 var(--turn),
+    color-mix(in srgb, var(--accent) 22%, var(--bg3)) var(--turn) 100%
+  );
+}
+
+/* How far the knob has been thrown, measured from the turn rather than from the
+   bottom of the travel — which is what makes the two halves read as two throws
+   away from a middle instead of one long one. */
+.throw {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--way);
+}
+
+.turn {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: var(--turn);
+  width: 2px;
+  margin-left: -1px;
+  background: var(--fg);
+}
+
+.splitTrack {
+  composes: track;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  background: transparent;
+}
+
+.splitTrack::-webkit-slider-runnable-track {
+  height: 16px;
+  background: transparent;
+}
+
+.splitTrack::-moz-range-track {
+  height: 16px;
+  background: transparent;
+}
+
+/* The knob takes the colour of the half it is standing in, so the thing your
+   hand is on says which way the tape is going without you reading anything. */
+.splitTrack::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 16px;
+  border-radius: 2px;
+  border: 1px solid var(--bg);
+  background: var(--way);
+  cursor: pointer;
+}
+
+.splitTrack::-moz-range-thumb {
+  width: 10px;
+  height: 16px;
+  border-radius: 2px;
+  border: 1px solid var(--bg);
+  background: var(--way);
+  cursor: pointer;
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  pointer-events: none;
+}
+
+.end {
+  color: var(--fg4);
+}
+
+.endBack {
+  color: var(--cool);
+}
+
+.endFwd {
+  color: var(--accent);
+}
+
+.endMid {
+  color: var(--fg);
+}
+
+/* The number says the direction too, in the same two colours as the track. */
+.readoutBack {
+  composes: readout;
+  color: var(--cool);
+}
+
+.readoutFwd {
+  composes: readout;
+  color: var(--accent);
+}

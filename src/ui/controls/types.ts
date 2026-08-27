@@ -32,6 +32,12 @@ export interface SliderDef {
       the other way, and a knob whose left half is reverse rather than slow has
       to say so where you are looking. */
   reads?: (value: number) => string
+  /** A travel whose two halves are different things rather than more and less
+      of one thing. The row paints each half in its own colour, marks the turn
+      between them, names both ends under the track, and pulls to the turn under
+      the hand — a hairline of travel between backwards and forwards is one you
+      cross without noticing you have. */
+  split?: { at: number; below: string; above: string; mid: string }
   /** A value the control has a reason to jump to that isn't a place on its own
       travel — it is worked out from the rest of the board. One press, drawn
       beside the readout. */
