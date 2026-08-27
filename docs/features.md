@@ -23,58 +23,58 @@ renders it with the same layout the app uses.
 - **Nothing here is a sample.** The reboots, the pitch dives and the screams
   fall out of the mechanisms. One RC oscillator clocks the whole toy chip, so
   pitch, tempo and envelopes are the same thing divided — starve the rail and
-  they all go down together, and there is no setting where they come apart.
+  they all go down together, and no setting pulls them apart.
 - **Solder a pot onto the die.** _Bend spot_ picks the clock, the counter, the
   bias or the gate; _Bend pot_ is how far you turn it. _Clip chatter_ is the
   paperclip: bare metal dragged across the pads, biting the supply a few times a
   second, each touch a dive the board has to climb back out of.
 - **Put a knife through the bus.** Cut, ground, bridge or pull up a data or
-  address line — on the toy, on the drum machine, or on the FM chip — and the
-  wrong byte lands. On the FM chip it _stays_ wrong until the processor writes
-  that register again. Which wire and what happened to it are three controls
-  that only mean anything together, so each chip's _knife on the bus_ opens on a
-  row of named cuts: press **machine-gun** or **the note never ends** and the
-  controls under it say what that was. **Random knife** in the dice row draws
-  from the same table.
+  address line — on the toy, the drum machine or the FM chip — and the wrong
+  byte lands; on the FM chip it _stays_ wrong until the processor writes that
+  register again. Which wire and what happened to it only mean anything
+  together, so each chip's _knife on the bus_ opens on a row of named cuts:
+  press **machine-gun** or **the note never ends** and the rows under it say
+  what that was. **Random knife** in the dice row draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 25 destinations — and the
-  last four of those destinations are the other wires' depths.
+- **A patch bay that modulates itself.** Four wires, 25 destinations — among
+  them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
   saturates in-loop. Runaway is a feature; a fixed safety tail means no setting
   can blow up the output.
-- **The board ages while you play.** Heat builds off whatever you are making it
+- **The board ages while you play.** Heat builds off whatever you make it
   dissipate, dry joints drop a bend out of the path mid-note, and _Re-solder_
   rewires the slot order on its own.
 - **The sampler is the tape.** Drop an audio file anywhere on the page, or roll
   one off archive.org, and it plays at any speed either way round. Arm _Record_
-  and the board lays its own output back onto the reel on the spot the play head
-  is reading: what comes past next lap has been through the mix bus, the bends,
-  the pedals and the tape machine, and then goes through all of them again.
-  Nothing stands in for generation loss — the loop really is re-recorded every
-  lap, which is why a bend in the path makes it diverge rather than fade. The
-  reel is drawn under the keys, redrawn off the tape as the head reads it: drag
-  its two markers to trim the loop, drag the tape itself to move the head.
+  and the board lays its own output back onto the reel where the play head is
+  reading: what comes past next lap has been through the mix bus, the bends, the
+  pedals and the tape machine, and goes through all of them again. Nothing
+  stands in for generation loss — the loop really is re-recorded every lap,
+  which is why a bend in the path makes it diverge rather than fade. The reel
+  under the keys is drawn off the tape as the head reads it: drag its two
+  markers to trim the loop, drag the tape itself to move the head.
 - **A microphone into the middle of the board.** _Mic patch_ is not a channel —
-  on one setting the mic reaches the mix, and on the other six it is soldered
-  onto the chip's rail, an oscillator's FM input or the delay's feedback. The
-  body contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 52 presets and dice that roll the whole
-  board, one stage, or a knife; **morph** travels between two boards over up to
-  thirty seconds instead of cutting to one; **hunt** auditions six candidates
-  and keeps the one closest to the edge; **drift** nudges the board along on a
-  timer. Every one of those lands in a walk you can ctrl+z back down.
-- **A link is a patch.** The whole board rides in the URL. Play it over MIDI,
-  record it to wav.
+  on one setting the mic reaches the mix, on the other six it is soldered onto
+  the chip's rail, an oscillator's FM input or the delay's feedback. The body
+  contact pad is the same idea with your finger as the resistor.
+- **Boards, rather than settings.** 52 presets, and dice on every heading as
+  well as on the whole board; **morph** travels between two boards over up to
+  thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
+  the one closest to the edge; **drift** nudges the board along on a timer. All
+  of it lands in a walk you can ctrl+z back down.
+- **A link is a patch.** The board packs into the URL short enough to survive a
+  chat window, and a long `#set=` form names the controls if you would rather
+  type one. Play it over MIDI, record it to wav.
 
 [Bends](BENDS.md) explains how the interesting parts work and why they behave as
 they do. What follows is the list, for finding out whether something exists and
 what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
-effect buries the board. Your own hand still puts it wherever you want it, and a
+effect buries the board. Your own hand still puts it where you want it, and a
 preset that names it still gets it. 13 of them, mostly the ones that cover the
 board rather than joining it.
 
@@ -84,14 +84,12 @@ board rather than joining it.
 
 The instrument the whole thing is named after: a square-wave divider chip
 running a ROM, with a tone control that taps the divider at a different width,
-an auto bass-chord section, and playable voices over the top. Its clock, its
-counter, its bias and its gate are each a place you can solder a pot onto —
-_Bend spot_ picks which, _Bend pot_ is how far. Everything from _Starve_ down is
-the supply underneath it.
+an auto bass-chord section and playable voices over the top. Its clock, counter,
+bias and gate are each a place to solder a pot onto — _Bend spot_ picks which,
+_Bend pot_ how far. Everything from _Starve_ down is the supply underneath it.
 
-Named cuts, one press each under _knife on the bus_, which is where the panel
-keeps them too — the knife goes on and the rows under it say which controls that
-was:
+Named cuts, one press each under _knife on the bus_, where the panel keeps them
+too — the knife goes on and the rows under it say which controls that was:
 
 - **rests fill in**: A note wire held high — the song keeps its rhythm and its
   silences become notes
@@ -142,18 +140,17 @@ A step grid with a length per row, so a five-step hat runs against a
 sixteen-step kick until they line back up. _Retrigger_ hammers the current step
 at audio rate; _Cross-patch_ leans one voice’s amplifier onto another’s
 envelope, so a hit you can hear opens a voice nothing struck. _Address line_ and
-_Data line_ put a knife through the wires between the step counter and the
-pattern memory: the counter goes on counting and the grid goes on chasing it,
-and the machine plays somebody else’s pattern.
+_Data line_ knife the wires between the step counter and the pattern memory: the
+counter goes on counting, the grid goes on chasing it, and the machine plays
+somebody else’s pattern.
 
 The pattern grid is a widget rather than a row of sliders, so the table below
 leaves it out: seven rows (the six voices and an accent), each carrying 16 steps
 and a length of its own. That is 14 more controls, and they ride in a link like
 the rest.
 
-Named cuts, one press each under _knife on the bus_, which is where the panel
-keeps them too — the knife goes on and the rows under it say which controls that
-was:
+Named cuts, one press each under _knife on the bus_, where the panel keeps them
+too — the knife goes on and the rows under it say which controls that was:
 
 - **machine-gun**: The hat’s trigger wire held high — it fires on every step the
   machine fetches, and everything soldered to the trigger bus hears it
@@ -198,23 +195,21 @@ was:
 ### FM chip
 
 The other synthesiser on the board: two operators a voice, four voices, on the
-same rail. It has no keyboard and no sequencer of its own — its key input is
-soldered onto the toy’s gate line, so it plays whatever strikes a note over
-there, and _Struck by_ clips the kit’s trigger lines on beside it. Nothing about
-it is played, though; it is _configured_, one byte at a time, over a bus. Which
-is what _Data line_ and _Address line_ are for: a byte that lands wrong stays
-wrong until the processor writes that register again, and if the wire carrying
-the key back up cannot go low, the note never ends. _Wave line_ is the other
-bus, the one the processor never touches — the sine is a table and a table is an
-address, so a knife there changes the shape of the wave under your hand and
-leaves nothing behind. _Effect_ is the ROM’s other job: a bird, surf, wind, a
-siren or crickets, each of them a program in the processor spraying register
-writes rather than a sample, which makes it the busiest thing the bus ever
-carries.
+same rail. It has no keyboard and no sequencer — its key input is soldered onto
+the toy’s gate line, so it plays whatever strikes a note over there, and _Struck
+by_ clips the kit’s trigger lines on beside it. It is not played but
+_configured_, a byte at a time over a bus, which is what _Data line_ and
+_Address line_ are for: a byte that lands wrong stays wrong until the processor
+writes that register again, and if the wire carrying the key back up cannot go
+low, the note never ends. _Wave line_ is the other bus, the one the processor
+never touches — the sine is a table and a table is an address, so a knife there
+reshapes the wave under your hand and leaves nothing behind. _Effect_ is the
+ROM’s other job: a bird, surf, wind, a siren or crickets, each a program
+spraying register writes rather than a sample, and the busiest thing the bus
+ever carries.
 
-Named cuts, one press each under _knife on the bus_, which is where the panel
-keeps them too — the knife goes on and the rows under it say which controls that
-was:
+Named cuts, one press each under _knife on the bus_, where the panel keeps them
+too — the knife goes on and the rows under it say which controls that was:
 
 - **the note never ends**: The bit carrying the key coming back up cannot go
   low, so nothing the chip is told to play ever stops
@@ -301,7 +296,10 @@ Hiss with a colour control, and sparse crackle with a rate of its own.
 ### Sampler
 
 A loaded audio file, looping through the chain — or, with _Struck by_ on a voice
-and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped.
+and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped. The
+bay reaches its capstan and both loop markers, so a wire drags the reel’s pitch
+the way a starve drags the toy’s, or walks the loop window around the recording
+while the head plays on.
 
 <details>
 <summary>9 controls</summary>
@@ -323,10 +321,10 @@ and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped.
 ### Mic
 
 A live microphone, and the one source that does not have to reach the mix. _Mic
-patch_ is the whole of it: the wire can go onto the chip’s supply rail instead,
-or into the oscillator’s FM input, the delay’s feedback, the ring modulator’s
-carrier, or a trigger line — so a shout browns the toy out, or fires the kit,
-rather than simply being loud.
+patch_ is the whole of it: the wire can land on the chip’s supply rail instead,
+or the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier
+or a trigger line — so a shout browns the toy out or fires the kit rather than
+simply being loud.
 
 <details>
 <summary>2 controls</summary>
@@ -342,18 +340,16 @@ rather than simply being loud.
 
 The desk the six sources meet at, and the only place their balance against each
 other is a thing you can see. Every fader is drawn here as well as on its own
-machine’s panel — under the machine’s name rather than the word _Level_, which
-six of them carry — with a meter beside it reading what that channel is actually
-putting on the bus, and the bus’s own meter under the lot. A fader says how far
-it is up; it does not say whether anything is coming out. The FM chip is the
-reason: it boots at zero, it has no keyboard of its own, and turned up on a toy
-nothing is striking it is a channel at three quarters and silence. _Bus drive_
-is the desk’s own knob — the summing amp, a wire at unity and the one saturation
-ahead of the bends anywhere off it.
+machine’s panel, under the machine’s name, with a meter beside it reading what
+that channel is putting on the bus and the bus’s own meter under the lot. A
+fader says how far it is up, not whether anything is coming out — the FM chip is
+the reason: it boots at zero, it has no keyboard of its own, and turned up on a
+toy nothing is striking it is three quarters and silence. _Bus drive_ is the
+summing amp: a wire at unity, and the one saturation ahead of the bends.
 
-The desk is a widget rather than a row of sliders, and the seven faders on it
-are counted under the machines they belong to rather than here: a fader is the
-first knob on its own machine's panel and one strip of this one.
+The desk is a widget rather than a row of sliders, and its seven faders are
+counted under the machines they belong to: each is the first knob on that
+machine's panel and one strip of this one.
 
 <details>
 <summary>1 control</summary>
@@ -366,9 +362,9 @@ first knob on its own machine's panel and one strip of this one.
 
 ## Bends
 
-Seven of them for six slots, so one always sits out — and the slots are ordered,
-so which comes first is yours. Each has a mix, and a mix at zero takes the stage
-out of the path rather than merely silencing it.
+Seven for six slots, so one always sits out, and the slots are ordered. Each has
+a mix, and a mix at zero takes the stage out of the path rather than merely
+silencing it.
 
 ### Slot order
 
@@ -513,7 +509,7 @@ again and partials climb forever.
 Each circuit is its own model rather than one circuit with a knob on it.
 _Screamer_ clips inside the feedback loop so the dry note walks under it; _rat_
 clips to ground behind a slew-limited op-amp; _muff_ is two clipping stages and
-a scooped tone stack; _germanium_ is the lopsided one whose bias rides down on
+a scooped tone stack; _germanium_ is the lopsided one, riding its bias down on
 the signal; _octave_ rectifies into a ringing transformer; _gate_ is misbiased
 to the edge of cutoff.
 
@@ -560,11 +556,11 @@ pitch as the board browns out.
 The normal box on a board of abused ones, and the one thing here that behaves.
 _Standard_ moves its time by crossing between two read heads rather than
 dragging one, so the repeats already in the buffer keep their pitch while your
-hand is on the knob — which is the whole difference between this and the tape
-machine next to it. _Analog_ is a bucket brigade, and the clock that sets the
-delay is also what sets the bandwidth, so long is muddy by construction and the
-compander breathes behind the repeats. _Reverse_ plays each window backwards,
-relocking at the seam.
+hand is on the knob — the whole difference between this and the tape machine
+next to it. _Analog_ is a bucket brigade whose clock sets the delay and the
+bandwidth together, so long is muddy by construction and the compander breathes
+behind the repeats. _Reverse_ plays each window backwards, relocking at the
+seam.
 
 <details>
 <summary>6 controls</summary>
@@ -602,8 +598,9 @@ deliberately cheap.
 
 ### Patch bay
 
-Wires, each from a source to a destination at a signed depth. A wire can also
-land on another wire’s depth, which is how the bay modulates itself.
+Wires, each from a source to a destination at a signed depth. A wire can land on
+the toy’s supply rail, on the sampler’s capstan and loop markers, or on another
+wire’s depth — which is how the bay modulates itself.
 
 <details>
 <summary>14 controls</summary>
@@ -652,9 +649,8 @@ Two axes, for the hand on the circuit.
 
 ### Feedback bus
 
-The output fed back in, at a loop time short enough for kHz mixer squeal — the
-block-rate global loop is far too slow for that. _Patched into_ decides where
-the return lands.
+The output fed back in, at a loop time short enough for kHz mixer squeal.
+_Patched into_ decides where the return lands.
 
 <details>
 <summary>16 controls</summary>
@@ -745,15 +741,15 @@ Gain, ahead of a dc block, soft clip and limiter that always run.
 
 What the toy board is made of, rather than what you are doing to it. Every one
 of these was a number compiled into the model until somebody wanted the other
-value, and every default is the one that shipped — so a board nobody has been at
+value, and every default is the one that shipped, so a board nobody has been at
 here is the stock board. _Timing pin_ decides which sags the tempo notices.
 _Watchdog_ is where the reset chip gives up, and it cannot sit under the voltage
 the die gives up at. _Latch hold_ is what a jam sounds like. The four _Clip_
 knobs are the paperclip itself: how hard it bites, how long it stays, and the
 charge and release that make a dive a dive rather than a warble. _Clock drag_ is
 how deep the cap on the oscillator can divide. _Part spread_ is how far apart
-the four output stages came out of the bin, which is whether a chord collapses
-raggedly or all at once.
+the four output stages came out of the bin — whether a chord collapses raggedly
+or all at once.
 
 <details>
 <summary>10 controls</summary>
@@ -777,8 +773,8 @@ raggedly or all at once.
 
 The slow ones. _Heat_ builds with what the board is dissipating and takes the
 rail down with it. _Dry joints_ drop a bend slot out of the path mid-note.
-_Re-solder_ has the board rewire its own slot order while you play.
-_Cross-coupling_ is how much the brightness bus feeds back into the supply.
+_Re-solder_ rewires the slot order while you play. _Cross-coupling_ is how much
+the brightness bus feeds back into the supply.
 
 <details>
 <summary>5 controls</summary>
@@ -798,20 +794,26 @@ _Cross-coupling_ is how much the brightness bus feeds back into the supply.
 - **Roll** randomises the board with a bias toward leaving something audible;
   the controls marked † come on rarely and low, so a roll does not bury the
   board under one effect. **Mutate** shakes the board you have rather than
-  replacing it, and each stage has dice of its own.
-- **Morph** travels between two boards over time rather than jumping, and
-  pressing it mid-flight keeps the half-way board — which is a board like any
-  other. **Hunt** auditions candidates and keeps whichever spends the most time
-  arriving at the limiter and backing off, which is what the edge sounds like
-  from outside. **Drift** sets the board off for somewhere near where it stands
-  every fifteen seconds and never lets it arrive, so it keeps moving rather than
-  being replaced — and banks none of it, so the board you set drifting is still
-  one undo away.
+  replacing it.
+- **Dice on every heading**, not only on the stage, with a _reset_ beside them
+  that says how many controls it would put back. A heading is where the controls
+  that only mean anything together live, so you can roll a knife on the toy's
+  bus without re-rolling its clock and its bend pot underneath you.
+- **Morph** travels between two boards rather than jumping, and pressing it
+  mid-flight keeps the half-way board — a board like any other. **Hunt**
+  auditions candidates and keeps whichever spends the most time arriving at the
+  limiter and backing off, which is what the edge sounds like from outside.
+  **Drift** sets the board off for somewhere near where it stands every fifteen
+  seconds and never lets it arrive; it banks none of it, so the board you set
+  drifting is one undo away.
 - **The walk**: every gesture that lands a board — a preset, a roll, a stage
   reset, a sweep of one knob — is a step, and ctrl+z and ctrl+shift+z go back
   and forward through them.
-- **The board rides in the URL**, so a link is a patch. A link never presses
-  play; a reload of your own tab comes back running whatever it was running.
+- **The board rides in the URL**, so a link is a patch: `#p=` packs it into a
+  few dozen characters, `#set=` spells the moved controls out by name for typing
+  at the address bar, and arriving on one keeps the bar writing that form. A
+  link never presses play; a reload of your own tab comes back running whatever
+  it was running.
 - **Play it from the computer keyboard** — `a s d f` for the keys, `z` and `x`
   for octaves, `1`–`6` for the kit, space for both machines.
 - **MIDI in** — notes, velocity, and knobs that map onto the panel, including
