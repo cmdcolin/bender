@@ -95,6 +95,7 @@ const SCRIPTS: Record<string, string> = {
   soak: 'whether any stage gets slower the longer it runs',
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
+  figure: "re-shoots the README's screenshot of the app and its panel",
   knife:
     'sweeps every wire and fault on all five buses and reports which you can hear',
   preview: 'serves the built bundle',

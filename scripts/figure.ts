@@ -1,0 +1,293 @@
+import { execFileSync, spawn } from 'node:child_process'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
+import { encodeControls } from '../src/ui/share'
+
+// The README's one picture: the panel drawn big on the left, and the whole app
+// beside it with the panel ringed in red where it actually sits. `pnpm figure`
+// rewrites docs/img/panel-callout.jpg from the app as it is now, so the shot
+// never drifts from the board — no hand-cropping to redo.
+//
+// It drives a headless Chrome over the devtools protocol rather than a browser
+// library, so the repo owes nothing to a 300 MB dependency for one image, and
+// it asks the page where the panel is instead of carrying pixel coordinates
+// that a layout change would quietly invalidate.
+//
+// Wants `google-chrome` (or `chromium`) and ImageMagick's `magick` on PATH.
+
+const OUT = 'docs/img/panel-callout.jpg'
+const PORT = 5199
+const VIEW = { width: 1600, height: 900 }
+
+const PAD = 24
+const GAP = 40
+const PANEL_H = 820
+const APP_W = 1020
+const BG = '#131316'
+const RING = '#ff3b30'
+
+// A board with something on it. Stock, the panel is a column of grey boxes and
+// the picture says nothing about what the app does, so this patches bends,
+// pedals, the tape and three wires of the bay — the drawing then carries move
+// counts, wire depths and the feedback loop, which is the reason for the shot.
+const BOARD: Controls = {
+  ...DEFAULT_CONTROLS,
+  chipStarve: 0.5,
+  ringMix: 0.6,
+  ringHz: 120,
+  crushMix: 0.5,
+  bits: 5,
+  filtMix: 0.7,
+  filtHz: 800,
+  filtRes: 0.6,
+  glitchMix: 0.4,
+  glitchProb: 0.3,
+  combMix: 0.5,
+  combHz: 220,
+  driveDb: 12,
+  distMix: 0.8,
+  dlyMix: 0.4,
+  revMix: 0.35,
+  tapeMix: 0.6,
+  tapeWow: 0.3,
+  fbAmt: 0.7,
+  fbDelayMs: 40,
+  mod0Src: 1,
+  mod0Dest: 0,
+  mod0Depth: 0.7,
+  mod1Src: 2,
+  mod1Dest: 13,
+  mod1Depth: -0.5,
+  mod2Src: 3,
+  mod2Dest: 6,
+  mod2Depth: 0.4,
+}
+
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
+
+function which(cmd: string) {
+  try {
+    return execFileSync('which', [cmd]).toString().trim()
+  } catch {
+    return ''
+  }
+}
+
+function chromePath() {
+  const found = [
+    process.env.BENDER_CHROME,
+    'google-chrome',
+    'chromium',
+    'chromium-browser',
+  ].find(c => c && (c.includes('/') ? true : which(c)))
+  if (!found) throw new Error('no chrome on PATH — set BENDER_CHROME')
+  return found
+}
+
+async function serve() {
+  const vite = spawn(
+    'node_modules/.bin/vite',
+    ['--port', String(PORT), '--strictPort'],
+    { stdio: ['ignore', 'pipe', 'inherit'] },
+  )
+  const url = await new Promise<string>((resolve, reject) => {
+    let out = ''
+    const die = setTimeout(() => reject(new Error('vite never started')), 30000)
+    vite.stdout.on('data', (d: Buffer) => {
+      out += d.toString()
+      const hit = out.match(/(http:\/\/localhost:\d+\/\S*)/)?.[1]
+      if (hit) {
+        clearTimeout(die)
+        resolve(hit.replace(/\x1b\[[0-9;]*m/g, ''))
+      }
+    })
+  })
+  return { url, stop: () => vite.kill() }
+}
+
+// Enough of the devtools protocol to open a page, ask it a question and take
+// its picture.
+async function attach(port: number) {
+  let list: { webSocketDebuggerUrl: string }[] = []
+  for (let i = 0; i < 100 && !list.length; i++) {
+    try {
+      list = (
+        await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()
+      ).filter((t: { type: string }) => t.type === 'page')
+    } catch {
+      await sleep(100)
+    }
+  }
+  const first = list[0]
+  if (!first) throw new Error('chrome never opened a page')
+
+  const ws = new WebSocket(first.webSocketDebuggerUrl)
+  await new Promise(r => ws.addEventListener('open', r, { once: true }))
+  const waiting = new Map<number, (v: unknown) => void>()
+  let id = 0
+  ws.addEventListener('message', e => {
+    const msg = JSON.parse(String(e.data))
+    waiting.get(msg.id)?.(msg.result)
+    waiting.delete(msg.id)
+  })
+  const send = <T>(method: string, params: object = {}) =>
+    new Promise<T>(resolve => {
+      const at = ++id
+      waiting.set(at, resolve as (v: unknown) => void)
+      ws.send(JSON.stringify({ id: at, method, params }))
+    })
+  return { send, close: () => ws.close() }
+}
+
+async function shoot(url: string, into: string) {
+  const dir = mkdtempSync(join(tmpdir(), 'bender-figure-'))
+  const chrome = spawn(
+    chromePath(),
+    [
+      '--headless',
+      '--disable-gpu',
+      '--hide-scrollbars',
+      `--window-size=${VIEW.width},${VIEW.height}`,
+      '--remote-debugging-port=9333',
+      `--user-data-dir=${dir}`,
+      url,
+    ],
+    { stdio: 'ignore' },
+  )
+  try {
+    const page = await attach(9333)
+    await page.send('Page.enable')
+    await sleep(3000)
+
+    const { result } = await page.send<{ result: { value: string } }>(
+      'Runtime.evaluate',
+      {
+        expression: `JSON.stringify((() => {
+        const el = document.querySelector('[class*="graph"]')
+        if (!el) throw new Error('no panel on the page')
+        const r = el.getBoundingClientRect()
+        return { x: r.x, y: r.y, width: r.width, height: r.height }
+      })())`,
+      },
+    )
+    const rect = JSON.parse(result.value) as {
+      x: number
+      y: number
+      width: number
+      height: number
+    }
+
+    const shot = await page.send<{ data: string }>('Page.captureScreenshot', {
+      format: 'png',
+    })
+    writeFileSync(into, Buffer.from(shot.data, 'base64'))
+    page.close()
+    return rect
+  } finally {
+    chrome.kill()
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+const magick = (args: string[]) => execFileSync('magick', args)
+
+async function main() {
+  if (!which('magick')) throw new Error('no imagemagick on PATH')
+
+  const { url, stop } = await serve()
+  const work = mkdtempSync(join(tmpdir(), 'bender-figure-out-'))
+  const shot = join(work, 'shot.png')
+  const panel = join(work, 'panel.png')
+  const app = join(work, 'app.png')
+
+  try {
+    const rect = await shoot(`${url}#set=${encodeControls(BOARD)}`, shot)
+
+    // The box, a hair outside the drawing so the ring never lands on a wire.
+    const box = {
+      x: Math.round(rect.x) - 4,
+      y: Math.round(rect.y) - 4,
+      w: Math.round(rect.width) + 8,
+      h: Math.round(rect.height) + 8,
+    }
+    // The empty half-screen under the keyboard is not worth the pixels; the
+    // caption under the panel is, so the crop stops just below it.
+    const appH = Math.min(VIEW.height, box.y + box.h + 60)
+
+    magick([
+      shot,
+      '-crop',
+      `${box.w}x${box.h}+${box.x}+${box.y}`,
+      '+repage',
+      '-resize',
+      `x${PANEL_H}`,
+      '-bordercolor',
+      RING,
+      '-border',
+      '3',
+      panel,
+    ])
+    magick([
+      shot,
+      '-crop',
+      `${VIEW.width}x${appH}+0+0`,
+      '+repage',
+      '-fill',
+      'none',
+      '-stroke',
+      RING,
+      '-strokewidth',
+      '5',
+      '-draw',
+      `rectangle ${box.x},${box.y} ${box.x + box.w},${box.y + box.h}`,
+      '-resize',
+      `${APP_W}x`,
+      '-bordercolor',
+      '#3a3a40',
+      '-border',
+      '1',
+      app,
+    ])
+
+    const size = (f: string) => {
+      const [w = 0, h = 0] = execFileSync('magick', [
+        'identify',
+        '-format',
+        '%w %h',
+        f,
+      ])
+        .toString()
+        .split(' ')
+        .map(Number)
+      return { w, h }
+    }
+    const { w: pw, h: ph } = size(panel)
+    const { w: aw, h: ah } = size(app)
+    const canvas = { w: PAD * 2 + pw + GAP + aw, h: PAD * 2 + ph }
+
+    magick([
+      '-size',
+      `${canvas.w}x${canvas.h}`,
+      `xc:${BG}`,
+      panel,
+      '-geometry',
+      `+${PAD}+${PAD}`,
+      '-composite',
+      app,
+      '-geometry',
+      `+${PAD + pw + GAP}+${Math.round((canvas.h - ah) / 2)}`,
+      '-composite',
+      '-quality',
+      '88',
+      OUT,
+    ])
+    console.log(`${OUT} — ${canvas.w}x${canvas.h}`)
+  } finally {
+    stop()
+    rmSync(work, { recursive: true, force: true })
+  }
+}
+
+await main()

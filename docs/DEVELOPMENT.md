@@ -48,6 +48,14 @@ the main and audio threads is [dataflow.md](dataflow.md).
 - `pnpm diagram` regenerates the signal path diagram (`img/chain-*.svg`) from
   the same layout code the panel draws with. Run it after any change to
   `src/ui/chain-map.ts`.
+- `pnpm figure` regenerates the README's screenshot
+  (`docs/img/panel-callout.jpg`): it starts the dev server, opens the app in a
+  headless Chrome on a board with the bends, the tape and three patch wires
+  turned on, and composes the panel enlarged beside the whole window with the
+  panel ringed in red. It asks the page where the panel is rather than carrying
+  crop coordinates, so a layout change moves the box on its own. Wants
+  `google-chrome` (or `chromium`, or `BENDER_CHROME`) and ImageMagick's `magick`
+  on PATH.
 - `pnpm features` regenerates [features.md](features.md) from the app's own
   control tables and tooltips. Run it after changing a control, a preset, or a
   ROM — a test fails the build if the committed file falls behind.
