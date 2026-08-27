@@ -226,3 +226,42 @@ preset, a roll, or a shared link.
 actual audio output as a 16-bit stereo wav file, where the keyboard's **Rec**
 and the drum machine's **Record** capture what you played rather than what comes
 out of the speakers.
+
+## The link is the board
+
+The address bar carries the whole board at all times — every control off stock,
+the drum pattern and the melody — so copying it is the share button and
+reloading keeps what you had. There is no server involved: it all rides in the
+`#`, which is also why no host has to be taught to serve the app for a url it
+has never seen.
+
+It comes out short by default. Here is **bucket brigade**:
+
+```
+https://cmdcolin.github.io/bender/#p=AEsvLX4BAMwDAEgApAMBPA
+```
+
+That's the board written as bytes. The long form spells the same board out, and
+the app both reads and writes it:
+
+```
+https://cmdcolin.github.io/bender/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6
+```
+
+Four times the characters, which is why the bar carries the short one — the
+difference between a link that survives a chat window and one that arrives in
+three pieces.
+
+What the long form buys is a board you can program by hand: a control name from
+[features.md](features.md), a colon, a number, commas between.
+
+```
+#set=chipStarve:0.8,dlyFb:0.6,drumKick:33825
+```
+
+Anything you leave out is at stock, anything out of range is pulled back onto
+the panel, and a name the app no longer has is dropped. A bar already carrying
+`#set=` keeps carrying it, so the board stays readable while you are working
+that way rather than turning back to bytes under the cursor — type a bare
+`#set=` to switch a tab over. Every preset link in [features.md](features.md) is
+written this way.

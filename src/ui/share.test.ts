@@ -102,17 +102,26 @@ test('junk decodes to nothing rather than to NaN', () => {
 })
 
 test('the hash carries the board and leaves the rest of the hash alone', () => {
-  const h = boardHash('#debug=1', { ...DEFAULT_CONTROLS, dlyFb: 1.4 })
+  const h = boardHash('#debug=1&set=', { ...DEFAULT_CONTROLS, dlyFb: 1.4 })
   expect(new URLSearchParams(h).get('set')).toBe('dlyFb:1.4')
   expect(new URLSearchParams(h).get('debug')).toBe('1')
 })
 
 test('a stock board drops the param rather than writing an empty one', () => {
-  expect(boardHash('#set=dlyFb:1.4', { ...DEFAULT_CONTROLS })).toBe('')
+  expect(boardHash('', { ...DEFAULT_CONTROLS })).toBe('')
+  expect(
+    boardHash(`#${boardHash('', { ...DEFAULT_CONTROLS, dlyFb: 1.4 })}`, {
+      ...DEFAULT_CONTROLS,
+    }),
+  ).toBe('')
 })
 
 test('the separators stay one character each in the bar', () => {
-  const h = boardHash('', { ...DEFAULT_CONTROLS, dlyFb: 1.4, filtRes: 1.2 })
+  const h = boardHash('#set=', {
+    ...DEFAULT_CONTROLS,
+    dlyFb: 1.4,
+    filtRes: 1.2,
+  })
   expect(h).toBe('set=filtRes:1.2,dlyFb:1.4')
   expect(boardFromUrl('', `#${h}`)).toEqual({ filtRes: 1.2, dlyFb: 1.4 })
   // and an escaped link from before still reads
@@ -143,7 +152,70 @@ test('a link opens the board it names, from the hash or an older url', () => {
 test('a url naming no board is nothing to patch', () => {
   expect(boardFromUrl('', '')).toBeNull()
   expect(boardFromUrl('', '#set=')).toBeNull()
+  expect(boardFromUrl('', '#p=')).toBeNull()
   expect(boardFromUrl('', '#set=retiredKnob:3')).toBeNull()
   expect(boardFromUrl('', '#somethingelse')).toBeNull()
   expect(boardFromUrl('?set=', '')).toBeNull()
+})
+
+const BOARD: Controls = {
+  ...DEFAULT_CONTROLS,
+  chipStarve: 0.85,
+  filtRes: 1.15,
+  bendSlot0: 7,
+  shiftHz: 380,
+  mod0Depth: -0.6,
+  drumClap: 0b0000_1000_0000_1000,
+  tuneStep3: 12,
+  tuneLen: 9,
+  drumHatLen: 12,
+}
+
+test('a bar with nothing on it writes the short form', () => {
+  const h = boardHash('', BOARD)
+  expect(h.startsWith('p=')).toBe(true)
+  expect(boardFrom(boardFromUrl('', `#${h}`) ?? {}, BOARD)).toEqual(BOARD)
+})
+
+test('the short form is worth the trouble', () => {
+  // The point of the whole exercise, pinned so it cannot quietly stop being
+  // true: this board is 92 characters by name and 26 as bytes.
+  expect(boardHash('', BOARD).length * 3).toBeLessThan(
+    boardHash('#set=', BOARD).length,
+  )
+})
+
+test('a bar already in the long form keeps writing it', () => {
+  // Which is what makes the address bar programmable: type a board by hand and
+  // it stays typed by hand, rather than turning to bytes under the cursor on
+  // the next control you move.
+  const typed = '#set=chipStarve:0.8'
+  const h = boardHash(typed, boardFrom(boardFromUrl('', typed) ?? {}, BOARD))
+  expect(h).toBe('set=chipStarve:0.8')
+  expect(boardHash(`#${h}`, BOARD).startsWith('set=')).toBe(true)
+  // an empty `set=` is the marker on its own, so typing it into a bare bar is
+  // enough to switch a stock board over
+  expect(boardHash('#set=', { ...DEFAULT_CONTROLS })).toBe('set=')
+})
+
+test('the two forms carry the same board', () => {
+  const long = boardFromUrl('', `#${boardHash('#set=', BOARD)}`)
+  const short = boardFromUrl('', `#${boardHash('', BOARD)}`)
+  expect(short).toEqual(long)
+})
+
+test('the form a board is written in replaces the other one', () => {
+  expect(boardHash('#p=jAF4', BOARD)).not.toContain('set=')
+  expect(boardHash('#set=dlyFb:1.4&p=jAF4', BOARD)).not.toContain('p=')
+})
+
+test('a hash carrying both forms reads as the one it will keep writing', () => {
+  const both = '#set=filtRes:1.2&p=jAF4'
+  expect(boardFromUrl('', both)).toEqual({ filtRes: 1.2 })
+  expect(boardHash(both, BOARD).startsWith('set=')).toBe(true)
+})
+
+test('a short link beats a board left in an older query', () => {
+  const h = boardHash('', { ...DEFAULT_CONTROLS, filtRes: 1.2 })
+  expect(boardFromUrl('?set=dlyFb:1.4', `#${h}`)).toEqual({ filtRes: 1.2 })
 })

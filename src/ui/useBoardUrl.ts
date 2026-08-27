@@ -7,6 +7,10 @@ import { boardFrom, boardFromLocation, boardUrl } from './share'
 // bar is as good as pressing share. This hook owns the address bar — nothing
 // else writes it.
 //
+// Which of the two forms it writes is share.ts's business, and it is decided
+// from what the bar already says — so a board typed out by hand stays typed out
+// by hand while the writes go on underneath it.
+//
 // It listens to the engine rather than taking the board as a prop, because
 // whoever held that prop would re-render on every control that moved — and a
 // slider drag and a morph each move controls every frame, which is the whole

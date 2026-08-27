@@ -50,7 +50,9 @@ the drawing itself changes as you patch the board. Full explanation in
 - The panel _is_ the signal path: a live drawing that redraws as you patch, with
   a desk, meters, a scope and a rail lamp beside it.
 - The whole board — settings, pattern and melody — lives in the URL, so a link
-  is a patch. Record the output to wav.
+  is a patch: packed into a couple of dozen characters by default, or spelled
+  out as `#set=chipStarve:0.8,dlyFb:0.6` when you would rather program the board
+  by typing at the address bar. Record the output to wav.
 - Everything runs inside one audio callback with a fixed safety tail, so no
   setting can blow up the output.
 

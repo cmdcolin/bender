@@ -7,22 +7,33 @@ import {
 import { EDITOR_KEYS, sliderFor, snapToStep } from './controls'
 import { asLen, asMask, LEN_KEYS } from '../drums'
 import { asTuneLen, asTuneStep, TUNE_STEP_KEYS } from '../tune'
+import { packControls, unpackControls } from './packed'
 
 const TUNE_KEYS = new Set<ControlKey>(TUNE_STEP_KEYS)
 
-// A board as a link: every control that is off stock, by name, so a link keeps
-// working when the param table grows or its order changes. Names cost more
-// characters than indices and are worth it — a stale link decodes to the board
-// it meant, and anything it names that no longer exists is simply dropped.
+// A board as a link, in two forms that say the same thing.
 //
-// It rides in the hash, and the address bar carries it at all times rather than
-// only once someone presses share (see useBoardUrl). The board on screen is
-// then always the board the url names: a reload keeps it, and copying out of
-// the address bar is as good as the button. The hash keeps every board on one
-// page as far as the server is concerned, so no host has to be taught to serve
-// the app for a url it has never seen.
+// The short one, `#p=`, is the board as bytes and is what the bar carries by
+// default — four times shorter, which is the difference between a link that
+// survives a chat window and one that arrives in three pieces. See packed.ts.
+//
+// The long one, `#set=`, names every control that is off stock. It costs the
+// characters and buys two things back. A stale link still decodes to the board
+// it meant when the param table grows or its order changes, and — the reason
+// it is still written rather than only read — you can program the board by
+// typing at the address bar: `#set=chipStarve:0.8,dlyFb:0.6` is a patch you
+// wrote by hand. So a bar already carrying the long form keeps carrying it,
+// and everything else gets the short one.
+//
+// Both ride in the hash, and the address bar carries the board at all times
+// rather than only once someone presses share (see useBoardUrl). The board on
+// screen is then always the board the url names: a reload keeps it, and copying
+// out of the address bar is as good as a button. The hash keeps every board on
+// one page as far as the server is concerned, so no host has to be taught to
+// serve the app for a url it has never seen.
 
 const PARAM = 'set'
+const PACKED = 'p'
 
 // Where a board rode before the hash: for a while in the query string under the
 // same name, and before that in the hash under a shorter one. Read, never
@@ -31,6 +42,7 @@ const LEGACY_HASH_KEY = 'b'
 
 // Your finger is not part of the board.
 const PRIVATE = new Set<ControlKey>(['bodyX', 'bodyY'])
+const isPrivate = (key: ControlKey) => PRIVATE.has(key)
 
 export function encodeControls(c: Controls): string {
   const parts: string[] = []
@@ -73,18 +85,31 @@ export function decodeControls(encoded: string): Partial<Controls> {
   return out
 }
 
+// Which form the bar is already in, and so which one the next write uses. A
+// hash someone typed by hand is a hash they mean to keep typing into, so the
+// long form is sticky: arrive on one, or type `#set=` into an empty bar, and
+// the board stays readable for as long as you are working that way. Everything
+// else — a fresh load, a short link, the legacy `b` — comes out short.
+const wantsLong = (q: URLSearchParams) => q.has(PARAM) || q.has(LEGACY_HASH_KEY)
+
 // The hash a board writes, over whatever the address bar already had. A stock
 // board drops the param rather than writing an empty one: everything the link
 // carries is a control off stock, so a board with none of those is the same
-// board a bare url opens.
+// board a bare url opens. The exception is a bar sitting in the long form,
+// which keeps its empty `set=` — that marker is the only thing saying which
+// form to write, and dropping it would snap the next control you move back to
+// bytes under your cursor.
 export function boardHash(hash: string, c: Controls): string {
   const q = new URLSearchParams(hash.replace(/^#/, ''))
-  // The board is written under one name, so the older one does not ride along
-  // beside it saying something staler.
+  const long = wantsLong(q)
+  // The board is written under one name, so no other form rides along beside
+  // it saying something staler.
   q.delete(LEGACY_HASH_KEY)
-  const set = encodeControls(c)
-  if (set === '') q.delete(PARAM)
-  else q.set(PARAM, set)
+  q.delete(long ? PACKED : PARAM)
+  const key = long ? PARAM : PACKED
+  const set = long ? encodeControls(c) : packControls(c, isPrivate)
+  if (set === '' && !long) q.delete(key)
+  else q.set(key, set)
   // A fragment may carry ':' and ',' as themselves, and this one is read off
   // the address bar by people, so the separators go back to being one
   // character each. The reader takes them either way.
@@ -93,18 +118,24 @@ export function boardHash(hash: string, c: Controls): string {
 
 // Whatever board the link carried, or nothing. The hash wins over the query so
 // that a link made today reads as itself even when it lands on a tab whose bar
-// still carries an older board.
+// still carries an older board, and a hash carrying both forms reads as the
+// long one — the same one wantsLong picks, so what a mangled bar shows is what
+// the next write keeps.
 export function boardFromUrl(
   search: string,
   hash: string,
 ): Partial<Controls> | null {
   const h = new URLSearchParams(hash.replace(/^#/, ''))
-  const raw =
+  const packed = h.get(PACKED)
+  const named =
     h.get(PARAM) ??
     h.get(LEGACY_HASH_KEY) ??
-    new URLSearchParams(search).get(PARAM)
-  if (raw === null) return null
-  const patch = decodeControls(raw)
+    (packed === null ? new URLSearchParams(search).get(PARAM) : null)
+  if (named === null && packed === null) return null
+  const patch =
+    named === null
+      ? unpackControls(packed ?? '', isPrivate)
+      : decodeControls(named)
   return Object.keys(patch).length > 0 ? patch : null
 }
 
