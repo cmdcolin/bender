@@ -16,12 +16,21 @@ import {
 } from '../testRender'
 import { ToyChip } from './toyChip'
 import { YOURS } from './roms'
-import { HOLD, REST, TUNE_STEP_KEYS } from '../../tune'
+import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune'
 
 // A memory written out as the controls that carry it. Anything not named is a
 // step with nothing on it.
 const memory = (steps: Record<number, number>): Partial<Controls> =>
   Object.fromEntries(TUNE_STEP_KEYS.map((key, i) => [key, steps[i] ?? REST]))
+
+// A chord written across the three lanes: the melody lane, then the two chips
+// stacked on it. Every step of every lane not named is empty.
+const chord = (steps: Record<number, number[]>): Partial<Controls> =>
+  Object.fromEntries(
+    TUNE_LANE_KEYS.flatMap((keys, lane) =>
+      keys.map((key, i) => [key, steps[i]?.[lane] ?? REST]),
+    ),
+  )
 
 // The board boots with the drum machine running too; these takes measure the
 // chip's own tune, so they mute it.
@@ -271,4 +280,58 @@ test('the knife on the ROM bus reaches your tune too', () => {
   )
   expect(rms(cut)).toBeGreaterThan(0)
   expect(deviation(cut, clean)).toBeGreaterThan(0.05)
+})
+
+// The keyboard has always been polyphonic — four voices, and your hands play
+// chords on them. What was mono is the memory: one word a step, one melody
+// oscillator. The stacked chips put their notes on the key line, so a chord in
+// the memory comes out of the voices your hands would have used.
+test('a chord in the memory sounds all three of its notes', () => {
+  const board = {
+    ...DEFAULT_CONTROLS,
+    ...CHIP_ONLY,
+    chipLevel: 1,
+    chipTune: YOURS,
+    tuneRate: 2,
+    ...chord({ 0: [0, 4, 7] }),
+  }
+  // A fresh chip a take, since a voice struck in one is still ringing in the
+  // next: what the mono take must not do is play notes of its own.
+  const play = (over: Partial<Controls>) => {
+    const built = buildBender(SR)
+    built.transport.tune = true
+    const p = packParams({ ...board, ...over })
+    const io = makeIo()
+    const out = new Int16Array(ToyChip.MAX_SOUNDING)
+    const seen = new Set<number>()
+    for (let b = 0; b < Math.ceil((0.4 * SR) / BLOCK); b++) {
+      built.chain.process(io, p)
+      for (const note of out.subarray(0, built.toyChip.soundingNotes(out)))
+        seen.add(note)
+    }
+    return [...seen].sort((a, b) => a - b)
+  }
+
+  expect(play({ tunePoly: 1 })).toEqual([0, 4, 7])
+  // Mono is the toy as it shipped: the stacked lanes are still written and the
+  // chip is not reading them.
+  expect(play({ tunePoly: 0 })).toEqual([0])
+})
+
+// One counter addresses all three chips, so a wire on it drags the chord along
+// with the melody rather than smearing the two apart — which is why the address
+// is worked out once a step rather than once a lane.
+test('a chord holds together under an address fault', () => {
+  const board = {
+    ...CHIP_ONLY,
+    chipLevel: 1,
+    chipTune: YOURS,
+    tuneRate: 8,
+    ...chord({ 0: [0, 4, 7], 4: [5, 9, 12] }),
+  }
+  // A0 held low: every read lands on an even step, which is where both chords
+  // are, so the tune keeps playing chords rather than falling silent.
+  const bent = render({ ...board, chipAddrLine: 1, chipAddrFault: 1 }, 1)
+  expect(rms(bent)).toBeGreaterThan(0)
+  expect(bent.every(Number.isFinite)).toBe(true)
 })

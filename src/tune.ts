@@ -1,4 +1,4 @@
-import type { ControlKey } from './controls'
+import type { ControlKey, Controls } from './controls'
 
 // The melody memory: the thirty-two steps the toy keeps of what you played,
 // and the word each one is filed as.
@@ -12,6 +12,17 @@ import type { ControlKey } from './controls'
 //
 // A step is a semitone in the chip's own counting (0 is A3, 220 Hz), or one of
 // the two things a step can be that is not a note.
+//
+// Three lanes of those, because a hand plays chords and the toy's own memory
+// keeps one note a step. Two more memory chips piggybacked on the first — legs
+// bent out, address pins soldered to the counter the bottom chip already sits
+// on — is the oldest mod there is on a board like this, and it is the whole
+// story of how the extra lanes behave. One counter addresses all three, so an
+// address wire on the floor drags the chord along with the melody; the ROM's
+// data bus never reaches the stacked chips, so a data wire mangles the melody
+// and leaves them alone. Their outputs went where there was a pin free, which
+// is the key line: the melody oscillator plays lane one and the key voices
+// play the other two.
 
 // As long as the songs in the ROM bank. The memory used to be half of one,
 // which made yours the one tune on the chip that could not hold a phrase and
@@ -107,7 +118,92 @@ export const TUNE_STEP_KEYS = [
   'tuneStep31',
 ] as const satisfies readonly ControlKey[]
 
-export type TuneStepKey = (typeof TUNE_STEP_KEYS)[number]
+export const TUNE_STACK_A_KEYS = [
+  'tuneStackA0',
+  'tuneStackA1',
+  'tuneStackA2',
+  'tuneStackA3',
+  'tuneStackA4',
+  'tuneStackA5',
+  'tuneStackA6',
+  'tuneStackA7',
+  'tuneStackA8',
+  'tuneStackA9',
+  'tuneStackA10',
+  'tuneStackA11',
+  'tuneStackA12',
+  'tuneStackA13',
+  'tuneStackA14',
+  'tuneStackA15',
+  'tuneStackA16',
+  'tuneStackA17',
+  'tuneStackA18',
+  'tuneStackA19',
+  'tuneStackA20',
+  'tuneStackA21',
+  'tuneStackA22',
+  'tuneStackA23',
+  'tuneStackA24',
+  'tuneStackA25',
+  'tuneStackA26',
+  'tuneStackA27',
+  'tuneStackA28',
+  'tuneStackA29',
+  'tuneStackA30',
+  'tuneStackA31',
+] as const satisfies readonly ControlKey[]
+
+export const TUNE_STACK_B_KEYS = [
+  'tuneStackB0',
+  'tuneStackB1',
+  'tuneStackB2',
+  'tuneStackB3',
+  'tuneStackB4',
+  'tuneStackB5',
+  'tuneStackB6',
+  'tuneStackB7',
+  'tuneStackB8',
+  'tuneStackB9',
+  'tuneStackB10',
+  'tuneStackB11',
+  'tuneStackB12',
+  'tuneStackB13',
+  'tuneStackB14',
+  'tuneStackB15',
+  'tuneStackB16',
+  'tuneStackB17',
+  'tuneStackB18',
+  'tuneStackB19',
+  'tuneStackB20',
+  'tuneStackB21',
+  'tuneStackB22',
+  'tuneStackB23',
+  'tuneStackB24',
+  'tuneStackB25',
+  'tuneStackB26',
+  'tuneStackB27',
+  'tuneStackB28',
+  'tuneStackB29',
+  'tuneStackB30',
+  'tuneStackB31',
+] as const satisfies readonly ControlKey[]
+
+/** The three note lanes in playing order: the melody the chip's own oscillator
+    takes, then the two the piggybacked chips hand to the key voices. */
+export const TUNE_LANE_KEYS = [
+  TUNE_STEP_KEYS,
+  TUNE_STACK_A_KEYS,
+  TUNE_STACK_B_KEYS,
+] as const
+
+export const TUNE_LANES = TUNE_LANE_KEYS.length
+
+export const TUNE_ALL_STEP_KEYS = TUNE_LANE_KEYS.flat()
+
+export type TuneStepKey =
+  | (typeof TUNE_STEP_KEYS)[number]
+  | (typeof TUNE_STACK_A_KEYS)[number]
+  | (typeof TUNE_STACK_B_KEYS)[number]
 
 /** How many steps the memory plays before it comes round: a whole number of the
     steps it has. */
@@ -147,3 +243,47 @@ export function voicing(steps: readonly number[]) {
     return { note, head }
   })
 }
+
+/** Every lane's steps, off a board. */
+export const laneSteps = (c: Controls, lane: number) =>
+  TUNE_LANE_KEYS[lane]!.map(k => c[k])
+
+/** What all three lanes are sounding, step by step. */
+export const chordVoicing = (c: Controls) =>
+  TUNE_LANE_KEYS.map((_, lane) => voicing(laneSteps(c, lane)))
+
+/** Which lane is sounding a note on a step, or -1 for a note nothing is
+    playing there. The melody lane answers first, so a note doubled across
+    lanes is taken off the one the chip's own oscillator is on. */
+export function laneOf(c: Controls, step: number, note: number): number {
+  for (let lane = 0; lane < TUNE_LANES; lane++) {
+    const at = voicing(laneSteps(c, lane))[step]!
+    if (at.note === note) return lane
+  }
+  return -1
+}
+
+/** Where a note written on a step goes: the lane already playing it, else the
+    first lane with nothing sounding there, else the melody — which is the lane
+    a chord loses a note off when all three are full, since the two stacked
+    chips are the ones nobody can hear a wrong note on. Mono keeps everything on
+    the melody lane, the way the memory was before anybody soldered to it. */
+export function laneForNote(
+  c: Controls,
+  step: number,
+  note: number,
+  poly: boolean,
+): number {
+  if (!poly) return 0
+  const held = laneOf(c, step, note)
+  if (held >= 0) return held
+  for (let lane = 0; lane < TUNE_LANES; lane++) {
+    if (voicing(laneSteps(c, lane))[step]!.note === REST) return lane
+  }
+  return 0
+}
+
+/** Every note the memory strikes anywhere, which is what the accompaniment
+    reads its key off and what the roll opens its window on. */
+export const tuneNotes = (c: Controls) =>
+  TUNE_LANE_KEYS.flatMap((_, lane) => laneSteps(c, lane)).filter(isNote)

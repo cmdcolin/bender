@@ -10,7 +10,7 @@ import {
   YOURS,
 } from '../../dsp/stages/roms'
 import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
-import { TUNE_STEP_KEYS } from '../../tune'
+import { TUNE_ALL_STEP_KEYS } from '../../tune'
 
 /** True while the chip is playing the memory rather than one of its own songs. */
 const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS
@@ -92,13 +92,14 @@ export const SOURCE_GROUPS: Group[] = [
     // many of them you have written.
     editor: {
       kind: 'roll',
-      keys: [...TUNE_STEP_KEYS, 'tuneLen'],
+      keys: [...TUNE_ALL_STEP_KEYS, 'tuneLen'],
     },
-    // The two rows the roll is about, over it rather than under it: which song
-    // the chip is on — the roll is only what you are hearing when this says
-    // yours — and the rate it plays them back at. A widget this tall pushes
-    // both far enough down that you stop finding them.
-    lead: ['chipTune', 'tuneRate'],
+    // The rows the roll is about, over it rather than under it: which song the
+    // chip is on — the roll is only what you are hearing when this says yours —
+    // the rate it plays them back at, and how many of its notes a step it
+    // reads. A widget this tall pushes all of them far enough down that you
+    // stop finding them.
+    lead: ['chipTune', 'tuneRate', 'tunePoly'],
     sliders: [
       {
         key: 'chipLevel',
@@ -130,6 +131,17 @@ export const SOURCE_GROUPS: Group[] = [
         curve: 'log',
         needs: playingYours,
         help: 'How fast the memory plays its steps back, which the ROM songs each carry for themselves. It is a rate rather than a tempo because it is the same clock the envelopes come off — wind it up and the notes shorten with it, exactly as they do on the ROM that runs at nine.',
+      },
+      {
+        key: 'tunePoly',
+        label: 'Memory notes',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['mono', 'poly'],
+        needs: playingYours,
+        help: 'Whether the chip reads the two memory chips stacked on the first one. Mono is the toy as it shipped: one note a step, off the melody oscillator, and the stacked lanes sit there unread. Poly plays all three — the melody where it always was, the other two on the key voices, which is the pin the piggyback’s output was soldered to. Four voices is the whole of the chip, so a three-note chord leaves one for your hands and the next thing that strikes takes the oldest.',
       },
       {
         key: 'chipTone',

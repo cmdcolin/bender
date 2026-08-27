@@ -6,11 +6,14 @@ import {
   asTuneLen,
   HOLD,
   isNote,
+  laneForNote,
+  laneOf,
   NOTE_HI,
   NOTE_LO,
   REST,
+  TUNE_ALL_STEP_KEYS,
+  TUNE_LANE_KEYS,
   TUNE_STEPS,
-  TUNE_STEP_KEYS,
   voicing,
 } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
@@ -38,8 +41,8 @@ const octaveFloor = (note: number) => Math.floor((note - 3) / 12) * 12 + 3
 
 const clampBase = (note: number) => Math.min(Math.max(note, NOTE_LO), TOP_BASE)
 
-const baseFor = (steps: number[]) => {
-  const notes = steps.filter(isNote)
+const baseFor = (lanes: number[][]) => {
+  const notes = lanes.flat().filter(isNote)
   return clampBase(octaveFloor(notes.length === 0 ? -9 : Math.min(...notes)))
 }
 
@@ -53,14 +56,17 @@ function useTunePos(): number {
   )
 }
 
-// Thirty-two numbers read through one subscription rather than thirty-two. What
+// Ninety-six numbers read through one subscription rather than ninety-six. What
 // the board hands back has to be comparable with Object.is or every write to any
 // control redraws the roll, so the steps travel as a string and come back as
 // numbers — which is one small parse per write against the seven hundred and
 // sixty-eight cells a morph would otherwise rebuild every frame.
-function useSteps(): number[] {
-  const packed = useBoardValue(c => TUNE_STEP_KEYS.map(k => c[k]).join(','))
-  return packed.split(',').map(Number)
+function useLanes(): number[][] {
+  const packed = useBoardValue(c => TUNE_ALL_STEP_KEYS.map(k => c[k]).join(','))
+  const flat = packed.split(',').map(Number)
+  return TUNE_LANE_KEYS.map((_, lane) =>
+    flat.slice(lane * TUNE_STEPS, (lane + 1) * TUNE_STEPS),
+  )
 }
 
 // What a drag across the roll is drawing. Held in a ref rather than in state
@@ -74,15 +80,19 @@ type Paint = RefObject<boolean>
 // machines keep what you wrote the same way, and the only difference is that a
 // row of this is a pitch rather than a drum.
 export function TuneRoll() {
-  const steps = useSteps()
+  const lanes = useLanes()
   const len = asTuneLen(useControlValue('tuneLen'))
+  const poly = Math.round(useControlValue('tunePoly')) === 1
   const playing = useStoreValue(engine.songPlaying)
   const armed = useStoreValue(engine.tuneRecord)
   const mine = useBoardValue(c => Math.round(c.chipTune) === YOURS)
   const pos = useTunePos()
-  const [base, setBase] = useState(() => baseFor(steps))
+  const [base, setBase] = useState(() => baseFor(lanes))
   const paint = useRef(false)
-  const bars = voicing(steps)
+  // What each lane is sounding, step by step. A cell is lit by whichever lane
+  // has that note on that step, so a chord is three rows of one column and the
+  // roll never has to say which chip is playing which of them.
+  const bars = lanes.map(voicing)
   const under = playing && mine ? pos % len : -1
 
   // A drag ends wherever the hand lets go, which is often not over a cell. Without
@@ -109,7 +119,7 @@ export function TuneRoll() {
     engine.armStep()
     engine.writeBoard({
       ...engine.controls.get(),
-      ...Object.fromEntries(TUNE_STEP_KEYS.map(k => [k, REST])),
+      ...Object.fromEntries(TUNE_ALL_STEP_KEYS.map(k => [k, REST])),
     })
   }
 
@@ -192,7 +202,7 @@ export function TuneRoll() {
         </Tip>
       </div>
 
-      <Tip text="Click a cell to put that note on that step, and drag across to draw a line. Click a note again to take it off, and shift-click a step to hold whatever the step before it struck.">
+      <Tip text="Click a cell to put that note on that step, and drag across to draw a line. Click a note again to take it off, and shift-click a step to hold whatever the step before it struck. Three notes fit on a step while the memory is in poly: the first goes to the melody lane and the rest to the chips stacked on it.">
         <div className={styles.grid}>
           {notes.map(note => (
             <div key={note} className={styles.row}>
@@ -201,19 +211,23 @@ export function TuneRoll() {
               </span>
               <div className={styles.cells}>
                 {Array.from({ length: TUNE_STEPS }, (_, s) => {
-                  const bar = bars[s]!
-                  const on = bar.note === note
+                  const bar = bars
+                    .map(lane => lane[s]!)
+                    .find(b => b.note === note)
+                  const on = bar !== undefined
+                  const head = bar?.head === true
                   return (
                     <Cell
                       key={s}
                       step={s}
                       note={note}
                       paint={paint}
+                      poly={poly}
                       on={on}
-                      head={on && bar.head}
+                      head={head}
                       className={cellClass({
                         on,
-                        head: on && bar.head,
+                        head,
                         sharp: isSharp(note),
                         beat: s % 4 === 0,
                         under: s === under,
@@ -240,14 +254,22 @@ const Cell = memo(function Cell(props: {
   note: number
   on: boolean
   head: boolean
+  poly: boolean
   className: string
   paint: Paint
 }) {
-  const { step, note, paint } = props
+  const { step, note, paint, poly } = props
   // Written against the board as it stands rather than as it was drawn: a drag
   // writes a cell per event, and folding a note into a rendered copy would make
-  // every step of the line depend on React having caught up in between.
-  const write = (value: number) => engine.set(TUNE_STEP_KEYS[step]!, value)
+  // every step of the line depend on React having caught up in between. Which
+  // lane takes the write is the same question — the lane a note is already on
+  // if it is on one, else whichever is free.
+  const write = (value: number) => {
+    const c = engine.controls.get()
+    const held = laneOf(c, step, note)
+    const lane = held >= 0 ? held : laneForNote(c, step, note, poly)
+    engine.set(TUNE_LANE_KEYS[lane]![step]!, value)
+  }
   const put = (shift: boolean) => write(shift ? HOLD : props.head ? REST : note)
   return (
     <button

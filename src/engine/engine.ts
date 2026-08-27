@@ -27,7 +27,8 @@ import {
   foldNote,
   HOLD,
   REST,
-  TUNE_STEP_KEYS,
+  TUNE_LANE_KEYS,
+  laneForNote,
   type TuneStepKey,
 } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
@@ -758,10 +759,11 @@ export class Engine {
     this.tuneRecord.set(on)
   }
 
-  // Where each key that is down struck, so that letting it go can spell the
-  // note's length out in holds. A map because a hand plays chords, and the toy
-  // sounds four of them.
-  private struckAt = new Map<number, number>()
+  // Where each key that is down struck — the step, and which of the memory's
+  // three lanes took it, so that letting it go spells that note's length out in
+  // holds without writing over the lane beside it. A map because a hand plays
+  // chords, and the toy sounds four of them.
+  private struckAt = new Map<number, { step: number; lane: number }>()
 
   /** Which step of the memory a note played now belongs to. The counter and how
       far through its step it is both arrive with the meter, which is at most one
@@ -775,8 +777,9 @@ export class Engine {
     )
   }
 
-  private stepKey(step: number): TuneStepKey {
-    return TUNE_STEP_KEYS[step % TUNE_STEP_KEYS.length]!
+  private stepKey(step: number, lane = 0): TuneStepKey {
+    const keys = TUNE_LANE_KEYS[lane]!
+    return keys[step % keys.length]!
   }
 
   // A note played by hand, filed on the step the chip is standing on. One entry
@@ -784,10 +787,16 @@ export class Engine {
   // played the wrong note wants that note back and nothing else.
   private writeNote(semitone: number) {
     const step = this.tuneStep()
-    this.struckAt.set(semitone, step)
-    const key = this.stepKey(step)
+    const c = this.controls.get()
     const note = foldNote(semitone)
-    if (this.controls.get()[key] !== note) {
+    // A chord played in lands as a chord: the melody lane takes the first note
+    // and the stacked chips take what your other fingers are holding. With the
+    // memory in mono there is one lane, and the last key down is the note on
+    // the step — which is what the toy did.
+    const lane = laneForNote(c, step, note, Math.round(c.tunePoly) === 1)
+    this.struckAt.set(semitone, { step, lane })
+    const key = this.stepKey(step, lane)
+    if (c[key] !== note) {
       this.armStep()
       this.set(key, note)
     }
@@ -802,9 +811,10 @@ export class Engine {
   // A step already carrying something is where the run stops — a note somebody
   // else played is not this note's to lengthen.
   private writeHeld(semitone: number) {
-    const from = this.struckAt.get(semitone)
-    if (from !== undefined) {
+    const struck = this.struckAt.get(semitone)
+    if (struck !== undefined) {
       this.struckAt.delete(semitone)
+      const { step: from, lane } = struck
       const len = asTuneLen(this.controls.get().tuneLen)
       const to = this.tuneStep()
       const held: Partial<Controls> = {}
@@ -815,8 +825,9 @@ export class Engine {
       // tap is the one that ruins what you played.
       for (let i = 1; i < len && to !== from; i++) {
         const at = (from + i) % len
-        if (at === to || this.controls.get()[this.stepKey(at)] !== REST) break
-        held[this.stepKey(at)] = HOLD
+        const key = this.stepKey(at, lane)
+        if (at === to || this.controls.get()[key] !== REST) break
+        held[key] = HOLD
       }
       if (Object.keys(held).length > 0) this.patch(held)
     }

@@ -474,3 +474,46 @@ test('a note past the memory’s reach is filed an octave nearer', () => {
 afterEach(() => {
   vi.restoreAllMocks()
 })
+
+// A hand plays chords and the memory keeps three notes a step, so a chord you
+// play in arrives as a chord: one note a lane, and each of them holds out to
+// its own length when that finger comes up.
+test('a chord played in fills the lanes, a note each', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.tuneRecord.set(true)
+  atTuneStep(engine, 0)
+  engine.noteOn(0)
+  engine.noteOn(4)
+  engine.noteOn(7)
+
+  const c = engine.controls.get()
+  expect([c.tuneStep0, c.tuneStackA0, c.tuneStackB0]).toEqual([0, 4, 7])
+
+  // The third finger comes up two steps later, and the holds land in its own
+  // lane rather than over the notes beside it.
+  atTuneStep(engine, 2)
+  engine.noteOff(7)
+  const held = engine.controls.get()
+  expect([held.tuneStackB1, held.tuneStackA1, held.tuneStep1]).toEqual([
+    HOLD,
+    REST,
+    REST,
+  ])
+})
+
+// Mono is the memory the toy shipped with, and a chord played into one word a
+// step is the last key down.
+test('with the memory in mono a chord played in is one note', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.tuneRecord.set(true)
+  engine.set('tunePoly', 0)
+  atTuneStep(engine, 0)
+  engine.noteOn(0)
+  engine.noteOn(4)
+
+  const c = engine.controls.get()
+  expect(c.tuneStep0).toBe(4)
+  expect(c.tuneStackA0).toBe(REST)
+})

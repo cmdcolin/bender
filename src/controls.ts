@@ -37,10 +37,10 @@ export const DEFAULT_CONTROLS = {
   chipSpread: 1,
   chipMixDrive: 0.35,
 
-  // The melody memory: sixteen steps of what you played, filed the way the demo
-  // songs are so the chip plays yours off the same counter. -128 is a step with
-  // nothing on it, -127 one that holds whatever the step before struck; anything
-  // else is a semitone above the chip's bottom A. See tune.ts.
+  // The melody memory: thirty-two steps of what you played, filed the way the
+  // demo songs are so the chip plays yours off the same counter. -128 is a step
+  // with nothing on it, -127 one that holds whatever the step before struck;
+  // anything else is a semitone above the chip's bottom A. See tune.ts.
   tuneStep0: -128,
   tuneStep1: -128,
   tuneStep2: -128,
@@ -73,8 +73,81 @@ export const DEFAULT_CONTROLS = {
   tuneStep29: -128,
   tuneStep30: -128,
   tuneStep31: -128,
+
+  // The two memory chips piggybacked on that one. Same thirty-two steps off the
+  // same counter, and their notes come out on the key line rather than through
+  // the melody oscillator — a chord in the memory, on a chip that keeps one
+  // note a step. Empty on a board nobody has stacked a note on.
+  tuneStackA0: -128,
+  tuneStackA1: -128,
+  tuneStackA2: -128,
+  tuneStackA3: -128,
+  tuneStackA4: -128,
+  tuneStackA5: -128,
+  tuneStackA6: -128,
+  tuneStackA7: -128,
+  tuneStackA8: -128,
+  tuneStackA9: -128,
+  tuneStackA10: -128,
+  tuneStackA11: -128,
+  tuneStackA12: -128,
+  tuneStackA13: -128,
+  tuneStackA14: -128,
+  tuneStackA15: -128,
+  tuneStackA16: -128,
+  tuneStackA17: -128,
+  tuneStackA18: -128,
+  tuneStackA19: -128,
+  tuneStackA20: -128,
+  tuneStackA21: -128,
+  tuneStackA22: -128,
+  tuneStackA23: -128,
+  tuneStackA24: -128,
+  tuneStackA25: -128,
+  tuneStackA26: -128,
+  tuneStackA27: -128,
+  tuneStackA28: -128,
+  tuneStackA29: -128,
+  tuneStackA30: -128,
+  tuneStackA31: -128,
+
+  tuneStackB0: -128,
+  tuneStackB1: -128,
+  tuneStackB2: -128,
+  tuneStackB3: -128,
+  tuneStackB4: -128,
+  tuneStackB5: -128,
+  tuneStackB6: -128,
+  tuneStackB7: -128,
+  tuneStackB8: -128,
+  tuneStackB9: -128,
+  tuneStackB10: -128,
+  tuneStackB11: -128,
+  tuneStackB12: -128,
+  tuneStackB13: -128,
+  tuneStackB14: -128,
+  tuneStackB15: -128,
+  tuneStackB16: -128,
+  tuneStackB17: -128,
+  tuneStackB18: -128,
+  tuneStackB19: -128,
+  tuneStackB20: -128,
+  tuneStackB21: -128,
+  tuneStackB22: -128,
+  tuneStackB23: -128,
+  tuneStackB24: -128,
+  tuneStackB25: -128,
+  tuneStackB26: -128,
+  tuneStackB27: -128,
+  tuneStackB28: -128,
+  tuneStackB29: -128,
+  tuneStackB30: -128,
+  tuneStackB31: -128,
   tuneLen: 32,
   tuneRate: 3.2,
+  // Mono is the memory the toy shipped with: one note a step, the stacked
+  // chips ignored. Poly plays all three lanes.
+  tunePoly: 1,
 
   drumLevel: 0.7,
   drumBpm: 118,

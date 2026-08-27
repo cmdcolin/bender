@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 214 knobs and switches in 30 groups, seven bends competing for six slots,
+ruin. 215 knobs and switches in 30 groups, seven bends competing for six slots,
 18 ROM tunes, 52 presets and 20 named cuts — and everything below comes off the
 control tables themselves, so the list cannot drift from the instrument.
 
@@ -106,13 +106,14 @@ too — the knife goes on and the rows under it say which controls that was:
   back stale, and the melody flickers between two versions of itself
 
 <details>
-<summary>21 controls</summary>
+<summary>22 controls</summary>
 
 | control         | range                                                                                                                                                                               | what it does                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Level           | off to full                                                                                                                                                                         | How loud the toy keyboard chip is in the source mix                                                              |
 | Tune            | lullaby, march, arp, scale, für elise, ode to joy, rondo turca, yankee, camptown, wm tell, ragtime, danube, gymnopédie, gnossienne, sakura, dies irae, funeral, greensleeves, yours | Which song the chip plays                                                                                        |
 | Memory rate     | 0.2 to 24 Hz                                                                                                                                                                        | How fast the memory plays its steps back, which the ROM songs each carry for themselves                          |
+| Memory notes    | mono or poly                                                                                                                                                                        | Whether the chip reads the two memory chips stacked on the first one                                             |
 | Tone            | organ 1/2, reed 1/4, clav 1/8, buzz 1/16                                                                                                                                            | Which width of pulse the tone selector taps off the divider chain                                                |
 | Auto bass-chord | off to full                                                                                                                                                                         | The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running     |
 | Clock           | 0.05× to 16×                                                                                                                                                                        | Drags the master clock crystal                                                                                   |

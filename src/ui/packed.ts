@@ -1,7 +1,7 @@
 import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { SLIDER_BY_KEY, snapToStep } from './controls'
 import { asLen, asMask, LEN_KEYS } from '../drums'
-import { asTuneLen, asTuneStep, TUNE_STEP_KEYS } from '../tune'
+import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune'
 
 // The short form of a board: the same controls the long form names, written as
 // bytes instead of words. A dice roll is 433 characters by name and 92 packed,
@@ -289,10 +289,78 @@ export const URL_KEY_ORDER: readonly ControlKey[] = [
   'tuneStep29',
   'tuneStep30',
   'tuneStep31',
+
+  // Appended, as everything here is: the stacked memory chips and the switch
+  // that says whether the chip is reading them.
+  'tuneStackA0',
+  'tuneStackA1',
+  'tuneStackA2',
+  'tuneStackA3',
+  'tuneStackA4',
+  'tuneStackA5',
+  'tuneStackA6',
+  'tuneStackA7',
+  'tuneStackA8',
+  'tuneStackA9',
+  'tuneStackA10',
+  'tuneStackA11',
+  'tuneStackA12',
+  'tuneStackA13',
+  'tuneStackA14',
+  'tuneStackA15',
+  'tuneStackA16',
+  'tuneStackA17',
+  'tuneStackA18',
+  'tuneStackA19',
+  'tuneStackA20',
+  'tuneStackA21',
+  'tuneStackA22',
+  'tuneStackA23',
+  'tuneStackA24',
+  'tuneStackA25',
+  'tuneStackA26',
+  'tuneStackA27',
+  'tuneStackA28',
+  'tuneStackA29',
+  'tuneStackA30',
+  'tuneStackA31',
+  'tuneStackB0',
+  'tuneStackB1',
+  'tuneStackB2',
+  'tuneStackB3',
+  'tuneStackB4',
+  'tuneStackB5',
+  'tuneStackB6',
+  'tuneStackB7',
+  'tuneStackB8',
+  'tuneStackB9',
+  'tuneStackB10',
+  'tuneStackB11',
+  'tuneStackB12',
+  'tuneStackB13',
+  'tuneStackB14',
+  'tuneStackB15',
+  'tuneStackB16',
+  'tuneStackB17',
+  'tuneStackB18',
+  'tuneStackB19',
+  'tuneStackB20',
+  'tuneStackB21',
+  'tuneStackB22',
+  'tuneStackB23',
+  'tuneStackB24',
+  'tuneStackB25',
+  'tuneStackB26',
+  'tuneStackB27',
+  'tuneStackB28',
+  'tuneStackB29',
+  'tuneStackB30',
+  'tuneStackB31',
+  'tunePoly',
 ]
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))
-const TUNE = new Set<ControlKey>(TUNE_STEP_KEYS)
+const TUNE = new Set<ControlKey>(TUNE_ALL_STEP_KEYS)
 
 // A step of the memory is a note, a rest (-128) or a hold (-127), and the wire
 // carries unsigned numbers, so the whole row shifts up by its own floor.

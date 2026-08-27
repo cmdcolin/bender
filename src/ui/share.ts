@@ -6,10 +6,10 @@ import {
 } from '../controls'
 import { EDITOR_KEYS, sliderFor, snapToStep } from './controls'
 import { asLen, asMask, LEN_KEYS } from '../drums'
-import { asTuneLen, asTuneStep, TUNE_STEP_KEYS } from '../tune'
+import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune'
 import { packControls, unpackControls } from './packed'
 
-const TUNE_KEYS = new Set<ControlKey>(TUNE_STEP_KEYS)
+const TUNE_KEYS = new Set<ControlKey>(TUNE_ALL_STEP_KEYS)
 
 // A board as a link, in two forms that say the same thing.
 //

@@ -27,11 +27,14 @@ import {
   isNote,
   keyOf,
   REST,
-  TUNE_STEP_KEYS,
+  TUNE_LANE_KEYS,
   TUNE_STEPS,
 } from '../../tune'
 
-const TUNE_IDX = TUNE_STEP_KEYS.map(k => IDX[k])
+// One index table per lane: the melody the oscillator plays, then the two
+// stacked chips whose notes come out on the key line.
+const LANE_IDX = TUNE_LANE_KEYS.map(keys => keys.map(k => IDX[k]))
+const TUNE_IDX = LANE_IDX[0]!
 
 const BASE_HZ = 220
 const ENV_FLOOR = 0.003
@@ -147,6 +150,11 @@ export class ToyChip implements Stage {
   // than built, because an array built per block is garbage per block on the
   // one thread that cannot collect it.
   private mine = new Array<number>(TUNE_STEPS).fill(REST)
+  // The stacked chips' steps, in the same shape and read off the same address.
+  private stacks = LANE_IDX.slice(1).map(() =>
+    new Array<number>(TUNE_STEPS).fill(REST),
+  )
+  private poly = false
   private yours = false
   private len = 1
   // What the memory held when its key was last worked out. The accompaniment
@@ -306,10 +314,22 @@ export class ToyChip implements Stage {
   // one bus and a note code comes back on the other, so a fault on either
   // reaches the melody, the chord the accompaniment harmonises to and whatever
   // a drum hit clocks out of the tune alike.
-  private readRom(tune: number[], pos: number): number {
-    const addr =
+  // Where the counter actually lands. Split out because one counter addresses
+  // all three chips: a step reads the melody and the two stacked lanes off the
+  // same faulted address, rather than rolling the address fault once a lane and
+  // playing a chord off three different steps.
+  private romAddr(pos: number): number {
+    return (
       this.addrBus.read(pos, this.addrLine, this.addrFault, this.busCut) %
       this.len
+    )
+  }
+
+  private readRom(tune: number[], pos: number): number {
+    return this.readAt(tune, this.romAddr(pos))
+  }
+
+  private readAt(tune: number[], addr: number): number {
     const step = tune[addr]!
     const word = this.dataBus.read(
       this.yours ? encodeTune(step) : encodeStep(step),
@@ -326,6 +346,17 @@ export class ToyChip implements Stage {
     return rom === -1 ? REST : rom === -2 ? HOLD : rom
   }
 
+  // The stacked chips, on the address the melody was read at. They are wired to
+  // the key line, so what they hold takes key voices and decays like a struck
+  // note — a chord the memory plays through the voices your hands would use.
+  private strikeStacks(addr: number) {
+    if (!this.poly) return
+    for (const lane of this.stacks) {
+      const note = lane[addr]!
+      if (isNote(note)) this.strike(note, 1)
+    }
+  }
+
   // Pressing play drops the needle on step 0. Coming back from a brownout is
   // not that tidy: the program counter holds whatever junk was in the latch when
   // the rail went, so the tune comes back from the middle of itself as often as
@@ -334,9 +365,11 @@ export class ToyChip implements Stage {
   private restart(tune: number[], junk = false) {
     this.pos = junk && this.rng() < 0.6 ? Math.floor(this.rng() * this.len) : 0
     this.stepClock = junk ? this.rng() : 0
-    const step = this.readRom(tune, this.pos)
+    const addr = this.romAddr(this.pos)
+    const step = this.readAt(tune, addr)
     this.note = isNote(step) ? step : REST
     this.env = isNote(step) ? 1 : 0
+    this.strikeStacks(addr)
     this.chord = this.triads[0]!
     this.bassFifth = false
   }
@@ -407,13 +440,24 @@ export class ToyChip implements Stage {
     const tune = this.yours ? this.mine : rom.steps
     const stepHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
     let stamp = 0
+    this.poly = false
     if (this.yours) {
       this.len = asTuneLen(p[IDX.tuneLen]!)
+      this.poly = Math.round(p[IDX.tunePoly]!) === 1
       stamp = this.len
       for (let i = 0; i < TUNE_STEPS; i++) {
         const step = p[TUNE_IDX[i]!]!
         this.mine[i] = step
         stamp = (stamp * 31 + step) % 0x7fffffff
+      }
+      for (let lane = 0; lane < this.stacks.length; lane++) {
+        const idx = LANE_IDX[lane + 1]!
+        const steps = this.stacks[lane]!
+        for (let i = 0; i < TUNE_STEPS; i++) {
+          const step = p[idx[i]!]!
+          steps[i] = step
+          stamp = (stamp * 31 + step) % 0x7fffffff
+        }
       }
     } else {
       this.len = rom.steps.length
@@ -484,7 +528,17 @@ export class ToyChip implements Stage {
       if (stamp !== this.mineStamp) {
         this.mineStamp = stamp
         this.lastRom = undefined
-        this.triads = triadsFor(keyOf(this.mine.slice(0, this.len)))
+        // The chord lanes count toward the key: a third somebody stacked on
+        // the melody is the note that says major or minor, and reading the
+        // melody alone would harmonise against half of what is playing.
+        this.triads = triadsFor(
+          keyOf([
+            ...this.mine.slice(0, this.len),
+            ...(this.poly
+              ? this.stacks.flatMap(l => l.slice(0, this.len))
+              : []),
+          ]),
+        )
         this.chord = this.triads[0]!
       }
     } else if (rom !== this.lastRom) {
@@ -548,8 +602,10 @@ export class ToyChip implements Stage {
           next = this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * this.len)
         }
         this.pos = next % this.len
+        const addr = this.romAddr(this.pos)
         // A hold keeps whatever is ringing; a rest drops the voice; a note strikes
-        const step = this.readRom(tune, this.pos)
+        const step = this.readAt(tune, addr)
+        this.strikeStacks(addr)
         if (isNote(step)) {
           this.note = step
           this.env = 1
