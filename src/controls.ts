@@ -140,6 +140,8 @@ export const DEFAULT_CONTROLS = {
   loopRec: 0,
   loopErase: 1,
   loopSecs: 4,
+  loopIn: 0,
+  loopOut: 1,
 
   // The bus the six of them sum onto, and the one thing about it that is not
   // one of their faders.

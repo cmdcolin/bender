@@ -31,6 +31,7 @@ import {
   type TuneStepKey,
 } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
+import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
 import { Glide } from './glide'
 import type { FromWorklet, ToWorklet } from './messages'
 import { N_TAPS, packParams } from './params'
@@ -55,6 +56,13 @@ export interface Meter {
       the chain's taps. Read by the mixer's meters, which draw straight to the
       DOM off it rather than through a render. */
   taps: Float32Array
+  /** The reel the sampler is playing: its length in seconds (0 with nothing
+      threaded), where the head stands over it, whether it is turning, and its
+      envelope. Read by the reel, which draws off it every frame. */
+  sampleSecs: number
+  samplePos: number
+  samplePlaying: boolean
+  samplePeaks: Float32Array
 }
 
 // What a board on the edge of running away sounds like from the main thread.
@@ -119,6 +127,10 @@ export class Engine {
       rail: 1,
       reboots: 0,
       taps: new Float32Array(N_TAPS),
+      sampleSecs: 0,
+      samplePos: 0,
+      samplePlaying: false,
+      samplePeaks: new Float32Array(PEAK_BINS),
     })
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
@@ -249,6 +261,10 @@ export class Engine {
           rail: msg.rail,
           reboots: msg.reboots,
           taps: msg.taps,
+          sampleSecs: msg.sampleSecs,
+          samplePos: msg.samplePos,
+          samplePlaying: msg.samplePlaying,
+          samplePeaks: msg.samplePeaks,
         })
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
@@ -562,8 +578,16 @@ export class Engine {
       for (let i = 0; i < frames; i++)
         mono[i]! += chan[i]! / buf.numberOfChannels
     }
-    this.post({ kind: 'sample', mono }, [mono.buffer])
+    // Scanned here, where 90 seconds of audio is a few milliseconds nobody is
+    // listening to, rather than in the block that would otherwise have to.
+    const peaks = peaksOf(mono)
+    this.post({ kind: 'sample', mono, peaks }, [mono.buffer, peaks.buffer])
     this.sampleName.set(name)
+  }
+
+  /** Drop the play head on the reel, 0..1 over the whole of it. */
+  seekSample(frac: number) {
+    this.post({ kind: 'seek', frac })
   }
 
   /**

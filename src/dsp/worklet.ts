@@ -56,7 +56,10 @@ class BenderProcessor extends AudioWorkletProcessor {
           this.target.set(msg.pack)
           break
         case 'sample':
-          this.built.sampler.setBuffer(msg.mono)
+          this.built.sampler.setBuffer(msg.mono, msg.peaks)
+          break
+        case 'seek':
+          this.built.sampler.seek(msg.frac)
           break
         case 'noteOn':
           this.built.toyChip.noteOn(msg.semitone, msg.gain)
@@ -179,6 +182,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       for (let i = 0; i < SCOPE_LEN; i++)
         scope[i] = ring[(head + i) & SCOPE_MASK]!
       const rail = this.built.rail
+      const sampler = this.built.sampler
       const sounding = this.built.toyChip.soundingNotes(this.chipNotes)
       this.port.postMessage({
         kind: 'meter',
@@ -197,6 +201,10 @@ class BenderProcessor extends AudioWorkletProcessor {
         // note report, and cleared here — the peaks are held between reads, so
         // whoever reads them is the only thing that may clear them.
         taps: this.built.chain.taps,
+        sampleSecs: sampler.frames / sampleRate,
+        samplePos: sampler.head,
+        samplePlaying: sampler.rolling,
+        samplePeaks: sampler.peaks,
       })
       this.peak = 0
       this.duck = 0

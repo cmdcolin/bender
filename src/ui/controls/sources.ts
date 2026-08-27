@@ -850,6 +850,10 @@ export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Sampler',
     place: 'Sources',
+    // The reel itself lives beside the keys rather than in here, because it is
+    // the one thing on this stage you watch rather than set: what is on the
+    // tape, where the head is, and the two markers, drawn as a tape and
+    // dragged as one.
     sliders: [
       {
         key: 'sampleLevel',
@@ -868,7 +872,21 @@ export const SOURCE_GROUPS: Group[] = [
         max: 4,
         step: 0.01,
         unit: '×',
-        help: 'Playback speed. Negative runs backwards; zero freezes on the current spot.',
+        // A knob whose middle is a stop and whose left half is reverse reads as
+        // a broken one if the readout only prints the number: coming down past
+        // zero the tape picks up again, and "−2.40 ×" does not say that where
+        // "2.40× reverse" does.
+        reads: v =>
+          v === 0
+            ? 'frozen'
+            : `${Math.abs(v).toFixed(2)}× ${v < 0 ? 'reverse' : 'forward'}`,
+        action: {
+          label: 'stop',
+          title:
+            'park the tape on the spot the head is standing — the middle of this travel, with reverse below it and forward above',
+          value: () => 0,
+        },
+        help: 'Playback speed, with the stop in the middle of the travel and reverse below it. The left half is not slower, it is backwards: coming down past zero the tape freezes on the spot the head is standing and then picks up again the other way, so the far end of the travel is four times speed in reverse. The arrow on the head of the reel says which way you are going.',
       },
       {
         key: 'sampleTrig',
@@ -889,6 +907,28 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: ['loop', 'one-shot'],
         help: 'What happens at the end of the file: round again, or stop there and wait to be struck. Backwards, the end is the top of the file.',
+      },
+      {
+        key: 'loopIn',
+        label: 'Loop in',
+        min: 0,
+        max: 1,
+        step: 0.001,
+        unit: '',
+        // A place on the tape rather than an amount of anything, so it reads as
+        // how far along it is: 0.350 is a number, 35.0% is a spot on a reel.
+        reads: v => `${(v * 100).toFixed(1)}%`,
+        help: 'Where the loop starts, as a fraction of the reel. Everything before it is still on the tape and simply never passes the head — so a bar you liked out of a three-minute recording is two markers rather than an edit, and moving one while it runs is the whole gesture. Drag the markers on the reel under the keys instead of guessing at the number.',
+      },
+      {
+        key: 'loopOut',
+        label: 'Loop out',
+        min: 0,
+        max: 1,
+        step: 0.001,
+        unit: '',
+        reads: v => `${(v * 100).toFixed(1)}%`,
+        help: 'Where the loop ends. Dragged past the in point the two swap rather than collapse — you asked for the tape between them either way. Pinch them together and the window is a handful of frames going round thousands of times a second, which stops being a loop and becomes a pitch; that is the tape doing it, not an oscillator.',
       },
       {
         key: 'loopRec',

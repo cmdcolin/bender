@@ -10,6 +10,31 @@ import { softclip } from '../util/softclip'
 export const KEY_CHOICE = N_DRUM_VOICES + 2
 export const MIC_CHOICE = N_DRUM_VOICES + 3
 
+// How many bins the reel is drawn in. A number of columns rather than a
+// resolution: the panel is a few hundred pixels wide however long the tape is,
+// so a bin is one column of it and 90 seconds and 4 seconds cost the same.
+export const PEAK_BINS = 256
+
+// The smallest window the handles can pinch the loop down to. Two frames is a
+// tone rather than a loop, and this board is happy to make one — what it must
+// not do is divide by nothing.
+const MIN_WINDOW = 2
+
+/** The envelope of a clip in `PEAK_BINS` bins, for whatever draws the reel. */
+export function peaksOf(
+  mono: Float32Array,
+  out = new Float32Array(PEAK_BINS),
+): Float32Array {
+  out.fill(0)
+  const n = mono.length
+  for (let i = 0; i < n; i++) {
+    const bin = ((i * PEAK_BINS) / n) | 0
+    const v = mono[i]! < 0 ? -mono[i]! : mono[i]!
+    if (v > out[bin]!) out[bin] = v
+  }
+  return out
+}
+
 // A dropped audio file at bendable speed: looping through the chain, or waiting
 // on a trigger line the way the kit's own voices do. Struck, it is a seventh
 // drum voice — whatever you dropped, played from the top on every hit.
@@ -29,15 +54,55 @@ export class Sampler implements Stage {
   private pos = 0
   private playing = true
   private micTrig: Transient
+  // What the tape looks like, kept out here for the panel to draw. Written as
+  // the head passes rather than rescanned: the record head rewrites the reel
+  // under it every lap, and a loop you cannot watch going round is the one
+  // thing a loop machine must not be.
+  readonly peaks = new Float32Array(PEAK_BINS)
+  private binMax = 0
+  private binAt = -1
 
   constructor(sr: number) {
     this.micTrig = new Transient(sr)
   }
 
-  setBuffer(mono: Float32Array) {
+  /** Frames on the tape, 0 when there is none threaded. */
+  get frames(): number {
+    return this.buf?.length ?? 0
+  }
+
+  /** Where the play head stands, 0..1 over the whole reel. */
+  get head(): number {
+    const n = this.frames
+    return n > 0 ? this.pos / n : 0
+  }
+
+  /** Whether the reel is turning, as against a one-shot that has run out. */
+  get rolling(): boolean {
+    return this.playing
+  }
+
+  // The envelope comes in already worked out where there is somewhere better to
+  // work it out: a dropped file is scanned on the main thread on its way over,
+  // because a scan of 90 seconds is several audio blocks long and the audio
+  // thread has no several blocks to give. Offline callers hand over the buffer
+  // alone and pay for the scan where nothing is listening.
+  setBuffer(mono: Float32Array, peaks?: Float32Array) {
     this.buf = mono
     this.pos = 0
     this.playing = true
+    this.binAt = -1
+    if (peaks) this.peaks.set(peaks)
+    else peaksOf(mono, this.peaks)
+  }
+
+  /** Drop the needle at a spot on the reel, 0..1 over the whole of it. */
+  seek(frac: number) {
+    const n = this.frames
+    if (n < 2) return
+    this.pos = Math.min(Math.max(frac, 0), 0.999999) * n
+    this.playing = true
+    this.binAt = -1
   }
 
   // True whenever there is a file and a level, playing or not: a stage skipped is
@@ -56,6 +121,8 @@ export class Sampler implements Stage {
     this.buf = new Float32Array(Math.max(Math.round(secs * sr), 2))
     this.pos = 0
     this.playing = true
+    this.binAt = -1
+    this.peaks.fill(0)
   }
 
   private struck(trig: number, ctx: Ctx, i: number): boolean {
@@ -76,18 +143,30 @@ export class Sampler implements Stage {
     const oneShot = Math.round(p[IDX.sampleMode]!) === 1
     const erase = p[IDX.loopErase]!
 
+    // The stretch of reel between the two markers, in frames. Dragged past each
+    // other they swap rather than collapse, which is what a pair of markers on
+    // one line does — you asked for the tape between them either way.
+    const lo = Math.min(p[IDX.loopIn]!, p[IDX.loopOut]!)
+    const hi = Math.max(p[IDX.loopIn]!, p[IDX.loopOut]!)
+    const from = Math.min(Math.max(Math.floor(lo * n), 0), n - MIN_WINDOW)
+    const to = Math.min(Math.max(Math.ceil(hi * n), from + MIN_WINDOW), n)
+    const span = to - from
+
     for (let i = 0; i < io.n; i++) {
       if (trig > 0 && this.struck(trig, ctx, i)) {
-        // Backwards, a hit drops the needle at the other end of the file.
-        this.pos = speed < 0 ? n - 1 : 0
+        // Backwards, a hit drops the needle at the other end of the window.
+        this.pos = speed < 0 ? to - 1 : from
         this.playing = true
       }
       if (!this.playing) continue
 
       const idx = Math.floor(this.pos)
       const frac = this.pos - idx
-      const a = buf[idx % n]!
-      const b = buf[(idx + 1) % n]!
+      // The sample after the last one in the window is the first one in it:
+      // interpolating off the tape outside the markers would put a sliver of
+      // what you trimmed back into the splice.
+      const a = buf[idx]!
+      const b = buf[idx + 1 >= to ? from : idx + 1]!
       const out = (a + frac * (b - a)) * level
 
       // The heads, in the order a tape passes them: erase takes off what is
@@ -102,15 +181,26 @@ export class Sampler implements Stage {
       // into distortion, which is what a loop left running is supposed to
       // become.
       if (rec > 0) {
-        const at = idx % n
-        buf[at] = softclip(buf[at]! * (1 - erase) + ctx.out[i]! * rec)
+        buf[idx] = softclip(buf[idx]! * (1 - erase) + ctx.out[i]! * rec)
       }
 
-      // Off the end is where a loop comes round and a one-shot stops. A one-shot
-      // with nothing wired to it is a file that plays once when you drop it.
+      // One column of the drawing per pass under the head, committed as the
+      // head leaves it. A frozen head commits nothing, which is right — a reel
+      // standing still is a reel that has not changed.
+      const bin = ((idx * PEAK_BINS) / n) | 0
+      const v = buf[idx]! < 0 ? -buf[idx]! : buf[idx]!
+      if (bin !== this.binAt) {
+        if (this.binAt >= 0) this.peaks[this.binAt] = this.binMax
+        this.binAt = bin
+        this.binMax = v
+      } else if (v > this.binMax) this.binMax = v
+
+      // Off the end of the window is where a loop comes round and a one-shot
+      // stops. A one-shot with nothing wired to it is a file that plays once
+      // when you drop it.
       const next = this.pos + speed
-      if (oneShot && (next >= n || next < 0)) this.playing = false
-      this.pos = ((next % n) + n) % n
+      if (oneShot && (next >= to || next < from)) this.playing = false
+      this.pos = from + ((((next - from) % span) + span) % span)
 
       io.l[i]! += out
       io.r[i]! += out
@@ -120,6 +210,7 @@ export class Sampler implements Stage {
   panic() {
     this.pos = 0
     this.playing = true
+    this.binAt = -1
     this.micTrig.reset()
   }
 }

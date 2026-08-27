@@ -17,9 +17,15 @@ import { TUNE_STEP_KEYS } from '../../tune'
 // The melody memory goes with it, steps and all, and so does the rate it plays
 // back at: a tune you sat down and played in is the last thing on the board a
 // roll of the dice gets to rewrite.
+// The two markers on the reel go with the fader above them: which bar of your
+// recording is the loop is a statement about what is playing, and the dice
+// rewriting it would hand back a different piece of music rather than a
+// different circuit.
 export const YOURS = new Set<ControlKey>([
   ...HOLD_KEYS,
   'sampleLevel',
+  'loopIn',
+  'loopOut',
   'chipTune',
   ...GRID_ROWS.flatMap(r => [r.key, r.len]),
   ...TUNE_STEP_KEYS,

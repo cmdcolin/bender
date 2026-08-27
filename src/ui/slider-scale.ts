@@ -29,6 +29,7 @@ export function fromPos(def: SliderDef, pos: number): number {
 // thousandths gets the third place to show it. The tiers above it are all
 // coarser than their own step by a wide margin and mean to be.
 export function formatValue(def: SliderDef, value: number): string {
+  if (def.reads) return def.reads(value)
   if (def.choices)
     return def.choices[Math.round(value) - def.min] ?? String(value)
   const abs = Math.abs(value)

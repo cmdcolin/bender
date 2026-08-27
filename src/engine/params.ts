@@ -138,6 +138,8 @@ export const PARAM_DEFS = [
   ['loopRec', 'slew'],
   ['loopErase', 'slew'],
   ['loopSecs', 'step'],
+  ['loopIn', 'slew'],
+  ['loopOut', 'slew'],
 
   ['mixDrive', 'ramp'],
 

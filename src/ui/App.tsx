@@ -26,6 +26,7 @@ import {
 } from './morph'
 import { huntCandidates, mutate, randomLook, SCENARIOS } from './presets'
 import { Presets } from './PresetRow'
+import { SampleReel } from './SampleReel'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { useBoardUrl } from './useBoardUrl'
@@ -334,6 +335,7 @@ export function App() {
             </select>
           </Tip>
         </div>
+        <SampleReel />
         {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
         {!archiveStep && archiveSource && (
           <p className={styles.credit}>

@@ -27,6 +27,11 @@ export interface SliderDef {
       your hand has already moved it, because a control you have set is a control
       you get to see. */
   needs?: (c: Controls) => boolean
+  /** What the readout says, where the number alone is not what the control
+      means. A speed of −2 is not two less than something — it is twice as fast
+      the other way, and a knob whose left half is reverse rather than slow has
+      to say so where you are looking. */
+  reads?: (value: number) => string
   /** A value the control has a reason to jump to that isn't a place on its own
       travel — it is worked out from the rest of the board. One press, drawn
       beside the readout. */

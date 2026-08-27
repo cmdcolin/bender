@@ -6,6 +6,18 @@ export interface ParamsMsg {
 export interface SampleMsg {
   kind: 'sample'
   mono: Float32Array
+  /** The clip's envelope, drawn on the main thread on the way over: scanning a
+      minute and a half of audio is several audio blocks long, and the block is
+      where the sampler would otherwise have to do it. */
+  peaks: Float32Array
+}
+
+/** Drop the play head somewhere on the reel, 0..1 over the whole of it. Where
+    the head stands is not a control — it is where the tape has got to — so it
+    travels as a gesture rather than in the param pack. */
+export interface SeekMsg {
+  kind: 'seek'
+  frac: number
 }
 
 export interface NoteMsg {
@@ -46,6 +58,7 @@ export interface PanicMsg {
 export type ToWorklet =
   | ParamsMsg
   | SampleMsg
+  | SeekMsg
   | NoteMsg
   | DrumHitMsg
   | TransportMsg
@@ -92,6 +105,15 @@ export interface MeterMsg {
       — the serializer copies it on the way across, so what arrives is this
       read and nothing of the next one. */
   taps: Float32Array
+  /** The reel: how long it is in seconds (0 with no tape threaded), where the
+      play head stands over the whole of it, whether it is turning, and what is
+      on it. The envelope is the sampler's own buffer, posted untransferred like
+      the scope — the record head rewrites the tape every lap, so what it looks
+      like is news the same way the trace is. */
+  sampleSecs: number
+  samplePos: number
+  samplePlaying: boolean
+  samplePeaks: Float32Array
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

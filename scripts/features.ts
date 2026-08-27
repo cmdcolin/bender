@@ -162,6 +162,10 @@ function range(s: SliderDef): string {
   const { min, max, unit } = s
   const signed = min < 0
   const to = (a: string, b: string) => `${a} to ${b}`
+  // A control that prints its own readout prints its own ends too. The rules
+  // below read a number as an amount of something, which is exactly what those
+  // controls have a readout of their own to say they are not.
+  if (s.reads) return to(s.reads(min), s.reads(max))
   if (!unit) {
     if (min === 0 && max === 1) return 'off to full'
     return to(sign(min, false), sign(max, signed))

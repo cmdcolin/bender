@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 212 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 214 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 51 presets and 20 named cuts — and everything below comes off the
 control tables themselves, so the list cannot drift from the instrument.
 
@@ -286,14 +286,16 @@ A loaded audio file, looping through the chain — or, with _Struck by_ on a voi
 and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped.
 
 <details>
-<summary>7 controls</summary>
+<summary>9 controls</summary>
 
 | control    | range                                                     | what it does                                                                                            |
 | ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Level      | 0 to 2                                                    | Level of the dropped audio file, looping through the chain                                              |
-| Speed      | −4× to +4×                                                | Playback speed                                                                                          |
+| Speed      | 4.00× reverse to 4.00× forward                            | Playback speed, with the stop in the middle of the travel and reverse below it                          |
 | Struck by  | off, kick, snare, hat, clap, tom, bell, any hit, key, mic | Which trigger line drops the needle back at the top of the file                                         |
 | Ending     | loop or one-shot                                          | What happens at the end of the file: round again, or stop there and wait to be struck                   |
+| Loop in    | 0.0% to 100.0%                                            | Where the loop starts, as a fraction of the reel                                                        |
+| Loop out   | 0.0% to 100.0%                                            | Where the loop ends                                                                                     |
 | Record     | off to full                                               | How much of the board’s own output the record head lays back down, on the spot the play head is reading |
 | Erase      | off to full                                               | How much of what is already on the tape the erase head takes off on the way past                        |
 | Blank tape | 0.25 to 20 s                                              | How long a reel to thread when you arm the record head with nothing loaded                              |
