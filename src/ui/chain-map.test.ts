@@ -160,9 +160,11 @@ test('the toy board frames its three chips, and wires the key line', () => {
   const map = buildMap(DEFAULT_CONTROLS)
   const frame = box(map, 'toy_board')!
   expect(frame.kind).toBe('frame')
-  // The name on its lip opens the parts the outline is round — the ones that
-  // are hardware rather than a stage, and so have no box of their own.
+  // The lip opens the parts the outline is round — the ones that are hardware
+  // rather than a stage, and so have no box of their own — and is named for
+  // them, the way every other door on the drawing is named for what it opens.
   expect(frame.door).toBe('Board parts')
+  expect(frame.label).toBe('board parts')
   for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums']) {
     const chip = box(map, id)!
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)

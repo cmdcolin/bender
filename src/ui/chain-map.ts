@@ -406,8 +406,11 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const lines = LINE_ROW.map(instrument)
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
+  // So the lip says what it opens rather than what the outline is: three named
+  // machines and a supply rail across them already say that this is the toy
+  // board, and nothing else on the drawing said where its parts were.
   doors.add('Board parts')
-  const board = node('toy_board', 'frame', 'toy board', {
+  const board = node('toy_board', 'frame', 'board parts', {
     door: 'Board parts',
   })
   // The bus is a stage like any other: it has a door, a count and a way back,
@@ -1488,9 +1491,11 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   }
   // The toy board: an outline round what is one piece of hardware, and the
   // cheapest way on a drawing to say that three things share a supply. Dashed,
-  // because it is a boundary rather than anything signal travels along. The
-  // name on its lip is the door onto the parts the outline is round — the ones
-  // that are hardware rather than a stage, and so have no box of their own.
+  // because it is a boundary rather than anything signal travels along. The lip
+  // carries the door onto the parts the outline is round — the ones that are
+  // hardware rather than a stage, and so have no box of their own — and is
+  // named for them, because a lip reading anything else is a door lying about
+  // where it goes.
   if (n.kind === 'frame') {
     return el('g', { className: 'node' }, [
       el('rect', {
