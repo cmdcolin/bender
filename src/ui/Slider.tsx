@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { useControlValue, useStoreValue } from './ControlsContext'
@@ -91,6 +91,11 @@ export function ControlSlider({
   label?: string
 }) {
   const value = useControlValue(def.key)
+  // Whether the knob is under a hand rather than under the arrow keys. The pull
+  // to a split's turn belongs to the drag: a key step is smaller than the turn
+  // is wide, so a knob that pulled for the keyboard too would be one the
+  // keyboard could never walk off the stop.
+  const hand = useRef(false)
   const touched = value !== DEFAULT_CONTROLS[def.key]
   const action = def.action
 
@@ -163,14 +168,21 @@ export function ControlSlider({
       // The whole sweep is one gesture and wants one step in the walk, so it
       // arms here and the first move that changes anything takes it. A held
       // arrow key repeats, and a repeat is the same sweep continuing.
-      onPointerDown={() => engine.armStep()}
+      onPointerDown={() => {
+        hand.current = true
+        engine.armStep()
+      }}
+      onPointerUp={() => (hand.current = false)}
+      onPointerCancel={() => (hand.current = false)}
       onKeyDown={e => {
+        hand.current = false
         if (!e.repeat) engine.armStep()
       }}
       onChange={e => {
+        const at = Number(e.currentTarget.value) / 1000
         engine.set(
           def.key,
-          snapToStep(def, pull(def, Number(e.currentTarget.value) / 1000)),
+          snapToStep(def, hand.current ? pull(def, at) : fromPos(def, at)),
         )
       }}
       onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}

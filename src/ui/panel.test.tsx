@@ -383,6 +383,7 @@ test('a split travel pulls to its turn and says which side it is on', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   const knob = speed()
 
+  fireEvent.pointerDown(knob)
   fireEvent.change(knob, { target: { value: '505' } })
   expect(engine.controls.get().sampleSpeed).toBe(0)
   expect(knob.getAttribute('aria-valuetext')).toBe('frozen')
@@ -390,4 +391,15 @@ test('a split travel pulls to its turn and says which side it is on', () => {
   fireEvent.change(knob, { target: { value: '300' } })
   expect(engine.controls.get().sampleSpeed).toBeLessThan(0)
   expect(knob.getAttribute('aria-valuetext')).toBe('1.60× reverse')
+})
+
+// The pull is the drag's, not the keyboard's. A key step is a fifth of the
+// width of the turn, so a knob that pulled for keys too would be a knob the
+// keys could park on the stop and never walk off again.
+test('a split travel still steps off its turn under the arrow keys', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS, sampleSpeed: 0 }))
+  const knob = speed()
+  fireEvent.keyDown(knob, { key: 'ArrowRight' })
+  fireEvent.change(knob, { target: { value: '501' } })
+  expect(engine.controls.get().sampleSpeed).toBeGreaterThan(0)
 })
