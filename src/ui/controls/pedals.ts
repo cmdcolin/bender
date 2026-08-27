@@ -41,6 +41,7 @@ export const PEDAL_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
         help: 'Shifts the clipper off centre — the classic starve mod. Quiet passages gate out, loud ones come through one-sided and full of even harmonics. On the gate circuit this is what walks it toward cutoff, so it shuts higher and higher up.',
       },
       {

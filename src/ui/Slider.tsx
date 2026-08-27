@@ -66,7 +66,7 @@ const DETENT = 0.02
 
 function pull(def: SliderDef, pos: number): number {
   const split = def.split
-  if (!split) return fromPos(def, pos)
+  if (!split?.detent) return fromPos(def, pos)
   return Math.abs(pos - toPos(def, split.at)) < DETENT
     ? split.at
     : fromPos(def, pos)
@@ -191,7 +191,7 @@ export function ControlSlider({
 
   return (
     <Tip text={def.help}>
-      <div className={split ? styles.rowSplit : styles.row}>
+      <div className={split?.names ? styles.rowSplit : styles.row}>
         <span
           className={touched ? styles.labelTouched : styles.label}
           onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
@@ -230,17 +230,19 @@ export function ControlSlider({
               <span className={styles.turn} />
             </span>
             {track}
-            <span className={styles.ends}>
-              <span className={way < 0 ? styles.endBack : styles.end}>
-                ◀ {split.below}
+            {split.names && (
+              <span className={styles.ends}>
+                <span className={way < 0 ? styles.endBack : styles.end}>
+                  ◀ {split.names.below}
+                </span>
+                <span className={way === 0 ? styles.endMid : styles.end}>
+                  {split.names.mid}
+                </span>
+                <span className={way > 0 ? styles.endFwd : styles.end}>
+                  {split.names.above} ▶
+                </span>
               </span>
-              <span className={way === 0 ? styles.endMid : styles.end}>
-                {split.mid}
-              </span>
-              <span className={way > 0 ? styles.endFwd : styles.end}>
-                {split.above} ▶
-              </span>
-            </span>
+            )}
           </span>
         ) : (
           track

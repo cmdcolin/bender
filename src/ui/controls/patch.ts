@@ -94,6 +94,11 @@ export const PATCH_GROUPS: Group[] = [
           max: 1,
           step: 0.01,
           unit: '',
+          split: { at: 0 },
+          reads: (v: number) =>
+            v === 0
+              ? 'off'
+              : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'flipped' : 'straight'}`,
           help: 'How hard the wire pushes. Negative flips it — the supply dying can drag a pitch up as easily as down.',
         },
       ]),

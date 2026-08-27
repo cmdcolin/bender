@@ -152,6 +152,7 @@ export const BEND_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
         help: 'DC offset into the clipper. Off-center bias gates quiet passages and adds even harmonics.',
       },
       {

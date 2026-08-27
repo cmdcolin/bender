@@ -824,6 +824,11 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
+        reads: v =>
+          v === 0
+            ? 'flat'
+            : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'dark' : 'bright'}`,
         help: 'Tilts the noise dark (rumble) or bright (hiss).',
       },
       {
@@ -880,7 +885,11 @@ export const SOURCE_GROUPS: Group[] = [
           v === 0
             ? 'frozen'
             : `${Math.abs(v).toFixed(2)}× ${v < 0 ? 'reverse' : 'forward'}`,
-        split: { at: 0, below: 'reverse', above: 'forward', mid: 'stop' },
+        split: {
+          at: 0,
+          names: { below: 'reverse', above: 'forward', mid: 'stop' },
+          detent: true,
+        },
         action: {
           label: 'stop',
           title:

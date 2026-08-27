@@ -21,6 +21,12 @@ const MIN_SPAN = 0.002
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
+// Backwards, in the cold the Speed knob paints its bottom half. Forwards the
+// head stays white: the tape under it is already lit in the accent, and a head
+// the colour of the tape is a head you have to look for. One direction is the
+// ordinary one and only the other needs saying.
+const COLD = '#49b6ff'
+
 function clock(secs: number): string {
   const s = Math.max(secs, 0)
   const m = Math.floor(s / 60)
@@ -59,6 +65,7 @@ const useReelSeconds = () =>
 export function SampleReel() {
   const canvas = useRef<HTMLCanvasElement>(null)
   const readout = useRef<HTMLSpanElement>(null)
+  const heading = useRef<HTMLSpanElement>(null)
   const secs = useReelSeconds()
   const name = useStoreValue(engine.sampleName)
   const level = useBoardValue(c => c.sampleLevel)
@@ -140,7 +147,7 @@ export function SampleReel() {
       const speed = c.sampleSpeed
       const turning = m.samplePlaying && (level > 0 || rec > 0) && speed !== 0
       const hx = Math.round(m.samplePos * w)
-      g.fillStyle = turning ? '#e8e8ea' : '#5c5c63'
+      g.fillStyle = !turning ? '#5c5c63' : speed < 0 ? COLD : '#e8e8ea'
       if (turning) {
         const tail = (Math.min(Math.abs(speed), 4) / 4) * 26 * dpr
         g.globalAlpha = 0.25
@@ -155,14 +162,26 @@ export function SampleReel() {
       }
       g.fillRect(hx - dpr, 0, 2 * dpr, h)
 
+      // The direction is its own span in the two colours the Speed knob uses,
+      // because it is the one part of this line you read at a glance rather
+      // than off the numbers.
       const way =
         speed === 0
           ? 'frozen'
           : `${Math.abs(speed).toFixed(2)}× ${speed < 0 ? 'reverse' : 'forward'}`
-      const says = `${clock(m.samplePos * m.sampleSecs)} / ${clock(m.sampleSecs)} · loop ${clock((to - from) * m.sampleSecs)} · ${way}`
-      if (readout.current && painted !== says) {
-        painted = says
+      const says = `${clock(m.samplePos * m.sampleSecs)} / ${clock(m.sampleSecs)} · loop ${clock((to - from) * m.sampleSecs)} · `
+      if (readout.current && painted !== says + way) {
+        painted = says + way
         readout.current.textContent = says
+        if (heading.current) {
+          heading.current.textContent = way
+          heading.current.style.color =
+            speed === 0
+              ? 'var(--fg4)'
+              : speed < 0
+                ? 'var(--cool)'
+                : 'var(--accent)'
+        }
       }
     }
     raf = requestAnimationFrame(draw)
@@ -219,7 +238,10 @@ export function SampleReel() {
       </Tip>
       <div className={styles.foot}>
         <span className={styles.name}>{name ?? 'blank tape'}</span>
-        <span ref={readout} className={styles.time} />
+        <span className={styles.time}>
+          <span ref={readout} />
+          <span ref={heading} />
+        </span>
         {level <= 0 && rec <= 0 && (
           <span className={styles.down}>bring the sampler’s Level up</span>
         )}

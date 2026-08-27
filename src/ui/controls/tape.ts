@@ -41,6 +41,11 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
+        reads: v =>
+          v === 0
+            ? 'centred'
+            : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'under' : 'over'}`,
         help: 'Underbiased is bright and crunchy; overbiased is dull and squashed. Distortion and top end move against each other.',
       },
       {

@@ -34,10 +34,22 @@ export interface SliderDef {
   reads?: (value: number) => string
   /** A travel whose two halves are different things rather than more and less
       of one thing. The row paints each half in its own colour, marks the turn
-      between them, names both ends under the track, and pulls to the turn under
-      the hand — a hairline of travel between backwards and forwards is one you
-      cross without noticing you have. */
-  split?: { at: number; below: string; above: string; mid: string }
+      between them, and fills the throw out from the turn rather than up from
+      the bottom, so a knob a hair the wrong side of the middle reads as the
+      wrong side rather than as nearly nothing. */
+  split?: {
+    at: number
+    /** The two directions and the turn, named under the track. A stage's one
+        headline travel earns the line; a panel of split rows would spend more
+        height on captions than on knobs, so most take the paint alone. */
+    names?: { below: string; above: string; mid: string }
+    /** Whether the turn holds the knob as it passes. For a travel whose middle
+        is a stop, yes: the values a hair either side are a tape going one way
+        and a tape going the other, and a stop you can only hit by luck is a
+        stop that isn't there. For one whose middle is merely centred — a bias
+        you want a hair off — no. */
+    detent?: true
+  }
   /** A value the control has a reason to jump to that isn't a place on its own
       travel — it is worked out from the rest of the board. One press, drawn
       beside the readout. */

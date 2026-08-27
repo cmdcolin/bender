@@ -32,6 +32,11 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
+        reads: v =>
+          v === 0
+            ? 'flat'
+            : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'dark' : 'bright'}`,
         help: 'Darkens or brightens the loop — decides which register the squeal settles into.',
       },
       {
@@ -83,6 +88,11 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
+        reads: v =>
+          v === 0
+            ? 'flat'
+            : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'dark' : 'bright'}`,
         help: 'Strip 2’s own tilt. Tilt the strips apart and they scream in different registers — a top-end shriek over a bottom-end growl, off one bus.',
       },
       {
@@ -114,6 +124,11 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
+        reads: v =>
+          v === 0
+            ? 'flat'
+            : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'dark' : 'bright'}`,
         help: 'Strip 3’s own tilt.',
       },
       {
@@ -134,6 +149,11 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
+        split: { at: 0 },
+        reads: v =>
+          v === 0
+            ? 'matched'
+            : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'low rail' : 'high rail'}`,
         help: 'How far apart the two supplies are. Real ones never match, and a wave that squares off on one half before the other puts out even harmonics as well as odd — an octave under the squeal rather than more of it. It also leaves dc behind, which walks the operating point of everything downstream until the safety tail takes it back off.',
       },
       {

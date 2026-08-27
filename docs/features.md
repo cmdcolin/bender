@@ -284,12 +284,12 @@ Hiss with a colour control, and sparse crackle with a rate of its own.
 <details>
 <summary>4 controls</summary>
 
-| control      | range                | what it does                                                            |
-| ------------ | -------------------- | ----------------------------------------------------------------------- |
-| Noise        | off to full          | White noise level into the chain                                        |
-| Color        | −1 to +1             | Tilts the noise dark (rumble) or bright (hiss)                          |
-| Crackle †    | off to full          | Dirty-pot contact crackle: random spikes rung through a resonant filter |
-| Crackle rate | 0 to 2000 per second | How often the contact sparks                                            |
+| control      | range                    | what it does                                                            |
+| ------------ | ------------------------ | ----------------------------------------------------------------------- |
+| Noise        | off to full              | White noise level into the chain                                        |
+| Color        | 1.00 dark to 1.00 bright | Tilts the noise dark (rumble) or bright (hiss)                          |
+| Crackle †    | off to full              | Dirty-pot contact crackle: random spikes rung through a resonant filter |
+| Crackle rate | 0 to 2000 per second     | How often the contact sparks                                            |
 
 </details>
 
@@ -611,7 +611,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                     | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                | What the wire picks up                                                         |
 | Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span | Where the other end is soldered                                                |
-| Wire 1–4 depth | −1 to +1                                                                                                                                                                                                                                                                                                  | How hard the wire pushes                                                       |
+| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                             | How hard the wire pushes                                                       |
 
 </details>
 
@@ -655,24 +655,24 @@ _Patched into_ decides where the return lands.
 <details>
 <summary>16 controls</summary>
 
-| control      | range                         | what it does                                                                            |
-| ------------ | ----------------------------- | --------------------------------------------------------------------------------------- |
-| Amount       | 0 to 1.5                      | Output patched back into the source mix                                                 |
-| Loop time    | 0.05 to 500 ms                | The loop’s own comb delay                                                               |
-| Tilt         | −1 to +1                      | Darkens or brightens the loop — decides which register the squeal settles into          |
-| Patched into | mix, osc FM, chip rail, delay | Where the return wire is soldered                                                       |
-| Cross        | off to full                   | Sends each strip round the next one’s delay instead of its own                          |
-| Strip 2      | 0 to 1.5                      | A second send and return, on its own fader                                              |
-| Strip 2 time | 0.05 to 500 ms                | How long strip 2’s cord and its circuit take                                            |
-| Strip 2 tilt | −1 to +1                      | Strip 2’s own tilt                                                                      |
-| Strip 3      | 0 to 1.5                      | The third send and return                                                               |
-| Strip 3 time | 0.05 to 500 ms                | How long strip 3’s cord takes                                                           |
-| Strip 3 tilt | −1 to +1                      | Strip 3’s own tilt                                                                      |
-| Rails        | off to full                   | How hard the return amps hit their supply                                               |
-| Rail balance | −1 to +1                      | How far apart the two supplies are                                                      |
-| Slew         | off to full                   | How slow the return amps are                                                            |
-| Supply       | off to full                   | How far the return amps pull their own rail down                                        |
-| Blocking     | off to full                   | The coupling cap into the return amp, and what happens when it is driven past its rails |
+| control      | range                           | what it does                                                                            |
+| ------------ | ------------------------------- | --------------------------------------------------------------------------------------- |
+| Amount       | 0 to 1.5                        | Output patched back into the source mix                                                 |
+| Loop time    | 0.05 to 500 ms                  | The loop’s own comb delay                                                               |
+| Tilt         | 1.00 dark to 1.00 bright        | Darkens or brightens the loop — decides which register the squeal settles into          |
+| Patched into | mix, osc FM, chip rail, delay   | Where the return wire is soldered                                                       |
+| Cross        | off to full                     | Sends each strip round the next one’s delay instead of its own                          |
+| Strip 2      | 0 to 1.5                        | A second send and return, on its own fader                                              |
+| Strip 2 time | 0.05 to 500 ms                  | How long strip 2’s cord and its circuit take                                            |
+| Strip 2 tilt | 1.00 dark to 1.00 bright        | Strip 2’s own tilt                                                                      |
+| Strip 3      | 0 to 1.5                        | The third send and return                                                               |
+| Strip 3 time | 0.05 to 500 ms                  | How long strip 3’s cord takes                                                           |
+| Strip 3 tilt | 1.00 dark to 1.00 bright        | Strip 3’s own tilt                                                                      |
+| Rails        | off to full                     | How hard the return amps hit their supply                                               |
+| Rail balance | 1.00 low rail to 1.00 high rail | How far apart the two supplies are                                                      |
+| Slew         | off to full                     | How slow the return amps are                                                            |
+| Supply       | off to full                     | How far the return amps pull their own rail down                                        |
+| Blocking     | off to full                     | The coupling cap into the return amp, and what happens when it is driven past its rails |
 
 </details>
 
@@ -687,21 +687,21 @@ machine they are one thing.
 <details>
 <summary>13 controls</summary>
 
-| control       | range                  | what it does                                                                                          |
-| ------------- | ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| To tape       | off to full            | How much of the board you hear through the machine rather than straight off the bus                   |
-| Speed         | 3¾ ips, 7½ ips, 15 ips | Moves the whole machine at once                                                                       |
-| Level         | −12 to +15 dB          | Record level                                                                                          |
-| Bias          | −1 to +1               | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
-| Hysteresis    | off to full            | How far the field the medium is already carrying sits the record curve off centre                     |
-| Head bump     | 0 to 1.5               | The lift where the wavelength going past the replay head is the size of the head                      |
-| Squeal        | off to full            | Sticky shed                                                                                           |
-| Hiss          | off to full            | Noise laid on the medium, not on the mix                                                              |
-| Wow           | off to full            | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
-| Flutter       | off to full            | The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head           |
-| Dropouts      | off to full            | Shed oxide                                                                                            |
-| Print-through | off to full            | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
-| Azimuth       | off to full            | Head misalignment: the right channel lags and loses top end                                           |
+| control       | range                   | what it does                                                                                          |
+| ------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| To tape       | off to full             | How much of the board you hear through the machine rather than straight off the bus                   |
+| Speed         | 3¾ ips, 7½ ips, 15 ips  | Moves the whole machine at once                                                                       |
+| Level         | −12 to +15 dB           | Record level                                                                                          |
+| Bias          | 1.00 under to 1.00 over | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
+| Hysteresis    | off to full             | How far the field the medium is already carrying sits the record curve off centre                     |
+| Head bump     | 0 to 1.5                | The lift where the wavelength going past the replay head is the size of the head                      |
+| Squeal        | off to full             | Sticky shed                                                                                           |
+| Hiss          | off to full             | Noise laid on the medium, not on the mix                                                              |
+| Wow           | off to full             | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
+| Flutter       | off to full             | The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head           |
+| Dropouts      | off to full             | Shed oxide                                                                                            |
+| Print-through | off to full             | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
+| Azimuth       | off to full             | Head misalignment: the right channel lags and loses top end                                           |
 
 </details>
 
