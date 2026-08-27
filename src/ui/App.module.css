@@ -136,10 +136,20 @@
   position: relative;
 }
 
+/* Wrapping, and every label kept on one line. The row is six switches at their
+   own widths and it used to squeeze them instead: "play demo song" broke over
+   two lines, and a button whose label wraps reads as a button that is being
+   crowded rather than one that is where it wants to be. There is height under
+   this row and there was never width in it. */
 .ioRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+}
+
+.ioRow > * {
+  white-space: nowrap;
 }
 
 .playBtn,

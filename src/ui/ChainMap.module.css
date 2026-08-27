@@ -15,10 +15,21 @@
    it. Sized to the width instead, the column is what the drawing answers to and
    the labels land the size they were drawn.
 
-   The ceiling stays, well clear of that: what it is for now is a screen tall
-   enough that a map filling the width would run past what a hand can take in,
-   and there it goes back to scaling down. It is not what sizes the map on any
-   ordinary screen.
+   The ceiling is what the width has to answer to, and it is a ration rather
+   than a number: the panel holds a header, this, and the stage a door on it
+   opens, so what the map may have is the window less the other two. On a tall
+   screen the ration is more than the drawing wants and the width is what sizes
+   it; on a short one the ration wins and the map scales down to it, which is
+   the trade every screen was making unconditionally before.
+
+   The floor is what stops the ration being a licence. 450 was the old ceiling,
+   and holding it as the floor is what says a short screen keeps exactly the map
+   it already had — at 9.4px labels rather than 8.5, because the drawing they
+   are scaled from is bigger now.
+
+   Fixed and not measured. A ration that read the header would move when the
+   preset row unfolds, and a map that resizes because you opened a list is a map
+   that reads as having been done something to.
 
    What the map gives back on a short screen it gives back always, open or not.
    The ration used to arrive at the click, which on an 820px screen took a third
@@ -30,7 +41,7 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: max(620px, 55vh);
+  max-height: max(450px, calc(100vh - 330px));
 }
 
 /* Stacked under the toy rather than beside it, the panel has the document's own

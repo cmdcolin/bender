@@ -5,7 +5,7 @@ import {
   shift,
   useFloating,
 } from '@floating-ui/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { engine } from '../engine/engine'
 import type { MorphSeconds } from './morph'
 import { huntCandidates, randomLook, SCENARIOS } from './presets'
@@ -76,7 +76,11 @@ export function Dice(props: {
 }) {
   const [held, setHeld] = useState<Roll>(BLIND)
   const [open, setOpen] = useState(false)
-  const split = useRef<HTMLSpanElement>(null)
+  // Held in state rather than a ref: the menu takes the element it hangs off as
+  // a prop, and a ref read while rendering is whatever it was last commit — on
+  // the render that opens the menu that is null, and a menu with no anchor is a
+  // menu in the top left corner of the window.
+  const [split, setSplit] = useState<HTMLSpanElement | null>(null)
   const { seconds, onLanded } = props
 
   const roll = useCallback(
@@ -90,7 +94,7 @@ export function Dice(props: {
   const close = useCallback(() => setOpen(false), [])
 
   return (
-    <span className={styles.split} ref={split}>
+    <span className={styles.split} ref={setSplit}>
       <Tip text={held.blurb}>
         <button className={styles.face} onClick={() => roll(held)}>
           {held.label}
@@ -108,7 +112,7 @@ export function Dice(props: {
       </Tip>
       {open && (
         <Menu
-          anchor={split.current}
+          anchor={split}
           held={held}
           onPick={r => {
             close()
