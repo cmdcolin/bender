@@ -39,8 +39,35 @@ export const BEND_GROUPS: Group[] = [
       step: 1,
       unit: '',
       choices: ['—', ...BENDS.map(b => b.label)],
-      help: 'Which bend runs in this position. The signal walks the slots top to bottom; duplicates run once at their first slot.',
+      help: 'Which bend runs in this position. The signal walks the slots top to bottom, and a bend named twice runs only at its first slot.',
     })),
+  },
+  // The two wear controls that act on the slots rather than on the whole board,
+  // so the rack can carry a door onto them without opening a panel of heat and
+  // supply coupling. The slow ones that cover everything stay under Wear.
+  {
+    name: 'Solder',
+    place: 'Bends',
+    sliders: [
+      {
+        key: 'jointChatter',
+        label: 'Dry joints',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How intermittent the solder is under the bend slots. A cold joint opens and the stage on that slot is simply not in the path for a moment — no dry/wet fade, a click on the way out and another on the way back, and whatever it was ringing left mid-ring. What drops out is whatever you patched there, so the board rewrites its own signal path while it plays.',
+      },
+      {
+        key: 'relayRate',
+        label: 'Re-solder',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin. Nothing about the settings changes — every bend keeps the values you gave it, and the order and the routing are what move. The one roll on the board that changes topology rather than numbers, and the only one that does it without your hand on anything.',
+      },
+    ],
   },
   {
     name: 'Ring mod',

@@ -299,11 +299,17 @@ test('the rack heads the run and carries the bends in no slot', () => {
   expect(ring.y + ring.h).toBeLessThanOrEqual(rack.y + rack.h)
 })
 
-// The one part of the drawing wear rewrites is the rack — the joints under the
-// slots open mid-note and the board re-solders two of them behind your back —
-// so that is the row it reads off.
-test('the rack row carries the wear on the board', () => {
-  expect(box(buildMap(DEFAULT_CONTROLS), 'wear')?.door).toBe('Wear')
+// The one part of the drawing the solder rewrites is the rack — the joints
+// under the slots open mid-note and the board re-solders two of them behind
+// your back — so that is the row it reads off. It draws as a chip, because
+// everything else you can press in that box does, and it sits at the far side
+// of the name row from the count, which is the button that empties the slots.
+test('the rack row carries the solder under its slots', () => {
+  const solder = box(buildMap(DEFAULT_CONTROLS), 'solder')!
+  expect(solder.door).toBe('Solder')
+  expect(solder.kind).toBe('chip')
+  const rack = box(buildMap(DEFAULT_CONTROLS), 'rack')!
+  expect(solder.x + solder.w).toBeLessThan(rack.x + rack.w / 2)
 })
 
 test('a patch wire draws onto the group it is soldered to', () => {
@@ -421,7 +427,9 @@ test('an empty rack says so in the path, and every bend rides in it', () => {
   const rack = box(map, 'rack')!
   expect(rack.label).toBe('no bends patched')
   expect(rack.door).toBe('Slot order')
-  expect(map.nodes.filter(n => n.kind === 'chip')).toHaveLength(BENDS.length)
+  expect(
+    map.nodes.filter(n => n.kind === 'chip' && n.id !== 'solder'),
+  ).toHaveLength(BENDS.length)
 })
 
 test('a wire label opens what it picks up, the wire itself the bay', () => {

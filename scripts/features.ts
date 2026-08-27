@@ -46,6 +46,8 @@ const BLURBS: Record<string, string> = {
     'The desk the six sources meet at, and the only place their balance against each other is a thing you can see. Every fader is drawn here as well as on its own machine’s panel, under the machine’s name, with a meter beside it reading what that channel is putting on the bus and the bus’s own meter under the lot. A fader says how far it is up, not whether anything is coming out — the FM chip is the reason: it boots at zero, it has no keyboard of its own, and turned up on a toy nothing is striking it is three quarters and silence. *Bus drive* is the summing amp: a wire at unity, and the one saturation ahead of the bends.',
   'Slot order':
     'Which bend sits in which position, and therefore what order they run in. Fewer slots than bends, so one always sits out.',
+  Solder:
+    'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
   Crusher:
     'Bit depth and sample rate, both down far enough to fall apart, with jitter on the rate.',
@@ -63,7 +65,7 @@ const BLURBS: Record<string, string> = {
   'Tape delay':
     'The capstan is a real motor: it has weight, it answers the brake slowly, and *Supply drag* wires it to the same dying rail as the toy, so the repeats dive in pitch as the board browns out.',
   'Delay pedal':
-    'The normal box on a board of abused ones, and the one thing here that behaves. *Standard* moves its time by crossing between two read heads rather than dragging one, so the repeats already in the buffer keep their pitch while your hand is on the knob \u2014 the whole difference between this and the tape machine next to it. *Analog* is a bucket brigade whose clock sets the delay and the bandwidth together, so long is muddy by construction and the compander breathes behind the repeats. *Reverse* plays each window backwards, relocking at the seam.',
+    'The normal box on a board of abused ones, and the one thing here that behaves. *Standard* moves its time by crossing between two read heads rather than dragging one, so the repeats already in the buffer keep their pitch while your hand is on the knob — the whole difference between this and the tape machine next to it. *Analog* is a bucket brigade whose clock sets the delay and the bandwidth together, so long is muddy by construction and the compander breathes behind the repeats. *Reverse* plays each window backwards, relocking at the seam.',
   'Spring verb':
     'Dispersive allpass cascade into short parallel combs — metallic, boingy, deliberately cheap.',
   'Patch bay':
@@ -79,7 +81,7 @@ const BLURBS: Record<string, string> = {
   Output: 'Gain, ahead of a dc block, soft clip and limiter that always run.',
   'Board parts':
     'What the toy board is made of, rather than what you are doing to it. Every one of these was a number compiled into the model until somebody wanted the other value, and every default is the one that shipped, so a board nobody has been at here is the stock board. *Timing pin* decides which sags the tempo notices. *Watchdog* is where the reset chip gives up, and it cannot sit under the voltage the die gives up at. *Latch hold* is what a jam sounds like. The four *Clip* knobs are the paperclip itself: how hard it bites, how long it stays, and the charge and release that make a dive a dive rather than a warble. *Clock drag* is how deep the cap on the oscillator can divide. *Part spread* is how far apart the four output stages came out of the bin — whether a chord collapses raggedly or all at once.',
-  Wear: 'The slow ones. *Heat* builds with what the board is dissipating and takes the rail down with it. *Dry joints* drop a bend slot out of the path mid-note. *Re-solder* rewires the slot order while you play. *Cross-coupling* is how much the brightness bus feeds back into the supply.',
+  Wear: 'The slow ones, and the board-wide ones. *Heat* builds with what the board is dissipating and takes the rail down with it. *Fault clustering* redistributes every fault on the board from a flat rate into bursts. *Cross-coupling* is how much the brightness bus feeds back into the supply.',
 }
 
 const SCRIPTS: Record<string, string> = {

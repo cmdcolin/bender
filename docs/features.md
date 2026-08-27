@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 214 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 214 knobs and switches in 30 groups, seven bends competing for six slots,
 18 ROM tunes, 52 presets and 20 named cuts — and everything below comes off the
 control tables themselves, so the list cannot drift from the instrument.
 
@@ -377,6 +377,24 @@ slots than bends, so one always sits out.
 | control  | range                                           | what it does                     |
 | -------- | ----------------------------------------------- | -------------------------------- |
 | Slot 1–6 | —, ring, crush, dist, comb, glitch, filt, shift | Which bend runs in this position |
+
+</details>
+
+### Solder
+
+What the slots are held in by. _Dry joints_ drops the bend on a slot out of the
+path mid-note — a click on the way out, another on the way back, and whatever it
+was ringing left mid-ring. _Re-solder_ swaps two slots outright while you play,
+or moves the feedback return to a different pin, so the order changes with
+nobody’s hand on it.
+
+<details>
+<summary>2 controls</summary>
+
+| control    | range       | what it does                                                                                                       |
+| ---------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| Dry joints | off to full | How intermittent the solder is under the bend slots                                                                |
+| Re-solder  | off to full | How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin |
 
 </details>
 
@@ -771,21 +789,19 @@ or all at once.
 
 ### Wear
 
-The slow ones. _Heat_ builds with what the board is dissipating and takes the
-rail down with it. _Dry joints_ drop a bend slot out of the path mid-note.
-_Re-solder_ rewires the slot order while you play. _Cross-coupling_ is how much
-the brightness bus feeds back into the supply.
+The slow ones, and the board-wide ones. _Heat_ builds with what the board is
+dissipating and takes the rail down with it. _Fault clustering_ redistributes
+every fault on the board from a flat rate into bursts. _Cross-coupling_ is how
+much the brightness bus feeds back into the supply.
 
 <details>
-<summary>5 controls</summary>
+<summary>3 controls</summary>
 
-| control          | range       | what it does                                                                                                       |
-| ---------------- | ----------- | ------------------------------------------------------------------------------------------------------------------ |
-| Heat             | off to full | How far the board’s own temperature drags its thresholds                                                           |
-| Fault clustering | off to full | Whether faults arrive on a flat rate or in bursts                                                                  |
-| Dry joints       | off to full | How intermittent the solder is under the bend slots                                                                |
-| Re-solder        | off to full | How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin |
-| Cross-coupling   | off to full | Wires the loop’s own brightness against its supply                                                                 |
+| control          | range       | what it does                                             |
+| ---------------- | ----------- | -------------------------------------------------------- |
+| Heat             | off to full | How far the board’s own temperature drags its thresholds |
+| Fault clustering | off to full | Whether faults arrive on a flat rate or in bursts        |
+| Cross-coupling   | off to full | Wires the loop’s own brightness against its supply       |
 
 </details>
 

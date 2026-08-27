@@ -43,8 +43,13 @@ const WIRE_TARGET = [
 
 const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 
-/** what the rack calls the bends riding in it rather than in one of its slots */
-const OFF_BOARD = 'off the board'
+/** what the rack calls the bends riding in it rather than in one of its slots.
+    They are on the board — every one of them is soldered in and has a panel of
+    its own — and out of the path, which is the thing worth saying. */
+const OFF_BOARD = 'in no slot'
+
+/** the door the rack carries onto the solder under its slots */
+const SOLDER = 'solder'
 
 // A wire's label names what it picks up, so it opens the thing it is clipped
 // onto rather than the bay — mod*Src order. The rest (the bay's own LFO, the
@@ -204,6 +209,9 @@ export interface MapNode {
   h: number
   /** 'label' only: which end of the text x is */
   anchor?: 'start' | 'end'
+  /** 'rack' only: the column its solder chip takes at the left, which the name
+      centres clear of */
+  lead?: number
   /** 'inst' only: how far its fader is up, along that fader's own travel */
   level?: number
   /** 'inst' only: running right now, off a switch of its own */
@@ -439,20 +447,23 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // board is one of them.
   const capW = bends.length ? textWidth(OFF_BOARD, SMALL) + 6 : 0
   doors.add('Slot order')
-  // And the board wears where its solder is: the joints under these slots open
-  // mid-note, and the board re-solders two of them behind your back. Wear is
-  // the one thing on the board that rewrites the drawing, so it reads off the
-  // part of the drawing it rewrites.
-  doors.add('Wear')
+  // And the solder under those slots, which is the one thing on the board that
+  // rewrites the drawing: a joint opens mid-note and takes its stage out of the
+  // path, and the board swaps two of them behind your back. So it reads off the
+  // row it rewrites — as a chip, in the grammar the drawing already uses for
+  // everything you can press, rather than as a word beside the reset column.
+  doors.add('Solder')
   for (const b of loose) doors.add(b.group)
+  const solderW = textWidth(SOLDER, SMALL) + CHIP_PAD * 2
   const rack = node(
     'rack',
     'rack',
-    bends.length ? 'slot rack' : 'no bends patched',
+    bends.length ? 'slot order' : 'no bends patched',
     {
       count: live ? touchedCount('Slot order', c) : 0,
       open: o.open === 'Slot order',
       door: 'Slot order',
+      lead: solderW + PAD_X,
     },
   )
   path.push(rack)
@@ -479,11 +490,12 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const fbUp = c.fbAmt > 0 || c.fb2Amt > 0 || c.fb3Amt > 0
   const bus = stage('Feedback bus', fbUp)
 
-  // The two fittings the path runs past rather than through: the bay, whose
-  // wires fly down the outside of the rack, and the pad you push one with. They
-  // sit at the foot of the drawing, under the bus, because that is where
-  // everything that goes round the path rather than along it already is — and
-  // they stay there with nothing patched, greyed, for the reason the bus does.
+  // The fittings the path runs past rather than through: the bay, whose wires
+  // fly down the outside of the rack, the pad you push one with, and the wear
+  // that covers the board rather than landing on any one stage. They sit at the
+  // foot of the drawing, under the bus, because that is where everything that
+  // goes round the path rather than along it already is — and they stay there
+  // with nothing patched, greyed, for the reason the bus does.
   const patched = ([0, 1, 2, 3] as const).filter(
     i => Math.round(c[`mod${i}Src`]) > 0 && c[`mod${i}Depth`] !== 0,
   )
@@ -494,9 +506,18 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       i => SRC_GROUP[Math.round(c[`mod${i}Src`])] === 'Body contact',
     ),
   )
-  // Left to right, because that is the way the one wire between them runs: the
-  // pad's two axes reach the board only through the bay.
-  const foot = [pad, bay]
+  // Heat, the burst rate every fault on the board rolls against, and the loop
+  // wired to its own supply: nothing here is about one stage, so none of it has
+  // a box to hang off. What is about the slots is the rack's, and says so
+  // there.
+  const wear = stage(
+    'Wear',
+    c.heatAmt > 0 || c.faultCluster > 0 || c.couple > 0,
+  )
+  // Pad then bay, left to right, because that is the way the one wire between
+  // them runs: the pad's two axes reach the board only through the bay. Wear
+  // touches neither, so it stands clear on the end.
+  const foot = [pad, bay, wear]
 
   // How wide a box has to be to hold what is written on it. The count column is
   // held open whether or not anything is off stock yet: it is a button, and a
@@ -536,7 +557,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           // column cut to the names on the path would spill them out of it.
           PAD_X * 2 + capW + Math.max(0, ...chipW),
           ...[...path, bus].map(
-            n => PAD_X * 2 + textWidth(n.label, FONT) + countCol,
+            n =>
+              PAD_X * 2 + (n.lead ?? 0) + textWidth(n.label, FONT) + countCol,
           ),
         ) +
         (cols - 1) * COL_GAP,
@@ -622,13 +644,18 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   for (const n of down) n.x = 0
   for (const n of up) n.x = boxW + COL_GAP
   bus.x = (content - boxW) / 2
-  const footSpan = pad.w + INST_GAP + bay.w
-  pad.x = (content - footSpan) / 2
-  bay.x = pad.x + pad.w + INST_GAP
+  const footSpan =
+    foot.reduce((a, n) => a + n.w, 0) + INST_GAP * (foot.length - 1)
+  {
+    let x = (content - footSpan) / 2
+    for (const n of foot) {
+      n.x = x
+      x += n.w + INST_GAP
+    }
+  }
 
   // What the rack is carrying, drawn inside it now that it has landed: the
-  // bends in none of its slots, what to call them, and the wear that opens the
-  // joints under the whole row.
+  // solder its slots sit on, the bends in none of them, and what to call those.
   const loosePart = new Map(
     rackChips.map(ch => [
       ch.group,
@@ -655,15 +682,20 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         anchor: 'start',
       }),
     )
+  // At the left of the name row, the far side of the box from the count — which
+  // is the button that puts the slots back, and not a thing to land on by
+  // missing something else.
   parts.push(
-    node('wear', 'label', 'wear', {
-      door: 'Wear',
-      active: false,
-      x: rack.x + rack.w - countCol - 4,
-      y: rack.y + (BOX_H - LABEL_H) / 2,
-      w: textWidth('wear', SMALL),
-      h: LABEL_H,
-      anchor: 'end',
+    node('solder', 'chip', SOLDER, {
+      door: 'Solder',
+      // Lit while the joints are actually chattering or the board is swapping
+      // slots, which is the map saying why the order keeps moving on its own.
+      active: c.jointChatter > 0 || c.relayRate > 0,
+      open: o.open === 'Solder',
+      x: rack.x + PAD_X,
+      y: rack.y + (BOX_H - CHIP_H) / 2 + 1,
+      w: solderW,
+      h: CHIP_H - 2,
     }),
   )
 
@@ -1472,6 +1504,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   // the bends in none of its slots ride in under its name. One box round both
   // rows, so the run down to the first bend passes it rather than through it.
   if (n.kind === 'rack') {
+    const lead = n.lead ?? 0
     const inner = [
       el('rect', {
         className: 'box',
@@ -1484,9 +1517,12 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
         stroke: n.open ? k.fg : n.count > 0 ? k.accent : k.border,
         strokeWidth: n.open ? 2 : 1,
       }),
+      // Centred on what is left between the solder chip and the count column,
+      // so the name reads as the middle of the space it has rather than as
+      // shoved off one side of the box.
       words(
         n.label,
-        n.x + (n.w - (links ? COUNT_COL : 0)) / 2,
+        n.x + lead + (n.w - lead - (links ? COUNT_COL : 0)) / 2,
         baseline(n.y, BOX_H, FONT),
         FONT,
         k.fg,
@@ -1506,8 +1542,10 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
     ])
   }
 
-  // One of those bends: the short name it wears in a slot, in a dashed outline,
-  // because there is nothing soldered to either end of it.
+  // A chip riding in the rack: a short name in a dashed outline, because there
+  // is nothing soldered to either end of it. A bend in none of the slots is one;
+  // so is the door onto the solder those slots sit in, which lights the way a
+  // stage does when what it names is doing something.
   if (n.kind === 'chip') {
     return el(
       'g',
@@ -1530,7 +1568,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
             n.x + n.w / 2,
             baseline(n.y, n.h, SMALL),
             SMALL,
-            n.open ? k.fg : k.dim,
+            n.active || n.open ? k.fg : k.dim,
           ),
         ],
         n.door,

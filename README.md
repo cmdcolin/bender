@@ -13,7 +13,7 @@ Real-time in the browser, on one AudioWorklet.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/chain-dark.svg">
-  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, which runs into the slot rack, then through the bends themselves, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, with the feedback bus wired from output back to the mix" src="img/chain-light.svg" width="420">
+  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, which runs into the slot rack that orders the bends, then through the bends themselves, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, with the feedback bus wired from output back to the mix" src="img/chain-light.svg" width="420">
 </picture>
 
 The panel is a live drawing of this chain: click a box to open its controls, and
