@@ -534,14 +534,24 @@ function ShelfPart({
   )
 }
 
-// One line, because it is the line you read once. It used to spend four of them
-// on the same two sentences, which is a fifth of a short screen's panel held
-// open for a note nobody needs twice.
+// Two lines, because there are two things to say once. The first is how the
+// drawing is worked; the second is what it is a drawing of, which is the one
+// thing nothing else on screen says — the panel that sets the order of the
+// bends can hardly be where you find out that the sound runs through them in
+// order, since you would have to know what it was to go and open it.
 export function PathHint() {
   return (
-    <p className={styles.hint}>
-      click a stage for its controls — the number on it is how many you have
-      moved, and puts them back
-    </p>
+    <>
+      <p className={styles.hint}>
+        click a stage for its controls — the number on it is how many you have
+        moved, and puts them back
+      </p>
+      <p className={styles.hintPath}>
+        the drawing is the path the sound takes: the sources sum onto the mix
+        bus, walk the <em>signal chain</em> — six effects in whatever order you
+        put them, and the order is most of what they sound like — then the
+        pedals, the tape and out
+      </p>
+    </>
   )
 }

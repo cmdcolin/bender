@@ -175,7 +175,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Slot order',
+    group: 'Signal chain',
     name: 'crush, then filter',
     blurb:
       'A five-bit decimator with the filter after it — everything the crusher folded down comes back through 900 Hz, so the aliasing is inside the growl rather than on top of it',
@@ -191,7 +191,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Slot order',
+    group: 'Signal chain',
     name: 'filter, then crush',
     blurb:
       'The same two stages the other way round: the filter picks a band and the crusher folds *that* down, so the aliases land above the filter and nothing takes them off again — the pair to hear against the one before it',
@@ -207,7 +207,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Slot order',
+    group: 'Signal chain',
     name: 'fuzz into the comb',
     blurb:
       'Fuzz first, so the comb is given a wave that is already square and rings on its harmonics — a tuned string plucked by a distortion pedal',
@@ -223,7 +223,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Slot order',
+    group: 'Signal chain',
     name: 'comb into the fuzz',
     blurb:
       'The comb first, so what reaches the fuzz is a handful of loud resonant peaks — they intermodulate against each other in the clipper and come out as a chord nothing played',
@@ -239,7 +239,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Slot order',
+    group: 'Signal chain',
     name: 'chopped, then rung',
     blurb:
       'The stutter ahead of the comb, so every repeat arrives at the string as a fresh pluck and the ring restarts with it',
@@ -255,7 +255,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Slot order',
+    group: 'Signal chain',
     name: 'rung, then chopped',
     blurb:
       'The stutter after the comb, so what gets sliced and played backwards is the ring itself — the same two stages, and the repeats now cut across the decay instead of starting it',

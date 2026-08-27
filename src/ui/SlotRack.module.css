@@ -1,26 +1,112 @@
-/* The rack as a picture rather than six identical selects: a bend per box,
-   stacked in the order the signal walks them, with whatever didn't make the
-   cut drawn loose to the side. The rows of selects under it still do the
-   writing — this is only what makes reading them worth doing. */
-.diagram {
-  display: block;
-  width: 100%;
-  height: auto;
+/* The chain as a rack you can move rather than a picture of one: a row per
+   position in the order the signal walks them, dragged to reorder, with
+   whatever didn't make the cut on a shelf underneath. The selects below still
+   write the same six controls — they are the keyboard's way in, and the reason
+   this can be a drag and nothing else. */
+.rack {
   margin: 2px 0 8px;
 }
 
 .caption {
+  color: var(--fg4);
   font-size: var(--fs-xs);
-  fill: var(--fg4);
+  padding: 2px 2px 3px;
+}
+
+.slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* A row is a box on a wire: the gap between two of them is the wire, drawn by
+   the border that runs down the left of the numbers rather than by an SVG
+   line, so the whole rack is one flow that reflows with the panel. */
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border: 1px solid var(--border-quiet);
+  border-radius: 3px;
+  background: var(--bg2);
+  cursor: grab;
+  font-size: var(--fs-sm);
+}
+
+.slot:hover {
+  border-color: var(--accent);
 }
 
 .num {
+  color: var(--fg4);
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
+  min-width: 9px;
 }
 
-.label {
+.name {
+  color: var(--fg);
+}
+
+/* Nothing in this position, so there is nothing to pick up — but it is still
+   somewhere to drop. */
+.empty {
+  border-style: dashed;
+  cursor: default;
+}
+
+.empty .name {
+  color: var(--fg4);
+}
+
+/* In the chain and inaudible: mix at zero, or a second copy of a bend that
+   already ran earlier. */
+.quiet .name {
+  color: var(--fg3);
+}
+
+.held {
+  opacity: 0.45;
+}
+
+.target {
+  border-color: var(--accent);
+  border-style: solid;
+}
+
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 4px 6px;
+  border: 1px dashed var(--border-quiet);
+  border-radius: 3px;
+}
+
+.shelfLabel,
+.shelfEmpty {
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+}
+
+.loose {
+  padding: 2px 6px;
+  border: 1px dashed var(--border-quiet);
+  border-radius: 3px;
+  color: var(--fg3);
   font-size: var(--fs-sm);
+  cursor: grab;
+}
+
+.loose:hover {
+  border-color: var(--accent);
+  color: var(--fg);
 }
 
 /* The mixes under the six selects, fenced off by a rule: the rows above say

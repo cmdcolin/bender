@@ -47,7 +47,7 @@ renders it with the same layout the app uses.
   can blow up the output.
 - **The board ages while you play.** Heat builds off whatever you make it
   dissipate, dry joints drop a bend out of the path mid-note, and _Re-solder_
-  rewires the slot order on its own.
+  rewires the signal chain on its own.
 - **The sampler is the tape.** Drop an audio file anywhere on the page, or roll
   one off archive.org, and it plays at any speed either way round. Arm _Record_
   and the board lays its own output back onto the reel where the play head is
@@ -368,15 +368,21 @@ Seven for six slots, so one always sits out, and the slots are ordered. Each has
 a mix, and a mix at zero takes the stage out of the path rather than merely
 silencing it.
 
-### Slot order
+### Signal chain
 
-Which bend sits in which position, and therefore what order they run in. Fewer
-slots than bends, so one always sits out.
+The order the bends run in — six positions the sound walks top to bottom on its
+way from the mix bus to the pedals, one bend to a position. Drag a box to move
+it; drag the one riding off the board into a position to bring it in. Order is
+most of what a chain of effects sounds like: a crusher into a filter and a
+filter into a crusher are the same two stages and two different sounds. Seven
+bends for six positions, so one always sits out.
 
-The rack draws the chain as a picture and carries each bend's dry/wet under it —
-the order is only half of what the path is, since a stage in slot 2 with its mix
-at zero sits in the chain playing silent. Those seven faders are counted under
-the bends they belong to.
+The rack is the chain itself: a row per position, dragged to reorder, with the
+bend riding off the board on a shelf under it. The six selects below do the same
+writing for the keyboard, and each bend's dry/wet sits under those — the order
+is only half of what the path is, since a stage in slot 2 with its mix at zero
+sits in the chain playing silent. Those seven faders are counted under the bends
+they belong to.
 
 Named settings, one press each at the head of the panel — the stage goes back to
 stock and the setting is written over it, so the rows underneath say what it
@@ -404,9 +410,9 @@ became:
 <details>
 <summary>6 controls</summary>
 
-| control  | range                                           | what it does                     |
-| -------- | ----------------------------------------------- | -------------------------------- |
-| Slot 1–6 | —, ring, crush, dist, comb, glitch, filt, shift | Which bend runs in this position |
+| control      | range                                           | what it does                     |
+| ------------ | ----------------------------------------------- | -------------------------------- |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift | Which bend runs in this position |
 
 </details>
 

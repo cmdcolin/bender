@@ -29,7 +29,7 @@ export const BEND_SLOT_KEYS = [0, 1, 2, 3, 4, 5].map(
 
 export const BEND_GROUPS: Group[] = [
   {
-    name: 'Slot order',
+    name: 'Signal chain',
     place: 'Bends',
     // The picture drawn above these rows, in SlotRack: a box per slot in
     // signal order and the odd bend out riding loose beside them, so the
@@ -43,13 +43,13 @@ export const BEND_GROUPS: Group[] = [
     borrows: BENDS.map(b => b.mix),
     sliders: BEND_SLOT_KEYS.map((key, i) => ({
       key,
-      label: `Slot ${i + 1}`,
+      label: `Position ${i + 1}`,
       min: 0,
       max: BENDS.length,
       step: 1,
       unit: '',
       choices: ['—', ...BENDS.map(b => b.label)],
-      help: 'Which bend runs in this position. The signal walks the slots top to bottom, and a bend named twice runs only at its first slot.',
+      help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one — the rack above is the same six controls, and you can drag the boxes instead.',
     })),
   },
   // The two wear controls that act on the slots rather than on the whole board,

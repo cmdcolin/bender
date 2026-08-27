@@ -306,7 +306,7 @@ test("the README's diagrams are what the chain draws today — else `pnpm diagra
 // stage that is on the board and not in the path from going missing off the map.
 test('the rack heads the run and carries the bends in no slot', () => {
   const map = buildMap({ ...DEFAULT_CONTROLS, bendSlot0: 7 })
-  expect(box(map, 'rack')?.door).toBe('Slot order')
+  expect(box(map, 'rack')?.door).toBe('Signal chain')
   expect(hop(map, 'rack', 'Freq_shifter')).toBeTruthy()
   const ring = box(map, 'Ring_mod')!
   expect(ring.kind).toBe('chip')
@@ -445,7 +445,7 @@ test('an empty rack says so in the path, and every bend rides in it', () => {
   const map = buildMap(BOARDS.bare!)
   const rack = box(map, 'rack')!
   expect(rack.label).toBe('no bends patched')
-  expect(rack.door).toBe('Slot order')
+  expect(rack.door).toBe('Signal chain')
   // Every bend, and only the bends: the rack's own doors are chips too.
   const bends = new Set<string>(BENDS.map(b => b.group))
   expect(

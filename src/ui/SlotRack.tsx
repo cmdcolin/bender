@@ -1,178 +1,198 @@
+import { useState } from 'react'
+import type { Controls } from '../controls'
+import { engine } from '../engine/engine'
 import { useBoardValue } from './ControlsContext'
 import { BENDS, BEND_SLOT_KEYS, bendAt, sliderFor } from './controls'
 import { ControlSlider } from './Slider'
 import styles from './SlotRack.module.css'
 
-const BOX_X = 6
-const BOX_W = 128
-const BOX_H = 24
-const GAP = 8
-const STEP = BOX_H + GAP
-const TOP = 20
-const LOOSE_X = BOX_X + BOX_W + 24
-const LOOSE_W = 82
+/** Dropped on the shelf rather than on a position: the bend comes out of the
+    chain, which is the one move the six selects make you go looking for. */
+const OFF = -1
 
-const rowY = (i: number) => TOP + i * STEP
-const cy = (y: number) => y + BOX_H / 2
+const slotsOf = (c: Controls) => BEND_SLOT_KEYS.map(k => Math.round(c[k]))
 
-// Six slots, seven bends, drawn as the rack they are rather than as six
-// identical selects: a box per slot in the order the signal walks them, and
-// whichever bend didn't make the cut riding loose to the side. Read-only —
-// the selects underneath still do the writing — so the picture is only what
-// makes six rows headed 'Slot 1' through 'Slot 6' worth reading at a glance.
+// One gesture, one step in the walk: dragging a box moves one bend and shuffles
+// whatever it landed on, and ctrl+z puts the whole chain back rather than
+// unpicking it a position at a time.
+function writeSlots(next: number[]) {
+  const board = engine.controls.get()
+  engine.armStep()
+  engine.writeBoard({
+    ...board,
+    ...Object.fromEntries(BEND_SLOT_KEYS.map((k, i) => [k, next[i]!])),
+  })
+}
+
+// Insertion, not a swap. A chain is a list, and the move you mean when you drag
+// the filter above the crusher is "put it here and let the rest close up" —
+// swapping would move a second stage you never touched, which on a signal path
+// is two edits for one gesture.
+function move(slots: number[], from: number, to: number): number[] {
+  const next = [...slots]
+  const [taken] = next.splice(from, 1)
+  next.splice(to, 0, taken!)
+  return next
+}
+
 export function SlotRack() {
-  const raw = useBoardValue(c => BEND_SLOT_KEYS.map(k => c[k]).join(','))
+  const raw = useBoardValue(c => slotsOf(c).join(','))
   const slots = raw.split(',').map(Number)
   const mixRaw = useBoardValue(c => BENDS.map(b => c[b.mix]).join(','))
   const mixOf = mixRaw.split(',').map(Number)
+  // Which box is under the hand and which row it is over, so the rack shows
+  // where a drop would land while the hand is still moving. Not on the board:
+  // a drag that never finishes has to leave the chain exactly as it was.
+  const [held, setHeld] = useState<number | null>(null)
+  const [over, setOver] = useState<number | null>(null)
 
   const seen = new Set<number>()
-  const rows = slots.map(v => {
-    const id = Math.round(v)
+  const rows = slots.map((id, i) => {
     const bend = bendAt(id)
     const dupe = bend !== undefined && seen.has(id)
     if (bend !== undefined) seen.add(id)
-    return { bend, dupe, mix: bend ? mixOf[id - 1]! : 0 }
+    return { i, id, bend, dupe, mix: bend ? mixOf[id - 1]! : 0 }
   })
-  const loose = BENDS.filter((_, i) => !seen.has(i + 1))
+  const loose = BENDS.map((b, i) => ({ bend: b, id: i + 1 })).filter(
+    b => !seen.has(b.id),
+  )
 
-  const bottom = rowY(5) + BOX_H
-  const arrowY = bottom + 14
-  const height = arrowY + 16
+  const drop = (to: number) => {
+    const from = held
+    setHeld(null)
+    setOver(null)
+    if (from === null) return
+    if (from === OFF) return
+    if (to === OFF) {
+      const next = [...slots]
+      next[from] = 0
+      writeSlots(next)
+      return
+    }
+    if (from !== to) writeSlots(move(slots, from, to))
+  }
+
+  // A bend riding off the board, dragged into a position: it lands there and
+  // whatever was in that position is what rides loose now. Seven bends, six
+  // positions — bringing one in is always trading one out.
+  const dropLoose = (id: number, to: number) => {
+    setHeld(null)
+    setOver(null)
+    const next = [...slots]
+    next[to] = id
+    writeSlots(next)
+  }
 
   return (
-    <svg
-      className={styles.diagram}
-      viewBox={`0 0 ${LOOSE_X + LOOSE_W + 6} ${height}`}
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <text x={BOX_X} y={12} className={styles.caption}>
-        from the mix bus ↓
-      </text>
-
-      {rows.map((row, i) => {
-        const y = rowY(i)
-        const y0 = cy(y)
-        const off = row.bend === undefined
-        const quiet = off || row.dupe || row.mix === 0
-        const wire = quiet ? 'var(--fg4)' : 'var(--accent)'
-        const label = off ? '— empty —' : row.bend!.group
-        const title = off
-          ? `Slot ${i + 1} is empty — nothing runs here.`
-          : row.dupe
-            ? `${row.bend!.group} already sits earlier in the chain, so this slot does nothing — a bend only runs at its first slot.`
-            : row.mix === 0
-              ? `${row.bend!.group} — mix is at 0, so this stage sits in the chain but plays silent.`
-              : `${row.bend!.group}, slot ${i + 1} of the chain.`
-        return (
-          <g key={i} opacity={row.dupe ? 0.45 : 1}>
-            <title>{title}</title>
-            {i > 0 && (
-              <line
-                x1={BOX_X + BOX_W / 2}
-                y1={y - GAP}
-                x2={BOX_X + BOX_W / 2}
-                y2={y}
-                stroke="var(--fg4)"
-                strokeWidth={1.5}
-              />
-            )}
-            <rect
-              x={BOX_X}
-              y={y}
-              width={BOX_W}
-              height={BOX_H}
-              rx={4}
-              fill="none"
-              stroke={wire}
-              strokeDasharray={off || row.dupe ? '3 2' : undefined}
-            />
-            <text
-              x={BOX_X + 6}
-              y={y0 + 4}
-              className={styles.num}
-              fill="var(--fg4)"
+    <div className={styles.rack}>
+      <div className={styles.caption}>from the mix bus ↓</div>
+      <ol className={styles.slots}>
+        {rows.map(row => {
+          const off = row.bend === undefined
+          const quiet = off || row.dupe || row.mix === 0
+          const title = off
+            ? `Position ${row.i + 1} is empty — nothing runs here.`
+            : row.dupe
+              ? `${row.bend!.group} already sits earlier in the chain, so this position does nothing — a bend only runs at its first one.`
+              : row.mix === 0
+                ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
+                : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it to move it.`
+          return (
+            <li
+              key={row.i}
+              className={[
+                styles.slot,
+                off ? styles.empty : '',
+                quiet && !off ? styles.quiet : '',
+                over === row.i ? styles.target : '',
+                held === row.i ? styles.held : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={title}
+              draggable={!off}
+              onDragStart={() => setHeld(row.i)}
+              onDragEnd={() => {
+                setHeld(null)
+                setOver(null)
+              }}
+              onDragOver={e => {
+                e.preventDefault()
+                setOver(row.i)
+              }}
+              onDrop={e => {
+                e.preventDefault()
+                const id = Number(e.dataTransfer.getData('text/bend'))
+                if (id > 0) dropLoose(id, row.i)
+                else drop(row.i)
+              }}
             >
-              {i + 1}
-            </text>
-            <text
-              x={BOX_X + BOX_W / 2 + 6}
-              y={y0 + 4}
-              textAnchor="middle"
-              className={styles.label}
-              fill={off ? 'var(--fg4)' : quiet ? 'var(--fg3)' : 'var(--fg)'}
-            >
-              {label}
-            </text>
-          </g>
-        )
-      })}
+              <span className={styles.num}>{row.i + 1}</span>
+              <span className={styles.name}>
+                {off ? 'empty' : row.bend!.group}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+      <div className={styles.caption}>to the pedals →</div>
 
-      <path
-        d={`M ${BOX_X + BOX_W / 2} ${bottom} L ${BOX_X + BOX_W / 2} ${arrowY} M ${BOX_X + BOX_W / 2 - 3} ${arrowY - 4} L ${BOX_X + BOX_W / 2} ${arrowY} L ${BOX_X + BOX_W / 2 + 3} ${arrowY - 4}`}
-        stroke="var(--fg4)"
-        strokeWidth={1.5}
-        fill="none"
-      />
-      <text x={BOX_X} y={height - 2} className={styles.caption}>
-        to the pedals →
-      </text>
-
-      {loose.length > 0 && (
-        <>
-          <text x={LOOSE_X} y={12} className={styles.caption}>
-            off the board
-          </text>
-          {loose.map((bend, i) => {
-            const y = rowY(i)
-            return (
-              <g key={bend.group}>
-                <title>{`${bend.group} isn't soldered into a slot right now — click a slot's select below and pick it to bring it back.`}</title>
-                <rect
-                  x={LOOSE_X}
-                  y={y}
-                  width={LOOSE_W}
-                  height={BOX_H}
-                  rx={4}
-                  fill="none"
-                  stroke="var(--fg4)"
-                  strokeDasharray="3 2"
-                />
-                <text
-                  x={LOOSE_X + LOOSE_W / 2}
-                  y={cy(y) + 4}
-                  textAnchor="middle"
-                  className={styles.label}
-                  fill="var(--fg4)"
-                >
-                  {bend.group}
-                </text>
-              </g>
-            )
-          })}
-        </>
-      )}
-    </svg>
+      <div
+        className={
+          over === OFF ? `${styles.shelf} ${styles.target}` : styles.shelf
+        }
+        onDragOver={e => {
+          e.preventDefault()
+          setOver(OFF)
+        }}
+        onDrop={e => {
+          e.preventDefault()
+          drop(OFF)
+        }}
+      >
+        <span className={styles.shelfLabel}>off the board</span>
+        {loose.map(({ bend, id }) => (
+          <span
+            key={bend.group}
+            className={styles.loose}
+            title={`${bend.group} is in no position, so the signal never reaches it. Drag it onto one to bring it into the chain.`}
+            draggable
+            onDragStart={e => {
+              e.dataTransfer.setData('text/bend', String(id))
+              setHeld(OFF)
+            }}
+            onDragEnd={() => {
+              setHeld(null)
+              setOver(null)
+            }}
+          >
+            {bend.group}
+          </span>
+        ))}
+        {loose.length === 0 && (
+          <span className={styles.shelfEmpty}>everything is in the chain</span>
+        )}
+      </div>
+    </div>
   )
 }
 
-// The other half of the chain: a dry/wet per bend that is actually in a slot,
-// in the order the signal meets them. The selects above say what the path is,
-// and these say how much of the board goes down it — a stage in slot 2 at a mix
-// of zero is in the path and silent, which is the one thing the rack cannot
-// draw and the commonest reason a slot you just filled changed nothing.
+// The other half of the chain: a dry/wet per bend that is actually in a
+// position, in the order the signal meets them. The rack above says what the
+// path is, and these say how much of the board goes down it — a stage at a mix
+// of zero is in the chain and silent, which is the commonest reason a position
+// you just filled changed nothing.
 //
 // Each fader is called the bend it belongs to rather than *Mix*, the way the
 // desk calls six faders called *Level* by their machines. It is the same
 // control as the one on that bend's own panel, and only one panel is ever open.
 export function SlotMixes() {
-  const raw = useBoardValue(c => BEND_SLOT_KEYS.map(k => c[k]).join(','))
+  const raw = useBoardValue(c => slotsOf(c).join(','))
   const seen = new Set<number>()
   const rows = raw
     .split(',')
     .map(Number)
-    .flatMap(v => {
-      const id = Math.round(v)
+    .flatMap(id => {
       const bend = bendAt(id)
       if (!bend || seen.has(id)) return []
       seen.add(id)

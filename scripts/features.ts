@@ -45,8 +45,8 @@ const BLURBS: Record<string, string> = {
   Mic: 'A live microphone, and the one source that does not have to reach the mix. *Mic patch* is the whole of it: the wire can land on the chip’s supply rail instead, or the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier or a trigger line — so a shout browns the toy out or fires the kit rather than simply being loud.',
   'Mix bus':
     'The desk the six sources meet at, and the only place their balance against each other is a thing you can see. Every fader is drawn here as well as on its own machine’s panel, under the machine’s name, with a meter beside it reading what that channel is putting on the bus and the bus’s own meter under the lot. A fader says how far it is up, not whether anything is coming out — the FM chip is the reason: it boots at zero, it has no keyboard of its own, and turned up on a toy nothing is striking it is three quarters and silence. *Bus drive* is the summing amp: a wire at unity, and the one saturation ahead of the bends.',
-  'Slot order':
-    'Which bend sits in which position, and therefore what order they run in. Fewer slots than bends, so one always sits out.',
+  'Signal chain':
+    'The order the bends run in — six positions the sound walks top to bottom on its way from the mix bus to the pedals, one bend to a position. Drag a box to move it; drag the one riding off the board into a position to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds. Seven bends for six positions, so one always sits out.',
   Solder:
     'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
@@ -241,8 +241,10 @@ function grid(g: Group): string {
 are counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.\n`
   if (g.editor?.kind === 'slots')
-    return `\nThe rack draws the chain as a picture and carries each bend's
-dry/wet under it — the order is only half of what the path is, since a stage in
+    return `\nThe rack is the chain itself: a row per position, dragged to
+reorder, with the bend riding off the board on a shelf under it. The six
+selects below do the same writing for the keyboard, and each bend's
+dry/wet sits under those — the order is only half of what the path is, since a stage in
 slot 2 with its mix at zero sits in the chain playing silent. Those ${num(BENDS.length)} faders
 are counted under the bends they belong to.\n`
   if (g.editor?.kind !== 'drums') return ''
@@ -309,7 +311,7 @@ function build(): string {
   const sliders = GROUPS.flatMap(g => g.sliders)
 
   const out: string[] = []
-  const slots = GROUPS.find(g => g.name === 'Slot order')!.sliders.length
+  const slots = GROUPS.find(g => g.name === 'Signal chain')!.sliders.length
   const wires = GROUPS.find(g => g.name === 'Patch bay')!
   const dests = wires.sliders.find(s => s.label.endsWith('to'))!.choices!.length
 
@@ -362,7 +364,7 @@ renders it with the same layout the app uses.
   can blow up the output.
 - **The board ages while you play.** Heat builds off whatever you make it
   dissipate, dry joints drop a bend out of the path mid-note, and *Re-solder*
-  rewires the slot order on its own.
+  rewires the signal chain on its own.
 - **The sampler is the tape.** Drop an audio file anywhere on the page, or roll
   one off archive.org, and it plays at any speed either way round. Arm *Record*
   and the board lays its own output back onto the reel where the play head is
@@ -403,7 +405,7 @@ the board rather than joining it.
     out.push(`## ${place}\n`)
     if (place === 'Bends') {
       out.push(
-        `${cap(num(BENDS.length))} for ${num(GROUPS.find(g => g.name === 'Slot order')!.sliders.length)} slots, so one always sits out, and the slots are ordered. Each has a mix, and a mix at zero takes the stage out of the path rather than merely silencing it.\n`,
+        `${cap(num(BENDS.length))} for ${num(GROUPS.find(g => g.name === 'Signal chain')!.sliders.length)} slots, so one always sits out, and the slots are ordered. Each has a mix, and a mix at zero takes the stage out of the path rather than merely silencing it.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))

@@ -32,8 +32,10 @@ test('a rig is the whole of what the stage is doing', () => {
 // A rig that reaches outside its stage clears what its row-mates reached for
 // too, or a chain named for two stages arrives with a third one still wet.
 test('a rig takes the last rig off the board with it', () => {
-  const [chain] = rigsFor('Slot order')
-  const comb = rigsFor('Slot order').find(r => r.name === 'fuzz into the comb')!
+  const [chain] = rigsFor('Signal chain')
+  const comb = rigsFor('Signal chain').find(
+    r => r.name === 'fuzz into the comb',
+  )!
   const after = applyRig(chain!, applyRig(comb, mine()))
   expect(after.combMix).toBe(DEFAULT_CONTROLS.combMix)
   expect(after.distMix).toBe(DEFAULT_CONTROLS.distMix)

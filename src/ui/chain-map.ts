@@ -445,7 +445,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // caption to say what they are: with nothing in any slot, every bend on the
   // board is one of them.
   const capW = bends.length ? textWidth(OFF_BOARD, SMALL) + 6 : 0
-  doors.add('Slot order')
+  doors.add('Signal chain')
   // And the solder under those slots, which is the one thing on the board that
   // rewrites the drawing: a joint opens mid-note and takes its stage out of the
   // path, and the board swaps two of them behind your back. So it reads off the
@@ -457,11 +457,11 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const rack = node(
     'rack',
     'rack',
-    bends.length ? 'slot order' : 'no bends patched',
+    bends.length ? 'signal chain' : 'no bends patched',
     {
-      count: live ? touchedCount('Slot order', c) : 0,
-      open: o.open === 'Slot order',
-      door: 'Slot order',
+      count: live ? touchedCount('Signal chain', c) : 0,
+      open: o.open === 'Signal chain',
+      door: 'Signal chain',
       lead: solderW + PAD_X,
     },
   )
