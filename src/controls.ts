@@ -243,6 +243,8 @@ export const DEFAULT_CONTROLS = {
   bendSlot4: 4,
   bendSlot5: 5,
 
+  pedalOrder: 0,
+
   ringHz: 300,
   ringShape: 0,
   ringMix: 0,

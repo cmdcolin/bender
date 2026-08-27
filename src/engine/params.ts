@@ -231,6 +231,8 @@ export const PARAM_DEFS = [
   ['bendSlot4', 'step'],
   ['bendSlot5', 'step'],
 
+  ['pedalOrder', 'step'],
+
   ['ringHz', 'slew'],
   ['ringShape', 'step'],
   ['ringMix', 'slew'],

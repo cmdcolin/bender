@@ -1,4 +1,5 @@
 import type { ControlKey, Controls } from '../controls'
+import { PEDALS, pedalOrderAt } from '../pedals'
 import { bendAt, BENDS, sliderFor, touchedCount } from './controls'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg'
 
@@ -471,22 +472,35 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     path.push(stage(name, mixKey ? c[mixKey] > 0 : true))
   }
 
-  // Where the rack ends. Everything above this walks in the order you put it
-  // in; everything below is soldered down in the order it is drawn, and without
-  // something said between them the two runs are one run of identical boxes and
-  // the reorderable half of the board looks like the fixed half.
-  path.push(node('pedals', 'plain', 'pedals, in this fixed order'))
+  // Where the bends end and the board begins. Both runs are ordered and both are
+  // yours to order, but they are not the same thing — one is six sockets you put
+  // seven stages into, the other is four pedals that are all always there — and
+  // without a head on the second run the two are one column of identical boxes.
+  doors.add('Pedal board')
+  path.push(
+    node('board', 'rack', 'pedal board', {
+      open: o.open === 'Pedal board',
+      count: live ? touchedCount('Pedal board', c) : 0,
+      door: 'Pedal board',
+    }),
+  )
+  const active: Record<string, boolean> = {
+    Stompbox: c.stompMix > 0,
+    'Tape delay': c.dlyMix > 0,
+    'Delay pedal': c.echoLevel > 0,
+    'Spring verb': c.revMix > 0 || c.revDryCut > 0,
+  }
+  for (const i of pedalOrderAt(c.pedalOrder)) {
+    const name = PEDALS[i]!.group
+    path.push(stage(name, active[name]!))
+  }
 
-  for (const [name, active] of [
-    ['Stompbox', c.stompMix > 0],
-    ['Tape delay', c.dlyMix > 0],
-    ['Delay pedal', c.echoLevel > 0],
-    ['Spring verb', c.revMix > 0 || c.revDryCut > 0],
+  for (const [name, on] of [
     ['Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0],
     ['Tape machine', c.tapeMix > 0],
     ['Output', true],
   ] as const) {
-    path.push(stage(name, active))
+    path.push(stage(name, on))
   }
   path.push(node('out', 'plain', 'dc block → clip → limit'))
 

@@ -3,6 +3,7 @@ import type { Controls } from '../controls'
 import { engine } from '../engine/engine'
 import { useBoardValue, useMeterValue } from './ControlsContext'
 import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls'
+import { move } from './reorder'
 import styles from './SlotRack.module.css'
 
 /** Dropped on the shelf rather than on a position: the bend comes out of the
@@ -21,17 +22,6 @@ function writeSlots(next: number[]) {
     ...board,
     ...Object.fromEntries(BEND_SLOT_KEYS.map((k, i) => [k, next[i]!])),
   })
-}
-
-// Insertion, not a swap. A chain is a list, and the move you mean when you drag
-// the filter above the crusher is "put it here and let the rest close up" —
-// swapping would move a second stage you never touched, which on a signal path
-// is two edits for one gesture.
-function move(slots: number[], from: number, to: number): number[] {
-  const next = [...slots]
-  const [taken] = next.splice(from, 1)
-  next.splice(to, 0, taken!)
-  return next
 }
 
 export function SlotRack() {
@@ -242,9 +232,7 @@ export function SlotRack() {
           )
         })}
       </ol>
-      <div className={styles.caption}>
-        to the pedals, in their fixed order →
-      </div>
+      <div className={styles.caption}>to the pedal board →</div>
 
       <div
         className={

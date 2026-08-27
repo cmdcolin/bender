@@ -1,4 +1,5 @@
 import { IDX, MAX_SOURCES, N_TAPS, TAP_BUS, TAP_MIC } from '../engine/params'
+import { pedalOrderAt } from '../pedals'
 import { DEST, ModBus } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
 import { Thermal } from './thermal'
@@ -180,8 +181,9 @@ class DeskLoop {
 }
 
 // The full signal path in one place: sources sum (plus feedback return and
-// mic), reorderable bend slots, fixed pedals, brownout, then the always-on
-// safety tail: dc block → softclip → feedback tap → limiter.
+// mic), the bend slots, the pedal board — both in whatever order they are set
+// to — brownout, then the always-on safety tail: dc block → softclip →
+// feedback tap → limiter.
 export class Chain {
   private readonly ctx: Ctx
   private readonly fbRetL = new Float32Array(BLOCK)
@@ -458,7 +460,9 @@ export class Chain {
 
     this.runBends(io, p, n, cluster)
 
-    for (const s of this.pedals) {
+    for (const i of pedalOrderAt(p[IDX.pedalOrder]!)) {
+      const s = this.pedals[i]
+      if (!s) continue
       if (!s.when || s.when(p, ctx)) s.process(io, p, ctx)
     }
     for (const s of this.post) {

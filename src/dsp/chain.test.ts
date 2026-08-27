@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'
+import { PEDAL_ORDERS } from '../pedals'
 import { buildChain } from './build'
 import { makeIo, render, renderBender, rms, SR } from './testRender'
 
@@ -85,6 +86,33 @@ test('each machine runs on its own run line', () => {
   // Neither is the other: the kit on its own has no sustained tone in it, and
   // the tune on its own has no step of the pattern.
   expect(runLines(false, true)).not.toEqual(runLines(true, false))
+})
+
+// The whole point of ordering them: a fuzz into a tank is a wall with a room
+// behind it, and a tank into a fuzz is the room itself distorting. Same two
+// settings, and the board has to sound different.
+test('the pedal order is audible: dirt before the tank is not dirt after it', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0.6,
+    stompDrive: 40,
+    stompMix: 1,
+    revDecayS: 3,
+    revMix: 0.9,
+  }
+  const stompFirst = render({ ...look, pedalOrder: 0 }, 1)
+  const verbFirst = render({ ...look, pedalOrder: 18 }, 1)
+  expect([...PEDAL_ORDERS[18]!]).toEqual([3, 0, 1, 2])
+  expect(rms(stompFirst)).toBeGreaterThan(0.01)
+  expect(stompFirst).not.toEqual(verbFirst)
+})
+
+// An order the run does not touch is the run it always was: reordering two
+// pedals that are both out of the path cannot move a sample.
+test('reordering pedals nothing is going through changes nothing', () => {
+  const quiet: Partial<Controls> = { chipLevel: 0.6, stompMix: 0 }
+  expect(render({ ...quiet, pedalOrder: 0 }, 0.4)).toEqual(
+    render({ ...quiet, pedalOrder: 23 }, 0.4),
+  )
 })
 
 // The two Solder controls rewrite the path from inside the audio thread and

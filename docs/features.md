@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 215 knobs and switches in 30 groups, seven bends competing for six slots,
+ruin. 216 knobs and switches in 31 groups, seven bends competing for six slots,
 18 ROM tunes, 52 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -375,9 +375,10 @@ way from the mix bus to the pedals, one bend to a position. Drag a box to move
 it, or take it with the arrow keys; drag or press the one riding off the board
 to bring it in. Order is most of what a chain of effects sounds like: a crusher
 into a filter and a filter into a crusher are the same two stages and two
-different sounds. Seven bends for six positions, so one always sits out. This is
-the half of the path you arrange — the pedals downstream are four boxes soldered
-to the board in one order, and only their own mixes take them out of it.
+different sounds. Seven bends for six positions, so one always sits out. The
+pedals downstream have an order of their own, and it is not this: four boxes
+that are all always on the board, where these are six sockets seven bends
+compete for.
 
 The rack is the chain itself and the whole of the panel: a row per position,
 dragged or arrow-keyed to reorder, with whatever is in no position on a shelf
@@ -567,10 +568,34 @@ again and partials climb forever.
 
 ## Pedals
 
-Four boxes after the bends, and unlike the bends they do not move: the order
-below is the order the signal meets them, and nothing on the board changes it.
-What a pedal has instead is its own return — at zero it is on the board and out
-of the path.
+Four boxes after the bends, in an order of their own. Not the same kind of order
+as the rack upstream: there are no sockets and nothing sits out — all four are
+always on the board, and a pedal comes out of the path on its own mix rather
+than by leaving the run.
+
+### Pedal board
+
+What order the signal meets the four pedals in. It matters most where one of
+them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb
+into fuzz is the room itself distorting, and the delay before or after the dirt
+is the difference between repeats that decay clean and repeats that are
+re-fuzzed every lap. All four are always here — a pedal leaves the path on its
+own mix, not by leaving the order.
+
+The board is a rack like the bends', and worked the same way — drag a box or
+take it with the arrow keys. What it writes is the one control in the table
+below: 24 orders rather than a socket per pedal, so a roll, a link and a preset
+all reach it and none of them can leave it saying something that is not an
+order.
+
+<details>
+<summary>1 control</summary>
+
+| control | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | what it does                                   |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Order   | stomp → tape → echo → verb, stomp → tape → verb → echo, stomp → echo → tape → verb, stomp → echo → verb → tape, stomp → verb → tape → echo, stomp → verb → echo → tape, tape → stomp → echo → verb, tape → stomp → verb → echo, tape → echo → stomp → verb, tape → echo → verb → stomp, tape → verb → stomp → echo, tape → verb → echo → stomp, echo → stomp → tape → verb, echo → stomp → verb → tape, echo → tape → stomp → verb, echo → tape → verb → stomp, echo → verb → stomp → tape, echo → verb → tape → stomp, verb → stomp → tape → echo, verb → stomp → echo → tape, verb → tape → stomp → echo, verb → tape → echo → stomp, verb → echo → stomp → tape, verb → echo → tape → stomp | What order the signal meets the four pedals in |
+
+</details>
 
 ### Stompbox
 

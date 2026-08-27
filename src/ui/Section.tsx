@@ -9,6 +9,7 @@ import { FeedbackLoops } from './FeedbackLoops'
 import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
 import { PatchBay } from './PatchBay'
+import { PedalRack } from './PedalRack'
 import { SlotRack } from './SlotRack'
 import { TriggerPatch } from './TriggerPatch'
 import { TuneRoll } from './TuneRoll'
@@ -452,6 +453,7 @@ export function OpenGroup({
         {group.editor?.kind === 'mixer' && <Mixer />}
         {group.editor?.kind === 'feedback' && <FeedbackLoops />}
         {group.editor?.kind === 'slots' && <SlotRack />}
+        {group.editor?.kind === 'pedals' && <PedalRack />}
         {group.editor?.kind === 'patch' && <PatchBay />}
         {group.editor?.kind === 'trigger' && <TriggerPatch />}
         {group.editor?.kind === 'mic' && <MicPatch />}
@@ -548,10 +550,10 @@ export function PathHint() {
       </p>
       <p className={styles.hintPath}>
         the drawing is the path the sound takes: the sources sum onto the mix
-        bus, walk the <em>signal chain</em> — six positions you put the bends
-        into in whatever order you like, and the order is most of what they
-        sound like — and then the pedals, which are four boxes bolted down in
-        one order you cannot change, the tape and out
+        bus, walk the <em>signal chain</em> — six sockets seven bends compete
+        for, in whatever order you like, and the order is most of what they
+        sound like — then the <em>pedal board</em>, which is four boxes that are
+        always all there and also yours to order, the tape and out
       </p>
     </>
   )

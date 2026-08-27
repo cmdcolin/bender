@@ -84,6 +84,7 @@ export interface Group {
     | { kind: 'roll'; keys: ControlKey[] }
     | { kind: 'mixer' }
     | { kind: 'slots' }
+    | { kind: 'pedals' }
     | { kind: 'feedback' }
     | { kind: 'patch' }
     | { kind: 'trigger' }

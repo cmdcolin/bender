@@ -27,6 +27,7 @@ import { boardHash } from '../src/ui/share'
 import { DEFAULT_CONTROLS } from '../src/controls'
 import { ROMS } from '../src/dsp/stages/roms'
 import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums'
+import { PEDAL_ORDERS } from '../src/pedals'
 import pkg from '../package.json' with { type: 'json' }
 
 const BLURBS: Record<string, string> = {
@@ -46,7 +47,7 @@ const BLURBS: Record<string, string> = {
   'Mix bus':
     'The desk the six sources meet at, and the only place their balance against each other is a thing you can see. Every fader is drawn here as well as on its own machine’s panel, under the machine’s name, with a meter beside it reading what that channel is putting on the bus and the bus’s own meter under the lot. A fader says how far it is up, not whether anything is coming out — the FM chip is the reason: it boots at zero, it has no keyboard of its own, and turned up on a toy nothing is striking it is three quarters and silence. *Bus drive* is the summing amp: a wire at unity, and the one saturation ahead of the bends.',
   'Signal chain':
-    'The order the bends run in — six positions the sound walks top to bottom on its way from the mix bus to the pedals, one bend to a position. Drag a box to move it, or take it with the arrow keys; drag or press the one riding off the board to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds. Seven bends for six positions, so one always sits out. This is the half of the path you arrange — the pedals downstream are four boxes soldered to the board in one order, and only their own mixes take them out of it.',
+    'The order the bends run in — six positions the sound walks top to bottom on its way from the mix bus to the pedals, one bend to a position. Drag a box to move it, or take it with the arrow keys; drag or press the one riding off the board to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds. Seven bends for six positions, so one always sits out. The pedals downstream have an order of their own, and it is not this: four boxes that are all always on the board, where these are six sockets seven bends compete for.',
   Solder:
     'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it. Neither writes to a control — the settings stay exactly where you left them and the path moves underneath — so the rack on the Signal chain panel is where you watch it happen.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
@@ -61,6 +62,8 @@ const BLURBS: Record<string, string> = {
     'Catches slices and repeats them, sometimes reversed, sometimes transposed, sometimes held.',
   'Freq shifter':
     'Bode-style: every partial moves by the same number of Hz rather than the same ratio, so harmonic input comes out inharmonic. With feedback each lap shifts again and partials climb forever.',
+  'Pedal board':
+    'What order the signal meets the four pedals in. It matters most where one of them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb into fuzz is the room itself distorting, and the delay before or after the dirt is the difference between repeats that decay clean and repeats that are re-fuzzed every lap. All four are always here — a pedal leaves the path on its own mix, not by leaving the order.',
   Stompbox:
     'Each circuit is its own model rather than one circuit with a knob on it. *Screamer* clips inside the feedback loop so the dry note walks under it; *rat* clips to ground behind a slew-limited op-amp; *muff* is two clipping stages and a scooped tone stack; *germanium* is the lopsided one, riding its bias down on the signal; *octave* rectifies into a ringing transformer; *gate* is misbiased to the edge of cutoff.',
   'Tape delay':
@@ -252,6 +255,12 @@ what *Solder* is doing to the path while you play — a position the relay has
 moved says where the board is running it, and one whose joint has opened says it
 is out of the path altogether. Neither of those is a control, so this is the
 only place either of them can be seen.\n`
+  if (g.editor?.kind === 'pedals')
+    return `\nThe board is a rack like the bends', and worked the same way — drag a
+box or take it with the arrow keys. What it writes is the one control in the
+table below: ${num(PEDAL_ORDERS.length)} orders rather than a socket per pedal, so a roll, a link and a
+preset all reach it and none of them can leave it saying something that is not
+an order.\n`
   if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table
@@ -418,7 +427,7 @@ the board rather than joining it.
     // half starts.
     if (place === 'Pedals') {
       out.push(
-        `${cap(num(groups.length))} boxes after the bends, and unlike the bends they do not move: the order below is the order the signal meets them, and nothing on the board changes it. What a pedal has instead is its own return — at zero it is on the board and out of the path.\n`,
+        `${cap(num(groups.length - 1))} boxes after the bends, in an order of their own. Not the same kind of order as the rack upstream: there are no sockets and nothing sits out — all ${num(groups.length - 1)} are always on the board, and a pedal comes out of the path on its own mix rather than by leaving the run.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))

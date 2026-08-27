@@ -1,7 +1,34 @@
 import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo'
+import { PEDAL_ORDER_NAMES, PEDAL_ORDERS } from '../../pedals'
 import type { Group } from './types'
 
 export const PEDAL_GROUPS: Group[] = [
+  {
+    name: 'Pedal board',
+    place: 'Pedals',
+    // The rack drawn in PedalRack, and the whole of the panel: four boxes in
+    // the order the signal meets them, dragged or arrow-keyed to reorder.
+    //
+    // One control rather than four sockets, because the pedals are not the
+    // bends: all four are always on the board and the only question is their
+    // order, so what the board stores is which order — twenty-four of them, and
+    // none of them a state the board cannot be in. A pedal you want out of the
+    // path still comes out on its own mix, which is what a pedal's mix is.
+    editor: { kind: 'pedals' },
+    handled: ['pedalOrder'],
+    sliders: [
+      {
+        key: 'pedalOrder',
+        label: 'Order',
+        min: 0,
+        max: PEDAL_ORDERS.length - 1,
+        step: 1,
+        unit: '',
+        choices: PEDAL_ORDER_NAMES,
+        help: 'What order the signal meets the four pedals in. It matters most where one of them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb into fuzz is the room itself distorting. Unlike the bends upstream, all four are always on the board — a pedal comes out of the path on its own mix, not by leaving the order.',
+      },
+    ],
+  },
   {
     name: 'Stompbox',
     place: 'Pedals',

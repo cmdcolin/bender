@@ -45,7 +45,7 @@ export const BEND_GROUPS: Group[] = [
       step: 1,
       unit: '',
       choices: ['—', ...BENDS.map(b => b.label)],
-      help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one. Unlike the pedals downstream, which are bolted to the board in one order, these six are yours to arrange.',
+      help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one. The pedals downstream order themselves too, but they are not this: four boxes that are always all on the board, where these are six sockets seven bends compete for.',
     })),
   },
   // The two wear controls that act on the slots rather than on the whole board,
