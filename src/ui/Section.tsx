@@ -8,9 +8,8 @@ import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
 import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
+import { OrderRack } from './OrderRack'
 import { PatchBay } from './PatchBay'
-import { PedalRack } from './PedalRack'
-import { SlotRack } from './SlotRack'
 import { TriggerPatch } from './TriggerPatch'
 import { TuneRoll } from './TuneRoll'
 import {
@@ -460,8 +459,7 @@ export function OpenGroup({
         {group.editor?.kind === 'roll' && <TuneRoll />}
         {group.editor?.kind === 'mixer' && <Mixer />}
         {group.editor?.kind === 'feedback' && <FeedbackLoops />}
-        {group.editor?.kind === 'slots' && <SlotRack />}
-        {group.editor?.kind === 'pedals' && <PedalRack />}
+        {group.editor?.kind === 'order' && <OrderRack />}
         {group.editor?.kind === 'patch' && <PatchBay />}
         {group.editor?.kind === 'trigger' && <TriggerPatch />}
         {group.editor?.kind === 'mic' && <MicPatch />}
@@ -546,9 +544,9 @@ function ShelfPart({
 
 // Two lines, because there are two things to say once. The first is how the
 // drawing is worked; the second is what it is a drawing of, which is the one
-// thing nothing else on screen says — the panel that sets the order of the
-// bends can hardly be where you find out that the sound runs through them in
-// order, since you would have to know what it was to go and open it.
+// thing nothing else on screen says — Signal order sets the order of both runs
+// it names and can hardly be where you find out that the sound runs through
+// them in order, since you would have to know what it was to go and open it.
 export function PathHint() {
   return (
     <>
@@ -558,10 +556,9 @@ export function PathHint() {
       </p>
       <p className={styles.hintPath}>
         the drawing is the path the sound takes: the sources sum onto the mix
-        bus, walk the <em>signal chain</em> — six sockets seven bends compete
-        for, in whatever order you like, and the order is most of what they
-        sound like — then the <em>pedal board</em>, which is four boxes that are
-        always all there and also yours to order, the tape and out
+        bus, walk the six sockets seven bends compete for, then the four pedals
+        — both yours to order from <em>Signal order</em>, and the order is most
+        of what either sounds like — then the tape and out
       </p>
     </>
   )

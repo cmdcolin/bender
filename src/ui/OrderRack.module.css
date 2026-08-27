@@ -1,0 +1,8 @@
+.heading {
+  color: var(--fg3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 6px 2px 2px;
+}

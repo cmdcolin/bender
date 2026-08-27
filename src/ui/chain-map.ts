@@ -434,8 +434,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const path: MapNode[] = []
 
   // The rack itself, at the head of the run rather than on a shelf under the
-  // drawing: the signal walks into it before it walks the slots, so which bend
-  // sits in which slot is a door on the path like any other. Six slots and
+  // drawing: the signal walks into it before it walks the slots. Six slots and
   // seven bends, so one is always in none of them — those ride in the rack as
   // loose chips, each a door of its own, which is where a stage that is on the
   // board and not in the path belongs.
@@ -446,7 +445,6 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // caption to say what they are: with nothing in any slot, every bend on the
   // board is one of them.
   const capW = bends.length ? textWidth(OFF_BOARD, SMALL) + 6 : 0
-  doors.add('Signal chain')
   // And the solder under those slots, which is the one thing on the board that
   // rewrites the drawing: a joint opens mid-note and takes its stage out of the
   // path, and the board swaps two of them behind your back. So it reads off the
@@ -455,16 +453,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   doors.add('Solder')
   for (const b of loose) doors.add(b.group)
   const solderW = textWidth(SOLDER, SMALL) + CHIP_PAD * 2
+  // A box like any other on the path, but not a door onto one: which bend runs
+  // where is Signal order's to open, off the foot of the drawing, the same way
+  // Wear opens what the board's ageing is doing rather than any one stage.
   const rack = node(
     'rack',
     'rack',
     bends.length ? 'signal chain' : 'no bends patched',
-    {
-      count: live ? touchedCount('Signal chain', c) : 0,
-      open: o.open === 'Signal chain',
-      door: 'Signal chain',
-      lead: solderW + PAD_X,
-    },
+    { lead: solderW + PAD_X },
   )
   path.push(rack)
   for (const name of bends) {
@@ -472,18 +468,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     path.push(stage(name, mixKey ? c[mixKey] > 0 : true))
   }
 
-  // Where the bends end and the board begins. Both runs are ordered and both are
-  // yours to order, but they are not the same thing — one is six sockets you put
-  // seven stages into, the other is four pedals that are all always there — and
-  // without a head on the second run the two are one column of identical boxes.
-  doors.add('Pedal board')
-  path.push(
-    node('board', 'rack', 'pedal board', {
-      open: o.open === 'Pedal board',
-      count: live ? touchedCount('Pedal board', c) : 0,
-      door: 'Pedal board',
-    }),
-  )
+  // Where the bends end and the pedals begin — no head on the second run, since
+  // nothing here is a door any more: both runs are Signal order's, off the foot
+  // of the drawing, and the four pedal boxes need no header to say they are the
+  // board's rather than the rack's.
   const active: Record<string, boolean> = {
     Stompbox: c.stompMix > 0,
     'Tape delay': c.dlyMix > 0,
@@ -510,11 +498,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const bus = stage('Feedback bus', fbUp)
 
   // The fittings the path runs past rather than through: the bay, whose wires
-  // fly down the outside of the rack, the pad you push one with, and the wear
-  // that covers the board rather than landing on any one stage. They sit at the
-  // foot of the drawing, under the bus, because that is where everything that
-  // goes round the path rather than along it already is — and they stay there
-  // with nothing patched, greyed, for the reason the bus does.
+  // fly down the outside of the rack, the pad you push one with, the wear that
+  // covers the board rather than landing on any one stage, and which order the
+  // bends and the pedals run in — a setting about the two runs together rather
+  // than about a position in either. They sit at the foot of the drawing, under
+  // the bus, because that is where everything that goes round the path rather
+  // than along it already is — and they stay there with nothing patched, greyed,
+  // for the reason the bus does.
   const patched = ([0, 1, 2, 3] as const).filter(
     i => Math.round(c[`mod${i}Src`]) > 0 && c[`mod${i}Depth`] !== 0,
   )
@@ -527,16 +517,16 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   )
   // Heat, the burst rate every fault on the board rolls against, and the loop
   // wired to its own supply: nothing here is about one stage, so none of it has
-  // a box to hang off. What is about the slots is the rack's, and says so
-  // there.
+  // a box to hang off.
   const wear = stage(
     'Wear',
     c.heatAmt > 0 || c.faultCluster > 0 || c.couple > 0,
   )
+  const order = stage('Signal order', touchedCount('Signal order', c) > 0)
   // Pad then bay, left to right, because that is the way the one wire between
   // them runs: the pad's two axes reach the board only through the bay. Wear
-  // touches neither, so it stands clear on the end.
-  const foot = [pad, bay, wear]
+  // and Signal order touch neither, so they stand clear on the end.
+  const foot = [pad, bay, wear, order]
 
   // How wide a box has to be to hold what is written on it. The count column is
   // held open whether or not anything is off stock yet: it is a button, and a
@@ -566,6 +556,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     Math.max(
       sum(chips) + INST_GAP * 2 + FRAME_PAD * 2,
       sum(lines) + INST_GAP * (lines.length - 1),
+      sum(foot) + INST_GAP * (foot.length - 1),
       cols *
         Math.max(
           MIN_W,
@@ -1180,7 +1171,7 @@ function collectTaps(
         slots, and the box a wire onto one has to come in through */
     loosePart: Map<string, MapNode>
     rack: MapNode
-    /** pad, bay and wear, packed side by side with no gutter of their own — a
+    /** pad, bay, wear and Signal order, packed side by side with no gutter of their own — a
         wire landing on one of them needs the whole row's outer edge to clear,
         not just the box it lands on, or its label draws over a neighbour. */
     foot: MapNode[]

@@ -7,6 +7,7 @@ import { BEND_GROUPS } from './bends'
 import { FEEDBACK_GROUPS } from './feedback'
 import { MASTER_GROUPS } from './master'
 import { MIX_GROUPS } from './mix'
+import { ORDER_GROUPS } from './order'
 import { PATCH_GROUPS } from './patch'
 import { PEDAL_GROUPS } from './pedals'
 import { SOURCE_GROUPS } from './sources'
@@ -33,6 +34,7 @@ export const GROUPS: Group[] = [
   ...FEEDBACK_GROUPS,
   ...TAPE_GROUPS,
   ...MASTER_GROUPS,
+  ...ORDER_GROUPS,
 ]
 
 export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)

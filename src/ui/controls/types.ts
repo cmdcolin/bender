@@ -83,8 +83,7 @@ export interface Group {
     | { kind: 'drums'; keys: ControlKey[] }
     | { kind: 'roll'; keys: ControlKey[] }
     | { kind: 'mixer' }
-    | { kind: 'slots' }
-    | { kind: 'pedals' }
+    | { kind: 'order' }
     | { kind: 'feedback' }
     | { kind: 'patch' }
     | { kind: 'trigger' }
@@ -118,4 +117,10 @@ export interface Group {
       instrument and what you can do to it with a knife is one press away. A
       heading holding something you have moved opens anyway. */
   folded?: string[]
+  /** What a rig under this group's name puts back before it writes, where
+      that's narrower than every control the group draws. A rig demonstrating
+      two bends in order has no business resetting a pedal order it never
+      mentions, so the six under `Signal order` clear only the slots — the
+      group's own reset and roll still reach everything the door draws. */
+  clearScope?: readonly ControlKey[]
 }

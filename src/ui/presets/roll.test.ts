@@ -272,7 +272,7 @@ test('a roll you pointed at lands somewhere you were not', () => {
 // The rack borrows all seven dry/wets, so without thinning its own dice hand
 // back six bends half there and none of them the thing you are hearing.
 test('the slot rack rolls a chain you can pick apart', () => {
-  const rack = GROUPS.find(g => g.name === 'Signal chain')!
+  const rack = GROUPS.find(g => g.name === 'Signal order')!
   const rand = mulberry32(9)
   for (let i = 0; i < 40; i++) {
     const rolled = rollGroup(rack, DEFAULT_CONTROLS, rand)

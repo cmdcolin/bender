@@ -4,22 +4,16 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { PEDALS, PEDAL_ORDERS, pedalOrderAt } from '../pedals'
-import { GROUPS } from './controls'
-import { OpenGroup } from './Section'
+import { PedalRack } from './PedalRack'
 import './testDom'
 
 // The pedal board: four boxes in the order the signal meets them, dragged or
 // arrow-keyed like the bend rack upstream. What it writes is one control naming
 // one of the orders, so there is no arrangement of it that is not an order.
+// PedalRack needs no group to render — the merged panel-level suppression
+// check (no dropdown under either rack) lives in slots.test.tsx.
 
-const board = () => {
-  const g = GROUPS.find(g => g.name === 'Pedal board')
-  if (!g) throw new Error('no Pedal board')
-  return g
-}
-
-const openBoard = () =>
-  render(<OpenGroup group={board()} onClose={() => {}} seconds={0} />)
+const openBoard = () => render(<PedalRack />)
 
 const rowNames = () =>
   screen
@@ -81,12 +75,4 @@ test('a pedal at either end stays where it is', () => {
   fireEvent.keyDown(rows[0]!, { key: 'ArrowUp' })
   fireEvent.keyDown(rows[3]!, { key: 'ArrowDown' })
   expect(engine.controls.get().pedalOrder).toBe(0)
-})
-
-// One control, drawn by the rack — the panel does not put a twenty-four-way
-// dropdown under it as well.
-test('the panel draws no order dropdown', () => {
-  engine.controls.set({ ...DEFAULT_CONTROLS })
-  openBoard()
-  expect(screen.queryAllByRole('slider', { name: 'Order' })).toHaveLength(0)
 })

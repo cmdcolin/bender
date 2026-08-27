@@ -16,7 +16,7 @@
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { format, resolveConfig } from 'prettier'
-import { BENDS } from '../src/ui/controls/bends'
+import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends'
 import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls'
 import type { Group, SliderDef } from '../src/ui/controls/types'
 import { STAGE_ORDER } from '../src/ui/controls/types'
@@ -46,10 +46,8 @@ const BLURBS: Record<string, string> = {
   Mic: 'A live microphone, and the one source that does not have to reach the mix. *Mic patch* is the whole of it: the wire can land on the chip’s supply rail instead, or the oscillator’s FM input, the delay’s feedback, the ring modulator’s carrier or a trigger line — so a shout browns the toy out or fires the kit rather than simply being loud.',
   'Mix bus':
     'The desk the six sources meet at, and the only place their balance against each other is a thing you can see. Every fader is drawn here as well as on its own machine’s panel, under the machine’s name, with a meter beside it reading what that channel is putting on the bus and the bus’s own meter under the lot. A fader says how far it is up, not whether anything is coming out — the FM chip is the reason: it boots at zero, it has no keyboard of its own, and turned up on a toy nothing is striking it is three quarters and silence. *Bus drive* is the summing amp: a wire at unity, and the one saturation ahead of the bends.',
-  'Signal chain':
-    'The order the bends run in — six positions the sound walks top to bottom on its way from the mix bus to the pedals, one bend to a position. Drag a box to move it, or take it with the arrow keys; drag or press the one riding off the board to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds. Seven bends for six positions, so one always sits out. The pedals downstream have an order of their own, and it is not this: four boxes that are all always on the board, where these are six sockets seven bends compete for.',
   Solder:
-    'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it. Neither writes to a control — the settings stay exactly where you left them and the path moves underneath — so the rack on the Signal chain panel is where you watch it happen.',
+    'What the slots are held in by. *Dry joints* drops the bend on a slot out of the path mid-note — a click on the way out, another on the way back, and whatever it was ringing left mid-ring. *Re-solder* swaps two slots outright while you play, or moves the feedback return to a different pin, so the order changes with nobody’s hand on it. Neither writes to a control — the settings stay exactly where you left them and the path moves underneath — so the rack on the Signal order panel is where you watch it happen.',
   'Ring mod': 'Amplitude modulation by a carrier, sine or square.',
   Crusher:
     'Bit depth and sample rate, both down far enough to fall apart, with jitter on the rate.',
@@ -62,8 +60,8 @@ const BLURBS: Record<string, string> = {
     'Catches slices and repeats them, sometimes reversed, sometimes transposed, sometimes held.',
   'Freq shifter':
     'Bode-style: every partial moves by the same number of Hz rather than the same ratio, so harmonic input comes out inharmonic. With feedback each lap shifts again and partials climb forever.',
-  'Pedal board':
-    'What order the signal meets the four pedals in. It matters most where one of them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb into fuzz is the room itself distorting, and the delay before or after the dirt is the difference between repeats that decay clean and repeats that are re-fuzzed every lap. All four are always here — a pedal leaves the path on its own mix, not by leaving the order.',
+  'Signal order':
+    'One door for both runs that are yours to order — the six positions the bends compete for, on their way from the mix bus to the pedals, and the four pedals waiting downstream of them. Two sections, drawn as two racks: *onboard effects* first, then *pedals*. Drag a box to move it, or take it with the arrow keys; drag or press a bend riding off the board, in the first section, to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds, and fuzz into a reverb is a wall with a room behind it where a reverb into fuzz is the room itself distorting. Seven bends for six positions, so one always sits out; the four pedals never do — a pedal leaves the path on its own mix instead.',
   Stompbox:
     'Each circuit is its own model rather than one circuit with a knob on it. *Screamer* clips inside the feedback loop so the dry note walks under it; *rat* clips to ground behind a slew-limited op-amp; *muff* is two clipping stages and a scooped tone stack; *germanium* is the lopsided one, riding its bias down on the signal; *octave* rectifies into a ringing transformer; *gate* is misbiased to the edge of cutoff.',
   'Tape delay':
@@ -243,24 +241,20 @@ function grid(g: Group): string {
     return `\nThe desk is a widget rather than a row of sliders, and its ${num(CHANNELS.length)} faders
 are counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.\n`
-  if (g.editor?.kind === 'slots')
-    return `\nThe rack is the chain itself and the whole of the panel: a row per
-position, dragged or arrow-keyed to reorder, with whatever is in no position on
-a shelf under it. The ${num(g.sliders.length)} controls in the table below are the ones the rack
-writes — it draws them, so the panel does not draw them a second time as
-dropdowns. Order is only half of what the path is: a bend can sit in a position
-and still be inaudible, either because its own dry/wet is at zero or because it
-already ran higher up, and the row it is on says which. The rows also read back
-what *Solder* is doing to the path while you play — a position the relay has
-moved says where the board is running it, and one whose joint has opened says it
-is out of the path altogether. Neither of those is a control, so this is the
-only place either of them can be seen.\n`
-  if (g.editor?.kind === 'pedals')
-    return `\nThe board is a rack like the bends', and worked the same way — drag a
-box or take it with the arrow keys. What it writes is the one control in the
-table below: ${num(PEDAL_ORDERS.length)} orders rather than a socket per pedal, so a roll, a link and a
-preset all reach it and none of them can leave it saying something that is not
-an order.\n`
+  if (g.editor?.kind === 'order')
+    return `\nTwo racks, not a row of sliders: the ${num(BEND_SLOT_KEYS.length)} bend-slot controls under
+*onboard effects*, and the one order control under *pedals* — ${num(PEDAL_ORDERS.length)} orders rather
+than a socket per pedal, so a roll, a link and a preset all reach it and none
+of them can leave it saying something that is not an order. Both racks draw
+their own controls, so the panel does not draw either a second time as
+dropdowns. Order is only half of what the onboard-effects run is: a bend can
+sit in a position and still be inaudible, either because its own dry/wet is at
+zero or because it already ran higher up, and the row it is on says which. The
+rows also read back what *Solder* is doing to the path while you play — a
+position the relay has moved says where the board is running it, and one whose
+joint has opened says it is out of the path altogether. Neither of those is a
+control, so this is the only place either of them can be seen. The pedal rows
+have no equivalent to read back: all four are always on the board.\n`
   if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table
@@ -325,7 +319,7 @@ function build(): string {
   const sliders = GROUPS.flatMap(g => g.sliders)
 
   const out: string[] = []
-  const slots = GROUPS.find(g => g.name === 'Signal chain')!.sliders.length
+  const slots = BEND_SLOT_KEYS.length
   const wires = GROUPS.find(g => g.name === 'Patch bay')!
   const dests = wires.sliders.find(s => s.label.endsWith('to'))!.choices!.length
 
@@ -419,7 +413,7 @@ the board rather than joining it.
     out.push(`## ${place}\n`)
     if (place === 'Bends') {
       out.push(
-        `${cap(num(BENDS.length))} for ${num(GROUPS.find(g => g.name === 'Signal chain')!.sliders.length)} slots, so one always sits out, and the slots are ordered. Each has a mix, and a mix at zero takes the stage out of the path rather than merely silencing it.\n`,
+        `${cap(num(BENDS.length))} for ${num(slots)} slots, so one always sits out, and the slots are ordered. Each has a mix, and a mix at zero takes the stage out of the path rather than merely silencing it.\n`,
       )
     }
     // The bends are a rack and the pedals are a board, and every drawing of the
@@ -427,7 +421,7 @@ the board rather than joining it.
     // half starts.
     if (place === 'Pedals') {
       out.push(
-        `${cap(num(groups.length - 1))} boxes after the bends, in an order of their own. Not the same kind of order as the rack upstream: there are no sockets and nothing sits out — all ${num(groups.length - 1)} are always on the board, and a pedal comes out of the path on its own mix rather than by leaving the run.\n`,
+        `${cap(num(groups.length))} boxes after the bends, in an order of their own. Not the same kind of order as the rack upstream: there are no sockets and nothing sits out — all ${num(groups.length)} are always on the board, and a pedal comes out of the path on its own mix rather than by leaving the run.\n`,
       )
     }
     for (const g of groups) out.push(groupSection(g))

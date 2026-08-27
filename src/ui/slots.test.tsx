@@ -6,21 +6,21 @@ import { engine } from '../engine/engine'
 import { BENDS, bendAt, GROUPS, groupKeys } from './controls'
 import { applyRig, rigsFor } from './presets'
 import { OpenGroup } from './Section'
+import { SlotRack } from './SlotRack'
 import './testDom'
 
-// The rack, which is the whole of the Signal chain panel: a row per position,
-// dragged or arrow-keyed to reorder, with whatever is in no position on a shelf
-// under it. A bend can be in a position and still inaudible, and the row says
-// which way rather than a fader underneath.
+// The rack, drawn on its own under most tests here — SlotRack needs no group
+// to render, and the merged Signal order panel would add the pedal rack's own
+// rows to every row index below. The panel-level tests at the bottom open the
+// real group, to check what it does with both racks in it.
 
 const rack = () => {
-  const g = GROUPS.find(g => g.name === 'Signal chain')
-  if (!g) throw new Error('no Signal chain')
+  const g = GROUPS.find(g => g.name === 'Signal order')
+  if (!g) throw new Error('no Signal order')
   return g
 }
 
-const openRack = () =>
-  render(<OpenGroup group={rack()} onClose={() => {}} seconds={0} />)
+const openRack = () => render(<SlotRack />)
 
 // The one thing the row of dry/wet faders under the rack was carrying: a stage
 // can sit in the path and be inaudible, and which of the two ways it is doing
@@ -36,7 +36,7 @@ test('a position in the chain but inaudible says which way', () => {
 // What a chain setting is for: press it and the rack is that chain and nothing
 // else — two stages in the order it names, the other four slots empty.
 test('a chain setting empties the slots it does not name', () => {
-  const chain = rigsFor('Signal chain').find(
+  const chain = rigsFor('Signal order').find(
     r => r.name === 'filter, then crush',
   )!
   const after = applyRig(chain, { ...DEFAULT_CONTROLS })
@@ -130,11 +130,13 @@ test('a loose bend can be pressed into the first empty position', () => {
 // The six dropdowns the rack was drawn over. They are still the controls a
 // roll, a rig and the URL all go through — the panel just stopped drawing a
 // second way to turn them.
-test('the panel draws no position dropdowns', () => {
+test('the panel draws no position or order dropdowns', () => {
   engine.controls.set({ ...DEFAULT_CONTROLS })
-  openRack()
+  render(<OpenGroup group={rack()} onClose={() => {}} seconds={0} />)
   expect(screen.queryAllByRole('slider', { name: /^Position/ })).toHaveLength(0)
+  expect(screen.queryAllByRole('slider', { name: 'Order' })).toHaveLength(0)
   expect(groupKeys(rack())).toContain('bendSlot0')
+  expect(groupKeys(rack())).toContain('pedalOrder')
 })
 
 // What Solder does, which is the one thing about the chain that no control on

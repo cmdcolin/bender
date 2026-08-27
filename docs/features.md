@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 216 knobs and switches in 31 groups, seven bends competing for six slots,
+ruin. 216 knobs and switches in 30 groups, seven bends competing for six slots,
 18 ROM tunes, 52 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -368,62 +368,6 @@ Seven for six slots, so one always sits out, and the slots are ordered. Each has
 a mix, and a mix at zero takes the stage out of the path rather than merely
 silencing it.
 
-### Signal chain
-
-The order the bends run in — six positions the sound walks top to bottom on its
-way from the mix bus to the pedals, one bend to a position. Drag a box to move
-it, or take it with the arrow keys; drag or press the one riding off the board
-to bring it in. Order is most of what a chain of effects sounds like: a crusher
-into a filter and a filter into a crusher are the same two stages and two
-different sounds. Seven bends for six positions, so one always sits out. The
-pedals downstream have an order of their own, and it is not this: four boxes
-that are all always on the board, where these are six sockets seven bends
-compete for.
-
-The rack is the chain itself and the whole of the panel: a row per position,
-dragged or arrow-keyed to reorder, with whatever is in no position on a shelf
-under it. The six controls in the table below are the ones the rack writes — it
-draws them, so the panel does not draw them a second time as dropdowns. Order is
-only half of what the path is: a bend can sit in a position and still be
-inaudible, either because its own dry/wet is at zero or because it already ran
-higher up, and the row it is on says which. The rows also read back what
-_Solder_ is doing to the path while you play — a position the relay has moved
-says where the board is running it, and one whose joint has opened says it is
-out of the path altogether. Neither of those is a control, so this is the only
-place either of them can be seen.
-
-Named settings, one press each at the head of the panel — the stage goes back to
-stock and the setting is written over it, so the rows underneath say what it
-became:
-
-- **crush, then filter**: A five-bit decimator with the filter after it —
-  everything the crusher folded down comes back through 900 Hz, so the aliasing
-  is inside the growl rather than on top of it
-- **filter, then crush**: The same two stages the other way round: the filter
-  picks a band and the crusher folds _that_ down, so the aliases land above the
-  filter and nothing takes them off again — the pair to hear against the one
-  before it
-- **fuzz into the comb**: Fuzz first, so the comb is given a wave that is
-  already square and rings on its harmonics — a tuned string plucked by a
-  distortion pedal
-- **comb into the fuzz**: The comb first, so what reaches the fuzz is a handful
-  of loud resonant peaks — they intermodulate against each other in the clipper
-  and come out as a chord nothing played
-- **chopped, then rung**: The stutter ahead of the comb, so every repeat arrives
-  at the string as a fresh pluck and the ring restarts with it
-- **rung, then chopped**: The stutter after the comb, so what gets sliced and
-  played backwards is the ring itself — the same two stages, and the repeats now
-  cut across the decay instead of starting it
-
-<details>
-<summary>6 controls</summary>
-
-| control      | range                                           | what it does                     |
-| ------------ | ----------------------------------------------- | -------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift | Which bend runs in this position |
-
-</details>
-
 ### Solder
 
 What the slots are held in by. _Dry joints_ drops the bend on a slot out of the
@@ -432,7 +376,7 @@ was ringing left mid-ring. _Re-solder_ swaps two slots outright while you play,
 or moves the feedback return to a different pin, so the order changes with
 nobody’s hand on it. Neither writes to a control — the settings stay exactly
 where you left them and the path moves underneath — so the rack on the Signal
-chain panel is where you watch it happen.
+order panel is where you watch it happen.
 
 <details>
 <summary>2 controls</summary>
@@ -572,30 +516,6 @@ Four boxes after the bends, in an order of their own. Not the same kind of order
 as the rack upstream: there are no sockets and nothing sits out — all four are
 always on the board, and a pedal comes out of the path on its own mix rather
 than by leaving the run.
-
-### Pedal board
-
-What order the signal meets the four pedals in. It matters most where one of
-them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb
-into fuzz is the room itself distorting, and the delay before or after the dirt
-is the difference between repeats that decay clean and repeats that are
-re-fuzzed every lap. All four are always here — a pedal leaves the path on its
-own mix, not by leaving the order.
-
-The board is a rack like the bends', and worked the same way — drag a box or
-take it with the arrow keys. What it writes is the one control in the table
-below: 24 orders rather than a socket per pedal, so a roll, a link and a preset
-all reach it and none of them can leave it saying something that is not an
-order.
-
-<details>
-<summary>1 control</summary>
-
-| control | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | what it does                                   |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Order   | stomp → tape → echo → verb, stomp → tape → verb → echo, stomp → echo → tape → verb, stomp → echo → verb → tape, stomp → verb → tape → echo, stomp → verb → echo → tape, tape → stomp → echo → verb, tape → stomp → verb → echo, tape → echo → stomp → verb, tape → echo → verb → stomp, tape → verb → stomp → echo, tape → verb → echo → stomp, echo → stomp → tape → verb, echo → stomp → verb → tape, echo → tape → stomp → verb, echo → tape → verb → stomp, echo → verb → stomp → tape, echo → verb → tape → stomp, verb → stomp → tape → echo, verb → stomp → echo → tape, verb → tape → stomp → echo, verb → tape → echo → stomp, verb → echo → stomp → tape, verb → echo → tape → stomp | What order the signal meets the four pedals in |
-
-</details>
 
 ### Stompbox
 
@@ -906,6 +826,66 @@ much the brightness bus feeds back into the supply.
 | Heat             | off to full | How far the board’s own temperature drags its thresholds |
 | Fault clustering | off to full | Whether faults arrive at a flat rate or in bursts        |
 | Cross-coupling   | off to full | Wires the loop’s brightness against its supply           |
+
+</details>
+
+### Signal order
+
+One door for both runs that are yours to order — the six positions the bends
+compete for, on their way from the mix bus to the pedals, and the four pedals
+waiting downstream of them. Two sections, drawn as two racks: _onboard effects_
+first, then _pedals_. Drag a box to move it, or take it with the arrow keys;
+drag or press a bend riding off the board, in the first section, to bring it in.
+Order is most of what a chain of effects sounds like: a crusher into a filter
+and a filter into a crusher are the same two stages and two different sounds,
+and fuzz into a reverb is a wall with a room behind it where a reverb into fuzz
+is the room itself distorting. Seven bends for six positions, so one always sits
+out; the four pedals never do — a pedal leaves the path on its own mix instead.
+
+Two racks, not a row of sliders: the six bend-slot controls under _onboard
+effects_, and the one order control under _pedals_ — 24 orders rather than a
+socket per pedal, so a roll, a link and a preset all reach it and none of them
+can leave it saying something that is not an order. Both racks draw their own
+controls, so the panel does not draw either a second time as dropdowns. Order is
+only half of what the onboard-effects run is: a bend can sit in a position and
+still be inaudible, either because its own dry/wet is at zero or because it
+already ran higher up, and the row it is on says which. The rows also read back
+what _Solder_ is doing to the path while you play — a position the relay has
+moved says where the board is running it, and one whose joint has opened says it
+is out of the path altogether. Neither of those is a control, so this is the
+only place either of them can be seen. The pedal rows have no equivalent to read
+back: all four are always on the board.
+
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
+
+- **crush, then filter**: A five-bit decimator with the filter after it —
+  everything the crusher folded down comes back through 900 Hz, so the aliasing
+  is inside the growl rather than on top of it
+- **filter, then crush**: The same two stages the other way round: the filter
+  picks a band and the crusher folds _that_ down, so the aliases land above the
+  filter and nothing takes them off again — the pair to hear against the one
+  before it
+- **fuzz into the comb**: Fuzz first, so the comb is given a wave that is
+  already square and rings on its harmonics — a tuned string plucked by a
+  distortion pedal
+- **comb into the fuzz**: The comb first, so what reaches the fuzz is a handful
+  of loud resonant peaks — they intermodulate against each other in the clipper
+  and come out as a chord nothing played
+- **chopped, then rung**: The stutter ahead of the comb, so every repeat arrives
+  at the string as a fresh pluck and the ring restarts with it
+- **rung, then chopped**: The stutter after the comb, so what gets sliced and
+  played backwards is the ring itself — the same two stages, and the repeats now
+  cut across the decay instead of starting it
+
+<details>
+<summary>7 controls</summary>
+
+| control      | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | what it does                                   |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Which bend runs in this position               |
+| Order        | stomp → tape → echo → verb, stomp → tape → verb → echo, stomp → echo → tape → verb, stomp → echo → verb → tape, stomp → verb → tape → echo, stomp → verb → echo → tape, tape → stomp → echo → verb, tape → stomp → verb → echo, tape → echo → stomp → verb, tape → echo → verb → stomp, tape → verb → stomp → echo, tape → verb → echo → stomp, echo → stomp → tape → verb, echo → stomp → verb → tape, echo → tape → stomp → verb, echo → tape → verb → stomp, echo → verb → stomp → tape, echo → verb → tape → stomp, verb → stomp → tape → echo, verb → stomp → echo → tape, verb → tape → stomp → echo, verb → tape → echo → stomp, verb → echo → stomp → tape, verb → echo → tape → stomp | What order the signal meets the four pedals in |
 
 </details>
 
