@@ -92,6 +92,12 @@ test('log sliders have a positive floor or zero minimum', () => {
   }
 })
 
+test('symlog sliders mirror around a split', () => {
+  for (const def of ALL_SLIDERS) {
+    if (def.curve === 'symlog') expect(def.split, def.key).toBeDefined()
+  }
+})
+
 // The Parts rack is the model's own numbers on knobs. Every one of them has to
 // rest where the number was, or every saved link and every preset is a board
 // that used to sound like something else.

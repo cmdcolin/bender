@@ -44,6 +44,24 @@ test('a log control that starts at zero can still be turned off', () => {
   expect(toPos(d, 0)).toBe(0)
 })
 
+// A symlog control gives the run near its stop more of the track than the run
+// out to its ends, on both sides of the turn alike.
+test('a symlog track spends more travel near the split than the ends', () => {
+  const d = def({
+    min: -4,
+    max: 4,
+    step: 0.01,
+    curve: 'symlog',
+    split: { at: 0 },
+  })
+  expect(toPos(d, -4)).toBeCloseTo(0)
+  expect(toPos(d, 0)).toBeCloseTo(0.5)
+  expect(toPos(d, 4)).toBeCloseTo(1)
+  // Half of one side's travel lands well short of half that side's range.
+  expect(fromPos(d, 0.25)).toBeGreaterThan(-1)
+  expect(fromPos(d, 0.75)).toBeLessThan(1)
+})
+
 // Every control has to be able to reach both of its own ends off the track,
 // because the track is the only way a pointer reaches it.
 test('every slider reaches both of its ends', () => {

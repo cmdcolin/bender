@@ -902,6 +902,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 4,
         step: 0.01,
         unit: '×',
+        curve: 'symlog',
         // A knob whose middle is a stop and whose left half is reverse reads as
         // a broken one if the readout only prints the number: coming down past
         // zero the tape picks up again, and "−2.40 ×" does not say that where

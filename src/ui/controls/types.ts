@@ -9,7 +9,11 @@ export interface SliderDef {
   unit: string
   help: string
   choices?: string[]
-  curve?: 'log'
+  /** `log` spends even travel per decade; `symlog` is that, mirrored around a
+      `split.at`, for a knob whose middle is a stop but whose ends are still
+      wide — a speed you mostly ride near ×1 wants more of the throw than the
+      run out to ×4. `symlog` needs a `split`. */
+  curve?: 'log' | 'symlog'
   /** What the control is to the stage, where that outlives its name: a mix is
       the stage's dry/wet, a level is the whole of whether it is there at all.
       A roll reads this to decide what it must leave audible. */
