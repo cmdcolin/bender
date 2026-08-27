@@ -94,6 +94,11 @@ export const SOURCE_GROUPS: Group[] = [
       kind: 'roll',
       keys: [...TUNE_STEP_KEYS, 'tuneLen'],
     },
+    // The two rows the roll is about, over it rather than under it: which song
+    // the chip is on — the roll is only what you are hearing when this says
+    // yours — and the rate it plays them back at. A widget this tall pushes
+    // both far enough down that you stop finding them.
+    lead: ['chipTune', 'tuneRate'],
     sliders: [
       {
         key: 'chipLevel',

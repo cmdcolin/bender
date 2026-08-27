@@ -64,6 +64,7 @@ interface Part {
 function parts(group: Group): Part[] {
   const out: Part[] = []
   for (const def of group.sliders) {
+    if ((group.lead ?? []).includes(def.key)) continue
     const name = def.part ?? null
     const last = out[out.length - 1]
     if (last?.name === name) last.sliders.push(def)
@@ -252,6 +253,33 @@ function PartFold({
   )
 }
 
+// The rows that sit over the widget rather than under it. Nothing decides
+// which ones except the group saying so — a piano roll is tall enough to push
+// the row naming the song being played off the bottom of the screen, and that
+// is the row the roll is about.
+function Lead({ group }: { group: Group }) {
+  const keys = group.lead ?? []
+  const rows = group.sliders.filter(def => keys.includes(def.key))
+  // The same string the rest of the rows come off, and for the same reason: a
+  // row arriving or leaving is rare, and the board moves sixty times a second.
+  const shownKeys = useBoardValue(c =>
+    rows
+      .filter(d => shown(d, c))
+      .map(d => d.key)
+      .join(','),
+  )
+  const visible = new Set(shownKeys.split(','))
+  return (
+    <>
+      {rows
+        .filter(def => visible.has(def.key))
+        .map(def => (
+          <ControlSlider key={def.key} def={def} />
+        ))}
+    </>
+  )
+}
+
 // A long stage in the shape its own table gives it: the everyday knobs on top,
 // and the rest behind headings you press. Which headings start shut comes off
 // the group — and one holding a control you have moved starts open anyway, since
@@ -375,6 +403,7 @@ export function OpenGroup({
         </Tip>
       </div>
       <div className={styles.body}>
+        <Lead group={group} />
         {group.editor?.kind === 'drums' && <DrumGrid />}
         {group.editor?.kind === 'roll' && <TuneRoll />}
         {group.editor?.kind === 'mixer' && <Mixer />}

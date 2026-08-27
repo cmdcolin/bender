@@ -83,6 +83,11 @@ export interface Group {
     | { kind: 'drums'; keys: ControlKey[] }
     | { kind: 'roll'; keys: ControlKey[] }
     | { kind: 'mixer' }
+  /** Sliders the panel draws above the editor rather than under it. A widget
+      the size of a piano roll pushes the row naming which song the chip plays
+      far enough down that you stop finding it, and that row is the first thing
+      you want when the roll is what you are looking at. */
+  lead?: readonly ControlKey[]
   /** Controls another group owns that this one counts, resets and rolls as its
       own, because they are about this one too. A fader belongs to its machine —
       it is the first knob on the FM chip's panel, where a hand reaching for the
