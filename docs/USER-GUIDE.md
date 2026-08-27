@@ -239,11 +239,15 @@ has never seen.
 It comes out short by default. Here is **bucket brigade**:
 
 ```
-https://cmdcolin.github.io/bender/#p=AEsvLX4BAMwDAEgApAMBPA
+https://cmdcolin.github.io/bender/#p=AJYBL1p-AgDABwCQAQDoBwF4
 ```
 
-That's the board written as bytes. The long form spells the same board out, and
-the app both reads and writes it:
+That's the board written as bytes, and it stays that board. Each control rides
+as a count of its own steps up from zero rather than up from the bottom of its
+travel, so a version that widens a control's range later gives the link more
+room underneath it rather than sliding what it already says.
+
+The long form spells the same board out, and the app both reads and writes it:
 
 ```
 https://cmdcolin.github.io/bender/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6

@@ -116,7 +116,7 @@ const LIVE = 'https://cmdcolin.github.io/bender/'
 // In the long form, which is what the `#set=` asks for. The bar defaults to the
 // short one because a link that has to survive a chat window wants to be short,
 // and a doc is the other case entirely: the point of the line is which controls
-// the preset moves and where it puts them, which `#p=AEYvUFqWAQBVAmQsCQG5AQ`
+// the preset moves and where it puts them, which `#p=AIwBL6ABWugCAKoBAsgBLBIBqgE`
 // does not say.
 const presetUrl = (patch: Partial<typeof DEFAULT_CONTROLS>) =>
   `${LIVE}#${boardHash('#set=', { ...DEFAULT_CONTROLS, ...patch })}`

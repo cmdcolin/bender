@@ -205,7 +205,7 @@ test('the two forms carry the same board', () => {
 })
 
 test('the form a board is written in replaces the other one', () => {
-  expect(boardHash('#p=jAF4', BOARD)).not.toContain('set=')
+  expect(boardHash('#p=jAHwAQ', BOARD)).not.toContain('set=')
   expect(boardHash('#set=dlyFb:1.4&p=jAF4', BOARD)).not.toContain('p=')
 })
 

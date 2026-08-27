@@ -5,7 +5,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls'
-import { EDITOR_KEYS, SLIDER_BY_KEY } from './controls'
+import { ALL_SLIDERS, EDITOR_KEYS, SLIDER_BY_KEY, sliderFor } from './controls'
 import { LEN_KEYS } from '../drums'
 import { TUNE_STEP_KEYS } from '../tune'
 import { applyPreset } from './presets/apply'
@@ -21,12 +21,127 @@ const round = (c: Controls) => ({
   ...unpackControls(packControls(c, nothing), nothing),
 })
 
-test('the wire order names every control and no other', () => {
-  // Append here when a control is added — never insert and never reorder, or
-  // every link ever made decodes to a different board. This is the check that
-  // makes the rule the build's rather than someone's memory.
-  expect([...URL_KEY_ORDER].sort()).toEqual([...CONTROL_KEYS].sort())
-  expect(new Set(URL_KEY_ORDER).size).toBe(URL_KEY_ORDER.length)
+const live = (key: string) => key.replace(/^gone:/, '')
+
+test('the wire order names every control the app has', () => {
+  const here = URL_KEY_ORDER.filter(k => !k.startsWith('gone:'))
+  expect([...here].sort()).toEqual([...CONTROL_KEYS].sort())
+  expect(new Set(URL_KEY_ORDER.map(live)).size).toBe(URL_KEY_ORDER.length)
+})
+
+// What the wire order said, each time it grew. Every link ever made is written
+// against those positions, so the shape of this list is the point: a line is
+// written once and never edited again. Appending controls adds a line and
+// leaves every earlier one passing, which is what an append means. Inserting,
+// reordering or deleting a name breaks the lines that already cover that stretch
+// — and the only way to make them green again is to delete them, which is a
+// visible thing to do to a file that says not to.
+//
+// Retiring a control is the exception the digest is blind to on purpose:
+// `noiseColor` becoming `gone:noiseColor` holds the slot rather than closing it,
+// which is the whole reason for writing it that way instead of dropping the
+// line.
+const PINNED_ORDER = [
+  // v0.10.1, when a packed link stopped counting from the bottom of a travel
+  { keys: 261, digest: '3af9e04e' },
+  // the stacked memory chips and the switch that reads them
+  { keys: 326, digest: '2e0026f0' },
+]
+
+const digest = (keys: readonly string[]) => {
+  let h = 0x811c9dc5
+  for (const ch of keys.join(','))
+    h = Math.imul(h ^ ch.charCodeAt(0), 0x01000193)
+  return (h >>> 0).toString(16).padStart(8, '0')
+}
+
+test('the wire order is the one every link ever made was written against', () => {
+  const now = URL_KEY_ORDER.map(live)
+  expect(
+    PINNED_ORDER.map(p => ({
+      keys: p.keys,
+      digest: digest(now.slice(0, p.keys)),
+    })),
+  ).toEqual(PINNED_ORDER)
+  expect(now.length).toBeGreaterThanOrEqual(PINNED_ORDER.at(-1)!.keys)
+})
+
+// A packed link carries a number of steps and nothing else, so the grid it is
+// counted on has to be the same grid a year from now. Counting from zero is
+// what makes a widened travel mean more reach rather than a shifted board — and
+// it is exact only while a travel starts a whole number of steps from zero.
+test('every travel starts a whole number of its own steps from zero', () => {
+  const off = ALL_SLIDERS.filter(
+    s => Math.abs(s.min / s.step - Math.round(s.min / s.step)) > 1e-9,
+  )
+  expect(
+    off.map(s => `${s.key}: min ${s.min} is not a whole ${s.step}`),
+  ).toEqual([])
+})
+
+// A board fixed in physical units against the bytes it packs to, both ways, so
+// that any change to the wire — the order, the zero, the alphabet, the varints
+// — has to come past a link that already exists. Regenerating these to make a
+// failure go away is regenerating every link anyone has ever shared.
+const GOLDEN_BOARD: Partial<Controls> = {
+  chipStarve: 0.8,
+  drumTune: 0.75,
+  drumKick: 0b1000_0000_1000_1000,
+  drumHatLen: 12,
+  tuneStep0: 24,
+  tuneStep1: -12,
+  tuneStep2: -127,
+  tuneLen: 9,
+  filtHz: 180,
+  mod0Depth: -0.6,
+}
+const GOLDEN_LINK = 'BaABGDAAFwD9AQ0SBKwCDpCCBAgYP-gCMnc'
+
+test('a link made the day the format was pinned still opens its own board', () => {
+  const board: Controls = { ...stock(), ...GOLDEN_BOARD }
+  expect(packControls(board, nothing)).toBe(GOLDEN_LINK)
+  expect(unpackControls(GOLDEN_LINK, nothing)).toEqual(GOLDEN_BOARD)
+})
+
+// The failure this format is built against: someone widens a travel, and every
+// link ever made for that control slides by however far the floor moved. The
+// wire number is the value over the step, so the floor is not in it.
+test('widening a travel leaves the links already made where they were', () => {
+  const board: Controls = { ...stock(), ...GOLDEN_BOARD }
+  const packed = packControls(board, nothing)
+  const widened = [
+    { def: sliderFor('filtHz'), min: 10 },
+    { def: sliderFor('drumTune'), min: 0.05 },
+    { def: sliderFor('mod0Depth'), min: -2 },
+  ]
+  const was = widened.map(w => w.def.min)
+  try {
+    for (const w of widened) w.def.min = w.min
+    expect(packControls(board, nothing)).toBe(packed)
+    expect(unpackControls(packed, nothing)).toEqual(GOLDEN_BOARD)
+  } finally {
+    widened.forEach((w, i) => (w.def.min = was[i]!))
+  }
+})
+
+test('a retired control holds its slot rather than renumbering the rest', () => {
+  // The app drops drumTune, so its name is rewritten in place. Every control
+  // below it keeps the wire number it had, an old link still opens as the rest
+  // of the board it named, and the value it carries for the retired one is read
+  // past rather than ending the read.
+  const order = URL_KEY_ORDER as (ControlKey | `gone:${string}`)[]
+  const at = order.indexOf('drumTune')
+  const packed = packControls({ ...stock(), ...GOLDEN_BOARD }, nothing)
+  try {
+    order[at] = 'gone:drumTune'
+    expect(unpackControls(packed, nothing)).toEqual(
+      Object.fromEntries(
+        Object.entries(GOLDEN_BOARD).filter(([k]) => k !== 'drumTune'),
+      ),
+    )
+  } finally {
+    order[at] = 'drumTune'
+  }
 })
 
 test('every control has a shape the wire knows how to carry', () => {
@@ -114,10 +229,8 @@ test('a control this build has never heard of is read past', () => {
     (a, b) => at(a) - at(b),
   )) {
     const def = SLIDER_BY_KEY.get(key)
-    bytes.push(
-      at(key) - prev - 1,
-      Math.round((board[key] - def!.min) / def!.step),
-    )
+    const n = Math.round(board[key] / def!.step)
+    bytes.push(at(key) - prev - 1, n < 0 ? -2 * n - 1 : 2 * n)
     prev = at(key)
   }
   // the forged wire is the encoder's, or the rest of this proves nothing

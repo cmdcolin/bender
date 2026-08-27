@@ -380,9 +380,14 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'drumTune',
         label: 'Tune',
+        // A travel starts a whole number of its own steps from zero, or a
+        // packed link and the slider count on different grids and the round
+        // trip loses half a step (see packed.ts). An eighth speed is the floor
+        // worth having, so the step halves rather than the floor moving — and
+        // the bottom of a log travel is where a finer one pays anyway.
         min: 0.125,
         max: 8,
-        step: 0.01,
+        step: 0.005,
         unit: '×',
         curve: 'log',
         help: 'The pitch trimmer inside the kit: every struck voice moves together. It rides on the supply, so starving the toy drags it down again. At the bottom of the travel the kick is under hearing and arrives as the thump of its own envelope; at the top the whole kit is a handful of tick marks.',

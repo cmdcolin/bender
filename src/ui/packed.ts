@@ -17,17 +17,30 @@ import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune'
 // step of its own travel it sits on.
 //
 // Nothing is lost doing that. The long form already snaps every value it reads
-// to the control's step, so the step index is the whole of what a link ever
+// to the control's step, so the step count is the whole of what a link ever
 // carried. See share.ts for which form goes in the bar.
+//
+// A named link carries its own meaning — `#set=noiseColor:0.4` is 0.4 in a year
+// no matter what the app does to that control in the meantime. A packed one
+// carries two numbers and takes the rest from this file, so everything this
+// file could change out from under an old link is a way to move boards that are
+// already in the world, silently, with nothing in the link for a reader to
+// check against. There are three such things, and each is nailed down here:
+// the position of a control in the wire order, the zero the value is counted
+// from, and the step it is counted in. packed.test.ts holds all three.
 
 // The wire order, and the reason this list is written out rather than taken
 // from CONTROL_KEYS: a packed link says "control 84", so the day someone tidies
 // DEFAULT_CONTROLS into alphabetical order every link ever made would quietly
 // decode to a different board. Adding a control means appending here — never
-// inserting, never reordering. packed.test.ts fails if the two lists stop
-// holding the same names, which is what turns "append" from a rule people
-// remember into one the build checks.
-export const URL_KEY_ORDER: readonly ControlKey[] = [
+// inserting, never reordering, and never deleting either. A control the app
+// drops keeps its slot, rewritten as `gone:<name>`, because everything below it
+// is at a fixed distance from the front and closing the gap would renumber the
+// lot. packed.test.ts pins the order that exists, so an append is the only edit
+// that passes.
+type Retired = `gone:${string}`
+
+export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'chipLevel',
   'chipTune',
   'chipTone',
@@ -362,30 +375,48 @@ export const URL_KEY_ORDER: readonly ControlKey[] = [
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))
 const TUNE = new Set<ControlKey>(TUNE_ALL_STEP_KEYS)
 
-// A step of the memory is a note, a rest (-128) or a hold (-127), and the wire
-// carries unsigned numbers, so the whole row shifts up by its own floor.
-const TUNE_FLOOR = 128
+const isLive = (key: ControlKey | Retired | undefined): key is ControlKey =>
+  key !== undefined && !key.startsWith('gone:')
 
-// Every control as a whole number of its own steps. A slider is how far along
-// its travel it sits; the widgets that are not sliders already hold integers —
-// sixteen bits of pattern, a step count, a note.
+// Every control as a whole number of its own steps, counted from zero — and the
+// zero is the point. Counting from the control's own min is a step cheaper and
+// is what this used to do, but ranges get widened: drumTune's floor has already
+// moved once, from 0.25 to 0.125, and had a link been counting from it that day
+// every drumTune ever shared would have slid twelve steps down. From zero, a
+// widened range is what it ought to be — the same values, with more of them now
+// reachable — and it costs about a tenth of the payload to say so.
+//
+// Exact only while a control's min is itself a whole number of steps, or its
+// travel sits on one grid and the wire counts in another and the round trip
+// loses up to half a step. packed.test.ts holds every slider to that.
+//
+// step is deliberately not pinned. Change one and an old link moves by less
+// than a step: bounded, small enough to stay the board it was, and nothing like
+// a floor moving out from under it.
+//
+// The widgets that are not sliders already hold integers — sixteen bits of
+// pattern, a step count, a note, where a rest is -128 and a hold -127.
 function toInt(key: ControlKey, v: number): number {
   const def = SLIDER_BY_KEY.get(key)
-  if (def) return Math.max(0, Math.round((v - def.min) / def.step))
-  if (TUNE.has(key)) return v + TUNE_FLOOR
-  return v
+  return def ? Math.round(v / def.step) : v
 }
 
 function fromInt(key: ControlKey, n: number): number {
   const def = SLIDER_BY_KEY.get(key)
-  // Through the same snap the long form goes through, so a slider whose range
-  // has moved since the link was made lands where a named link would land.
-  if (def) return snapToStep(def, def.min + n * def.step)
-  if (TUNE.has(key)) return asTuneStep(n - TUNE_FLOOR)
+  // Through the same snap the long form goes through, so a value the travel has
+  // since grown past lands at the end of it rather than outside.
+  if (def) return snapToStep(def, n * def.step)
+  if (TUNE.has(key)) return asTuneStep(n)
   if (LEN_KEYS.has(key)) return asLen(n)
   if (key === 'tuneLen') return asTuneLen(n)
   return asMask(n)
 }
+
+// Counting from zero means half the numbers are negative — a depth, a bias, a
+// rest — and a varint carries unsigned ones, so the sign rides in the low bit.
+// The alternative is a per-control offset, which is the thing being removed.
+const zigzag = (n: number) => (n < 0 ? -2 * n - 1 : 2 * n)
+const unzigzag = (n: number) => (n % 2 === 1 ? -(n + 1) / 2 : n / 2)
 
 function putVarint(out: number[], n: number) {
   while (n > 0x7f) {
@@ -443,7 +474,7 @@ export function packControls(
   const bytes: number[] = []
   let prev = -1
   for (const key of URL_KEY_ORDER) {
-    if (skip(key)) continue
+    if (!isLive(key) || skip(key)) continue
     const v = c[key]
     if (v === DEFAULT_CONTROLS[key] || !Number.isFinite(v)) continue
     const i = INDEX.get(key) ?? 0
@@ -452,7 +483,7 @@ export function packControls(
     // sixteen ones — and a run costs one byte a control instead of two.
     putVarint(bytes, i - prev - 1)
     prev = i
-    putVarint(bytes, toInt(key, v))
+    putVarint(bytes, zigzag(toInt(key, v)))
   }
   return toBase64Url(bytes)
 }
@@ -487,12 +518,13 @@ export function unpackControls(
     const i = prev + 1 + gap
     prev = i
     const key = URL_KEY_ORDER[i]
-    // A control this build has never heard of is read past rather than ending
-    // the board: every field is a varint, so the reader can always find the
-    // next one. A link made by a newer app opens here as itself minus whatever
-    // it names that does not exist yet.
-    if (key === undefined || skip(key)) continue
-    out[key] = fromInt(key, value)
+    // A control this build does not have is read past rather than ending the
+    // board: every field is a varint, so the reader can always find the next
+    // one. That covers both directions of drift — a link made by a newer app
+    // naming something not built yet, and an old link still naming a control
+    // that has since been retired out of the app.
+    if (!isLive(key) || skip(key)) continue
+    out[key] = fromInt(key, unzigzag(value))
   }
   return out
 }
