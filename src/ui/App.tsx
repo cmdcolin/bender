@@ -11,7 +11,7 @@ import { engine } from '../engine/engine'
 import { gitSha, versionLabel } from '../version'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
-import { useStoreValue } from './ControlsContext'
+import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Dice } from './Dice'
 import { GROUPS } from './controls'
 import { useDrumKeys } from './drumKeys'
@@ -34,6 +34,7 @@ import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
 import { Tip } from './Tip'
 import { POOLS, detailsUrl } from '../engine/archive'
+import { YOURS } from '../dsp/stages/roms'
 
 // Where a keypress belongs to the control rather than to the board.
 const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
@@ -172,6 +173,10 @@ export function App() {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
   const songPlaying = useStoreValue(engine.songPlaying)
+  // The switch runs whichever tune the chip is on, and the melody memory is one
+  // of them — writing the roll puts the chip on yours, so a button that says
+  // demo song from then on is naming something it is not playing.
+  const yourTune = useBoardValue(c => Math.round(c.chipTune) === YOURS)
   const drumsPlaying = useStoreValue(engine.drumsPlaying)
   const recording = useStoreValue(engine.recording)
   const recSeconds = useStoreValue(engine.recSeconds)
@@ -265,15 +270,22 @@ export function App() {
           {/* Two machines, two switches. The kit used to run off the demo
               song's line, so writing a pattern and hearing it meant putting the
               toy's ROM tune on underneath it. */}
-          <Tip text="run or stop the toy chip's ROM tune. Nothing else starts it — space runs both machines">
+          <Tip
+            text={
+              yourTune
+                ? 'run or stop the toy chip on your own melody, the one in the piano roll. Nothing else starts it — space runs both machines'
+                : "run or stop the toy chip's ROM tune. Nothing else starts it — space runs both machines"
+            }
+          >
             <button
               className={songPlaying ? styles.playBtnOn : styles.playBtn}
               onClick={() => engine.setSongPlaying(!songPlaying)}
             >
-              {songPlaying ? '❚❚ pause demo song' : '▶ play demo song'}
+              {songPlaying ? '❚❚ pause ' : '▶ play '}
+              {yourTune ? 'your tune' : 'demo song'}
             </button>
           </Tip>
-          <Tip text="run or stop the drum machine's pattern, with or without the demo song. Bring the kit's Level up if you hear nothing">
+          <Tip text="run or stop the drum machine's pattern, with or without the chip's tune. Bring the kit's Level up if you hear nothing">
             <button
               className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
               onClick={() => engine.setDrumsPlaying(!drumsPlaying)}

@@ -59,6 +59,9 @@ pnpm dev
 Initial template with Claude Fable. Follows in footsteps of
 https://github.com/cmdcolin/ntsc.js
 
+This app inspired by hunching over broken keyboards on the floor and conjuring
+harsh noise out of the ether
+
 ## Demos
 
 - Dubby drums

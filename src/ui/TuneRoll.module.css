@@ -55,6 +55,10 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
+  /* A drag across cells is drawing, never selecting: without this the hand
+     picks up the note names down the side and the page paints a selection over
+     the roll it is drawing on. The cells say what a finger does. */
+  user-select: none;
 }
 
 .row {
@@ -145,6 +149,19 @@
   opacity: 0.3;
 }
 
+/* The length reads as one control with a word on it: a bare number in a header
+   of buttons names nothing, and this one names the line drawn across the grid. */
+.loop {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.loopLabel {
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
 .len,
 .lenShort {
   font-size: var(--fs-xs);
@@ -165,4 +182,10 @@
 
 .lenShort {
   color: var(--accent2);
+}
+
+/* Where the counter comes round, drawn on the first step it never reaches — so
+   the number in the header is a line you can see rather than a claim. */
+.wrap .wrapLine {
+  border-left: 1px solid var(--accent2);
 }

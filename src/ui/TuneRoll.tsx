@@ -163,6 +163,8 @@ export function TuneRoll() {
             ▴
           </button>
         </Tip>
+        {/* The number on its own read as a setting nobody could name. It says
+            what it does now, and the grid draws the line it names. */}
         <Tip
           text={
             len === TUNE_STEPS
@@ -170,18 +172,23 @@ export function TuneRoll() {
               : `the memory comes round every ${len} steps — the rest are still written, they are just past the end`
           }
         >
-          <select
-            className={len === TUNE_STEPS ? styles.len : styles.lenShort}
-            value={len}
-            onChange={e => engine.set('tuneLen', Number(e.currentTarget.value))}
-            aria-label="memory length"
-          >
-            {Array.from({ length: TUNE_STEPS }, (_, i) => (
-              <option key={i} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
+          <label className={styles.loop}>
+            <span className={styles.loopLabel}>loop</span>
+            <select
+              className={len === TUNE_STEPS ? styles.len : styles.lenShort}
+              value={len}
+              onChange={e =>
+                engine.set('tuneLen', Number(e.currentTarget.value))
+              }
+              aria-label="loop length in steps"
+            >
+              {Array.from({ length: TUNE_STEPS }, (_, i) => (
+                <option key={i} value={i + 1}>
+                  {i + 1} {i === 0 ? 'step' : 'steps'}
+                </option>
+              ))}
+            </select>
+          </label>
         </Tip>
       </div>
 
@@ -211,6 +218,7 @@ export function TuneRoll() {
                         beat: s % 4 === 0,
                         under: s === under,
                         past: s >= len,
+                        wrap: s === len,
                       })}
                     />
                   )
@@ -281,6 +289,7 @@ function cellClass(s: {
   beat: boolean
   under: boolean
   past: boolean
+  wrap: boolean
 }): string {
   return [
     s.on ? (s.head ? styles.headOn : styles.holdOn) : styles.cell,
@@ -288,6 +297,7 @@ function cellClass(s: {
     s.beat && styles.beat,
     s.under && styles.under,
     s.past && styles.past,
+    s.wrap && styles.wrapLine,
   ]
     .filter(Boolean)
     .join(' ')
