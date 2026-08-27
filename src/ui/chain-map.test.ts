@@ -98,7 +98,7 @@ test('a duplicated bend runs once, at its first slot', () => {
 test('the feedback bus stays on the map at zero, greyed out', () => {
   const map = buildMap(DEFAULT_CONTROLS)
   expect(box(map, 'Feedback_bus')?.active).toBe(false)
-  expect(hop(map, 'out', 'Feedback_bus')?.color).toBe(PANEL.dim)
+  expect(hop(map, 'Output', 'Feedback_bus')?.color).toBe(PANEL.dim)
 })
 
 test('the feedback wire lands on its destination', () => {
@@ -117,7 +117,7 @@ test('the wires are doors too — feedback to the bus, a patch wire to the bay',
     mod0Dest: 6,
     mod0Depth: 0.8,
   })
-  expect(hop(map, 'out', 'Feedback_bus')?.door).toBe('Feedback bus')
+  expect(hop(map, 'Output', 'Feedback_bus')?.door).toBe('Feedback bus')
   expect(hop(map, 'Feedback_bus', 'mix')?.door).toBe('Feedback bus')
   expect(hop(map, 'wire0', 'Tape_delay')?.door).toBe('Patch bay')
 })

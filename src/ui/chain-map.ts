@@ -201,7 +201,7 @@ type Side = 'left' | 'right'
 
 export interface MapNode {
   id: string
-  kind: 'stage' | 'plain' | 'inst' | 'frame' | 'label' | 'rack' | 'chip'
+  kind: 'stage' | 'inst' | 'frame' | 'label' | 'rack' | 'chip'
   label: string
   count: number
   /** the group this opens, where it opens one */
@@ -476,7 +476,6 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   ] as const) {
     path.push(stage(name, on))
   }
-  path.push(node('out', 'plain', 'dc block → clip → limit'))
 
   // The bus is soldered to the board whether or not it is turned up, so it
   // stays on the map — greyed at zero, like any other stage sitting at no mix.
@@ -557,7 +556,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           // only the stages actually on the path do.
           ...[...path, bus]
             .filter(n => n.kind !== 'rack')
-            .map(n => PAD_X * 2 + textWidth(n.label, FONT) + countCol),
+            .map(
+              n =>
+                PAD_X * 2 +
+                iconCol(n.label) +
+                textWidth(n.label, FONT) +
+                countCol,
+            ),
         ) +
         (cols - 1) * COL_GAP,
     ),
@@ -1439,6 +1444,70 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       fill: c,
     }),
   ],
+  // The four pedals, drawn as the boxes they would be on a floor: the stompbox
+  // as an enclosure with a footswitch under its knob, and the other three as
+  // what each one does to the signal rather than as three more enclosures — at
+  // 12px a row of alike outlines says only "pedal", which is what their place
+  // on the path already says.
+  Stompbox: (x, y, c) => [
+    el('rect', {
+      x: x + 1.5,
+      y: y + 0.5,
+      width: 9,
+      height: 11,
+      rx: 1.2,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('circle', {
+      cx: x + 6,
+      cy: y + 3.6,
+      r: 1.5,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('circle', { cx: x + 6, cy: y + 8.2, r: 1.5, fill: c }),
+  ],
+  'Tape delay': (x, y, c) => [
+    ...[3.4, 8.6].flatMap(dx => [
+      el('circle', {
+        cx: x + dx,
+        cy: y + 7,
+        r: 2.6,
+        fill: 'none',
+        stroke: c,
+        strokeWidth: 0.9,
+      }),
+      el('circle', { cx: x + dx, cy: y + 7, r: 0.7, fill: c }),
+    ]),
+    el('path', {
+      d: `M ${x + 3.4} ${y + 3.2} H ${x + 8.6}`,
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+  ],
+  'Delay pedal': (x, y, c) => [
+    el('path', {
+      d: [9, 6, 3.6, 2]
+        .map((h, i) => `M ${x + 1.2 + i * 3} ${y + 10} v ${-h}`)
+        .join(' '),
+      stroke: c,
+      strokeWidth: 1,
+      strokeLinecap: 'round',
+    }),
+  ],
+  'Spring verb': (x, y, c) => [
+    el('path', {
+      d: `M ${x + 0.4} ${y + 9} h 0.8 ${[0, 1, 2]
+        .map(() => 'q 1.7 -9.5 3.4 0')
+        .join(' ')} h 0.8`,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+  ],
   Sampler: (x, y, c) => [
     el('path', {
       d: [3.4, 8, 5, 10.4, 6, 2.8]
@@ -1451,17 +1520,16 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
   ],
 }
 
-function glyph(n: MapNode, k: Palette): El[] {
+/** the column at the left of a box its glyph rides in, where it has one. The
+    count takes the same width off the other end, so a label centred on what is
+    left of the box is still centred on the box. */
+const iconCol = (label: string) => (GLYPH[label] ? ICON_COL : 0)
+
+function glyph(n: MapNode, k: Palette, y: number): El[] {
   const draw = GLYPH[n.label]
   if (!draw) return []
   const c = n.playing ? k.accent2 : n.active || n.open ? k.fg : k.dim
-  return [
-    el(
-      'g',
-      { className: 'glyph' },
-      draw(n.x + PAD_X, n.y + (INST_H - ICON) / 2 - 4, c),
-    ),
-  ]
+  return [el('g', { className: 'glyph' }, draw(n.x + PAD_X, y, c))]
 }
 
 export function drawNode(n: MapNode, k: Palette, links: boolean): El {
@@ -1570,7 +1638,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
         stroke: lit,
         strokeWidth: n.open ? 2 : 1,
       }),
-      ...glyph(n, k),
+      ...glyph(n, k, n.y + (INST_H - ICON) / 2 - 4),
       words(
         n.label,
         n.x + PAD_X + ICON_COL,
@@ -1587,6 +1655,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
     ])
   }
   const lit = n.open ? k.fg : n.count > 0 ? k.accent : k.border
+  const lead = iconCol(n.label)
   const inner = [
     el('rect', {
       className: 'box',
@@ -1596,18 +1665,19 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
       height: n.h,
       rx: 4,
       fill: n.open ? k.open : k.bg,
-      stroke: n.kind === 'plain' ? k.border : lit,
+      stroke: lit,
       strokeWidth: n.open ? 2 : 1,
     }),
-    // Centred on what is left after the count's column, not on the box: the
-    // column is there on every box whether or not it holds a number, so a
+    ...glyph(n, k, n.y + (n.h - ICON) / 2),
+    // Centred on what is left between the glyph and the count's column, not on
+    // the box: both columns are there whether or not they hold anything, so a
     // label centred on the box would sit off to one side of the space it has.
     words(
       n.label,
-      n.x + (n.w - (links ? COUNT_COL : 0)) / 2,
+      n.x + lead + (n.w - lead - (links ? COUNT_COL : 0)) / 2,
       baseline(n.y, n.h, FONT),
       FONT,
-      n.kind === 'plain' ? k.dim : n.active || n.open ? k.fg : k.dim,
+      n.active || n.open ? k.fg : k.dim,
     ),
   ]
   return el('g', { className: 'node' }, [
