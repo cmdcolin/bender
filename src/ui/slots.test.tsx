@@ -3,15 +3,14 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
-import { BENDS, bendAt, GROUPS, groupKeys, touchedCount } from './controls'
+import { BENDS, bendAt, GROUPS } from './controls'
 import { applyRig, rigsFor } from './presets'
 import { OpenGroup } from './Section'
 import './testDom'
 
 // The rack: a row per position, dragged to reorder, with the six selects under
-// it doing the same writing for the keyboard — and, because the order is only
-// half of what the chain is, each bend's dry/wet under those, borrowed from the
-// panels that own them.
+// it doing the same writing for the keyboard. A bend can be in a position and
+// still inaudible, and the row says so rather than a fader under it.
 
 const rack = () => {
   const g = GROUPS.find(g => g.name === 'Signal chain')
@@ -22,33 +21,15 @@ const rack = () => {
 const openRack = () =>
   render(<OpenGroup group={rack()} onClose={() => {}} seconds={0} />)
 
-test('the rack draws a mix for every bend in a slot, by the bend’s own name', () => {
-  engine.controls.set({ ...DEFAULT_CONTROLS })
+// The one thing the row of dry/wet faders under the rack was carrying: a stage
+// can sit in the path and be inaudible, and which of the two ways it is doing
+// that is the answer to why the position you just filled changed nothing.
+test('a position in the chain but inaudible says which way', () => {
+  engine.controls.set({ ...DEFAULT_CONTROLS, bendSlot1: 1 })
   openRack()
-  for (const bend of BENDS) {
-    const inChain = groupKeys(rack()).includes(bend.mix)
-    expect(inChain, bend.group).toBe(true)
-  }
-  // Six slots, seven bends: the one sitting out has no fader to show.
-  expect(
-    screen.queryAllByRole('slider', { name: 'Freq shifter' }),
-  ).toHaveLength(0)
-  expect(screen.getByRole('slider', { name: 'Ring mod' })).toBeTruthy()
-  expect(screen.queryAllByRole('slider', { name: 'Mix' })).toHaveLength(0)
-})
-
-test('a mix moved on the rack is the bend’s own control', () => {
-  engine.controls.set({ ...DEFAULT_CONTROLS })
-  openRack()
-  fireEvent.change(screen.getByRole('slider', { name: 'Comb' }), {
-    target: { value: '800' },
-  })
-  expect(engine.controls.get().combMix).toBeGreaterThan(0.5)
-})
-
-test('the rack counts and resets the mixes it borrows', () => {
-  expect(groupKeys(rack())).toContain('combMix')
-  expect(touchedCount(rack(), { ...DEFAULT_CONTROLS, combMix: 0.5 })).toBe(1)
+  const rows = screen.getAllByRole('listitem')
+  expect(rows[0]!.textContent).toContain('silent')
+  expect(rows[1]!.textContent).toContain('already above')
 })
 
 // What a chain setting is for: press it and the rack is that chain and nothing
@@ -63,8 +44,12 @@ test('a chain setting empties the slots it does not name', () => {
   expect(BENDS.filter(b => after[b.mix] > 0)).toHaveLength(2)
 })
 
+// The name span, not the whole row: a row also carries its position and, when
+// the bend on it cannot be heard, why not.
 const rowNames = () =>
-  screen.getAllByRole('listitem').map(li => li.textContent?.replace(/^\d/, ''))
+  screen
+    .getAllByRole('listitem')
+    .map(li => li.querySelectorAll('span')[1]?.textContent)
 
 const dragTo = (from: number, to: number) => {
   const rows = screen.getAllByRole('listitem')

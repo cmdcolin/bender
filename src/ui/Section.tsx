@@ -9,7 +9,7 @@ import { FeedbackLoops } from './FeedbackLoops'
 import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
 import { PatchBay } from './PatchBay'
-import { SlotMixes, SlotRack } from './SlotRack'
+import { SlotRack } from './SlotRack'
 import { TriggerPatch } from './TriggerPatch'
 import { TuneRoll } from './TuneRoll'
 import {
@@ -456,7 +456,6 @@ export function OpenGroup({
         {group.editor?.kind === 'mic' && <MicPatch />}
         <Rigs group={group} seconds={seconds} />
         <Rows key={group.name} group={group} seconds={seconds} />
-        {group.editor?.kind === 'slots' && <SlotMixes />}
       </div>
     </div>
   )

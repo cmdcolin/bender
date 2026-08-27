@@ -1,8 +1,6 @@
 /* The chain as a rack you can move rather than a picture of one: a row per
    position in the order the signal walks them, dragged to reorder, with
-   whatever didn't make the cut on a shelf underneath. The selects below still
-   write the same six controls — they are the keyboard's way in, and the reason
-   this can be a drag and nothing else. */
+   whatever didn't make the cut on a shelf underneath. */
 .rack {
   margin: 2px 0 8px;
 }
@@ -109,17 +107,10 @@
   color: var(--fg);
 }
 
-/* The mixes under the six selects, fenced off by a rule: the rows above say
-   what the chain is and these say how much of the board goes down it. */
-.mixes {
-  border-top: 1px solid var(--border-quiet);
-  margin-top: 6px;
-  padding-top: 4px;
-}
-
-.mixHead {
-  display: block;
-  padding: 2px 2px 4px;
-  color: var(--fg3);
-  font-size: var(--fs-sm);
+/* Why a row you can see is a row you cannot hear — the one thing the dry/wet
+   faders under the rack were carrying, said on the row it is about. */
+.tag {
+  margin-left: auto;
+  color: var(--fg4);
+  font-size: var(--fs-xs);
 }

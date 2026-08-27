@@ -35,12 +35,6 @@ export const BEND_GROUPS: Group[] = [
     // signal order and the odd bend out riding loose beside them, so the
     // six selects below read as a rack rather than a wall of dropdowns.
     editor: { kind: 'slots' },
-    // Every bend's dry/wet, counted, reset and rolled here as well as on the
-    // bend's own panel. The order of the slots is only half of what the chain
-    // is: a stage in slot 2 with its mix at zero sits in the path playing
-    // silent, and reading the rack without them is reading half the answer to
-    // why the board sounds the way it does.
-    borrows: BENDS.map(b => b.mix),
     sliders: BEND_SLOT_KEYS.map((key, i) => ({
       key,
       label: `Position ${i + 1}`,

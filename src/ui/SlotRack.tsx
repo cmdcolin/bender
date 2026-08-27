@@ -2,8 +2,7 @@ import { useState } from 'react'
 import type { Controls } from '../controls'
 import { engine } from '../engine/engine'
 import { useBoardValue } from './ControlsContext'
-import { BENDS, BEND_SLOT_KEYS, bendAt, sliderFor } from './controls'
-import { ControlSlider } from './Slider'
+import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls'
 import styles from './SlotRack.module.css'
 
 /** Dropped on the shelf rather than on a position: the bend comes out of the
@@ -97,6 +96,18 @@ export function SlotRack() {
               : row.mix === 0
                 ? `${row.bend!.group} — its mix is at 0, so it sits in the chain playing silent.`
                 : `${row.bend!.group}, position ${row.i + 1} of ${rows.length}. Drag it to move it.`
+          // What the row of dry/wet faders under the rack used to be for. A
+          // stage can be in the path and inaudible two ways, and both of them
+          // are why a position you just filled changed nothing — so the rack
+          // says which, on the row, rather than sending you to a fader to
+          // work it out.
+          const tag = off
+            ? ''
+            : row.dupe
+              ? 'already above'
+              : row.mix === 0
+                ? 'silent'
+                : ''
           return (
             <li
               key={row.i}
@@ -131,6 +142,7 @@ export function SlotRack() {
               <span className={styles.name}>
                 {off ? 'empty' : row.bend!.group}
               </span>
+              {tag && <span className={styles.tag}>{tag}</span>}
             </li>
           )
         })}
@@ -177,42 +189,6 @@ export function SlotRack() {
           <span className={styles.shelfEmpty}>everything is in the chain</span>
         )}
       </div>
-    </div>
-  )
-}
-
-// The other half of the chain: a dry/wet per bend that is actually in a
-// position, in the order the signal meets them. The rack above says what the
-// path is, and these say how much of the board goes down it — a stage at a mix
-// of zero is in the chain and silent, which is the commonest reason a position
-// you just filled changed nothing.
-//
-// Each fader is called the bend it belongs to rather than *Mix*, the way the
-// desk calls six faders called *Level* by their machines. It is the same
-// control as the one on that bend's own panel, and only one panel is ever open.
-export function SlotMixes() {
-  const raw = useBoardValue(c => slotsOf(c).join(','))
-  const seen = new Set<number>()
-  const rows = raw
-    .split(',')
-    .map(Number)
-    .flatMap(id => {
-      const bend = bendAt(id)
-      if (!bend || seen.has(id)) return []
-      seen.add(id)
-      return [bend]
-    })
-  if (rows.length === 0) return null
-  return (
-    <div className={styles.mixes}>
-      <span className={styles.mixHead}>how wet each one is</span>
-      {rows.map(bend => (
-        <ControlSlider
-          key={bend.mix}
-          def={sliderFor(bend.mix)}
-          label={bend.group}
-        />
-      ))}
     </div>
   )
 }
