@@ -5,34 +5,32 @@
 
 /* The path draws at whatever height the layout came out and the panel scrolls
    it with everything else — a scroll box of its own only ever clipped the chain
-   and trapped the wheel. The drawing is sized in the same units the panel is,
-   so it only ever scales down and the labels stay put.
+   and trapped the wheel.
 
-   What it gives back on a short screen it gives back always, open or not. The
-   ration used to arrive at the click, which on an 820px screen took a third of
-   the map away the instant you opened a stage: the box you had just aimed at
+   Width, not max-width: the drawing is fitted to the column it is in. It used
+   to be capped on height alone, and the two never fought over the same axis —
+   the drawing is 420 wide in a 446 column and 573 tall against a 450 ceiling,
+   so the ceiling always won and scaled it to 0.85 on the way past. Ten-point
+   labels arrived as 8.5, and a fifth of the panel's width sat empty to pay for
+   it. Sized to the width instead, the column is what the drawing answers to and
+   the labels land the size they were drawn.
+
+   The ceiling stays, well clear of that: what it is for now is a screen tall
+   enough that a map filling the width would run past what a hand can take in,
+   and there it goes back to scaling down. It is not what sizes the map on any
+   ordinary screen.
+
+   What the map gives back on a short screen it gives back always, open or not.
+   The ration used to arrive at the click, which on an 820px screen took a third
+   of the map away the instant you opened a stage: the box you had just aimed at
    shrank and slid out from under the pointer, and a map that rescales when you
    press it reads as the press having done something to the path. It lights a
-   door and nothing else. The size is picked to leave room for what that door
-   opens — the viewBox scaling the drawing down rather than cropping it.
-
-   The floor is what stops that being a licence: 450px is the drawing at 0.85,
-   which is 8.5px labels, and a map whose labels have gone to 6px has stopped
-   being the index it is there to be. A 720px screen hits the floor and scrolls
-   the last of the stage into view instead, which is a thing the panel does
-   anyway and reads as one.
-
-   It was 400px while the drawing was shorter. What made it taller is the parts
-   that used to sit on a shelf underneath — the rack, the bends in none of its
-   slots, the bay and the pad — moving onto the drawing itself, and the shelf
-   they have left is a row the panel no longer draws. So most of the fifty
-   pixels come back, and what the map is holding for them is the whole index
-   rather than most of it. */
+   door and nothing else. */
 .graph svg {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
-  max-height: max(450px, 40vh);
+  max-height: max(620px, 55vh);
 }
 
 /* Stacked under the toy rather than beside it, the panel has the document's own

@@ -24,9 +24,15 @@ const box = (map: ChainMap, id: string) => map.nodes.find(n => n.id === id)
 function checkLayout(map: ChainMap) {
   expect(map.width).toBeGreaterThan(0)
   for (const n of map.nodes) {
-    expect(n.x).toBeGreaterThanOrEqual(0)
+    // A label's x is whichever end of the text it is anchored by, so an
+    // end-anchored one runs leftward from it and its left edge is x - w. Read
+    // as a left edge it reports a right edge past the drawing that no glyph is
+    // ever painted at — which is a size the labels can grow into unnoticed
+    // until one of them happens to be wide enough to trip the check.
+    const left = n.anchor === 'end' ? n.x - n.w : n.x
+    expect(left).toBeGreaterThanOrEqual(0)
     expect(n.y).toBeGreaterThanOrEqual(0)
-    expect(n.x + n.w).toBeLessThanOrEqual(map.width)
+    expect(left + n.w).toBeLessThanOrEqual(map.width)
     expect(n.y + n.h).toBeLessThanOrEqual(map.height)
   }
   // Frames and chips are left out: the toy board's whole job is to contain the

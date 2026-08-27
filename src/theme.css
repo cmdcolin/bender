@@ -18,12 +18,15 @@
   --border-quiet: #202024;
   --border-hover: #45454c;
   /* The panel is an instrument's front plate: everything it holds has to be on
-     screen at once, so the scale runs a step under a document's. */
-  --fs-xs: 10px;
-  --fs-sm: 11px;
-  --fs-md: 12px;
-  --fs-lg: 13px;
-  --fs-xl: 16px;
+     screen at once, so the scale runs a step under a document's. A step, and
+     not two — it ran at 10/11/12 while the signal path was being scaled down to
+     8.5px labels to fit, and a caption set smaller than the map it captions was
+     the panel apologising for room it turned out to have. */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 14px;
+  --fs-xl: 17px;
   --mono: 'SF Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 }
 

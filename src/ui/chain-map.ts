@@ -144,10 +144,15 @@ function nodeId(name: string): string {
   return name.replace(/\W+/g, '_')
 }
 
-const FONT = 10
-const SMALL = 9
-const BOX_H = 20
-const MIN_W = 96
+// The drawing's own scale, which is not the size it ends up: the panel fits it
+// to the column, so what these set is how big the labels are *relative to the
+// boxes and the gaps*. Going up a step here is not the same as scaling the
+// whole drawing up — CAP_H, LABEL_H and every gap stay where they are, so the
+// text grows and the picture barely does.
+const FONT = 12
+const SMALL = 11
+const BOX_H = 24
+const MIN_W = 110
 const PAD_X = 9
 const ROW_GAP = 9
 /** the channel the folded path's cable runs up, between the two columns */
