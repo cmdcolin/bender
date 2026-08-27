@@ -1,0 +1,54 @@
+/* A modal dialog, same as the hunt's: the browser puts it in the top layer,
+   so what this sits behind is never in question. */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(360px, calc(100vw - 24px));
+  padding: 28px 24px;
+  background: var(--bg2);
+  color: var(--fg2);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 10px 30px #000b;
+  text-align: center;
+}
+
+.card::backdrop {
+  background: #000c;
+}
+
+.start {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  padding: 14px 28px;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.start:hover {
+  background: var(--accent2);
+}
+
+.line {
+  margin: 0;
+  color: var(--fg3);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+
+.quiet {
+  background: none;
+  border: none;
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+
+.quiet:hover {
+  color: var(--fg3);
+}

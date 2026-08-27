@@ -30,6 +30,7 @@ import { Presets } from './PresetRow'
 import { SampleReel } from './SampleReel'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
+import { StartOverlay } from './StartOverlay'
 import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
 import { HelpDot, Tip } from './Tip'
@@ -186,7 +187,7 @@ function Panic() {
 const PANIC_HELP =
   'Kills a runaway howl: feedback to zero, and every delay line, buffer and held note emptied. Your knobs stay where you left them — only the sound already in flight goes. The bar fills as the safety limiter leans on the output, so a bar that keeps filling is the board running away.'
 
-export function App() {
+export function App(props: { openedFromLink?: boolean }) {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
   const songPlaying = useStoreValue(engine.songPlaying)
@@ -217,6 +218,10 @@ export function App() {
   // stopped by hand needs no note: you are holding the answer.
   const [landed, setLanded] = useState(false)
   const dismissLanded = useCallback(() => setLanded(false), [])
+  // Up once, for a board that arrived from a link: closing it, by either
+  // door, is the last anyone hears of it — pressing play from the row below
+  // afterwards is a second gesture and gets no overlay to answer to.
+  const [showStart, setShowStart] = useState(!!props.openedFromLink)
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
@@ -507,6 +512,12 @@ export function App() {
             it off: eight seconds of the board playing six strangers reads as a
             fault unless something says otherwise. */}
         <HuntDialog landed={landed} onDismiss={dismissLanded} />
+
+        {/* A link opens a board nobody has heard yet, with the two run
+            buttons buried in the row below — this is what says where to
+            press and starts both machines together, eased up rather than
+            landing at whatever level the board was left. */}
+        {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
 
         <Presets morphSeconds={morphSeconds} />
 

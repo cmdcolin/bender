@@ -16,4 +16,6 @@ if (shared) engine.patch(shared)
 // never carried either way — see runState.
 keepRunState()
 
-createRoot(document.getElementById('root')!).render(<App />)
+createRoot(document.getElementById('root')!).render(
+  <App openedFromLink={!!shared} />,
+)

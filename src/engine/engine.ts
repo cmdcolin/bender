@@ -199,6 +199,7 @@ export class Engine {
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
   private node: AudioWorkletNode | null = null
+  private masterGain: GainNode | null = null
   private micStream: MediaStream | null = null
   private archiveRoll: AbortController | null = null
   private dirty = false
@@ -286,7 +287,9 @@ export class Engine {
         })
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
-    node.connect(ctx.destination)
+    const masterGain = ctx.createGain()
+    node.connect(masterGain).connect(ctx.destination)
+    this.masterGain = masterGain
     ctx.onstatechange = () => this.running.set(ctx.state === 'running')
     this.ctx = ctx
     this.node = node
@@ -735,6 +738,21 @@ export class Engine {
   // and the next press starts that same thing again, so a board running the kit
   // on its own comes back running the kit on its own rather than breaking into
   // the demo song.
+  // What a board arriving already running plays into: a link opens a full
+  // circuit nobody has heard yet, so the first sound out of it starts from
+  // nothing and climbs rather than landing at whatever level it was left.
+  // Every other run line — the two buttons, space — leaves the gain alone,
+  // since by then you've already heard the board and know what it does.
+  fadeIn(seconds = 1.5) {
+    const ctx = this.ctx
+    const gain = this.masterGain
+    if (!ctx || !gain) return
+    const now = ctx.currentTime
+    gain.gain.cancelScheduledValues(now)
+    gain.gain.setValueAtTime(0, now)
+    gain.gain.linearRampToValueAtTime(1, now + seconds)
+  }
+
   toggleRun() {
     const song = this.songPlaying.get()
     const drums = this.drumsPlaying.get()
