@@ -268,7 +268,15 @@ const Cell = memo(function Cell(props: {
     const c = engine.controls.get()
     const held = laneOf(c, step, note)
     const lane = held >= 0 ? held : laneForNote(c, step, note, poly)
-    engine.set(TUNE_LANE_KEYS[lane]![step]!, value)
+    const key = TUNE_LANE_KEYS[lane]![step]!
+    // Drawing on the roll puts the chip on the memory, the way arming record
+    // does. A note written into a memory nothing is playing is a note you drew
+    // and cannot hear: the roll is the one panel where what you are looking at
+    // and what is coming out of the speaker have to be the same thing. The tune
+    // the chip was on is a press of the picker away, and one undo puts back
+    // both it and the note, since the pair land as one entry in the walk.
+    if (Math.round(c.chipTune) !== YOURS) engine.set('chipTune', YOURS)
+    engine.set(key, value)
   }
   const put = (shift: boolean) => write(shift ? HOLD : props.head ? REST : note)
   return (

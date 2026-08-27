@@ -45,6 +45,21 @@ test('a note held over steps draws as one bar', () => {
   expect(lit('C#4 step 2')).toBe(false)
 })
 
+// Drawing into a memory the chip is not playing is the same silence arming
+// record would be: the roll is what you are hearing, or it is a drawing.
+test('drawing on the roll puts the chip on the memory', () => {
+  act(() => engine.set('chipTune', 0))
+  openKeyboard()
+  fireEvent.pointerDown(cell('C4 step 1'), { button: 0 })
+  expect(engine.controls.get().chipTune).toBe(YOURS)
+  expect(engine.controls.get().tuneStep0).toBe(3)
+
+  // Both go back together: the note and the tune it took the chip off.
+  act(() => engine.undo(0))
+  expect(engine.controls.get().chipTune).toBe(0)
+  expect(engine.controls.get().tuneStep0).toBe(REST)
+})
+
 // Recording into a memory the chip is not playing is the one state where every
 // light says it is working and nothing you play comes back.
 test('arming record from the roll puts the chip on the memory', () => {
