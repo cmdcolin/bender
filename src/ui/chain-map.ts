@@ -95,11 +95,16 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
 const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
 
 // And the one you don't. The FM chip has no keyboard and no sequencer of its
-// own — its key input is soldered onto the toy's gate line — so it hangs under
-// the keyboard rather than standing beside it, indented, on the end of that
-// wire. All three are inside the frame because all three are one piece of
-// hardware on one supply, which is what the frame and its rail are there to
-// say; the starve knob on the keyboard's panel bends every one of them.
+// own — its key input is soldered onto the toy's gate line — so it stands next
+// to the keyboard, on the end of that wire, rather than beside the drums as an
+// equal. It hung underneath for a while, which said the same thing and cost a
+// whole row of the drawing to say: a 34px band holding one box, with the half
+// beside it empty. Adjacency says it for nothing, and the row had the width to
+// give — two boxes were being stretched to 190 to carry labels wanting 128.
+//
+// All three are inside the frame because all three are one piece of hardware on
+// one supply, which is what the frame and its rail are there to say; the starve
+// knob on the keyboard's panel bends every one of them.
 const FM_CHIP = 'FM chip'
 
 // The three that take no supply and no trigger from anything: they start where
@@ -149,10 +154,10 @@ function nodeId(name: string): string {
 // boxes and the gaps*. Going up a step here is not the same as scaling the
 // whole drawing up — CAP_H, LABEL_H and every gap stay where they are, so the
 // text grows and the picture barely does.
-const FONT = 12
-const SMALL = 11
-const BOX_H = 24
-const MIN_W = 110
+const FONT = 11
+const SMALL = 10
+const BOX_H = 22
+const MIN_W = 100
 const PAD_X = 9
 const ROW_GAP = 9
 /** the channel the folded path's cable runs up, between the two columns */
@@ -160,12 +165,6 @@ const COL_GAP = 28
 /** an instrument's own box: a name and a count over a fader */
 const INST_H = 34
 const INST_GAP = 12
-/** the lane under the toys that the key line and any trigger bridges drop
-    through, wide enough to carry their labels */
-const KEY_GAP = 22
-/** how far under the keyboard the FM chip is set in, so the two read as a
-    machine and the thing hanging off it rather than as two machines */
-const FM_INSET = 24
 /** the lip a frame carries its name on */
 const CAP_H = 12
 /** the inset the chips sit at inside the toy board's frame */
@@ -313,17 +312,6 @@ function spread(
     n.w = want[i]! + (slack * want[i]!) / total
     n.x = x
     x += n.w + (gaps[i] ?? 0)
-  }
-}
-
-// A row of boxes at one width across a span, which is what a rack looks like.
-// Only for rows short enough that the longest name still fits the share it
-// gets — three across at panel width is not, which is what spread() is for.
-function even(row: MapNode[], x0: number, span: number, gap: number) {
-  const w = (span - gap * (row.length - 1)) / row.length
-  for (const [i, n] of row.entries()) {
-    n.w = w
-    n.x = x0 + i * (w + gap)
   }
 }
 
@@ -550,10 +538,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // it. The band is the usual winner: six boxes across beats two columns.
   const content = Math.ceil(
     Math.max(
-      sum(toys) + INST_GAP + FRAME_PAD * 2,
-      // The FM chip sits in what is left of the keyboard's column after the
-      // inset, so a keyboard cut to its own name can still be too narrow for it.
-      (natural(fm) + FM_INSET) * 2 + INST_GAP + FRAME_PAD * 2,
+      sum(chips) + INST_GAP * 2 + FRAME_PAD * 2,
       sum(lines) + INST_GAP * (lines.length - 1),
       cols *
         Math.max(
@@ -611,14 +596,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   board.y = MARGIN
   const railY = board.y + CAP_H + 6
   const chipY = railY + RAIL_H
-  for (const n of toys) n.y = chipY
-  // The lane under the toys: the key line drops through it into the FM chip,
-  // and any trigger bridge you have patched runs across it on the way. The
-  // chip is pushed down by whatever is in there, so a bridge never lands on it.
+  for (const n of chips) n.y = chipY
+  // The lane under the row, which carries everything written about the row
+  // rather than about one box in it: what the key line is, the bridges you have
+  // patched across it, and — when you have patched none — that there are none.
   const laneY = chipY + INST_H
   const trigY = laneY + TRIG_H
-  fm.y = laneY + KEY_GAP + trigs.length * TRIG_H
-  board.h = fm.y + INST_H - board.y + 4
+  board.h = laneY + Math.max(LABEL_H, trigs.length * TRIG_H) - board.y + 4
 
   const lineY = board.y + board.h + BAND_GAP
   for (const n of lines) n.y = lineY
@@ -640,9 +624,15 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // --- across it, at an origin of zero, so the gutters can be measured off the
   // --- x each box has already landed on and everything shifted once after ----
 
-  even(toys, FRAME_PAD, content - FRAME_PAD * 2, INST_GAP)
-  fm.x = toys[0]!.x + FM_INSET
-  fm.w = toys[0]!.w - FM_INSET
+  // By their labels rather than evenly: the chip is the one you do not play and
+  // it should not come out the size of the two you do.
+  spread(
+    [toys[0]!, fm, toys[1]!],
+    FRAME_PAD,
+    content - FRAME_PAD * 2,
+    [INST_GAP, INST_GAP],
+    natural,
+  )
   spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
   board.x = 0
   mix.x = 0
@@ -803,7 +793,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // Droppers onto the two boxes the bar is over. The FM chip takes the same
   // supply and has no dropper of its own: it is under the keyboard, inside the
   // frame, and a dotted line reaching it would have to cross the row to do it.
-  for (const toy of toys)
+  for (const toy of chips)
     bar(
       `rail-${toy.id}`,
       board,
@@ -817,26 +807,30 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // The key line, which is solder rather than a cable you patched: the FM chip
   // has no keyboard and no sequencer, so every note it plays arrives on the
-  // gate line the toy brings out. It drops straight out of the keyboard's foot
-  // into the chip hanging under it, which is the shape of the thing.
+  // gate line the toy brings out. Straight across the joint between the two,
+  // which standing next to each other is what the shape of the thing has
+  // become.
+  const joint = (toys[0]!.x + toys[0]!.w + fm.x) / 2
   wire(
     'key-line',
     toys[0]!,
     fm,
     [
-      [midX(fm), laneY],
-      [midX(fm), fm.y],
+      [toys[0]!.x + toys[0]!.w, chipY + INST_H / 2],
+      [fm.x, chipY + INST_H / 2],
     ],
     {
       color: k.accent2,
       door: 'Toy keyboard',
-      // Just over the chip rather than mid-drop: the middle of the lane is
-      // where the trigger bridges cross, and a label there lands on one.
+      // In the lane under the joint rather than on it. The gap between two
+      // boxes is twelve pixels and the word is twice that, so a label written
+      // there lands on the count column of whichever box it overhangs — which
+      // is a button, and a word sitting on a button reads as its name.
       label: {
         text: 'key',
-        x: midX(fm) + 4,
-        y: fm.y - 4,
-        anchor: 'start',
+        x: joint,
+        y: laneY + LABEL_H,
+        anchor: 'middle',
       },
     },
   )
@@ -853,7 +847,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         door: 'Trigger patch',
         active: false,
         x: midX(toys[1]!),
-        y: laneY + 4,
+        y: laneY,
         w: textWidth('no trig patched', SMALL),
         h: LABEL_H,
       }),

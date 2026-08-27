@@ -7,41 +7,36 @@
    it with everything else — a scroll box of its own only ever clipped the chain
    and trapped the wheel.
 
-   Width, not max-width: the drawing is fitted to the column it is in. It used
-   to be capped on height alone, and the two never fought over the same axis —
-   the drawing is 420 wide in a 446 column and 573 tall against a 450 ceiling,
-   so the ceiling always won and scaled it to 0.85 on the way past. Ten-point
-   labels arrived as 8.5, and a fifth of the panel's width sat empty to pay for
-   it. Sized to the width instead, the column is what the drawing answers to and
-   the labels land the size they were drawn.
+   max-width and not width: the drawing draws at its own size, and only ever
+   scales down. It used to be capped on height alone and the two never fought
+   over the same axis — 385 wide in a 396 column against 529 tall under a 450
+   ceiling — so the ceiling always won and took the whole drawing to 0.85 on the
+   way past, which is where the 8.5px labels came from. A wider panel is the
+   whole fix: at 406 in a 446 column the drawing fits, and fitting is all it has
+   to do. Scaling it up to fill the column was 35px of height charged to the
+   settings for a tenth of a point of label.
 
-   The ceiling is what the width has to answer to, and it is a ration rather
-   than a number: the panel holds a header, this, and the stage a door on it
-   opens, so what the map may have is the window less the other two. On a tall
-   screen the ration is more than the drawing wants and the width is what sizes
-   it; on a short one the ration wins and the map scales down to it, which is
-   the trade every screen was making unconditionally before.
-
-   The floor is what stops the ration being a licence. 450 was the old ceiling,
-   and holding it as the floor is what says a short screen keeps exactly the map
-   it already had — at 9.4px labels rather than 8.5, because the drawing they
-   are scaled from is bigger now.
+   The ceiling is a ration, and what it rations for is the stage under it. The
+   panel holds a header, this, and whatever a door on it opens, and the last of
+   those is the one you came to turn: Toy keyboard is twenty-one controls, which
+   no arrangement fits beside a map on a laptop. So the reserve is generous and
+   the map yields first — on a tall screen the ration is more than the drawing
+   wants and it draws at its own size, and on a short one the map scales down to
+   what is left.
 
    Fixed and not measured. A ration that read the header would move when the
    preset row unfolds, and a map that resizes because you opened a list is a map
-   that reads as having been done something to.
-
-   What the map gives back on a short screen it gives back always, open or not.
-   The ration used to arrive at the click, which on an 820px screen took a third
-   of the map away the instant you opened a stage: the box you had just aimed at
-   shrank and slid out from under the pointer, and a map that rescales when you
-   press it reads as the press having done something to the path. It lights a
-   door and nothing else. */
+   that reads as having been done something to. Same reason it does not read
+   whether a stage is open: the ration used to arrive at the click, which on an
+   820px screen took a third of the map away the instant you opened a stage —
+   the box you had just aimed at shrank and slid out from under the pointer, and
+   a map that rescales when you press it reads as the press having done
+   something to the path. It lights a door and nothing else. */
 .graph svg {
   display: block;
-  width: 100%;
+  max-width: 100%;
   height: auto;
-  max-height: max(450px, calc(100vh - 330px));
+  max-height: max(420px, calc(100vh - 400px));
 }
 
 /* Stacked under the toy rather than beside it, the panel has the document's own

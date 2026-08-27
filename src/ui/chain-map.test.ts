@@ -24,12 +24,20 @@ const box = (map: ChainMap, id: string) => map.nodes.find(n => n.id === id)
 function checkLayout(map: ChainMap) {
   expect(map.width).toBeGreaterThan(0)
   for (const n of map.nodes) {
-    // A label's x is whichever end of the text it is anchored by, so an
-    // end-anchored one runs leftward from it and its left edge is x - w. Read
-    // as a left edge it reports a right edge past the drawing that no glyph is
-    // ever painted at — which is a size the labels can grow into unnoticed
-    // until one of them happens to be wide enough to trip the check.
-    const left = n.anchor === 'end' ? n.x - n.w : n.x
+    // A label is anchored text and not a box: its x is the point the text is
+    // hung from, and which part of the text that is depends on the anchor —
+    // start hangs the left edge there, end the right, and the default, middle,
+    // the centre. Read as a left edge whatever the anchor, two of the three
+    // report an edge no glyph is ever painted at, and the check passes or fails
+    // on how wide the word happens to be rather than on where it sits.
+    const left =
+      n.kind !== 'label'
+        ? n.x
+        : n.anchor === 'start'
+          ? n.x
+          : n.anchor === 'end'
+            ? n.x - n.w
+            : n.x - n.w / 2
     expect(left).toBeGreaterThanOrEqual(0)
     expect(n.y).toBeGreaterThanOrEqual(0)
     expect(left + n.w).toBeLessThanOrEqual(map.width)
@@ -160,11 +168,11 @@ test('the toy board frames its three chips, and wires the key line', () => {
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)
     expect(chip.x + chip.w).toBeLessThanOrEqual(frame.x + frame.w)
   }
-  // The bar is over the two boxes it can reach. The chip under one of them
-  // takes the same supply and says so by being inside the frame.
-  for (const id of ['Toy_keyboard', 'Toy_drums'])
+  // The bar drops onto all three, which is what one supply means. It reached
+  // only two while the chip sat under the keyboard rather than beside it, and
+  // being inside the frame was what said the chip took the supply too.
+  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums'])
     expect(hop(map, 'toy_board', id)?.color).toBe(PANEL.dim)
-  expect(hop(map, 'toy_board', 'FM_chip')).toBeUndefined()
   // Soldered, so it is on the map whatever the board is set to — and it is the
   // warm colour, because a patched cable is the cool one.
   const key = hop(map, 'Toy_keyboard', 'FM_chip')!
@@ -173,34 +181,37 @@ test('the toy board frames its three chips, and wires the key line', () => {
   expect(key.label?.text).toBe('key')
 })
 
-// The pairing is the point: the two machines you play are one row at one width,
-// and the chip with no keyboard of its own hangs under the keyboard on the key
-// line rather than standing beside them as a third peer.
-test('the two toys pair across the top, with the FM chip set in under one', () => {
+// One row of three, and which one the chip stands next to is the whole of what
+// the drawing has left to say about the key line: it is soldered to the
+// keyboard's gate and to nothing else, so it sits against the keyboard and the
+// drums sit the far side of it.
+test('the three chips make one row, the FM chip against the keyboard', () => {
   const map = buildMap(DEFAULT_CONTROLS)
   const keys = box(map, 'Toy_keyboard')!
   const drums = box(map, 'Toy_drums')!
   const fm = box(map, 'FM_chip')!
-  expect(keys.y).toBe(drums.y)
-  expect(keys.w).toBeCloseTo(drums.w)
-  expect(keys.x + keys.w).toBeLessThanOrEqual(drums.x)
-  // Under the keyboard, inside its column, and inset from its left edge.
-  expect(fm.y).toBeGreaterThan(keys.y + keys.h)
-  expect(fm.x).toBeGreaterThan(keys.x)
-  expect(fm.x + fm.w).toBeCloseTo(keys.x + keys.w)
+  expect(fm.y).toBe(keys.y)
+  expect(drums.y).toBe(keys.y)
+  expect(keys.x + keys.w).toBeLessThanOrEqual(fm.x)
+  expect(fm.x + fm.w).toBeLessThanOrEqual(drums.x)
+  // By its label and not the row's: the one you do not play should not come out
+  // the size of the two you do.
+  expect(fm.w).toBeLessThan(keys.w)
 })
 
-// A bridge you patch runs across the lane the key line drops through, so the
-// chip has to move down out of its way rather than be drawn over.
-test('a patched trigger bridge pushes the FM chip clear of it', () => {
+// A bridge you patch runs across the lane under the row, and the frame has to
+// grow to hold it rather than draw over it.
+test('a patched trigger bridge deepens the board rather than crossing it', () => {
   const plain = buildMap(DEFAULT_CONTROLS)
   const bridged = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1 })
-  expect(box(bridged, 'FM_chip')!.y).toBeGreaterThan(box(plain, 'FM_chip')!.y)
+  expect(box(bridged, 'toy_board')!.h).toBeGreaterThanOrEqual(
+    box(plain, 'toy_board')!.h,
+  )
   const trig = hop(bridged, 'Toy_drums', 'Toy_keyboard')!
   expect(trig.color).toBe(PANEL.mod)
-  expect(box(bridged, 'FM_chip')!.y).toBeGreaterThan(
-    box(bridged, 'Toy_keyboard')!.y + box(bridged, 'Toy_keyboard')!.h,
-  )
+  // The row itself does not move: the lane is under it, and what is in the lane
+  // is what the frame grows for.
+  expect(box(bridged, 'FM_chip')!.y).toBe(box(plain, 'FM_chip')!.y)
 })
 
 test('a source box carries how far up its fader is, on its own travel', () => {
