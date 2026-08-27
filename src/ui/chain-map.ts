@@ -42,6 +42,16 @@ const WIRE_TARGET = [
   'Delay pedal',
 ] as const
 
+// The stages that can be wired to droop with the board's supply, and the
+// control on each that wires it. Brownout drags that rail — so does the toy's
+// starve knob — and this is the only thing on the map that says how far its
+// reach goes past its own box.
+const RAIL_LINK = [
+  ['stompSag', 'Stompbox'],
+  ['tapeMotorRail', 'Tape delay'],
+  ['fbSag', 'Feedback bus'],
+] as const satisfies readonly (readonly [ControlKey, string])[]
+
 const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 
 /** what the rack calls the bends riding in it rather than in one of its slots.
@@ -1132,8 +1142,10 @@ interface Tap {
       it lands on is riding inside another one */
   edge: MapNode
   dash: string
-  /** pushing anything: a wire at no depth, or a mic turned right down, is
-      soldered where it is soldered and draws greyed rather than not at all */
+  /** whether it draws lit. A wire at no depth, or a mic turned right down, is
+      soldered where it is soldered and draws greyed rather than not at all —
+      and a supply line is dim whatever it is carrying, because it is a rail
+      rather than a signal. */
   active: boolean
 }
 
@@ -1188,6 +1200,30 @@ function collectTaps(
       wireDoor: 'Mic',
       dash: '1 3',
       ...mic,
+    })
+  }
+
+  // Where the sag goes. Brownout is on the path because it gates and hums the
+  // mix at a place, but the rail it drags is the board's, and three stages can
+  // be wired to droop with it: the stompbox's 9V, the tape motor's capstan and
+  // the desk's return amps. Each draws only once you have wired it — the link
+  // sits at zero stock, and a rail nothing is hanging off is a line saying
+  // nothing. Dotted in the supply's own dash and dim, like the bar over the toy
+  // board: it is the same rail, and it is not a signal going anywhere.
+  for (const [key, group] of RAIL_LINK) {
+    if (c[key] <= 0) continue
+    const target = ctx.byId.get(nodeId(group))
+    if (!target) continue
+    ctx.doors.add('Brownout')
+    taps.push({
+      id: `rail-${nodeId(group)}`,
+      label: 'supply',
+      door: 'Brownout',
+      wireDoor: 'Brownout',
+      target,
+      edge: footEdge(target),
+      dash: '1 2',
+      active: false,
     })
   }
 
