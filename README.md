@@ -9,10 +9,6 @@ Real-time in the browser, on one AudioWorklet.
 
 **Live: https://cmdcolin.github.io/bender/**
 
-## Screenshot
-
-[![The board on screen: a scope and a rail lamp over a toy keyboard, the body contact pad and the transport under it, and the whole signal path drawn down the right-hand panel with the bent stages ringed in red](img/screenshot.jpg)](https://cmdcolin.github.io/bender/)
-
 ## The signal path
 
 <picture>
