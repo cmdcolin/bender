@@ -182,6 +182,31 @@
   composes: chip from './button.module.css';
 }
 
+/* The two verbs at the head of the row, square where the cuts beside them are
+   pills: a cut is a board with a name, and these two are things you do to
+   whatever board is there. A row where both look alike is a row where 'roll'
+   reads as one more named glitch. */
+.partVerb {
+  composes: chipQuiet from './button.module.css';
+  border-radius: 3px;
+}
+
+.partReset {
+  composes: chipDanger from './button.module.css';
+  border-radius: 3px;
+  margin-right: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Nothing under this heading has moved, so there is nothing to put back. Lit
+   like the rest of the row's dead buttons rather than like a reset, because a
+   reset that glows with no work to do is one you press to find out. */
+.partOff {
+  composes: chipOff from './button.module.css';
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
 /* Lit while the board is standing on this one, so the row says which knife is
    on the bus as well as which are on offer. */
 .cutOn {

@@ -16,7 +16,9 @@ import {
   cutWired,
   type CutDef,
   resetGroup,
+  resetKeys,
   rollGroup,
+  rollKeys,
 } from './presets'
 import { scrollIntoPanel } from './reveal'
 import { ControlSlider } from './Slider'
@@ -73,27 +75,73 @@ function parts(group: Group): Part[] {
 const movedIn = (sliders: SliderDef[], c: Controls) =>
   sliders.filter(d => c[d.key] !== DEFAULT_CONTROLS[d.key]).length
 
-// The cuts on offer under one heading, each of them one press of a knife the
-// board has a name for. A row of chips rather than rows of its own, because
-// nothing here is a control: pressing one moves the controls underneath, which
+// The verbs and the cuts for one heading, in a row above the rows they move.
+// Nothing here is a control: pressing one moves the controls underneath, which
 // is the whole of what it is for — the settings are hard to read cold, and this
 // is the way in that leaves them on screen saying what they became.
-function CutRow({
+//
+// The dice and the way back are per heading and not only per stage because a
+// heading is where the board keeps the things that only mean anything together.
+// Rolling the whole of *Toy keyboard* to hear a different knife on its bus
+// re-rolls its clock, its supply and its bend pot as well, so what you get is a
+// different board and not a different cut — and the three controls you pointed
+// at are the ones you can no longer hear the effect of.
+//
+// Inside the fold rather than on the heading, like the cuts: a row of verbs on
+// a heading you have not opened is a promise about controls you cannot see.
+function PartVerbs({
   cuts,
   group,
   part,
+  rows,
+  moved,
   standing,
   seconds,
 }: {
   cuts: CutDef[]
   group: Group
   part: string
+  rows: SliderDef[]
+  moved: number
   standing: string
   seconds: number
 }) {
   const wired = useBoardValue(c => cutWired(group.name, part, c))
+  const keys = rows.map(d => d.key)
   return (
     <div className={styles.cuts}>
+      <Tip
+        text={`roll the ${rows.length} controls under ${part} somewhere new and leave the rest of ${group.name} where it stands`}
+      >
+        <button
+          className={styles.partVerb}
+          onClick={() =>
+            engine.morphTo(
+              rollKeys(engine.controls.get(), keys, Math.random, true),
+              seconds,
+            )
+          }
+        >
+          roll
+        </button>
+      </Tip>
+      <Tip
+        text={
+          moved > 0
+            ? `put ${part}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
+            : `${part} is already where it booted`
+        }
+      >
+        <button
+          className={moved > 0 ? styles.partReset : styles.partOff}
+          disabled={moved === 0}
+          onClick={() =>
+            engine.morphTo(resetKeys(engine.controls.get(), keys), seconds)
+          }
+        >
+          {moved > 0 ? `reset ${moved}` : 'reset'}
+        </button>
+      </Tip>
       {cuts.map(cut => (
         <Tip
           key={cut.name}
@@ -109,26 +157,28 @@ function CutRow({
           </button>
         </Tip>
       ))}
-      <Tip
-        text={
-          wired
-            ? `take the knife off ${group.name}'s buses and leave the rest of the stage alone`
-            : `there is no knife on ${group.name}'s buses`
-        }
-      >
-        <button
-          className={wired ? styles.cut : styles.cutOff}
-          disabled={!wired}
-          onClick={() =>
-            engine.morphTo(
-              cutOff(group.name, part, engine.controls.get()),
-              seconds,
-            )
+      {cuts.length > 0 && (
+        <Tip
+          text={
+            wired
+              ? `take the knife off ${group.name}'s buses and leave the rest of the stage alone`
+              : `there is no knife on ${group.name}'s buses`
           }
         >
-          none
-        </button>
-      </Tip>
+          <button
+            className={wired ? styles.cut : styles.cutOff}
+            disabled={!wired}
+            onClick={() =>
+              engine.morphTo(
+                cutOff(group.name, part, engine.controls.get()),
+                seconds,
+              )
+            }
+          >
+            none
+          </button>
+        </Tip>
+      )}
     </div>
   )
 }
@@ -186,15 +236,15 @@ function PartFold({
           {says}
         </span>
       </summary>
-      {cuts.length > 0 && (
-        <CutRow
-          cuts={cuts}
-          group={group}
-          part={name}
-          standing={standing}
-          seconds={seconds}
-        />
-      )}
+      <PartVerbs
+        cuts={cuts}
+        group={group}
+        part={name}
+        rows={rows}
+        moved={moved}
+        standing={standing}
+        seconds={seconds}
+      />
       {rows.map(def => (
         <ControlSlider key={def.key} def={def} />
       ))}

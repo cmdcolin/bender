@@ -167,10 +167,15 @@ const audible = (def: SliderDef, rand: () => number) =>
 // The Parts rack does not: naming it is a hand asking for it, and the reason the
 // blind dice skip the rack is that they cannot tell a dud roll from a dud board.
 // Somebody who pointed at it can.
+//
+// `named` says the hand pointed at these controls in particular rather than at
+// a board they happen to be on, which is the one case a shy control rolls like
+// any other — pressing the dice on the crackle is asking for crackle.
 export function rollKeys(
   current: Controls,
   keys: Iterable<ControlKey>,
   rand: () => number,
+  named = false,
 ): Controls {
   const next = { ...current }
   const moved = new Set<ControlKey>()
@@ -178,10 +183,20 @@ export function rollKeys(
     if (YOURS.has(key) || CLOCK_KEYS.has(key)) continue
     const def = SLIDER_BY_KEY.get(key)
     if (!def) continue
-    next[key] = rollValue(def, rand)
+    next[key] = rollValue(def, rand, named)
     moved.add(key)
   }
   return inTime(next, k => moved.has(k))
+}
+
+/** The controls named, back where they booted, and nothing else moved. */
+export function resetKeys(
+  current: Controls,
+  keys: Iterable<ControlKey>,
+): Controls {
+  const next = { ...current }
+  for (const key of keys) next[key] = DEFAULT_CONTROLS[key]
+  return next
 }
 
 // One row running against the others, about half the time. A fresh length on
@@ -230,8 +245,5 @@ export function rollGroup(
 }
 
 /** Every control the stage owns, back where it booted. */
-export function resetGroup(group: Group, current: Controls): Controls {
-  const next = { ...current }
-  for (const key of groupKeys(group)) next[key] = DEFAULT_CONTROLS[key]
-  return next
-}
+export const resetGroup = (group: Group, current: Controls): Controls =>
+  resetKeys(current, groupKeys(group))

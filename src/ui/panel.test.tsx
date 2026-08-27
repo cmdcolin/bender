@@ -327,3 +327,45 @@ test('a morph in flight puts the bar up instead', async () => {
   expect(screen.getByText('stop here')).toBeTruthy()
   expect(screen.queryByDisplayValue(/^morph:/)).toBeNull()
 })
+
+// A heading is where the board keeps the controls that only mean anything
+// together, so it gets its own dice: rolling the whole stage to hear a
+// different knife on the bus re-rolls the clock and the supply as well, and
+// what you get is a different board rather than a different cut.
+const inFold = (head: HTMLElement, name: RegExp) =>
+  within(head.parentElement!).getByRole('button', { name })
+
+test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  openFmChip()
+  fireEvent.click(knife())
+  const rows = group('FM chip')
+    .sliders.filter(s => s.part === 'knife on the bus')
+    .map(s => s.key)
+  const outside = group('FM chip')
+    .sliders.filter(s => !rows.includes(s.key))
+    .map(s => s.key)
+  const was = { ...engine.controls.get() }
+
+  act(() => fireEvent.click(inFold(knife(), /^roll$/)))
+  const now = engine.controls.get()
+  expect(rows.some(k => now[k] !== was[k])).toBe(true)
+  for (const k of outside) expect(now[k]).toBe(was[k])
+})
+
+// And its own way back, which is the count it is carrying.
+test('a fold puts back only what is under it', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS, fmDataLine: 3, fmBright: 0.9 }))
+  openFmChip()
+  fireEvent.click(knife())
+  act(() => fireEvent.click(inFold(knife(), /^reset 1$/)))
+  expect(engine.controls.get().fmDataLine).toBe(DEFAULT_CONTROLS.fmDataLine)
+  expect(engine.controls.get().fmBright).toBe(0.9)
+})
+
+test('a fold with nothing moved under it offers no way back', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  openFmChip()
+  fireEvent.click(knife())
+  expect((inFold(knife(), /^reset$/) as HTMLButtonElement).disabled).toBe(true)
+})
