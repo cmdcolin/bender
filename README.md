@@ -87,3 +87,8 @@ pnpm dev
 
 Initial template with Claude Fable. Follows in footsteps of
 https://github.com/cmdcolin/ntsc.js
+
+## Demos
+
+- Dubby drums
+  https://cmdcolin.github.io/bender/#p=ABYAEgFkBgIAAwJgAAEAUABaAAkMjAEBiQEBhgEBhAEAggEBgAEAfQB8AHoAeAIBAFcCPwAtAAoATQAfAlEBAAEBAj0AkIACAIEBAICRAgKAgAIAgYECBQsBCAE5AAEDHgEBAAQCAxDIAQDLAwIaATEnAQm_AgEEAsUEAkwBvA8AMwBpASIFthIBCAANAHEAAwALAFUABwAFADEACQAHACEK-gsGXwADAAQWBA
