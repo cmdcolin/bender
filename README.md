@@ -9,6 +9,10 @@ Real-time in the browser, on one AudioWorklet.
 
 **Live: https://cmdcolin.github.io/bender/**
 
+## Screenshot
+
+[![The board on screen: a scope and a rail lamp over a toy keyboard, the body contact pad and the transport under it, and the whole signal path drawn down the right-hand panel with the bent stages ringed in red](img/screenshot.jpg)](https://cmdcolin.github.io/bender/)
+
 ## The signal path
 
 <picture>
@@ -17,8 +21,11 @@ Real-time in the browser, on one AudioWorklet.
 </picture>
 
 The panel is a live drawing of this chain: click a box to open its controls, and
-the drawing itself changes as you patch the board. Full explanation in
-[How it works](docs/HOW-IT-WORKS.md).
+the drawing itself changes as you patch the board.
+
+![The app window with the panel boxed in red down the right-hand side and enlarged over the picture: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the six bend slots beside the pedals and the tape machine, patch wires labelled with their depths arching in from the LFO and the envelope, and the feedback bus running back under the whole run](docs/img/panel-callout.jpg)
+
+Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 
 ## Features
 
