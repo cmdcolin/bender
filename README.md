@@ -54,11 +54,8 @@ pnpm dev
 
 ## Footnote
 
-Initial template with Claude Fable. Follows in footsteps of
-https://github.com/cmdcolin/ntsc.js
-
-This app inspired by hunching over broken keyboards on the floor and conjuring
-harsh noise out of the ether
+Initial template with Claude Fable and extensively vibecoded. Follows in
+footsteps of https://github.com/cmdcolin/ntsc.js
 
 ## Demos
 

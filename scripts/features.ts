@@ -21,6 +21,7 @@ import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls'
 import type { Group, SliderDef } from '../src/ui/controls/types'
 import { STAGE_ORDER } from '../src/ui/controls/types'
 import { CUTS } from '../src/ui/presets/cuts'
+import { RIGS } from '../src/ui/presets/rigs'
 import { PRESETS } from '../src/ui/presets/table'
 import { boardHash } from '../src/ui/share'
 import { DEFAULT_CONTROLS } from '../src/controls'
@@ -261,6 +262,17 @@ keeps them too — the knife goes on and the rows under it say which controls
 that was:\n\n${lines}\n`
 }
 
+// A stage that only says anything with every knob on it pointing the same way
+// keeps a row of whole settings, the way a bus keeps a row of cuts.
+function rigs(g: Group): string {
+  const mine = RIGS.filter(r => r.group === g.name)
+  if (mine.length === 0) return ''
+  const lines = mine.map(r => `- **${r.name}**: ${r.blurb}`).join('\n')
+  return `\nNamed settings, one press each at the head of the panel — the stage
+goes back to stock and the setting is written over it, so the rows underneath
+say what it became:\n\n${lines}\n`
+}
+
 function groupSection(g: Group): string {
   const blurb = BLURBS[g.name]
   if (!blurb) {
@@ -271,7 +283,7 @@ function groupSection(g: Group): string {
   const table = rows(g.sliders).join('\n')
   // The doc tells people a roll leaves the shy ones alone, so it had better say
   // which those are.
-  return `### ${g.name}\n\n${blurb}\n${grid(g)}${cuts(g)}\n${fold(
+  return `### ${g.name}\n\n${blurb}\n${grid(g)}${rigs(g)}${cuts(g)}\n${fold(
     `${g.sliders.length} control${g.sliders.length === 1 ? '' : 's'}`,
     `| control | range | what it does |\n| --- | --- | --- |\n${table}`,
   )}\n`
@@ -302,7 +314,8 @@ function build(): string {
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. ${sliders.length} knobs and switches in ${GROUPS.length} groups, ${num(BENDS.length)} bends competing for ${num(slots)} slots,
-${ROMS.length} ROM tunes, ${PRESETS.length} presets and ${CUTS.length} named cuts — and everything below comes off
+${ROMS.length} ROM tunes, ${PRESETS.length} presets, ${RIGS.length} desk settings and ${CUTS.length} named cuts — and everything
+below comes off
 the control tables themselves, so the list cannot drift from the instrument.
 
 Try it: **${LIVE}**

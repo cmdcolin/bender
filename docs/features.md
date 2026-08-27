@@ -4,8 +4,9 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 215 knobs and switches in 30 groups, seven bends competing for six slots,
-18 ROM tunes, 52 presets and 20 named cuts — and everything below comes off the
-control tables themselves, so the list cannot drift from the instrument.
+18 ROM tunes, 52 presets, 8 desk settings and 20 named cuts — and everything
+below comes off the control tables themselves, so the list cannot drift from the
+instrument.
 
 Try it: **https://cmdcolin.github.io/bender/**
 
@@ -75,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 13 of them, mostly the ones that cover the
+preset that names it still gets it. 19 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -120,13 +121,13 @@ too — the knife goes on and the rows under it say which controls that was:
 | Bend spot       | off, clock, counter, bias, gate                                                                                                                                                     | Where the virtual pot is soldered onto the die: clock feedback, program counter, DAC bias, or the gate line      |
 | Bend pot        | off to full                                                                                                                                                                         | Turns the pot on the chosen bend spot                                                                            |
 | Crystal drift   | off to full                                                                                                                                                                         | How far the chip’s clock wanders off the ratio you set it to                                                     |
-| Starve          | off to full                                                                                                                                                                         | Sags the shared toy supply rail                                                                                  |
-| Batteries       | off to full                                                                                                                                                                         | How flat the cells are                                                                                           |
+| Starve †        | off to full                                                                                                                                                                         | Sags the shared toy supply rail                                                                                  |
+| Batteries †     | off to full                                                                                                                                                                         | How flat the cells are                                                                                           |
 | Lead resistance | off to full                                                                                                                                                                         | A resistor in series with the cells                                                                              |
 | Reservoir       | off to full                                                                                                                                                                         | How much of the board’s capacitance sits behind whatever the starve is pulling on                                |
 | Clip chatter    | 0 to 40 Hz                                                                                                                                                                          | Bare metal dragged across the pads, and how often it finds one                                                   |
 | Clip on clock   | off to full                                                                                                                                                                         | Whether the clip lands on the timing pin instead of the supply, which is the difference between a sag and a dive |
-| Latch-up        | off to full                                                                                                                                                                         | How often a brownout jams the chip instead of rebooting it                                                       |
+| Latch-up †      | off to full                                                                                                                                                                         | How often a brownout jams the chip instead of rebooting it                                                       |
 | Data line †     | off, D0, D1, D2, D3, D4, D5                                                                                                                                                         | Which wire between the ROM and the divider the knife found                                                       |
 | Data fault      | cut, to ground, to +V, bridged                                                                                                                                                      | What happened to the wire                                                                                        |
 | Address line †  | off, A0, A1, A2, A3, A4                                                                                                                                                             | Which wire between the program counter and the ROM the knife found                                               |
@@ -671,6 +672,35 @@ Two axes, for the hand on the circuit.
 The output fed back in, at a loop time short enough for kHz mixer squeal.
 _Patched into_ decides where the return lands.
 
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
+
+- **one squeal**: The whole of the no-input mixer in four controls — one send
+  round a short cord, tilted bright, into amps that saturate rather than square
+  off
+- **slow throb**: Two strips a few tenths of a millisecond apart, which is close
+  enough to fight over the same note and far enough that neither wins — the beat
+  is the difference between the two cords
+- **never settles**: Three cords of no common length wired into a ring, each
+  recirculating its neighbour — a squeal, a flutter and an echo with no mode any
+  of them can hold, wandering untouched
+- **motorboat**: A dried-out coupling cap on the return: the loop climbs, walks
+  its own bias to cutoff, dies, drains and does it again — a rhythm out of a
+  desk with no clock on it
+- **buzzsaw octave**: One loud strip into hard rails set well apart — the wave
+  squares off on one half before the other, so what comes back is an octave
+  under the squeal and a pile of dc
+- **hash**: Three squeals a hair apart through amps too slow to draw any of them
+  — what a slew limiter does to a sum is not what it does to either part, and
+  none of it has harmonics
+- **browns out the toy**: The return soldered to the supply rail the toy runs on
+  — the louder the desk screams the less there is to make the tune out of, and
+  the tune is what is feeding it
+- **the loop picks the note**: The return on oscillator A’s FM pin, on a cord
+  long enough to hear go round — the loop is no longer a squeal at a pitch, it
+  is what sets the pitch
+
 <details>
 <summary>16 controls</summary>
 
@@ -735,8 +765,8 @@ The mains supply failing: sag, dropouts, crackle and hum.
 
 | control    | range          | what it does                                                                                                          |
 | ---------- | -------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Sag        | off to full    | The master supply sags under load: loud passages collapse and pump like a dying battery                               |
-| Dropouts   | 0 to 50 Hz     | Random full dropouts — a loose power jack                                                                             |
+| Sag †      | off to full    | The master supply sags under load: loud passages collapse and pump like a dying battery                               |
+| Dropouts † | 0 to 50 Hz     | Random full dropouts — a loose power jack                                                                             |
 | Crackle †  | off to full    | Crackle injected in proportion to how hard the supply is working                                                      |
 | Ground hum | off to full    | A ground loop: mains fundamental plus rectifier buzz, louder as the supply strains, with the ripple wobbling the rail |
 | Mains      | 50 Hz or 60 Hz | Which grid you’re plugged into                                                                                        |
@@ -778,7 +808,7 @@ or all at once.
 | Timing pin   | 0.2 ms to 2 s        | The decoupling cap on the oscillator, as the time it averages the rail over                                                       |
 | Watchdog     | 0.2 to 0.6 V         | Where the reset chip decides the supply has failed                                                                                |
 | Latch hold   | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                                 |
-| Clip bite    | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
+| Clip bite †  | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
 | Clip dwell   | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                                         |
 | Clip charge  | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down                |
 | Clip release | 2 to 2000 per second | How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate |

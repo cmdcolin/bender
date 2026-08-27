@@ -217,3 +217,17 @@
 .cutOff {
   composes: chipOff from './button.module.css';
 }
+
+/* A stage's own settings, over the rows they move. Same pills as the cuts,
+   since they are the same promise at stage scale, with the word in front of
+   them that a heading gives the cuts for free. */
+.rigs {
+  composes: cuts;
+  align-items: baseline;
+}
+
+.rigsLabel {
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+  margin-right: 2px;
+}

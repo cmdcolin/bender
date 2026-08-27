@@ -3,7 +3,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../../controls'
-import { GROUPS, sliderFor } from '../controls'
+import { choiceValue, GROUPS, sliderFor } from '../controls'
 import { formatValue } from '../slider-scale'
 
 // A knife on a bus is three controls that only mean anything together — a wire,
@@ -22,16 +22,7 @@ export interface CutDef {
 
 const KNIFE = 'knife on the bus'
 
-// By name, so a bus growing a wire or a fault renames nothing here and a cut
-// naming a wire that no longer exists fails loudly rather than landing on
-// whatever is at that index now.
-function pick(key: ControlKey, choice: string): number {
-  const def = sliderFor(key)
-  const at = def.choices?.indexOf(choice)
-  if (at === undefined || at < 0)
-    throw new Error(`${key} has no choice named '${choice}'`)
-  return def.min + at
-}
+const pick = choiceValue
 
 export const CUTS: CutDef[] = [
   {

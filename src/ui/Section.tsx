@@ -12,6 +12,7 @@ import { SlotRack } from './SlotRack'
 import { TuneRoll } from './TuneRoll'
 import {
   applyCut,
+  applyRig,
   cutOff,
   cutSays,
   cutsFor,
@@ -20,6 +21,8 @@ import {
   type CutDef,
   resetGroup,
   resetKeys,
+  rigsFor,
+  rigStands,
   rollGroup,
   rollKeys,
 } from './presets'
@@ -183,6 +186,40 @@ function PartVerbs({
           </button>
         </Tip>
       )}
+    </div>
+  )
+}
+
+// A stage's settings, where the stage is one machine rather than a row of
+// separate effects and any single knob on it does nothing you can hear. The
+// desk is sixteen controls that only mean something in combination, and a hand
+// arriving at it has nowhere to start; these are the places it goes that are
+// worth hearing, named for the noise and not for the wiring. Above the rows and
+// under the picture, because the picture is what a rig visibly changes.
+function Rigs({ group, seconds }: { group: Group; seconds: number }) {
+  const rigs = rigsFor(group.name)
+  const standing = useBoardValue(
+    c => rigs.find(rig => rigStands(rig, c))?.name ?? '',
+  )
+  if (rigs.length === 0) return null
+  return (
+    <div className={styles.rigs}>
+      <span className={styles.rigsLabel}>settings</span>
+      {rigs.map(rig => (
+        <Tip
+          key={rig.name}
+          text={`${rig.blurb}. One press: ${group.name} goes back to stock and this is written over it — the rows under here say what it became.`}
+        >
+          <button
+            className={standing === rig.name ? styles.cutOn : styles.cut}
+            onClick={() =>
+              engine.morphTo(applyRig(rig, engine.controls.get()), seconds)
+            }
+          >
+            {rig.name}
+          </button>
+        </Tip>
+      ))}
     </div>
   )
 }
@@ -413,6 +450,7 @@ export function OpenGroup({
         {group.editor?.kind === 'feedback' && <FeedbackLoops />}
         {group.editor?.kind === 'slots' && <SlotRack />}
         {group.editor?.kind === 'patch' && <PatchBay />}
+        <Rigs group={group} seconds={seconds} />
         <Rows key={group.name} group={group} seconds={seconds} />
       </div>
     </div>

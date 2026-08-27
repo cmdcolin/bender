@@ -112,6 +112,17 @@ export function groupFor(key: ControlKey): string {
   return name
 }
 
+/** The number behind a named choice, so a catalog naming a wire survives the
+    bus growing another one — and a name that has gone fails loudly rather than
+    landing on whatever sits at that index now. */
+export function choiceValue(key: ControlKey, choice: string): number {
+  const def = sliderFor(key)
+  const at = def.choices?.indexOf(choice)
+  if (at === undefined || at < 0)
+    throw new Error(`${key} has no choice named '${choice}'`)
+  return def.min + at
+}
+
 export function snapToStep(
   def: Pick<SliderDef, 'min' | 'max' | 'step'>,
   value: number,
