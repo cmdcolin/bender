@@ -52,6 +52,23 @@ function stubLayout() {
   // pointer events and neither half of pointer capture.
   Element.prototype.hasPointerCapture ??= () => false
   Element.prototype.releasePointerCapture ??= () => {}
+  // Anything the panel opens over the signal path — a tip, the roll menu — is a
+  // popover, so the top layer clears the path's own scrolling and clipping
+  // without a portal to escape them or a z-index to outbid them. jsdom has the
+  // `display: none` half of that (its stylesheet hides every [popover]) and
+  // neither the top layer nor the calls that promote an element into it, so
+  // without this an opened menu is in the document and inaccessible to every
+  // query that respects what a screen reader would see.
+  //
+  // Setting display is what stands in for `:popover-open`, which is the state
+  // jsdom cannot hold. Nothing here wants the top layer itself: what a test
+  // asks of an open popover is that it is on screen with its buttons reachable.
+  HTMLElement.prototype.showPopover ??= function (this: HTMLElement) {
+    this.style.display = 'block'
+  }
+  HTMLElement.prototype.hidePopover ??= function (this: HTMLElement) {
+    this.style.display = ''
+  }
 }
 
 // The engine is a module singleton, so one test's turning is the next one's

@@ -46,13 +46,16 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Every row of verbs in the panel is the same row: buttons at their own width,
-   wrapping when they run out. Nothing stretches to fill a line, so a button's
-   width says how long its label is and nothing else — a row that wrapped used
-   to hand its last two buttons the whole leftover width and read as a
-   different, more important kind of button. */
-.actions,
-.dice {
+/* The panel's row of verbs: buttons at their own width, wrapping when they run
+   out. Nothing stretches to fill a line, so a button's width says how long its
+   label is and nothing else — a row that wrapped used to hand its last two
+   buttons the whole leftover width and read as a different, more important kind
+   of button.
+
+   There were two such rows. The second was the eight rolls, seven of them
+   opening with the word this row's first button already is, and they are behind
+   its caret now. */
+.actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

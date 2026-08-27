@@ -12,6 +12,7 @@ import { gitSha, versionLabel } from '../version'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useStoreValue } from './ControlsContext'
+import { Dice } from './Dice'
 import { GROUPS } from './controls'
 import { useDrumKeys } from './drumKeys'
 import { HuntDialog } from './HuntDialog'
@@ -24,7 +25,7 @@ import {
   saveMorph,
   type MorphSeconds,
 } from './morph'
-import { huntCandidates, mutate, randomLook, SCENARIOS } from './presets'
+import { mutate } from './presets'
 import { Presets } from './PresetRow'
 import { SampleReel } from './SampleReel'
 import { Scope } from './Scope'
@@ -386,19 +387,7 @@ export function App() {
         </div>
 
         <div className={styles.actions}>
-          <Tip text="a board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern, levels and what is running stay put">
-            <button
-              className={styles.btn}
-              onClick={() =>
-                engine.morphTo(
-                  randomLook(engine.controls.get(), Math.random),
-                  morphSeconds,
-                )
-              }
-            >
-              random
-            </button>
-          </Tip>
+          <Dice seconds={morphSeconds} onLanded={setLanded} />
           <Tip text="keep this board and nudge every control around where it sits, in time: the tempo stays put and the delay, slice, roll and LFO land back on the grid — shift for wild, alt for gentle">
             <button
               className={styles.btn}
@@ -474,42 +463,6 @@ export function App() {
           )}
         </div>
 
-        {/* Rolls that are about how the stages sit together, so no one panel
-            could offer them. The ones that are about a single stage live in
-            that stage's own header, next to its reset. */}
-        <div className={styles.dice}>
-          {SCENARIOS.map(s => (
-            <Tip key={s.name} text={s.blurb}>
-              <button
-                className={styles.btn}
-                onClick={() =>
-                  engine.morphTo(
-                    s.roll(engine.controls.get(), Math.random),
-                    morphSeconds,
-                  )
-                }
-              >
-                {s.label}
-              </button>
-            </Tip>
-          ))}
-          {/* The one roll that listens to what it rolled. It plays its way
-              through the candidates, so it takes as long as it takes, and the
-              dialog it puts up is where it says so and where it is stopped. */}
-          <Tip text="roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. A dialog says which board it is on while it listens, and stops it there">
-            <button
-              className={styles.btn}
-              onClick={() => {
-                setLanded(false)
-                void engine
-                  .hunt(huntCandidates(engine.controls.get(), Math.random))
-                  .then(best => setLanded(best !== null))
-              }}
-            >
-              hunt an edge
-            </button>
-          </Tip>
-        </div>
         {/* What the hunt is doing while it does it, and the only way to call
             it off: eight seconds of the board playing six strangers reads as a
             fault unless something says otherwise. */}
