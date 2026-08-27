@@ -25,12 +25,24 @@
 
 /* Folded away and unconnected, this row is the only way to reach the wire — so
    it is drawn as the button it is rather than as a heading, which is how it
-   went unfound. */
+   went unfound.
+
+   As wide as its words and no wider, and a size down. It spanned the panel in
+   the accent colour, which made the loudest thing on the board after panic a
+   permanent advertisement for hardware most sessions never plug in — and it is
+   the *unconnected* state, so that is every session, forever. Findable is what
+   the border is for and a button-sized button is still findable. Connected, it
+   goes back to being the heading it is: there is something under it then.
+
+   width rather than display: a summary draws its own marker off `list-item`,
+   and laying this out any other way takes the marker back off it. */
 .headerCall {
   composes: header;
+  width: fit-content;
+  font-size: var(--fs-sm);
   border: 1px solid var(--accent);
   border-radius: 3px;
-  padding: 3px 6px;
+  padding: 2px 8px 2px 4px;
 }
 
 .headerCall .quiet {

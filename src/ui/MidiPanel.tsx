@@ -404,7 +404,7 @@ export function MidiPanel() {
           ? 'refused'
           : status === 'requesting'
             ? 'asking…'
-            : 'off — press to connect a controller'
+            : 'off — connect a controller'
 
   // A disclosure, which the browser already has: <details> keeps the open state,
   // draws its own marker and works from the keyboard, so none of that is written

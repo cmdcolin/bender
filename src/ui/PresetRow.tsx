@@ -17,8 +17,10 @@ const DRAG_SLOP = 4
 const DRAG_FULL = 140
 
 // How many chips the row shows before you ask for the rest. Enough to browse
-// without the panel's first screen being nothing but presets.
-const COLLAPSED = 12
+// without the panel's first screen being nothing but presets — and picked to
+// fill its last line rather than leave one chip stranded on a third, which
+// reads as the fold having happened somewhere arbitrary.
+const COLLAPSED = 11
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 

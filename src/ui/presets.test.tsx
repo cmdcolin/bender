@@ -182,7 +182,7 @@ test('the row says what it is and what it does', () => {
 
 // Forty-five chips is a wall, so the row shows a dozen and the rest arrive when
 // you ask for them.
-const COLLAPSED = 12 // how many the row shows shut, from Presets.tsx
+const COLLAPSED = 11 // how many the row shows shut, from Presets.tsx
 const toggle = () => screen.getByRole('button', { name: /show|hide/ })
 const chips = () =>
   screen.getAllByRole('button').filter(b => b !== toggle()).length
