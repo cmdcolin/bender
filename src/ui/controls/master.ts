@@ -81,7 +81,7 @@ export const MASTER_GROUPS: Group[] = [
         step: 0.1,
         unit: 'ms',
         curve: 'log',
-        help: 'The decoupling cap on the oscillator, as the time it averages the rail over. One RC oscillator clocks the whole chip — pitch, tempo and envelopes are all it, divided — so they cannot come apart. What this decides is which sags the timebase notices. At the stock 120 ms a single note’s current is gone before the clock sees it, which is why a chord sags without the beat stumbling, and only a sag that outlasts it takes the tempo down. Scrape the cap off and nothing is averaged: every note in a chord trips the tune. Wind it up and the timebase stops hearing the rail at all, and the pitch dives while the tempo holds — which no chip with one oscillator in it can do, and is the sound of a board somebody has already been at.',
+        help: 'The decoupling cap on the oscillator, as the time it averages the rail over. It decides which sags the timebase notices: at the stock 120 ms a chord sags without the beat stumbling. Scrape it off and every note trips the tune.',
       },
       {
         key: 'chipWatchdog',
@@ -90,7 +90,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 0.6,
         step: 0.005,
         unit: 'V',
-        help: 'Where the reset chip decides the supply has failed. It cannot go under the voltage the die stops running at — a watchdog watches for the chip failing, so the bottom of this knob is that point and not a millivolt lower. Sitting there, the reboot is the last thing that happens on the way down and you hear the whole dive first. Up at the top the toy is being reset while it is still perfectly able to run: no sag ever gets going, and the tune simply restarts and restarts.',
+        help: 'Where the reset chip decides the supply has failed. At the bottom the reboot is the last thing to happen on the way down and you hear the whole dive first; at the top the toy resets while it could still run, so the tune just restarts.',
       },
       {
         key: 'chipLatchHold',
@@ -99,7 +99,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 0.19,
         step: 0.005,
         unit: 'V',
-        help: 'Where a jammed die and its supply come to rest against each other. A latch is a short the chip cannot let go of, and it needs some rail left to hold itself in — so the two settle and sit there, which is why the note screams instead of stopping. Down near nothing that is a growl under the floor; up near the voltage the chip gives up at it is a shriek that nearly resolves into a note. Whether it latches at all is the toy’s own Latch-up knob; this is what it sounds like when it does.',
+        help: 'Where a jammed die and its supply come to rest against each other — a latch needs some rail left to hold itself in, which is why the note screams instead of stopping. Low is a growl under the floor, high a shriek that nearly makes a note.',
       },
       {
         key: 'chipClipBite',
@@ -108,7 +108,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 4,
         step: 0.05,
         unit: '',
-        help: 'How hard bare metal chokes the supply when it lands. A paperclip is not a switch and it is not a short: it bounces, it is held in fingers that move, and it lands through skin and oxide. Low, it is a lean on the pitch. High, it is a full brownout on every touch. Crank it and each contact takes the rail past the watchdog, so Clip chatter becomes a reboot machine.',
+        help: 'How hard bare metal chokes the supply when it lands. Low is a lean on the pitch; high is a full brownout on every touch. Crank it and each contact trips the watchdog, so Clip chatter becomes a reboot machine.',
       },
       {
         key: 'chipClipHold',
@@ -118,7 +118,7 @@ export const MASTER_GROUPS: Group[] = [
         step: 1,
         unit: 'ms',
         curve: 'log',
-        help: 'How long one touch lasts on average. Never twice the same — the spread moves with the mean, so it is a hand at every setting rather than a metronome at one end. Short enough and the rail has not finished leaving before the metal lifts, so you get the top of the dive over and over; long enough and every touch arrives all the way at the bottom and sits there.',
+        help: 'How long one touch lasts on average, never twice the same. Short, the rail has not finished leaving before the metal lifts, so you get the top of the dive over and over; long, every touch arrives at the bottom and sits there.',
       },
       {
         key: 'chipClipCharge',
@@ -138,7 +138,7 @@ export const MASTER_GROUPS: Group[] = [
         step: 1,
         unit: '/s',
         curve: 'log',
-        help: 'And how fast the clock comes back when the metal lifts, which is not a discharge but a disconnection — the cap leaves the circuit altogether and the node is left with its own resistor and the picofarads inside the die. Stock, that is ten times the charge rate, and the asymmetry is the whole reason the bend reads as a dive: the falls are what there is time to hear. Bring this down onto Clip charge and the two ends take the same time, and dives turn into a warble.',
+        help: 'How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate. That asymmetry is why the bend reads as a dive; even it up and dives turn into a warble.',
       },
       {
         key: 'chipDragOct',
@@ -147,7 +147,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 8,
         step: 0.05,
         unit: 'oct',
-        help: 'How far the cap on the timing pin can divide the clock. Starving the rail is worth a fraction of an octave before the chip stops running at all; hanging a capacitor off the oscillator divides it, and dividing has no such limit. Four octaves is stock — enough to put the melody under the bottom of its own keyboard and turn its squares into something you feel rather than hear. The whole timebase goes with it, so the tune, the tempo and the envelopes dive together. How much of it you get is Clip on clock; this is how deep the part you hung there goes.',
+        help: 'How far the cap on the timing pin can divide the clock — four octaves stock, enough to put the melody under the bottom of its own keyboard. The whole timebase goes with it, so tune, tempo and envelopes dive together.',
       },
       {
         key: 'chipSpread',
@@ -156,7 +156,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 4,
         step: 0.01,
         unit: '×',
-        help: 'How far apart the four output stages came out of the bin. Every voice shares the one supply but has its own amplifier, so on a starving rail each browns out at its own voltage and sags by its own amount — which is why a chord on a dying toy detunes against itself and collapses raggedly, a note at a time. At zero the four parts are identical and a chord dies in lockstep, cleanly, all at once; wound up they scatter, and the chord comes apart over a second with the last voice still going.',
+        help: 'How far apart the four output stages came out of the bin. At zero a chord on a dying toy dies in lockstep; wound up each voice browns out at its own voltage, so the chord detunes against itself and comes apart a note at a time.',
       },
       {
         key: 'chipMixDrive',
@@ -166,7 +166,7 @@ export const MASTER_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         curve: 'log',
-        help: 'The headroom in the one small output stage every key voice runs through. It is why a chord leans rather than coming out four times louder. Low is a clean summing amp with room for all four; high is a stage that squares off on two notes, so playing harder changes the timbre instead of the level — and the harmonics that makes are what the rest of the chain has to work with.',
+        help: 'The headroom in the one small output stage every key voice runs through — why a chord leans rather than coming out four times louder. High squares off on two notes, so playing harder changes the timbre, not the level.',
       },
     ],
   },
@@ -181,7 +181,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the board’s own temperature drags its thresholds. Nothing on the panel reads it out: it climbs off whatever you are making it dissipate — a screaming loop, a starved rail, a pedal wound up — over about a minute, and falls back over two. The rail holds less, the watchdog trips sooner, the capstan wanders further and a starving oscillator takes longer to come back. Turned up, the board three minutes in is not the one that booted, and it never settles anywhere, because where it goes depends on what you played on the way.',
+        help: 'How far the board’s own temperature drags its thresholds. It climbs over a minute off whatever you are making it dissipate: the rail holds less, the watchdog trips sooner, the capstan wanders further. Nothing reads it out.',
       },
       {
         key: 'faultCluster',
@@ -190,7 +190,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Whether faults arrive on a flat rate or in bursts. At zero every dropout, spark, glitch and counter slip rolls its own dice at a constant rate, which the ear averages into a texture within a second. Wound up, each fault leaves the next one likelier for a couple of seconds — the same number of faults, redistributed into a minute of nothing and then a dozen at once, the way a joint that has started arcing goes on arcing.',
+        help: 'Whether faults arrive at a flat rate or in bursts. At zero the ear averages them into a texture; wound up each one leaves the next likelier, so the same number redistribute into a minute of nothing and then a dozen at once.',
       },
       {
         key: 'couple',
@@ -199,7 +199,7 @@ export const MASTER_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Wires the loop’s own brightness against its supply. High-frequency energy in the chain opens the screech filter’s resonance and drives the shifter harder — which makes more of it — while the same energy drags the rail down, which shuts it back up. Two couplings of opposite sign on different time constants never find a resting point, so a squeal hunts around a pitch instead of settling on one, with no LFO anywhere near it.',
+        help: 'Wires the loop’s brightness against its supply: brightness opens the resonance and drives the shifter harder, and the same energy drags the rail down and shuts it back up. Two couplings of opposite sign never settle, so a squeal hunts.',
       },
     ],
   },

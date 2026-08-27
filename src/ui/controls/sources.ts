@@ -203,7 +203,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip — the tune keeps restarting. One oscillator clocks the whole chip, so a sag that lasts takes the tempo down with the pitch: the tune slurs and slows together, the way a tape does. A dip inside a single note is too quick for the timing pin to notice, which is why a chord sags without the beat stumbling.',
+        help: 'Sags the shared toy supply rail. Pitch dives, notes collapse, and past the brownout threshold the watchdog reboots the chip. One oscillator clocks the whole chip, so a sag that lasts slurs and slows the tune together, the way a tape does.',
       },
       {
         key: 'chipBattery',
@@ -223,7 +223,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'A resistor in series with the cells. Flat cells are two things at once — a voltage that has dropped and a resistance that has climbed — and this is the second without the first: the rail still rests where it always rested, and every note has to pull its supply through the resistor to get there. So it sags on the attack and climbs back between hits, as far as the Reservoir gives it time to travel. It is the difference between a toy that is running out and a toy that whoops on every note and never runs out at all, and it is the one to reach for over Batteries if what you want is the swoop rather than the decline.',
+        help: 'A resistor in series with the cells: the rail still rests where it always rested, but every note has to pull its supply through the resistor to get there. So it sags on the attack and climbs back between hits — a toy that whoops on every note rather than one running out.',
       },
       {
         key: 'chipCap',
@@ -233,7 +233,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much of the board’s own capacitance sits behind whatever the starve is pulling on. It moves no voltage — it decides how long the rail takes to get there. At zero the supply settles inside a millisecond and starve is a step you land on; wound up, the same starve takes a third of a second to fall and you hear the whole dive, slowing as it goes. Everything on the rail goes with it: pitch, tempo, envelopes. Far enough up and the reboot stops snapping the rail back at all, so the tune is struck high, dragged down, cut off, and struck high again.',
+        help: 'How much of the board’s capacitance sits behind whatever the starve is pulling on. It moves no voltage — it decides how long the rail takes to get there. At zero starve is a step you land on; wound up you hear the whole dive, slowing as it goes.',
       },
       {
         key: 'chipClipHz',
@@ -243,7 +243,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 40,
         step: 0.1,
         unit: 'Hz',
-        help: 'Bare metal dragged across the pads, and how often it finds one. Each touch chokes hard for a few tens of milliseconds and lets go, and what it chokes leaves at whatever rate the Reservoir allows — so this is the dive that repeats without you doing anything. A choke rather than a short: crash the rail to ground instead and the pitch is simply gone and then simply back, two steps with the dive missing. It is a hand holding a paperclip rather than a switch, so the rate is an average and the fault cluster decides how much it bunches.',
+        help: 'Bare metal dragged across the pads, and how often it finds one. Each touch chokes hard for a few tens of milliseconds and lets go at whatever rate the Reservoir allows — the dive that repeats without you doing anything.',
       },
       {
         key: 'chipClipClock',
@@ -254,7 +254,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Whether the clip lands on the timing pin instead of the supply — and it is the difference between a sag and a dive. Starving the rail is worth two thirds of an octave before the chip stops running at all; a capacitor hung on the oscillator divides the clock instead, and division has no such ceiling. Four octaves at the top, travelling at whatever rate the Reservoir charges, with the whole timebase going along: tune, tempo and envelopes together, the melody arriving somewhere under the bottom of its own keyboard. Needs Clip chatter to have something to land with.',
+        help: 'Whether the clip lands on the timing pin instead of the supply, which is the difference between a sag and a dive. Starving the rail is worth two thirds of an octave; dividing the clock has no such ceiling — four at the top, whole timebase with it. Needs Clip chatter.',
       },
       {
         key: 'chipLatch',
@@ -276,7 +276,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('D', ROM_DATA_LINES),
         shy: true,
-        help: 'Which wire between the ROM and the divider the knife found. The chip stores a note code rather than a pitch, so the low lines are small intervals and the high ones are octaves — D0 is a semitone, D2 a major third, D5 the better part of three octaves. Nothing about it is random: one wire wrong is the same wrong note every time that step comes round, so the song keeps its rhythm and its shape and becomes a different song.',
+        help: 'Which wire between the ROM and the divider the knife found. The chip stores a note code rather than a pitch, so low lines are small intervals and high ones octaves. One wire wrong is the same wrong note every time — the song keeps its rhythm and becomes a different song.',
       },
       {
         key: 'chipDataFault',
@@ -288,7 +288,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'What happened to the wire. Cut leaves the pin floating, so the bit goes stale and carries whatever the word before had in it. To ground takes that bit out of every note the chip reads. To +V puts it into every note — including the ones that were not notes, because a rest is only a code, and a code with a bit forced into it is a pitch. Bridged solders the line to its neighbour so the two can no longer disagree, and the melody comes out in clumps.',
+        help: 'What happened to the wire. Cut leaves the pin floating, so the bit goes stale and carries the word before. To ground takes it out of every note; to +V puts it into every note, rests included, because a rest is only a code. Bridged brings the melody out in clumps.',
       },
       {
         key: 'chipAddrLine',
@@ -300,7 +300,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('A', ROM_ADDR_LINES),
         shy: true,
-        help: 'Which wire between the program counter and the ROM the knife found. The counter still counts and the tempo never moves; the ROM is simply handed the wrong step. A0 plays the tune in swapped pairs, A3 held low locks it into the bottom eight steps for good, and a line this ROM never drives does nothing at all — a sixteen-step song has no A4 for you to find.',
+        help: 'Which wire between the program counter and the ROM the knife found. The counter still counts and the tempo never moves — the ROM is simply handed the wrong step. A0 plays the tune in swapped pairs; A3 held low locks it into the bottom eight for good.',
       },
       {
         key: 'chipAddrFault',
@@ -323,7 +323,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the pin floats for good: the bit holds whatever the last word left on it and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the bit is right on some reads and a word old on others, and the melody flickers between two versions of itself.',
+        help: 'How far through the trace the knife went — only the cut fault reads it. All the way and the pin floats for good, and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the melody flickers between two versions of itself.',
       },
     ],
   },
@@ -406,7 +406,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much of that converter’s error you are hearing. A ladder halves its weight at every rung down the word, and a kit like this got its rungs off a reel nobody measured, so the steps come out uneven — and unevenly, because the error scales with the rung: half the tolerance of the top resistor is an enormous number of counts. That is why a cheap converter is not hiss. It is one lurch, at the code where every bit changes at once, and for a signal that code is the zero crossing — so it lands hardest on whatever is quietest, and a tail on its way out is nothing but zero crossings. Bit depth moves where the word is tapped off the ladder, so it changes the character of the error as well as the size.',
+        help: 'How much of that converter’s error you are hearing. Rungs off an unmeasured reel come out uneven, and the error is one lurch at the code where every bit changes at once — which for a signal is the zero crossing, so it lands hardest on whatever is quietest. Not hiss.',
       },
       {
         key: 'drumLadderTol',
@@ -416,7 +416,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 0.6,
         step: 0.005,
         unit: '',
-        help: 'What the reel those resistors came off was sold as — 15% is the bin this kit was built out of. Which rungs are long and which are short is soldered in and does not move; this is how far out they are, so the whole lurch scales without changing where on the signal it lands. Ladder is how much of it reaches the output; this is how bad the parts were to begin with.',
+        help: 'What the reel those resistors came off was sold as — 15% is the bin this kit was built out of. Which rungs are long is soldered in and does not move; this is how far out they are. Ladder is how much reaches the output, this is how bad the parts were.',
       },
       {
         key: 'drumOverflow',
@@ -427,7 +427,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['off', 'wrap'],
-        help: 'What the converter does with a sum that will not fit its word. The accumulator behind the ladder is as wide as the word and no wider, and a cheap one rolls over rather than stopping at the top: a step stacking four voices under an accent comes out inside-out, while the quiet steps either side of it are untouched. The fold is the pattern’s own dynamics rather than a setting, so it moves when Level, Decay or the accent row moves, and a kit that wraps can never leave the box past full scale. Off, the sum does, and the limiter at the end of the chain is what deals with it.',
+        help: 'What the converter does with a sum too wide for its word. A cheap one rolls over rather than stopping at the top: a step stacking four voices under an accent comes out inside-out, while the quiet steps either side are untouched. Off, the sum leaves the box past full scale.',
       },
       {
         key: 'drumRetrigHz',
@@ -448,7 +448,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far a voice has to have drained before the one-shot behind it will answer the trigger line again. At nothing every pulse strikes, which is what a retrigger at audio rate has always been. Wind it up and a line hammered faster than a voice can empty comes out divided: the kit answers a 300 Hz hammer with a rattle of its own, at a rate *Decay* sets rather than *Retrigger* — and one that slows as the supply sags, because the envelope is counted off the same oscillator the tempo is. All the way up, a voice will not strike again until it has stopped sounding. It sits on the trigger line rather than in the bend, so the sequencer, the pads, the mic and the keyboard queue behind it too.',
+        help: 'How far a voice has to have drained before the one-shot behind it will answer the trigger line again. At nothing every pulse strikes; wound up, a line hammered faster than a voice can empty comes out divided — a rattle at the rate Decay sets rather than Retrigger.',
       },
       {
         key: 'drumCross',
@@ -489,7 +489,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('A', ADDR_LINES),
         shy: true,
-        help: 'Which of the four wires carrying a step number from the counter to the pattern memory the knife found. Nothing malfunctions: the counter still counts, the playhead on the grid still chases the step it always did, and a different cell of memory answers. A0 held low plays every step twice; A3 held high hands you the back half of the bar and never the front. A row’s length is the counter’s business rather than the memory’s, so a faulted address reaches cells a five-step row would never have played.',
+        help: 'Which of the four wires carrying a step number to the pattern memory the knife found. Nothing malfunctions: the counter still counts and a different cell answers. A0 held low plays every step twice; A3 held high hands you the back half of the bar and never the front.',
       },
       {
         key: 'drumAddrFault',
@@ -501,7 +501,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four things a knife does to any trace, on the side that chooses the step. Cut leaves the wire floating and the bit goes stale, carrying whatever the fetch before left on it — and on this machine the fetch before is usually the row above asking for the same step, so a cut wants to be most of the way through before the pattern moves at all. Bridged solders it to its neighbour and the steps collapse onto a lattice.',
+        help: 'The same four things a knife does to any trace, on the side that chooses the step. A cut goes stale carrying the fetch before — usually the row above asking for the same step — so it wants to be most of the way through before the pattern moves. Bridged collapses the steps onto a lattice.',
       },
       {
         key: 'drumDataLine',
@@ -513,7 +513,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('D', N_DRUM_VOICES),
         shy: true,
-        help: 'Which of the six wires carrying the word back the knife found — one wire a voice, in the order of the rows. To +V is that voice on every step the machine fetches, which is the machine-gun; to ground is a row you can see and cannot hear. This is the trigger line rather than an amplifier, so a bit forced high strikes the voice for real: it lights the row, stamps the trigger bus, and reaches everything soldered onto it — the sampler, the keyboard, the FM chip. The cross-patch beside it only ever lent an envelope.',
+        help: 'Which of the six wires carrying the word back the knife found — one wire a voice, in the order of the rows. To +V is that voice on every step, which is the machine-gun; to ground is a row you can see and cannot hear. It is the trigger bus, so a bit forced high reaches the sampler, keyboard and FM chip too.',
       },
       {
         key: 'drumDataFault',
@@ -536,7 +536,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far through the trace the knife went — the cut fault is the only one that reads it. All the way and the wire holds whatever was last on it, and every fetch after that is a step old. Back it off and it bites less here than it does anywhere else on the board: every row fetches its own step through these same wires inside one tick, so a floating bit is mostly holding the value it was about to be handed anyway. What is left is the odd fetch at the turn of a step, and mostly on the kick, which is the row that reads first — the pattern comes apart a step at a time rather than flickering between two of itself.',
+        help: 'How far through the trace the knife went — only the cut fault reads it. It bites less here than anywhere else on the board: every row fetches its own step through these same wires inside one tick, so a floating bit is mostly holding the value it was about to be handed anyway.',
       },
     ],
   },
@@ -553,7 +553,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How loud the FM chip is in the source mix. It has no keyboard and no sequencer of its own — somebody soldered its key input onto the toy’s gate line, so it plays whatever strikes a note over there: the demo song, your hands, a controller, or a drum hit that came back round. It runs off the same rail too, so starving the toy dives its pitch and drags its envelopes out.',
+        help: 'How loud the FM chip is in the source mix. It has no keyboard and no sequencer of its own — somebody soldered its key input onto the toy’s gate line, so it plays whatever strikes a note over there. Same rail, too, so starving the toy dives its pitch.',
       },
       {
         key: 'fmVoice',
@@ -591,7 +591,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: 's',
         curve: 'log',
-        help: 'How long the processor waits before writing the key back up, for a note nothing is holding: the demo song, a drum hit through the trigger patch, a kit line clipped on below. Those arrive as an edge and nothing else, so the length is a decision something has to make and this is where it is made. Your own hands are the exception — the gate says the key is still down, so the processor holds the note and writes it up when you let go, however long that is. What a held note does meanwhile is the patch’s business: four of the eight wait for the key, and the struck ones decay whatever your finger is doing. A cut data line overrides the lot, by making sure the write never lands.',
+        help: 'How long the processor waits before writing the key back up, for a note nothing is holding — the demo song, a drum hit, a kit line clipped on below. Your own hands are the exception: the gate says the key is still down, so the note is held until you let go.',
       },
       {
         key: 'fmStruck',
@@ -601,7 +601,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['off', ...VOICE_LABELS, 'any hit'],
-        help: 'The kit’s trigger lines, clipped onto this chip’s key input alongside the keyboard’s. A drum machine has no notes to send — a trigger line carries a strike and nothing else — so the note is decided at this end: one per voice, in the kit’s own row order, a pentatonic apart, which is what turns a pattern written for drums into a riff. Every voice you clip on takes a channel while it rings, and there are four, so a busy grid steals its own notes. Accents come across as well, in the only place the register file has for them: an accented step is written at a different attenuation. Whatever the grid is doing, the FM chip is now playing it.',
+        help: 'The kit’s trigger lines, clipped onto this chip’s key input. A trigger carries a strike and nothing else, so the note is decided at this end: one per voice, in row order, a pentatonic apart, which turns a pattern written for drums into a riff. Four channels, so a busy grid steals its own notes.',
       },
       {
         key: 'fmEffect',
@@ -612,7 +612,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: FM_EFFECT_NAMES,
         shy: true,
-        help: 'The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board. Each is a little program in the processor firing register writes at the synthesiser, hundreds a second on the weather, which makes an effect far and away the busiest thing the bus ever carries. A note is four writes; a bird call never stops, so a cut line lands on every one of them and the corruption never lets up while the gesture keeps its own time. It borrows the fourth channel and the patch registers to do it, so the keyboard is down to three voices and plays in the effect’s voice — until you let the button go and the processor sends the voice again. Which is also why *Voice*, *Bright* and *Feedback* sit still while a script runs: the driver has one instrument to select and the effect is holding it, so those knobs only land once the button comes up.',
+        help: 'The effect ROM — a bird, surf, wind, a siren, crickets. None is a sample: each is a little program firing hundreds of register writes a second, far and away the busiest thing the bus ever carries. It borrows the fourth channel, so Voice, Bright and Feedback sit still while one runs.',
       },
       {
         key: 'fmModRatio',
@@ -623,7 +623,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RATIO_CHOICES,
-        help: 'What the modulator runs at against the note, as a multiple of it. This and *Brightness* are the whole of two-operator FM: the ratio picks which harmonics the modulator can put there and brightness decides how many of them arrive. Whole numbers stay in tune with the note and land on its own harmonics — 1 for a fuller version of the same tone, 2 and 3 for reed and brass, 7 upward for bells and metal. The table is the part’s own, so it stops being a scale near the top and repeats: there is no 11 or 13 on this chip, and nothing between the steps, because a ratio here is four bits of a flags byte and nothing finer exists. Left at *as patched*, the voice keeps whatever it shipped with.',
+        help: 'What the modulator runs at against the note, as a multiple of it. This and Brightness are the whole of two-operator FM: the ratio picks which harmonics can be there, brightness decides how many arrive. 1 fills out the tone, 2 and 3 are reed and brass, 7 upward bells and metal.',
       },
       {
         key: 'fmCarRatio',
@@ -634,7 +634,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RATIO_CHOICES,
-        help: 'The same table on the carrier, which moves the note itself rather than its colour — the operator you hear is the one running at this multiple, so 2 is the same patch an octave up. Set both ratios and what matters is the interval between them: 1 against 2 is a hollow octave, 2 against 3 a fifth, and anything where the modulator is not a whole multiple of the carrier makes sidebands that are not harmonics of anything, which is the clangorous end of the chip.',
+        help: 'The same table on the carrier, which moves the note itself rather than its colour — 2 is the same patch an octave up. Set both and what matters is the interval: 1 against 2 is a hollow octave, 2 against 3 a fifth, and anything not a whole multiple clangs.',
       },
       {
         key: 'fmModDecay',
@@ -645,7 +645,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: DECAY_CHOICES,
-        help: 'How long the modulator takes to fall away, which is what makes an FM note a bell or an organ: a bright attack that collapses to a sine in eighty milliseconds is a struck thing, and one that never collapses is a blown one. Sixteen rates, because the register holds four bits of it, and they are counted off the same divider as the tempo and the pitch — so starving the rail stretches this along with everything else and the times printed here are the times on a board with its supply intact.',
+        help: 'How long the modulator takes to fall away, which is what makes an FM note a bell or an organ. Sixteen rates, counted off the same divider as the tempo and the pitch — so starving the rail stretches these along with everything else.',
       },
       {
         key: 'fmDataLine',
@@ -657,7 +657,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('D', 8),
         shy: true,
-        help: 'Which of the eight wires carrying bytes to the register file the knife found. This is the bend the FM keyboards are known for, and it is not a malfunction: the chip receives a byte with one bit wrong and executes it perfectly, then goes on executing it, because a register holds what it was last told. So a fault here does not pass — it accumulates. Patches come out wrong and stay wrong, a channel sits at the wrong volume, pitches land on a lattice, and if the bit carrying the key going up cannot go low, the note never ends.',
+        help: 'Which of the eight wires carrying bytes to the register file the knife found. A register holds what it was last told, so a fault here does not pass — it accumulates. Patches come out wrong and stay wrong, and if the bit carrying the key going up cannot go low, the note never ends.',
       },
       {
         key: 'fmDataFault',
@@ -681,7 +681,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('A', 6),
         shy: true,
-        help: 'Which of the six wires choosing the register the knife found. The byte arrives intact and is filed in the wrong place, which is the more violent of the two: a frequency written into an envelope register, a key-on written into a waveform. It also means whatever should have gone there never did, so the chip goes on playing the last thing it was told about that register. Some of these lines do nothing while an effect runs, and that is the part rather than the control: a script only ever writes the fourth channel and the eight patch bytes, so the wires that only matter to the registers it never names have nothing to carry.',
+        help: 'Which of the six wires choosing the register the knife found. The byte arrives intact and is filed in the wrong place — a frequency into an envelope register, a key-on into a waveform — and whatever should have gone there never did, so the chip plays on with the last value it was told.',
       },
       {
         key: 'fmAddrFault',
@@ -705,7 +705,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: lineNames('W', 10),
         shy: true,
-        help: 'Which of the ten wires addressing the sine table the knife found. Nothing on this chip computes a sine — it looks one up, a quarter of a wave with two more bits of phase to build the rest — so the waveform is an address and an address can be cut. It is the opposite bend to the data lines: the processor never touches this bus, the operators read it eight times a sample, and nothing accumulates. The wires are weighted, so where you cut is the whole of it. W8 mirrors the quarter back on itself, and held, the quarter simply runs twice: the chip is still playing the note it was told and what comes out is an octave up with a cliff in it. W9 is the sign, and a sine with no sign is a rectified one — all octave, no fundamental. Below those the wires only move the phase a fraction of a step each, so the bottom of the bus is a wire you can cut and hear almost nothing, which is what a binary bus is.',
+        help: 'Which of the ten wires addressing the sine table the knife found. Nothing here computes a sine — it looks one up — so the waveform is an address, and nothing accumulates. W8 runs the quarter wave twice, an octave up with a cliff in it; W9 is the sign, so cutting it leaves all octave and no fundamental.',
       },
       {
         key: 'fmWaveFault',
@@ -718,7 +718,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         choices: FAULT_NAMES,
-        help: 'The same four things, on the wave ROM’s address. Cut is the strange one: a severed trace is a pin nothing drives again, so it holds the last phase bit that reached it and every read after that comes back with that bit stale — the line stops being part of the wave at all. Back the cut depth off and the trace still conducts sometimes, so the bit is right on some reads and stale on others and the wave flickers between two shapes at the rate the operators come round. To ground and to +V nail it for every read, which is a waveform rather than a fault.',
+        help: 'The same four things, on the wave ROM’s address. Cut is the strange one: the line holds the last phase bit that reached it and stops being part of the wave at all. Back the cut depth off and the wave flickers between two shapes. Ground and +V nail it — a waveform rather than a fault.',
       },
       {
         key: 'fmBusCut',
@@ -740,7 +740,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         shy: true,
-        help: 'The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught. Nothing is corrupted here — both bytes arrive intact and the latch simply does not clock, so a perfectly good value commits to whichever register the last pulse that landed had named. Which is a fault no cut wire can imitate: every byte involved is right, and they are only paired one write late. Turn it up and the latch slips further, because a latch that misses holds rather than skips — two misses running is two writes of lag, and a strobe that never lands is the whole run piling into one register. It bites hardest on the effects, where the processor writes the same short run of registers hundreds of times a second: shift that by one and every frequency byte lands in the register carrying the key.',
+        help: 'The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught. Nothing is corrupted: both bytes arrive intact and commit to whichever register the last pulse named, one write late. A latch that misses holds rather than skips, so misses stack.',
       },
     ],
   },
@@ -901,7 +901,7 @@ export const SOURCE_GROUPS: Group[] = [
             'park the tape on the spot the head is standing — the middle of this travel, with reverse below it and forward above',
           value: () => 0,
         },
-        help: 'Playback speed, with the stop in the middle of the travel and reverse below it. The left half is not slower, it is backwards: coming down past zero the tape freezes on the spot the head is standing and then picks up again the other way, so the far end of the travel is four times speed in reverse. The arrow on the head of the reel says which way you are going.',
+        help: 'Playback speed, with the stop in the middle of the travel and reverse below it. The left half is not slower, it is backwards: the tape freezes where the head stands and picks up the other way. The arrow on the reel says which way you are going.',
       },
       {
         key: 'sampleTrig',
@@ -911,7 +911,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['off', ...VOICE_LABELS, 'any hit', 'key', 'mic'],
-        help: 'Which trigger line drops the needle back at the top of the file: one of the kit’s voices, any hit at all, a note off the keyboard, or a shout in the mic. With one-shot beside it, the file becomes a seventh drum voice — whatever you dropped, played from the start on every hit. Off, it loops the way it always did.',
+        help: 'Which trigger line drops the needle back at the top of the file: one of the kit’s voices, any hit at all, a note off the keyboard, or a shout in the mic. With one-shot beside it the file becomes a seventh drum voice; off, it loops the way it always did.',
       },
       {
         key: 'sampleMode',
@@ -933,7 +933,7 @@ export const SOURCE_GROUPS: Group[] = [
         // A place on the tape rather than an amount of anything, so it reads as
         // how far along it is: 0.350 is a number, 35.0% is a spot on a reel.
         reads: v => `${(v * 100).toFixed(1)}%`,
-        help: 'Where the loop starts, as a fraction of the reel. Everything before it is still on the tape and simply never passes the head — so a bar you liked out of a three-minute recording is two markers rather than an edit, and moving one while it runs is the whole gesture. Drag the markers on the reel under the keys instead of guessing at the number.',
+        help: 'Where the loop starts, as a fraction of the reel. Everything before it is still on the tape and simply never passes the head, so a bar you liked out of a three-minute recording is two markers rather than an edit. Drag them on the reel instead of guessing at the number.',
       },
       {
         key: 'loopOut',
@@ -943,7 +943,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.001,
         unit: '',
         reads: v => `${(v * 100).toFixed(1)}%`,
-        help: 'Where the loop ends. Dragged past the in point the two swap rather than collapse — you asked for the tape between them either way. Pinch them together and the window is a handful of frames going round thousands of times a second, which stops being a loop and becomes a pitch; that is the tape doing it, not an oscillator.',
+        help: 'Where the loop ends. Dragged past the in point the two swap rather than collapse. Pinch them together and the window is a handful of frames going round thousands of times a second, which stops being a loop and becomes a pitch — the tape doing it, not an oscillator.',
       },
       {
         key: 'loopRec',
@@ -953,7 +953,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much of the board’s own output the record head lays back down, on the spot the play head is reading. Which makes this a tape loop rather than a sampler: what comes round next lap has been through the mix bus, the bends, the pedals and the tape machine, and then goes through all of them again. Nothing here is pretending to be generation loss — the loop really is re-recorded every lap, so thirty laps is thirty laps of whatever the board is actually doing. Armed with nothing loaded it threads a blank tape and you play onto it.',
+        help: 'How much of the board’s own output the record head lays back down, on the spot the play head is reading. Which makes this a tape loop rather than a sampler: what comes round next lap has been through the whole board, and then goes through it again.',
       },
       {
         key: 'loopErase',
@@ -963,7 +963,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much of what is already on the tape the erase head takes off on the way past. All the way up and each lap replaces the last, which is a delay the length of the reel. All the way down the head is disconnected and the laps pile up until the oxide runs out of room and the pile turns to distortion. In between they fade over a few passes, which is the old trick of two machines and a long piece of tape — and the fade is the board’s doing, so a bend in the path makes the loop drift somewhere else rather than merely fade.',
+        help: 'How much of what is already on the tape the erase head takes off on the way past. All the way up, each lap replaces the last — a delay the length of the reel. All the way down the head is disconnected and the laps pile up until the oxide runs out of room.',
       },
       {
         key: 'loopSecs',

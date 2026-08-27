@@ -14,7 +14,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['screamer', 'rat', 'muff', 'germanium', 'octave', 'gate'],
-        help: 'Which dirt box is on the board. Screamer clips inside the feedback loop so the dry note walks under it; rat clips to ground behind a slew-limited op-amp; muff is two clipping stages and a scooped tone stack that never decays; germanium is the lopsided one whose bias rides down on the signal; octave rectifies into a ringing transformer; gate is misbiased to the edge of cutoff.',
+        help: 'Which dirt box is on the board. Screamer clips inside the loop, so the dry note walks under it; rat clips to ground behind a slewed op-amp; muff is two stages and a scooped tone stack; germanium is lopsided; octave rectifies; gate is misbiased to cutoff.',
       },
       {
         key: 'stompDrive',
@@ -177,7 +177,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ECHO_MODE_NAMES,
-        help: 'Which delay the box is being. Standard is the plain one \u2014 flat repeats, and a time knob that crosses between two read heads rather than dragging one, so what is already in the buffer keeps its pitch while you move it. Analog is a bucket brigade, where the clock that sets the time is also what sets the bandwidth, so every step longer is a step muddier and the noise floor breathes behind the repeats. Reverse plays each window backwards. Modulate is the standard one with the head on an LFO, opposite ways on the two channels.',
+        help: 'Which delay the box is being. Standard is flat repeats that keep their pitch as you move the time; analog is a bucket brigade, so every step longer is a step muddier; reverse plays each window backwards; modulate puts the head on an LFO.',
       },
       {
         key: 'echoMs',
@@ -187,7 +187,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: 'ms',
         curve: 'log',
-        help: 'Delay time. On standard and modulate the box crosses to the new one over 25 ms and nothing bends; on analog the clock has to walk there, so it smears like a tape would; on reverse the window relocks at the next seam, so it changes on the beat rather than under your hand.',
+        help: 'Delay time. Standard and modulate cross to the new one over 25 ms and nothing bends; analog has to walk there, so it smears like tape; reverse relocks at the next seam, so it changes on the beat.',
       },
       {
         key: 'echoFb',

@@ -108,29 +108,29 @@ too — the knife goes on and the rows under it say which controls that was:
 <details>
 <summary>21 controls</summary>
 
-| control         | range                                                                                                                                                                               | what it does                                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Level           | off to full                                                                                                                                                                         | How loud the toy keyboard chip is in the source mix                                                                |
-| Tune            | lullaby, march, arp, scale, für elise, ode to joy, rondo turca, yankee, camptown, wm tell, ragtime, danube, gymnopédie, gnossienne, sakura, dies irae, funeral, greensleeves, yours | Which song the chip plays                                                                                          |
-| Memory rate     | 0.2 to 24 Hz                                                                                                                                                                        | How fast the memory plays its steps back, which the ROM songs each carry for themselves                            |
-| Tone            | organ 1/2, reed 1/4, clav 1/8, buzz 1/16                                                                                                                                            | Which width of pulse the tone selector taps off the divider chain                                                  |
-| Auto bass-chord | off to full                                                                                                                                                                         | The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running       |
-| Clock           | 0.05× to 16×                                                                                                                                                                        | Drags the master clock crystal                                                                                     |
-| Bend spot       | off, clock, counter, bias, gate                                                                                                                                                     | Where the virtual pot is soldered onto the die: clock feedback, program counter, DAC bias, or the gate line        |
-| Bend pot        | off to full                                                                                                                                                                         | Turns the pot on the chosen bend spot                                                                              |
-| Crystal drift   | off to full                                                                                                                                                                         | How far the chip’s clock wanders off the ratio you set it to                                                       |
-| Starve          | off to full                                                                                                                                                                         | Sags the shared toy supply rail                                                                                    |
-| Batteries       | off to full                                                                                                                                                                         | How flat the cells are                                                                                             |
-| Lead resistance | off to full                                                                                                                                                                         | A resistor in series with the cells                                                                                |
-| Reservoir       | off to full                                                                                                                                                                         | How much of the board’s own capacitance sits behind whatever the starve is pulling on                              |
-| Clip chatter    | 0 to 40 Hz                                                                                                                                                                          | Bare metal dragged across the pads, and how often it finds one                                                     |
-| Clip on clock   | off to full                                                                                                                                                                         | Whether the clip lands on the timing pin instead of the supply — and it is the difference between a sag and a dive |
-| Latch-up        | off to full                                                                                                                                                                         | How often a brownout jams the chip instead of rebooting it                                                         |
-| Data line †     | off, D0, D1, D2, D3, D4, D5                                                                                                                                                         | Which wire between the ROM and the divider the knife found                                                         |
-| Data fault      | cut, to ground, to +V, bridged                                                                                                                                                      | What happened to the wire                                                                                          |
-| Address line †  | off, A0, A1, A2, A3, A4                                                                                                                                                             | Which wire between the program counter and the ROM the knife found                                                 |
-| Address fault   | cut, to ground, to +V, bridged                                                                                                                                                      | The same four things, on the address side                                                                          |
-| Cut depth       | off to full                                                                                                                                                                         | How far through the trace the knife went — the cut fault is the only one that reads it                             |
+| control         | range                                                                                                                                                                               | what it does                                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Level           | off to full                                                                                                                                                                         | How loud the toy keyboard chip is in the source mix                                                              |
+| Tune            | lullaby, march, arp, scale, für elise, ode to joy, rondo turca, yankee, camptown, wm tell, ragtime, danube, gymnopédie, gnossienne, sakura, dies irae, funeral, greensleeves, yours | Which song the chip plays                                                                                        |
+| Memory rate     | 0.2 to 24 Hz                                                                                                                                                                        | How fast the memory plays its steps back, which the ROM songs each carry for themselves                          |
+| Tone            | organ 1/2, reed 1/4, clav 1/8, buzz 1/16                                                                                                                                            | Which width of pulse the tone selector taps off the divider chain                                                |
+| Auto bass-chord | off to full                                                                                                                                                                         | The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running     |
+| Clock           | 0.05× to 16×                                                                                                                                                                        | Drags the master clock crystal                                                                                   |
+| Bend spot       | off, clock, counter, bias, gate                                                                                                                                                     | Where the virtual pot is soldered onto the die: clock feedback, program counter, DAC bias, or the gate line      |
+| Bend pot        | off to full                                                                                                                                                                         | Turns the pot on the chosen bend spot                                                                            |
+| Crystal drift   | off to full                                                                                                                                                                         | How far the chip’s clock wanders off the ratio you set it to                                                     |
+| Starve          | off to full                                                                                                                                                                         | Sags the shared toy supply rail                                                                                  |
+| Batteries       | off to full                                                                                                                                                                         | How flat the cells are                                                                                           |
+| Lead resistance | off to full                                                                                                                                                                         | A resistor in series with the cells                                                                              |
+| Reservoir       | off to full                                                                                                                                                                         | How much of the board’s capacitance sits behind whatever the starve is pulling on                                |
+| Clip chatter    | 0 to 40 Hz                                                                                                                                                                          | Bare metal dragged across the pads, and how often it finds one                                                   |
+| Clip on clock   | off to full                                                                                                                                                                         | Whether the clip lands on the timing pin instead of the supply, which is the difference between a sag and a dive |
+| Latch-up        | off to full                                                                                                                                                                         | How often a brownout jams the chip instead of rebooting it                                                       |
+| Data line †     | off, D0, D1, D2, D3, D4, D5                                                                                                                                                         | Which wire between the ROM and the divider the knife found                                                       |
+| Data fault      | cut, to ground, to +V, bridged                                                                                                                                                      | What happened to the wire                                                                                        |
+| Address line †  | off, A0, A1, A2, A3, A4                                                                                                                                                             | Which wire between the program counter and the ROM the knife found                                               |
+| Address fault   | cut, to ground, to +V, bridged                                                                                                                                                      | The same four things, on the address side                                                                        |
+| Cut depth       | off to full                                                                                                                                                                         | How far through the trace the knife went — only the cut fault reads it                                           |
 
 </details>
 
@@ -179,16 +179,16 @@ too — the knife goes on and the rows under it say which controls that was:
 | Bit depth      | 2 to 16 bits                                            | Word length of the one cheap DAC the whole kit shares                                                                 |
 | Ladder         | off to full                                             | How much of that converter’s error you are hearing                                                                    |
 | Part grade     | 0 to 0.6                                                | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                         |
-| Overflow       | off or wrap                                             | What the converter does with a sum that will not fit its word                                                         |
+| Overflow       | off or wrap                                             | What the converter does with a sum too wide for its word                                                              |
 | Retrigger      | 0 Hz to 4 kHz                                           | Retriggers the current step at this rate                                                                              |
 | Trigger floor  | off to full                                             | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                  |
 | Cross-patch    | off, kick/snare, snare/hat, kick/hat, rotate, whole kit | Bridges two voices’ envelope pins so each amplifier hears the wrong envelope                                          |
 | Cross bleed    | off to full                                             | How far each amplifier leans across                                                                                   |
-| Address line † | off, A0, A1, A2, A3                                     | Which of the four wires carrying a step number from the counter to the pattern memory the knife found                 |
+| Address line † | off, A0, A1, A2, A3                                     | Which of the four wires carrying a step number to the pattern memory the knife found                                  |
 | Address fault  | cut, to ground, to +V, bridged                          | The same four things a knife does to any trace, on the side that chooses the step                                     |
 | Data line †    | off, D0, D1, D2, D3, D4, D5                             | Which of the six wires carrying the word back the knife found — one wire a voice, in the order of the rows            |
 | Data fault     | cut, to ground, to +V, bridged                          | The same four, on the side carrying the word                                                                          |
-| Cut depth      | off to full                                             | How far through the trace the knife went — the cut fault is the only one that reads it                                |
+| Cut depth      | off to full                                             | How far through the trace the knife went — only the cut fault reads it                                                |
 
 </details>
 
@@ -234,26 +234,26 @@ too — the knife goes on and the rows under it say which controls that was:
 <details>
 <summary>18 controls</summary>
 
-| control        | range                                                                                                                           | what it does                                                                                                                |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Level          | off to full                                                                                                                     | How loud the FM chip is in the source mix                                                                                   |
-| Voice          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                                                                   | Which of the eight patches under the voice buttons the processor sends the chip                                             |
-| Brightness     | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control                   |
-| Feedback       | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                           |
-| Note length    | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                                  |
-| Struck by      | off, kick, snare, hat, clap, tom, bell, any hit                                                                                 | The kit’s trigger lines, clipped onto this chip’s key input alongside the keyboard’s                                        |
-| Effect †       | off, bird, surf, wind, siren, crickets                                                                                          | The effect ROM: a bird, surf, wind, a siren or crickets, none of which is a sample — there is no sample memory on the board |
-| Mod ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | What the modulator runs at against the note, as a multiple of it                                                            |
-| Car ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | The same table on the carrier, which moves the note itself rather than its colour                                           |
-| Mod decay      | as patched, 4 ms, 6 ms, 9 ms, 15 ms, 22 ms, 34 ms, 53 ms, 81 ms, 0.12 s, 0.19 s, 0.29 s, 0.45 s, 0.69 s, 1.07 s, 1.64 s, 2.52 s | How long the modulator takes to fall away, which is what makes an FM note a bell or an organ                                |
-| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                                             | Which of the eight wires carrying bytes to the register file the knife found                                                |
-| Data fault     | cut, to ground, to +V, bridged                                                                                                  | What happened to the wire — the same four things a knife does to any trace                                                  |
-| Address line † | off, A0, A1, A2, A3, A4, A5                                                                                                     | Which of the six wires choosing the register the knife found                                                                |
-| Address fault  | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the address side                                                                                   |
-| Wave line †    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                                                                     | Which of the ten wires addressing the sine table the knife found                                                            |
-| Wave fault †   | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the wave ROM’s address                                                                             |
-| Cut depth      | off to full                                                                                                                     | How far through the trace the knife went — the cut fault is the only one that reads it                                      |
-| Strobe slip †  | off to full                                                                                                                     | The pulse that tells the address latch to take what is on the wires, and how often it comes out too narrow to be caught     |
+| control        | range                                                                                                                           | what it does                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Level          | off to full                                                                                                                     | How loud the FM chip is in the source mix                                                                            |
+| Voice          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                                                                   | Which of the eight patches under the voice buttons the processor sends the chip                                      |
+| Brightness     | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
+| Feedback       | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
+| Note length    | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                           |
+| Struck by      | off, kick, snare, hat, clap, tom, bell, any hit                                                                                 | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
+| Effect †       | off, bird, surf, wind, siren, crickets                                                                                          | The effect ROM — a bird, surf, wind, a siren, crickets                                                               |
+| Mod ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | What the modulator runs at against the note, as a multiple of it                                                     |
+| Car ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | The same table on the carrier, which moves the note itself rather than its colour — 2 is the same patch an octave up |
+| Mod decay      | as patched, 4 ms, 6 ms, 9 ms, 15 ms, 22 ms, 34 ms, 53 ms, 81 ms, 0.12 s, 0.19 s, 0.29 s, 0.45 s, 0.69 s, 1.07 s, 1.64 s, 2.52 s | How long the modulator takes to fall away, which is what makes an FM note a bell or an organ                         |
+| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                                             | Which of the eight wires carrying bytes to the register file the knife found                                         |
+| Data fault     | cut, to ground, to +V, bridged                                                                                                  | What happened to the wire — the same four things a knife does to any trace                                           |
+| Address line † | off, A0, A1, A2, A3, A4, A5                                                                                                     | Which of the six wires choosing the register the knife found                                                         |
+| Address fault  | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the address side                                                                            |
+| Wave line †    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                                                                     | Which of the ten wires addressing the sine table the knife found                                                     |
+| Wave fault †   | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the wave ROM’s address                                                                      |
+| Cut depth      | off to full                                                                                                                     | How far through the trace the knife went — the cut fault is the only one that reads it                               |
+| Strobe slip †  | off to full                                                                                                                     | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
 
 </details>
 
@@ -641,11 +641,11 @@ can play the kit.
 <details>
 <summary>3 controls</summary>
 
-| control        | range                                                       | what it does                                                                                  |
-| -------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Kit fires keys | off, kick, snare, hat, clap, tom, bell, any hit             | Bridges one of the kit’s trigger lines onto the keyboard’s gate, so a drum hit strikes a note |
-| and plays      | the note, the next step, any step, the chord                | What the hit strikes                                                                          |
-| Keys fire kit  | off, kick, snare, hat, clap, tom, bell, whole kit, the step | The wire back                                                                                 |
+| control        | range                                                       | what it does                                                                                                |
+| -------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Kit fires keys | off, kick, snare, hat, clap, tom, bell, any hit             | Bridges one of the kit’s trigger lines onto the keyboard’s gate, so a drum hit strikes a note               |
+| and plays      | the note, the next step, any step, the chord                | What the hit strikes                                                                                        |
+| Keys fire kit  | off, kick, snare, hat, clap, tom, bell, whole kit, the step | The keyboard’s gate onto the kit’s trigger line: every note you strike hits the kit, pattern running or not |
 
 </details>
 
@@ -673,24 +673,24 @@ _Patched into_ decides where the return lands.
 <details>
 <summary>16 controls</summary>
 
-| control      | range                           | what it does                                                                            |
-| ------------ | ------------------------------- | --------------------------------------------------------------------------------------- |
-| Amount       | 0 to 1.5                        | Output patched back into the source mix                                                 |
-| Loop time    | 0.05 to 500 ms                  | The loop’s own comb delay                                                               |
-| Tilt         | 1.00 dark to 1.00 bright        | Darkens or brightens the loop — decides which register the squeal settles into          |
-| Patched into | mix, osc FM, chip rail, delay   | Where the return wire is soldered                                                       |
-| Cross        | off to full                     | Sends each strip round the next one’s delay instead of its own                          |
-| Strip 2      | 0 to 1.5                        | A second send and return, on its own fader                                              |
-| Strip 2 time | 0.05 to 500 ms                  | How long strip 2’s cord and its circuit take                                            |
-| Strip 2 tilt | 1.00 dark to 1.00 bright        | Strip 2’s own tilt                                                                      |
-| Strip 3      | 0 to 1.5                        | The third send and return                                                               |
-| Strip 3 time | 0.05 to 500 ms                  | How long strip 3’s cord takes                                                           |
-| Strip 3 tilt | 1.00 dark to 1.00 bright        | Strip 3’s own tilt                                                                      |
-| Rails        | off to full                     | How hard the return amps hit their supply                                               |
-| Rail balance | 1.00 low rail to 1.00 high rail | How far apart the two supplies are                                                      |
-| Slew         | off to full                     | How slow the return amps are                                                            |
-| Supply       | off to full                     | How far the return amps pull their own rail down                                        |
-| Blocking     | off to full                     | The coupling cap into the return amp, and what happens when it is driven past its rails |
+| control      | range                           | what it does                                                                                                           |
+| ------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Amount       | 0 to 1.5                        | Output patched back into the source mix                                                                                |
+| Loop time    | 0.05 to 500 ms                  | The loop’s own comb delay                                                                                              |
+| Tilt         | 1.00 dark to 1.00 bright        | Darkens or brightens the loop — decides which register the squeal settles into                                         |
+| Patched into | mix, osc FM, chip rail, delay   | Where the return wire is soldered                                                                                      |
+| Cross        | off to full                     | Sends each strip round the next one’s delay instead of its own                                                         |
+| Strip 2      | 0 to 1.5                        | A second send and return, on its own fader                                                                             |
+| Strip 2 time | 0.05 to 500 ms                  | How long strip 2’s cord and its circuit take                                                                           |
+| Strip 2 tilt | 1.00 dark to 1.00 bright        | Strip 2’s own tilt                                                                                                     |
+| Strip 3      | 0 to 1.5                        | The third send and return                                                                                              |
+| Strip 3 time | 0.05 to 500 ms                  | How long strip 3’s cord takes                                                                                          |
+| Strip 3 tilt | 1.00 dark to 1.00 bright        | Strip 3’s own tilt                                                                                                     |
+| Rails        | off to full                     | How hard the return amps hit their supply                                                                              |
+| Rail balance | 1.00 low rail to 1.00 high rail | How far apart the two supplies are                                                                                     |
+| Slew         | off to full                     | How slow the return amps are                                                                                           |
+| Supply       | off to full                     | How far the return amps pull their own rail down                                                                       |
+| Blocking     | off to full                     | The coupling cap driven past its rails: charge walks the bias to cutoff, the stage stops conducting, and the loop dies |
 
 </details>
 
@@ -711,12 +711,12 @@ machine they are one thing.
 | Speed         | 3¾ ips, 7½ ips, 15 ips  | Moves the whole machine at once                                                                       |
 | Level         | −12 to +15 dB           | Record level                                                                                          |
 | Bias          | 1.00 under to 1.00 over | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
-| Hysteresis    | off to full             | How far the field the medium is already carrying sits the record curve off centre                     |
-| Head bump     | 0 to 1.5                | The lift where the wavelength going past the replay head is the size of the head                      |
-| Squeal        | off to full             | Sticky shed                                                                                           |
+| Hysteresis    | off to full             | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
+| Head bump     | 0 to 1.5                | The lift where the wavelength past the replay head is the size of the head                            |
+| Squeal        | off to full             | Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal      |
 | Hiss          | off to full             | Noise laid on the medium, not on the mix                                                              |
 | Wow           | off to full             | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
-| Flutter       | off to full             | The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head           |
+| Flutter       | off to full             | The fast wobble, plus the scrape grain of tape dragging past the head                                 |
 | Dropouts      | off to full             | Shed oxide                                                                                            |
 | Print-through | off to full             | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
 | Azimuth       | off to full             | Head misalignment: the right channel lags and loses top end                                           |
@@ -772,18 +772,18 @@ or all at once.
 <details>
 <summary>10 controls</summary>
 
-| control      | range                | what it does                                                                                                       |
-| ------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Timing pin   | 0.2 ms to 2 s        | The decoupling cap on the oscillator, as the time it averages the rail over                                        |
-| Watchdog     | 0.2 to 0.6 V         | Where the reset chip decides the supply has failed                                                                 |
-| Latch hold   | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                  |
-| Clip bite    | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                |
-| Clip dwell   | 3 to 800 ms          | How long one touch lasts on average                                                                                |
-| Clip charge  | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down |
-| Clip release | 2 to 2000 per second | And how fast the clock comes back when the metal lifts, which is not a discharge but a disconnection               |
-| Clock drag   | 0 to 8 octaves       | How far the cap on the timing pin can divide the clock                                                             |
-| Part spread  | 0× to 4×             | How far apart the four output stages came out of the bin                                                           |
-| Mixer drive  | 0.02 to 3            | The headroom in the one small output stage every key voice runs through                                            |
+| control      | range                | what it does                                                                                                                      |
+| ------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Timing pin   | 0.2 ms to 2 s        | The decoupling cap on the oscillator, as the time it averages the rail over                                                       |
+| Watchdog     | 0.2 to 0.6 V         | Where the reset chip decides the supply has failed                                                                                |
+| Latch hold   | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                                 |
+| Clip bite    | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
+| Clip dwell   | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                                         |
+| Clip charge  | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down                |
+| Clip release | 2 to 2000 per second | How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate |
+| Clock drag   | 0 to 8 octaves       | How far the cap on the timing pin can divide the clock                                                                            |
+| Part spread  | 0× to 4×             | How far apart the four output stages came out of the bin                                                                          |
+| Mixer drive  | 0.02 to 3            | The headroom in the one small output stage every key voice runs through                                                           |
 
 </details>
 
@@ -800,8 +800,8 @@ much the brightness bus feeds back into the supply.
 | control          | range       | what it does                                             |
 | ---------------- | ----------- | -------------------------------------------------------- |
 | Heat             | off to full | How far the board’s own temperature drags its thresholds |
-| Fault clustering | off to full | Whether faults arrive on a flat rate or in bursts        |
-| Cross-coupling   | off to full | Wires the loop’s own brightness against its supply       |
+| Fault clustering | off to full | Whether faults arrive at a flat rate or in bursts        |
+| Cross-coupling   | off to full | Wires the loop’s brightness against its supply           |
 
 </details>
 

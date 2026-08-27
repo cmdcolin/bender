@@ -15,7 +15,7 @@ export const PATCH_GROUPS: Group[] = [
         step: 0.01,
         unit: 'Hz',
         curve: 'log',
-        help: 'The bay’s own oscillator, free-running. Slow is a sweep, fast is a buzz through whatever it is wired to — and the wires carry a value per sample, so at the top of the travel a wire onto a pitch is modulation rather than vibrato. The chaos shape is the exception: its own step size stops growing around 160 Hz, so it runs out of speed while the other five keep going.',
+        help: 'The bay’s own oscillator, free-running. Slow is a sweep; fast, wired onto a pitch, is modulation rather than vibrato. Chaos is the exception — it runs out of speed around 160 Hz.',
       },
       {
         key: 'modLfoShape',
@@ -25,7 +25,7 @@ export const PATCH_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['sine', 'ramp', 'square', 'S&H', 'chaos', 'drunk'],
-        help: 'Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle. The last two never come round again: chaos folds along a Rössler band, passing near where it has been without ever landing there, and drunk is a bounded walk that reflects off the ends of its travel. Rate still sets roughly how fast, but nothing about the next cycle is in the last one.',
+        help: 'Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle. Chaos and drunk never come round again — rate sets roughly how fast, but nothing about the next cycle is in the last.',
       },
       ...[0, 1, 2, 3].flatMap(i => [
         {
@@ -49,7 +49,7 @@ export const PATCH_GROUPS: Group[] = [
             'key hit',
             'heat',
           ],
-          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus itself, the chip’s sequencer ramping across each ROM step, either trigger line — a drum hit or a note struck, which fall from the hit rather than sweeping — or how hot the board has got, which is the slowest thing on it and the one that never comes back to where it started.',
+          help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, or how hot the board has got.',
         },
         {
           key: `mod${i}Dest` as ControlKey,
@@ -85,7 +85,7 @@ export const PATCH_GROUPS: Group[] = [
             'loop slide',
             'loop span',
           ],
-          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on the board, so a wire there reaches everything powered from it at once — a drum hit browns the chip out on every kick, and the watchdog does the rest. Four of them land on a wire’s own depth, so one wire decides how hard another pushes — two wires that modulate each other stop being two modulations and start being one that neither of them wrote. The last three are the sampler’s: the capstan the reel is on, which drags its pitch the way a starve drags the toy’s and leaves the direction alone, and then the two markers — *slide* walks the window along the recording, *span* opens and closes it. Markers are marks on the tape rather than a hand on the transport, so the head plays on where it stands until the window has left it behind, which is why a wire on the slide reads as the loop jumping around the recording rather than as a scrub.',
+          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once. Four land on a wire’s own depth, so one wire decides how hard another pushes.',
         },
         {
           key: `mod${i}Depth` as ControlKey,
@@ -136,7 +136,7 @@ export const PATCH_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['off', ...VOICE_LABELS, 'whole kit', 'the step'],
-        help: 'The wire back: the keyboard’s gate onto the kit’s trigger line, so every note it strikes hits the kit whether the pattern is running or not. The step hands the grid to your hands — a key fires whichever column the sequencer is on. Solder both wires and the two boxes play each other.',
+        help: 'The keyboard’s gate onto the kit’s trigger line: every note you strike hits the kit, pattern running or not. Solder both wires and the two boxes play each other.',
       },
     ],
   },

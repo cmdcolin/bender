@@ -66,7 +66,7 @@ export const MIX_GROUPS: Group[] = [
         max: 24,
         step: 0.5,
         unit: 'dB',
-        help: 'The summing amp the six of them meet in. At unity it is a wire — a soft clipper asked to pass a bus that already peaks two thirds of the way up is a decibel of squash nobody dialled in, so nothing at all happens here until you move it. Wound up it is the one saturation ahead of the bends, so the whole board arrives at them driven together rather than each stage being driven on its own, and what leans on it is whatever is loudest: bring the kit up and the kit is what ducks everything else. The feedback return lands on this bus too, so a howl saturates in the amp it is coming back through.',
+        help: 'The summing amp the six of them meet in. At unity it is a wire, so nothing happens here until you move it. Wound up it is the one saturation ahead of the bends, so the whole board arrives at them driven together — and whatever is loudest is what ducks the rest.',
       },
     ],
   },

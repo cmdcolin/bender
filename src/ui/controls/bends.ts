@@ -56,7 +56,7 @@ export const BEND_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How intermittent the solder is under the bend slots. A cold joint opens and the stage on that slot is simply not in the path for a moment — no dry/wet fade, a click on the way out and another on the way back, and whatever it was ringing left mid-ring. What drops out is whatever you patched there, so the board rewrites its own signal path while it plays.',
+        help: 'How intermittent the solder is under the bend slots. A cold joint drops its stage out of the path outright — a click on the way out, another on the way back, and whatever was ringing left mid-ring. The board rewrites its own signal path while it plays.',
       },
       {
         key: 'relayRate',
@@ -65,7 +65,7 @@ export const BEND_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin. Nothing about the settings changes — every bend keeps the values you gave it, and the order and the routing are what move. The one roll on the board that changes topology rather than numbers, and the only one that does it without your hand on anything.',
+        help: 'How often the board re-solders itself: two bend slots swap places, or the feedback return jumps to a different pin. Every bend keeps the values you gave it — the order and the routing are what move. The one roll that changes topology rather than numbers.',
       },
     ],
   },

@@ -55,7 +55,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the field the medium is already carrying sits the record curve off centre. A clipper on its own is symmetrical: both halves of a wave meet the same shape, so it makes a third harmonic and never a second, which is the sound of something breaking up rather than of something warm. Tape is not symmetrical — it arrives at the gap magnetised, by more of it the harder it has been driven, and the two halves saturate against different amounts of that. The difference is the second harmonic, and because the offset rides the level rather than the note, it blooms up as you play into it and lets go when you back off. Remanence is what the medium keeps, so it keeps it: the bloom lights in a couple of milliseconds and takes a twentieth of a second to go out, which is why a quiet phrase behind a loud one is still warm. Under-bias leaves more of the field behind, so this and the bias multiply.',
+        help: 'Tape reaches the gap already magnetised, so a wave’s two halves saturate differently. That asymmetry is the second harmonic — warmth, not breakup — and it blooms as you play in and fades as you back off.',
       },
       {
         key: 'tapeBump',
@@ -64,7 +64,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1.5,
         step: 0.01,
         unit: '',
-        help: 'The lift where the wavelength going past the replay head is the size of the head — a resonance a head has by being a head, down at the bottom of the band, and the low end every tape machine adds without being asked. Flux comes back round the core a second time, so the response ripples on up the band with the next one inverted — the lift is paid for by a scoop above it, and that pair is the shape of a real machine’s bottom octave rather than one peak on a flat line. Speed moves where both of them sit, because a wavelength is a distance and a faster tape lays it out longer; this is how much of them comes back. Stock is the machine as it was built.',
+        help: 'The lift where the wavelength past the replay head is the size of the head — the low end every tape machine adds unasked, paid for by a scoop above it. Speed moves where both sit; this is how much comes back.',
       },
       {
         key: 'tapeSqueal',
@@ -73,7 +73,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Sticky shed. The binder has gone off, so the tape grabs the head, stretches, lets go and grabs again — and friction falls as it starts to move, which is a damping that is negative while the span is nearly still and positive once it is running. A resonator wired that way needs no exciting: it takes off on its own and settles into a limit cycle, which is what a squeal is. Speed sets the note, because a faster tape pulls the span tighter, and tension decides how hard it takes off, so it comes and goes in waves rather than holding one. You hear it twice — the machine screaming, and everything already on the tape wobbling at the same rate, because the thing squealing is the tape’s own speed past the head.',
+        help: 'Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal. Speed sets the note, tension how hard. You hear it twice — the scream, and everything on the tape wobbling with it.',
       },
       {
         key: 'tapeHiss',
@@ -100,7 +100,7 @@ export const TAPE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The fast wobble, plus scrape flutter — the grain that comes off tape dragging past the head. That grain is the free span between the guides resonating, which is the same span, the same friction and the same resonance the Squeal knob takes over the edge: this is under the line, where friction only rattles it. So the grain sits on the note the machine would scream at, and moves down the band with the speed the way that note does.',
+        help: 'The fast wobble, plus the scrape grain of tape dragging past the head. Same span and friction the Squeal knob takes over the edge — this is under the line, where it only rattles.',
       },
       {
         key: 'tapeDrop',

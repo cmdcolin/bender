@@ -57,7 +57,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         needs: c => c.fb2Amt > 0 || c.fb3Amt > 0,
-        help: 'Sends each strip round the next one’s delay instead of its own. At rest the strips are three separate loops that happen to share a bus, and each finds a squeal and holds it. Wound up they are a ring, and a ring of saturating delays has nothing to settle on: it climbs into a mode, holds for a few seconds, and falls out of it into another one with nobody touching anything. This is the knob the rest of the desk is here for. With one strip up it does nothing, because there is no second channel to cross to.',
+        help: 'Sends each strip round the next one’s delay instead of its own. Separate loops each find a squeal and hold it; a ring of them has nothing to settle on, and wanders between modes untouched. Needs two strips up.',
       },
       {
         key: 'fb2Amt',
@@ -139,7 +139,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How hard the return amps hit their supply. At rest they saturate the way everything else on this board does — a tanh, which rolls off into its ceiling and is the sound of something being driven warmly. Wound up they stop instead: the wave meets the rail and squares off flat, which is the difference between a loop that howls and a loop that buzzsaws.',
+        help: 'How hard the return amps hit their supply. At rest they saturate warmly; wound up the wave meets the rail and squares off flat — the difference between a loop that howls and one that buzzsaws.',
       },
       {
         key: 'fbAsym',
@@ -154,7 +154,7 @@ export const FEEDBACK_GROUPS: Group[] = [
           v === 0
             ? 'matched'
             : `${Math.abs(v).toFixed(2)} ${v < 0 ? 'low rail' : 'high rail'}`,
-        help: 'How far apart the two supplies are. Real ones never match, and a wave that squares off on one half before the other puts out even harmonics as well as odd — an octave under the squeal rather than more of it. It also leaves dc behind, which walks the operating point of everything downstream until the safety tail takes it back off.',
+        help: 'How far apart the two supplies are. Squaring off on one half before the other puts out even harmonics — an octave under the squeal rather than more of it — and leaves dc behind.',
       },
       {
         key: 'fbSlew',
@@ -164,7 +164,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How slow the return amps are. Asked for an edge faster than it can swing, an amp puts out a ramp instead. On one tone that is a dull sort of distortion. On two it is neither tone’s harmonics, because what a slew limiter does to a sum is not what it does to either part — so a bus with three squeals on it fills up with hash that has no harmonic structure to fall back on. The one thing here that is not a note.',
+        help: 'How slow the return amps are. Asked for an edge faster than they can swing, they put out a ramp. On one tone that is dull distortion; on three squeals it is hash with no harmonic structure at all.',
       },
       {
         key: 'fbSag',
@@ -174,7 +174,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How far the return amps pull their own rail down. At rest they have all the headroom in the world, which no amplifier has ever had. Wound up they draw on the supply by how hard they are working: the current goes in milliseconds and comes back over a third of a second, and below about two thirds of the rail the stages start losing their bias rather than merely their headroom, so what the desk can put out falls away faster than the volts do. Bringing the strips up against it is a fight — the desk screams, takes its own supply out, and has to find a quieter place to run from, which is a long way from the level it would have sat at with the rail held up. It is the same rail the toy is on, so Starve and Brownout pull it out from under the desk as well, and it is Blocking rather than this that makes the loop let go outright.',
+        help: 'How far the return amps pull their own rail down. They scream, take out their own supply, and have to find somewhere quieter to run — current goes in milliseconds, back over a third of a second. Same rail the toy is on.',
       },
       {
         key: 'fbBlock',
@@ -184,7 +184,7 @@ export const FEEDBACK_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The coupling cap into the return amp, and what happens when it is driven past its rails. Current flows where the cap can only leak it back slowly, the charge walks the bias down to cutoff, and the stage stops conducting — so the loop goes dead. With nothing getting through there is nothing left to hold the charge, so it drains, the stage comes back, and it blocks again. The loop dies, rebuilds out of whatever is on the bus, and dies again, at a rate set by how hard it is being driven and by nothing with a rate control on it.',
+        help: 'The coupling cap driven past its rails: charge walks the bias to cutoff, the stage stops conducting, and the loop dies. Then the charge drains and it rebuilds — over and over, at a rate nothing here controls.',
       },
     ],
   },

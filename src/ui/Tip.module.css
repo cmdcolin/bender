@@ -21,6 +21,9 @@
   box-shadow: 0 6px 20px #000c;
   font-size: var(--fs-lg);
   line-height: 1.5;
+  /* Written down because the dot renders its bubble inside itself, and a button
+     centres its text. The top layer does not break inheritance. */
+  text-align: left;
   /* It is never a target: a tip that opened over the control it explains would
      otherwise swallow the click, and drags run under it either way. */
   pointer-events: none;
