@@ -80,7 +80,7 @@ function PresetChip(props: {
 
   return (
     <Tip
-      text={`${props.def.blurb} — click for the whole board, or drag sideways to stop part way there`}
+      text={`${props.def.blurb} — click for the whole board, or drag sideways to stop part way there.`}
     >
       <button
         className={props.scrub === null ? styles.preset : styles.presetOn}

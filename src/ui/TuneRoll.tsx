@@ -139,13 +139,13 @@ export function TuneRoll() {
             record
           </button>
         </Tip>
-        <Tip text="wipe every step of the memory. One entry in the walk, so a memory you did not mean to wipe is one ctrl+z away">
+        <Tip text="Wipe every step of the memory. One entry in the walk, so a memory you did not mean to wipe is one ctrl+z away.">
           <button className={styles.verb} onClick={() => wipe()}>
             clear
           </button>
         </Tip>
         <span className={styles.spacer} />
-        <Tip text="move the window down an octave — the memory reaches further than the two octaves drawn">
+        <Tip text="Move the window down an octave — the memory reaches further than the two octaves drawn.">
           <button
             className={styles.octave}
             onClick={() => shift(-12)}
@@ -154,7 +154,7 @@ export function TuneRoll() {
             ▾
           </button>
         </Tip>
-        <Tip text="move the window up an octave">
+        <Tip text="Move the window up an octave.">
           <button
             className={styles.octave}
             onClick={() => shift(12)}
@@ -192,7 +192,7 @@ export function TuneRoll() {
         </Tip>
       </div>
 
-      <Tip text="click a cell to put that note on that step, and drag across to draw a line. Click a note again to take it off, and shift-click a step to hold whatever the step before it struck">
+      <Tip text="Click a cell to put that note on that step, and drag across to draw a line. Click a note again to take it off, and shift-click a step to hold whatever the step before it struck.">
         <div className={styles.grid}>
           {notes.map(note => (
             <div key={note} className={styles.row}>

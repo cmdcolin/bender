@@ -242,7 +242,7 @@ export function Keys() {
                 rec
               </button>
             </Tip>
-            <Tip text="latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down">
+            <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">
               <button
                 className={hold ? styles.holdOn : styles.hold}
                 onClick={() => {

@@ -6,18 +6,52 @@
   inset: auto;
   margin: 0;
   overflow: visible;
-  /* Wide enough for the long ones to read as a paragraph rather than a column,
-     narrow enough that a tip on a step cell doesn't cover the row it explains. */
-  max-width: 300px;
-  padding: 4px 7px;
-  background: var(--bg2);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  box-shadow: 0 4px 14px #000a;
-  font-size: var(--fs-sm);
-  line-height: 1.45;
+  /* Wide enough for a sentence to read as a sentence, narrow enough that a tip
+     on a step cell doesn't cover the row it explains. */
+  max-width: 320px;
+  padding: 7px 10px;
+  background: var(--bg3);
+  /* The panel runs a step under a document's scale because everything on it has
+     to be on screen at once. A tip is the opposite case: it is up on its own,
+     over the top of everything, and only while you are reading it — so it gets
+     document type and the brightest foreground rather than the panel's. */
+  color: var(--fg);
+  border: 1px solid var(--border-hover);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px #000c;
+  font-size: var(--fs-lg);
+  line-height: 1.5;
   /* It is never a target: a tip that opened over the control it explains would
      otherwise swallow the click, and drags run under it either way. */
   pointer-events: none;
+}
+
+/* The mark that says there is a sentence here. Round, quiet, and the size of a
+   piece of punctuation — it stands beside a name without becoming a second word
+   in it. Never a bare glyph: it is a button, and it has to look pressable to be
+   worth pressing on a touch screen where hovering does not exist. */
+.dot {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  color: var(--fg4);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font: inherit;
+  font-size: var(--fs-xs);
+  line-height: 1;
+  cursor: help;
+}
+
+/* Lit the same for a hover, a focus and a pinned tip, because all three mean
+   the same thing: the sentence this dot is about is on screen right now. */
+.dotOn {
+  composes: dot;
+  color: var(--accent);
+  border-color: var(--accent);
 }

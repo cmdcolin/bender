@@ -33,7 +33,7 @@ function Bind({ def }: { def: SliderDef }) {
     <>
       {waiting === undefined ? null : (
         <Tip
-          text={`your knob is sitting at ${formatValue(def, waiting)} — sweep it through ${formatValue(def, engine.controls.get()[def.key])} to pick this control up`}
+          text={`Your knob is sitting at ${formatValue(def, waiting)} — sweep it through ${formatValue(def, engine.controls.get()[def.key])} to pick this control up.`}
         >
           <span className={styles.pickup}>{formatValue(def, waiting)}</span>
         </Tip>

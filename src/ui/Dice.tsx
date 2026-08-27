@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { engine } from '../engine/engine'
 import type { MorphSeconds } from './morph'
 import { huntCandidates, randomLook, SCENARIOS } from './presets'
-import { Tip } from './Tip'
+import { HelpDot, Tip } from './Tip'
 import styles from './Dice.module.css'
 
 // Every way the panel has of handing you a board you did not ask for, behind
@@ -40,7 +40,7 @@ const BLIND: Roll = {
   name: 'blind',
   label: 'random',
   blurb:
-    'A board you have not heard: a random preset nudged off itself. It replaces the circuit — mutate keeps it, and either way your song, pattern, levels and what is running stay put',
+    'A board you have not heard: a random preset, nudged off itself. It replaces the circuit — your song, pattern and levels stay put.',
   run: seconds =>
     engine.morphTo(randomLook(engine.controls.get(), Math.random), seconds),
 }
@@ -49,7 +49,7 @@ const HUNT: Roll = {
   name: 'hunt',
   label: 'hunt an edge',
   blurb:
-    'Roll six boards, play each of them, and keep whichever came nearest the edge of running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. A dialog says which board it is on while it listens, and stops it there',
+    'Rolls six boards, plays each one, and keeps whichever came nearest running away — judged off the limiter, which is the only thing that can tell an edge from a board that is merely loud. A dialog says where it has got to, and is where you call it off.',
   run: (_seconds, onLanded) => {
     onLanded(false)
     void engine
@@ -100,7 +100,7 @@ export function Dice(props: {
           {held.label}
         </button>
       </Tip>
-      <Tip text="the other ways the board has of rolling you one — picking one rolls it, and it stays on the button so going again is one press">
+      <Tip text="The other ways the board has of rolling you one. Picking one rolls it, and it stays on the button, so going again is one press.">
         <button
           className={open ? styles.caretOn : styles.caret}
           aria-label="pick a kind of roll"
@@ -110,6 +110,7 @@ export function Dice(props: {
           ▾
         </button>
       </Tip>
+      <HelpDot text={held.blurb} label={held.label} />
       {open && (
         <Menu
           anchor={split}

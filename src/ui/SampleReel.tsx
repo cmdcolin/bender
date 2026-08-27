@@ -216,7 +216,7 @@ export function SampleReel() {
 
   return (
     <div className={styles.wrap}>
-      <Tip text="the reel: what is on the tape, where the play head is standing, and the two markers saying which stretch of it goes round. Drag a marker to trim the loop — cross them and they swap — or drag the tape itself to drop the head somewhere else. The drawing is read back off the tape as it plays, so an armed record head redraws it lap by lap">
+      <Tip text="The reel: what is on the tape, where the play head stands, and the two markers saying which stretch goes round. Drag a marker to trim the loop — cross them and they swap — or drag the tape to move the head.">
         <canvas
           ref={canvas}
           className={styles.reel}
@@ -245,7 +245,7 @@ export function SampleReel() {
         {level <= 0 && rec <= 0 && (
           <span className={styles.down}>bring the sampler’s Level up</span>
         )}
-        <Tip text="put both markers back at the ends of the reel, so the whole of what you dropped goes round again">
+        <Tip text="Put both markers back at the ends of the reel, so the whole of what you dropped goes round again.">
           <button
             className={styles.whole}
             onClick={() => engine.patch({ loopIn: 0, loopOut: 1 })}

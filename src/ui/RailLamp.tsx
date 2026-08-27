@@ -49,7 +49,7 @@ export function RailLamp() {
   }, [])
 
   return (
-    <Tip text="the toy's supply rail, 4.5 V on fresh cells. Everything the chip does rides on it: pitch and tempo sag as it falls, voices drop out one at a time, and under about half a volt the watchdog power-cycles the chip — which is what the lamp says on a reboot">
+    <Tip text="The toy's supply rail, 4.5 V on fresh cells. Everything the chip does rides on it: pitch and tempo sag as it falls, and under about half a volt the watchdog power-cycles the chip — which is what the lamp says on a reboot.">
       <span className={styles.lamp}>
         <span ref={dot} className={styles.dot} />
         <span ref={label} className={styles.volts}>

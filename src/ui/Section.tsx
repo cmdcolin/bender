@@ -112,7 +112,7 @@ function PartVerbs({
   return (
     <div className={styles.cuts}>
       <Tip
-        text={`roll the ${rows.length} controls under ${part} somewhere new and leave the rest of ${group.name} where it stands`}
+        text={`Roll the ${rows.length} controls under ${part} somewhere new and leave the rest of ${group.name} where it stands.`}
       >
         <button
           className={styles.partVerb}
@@ -146,7 +146,7 @@ function PartVerbs({
       {cuts.map(cut => (
         <Tip
           key={cut.name}
-          text={`${cut.blurb}. One press: ${cutSays(cut)} — which is where it lands in the rows under here`}
+          text={`${cut.blurb}. One press: ${cutSays(cut)} — which is where it lands in the rows under here.`}
         >
           <button
             className={standing === cut.name ? styles.cutOn : styles.cut}
@@ -392,7 +392,7 @@ export function OpenGroup({
             {touched > 0 ? `reset ${touched}` : 'reset'}
           </button>
         </Tip>
-        <Tip text={`close ${group.name} — the path stays`}>
+        <Tip text={`Close ${group.name} — the path stays.`}>
           <button
             className={styles.close}
             onClick={onClose}

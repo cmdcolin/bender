@@ -32,7 +32,7 @@ import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
-import { Tip } from './Tip'
+import { HelpDot, Tip } from './Tip'
 import { POOLS, detailsUrl } from '../engine/archive'
 import { YOURS } from '../dsp/stages/roms'
 
@@ -72,6 +72,14 @@ function clock(seconds: number): string {
 // keeps the board for fifteen seconds and no longer, and the picker is the only
 // place the next roll's duration is set — so a drift must not take it away for
 // as long as it runs. Drift's own button is what stops a drift.
+const MUTATE_HELP =
+  'Keeps this board and nudges every control a little way off where it sits. The tempo stays put and the timed things land back on the grid — shift for a wild nudge, alt for a gentle one.'
+
+// Beside mutate, because that is what it is: the same nudge, gentle, on a
+// timer, forever. Nothing else on the board plays itself.
+const DRIFT_HELP =
+  'Lets the board nudge itself somewhere near where it stands, every fifteen seconds, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
+
 function MorphControl(props: {
   seconds: MorphSeconds
   drifting: boolean
@@ -84,7 +92,7 @@ function MorphControl(props: {
   if (progress !== null && !props.drifting) {
     return (
       <Tip
-        text={`travelling over ${props.seconds}s — press to stop here and keep the half-way board, which is a board like any other. Grabbing a slider does the same`}
+        text={`Travelling over ${props.seconds}s. Press to stop here and keep the half-way board — grabbing a slider does the same.`}
       >
         <button className={styles.flight} onClick={() => engine.stopMorph()}>
           <span
@@ -100,8 +108,8 @@ function MorphControl(props: {
     <Tip
       text={
         props.seconds > 0
-          ? `presets, random, mutate and reset travel to the new board over ${props.seconds}s instead of cutting to it. Rolling again mid-morph carries on from wherever the board has got to`
-          : 'presets, random, mutate and reset land in one frame — pick a duration to make them travel there instead, which is where the sounds between two presets live'
+          ? `Presets, random, mutate and reset travel to the new board over ${props.seconds}s instead of cutting to it.`
+          : 'Presets, random, mutate and reset land in one frame. Pick a duration and they travel there instead — which is where the sounds between two presets live.'
       }
     >
       <select
@@ -160,14 +168,23 @@ function Panic() {
     return () => cancelAnimationFrame(raf)
   }, [])
   return (
-    <Tip text="kill a runaway howl: cuts feedback to zero, tames delay feedback, and empties every delay line, buffer and held note. The board keeps its knobs — only the sound in flight goes. It fills as the safety limiter leans on the output, which is the one thing on the board that can tell a howl from a sound you asked for">
-      <button className={styles.btnDanger} onClick={() => engine.panic()}>
-        <span ref={bar} className={styles.duck} />
-        <span className={styles.duckLabel}>panic</span>
-      </button>
-    </Tip>
+    <span className={styles.withHelp}>
+      <Tip text={PANIC_HELP}>
+        <button className={styles.btnDanger} onClick={() => engine.panic()}>
+          <span ref={bar} className={styles.duck} />
+          <span className={styles.duckLabel}>panic</span>
+        </button>
+      </Tip>
+      <HelpDot text={PANIC_HELP} label="panic" />
+    </span>
   )
 }
+
+// Two questions, because the button asks two: what pressing it does, and what
+// the bar creeping across it is. The bar is the limiter, and the limiter is the
+// only reason it is on this button rather than on a meter of its own.
+const PANIC_HELP =
+  'Kills a runaway howl: feedback to zero, and every delay line, buffer and held note emptied. Your knobs stay where you left them — only the sound already in flight goes. The bar fills as the safety limiter leans on the output, so a bar that keeps filling is the board running away.'
 
 export function App() {
   const running = useStoreValue(engine.running)
@@ -273,8 +290,8 @@ export function App() {
           <Tip
             text={
               yourTune
-                ? 'run or stop the toy chip on your own melody, the one in the piano roll. Nothing else starts it — space runs both machines'
-                : "run or stop the toy chip's ROM tune. Nothing else starts it — space runs both machines"
+                ? 'Runs the toy chip on your own melody, the one in the piano roll. Nothing else starts it — space runs both machines.'
+                : "Runs the toy chip's ROM tune. Nothing else starts it — space runs both machines."
             }
           >
             <button
@@ -285,7 +302,7 @@ export function App() {
               {yourTune ? 'your tune' : 'demo song'}
             </button>
           </Tip>
-          <Tip text="run or stop the drum machine's pattern, with or without the chip's tune. Bring the kit's Level up if you hear nothing">
+          <Tip text="Runs the drum machine's pattern, with or without the chip's tune. Bring the kit's Level up if you hear nothing.">
             <button
               className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
               onClick={() => engine.setDrumsPlaying(!drumsPlaying)}
@@ -296,7 +313,7 @@ export function App() {
           {/* Named for what it records, because the kit has a record button of
               its own now and one of them writes a file while the other writes
               the pattern. */}
-          <Tip text="record the output to a wav file — stopping saves it">
+          <Tip text="Records the output to a wav file — stopping saves it.">
             <button
               className={recording ? styles.recBtnOn : styles.ioBtn}
               onClick={() =>
@@ -322,7 +339,7 @@ export function App() {
           {/* Finding a file is the slowest part of putting something on the
               tape, so the board will go and find one. A pool is a search, and
               the die picks out of it. */}
-          <Tip text="pull a random recording off archive.org straight onto the sampler — then bring the sampler's Level up">
+          <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
             <button
               className={styles.ioBtn}
               onClick={() =>
@@ -387,7 +404,7 @@ export function App() {
             of the panel's height on its own. */}
         <div className={styles.head}>
           <span className={styles.brand}>bender</span>
-          <Tip text={`bender ${versionLabel} (${gitSha})`}>
+          <Tip text={`Bender ${versionLabel} (${gitSha}).`}>
             <span className={styles.version}>{versionLabel}</span>
           </Tip>
           <MorphControl
@@ -405,46 +422,52 @@ export function App() {
 
         <div className={styles.actions}>
           <Dice seconds={morphSeconds} onLanded={setLanded} />
-          <Tip text="keep this board and nudge every control around where it sits, in time: the tempo stays put and the delay, slice, roll and LFO land back on the grid — shift for wild, alt for gentle">
-            <button
-              className={styles.btn}
-              onClick={e =>
-                engine.morphTo(
-                  mutate(
-                    engine.controls.get(),
-                    e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
-                    Math.random,
-                  ),
-                  morphSeconds,
-                )
-              }
-            >
-              mutate
-            </button>
-          </Tip>
+          <span className={styles.withHelp}>
+            <Tip text={MUTATE_HELP}>
+              <button
+                className={styles.btn}
+                onClick={e =>
+                  engine.morphTo(
+                    mutate(
+                      engine.controls.get(),
+                      e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
+                      Math.random,
+                    ),
+                    morphSeconds,
+                  )
+                }
+              >
+                mutate
+              </button>
+            </Tip>
+            <HelpDot text={MUTATE_HELP} label="mutate" />
+          </span>
           {/* Beside mutate, because that is what it is: the same nudge, gentle,
               on a timer, forever. Nothing else on the board plays itself. */}
-          <Tip
-            text={
-              drifting
-                ? 'stop drifting and keep the board wherever it has got to'
-                : 'let the board nudge itself somewhere near where it stands, every fifteen seconds, travelling most of the way there before it sets off again — a board that plays itself. Your levels, song and pattern stay put, and none of it lands in the walk: one undo puts back the board you set drifting'
-            }
-          >
-            <button
-              className={drifting ? styles.btnOn : styles.btn}
-              onClick={() =>
+          <span className={styles.withHelp}>
+            <Tip
+              text={
                 drifting
-                  ? engine.stopDrift()
-                  : engine.startDrift(() =>
-                      mutate(engine.controls.get(), 0.05, Math.random),
-                    )
+                  ? 'stop drifting and keep the board wherever it has got to'
+                  : DRIFT_HELP
               }
             >
-              {drifting ? 'drifting…' : 'drift'}
-            </button>
-          </Tip>
-          <Tip text="back to the board the toy ships with. It travels there like anything else, and it lands in the walk, so undo brings back whatever you were on">
+              <button
+                className={drifting ? styles.btnOn : styles.btn}
+                onClick={() =>
+                  drifting
+                    ? engine.stopDrift()
+                    : engine.startDrift(() =>
+                        mutate(engine.controls.get(), 0.05, Math.random),
+                      )
+                }
+              >
+                {drifting ? 'drifting…' : 'drift'}
+              </button>
+            </Tip>
+            <HelpDot text={DRIFT_HELP} label="drift" />
+          </span>
+          <Tip text="Back to the board the toy ships with. It lands in the walk, so undo brings back whatever you were on.">
             <button
               className={styles.btn}
               onClick={() =>
@@ -456,7 +479,7 @@ export function App() {
           </Tip>
           {/* Beside reset, because what undo has in common with it is what a
               hand reaching for either one wants: out of here. */}
-          <Tip text="step back through the boards you have been through (ctrl+z). It arrives however morph says boards arrive, so at a long one the way back is a transition too">
+          <Tip text="Steps back through the boards you have been through (ctrl+z).">
             <button
               className={walk.past.length ? styles.btn : styles.btnOff}
               onClick={() => engine.undo(morphSeconds)}
@@ -469,7 +492,7 @@ export function App() {
               greyed redo would cost a slot in the row on every session that
               never undid anything. */}
           {walk.future.length > 0 && (
-            <Tip text="step forward again (ctrl+shift+z)">
+            <Tip text="Steps forward again (ctrl+shift+z).">
               <button
                 className={styles.btn}
                 onClick={() => engine.redo(morphSeconds)}

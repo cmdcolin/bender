@@ -56,7 +56,7 @@ function Bindings() {
                 CC{b.controller}
                 {b.channel === 0 ? '' : ` ch${b.channel + 1}`}
               </span>
-              <Tip text={`take ${s.label} off its knob`}>
+              <Tip text={`Take ${s.label} off its knob.`}>
                 <button
                   className={styles.drop}
                   onClick={() => midi.clearBinding(s.key)}
@@ -92,7 +92,7 @@ function Pads() {
     <>
       <div className={styles.row}>
         {learn === null ? (
-          <Tip text="hit a pad for each of the kit's six voices in turn. For a pad bank that isn't on channel 10, or isn't General MIDI — the ones that are need none of this. Replaces every pad you have; the ⚟ on a row moves one">
+          <Tip text="Hit a pad for each of the kit's six voices in turn. For a pad bank that isn't on channel 10, or isn't General MIDI — the ones that are need none of this. Replaces every pad you have; the ⚟ on a row moves one.">
             <button className={styles.btn} onClick={() => midi.learnPads()}>
               learn pads
             </button>
@@ -138,7 +138,7 @@ function Pads() {
                   : `${noteName(p.note)}${p.channel === 0 ? '' : ` ch${p.channel + 1}`}`}
               </span>
               {p === undefined ? null : (
-                <Tip text={`take the ${voiceLabel(key)} off its pad`}>
+                <Tip text={`Take the ${voiceLabel(key)} off its pad.`}>
                   <button
                     className={styles.drop}
                     onClick={() => midi.clearPad(key)}
@@ -215,7 +215,7 @@ function Wire() {
             {traffic.port === '' ? '' : ` · ${traffic.port}`}
           </span>
         )}
-        <Tip text="also print every message to the browser console, which keeps a scrollback the one-line readout cannot">
+        <Tip text="Also print every message to the browser console, which keeps a scrollback the one-line readout cannot.">
           <button
             className={debug ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setDebug(!debug)}
@@ -298,7 +298,7 @@ function Wired() {
               </option>
             ))}
           </select>
-          <Tip text="bind this device's knobs by CC number, in order: the mixes and levels first, then the rest down the signal path. Replaces every binding you have">
+          <Tip text="Bind this device's knobs by CC number, in order: the mixes and levels first, then the rest down the signal path. Replaces every binding you have.">
             <button
               className={styles.btn}
               disabled={device === undefined}
@@ -308,7 +308,7 @@ function Wired() {
               {device ? Math.min(device.ccs.length, AUTOMAP_KEYS.length) : 0}
             </button>
           </Tip>
-          <Tip text="works on any controller whatever its CC numbers: sweep each knob once, left to right, and each takes the next control. Replaces every binding you have">
+          <Tip text="Works on any controller whatever its CC numbers: sweep each knob once, left to right, and each takes the next control. Replaces every binding you have.">
             <button
               className={styles.btn}
               onClick={() => midi.learnSequence(encoders)}
@@ -318,7 +318,7 @@ function Wired() {
           </Tip>
           {/* A sweep can see which knob moved but not what kind of knob it is:
               an encoder's clicks and a fader's positions are the same bytes. */}
-          <Tip text="the knobs being swept are endless encoders — they report turns, not positions. Applies to what learn in order binds">
+          <Tip text="The knobs being swept are endless encoders — they report turns, not positions. Applies to what learn in order binds.">
             <button
               className={encoders ? styles.toggleOn : styles.toggle}
               onClick={() => setEncoders(!encoders)}
@@ -334,7 +334,7 @@ function Wired() {
       )}
 
       <div className={styles.row}>
-        <Tip text="notes play the toy chip's keyboard — the same voice the on-screen keys strike, and they light the same keys. The sustain pedal holds them, and all-notes-off lets them go, on any CC nothing else has taken">
+        <Tip text="Notes play the toy chip's keyboard — the same voice the on-screen keys strike, and they light the same keys. The sustain pedal holds them, and all-notes-off lets them go, on any CC nothing else has taken.">
           <button
             className={notes ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setNotes(!notes)}
@@ -342,7 +342,7 @@ function Wired() {
             notes play the keys
           </button>
         </Tip>
-        <Tip text="pads play the drum machine's voices. Channel 10 is General MIDI's drum channel and lands on the kit with nothing to set up; a pad bank sending anything else is what learn pads is for">
+        <Tip text="Pads play the drum machine's voices. Channel 10 is General MIDI's drum channel and lands on the kit with nothing to set up; a pad bank sending anything else is what learn pads is for.">
           <button
             className={pads ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setPads(!pads)}
@@ -350,7 +350,7 @@ function Wired() {
             pads play the kit
           </button>
         </Tip>
-        <Tip text="the drum machine's tempo follows the clock on the wire. It writes the BPM control, so the slider moves with it">
+        <Tip text="The drum machine's tempo follows the clock on the wire. It writes the BPM control, so the slider moves with it.">
           <button
             className={clockLock ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setClockLock(!clockLock)}
@@ -358,7 +358,7 @@ function Wired() {
             clock sets the tempo
           </button>
         </Tip>
-        <Tip text="send each bound control's value back out, so a device with lit rings shows where the board is. A ring that follows a preset is a knob that was never stranded">
+        <Tip text="Send each bound control's value back out, so a device with lit rings shows where the board is. A ring that follows a preset is a knob that was never stranded.">
           <button
             className={lights ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setLights(!lights)}

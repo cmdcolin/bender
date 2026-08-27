@@ -262,3 +262,12 @@
     border-top: 1px solid var(--border);
   }
 }
+
+/* A control and the dot that explains it, held tight enough to read as one
+   thing. In a row with a gap of its own, a dot at the row's spacing would sit
+   between two buttons rather than beside one, and belong to neither. */
+.withHelp {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}

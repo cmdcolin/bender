@@ -96,7 +96,7 @@ export function Mixer() {
           <span className={styles.track}>{bar(i)}</span>
         </div>
       ))}
-      <Tip text="what the channels above add up to, before a single bend — read where the faders meet rather than at the output, so it says which of them is eating the headroom rather than what the limiter did about it">
+      <Tip text="What the channels above add up to, before a single bend — read where the faders meet rather than at the output, so it says which of them is eating the headroom rather than what the limiter did about it.">
         <div className={styles.bus}>
           <span className={styles.busName}>mix bus</span>
           <span className={styles.busTrack}>{bar(TAPS.length - 1)}</span>

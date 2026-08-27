@@ -280,7 +280,7 @@ function Row({
           </span>
         ) : (
           <Tip
-            text={`press to hear the ${row.label}, or play it on the ${padKeyFor(voice)} key — with record armed and the kit running, it writes the step it lands on`}
+            text={`Press to hear the ${row.label}, or play it on the ${padKeyFor(voice)} key — with record armed and the kit running, it writes the step it lands on.`}
           >
             <button
               className={
@@ -360,7 +360,7 @@ const Cell = memo(function Cell(props: {
   }
   return (
     <Tip
-      text={`drag across the grid to draw a run of steps — shift-click to bring the ${row.label} row round after step ${step + 1}`}
+      text={`Drag across the grid to draw a run of steps — shift-click to bring the ${row.label} row round after step ${step + 1}`}
     >
       <button
         className={props.className}
