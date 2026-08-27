@@ -16,6 +16,7 @@ import {
   asLen,
   asMask,
   DRUM_VOICES,
+  GRID_ROWS,
   quantizeStep,
   stepBit,
   type DrumStepKey,
@@ -159,6 +160,17 @@ export class Engine {
   // and hear it always expected of it.
   readonly songPlaying = createStore(false)
   readonly drumsPlaying = createStore(false)
+  // Four spare patterns for the kit, next to the one on the grid — a place to
+  // park a verse while you draw a chorus, not a preset: nothing seeds them and
+  // nothing shares them, so a slot means nothing until you've put something in
+  // it. Held here rather than in the grid's own state so a slot survives the
+  // section closing and reopening, the way the running switches above it do.
+  readonly drumSlots = createStore<(Partial<Controls> | null)[]>([
+    null,
+    null,
+    null,
+    null,
+  ])
   readonly recording = createStore(false)
   readonly recSeconds = createStore(0)
   readonly sampleName = createStore<string | null>(null)
@@ -517,6 +529,29 @@ export class Engine {
     this.cancelMorph()
     this.controls.set(next)
     this.flushSoon()
+  }
+
+  // The kit's pattern alone — every row's mask and length, nothing else on the
+  // board — copied into a spare slot.
+  saveDrumSlot(i: number) {
+    const board = this.controls.get()
+    const patch: Partial<Controls> = {}
+    for (const row of GRID_ROWS) {
+      patch[row.key] = board[row.key]
+      patch[row.len] = board[row.len]
+    }
+    const slots = this.drumSlots.get().slice()
+    slots[i] = patch
+    this.drumSlots.set(slots)
+  }
+
+  // Lands the same way a ROM does: one entry in the walk, so a slot you didn't
+  // mean to load is one ctrl+z away from the pattern it replaced.
+  loadDrumSlot(i: number) {
+    const patch = this.drumSlots.get()[i]
+    if (!patch) return
+    this.armStep()
+    this.writeBoard({ ...this.controls.get(), ...patch })
   }
 
   // Travel to a new board over `seconds`, or land in one frame at zero. It sets

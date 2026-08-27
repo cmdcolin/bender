@@ -102,6 +102,7 @@ type Paint = RefObject<boolean | null>
 export function DrumGrid() {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
+  const slots = useStoreValue(engine.drumSlots)
   const tick = usePlayTick()
   const struck = useStruck()
   // Two figures rather than the board: the grid is open while a morph travels,
@@ -157,6 +158,17 @@ export function DrumGrid() {
   return (
     <div className={styles.wrap}>
       <div className={styles.roms}>
+        {/* Runs the kit from the grid itself, so toggling it doesn't mean a
+            trip back up to the io row while you're looking at the pattern. */}
+        <Tip text={playing ? 'Stop the kit.' : 'Run the kit.'}>
+          <button
+            className={playing ? styles.playOn : styles.play}
+            aria-pressed={playing}
+            onClick={() => engine.setDrumsPlaying(!playing)}
+          >
+            {playing ? '❚❚' : '▶'}
+          </button>
+        </Tip>
         {DRUM_ROMS.map(r => (
           <Tip key={r.name} text={r.blurb}>
             <button
@@ -195,6 +207,34 @@ export function DrumGrid() {
             record
           </button>
         </Tip>
+      </div>
+
+      {/* Spare patterns, next to the grid rather than a preset: empty until you
+          put something in one, and nothing here says what a slot holds beyond
+          "something" or "nothing" — the grid itself is the only place to see
+          what a pattern is. */}
+      <div className={styles.slots}>
+        {slots.map((slot, i) => (
+          <Tip
+            key={i}
+            text={
+              slot
+                ? `Load pattern ${i + 1}. Shift-click to overwrite it with the grid as it stands.`
+                : `Empty — click to save the grid as it stands into pattern ${i + 1}.`
+            }
+          >
+            <button
+              className={slot ? styles.slot : styles.slotEmpty}
+              onClick={e =>
+                slot && !e.shiftKey
+                  ? engine.loadDrumSlot(i)
+                  : engine.saveDrumSlot(i)
+              }
+            >
+              {i + 1}
+            </button>
+          </Tip>
+        ))}
       </div>
 
       {/* What the machine will do to a pattern that a hand drawing sixteen

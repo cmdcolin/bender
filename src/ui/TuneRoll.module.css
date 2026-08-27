@@ -22,6 +22,14 @@
   composes: chip from './button.module.css';
 }
 
+.play {
+  composes: chip from './button.module.css';
+}
+
+.playOn {
+  composes: chipOn from './button.module.css';
+}
+
 /* Armed to record what you play in — the same three states the kit's has, for
    the same reasons, and drawn the same way so the two read as one switch on two
    machines. */

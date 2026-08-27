@@ -134,6 +134,17 @@ export function TuneRoll() {
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
+        {/* Runs the tune from the roll itself, so toggling it doesn't mean a
+            trip back up to the io row while you're looking at the memory. */}
+        <Tip text={playing ? 'Stop the tune.' : 'Run the tune.'}>
+          <button
+            className={playing ? styles.playOn : styles.play}
+            aria-pressed={playing}
+            onClick={() => engine.setSongPlaying(!playing)}
+          >
+            {playing ? '❚❚' : '▶'}
+          </button>
+        </Tip>
         {/* The record button, on the memory it writes into. The other one is on
             the keyboard's own deck, where your hands are — the same switch,
             reachable from both because you cannot watch this and play the keys

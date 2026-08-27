@@ -19,6 +19,33 @@
   composes: pickOn from './button.module.css';
 }
 
+.play {
+  composes: chip from './button.module.css';
+}
+
+.playOn {
+  composes: chipOn from './button.module.css';
+}
+
+.slots {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 5px;
+}
+
+.slot {
+  composes: pick from './button.module.css';
+}
+
+/* Nothing saved here yet — dashed, the same promise the kit's armed-but-idle
+   record button makes, since a click does something different to an empty
+   slot than to a full one and the button has to say which before it's pressed. */
+.slotEmpty {
+  composes: pick from './button.module.css';
+  border-style: dashed;
+  color: var(--fg4);
+}
+
 /* The verbs that rewrite whatever the ROM row loaded. Chips rather than picks:
    a ROM is a place the grid can be in and shows as the one it is in, while a
    move is something that happened to it and has no state to be in at all. */
