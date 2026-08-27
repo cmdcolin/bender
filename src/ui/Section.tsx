@@ -5,6 +5,7 @@ import { useBoardValue } from './ControlsContext'
 import { engine } from '../engine/engine'
 import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
+import { FeedbackLoops } from './FeedbackLoops'
 import { Mixer } from './Mixer'
 import { TuneRoll } from './TuneRoll'
 import {
@@ -407,6 +408,7 @@ export function OpenGroup({
         {group.editor?.kind === 'drums' && <DrumGrid />}
         {group.editor?.kind === 'roll' && <TuneRoll />}
         {group.editor?.kind === 'mixer' && <Mixer />}
+        {group.editor?.kind === 'feedback' && <FeedbackLoops />}
         <Rows key={group.name} group={group} seconds={seconds} />
       </div>
     </div>

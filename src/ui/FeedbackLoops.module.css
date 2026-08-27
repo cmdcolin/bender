@@ -1,0 +1,25 @@
+/* The bus as a picture rather than a paragraph: three strips into one return,
+   drawn once so the rows of sliders under it read as what they are. */
+.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 2px 0 8px;
+}
+
+.label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.sub {
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.cross {
+  fill: none;
+  stroke: var(--cool);
+  stroke-width: 1.3;
+  stroke-dasharray: 3 2;
+}

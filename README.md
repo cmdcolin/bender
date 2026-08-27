@@ -1,16 +1,13 @@
 # bender
 
-A virtual toy keyboard and drum machine on a modelled supply rail. Starve the
-rail, solder a pot onto the die, listen to what falls out. Nothing plays a
-"glitch sample" — the reboots and pitch dives come out of the mechanisms.
+virtual web based circuit bender
 
-**Live: https://cmdcolin.github.io/bender/**
+https://cmdcolin.github.io/bender/
 
 ## The signal path
 
-The panel draws the chain live: sources into the mix bus, through the bend
-slots, the pedals, the tape machine, out, and the feedback bus back again. Click
-a box for its controls. The drawing changes as you patch.
+You interact with the audio using the signal path diagram. Clicking on buttons
+there opens settings panels
 
 ![The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run](docs/img/panel-callout.jpg)
 
@@ -18,11 +15,12 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 
 ## Features
 
-- Simulates circuit bending toy keyboard, toy drum machine, and basic FM synth
-- Effects, including tape delay and guitar-pedal styles
-- A patch bay where modulators can modulate other modulators
-- Buttons to easily randomize all the settings
-- Connect MIDI controller via WebMIDI (works with Chrome, Firefox Nightly)
+- Circuit bend a toy keyboard, drum machine, and basic FM synth
+- Tape delay, reverb, and distortion 'guitar pedals'
+- Allows custom piano roll and drum sequences
+- Patch bay with LFO and other modulations
+- Buttons to easily randomize settings
+- Connect MIDI controller (works with Chrome, Firefox Nightly)
 - Shareable URLs
 
 Uses AudioWorklet API...surpringly powerful and fast

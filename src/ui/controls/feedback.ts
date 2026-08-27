@@ -4,6 +4,7 @@ export const FEEDBACK_GROUPS: Group[] = [
   {
     name: 'Feedback bus',
     place: 'Feedback',
+    editor: { kind: 'feedback' },
     folded: ['strips 2 and 3', 'the return amps'],
     sliders: [
       {
