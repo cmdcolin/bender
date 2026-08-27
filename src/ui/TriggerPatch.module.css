@@ -1,0 +1,19 @@
+/* The kit and the keyboard, and the two wires that can bridge one's trigger
+   line onto the other's gate — solder both and the two boxes play each
+   other, which three plain dropdowns never quite say out loud. */
+.diagram {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  margin: 2px 0 8px;
+}
+
+.label {
+  font-size: var(--fs-xs);
+}
+
+.tag {
+  font-size: var(--fs-xs);
+  fill: var(--fg4);
+}

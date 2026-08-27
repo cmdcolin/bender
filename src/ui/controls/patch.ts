@@ -111,6 +111,10 @@ export const PATCH_GROUPS: Group[] = [
   {
     name: 'Trigger patch',
     place: 'Patch',
+    // The loop drawn above these rows, in TriggerPatch: the kit and the
+    // keyboard as two boxes, with the wire each direction can carry between
+    // them — solder both and they play each other.
+    editor: { kind: 'trigger' },
     sliders: [
       {
         key: 'trigToKeys',

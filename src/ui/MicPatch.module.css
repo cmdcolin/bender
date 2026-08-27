@@ -1,0 +1,14 @@
+/* One wire out of a mic, drawn against the seven jacks it could be soldered
+   to instead — so 'Mic patch: 4' reads as a picture rather than an index into
+   a list you have to hold in your head. */
+.diagram {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  margin: 2px 0 8px;
+}
+
+.label {
+  font-size: var(--fs-xs);
+}

@@ -1003,6 +1003,9 @@ export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Mic',
     place: 'Sources',
+    // The picture drawn above these rows, in MicPatch: the mic against all
+    // seven jacks it could be soldered to, not only the one it is.
+    editor: { kind: 'mic' },
     sliders: [
       {
         key: 'micLevel',

@@ -6,9 +6,11 @@ import { engine } from '../engine/engine'
 import { touchedCount, type Group, type SliderDef } from './controls'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
+import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
 import { PatchBay } from './PatchBay'
 import { SlotMixes, SlotRack } from './SlotRack'
+import { TriggerPatch } from './TriggerPatch'
 import { TuneRoll } from './TuneRoll'
 import {
   applyCut,
@@ -450,6 +452,8 @@ export function OpenGroup({
         {group.editor?.kind === 'feedback' && <FeedbackLoops />}
         {group.editor?.kind === 'slots' && <SlotRack />}
         {group.editor?.kind === 'patch' && <PatchBay />}
+        {group.editor?.kind === 'trigger' && <TriggerPatch />}
+        {group.editor?.kind === 'mic' && <MicPatch />}
         <Rigs group={group} seconds={seconds} />
         <Rows key={group.name} group={group} seconds={seconds} />
         {group.editor?.kind === 'slots' && <SlotMixes />}
