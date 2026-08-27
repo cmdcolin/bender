@@ -5,6 +5,7 @@
 .diagram {
   display: block;
   width: 100%;
+  max-width: 260px;
   height: auto;
   margin: 2px 0 8px;
 }

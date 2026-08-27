@@ -16,14 +16,15 @@ const MOD_KEYS = [0, 1, 2, 3].map(i => ({
   depth: `mod${i}Depth` as ControlKey,
 }))
 
-const SRC_X = 6
-const SRC_W = 62
-const DEST_X = 104
-const DEST_W = 148
-const ROW_H = 22
-const STEP = ROW_H + 15
-const TOP = 10
-const LOOP_X = DEST_X + DEST_W + 14
+const NUM_X = 2
+const SRC_X = 14
+const SRC_W = 54
+const DEST_X = SRC_X + SRC_W + 30
+const DEST_W = 132
+const ROW_H = 20
+const STEP = ROW_H + 8
+const TOP = 6
+const LOOP_X = DEST_X + DEST_W + 12
 
 const rowY = (i: number) => TOP + i * STEP
 const cy = (y: number) => y + ROW_H / 2
@@ -73,8 +74,8 @@ export function PatchBay() {
         return (
           <g key={i} opacity={live ? 1 : 0.55}>
             <title>{title}</title>
-            <text x={SRC_X} y={y - 3} className={styles.num}>
-              wire {i + 1}
+            <text x={NUM_X} y={y0 + 4} className={styles.num}>
+              {i + 1}
             </text>
             <rect
               x={SRC_X}
