@@ -96,7 +96,8 @@ export function ControlSlider({
   // is wide, so a knob that pulled for the keyboard too would be one the
   // keyboard could never walk off the stop.
   const hand = useRef(false)
-  const touched = value !== DEFAULT_CONTROLS[def.key]
+  const stock = DEFAULT_CONTROLS[def.key]
+  const touched = value !== stock
   const action = def.action
 
   if (def.choices) {
@@ -185,7 +186,7 @@ export function ControlSlider({
           snapToStep(def, hand.current ? pull(def, at) : fromPos(def, at)),
         )
       }}
-      onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
+      onDoubleClick={() => write(def.key, stock)}
     />
   )
 
@@ -194,7 +195,7 @@ export function ControlSlider({
       <div className={split?.names ? styles.rowSplit : styles.row}>
         <span
           className={touched ? styles.labelTouched : styles.label}
-          onDoubleClick={() => write(def.key, DEFAULT_CONTROLS[def.key])}
+          onDoubleClick={() => write(def.key, stock)}
         >
           {label}
         </span>
@@ -256,7 +257,25 @@ export function ControlSlider({
                 : styles.readout
           }
         >
-          {formatValue(def, value)}
+          {touched ? (
+            <Tip
+              text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
+            >
+              <button
+                className={styles.revert}
+                aria-label={`reset ${label} to ${formatValue(def, stock)}`}
+                onClick={() => write(def.key, stock)}
+              >
+                {formatValue(def, value)}
+                <span className={styles.mark}>↺</span>
+              </button>
+            </Tip>
+          ) : (
+            <>
+              {formatValue(def, value)}
+              <span className={styles.markIdle}>↺</span>
+            </>
+          )}
           {action && (
             <Tip text={action.title}>
               <button

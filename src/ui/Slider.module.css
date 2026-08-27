@@ -39,6 +39,35 @@
   white-space: nowrap;
 }
 
+/* The reading is the way back: once a control is off stock, the number itself
+   is the press that puts it there, and it wears a ↺ to say so. The mark keeps
+   its box at stock too — a slot that appeared on the first move would shove the
+   number sideways under the hand that was dragging it. */
+.revert {
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.revert:hover .mark {
+  color: var(--accent);
+}
+
+.mark {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  color: var(--fg4);
+}
+
+.markIdle {
+  composes: mark;
+  visibility: hidden;
+}
+
 /* A press beside the readout, for a value that is worked out rather than dialled
    in. Quiet until you hover it: it is an offer, not a mode. */
 .action {
