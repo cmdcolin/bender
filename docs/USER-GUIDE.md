@@ -53,8 +53,9 @@ pitch, one column per step. Click a cell to place a note, drag to draw a run of
 them, click a note again to remove it, and shift-click a step to hold whatever
 the previous step played. A held note draws as one bar across the steps it
 covers, rather than a note followed by empty cells. Two octaves show at a time,
-with arrows to move the window, and the memory keeps its own length — a
-four-step phrase you write loops four times against a sixteen-step pattern.
+with arrows to move the window. The memory is 32 steps, the same length as the
+songs in the ROM bank, and it keeps its own length — a four-step phrase you
+write loops eight times against a sixteen-step drum pattern.
 
 A step is stored as one of 64 codes on six bits: 62 of them are pitches (a
 little over five octaves), and the other two are a rest and a hold. The octave

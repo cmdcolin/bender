@@ -273,6 +273,22 @@ export const URL_KEY_ORDER: readonly ControlKey[] = [
   'relayRate',
   'couple',
   'outGain',
+  'tuneStep16',
+  'tuneStep17',
+  'tuneStep18',
+  'tuneStep19',
+  'tuneStep20',
+  'tuneStep21',
+  'tuneStep22',
+  'tuneStep23',
+  'tuneStep24',
+  'tuneStep25',
+  'tuneStep26',
+  'tuneStep27',
+  'tuneStep28',
+  'tuneStep29',
+  'tuneStep30',
+  'tuneStep31',
 ]
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))

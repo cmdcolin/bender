@@ -51,27 +51,6 @@
   min-width: 1.4rem;
 }
 
-/* Which tune the chip is actually on. It is a whole line rather than a badge
-   because it is the difference between hearing your melody and hearing für
-   Elise, which is not a thing to say quietly. */
-.notMine {
-  display: block;
-  width: 100%;
-  margin-bottom: 5px;
-  padding: 3px 0;
-  font-size: var(--fs-xs);
-  color: var(--accent2);
-  background: none;
-  border: 1px dashed var(--border-quiet);
-  border-radius: 2px;
-  cursor: pointer;
-  text-align: center;
-}
-
-.notMine:hover {
-  border-color: var(--accent2);
-}
-
 .grid {
   display: flex;
   flex-direction: column;
@@ -97,14 +76,14 @@
 
 .cells {
   display: grid;
-  grid-template-columns: repeat(16, 1fr);
+  grid-template-columns: repeat(32, 1fr);
   gap: 1px;
 }
 
 .cell,
 .headOn,
 .holdOn {
-  height: 10px;
+  height: 8px;
   min-width: 0;
   padding: 0;
   border: 1px solid transparent;

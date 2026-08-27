@@ -1,7 +1,7 @@
 import type { ControlKey } from './controls'
 
-// The melody memory: the sixteen steps the toy keeps of what you played, and
-// the word each one is filed as.
+// The melody memory: the thirty-two steps the toy keeps of what you played,
+// and the word each one is filed as.
 //
 // Toy keyboards of this kind had a record button, and what it wrote went into
 // the same memory the demo song came out of — so the chip plays your melody the
@@ -13,7 +13,11 @@ import type { ControlKey } from './controls'
 // A step is a semitone in the chip's own counting (0 is A3, 220 Hz), or one of
 // the two things a step can be that is not a note.
 
-export const TUNE_STEPS = 16
+// As long as the songs in the ROM bank. The memory used to be half of one,
+// which made yours the one tune on the chip that could not hold a phrase and
+// its answer — and the design here is that the memory is a nineteenth tune, so
+// it is the same length as the other eighteen.
+export const TUNE_STEPS = 32
 
 // Not notes: nothing sounding, and whatever is sounding carrying on. The ROM
 // bank spells them -1 and -2 because its steps never go below the chip's bottom
@@ -85,6 +89,22 @@ export const TUNE_STEP_KEYS = [
   'tuneStep13',
   'tuneStep14',
   'tuneStep15',
+  'tuneStep16',
+  'tuneStep17',
+  'tuneStep18',
+  'tuneStep19',
+  'tuneStep20',
+  'tuneStep21',
+  'tuneStep22',
+  'tuneStep23',
+  'tuneStep24',
+  'tuneStep25',
+  'tuneStep26',
+  'tuneStep27',
+  'tuneStep28',
+  'tuneStep29',
+  'tuneStep30',
+  'tuneStep31',
 ] as const satisfies readonly ControlKey[]
 
 export type TuneStepKey = (typeof TUNE_STEP_KEYS)[number]

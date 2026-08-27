@@ -53,11 +53,11 @@ function useTunePos(): number {
   )
 }
 
-// Sixteen numbers read through one subscription rather than sixteen. What the
-// board hands back has to be comparable with Object.is or every write to any
+// Thirty-two numbers read through one subscription rather than thirty-two. What
+// the board hands back has to be comparable with Object.is or every write to any
 // control redraws the roll, so the steps travel as a string and come back as
-// numbers — which is one small parse per write against three hundred and
-// eighty-four cells rebuilt per frame of a morph.
+// numbers — which is one small parse per write against the seven hundred and
+// sixty-eight cells a morph would otherwise rebuild every frame.
 function useSteps(): number[] {
   const packed = useBoardValue(c => TUNE_STEP_KEYS.map(k => c[k]).join(','))
   return packed.split(',').map(Number)
@@ -166,7 +166,7 @@ export function TuneRoll() {
         <Tip
           text={
             len === TUNE_STEPS
-              ? 'how many steps the memory plays before it comes round. All sixteen is the whole of it; anything less is a shorter phrase, and the steps past the end keep whatever they were holding'
+              ? 'how many steps the memory plays before it comes round. All thirty-two is the whole of it, the same length as the songs in the ROM bank; anything less is a shorter phrase, and the steps past the end keep whatever they were holding'
               : `the memory comes round every ${len} steps — the rest are still written, they are just past the end`
           }
         >
@@ -184,23 +184,6 @@ export function TuneRoll() {
           </select>
         </Tip>
       </div>
-
-      {/* The chip plays one tune at a time and it is not necessarily this one.
-          A roll drawn beside a chip playing für Elise says nothing about which
-          of the two you are hearing unless something says so. */}
-      {mine || (
-        <Tip text="the memory takes what you play whatever the chip is playing — this puts the chip on it">
-          <button
-            className={styles.notMine}
-            onClick={() => {
-              engine.armStep()
-              engine.set('chipTune', YOURS)
-            }}
-          >
-            the chip is playing one of its own songs — press to play yours
-          </button>
-        </Tip>
-      )}
 
       <Tip text="click a cell to put that note on that step, and drag across to draw a line. Click a note again to take it off, and shift-click a step to hold whatever the step before it struck">
         <div className={styles.grid}>
@@ -242,7 +225,7 @@ export function TuneRoll() {
 }
 
 // Memoised for the same reason the kit's cells are: the playhead moves, and a
-// roll is three hundred and eighty-four cells. Only the two columns whose class
+// roll is seven hundred and sixty-eight cells. Only the two columns whose class
 // changed have anything to do.
 const Cell = memo(function Cell(props: {
   step: number
