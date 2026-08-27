@@ -19,7 +19,12 @@ import { encodeControls } from '../src/ui/share'
 
 const OUT = 'docs/img/panel-callout.jpg'
 const PORT = 5199
-const VIEW = { width: 1600, height: 900 }
+const VIEW = { width: 1180, height: 900 }
+
+// Shot at two device pixels to the css pixel, so the panel blown up to twice
+// its size on screen is still made of pixels the browser drew rather than ones
+// ImageMagick guessed.
+const DPR = 2
 
 const PAD = 24
 const GAP = 40
@@ -150,6 +155,7 @@ async function shoot(url: string, into: string) {
       '--disable-gpu',
       '--hide-scrollbars',
       `--window-size=${VIEW.width},${VIEW.height}`,
+      `--force-device-scale-factor=${DPR}`,
       '--remote-debugging-port=9333',
       `--user-data-dir=${dir}`,
       url,
@@ -159,6 +165,12 @@ async function shoot(url: string, into: string) {
   try {
     const page = await attach(9333)
     await page.send('Page.enable')
+    await page.send('Emulation.setDeviceMetricsOverride', {
+      width: VIEW.width,
+      height: VIEW.height,
+      deviceScaleFactor: DPR,
+      mobile: false,
+    })
     await sleep(3000)
 
     const { result } = await page.send<{ result: { value: string } }>(
@@ -206,15 +218,16 @@ async function main() {
     const rect = await shoot(`${url}#set=${encodeControls(BOARD)}`, shot)
 
     // The box, a hair outside the drawing so the ring never lands on a wire.
+    // The page answers in css pixels and the shot is in device ones.
     const box = {
-      x: Math.round(rect.x) - 4,
-      y: Math.round(rect.y) - 4,
-      w: Math.round(rect.width) + 8,
-      h: Math.round(rect.height) + 8,
+      x: Math.round((rect.x - 4) * DPR),
+      y: Math.round((rect.y - 4) * DPR),
+      w: Math.round((rect.width + 8) * DPR),
+      h: Math.round((rect.height + 8) * DPR),
     }
     // The empty half-screen under the keyboard is not worth the pixels; the
     // caption under the panel is, so the crop stops just below it.
-    const appH = Math.min(VIEW.height, box.y + box.h + 60)
+    const appH = Math.min(VIEW.height * DPR, box.y + box.h + 60 * DPR)
 
     magick([
       shot,
@@ -232,14 +245,14 @@ async function main() {
     magick([
       shot,
       '-crop',
-      `${VIEW.width}x${appH}+0+0`,
+      `${VIEW.width * DPR}x${appH}+0+0`,
       '+repage',
       '-fill',
       'none',
       '-stroke',
       RING,
       '-strokewidth',
-      '5',
+      String(3 * DPR),
       '-draw',
       `rectangle ${box.x},${box.y} ${box.x + box.w},${box.y + box.h}`,
       '-resize',
