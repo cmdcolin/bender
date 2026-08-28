@@ -7,7 +7,7 @@ https://cmdcolin.github.io/bender/
 ## The signal path
 
 You interact with the audio using the signal path diagram. Clicking on buttons
-there opens settings panels
+there opens settings panels.
 
 ![The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run](docs/img/panel-callout.jpg)
 
@@ -27,6 +27,16 @@ Uses AudioWorklet API...surpringly powerful and fast
 https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet
 
 See full feature list - [docs/features.md](docs/features.md)
+
+## User interface
+
+You can see from the above screenshot it's all kind of compact and wrapped into
+that signal diagram. It is a little tricky but it is better than just having 100
+sliders all visible at once.
+
+For maximum control to get e.g. super tactile control I'd recommend getting a
+MIDI controller. I got one just because i made this! This one though of course
+any will do "Akai Professional MPK Mini" (has drum pad, 8 dials, keys)
 
 ## Run
 
