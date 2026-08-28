@@ -19,18 +19,36 @@ import { engine } from '../engine/engine'
 // and somewhere to connect it. A context that threw instead would come back as
 // an unhandled rejection out of autostart, which is a fault in the test rig
 // arriving as a fault in the app.
+class SilentGainNode {
+  gain = {
+    cancelScheduledValues() {},
+    setValueAtTime() {},
+    linearRampToValueAtTime() {},
+  }
+  connect(dest: any) {
+    return dest
+  }
+  disconnect() {}
+}
+
 class SilentContext {
   state = 'suspended'
+  currentTime = 0
   destination = {}
   audioWorklet = { addModule: async () => {} }
   onstatechange: (() => void) | null = null
   resume = async () => {}
   close = async () => {}
+  createGain() {
+    return new SilentGainNode()
+  }
 }
 
 class SilentNode {
   port = { onmessage: null, postMessage() {} }
-  connect() {}
+  connect(dest: any) {
+    return dest
+  }
   disconnect() {}
 }
 
@@ -63,10 +81,10 @@ function stubLayout() {
   // Setting display is what stands in for `:popover-open`, which is the state
   // jsdom cannot hold. Nothing here wants the top layer itself: what a test
   // asks of an open popover is that it is on screen with its buttons reachable.
-  HTMLElement.prototype.showPopover ??= function (this: HTMLElement) {
+  HTMLElement.prototype.showPopover = function (this: HTMLElement) {
     this.style.display = 'block'
   }
-  HTMLElement.prototype.hidePopover ??= function (this: HTMLElement) {
+  HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
     this.style.display = ''
   }
   // And <dialog>, of which jsdom has the element and none of the three calls
@@ -75,13 +93,13 @@ function stubLayout() {
   // rather than modal so the stage behind it stays reachable. Only `open`
   // separates them here — the top layer and the inertness a modal puts on the
   // rest of the page are things jsdom has no notion of either way.
-  HTMLDialogElement.prototype.show ??= function (this: HTMLDialogElement) {
+  HTMLDialogElement.prototype.show = function (this: HTMLDialogElement) {
     this.open = true
   }
-  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+  HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement) {
     this.open = true
   }
-  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+  HTMLDialogElement.prototype.close = function (this: HTMLDialogElement) {
     this.open = false
     this.dispatchEvent(new Event('close'))
   }
