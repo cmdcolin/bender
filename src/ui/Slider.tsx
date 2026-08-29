@@ -7,7 +7,7 @@ import { snapToStep } from './controls'
 import { midi } from './midi'
 import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
 import styles from './Slider.module.css'
-import { Tip } from './Tip'
+import { Tip, type TipHandle } from './Tip'
 
 // A discrete write is its own step in the undo walk: arm one, take it. A drag
 // arms on the way down instead, so the whole sweep banks a single step — see
@@ -99,14 +99,21 @@ export function ControlSlider({
   const stock = DEFAULT_CONTROLS[def.key]
   const touched = value !== stock
   const action = def.action
+  // A hover tip is invisible to anyone who can't read it in the second before
+  // it drifts away, so the label is also a button onto the same bubble: click
+  // pins it open until you click elsewhere or press Escape.
+  const tip = useRef<TipHandle>(null)
 
   if (def.choices) {
     const choices = def.choices
     const pick = (i: number) => write(def.key, def.min + i)
     return (
-      <Tip text={def.help}>
+      <Tip ref={tip} text={def.help}>
         <div className={styles.row}>
-          <span className={touched ? styles.labelTouched : styles.label}>
+          <span
+            className={touched ? styles.labelTouched : styles.label}
+            onClick={() => tip.current?.toggle()}
+          >
             {label}
           </span>
           <span className={styles.choices}>
@@ -202,10 +209,11 @@ export function ControlSlider({
   )
 
   return (
-    <Tip text={def.help}>
+    <Tip ref={tip} text={def.help}>
       <div className={split?.names ? styles.rowSplit : styles.row}>
         <span
           className={touched ? styles.labelTouched : styles.label}
+          onClick={() => tip.current?.toggle()}
           onDoubleClick={() => write(def.key, stock)}
         >
           {label}

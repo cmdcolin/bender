@@ -8,10 +8,12 @@ import {
 import {
   cloneElement,
   createContext,
+  forwardRef,
   useCallback,
   useContext,
   useEffect,
   useId,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
@@ -61,82 +63,114 @@ interface Nested {
 
 const NestedTip = createContext<Nested | null>(null)
 
-export function Tip(props: { text: ReactNode; children: Anchor }) {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const [open, setOpen] = useState(false)
-  const timer = useRef(0)
-  const outer = useContext(NestedTip)
-  const id = useId()
-
-  const self = useMemo<Nested>(
-    () => ({
-      arm: () => {
-        clearTimeout(timer.current)
-        timer.current = window.setTimeout(() => setOpen(true), DELAY_MS)
-      },
-      hide: () => {
-        clearTimeout(timer.current)
-        setOpen(false)
-      },
-    }),
-    [],
-  )
-
-  useEffect(() => () => clearTimeout(timer.current), [])
-
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') self.hide()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, self])
-
-  const child = props.children
-  // Held across renders: a fresh ref callback would have React drop and retake
-  // the element every time, which for the drum grid is a hundred and twenty of
-  // them on every tick of the playhead.
-  const setRef = useMemo(
-    () => mergeRefs(child.props.ref, setAnchor),
-    [child.props.ref],
-  )
-
-  return (
-    <NestedTip.Provider value={self}>
-      {cloneElement(child, {
-        ref: setRef,
-        'aria-describedby': open ? id : child.props['aria-describedby'],
-        // Touch is left alone: every tip here sits on something you press or
-        // drag, and a finger has no way to hover one without doing that.
-        onPointerEnter: chain(child.props.onPointerEnter, () => {
-          outer?.hide()
-          self.arm()
-        }),
-        onPointerLeave: chain(child.props.onPointerLeave, () => {
-          self.hide()
-          outer?.arm()
-        }),
-        // Pressing is the answer to "what does this do", so the tip gets out of
-        // the way rather than sitting over what the press just changed.
-        onPointerDown: chain(child.props.onPointerDown, () => {
-          self.hide()
-          outer?.hide()
-        }),
-        // Keyboard focus gets what the pointer gets, which the browser's
-        // tooltip never gave it. `:focus-visible` keeps a click that also
-        // focuses from leaving one up after the pointer has gone.
-        onFocus: chain(child.props.onFocus, () => {
-          if (anchor?.matches(':focus-visible') === true) setOpen(true)
-        }),
-        onBlur: chain(child.props.onBlur, () => self.hide()),
-      })}
-      {open && anchor !== null && (
-        <Bubble anchor={anchor} id={id} text={props.text} />
-      )}
-    </NestedTip.Provider>
-  )
+// A hover is a bad match for a sentence someone actually needs to read: it
+// takes a delay to show, is gone the moment the pointer drifts, and has no
+// press to hold it still. This is the escape hatch — a ref onto a `Tip` that
+// lets whatever is inside it (the label, say) pin the same bubble open on a
+// click rather than a hover, same as the pointer never left.
+export interface TipHandle {
+  toggle: () => void
 }
+
+export const Tip = forwardRef<TipHandle, { text: ReactNode; children: Anchor }>(
+  function Tip(props, ref) {
+    const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+    const [open, setOpen] = useState(false)
+    const [pinned, setPinned] = useState(false)
+    const timer = useRef(0)
+    const outer = useContext(NestedTip)
+    const id = useId()
+    const up = open || pinned
+
+    useImperativeHandle(ref, () => ({ toggle: () => setPinned(p => !p) }), [])
+
+    const self = useMemo<Nested>(
+      () => ({
+        arm: () => {
+          clearTimeout(timer.current)
+          timer.current = window.setTimeout(() => setOpen(true), DELAY_MS)
+        },
+        hide: () => {
+          clearTimeout(timer.current)
+          setOpen(false)
+        },
+      }),
+      [],
+    )
+
+    useEffect(() => () => clearTimeout(timer.current), [])
+
+    useEffect(() => {
+      if (!pinned) return
+      // Anywhere else puts it away, same as HelpDot below — the bubble itself
+      // takes no pointer events, so a press that lands on it is a press on
+      // whatever is under it.
+      const onDown = (e: PointerEvent) => {
+        if (!anchor?.contains(e.target as Node)) setPinned(false)
+      }
+      window.addEventListener('pointerdown', onDown)
+      return () => window.removeEventListener('pointerdown', onDown)
+    }, [pinned, anchor])
+
+    useEffect(() => {
+      if (!up) return
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          self.hide()
+          setPinned(false)
+        }
+      }
+      window.addEventListener('keydown', onKey)
+      return () => window.removeEventListener('keydown', onKey)
+    }, [up, self])
+
+    const child = props.children
+    // Held across renders: a fresh ref callback would have React drop and retake
+    // the element every time, which for the drum grid is a hundred and twenty of
+    // them on every tick of the playhead.
+    const setRef = useMemo(
+      () => mergeRefs(child.props.ref, setAnchor),
+      [child.props.ref],
+    )
+
+    return (
+      <NestedTip.Provider value={self}>
+        {cloneElement(child, {
+          ref: setRef,
+          'aria-describedby': up ? id : child.props['aria-describedby'],
+          // Touch is left alone: every tip here sits on something you press or
+          // drag, and a finger has no way to hover one without doing that.
+          onPointerEnter: chain(child.props.onPointerEnter, () => {
+            outer?.hide()
+            self.arm()
+          }),
+          onPointerLeave: chain(child.props.onPointerLeave, () => {
+            self.hide()
+            outer?.arm()
+          }),
+          // Pressing is the answer to "what does this do", so the tip gets out of
+          // the way rather than sitting over what the press just changed — unless
+          // the press is what pinned it, which arrives through the ref rather
+          // than through this handler and so is untouched by it.
+          onPointerDown: chain(child.props.onPointerDown, () => {
+            self.hide()
+            outer?.hide()
+          }),
+          // Keyboard focus gets what the pointer gets, which the browser's
+          // tooltip never gave it. `:focus-visible` keeps a click that also
+          // focuses from leaving one up after the pointer has gone.
+          onFocus: chain(child.props.onFocus, () => {
+            if (anchor?.matches(':focus-visible') === true) setOpen(true)
+          }),
+          onBlur: chain(child.props.onBlur, () => self.hide()),
+        })}
+        {up && anchor !== null && (
+          <Bubble anchor={anchor} id={id} text={props.text} />
+        )}
+      </NestedTip.Provider>
+    )
+  },
+)
 
 // Split out so an idle tip costs a state hook and nothing else: the drum grid
 // alone holds a hundred and twenty of them, and floating-ui's measuring and
