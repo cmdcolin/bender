@@ -54,16 +54,17 @@ MIDI note or the trigger patch can arrive at any level.
 
 **Pads play the kit.** Channel 10 is where General MIDI puts percussion, so a
 pad bank sending there needs no setup — the standard GM map folds onto bender's
-six voices automatically (sticks to the tom, metal to the hat, wood and cowbells
-to the bell). A pad bank that sends on its own channel or its own notes needs
-**learn pads**: hit a pad for each voice down the kit, and what you hit
-overrides the standard map wherever the two disagree. Getting one voice on the
-wrong pad doesn't mean relearning all six — press **⚟** on just that row and hit
-the pad you meant. A pad fires the same trigger line the sequencer does, so it
-plays with the pattern stopped, and its velocity falls into one of the kit's two
-step weights, plain or accented, with a soft enough hit landing below both as a
-ghost note — something the grid itself has no way to write. Drums have no
-release, so the note-off a pad sends on the way up is ignored.
+voices automatically (sticks to the tom, shakers and closed hats to the hat,
+anything that rings on to the open hat or the cymbal, wood and cowbells to the
+bell). A pad bank that sends on its own channel or its own notes needs **learn
+pads**: hit a pad for each voice down the kit, and what you hit overrides the
+standard map wherever the two disagree. Getting one voice on the wrong pad
+doesn't mean relearning the lot — press **⚟** on just that row and hit the pad
+you meant. A pad fires the same trigger line the sequencer does, so it plays
+with the pattern stopped, and its velocity falls into one of the kit's two step
+weights, plain or accented, with a soft enough hit landing below both as a ghost
+note — something the grid itself has no way to write. Drums have no release, so
+the note-off a pad sends on the way up is ignored.
 
 **Clock** lets the drum machine follow an incoming MIDI clock. It does this by
 writing the tempo control directly, so the slider tracks the room rather than

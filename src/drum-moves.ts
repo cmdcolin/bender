@@ -64,8 +64,8 @@ export const euclid = (hits: number, len = STEPS, turn = 0) => {
 
 // A pattern that reads as a pattern rather than as noise on a grid: pick a feel,
 // and let it say where the kick, the snare and the hat go. Rolling all sixteen
-// steps of all seven rows independently is the one thing the plugboard already
-// lets you draw by hand.
+// steps of every row independently is the one thing the plugboard already lets
+// you draw by hand.
 type Feel = (rand: Rng) => Partial<DrumMasks>
 
 const FEELS: Feel[] = [
@@ -111,6 +111,10 @@ const FEELS: Feel[] = [
 // hits, and the one figure that sounds deliberate on a cowbell.
 const CLAVE = bits([0, 3, 6, 10, 12])
 
+// Where an open hat goes when the roll reaches for one. Between the closed
+// hats, never on top of them: the two share a cap, so an open hat on a step the
+// closed one already has is an open hat nobody hears.
+
 // Which voices the machine is willing to wire through the dice. Not the kick or
 // the snare: a downbeat that is only sometimes there is not a bar with a loose
 // contact in it, it is a bar you cannot count. The trimmings are where a hand
@@ -144,6 +148,8 @@ export function randomPattern(rand: Rng): DrumMasks {
     masks.drumClap = masks.drumSnare & bits([4, 12])
   if (rand() < 0.3) masks.drumTom = bits([13, 14, 15])
   if (masks.drumBell === 0 && rand() < 0.2) masks.drumBell = CLAVE
+  if (masks.drumOpen === 0 && rand() < 0.3)
+    masks.drumOpen = every(4, 2) & ~masks.drumHat
   masks.drumAccent = pick(
     [every(8), every(4), stepBit(0), masks.drumSnare],
     rand,
@@ -241,12 +247,12 @@ export const FILLS: Fill[] = [
 
 /** A fill over the end of the bar — the last beat, or the last two when the roll
     asks for the room. What comes before it is left exactly as it was, and half
-    the time the bell marks the downbeat the fill is running at. */
+    the time a crash marks the downbeat the fill is running at. */
 export function fillBar(masks: DrumMasks, rand: Rng): DrumMasks {
   const at = rand() < 0.25 ? STEPS / 2 : STEPS - 4
   const filled = pick(FILLS, rand).write(masks, at, rand)
   if (rand() < 0.5) {
-    filled.drumBell |= stepBit(0)
+    filled.drumCym |= stepBit(0)
     filled.drumAccent |= stepBit(0)
   }
   return filled

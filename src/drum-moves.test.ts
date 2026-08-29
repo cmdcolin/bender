@@ -87,8 +87,8 @@ test('a fill writes the end of the bar and leaves the start of it alone', () => 
   for (let seed = 1; seed <= 120; seed++) {
     const after = fillBar(before, mulberry32(seed))
     for (const row of GRID_ROWS) {
-      // The bell and the accent are allowed the downbeat the fill runs at.
-      if (row.key === 'drumBell' || row.key === 'drumAccent') continue
+      // The crash and the accent are allowed the downbeat the fill runs at.
+      if (row.key === 'drumCym' || row.key === 'drumAccent') continue
       for (let s = 0; s < STEPS / 2; s++) {
         expect(hasStep(after[row.key], s), `${seed}/${row.key}/${s}`).toBe(
           hasStep(before[row.key], s),

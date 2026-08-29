@@ -195,10 +195,11 @@ export const DRUM_ROMS: DrumRom[] = [
     drumSnare: 0b0000_1000_0000_1000,
     drumHat: 0b0010_0010_0010_0010,
   }),
-  rom('disco', 'Four on the floor under sixteenth hats', {
+  rom('disco', 'Four on the floor, open hats on the offbeat', {
     drumKick: 0b1000_1000_1000_1000,
     drumSnare: 0b0000_1000_0000_1000,
-    drumHat: 0b0011_0011_0011_0011,
+    drumHat: 0b1000_1000_1000_1000,
+    drumOpen: 0b0010_0010_0010_0010,
     drumAccent: 0b1000_0000_1000_0000,
   }),
   rom('breaks', 'Kick off the beat, ghost snare in the gap', {
@@ -253,6 +254,7 @@ export const DRUM_ROMS: DrumRom[] = [
     drumSnare: 0b0000_1000_0000_1000,
     drumTom: 0b0000_0000_0000_0111,
     drumBell: 0b1000_0000_1000_0000,
+    drumCym: 0b1000_0000_0000_0000,
     drumAccent: 0b1000_0000_1000_0000,
   }),
   rom('clear', 'Wipe every voice and write your own', {}),

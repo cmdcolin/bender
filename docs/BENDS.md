@@ -199,6 +199,41 @@ under it come through instead, beating against each other. Tune reaches those
 and doesn't reach the hiss, so a snare with any tone in it moves with the rest
 of the kit.
 
+## The metal bank
+
+The other four voices are one part. The cowbell, the two hats and the cymbal all
+come off a single bank of six square oscillators, tuned so that no two of them
+share a harmonic. Nothing on the board ever stops that bank: a trigger opens an
+amplifier and that's all it does, so every hit catches the six wherever they
+happen to be and no two hats start on the same edge.
+
+The six go into a stage with nothing like the headroom for six of them, which is
+what makes a clatter out of them rather than six tones. Summed and left alone,
+the loudest harmonics in the pile all belong to the fastest oscillator and the
+hat comes out ringing on a note; squared off, the edges of all six land in it at
+times that never come round. The cowbell is soldered in ahead of that stage,
+which is why it's the one metal voice with a pitch left in it.
+
+**Metal** is the pot on the hats' amplifier, between that bank and the noise
+transistor the hat used to be made of — the same transistor the snare and the
+clap are still hanging off. Down the travel is the old hat, and every hit off it
+is the same hit; up it, no two are.
+
+**Bank spread** leans on the one resistor chain that sets all six. The ends of
+the chain move and the middle stays, so the bank widens rather than transposing
+— that's Tune's job. Every metal voice moves at once because they're the same
+six parts: wind it up and the cowbell detunes, the cymbal turns to glass and the
+hats get grittier.
+
+**Cymbal tone** is a wiper between two taps on the cymbal's own filter rather
+than a corner being swept, which is why it's a tone control and not a second
+volume. Down it keeps the body the hats throw away; up it's most of the way to
+being a hat.
+
+The two hats share one cap, which is what a hi-hat pedal is. A closed step
+doesn't silence a ringing open hat — it drains what's left of it in a hurry, so
+writing hats under an open one is a foot on the pedal rather than a mute.
+
 **Accent** and **Accent sag** make the accent row a circuit rather than a flag.
 The accent is one cap feeding every voice on the board, and sag is how much each
 accented step takes off it. Left at nothing the bus is stiff and every accent is
@@ -241,8 +276,8 @@ sequencer, pads, mic and keyboard all queue behind it too.
 **Cross-patch** bridges two drum voices' envelope pins, so one voice's amplifier
 ends up hearing another voice's envelope — a hit you can hear opens a channel
 nothing struck. **Rotate** cycles this through the original three voices;
-**Whole kit** extends it to all six, so a voice with no steps of its own can
-still fire off another voice's pattern.
+**Whole kit** extends it to every voice on the board, so a voice with no steps
+of its own can still fire off another voice's pattern.
 
 **Mic patch** wires the mic past the mixer entirely, onto one of several points:
 the chip's supply rail, the oscillator's FM input, the delay's feedback path,
@@ -251,7 +286,7 @@ glitch buffer.
 
 **Struck by** puts a dropped audio file on a trigger line of your choice — one
 of the kit's voices, any hit at all, a keyboard note, or the mic. With
-**Ending** set to one-shot, the file plays as a seventh drum voice, retriggered
+**Ending** set to one-shot, the file plays as one more drum voice, retriggered
 from the top on every hit; left as a loop, each hit just drops the needle back
 at the start of whatever's already playing.
 

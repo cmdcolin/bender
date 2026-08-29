@@ -1006,7 +1006,7 @@ on it — a link never presses play, so it is loaded and waiting.
   — A soldered DAC bias into a ringing comb, slowed right down
 - [**dying walkman**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,chipClockX:0.8,bits:7,srHz:9000,crushMix:0.5,delayMs:260,dlyFb:0.45,wowDepthMs:5,flutter:0.45,dlyToneHz:3500,dlyMix:0.5,revMix:0.35)
   — A chewed tape running into a failing DAC
-- [**wrong voices**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumCross:4,drumCrossAmt:0.85,drumKick:34952,drumHat:13107,drumAccent:32896,distMix:0.35,revMix:0.25)
+- [**wrong voices**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumCross:4,drumCrossAmt:0.85,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,distMix:0.35,revMix:0.25)
   — Envelope pins bridged — the kit fires the wrong drums
 - [**yell into it**](https://cmdcolin.github.io/bender/#set=chipLevel:0,micPatch:3,driveDb:28,distMix:0.6,delayMs:220,dlyFb:0.95,dlyMix:0.7)
   — Mic soldered into the delay feedback path — bring your mic level up

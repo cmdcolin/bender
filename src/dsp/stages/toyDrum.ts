@@ -189,8 +189,8 @@ const CYM_LP_POLES = 2
 const BELL_GAIN = 0.3
 const HAT_NOISE = 0.35
 const HAT_METAL = 4.3
-const CYM_CRASH_GAIN = 0.636
-const CYM_SPLASH_GAIN = 5.52
+const CYM_CRASH_GAIN = 1.27
+const CYM_SPLASH_GAIN = 11.0
 
 export class ToyDrum implements Stage {
   label = 'toyDrum'

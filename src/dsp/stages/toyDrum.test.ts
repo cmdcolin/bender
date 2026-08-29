@@ -778,3 +778,108 @@ test('a narrow one-shot is a click and a wide one is neither', () => {
   expect(lowEnergy(sharp)).toBeGreaterThan(2 * lowEnergy(wide))
   expect(bin(sharp, 2500)).toBeGreaterThan(4 * bin(wide, 2500))
 })
+
+// The cowbell, the two hats and the cymbal are four voices made of one part.
+// What follows is the consequences of that being true rather than four voices
+// that happen to sound related.
+
+test('one chain sets the whole metal bank, so the trimmer moves all of it', () => {
+  const bell: Partial<Controls> = { drumBell: stepMask(2), drumBpm: 60 }
+  const stock = soloVoice(bell, 1)
+  const wide = soloVoice({ ...bell, drumSpread: 1 }, 1)
+  expect(bin(stock, 540)).toBeGreaterThan(4 * bin(wide, 540))
+  expect(bin(wide, 638)).toBeGreaterThan(4 * bin(stock, 638))
+  // The bank's own chain and nothing else's: the voices off the noise
+  // transistor and the voices built on networks are untouched.
+  const snare: Partial<Controls> = { drumSnare: stepMask(2), drumBpm: 60 }
+  expect(soloVoice({ ...snare, drumSpread: 1 }, 1)).toEqual(soloVoice(snare, 1))
+})
+
+// Nothing on the board resets the bank — a trigger opens an amplifier and that
+// is all it does. The cowbell is where this is readable, because it is the one
+// metal voice with no noise source anywhere near it: two hits a step apart come
+// out as two different waveforms only if the oscillators under them went on
+// turning while nothing was sounding.
+test('the metal bank never stops, so no two hits catch it in the same place', () => {
+  const grab = (step: number) => {
+    const x = soloVoice({ drumBell: stepMask(step) }, 0.6)
+    const at = onsets(x)[0]!
+    return x.slice(at, at + Math.round(0.02 * SR))
+  }
+  const a = grab(2)
+  const b = grab(3)
+  const apart = Math.sqrt(
+    a.reduce((sum, v, i) => sum + (v - b[i]!) ** 2, 0) / a.length,
+  )
+  expect(apart).toBeGreaterThan(0.3 * rms(a))
+})
+
+// The same trimmer test the snare has, on the kit's other two-source voice.
+test('the trimmer reaches the hat made of metal and not the one made of hiss', () => {
+  const hat: Partial<Controls> = { drumHat: stepMask(2), drumBpm: 60 }
+  const hiss = soloVoice({ ...hat, drumMetal: 0 }, 1)
+  expect(soloVoice({ ...hat, drumMetal: 0, drumTune: 2 }, 1)).toEqual(hiss)
+  const metal = soloVoice({ ...hat, drumMetal: 1 }, 1)
+  expect(soloVoice({ ...hat, drumMetal: 1, drumTune: 2 }, 1)).not.toEqual(metal)
+})
+
+// Two sources with nothing in common, so the pot between them has to fade on
+// power: an amplitude fade would leave the middle of the travel down on both
+// ends of it, which is where a hat wants to sit.
+test('the pot on the hat crossfades rather than steps', () => {
+  const hat: Partial<Controls> = { drumHat: stepMask(2) }
+  // The hit rather than the render: a hat is over in a few tens of
+  // milliseconds and the silence after it weighs nothing either way.
+  const level = (metal: number) => {
+    const x = soloVoice({ ...hat, drumMetal: metal }, 1)
+    const at = onsets(x)[0]!
+    return rms(x.subarray(at, at + Math.round(0.04 * SR)))
+  }
+  expect(level(1) / level(0)).toBeGreaterThan(0.9)
+  expect(level(1) / level(0)).toBeLessThan(1.1)
+  expect(level(0.5)).toBeGreaterThan(0.85 * Math.min(level(0), level(1)))
+})
+
+test('the cymbal’s tone pot is a tone control and not a second volume', () => {
+  const cym: Partial<Controls> = { drumCym: stepMask(2), drumBpm: 60 }
+  const dark = soloVoice({ ...cym, drumCymTone: 0 }, 1.5)
+  const bright = soloVoice({ ...cym, drumCymTone: 1 }, 1.5)
+  expect(rms(bright) / rms(dark)).toBeGreaterThan(0.8)
+  expect(rms(bright) / rms(dark)).toBeLessThan(1.25)
+  // What moves is where the weight of the band is, which is a ratio and not a
+  // level: the wiper takes the same amount of signal off two different taps.
+  const tilt = (x: Float32Array) => bin(x, 2500) / bin(x, 8000)
+  expect(tilt(dark)).toBeGreaterThan(3 * tilt(bright))
+})
+
+test('the open hat and the cymbal are the same bank held open longer', () => {
+  const tail = (o: Partial<Controls>) =>
+    rms(soloVoice({ ...o, drumBpm: 60 }, 1.6).subarray(Math.round(0.6 * SR)))
+  expect(tail({ drumOpen: stepMask(2) })).toBeGreaterThan(
+    4 * tail({ drumHat: stepMask(2) }),
+  )
+  expect(tail({ drumCym: stepMask(2) })).toBeGreaterThan(
+    tail({ drumOpen: stepMask(2) }),
+  )
+})
+
+// One cap under both hats, which is what a hi-hat pedal is. A closed step does
+// not silence a ringing open one — it drains what is left of it in a hurry.
+test('a hat step is a foot on the pedal rather than a mute', () => {
+  const at: Partial<Controls> = {
+    drumBpm: 240,
+    drumOpen: stepMask(2),
+    drumDecay: 3,
+  }
+  const tail = (x: Float32Array) =>
+    rms(x.subarray(Math.round(0.4 * SR), Math.round(0.9 * SR)))
+  const open = tail(soloVoice(at, 1))
+  const choked = tail(soloVoice({ ...at, drumHat: stepMask(4) }, 1))
+  const closedOnly = tail(
+    soloVoice({ ...at, drumOpen: 0, drumHat: stepMask(4) }, 1),
+  )
+  expect(choked).toBeLessThan(open * 0.3)
+  // And what is left down there is the closed hat's own tail, not the open
+  // hat's: the pedal came down, it did not open again.
+  expect(choked).toBeLessThan(closedOnly * 3)
+})

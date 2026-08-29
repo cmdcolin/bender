@@ -149,11 +149,12 @@ made before the matrix went in has.
 
 ## The drum machine
 
-The kit is a sixteen-step grid rather than a fixed pattern. Six voices —
-**kick**, **snare**, **hat**, **clap**, **tom**, **cowbell** — each get a row of
-steps you click, with an accent row underneath deciding which hits land harder.
-Ten factory patterns sit as buttons above the grid; each one writes into the
-same steps, so it's a starting point rather than a mode you're stuck in.
+The kit is a sixteen-step grid rather than a fixed pattern. Eight voices —
+**kick**, **snare**, **hat**, **clap**, **tom**, **cowbell**, **open hat**,
+**cymbal** — each get a row of steps you click, with an accent row underneath
+deciding which hits land harder. Ten factory patterns sit as buttons above the
+grid; each one writes into the same steps, so it's a starting point rather than
+a mode you're stuck in.
 
 **Swing** holds every offbeat step back and gives the following step less time,
 so shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
@@ -163,6 +164,16 @@ tenths of its travel latches them into notes that ring on until you wind it
 back. The kit also has its own cheap-DAC quirks — see [Bends](BENDS.md) for what
 **Ring**, **Trigger pulse**, **Snappy**, **Accent sag**, **Bit depth**,
 **Ladder** and **Overflow** actually do to it.
+
+Four of the voices are one part. The cowbell, both hats and the cymbal come off
+a single bank of six square oscillators that never stops turning — the cowbell
+taps two of them and keeps a pitch, the rest take all six through filters that
+leave only the clatter. **Bank spread** widens the bank, so it detunes the
+cowbell and roughens the hats in one gesture; **Metal** is the pot between that
+bank and the noise transistor the hat used to be made of, and **Cymbal tone**
+slides the cymbal between a crash and a splash. The two hats share a cap, which
+is what a hi-hat pedal is: writing a hat step under a ringing open hat cuts it
+short, so the pair play against each other the way a foot does.
 
 Drawing a run of steps is a drag rather than sixteen separate clicks: press a
 step and drag across the grid, and every cell the pointer crosses goes the way
@@ -192,7 +203,7 @@ these is a single step in the undo history, however much it changed.
 
 A row's name is also a button: press it to hear that voice without waiting for
 the playhead to reach a step you've written. The kit is playable on the number
-row too — `1` is the kick through `6` the cowbell, printed on each row the way
+row too — `1` is the kick through `8` the cymbal, printed on each row the way
 the number is on the on-screen grid. A held key is a single hit, not the
 operating system's key repeat.
 

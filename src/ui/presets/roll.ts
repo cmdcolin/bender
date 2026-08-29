@@ -237,7 +237,13 @@ export function resetKeys(
 // its bar and one of the trimmings drifts against it — and the lengths that read
 // as polymeter rather than as a dropped step are the ones sixteen doesn't divide.
 const ODD_LENGTHS = [3, 5, 6, 7, 9, 11, 13, 14, 15]
-const DRIFTERS = ['drumHat', 'drumBell', 'drumTom', 'drumAccent'] as const
+const DRIFTERS = [
+  'drumHat',
+  'drumBell',
+  'drumTom',
+  'drumOpen',
+  'drumAccent',
+] as const
 
 function rollLengths(rand: () => number): Record<DrumLenKey, number> {
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
