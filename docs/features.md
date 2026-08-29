@@ -534,17 +534,17 @@ pitch as the board browns out.
 <details>
 <summary>9 controls</summary>
 
-| control     | range            | what it does                                                                              |
-| ----------- | ---------------- | ----------------------------------------------------------------------------------------- |
-| Time        | 20 ms to 4 s     | Delay time                                                                                |
-| Feedback    | 0 to 1.5         | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap |
-| Wow         | 0 to 50 ms       | Slow speed wobble of the transport                                                        |
-| Wow rate    | 0.1 to 8 Hz      | How fast the wobble cycles                                                                |
-| Flutter     | off to full      | Fast random speed jitter — worn pinch roller                                              |
-| Tone        | 500 Hz to 15 kHz | High-frequency loss per repeat — tape generation loss                                     |
-| Brake       | off to full      | Drags the capstan                                                                         |
-| Supply drag | off to full      | Wires the motor to the same dying supply as the toy                                       |
-| Return      | off to full      | How loud the echo comes back                                                              |
+| control     | range            | what it does                                                                                               |
+| ----------- | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| Time        | 20 ms to 4 s     | Delay time                                                                                                 |
+| Feedback    | 0 to 1.5         | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                  |
+| Wow         | 0 to 50 ms       | Slow speed wobble of the transport                                                                         |
+| Wow rate    | 0.1 to 8 Hz      | How fast the wobble cycles                                                                                 |
+| Flutter     | off to full      | Fast random speed jitter — worn pinch roller                                                               |
+| Tone        | 500 Hz to 15 kHz | High-frequency loss per repeat — tape generation loss                                                      |
+| Brake       | off to full      | Drags the capstan                                                                                          |
+| Supply drag | off to full      | Wires the motor to the same dying supply as the toy                                                        |
+| Echo level  | off to full      | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
 
 </details>
 
@@ -562,14 +562,14 @@ seam.
 <details>
 <summary>6 controls</summary>
 
-| control   | range                               | what it does                                                         |
-| --------- | ----------------------------------- | -------------------------------------------------------------------- |
-| Mode      | standard, analog, reverse, modulate | Which delay the box is being                                         |
-| Time      | 20 ms to 2 s                        | Delay time                                                           |
-| Feedback  | 0 to 1.1                            | How much of the repeat goes back in                                  |
-| Tone      | 800 Hz to 16 kHz                    | High cut in the loop, so each lap comes back darker than the last    |
-| Mod depth | off to full                         | How far the read head swings, up to six milliseconds at 0.7 Hz       |
-| E. level  | off to full                         | How loud the echo comes back, and at zero the pedal is off the board |
+| control   | range                               | what it does                                                                                               |
+| --------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Mode      | standard, analog, reverse, modulate | Which delay the box is being                                                                               |
+| Time      | 20 ms to 2 s                        | Delay time                                                                                                 |
+| Feedback  | 0 to 1.1                            | How much of the repeat goes back in                                                                        |
+| Tone      | 800 Hz to 16 kHz                    | High cut in the loop, so each lap comes back darker than the last                                          |
+| Mod depth | off to full                         | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
+| E. level  | off to full                         | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
 
 </details>
 
@@ -581,13 +581,13 @@ deliberately cheap.
 <details>
 <summary>5 controls</summary>
 
-| control   | range            | what it does                                         |
-| --------- | ---------------- | ---------------------------------------------------- |
-| Decay     | 0.1 to 30 s      | How long the springs ring                            |
-| Tone      | 500 Hz to 12 kHz | Damping inside the tank                              |
-| Boing     | off to full      | Spring dispersion — the drip and chirp on transients |
-| Return    | off to full      | How loud the tank comes back                         |
-| Dry cut † | off to full      | How much of the dry the tank swallows                |
+| control      | range            | what it does                                                                                                 |
+| ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| Decay        | 0.1 to 30 s      | How long the springs ring                                                                                    |
+| Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                                      |
+| Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                                         |
+| Reverb level | off to full      | Volume of the spring tank on its own fader, added on top of the dry signal rather than crossfaded against it |
+| Dry cut †    | off to full      | Separately fades out the dry signal, independent of Reverb level above                                       |
 
 </details>
 
