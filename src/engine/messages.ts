@@ -20,9 +20,15 @@ export interface SeekMsg {
   frac: number
 }
 
+/** Which keybed a note came off. The toy's gate is the default and reaches the
+    FM chip too wherever that jumper is still soldered on; 'fm' is the other
+    keybed, which is soldered to nothing but the chip it is drawn on. */
+export type NoteDest = 'toy' | 'fm'
+
 export interface NoteMsg {
   kind: 'noteOn' | 'noteOff'
   semitone: number
+  dest?: NoteDest
   /** How hard the gate arrives, 0 to 1. The toy's own keys are switches and
       always send 1; a wire soldered onto the gate — the trigger patch, or a
       controller — is what can strike softly. */
@@ -99,6 +105,10 @@ export interface MeterMsg {
       report's. */
   notes: Int16Array
   noteCount: number
+  /** The same, for the FM chip's own keybed: what its four channels are holding
+      down, whether a hand, the toy's gate or a drum line put them there. */
+  fmNotes: Int16Array
+  fmNoteCount: number
   /** What each source, the mic and the mix bus itself have peaked at since the
       last meter — the chain's taps, in `SOURCE_TAPS` order with the mic and the
       bus above them. The worklet's own buffer, cleared the moment it is posted

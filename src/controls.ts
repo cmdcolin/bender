@@ -198,6 +198,7 @@ export const DEFAULT_CONTROLS = {
   fmModDecay: 0,
   fmLength: 0.4,
   fmStruck: 0,
+  fmKeyGate: 0,
   fmEffect: 0,
   fmDataLine: 0,
   fmDataFault: 0,

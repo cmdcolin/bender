@@ -573,7 +573,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How loud the FM chip is in the source mix. It has no keyboard and no sequencer of its own — somebody soldered its key input onto the toy’s gate line, so it plays whatever strikes a note over there. Same rail, too, so starving the toy dives its pitch.',
+        help: 'How loud the FM chip is in the source mix. It has no sequencer of its own — somebody soldered its key input onto the toy’s gate line, so out of the box it plays whatever strikes a note over there. Cut that jumper and it answers only its own keybed. Same rail either way, so starving the toy dives its pitch.',
       },
       {
         key: 'fmVoice',
@@ -622,6 +622,16 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: ['off', ...VOICE_LABELS, 'any hit'],
         help: 'The kit’s trigger lines, clipped onto this chip’s key input. A trigger carries a strike and nothing else, so the note is decided at this end: one per voice, in row order, a pentatonic apart, which turns a pattern written for drums into a riff. Four channels, so a busy grid steals its own notes.',
+      },
+      {
+        key: 'fmKeyGate',
+        label: 'Toy gate',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['soldered', 'cut'],
+        help: 'The jumper from the toy’s gate line onto this chip’s key input — the accident of a wiring loom that makes the two boxes play the same part. Cut it and the chip stops following the keyboard next door and answers only its own keys, the kit’s trigger lines and the effect ROM. Its own keybed plays either way.',
       },
       {
         key: 'fmEffect',

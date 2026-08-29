@@ -29,6 +29,9 @@ class BenderProcessor extends AudioWorkletProcessor {
   // second on the thread that cannot afford a collection, so the count rides
   // along instead and the reader takes that many.
   private chipNotes = new Int16Array(ToyChip.MAX_SOUNDING)
+  // The FM chip's four channels, reported beside the toy's: two keybeds on the
+  // panel, two lists of what is sounding.
+  private fmNotes = new Int16Array(4)
   private peak = 0
   private duck = 0
   private recording = false
@@ -62,10 +65,13 @@ class BenderProcessor extends AudioWorkletProcessor {
           this.built.sampler.seek(msg.frac)
           break
         case 'noteOn':
-          this.built.toyChip.noteOn(msg.semitone, msg.gain)
+          if (msg.dest === 'fm')
+            this.built.fmChip.noteOn(msg.semitone, msg.gain)
+          else this.built.toyChip.noteOn(msg.semitone, msg.gain)
           break
         case 'noteOff':
-          this.built.noteOff(msg.semitone)
+          if (msg.dest === 'fm') this.built.fmChip.noteOff(msg.semitone)
+          else this.built.noteOff(msg.semitone)
           break
         case 'drumHit':
           this.built.toyDrum.strike(msg.bits, msg.gain)
@@ -184,6 +190,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       const rail = this.built.rail
       const sampler = this.built.sampler
       const sounding = this.built.toyChip.soundingNotes(this.chipNotes)
+      const fmSounding = this.built.fmChip.soundingNotes(this.fmNotes)
       this.port.postMessage({
         kind: 'meter',
         peak,
@@ -197,6 +204,8 @@ class BenderProcessor extends AudioWorkletProcessor {
         reboots: rail.rebootCount,
         notes: this.chipNotes,
         noteCount: sounding,
+        fmNotes: this.fmNotes,
+        fmNoteCount: fmSounding,
         // The chain's own buffer, posted untransferred like the scope and the
         // note report, and cleared here — the peaks are held between reads, so
         // whoever reads them is the only thing that may clear them.

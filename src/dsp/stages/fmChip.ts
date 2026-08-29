@@ -202,6 +202,11 @@ export class FmChip implements Stage {
   private waveFault = 0
   /** what the output latch is holding, for the test bit that stops it taking */
   private held = 0
+  // Notes struck on the chip's own keys, waiting for the block to start. A key
+  // pressed between two blocks is a message on a queue rather than a wire, so
+  // it lands with the patch the block is about to run rather than the one the
+  // last block left standing.
+  private queued: { note: number; vol: number }[] = []
   // The write strobe, and how often its pulse comes out too narrow for the
   // address latch to catch.
   private strobe = 0
@@ -385,9 +390,32 @@ export class FmChip implements Stage {
     this.write(REG.keyBlock + i, this.regs[REG.keyBlock + i]! & ~KEY_ON)
   }
 
+  // The chip's own keys, for whoever cut the jumper off the toy's gate. A hand
+  // is a hand at either end of that wire: the key stays down until it comes up,
+  // so nothing here decides a length. Weight lands where a strike's weight can
+  // land on this part at all — the volume nibble, four steps of it.
+  noteOn(note: number, gain = 1) {
+    const vol = Math.min(Math.max(Math.round((1 - gain) * 3), 0), 3)
+    this.queued.push({ note, vol })
+  }
+
   noteOff(note: number) {
     const n = this.effect >= 0 ? EFFECT_CH : N_CH
     for (let i = 0; i < n; i++) if (this.ch[i]!.note === note) this.keyOff(i)
+  }
+
+  /** Every note the chip is holding down, for the panel's second keybed — its
+      own keys, the toy's gate where that is still soldered on, and whatever the
+      kit's trigger lines struck. The effect ROM's channels are not notes
+      anybody played, so a bird call lights nothing. */
+  soundingNotes(out: Int16Array): number {
+    let n = 0
+    const chans = this.effect >= 0 ? EFFECT_CH : N_CH
+    for (let i = 0; i < chans; i++) {
+      const c = this.ch[i]!
+      if (c.car.stage !== IDLE) out[n++] = c.note
+    }
+    return n
   }
 
   // The effect button, pressed or let go. Going in, eight patch bytes; coming
@@ -522,6 +550,10 @@ export class FmChip implements Stage {
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 
     const drumMask = voiceMask(Math.round(p[IDX.fmStruck]!))
+    // The jumper off the toy's gate. Cut it and the chip stops hearing the
+    // keyboard next door — its own keys, the kit's lines and the effect ROM are
+    // all still soldered where they were.
+    const gateOn = p[IDX.fmKeyGate]! < 0.5
 
     const effect = Math.round(p[IDX.fmEffect]!) - 1
     if (effect !== this.effect) this.setEffect(effect)
@@ -548,6 +580,9 @@ export class FmChip implements Stage {
     }
 
     this.readPatch(rail.clockFactor)
+    // The keys, before the block: held, because a hand is holding them.
+    for (const q of this.queued) this.keyOn(q.note, 0, q.vol)
+    this.queued.length = 0
     const mod = this.modRates
     const car = this.carRates
     const drive = 0.4
@@ -579,7 +614,7 @@ export class FmChip implements Stage {
       // comes off. Everything else on that wire — the ROM's tune, a drum hit
       // through the patch — is an edge and nothing more, and an edge is where
       // *Note length* comes in.
-      const struck = ctx.trig.key[i]!
+      const struck = gateOn ? ctx.trig.key[i]! : 0
       if (struck !== 0)
         this.keyOn(struck - 128, ctx.trig.keyHeld[i]! > 0 ? 0 : lengthSamples)
 
@@ -686,6 +721,7 @@ export class FmChip implements Stage {
     this.dataBus.reset()
     this.addrBus.reset()
     this.waveBus.reset()
+    this.queued.length = 0
     this.held = 0
     this.addrLatch.reset()
     this.sentVoice = -1

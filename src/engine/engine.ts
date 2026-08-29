@@ -35,7 +35,7 @@ import {
 import { YOURS } from '../dsp/stages/roms'
 import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
 import { Glide } from './glide'
-import type { FromWorklet, ToWorklet } from './messages'
+import type { FromWorklet, NoteDest, ToWorklet } from './messages'
 import { N_TAPS, packParams } from './params'
 import { encodeWav } from './wav'
 
@@ -207,6 +207,11 @@ export class Engine {
   // ROM's tune, the backing under it, a note a drum hit struck through the
   // trigger patch. Yours show up in here too, a meter late.
   readonly chipNotes = createStore<ReadonlySet<number>>(new Set())
+  // The same pair for the FM chip's keybed: what a hand is holding down on it,
+  // and what its channels are sounding — which is its own keys, the toy's gate
+  // wherever that jumper is still on, and whatever the kit's lines struck.
+  readonly fmKeysDown = createStore<ReadonlySet<number>>(new Set())
+  readonly fmNotes = createStore<ReadonlySet<number>>(new Set())
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -277,6 +282,8 @@ export class Engine {
       if (msg.kind === 'meter') {
         const notes = mergeNotes(this.chipNotes.get(), msg.notes, msg.noteCount)
         if (notes !== this.chipNotes.get()) this.chipNotes.set(notes)
+        const fm = mergeNotes(this.fmNotes.get(), msg.fmNotes, msg.fmNoteCount)
+        if (fm !== this.fmNotes.get()) this.fmNotes.set(fm)
         this.meter.set({
           peak: msg.peak,
           scope: msg.scope,
@@ -799,17 +806,20 @@ export class Engine {
     }
   }
 
-  noteOn(semitone: number, gain = 1) {
-    this.post({ kind: 'noteOn', semitone, gain })
-    this.hold(semitone, true)
-    if (this.tuneRecord.get() && this.songPlaying.get())
+  // A key, on one keybed or the other. The memory is the toy's, so only the
+  // toy's keys are written into it — the FM chip has no sequencer to record to
+  // and a note played on it should not land in somebody else's tune.
+  noteOn(semitone: number, gain = 1, dest: NoteDest = 'toy') {
+    this.post({ kind: 'noteOn', semitone, gain, dest })
+    this.hold(semitone, true, dest)
+    if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
       this.writeNote(semitone)
   }
 
-  noteOff(semitone: number) {
-    this.post({ kind: 'noteOff', semitone })
-    this.hold(semitone, false)
-    if (this.tuneRecord.get() && this.songPlaying.get())
+  noteOff(semitone: number, dest: NoteDest = 'toy') {
+    this.post({ kind: 'noteOff', semitone, dest })
+    this.hold(semitone, false, dest)
+    if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
       this.writeHeld(semitone)
   }
 
@@ -958,19 +968,21 @@ export class Engine {
 
   // Striking a note that is already down is no news to anything watching, so
   // the set only turns over when it really changes.
-  private hold(semitone: number, down: boolean) {
-    const notes = this.keysDown.get()
+  private hold(semitone: number, down: boolean, dest: NoteDest) {
+    const store = dest === 'fm' ? this.fmKeysDown : this.keysDown
+    const notes = store.get()
     if (notes.has(semitone) === down) return
     const next = new Set(notes)
     if (down) next.add(semitone)
     else next.delete(semitone)
-    this.keysDown.set(next)
+    store.set(next)
   }
 
   panic() {
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
     this.post({ kind: 'panic' })
     if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
+    if (this.fmKeysDown.get().size > 0) this.fmKeysDown.set(new Set())
   }
 }
 

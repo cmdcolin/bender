@@ -188,6 +188,7 @@ export const PARAM_DEFS = [
   ['fmModDecay', 'step'],
   ['fmLength', 'slew'],
   ['fmStruck', 'step'],
+  ['fmKeyGate', 'step'],
   ['fmEffect', 'step'],
   ['fmDataLine', 'step'],
   ['fmDataFault', 'step'],
