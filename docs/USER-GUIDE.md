@@ -96,11 +96,38 @@ climbs before it starts again. Neither is a clock of its own — the arpeggiator
 runs off the chip's divider like everything else on that die, so **Clock**, a
 pot on the timing pin and a flat rail all drag the figure along with the tune,
 the tempo and the envelopes. Nudging the rate lands it on a division of the
-kit's tempo, which is the only way the two machines ever line up.
+kit's tempo, and **Kit sync** below does not reach it: the arp rate is its own
+knob rather than the number the ROM carries, so what the figure takes from the
+kit is what the divider takes, which is every bend and no tempo.
 
 The figure goes out on the gate line like any other note, so it plays the FM
 chip too wherever that jumper is still soldered on, and **Keys fire kit** in the
 trigger patch turns it into a drum pattern.
+
+## Kit sync
+
+**Kit sync** on the toy's panel is the wire the keyboard never had: the drum
+machine's step clock brought over to the toy's timing chain, so the tune counts
+off the kit's tempo instead of its own crystal. Pick how much of a beat one step
+of the tune is worth — **sixteenths** is one step of the tune per step of the
+pattern, **eighths** and **quarters** are half and a quarter of that. It reaches
+the melody, the two stacked memory lanes and the auto bass-chord, which all run
+off the one step clock. It does not reach the arpeggiator, whose rate is a knob
+of its own.
+
+What it replaces is the rate the song was written at — the ROM's own number, or
+**Memory rate** for your melody — and nothing else. Everything downstream of
+that still drags the tune: **Clock**, a pot on the timing pin, **Crystal drift**
+and a rail going flat all move a locked toy exactly as far as they ever moved a
+free one, so a synced keyboard on dying batteries still goes low, late and long.
+It is a wire on the timing pin, not a phase detector. That also means the tempo
+is read as the panel has it written: both machines hang off the one divider, so
+a sag arrives on both sides on its own and they go flat together.
+
+Off is the crystal, and off is what every board made before the wire went in
+has. The **lock** button beside **Clock** is the older, blunter way to the same
+place — it sets the crystal to the nearest speed at which this song's steps
+divide into the kit's, once, and then nothing holds it there.
 
 ## The key lock
 

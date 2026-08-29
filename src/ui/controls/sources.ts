@@ -9,7 +9,7 @@ import {
   TUNE_NAMES,
   YOURS,
 } from '../../dsp/stages/roms'
-import { ARP_MODES } from '../../dsp/stages/toyChip'
+import { ARP_MODES, SYNC_MODES } from '../../dsp/stages/toyChip'
 import { NOTE_NAMES } from '../../notes'
 import { SCALE_NAMES } from '../../scale'
 import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
@@ -218,6 +218,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Which note the matrix is wired around. The chip’s own bottom key is an A, so C here is three keys up from it — the toy was never built in C.',
       },
       {
+        key: 'chipSync',
+        label: 'Kit sync',
+        min: 0,
+        max: SYNC_MODES.length - 1,
+        step: 1,
+        unit: '',
+        choices: SYNC_MODES,
+        help: 'A wire from the drum machine’s step clock to the toy’s timing chain, so the tune counts off the kit’s tempo instead of its own crystal. Pick how much of a beat one step of the tune is worth. It replaces the rate the song was written at and nothing else: Clock, a pot on the timing pin, crystal drift and a rail going flat all still drag the tune, so a locked toy on dying batteries still goes low, late and long — it is a wire on the timing pin, not a phase detector. Off is the crystal, which is what every board made before the wire went in has.',
+      },
+      {
         key: 'chipClockX',
         label: 'Clock',
         min: 0.05,
@@ -229,7 +239,7 @@ export const SOURCE_GROUPS: Group[] = [
         action: {
           label: 'lock',
           title:
-            'set the crystal to the nearest speed at which this ROM’s steps divide into the kit’s, so the tune and the pattern line up. It is the same knob as the pitch, so locking moves that too — and nothing holds it there: crystal drift, a starving rail or a wire on the clock will walk it off again',
+            'set the crystal to the nearest speed at which this ROM’s steps divide into the kit’s, so the tune and the pattern line up. It is the same knob as the pitch, so locking moves that too — and nothing holds it there: crystal drift, a starving rail or a wire on the clock will walk it off again, and changing the tempo afterwards leaves it where it stands. Kit sync is the wire that keeps up',
           value: lockToKit,
         },
       },

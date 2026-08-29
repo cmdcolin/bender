@@ -19,6 +19,12 @@ const MAX_MUSICAL_BPM = 600
 // The toy runs off its own crystal, so a nudge can still send it somewhere else
 // entirely — but it lands on a simple ratio, where the tune still lines up with
 // the kit. The same knob is the pitch, so those ratios are intervals too.
+//
+// Kit sync does not change what belongs here. It replaces the song's own step
+// rate and leaves this knob multiplying it, so a locked toy nudged onto one of
+// these is a toy running at a clean multiple of the kit rather than near one —
+// and the rates it does replace, Memory rate and the ROM's, are numbers a nudge
+// can no longer move the tune with anyway.
 const CLOCK_RATIOS = [
   1 / 8,
   1 / 6,

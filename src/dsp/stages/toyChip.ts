@@ -75,6 +75,23 @@ export const TONE_DUTY = [0.5, 0.25, 0.125, 0.0625]
 export const ARP_MODES = ['off', 'up', 'down', 'up-down', 'random', 'as played']
 const ARP = { up: 1, down: 2, upDown: 3, random: 4, asPlayed: 5 }
 
+// The wire the toy never shipped with: the kit's step clock brought over to the
+// timing chain, dividing. What the selector picks is how much of a beat one toy
+// step is worth — the kit counts sixteen steps to the bar, so the first of these
+// is one step of the tune per step of the pattern.
+export const SYNC_MODES = ['off', 'sixteenths', 'eighths', 'quarters']
+const SYNC_PER_BEAT = [0, 4, 2, 1]
+
+// The rate a locked chip counts at, taken from the tempo as the panel has it
+// written rather than as the kit is currently keeping it. Both machines hang off
+// one supply and one divider: the drum machine multiplies its own step rate by
+// the rail's clockFactor, and so does everything below here, so a sag arrives on
+// both sides on its own. Reading the kit's running rate into this number would
+// charge the toy for it twice and the tune would fall behind the pattern exactly
+// as fast as the batteries went flat.
+const kitStepHz = (bpm: number, mode: number) =>
+  (Math.max(bpm, 0.6) / 60) * (SYNC_PER_BEAT[mode] ?? 4)
+
 // Four notes, as the toys of the era had, and how far apart the four output
 // stages came out of the bin. Written as a deviation from nominal rather than
 // as the trims themselves, so the knob that scales it has a zero: all four
@@ -514,7 +531,16 @@ export class ToyChip implements Stage {
     this.yours = pick === YOURS
     const rom = ROMS[pick] ?? ROMS[0]!
     const tune = this.yours ? this.mine : rom.steps
-    const stepHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
+    // What the part itself counts at: the ROM's own nominal rate, or the knob
+    // that stands in for one when the chip is playing the memory. A lock
+    // replaces this number and nothing else. Everything downstream of it still
+    // drags the tune — Clock, a pot on the timing pin, the crystal wandering, a
+    // rail going flat — because all of that is in `timing` below and `timing` is
+    // still what the count is multiplied by. A toy that kept time through a
+    // dying battery would be half the instrument gone.
+    const nominalHz = this.yours ? Math.max(p[IDX.tuneRate]!, 0.01) : rom.stepHz
+    const sync = Math.round(p[IDX.chipSync]!)
+    const stepHz = sync > 0 ? kitStepHz(p[IDX.drumBpm]!, sync) : nominalHz
     let stamp = 0
     this.poly = false
     if (this.yours) {
@@ -668,7 +694,11 @@ export class ToyChip implements Stage {
       if (clipClock > 0) clock /= 1 + clipClock * dragMax * rail.clipTravel
       // The toy runs on its own crystal and it wanders. Nothing pulls it back,
       // so it never settles on a ratio with the drum machine — the two lean past
-      // each other and come back for as long as you leave it running.
+      // each other and come back for as long as you leave it running. A lock
+      // does not stop that either: it hands the counter a rate off the kit and
+      // then the wander is applied to it, which is a tune that starts the bar
+      // with the pattern and breathes against it rather than one that walks off.
+      // The wire is on the timing pin, not on a phase detector.
       if (drift > 0) {
         clock *= 1 + this.drift.step(0.08, this.sr, this.rng) * 0.3 * drift
       }
@@ -714,7 +744,10 @@ export class ToyChip implements Stage {
       // Slow the chip and the figure slows with the tune, the tempo and the
       // envelopes; put a pot on the timing pin and it dives with them. A cheap
       // keyboard's arpeggio was never a musical decision, it was whatever the
-      // counter was doing.
+      // counter was doing. Its rate is its own knob rather than the ROM's
+      // number, though, so a lock does not land it on the kit the way it lands
+      // the tune: what the figure gets from the kit is what the divider gets,
+      // which is every bend and no tempo.
       if (arpMode > 0 && this.heldKeys.length > 0) {
         this.arpClock += (arpHz * timing) / this.sr
         while (this.arpClock >= 1) {

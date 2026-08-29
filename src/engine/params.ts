@@ -20,6 +20,7 @@ export const PARAM_DEFS = [
   ['keyScale', 'step'],
   ['keyRoot', 'step'],
   ['chipClockX', 'slew'],
+  ['chipSync', 'step'],
   ['chipStarve', 'slew'],
   ['chipBattery', 'slew'],
   ['chipCap', 'slew'],
