@@ -1,4 +1,11 @@
-import { useRef, type CSSProperties } from 'react'
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { useControlValue, useStoreValue } from './ControlsContext'
@@ -58,6 +65,27 @@ function Bind({ def }: { def: SliderDef }) {
   )
 }
 
+// The widest reading any row in a panel can print. Every row in it reserves
+// that much, so the tracks all end in the same place — and it is a floor rather
+// than a size, since a row drawn outside any panel, or one whose own reading
+// runs longer than its neighbours', still has to fit what it says.
+const Reserved = createContext(0)
+
+export function ReserveReadout({
+  defs,
+  children,
+}: {
+  defs: readonly SliderDef[]
+  children: ReactNode
+}) {
+  const chars = useMemo(
+    () =>
+      defs.reduce((w, d) => (d.choices ? w : Math.max(w, readoutChars(d))), 0),
+    [defs],
+  )
+  return <Reserved.Provider value={chars}>{children}</Reserved.Provider>
+}
+
 // How much of the travel either side of a split's turn belongs to the turn
 // itself. The knob pulls to it under the hand, because two values a hair apart
 // across the turn are not a hair apart in what you hear, and a stop you can
@@ -96,6 +124,7 @@ export function ControlSlider({
   // is wide, so a knob that pulled for the keyboard too would be one the
   // keyboard could never walk off the stop.
   const hand = useRef(false)
+  const reserved = useContext(Reserved)
   const stock = DEFAULT_CONTROLS[def.key]
   const touched = value !== stock
   const action = def.action
@@ -159,12 +188,14 @@ export function ControlSlider({
   // or on it. Everything the row draws about direction comes off this.
   const way = split ? Math.sign(value - split.at) : 0
 
-  // The reading in a box cut to the widest thing this control can print, so a
-  // value that grows a character mid-drag does not shove the track it came from.
+  // The reading in a box cut to the widest thing the panel can print, so a value
+  // that grows a character mid-drag does not shove the track it came from.
   const reading = (
     <span
       className={styles.value}
-      style={{ '--chars': readoutChars(def) } as CSSProperties}
+      style={
+        { '--chars': Math.max(readoutChars(def), reserved) } as CSSProperties
+      }
     >
       {formatValue(def, value)}
     </span>

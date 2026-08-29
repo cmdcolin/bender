@@ -3,7 +3,13 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { groupAnchor } from './chain-map'
 import { useBoardValue } from './ControlsContext'
 import { engine } from '../engine/engine'
-import { groupKeys, touchedCount, type Group, type SliderDef } from './controls'
+import {
+  groupKeys,
+  touchedCount,
+  SLIDER_BY_KEY,
+  type Group,
+  type SliderDef,
+} from './controls'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
 import { MicPatch } from './MicPatch'
@@ -29,7 +35,7 @@ import {
   rollKeys,
 } from './presets'
 import { scrollIntoPanel } from './reveal'
-import { ControlSlider } from './Slider'
+import { ControlSlider, ReserveReadout } from './Slider'
 import styles from './Section.module.css'
 import { Tip } from './Tip'
 
@@ -61,6 +67,22 @@ const putBackTitle = (group: Group, touched: number) =>
 // your hand has already moved. A fault picks what happened to a wire nobody has
 // cut, and that row is a question about nothing — but a value you set and then
 // unwired is yours, and never vanishes out from under you.
+// Every control a stage draws as a row, its own and the ones it borrows for a
+// widget of its own — kept by name, because the rows measure themselves against
+// each other and the panel is rebuilt as the board travels.
+const ROWS_BY_GROUP = new Map<string, SliderDef[]>()
+
+function panelRows(group: Group): SliderDef[] {
+  let rows = ROWS_BY_GROUP.get(group.name)
+  if (!rows) {
+    rows = groupKeys(group)
+      .map(key => SLIDER_BY_KEY.get(key))
+      .filter(def => def !== undefined)
+    ROWS_BY_GROUP.set(group.name, rows)
+  }
+  return rows
+}
+
 function shown(def: SliderDef, c: Controls): boolean {
   return !def.needs || def.needs(c) || c[def.key] !== DEFAULT_CONTROLS[def.key]
 }
@@ -454,17 +476,19 @@ export function OpenGroup({
         </Tip>
       </div>
       <div className={styles.body}>
-        <Lead group={group} />
-        {group.editor?.kind === 'drums' && <DrumGrid />}
-        {group.editor?.kind === 'roll' && <TuneRoll />}
-        {group.editor?.kind === 'mixer' && <Mixer />}
-        {group.editor?.kind === 'feedback' && <FeedbackLoops />}
-        {group.editor?.kind === 'order' && <OrderRack />}
-        {group.editor?.kind === 'patch' && <PatchBay />}
-        {group.editor?.kind === 'trigger' && <TriggerPatch />}
-        {group.editor?.kind === 'mic' && <MicPatch />}
-        <Rigs group={group} seconds={seconds} />
-        <Rows key={group.name} group={group} seconds={seconds} />
+        <ReserveReadout defs={panelRows(group)}>
+          <Lead group={group} />
+          {group.editor?.kind === 'drums' && <DrumGrid />}
+          {group.editor?.kind === 'roll' && <TuneRoll />}
+          {group.editor?.kind === 'mixer' && <Mixer />}
+          {group.editor?.kind === 'feedback' && <FeedbackLoops />}
+          {group.editor?.kind === 'order' && <OrderRack />}
+          {group.editor?.kind === 'patch' && <PatchBay />}
+          {group.editor?.kind === 'trigger' && <TriggerPatch />}
+          {group.editor?.kind === 'mic' && <MicPatch />}
+          <Rigs group={group} seconds={seconds} />
+          <Rows key={group.name} group={group} seconds={seconds} />
+        </ReserveReadout>
       </div>
     </div>
   )

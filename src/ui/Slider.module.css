@@ -46,10 +46,11 @@
   white-space: nowrap;
 }
 
-/* The number itself, in a box wide enough for the widest reading this control
-   has — so a value that gains a character as it moves, or trades "frozen" for
-   "2.40× reverse", doesn't push the track it is attached to out from under the
-   hand dragging it. */
+/* The number itself, in a box wide enough for the widest reading anything in
+   the panel can print — so a value that gains a character as it moves, or
+   trades "frozen" for "2.40× reverse", doesn't push the track it is attached to
+   out from under the hand dragging it, and the tracks line up down the panel
+   rather than each ending wherever its own row's number left off. */
 .value {
   display: inline-block;
   min-width: calc(var(--chars) * 1ch);
