@@ -15,8 +15,8 @@ import type { Transport } from '../transport'
 import { N_DRUM_VOICES, STEP_CHOICE, voiceMask } from '../trigbus'
 import { BridgedT } from '../util/bridged'
 import { coef, Transient } from '../util/follower'
-import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole'
 import { MetalBank } from '../util/metal'
+import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole'
 import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 
@@ -152,11 +152,11 @@ const ACCENT_RECHARGE = 0.25
 // draws, and soldering another one on does not make the rest thirstier.
 const ACCENT_DRAW = 1 / 6
 
-// Where the hats' filter sits, and how much of it there is. What the bank hands
-// over is six fundamentals under a kilohertz with a thin dust of harmonics
-// above them, and a hat is only the dust — so the corner has to sit well above
-// the top of the bank and the slope has to be steep enough to bury what is
-// under it by forty decibels. One pole at this corner hands back a cowbell.
+// Where the hats' filter sits, and how much of it there is. What comes off the
+// bank's summing stage is broadband, but it is broadband with the bank's own
+// rate all through it, and a hat is only the part of that above where a pitch
+// can be heard. Forty-odd decibels down at the top of the bank is what it takes
+// to be sure of that; one pole at this corner hands back a cowbell.
 const HAT_HP = 5000
 const HAT_POLES = 3
 
@@ -178,9 +178,6 @@ const CYM_POLES = 3
 const CYM_LP = 9000
 const CYM_LP_POLES = 2
 
-// What each metal voice is worth in the sum, measured against the voices they
-// stand beside rather than chosen: the hat matches the noise transistor it used
-// to be, so the pot between them crossfades instead of stepping.
 // What each metal voice is worth in the sum. The hat's two are measured against
 // each other rather than chosen, so the pot between the transistor and the bank
 // crossfades instead of stepping. The open hat has no numbers of its own: it is
@@ -711,12 +708,12 @@ export class ToyDrum implements Stage {
             amp[CLAP] = 1
           }
         }
-        // There is one noise transistor on the board, and the snare, the hat and
-        // the clap are all hung off it. Two of them on the same step hear the
-        // same hiss, so they sum coherently into one crack instead of standing
-        // beside each other as two — and the hat is a high-pass rather than a
-        // second noise minus a first one, because what it subtracts is the
-        // filtered version of the sample it is holding.
+        // There is one noise transistor on the board, and the snare, both hats
+        // and the clap are all hung off it. Two of them on the same step hear
+        // the same hiss, so they sum coherently into one crack instead of
+        // standing beside each other as two — and the hats are a high-pass
+        // rather than a second noise minus a first one, because what they
+        // subtract is the filtered version of the sample being held.
         //
         // The filter is a cap on the board and it keeps its charge between hits,
         // so it runs when anything is drawing on the transistor and stops when
@@ -736,20 +733,13 @@ export class ToyDrum implements Stage {
               weight[SNARE]! *
               0.8 *
               hiss
+          // One tap for both hats, because there is one amplifier: what
+          // separates them is the cap under it, not what is fed into it.
+          const hatHiss = noise - this.noiseLp
           if (amp[HAT]! > AUDIBLE)
-            out +=
-              (noise - this.noiseLp) *
-              amp[HAT]! *
-              weight[HAT]! *
-              HAT_NOISE *
-              trans
+            out += hatHiss * amp[HAT]! * weight[HAT]! * HAT_NOISE * trans
           if (amp[OHAT]! > AUDIBLE)
-            out +=
-              (noise - this.noiseLp) *
-              amp[OHAT]! *
-              weight[OHAT]! *
-              HAT_NOISE *
-              trans
+            out += hatHiss * amp[OHAT]! * weight[OHAT]! * HAT_NOISE * trans
           if (amp[CLAP]! > AUDIBLE) {
             this.clapFast += 0.45 * (noise - this.clapFast)
             this.clapSlow += 0.05 * (noise - this.clapSlow)
@@ -759,9 +749,11 @@ export class ToyDrum implements Stage {
         }
         // Four voices off the one bank, and what separates them is the filter
         // each is soldered behind. The cowbell takes the top pair through a
-        // notch, which is what leaves a pitch in it; the hats take all six
-        // through a corner high enough that only the edges survive; the cymbal
-        // takes all six through a shallower band that keeps the body.
+        // notch, ahead of the summing stage, which is what leaves a pitch in
+        // it; the hats take what comes off that stage through a corner high
+        // enough that only the clatter survives; the cymbal takes the same
+        // through a lower band with a lid on it, which is the body a hat
+        // throws away.
         if (amp[BELL]! > AUDIBLE) {
           const sq = this.metal.bell
           this.bellLp += 0.4 * (sq - this.bellLp)
