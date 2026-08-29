@@ -40,7 +40,11 @@ Nothing outstanding from the brief. Possible follow-ups, none started:
 - The arpeggiator does **not** lock (see below). If someone wants it to, it
   needs its own ratio, and `chipArpHz` would have to stop meaning Hz.
 - MIDI clock (`docs/MIDI.md`) drives `drumBpm`, so a locked toy follows incoming
-  MIDI clock for free. Untested, unmentioned in the docs.
+  MIDI clock for free. Pinned end to end by
+  `a locked toy counts off the clock arriving on the wire` in
+  `midi.wire.test.ts`, and written up in `docs/MIDI.md` along with what the wire
+  does _not_ buy: bender ignores 0xFA and the kit's counter runs off the tempo
+  control, so the lock follows a tempo and never a downbeat.
 
 ## The ratio, and why three of them
 

@@ -68,7 +68,17 @@ the note-off a pad sends on the way up is ignored.
 
 **Clock** lets the drum machine follow an incoming MIDI clock. It does this by
 writing the tempo control directly, so the slider tracks the room rather than
-fighting it.
+fighting it — and so everything hanging off that control comes along. Put the
+toy on the kit's tempo with **Kit sync**, and the toy's tune follows your
+sequencer too, with no second wire and nothing else switched on: the sync counts
+the tune off the tempo control, and the clock input writes the tempo control.
+
+What arrives is a tempo, not a downbeat. bender ignores clock start, and the
+kit's step counter runs off the tempo control rather than off the pulses, so the
+wire buys the right speed and never the right bar. The tempo control steps in
+whole bpm besides, so a room at 128.5 is followed at 129 and walks a beat away
+from it every couple of minutes. Start both machines together and they hold for
+a phrase; nothing here holds them together for a song.
 
 ## Sending
 

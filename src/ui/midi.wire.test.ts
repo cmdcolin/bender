@@ -3,7 +3,10 @@
 // shipping code path — binding, soft takeover, the undo walk and the keyboard.
 
 import { beforeEach, expect, test, vi } from 'vitest'
-import { DEFAULT_CONTROLS } from '../controls'
+import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { bursts, render } from '../dsp/testRender'
+import { YOURS } from '../dsp/stages/roms'
+import { REST, TUNE_STEP_KEYS } from '../tune'
 import { engine } from '../engine/engine'
 import { sliderFor } from './controls'
 import { ACCENT_GAIN, hasStep } from '../drums'
@@ -597,6 +600,59 @@ test('clock sets the tempo only once it is asked to', () => {
   }
   expect(engine.controls.get().drumBpm).toBe(90)
   midi.setClockLock(false)
+  vi.restoreAllMocks()
+})
+
+// Alternating note and rest, so a step of the memory is a burst with silence
+// after it and the step rate can be counted off the level. The kit is muted:
+// this take measures the toy. Same rig as sync.test.ts, which measures the same
+// clock from the other end.
+const TOY: Partial<Controls> = {
+  ...Object.fromEntries(
+    TUNE_STEP_KEYS.map((key, i) => [key, i % 2 === 0 ? 0 : REST]),
+  ),
+  chipLevel: 0.9,
+  drumLevel: 0,
+  chipTune: YOURS,
+  tunePoly: 0,
+  chipSync: 1,
+}
+
+// Nothing wires the clock input to the toy — the tempo control is the wire.
+// Clock lock writes drumBpm, the lock on the toy counts off drumBpm, and so a
+// toy locked to the kit is locked to whatever is driving the kit. Worth a take
+// rather than an argument: the day someone gives the clock input a timebase of
+// its own, this is what says the toy stopped following the room.
+test('a locked toy counts off the clock arriving on the wire', () => {
+  midi.setClockLock(true)
+  for (let i = 0; i < 30; i++) {
+    vi.spyOn(performance, 'now').mockReturnValue(i * (60000 / (90 * 24)))
+    send(0xf8)
+  }
+  expect(engine.controls.get().drumBpm).toBe(90)
+
+  // Sixteen steps to the bar, so 90 bpm is six of them a second — and two steps
+  // to a burst, since every other one is the rest.
+  const seconds = 4
+  const x = render({ ...engine.controls.get(), ...TOY }, seconds)
+  expect((2 * bursts(x)) / seconds).toBeCloseTo(6, 5)
+  vi.restoreAllMocks()
+})
+
+// The lock follows the room's tempo; it does not fall in step with its
+// downbeat. Nothing here handles 0xFA, and the kit's counter runs free off the
+// tempo control, so the wire buys you the right speed and never the right bar.
+// A tempo the control cannot hold makes that plain: the wire reads half a bpm
+// and the control steps in whole ones, so a room at 128.5 is followed at 129
+// and walks a beat away from it every couple of minutes.
+test('the wire sets the tempo to the nearest bpm the control holds', () => {
+  midi.setClockLock(true)
+  for (let i = 0; i < 30; i++) {
+    vi.spyOn(performance, 'now').mockReturnValue(i * (60000 / (128.5 * 24)))
+    send(0xf8)
+  }
+  expect(midi.bpm.get()).toBe(128.5)
+  expect(engine.controls.get().drumBpm).toBe(129)
   vi.restoreAllMocks()
 })
 
