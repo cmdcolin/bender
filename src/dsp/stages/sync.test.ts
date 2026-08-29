@@ -33,25 +33,30 @@ const SIXTEENTHS = 1
 const EIGHTHS = 2
 const QUARTERS = 3
 
-// A board nobody has thrown the switch on is the board that shipped, down to
-// the sample. Sixteen windows of the default take, measured before the wire
-// went in — the toy's step clock reaches the pitch, the tempo and the
-// envelopes, so anything that moved it at all would move these.
-test('the default board is untouched with the wire off', () => {
-  const x = render({}, 1)
+// A toy nobody has thrown the switch on is the toy that shipped, down to the
+// sample. Sixteen windows of the take, measured before the wire went in — the
+// step clock reaches the pitch, the tempo and the envelopes, so anything that
+// moved it at all would move these.
+//
+// The kit is muted here on purpose. These are frozen numbers, and a take with
+// the drums in it would freeze their voices too: a deliberate change to a drum
+// would fail this test, which is about the toy's clock and has no business
+// having an opinion about the kit.
+test('the toy is untouched with the wire off', () => {
+  const x = render(TOY, 1)
   const slice = Math.floor(x.length / 16)
   const parts = Array.from({ length: 16 }, (_, i) =>
     rms(x.subarray(i * slice, (i + 1) * slice)),
   )
-  expect(rms(x)).toBeCloseTo(0.17321623436422148, 8)
+  expect(rms(x)).toBeCloseTo(0.19588753299722544, 8)
   expect(parts).toEqual(
     [
-      0.2182551008860624, 0.18679726634328983, 0.15989697026282965,
-      0.1364102711286228, 0.11935652910145307, 0.21822047909173792,
-      0.18702790416179985, 0.15969848822977364, 0.16687436401922665,
-      0.11947663420543239, 0.21854561806968054, 0.18706915565733864,
-      0.16180853651169977, 0.13655285248836233, 0.11654977261179722,
-      0.21844449828241969,
+      0.3208718275805656, 0.2761065804198307, 0.23727251712393108,
+      0.203014353493298, 0.17385703926887086, 0.00007186457415551851,
+      0.0000014123008270289257, 2.775489368724925e-8, 5.454462028380675e-10,
+      0.006302408156065828, 0.32083721535460097, 0.2764230844388431,
+      0.23697238812735022, 0.20325310837951993, 0.17362943868447153,
+      0.0041235886014619185,
     ].map(v => expect.closeTo(v, 8)),
   )
 })
