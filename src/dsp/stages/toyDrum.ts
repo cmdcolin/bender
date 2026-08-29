@@ -13,7 +13,9 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
 import { N_DRUM_VOICES, STEP_CHOICE, voiceMask } from '../trigbus'
-import { Transient } from '../util/follower'
+import { BridgedT } from '../util/bridged'
+import { coef, Transient } from '../util/follower'
+import { lpCoef, OnePoleLP } from '../util/onepole'
 import { octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 
@@ -82,6 +84,55 @@ const CROSS_WIRING: readonly number[][] = [
   [SNARE, HAT, CLAP, TOM, BELL, KICK],
 ]
 
+// The bridged-T networks, and which trigger line shocks each one. Three voices
+// have them: the kick and the tom are one tank apiece, and the snare is the two
+// the 808 puts under its noise — 185 and 330 Hz, close enough to beat.
+//
+// `count` is the ring time in the units the rest of the kit counts envelopes
+// in, so a tank runs down alongside the noise voices rather than to a clock of
+// its own; `sweep` is how far a full swing carries the tuning; `gain` is what
+// the voice is worth in the sum.
+const TANKS = [
+  { voice: KICK, hz: 48, sweep: 0.9, count: 9, gain: 1.2 },
+  { voice: TOM, hz: 105, sweep: 0.7, count: 11, gain: 1 },
+  { voice: SNARE, hz: 185, sweep: 0.25, count: 22, gain: 0.55 },
+  { voice: SNARE, hz: 330, sweep: 0.25, count: 22, gain: 0.35 },
+] as const
+const N_TANKS = TANKS.length
+
+// Which tank carries a voice's envelope, where the voice has one at all. The
+// kick and the tom have no amplifier of their own — the tank is the sound and
+// its swing is the whole of what the panel, the trigger floor and the
+// cross-patch can read off them. The snare keeps its amplifier for the noise.
+const VOICE_TANK = [0, -1, -1, -1, 1, -1]
+
+// How much of the trigger pulse gets past the coupling cap and out, per voice.
+// It is what survives of a kick on a small speaker, and it is only there while
+// the pulse is narrow enough to be a spike: the charge is fixed, so a wide one
+// arrives as a shove too low and too slow for the cap to pass.
+const CLICK = [0.9, 0.45, 0, 0, 0.7, 0]
+
+// And what the path does to it on the way, which is the whole of why it is a
+// click and not a thud. The cap it comes through blocks the low end, so what
+// reaches the mix is the pulse's edges rather than its body; the one small
+// stage it lands in cannot swing arbitrarily fast, so those edges arrive with a
+// shape. Left as the raw pulse it was neither — a lump with a needle on it,
+// mostly energy under a hundred hertz, and a kick that came out of the kit's
+// seven-bit converter carrying more hash at 6 kHz than the hat did.
+const CLICK_HI = 1200
+const CLICK_LO = 4200
+
+// Where the ring knob crosses over. Below it the transistor hands back less
+// than it took and the drum is a drum; at it the network never runs down; past
+// it the loop makes up the difference and the tank grows into its own clipping.
+// The crossing sits inside the travel rather than at the end of it, because a
+// far side you cannot get to is not a far side.
+const RING_LATCH = 0.9
+
+// How long the accent cap takes to come back after a step has drawn on it,
+// counted off the kit's own oscillator like everything else here.
+const ACCENT_RECHARGE = 0.25
+
 export class ToyDrum implements Stage {
   label = 'toyDrum'
   /**
@@ -104,9 +155,29 @@ export class ToyDrum implements Stage {
   private weight = new Float32Array(N_VOICES).fill(1)
   private phase = new Float32Array(N_VOICES)
   private falls = new Float32Array(N_VOICES)
+  // The trigger pulse on each voice's line, and what is left of it this sample.
+  // Every voice has one — the noise voices use theirs to open a gate and the
+  // tanked ones to charge a network — so a bridged pair swaps what shocks the
+  // network as well as what opens the amplifier.
+  private pulse = new Float32Array(N_VOICES)
+  private pulseX = new Float32Array(N_VOICES)
+  private pulseFall = 0
+  private tanks = Array.from({ length: N_TANKS }, () => new BridgedT())
+  private tankF = new Float32Array(N_TANKS)
+  private tankRate = new Float32Array(N_TANKS)
+  private tankGain = new Float32Array(N_TANKS)
+  // The accent cap, as the fraction of its rested charge still on it. One cap
+  // feeds every voice on the board, so what a step takes off it is what the
+  // next step does not get.
+  private accentV = 1
+  private accentAmt = ACCENT_GAIN
+  private accentSag = 0
+  private accentPull = 0
   private bellPhase2 = 0
   private bellLp = 0
   private noiseLp = 0
+  private clickHi = new OnePoleLP()
+  private clickLo = new OnePoleLP()
   private clapFast = 0
   private clapSlow = 0
   private clapsLeft = 0
@@ -267,8 +338,8 @@ export class ToyDrum implements Stage {
   // Every hit is stamped on the bus as it goes, whether the sequencer struck it,
   // the retrigger bend hammered it, a shout came in the mic or the keyboard's
   // gate reached across. The line is one node; what is soldered to it decides.
-  private hit(bits: number, gain: number, ctx: Ctx, i: number) {
-    if (!bits) return
+  private hit(bits: number, gain: number, ctx: Ctx, i: number): number {
+    if (!bits) return 0
     let struck = 0
     for (let v = 0; v < N_VOICES; v++) {
       if (!(bits & (1 << v))) continue
@@ -283,23 +354,42 @@ export class ToyDrum implements Stage {
         this.env[v] = 1
         this.phase[v] = 0
       }
+      // Same charge whatever the one-shot's width: the pulse is where it goes,
+      // not how much of it there is.
+      this.pulse[v] = gain * (1 - this.pulseFall)
       struck |= 1 << v
     }
-    if (!struck) return
+    if (!struck) return 0
     this.firedSince |= struck
     ctx.trig.drumFired(i, struck, gain)
+    return struck
   }
 
-  // The accent line is read the way it always was: it says how hard whatever
-  // plays on this step lands, and a maybe step that came up plays at the weight
-  // the accent row asked for. Nothing rolls for the weight — an accent nobody
-  // can predict on a hit nobody can predict is two dice on one step, and what
-  // comes back off that is a kit playing at random rather than a pattern with a
-  // loose contact in it.
+  // The accent row says how hard whatever plays on this step lands, and a maybe
+  // step that came up plays at the weight it asked for. Nothing rolls for the
+  // weight — an accent nobody can predict on a hit nobody can predict is two
+  // dice on one step, and what comes back off that is a kit playing at random
+  // rather than a pattern with a loose contact in it.
+  //
+  // What the row names is not a flag, though. It is a voltage on a bus every
+  // voice hangs off — one cap, charged between steps and drawn on by whatever
+  // the step strikes — so an accent stacking four voices is a weaker accent
+  // than one striking a single drum, and a second accent arriving before the
+  // cap has caught up lands softer than the first. Left stiff, none of that
+  // happens and the accent is the flag it always was.
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
     const named = this.bitsAt(p, this.tick)
     const bits = fallback ? named || 1 : named
-    this.hit(bits, this.accentAt(p, this.tick) ? ACCENT_GAIN : 1, ctx, i)
+    const accent = this.accentAt(p, this.tick)
+    const gain = accent ? 1 + (this.accentAmt - 1) * this.accentV : 1
+    const struck = this.hit(bits, gain, ctx, i)
+    if (!accent || !struck || this.accentSag <= 0) return
+    let load = 0
+    for (let v = 0; v < N_VOICES; v++) if (struck & (1 << v)) load++
+    this.accentV = Math.max(
+      0,
+      this.accentV - (this.accentSag * load) / N_VOICES,
+    )
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -313,6 +403,8 @@ export class ToyDrum implements Stage {
     const baseTune = p[IDX.drumTune]!
     const modTune = ctx.mod.read(DEST.drumTune)
     const decay = Math.max(p[IDX.drumDecay]!, 0.05)
+    const ring = p[IDX.drumRing]!
+    const snappy = Math.min(Math.max(p[IDX.drumSnappy]!, 0), 1)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = Math.round(p[IDX.micPatch]!) === 5
@@ -336,6 +428,9 @@ export class ToyDrum implements Stage {
     // nothing is ever locked out.
     this.trigFloor = 1 - (1 - AUDIBLE) * p[IDX.drumTrigFloor]!
     const wrap = Math.round(p[IDX.drumOverflow]!) === 1
+    this.accentAmt = p[IDX.drumAccentAmt]!
+    this.accentSag = p[IDX.drumAccentSag]!
+    this.accentPull = coef(ACCENT_RECHARGE / clock, this.sr)
 
     // Every row's length, read once a block: a length that moved mid-block would
     // move a playhead the panel has already drawn.
@@ -368,11 +463,35 @@ export class ToyDrum implements Stage {
     falls[TOM] = Math.exp(11 * perSample)
     falls[BELL] = Math.exp(16 * perSample)
 
+    const clickHiCoef = lpCoef(CLICK_HI, this.sr)
+    const clickLoCoef = lpCoef(CLICK_LO, this.sr)
+    // The one-shot on the trigger line is a resistor and a cap, and like the
+    // clap's nine milliseconds it is counted off the chip's own oscillator: a
+    // sagging rail widens the pulse along with everything else.
+    this.pulseFall = Math.exp(
+      -1000 / (Math.max(p[IDX.drumPulse]!, 0.01) * this.sr * clock),
+    )
+
+    // What each tank loses per sample, off the same count and the same divisor
+    // the noise voices' envelopes come off — so a network runs down alongside
+    // them rather than to a clock of its own. Ring is what the feedback knob
+    // leaves of that: past the crossing the loss goes negative and the tank
+    // stops being something that runs down at all.
+    const ringScale = 1 - ring / RING_LATCH
+    for (let t = 0; t < N_TANKS; t++) {
+      const spec = TANKS[t]!
+      this.tankF[t] = (TAU * spec.hz) / this.sr
+      this.tankRate[t] = (ringScale * spec.count * clock) / (this.sr * decay)
+      this.tankGain[t] =
+        spec.voice === SNARE ? spec.gain * (1 - snappy) : spec.gain
+    }
+
     let loadSum = 0
     for (let i = 0; i < io.n; i++) {
       // Hands first, and whether or not the pattern is running: a pad is a
       // finger on the trigger line, and the kit answers a finger with the
       // machine stopped the way it answers the mic.
+      this.accentV += this.accentPull * (1 - this.accentV)
       if (i === 0 && this.struckBits !== 0) {
         this.hit(this.struckBits, this.struckGain, ctx, i)
         this.struckBits = 0
@@ -426,14 +545,18 @@ export class ToyDrum implements Stage {
         : baseBleed
       let amp = env
       let weight = this.gain
+      let shock = this.pulse
       if (bleed > 0) {
         amp = this.amp
         weight = this.weight
+        shock = this.pulseX
         const wiring = CROSS_WIRING[cross] ?? CROSS_WIRING[0]!
         for (let v = 0; v < N_VOICES; v++) {
           const from = wiring[v]!
           amp[v] = env[v]! + bleed * (env[from]! - env[v]!)
           weight[v] = this.gain[v]! + bleed * (this.gain[from]! - this.gain[v]!)
+          shock[v] =
+            this.pulse[v]! + bleed * (this.pulse[from]! - this.pulse[v]!)
         }
       }
 
@@ -443,12 +566,35 @@ export class ToyDrum implements Stage {
         // voice together — two octaves either way at full depth.
         const tune = modTune ? baseTune * octaves(2 * modTune[i]!) : baseTune
         const pf = rail.pitchFactor * tune
-        if (amp[KICK]! > AUDIBLE) {
-          const hz = (40 + 90 * amp[KICK]! * amp[KICK]!) * pf
-          this.phase[KICK] = wrap1(this.phase[KICK]! + hz / this.sr)
+        // The bridged-T voices. Nothing here has an amplifier: the trigger
+        // pulse charges the network, the network rings, and how loud the drum
+        // is and how long it lasts are the same fact about the same part. What
+        // the panel calls Ring is how much of that the transistor hands back,
+        // so past the crossing these three stop running down and the pattern
+        // starts retuning a note instead of restriking a drum.
+        for (let t = 0; t < N_TANKS; t++) {
+          const v = TANKS[t]!.voice
+          const drive = shock[v]!
+          const tank = this.tanks[t]!
+          if (drive === 0 && tank.level <= AUDIBLE) continue
           out +=
-            Math.sin(this.phase[KICK]! * TAU) * amp[KICK]! * weight[KICK]! * 1.2
+            tank.process(
+              drive,
+              this.tankF[t]! * pf,
+              this.tankRate[t]!,
+              TANKS[t]!.sweep,
+            ) * this.tankGain[t]!
         }
+        // What gets past the coupling cap on the way to the output rather than
+        // into a network: the click at the front of a kick, and the only part
+        // of it that survives a small speaker.
+        let click = 0
+        for (let v = 0; v < N_VOICES; v++) {
+          if (CLICK[v]! > 0) click += shock[v]! * CLICK[v]!
+        }
+        out +=
+          this.clickLo.process(click, clickLoCoef) -
+          this.clickHi.process(click, clickHiCoef)
         // The clap is three bursts nine milliseconds apart and then the room:
         // one noise source, retriggered, with the last hit left to ring on.
         if (this.clapsLeft > 0) {
@@ -479,7 +625,11 @@ export class ToyDrum implements Stage {
           this.noiseLp += 0.25 * (noise - this.noiseLp)
           if (amp[SNARE]! > AUDIBLE)
             out +=
-              (noise - this.noiseLp * 0.5) * amp[SNARE]! * weight[SNARE]! * 0.8
+              (noise - this.noiseLp * 0.5) *
+              amp[SNARE]! *
+              weight[SNARE]! *
+              0.8 *
+              snappy
           if (amp[HAT]! > AUDIBLE)
             out += (noise - this.noiseLp) * amp[HAT]! * weight[HAT]! * 0.35
           if (amp[CLAP]! > AUDIBLE) {
@@ -488,11 +638,6 @@ export class ToyDrum implements Stage {
             out +=
               (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
           }
-        }
-        if (amp[TOM]! > AUDIBLE) {
-          const hz = (90 + 70 * amp[TOM]!) * pf
-          this.phase[TOM] = wrap1(this.phase[TOM]! + hz / this.sr)
-          out += Math.sin(this.phase[TOM]! * TAU) * amp[TOM]! * weight[TOM]!
         }
         if (amp[BELL]! > AUDIBLE) {
           this.phase[BELL] = wrap1(this.phase[BELL]! + (540 * pf) / this.sr)
@@ -512,6 +657,14 @@ export class ToyDrum implements Stage {
         for (let v = 0; v < N_VOICES; v++) {
           env[v]! *=
             v === CLAP && this.clapsLeft > 0 ? clapBurstFall : falls[v]!
+          // A voice built on a network has no envelope to run down, so what the
+          // panel lights, what the trigger floor measures and what a bridged
+          // amplifier leans on is the swing of the network itself. Which is why
+          // a latched tank cannot be restruck: nothing about it ever drains.
+          const t = VOICE_TANK[v]!
+          if (t >= 0) env[v] = Math.max(env[v]!, this.tanks[t]!.level)
+          this.pulse[v] =
+            this.pulse[v]! > 1e-6 ? this.pulse[v]! * this.pulseFall : 0
         }
         // The accumulator behind the ladder is as wide as the word and no
         // wider. A cheap one rolls over rather than stopping at the top, so a
@@ -554,9 +707,15 @@ export class ToyDrum implements Stage {
     this.gain.fill(1)
     this.weight.fill(1)
     this.phase.fill(0)
+    this.pulse.fill(0)
+    this.pulseX.fill(0)
+    for (const tank of this.tanks) tank.reset()
+    this.accentV = 1
     this.bellPhase2 = 0
     this.bellLp = 0
     this.noiseLp = 0
+    this.clickHi.reset()
+    this.clickLo.reset()
     this.clapFast = 0
     this.clapSlow = 0
     this.clapsLeft = 0
