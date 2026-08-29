@@ -93,10 +93,10 @@ const CROSS_WIRING: readonly number[][] = [
 // its own; `sweep` is how far a full swing carries the tuning; `gain` is what
 // the voice is worth in the sum.
 const TANKS = [
-  { voice: KICK, hz: 48, sweep: 0.9, count: 9, gain: 1.2 },
-  { voice: TOM, hz: 105, sweep: 0.7, count: 11, gain: 1 },
-  { voice: SNARE, hz: 185, sweep: 0.25, count: 22, gain: 0.55 },
-  { voice: SNARE, hz: 330, sweep: 0.25, count: 22, gain: 0.35 },
+  { voice: KICK, hz: 48, sweep: 0.9, count: 9, gain: 1.54 },
+  { voice: TOM, hz: 105, sweep: 0.7, count: 11, gain: 1.86 },
+  { voice: SNARE, hz: 185, sweep: 0.25, count: 22, gain: 1.53 },
+  { voice: SNARE, hz: 330, sweep: 0.25, count: 22, gain: 0.98 },
 ] as const
 const N_TANKS = TANKS.length
 
@@ -121,6 +121,14 @@ const CLICK = [0.9, 0.45, 0, 0, 0.7, 0]
 // seven-bit converter carrying more hash at 6 kHz than the hat did.
 const CLICK_HI = 1200
 const CLICK_LO = 4200
+
+// How much of a one-shot's width its own edge takes. A one-shot is a cap
+// charging through a resistor, so it has a rise as well as a fall, and the rise
+// is the fast part rather than no part: nothing on a board goes anywhere in
+// nought seconds. Modelled without one, a hit arrived as a step two samples
+// wide, and the kit's seven-bit converter turned that edge into broadband hash
+// — a kick that measured brighter at 6 kHz than the hat sitting on top of it.
+const PULSE_EDGE = 2.5
 
 // Where the ring knob crosses over. Below it the transistor hands back less
 // than it took and the drum is a drum; at it the network never runs down; past
@@ -160,8 +168,10 @@ export class ToyDrum implements Stage {
   // tanked ones to charge a network — so a bridged pair swaps what shocks the
   // network as well as what opens the amplifier.
   private pulse = new Float32Array(N_VOICES)
+  private pulseOut = new Float32Array(N_VOICES)
   private pulseX = new Float32Array(N_VOICES)
   private pulseFall = 0
+  private pulseRise = 0
   private tanks = Array.from({ length: N_TANKS }, () => new BridgedT())
   private tankF = new Float32Array(N_TANKS)
   private tankRate = new Float32Array(N_TANKS)
@@ -404,7 +414,14 @@ export class ToyDrum implements Stage {
     const modTune = ctx.mod.read(DEST.drumTune)
     const decay = Math.max(p[IDX.drumDecay]!, 0.05)
     const ring = p[IDX.drumRing]!
+    // The two halves of the snare are a transistor's hiss and a pair of tuned
+    // networks, and nothing in one is in the other. So the pot between them has
+    // to fade on power rather than on amplitude, or the middle of its travel —
+    // which is where a snare wants to sit — comes out three decibels down on
+    // both ends of it.
     const snappy = Math.min(Math.max(p[IDX.drumSnappy]!, 0), 1)
+    const hiss = Math.sqrt(snappy)
+    const tone = Math.sqrt(1 - snappy)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
     const micTrig = Math.round(p[IDX.micPatch]!) === 5
@@ -468,9 +485,9 @@ export class ToyDrum implements Stage {
     // The one-shot on the trigger line is a resistor and a cap, and like the
     // clap's nine milliseconds it is counted off the chip's own oscillator: a
     // sagging rail widens the pulse along with everything else.
-    this.pulseFall = Math.exp(
-      -1000 / (Math.max(p[IDX.drumPulse]!, 0.01) * this.sr * clock),
-    )
+    const pulseS = (Math.max(p[IDX.drumPulse]!, 0.01) / 1000) * clock
+    this.pulseFall = Math.exp(-1 / (pulseS * this.sr))
+    this.pulseRise = lpCoef(PULSE_EDGE / (TAU * pulseS), this.sr)
 
     // What each tank loses per sample, off the same count and the same divisor
     // the noise voices' envelopes come off — so a network runs down alongside
@@ -482,8 +499,7 @@ export class ToyDrum implements Stage {
       const spec = TANKS[t]!
       this.tankF[t] = (TAU * spec.hz) / this.sr
       this.tankRate[t] = (ringScale * spec.count * clock) / (this.sr * decay)
-      this.tankGain[t] =
-        spec.voice === SNARE ? spec.gain * (1 - snappy) : spec.gain
+      this.tankGain[t] = spec.voice === SNARE ? spec.gain * tone : spec.gain
     }
 
     let loadSum = 0
@@ -545,7 +561,7 @@ export class ToyDrum implements Stage {
         : baseBleed
       let amp = env
       let weight = this.gain
-      let shock = this.pulse
+      let shock = this.pulseOut
       if (bleed > 0) {
         amp = this.amp
         weight = this.weight
@@ -556,7 +572,8 @@ export class ToyDrum implements Stage {
           amp[v] = env[v]! + bleed * (env[from]! - env[v]!)
           weight[v] = this.gain[v]! + bleed * (this.gain[from]! - this.gain[v]!)
           shock[v] =
-            this.pulse[v]! + bleed * (this.pulse[from]! - this.pulse[v]!)
+            this.pulseOut[v]! +
+            bleed * (this.pulseOut[from]! - this.pulseOut[v]!)
         }
       }
 
@@ -629,7 +646,7 @@ export class ToyDrum implements Stage {
               amp[SNARE]! *
               weight[SNARE]! *
               0.8 *
-              snappy
+              hiss
           if (amp[HAT]! > AUDIBLE)
             out += (noise - this.noiseLp) * amp[HAT]! * weight[HAT]! * 0.35
           if (amp[CLAP]! > AUDIBLE) {
@@ -663,8 +680,15 @@ export class ToyDrum implements Stage {
           // a latched tank cannot be restruck: nothing about it ever drains.
           const t = VOICE_TANK[v]!
           if (t >= 0) env[v] = Math.max(env[v]!, this.tanks[t]!.level)
+          // The one-shot runs down, and what the networks and the output see
+          // is that shape with its own edge on it rather than the step the
+          // counter made.
           this.pulse[v] =
-            this.pulse[v]! > 1e-6 ? this.pulse[v]! * this.pulseFall : 0
+            this.pulse[v]! > 1e-7 ? this.pulse[v]! * this.pulseFall : 0
+          const lp =
+            this.pulseOut[v]! +
+            this.pulseRise * (this.pulse[v]! - this.pulseOut[v]!)
+          this.pulseOut[v] = lp > 1e-7 ? lp : 0
         }
         // The accumulator behind the ladder is as wide as the word and no
         // wider. A cheap one rolls over rather than stopping at the top, so a
@@ -708,6 +732,7 @@ export class ToyDrum implements Stage {
     this.weight.fill(1)
     this.phase.fill(0)
     this.pulse.fill(0)
+    this.pulseOut.fill(0)
     this.pulseX.fill(0)
     for (const tank of this.tanks) tank.reset()
     this.accentV = 1

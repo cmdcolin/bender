@@ -160,7 +160,7 @@ export const DEFAULT_CONTROLS = {
   drumTune: 1,
   drumDecay: 1,
   drumRing: 0,
-  drumPulse: 0.6,
+  drumPulse: 1.5,
   drumSnappy: 0.7,
   drumBits: 7,
   drumLadder: 0,

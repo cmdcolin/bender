@@ -8,6 +8,7 @@ import {
   deviation,
   lowEnergy,
   makeIo,
+  pitchHz,
   render,
   renderBender,
   rms,
@@ -175,6 +176,10 @@ test('bridged envelope pins put the kick on the snare steps', () => {
     drumKick: 0b1000_1000_0000_1100,
     drumSnare: 0b0111_0111_1111_0011,
     drumHat: 0,
+    // The noise transistor alone. What the swap has to be heard against is a
+    // snare with nothing low in it — with the tuned networks under it the snare
+    // steps already carry a thump, which is the wrong thump to be counting.
+    drumSnappy: 1,
   }
   const stock = render(look, 2)
   const swapped = render({ ...look, drumCross: 1, drumCrossAmt: 1 }, 2)
@@ -624,4 +629,144 @@ test('a maybe step comes round on its own row’s length', () => {
   // Five hits a second against one every sixteen steps: too close together to
   // count as onsets, and loud enough to hear as the difference it is.
   expect(rms(short)).toBeGreaterThan(rms(full) * 1.5)
+})
+
+// One hit by hand with the sequencer stopped, so what follows it is the voice
+// and nothing else.
+const struck = (
+  overrides: Partial<Controls>,
+  seconds: number,
+  gain = 1,
+  bits = 1,
+) =>
+  renderBender(
+    {
+      chipLevel: 0,
+      drumLevel: 1,
+      drumKick: 0,
+      drumSnare: 0,
+      drumHat: 0,
+      ...overrides,
+    },
+    seconds,
+    b => b.toyDrum.strike(bits, gain),
+  )
+
+const after = (x: Float32Array, secs: number) =>
+  x.subarray(Math.round(secs * SR))
+
+// The far side of the feedback knob. Under the crossing the transistor hands
+// back less than it took and the kick is a kick; over it the network makes up
+// the difference every cycle and there is nothing left to stop it.
+test('wound past the crossing a pitched voice stops running down', () => {
+  const drum = struck({}, 2)
+  const ringing = struck({ drumRing: 0.85 }, 2)
+  const note = struck({ drumRing: 1 }, 2)
+  expect(rms(after(drum, 1.5))).toBeLessThan(1e-3)
+  expect(rms(after(ringing, 1.5))).toBeGreaterThan(10 * rms(after(drum, 1.5)))
+  expect(rms(after(note, 1.5))).toBeGreaterThan(rms(after(note, 0.2)) * 0.9)
+})
+
+// The two knobs are one part. A network that never drains never gets back under
+// the floor, so the thing that latches it is also the thing that locks it out.
+test('a latched network is one the trigger line cannot reach again', () => {
+  const built = buildBender(SR)
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0,
+    drumLevel: 1,
+    drumKick: 0,
+    drumSnare: 0,
+    drumHat: 0,
+    drumRing: 1,
+    drumTrigFloor: 1,
+  })
+  const io = makeIo()
+  built.toyDrum.strike(1, 1)
+  for (let b = 0; b < 40; b++) built.chain.process(io, p)
+  expect(built.toyDrum.takeFired()).toBe(1)
+  built.toyDrum.strike(1, 1)
+  built.chain.process(io, p)
+  expect(built.toyDrum.takeFired()).toBe(0)
+})
+
+// The swoop is not drawn on the voice, it is read off it — so how far it swoops
+// is how hard the thing was hit, which no envelope shape can say.
+test('a harder hit is a higher hit, because the tuning follows the swing', () => {
+  const attack = (x: Float32Array) =>
+    pitchHz(x.subarray(0, Math.round(0.08 * SR)))
+  expect(attack(struck({}, 0.5, 2.5))).toBeGreaterThan(
+    attack(struck({}, 0.5)) * 1.2,
+  )
+})
+
+// The accent is one cap feeding the whole board rather than a flag on a step.
+test('a run of accents drains the bus it is drawn from', () => {
+  const roll: Partial<Controls> = {
+    drumKick: 0b1111_1111_1111_1111,
+    drumAccent: 0b1111_1111_1111_1111,
+    drumBpm: 200,
+  }
+  const span = (x: Float32Array, a: number, b: number) =>
+    rms(x.subarray(Math.round(a * SR), Math.round(b * SR)))
+  const stiff = soloVoice(roll, 1.2)
+  const sagging = soloVoice({ ...roll, drumAccentSag: 1 }, 1.2)
+  // The first accent of the run finds the cap charged and lands where a stiff
+  // bus would have put it. A few steps later there is nothing left to hand out,
+  // and the cap is being asked for another one every seventy milliseconds.
+  expect(span(sagging, 0.06, 0.14)).toBeCloseTo(span(stiff, 0.06, 0.14), 2)
+  expect(rms(sagging)).toBeLessThan(rms(stiff) * 0.9)
+  expect(span(stiff, 0.8, 1.2)).toBeGreaterThan(span(stiff, 0.1, 0.3) * 0.9)
+})
+
+test('an accent stacking the kit leaves less on the bus for the next one', () => {
+  const board: Partial<Controls> = {
+    drumBpm: 240,
+    drumKick: stepMask(3),
+    drumAccent: stepMask(2, 3),
+    drumAccentSag: 1,
+    drumSnappy: 1,
+  }
+  const busy: Partial<Controls> = {
+    drumSnare: stepMask(2),
+    drumHat: stepMask(2),
+    drumClap: stepMask(2),
+    drumBell: stepMask(2),
+  }
+  // The kick has a step to itself, one after the step that did the drawing, so
+  // what is being read is what the bus had left rather than what the other four
+  // put on the step with it.
+  const kickAlone = (o: Partial<Controls>) =>
+    lowEnergy(
+      soloVoice(o, 1).subarray(Math.round(0.25 * SR), Math.round(0.55 * SR)),
+      70,
+    )
+  expect(kickAlone({ ...board, ...busy })).toBeLessThan(kickAlone(board) * 0.9)
+  // With the bus stiff there is nothing to share and the kick lands the same.
+  const stiff = (o: Partial<Controls>) => kickAlone({ ...o, drumAccentSag: 0 })
+  expect(stiff({ ...board, ...busy })).toBeGreaterThan(stiff(board) * 0.95)
+})
+
+// Half the snare is a transistor's hiss and half is two tuned networks, and the
+// trimmer reaches one of them. Which is what makes it the kit's trimmer rather
+// than the kick's.
+test('the trimmer reaches the snare that has tone in it and not the one that doesn’t', () => {
+  const snare: Partial<Controls> = { drumSnare: stepMask(2), drumBpm: 60 }
+  const tone = soloVoice({ ...snare, drumSnappy: 0 }, 1)
+  const toneUp = soloVoice({ ...snare, drumSnappy: 0, drumTune: 2 }, 1)
+  expect(bin(tone, 185)).toBeGreaterThan(3 * bin(toneUp, 185))
+  expect(bin(toneUp, 370)).toBeGreaterThan(3 * bin(tone, 370))
+  const hiss = soloVoice({ ...snare, drumSnappy: 1 }, 1)
+  expect(soloVoice({ ...snare, drumSnappy: 1, drumTune: 2 }, 1)).toEqual(hiss)
+})
+
+// Same charge either way — the one-shot decides where it goes, not how much of
+// it there is. Narrow, it arrives as a spike the coupling cap passes as a click
+// and the network takes cleanly; wide, it is a shove spread across a good part
+// of a cycle, which the cap blocks and the network partly cancels.
+test('a narrow one-shot is a click and a wide one is neither', () => {
+  const sharp = struck({ drumPulse: 0.05 }, 0.6)
+  const wide = struck({ drumPulse: 8 }, 0.6)
+  expect(lowEnergy(sharp)).toBeGreaterThan(2 * lowEnergy(wide))
+  expect(bin(sharp, 2500)).toBeGreaterThan(4 * bin(wide, 2500))
 })

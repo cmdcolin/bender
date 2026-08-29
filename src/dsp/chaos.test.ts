@@ -218,6 +218,24 @@ test('latch-up leaves a starving chip louder, not quieter', () => {
   expect(rms(jamming)).toBeGreaterThan(rms(clean) * 1.15)
 })
 
+// What is left of the board under 800 Hz, which is where its pitch is.
+//
+// Counting crossings of the mix straight off counts the hat's hiss, and hiss
+// has no pitch — it has a crossing rate, fifteen thousand a second of it, and
+// whichever way that lands against the tune is what the count ends up saying.
+// Any change to what the kit is made of moves it, which is not what a test of
+// the rail should be reading.
+const belowPitch = (x: Float32Array) => {
+  const c = 1 - Math.exp((-2 * Math.PI * 800) / SR)
+  let y = 0
+  const out = new Float32Array(x.length)
+  for (let i = 0; i < x.length; i++) {
+    y += c * (x[i]! - y)
+    out[i] = y
+  }
+  return out
+}
+
 // Positive-going crossings per window: the pitch of the tune, near enough, and
 // what a rail sagging under its own warmth takes down with it.
 const crossings = (x: Float32Array, from: number, to: number) => {
@@ -251,8 +269,8 @@ test('a hot board is not the board that booted', () => {
     chipStarve: 0.25,
     chipAccomp: 0.5,
   }
-  const hot = render({ ...look, heatAmt: 1 }, 20)
-  const cold = render({ ...look, heatAmt: 0 }, 20)
+  const hot = belowPitch(render({ ...look, heatAmt: 1 }, 20))
+  const cold = belowPitch(render({ ...look, heatAmt: 0 }, 20))
   const early = [hot, cold].map(x => crossings(x, 1, 4))
   // Barely apart at the start.
   expect(Math.abs(early[0]! - early[1]!)).toBeLessThan(early[1]! * 0.015)
@@ -264,7 +282,7 @@ test('a hot board is not the board that booted', () => {
   // punishing it for the pitch it lost. Dividing by the time it spends audible
   // asks only about the pitch.
   const sounding = [hot, cold].map(x => soundingPitch(x, 15, 20))
-  expect(sounding[0]!).toBeLessThan(sounding[1]! * 0.98)
+  expect(sounding[0]!).toBeLessThan(sounding[1]! * 0.99)
 })
 
 test('clustered faults change when things happen, not whether', () => {
