@@ -3,6 +3,7 @@ import { cleanup } from '@testing-library/react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { EMPTY_HISTORY } from '../history'
 import { engine } from '../engine/engine'
+import { letterKeys } from './letters'
 
 // What the panel needs under it that jsdom does not have, and a board back
 // where it booted between tests. Imported for its hooks — `import './testDom'`
@@ -119,6 +120,11 @@ function resetBoard() {
   engine.setDrumsPlaying(false)
   engine.drumRecord.set(false)
   engine.tuneRecord.set(false)
+  letterKeys.set('toy')
+  // A test that left a key down is a test that hands the next one a note it
+  // never played, and the beds light off these.
+  engine.keysDown.set(new Set())
+  engine.fmKeysDown.set(new Set())
 }
 
 beforeAll(() => {

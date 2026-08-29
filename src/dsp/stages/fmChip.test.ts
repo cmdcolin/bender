@@ -11,10 +11,12 @@ import {
   playHeldKey,
   playKeys,
   render,
+  renderBender,
   rms,
   SR,
+  tail,
 } from '../testRender'
-import { FM_VOICES } from './fmVoices'
+import { FM_VOICE_NAMES, FM_VOICES } from './fmVoices'
 import { romIndex } from './roms'
 
 // The toy turned down to nothing, so what comes out is the other chip playing
@@ -29,11 +31,40 @@ const FM_ONLY: Partial<Controls> = {
 /** The key register's own bit, which is the fifth wire on the data bus. */
 const KEY_LINE = 5
 
-test('the chip has no keyboard of its own and plays the toy’s gate line', () => {
+test('the chip’s key input is soldered onto the toy’s gate line', () => {
   // The toy is turned all the way down, so anything audible here is the other
   // chip playing the demo song off a wire.
   expect(rms(render({ ...FM_ONLY, fmLevel: 0 }, 2))).toBe(0)
   expect(rms(render(FM_ONLY, 2))).toBeGreaterThan(0.02)
+})
+
+// And the jumper cut, which is the whole of what the switch does: the tune next
+// door goes on playing and this chip stops hearing it.
+test('cutting the jumper takes the toy’s gate off the key input', () => {
+  expect(rms(render({ ...FM_ONLY, fmKeyGate: 1 }, 2))).toBe(0)
+})
+
+// The keys somebody screwed to the chip's own board. They are wired to it and
+// to nothing else, so the jumper is none of their business.
+test('its own keys play it whichever way the jumper is set', () => {
+  for (const fmKeyGate of [0, 1]) {
+    const x = renderBender({ ...FM_ONLY, fmKeyGate }, 0.5, built =>
+      built.fmChip.noteOn(0),
+    )
+    expect(rms(x), `jumper ${fmKeyGate}`).toBeGreaterThan(0.02)
+  }
+})
+
+// A gate carries a level as well as an edge, and its own keys are the same
+// wire: what a hand is holding is held, and *Note length* is for everything
+// that only ever sends an edge.
+test('a hand on its own keys outlasts the length the driver would give it', () => {
+  const held = renderBender(
+    { ...FM_ONLY, fmVoice: FM_VOICE_NAMES.indexOf('organ'), fmLength: 0.05 },
+    1,
+    built => built.fmChip.noteOn(0),
+  )
+  expect(rms(tail(held, 0.2))).toBeGreaterThan(0.02)
 })
 
 test('every voice under the buttons is a patch that sounds', () => {

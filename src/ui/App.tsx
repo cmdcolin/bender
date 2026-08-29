@@ -16,6 +16,7 @@ import { Dice } from './Dice'
 import { GROUPS } from './controls'
 import { useDrumKeys } from './drumKeys'
 import { HuntDialog } from './HuntDialog'
+import { FmKeys } from './FmKeys'
 import { Keys } from './Keys'
 import { MidiPanel } from './MidiPanel'
 import {
@@ -201,6 +202,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const sampleName = useStoreValue(engine.sampleName)
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
+  const fmUp = useBoardValue(c => c.fmLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [pool, setPool] = useState(0)
   // Which stage's controls the panel is showing. The map is the way in — every
@@ -287,6 +289,10 @@ export function App(props: { openedFromLink?: boolean }) {
       <main className={styles.left}>
         <Scope />
         <Keys />
+        {/* The second bed appears with the chip it plays. Nobody who has left
+            the FM chip down needs a keyboard for it in the way, and a board
+            that arrives with the chip up arrives with its keys under it. */}
+        {fmUp && <FmKeys />}
         <BodyPad onOpen={setOpen} />
         <div className={styles.ioRow}>
           {/* Two machines, two switches. The kit used to run off the demo

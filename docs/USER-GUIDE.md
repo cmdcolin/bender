@@ -123,10 +123,25 @@ arrive, and each hit is its own step in the undo history.
 
 ## Playing the FM chip
 
-The board's second synthesiser has no keyboard or sequencer of its own — its key
-input is soldered onto the toy keyboard's gate line, so by default it plays
-whatever note the toy strikes. **Struck by** can wire a kit voice onto that same
-line instead, so a drum hit plays a note.
+The board's second synthesiser has no sequencer of its own — its key input is
+soldered onto the toy keyboard's gate line, so out of the box it plays whatever
+note the toy strikes. **Struck by** can wire a kit voice onto that same line as
+well, so a drum hit plays a note.
+
+It does have keys, though somebody had to screw them on. Bring the chip up in
+the mix and a second keybed appears under the toy's, wired to this chip and
+nothing else, with a hold switch and an octave switch of its own. The switch on
+its deck is the jumper off the toy's gate: **toy gate** is how the board
+shipped, and pressing it to **gate cut** leaves the chip answering only its own
+keys and the kit's trigger lines — two synthesisers playing two parts instead of
+one part twice. It is also on the chip's panel as **Toy gate**, so it travels in
+a link like every other control.
+
+One computer keyboard, two keybeds: `a s d f` and the octave keys `z`/`x` play
+whichever bed the **keys** switch on its deck is lit on, and the letters are
+printed on that bed's keys so you can see where they went. Both beds take the
+mouse either way, and a MIDI controller plays the toy's unless you split the
+keybed — see [MIDI](MIDI.md).
 
 **Voice** picks one of eight patches, **Brightness** sets how much of the
 modulator reaches the carrier, and **Feedback** sets how much of the modulator

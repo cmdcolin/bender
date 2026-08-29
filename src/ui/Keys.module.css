@@ -1,73 +1,6 @@
-/* The toy drawn as the object it is: a molded case, a control deck across the
-   top with the badge and the speaker on it, and a keybed sunk into the shell.
-   The shapes carry it — the case, the deck, the bed, the letters printed on the
-   keys — so the surfaces are flat colour and a hairline. The colours that *mean*
-   something are still the panel's accent and amber, because a lit key has to say
-   the same thing here as the scope and the map say everywhere else. */
-
-.row {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* The case. Three octaves wide and it takes the column: twenty-two white keys
-   in the 460px one octave used to sit in are 20px each, which is not a key
-   anybody can hit. */
-.body {
-  --case: #2b2b33;
-  --case-edge: #14141a;
-  /* The ink every label on a toy's front panel is printed in. */
-  --stamp: #8c8c9a;
-  --decal-pink: #ff3d8b;
-  --decal-cyan: #2fd3d3;
-  --decal-yellow: #ffd23b;
-
-  position: relative;
-  flex: 1 1 460px;
-  min-width: 280px;
-  max-width: 820px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 8px 10px 11px;
-  background: var(--case);
-  border: 1px solid var(--case-edge);
-  border-radius: 10px 10px 5px 5px;
-}
-
-/* The two screws holding the shell together, where they went: bottom corners,
-   under the keybed. Flat dots — a drawn slot and a highlight at this size is
-   three pixels arguing about which way the light came from. */
-.body::before,
-.body::after {
-  content: '';
-  position: absolute;
-  bottom: 3px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--case-edge);
-}
-
-.body::before {
-  left: 5px;
-}
-
-.body::after {
-  right: 5px;
-}
-
-/* The front panel: badge, decal, switches, speaker. On a toy every one of them
-   is on the same strip above the keys, so they are here too. */
-.deck {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 22px;
-}
+/* What the toy has on its deck that a keybed does not: the badge, the decal,
+   the speaker, and the switch for its own melody memory. The case and the keys
+   themselves are in Keybed.module.css, which the FM chip's bed shares. */
 
 /* Italic, because nothing in 1985 was upright. */
 .brand {
@@ -90,11 +23,11 @@
   opacity: 0.8;
   background: linear-gradient(
     90deg,
-    var(--decal-pink) 0 30%,
+    var(--decal-pink, #ff3d8b) 0 30%,
     transparent 30% 35%,
-    var(--decal-yellow) 35% 65%,
+    var(--decal-yellow, #ffd23b) 35% 65%,
     transparent 65% 70%,
-    var(--decal-cyan) 70% 100%
+    var(--decal-cyan, #2fd3d3) 70% 100%
   );
 }
 
@@ -109,170 +42,9 @@
   background-size: 5px 5px;
 }
 
-/* The bed the keys are sunk into. touch-action keeps a finger dragged across it
-   playing rather than scrolling the page. */
-.keys {
-  display: flex;
-  position: relative;
-  height: 78px;
-  border-radius: 3px;
-  background: #0a0a0d;
-  overflow: hidden;
-  user-select: none;
-  touch-action: none;
-}
-
-.whiteWrap {
-  position: relative;
-  flex: 1;
-}
-
-.white,
-.whiteOn,
-.whiteChip {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: #e4dfd1;
-  border: none;
-  border-right: 1px solid #a9a49a;
-  border-radius: 0 0 3px 3px;
-  cursor: pointer;
-  padding: 0 0 4px;
-}
-
-/* Lit by a hand — the pointer, the letter keys, a controller on the wire. A key
-   under a finger is also a key that has gone down, so it does both: the colour
-   says who, and the two pixels say it is down. */
-.whiteOn {
-  background: var(--accent);
-  transform: translateY(2px);
-}
-
-/* Lit by the toy playing itself: the ROM's tune, the backing under it, a note a
-   drum hit struck through the trigger patch. Amber rather than the accent, so
-   what you are playing stays legible over what the board is playing. */
-.whiteChip {
-  background: var(--accent2);
-  transform: translateY(2px);
-}
-
-.black,
-.blackOn,
-.blackChip {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  position: absolute;
-  top: 0;
-  right: -18%;
-  width: 40%;
-  height: 58%;
-  background: #17171a;
-  border: 1px solid #000;
-  border-radius: 0 0 3px 3px;
-  cursor: pointer;
-  z-index: 2;
-  padding: 0 0 3px;
-}
-
-.blackOn {
-  background: var(--accent);
-  transform: translateY(2px);
-}
-
-.blackChip {
-  background: var(--accent2);
-  transform: translateY(2px);
-}
-
-/* A key catching the light as the pointer crosses it. Plastic doesn't light up
-   under a hand, but a key that answers the pointer is the one thing the drawn
-   board can do that the toy couldn't, and the colours are spoken for. */
-.white:hover,
-.black:hover {
-  filter: brightness(1.07);
-}
-
-/* A note sounding past either end of the drawn board. The keys stay where your
-   hands are; this says the wire is playing somewhere else, and which way the
-   octave switch has to go to meet it. */
-.offLow,
-.offHigh {
-  position: absolute;
-  top: 4px;
-  font-size: var(--fs-sm);
-  line-height: 1;
-  color: var(--accent);
-  pointer-events: none;
-  z-index: 3;
-}
-
-.offLow {
-  left: 3px;
-}
-
-.offHigh {
-  right: 3px;
-}
-
-/* The letter the key answers to, printed on the key the way a toy printed its
-   note names: quiet enough that the board still reads as a keyboard, there
-   enough that nobody has to go looking for the hint. */
-.letter,
-.blackLetter {
-  font-size: var(--fs-xs);
-  line-height: 1;
-  pointer-events: none;
-}
-
-.letter {
-  color: #7c766a;
-}
-
-.blackLetter {
-  color: #8d8880;
-}
-
-.whiteOn .letter,
-.whiteChip .letter,
-.blackOn .blackLetter,
-.blackChip .blackLetter {
-  color: rgba(40, 10, 0, 0.6);
-}
-
-/* Pushed down to the speaker end of the deck, so the badge keeps the left and
-   the switches sit under the hand that reaches past the keys for them. */
-.switches {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-}
-
-.stamp {
-  font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--stamp);
-}
-
-.octaves {
-  display: flex;
-  gap: 3px;
-}
-
-/* A switch on the toy's own panel rather than one of the app's verbs: stamped
-   caps on a flat cap, and it goes down when you press it. */
-.hold,
-.holdOn,
 .rec,
 .recOn,
-.recIdle,
-.octave,
-.octaveOn {
+.recIdle {
   font-size: var(--fs-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -284,45 +56,16 @@
   cursor: pointer;
 }
 
-.octave,
-.octaveOn {
-  padding: 3px 6px;
-  font-variant-numeric: tabular-nums;
-}
-
-.hold:hover,
 .rec:hover,
-.recIdle:hover,
-.octave:hover {
+.recIdle:hover {
   background: #44444f;
   color: var(--fg);
 }
 
-.hold:active,
 .rec:active,
 .recOn:active,
-.recIdle:active,
-.octave:active,
-.holdOn:active,
-.octaveOn:active {
+.recIdle:active {
   transform: translateY(1px);
-}
-
-/* Thrown. */
-.holdOn,
-.octaveOn {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #2a0d04;
-}
-
-/* Nothing decorative survives the squeeze: on a narrow board the deck is for the
-   switches, and the badge is the last thing anybody needs. */
-@media (max-width: 640px) {
-  .stripe,
-  .grille {
-    display: none;
-  }
 }
 
 /* Recording into the memory, and armed with the tune stopped — the same two
@@ -338,4 +81,13 @@
   color: var(--accent2);
   border-color: var(--accent2);
   border-style: dashed;
+}
+
+/* Nothing decorative survives the squeeze: on a narrow board the deck is for the
+   switches, and the badge is the last thing anybody needs. */
+@media (max-width: 640px) {
+  .stripe,
+  .grille {
+    display: none;
+  }
 }

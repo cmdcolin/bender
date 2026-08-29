@@ -48,11 +48,12 @@ dies on one rail, drawn inside a dashed frame with **Starve** — a knob on the
 keyboard's panel — running across the top of it, because starving the rail dives
 the FM chip's pitch and drags the kit's tempo down with it.
 
-The FM chip has no keyboard or sequencer of its own. Its key input is soldered
-onto the toy's gate line, so it hangs under the keyboard on the diagram and
-plays whatever note the toy strikes, unless you patch a trigger bridge across
-the lane between them yourself — see [the trigger patch](USER-GUIDE.md) in the
-user guide.
+The FM chip has no sequencer of its own. Its key input is soldered onto the
+toy's gate line, so it hangs under the keyboard on the diagram and plays
+whatever note the toy strikes — until **Toy gate** cuts that jumper, and the
+chip answers only the keybed drawn under the toy's and whatever trigger bridge
+you patched across the lane between the two machines yourself. See
+[the trigger patch](USER-GUIDE.md) in the user guide.
 
 Three more sources start where they stand rather than sharing anything: the
 chaos oscillator, the noise generator and the sampler. The mic isn't a source

@@ -396,6 +396,12 @@ export class FmChip implements Stage {
   // land on this part at all — the volume nibble, four steps of it.
   noteOn(note: number, gain = 1) {
     const vol = Math.min(Math.max(Math.round((1 - gain) * 3), 0), 3)
+    // A chip with its level at the floor is a chip the chain steps over, so
+    // nothing drains this. Four channels means four notes are all it could
+    // strike anyway, and the ones underneath would be stolen the moment it
+    // came back up — so the queue holds the last of them rather than growing
+    // for as long as the level is down.
+    if (this.queued.length >= N_CH) this.queued.shift()
     this.queued.push({ note, vol })
   }
 

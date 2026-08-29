@@ -197,18 +197,21 @@ too — the knife goes on and the rows under it say which controls that was:
 ### FM chip
 
 The other synthesiser on the board: two operators a voice, four voices, on the
-same rail. It has no keyboard and no sequencer — its key input is soldered onto
-the toy’s gate line, so it plays whatever strikes a note over there, and _Struck
-by_ clips the kit’s trigger lines on beside it. It is not played but
-_configured_, a byte at a time over a bus, which is what _Data line_ and
-_Address line_ are for: a byte that lands wrong stays wrong until the processor
-writes that register again, and if the wire carrying the key back up cannot go
-low, the note never ends. _Wave line_ is the other bus, the one the processor
-never touches — the sine is a table and a table is an address, so a knife there
-reshapes the wave under your hand and leaves nothing behind. _Effect_ is the
-ROM’s other job: a bird, surf, wind, a siren or crickets, each a program
-spraying register writes rather than a sample, and the busiest thing the bus
-ever carries.
+same rail. It has no sequencer — its key input is soldered onto the toy’s gate
+line, so out of the box it plays whatever strikes a note over there, _Struck by_
+clips the kit’s trigger lines on beside it, and _Toy gate_ cuts that jumper so
+it answers only the keybed screwed to its own board. That bed is drawn under the
+toy’s the moment the chip is up in the mix, with its own hold and octave, and
+the _keys_ switch on either deck says which of the two the computer’s letter
+keys are wired to. It is not played but _configured_, a byte at a time over a
+bus, which is what _Data line_ and _Address line_ are for: a byte that lands
+wrong stays wrong until the processor writes that register again, and if the
+wire carrying the key back up cannot go low, the note never ends. _Wave line_ is
+the other bus, the one the processor never touches — the sine is a table and a
+table is an address, so a knife there reshapes the wave under your hand and
+leaves nothing behind. _Effect_ is the ROM’s other job: a bird, surf, wind, a
+siren or crickets, each a program spraying register writes rather than a sample,
+and the busiest thing the bus ever carries.
 
 Named cuts, one press each under _knife on the bus_, where the panel keeps them
 too — the knife goes on and the rows under it say which controls that was:
@@ -346,9 +349,9 @@ other is a thing you can see. Every fader is drawn here as well as on its own
 machine’s panel, under the machine’s name, with a meter beside it reading what
 that channel is putting on the bus and the bus’s own meter under the lot. A
 fader says how far it is up, not whether anything is coming out — the FM chip is
-the reason: it boots at zero, it has no keyboard of its own, and turned up on a
-toy nothing is striking it is three quarters and silence. _Bus drive_ is the
-summing amp: a wire at unity, and the one saturation ahead of the bends.
+the reason: it boots at zero, and turned up with nothing striking it — no hand
+on its keys, no tune next door — it is three quarters and silence. _Bus drive_
+is the summing amp: a wire at unity, and the one saturation ahead of the bends.
 
 The desk is a widget rather than a row of sliders, and its seven faders are
 counted under the machines they belong to: each is the first knob on that
