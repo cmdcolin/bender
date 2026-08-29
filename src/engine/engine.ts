@@ -37,11 +37,21 @@ import { YOURS } from '../dsp/stages/roms'
 import { snap } from '../scale'
 import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
 import { Glide } from './glide'
-import type { FromWorklet, NoteDest, ToWorklet } from './messages'
-import { N_TAPS, packParams } from './params'
-import { encodeWav } from './wav'
+import type { FromWorklet, NoteDest, RecMsg, ToWorklet } from './messages'
+import { MAX_SOURCES, N_TAPS, STEM_FILES, packParams } from './params'
+import { encodeMonoWav, encodeWav } from './wav'
 
 const REC_MAX_S = 600 // a take stops itself at ten minutes
+// And sooner with the stems running, because the tape is seven tracks instead
+// of one. A second of master costs 384 kB of float in this tab; a second of
+// stems costs 1.15 MB on top, so ten minutes of stems would be 900 MB held in
+// memory before a single file is encoded. Two minutes is 184 MB, which is a
+// take you can actually finish.
+const REC_MAX_STEM_S = 120
+// Below this a stem is silence, and silence gets no file: a fader left down is
+// six seconds of nothing to drag into a session and wonder about. Not exactly
+// zero, because a source can leave dc dust behind a fader on its way to zero.
+const STEM_FLOOR = 1e-4
 
 export interface Meter {
   peak: number
@@ -175,6 +185,14 @@ export class Engine {
   ])
   readonly recording = createStore(false)
   readonly recSeconds = createStore(0)
+  /** Whether a take comes back as one file or as one per source plus the
+      master. UI state rather than a control on the board: it changes nothing
+      about what the instrument does, and a board control rides in the link, in
+      every preset, in the undo walk and through a morph — none of which have
+      anything to say about which files land in the downloads folder. It sits
+      beside the mic switch and the two arm buttons, which are the other
+      settings that are about you rather than about the circuit. */
+  readonly recStems = createStore(false)
   readonly sampleName = createStore<string | null>(null)
   /** What a roll off archive.org is doing, or null when it is not doing one. */
   readonly archiveStep = createStore<string | null>(null)
@@ -702,44 +720,93 @@ export class Engine {
   }
 
   private take: { l: Float32Array; r: Float32Array }[] = []
+  // The stem tape: one growing list of slabs per source, and a bit per source
+  // that has ever risen above the floor. A take only writes files for the
+  // sources that had something on them, which on a stock board is two of six.
+  private stemTake: Float32Array[][] = []
+  private stemLive = 0
 
-  private onRecChunk(msg: {
-    l: Float32Array
-    r: Float32Array
-    n: number
-    done: boolean
-  }) {
-    if (msg.n)
+  private onRecChunk(msg: RecMsg) {
+    if (msg.n) {
       this.take.push({ l: msg.l.slice(0, msg.n), r: msg.r.slice(0, msg.n) })
+      if (msg.stems) this.keepStems(msg.stems, msg.n)
+    }
     const frames = this.take.reduce((n, c) => n + c.l.length, 0)
     const sr = this.ctx?.sampleRate ?? 48000
     this.recSeconds.set(frames / sr)
-    if (frames >= sr * REC_MAX_S && this.recording.get()) this.stopRecording()
+    const cap = this.stemTake.length ? REC_MAX_STEM_S : REC_MAX_S
+    if (frames >= sr * cap && this.recording.get()) this.stopRecording()
     if (msg.done) this.saveTake(sr)
   }
 
+  // The slabs copied out of the worklet's buffers, which it goes on writing
+  // over the moment this returns. Whether a source is worth a file is settled
+  // here, on the way past, rather than by walking two minutes of tape again at
+  // the end of the take.
+  private keepStems(slabs: Float32Array[], n: number) {
+    for (let k = 0; k < MAX_SOURCES; k++) {
+      const slab = slabs[k]
+      if (!slab) continue
+      const chunk = slab.slice(0, n)
+      this.stemTake[k]!.push(chunk)
+      if (this.stemLive & (1 << k)) continue
+      for (const v of chunk) {
+        if (v > STEM_FLOOR || v < -STEM_FLOOR) {
+          this.stemLive |= 1 << k
+          break
+        }
+      }
+    }
+  }
+
+  // Six clicks in a row where there was one. There is no zip here and there is
+  // not going to be — the dependency list is four packages — so a stem take is
+  // however many downloads it is, named so the folder sorts itself: one stamp,
+  // one file per source, and the master under the same stamp. A browser may ask
+  // whether this site can download several files at once; that prompt is the
+  // cost of not shipping an archiver.
   private saveTake(sr: number) {
     const take = this.take
+    const stems = this.stemTake
+    const live = this.stemLive
     this.take = []
+    this.stemTake = []
+    this.stemLive = 0
     if (!take.length) return
-    const url = URL.createObjectURL(encodeWav(take, sr))
+    const at = stamp()
+    if (!stems.length) return this.download(encodeWav(take, sr), `bender-${at}`)
+    this.download(encodeWav(take, sr), `bender-${at}-master`)
+    for (let k = 0; k < MAX_SOURCES; k++) {
+      if (!(live & (1 << k))) continue
+      this.download(
+        encodeMonoWav(stems[k]!, sr),
+        `bender-${at}-${STEM_FILES[k]}`,
+      )
+    }
+  }
+
+  private download(blob: Blob, name: string) {
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `bender-${stamp()}.wav`
+    a.download = `${name}.wav`
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 
   startRecording() {
     if (!this.node || this.recording.get()) return
+    const stems = this.recStems.get()
     this.take = []
+    this.stemTake = stems ? Array.from({ length: MAX_SOURCES }, () => []) : []
+    this.stemLive = 0
     this.recSeconds.set(0)
     this.recording.set(true)
-    this.post({ kind: 'record', on: true })
+    this.post({ kind: 'record', on: true, stems })
   }
 
   // Stopping is what saves it: the worklet's last slab carries done, and the
-  // file lands in the downloads folder.
+  // files land in the downloads folder.
   stopRecording() {
     if (!this.recording.get()) return
     this.recording.set(false)

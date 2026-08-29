@@ -1,5 +1,5 @@
 import type { ToWorklet } from '../engine/messages'
-import { N_PARAMS, packParams } from '../engine/params'
+import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params'
 import { DEFAULT_CONTROLS } from '../controls'
 import { buildBender, type BuiltChain } from './build'
 import { Smoother } from './smoother'
@@ -38,6 +38,16 @@ class BenderProcessor extends AudioWorkletProcessor {
   private recL = new Float32Array(REC_CHUNK)
   private recR = new Float32Array(REC_CHUNK)
   private recFill = 0
+  private recStems = false
+  // The six source tapes, one mono slab each, standing whether anybody ever
+  // records stems or not. 768 kB of the worklet's heap sitting idle is the
+  // price of never allocating them: the alternative is 768 kB drawn on the
+  // audio thread the first time a stem take is armed, and a collector run on
+  // this thread is a hole in the sound wherever it lands.
+  private stemSlabs = Array.from(
+    { length: MAX_SOURCES },
+    () => new Float32Array(REC_CHUNK),
+  )
 
   constructor() {
     super()
@@ -79,9 +89,12 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'record':
           if (msg.on) {
             this.recFill = 0
+            this.recStems = !!msg.stems
+            this.built.chain.capturing = this.recStems
             this.recording = true
           } else if (this.recording) {
             this.recording = false
+            this.built.chain.capturing = false
             this.flushRec(true)
           }
           break
@@ -112,7 +125,50 @@ class BenderProcessor extends AudioWorkletProcessor {
   private flushRec(done: boolean) {
     const n = this.recFill
     this.recFill = 0
-    this.port.postMessage({ kind: 'rec', l: this.recL, r: this.recR, n, done })
+    this.port.postMessage({
+      kind: 'rec',
+      l: this.recL,
+      r: this.recR,
+      n,
+      done,
+      // Six more slabs on the same terms, and only when the take asked for
+      // them: the serializer's copy goes from 128 kB every 0.7 s to 900 kB,
+      // which is 80 µs in a block that has 2700.
+      stems: this.recStems ? this.stemSlabs : undefined,
+    })
+  }
+
+  // The block onto the tape, in whatever piece of it fits before the slab is
+  // full. The tape used to ride inside the loop that also drew the trace and
+  // took the peak, one sample at a time, testing for the slab boundary as it
+  // went; with seven tracks on it the boundary is worth finding once and
+  // copying up to, and the walk it costs only happens while a take is running.
+  //
+  // A slab always ends where a block ends — REC_CHUNK is a whole number of
+  // blocks — so the loop runs once for every block the host asks for in full.
+  // It goes round twice for a short block that straddles the seam, which is
+  // the case that has to be right rather than fast.
+  private lay(l: Float32Array, r: Float32Array, n: number) {
+    const stems = this.recStems ? this.built.chain.stems : undefined
+    let at = 0
+    while (at < n) {
+      const take = Math.min(n - at, REC_CHUNK - this.recFill)
+      const fill = this.recFill
+      for (let i = 0; i < take; i++) {
+        this.recL[fill + i] = l[at + i]!
+        this.recR[fill + i] = r[at + i]!
+      }
+      if (stems) {
+        for (let k = 0; k < MAX_SOURCES; k++) {
+          const slab = this.stemSlabs[k]!
+          const base = k * BLOCK + at
+          for (let i = 0; i < take; i++) slab[fill + i] = stems[base + i]!
+        }
+      }
+      this.recFill = fill + take
+      at += take
+      if (this.recFill === REC_CHUNK) this.flushRec(false)
+    }
   }
 
   process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean {
@@ -152,18 +208,12 @@ class BenderProcessor extends AudioWorkletProcessor {
       if (out[1]) out[1].set(r.subarray(0, n))
     }
 
-    // One pass for the tape, the trace and the peak: three walks over the same
-    // 128 samples were three loop set-ups and three passes over the same line.
-    const recording = this.recording
+    // One pass for the trace and the peak: two walks over the same 128 samples
+    // were two loop set-ups and two passes over the same line.
     let scopePos = this.scopePos
     let peak = this.peak
     for (let i = 0; i < n; i++) {
       const v = l[i]!
-      if (recording) {
-        this.recL[this.recFill] = v
-        this.recR[this.recFill] = r[i]!
-        if (++this.recFill === REC_CHUNK) this.flushRec(false)
-      }
       this.scope[scopePos] = v
       scopePos = (scopePos + 1) & SCOPE_MASK
       const a = v < 0 ? -v : v
@@ -171,6 +221,8 @@ class BenderProcessor extends AudioWorkletProcessor {
     }
     this.scopePos = scopePos
     this.peak = peak
+
+    if (this.recording) this.lay(l, r, n)
 
     this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {

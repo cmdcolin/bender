@@ -199,6 +199,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const drumsPlaying = useStoreValue(engine.drumsPlaying)
   const recording = useStoreValue(engine.recording)
   const recSeconds = useStoreValue(engine.recSeconds)
+  const recStems = useStoreValue(engine.recStems)
   const sampleName = useStoreValue(engine.sampleName)
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
@@ -324,7 +325,13 @@ export function App(props: { openedFromLink?: boolean }) {
           {/* Named for what it records, because the kit has a record button of
               its own now and one of them writes a file while the other writes
               the pattern. */}
-          <Tip text="Records the output to a wav file — stopping saves it.">
+          <Tip
+            text={
+              recStems
+                ? 'Records the output and every source that had something on it — stopping saves the lot.'
+                : 'Records the output to a wav file — stopping saves it.'
+            }
+          >
             <button
               className={recording ? styles.recBtnOn : styles.ioBtn}
               onClick={() =>
@@ -333,8 +340,25 @@ export function App(props: { openedFromLink?: boolean }) {
             >
               {recording
                 ? `■ stop & save ${clock(recSeconds)}`
-                : '● record wav'}
+                : recStems
+                  ? '● record stems'
+                  : '● record wav'}
             </button>
+          </Tip>
+          {/* What comes back off a take. Locked while one is running: the tape
+              is threaded for six tracks or for one at the moment you press
+              record, and a switch that moved half way through would hand back
+              six files that start in different places. */}
+          <Tip text="Master is the take with the whole board on it. Stems hands back each machine on its own as well — dry, straight off the bus, one wav each — which is what you drag into a DAW.">
+            <select
+              className={styles.pool}
+              value={recStems ? 'stems' : 'master'}
+              disabled={recording}
+              onChange={e => engine.recStems.set(e.target.value === 'stems')}
+            >
+              <option value="master">master only</option>
+              <option value="stems">master + stems</option>
+            </select>
           </Tip>
           <button
             className={micOn ? styles.ioBtnOn : styles.ioBtn}

@@ -55,6 +55,10 @@ export interface TransportMsg {
 export interface RecordMsg {
   kind: 'record'
   on: boolean
+  /** Whether this take runs the per-source tape as well as the master. Settled
+      when the take is armed and never mid-take: six tracks that start half way
+      through are six files nobody can line up. */
+  stems?: boolean
 }
 
 export interface PanicMsg {
@@ -147,6 +151,11 @@ export interface RecMsg {
   r: Float32Array
   n: number
   done: boolean
+  /** One mono slab per source, in `SOURCE_TAPS` order, on a stem take — the
+      worklet's own buffers again, and `n` counts for these too, so the whole
+      take stays one set of slabs that all start and end together. Absent on a
+      master-only take, which is what the tape does when nobody asked for six. */
+  stems?: Float32Array[]
 }
 
 export type FromWorklet = MeterMsg | RecMsg

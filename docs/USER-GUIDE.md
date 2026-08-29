@@ -302,6 +302,42 @@ actual audio output as a 16-bit stereo wav file, where the keyboard's **Rec**
 and the drum machine's **Record** capture what you played rather than what comes
 out of the speakers.
 
+### Stems
+
+The selector beside it says what a take comes back as. **Master only** is one
+file of what you heard. **Master + stems** adds one wav per source that had
+anything on it — the toy keyboard, the drums, the FM chip, the chaos oscillator,
+the noise and the sampler — named `bender-<stamp>-toy.wav`, `-drums`, `-fm`,
+`-chaos`, `-noise`, `-sampler`, beside `bender-<stamp>-master.wav` under the
+same stamp. A source you left down writes no file. The selector locks while a
+take is running: what the tape is threaded for is settled when you press record.
+
+**A stem is the dry machine.** The six sources sum into the mix bus, and
+everything after that point — the bus drive, the bends, the pedals, the
+brownout, the tape and the limiter — is applied to the sum. There is one signal
+path, not six, so a stem taken after the bus would mean running the whole board
+six times over. What you get is each source as it arrived at the summing amp,
+with none of the board on it; the master is the take with all of it on. Bring
+the stems into a DAW and they will not add up to the master, and they are not
+meant to — the master is the instrument, the stems are what went into it.
+
+The mic and the feedback return are not stems. Neither is a source: the mic is a
+wire that lands on the bus (or on the toy's supply rail), and the return is the
+desk feeding itself. Both are in the master only.
+
+Stems are **mono**. Five of the six sources put the identical sample on both
+channels, so a stereo stem would be the same file twice at twice the size; the
+noise is the exception, and its stem is the middle of its two streams — the
+width it has stays in the master.
+
+Two practical limits. A stem take stops itself at **two minutes** rather than
+the ten a master take gets: seven tracks of 48 kHz float is about 1.5 MB for
+every second held in the tab, so two minutes is around 184 MB before a byte is
+encoded. And there is no zip here — the dependency list is four packages and
+staying that way — so stopping a stem take fires up to seven downloads at once.
+Your browser may ask whether this site can download multiple files; say yes, or
+you will get the master and nothing else.
+
 ## The link is the board
 
 The address bar carries the whole board at all times — every control off stock,

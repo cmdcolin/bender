@@ -1,7 +1,7 @@
 // The rig the dsp tests render through: a board at 48 kHz run block by block,
 // and the measurements that turn what came out of it into something to assert on.
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { packParams } from '../engine/params'
+import { MAX_SOURCES, packParams } from '../engine/params'
 import { buildBender, buildChain, type BuiltChain } from './build'
 import { BLOCK, type StereoBlock } from './stage'
 
@@ -54,6 +54,40 @@ export function renderBender(
     out.set(io.l.subarray(0, BLOCK), b * BLOCK)
   }
   return out
+}
+
+// A take with the stem tape running: what came out of the board, and what each
+// source put on the bus on its own — mono and dry, the way the recorder takes
+// them. Laid out in SOURCE_TAPS order, so `stems[0]` is the toy keyboard.
+export function renderStems(
+  overrides: Partial<Controls>,
+  seconds: number,
+  setup?: (built: BuiltChain) => void,
+): { master: Float32Array; stems: Float32Array[] } {
+  const built = buildBender(SR)
+  built.transport.tune = true
+  built.transport.drums = true
+  built.chain.capturing = true
+  setup?.(built)
+  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const io = makeIo()
+  const blocks = Math.ceil((seconds * SR) / BLOCK)
+  const master = new Float32Array(blocks * BLOCK)
+  const stems = Array.from(
+    { length: MAX_SOURCES },
+    () => new Float32Array(blocks * BLOCK),
+  )
+  for (let b = 0; b < blocks; b++) {
+    built.chain.process(io, p)
+    master.set(io.l.subarray(0, BLOCK), b * BLOCK)
+    for (let k = 0; k < MAX_SOURCES; k++) {
+      stems[k]!.set(
+        built.chain.stems.subarray(k * BLOCK, k * BLOCK + BLOCK),
+        b * BLOCK,
+      )
+    }
+  }
+  return { master, stems }
 }
 
 // A key held for a while and let go, which is the gesture the FM chip reads off

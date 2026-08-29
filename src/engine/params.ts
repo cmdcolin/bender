@@ -425,6 +425,19 @@ export const SOURCE_TAPS = [
 
 export type SourceTap = (typeof SOURCE_TAPS)[number]
 
+// What each source's stem is called in the downloads folder. The tap names are
+// the identifiers the audio thread is built out of; these are what somebody
+// reading a folder of six files at midnight wants to see on them. Same order,
+// and a test holds the two lists to the same length.
+export const STEM_FILES = [
+  'toy',
+  'drums',
+  'fm',
+  'chaos',
+  'noise',
+  'sampler',
+] as const
+
 export const MAX_SOURCES = SOURCE_TAPS.length
 export const TAP_MIC = MAX_SOURCES
 export const TAP_BUS = MAX_SOURCES + 1

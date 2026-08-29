@@ -209,8 +209,10 @@ export class Chain {
   // spread per block is 375 collections a second on the audio thread.
   private readonly slots = new Float32Array(6)
   // The bus as each source found it, so the next one's difference is its own
-  // channel and nothing else's.
+  // channel and nothing else's. The right channel is only kept while the stem
+  // tape is running: the meters read the left alone.
   private readonly tapPrev = new Float32Array(BLOCK)
+  private readonly tapPrevR = new Float32Array(BLOCK)
   private thermal: Thermal
   private relayBurst: Burst
   private rng: Rng
@@ -252,6 +254,26 @@ export class Chain {
    * silent. Whoever reads it clears it; nothing in the audio path reads it.
    */
   readonly taps = new Float32Array(N_TAPS)
+
+  /**
+   * Each source on its own, for this block: `stems[k * BLOCK + i]` is what
+   * source k put on the bus at sample i, mono, dry.
+   *
+   * Taken the same way the meters are — as the difference a source made to the
+   * sum — because that is the only place the six of them are still separate.
+   * Everything from the summing amp down (drive, bends, pedals, brownout, tape,
+   * the limiter) is applied to the sum, so a stem taken after the bus would mean
+   * running the whole chain six times over. A stem here is the dry machine; the
+   * master is the take with the board on it.
+   *
+   * Written only while `capturing` is set, and nothing in the audio path reads
+   * it. Off, this costs the block a boolean.
+   */
+  readonly stems = new Float32Array(MAX_SOURCES * BLOCK)
+
+  /** Whether the stem tape is running. Set by the worklet when a take is armed
+      for stems, and by nothing else. */
+  capturing = false
 
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
@@ -330,6 +352,8 @@ export class Chain {
     this.deskLast = 0
     this.taps.fill(0)
     this.tapPrev.fill(0)
+    this.tapPrevR.fill(0)
+    this.stems.fill(0)
   }
 
   process(io: StereoBlock, p: Float32Array, mic?: Float32Array) {
@@ -395,19 +419,55 @@ export class Chain {
     // Copied by hand rather than through subarray: a view is an object, and an
     // object per block is 375 of them a second on the thread that cannot afford
     // a collection.
+    //
+    // While a stem take is running the same difference is written out sample by
+    // sample as well, mono. Five of the six sources put the identical sample on
+    // both channels — the noise is the one that does not — so a stereo stem
+    // would be the same file twice for all but one of them, at twice the
+    // memory. The stem is the mid of the pair; the noise keeps its width in the
+    // master, which is the take that has the width in it anyway.
+    //
+    // A second walk over the block and a second history buffer, and both of
+    // them only when the tape is on: the stem loop is written out beside the
+    // meter loop rather than branching inside it, because a branch per sample
+    // per source is the shape this file spends its comments avoiding.
     const prev = this.tapPrev
+    const cap = this.capturing
+    const prevR = this.tapPrevR
+    const stems = this.stems
     for (let i = 0; i < n; i++) prev[i] = io.l[i]!
+    if (cap) {
+      // Every slice cleared first, so a source that did not run this block —
+      // its `when` said no, or the board has fewer than six — lands on the tape
+      // as silence rather than as last block's copy of itself.
+      stems.fill(0)
+      for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
+    }
     for (let k = 0; k < this.sources.length; k++) {
       const s = this.sources[k]!
       if (!s.when || s.when(p, ctx)) {
         s.process(io, p, ctx)
         let peak = 0
-        for (let i = 0; i < n; i++) {
-          const l = io.l[i]!
-          const d = l - prev[i]!
-          const a = d < 0 ? -d : d
-          if (a > peak) peak = a
-          prev[i] = l
+        if (cap && k < MAX_SOURCES) {
+          const base = k * BLOCK
+          for (let i = 0; i < n; i++) {
+            const l = io.l[i]!
+            const r = io.r[i]!
+            const d = l - prev[i]!
+            const a = d < 0 ? -d : d
+            if (a > peak) peak = a
+            stems[base + i] = 0.5 * (d + (r - prevR[i]!))
+            prev[i] = l
+            prevR[i] = r
+          }
+        } else {
+          for (let i = 0; i < n; i++) {
+            const l = io.l[i]!
+            const d = l - prev[i]!
+            const a = d < 0 ? -d : d
+            if (a > peak) peak = a
+            prev[i] = l
+          }
         }
         // There are six slots and the instrument is built with six sources; a
         // seventh would still sound, and a test holds the two numbers together

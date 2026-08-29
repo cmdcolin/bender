@@ -212,6 +212,13 @@
   cursor: pointer;
 }
 
+/* Greyed while a take is running: what the tape is threaded for is settled at
+   the moment you press record. */
+.pool:disabled {
+  color: var(--fg4);
+  cursor: default;
+}
+
 /* The roll's own line: what it is doing while it does it, and what it came back
    with once it has. Its own colour, so a wait reads as the app working rather
    than as the board saying something. */
