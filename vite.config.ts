@@ -12,7 +12,7 @@ function gitSha() {
 }
 
 export default defineConfig({
-  base: '/bender/',
+  base: './',
   plugins: [react()],
   worker: { format: 'es' },
   define: {
