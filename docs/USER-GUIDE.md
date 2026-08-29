@@ -249,6 +249,11 @@ board is actually running, turning that stage up where it was dry — and
 **cascade** solders one wire onto another wire's own depth, so what the second
 wire does to the board is itself something opening and closing.
 
+The patch bay's own picture says when a lead reaches nothing — a wire off a mic
+nobody has turned on, or onto a reverb that is dry — and one press under the
+diagram moves the loose end onto a stage the board is running. It turns nothing
+up, so the stages stay where you left them.
+
 **Hunt** is the one roll that listens to what it rolled: it tries six boards,
 plays each for a second and a half, and keeps whichever rides closest to the
 limiter without burying it — a dialog shows which candidate is currently
