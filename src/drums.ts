@@ -28,14 +28,14 @@ export const DRUM_VOICES = [
     maybe: 'drumKickMaybe',
     len: 'drumKickLen',
     label: 'kick',
-    help: 'Sine thump, pitch falling through its own envelope.',
+    help: 'A bridged-T network, shocked and left to ring. It pitches down as it runs down, so how hard you hit it is how far it swoops.',
   },
   {
     key: 'drumSnare',
     maybe: 'drumSnareMaybe',
     len: 'drumSnareLen',
     label: 'snare',
-    help: 'Filtered noise crack.',
+    help: 'A noise transistor over two tuned networks at 185 and 330 Hz. Snappy is the pot between them.',
   },
   {
     key: 'drumHat',
@@ -56,7 +56,7 @@ export const DRUM_VOICES = [
     maybe: 'drumTomMaybe',
     len: 'drumTomLen',
     label: 'tom',
-    help: 'A slower, higher kick — the fill voice.',
+    help: 'The same network as the kick, tuned higher and rung shorter — the fill voice.',
   },
   {
     key: 'drumBell',

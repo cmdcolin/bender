@@ -130,8 +130,12 @@ same steps, so it's a starting point rather than a mode you're stuck in.
 
 **Swing** holds every offbeat step back and gives the following step less time,
 so shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
-once. The kit also has its own cheap-DAC quirks — see [Bends](BENDS.md) for what
-**Bit depth**, **Ladder** and **Overflow** actually do to it.
+once, and **Ring** is the one to reach for after those: the kick, tom and snare
+body are resonant networks rather than oscillators, and winding Ring past nine
+tenths of its travel latches them into notes that ring on until you wind it
+back. The kit also has its own cheap-DAC quirks — see [Bends](BENDS.md) for what
+**Ring**, **Trigger pulse**, **Snappy**, **Accent sag**, **Bit depth**,
+**Ladder** and **Overflow** actually do to it.
 
 Drawing a run of steps is a drag rather than sixteen separate clicks: press a
 step and drag across the grid, and every cell the pointer crosses goes the way

@@ -161,6 +161,51 @@ processor's clock is a resonator that doesn't care what the supply is doing, so
 the effect keeps arriving at its usual rate while the chip it's addressed to
 dives and slurs underneath it.
 
+## Inside the drum voices
+
+The kit's pitched voices — kick, tom, and the body under the snare — aren't
+oscillators with envelopes on them. Each one is a bridged-T network: a handful
+of parts around a transistor that does nothing until the trigger dumps a pulse
+into it, and then rings. The ringing is the drum, which means the decay isn't a
+shape laid over a tone. It's how much of each swing the transistor hands back.
+
+**Ring** is that fraction, and a fraction has a far side. Under about nine
+tenths of the travel the network gives back less than it took and a kick is a
+kick. At the crossing it gives back exactly what it took and never stops. Past
+it, it makes up the difference every cycle and grows into its own clipping — so
+the pitched voices stop being drums and become notes, which the pattern retunes
+rather than restrikes. The trigger floor is wired to the same fact: a network
+that never drains never gets back under the floor, so a latched voice is also a
+voice the sequencer can't strike again.
+
+The pitch falling through a hit comes off the same part rather than being drawn
+on. The pulse drives the transistor a long way from where it settles, and what
+the network is tuned to depends on what the transistor looks like from outside,
+so a big swing is a high tuning that comes down as the swing does. Hit it harder
+and the swoop starts higher and lasts longer — an accent is a pitch as well as a
+weight, which no envelope shape can say.
+
+**Trigger pulse** is how long the one-shot holds that line down. The charge is
+the same either way, so this is where it goes rather than how much of it there
+is: narrow is a tall spike that gets through the coupling cap as a click and
+shocks the network cleanly, wide is a shove spread across a good part of a
+cycle, which the cap blocks and the network partly cancels — no click, less
+body, and least of both on the voices pitched high enough that the pulse
+outlasts them.
+
+**Snappy** is what the snare is made of. All the way up is the noise transistor
+alone, which is the snare the kit used to have; down, the two tuned networks
+under it come through instead, beating against each other. Tune reaches those
+and doesn't reach the hiss, so a snare with any tone in it moves with the rest
+of the kit.
+
+**Accent** and **Accent sag** make the accent row a circuit rather than a flag.
+The accent is one cap feeding every voice on the board, and sag is how much each
+accented step takes off it. Left at nothing the bus is stiff and every accent is
+the full one. Wound up, a step stacking four voices hands each of them less than
+a step stacking one, and a second accent arriving before the cap has caught up
+lands softer than the first — so a roll comes out shaped without a knob moving.
+
 ## The drum machine's pattern bus
 
 The same four wire faults apply here, between the step counter and the pattern

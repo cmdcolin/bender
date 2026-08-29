@@ -1052,11 +1052,14 @@ on it — a link never presses play, so it is loaded and waiting.
 
 ### Kit voices
 
-- **kick** — Sine thump, pitch falling through its own envelope.
-- **snare** — Filtered noise crack.
+- **kick** — A bridged-T network, shocked and left to ring. It pitches down as
+  it runs down, so how hard you hit it is how far it swoops.
+- **snare** — A noise transistor over two tuned networks at 185 and 330 Hz.
+  Snappy is the pot between them.
 - **hat** — The same noise, gated short and bright.
 - **clap** — Three noise bursts nine milliseconds apart, then the tail.
-- **tom** — A slower, higher kick — the fill voice.
+- **tom** — The same network as the kick, tuned higher and rung shorter — the
+  fill voice.
 - **bell** — Two detuned squares through a notch: the cowbell.
 
 ## Scripts
