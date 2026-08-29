@@ -31,19 +31,22 @@ export interface PadLearnState {
 // saying it is a drum, whatever else the device is doing.
 export const GM_CHANNEL = 9
 
-// The General MIDI percussion map, folded onto a kit that has six voices. The
-// whole 35…81 range is here rather than the eight notes a pad bank usually
-// sends, because a controller with a full drum layout — or a DAW's clip playing
-// out to us — sends the rest too, and a note that lands nowhere reads as a dead
-// pad. Everything with a stick in it goes to a tom, everything metallic and
-// short to the hat, and the wooden and pitched percussion to the bell.
+// The General MIDI percussion map, folded onto this kit's voices. The whole
+// 35…81 range is here rather than the eight notes a pad bank usually sends,
+// because a controller with a full drum layout — or a DAW's clip playing out to
+// us — sends the rest too, and a note that lands nowhere reads as a dead pad.
+// Everything with a stick in it goes to a tom, the shakers and the closed hats
+// to the hat, anything that rings on to the open hat or the cymbal, and the
+// wooden and pitched percussion to the bell.
 export const GM_PADS: Record<DrumVoiceKey, number[]> = {
   drumKick: [35, 36],
   drumSnare: [37, 38, 40],
   drumClap: [39],
-  drumHat: [42, 44, 46, 49, 51, 52, 54, 55, 57, 59, 69, 70, 73, 74],
+  drumHat: [42, 44, 69, 70, 73, 74],
   drumTom: [41, 43, 45, 47, 48, 50, 60, 61, 62, 63, 64, 65, 66, 78, 79],
-  drumBell: [53, 56, 58, 67, 68, 71, 72, 75, 76, 77, 80, 81],
+  drumBell: [56, 58, 67, 68, 71, 72, 75, 76, 77, 80, 81],
+  drumOpen: [46, 54],
+  drumCym: [49, 51, 52, 53, 55, 57, 59],
 }
 
 export const VOICE_KEYS: DrumVoiceKey[] = DRUM_VOICES.map(v => v.key)
@@ -124,7 +127,7 @@ export class PadKit {
   }
 
   /** Wait for a pad for one voice, keeping every other pad where it is. A sweep
-      is six gestures to fix one wrong pad; this is the one gesture. */
+      is a gesture per voice to fix one wrong pad; this is the one gesture. */
   arm(key: DrumVoiceKey | null) {
     this.stopLearn()
     this.armed.set(key)

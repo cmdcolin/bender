@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import type { Controls } from '../controls'
 import type { BuiltChain } from './build'
+import { ANY_CHOICE, STEP_CHOICE } from './trigbus'
 import {
   bin,
   lowEnergy,
@@ -56,7 +57,7 @@ test('the kit fires the keyboard, with the demo song stopped', () => {
 test('a hit off any voice fires it, a hit off the wrong one does not', () => {
   const onKick = bridge({ trigToKeys: 1 })
   const onSnare = bridge({ trigToKeys: 2 })
-  const onAny = bridge({ trigToKeys: 7 })
+  const onAny = bridge({ trigToKeys: ANY_CHOICE })
   expect(bin(onSnare, 220)).toBeLessThan(0.1 * bin(onKick, 220))
   expect(bin(onAny, 220)).toBeGreaterThan(0.5 * bin(onKick, 220))
 })
@@ -112,7 +113,7 @@ test('a key under the chip’s bottom note still fires the kit', () => {
 test('a key on the step plays whatever column the sequencer is on', () => {
   const key = (masks: Partial<Controls>) =>
     playKeys(
-      { chipLevel: 0, drumLevel: 1, trigToDrum: 8, ...masks },
+      { chipLevel: 0, drumLevel: 1, trigToDrum: STEP_CHOICE, ...masks },
       chip => chip.noteOn(0),
       0.3,
     )
@@ -130,7 +131,12 @@ test('both wires soldered leaves the two boxes playing each other', () => {
   // lap closes once a block rather than once a sample, which is what keeps it a
   // rattle instead of a blowup.
   const out = playKeys(
-    { chipLevel: 0.6, drumLevel: 0.9, trigToKeys: 7, trigToDrum: 7 },
+    {
+      chipLevel: 0.6,
+      drumLevel: 0.9,
+      trigToKeys: ANY_CHOICE,
+      trigToDrum: ANY_CHOICE,
+    },
     chip => chip.noteOn(0),
     1,
   )

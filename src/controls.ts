@@ -163,6 +163,9 @@ export const DEFAULT_CONTROLS = {
   drumRing: 0,
   drumPulse: 1.5,
   drumSnappy: 0.7,
+  drumMetal: 0.75,
+  drumCymTone: 0.5,
+  drumSpread: 0,
   drumBits: 7,
   drumLadder: 0,
   drumLadderTol: 0.15,
@@ -188,6 +191,8 @@ export const DEFAULT_CONTROLS = {
   drumClap: 0,
   drumTom: 0,
   drumBell: 0,
+  drumOpen: 0,
+  drumCym: 0,
   drumAccent: 0,
 
   // The other mask a voice: the steps that only sometimes close, at the odds
@@ -199,6 +204,8 @@ export const DEFAULT_CONTROLS = {
   drumClapMaybe: 0,
   drumTomMaybe: 0,
   drumBellMaybe: 0,
+  drumOpenMaybe: 0,
+  drumCymMaybe: 0,
 
   // How many of those steps each row plays before it comes round again. All
   // sixteen is the machine as it left the factory; anything else is polymeter —
@@ -209,6 +216,8 @@ export const DEFAULT_CONTROLS = {
   drumClapLen: 16,
   drumTomLen: 16,
   drumBellLen: 16,
+  drumOpenLen: 16,
+  drumCymLen: 16,
   drumAccentLen: 16,
 
   fmLevel: 0,

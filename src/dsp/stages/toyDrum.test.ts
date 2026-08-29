@@ -212,15 +212,19 @@ test('a bridged envelope still falls, so a borrowed hit is a hit and not a drone
   expect(onsets(out)).toHaveLength(3)
 })
 
+// Rotate passes the kick, the snare and the hat around between themselves and
+// leaves the rest of the board where it was. The whole-kit ring is every voice
+// there is, so an open hat — which the three-way one cannot see at all — comes
+// out of the cowbell, and 540 Hz is where the cowbell lives.
 test('the whole-kit ring reaches the voices the three-way one never did', () => {
-  // only kicks in the pattern, so anything the cowbell does came off the ring
   const look: Partial<Controls> = {
     chipLevel: 0,
     drumLevel: 0.9,
     drumBpm: 120,
-    drumKick: 0b1000_1000_1000_1000,
+    drumKick: 0,
     drumSnare: 0,
     drumHat: 0,
+    drumOpen: 0b1000_1000_1000_1000,
     drumCrossAmt: 1,
   }
   const threeWay = render({ ...look, drumCross: 4 }, 1)
@@ -413,8 +417,12 @@ test('a sagging rail spreads the clap\u2019s bursts', () => {
 // more. It is also what makes the hat a high-pass: what it subtracts is the
 // filtered version of the sample it is holding, and drawing its own sample left
 // it subtracting a number the snare had frozen there whenever it last rang.
+//
+// Metal all the way down, because the transistor is what this is about: the
+// hat's own pot decides how much of it the hat is drawing, and up the travel it
+// is drawing on the metal bank instead, which shares nothing with anything.
 test('a snare and a hat on the same step are one noise source, not two', () => {
-  const at: Partial<Controls> = { drumBpm: 60, drumLevel: 0.5 }
+  const at: Partial<Controls> = { drumBpm: 60, drumLevel: 0.5, drumMetal: 0 }
   const hat = soloVoice({ ...at, drumHat: stepMask(2) }, 1)
   const snare = soloVoice({ ...at, drumSnare: stepMask(2) }, 1)
   const both = soloVoice(

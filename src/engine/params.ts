@@ -158,6 +158,9 @@ export const PARAM_DEFS = [
   ['drumRing', 'slew'],
   ['drumPulse', 'slew'],
   ['drumSnappy', 'slew'],
+  ['drumMetal', 'slew'],
+  ['drumCymTone', 'slew'],
+  ['drumSpread', 'slew'],
   ['drumBits', 'step'],
   ['drumLadder', 'slew'],
   ['drumLadderTol', 'slew'],
@@ -181,6 +184,8 @@ export const PARAM_DEFS = [
   ['drumClap', 'step'],
   ['drumTom', 'step'],
   ['drumBell', 'step'],
+  ['drumOpen', 'step'],
+  ['drumCym', 'step'],
   ['drumAccent', 'step'],
 
   ['drumKickMaybe', 'step'],
@@ -189,6 +194,8 @@ export const PARAM_DEFS = [
   ['drumClapMaybe', 'step'],
   ['drumTomMaybe', 'step'],
   ['drumBellMaybe', 'step'],
+  ['drumOpenMaybe', 'step'],
+  ['drumCymMaybe', 'step'],
 
   ['drumKickLen', 'step'],
   ['drumSnareLen', 'step'],
@@ -196,6 +203,8 @@ export const PARAM_DEFS = [
   ['drumClapLen', 'step'],
   ['drumTomLen', 'step'],
   ['drumBellLen', 'step'],
+  ['drumOpenLen', 'step'],
+  ['drumCymLen', 'step'],
   ['drumAccentLen', 'step'],
 
   ['fmLevel', 'slew'],

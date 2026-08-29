@@ -1,6 +1,6 @@
 import type { ControlKey } from './controls'
 
-// The drum machine's vocabulary, in one place: what the six voices are, in the
+// The drum machine's vocabulary, in one place: what the voices are, in the
 // bit order of a step; the controls each row's pattern and length live in; and
 // the factory patterns. The panel draws its grid from this table, the trigger
 // patch and the cross-patch name their choices off it, and the DSP reads its
@@ -42,7 +42,7 @@ export const DRUM_VOICES = [
     maybe: 'drumHatMaybe',
     len: 'drumHatLen',
     label: 'hat',
-    help: 'The same noise, gated short and bright.',
+    help: 'The metal bank through a steep high-pass, gated short. Metal is the pot between the bank and the noise transistor.',
   },
   {
     key: 'drumClap',
@@ -63,7 +63,21 @@ export const DRUM_VOICES = [
     maybe: 'drumBellMaybe',
     len: 'drumBellLen',
     label: 'bell',
-    help: 'Two detuned squares through a notch: the cowbell.',
+    help: 'Two of the metal bank’s six oscillators through a notch: the cowbell.',
+  },
+  {
+    key: 'drumOpen',
+    maybe: 'drumOpenMaybe',
+    len: 'drumOpenLen',
+    label: 'open hat',
+    help: 'The same bank and the same filter as the hat, held open instead of gated. A hat step cuts it short — the two share one cap.',
+  },
+  {
+    key: 'drumCym',
+    maybe: 'drumCymMaybe',
+    len: 'drumCymLen',
+    label: 'cymbal',
+    help: 'All six oscillators through a wider band, and a tail nothing chokes. Cymbal tone is where the band sits.',
   },
 ] as const satisfies readonly {
   key: ControlKey

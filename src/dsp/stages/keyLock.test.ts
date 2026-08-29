@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import type { Controls } from '../../controls'
 import { SCALE_NAMES, snap } from '../../scale'
 import { renderBender } from '../testRender'
+import { ANY_CHOICE } from '../trigbus'
 import { ToyChip } from './toyChip'
 
 // The key line's matrix, from the audio thread's end. The keybeds are snapped
@@ -21,7 +22,7 @@ const PATCH: Partial<Controls> = {
   drumKick: 0b1010_1010_1010_1010,
   drumSnare: 0,
   drumHat: 0,
-  trigToKeys: 7,
+  trigToKeys: ANY_CHOICE,
   trigKeysNote: 2,
 }
 

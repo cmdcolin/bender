@@ -390,6 +390,15 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumAccentAmt',
   'drumAccentSag',
   'chipSync',
+  'drumOpen',
+  'drumCym',
+  'drumOpenMaybe',
+  'drumCymMaybe',
+  'drumOpenLen',
+  'drumCymLen',
+  'drumMetal',
+  'drumCymTone',
+  'drumSpread',
 ]
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))

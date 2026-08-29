@@ -12,6 +12,9 @@ export const voiceMask = (choice: number) =>
       ? (1 << N_DRUM_VOICES) - 1
       : 1 << (choice - 1)
 
+/** The choice past the last voice: any hit at all, which is the whole kit. */
+export const ANY_CHOICE = N_DRUM_VOICES + 1
+
 /** The choice past the voices and the whole kit: whatever the step names. */
 export const STEP_CHOICE = N_DRUM_VOICES + 2
 

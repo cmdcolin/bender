@@ -2,6 +2,7 @@ import { expect, test } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { renderDiagrams } from '../../scripts/chain-svg'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus'
 import {
   buildMap,
   drawMap,
@@ -356,7 +357,7 @@ const BOARDS: Record<string, Controls> = {
     bendSlot4: 0,
     bendSlot5: 0,
   },
-  bridged: { ...DEFAULT_CONTROLS, trigToKeys: 7, trigToDrum: 1 },
+  bridged: { ...DEFAULT_CONTROLS, trigToKeys: ANY_CHOICE, trigToDrum: 1 },
   wired: {
     ...DEFAULT_CONTROLS,
     tapeMix: 0.5,
@@ -372,7 +373,7 @@ const BOARDS: Record<string, Controls> = {
     fbAmt: 0.5,
     fbDest: 3,
     trigToKeys: 1,
-    trigToDrum: 8,
+    trigToDrum: STEP_CHOICE,
     mod0Src: 5,
     mod0Dest: 6,
     mod0Depth: 0.8,
@@ -461,7 +462,11 @@ test('a bridged trigger line draws between the two boxes', () => {
   expect(note.door).toBe('Trigger patch')
   expect(note.kind).toBe('chip')
 
-  const both = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1, trigToDrum: 8 })
+  const both = buildMap({
+    ...DEFAULT_CONTROLS,
+    trigToKeys: 1,
+    trigToDrum: STEP_CHOICE,
+  })
   const up = hop(both, 'Toy_drums', 'Toy_keyboard')!
   const down = hop(both, 'Toy_keyboard', 'Toy_drums')!
   expect(up.label?.text).toBe('kick trig')

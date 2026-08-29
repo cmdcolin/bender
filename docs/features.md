@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 229 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 232 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -153,10 +153,10 @@ counter goes on counting, the grid goes on chasing it, and the machine plays
 somebody else’s pattern.
 
 The pattern grid is a widget rather than a row of sliders, so the table below
-leaves it out: seven rows (the six voices and an accent), each carrying 16 steps
-and a length of its own, and a second 16-step mask on every voice for the steps
-that only sometimes fire. That is 20 more controls, and they ride in a link like
-the rest.
+leaves it out: nine rows (the eight voices and an accent), each carrying 16
+steps and a length of its own, and a second 16-step mask on every voice for the
+steps that only sometimes fire. That is 26 more controls, and they ride in a
+link like the rest.
 
 Named cuts, one press each under _knife on the bus_, where the panel keeps them
 too — the knife goes on and the rows under it say which controls that was:
@@ -176,7 +176,7 @@ too — the knife goes on and the rows under it say which controls that was:
   does not, and the pattern comes apart a step at a time
 
 <details>
-<summary>24 controls</summary>
+<summary>27 controls</summary>
 
 | control        | range                                                   | what it does                                                                                                          |
 | -------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -189,6 +189,9 @@ too — the knife goes on and the rows under it say which controls that was:
 | Ring           | off to full                                             | How much of each swing the transistor around the kick, tom and snare hands back                                       |
 | Trigger pulse  | 0.05 to 8 ms                                            | How long the one-shot holds the trigger line down                                                                     |
 | Snappy         | off to full                                             | What the snare is made of                                                                                             |
+| Metal          | off to full                                             | What the hat and the open hat are fed from                                                                            |
+| Cymbal tone    | off to full                                             | Where the bottom of the cymbal’s band sits                                                                            |
+| Bank spread    | off to full                                             | One resistor chain sets all six oscillators, and this leans on it                                                     |
 | Bit depth      | 2 to 16 bits                                            | Word length of the one cheap DAC the whole kit shares                                                                 |
 | Ladder         | off to full                                             | How much of that converter’s error you are hearing                                                                    |
 | Part grade     | 0 to 0.6                                                | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                         |
@@ -201,7 +204,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Cross bleed    | off to full                                             | How far each amplifier leans across                                                                                   |
 | Address line † | off, A0, A1, A2, A3                                     | Which of the four wires carrying a step number to the pattern memory the knife found                                  |
 | Address fault  | cut, to ground, to +V, bridged                          | The same four things a knife does to any trace, on the side that chooses the step                                     |
-| Data line †    | off, D0, D1, D2, D3, D4, D5                             | Which of the six wires carrying the word back the knife found — one wire a voice, in the order of the rows            |
+| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                     | Which of the wires carrying the word back the knife found — one wire a voice, in the order of the rows                |
 | Data fault     | cut, to ground, to +V, bridged                          | The same four, on the side carrying the word                                                                          |
 | Cut depth      | off to full                                             | How far through the trace the knife went — only the cut fault reads it                                                |
 
@@ -259,7 +262,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Brightness     | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
 | Feedback       | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
 | Note length    | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                           |
-| Struck by      | off, kick, snare, hat, clap, tom, bell, any hit                                                                                 | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
+| Struck by      | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                                               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
 | Toy gate       | soldered or cut                                                                                                                 | The jumper from the toy’s gate line onto this chip’s key input                                                       |
 | Effect †       | off, bird, surf, wind, siren, crickets                                                                                          | The effect ROM — a bird, surf, wind, a siren, crickets                                                               |
 | Mod ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | What the modulator runs at against the note, as a multiple of it                                                     |
@@ -323,17 +326,17 @@ while the head plays on.
 <details>
 <summary>9 controls</summary>
 
-| control    | range                                                     | what it does                                                                                            |
-| ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Level      | 0 to 2                                                    | Level of the dropped audio file, looping through the chain                                              |
-| Speed      | 4.000× reverse to 4.000× forward                          | Playback speed, with the stop in the middle of the travel and reverse below it                          |
-| Struck by  | off, kick, snare, hat, clap, tom, bell, any hit, key, mic | Which trigger line drops the needle back at the top of the file                                         |
-| Ending     | loop or one-shot                                          | What happens at the end of the file: round again, or stop there and wait to be struck                   |
-| Loop in    | 0.0% to 100.0%                                            | Where the loop starts, as a fraction of the reel                                                        |
-| Loop out   | 0.0% to 100.0%                                            | Where the loop ends                                                                                     |
-| Record     | off to full                                               | How much of the board’s own output the record head lays back down, on the spot the play head is reading |
-| Erase      | off to full                                               | How much of what is already on the tape the erase head takes off on the way past                        |
-| Blank tape | 0.25 to 20 s                                              | How long a reel to thread when you arm the record head with nothing loaded                              |
+| control    | range                                                                       | what it does                                                                                            |
+| ---------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Level      | 0 to 2                                                                      | Level of the dropped audio file, looping through the chain                                              |
+| Speed      | 4.000× reverse to 4.000× forward                                            | Playback speed, with the stop in the middle of the travel and reverse below it                          |
+| Struck by  | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key, mic | Which trigger line drops the needle back at the top of the file                                         |
+| Ending     | loop or one-shot                                                            | What happens at the end of the file: round again, or stop there and wait to be struck                   |
+| Loop in    | 0.0% to 100.0%                                                              | Where the loop starts, as a fraction of the reel                                                        |
+| Loop out   | 0.0% to 100.0%                                                              | Where the loop ends                                                                                     |
+| Record     | off to full                                                                 | How much of the board’s own output the record head lays back down, on the spot the play head is reading |
+| Erase      | off to full                                                                 | How much of what is already on the tape the erase head takes off on the way past                        |
+| Blank tape | 0.25 to 20 s                                                                | How long a reel to thread when you arm the record head with nothing loaded                              |
 
 </details>
 
@@ -633,11 +636,11 @@ can play the kit.
 <details>
 <summary>3 controls</summary>
 
-| control        | range                                                       | what it does                                                                                                |
-| -------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Kit fires keys | off, kick, snare, hat, clap, tom, bell, any hit             | Bridges one of the kit’s trigger lines onto the keyboard’s gate, so a drum hit strikes a note               |
-| and plays      | the note, the next step, any step, the chord                | What the hit strikes                                                                                        |
-| Keys fire kit  | off, kick, snare, hat, clap, tom, bell, whole kit, the step | The keyboard’s gate onto the kit’s trigger line: every note you strike hits the kit, pattern running or not |
+| control        | range                                                                         | what it does                                                                                                |
+| -------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Kit fires keys | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit             | Bridges one of the kit’s trigger lines onto the keyboard’s gate, so a drum hit strikes a note               |
+| and plays      | the note, the next step, any step, the chord                                  | What the hit strikes                                                                                        |
+| Keys fire kit  | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, whole kit, the step | The keyboard’s gate onto the kit’s trigger line: every note you strike hits the kit, pattern running or not |
 
 </details>
 
@@ -1057,11 +1060,17 @@ on it — a link never presses play, so it is loaded and waiting.
   it runs down, so how hard you hit it is how far it swoops.
 - **snare** — A noise transistor over two tuned networks at 185 and 330 Hz.
   Snappy is the pot between them.
-- **hat** — The same noise, gated short and bright.
+- **hat** — The metal bank through a steep high-pass, gated short. Metal is the
+  pot between the bank and the noise transistor.
 - **clap** — Three noise bursts nine milliseconds apart, then the tail.
 - **tom** — The same network as the kick, tuned higher and rung shorter — the
   fill voice.
-- **bell** — Two detuned squares through a notch: the cowbell.
+- **bell** — Two of the metal bank’s six oscillators through a notch: the
+  cowbell.
+- **open hat** — The same bank and the same filter as the hat, held open instead
+  of gated. A hat step cuts it short — the two share one cap.
+- **cymbal** — All six oscillators through a wider band, and a tail nothing
+  chokes. Cymbal tone is where the band sits.
 
 ## Scripts
 
