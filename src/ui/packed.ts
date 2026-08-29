@@ -28,6 +28,14 @@ import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune'
 // check against. There are three such things, and each is nailed down here:
 // the position of a control in the wire order, the zero the value is counted
 // from, and the step it is counted in. packed.test.ts holds all three.
+//
+// A fourth is not this file's to nail down, and is worth knowing about: a
+// control whose steps are a list of names moves an old link the day the list
+// grows anywhere but at its end. Soldering a voice onto the kit does exactly
+// that to the trigger patch, whose choices are the voices and then 'any hit' —
+// the open hat and the cymbal pushed 'any hit' down the list, so a link made
+// before them and set to it now names a voice. Nothing here can see that: the
+// number in the link is the number the control was on.
 
 // The wire order, and the reason this list is written out rather than taken
 // from CONTROL_KEYS: a packed link says "control 84", so the day someone tidies
