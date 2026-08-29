@@ -2,6 +2,7 @@ import type { Controls } from '../../controls'
 import { DRUM_ROMS } from '../../drums'
 import { DEST } from '../../dsp/modbus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
+import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
 
 export interface PresetDef {
   name: string
@@ -13,6 +14,9 @@ const romMasks = (name: string) => DRUM_ROMS.find(r => r.name === name)!.masks
 
 /** By name, so the catalog survives the ROM growing another script. */
 const effect = (name: string) => FM_EFFECT_NAMES.indexOf(name)
+
+/** And the same for the patches under the voice buttons. */
+const voice = (name: string) => FM_VOICE_NAMES.indexOf(name)
 
 export const PRESETS: PresetDef[] = [
   {
@@ -788,6 +792,33 @@ export const PRESETS: PresetDef[] = [
       mod0Src: 1,
       mod0Dest: DEST.echoMs,
       mod0Depth: 0.3,
+    },
+  },
+  {
+    name: 'two hands',
+    blurb: 'Gate jumper cut — the toy on one keybed, the FM chip on the other',
+    patch: {
+      chipLevel: 0.75,
+      fmLevel: 0.7,
+      fmKeyGate: 1,
+      fmVoice: voice('bass'),
+      fmBright: 0.45,
+      fmModDecay: 8,
+      revDecayS: 2,
+      revMix: 0.2,
+    },
+  },
+  {
+    name: 'doubled',
+    blurb: 'The gate jumper left on: one key, a square and an FM string on it',
+    patch: {
+      chipLevel: 0.6,
+      fmLevel: 0.6,
+      fmVoice: voice('strings'),
+      fmBright: 0.6,
+      fmLength: 1.2,
+      revDecayS: 3,
+      revMix: 0.3,
     },
   },
 ]

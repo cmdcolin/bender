@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 217 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 52 presets, 14 stage settings and 20 named cuts — and everything
+18 ROM tunes, 54 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 52 presets, and dice on every heading as
+- **Boards, rather than settings.** 54 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -922,7 +922,7 @@ became:
 
 ### Presets
 
-52 boards worth keeping. Every name is a link that opens the app with that board
+54 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -1031,6 +1031,10 @@ on it — a link never presses play, so it is loaded and waiting.
   — A blank reel, a short loop walking over what the toy put on it — press play
 - [**seasick**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,echoMs:300,echoFb:0.55,echoLevel:0.6,modLfoHz:0.35,mod0Src:1,mod0Dest:21,mod0Depth:0.3)
   — A wire off the bay onto the pedal’s time — the repeats never settle
+- [**two hands**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,fmLevel:0.7,fmVoice:5,fmBright:0.45,fmModDecay:8,fmKeyGate:1,revMix:0.2)
+  — Gate jumper cut — the toy on one keybed, the FM chip on the other
+- [**doubled**](https://cmdcolin.github.io/bender/#set=fmLevel:0.6,fmVoice:6,fmBright:0.6,fmLength:1.2,revDecayS:3,revMix:0.3)
+  — The gate jumper left on: one key, a square and an FM string on it
 
 ### Kit voices
 
