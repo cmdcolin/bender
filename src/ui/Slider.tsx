@@ -5,7 +5,7 @@ import { useControlValue, useStoreValue } from './ControlsContext'
 import type { SliderDef } from './controls'
 import { snapToStep } from './controls'
 import { midi } from './midi'
-import { formatValue, fromPos, toPos } from './slider-scale'
+import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
 import styles from './Slider.module.css'
 import { Tip } from './Tip'
 
@@ -152,6 +152,17 @@ export function ControlSlider({
   // or on it. Everything the row draws about direction comes off this.
   const way = split ? Math.sign(value - split.at) : 0
 
+  // The reading in a box cut to the widest thing this control can print, so a
+  // value that grows a character mid-drag does not shove the track it came from.
+  const reading = (
+    <span
+      className={styles.value}
+      style={{ '--chars': readoutChars(def) } as CSSProperties}
+    >
+      {formatValue(def, value)}
+    </span>
+  )
+
   const track = (
     <input
       className={split ? styles.splitTrack : styles.track}
@@ -266,13 +277,13 @@ export function ControlSlider({
                 aria-label={`reset ${label} to ${formatValue(def, stock)}`}
                 onClick={() => write(def.key, stock)}
               >
-                {formatValue(def, value)}
+                {reading}
                 <span className={styles.mark}>↺</span>
               </button>
             </Tip>
           ) : (
             <>
-              {formatValue(def, value)}
+              {reading}
               <span className={styles.markIdle}>↺</span>
             </>
           )}

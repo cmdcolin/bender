@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { ALL_SLIDERS, snapToStep, type SliderDef } from './controls'
-import { formatValue, fromPos, toPos } from './slider-scale'
+import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
 
 // The maths under every knob: where a value sits on a thousand-position track,
 // what comes back when you drop the thumb there, and what the row prints.
@@ -119,4 +119,21 @@ test('a choice reads as its own name', () => {
   })
   expect(formatValue(d, 1)).toBe('to ground')
   expect(formatValue(d, 9)).toBe('9')
+})
+
+// The readout reserves its box up front, from a coarse walk of the travel. A
+// reading that overran it would push the track sideways mid-drag, which is the
+// one thing the box is there to stop — so walk the travel far finer than the
+// box was cut from and check nothing sticks out.
+test('the reserved readout fits every reading a control can print', () => {
+  const over: string[] = []
+  for (const d of ALL_SLIDERS) {
+    if (d.choices) continue
+    const box = readoutChars(d)
+    for (let i = 0; i <= 1000; i++) {
+      const reading = formatValue(d, snapToStep(d, fromPos(d, i / 1000)))
+      if (reading.length > box) over.push(`${d.key}: ${reading}`)
+    }
+  }
+  expect([...new Set(over)]).toEqual([])
 })

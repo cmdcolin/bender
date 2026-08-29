@@ -39,6 +39,17 @@
   white-space: nowrap;
 }
 
+/* The number itself, in a box wide enough for the widest reading this control
+   has — so a value that gains a character as it moves, or trades "frozen" for
+   "2.40× reverse", doesn't push the track it is attached to out from under the
+   hand dragging it. */
+.value {
+  display: inline-block;
+  min-width: calc(var(--chars) * 1ch);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 /* The reading is the way back: once a control is off stock, the number itself
    is the press that puts it there, and it wears a ↺ to say so. The mark keeps
    its box at stock too — a slot that appeared on the first move would shove the

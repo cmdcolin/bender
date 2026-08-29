@@ -74,3 +74,23 @@ export function formatValue(def: SliderDef, value: number): string {
         : value.toFixed(def.step < 0.01 ? 3 : 2)
   return def.unit ? `${text} ${def.unit}` : text
 }
+
+// The reading grows and shrinks with what it says — the sampler's speed is
+// "frozen" in the middle and "2.40× reverse" a nudge off it — and a box cut to
+// the current one drags the track sideways under the hand that is moving it. So
+// the box is cut to the widest thing the control can ever print, which means
+// walking its travel once and keeping the answer.
+const READOUT_STOPS = 101
+const readoutWidths = new Map<SliderDef, number>()
+
+export function readoutChars(def: SliderDef): number {
+  const kept = readoutWidths.get(def)
+  if (kept !== undefined) return kept
+  let chars = 0
+  for (let i = 0; i < READOUT_STOPS; i++) {
+    const at = fromPos(def, i / (READOUT_STOPS - 1))
+    chars = Math.max(chars, formatValue(def, at).length)
+  }
+  readoutWidths.set(def, chars)
+  return chars
+}
