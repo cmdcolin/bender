@@ -87,6 +87,53 @@ const CROSS_WIRING: readonly number[][] = [
   [SNARE, HAT, CLAP, TOM, BELL, OHAT, CYM, KICK],
 ]
 
+// There is one choke resistor on the board and it is across the hats' shared
+// cap, which is what a hi-hat pedal is: a closed step does not silence a
+// ringing open hat, it drains what is left of it through that resistor. Solder
+// the wire somewhere else and any voice can do it to any other.
+//
+// One entry a voice: whose trigger line drains it, or nothing. The hats are
+// wired that way in the metal rather than on the panel, so they are in every
+// row of this table — a pedal is not a patch.
+const chokeWiring = (...pairs: readonly (readonly [number, number])[]) => {
+  const from = new Int8Array(N_VOICES).fill(-1)
+  for (const [cut, by] of pairs) from[cut] = by
+  // Last, so no row of the table can solder over the pedal.
+  from[OHAT] = HAT
+  return from
+}
+
+/** What the panel calls each place the choke wire can go. The order is the
+    order of the table below it. */
+export const CHOKE_NAMES = [
+  'off',
+  'hat cuts cymbal',
+  'kick cuts tom',
+  'snare cuts clap',
+  'each cuts the next',
+  'kick cuts the kit',
+]
+
+const CHOKE_WIRING: readonly Int8Array[] = [
+  chokeWiring(),
+  chokeWiring([CYM, HAT]),
+  chokeWiring([TOM, KICK]),
+  chokeWiring([CLAP, SNARE]),
+  // Each voice across the next one's cap, all the way round.
+  chokeWiring(
+    ...Array.from(
+      { length: N_VOICES },
+      (_, v) => [v, (v + 1) % N_VOICES] as const,
+    ),
+  ),
+  // Everything across the kick's trigger, which is a gate on the whole kit.
+  chokeWiring(
+    ...Array.from({ length: N_VOICES }, (_, v) => [v, KICK] as const).filter(
+      ([v]) => v !== KICK,
+    ),
+  ),
+]
+
 // The bridged-T networks, and which trigger line shocks each one. Three voices
 // have them: the kick and the tom are one tank apiece, and the snare is the two
 // the 808 puts under its noise — 185 and 330 Hz, close enough to beat.
@@ -143,6 +190,12 @@ const RING_LATCH = 0.9
 // How long the accent cap takes to come back after a step has drawn on it,
 // counted off the kit's own oscillator like everything else here.
 const ACCENT_RECHARGE = 0.25
+
+// What the choke resistor is worth, in the same count of the kit's own
+// oscillator every envelope here is measured in. It is the closed hat's own
+// rate, because on this board it is the closed hat's own resistor: the pedal
+// came first and the patch is a wire onto the part that was already there.
+const CHOKE_COUNT = 60
 
 // What one voice takes off the accent cap with the sag knob all the way up, as
 // a fraction of the charge on it. Six voices on one step empty it — the board
@@ -248,10 +301,12 @@ export class ToyDrum implements Stage {
   // How many voices the chip had to service on the pass before this one. Read a
   // sample late, because it is: the chip counts the work as it does it.
   private live = 1
-  // Whether the open hat is running down through the closed hat's resistor.
-  // The two share one cap — that is what a hi-hat pedal is — so a closed step
-  // does not silence an open one, it drains what is left of it in a hurry.
-  private ohatChoked = false
+  // Which voices are running down through the choke resistor rather than their
+  // own, and which trigger line puts them there. A choked voice is not a
+  // silenced one: what is left of it drains in a hurry, which is the difference
+  // between a pedal and a mute.
+  private chokedBits = 0
+  private chokeFrom = CHOKE_WIRING[0]!
   private clickHi = new OnePoleLP()
   private clickLo = new OnePoleLP()
   private clapFast = 0
@@ -430,10 +485,12 @@ export class ToyDrum implements Stage {
         this.gain[v] = gain
         this.env[v] = 1
       }
-      // Which resistor the hats' shared cap drains through. A closed step
-      // clamps whatever the open one had left; an open step lets it run.
-      if (v === HAT) this.ohatChoked = true
-      else if (v === OHAT) this.ohatChoked = false
+      // A voice that has just been struck is not being drained, whatever was
+      // across it a moment ago; and its own trigger line drains whatever the
+      // choke wire is soldered to.
+      this.chokedBits &= ~(1 << v)
+      for (let w = 0; w < N_VOICES; w++)
+        if (this.chokeFrom[w] === v) this.chokedBits |= 1 << w
       // Same charge whatever the one-shot's width: the pulse is where it goes,
       // not how much of it there is.
       this.pulse[v] = gain * (1 - this.pulseFall)
@@ -517,6 +574,8 @@ export class ToyDrum implements Stage {
     this.dataLine = Math.round(p[IDX.drumDataLine]!) - 1
     this.dataFault = Math.round(p[IDX.drumDataFault]!)
     this.busCut = p[IDX.drumBusCut]!
+    this.chokeFrom =
+      CHOKE_WIRING[Math.round(p[IDX.drumChoke]!)] ?? CHOKE_WIRING[0]!
     // How long the chip spends on one voice, counted off its own oscillator
     // like every other duration on this board: a sagging rail slows the pass
     // as well as the tempo, so a flat kit is a coarse kit.
@@ -557,12 +616,14 @@ export class ToyDrum implements Stage {
     const falls = this.falls
     falls[KICK] = Math.exp(9 * perSample)
     falls[SNARE] = Math.exp(22 * perSample)
-    falls[HAT] = Math.exp(60 * perSample)
+    falls[HAT] = Math.exp(CHOKE_COUNT * perSample)
     falls[CLAP] = Math.exp(13 * perSample)
     falls[TOM] = Math.exp(11 * perSample)
     falls[BELL] = Math.exp(16 * perSample)
     falls[OHAT] = Math.exp(8 * perSample)
     falls[CYM] = Math.exp(4 * perSample)
+
+    const chokeFall = Math.exp(CHOKE_COUNT * perSample)
 
     const clickHiCoef = lpCoef(CLICK_HI, this.sr)
     const clickLoCoef = lpCoef(CLICK_LO, this.sr)
@@ -799,8 +860,8 @@ export class ToyDrum implements Stage {
           env[v]! *=
             v === CLAP && this.clapsLeft > 0
               ? clapBurstFall
-              : v === OHAT && this.ohatChoked
-                ? falls[HAT]!
+              : this.chokedBits & (1 << v)
+                ? chokeFall
                 : falls[v]!
           // A voice built on a network has no envelope to run down, so what the
           // panel lights, what the trigger floor measures and what a bridged
@@ -894,7 +955,7 @@ export class ToyDrum implements Stage {
     this.cymCrash.reset()
     this.cymSplash.reset()
     this.cymLp.reset()
-    this.ohatChoked = false
+    this.chokedBits = 0
     this.muxHeld = 0
     this.muxLeft = 0
     this.live = 1

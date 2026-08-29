@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 233 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 234 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -176,38 +176,39 @@ too — the knife goes on and the rows under it say which controls that was:
   does not, and the pattern comes apart a step at a time
 
 <details>
-<summary>28 controls</summary>
+<summary>29 controls</summary>
 
-| control        | range                                                   | what it does                                                                                                          |
-| -------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Level          | off to full                                             | How loud the toy drum machine is in the source mix                                                                    |
-| Tempo          | 10 to 3000 bpm                                          | Sequencer clock                                                                                                       |
-| Swing          | 0 to 0.9                                                | Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving |
-| Chance         | off to full                                             | How often a maybe step closes                                                                                         |
-| Tune           | 0.125× to 8×                                            | The pitch trimmer inside the kit: every struck voice moves together                                                   |
-| Decay          | 0.25× to 16×                                            | Stretches or chokes every envelope at once                                                                            |
-| Ring           | off to full                                             | How much of each swing the transistor around the kick, tom and snare hands back                                       |
-| Trigger pulse  | 0.05 to 8 ms                                            | How long the one-shot holds the trigger line down                                                                     |
-| Snappy         | off to full                                             | What the snare is made of                                                                                             |
-| Metal          | off to full                                             | What the hat and the open hat are fed from                                                                            |
-| Cymbal tone    | off to full                                             | Where the bottom of the cymbal’s band sits                                                                            |
-| Bank spread    | off to full                                             | One resistor chain sets all six oscillators, and this leans on it                                                     |
-| Bit depth      | 2 to 16 bits                                            | Word length of the one cheap DAC the whole kit shares                                                                 |
-| Voice slot     | 0 to 60 µs                                              | How long the chip spends on one voice before it moves to the next                                                     |
-| Ladder         | off to full                                             | How much of that converter’s error you are hearing                                                                    |
-| Part grade     | 0 to 0.6                                                | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                         |
-| Overflow       | off or wrap                                             | What the converter does with a sum too wide for its word                                                              |
-| Retrigger      | 0 Hz to 4 kHz                                           | Retriggers the current step at this rate                                                                              |
-| Trigger floor  | off to full                                             | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                  |
-| Accent         | 1× to 4×                                                | How far the accent bus swings when it is rested                                                                       |
-| Accent sag     | off to full                                             | The accent is one cap feeding every voice, and this is how much each accented step takes off it                       |
-| Cross-patch    | off, kick/snare, snare/hat, kick/hat, rotate, whole kit | Bridges two voices’ envelope pins so each amplifier hears the wrong envelope                                          |
-| Cross bleed    | off to full                                             | How far each amplifier leans across                                                                                   |
-| Address line † | off, A0, A1, A2, A3                                     | Which of the four wires carrying a step number to the pattern memory the knife found                                  |
-| Address fault  | cut, to ground, to +V, bridged                          | The same four things a knife does to any trace, on the side that chooses the step                                     |
-| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                     | Which of the wires carrying the word back the knife found — one wire a voice, in the order of the rows                |
-| Data fault     | cut, to ground, to +V, bridged                          | The same four, on the side carrying the word                                                                          |
-| Cut depth      | off to full                                             | How far through the trace the knife went — only the cut fault reads it                                                |
+| control        | range                                                                                       | what it does                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Level          | off to full                                                                                 | How loud the toy drum machine is in the source mix                                                                    |
+| Tempo          | 10 to 3000 bpm                                                                              | Sequencer clock                                                                                                       |
+| Swing          | 0 to 0.9                                                                                    | Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving |
+| Chance         | off to full                                                                                 | How often a maybe step closes                                                                                         |
+| Tune           | 0.125× to 8×                                                                                | The pitch trimmer inside the kit: every struck voice moves together                                                   |
+| Decay          | 0.25× to 16×                                                                                | Stretches or chokes every envelope at once                                                                            |
+| Ring           | off to full                                                                                 | How much of each swing the transistor around the kick, tom and snare hands back                                       |
+| Trigger pulse  | 0.05 to 8 ms                                                                                | How long the one-shot holds the trigger line down                                                                     |
+| Snappy         | off to full                                                                                 | What the snare is made of                                                                                             |
+| Metal          | off to full                                                                                 | What the hat and the open hat are fed from                                                                            |
+| Cymbal tone    | off to full                                                                                 | Where the bottom of the cymbal’s band sits                                                                            |
+| Bank spread    | off to full                                                                                 | One resistor chain sets all six oscillators, and this leans on it                                                     |
+| Bit depth      | 2 to 16 bits                                                                                | Word length of the one cheap DAC the whole kit shares                                                                 |
+| Voice slot     | 0 to 60 µs                                                                                  | How long the chip spends on one voice before it moves to the next                                                     |
+| Ladder         | off to full                                                                                 | How much of that converter’s error you are hearing                                                                    |
+| Part grade     | 0 to 0.6                                                                                    | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                         |
+| Overflow       | off or wrap                                                                                 | What the converter does with a sum too wide for its word                                                              |
+| Retrigger      | 0 Hz to 4 kHz                                                                               | Retriggers the current step at this rate                                                                              |
+| Trigger floor  | off to full                                                                                 | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                  |
+| Accent         | 1× to 4×                                                                                    | How far the accent bus swings when it is rested                                                                       |
+| Accent sag     | off to full                                                                                 | The accent is one cap feeding every voice, and this is how much each accented step takes off it                       |
+| Choke          | off, hat cuts cymbal, kick cuts tom, snare cuts clap, each cuts the next, kick cuts the kit | Where the board’s one choke resistor is soldered                                                                      |
+| Cross-patch    | off, kick/snare, snare/hat, kick/hat, rotate, whole kit                                     | Bridges two voices’ envelope pins so each amplifier hears the wrong envelope                                          |
+| Cross bleed    | off to full                                                                                 | How far each amplifier leans across                                                                                   |
+| Address line † | off, A0, A1, A2, A3                                                                         | Which of the four wires carrying a step number to the pattern memory the knife found                                  |
+| Address fault  | cut, to ground, to +V, bridged                                                              | The same four things a knife does to any trace, on the side that chooses the step                                     |
+| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                         | Which of the wires carrying the word back the knife found — one wire a voice, in the order of the rows                |
+| Data fault     | cut, to ground, to +V, bridged                                                              | The same four, on the side carrying the word                                                                          |
+| Cut depth      | off to full                                                                                 | How far through the trace the knife went — only the cut fault reads it                                                |
 
 </details>
 

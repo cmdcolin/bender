@@ -926,3 +926,32 @@ test('a flat kit is a coarse kit', () => {
     highEnergy(soloVoice({ ...STACKED, ...o }, 1))
   expect(lid({ chipBattery: 0.75 })).toBeLessThan(lid({}) * 0.95)
 })
+
+// The pedal is a resistor across a cap, and a resistor across a cap is a wire
+// you can move. What it does anywhere else is what it does across the hats.
+test('the choke wire moves, and the hats keep their pedal wherever it goes', () => {
+  const at: Partial<Controls> = {
+    drumBpm: 240,
+    drumCym: stepMask(2),
+    drumKick: stepMask(4),
+  }
+  // Two steps after the kick, in the band the cymbal has to itself: the kick
+  // rings on down there for most of a second and none of it is up here.
+  const tail = (x: Float32Array) =>
+    highEnergy(x.subarray(Math.round(0.4 * SR), Math.round(0.9 * SR)), 2000)
+  const free = tail(soloVoice(at, 1))
+  const cut = tail(soloVoice({ ...at, drumChoke: 5 }, 1))
+  expect(cut).toBeLessThan(free * 0.5)
+
+  // And with the wire soldered somewhere else entirely, a hat step still cuts a
+  // ringing open hat: that pair is wired in the metal, not on the panel.
+  const hats: Partial<Controls> = {
+    drumBpm: 240,
+    drumOpen: stepMask(2),
+    drumDecay: 3,
+    drumChoke: 2,
+  }
+  const open = tail(soloVoice(hats, 1))
+  const pedal = tail(soloVoice({ ...hats, drumHat: stepMask(4) }, 1))
+  expect(pedal).toBeLessThan(open * 0.3)
+})

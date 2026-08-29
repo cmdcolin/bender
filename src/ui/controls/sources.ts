@@ -13,6 +13,7 @@ import { ARP_MODES, SYNC_MODES } from '../../dsp/stages/toyChip'
 import { NOTE_NAMES } from '../../notes'
 import { SCALE_NAMES } from '../../scale'
 import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
+import { CHOKE_NAMES } from '../../dsp/stages/toyDrum'
 import { TUNE_ALL_STEP_KEYS } from '../../tune'
 
 /** True while the chip is playing the memory rather than one of its own songs. */
@@ -641,6 +642,17 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'The accent is one cap feeding every voice, and this is how much each accented step takes off it. At nothing the bus is stiff and every accent is the full one. Wound up, a step stacking four voices hands each of them less than a step stacking one, and a second accent before the cap has caught up lands softer than the first — so a roll comes out shaped without a knob moving.',
+      },
+      {
+        key: 'drumChoke',
+        part: 'triggers and cross-patch',
+        label: 'Choke',
+        min: 0,
+        max: CHOKE_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: CHOKE_NAMES,
+        help: 'Where the board’s one choke resistor is soldered. It sits across the hats’ shared cap to begin with, which is what a hi-hat pedal is: a closed step does not silence a ringing open hat, it drains what is left of it in a hurry. Move the wire and any voice can do that to any other — the hats keep their pedal either way, because that pair is wired in the metal rather than on the panel. It is the trigger line it listens to, so a pad, the mic and a bridged wire all choke as well as the sequencer does.',
       },
       {
         key: 'drumCross',

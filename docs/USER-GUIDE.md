@@ -175,7 +175,8 @@ cowbell and roughens the hats in one gesture; **Metal** is the pot between that
 bank and the noise transistor the hat used to be made of, and **Cymbal tone**
 slides the cymbal between a crash and a splash. The two hats share a cap, which
 is what a hi-hat pedal is: writing a hat step under a ringing open hat cuts it
-short, so the pair play against each other the way a foot does.
+short, so the pair play against each other the way a foot does — and **Choke**
+moves the resistor that does it, so any voice can cut any other.
 
 Drawing a run of steps is a drag rather than sixteen separate clicks: press a
 step and drag across the grid, and every cell the pointer crosses goes the way

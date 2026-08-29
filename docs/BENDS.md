@@ -232,7 +232,13 @@ being a hat.
 
 The two hats share one cap, which is what a hi-hat pedal is. A closed step
 doesn't silence a ringing open hat — it drains what's left of it in a hurry, so
-writing hats under an open one is a foot on the pedal rather than a mute.
+writing hats under an open one is a foot on the pedal rather than a mute. What
+does the draining is one resistor across that cap, and **Choke** is where it's
+soldered: move the wire and any voice does that to any other. _Kick cuts the
+kit_ is a gate on everything; _each cuts the next_ passes it round the ring. The
+hats keep their pedal wherever the wire goes, because that pair is wired in the
+metal rather than on the panel. It listens to the trigger line, so a pad, the
+mic and a bridged wire choke exactly as well as the sequencer does.
 
 **Accent** and **Accent sag** make the accent row a circuit rather than a flag.
 The accent is one cap feeding every voice on the board, and sag is how much each
