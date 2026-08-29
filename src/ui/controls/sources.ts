@@ -561,6 +561,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Word length of the one cheap DAC the whole kit shares. Stock is 7 — wind it down and the tails turn to gravel before the hits do.',
       },
       {
+        key: 'drumSlot',
+        part: 'the converter',
+        label: 'Voice slot',
+        min: 0,
+        max: 60,
+        step: 0.5,
+        unit: 'µs',
+        help: 'How long the chip spends on one voice before it moves to the next. There is one converter for the whole kit, so it writes the ladder once it has been round everything that is sounding — which makes the kit’s sample rate the slot times the number of voices up, rather than a constant. A step that stacks the kit comes out coarser than the same voice on its own, and it goes coarser again as the batteries flatten, because a slot is counted off the same oscillator as the tempo. At nothing the chip keeps up and the kit is the kit it shipped as.',
+      },
+      {
         key: 'drumLadder',
         part: 'the converter',
         label: 'Ladder',

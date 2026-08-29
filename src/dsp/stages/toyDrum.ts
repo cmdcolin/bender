@@ -239,6 +239,15 @@ export class ToyDrum implements Stage {
   private cymCrash = new Highpass(CYM_POLES)
   private cymSplash = new Highpass(CYM_POLES)
   private cymLp = new Lowpass(CYM_LP_POLES)
+  // The one converter, and what it is holding between conversions. The chip
+  // computes a voice, moves on to the next, and writes the ladder once it has
+  // been round them all — so what reaches the output is a staircase whose step
+  // is as wide as one pass, and a pass is as wide as the kit is busy.
+  private muxHeld = 0
+  private muxLeft = 0
+  // How many voices the chip had to service on the pass before this one. Read a
+  // sample late, because it is: the chip counts the work as it does it.
+  private live = 1
   // Whether the open hat is running down through the closed hat's resistor.
   // The two share one cap — that is what a hi-hat pedal is — so a closed step
   // does not silence an open one, it drains what is left of it in a hurry.
@@ -508,6 +517,10 @@ export class ToyDrum implements Stage {
     this.dataLine = Math.round(p[IDX.drumDataLine]!) - 1
     this.dataFault = Math.round(p[IDX.drumDataFault]!)
     this.busCut = p[IDX.drumBusCut]!
+    // How long the chip spends on one voice, counted off its own oscillator
+    // like every other duration on this board: a sagging rail slows the pass
+    // as well as the tempo, so a flat kit is a coarse kit.
+    const slotS = Math.max(p[IDX.drumSlot]!, 0) / 1e6 / clock
     this.chance = Math.min(Math.max(p[IDX.drumChance]!, 0), 1)
     // All the way up is a voice that will not answer again until it has stopped
     // sounding; at nothing the floor sits above where an envelope starts, so
@@ -781,6 +794,7 @@ export class ToyDrum implements Stage {
         // snare that never fires has nothing to open its own amplifier with, so
         // nothing was left to run its envelope down, and unpatching the bridge
         // dropped a hit that had been waiting there for minutes.
+        let live = 0
         for (let v = 0; v < N_VOICES; v++) {
           env[v]! *=
             v === CLAP && this.clapsLeft > 0
@@ -803,7 +817,21 @@ export class ToyDrum implements Stage {
             this.pulseOut[v]! +
             this.pulseRise * (this.pulse[v]! - this.pulseOut[v]!)
           this.pulseOut[v] = lp > 1e-7 ? lp : 0
+          if (env[v]! > AUDIBLE) live++
         }
+        // What the next pass has to get through. One, at the least: a chip with
+        // nothing to do still goes round.
+        this.live = live > 0 ? live : 1
+        // There is one converter and there are eight voices, and the chip in
+        // front of it is not fast enough to pretend otherwise. It works through
+        // whatever is sounding a voice at a time and writes the ladder when it
+        // has been round them all, so the kit's own sample rate is not a
+        // constant: it is the slot divided into a pass, and a pass is as long
+        // as the step is busy. Stack the kit on one step and the kick coming
+        // out of it is coarser than the same kick on its own — which is the
+        // second thing on this board that a crowded step does to a voice, and
+        // it comes off the same fact as the first.
+        //
         // The accumulator behind the ladder is as wide as the word and no
         // wider. A cheap one rolls over rather than stopping at the top, so a
         // step stacking four voices under an accent comes out inside-out while
@@ -811,10 +839,20 @@ export class ToyDrum implements Stage {
         // pattern's own dynamics rather than a setting. Left alone, the sum
         // leaves the kit past full scale and the limiter at the end of the
         // chain is what deals with it.
-        let code = Math.round(out * q)
-        if (wrap) code = ((((code + q) % (2 * q)) + 2 * q) % (2 * q)) - q
-        out = (code + this.ladderErr(code, bits, ladder, ladderTol)) / q
-        out *= rail.ampFactor
+        if (this.muxLeft > 0) this.muxLeft--
+        else {
+          // Nought is a chip that keeps up, which is the kit as it shipped:
+          // every sample is its own conversion and nothing is ever held.
+          this.muxLeft =
+            slotS > 0
+              ? Math.max(Math.round(slotS * this.live * this.sr), 1) - 1
+              : 0
+          let code = Math.round(out * q)
+          if (wrap) code = ((((code + q) % (2 * q)) + 2 * q) % (2 * q)) - q
+          this.muxHeld =
+            (code + this.ladderErr(code, bits, ladder, ladderTol)) / q
+        }
+        out = this.muxHeld * rail.ampFactor
       }
 
       out *= level * 0.6
@@ -857,6 +895,9 @@ export class ToyDrum implements Stage {
     this.cymSplash.reset()
     this.cymLp.reset()
     this.ohatChoked = false
+    this.muxHeld = 0
+    this.muxLeft = 0
+    this.live = 1
     this.clickHi.reset()
     this.clickLo.reset()
     this.clapFast = 0

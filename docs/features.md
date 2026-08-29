@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 232 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 233 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -176,7 +176,7 @@ too — the knife goes on and the rows under it say which controls that was:
   does not, and the pattern comes apart a step at a time
 
 <details>
-<summary>27 controls</summary>
+<summary>28 controls</summary>
 
 | control        | range                                                   | what it does                                                                                                          |
 | -------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -193,6 +193,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Cymbal tone    | off to full                                             | Where the bottom of the cymbal’s band sits                                                                            |
 | Bank spread    | off to full                                             | One resistor chain sets all six oscillators, and this leans on it                                                     |
 | Bit depth      | 2 to 16 bits                                            | Word length of the one cheap DAC the whole kit shares                                                                 |
+| Voice slot     | 0 to 60 µs                                              | How long the chip spends on one voice before it moves to the next                                                     |
 | Ladder         | off to full                                             | How much of that converter’s error you are hearing                                                                    |
 | Part grade     | 0 to 0.6                                                | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                         |
 | Overflow       | off or wrap                                             | What the converter does with a sum too wide for its word                                                              |

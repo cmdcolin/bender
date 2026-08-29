@@ -6,6 +6,7 @@ import { buildBender } from '../build'
 import {
   bin,
   deviation,
+  highEnergy,
   lowEnergy,
   makeIo,
   pitchHz,
@@ -882,4 +883,46 @@ test('a hat step is a foot on the pedal rather than a mute', () => {
   // And what is left down there is the closed hat's own tail, not the open
   // hat's: the pedal came down, it did not open again.
   expect(choked).toBeLessThan(closedOnly * 3)
+})
+
+// One converter, eight voices, and a chip in front of it that is not fast
+// enough to pretend otherwise. It works through whatever is sounding a voice at
+// a time and writes the ladder once it has been round them all, so the kit's
+// own sample rate is the slot divided into a pass — and a pass is as long as
+// the step is busy.
+const STACKED: Partial<Controls> = {
+  drumKick: stepMask(2),
+  drumSnare: stepMask(2),
+  drumHat: stepMask(2),
+  drumClap: stepMask(2),
+  drumTom: stepMask(2),
+  drumBell: stepMask(2),
+}
+
+test('the converter’s rate is the kit’s business rather than a voice’s', () => {
+  const kick: Partial<Controls> = { drumKick: stepMask(2) }
+  // Twelve microseconds is well under a sample on its own and three samples
+  // with the kit stacked on the step, so the same slot is nothing to one voice
+  // and a staircase to six of them.
+  expect(soloVoice({ ...kick, drumSlot: 12 }, 1)).toEqual(soloVoice(kick, 1))
+  expect(soloVoice({ ...STACKED, drumSlot: 12 }, 1)).not.toEqual(
+    soloVoice(STACKED, 1),
+  )
+})
+
+test('a wide slot is a lid on the kit, not a filter on a voice', () => {
+  const stock = highEnergy(soloVoice(STACKED, 1))
+  const held = highEnergy(soloVoice({ ...STACKED, drumSlot: 60 }, 1))
+  expect(held).toBeLessThan(stock * 0.5)
+})
+
+// A slot is a count off the chip's own oscillator, like the tempo and the
+// envelopes, so it stretches as the cells go down. Measured against what the
+// same board does with the chip keeping up, because flat batteries take the top
+// off the kit by themselves and that is not what is being asked about here.
+test('a flat kit is a coarse kit', () => {
+  const lid = (o: Partial<Controls>) =>
+    highEnergy(soloVoice({ ...STACKED, ...o, drumSlot: 25 }, 1)) /
+    highEnergy(soloVoice({ ...STACKED, ...o }, 1))
+  expect(lid({ chipBattery: 0.75 })).toBeLessThan(lid({}) * 0.95)
 })

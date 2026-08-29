@@ -167,6 +167,7 @@ export const DEFAULT_CONTROLS = {
   drumCymTone: 0.5,
   drumSpread: 0,
   drumBits: 7,
+  drumSlot: 0,
   drumLadder: 0,
   drumLadderTol: 0.15,
   drumOverflow: 0,

@@ -407,6 +407,7 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumMetal',
   'drumCymTone',
   'drumSpread',
+  'drumSlot',
 ]
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))

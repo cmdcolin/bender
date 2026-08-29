@@ -163,7 +163,9 @@ body are resonant networks rather than oscillators, and winding Ring past nine
 tenths of its travel latches them into notes that ring on until you wind it
 back. The kit also has its own cheap-DAC quirks — see [Bends](BENDS.md) for what
 **Ring**, **Trigger pulse**, **Snappy**, **Accent sag**, **Bit depth**,
-**Ladder** and **Overflow** actually do to it.
+**Ladder**, **Voice slot** and **Overflow** actually do to it. **Voice slot** is
+the one that ties the kit together: there is one converter for eight voices, so
+a step that stacks the kit comes out coarser than the same voice on its own.
 
 Four of the voices are one part. The cowbell, both hats and the cymbal come off
 a single bank of six square oscillators that never stops turning — the cowbell

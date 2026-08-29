@@ -162,6 +162,7 @@ export const PARAM_DEFS = [
   ['drumCymTone', 'slew'],
   ['drumSpread', 'slew'],
   ['drumBits', 'step'],
+  ['drumSlot', 'slew'],
   ['drumLadder', 'slew'],
   ['drumLadderTol', 'slew'],
   ['drumOverflow', 'step'],

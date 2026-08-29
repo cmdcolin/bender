@@ -178,6 +178,19 @@ export function lowEnergy(x: Float32Array, hz = 120): number {
   return Math.sqrt(sum / x.length)
 }
 
+// And how much sits up where a staircase puts its images and most voices have
+// nothing of their own. The same one-pole, taken off the signal instead of kept.
+export function highEnergy(x: Float32Array, hz = 8000): number {
+  const c = 1 - Math.exp((-2 * Math.PI * hz) / SR)
+  let y = 0
+  let sum = 0
+  for (let i = 0; i < x.length; i++) {
+    y += c * (x[i]! - y)
+    sum += (x[i]! - y) ** 2
+  }
+  return Math.sqrt(sum / x.length)
+}
+
 // Level over time in 20 ms windows — finer than any gesture a ROM makes, and
 // coarser than anything a chip does inside a note.
 export function envelope(x: Float32Array, seconds = 0.02): Float32Array {

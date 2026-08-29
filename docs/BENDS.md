@@ -397,9 +397,9 @@ playing, so playing harder changes the timbre rather than just the level.
 
 **Part grade**, on the drum kit, is which reel the ladder DAC's resistors were
 sold off — it sets how uneven the converter's steps are. The kit's converter
-itself has two more controls worth knowing: **Bit depth** is the word length of
-the shared DAC across all six voices, and winding it down trims the quiet tails
-off a decay before it trims the hits themselves. **Ladder** governs the resistor
+itself has three more controls worth knowing: **Bit depth** is the word length
+of the DAC the whole kit shares, and winding it down trims the quiet tails off a
+decay before it trims the hits themselves. **Ladder** governs the resistor
 tolerance in that converter, and because the error scales with the size of the
 bit changing, a cheap ladder doesn't sound like hiss — it sounds like one lurch,
 right at the code where every bit flips at once, which for a signal is the zero
@@ -407,6 +407,18 @@ crossing. That lands hardest on whatever's quietest, and a decaying tail is
 nothing but zero crossings. **Overflow** decides what happens when a step's sum
 doesn't fit the accumulator: left to wrap, a step stacking several voices under
 an accent comes out inside-out, while the quiet steps around it stay untouched.
+
+**Voice slot** is the third, and it's the one that says out loud that there's
+one converter and eight voices. The chip works through whatever is sounding a
+voice at a time and writes the ladder once it's been round them all, so the
+kit's sample rate isn't a constant — it's the slot divided into a pass, and a
+pass is as long as the step is busy. A kick on its own comes out at whatever
+rate the board can manage; the same kick under five other voices comes out
+coarser — the second thing a crowded step does to a voice, and it comes off the
+same fact as the accent bus sagging. A slot is counted off the chip's own
+oscillator like the tempo and the envelopes, so a board going down with its
+batteries goes coarse as well as slow. At nothing the chip keeps up and the kit
+is the kit it shipped as.
 
 The dice skip this whole rack. A roll here asks for a different way of playing
 this board, not a different board — randomizing the watchdog or the timing pin
