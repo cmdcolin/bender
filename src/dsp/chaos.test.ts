@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'
-import { buildChain } from './build'
+import { buildBender, buildChain } from './build'
 import { DEST } from './modbus'
 import { BLOCK, type StereoBlock } from './stage'
 import { Thermal } from './thermal'
@@ -218,71 +218,58 @@ test('latch-up leaves a starving chip louder, not quieter', () => {
   expect(rms(jamming)).toBeGreaterThan(rms(clean) * 1.15)
 })
 
-// What is left of the board under 800 Hz, which is where its pitch is.
+// The rail as the chain leaves it, averaged over a window rather than read off
+// one block: a starving supply moves block to block, and what is being asked
+// here is where it sat, not where it was at one instant.
 //
-// Counting crossings of the mix straight off counts the hat's hiss, and hiss
-// has no pitch — it has a crossing rate, fifteen thousand a second of it, and
-// whichever way that lands against the tune is what the count ends up saying.
-// Any change to what the kit is made of moves it, which is not what a test of
-// the rail should be reading.
-const belowPitch = (x: Float32Array) => {
-  const c = 1 - Math.exp((-2 * Math.PI * 800) / SR)
-  let y = 0
-  const out = new Float32Array(x.length)
-  for (let i = 0; i < x.length; i++) {
-    y += c * (x[i]! - y)
-    out[i] = y
-  }
-  return out
-}
-
-// Positive-going crossings per window: the pitch of the tune, near enough, and
-// what a rail sagging under its own warmth takes down with it.
-const crossings = (x: Float32Array, from: number, to: number) => {
+// Read off the rail rather than counted off the mix. What heat does to the
+// pitch is three parts in a thousand, and no crossing count of a whole board —
+// hats, reboots, six sources and a tape machine — resolves three parts in a
+// thousand of anything. An earlier version of this test counted crossings of
+// the mix and passed on the strength of the drum kit being in it: with the kit
+// muted it failed, and it failed in the wrong direction, which is what a
+// measurement that cannot see its own signal does.
+function railPitch(
+  overrides: Partial<Controls>,
+  from: number,
+  to: number,
+): number {
+  const built = buildBender(SR)
+  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const io = makeIo()
+  const blocks = Math.ceil((to * SR) / BLOCK)
+  let sum = 0
   let n = 0
-  for (let i = from * SR + 1; i < to * SR; i++) {
-    if (x[i - 1]! <= 0 && x[i]! > 0) n++
+  for (let b = 0; b < blocks; b++) {
+    built.chain.process(io, p)
+    const secs = (b * BLOCK) / SR
+    if (secs >= from) {
+      sum += built.rail.pitchFactor
+      n++
+    }
   }
-  return n
-}
-
-// The same count, over the time the board spends making a sound rather than the
-// time it spends running. Pitch without the tempo folded into it.
-const soundingPitch = (x: Float32Array, from: number, to: number) => {
-  let n = 0
-  let live = 0
-  for (let i = from * SR + 1; i < to * SR; i++) {
-    if (Math.abs(x[i]!) > 0.005) live++
-    if (x[i - 1]! <= 0 && x[i]! > 0) n++
-  }
-  return live > 0 ? (n * SR) / live : 0
+  return sum / n
 }
 
 // Rendered on a board sagging steadily rather than rebooting, so what is being
-// measured is the drift and not the reboot timing. Heat takes about forty seconds
-// to climb and two minutes to fall — how far it goes is held by the Thermal and
-// ToyRail units above; what this holds is that the board is wired to it, and that
-// the two boards start together and come apart as they run.
+// measured is the drift and not the reboot timing. Heat takes about forty
+// seconds to climb and two minutes to fall — how far it goes is held by the
+// Thermal and ToyRail units above; what this holds is that the board is wired
+// to it, and that the two boards start together and come apart as they run.
 test('a hot board is not the board that booted', () => {
   const look: Partial<Controls> = {
     chipLevel: 1,
     chipStarve: 0.25,
     chipAccomp: 0.5,
   }
-  const hot = belowPitch(render({ ...look, heatAmt: 1 }, 20))
-  const cold = belowPitch(render({ ...look, heatAmt: 0 }, 20))
-  const early = [hot, cold].map(x => crossings(x, 1, 4))
-  // Barely apart at the start.
-  expect(Math.abs(early[0]! - early[1]!)).toBeLessThan(early[1]! * 0.015)
-
-  // ...and running flatter by the end. Crossings per second of audio that is
-  // actually sounding, rather than per second of tape: the rail is the tempo as
-  // well as the pitch, so a hot board holds each note longer as well as pitching
-  // it lower, and a straight count rewards it for the sustain it gained while
-  // punishing it for the pitch it lost. Dividing by the time it spends audible
-  // asks only about the pitch.
-  const sounding = [hot, cold].map(x => soundingPitch(x, 15, 20))
-  expect(sounding[0]!).toBeLessThan(sounding[1]! * 0.99)
+  const early = (heatAmt: number) => railPitch({ ...look, heatAmt }, 1, 4)
+  const late = (heatAmt: number) => railPitch({ ...look, heatAmt }, 15, 20)
+  // Barely apart at the start: forty seconds is the climb, and neither board
+  // has had four of them.
+  expect(early(1)).toBeCloseTo(early(0), 3)
+  // The cold board is where it booted; the hot one has come off it.
+  expect(late(0)).toBeCloseTo(early(0), 4)
+  expect(late(1)).toBeLessThan(late(0) * 0.999)
 })
 
 test('clustered faults change when things happen, not whether', () => {
