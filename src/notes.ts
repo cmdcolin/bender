@@ -8,11 +8,25 @@
 // arrives here as 3 rather than 0.
 export const A3 = 57
 
-const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+/** The twelve pitch classes, which is also the key switch's own order. */
+export const NOTE_NAMES = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+]
 
 /** A MIDI note number as a name — 60 is C4. */
 export const noteName = (midi: number) =>
-  `${NAMES[((midi % 12) + 12) % 12] ?? '?'}${Math.floor(midi / 12) - 1}`
+  `${NOTE_NAMES[((midi % 12) + 12) % 12] ?? '?'}${Math.floor(midi / 12) - 1}`
 
 /** A MIDI note number as one of the chip's semitones. */
 export const toSemitone = (midi: number) => midi - A3

@@ -9,6 +9,8 @@ export const DEFAULT_CONTROLS = {
   chipArp: 0,
   chipArpHz: 8,
   chipArpOct: 1,
+  keyScale: 0,
+  keyRoot: 0,
   chipClockX: 1,
   chipStarve: 0,
   chipBattery: 0,

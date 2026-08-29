@@ -10,6 +10,8 @@ import {
   YOURS,
 } from '../../dsp/stages/roms'
 import { ARP_MODES } from '../../dsp/stages/toyChip'
+import { NOTE_NAMES } from '../../notes'
+import { SCALE_NAMES } from '../../scale'
 import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
 import { TUNE_ALL_STEP_KEYS } from '../../tune'
 
@@ -193,6 +195,27 @@ export const SOURCE_GROUPS: Group[] = [
         unit: 'oct',
         needs: c => c.chipArp > 0,
         help: 'How many octaves the figure climbs before it starts again. The chip has four voices and the keys reach two octaves under its bottom A, so a wide range on a big chord is a chip stealing from itself — which is what it sounded like.',
+      },
+      {
+        key: 'keyScale',
+        label: 'Key lock',
+        min: 0,
+        max: SCALE_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: SCALE_NAMES,
+        help: 'A diode matrix across the key contacts: a key off the scale closes the one under it instead, so nothing you play — or that the kit plays through the trigger patch — lands outside the key. It is on the key line, not on the ROM, so the demo songs and your own memory still come out as they were written.',
+      },
+      {
+        key: 'keyRoot',
+        label: 'Key',
+        min: 0,
+        max: 11,
+        step: 1,
+        unit: '',
+        choices: NOTE_NAMES,
+        needs: c => c.keyScale > 0,
+        help: 'Which note the matrix is wired around. The chip’s own bottom key is an A, so C here is three keys up from it — the toy was never built in C.',
       },
       {
         key: 'chipClockX',

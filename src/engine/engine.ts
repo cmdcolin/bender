@@ -33,6 +33,7 @@ import {
   type TuneStepKey,
 } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
+import { snap } from '../scale'
 import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
 import { Glide } from './glide'
 import type { FromWorklet, NoteDest, ToWorklet } from './messages'
@@ -810,17 +811,29 @@ export class Engine {
   // toy's keys are written into it — the FM chip has no sequencer to record to
   // and a note played on it should not land in somebody else's tune.
   noteOn(semitone: number, gain = 1, dest: NoteDest = 'toy') {
-    this.post({ kind: 'noteOn', semitone, gain, dest })
-    this.hold(semitone, true, dest)
+    const note = this.locked(semitone)
+    this.post({ kind: 'noteOn', semitone: note, gain, dest })
+    this.hold(note, true, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
-      this.writeNote(semitone)
+      this.writeNote(note)
   }
 
   noteOff(semitone: number, dest: NoteDest = 'toy') {
-    this.post({ kind: 'noteOff', semitone, dest })
-    this.hold(semitone, false, dest)
+    const note = this.locked(semitone)
+    this.post({ kind: 'noteOff', semitone: note, dest })
+    this.hold(note, false, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
-      this.writeHeld(semitone)
+      this.writeHeld(note)
+  }
+
+  // The key line's matrix, taken here rather than down on the wire: the drawn
+  // keybeds light what is down, so the key that lights has to be the key that
+  // sounds — and a note whose two halves went through different keys is a note
+  // that never comes up. Recording is on the far side of it too, because what
+  // the memory takes is what you heard yourself play.
+  private locked(semitone: number) {
+    const c = this.controls.get()
+    return snap(semitone, c.keyScale, c.keyRoot)
   }
 
   // Arming the memory puts it on: recording into a memory the chip is not

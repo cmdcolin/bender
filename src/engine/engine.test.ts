@@ -3,6 +3,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { hasStep, quantizeStep, STEPS } from '../drums'
 import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
+import { SCALE_NAMES } from '../scale'
 import { edgeScore, Engine, mergeNotes } from './engine'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
@@ -186,6 +187,19 @@ test('the notes that are down are the notes that were struck and not let go', ()
 
   // Panic silences the chip, so nothing is left lit over a voice that is gone.
   engine.panic()
+  expect(engine.keysDown.get().size).toBe(0)
+})
+
+// The key that lights has to be the key that sounds, so the lock is taken here
+// rather than on the wire — and taken on the release too, or the key you played
+// is one nothing ever lets go of.
+test('the key lock lights the key it snapped to, not the one you pressed', () => {
+  const engine = new Engine()
+  engine.set('keyScale', SCALE_NAMES.indexOf('major'))
+  engine.set('keyRoot', 0)
+  engine.noteOn(4)
+  expect([...engine.keysDown.get()]).toEqual([3])
+  engine.noteOff(4)
   expect(engine.keysDown.get().size).toBe(0)
 })
 

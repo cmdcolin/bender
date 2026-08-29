@@ -4,6 +4,7 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus'
 import { ACCENT_GAIN } from '../../drums'
+import { snap } from '../../scale'
 import { softclip } from '../util/softclip'
 import { mulberry32 } from '../util/rng'
 import {
@@ -556,6 +557,11 @@ export class FmChip implements Stage {
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 
     const drumMask = voiceMask(Math.round(p[IDX.fmStruck]!))
+    // The kit's notes are the wire's choice rather than anybody's, so the key
+    // line's matrix gets them too — a riff off a drum pattern in whatever key
+    // the rest of the board is in.
+    const keyScale = Math.round(p[IDX.keyScale]!)
+    const keyRoot = Math.round(p[IDX.keyRoot]!)
     // The jumper off the toy's gate. Cut it and the chip stops hearing the
     // keyboard next door — its own keys, the kit's lines and the effect ROM are
     // all still soldered where they were.
@@ -634,7 +640,11 @@ export class FmChip implements Stage {
           const vol = Math.round((1 - ctx.trig.drumGain[i]! / ACCENT_GAIN) * 3)
           for (let v = 0; v < N_DRUM_VOICES; v++)
             if (bits & (1 << v))
-              this.keyOn(DRUM_NOTES[v]!, lengthSamples, Math.max(vol, 0))
+              this.keyOn(
+                snap(DRUM_NOTES[v]!, keyScale, keyRoot),
+                lengthSamples,
+                Math.max(vol, 0),
+              )
         }
       }
 

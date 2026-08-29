@@ -102,6 +102,24 @@ The figure goes out on the gate line like any other note, so it plays the FM
 chip too wherever that jumper is still soldered on, and **Keys fire kit** in the
 trigger patch turns it into a drum pattern.
 
+## The key lock
+
+**Key lock** on the toy's panel is a diode matrix across the key contacts: a key
+off the scale closes the one under it instead. Pick a scale — **major**,
+**minor**, **dorian**, **mixolydian**, either **pentatonic**, **blues** or
+**whole tone** — and a **Key** for it to be wired around, and everything played
+into the board comes out in that key. Both keybeds, a controller on MIDI, the
+arpeggiator's figure, and the notes the trigger patch invents: **Kit fires
+keys** set to play **any step** picks a note off the ROM per hit, and that is
+the one the lock is really for. It moves a note by a semitone or two, never by
+an octave, so what you hear is still the key you pressed.
+
+It is on the key line and not on the ROM. The demo songs and your own melody
+memory come out as they were written, in whatever key they were written in — a
+lock that reached them would quietly rewrite eighteen songs and every tune
+anybody has saved into a link. Off is the default and off is what every board
+made before the matrix went in has.
+
 ## The drum machine
 
 The kit is a sixteen-step grid rather than a fixed pattern. Six voices —

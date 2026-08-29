@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 220 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 222 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -107,7 +107,7 @@ too — the knife goes on and the rows under it say which controls that was:
   back stale, and the melody flickers between two versions of itself
 
 <details>
-<summary>25 controls</summary>
+<summary>27 controls</summary>
 
 | control         | range                                                                                                                                                                               | what it does                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -120,6 +120,8 @@ too — the knife goes on and the rows under it say which controls that was:
 | Arpeggio        | off, up, down, up-down, random, as played                                                                                                                                           | The counter that walks the ROM, walking the keys your hand is holding instead                                    |
 | Arp rate        | 0.5 to 32 Hz                                                                                                                                                                        | Notes a second, before the divider gets to it                                                                    |
 | Arp range       | 1 to 4 octaves                                                                                                                                                                      | How many octaves the figure climbs before it starts again                                                        |
+| Key lock        | off, major, minor, dorian, mixolydian, pent major, pent minor, blues, whole tone                                                                                                    | A diode matrix across the key contacts                                                                           |
+| Key             | C, C#, D, D#, E, F, F#, G, G#, A, A#, B                                                                                                                                             | Which note the matrix is wired around                                                                            |
 | Clock           | 0.05× to 16×                                                                                                                                                                        | Drags the master clock crystal                                                                                   |
 | Bend spot       | off, clock, counter, bias, gate                                                                                                                                                     | Where the virtual pot is soldered onto the die: clock feedback, program counter, DAC bias, or the gate line      |
 | Bend pot        | off to full                                                                                                                                                                         | Turns the pot on the chosen bend spot                                                                            |

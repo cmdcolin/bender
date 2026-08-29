@@ -9,6 +9,7 @@ import { Burst } from '../util/burst'
 import { Drunk } from '../util/drift'
 import { octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
+import { snap } from '../../scale'
 import { Bus } from '../bus'
 import {
   decodeStep,
@@ -186,6 +187,11 @@ export class ToyChip implements Stage {
   private bassEnv = 0
   private chordPhase = [0, 0, 0]
   private chordEnv = 0
+  // Where the key line's matrix is wired, for the notes this chip strikes on
+  // its own. The keybeds are snapped on the other thread, so what these two are
+  // for is the trigger patch — nothing over there ever sees the note.
+  private keyScale = 0
+  private keyRoot = 0
   private gateState = 1
   private gateClock = 0
   private clockWalk = 0
@@ -463,6 +469,12 @@ export class ToyChip implements Stage {
   // rather than the melody oscillator, so it sounds whether or not the demo
   // song is running — the same as your hands do.
   private fromDrum(mode: number, tune: number[], gain: number) {
+    // The matrix on the key line catches these on the way to the voice. A kick
+    // picking a step at random is a note nobody chose — which is the reason to
+    // have the thing at all — and it is only the voice that moves: the counter
+    // stays on the step as written, and so does the chord the melody sets.
+    const hit = (note: number) =>
+      this.strike(snap(note, this.keyScale, this.keyRoot), gain)
     switch (mode) {
       // The kit clocks the tune: one hit, one step of the ROM, so a sixteen-step
       // pattern plays the melody and the kick decides where the beat is.
@@ -472,7 +484,7 @@ export class ToyChip implements Stage {
         if (isNote(step)) {
           this.note = step
           this.harmonize(step)
-          this.strike(step, gain)
+          hit(step)
         }
         // The whole band walks with the step, so the backing follows the kick
         // rather than a clock the tune is no longer keeping.
@@ -481,14 +493,14 @@ export class ToyChip implements Stage {
       }
       case 2: {
         const step = this.readRom(tune, Math.floor(this.rng() * this.len))
-        if (isNote(step)) this.strike(step, gain)
+        if (isNote(step)) hit(step)
         return
       }
       case 3:
-        this.strike(this.chord[Math.floor(this.rng() * 3)]!, gain)
+        hit(this.chord[Math.floor(this.rng() * 3)]!)
         return
       default:
-        this.strike(isNote(this.note) ? this.note : this.chord[0]!, gain)
+        hit(isNote(this.note) ? this.note : this.chord[0]!)
     }
   }
 
@@ -554,6 +566,8 @@ export class ToyChip implements Stage {
     // Whichever of the kit's voices is bridged onto the gate, and what it plays.
     const trigMask = voiceMask(Math.round(p[IDX.trigToKeys]!))
     const trigNote = Math.round(p[IDX.trigKeysNote]!)
+    this.keyScale = Math.round(p[IDX.keyScale]!)
+    this.keyRoot = Math.round(p[IDX.keyRoot]!)
     const drift = p[IDX.chipDrift]!
     const arpMode = Math.round(p[IDX.chipArp]!)
     const arpHz = p[IDX.chipArpHz]!
