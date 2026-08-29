@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useControlValue, useStoreValue } from './ControlsContext'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
 import { engine } from '../engine/engine'
-import { AUTOMAP_KEYS, DEVICE_PROFILES, midi, type DeviceProfile } from './midi'
+import {
+  AUTOMAP_KEYS,
+  DEVICE_PROFILES,
+  midi,
+  type DeviceProfile,
+  type KeyRoute,
+} from './midi'
 import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
 import { noteName } from '../notes'
 import styles from './MidiPanel.module.css'
@@ -334,7 +340,7 @@ function Wired() {
       )}
 
       <div className={styles.row}>
-        <Tip text="Notes play the toy chip's keyboard — the same voice the on-screen keys strike, and they light the same keys. The sustain pedal holds them, and all-notes-off lets them go, on any CC nothing else has taken.">
+        <Tip text="Notes play the keys on screen — the same voices the drawn keys strike, and they light the same keys. The sustain pedal holds them, and all-notes-off lets them go, on any CC nothing else has taken.">
           <button
             className={notes ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setNotes(!notes)}
@@ -342,6 +348,7 @@ function Wired() {
             notes play the keys
           </button>
         </Tip>
+        {notes && <KeyRouting />}
         <Tip text="Pads play the drum machine's voices. Channel 10 is General MIDI's drum channel and lands on the kit with nothing to set up; a pad bank sending anything else is what learn pads is for.">
           <button
             className={pads ? styles.toggleOn : styles.toggle}
@@ -374,6 +381,49 @@ function Wired() {
       <Pads />
       <Wire />
       <Bindings />
+    </>
+  )
+}
+
+// Which of the two beds the wire plays. A controller is one keybed and the panel
+// has two, so this is the same question a workstation with two sounds in it has
+// always asked: one, the other, both at once, or the keybed cut in half.
+function KeyRouting() {
+  const route = useStoreValue(midi.keyRoute)
+  const split = useStoreValue(midi.split)
+  const learning = useStoreValue(midi.splitLearn)
+
+  return (
+    <>
+      <Tip text="Which keybed the controller plays: the toy, the FM chip, both at once, or the keybed cut in half with the toy below the split and the FM chip from it up. Both is two synthesisers on one key — the FM chip has to be up in the mix to be heard.">
+        <select
+          className={styles.select}
+          value={route}
+          onChange={e => midi.setKeyRoute(e.target.value as KeyRoute)}
+        >
+          <option value="toy">→ toy keys</option>
+          <option value="fm">→ fm keys</option>
+          <option value="layer">→ both</option>
+          <option value="split">→ split</option>
+        </select>
+      </Tip>
+      {route === 'split' && (
+        <Tip
+          text={
+            learning
+              ? 'press the key to cut the board at — it sets the split rather than sounding'
+              : 'set the split by playing the key to cut the board at. From that key up plays the FM chip; everything under it is the toy'
+          }
+        >
+          <button
+            className={learning ? styles.toggleOn : styles.toggle}
+            aria-pressed={learning}
+            onClick={() => midi.learnSplit(!learning)}
+          >
+            {learning ? 'press a key…' : `split at ${noteName(split)}`}
+          </button>
+        </Tip>
+      )}
     </>
   )
 }

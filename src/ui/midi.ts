@@ -7,6 +7,7 @@
 import { CONTROL_KEYS, type ControlKey } from '../controls'
 import { VOICE_LABELS, type DrumVoiceKey } from '../drums'
 import { engine } from '../engine/engine'
+import type { NoteDest } from '../engine/messages'
 import { noteName, toSemitone } from '../notes'
 import { createStore } from '../listeners'
 import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
@@ -145,6 +146,38 @@ export const AUTOMAP_KEYS: ControlKey[] = [
 // would just make the chip permanently quieter than the on-screen keys with
 // nothing to show for it.
 const VELOCITY_FLOOR = 0.3
+// Which keybed the wire plays. There are two on the panel and one controller in
+// front of them, which is the same problem every workstation with two sounds in
+// it has had: play one, play the other, play both, or cut the keybed in half.
+export type KeyRoute = 'toy' | 'fm' | 'layer' | 'split'
+
+const ROUTES: KeyRoute[] = ['toy', 'fm', 'layer', 'split']
+
+const BOTH_BEDS: NoteDest[] = ['toy', 'fm']
+
+export const parseRoute = (raw: string | null): KeyRoute =>
+  ROUTES.find(r => r === raw) ?? 'toy'
+
+/** Where the keybed is cut, as a MIDI note. Middle C, until you set it. */
+export const DEFAULT_SPLIT = 60
+
+export const parseSplit = (raw: string | null): number => {
+  const n = Number(raw)
+  return Number.isInteger(n) && n >= 0 && n <= 127 ? n : DEFAULT_SPLIT
+}
+
+/** Which beds a note played at `midiNote` reaches. */
+export const routeDests = (
+  route: KeyRoute,
+  split: number,
+  midiNote: number,
+): NoteDest[] =>
+  route === 'layer'
+    ? BOTH_BEDS
+    : route === 'split'
+      ? [midiNote < split ? 'toy' : 'fm']
+      : [route]
+
 export const velocity = (v: number) =>
   VELOCITY_FLOOR + (1 - VELOCITY_FLOOR) * (v / 127)
 
@@ -156,6 +189,8 @@ const ENABLED_KEY = 'bender.midi.on'
 const NOTES_KEY = 'bender.midi.notes'
 const CLOCK_KEY = 'bender.midi.clock'
 const LIGHTS_KEY = 'bender.midi.lights'
+const ROUTE_KEY = 'bender.midi.route'
+const SPLIT_KEY = 'bender.midi.split'
 const DEBUG_KEY = 'bender.midi.debug'
 
 // A stored binding map read back. Anything that no longer names a control with
@@ -270,8 +305,14 @@ class Midi {
   readonly pickups = createStore<PickupMap>({})
   /** Tempo off the wire, or null when no clock is running. */
   readonly bpm = createStore<number | null>(null)
-  /** Notes play the toy chip's keyboard. */
+  /** Notes play the keys. */
   readonly notes = createStore(read(NOTES_KEY) !== '0')
+  /** Which bed they play, and where the keybed is cut when it is cut. */
+  readonly keyRoute = createStore<KeyRoute>(parseRoute(read(ROUTE_KEY)))
+  readonly split = createStore(parseSplit(read(SPLIT_KEY)))
+  /** Waiting for a note to set the split point — the same gesture as binding a
+      knob by turning it, because the place to cut a keybed is a key. */
+  readonly splitLearn = createStore(false)
   /** Pads play the kit. Channel 10 needs no binding at all; anything else does. */
   readonly pads = this.kit.on
   readonly padBindings = this.kit.bindings
@@ -312,10 +353,13 @@ class Midi {
   // What the wire is holding down, so it can be let go of by something other
   // than the note-off that may never come: a pedal lifting, an all-notes-off, a
   // device leaving the desk mid-note.
-  private notesOn = new Set<number>()
+  // Which beds each one went to, not only which notes: the route can move while
+  // a note is down, and the key-up has to reach the bed that is holding it
+  // rather than the bed the switch is on now.
+  private notesOn = new Map<number, NoteDest[]>()
   // Notes let go of while the sustain pedal was down. They are still sounding,
   // and the pedal lifting is what ends them.
-  private sustained = new Set<number>()
+  private sustained = new Map<number, NoteDest[]>()
   private pedal = false
 
   private seen = 0
@@ -387,6 +431,27 @@ class Midi {
     this.notes.set(on)
     write(NOTES_KEY, on ? '1' : '0')
     if (!on) this.allNotesOff()
+  }
+
+  // Moving the wire lets go of what it is holding: a note left down on a bed
+  // the controller has stopped playing has nothing left that can end it.
+  setKeyRoute(route: KeyRoute) {
+    this.allNotesOff()
+    this.keyRoute.set(route)
+    write(ROUTE_KEY, route)
+    if (route !== 'split') this.splitLearn.set(false)
+  }
+
+  setSplit(midiNote: number) {
+    this.allNotesOff()
+    this.split.set(midiNote)
+    write(SPLIT_KEY, String(midiNote))
+    this.splitLearn.set(false)
+  }
+
+  /** Take the split point off the next key played, rather than off a number. */
+  learnSplit(on: boolean) {
+    this.splitLearn.set(on)
   }
 
   setPads(on: boolean) {
@@ -743,31 +808,36 @@ class Midi {
     if (this.bpm.get() !== null) this.bpm.set(null)
   }
 
-  private strike(semitone: number, gain: number) {
-    this.notesOn.add(semitone)
+  private strike(semitone: number, gain: number, dests: NoteDest[]) {
+    this.notesOn.set(semitone, dests)
     this.sustained.delete(semitone)
-    engine.noteOn(semitone, gain)
+    for (const dest of dests) engine.noteOn(semitone, gain, dest)
   }
 
   // A key let go of under a held pedal keeps sounding, and the pedal is what
   // ends it. The chip's voices latch, so a note nobody ends never stops.
   private letGo(semitone: number) {
+    // A key-up for a note the wire never struck is the standard cure for one
+    // that has stuck — a controller that lost its place, or a note left over
+    // from before the route moved — so it goes to both beds rather than
+    // nowhere. The chips ignore a note they are not holding.
+    const dests = this.notesOn.get(semitone) ?? BOTH_BEDS
     if (this.pedal) {
-      this.sustained.add(semitone)
+      this.sustained.set(semitone, dests)
       return
     }
     this.notesOn.delete(semitone)
     this.sustained.delete(semitone)
-    engine.noteOff(semitone)
+    for (const dest of dests) engine.noteOff(semitone, dest)
   }
 
   private setPedal(down: boolean) {
     if (down === this.pedal) return
     this.pedal = down
     if (down) return
-    for (const semitone of this.sustained) {
+    for (const [semitone, dests] of this.sustained) {
       this.notesOn.delete(semitone)
-      engine.noteOff(semitone)
+      for (const dest of dests) engine.noteOff(semitone, dest)
     }
     this.sustained.clear()
   }
@@ -776,7 +846,8 @@ class Midi {
   allNotesOff() {
     this.pedal = false
     this.sustained.clear()
-    for (const semitone of this.notesOn) engine.noteOff(semitone)
+    for (const [semitone, dests] of this.notesOn)
+      for (const dest of dests) engine.noteOff(semitone, dest)
     this.notesOn.clear()
   }
 
@@ -818,8 +889,19 @@ class Midi {
       // up — whichever it was, the kit has had it and the chip must not.
       if (this.kit.play(head & 0x0f, first, on, second)) return
       if (!this.notes.get()) return
+      // A key pressed to say where the keybed is cut is a key that does not
+      // sound: the gesture is aimed at the panel, not at the chip.
+      if (on && this.splitLearn.get()) {
+        this.setSplit(first)
+        return
+      }
       const semitone = toSemitone(first)
-      if (on) this.strike(semitone, velocity(second))
+      if (on)
+        this.strike(
+          semitone,
+          velocity(second),
+          routeDests(this.keyRoute.get(), this.split.get(), first),
+        )
       else this.letGo(semitone)
       return
     }

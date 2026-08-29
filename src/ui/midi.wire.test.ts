@@ -55,6 +55,7 @@ beforeEach(async () => {
   midi.setPads(true)
   midi.arm(null)
   midi.allNotesOff()
+  midi.setKeyRoute('toy')
   sent.length = 0
   engine.writeBoard({ ...DEFAULT_CONTROLS })
   if (midi.status.get() !== 'ready') {
@@ -158,12 +159,12 @@ test('notes strike the chip, and let go of the note they struck', () => {
   midi.setNotes(true)
   send(0x90, 60, 100) // middle C
   // Three semitones above the toy's A3, struck as hard as the key was hit.
-  expect(on).toHaveBeenCalledWith(3, velocity(100))
+  expect(on).toHaveBeenCalledWith(3, velocity(100), 'toy')
   send(0x80, 60, 0)
-  expect(off).toHaveBeenCalledWith(3)
+  expect(off).toHaveBeenCalledWith(3, 'toy')
   // The running-status spelling of a note off, which a latching voice needs too.
   send(0x90, 62, 0)
-  expect(off).toHaveBeenCalledWith(5)
+  expect(off).toHaveBeenCalledWith(5, 'toy')
   on.mockRestore()
   off.mockRestore()
 })
@@ -241,6 +242,67 @@ test('a bound CC64 drives its control rather than the pedal', () => {
   send(0x80, 60, 0)
   expect(engine.keysDown.get().has(3)).toBe(false)
   midi.clearAll()
+})
+
+// Two beds on the panel, one keybed on the desk. Where a note goes is the
+// route's business, and the key coming up has to reach whatever the key going
+// down reached — the route can move while a note is held.
+test('the route says which bed the wire plays', () => {
+  const on = vi.spyOn(engine, 'noteOn')
+  midi.setNotes(true)
+  midi.setKeyRoute('fm')
+  send(0x90, 60, 100)
+  expect(on).toHaveBeenCalledWith(3, velocity(100), 'fm')
+  expect(engine.fmKeysDown.get().has(3)).toBe(true)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+  send(0x80, 60, 0)
+  expect(engine.fmKeysDown.get().has(3)).toBe(false)
+  on.mockRestore()
+})
+
+test('both, and one key plays two synthesisers', () => {
+  midi.setNotes(true)
+  midi.setKeyRoute('layer')
+  send(0x90, 60, 100)
+  expect(engine.keysDown.get().has(3)).toBe(true)
+  expect(engine.fmKeysDown.get().has(3)).toBe(true)
+  send(0x80, 60, 0)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+  expect(engine.fmKeysDown.get().has(3)).toBe(false)
+})
+
+test('split cuts the keybed at the note you set it to', () => {
+  midi.setNotes(true)
+  midi.setKeyRoute('split')
+  midi.setSplit(60)
+  send(0x90, 59, 100) // the B under it
+  send(0x90, 60, 100) // and the split note itself
+  expect(engine.keysDown.get().has(2)).toBe(true)
+  expect(engine.fmKeysDown.get().has(3)).toBe(true)
+  expect(engine.keysDown.get().has(3)).toBe(false)
+})
+
+// The place to cut a keybed is a key, so the panel asks for one — and the key
+// that sets it is aimed at the panel rather than at the chip.
+test('the split point can be taken off a key, which does not sound', () => {
+  midi.setNotes(true)
+  midi.setKeyRoute('split')
+  midi.learnSplit(true)
+  send(0x90, 67, 100)
+  expect(midi.split.get()).toBe(67)
+  expect(midi.splitLearn.get()).toBe(false)
+  expect(engine.keysDown.get().size).toBe(0)
+  expect(engine.fmKeysDown.get().size).toBe(0)
+})
+
+// A note is let go of where it was struck. Moving the switch mid-note used to
+// be how a bed was left holding one for ever.
+test('moving the route lets go of what the wire is holding', () => {
+  midi.setNotes(true)
+  send(0x90, 60, 100)
+  expect(engine.keysDown.get().has(3)).toBe(true)
+  midi.setKeyRoute('fm')
+  expect(engine.keysDown.get().has(3)).toBe(false)
 })
 
 test('a harder key strikes harder', () => {

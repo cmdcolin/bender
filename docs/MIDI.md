@@ -38,7 +38,16 @@ an encoder, since it has no other way to show where its control actually is.
 Notes play the toy chip's keyboard, with A3 landing where the ROM has it — the
 chip counts semitones from 220 Hz, so a controller's middle C arrives three
 semitones higher than you'd expect. Played notes strike and light the same
-on-screen keys your hand does. The sustain pedal holds notes and releases them,
+on-screen keys your hand does.
+
+There are two keybeds on the panel once the FM chip is up in the mix, and the
+picker beside **notes play the keys** says which of them the wire plays: the
+toy, the FM chip, **both** — one key, two synthesisers — or **split**, which
+cuts the keybed in half with the toy below the split point and the FM chip from
+it up. Set the split by pressing **split at …** and then playing the key to cut
+at; that key sets the split rather than sounding. Moving the picker mid-note
+lets go of whatever the wire is holding, so nothing is left stuck on a bed the
+controller has stopped playing. The sustain pedal holds notes and releases them,
 and either spelling of "all notes off" clears the board. Velocity comes through
 too: the toy's own keys are switches and always strike at full velocity, but a
 MIDI note or the trigger patch can arrive at any level.
