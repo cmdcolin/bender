@@ -204,7 +204,11 @@ pushes everything that can run away — feedback, supply, bit depth — all the 
 at once (the safety tail holds all of it). **Slam** drives one to three controls
 to an extreme and leaves the rest alone. **On the edge** takes two controls that
 fight each other and drives them to opposite extremes. **Let it age** turns all
-five ageing controls up together.
+five ageing controls up together. **Patch** re-solders the modulation bay — two
+or three wires, each from a source that is actually moving onto a stage the
+board is actually running, turning that stage up where it was dry — and
+**cascade** solders one wire onto another wire's own depth, so what the second
+wire does to the board is itself something opening and closing.
 
 **Hunt** is the one roll that listens to what it rolled: it tries six boards,
 plays each for a second and a half, and keeps whichever rides closest to the

@@ -9,6 +9,7 @@ import {
 } from '../controls'
 import { fromPos } from '../slider-scale'
 import { applyCut, CUTS, type CutDef } from './cuts'
+import { coherePatch, solderBay, solderCascade } from './patch'
 import { inTime } from './quantize'
 import { rollGroup, rollKeys } from './roll'
 import { CLOCK_KEYS, YOURS } from './yours'
@@ -50,7 +51,9 @@ function rewire(current: Controls, rand: () => number): Controls {
   BEND_SLOT_KEYS.forEach((key, i) => {
     next[key] = slots[i]!
   })
-  return rollKeys(next, WIRE_KEYS, rand)
+  // Same parts is the promise, so the bay is re-soldered onto stages the board
+  // is already running rather than onto ones this roll would have to switch on.
+  return coherePatch(rollKeys(next, WIRE_KEYS, rand), rand, { wake: false })
 }
 
 const bendCount = () => (sliderFor('bendSlot0').choices?.length ?? 1) - 1
@@ -285,6 +288,20 @@ export const SCENARIOS: ScenarioDef[] = [
     blurb:
       'Two pairs that fight, each driven to opposite corners — the boundary rather than the middle',
     roll: edge,
+  },
+  {
+    name: 'patch',
+    label: 'random patch',
+    blurb:
+      'Re-solder the bay: two or three wires from a source that is moving onto a stage you can hear — and turn that stage up where it was dry',
+    roll: solderBay,
+  },
+  {
+    name: 'cascade',
+    label: 'random cascade',
+    blurb:
+      'One wire soldered onto another wire’s own depth, and that one onto something running — modulation that opens and shuts itself',
+    roll: solderCascade,
   },
   {
     name: 'let it age',

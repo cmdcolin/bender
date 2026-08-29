@@ -17,6 +17,7 @@ import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums'
 import { randomPattern } from '../../drum-moves'
 import { fromPos, toPos } from '../slider-scale'
 import { applyPreset } from './apply'
+import { coherePatch } from './patch'
 import { inTime } from './quantize'
 import { PRESETS } from './table'
 import { CLOCK_KEYS, keepYours, PART_KEYS, YOURS } from './yours'
@@ -122,7 +123,13 @@ function thinOut(next: Controls, rand: () => number): Controls {
 // preset it lands on hands over its board and nothing else.
 export function randomLook(current: Controls, rand: () => number): Controls {
   const preset = PRESETS[Math.floor(rand() * PRESETS.length)]!
-  const next = thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand)
+  const rolled = thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand)
+  // The bay, after the thinning rather than before it: a preset can name a wire
+  // onto a bend this roll just took off the board, and a wire onto a stage that
+  // isn't there is a row of the panel claiming something is happening. It moves
+  // that end of the wire onto something the board is running — and only that,
+  // since turning the stage back on would undo the thinning that dried it.
+  const next = coherePatch(rolled, rand, { wake: false })
   // A preset that names crackle names it loud, and a roll that landed on that
   // preset never asked for it. The shy controls get rolled shy whatever the
   // preset had to say about them.
@@ -264,6 +271,12 @@ export function rollGroup(
   // to land at zero. Turning a stage off is what the reset beside this is for.
   const mix = group.sliders.find(s => s.role === 'mix')
   if (mix && next[mix.key] === mix.min) next[mix.key] = audible(mix, rand)
+  // The bay is the one panel whose controls are about the rest of the board
+  // rather than about itself: a wire is a source, a destination and a depth that
+  // only mean anything together, and three sliders rolled apart is three ends
+  // that don't meet. Pointing the dice at it is asking for a patch, so this one
+  // is allowed to turn up what it lands on.
+  if (group.editor?.kind === 'patch') return coherePatch(next, rand)
   if (group.editor?.kind !== 'drums') return next
   return { ...next, ...randomPattern(rand), ...rollLengths(rand) }
 }
