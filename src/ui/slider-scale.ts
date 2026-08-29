@@ -14,6 +14,19 @@ function symlogTurn(def: SliderDef): number {
   return (at - def.min) / (def.max - def.min)
 }
 
+// Where each half of a symlog travel starts counting: the smallest number the
+// control can actually hold, which is its own step. A floor under that is
+// travel the value cannot follow — the positions there all snap to the same
+// number, and the thumb springs back out from under the hand. The sampler's
+// speed spent a quarter of its throw doing exactly that, springing back to
+// frozen, before the floor was tied to the step.
+//
+// The clamp is only against a degenerate curve: a step as wide as the span
+// would leave nothing to be logarithmic about.
+function symlogFloor(def: SliderDef, span: number): number {
+  return Math.min(def.step, span / 2)
+}
+
 export function toPos(def: SliderDef, value: number): number {
   if (def.curve === 'symlog') {
     const at = def.split!.at
@@ -21,7 +34,7 @@ export function toPos(def: SliderDef, value: number): number {
     if (value === at) return turn
     const below = value < at
     const span = below ? at - def.min : def.max - at
-    const floor = span / ZERO_DECADES
+    const floor = symlogFloor(def, span)
     const dist = Math.abs(value - at)
     const frac =
       dist <= floor ? 0 : Math.log(dist / floor) / Math.log(span / floor)
@@ -40,7 +53,7 @@ export function fromPos(def: SliderDef, pos: number): number {
     if (pos === turn) return at
     const below = pos < turn
     const span = below ? at - def.min : def.max - at
-    const floor = span / ZERO_DECADES
+    const floor = symlogFloor(def, span)
     const frac = below ? (turn - pos) / turn : (pos - turn) / (1 - turn)
     if (frac < 0.02) return at
     const dist = floor * Math.pow(span / floor, frac)

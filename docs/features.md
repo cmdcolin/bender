@@ -326,7 +326,7 @@ while the head plays on.
 | control    | range                                                     | what it does                                                                                            |
 | ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Level      | 0 to 2                                                    | Level of the dropped audio file, looping through the chain                                              |
-| Speed      | 4.00× reverse to 4.00× forward                            | Playback speed, with the stop in the middle of the travel and reverse below it                          |
+| Speed      | 4.000× reverse to 4.000× forward                          | Playback speed, with the stop in the middle of the travel and reverse below it                          |
 | Struck by  | off, kick, snare, hat, clap, tom, bell, any hit, key, mic | Which trigger line drops the needle back at the top of the file                                         |
 | Ending     | loop or one-shot                                          | What happens at the end of the file: round again, or stop there and wait to be struck                   |
 | Loop in    | 0.0% to 100.0%                                            | Where the loop starts, as a fraction of the reel                                                        |

@@ -1042,17 +1042,22 @@ export const SOURCE_GROUPS: Group[] = [
         label: 'Speed',
         min: -4,
         max: 4,
-        step: 0.01,
+        // Thousandths, where every other level on the board takes hundredths.
+        // A speed is a ratio, so what a step is worth depends where you are
+        // standing: 0.01 is a hundredth of a semitone at ×1 and a whole octave
+        // at ×0.01. The slow end is the end you crawl along, so the step is cut
+        // to what it is worth down there.
+        step: 0.001,
         unit: '×',
         curve: 'symlog',
         // A knob whose middle is a stop and whose left half is reverse reads as
         // a broken one if the readout only prints the number: coming down past
-        // zero the tape picks up again, and "−2.40 ×" does not say that where
-        // "2.40× reverse" does.
+        // zero the tape picks up again, and "−2.400 ×" does not say that where
+        // "2.400× reverse" does.
         reads: v =>
           v === 0
             ? 'frozen'
-            : `${Math.abs(v).toFixed(2)}× ${v < 0 ? 'reverse' : 'forward'}`,
+            : `${Math.abs(v).toFixed(3)}× ${v < 0 ? 'reverse' : 'forward'}`,
         split: {
           at: 0,
           names: { below: 'reverse', above: 'forward', mid: 'stop' },

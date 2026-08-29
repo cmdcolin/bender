@@ -410,9 +410,13 @@ const isLive = (key: ControlKey | Retired | undefined): key is ControlKey =>
 // travel sits on one grid and the wire counts in another and the round trip
 // loses up to half a step. packed.test.ts holds every slider to that.
 //
-// step is deliberately not pinned. Change one and an old link moves by less
-// than a step: bounded, small enough to stay the board it was, and nothing like
-// a floor moving out from under it.
+// step is deliberately not pinned, and it is the one thing here that is not
+// free. The wire number is the value over the step, so refining a step rescales
+// every link already made for that control: sampleSpeed went from hundredths to
+// thousandths, and a link written before that opens ×2 at ×0.2. Worth taking
+// there, because a link cannot carry the audio file the sampler needs and so a
+// shared speed had nothing to play — but changing a step is a decision about
+// the links already in the world, not a tidy-up.
 //
 // The widgets that are not sliders already hold integers — sixteen bits of
 // pattern, a step count, a note, where a rest is -128 and a hold -127.

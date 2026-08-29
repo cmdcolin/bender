@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { ALL_SLIDERS, snapToStep, type SliderDef } from './controls'
+import { ALL_SLIDERS, sliderFor, snapToStep, type SliderDef } from './controls'
 import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
 
 // The maths under every knob: where a value sits on a thousand-position track,
@@ -60,6 +60,44 @@ test('a symlog track spends more travel near the split than the ends', () => {
   // Half of one side's travel lands well short of half that side's range.
   expect(fromPos(d, 0.25)).toBeGreaterThan(-1)
   expect(fromPos(d, 0.75)).toBeLessThan(1)
+})
+
+// Where the track resolves finer than the value can, a band of positions all
+// snap to the same number and the thumb springs back out from under the hand.
+// The sampler's speed used to spend 137 of its thousand positions doing that,
+// all of them landing on frozen — a quarter of the throw fighting the drag. The
+// floor is the control's own step now, so nothing collapses a band wider than
+// the detent that is deliberately there. DETENT in Slider.tsx is 0.02 of the
+// travel either side of the turn, so 20 positions is the pull you asked for.
+const DEADBAND = 25
+
+test('a symlog travel never springs the thumb further than its own detent', () => {
+  const sprung: string[] = []
+  for (const d of ALL_SLIDERS) {
+    if (d.curve !== 'symlog') continue
+    for (let i = 0; i <= 1000; i++) {
+      const back = Math.round(
+        toPos(d, snapToStep(d, fromPos(d, i / 1000))) * 1000,
+      )
+      if (Math.abs(back - i) > DEADBAND)
+        sprung.push(`${d.key} at ${i} → ${back}`)
+    }
+  }
+  expect(sprung.slice(0, 5)).toEqual([])
+})
+
+// The other half of the same complaint: a speed is a ratio, so a step worth a
+// hundredth of a semitone at ×1 is worth an octave at ×0.01. The slow end is
+// where you crawl, and it is where the hundredth-wide step left barely a
+// hundred speeds to crawl between.
+test('the sampler crawls in small enough steps to crawl in', () => {
+  const d = sliderFor('sampleSpeed')
+  const slow = new Set<number>()
+  for (let i = 0; i <= 1000; i++) {
+    const v = snapToStep(d, fromPos(d, i / 1000))
+    if (v > 0 && v <= 1) slow.add(v)
+  }
+  expect(slow.size).toBeGreaterThan(200)
 })
 
 // Every control has to be able to reach both of its own ends off the track,
