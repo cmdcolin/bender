@@ -6,9 +6,11 @@ import {
 } from '../../controls'
 import { mulberry32 } from '../../dsp/util/rng'
 import { BENDS, GROUPS, choiceValue } from '../controls'
+import { applyPreset } from './apply'
 import { bayFaults, coherePatch, solderBay, solderCascade } from './patch'
 import { mutate, randomLook, rollGroup } from './roll'
 import { SCENARIOS } from './scenarios'
+import { PRESETS } from './table'
 import { mine } from './testBoard'
 
 const patchBay = GROUPS.find(g => g.editor?.kind === 'patch')!
@@ -215,6 +217,18 @@ test('a board left drifting still has a bay at the end of it', () => {
   for (let tick = 0; tick < 200; tick++) {
     board = mutate(board, 0.05, rand)
     expect(bayFaults(board), `tick ${tick}`).toEqual([])
+  }
+})
+
+// A preset is a board somebody wrote down, so a wire in one that reaches
+// nothing is a typo rather than a roll of the dice. Checked off a stock board,
+// which is the strictest reading: whatever the preset does not name is off.
+test('every shipped preset names a bay you can hear', () => {
+  for (const preset of PRESETS) {
+    expect(
+      bayFaults(applyPreset(preset, DEFAULT_CONTROLS)),
+      preset.name,
+    ).toEqual([])
   }
 })
 

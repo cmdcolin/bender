@@ -273,38 +273,43 @@ const driven = (c: Controls, wire: number) =>
       i !== wire && c[w.src] !== SRC_OFF && depthTarget(c[w.dest]) === wire,
   )
 
-// What is dead about the bay as it stands, in the words the panel would use.
-// A wire off a mic nobody has turned on, a wire onto a reverb that is dry, a
-// wire onto a wire that isn't plugged in: each one reads as a patch and is a
-// row of text. Empty is a bay where every lead does something you can hear.
-export function bayFaults(c: Controls): string[] {
-  const out: string[] = []
-  for (const [i, w] of WIRES.entries()) {
-    if (c[w.src] === SRC_OFF) continue
-    const n = i + 1
-    const tap = TAP_AT.get(Math.round(c[w.src]))
-    if (!tap) out.push(`wire ${n} picks up nothing`)
-    else if (!tap.hands && !moving(c, tap))
-      out.push(`wire ${n} is off a source that isn't running`)
-    if (c[w.depth] === 0 && !driven(c, i))
-      out.push(`wire ${n} is at zero depth with nothing opening it`)
-    const to = depthTarget(c[w.dest])
-    if (to === i) {
-      out.push(`wire ${n} is soldered to its own depth`)
-    } else if (to >= 0) {
-      const t = WIRES[to]!
-      if (c[t.src] === SRC_OFF)
-        out.push(`wire ${n} drives wire ${to + 1}, which is unplugged`)
-      else if (depthTarget(c[t.dest]) >= 0)
-        out.push(`wire ${n} drives wire ${to + 1}, which reaches no stage`)
-    } else {
-      const l = LANDING_AT.get(Math.round(c[w.dest]))
-      if (!l || !heard(c, l))
-        out.push(`wire ${n} lands on a stage that isn't running`)
-    }
+// What is dead about one wire, as a phrase the panel can print after its
+// number. A wire off a mic nobody has turned on, a wire onto a reverb that is
+// dry, a wire onto a wire that isn’t plugged in: each one reads as a patch and
+// is a row of text.
+//
+// Where it lands comes before what it is pushing at, because the picture says
+// the second one itself — a lead at zero depth is drawn dashed either way, and
+// a lead onto a stage that isn’t there looks exactly like one that is.
+export function wireFault(c: Controls, wire: number): string | null {
+  const w = WIRES[wire]!
+  if (c[w.src] === SRC_OFF) return null
+  const tap = TAP_AT.get(Math.round(c[w.src]))
+  if (!tap) return 'picks up nothing'
+  if (!tap.hands && !moving(c, tap)) return 'is off a source that isn’t running'
+  const to = depthTarget(c[w.dest])
+  if (to === wire) return 'is soldered to its own depth'
+  if (to >= 0) {
+    const t = WIRES[to]!
+    if (c[t.src] === SRC_OFF) return `drives wire ${to + 1}, which is unplugged`
+    if (depthTarget(c[t.dest]) >= 0)
+      return `drives wire ${to + 1}, which reaches no stage`
+  } else {
+    const l = LANDING_AT.get(Math.round(c[w.dest]))
+    if (!l || !heard(c, l)) return 'lands on a stage that isn’t running'
   }
-  return out
+  if (c[w.depth] === 0 && !driven(c, wire))
+    return 'is at zero depth with nothing opening it'
+  return null
 }
+
+/** Every fault in the bay, wire by wire. Empty is a bay where every lead does
+    something you can hear. */
+export const bayFaults = (c: Controls): string[] =>
+  WIRES.flatMap((_, i) => {
+    const fault = wireFault(c, i)
+    return fault ? [`wire ${i + 1} ${fault}`] : []
+  })
 
 /** What the bay is already landing on, so a repair moves a wire onto something
     else rather than doubling up on a lane. */

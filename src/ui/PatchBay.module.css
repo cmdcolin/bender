@@ -18,3 +18,24 @@
   font-size: var(--fs-xs);
   fill: var(--fg4);
 }
+
+/* Said where the wires are drawn rather than in the rows underneath: a lead
+   that reads as patched and carries nothing is exactly what the picture is for,
+   and this is the press that fixes it. Underlined rather than boxed — it is a
+   remark about the drawing above it, not a control of the bay. */
+.dead {
+  display: block;
+  margin: 0 0 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  text-decoration: underline dotted;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dead:hover {
+  color: var(--fg2);
+}
