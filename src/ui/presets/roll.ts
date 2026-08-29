@@ -17,7 +17,7 @@ import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums'
 import { randomPattern } from '../../drum-moves'
 import { fromPos, toPos } from '../slider-scale'
 import { applyPreset } from './apply'
-import { coherePatch } from './patch'
+import { coherePatch, cohereTriggers } from './patch'
 import { inTime } from './quantize'
 import { PRESETS } from './table'
 import { CLOCK_KEYS, keepYours, PART_KEYS, YOURS } from './yours'
@@ -285,6 +285,11 @@ export function rollGroup(
   // that don't meet. Pointing the dice at it is asking for a patch, so this one
   // is allowed to turn up what it lands on.
   if (group.editor?.kind === 'patch') return coherePatch(next, rand)
+  // The same for the two trigger bridges, which are wires by another name: a
+  // bridge onto a row the pattern never strikes waits for ever, and pointing
+  // the dice at the panel is asking for the bridge, so this one may turn the
+  // machine at the far end of it up.
+  if (group.editor?.kind === 'trigger') return cohereTriggers(next, rand)
   if (group.editor?.kind !== 'drums') return next
   return { ...next, ...randomPattern(rand), ...rollLengths(rand) }
 }

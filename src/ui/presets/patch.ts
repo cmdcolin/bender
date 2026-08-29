@@ -1,4 +1,5 @@
 import type { ControlKey, Controls } from '../../controls'
+import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums'
 import {
   BEND_SLOT_KEYS,
   bendAt,
@@ -398,6 +399,65 @@ export function coherePatch(
   }
 
   return inTime(next, key => woke.has(key))
+}
+
+// The board's other wires. Three controls rather than a bay, and the same two
+// ways of being nothing: soldered onto a machine that is turned down, or onto a
+// trigger line nothing ever strikes.
+
+/** The mic wire only means anything with a mic open, and no roll can open one —
+    the mic level is yours. A roll that solders it anyway hands you a wire off a
+    microphone that isn't there better than half the time. */
+export const micWired = (c: Controls) => isUp(c, 'micLevel')
+
+// Whether the kit ever strikes the voice a bridge is listening to. A row with
+// no steps on it is a trigger line that never fires — except under the
+// cross-patch, where one voice's hit fires another's, and no row on its own
+// says whether that reaches this one.
+const strikes = (c: Controls, choice: number): boolean => {
+  if (isUp(c, 'drumCross')) return true
+  if (choice > N_DRUM_VOICES) return DRUM_VOICES.some(v => c[v.key] !== 0)
+  const voice = DRUM_VOICES[choice - 1]
+  return voice ? c[voice.key] !== 0 : false
+}
+
+const pickVoice = (c: Controls, rand: () => number): number => {
+  const struck = [...DRUM_VOICES.keys()]
+    .map(i => i + 1)
+    .filter(choice => strikes(c, choice))
+  if (struck.length === 0) return 0
+  // The whole kit as well as any one voice of it: a bridge off every line is
+  // the one that follows the pattern rather than one row of it.
+  const pool = [...struck, N_DRUM_VOICES + 1]
+  return pool[Math.floor(rand() * pool.length)]!
+}
+
+// The two trigger bridges, made to mean something. Which voice fires the keys
+// is the half a roll gets wrong: the pattern is yours, so a bridge onto a row
+// you never wrote a step on is a wire that waits for ever, and the roll cannot
+// write one to fix it. It moves the bridge to a line the kit actually strikes.
+export function cohereTriggers(
+  board: Controls,
+  rand: () => number,
+  { wake = true }: CohereOpts = {},
+): Controls {
+  const next = { ...board }
+  const woke = new Set<ControlKey>()
+  if (Math.round(next.trigToKeys) > 0) {
+    if (!strikes(next, Math.round(next.trigToKeys)))
+      next.trigToKeys = pickVoice(next, rand)
+    // The strike lands on the toy chip's key voice, which comes out at the
+    // chip's own level: a bridge onto a machine turned down is silent.
+    if (next.trigToKeys > 0 && !isUp(next, 'chipLevel')) {
+      if (wake) turnUp(next, 'chipLevel', rand, woke)
+      else next.trigToKeys = 0
+    }
+  }
+  if (Math.round(next.trigToDrum) > 0 && !isUp(next, 'drumLevel')) {
+    if (wake) turnUp(next, 'drumLevel', rand, woke)
+    else next.trigToDrum = 0
+  }
+  return next
 }
 
 const clearBay = (next: Controls): Controls => {

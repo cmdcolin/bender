@@ -6,8 +6,15 @@ import {
 } from '../../controls'
 import { mulberry32 } from '../../dsp/util/rng'
 import { BENDS, GROUPS, choiceValue } from '../controls'
+import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums'
 import { applyPreset } from './apply'
-import { bayFaults, coherePatch, solderBay, solderCascade } from './patch'
+import {
+  bayFaults,
+  coherePatch,
+  cohereTriggers,
+  solderBay,
+  solderCascade,
+} from './patch'
 import { mutate, randomLook, rollGroup } from './roll'
 import { SCENARIOS } from './scenarios'
 import { PRESETS } from './table'
@@ -229,6 +236,65 @@ test('every shipped preset names a bay you can hear', () => {
       bayFaults(applyPreset(preset, DEFAULT_CONTROLS)),
       preset.name,
     ).toEqual([])
+  }
+})
+
+// The kit's trigger lines are wires too, and the pattern under them is yours:
+// a bridge onto a row you never wrote a step on waits for ever, and no roll can
+// write one to fix it.
+const struck = (c: Controls, choice: number) =>
+  choice > N_DRUM_VOICES
+    ? DRUM_VOICES.some(v => c[v.key] !== 0)
+    : c[DRUM_VOICES[choice - 1]!.key] !== 0
+
+test('a bridge lands on a line the kit actually strikes', () => {
+  // mine() writes the kick and the clap and leaves the other four empty.
+  const before = { ...mine(), trigToKeys: 2, trigToDrum: 3 }
+  for (let seed = 1; seed <= 40; seed++) {
+    const after = cohereTriggers(before, mulberry32(seed))
+    expect(after.trigToKeys, `seed ${seed}`).toBeGreaterThan(0)
+    expect(struck(after, Math.round(after.trigToKeys)), `seed ${seed}`).toBe(
+      true,
+    )
+  }
+})
+
+test('a bridge off a kit with no pattern at all comes out', () => {
+  const empty = { ...mine(), trigToKeys: 2 }
+  for (const row of DRUM_VOICES) empty[row.key] = 0
+  expect(cohereTriggers(empty, mulberry32(1)).trigToKeys).toBe(0)
+})
+
+// Which way the repair goes is whose press it was. The panel's own dice may
+// turn the machine at the far end up; the blind rewire takes the bridge out
+// instead, the same as it moves a wire rather than waking a stage.
+test('a bridge onto a machine turned down is woken or unsoldered', () => {
+  const quiet = {
+    ...mine(),
+    chipLevel: 0,
+    drumLevel: 0,
+    trigToKeys: 1,
+    trigToDrum: 1,
+  }
+  const named = cohereTriggers(quiet, mulberry32(3))
+  expect(named.trigToKeys).toBeGreaterThan(0)
+  expect(named.chipLevel).toBeGreaterThan(0)
+  expect(named.drumLevel).toBeGreaterThan(0)
+  const blind = cohereTriggers(quiet, mulberry32(3), { wake: false })
+  expect(blind.trigToKeys).toBe(0)
+  expect(blind.trigToDrum).toBe(0)
+  expect(blind.chipLevel).toBe(0)
+})
+
+test('rewire solders no wire the board has nothing at the end of', () => {
+  const noMic = { ...mine(), micLevel: 0, micPatch: 0 }
+  for (let seed = 1; seed <= 60; seed++) {
+    const after = scenarioNamed('rewire')(noMic, mulberry32(seed))
+    expect(after.micPatch, `seed ${seed}`).toBe(noMic.micPatch)
+    if (after.trigToKeys > 0)
+      expect(struck(after, Math.round(after.trigToKeys)), `seed ${seed}`).toBe(
+        true,
+      )
   }
 })
 

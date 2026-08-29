@@ -9,7 +9,13 @@ import {
 } from '../controls'
 import { fromPos } from '../slider-scale'
 import { applyCut, CUTS, type CutDef } from './cuts'
-import { coherePatch, solderBay, solderCascade } from './patch'
+import {
+  coherePatch,
+  cohereTriggers,
+  micWired,
+  solderBay,
+  solderCascade,
+} from './patch'
 import { inTime } from './quantize'
 import { rollGroup, rollKeys } from './roll'
 import { CLOCK_KEYS, YOURS } from './yours'
@@ -51,9 +57,17 @@ function rewire(current: Controls, rand: () => number): Controls {
   BEND_SLOT_KEYS.forEach((key, i) => {
     next[key] = slots[i]!
   })
-  // Same parts is the promise, so the bay is re-soldered onto stages the board
-  // is already running rather than onto ones this roll would have to switch on.
-  return coherePatch(rollKeys(next, WIRE_KEYS, rand), rand, { wake: false })
+  // The mic wire sits the roll out on a board with no mic open. Every other
+  // wire here lands on the board, which a roll can reach; that one lands on a
+  // microphone, which it cannot — so soldering it is a row of the panel moving
+  // and nothing else, and it moved on better than half of these.
+  const keys = WIRE_KEYS.filter(k => k !== 'micPatch' || micWired(current))
+  // Same parts is the promise, so the wires are re-soldered onto stages the
+  // board is already running rather than onto ones this roll would switch on.
+  const rolled = rollKeys(next, keys, rand)
+  return cohereTriggers(coherePatch(rolled, rand, { wake: false }), rand, {
+    wake: false,
+  })
 }
 
 const bendCount = () => (sliderFor('bendSlot0').choices?.length ?? 1) - 1
