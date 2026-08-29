@@ -23,5 +23,10 @@ if (dirty) {
   process.exit(1)
 }
 
+// Catch what CI would catch, before it's a remote failure blocking the release.
+for (const check of ['pnpm typecheck', 'pnpm test']) {
+  run(check)
+}
+
 run(`pnpm version ${bump} -m "Release v%s"`)
 run('git push --follow-tags')
