@@ -7,6 +7,7 @@ import {
   type DragEvent,
 } from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
+import { N_DRUM_VOICES } from '../drums'
 import { engine } from '../engine/engine'
 import { gitSha, versionLabel } from '../version'
 import { BodyPad } from './BodyPad'
@@ -14,7 +15,7 @@ import { ChainMap } from './ChainMap'
 import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Dice } from './Dice'
 import { GROUPS } from './controls'
-import { useDrumKeys } from './drumKeys'
+import { padKeyFor, useDrumKeys } from './drumKeys'
 import { HuntDialog } from './HuntDialog'
 import { FmKeys } from './FmKeys'
 import { Keys } from './Keys'
@@ -426,9 +427,10 @@ export function App(props: { openedFromLink?: boolean }) {
           with <span className={styles.kbd}>a s d f …</span> (
           <span className={styles.kbd}>z</span>{' '}
           <span className={styles.kbd}>x</span> for octaves) and the kit with{' '}
-          <span className={styles.kbd}>1 … 6</span> — turn up <b>Starve</b>{' '}
-          until the toy reboots, solder the <b>Bend spot</b> pot, bridge the two
-          boxes in <b>Trigger patch</b>, push any <b>Feedback</b> past 1
+          <span className={styles.kbd}>1 … {padKeyFor(N_DRUM_VOICES - 1)}</span>{' '}
+          — turn up <b>Starve</b> until the toy reboots, solder the{' '}
+          <b>Bend spot</b> pot, bridge the two boxes in <b>Trigger patch</b>,
+          push any <b>Feedback</b> past 1
         </p>
       </main>
 
