@@ -1,46 +1,110 @@
-/* The FM chip's bed: a bare board with a keybed screwed to it, not a toy. Green
-   solder mask, silkscreened lettering, and no speaker — the chip has never had
-   an output of its own, it goes into the same mix as everything else. */
+/* The FM chip's bed, drawn as the thing it is: a bare board with a short grey
+   keybed screwed to it, next to three octaves of moulded cream plastic. Nothing
+   here is decoration for its own sake — every difference is a way of saying at
+   a glance which machine your hand is on.
+
+   Green solder mask with a silkscreen hairline inside the edge, square corners
+   because a board is cut rather than moulded, plated holes instead of screws,
+   and a pin header where the toy has its speaker. */
 
 .board {
-  --case: #1b2a22;
-  --case-edge: #0b140f;
+  --case: #16241c;
+  --case-edge: #0a120d;
   --stamp: #6f8f7c;
-  --bed: #08100b;
+  --bed: #070d09;
+  --case-round: 3px;
+  --fixing: #0a120d;
+  --fixing-size: 7px;
+  --switch: #24382d;
+  --switch-hover: #2e4639;
+
+  /* Two thirds of a keybed and half the width of a key: a module keybed, not a
+     three-octave toy. */
+  --bed-h: 56px;
+  --key-w: #c6cbc6;
+  --key-w-edge: #7d857f;
+  --key-b: #0c100d;
+  --key-b-edge: #050706;
+  --key-b-w: 34%;
+  --key-b-h: 64%;
+  --key-round: 0 0 1px 1px;
+
+  /* The silkscreen outline every board of the period had printed just inside
+     its edge, and the plated ring around each mounting hole. */
+  box-shadow: inset 0 0 0 1px rgba(150, 200, 170, 0.13);
 }
 
-/* Silkscreen: the part number the way it is printed on the package. */
+.board::before,
+.board::after {
+  box-shadow: 0 0 0 1.5px #43604f;
+}
+
+/* Silkscreen: the part number the way it is printed on the package, with the
+   pin-1 dot beside it. */
 .badge {
-  font-size: var(--fs-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #cfe3d6;
+  color: #d3e4d8;
+}
+
+.badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d3e4d8;
+  opacity: 0.55;
 }
 
 .part {
   font-weight: 400;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: var(--stamp);
+}
+
+/* The header the keybed's ribbon plugs into — eight tinned pins in a row, which
+   is what sits where the toy has a speaker. */
+.header {
+  flex: none;
+  width: 46px;
+  height: 13px;
+  border-radius: 1px;
+  background-color: #101a14;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #b79a4a 0 4px,
+    transparent 4px 6px
+  );
+  background-position: 2px 0;
+  background-size: auto 100%;
+  box-shadow: inset 0 0 0 1px #0a120d;
 }
 
 /* The jumper. Soldered is the state the board shipped in, so it is the quiet
    one; cut is a modification, and says so. */
 .soldered,
 .cut {
+  font-family: var(--mono);
   font-size: var(--fs-xs);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 3px 9px;
-  background: #2a3d33;
+  background: var(--switch);
   color: var(--fg2);
   border: 1px solid var(--case-edge);
-  border-radius: 3px;
+  border-radius: 2px;
   cursor: pointer;
 }
 
 .soldered:hover,
 .cut:hover {
+  background: var(--switch-hover);
   color: var(--fg);
 }
 
@@ -53,4 +117,17 @@
   color: var(--accent2);
   border-color: var(--accent2);
   border-style: dashed;
+}
+
+/* The board is a module beside the toy rather than a second instrument as wide
+   as it: narrower, and it stops growing well before the toy does. */
+.board {
+  flex: 0 1 380px;
+  max-width: 560px;
+}
+
+@media (max-width: 640px) {
+  .header {
+    display: none;
+  }
 }

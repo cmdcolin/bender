@@ -18,7 +18,7 @@ export function FmKeys() {
       caseClass={styles.board}
       badge={
         <span className={styles.badge}>
-          fm<span className={styles.part}> 2-op</span>
+          fm2<span className={styles.part}>2-op</span>
         </span>
       }
       extras={
@@ -41,6 +41,7 @@ export function FmKeys() {
           </button>
         </Tip>
       }
+      tail={<span className={styles.header} aria-hidden="true" />}
     />
   )
 }
