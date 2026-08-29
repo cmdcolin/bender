@@ -68,3 +68,35 @@ release, so the note-off a pad sends on the way up is ignored.
 **Clock** lets the drum machine follow an incoming MIDI clock. It does this by
 writing the tempo control directly, so the slider tracks the room rather than
 fighting it.
+
+## Sending
+
+Three switches sit together in the panel's toggle row, and all three are what
+bender puts _on_ the wire rather than takes off it. Each starts off. The first
+is **light the rings**, above; the other two are the clock and the notes.
+
+**Send the clock** puts MIDI clock out at 24 pulses per quarter note, with start
+and stop riding the drum machine's own run switch. The pulses are counted off
+the steps the kit reports clocking — a step is a sixteenth, so each one is worth
+six pulses — rather than off a timer running alongside it. That is deliberate: a
+timer would send a clean clock the instrument itself is not playing to, whereas
+counting the kit's steps means everything that drags the kit drags what is
+following it. Pull the tempo control, starve the rail, bend the clock line, and
+the machine downstream goes with you.
+
+Counting steps costs granularity, and it is worth being honest about how much.
+The kit reports its step count about every 16 ms and a sixteenth is far longer
+than that, so a step's six pulses leave together in a burst rather than evenly
+spaced. Anything that averages a clock over a beat — which is most things,
+bender's own clock input included — reads the right tempo off it. Anything that
+advances on single pulses gets them in sixes.
+
+**Send the notes** mirrors what the two chips are sounding as note-on and
+note-off, the toy on channel 1 and the FM chip on channel 2. That is the whole
+board and not just your hands: the ROM's tune, the backing under it, the
+arpeggio, and any note the kit's trigger lines struck all go out alongside
+anything played on the keys. Pitches leave in MIDI's numbering, so the chip's
+zero note goes out as 57 — the A3 the ROM counts up from. Notes leave at one
+fixed velocity, since the chips report what is sounding and never how hard it
+was struck. Switching the toggle off releases whatever is still held, so nothing
+is left ringing on the far end.

@@ -56,6 +56,12 @@ beforeEach(async () => {
   midi.arm(null)
   midi.allNotesOff()
   midi.setKeyRoute('toy')
+  midi.setClockOut(false)
+  midi.setNoteOut(false)
+  engine.setDrumsPlaying(false)
+  engine.chipNotes.set(new Set())
+  engine.fmNotes.set(new Set())
+  engine.meter.set({ ...engine.meter.get(), tick: 0 })
   sent.length = 0
   engine.writeBoard({ ...DEFAULT_CONTROLS })
   if (midi.status.get() !== 'ready') {
@@ -592,4 +598,130 @@ test('clock sets the tempo only once it is asked to', () => {
   expect(engine.controls.get().drumBpm).toBe(90)
   midi.setClockLock(false)
   vi.restoreAllMocks()
+})
+
+// The board's own side of the wire. Everything below leaves the app rather than
+// arriving at it, so the fake output's `sent` is the whole assertion surface.
+
+/** A step the kit has clocked, as the meter reports one. */
+const step = (tick: number) => engine.meter.set({ ...engine.meter.get(), tick })
+
+const pulses = (n: number) => Array.from({ length: n }, () => [0xf8])
+
+// Six pulses a step, because a step is a sixteenth and MIDI counts 24 to the
+// quarter — and counted off the step the kit reports, so a meter that arrives
+// with no new step on it sends nothing at all.
+test('the clock out is six pulses for every step the kit clocks', () => {
+  midi.setClockOut(true)
+  engine.setDrumsPlaying(true)
+  sent.length = 0
+
+  step(1)
+  expect(sent).toEqual(pulses(6))
+
+  // Meters land about every 16 ms and a sixteenth is far longer, so most of
+  // them carry the step that already went out.
+  sent.length = 0
+  step(1)
+  expect(sent).toEqual([])
+
+  // A meter that landed late carries two steps, and both get paid for: what
+  // matters downstream is the running count, not when it arrived.
+  step(3)
+  expect(sent).toEqual(pulses(12))
+})
+
+test('start and stop ride the kit’s run switch', () => {
+  midi.setClockOut(true)
+  sent.length = 0
+
+  engine.setDrumsPlaying(true)
+  expect(sent).toEqual([[0xfa]])
+
+  sent.length = 0
+  engine.setDrumsPlaying(false)
+  expect(sent).toEqual([[0xfc]])
+
+  // A stopped kit whose counter is still moving — a step written by hand, a
+  // pattern edited — is not a clock anybody asked for.
+  sent.length = 0
+  step(9)
+  expect(sent).toEqual([])
+})
+
+// Switching the clock off halfway through a bar leaves the far end waiting on
+// pulses that stop coming, which reads as a hang rather than as a stop.
+test('switching the clock off sends the stop that ends it', () => {
+  midi.setClockOut(true)
+  engine.setDrumsPlaying(true)
+  sent.length = 0
+  midi.setClockOut(false)
+  expect(sent).toEqual([[0xfc]])
+})
+
+test('the clock stays off the wire until it is switched on', () => {
+  engine.setDrumsPlaying(true)
+  step(1)
+  step(2)
+  engine.setDrumsPlaying(false)
+  expect(sent).toEqual([])
+})
+
+// The chip counts semitones from A3 = 220 Hz, which is MIDI 57. Send its own
+// numbers straight out and the whole board leaves a minor third out.
+test('notes going out are counted from A3, not from MIDI zero', () => {
+  midi.setNoteOut(true)
+  engine.chipNotes.set(new Set([0]))
+  expect(sent).toEqual([[0x90, 57, 100]])
+
+  sent.length = 0
+  engine.chipNotes.set(new Set([0, 3]))
+  expect(sent).toEqual([[0x90, 60, 100]])
+})
+
+test('the toy goes out on channel 1 and the FM chip on channel 2', () => {
+  midi.setNoteOut(true)
+  engine.chipNotes.set(new Set([3]))
+  engine.fmNotes.set(new Set([3]))
+  expect(sent).toEqual([
+    [0x90, 60, 100],
+    [0x91, 60, 100],
+  ])
+})
+
+test('a note the chip stops sounding is let go of', () => {
+  midi.setNoteOut(true)
+  engine.chipNotes.set(new Set([3, 5]))
+  sent.length = 0
+
+  // One goes, one stays: only the one that went gets a note off, and the one
+  // that stayed is not struck again.
+  engine.chipNotes.set(new Set([5]))
+  expect(sent).toEqual([[0x80, 60, 0]])
+
+  sent.length = 0
+  engine.chipNotes.set(new Set())
+  expect(sent).toEqual([[0x80, 62, 0]])
+})
+
+// A note on nothing ever ends sounds until the far end is power-cycled, and the
+// switch going off is the last chance to end it.
+test('switching the notes off lets go of what is still out there', () => {
+  midi.setNoteOut(true)
+  engine.chipNotes.set(new Set([3]))
+  engine.fmNotes.set(new Set([5]))
+  sent.length = 0
+
+  midi.setNoteOut(false)
+  expect(sent).toEqual([
+    [0x80, 60, 0],
+    [0x81, 62, 0],
+  ])
+})
+
+test('the chips stay off the wire until the notes are switched on', () => {
+  engine.chipNotes.set(new Set([3]))
+  engine.fmNotes.set(new Set([5]))
+  engine.chipNotes.set(new Set())
+  expect(sent).toEqual([])
 })

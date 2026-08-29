@@ -3,12 +3,17 @@
 // voice for; pads, which the drum machine already has six voices for and which
 // keep their own half of this in pads.ts; and clock, which the drum machine
 // already has a tempo for.
+//
+// Then the same wire the other way: lit rings, the kit's clock, and what the two
+// chips are sounding. Each is a switch of its own and each starts off — a board
+// that talks back to a desk without being asked is a board somebody has to
+// debug.
 
 import { CONTROL_KEYS, type ControlKey } from '../controls'
 import { VOICE_LABELS, type DrumVoiceKey } from '../drums'
 import { engine } from '../engine/engine'
 import type { NoteDest } from '../engine/messages'
-import { noteName, toSemitone } from '../notes'
+import { noteName, toMidiNote, toSemitone } from '../notes'
 import { createStore } from '../listeners'
 import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
 import { PadKit } from './pads'
@@ -189,6 +194,8 @@ const ENABLED_KEY = 'bender.midi.on'
 const NOTES_KEY = 'bender.midi.notes'
 const CLOCK_KEY = 'bender.midi.clock'
 const LIGHTS_KEY = 'bender.midi.lights'
+const CLOCK_OUT_KEY = 'bender.midi.clockout'
+const NOTE_OUT_KEY = 'bender.midi.noteout'
 const ROUTE_KEY = 'bender.midi.route'
 const SPLIT_KEY = 'bender.midi.split'
 const DEBUG_KEY = 'bender.midi.debug'
@@ -287,6 +294,26 @@ export function bpmFromPulses(pulses: number[]): number | null {
   return Number.isFinite(bpm) ? bpm : null
 }
 
+// A step is a sixteenth and MIDI counts 24 pulses to the quarter, so every step
+// the kit clocks is worth six of them.
+const PULSES_PER_STEP = 6
+
+// A tab that went to the background, or a kit whose meter stopped arriving,
+// comes back with its step counter miles past the last one sent. Six pulses a
+// step for a gap that size is a burst nothing downstream can read as tempo, so
+// past this the clock resyncs silently rather than paying the debt off.
+const MAX_CATCHUP_STEPS = 8
+
+// The two chips get a channel each — the toy on 1, the FM chip on 2. Fixed
+// rather than settable: whatever is on the far end wants a stable pair, and a
+// setting for this is one nobody would ever have moved.
+const TOY_OUT_CHANNEL = 0
+const FM_OUT_CHANNEL = 1
+
+// The chips report what they are sounding, never how hard it was struck, so
+// everything leaves at one velocity.
+const OUT_VELOCITY = 100
+
 // A knob turning is one gesture and wants one step in the undo walk, the way a
 // slider drag does. There is no pointer-up to end it, so a quiet knob ends it:
 // this long without a message and the next one arms a fresh step.
@@ -324,6 +351,10 @@ class Midi {
   /** Send each bound control's value back out, so a device with lit rings shows
       where the board is. */
   readonly lights = createStore(read(LIGHTS_KEY) === '1')
+  /** Send the kit's clock out, counted off its own steps rather than a timer. */
+  readonly clockOut = createStore(read(CLOCK_OUT_KEY) === '1')
+  /** Send what the two chips are sounding out as notes. */
+  readonly noteOut = createStore(read(NOTE_OUT_KEY) === '1')
   /** The last message off the wire. Null until one arrives. */
   readonly traffic = createStore<Traffic | null>(null)
   /** Echo every message to the console as well as the panel. */
@@ -375,9 +406,19 @@ class Midi {
   // re-send the other 138.
   private lit = new Map<ControlKey, number>()
 
+  // The last step this has paid pulses for, and whether the far end has been
+  // told to run at all — pulses before a start byte are pulses most machines
+  // count and none of them play.
+  private sentTick = -1
+  private clockRunning = false
+  // What each channel has been told is sounding. Held here rather than read back
+  // off the store, because only what actually left the wire can be let go of.
+  private outNotes = new Map<number, Set<number>>()
+
   constructor() {
     this.reindex()
     this.watchControls()
+    this.watchBoard()
     if (read(ENABLED_KEY) === '1') this.enable()
   }
 
@@ -394,6 +435,10 @@ class Midi {
         this.status.set('ready')
         this.listen(access)
         this.lightAll()
+        // A kit already running when the grant lands has never sent its start,
+        // and a far end that never heard one ignores every pulse after it.
+        if (this.clockOut.get() && engine.drumsPlaying.get())
+          this.startClockOut()
         // Devices plugged in after the grant still get wired up — and one
         // pulled out mid-note never sends the note off, so what it was holding
         // is let go of here or it is held for ever.
@@ -505,6 +550,23 @@ class Midi {
     if (on) this.lightAll()
   }
 
+  // Switching off mid-bar leaves whatever is following this halfway through a
+  // pattern with the pulses gone, which reads as a hang rather than a stop —
+  // the stop byte is the one thing that ends it cleanly. Switching on picks the
+  // kit up wherever it already stands.
+  setClockOut(on: boolean) {
+    this.clockOut.set(on)
+    write(CLOCK_OUT_KEY, on ? '1' : '0')
+    if (!on) this.stopClockOut()
+    else if (engine.drumsPlaying.get()) this.startClockOut()
+  }
+
+  setNoteOut(on: boolean) {
+    this.noteOut.set(on)
+    write(NOTE_OUT_KEY, on ? '1' : '0')
+    if (!on) this.releaseOut()
+  }
+
   /** Replace every binding with a device's factory layout: each knob CC takes
       the next control down the spine. Returns how many controls got a knob. */
   autoMap(profile: DeviceProfile): number {
@@ -567,6 +629,8 @@ class Midi {
   }
 
   destroy() {
+    this.releaseOut()
+    this.stopClockOut()
     if (this.clockTimer !== null) clearInterval(this.clockTimer)
     if (this.lightRaf !== 0) cancelAnimationFrame(this.lightRaf)
     this.lightRaf = 0
@@ -710,10 +774,97 @@ class Midi {
       const cc = Math.round(toPos(def, controls[key]) * 127)
       if (this.lit.get(key) === cc) continue
       this.lit.set(key, cc)
-      for (const out of this.access.outputs.values()) {
-        if (isLoopback(out.name)) continue
-        out.send([0xb0 | b.channel, b.controller, cc])
-      }
+      this.out([0xb0 | b.channel, b.controller, cc])
+    }
+  }
+
+  // Out to every port but a through port, which would hand the bytes straight
+  // back to our own input — see isLoopback.
+  private out(bytes: number[]) {
+    if (this.access === null) return
+    for (const port of this.access.outputs.values()) {
+      if (isLoopback(port.name)) continue
+      port.send(bytes)
+    }
+  }
+
+  // The board's own side of the wire: the kit's clock and the two chips' notes,
+  // both off the meter, both switchable and both off until asked for.
+  private watchBoard() {
+    engine.drumsPlaying.subscribe(() => {
+      if (!this.clockOut.get()) return
+      if (engine.drumsPlaying.get()) this.startClockOut()
+      else this.stopClockOut()
+    })
+    engine.meter.subscribe(() => this.sendPulses())
+    engine.chipNotes.subscribe(() =>
+      this.mirror(TOY_OUT_CHANNEL, engine.chipNotes.get()),
+    )
+    engine.fmNotes.subscribe(() =>
+      this.mirror(FM_OUT_CHANNEL, engine.fmNotes.get()),
+    )
+  }
+
+  private startClockOut() {
+    this.sentTick = engine.meter.get().tick
+    this.clockRunning = true
+    this.out([0xfa])
+  }
+
+  private stopClockOut() {
+    if (!this.clockRunning) return
+    this.clockRunning = false
+    this.out([0xfc])
+  }
+
+  // The pulses are counted off the steps the kit reports clocking, not off a
+  // timer here, and that is the whole point of them: a timer would send a clean
+  // clock the instrument itself is not playing to. Off the step count, whatever
+  // drags the kit drags the clock with it — the tempo control, a rail on its
+  // knees, a bent clock line.
+  //
+  // The honest cost is granularity. The meter lands about every 16 ms and a
+  // sixteenth is far longer than that, so a step's six pulses leave together in
+  // a burst rather than evenly spaced. Anything averaging over a beat reads the
+  // right tempo; anything clocking off single pulses gets them in sixes.
+  private sendPulses() {
+    if (!this.clockRunning || !this.clockOut.get()) return
+    const tick = engine.meter.get().tick
+    const steps = tick - this.sentTick
+    if (steps === 0) return
+    this.sentTick = tick
+    if (steps < 0 || steps > MAX_CATCHUP_STEPS) return
+    for (let i = 0; i < steps * PULSES_PER_STEP; i++) this.out([0xf8])
+  }
+
+  // What a chip says it is sounding, as note-ons for whatever appeared and
+  // note-offs for whatever went away. The chips count semitones from A3, so
+  // every number goes through the conversion — miss it and the whole board
+  // leaves a minor third out.
+  private mirror(channel: number, sounding: ReadonlySet<number>) {
+    if (!this.noteOut.get()) return
+    const held = this.outNotes.get(channel) ?? new Set<number>()
+    this.outNotes.set(channel, held)
+    for (const semitone of sounding) {
+      const note = toMidiNote(semitone)
+      if (held.has(semitone) || note < 0 || note > 127) continue
+      held.add(semitone)
+      this.out([0x90 | channel, note, OUT_VELOCITY])
+    }
+    for (const semitone of held) {
+      if (sounding.has(semitone)) continue
+      held.delete(semitone)
+      this.out([0x80 | channel, toMidiNote(semitone), 0])
+    }
+  }
+
+  // Let go of everything the wire is holding out there. A note-on nothing ever
+  // ends sounds until the far end is power-cycled.
+  private releaseOut() {
+    for (const [channel, held] of this.outNotes) {
+      for (const semitone of held)
+        this.out([0x80 | channel, toMidiNote(semitone), 0])
+      held.clear()
     }
   }
 

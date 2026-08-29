@@ -244,6 +244,8 @@ function Wired() {
   const armedPad = useStoreValue(midi.armedPad)
   const clockLock = useStoreValue(midi.clockLock)
   const lights = useStoreValue(midi.lights)
+  const clockOut = useStoreValue(midi.clockOut)
+  const noteOut = useStoreValue(midi.noteOut)
   const stranded = Object.keys(useStoreValue(midi.pickups)).length
   const [deviceName, setDeviceName] = useState(DEVICE_PROFILES[0]?.name ?? '')
   const [encoders, setEncoders] = useState(false)
@@ -371,6 +373,22 @@ function Wired() {
             onClick={() => midi.setLights(!lights)}
           >
             light the rings
+          </button>
+        </Tip>
+        <Tip text="Send the drum machine's clock out to the wire, counted off the steps the kit actually clocks rather than off a timer — so a bent clock line or a rail on its knees drags whatever is following it, exactly as it drags the kit. Start and stop go with the kit's own run switch.">
+          <button
+            className={clockOut ? styles.toggleOn : styles.toggle}
+            onClick={() => midi.setClockOut(!clockOut)}
+          >
+            send the clock
+          </button>
+        </Tip>
+        <Tip text="Send what the two chips are sounding out as notes — the toy on channel 1, the FM chip on channel 2. That is the whole board, not just your hands: the ROM's tune, the backing under it, the arpeggio, and whatever the kit's trigger lines struck.">
+          <button
+            className={noteOut ? styles.toggleOn : styles.toggle}
+            onClick={() => midi.setNoteOut(!noteOut)}
+          >
+            send the notes
           </button>
         </Tip>
         <span className={bpm === null ? styles.quiet : styles.clock}>

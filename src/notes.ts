@@ -31,8 +31,12 @@ export const noteName = (midi: number) =>
 /** A MIDI note number as one of the chip's semitones. */
 export const toSemitone = (midi: number) => midi - A3
 
+/** And back the other way, for anything the chip is sounding that has to leave
+    the board as MIDI. */
+export const toMidiNote = (semitone: number) => semitone + A3
+
 /** One of the chip's semitones as a note name — 0 is A3. */
-export const semitoneName = (semitone: number) => noteName(semitone + A3)
+export const semitoneName = (semitone: number) => noteName(toMidiNote(semitone))
 
 /** True for the semitones a keyboard draws black. */
 export const isSharp = (semitone: number) =>
