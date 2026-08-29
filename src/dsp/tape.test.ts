@@ -670,8 +670,9 @@ test('a machine with nothing playing screams at the note the span holds', () => 
     [1, 2400],
     [2, 3400],
   ] as const) {
-    expect(sung(tapeSpeed) / want, `${want} Hz`).toBeGreaterThan(0.89)
-    expect(sung(tapeSpeed) / want, `${want} Hz`).toBeLessThan(1.11)
+    const off = sung(tapeSpeed) / want
+    expect(off, `${want} Hz`).toBeGreaterThan(0.89)
+    expect(off, `${want} Hz`).toBeLessThan(1.11)
   }
   expect(rms(renderBender({ ...SILENT, ...STEADY, tapeMix: 1 }, 4))).toBe(0)
 })
