@@ -9,6 +9,7 @@ import {
   TUNE_NAMES,
   YOURS,
 } from '../../dsp/stages/roms'
+import { ARP_MODES } from '../../dsp/stages/toyChip'
 import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
 import { TUNE_ALL_STEP_KEYS } from '../../tune'
 
@@ -161,6 +162,37 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running. It reads the chord off the melody and picks major or minor from the ROM’s own notes. Same divider, same rail — starve the chip and the backing band goes down with it.',
+      },
+      {
+        key: 'chipArp',
+        label: 'Arpeggio',
+        min: 0,
+        max: ARP_MODES.length - 1,
+        step: 1,
+        unit: '',
+        choices: ARP_MODES,
+        help: 'The counter that walks the ROM, walking the keys your hand is holding instead. Hold a chord — the hold switch on the keybed latches one — and it plays it a note at a time. It runs off the chip’s own divider and nothing else, so the clock, a pot on the timing pin and a flat rail all drag the figure along with the tune.',
+      },
+      {
+        key: 'chipArpHz',
+        label: 'Arp rate',
+        min: 0.5,
+        max: 32,
+        step: 0.1,
+        unit: 'Hz',
+        curve: 'log',
+        needs: c => c.chipArp > 0,
+        help: 'Notes a second, before the divider gets to it. A nudge lands it on a division of the kit’s tempo, which is the only way the two machines ever line up — the toy runs on its own crystal and nothing pulls it back.',
+      },
+      {
+        key: 'chipArpOct',
+        label: 'Arp range',
+        min: 1,
+        max: 4,
+        step: 1,
+        unit: 'oct',
+        needs: c => c.chipArp > 0,
+        help: 'How many octaves the figure climbs before it starts again. The chip has four voices and the keys reach two octaves under its bottom A, so a wide range on a big chord is a chip stealing from itself — which is what it sounded like.',
       },
       {
         key: 'chipClockX',

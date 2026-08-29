@@ -3,6 +3,7 @@ import { DRUM_ROMS } from '../../drums'
 import { DEST } from '../../dsp/modbus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
+import { ARP_MODES } from '../../dsp/stages/toyChip'
 
 export interface PresetDef {
   name: string
@@ -17,6 +18,8 @@ const effect = (name: string) => FM_EFFECT_NAMES.indexOf(name)
 
 /** And the same for the patches under the voice buttons. */
 const voice = (name: string) => FM_VOICE_NAMES.indexOf(name)
+
+const arp = (name: string) => ARP_MODES.indexOf(name)
 
 export const PRESETS: PresetDef[] = [
   {
@@ -792,6 +795,21 @@ export const PRESETS: PresetDef[] = [
       mod0Src: 1,
       mod0Dest: DEST.echoMs,
       mod0Depth: 0.3,
+    },
+  },
+  {
+    name: 'clockwork',
+    blurb:
+      'The counter walking your hand — hold a chord, or latch it with hold',
+    patch: {
+      chipLevel: 0.8,
+      chipArp: arp('up-down'),
+      chipArpHz: 8,
+      chipArpOct: 2,
+      delayMs: 240,
+      dlyMix: 0.25,
+      revDecayS: 2,
+      revMix: 0.2,
     },
   },
   {

@@ -81,6 +81,27 @@ from a chord button, and it runs on the same divider and the same rail as
 everything else, so starving the chip or dragging its clock takes the backing
 band down with the tune.
 
+## The arpeggiator
+
+The other thing the counter can walk is your hand. **Arpeggio** on the toy's
+panel takes the keys you are holding and plays them one at a time — **up**,
+**down**, **up-down**, **random**, or **as played**, which is the order your
+fingers went down in rather than the order of the pitches. Hold a chord, or
+throw the **hold** switch on the keybed and let go: latched keys arpeggiate the
+same as held ones, which leaves both hands free for the panel or for the other
+keybed.
+
+**Arp rate** is notes a second and **Arp range** is how many octaves the figure
+climbs before it starts again. Neither is a clock of its own — the arpeggiator
+runs off the chip's divider like everything else on that die, so **Clock**, a
+pot on the timing pin and a flat rail all drag the figure along with the tune,
+the tempo and the envelopes. Nudging the rate lands it on a division of the
+kit's tempo, which is the only way the two machines ever line up.
+
+The figure goes out on the gate line like any other note, so it plays the FM
+chip too wherever that jumper is still soldered on, and **Keys fire kit** in the
+trigger patch turns it into a drum pattern.
+
 ## The drum machine
 
 The kit is a sixteen-step grid rather than a fixed pattern. Six voices —

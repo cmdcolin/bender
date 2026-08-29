@@ -10,7 +10,7 @@ const NOTE_BEATS = [0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1, 1.5, 2, 3, 4]
 // the delay lands on a dotted eighth, the slice on a sixteenth and the roll on
 // a division of the step.
 const BEAT_MS: ControlKey[] = ['delayMs', 'glitchSliceMs']
-const BEAT_HZ: ControlKey[] = ['drumRetrigHz', 'modLfoHz']
+const BEAT_HZ: ControlKey[] = ['drumRetrigHz', 'modLfoHz', 'chipArpHz']
 
 // Past this the sequencer is a buzz rather than a pulse, so there is no beat to
 // be in time with and the timed controls go back to roaming.

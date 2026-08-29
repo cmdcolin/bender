@@ -67,6 +67,13 @@ const ratio = (semitone: number) =>
 // the cheap chips left them.
 export const TONE_DUTY = [0.5, 0.25, 0.125, 0.0625]
 
+// The arpeggiator's patterns, in the order the switch has them. It is not a
+// second sequencer: the counter that walks the ROM is walking the keys your
+// hand is holding instead, off the same divider, so every bend on the clock is
+// a bend on the arpeggio.
+export const ARP_MODES = ['off', 'up', 'down', 'up-down', 'random', 'as played']
+const ARP = { up: 1, down: 2, upDown: 3, random: 4, asPlayed: 5 }
+
 // Four notes, as the toys of the era had, and how far apart the four output
 // stages came out of the bin. Written as a deviation from nominal rather than
 // as the trims themselves, so the knob that scales it has a zero: all four
@@ -189,6 +196,21 @@ export class ToyChip implements Stage {
   // over to mean "nothing struck".
   private keyPending = false
   private keyNote = 0
+  // The keys a hand is holding, in the order they went down, and the same list
+  // sorted — which is the whole of what the arpeggiator plays. Held here rather
+  // than read off the voices because there are four voices and no reason a hand
+  // cannot hold five keys: what the arpeggio walks is the hand, and what the
+  // voices do is run out.
+  //
+  // Both are rebuilt on a key event and never inside the block, so the sort is
+  // a handful of numbers on a key press rather than arithmetic per sample.
+  private heldKeys: number[] = []
+  private arpUp: number[] = []
+  private arpClock = 0
+  private arpStep = 0
+  // Whether the switch is on, as of the last block: a key goes down between two
+  // blocks, and it has to know then whether to sound or to wait for the count.
+  private arping = false
   // Whether a hand is still on the key the gate is about to report. The ROM and
   // a trigger line strike and let go in the same instant; a finger does not.
   private keyHeldPending = false
@@ -230,6 +252,16 @@ export class ToyChip implements Stage {
   // wire onto the gate can arrive at any level, which is what the trigger patch
   // has always done and what a controller's velocity is.
   noteOn(semitone: number, gain = 1) {
+    if (!this.heldKeys.includes(semitone)) {
+      this.heldKeys.push(semitone)
+      this.arpUp = [...this.heldKeys].sort((a, b) => a - b)
+      // A chord going down on an idle arpeggiator strikes its first note there
+      // and then, rather than a beat later: the count starts under your hand.
+      if (this.heldKeys.length === 1) this.arpClock = 1
+    }
+    // With the switch on, a key held is a key waiting its turn — the count is
+    // what strikes it, and holding it down would be a drone under the arpeggio.
+    if (this.arping) return
     this.strike(semitone, gain).held = true
     this.keyHeldPending = true
   }
@@ -249,7 +281,39 @@ export class ToyChip implements Stage {
   }
 
   noteOff(semitone: number) {
+    const at = this.heldKeys.indexOf(semitone)
+    if (at >= 0) {
+      this.heldKeys.splice(at, 1)
+      this.arpUp = [...this.heldKeys].sort((a, b) => a - b)
+      // The last key up ends the figure rather than pausing it, so the next
+      // chord starts on its own first note instead of halfway through the last.
+      if (this.heldKeys.length === 0) this.arpStep = 0
+    }
     for (const v of this.voices) if (v.note === semitone) v.held = false
+  }
+
+  // Which note the count is on. Every mode is one walk over the held keys,
+  // stacked as many octaves up as the range asks for — the pattern decides the
+  // order and the octave falls out of how far along the walk it has got.
+  private arpNote(mode: number, range: number): number {
+    const keys = mode === ARP.asPlayed ? this.heldKeys : this.arpUp
+    const n = keys.length
+    const span = n * range
+    if (mode === ARP.random) {
+      const k = Math.floor(this.rng() * span) % span
+      return keys[k % n]! + 12 * Math.floor(k / n)
+    }
+    // Up-down turns round on the ends without playing either of them twice, so
+    // a three-note chord is five steps rather than six.
+    const cycle = mode === ARP.upDown && span > 1 ? span * 2 - 2 : span
+    const step = this.arpStep++ % cycle
+    const at = step < span ? step : cycle - step
+    const oct = Math.floor(at / n)
+    // Down means down: the walk starts on the top note of the top octave and
+    // falls off the bottom, rather than descending its way upward.
+    return mode === ARP.down
+      ? keys[n - 1 - (at % n)]! + 12 * (range - 1 - oct)
+      : keys[at % n]! + 12 * oct
   }
 
   // Every note the chip is making a sound with, written into `out` and returned
@@ -491,6 +555,18 @@ export class ToyChip implements Stage {
     const trigMask = voiceMask(Math.round(p[IDX.trigToKeys]!))
     const trigNote = Math.round(p[IDX.trigKeysNote]!)
     const drift = p[IDX.chipDrift]!
+    const arpMode = Math.round(p[IDX.chipArp]!)
+    const arpHz = p[IDX.chipArpHz]!
+    const arpRange = Math.max(Math.round(p[IDX.chipArpOct]!), 1)
+    // Whether a key going down between blocks sounds on its own or waits for
+    // the count. The switch moving with a hand already on the keys hands the
+    // chord over either way: on, and what was droning lets go for the count to
+    // walk; off, and what your hand is still holding comes back as a chord.
+    if (this.arping !== arpMode > 0) {
+      this.arping = arpMode > 0
+      if (this.arping) for (const v of this.voices) v.held = false
+      else for (const note of this.heldKeys) this.noteOn(note)
+    }
     const cluster = p[IDX.faultCluster]!
     const couple = p[IDX.couple]!
     const rail = this.rail
@@ -617,6 +693,20 @@ export class ToyChip implements Stage {
         }
 
         this.oomPah()
+      }
+
+      // The arpeggiator, on the same divider as everything else on this die —
+      // which is the whole of why it is here rather than on a clock of its own.
+      // Slow the chip and the figure slows with the tune, the tempo and the
+      // envelopes; put a pot on the timing pin and it dives with them. A cheap
+      // keyboard's arpeggio was never a musical decision, it was whatever the
+      // counter was doing.
+      if (arpMode > 0 && this.heldKeys.length > 0) {
+        this.arpClock += (arpHz * timing) / this.sr
+        while (this.arpClock >= 1) {
+          this.arpClock -= 1
+          this.strike(this.arpNote(arpMode, arpRange), 1)
+        }
       }
 
       // The kit's trigger line, bridged onto the gate. The hit is a block old,
@@ -762,6 +852,10 @@ export class ToyChip implements Stage {
       v.env = 0
       v.held = false
     }
+    this.heldKeys.length = 0
+    this.arpUp.length = 0
+    this.arpStep = 0
+    this.arpClock = 0
     this.rail.reset()
   }
 }

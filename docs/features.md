@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 217 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 54 presets, 14 stage settings and 20 named cuts — and everything
+ruin. 220 knobs and switches in 29 groups, seven bends competing for six slots,
+18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 54 presets, and dice on every heading as
+- **Boards, rather than settings.** 55 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -107,7 +107,7 @@ too — the knife goes on and the rows under it say which controls that was:
   back stale, and the melody flickers between two versions of itself
 
 <details>
-<summary>22 controls</summary>
+<summary>25 controls</summary>
 
 | control         | range                                                                                                                                                                               | what it does                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -117,6 +117,9 @@ too — the knife goes on and the rows under it say which controls that was:
 | Memory notes    | mono or poly                                                                                                                                                                        | Whether the chip reads the two memory chips stacked on the first one                                             |
 | Tone            | organ 1/2, reed 1/4, clav 1/8, buzz 1/16                                                                                                                                            | Which width of pulse the tone selector taps off the divider chain                                                |
 | Auto bass-chord | off to full                                                                                                                                                                         | The accompaniment section: bass on the step, chord stab on the offbeat, under whichever demo song is running     |
+| Arpeggio        | off, up, down, up-down, random, as played                                                                                                                                           | The counter that walks the ROM, walking the keys your hand is holding instead                                    |
+| Arp rate        | 0.5 to 32 Hz                                                                                                                                                                        | Notes a second, before the divider gets to it                                                                    |
+| Arp range       | 1 to 4 octaves                                                                                                                                                                      | How many octaves the figure climbs before it starts again                                                        |
 | Clock           | 0.05× to 16×                                                                                                                                                                        | Drags the master clock crystal                                                                                   |
 | Bend spot       | off, clock, counter, bias, gate                                                                                                                                                     | Where the virtual pot is soldered onto the die: clock feedback, program counter, DAC bias, or the gate line      |
 | Bend pot        | off to full                                                                                                                                                                         | Turns the pot on the chosen bend spot                                                                            |
@@ -922,7 +925,7 @@ became:
 
 ### Presets
 
-54 boards worth keeping. Every name is a link that opens the app with that board
+55 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -1031,6 +1034,8 @@ on it — a link never presses play, so it is loaded and waiting.
   — A blank reel, a short loop walking over what the toy put on it — press play
 - [**seasick**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,echoMs:300,echoFb:0.55,echoLevel:0.6,modLfoHz:0.35,mod0Src:1,mod0Dest:21,mod0Depth:0.3)
   — A wire off the bay onto the pedal’s time — the repeats never settle
+- [**clockwork**](https://cmdcolin.github.io/bender/#set=chipLevel:0.8,chipArp:3,chipArpOct:2,delayMs:240,dlyMix:0.25,revMix:0.2)
+  — The counter walking your hand — hold a chord, or latch it with hold
 - [**two hands**](https://cmdcolin.github.io/bender/#set=chipLevel:0.75,fmLevel:0.7,fmVoice:5,fmBright:0.45,fmModDecay:8,fmKeyGate:1,revMix:0.2)
   — Gate jumper cut — the toy on one keybed, the FM chip on the other
 - [**doubled**](https://cmdcolin.github.io/bender/#set=fmLevel:0.6,fmVoice:6,fmBright:0.6,fmLength:1.2,revDecayS:3,revMix:0.3)
