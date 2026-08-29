@@ -141,6 +141,17 @@ the row loop back from there, with a badge on the right showing where it ends
 against a sixteen-step kick is polymeter: the two only line back up every eighty
 steps, so the pattern takes the better part of a minute to properly repeat.
 
+Clicking a step again, past lit, wires it through the kit's dice instead: it is
+drawn as a ring with a dot in it rather than a filled lamp, and it fires as
+often as **Chance** says rather than every lap. One knob decides for the whole
+kit, so a few loose contacts on the hats are all it takes for a sixteen-step
+pattern to stop repeating exactly. A third click puts the step out. Chance at
+nothing makes those steps silent and Chance all the way up makes them ordinary
+steps, which are the two ends worth knowing. The accent row has no dice on it —
+an accent is a weight rather than a hit, and a hit the machine decided still
+lands as hard as the accent row asks. A drag carries whichever of the three the
+step under your finger became, so a run of hats goes maybe in one gesture.
+
 Alongside the factory patterns is a row of verbs that rewrite the grid without
 touching tempo or tone: **Roll** writes an entirely new pattern, **Vary** makes
 a couple of small changes to the one you have, **Turnaround** drops a fill over

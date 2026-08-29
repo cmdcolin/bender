@@ -13,6 +13,7 @@ import {
 import {
   DRUM_ROMS,
   GRID_ROWS,
+  PATTERN_KEYS,
   hasStep,
   STEPS,
   stepBit,
@@ -179,9 +180,7 @@ test('no move is named after a factory pattern', () => {
     expect(roms.has(move.name), move.name).toBe(false)
 })
 
-test('a board hands over its seven rows and none of its other numbers', () => {
+test('a board hands over every mask in the pattern and none of its other numbers', () => {
   const board = { ...romNamed('disco'), drumBpm: 118, revMix: 0.4 }
-  expect(Object.keys(masksOf(board)).sort()).toEqual(
-    GRID_ROWS.map(r => r.key).sort(),
-  )
+  expect(Object.keys(masksOf(board)).sort()).toEqual([...PATTERN_KEYS].sort())
 })

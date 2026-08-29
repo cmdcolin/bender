@@ -403,7 +403,9 @@ export const SOURCE_GROUPS: Group[] = [
     folded: ['the converter', 'triggers and cross-patch', 'knife on the bus'],
     editor: {
       kind: 'drums',
-      keys: GRID_ROWS.flatMap(r => [r.key, r.len]),
+      keys: GRID_ROWS.flatMap(r =>
+        r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
+      ),
     },
     sliders: [
       {
@@ -434,6 +436,15 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving.',
+      },
+      {
+        key: 'drumChance',
+        label: 'Chance',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How often a maybe step closes. Click a step twice on the grid and its contact stops going straight to the trigger line and goes through the kit’s dice instead — one knob for the whole kit, rolled fresh every time the counter reaches the step. At nothing those steps are drawn and silent; all the way up they are steps like any other; and anywhere in between is the sixteen-step pattern finally not repeating.',
       },
       {
         key: 'drumTune',

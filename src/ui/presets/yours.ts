@@ -27,7 +27,9 @@ export const YOURS = new Set<ControlKey>([
   'loopIn',
   'loopOut',
   'chipTune',
-  ...GRID_ROWS.flatMap(r => [r.key, r.len]),
+  ...GRID_ROWS.flatMap(r =>
+    r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
+  ),
   ...TUNE_ALL_STEP_KEYS,
   'tuneLen',
   'tuneRate',

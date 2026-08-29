@@ -16,45 +16,58 @@ export const STEPS = 16
 // what there is to put a knife through — see the bus bend in toyDrum.
 export const ADDR_LINES = 4
 
+// Every voice carries two masks. `key` is the steps that close every lap, and
+// `maybe` is the steps wired through the kit's dice instead — they close as
+// often as drumChance says, rolled fresh each time the counter reaches them,
+// which is the whole of how a sixteen-step pattern stops being sixteen steps
+// long. The two never overlap in anything the grid writes, and where a hand-
+// edited link makes them, the maybe wins.
 export const DRUM_VOICES = [
   {
     key: 'drumKick',
+    maybe: 'drumKickMaybe',
     len: 'drumKickLen',
     label: 'kick',
     help: 'Sine thump, pitch falling through its own envelope.',
   },
   {
     key: 'drumSnare',
+    maybe: 'drumSnareMaybe',
     len: 'drumSnareLen',
     label: 'snare',
     help: 'Filtered noise crack.',
   },
   {
     key: 'drumHat',
+    maybe: 'drumHatMaybe',
     len: 'drumHatLen',
     label: 'hat',
     help: 'The same noise, gated short and bright.',
   },
   {
     key: 'drumClap',
+    maybe: 'drumClapMaybe',
     len: 'drumClapLen',
     label: 'clap',
     help: 'Three noise bursts nine milliseconds apart, then the tail.',
   },
   {
     key: 'drumTom',
+    maybe: 'drumTomMaybe',
     len: 'drumTomLen',
     label: 'tom',
     help: 'A slower, higher kick — the fill voice.',
   },
   {
     key: 'drumBell',
+    maybe: 'drumBellMaybe',
     len: 'drumBellLen',
     label: 'bell',
     help: 'Two detuned squares through a notch: the cowbell.',
   },
 ] as const satisfies readonly {
   key: ControlKey
+  maybe: ControlKey
   len: ControlKey
   label: string
   help: string
@@ -62,8 +75,12 @@ export const DRUM_VOICES = [
 
 // Not a voice: it decides how hard whatever plays on a step lands. It carries a
 // length of its own all the same, so the accents can run against the voices.
+// No maybe mask — an accent is a weight rather than a hit, and a weight that
+// came and went would be a second dice rolling against the one that decided
+// whether there was anything to weigh.
 const ACCENT_ROW = {
   key: 'drumAccent',
+  maybe: null,
   len: 'drumAccentLen',
   label: 'accent',
   help: 'Not a voice — whatever plays on this step hits harder.',
@@ -83,11 +100,21 @@ export const voiceBit = (voice: number) => 1 << voice
 
 export type DrumVoice = (typeof DRUM_VOICES)[number]
 export type DrumVoiceKey = DrumVoice['key']
+export type DrumMaybeKey = DrumVoice['maybe']
 export type DrumRow = (typeof GRID_ROWS)[number]
 export type DrumStepKey = DrumRow['key']
 export type DrumLenKey = DrumRow['len']
 
 export const LEN_KEYS = new Set<ControlKey>(GRID_ROWS.map(r => r.len))
+
+export const MAYBE_KEYS = DRUM_VOICES.map(v => v.maybe)
+
+/** Every mask a pattern is made of, voice masks and maybe masks together, in
+    the order the grid draws them. A move that rewrites a pattern rewrites all
+    of these or it hands back a bar with somebody else's maybes in it. */
+export const PATTERN_KEYS = GRID_ROWS.flatMap(r =>
+  r.maybe ? [r.key, r.maybe] : [r.key],
+)
 
 /** Sixteen bits and nothing else, whatever a link or a stray float carried. */
 export const asMask = (v: number) =>
@@ -107,9 +134,22 @@ export const hasStep = (mask: number, step: number) =>
   (mask & stepBit(step)) !== 0
 export const toggleStep = (mask: number, step: number) => mask ^ stepBit(step)
 
+/** What one contact is, out of the two masks that answer for it. Three states
+    and one click cycling them, so a step is off, closed, or wired through the
+    dice — and a step in both masks is the dice, because that is the wire that
+    reaches the trigger line last. */
+export type StepState = 'off' | 'on' | 'maybe'
+
+export const stepState = (
+  mask: number,
+  maybe: number,
+  step: number,
+): StepState =>
+  hasStep(maybe, step) ? 'maybe' : hasStep(mask, step) ? 'on' : 'off'
+
 /** The pattern itself: a mask per row, and the length each row runs to. The two
     halves travel together through everything that rewrites a pattern. */
-export type DrumMasks = Record<DrumStepKey, number>
+export type DrumMasks = Record<DrumStepKey | DrumMaybeKey, number>
 export type DrumLens = Record<DrumLenKey, number>
 
 export interface DrumRom {
@@ -119,7 +159,7 @@ export interface DrumRom {
 }
 
 export const EMPTY_MASKS: DrumMasks = Object.fromEntries(
-  GRID_ROWS.map(r => [r.key, 0]),
+  PATTERN_KEYS.map(k => [k, 0]),
 ) as DrumMasks
 
 const rom = (
@@ -205,7 +245,5 @@ export const DRUM_ROMS: DrumRom[] = [
 ]
 
 export function romMatching(masks: DrumMasks): DrumRom | undefined {
-  return DRUM_ROMS.find(r =>
-    GRID_ROWS.every(row => r.masks[row.key] === masks[row.key]),
-  )
+  return DRUM_ROMS.find(r => PATTERN_KEYS.every(k => r.masks[k] === masks[k]))
 }

@@ -144,6 +144,7 @@
    one carries the beat line so sixteen of them stay countable. */
 .cell,
 .cellOn,
+.cellMaybe,
 .accent,
 .accentOn {
   height: 15px;
@@ -168,6 +169,22 @@
 
 .cellOn {
   background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Wired through the dice: the contact reads as half a closed one — the ring is
+   solid because the step is really there, and the fill is thin because whether
+   it plays is not settled until the counter arrives. The dot is what keeps it
+   from reading as a dimmed lamp, which is what the grid already does to the
+   steps past a row's own length. */
+.cellMaybe {
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      var(--accent) 0 1.6px,
+      transparent 1.6px
+    ),
+    color-mix(in srgb, var(--accent) 22%, var(--bg2));
   border-color: var(--accent);
 }
 
@@ -246,6 +263,7 @@
   }
   .cell,
   .cellOn,
+  .cellMaybe,
   .accent,
   .accentOn {
     height: 26px;

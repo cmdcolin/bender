@@ -3,12 +3,13 @@ import { DEFAULT_CONTROLS } from './controls'
 import {
   DRUM_ROMS,
   GRID_ROWS,
+  PATTERN_KEYS,
   STEPS,
   hasStep,
   romMatching,
   stepBit,
   toggleStep,
-  type DrumStepKey,
+  type DrumMasks,
 } from './drums'
 
 test('step 1 is the high bit, so a mask literal reads like the grid', () => {
@@ -40,8 +41,8 @@ test('every ROM fits sixteen steps', () => {
 
 test('the machine boots on the rock ROM', () => {
   const booted = Object.fromEntries(
-    GRID_ROWS.map(r => [r.key, DEFAULT_CONTROLS[r.key]]),
-  ) as Record<DrumStepKey, number>
+    PATTERN_KEYS.map(k => [k, DEFAULT_CONTROLS[k]]),
+  ) as DrumMasks
   expect(romMatching(booted)?.name).toBe('rock')
 })
 

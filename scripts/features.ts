@@ -257,7 +257,8 @@ have no equivalent to read back: all four are always on the board.\n`
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table
 below leaves it out: ${num(GRID_ROWS.length)} rows (the ${num(DRUM_VOICES.length)} voices and an accent), each
-carrying ${STEPS} steps and a length of its own. That is ${n} more controls, and they
+carrying ${STEPS} steps and a length of its own, and a second ${STEPS}-step mask on every
+voice for the steps that only sometimes fire. That is ${n} more controls, and they
 ride in a link like the rest.\n`
 }
 

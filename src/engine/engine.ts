@@ -19,6 +19,7 @@ import {
   GRID_ROWS,
   quantizeStep,
   stepBit,
+  type DrumMaybeKey,
   type DrumStepKey,
 } from '../drums'
 import { createStore, type Store } from '../listeners'
@@ -546,6 +547,7 @@ export class Engine {
     const patch: Partial<Controls> = {}
     for (const row of GRID_ROWS) {
       patch[row.key] = board[row.key]
+      if (row.maybe) patch[row.maybe] = board[row.maybe]
       patch[row.len] = board[row.len]
     }
     const slots = this.drumSlots.get().slice()
@@ -966,13 +968,17 @@ export class Engine {
     // arming per voice would bank a step per voice, and arming for a hit that
     // lands on steps already written would leave an arm nothing commits — which
     // the next gesture banks instead of the board it set off from.
-    const writes: [DrumStepKey, number][] = []
+    const writes: [DrumStepKey | DrumMaybeKey, number][] = []
     for (const [v, voice] of DRUM_VOICES.entries()) {
       if ((bits & (1 << v)) === 0) continue
       const len = asLen(controls[voice.len])
+      const bit = stepBit(quantizeStep(this.lastTick, phase, len))
       const mask = asMask(controls[voice.key])
-      const next = mask | stepBit(quantizeStep(this.lastTick, phase, len))
-      if (next !== mask) writes.push([voice.key, next])
+      if ((mask & bit) === 0) writes.push([voice.key, mask | bit])
+      // A hand playing a hit onto a step is asking for that hit, so a step it
+      // lands on comes off the dice: what you played back is what you played.
+      const dice = asMask(controls[voice.maybe])
+      if (dice & bit) writes.push([voice.maybe, dice & ~bit])
     }
     if (writes.length === 0) return
     this.armStep()

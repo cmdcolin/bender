@@ -4,10 +4,12 @@ import {
   EMPTY_MASKS,
   GRID_ROWS,
   hasStep,
+  PATTERN_KEYS,
   STEPS,
   stepBit,
   type DrumLens,
   type DrumMasks,
+  type DrumMaybeKey,
   type DrumStepKey,
   type DrumVoiceKey,
 } from './drums'
@@ -38,10 +40,11 @@ const every = (n: number, at = 0) => {
   return mask
 }
 
+// Every mask a pattern has, the maybe masks with the rest: a bar turned, halved
+// or doubled takes its loose contacts with it, or the move hands back a pattern
+// whose dice are wired to steps that have moved out from under them.
 const mapRows = (masks: DrumMasks, f: (mask: number) => number) =>
-  Object.fromEntries(
-    GRID_ROWS.map(row => [row.key, f(masks[row.key])]),
-  ) as DrumMasks
+  Object.fromEntries(PATTERN_KEYS.map(k => [k, f(masks[k])])) as DrumMasks
 
 const setSteps = (mask: number) => {
   const steps: number[] = []
@@ -108,6 +111,30 @@ const FEELS: Feel[] = [
 // hits, and the one figure that sounds deliberate on a cowbell.
 const CLAVE = bits([0, 3, 6, 10, 12])
 
+// Which voices the machine is willing to wire through the dice. Not the kick or
+// the snare: a downbeat that is only sometimes there is not a bar with a loose
+// contact in it, it is a bar you cannot count. The trimmings are where a hand
+// puts its maybes too.
+const DICE_VOICES = DRUM_VOICES.filter(
+  v => v.key !== 'drumKick' && v.key !== 'drumSnare',
+)
+
+/** A few of one trimming voice's hits moved out of its mask and into its maybe
+    mask — the same pattern, no longer arriving whole every lap. */
+function scatterMaybes(masks: DrumMasks, rand: Rng) {
+  const live = DICE_VOICES.filter(v => masks[v.key] !== 0)
+  if (live.length === 0) return
+  const voice = pick(live, rand)
+  const steps = setSteps(masks[voice.key])
+  // Three at the outside: a row that is all dice has stopped being a part.
+  const n = 1 + Math.floor(rand() * Math.min(3, steps.length))
+  for (let i = 0; i < n; i++) {
+    const bit = stepBit(pick(steps, rand))
+    masks[voice.key] &= ~bit
+    masks[voice.maybe] |= bit
+  }
+}
+
 /** A whole new pattern. The downbeat is the one step every roll agrees on —
     everything else is the feel it landed in, its trimmings, and a fill often
     enough that you hear the bar end. */
@@ -122,6 +149,7 @@ export function randomPattern(rand: Rng): DrumMasks {
     rand,
   )
   masks.drumKick |= stepBit(0)
+  if (rand() < 0.3) scatterMaybes(masks, rand)
   return rand() < 0.3 ? fillBar(masks, rand) : masks
 }
 
@@ -177,9 +205,9 @@ export const FILLS: Fill[] = [
     name: 'stutter',
     write: (masks, at) => {
       const base = clearFrom(masks, at)
-      for (const row of GRID_ROWS)
+      for (const key of PATTERN_KEYS)
         for (let to = at; to < STEPS; to += 4)
-          base[row.key] |= (masks[row.key] & FIRST_BEAT) >>> to
+          base[key] |= (masks[key] & FIRST_BEAT) >>> to
       return base
     },
   },
@@ -273,13 +301,28 @@ const EDITS: Edit[] = [
     const steps = setSteps(masks[key])
     if (steps.length > 0) masks[key] |= stepBit((pick(steps, rand) + 1) % STEPS)
   },
+  // A hit wired through the dice, or one wired back off it. The bar is the bar
+  // you wrote either way; what moves is how much of it you get each lap.
+  (masks, rand) => {
+    const voice = pick(DICE_VOICES, rand)
+    const loose = setSteps(masks[voice.maybe])
+    const [from, to] =
+      loose.length > 0 && rand() < 0.4
+        ? [voice.maybe, voice.key]
+        : [voice.key, voice.maybe]
+    const steps = from === voice.maybe ? loose : setSteps(masks[voice.key])
+    if (steps.length === 0) return
+    const bit = stepBit(pick(steps, rand))
+    masks[from] &= ~bit
+    masks[to] |= bit
+  },
 ]
 
 /** The pattern you have, still recognisably itself, with two to four small
     things done to it. */
 export function varyPattern(masks: DrumMasks, rand: Rng): DrumMasks {
   const next = { ...masks }
-  const moved = () => GRID_ROWS.some(row => next[row.key] !== masks[row.key])
+  const moved = () => PATTERN_KEYS.some(k => next[k] !== masks[k])
   // A handful of edits is allowed to come to nothing — a ghost written where
   // one already was, an accent flipped twice — but a press that changed nothing
   // reads as a button that isn't wired up, so it goes round again.
@@ -303,10 +346,15 @@ const rotate = (mask: number, len: number, by: number) => {
     comes round where a five-step hat does, not where the bar does. */
 export const shiftPattern = (masks: DrumMasks, lens: DrumLens, by: number) =>
   Object.fromEntries(
-    GRID_ROWS.map(row => [
-      row.key,
-      rotate(masks[row.key], asLen(lens[row.len]), by),
-    ]),
+    GRID_ROWS.flatMap(row => {
+      const len = asLen(lens[row.len])
+      const turn = (key: DrumStepKey | DrumMaybeKey) => [
+        key,
+        rotate(masks[key], len, by),
+      ]
+      // A voice's two masks are one row and come round on the one length.
+      return row.maybe ? [turn(row.key), turn(row.maybe)] : [turn(row.key)]
+    }),
   ) as DrumMasks
 
 /** Twice as slow: every step of the first half of the bar is given two, and the
@@ -345,13 +393,13 @@ export const DRUM_MOVES: DrumMove[] = [
   {
     name: 'roll',
     blurb:
-      'a pattern nobody has heard: a feel picked at random — four on the floor, a backbeat, a break, halftime, or hits spread evenly the Euclidean way — with its trimmings, and a fill often enough to notice. It writes the grid and nothing else, so the kit keeps its tempo and its tone',
+      'a pattern nobody has heard: a feel picked at random — four on the floor, a backbeat, a break, halftime, or hits spread evenly the Euclidean way — with its trimmings, a fill often enough to notice, and now and then a few steps of a trimming voice wired through the dice. It writes the grid and nothing else, so the kit keeps its tempo and its tone',
     play: kit => randomPattern(kit.rand),
   },
   {
     name: 'vary',
     blurb:
-      'keep this pattern and do two or three small things to it: a hit a step to one side, a ghost between the beats, one hit gone, an accent somewhere else. The bar you wrote is still the bar you wrote',
+      'keep this pattern and do two or three small things to it: a hit a step to one side, a ghost between the beats, one hit gone, an accent somewhere else, a hit wired through the dice or wired back off it. The bar you wrote is still the bar you wrote',
     play: kit => varyPattern(kit.masks, kit.rand),
   },
   // Not 'fill': the ROM row above it already has a pattern by that name, and
@@ -384,7 +432,5 @@ export const DRUM_MOVES: DrumMove[] = [
 ]
 
 /** Only the seven rows, out of a board that carries a hundred other numbers. */
-export const masksOf = (board: Record<DrumStepKey, number>): DrumMasks =>
-  Object.fromEntries(
-    GRID_ROWS.map(row => [row.key, board[row.key]]),
-  ) as DrumMasks
+export const masksOf = (board: DrumMasks): DrumMasks =>
+  Object.fromEntries(PATTERN_KEYS.map(k => [k, board[k]])) as DrumMasks

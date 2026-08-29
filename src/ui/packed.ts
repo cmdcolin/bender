@@ -377,6 +377,13 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'chipArpOct',
   'keyScale',
   'keyRoot',
+  'drumKickMaybe',
+  'drumSnareMaybe',
+  'drumHatMaybe',
+  'drumClapMaybe',
+  'drumTomMaybe',
+  'drumBellMaybe',
+  'drumChance',
 ]
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))

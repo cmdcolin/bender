@@ -205,21 +205,82 @@ test('a drag across the grid draws a run of steps, and one undo takes it back', 
 })
 
 // Which way the drag writes is settled by the step it started on, not by each
-// step it reaches: a drag off a lit step that decided per cell would rub the row
-// out and straight back in again.
-test('a drag off a step already written wipes the run it crosses', () => {
+// step it reaches: a drag that decided per cell would rub the row out and
+// straight back in again. Three states, so a drag off a lit step wires the run
+// it crosses through the dice and one off a maybe wipes it.
+test('a drag writes whatever the step it started on became', () => {
   render(
     <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
   )
   const cell = (step: number) =>
     screen.getByRole('button', { name: `hat step ${step + 1}` })
+  const run = [2, 3, 4, 5, 6]
 
+  // Step 3 is one of the rock ROM's hats, so the drag sets off from a lit step.
   fireEvent.pointerDown(cell(2))
   for (const step of [3, 4, 5, 6])
     fireEvent.pointerOver(cell(step), { buttons: 1 })
-  const left = engine.controls.get().drumHat
-  for (const step of [2, 3, 4, 5, 6])
-    expect(hasStep(left, step), `${step}`).toBe(false)
+  const dice = engine.controls.get()
+  for (const step of run) {
+    expect(hasStep(dice.drumHat, step), `${step}`).toBe(false)
+    expect(hasStep(dice.drumHatMaybe, step), `${step}`).toBe(true)
+  }
+
+  fireEvent.pointerUp(window)
+  fireEvent.pointerDown(cell(2))
+  for (const step of [3, 4, 5, 6])
+    fireEvent.pointerOver(cell(step), { buttons: 1 })
+  const left = engine.controls.get()
+  for (const step of run) {
+    expect(hasStep(left.drumHat, step), `${step}`).toBe(false)
+    expect(hasStep(left.drumHatMaybe, step), `${step}`).toBe(false)
+  }
+})
+
+// Three states on one contact, and one click each way round them. The two masks
+// never hold the same step, because what the grid draws is what the kit reads.
+test('a step cycles off, on, wired through the dice, off', () => {
+  render(
+    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
+  )
+  const cell = screen.getByRole('button', { name: 'tom step 5' })
+  const at = () => {
+    const c = engine.controls.get()
+    return [
+      hasStep(c.drumTom, 4),
+      hasStep(c.drumTomMaybe, 4),
+      cell.getAttribute('aria-pressed'),
+    ]
+  }
+  expect(at()).toEqual([false, false, 'false'])
+  fireEvent.pointerDown(cell)
+  expect(at()).toEqual([true, false, 'true'])
+  fireEvent.pointerDown(cell)
+  expect(at()).toEqual([false, true, 'mixed'])
+  fireEvent.pointerDown(cell)
+  expect(at()).toEqual([false, false, 'false'])
+
+  // And the round trip is three steps in the walk, not six: the click that
+  // moved both masks at once is still one click.
+  act(() => engine.undo(0))
+  expect(at()).toEqual([false, true, 'mixed'])
+  act(() => engine.undo(0))
+  expect(at()).toEqual([true, false, 'true'])
+  act(() => engine.undo(0))
+  expect(at()).toEqual([false, false, 'false'])
+})
+
+// The accent row has no maybe mask — it is a weight rather than a hit — so its
+// contact is the two-state contact it always was.
+test('the accent row has no dice on it', () => {
+  render(
+    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
+  )
+  const cell = screen.getByRole('button', { name: 'accent step 5' })
+  fireEvent.pointerDown(cell)
+  expect(hasStep(engine.controls.get().drumAccent, 4)).toBe(true)
+  fireEvent.pointerDown(cell)
+  expect(hasStep(engine.controls.get().drumAccent, 4)).toBe(false)
 })
 
 // A pointer crossing the grid on its way somewhere else is not a hand drawing.

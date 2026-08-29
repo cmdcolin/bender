@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 222 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 223 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -153,7 +153,8 @@ somebody else’s pattern.
 
 The pattern grid is a widget rather than a row of sliders, so the table below
 leaves it out: seven rows (the six voices and an accent), each carrying 16 steps
-and a length of its own. That is 14 more controls, and they ride in a link like
+and a length of its own, and a second 16-step mask on every voice for the steps
+that only sometimes fire. That is 20 more controls, and they ride in a link like
 the rest.
 
 Named cuts, one press each under _knife on the bus_, where the panel keeps them
@@ -174,13 +175,14 @@ too — the knife goes on and the rows under it say which controls that was:
   does not, and the pattern comes apart a step at a time
 
 <details>
-<summary>18 controls</summary>
+<summary>19 controls</summary>
 
 | control        | range                                                   | what it does                                                                                                          |
 | -------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | Level          | off to full                                             | How loud the toy drum machine is in the source mix                                                                    |
 | Tempo          | 10 to 3000 bpm                                          | Sequencer clock                                                                                                       |
 | Swing          | 0 to 0.9                                                | Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving |
+| Chance         | off to full                                             | How often a maybe step closes                                                                                         |
 | Tune           | 0.125× to 8×                                            | The pitch trimmer inside the kit: every struck voice moves together                                                   |
 | Decay          | 0.25× to 16×                                            | Stretches or chokes every envelope at once                                                                            |
 | Bit depth      | 2 to 16 bits                                            | Word length of the one cheap DAC the whole kit shares                                                                 |

@@ -167,6 +167,7 @@ export const PARAM_DEFS = [
   ['drumDataLine', 'step'],
   ['drumDataFault', 'step'],
   ['drumBusCut', 'slew'],
+  ['drumChance', 'slew'],
 
   ['drumKick', 'step'],
   ['drumSnare', 'step'],
@@ -175,6 +176,13 @@ export const PARAM_DEFS = [
   ['drumTom', 'step'],
   ['drumBell', 'step'],
   ['drumAccent', 'step'],
+
+  ['drumKickMaybe', 'step'],
+  ['drumSnareMaybe', 'step'],
+  ['drumHatMaybe', 'step'],
+  ['drumClapMaybe', 'step'],
+  ['drumTomMaybe', 'step'],
+  ['drumBellMaybe', 'step'],
 
   ['drumKickLen', 'step'],
   ['drumSnareLen', 'step'],

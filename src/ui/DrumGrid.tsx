@@ -19,12 +19,13 @@ import {
   GRID_ROWS,
   N_DRUM_VOICES,
   STEPS,
-  hasStep,
   romMatching,
   stepBit,
+  stepState,
   voiceBit,
   type DrumRom,
   type DrumRow,
+  type StepState,
 } from '../drums'
 import { DRUM_MOVES, masksOf, type DrumMove } from '../drum-moves'
 import { padKeyFor } from './drumKeys'
@@ -85,11 +86,21 @@ function useStruck(): number {
 }
 
 // What a drag across the grid is writing. Held in a ref rather than in state
-// because the grid draws none of it: the direction is settled on the way down —
-// a drag off a dark step writes the steps it crosses, one off a lit step wipes
-// them — and every cell it reaches afterwards writes the same way. A drag that
+// because the grid draws none of it: what the cell under the finger became on
+// the way down is what every cell the drag reaches becomes too. A drag that
 // decided per cell would be a hand rubbing a row out and back in again.
-type Paint = RefObject<boolean | null>
+//
+// So the three states are three drags. Off a dark step it draws a run of steps;
+// off a lit one it wires that run through the dice; off a maybe it wipes.
+type Paint = RefObject<StepState | null>
+
+// One click, one state on. The accent row skips the middle one — it has no
+// maybe mask, so its contact is the two-state contact it always was.
+const NEXT: Record<StepState, StepState> = {
+  off: 'on',
+  on: 'maybe',
+  maybe: 'off',
+}
 
 // The pattern, as the plugboard it is: a row per voice, a column per step, and
 // the accent row underneath deciding how hard each column lands. The ROM
@@ -99,6 +110,10 @@ type Paint = RefObject<boolean | null>
 // Each row carries its own length, so the rows need not come round together.
 // Shift-click a step to end a row there; the badge on the right says where it
 // ends, and puts the row back to sixteen.
+//
+// A contact has three positions rather than two: out, closed, and wired through
+// the kit's dice, where Chance decides it afresh every lap. Which is the only
+// thing on the panel that stops sixteen steps from being sixteen steps.
 export function DrumGrid() {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
@@ -112,7 +127,7 @@ export function DrumGrid() {
   const level = useControlValue('drumLevel')
   const loaded = useBoardValue(c => romMatching(c)?.name)
   const live = playing && level > 0
-  const paint = useRef<boolean | null>(null)
+  const paint = useRef<StepState | null>(null)
   // A drag ends wherever the hand lets go, which is often not over a cell — so
   // the release is heard on the window rather than on the button. Without it
   // the direction outlives the gesture, and the next press anywhere on the page
@@ -300,6 +315,11 @@ function Row({
   paint: Paint
 }) {
   const mask = useControlValue(row.key)
+  // The accent row has no maybe mask, so it reads its own back and draws none:
+  // a hook cannot be asked for conditionally, and there is nothing else on the
+  // board a row would rather be watching.
+  const dice = useControlValue(row.maybe ?? row.key)
+  const maybe = row.maybe ? dice : 0
   const len = asLen(useControlValue(row.len))
   const accent = row.key === 'drumAccent'
   // Each row's own playhead: the counter is steps clocked, so a short row is
@@ -324,7 +344,11 @@ function Row({
           >
             <button
               className={
-                lit ? styles.nameHit : mask ? styles.nameOn : styles.name
+                lit
+                  ? styles.nameHit
+                  : mask || maybe
+                    ? styles.nameOn
+                    : styles.name
               }
               onClick={() => engine.drumHit(voiceBit(voice))}
             >
@@ -342,12 +366,12 @@ function Row({
               paint={paint}
               className={cellClass({
                 accent,
-                on: hasStep(mask, s),
+                state: stepState(mask, maybe, s),
                 beat: s % 4 === 0,
                 under: s === under,
                 past: s >= len,
               })}
-              on={hasStep(mask, s)}
+              state={stepState(mask, maybe, s)}
             />
           ))}
         </div>
@@ -387,25 +411,43 @@ const Cell = memo(function Cell(props: {
   row: DrumRow
   step: number
   className: string
-  on: boolean
+  state: StepState
   paint: Paint
 }) {
   const { row, step, paint } = props
-  // The mask as it stands, not as it stood when this cell last drew: a drag
+  // The masks as they stand, not as they stood when this cell last drew: a drag
   // writes a cell per event, and folding a bit into a rendered copy would make
   // every step of the run depend on React having caught up in between.
-  const write = (on: boolean) => {
-    const mask = engine.controls.get()[row.key]
-    engine.set(row.key, on ? mask | stepBit(step) : mask & ~stepBit(step))
+  //
+  // The two are kept apart rather than layered, so what the grid draws is what
+  // the kit reads: a step is in one mask or the other or neither.
+  const write = (to: StepState) => {
+    const board = engine.controls.get()
+    const bit = stepBit(step)
+    const mask = to === 'on' ? board[row.key] | bit : board[row.key] & ~bit
+    if (mask !== board[row.key]) engine.set(row.key, mask)
+    if (!row.maybe) return
+    const dice =
+      to === 'maybe' ? board[row.maybe] | bit : board[row.maybe] & ~bit
+    if (dice !== board[row.maybe]) engine.set(row.maybe, dice)
   }
+  // Round the three states, or the two the accent row has.
+  const next = () =>
+    row.maybe ? NEXT[props.state] : props.state === 'on' ? 'off' : 'on'
   return (
     <Tip
-      text={`Drag across the grid to draw a run of steps — shift-click to bring the ${row.label} row round after step ${step + 1}.`}
+      text={
+        row.maybe
+          ? `One click closes the step, a second wires it through the kit’s dice so it fires as often as Chance says, a third puts it out. Drag across the grid to write a run of whichever the step under your finger became — shift-click to bring the ${row.label} row round after step ${step + 1}.`
+          : `Drag across the grid to draw a run of steps — shift-click to bring the ${row.label} row round after step ${step + 1}.`
+      }
     >
       <button
         className={props.className}
         aria-label={`${row.label} step ${step + 1}`}
-        aria-pressed={props.on}
+        // Half-pressed is what a maybe step is: the contact is wired up and the
+        // kit still has to decide.
+        aria-pressed={props.state === 'maybe' ? 'mixed' : props.state === 'on'}
         // The press writes on the way down rather than on the click, because
         // this is where a drag starts and the step under the finger is the one
         // that says which way the drag writes.
@@ -423,8 +465,8 @@ const Cell = memo(function Cell(props: {
               paint.current = null
               engine.set(row.len, step + 1)
             } else {
-              paint.current = !props.on
-              write(!props.on)
+              paint.current = next()
+              write(paint.current)
             }
           }
         }}
@@ -435,7 +477,7 @@ const Cell = memo(function Cell(props: {
           if (
             (e.buttons & 1) !== 0 &&
             paint.current !== null &&
-            paint.current !== props.on
+            paint.current !== props.state
           )
             write(paint.current)
         }}
@@ -445,7 +487,7 @@ const Cell = memo(function Cell(props: {
           if (e.detail === 0) {
             engine.armStep()
             if (e.shiftKey) engine.set(row.len, step + 1)
-            else write(!props.on)
+            else write(next())
           }
         }}
       />
@@ -455,18 +497,20 @@ const Cell = memo(function Cell(props: {
 
 function cellClass(s: {
   accent: boolean
-  on: boolean
+  state: StepState
   beat: boolean
   under: boolean
   past: boolean
 }): string {
   const base = s.accent
-    ? s.on
+    ? s.state === 'on'
       ? styles.accentOn
       : styles.accent
-    : s.on
-      ? styles.cellOn
-      : styles.cell
+    : s.state === 'maybe'
+      ? styles.cellMaybe
+      : s.state === 'on'
+        ? styles.cellOn
+        : styles.cell
   return [
     base,
     s.beat && styles.beat,

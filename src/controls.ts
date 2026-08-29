@@ -172,6 +172,7 @@ export const DEFAULT_CONTROLS = {
   drumDataLine: 0,
   drumDataFault: 0,
   drumBusCut: 1,
+  drumChance: 0.5,
 
   // The pattern: one sixteen-bit mask per voice, step 1 in the high bit so the
   // literal reads left to right like the grid. This is the 'rock' ROM.
@@ -182,6 +183,16 @@ export const DEFAULT_CONTROLS = {
   drumTom: 0,
   drumBell: 0,
   drumAccent: 0,
+
+  // The other mask a voice: the steps that only sometimes close, at the odds
+  // drumChance sets. Nothing here by default, so every board and every link
+  // made before the kit grew a dice plays exactly as it always did.
+  drumKickMaybe: 0,
+  drumSnareMaybe: 0,
+  drumHatMaybe: 0,
+  drumClapMaybe: 0,
+  drumTomMaybe: 0,
+  drumBellMaybe: 0,
 
   // How many of those steps each row plays before it comes round again. All
   // sixteen is the machine as it left the factory; anything else is polymeter —

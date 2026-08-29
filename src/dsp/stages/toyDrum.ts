@@ -62,6 +62,7 @@ const BELL = 5
 const N_VOICES = N_DRUM_VOICES
 
 const VOICE_PARAM = DRUM_VOICES.map(v => IDX[v.key])
+const MAYBE_PARAM = DRUM_VOICES.map(v => IDX[v.maybe])
 const LEN_PARAM = GRID_ROWS.map(r => IDX[r.len])
 const ACCENT_ROW = GRID_ROWS.length - 1
 
@@ -123,6 +124,15 @@ export class ToyDrum implements Stage {
   private dataLine = -1
   private dataFault = 0
   private busCut = 1
+  // How often a maybe step closes, and which of them closed on the step the
+  // counter is standing on. The roll happens once, when the counter arrives:
+  // the retrigger bend hammers the same step thousands of times a second and
+  // the mic and the keyboard reach across to whatever step is standing, and a
+  // contact that answered differently every time something touched it would be
+  // a rattle rather than a step that sometimes plays.
+  private chance = 0.5
+  private open = 0
+  private rolledAt = -1
   // How far a voice has to have drained before its one-shot will answer again.
   // At 1 nothing is ever locked out, because an envelope leaves at 1 and only
   // falls: the board that touches this knob is the only one that divides.
@@ -219,11 +229,23 @@ export class ToyDrum implements Stage {
   // stamping the bus and lighting the row, where the cross-patch only lends an
   // envelope. The accent rides a line of its own and is not in this word.
   private bitsAt(p: Float32Array, tick: number): number {
+    // Once a tick, and only for the voices that have a maybe step under the
+    // counter — a kit nobody has wired through the dice draws nothing from the
+    // noise source, so it renders the samples it always did.
+    const roll = tick !== this.rolledAt
+    if (roll) {
+      this.rolledAt = tick
+      this.open = 0
+    }
     let bits = 0
     for (let v = 0; v < N_VOICES; v++) {
       const step = this.stepAt(tick, v)
-      if ((Math.round(p[VOICE_PARAM[v]!]!) >> (STEPS - 1 - step)) & 1)
-        bits |= 1 << v
+      const at = STEPS - 1 - step
+      const bit = 1 << v
+      if ((Math.round(p[MAYBE_PARAM[v]!]!) >> at) & 1) {
+        if (roll && this.rng() < this.chance) this.open |= bit
+        if (this.open & bit) bits |= bit
+      } else if ((Math.round(p[VOICE_PARAM[v]!]!) >> at) & 1) bits |= bit
     }
     return this.dataBus.read(bits, this.dataLine, this.dataFault, this.busCut)
   }
@@ -268,6 +290,12 @@ export class ToyDrum implements Stage {
     ctx.trig.drumFired(i, struck, gain)
   }
 
+  // The accent line is read the way it always was: it says how hard whatever
+  // plays on this step lands, and a maybe step that came up plays at the weight
+  // the accent row asked for. Nothing rolls for the weight — an accent nobody
+  // can predict on a hit nobody can predict is two dice on one step, and what
+  // comes back off that is a kit playing at random rather than a pattern with a
+  // loose contact in it.
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
     const named = this.bitsAt(p, this.tick)
     const bits = fallback ? named || 1 : named
@@ -302,6 +330,7 @@ export class ToyDrum implements Stage {
     this.dataLine = Math.round(p[IDX.drumDataLine]!) - 1
     this.dataFault = Math.round(p[IDX.drumDataFault]!)
     this.busCut = p[IDX.drumBusCut]!
+    this.chance = Math.min(Math.max(p[IDX.drumChance]!, 0), 1)
     // All the way up is a voice that will not answer again until it has stopped
     // sounding; at nothing the floor sits above where an envelope starts, so
     // nothing is ever locked out.
@@ -318,6 +347,7 @@ export class ToyDrum implements Stage {
       this.lastReboot = rail.rebootCount
       this.tick = 0
       this.stepClock = 0
+      this.rolledAt = -1
     }
 
     // There is one oscillator in the chip and the envelopes are counted off it,
@@ -517,6 +547,8 @@ export class ToyDrum implements Stage {
     this.struckBits = 0
     this.struckGain = 0
     this.firedSince = 0
+    this.open = 0
+    this.rolledAt = -1
     this.env.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)

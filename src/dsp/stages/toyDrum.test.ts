@@ -5,6 +5,7 @@ import { packParams } from '../../engine/params'
 import { buildBender } from '../build'
 import {
   bin,
+  deviation,
   lowEnergy,
   makeIo,
   render,
@@ -565,4 +566,62 @@ test('a wrapping accumulator turns the loud step inside-out', () => {
   expect(peak(stock)).toBeGreaterThan(0.8)
   expect(peak(wrapped)).toBeLessThan(0.7 * peak(stock))
   expect(slew(wrapped)).toBeGreaterThan(1.6 * slew(stock))
+})
+
+// A step wired through the kit's dice rather than straight to the trigger line,
+// and how many of eight laps of the bar the kick arrived on.
+const diceLaps = (drumChance: number) =>
+  onsets(soloVoice({ drumKickMaybe: stepMask(2), drumChance, drumBpm: 480 }, 4))
+    .length
+
+test('a maybe step plays some laps and not others', () => {
+  const laps = diceLaps(0.5)
+  expect(laps).toBeGreaterThan(0)
+  expect(laps).toBeLessThan(8)
+})
+
+test('the ends of Chance are the two certainties', () => {
+  expect(diceLaps(0)).toBe(0)
+  expect(diceLaps(1)).toBe(8)
+})
+
+// The roll comes off the same seeded source the noise transistor draws on, so a
+// kit that rolled for steps nobody wired through the dice would move every hat
+// on the bar by a sample of hiss. Nothing draws until there is a maybe step
+// under the counter, which is why a board written before the kit grew a dice
+// renders the samples it always did.
+test('a kit with no maybe steps renders the same wherever Chance sits', () => {
+  const kit: Partial<Controls> = { chipLevel: 0, drumLevel: 1, drumBpm: 120 }
+  const stock = render(kit, 2)
+  for (const drumChance of [0, 0.25, 1])
+    expect(deviation(render({ ...kit, drumChance }, 2), stock)).toBe(0)
+})
+
+test('a maybe step lands on the same laps every time the board is rendered', () => {
+  const kit: Partial<Controls> = {
+    drumHatMaybe: stepMask(1, 5, 9, 13),
+    drumChance: 0.5,
+  }
+  expect(deviation(soloVoice(kit, 2), soloVoice(kit, 2))).toBe(0)
+})
+
+// The accent is a weight rather than a hit, and it stays on its own line: a
+// maybe step that comes up lands at whatever the accent row asked for.
+test('an accent still weighs a step the dice decided', () => {
+  const dice: Partial<Controls> = { drumKickMaybe: stepMask(2), drumChance: 1 }
+  const plain = soloVoice(dice)
+  const hard = soloVoice({ ...dice, drumAccent: stepMask(2) })
+  expect(rms(hard)).toBeGreaterThan(rms(plain) * 1.3)
+})
+
+// A row's own length decides which of its steps the counter is standing on, and
+// the maybe mask is read at that step like the other one: a three-step row's
+// dice come round every three steps, not every sixteen.
+test('a maybe step comes round on its own row’s length', () => {
+  const dice: Partial<Controls> = { drumKickMaybe: stepMask(2), drumChance: 1 }
+  const short = soloVoice({ ...dice, drumKickLen: 3 }, 2)
+  const full = soloVoice(dice, 2)
+  // Five hits a second against one every sixteen steps: too close together to
+  // count as onsets, and loud enough to hear as the difference it is.
+  expect(rms(short)).toBeGreaterThan(rms(full) * 1.5)
 })
