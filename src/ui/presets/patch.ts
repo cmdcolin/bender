@@ -360,12 +360,21 @@ export function coherePatch(
       next[w.dest] = DEPTH_DEST[to]!
     }
     const t = WIRES[to]!
-    if (next[t.src] === SRC_OFF)
+    let invented = false
+    if (next[t.src] === SRC_OFF) {
       next[t.src] = pickTap(next, rand, woke, bayTaps(next))
-    if (depthTarget(next[t.dest]) >= 0)
+      invented = true
+    }
+    if (depthTarget(next[t.dest]) >= 0) {
       next[t.dest] = landOn(next, rand, wake, woke, bayDests(next))
-    next[t.depth] = gated(rand)
-    next[w.depth] = strong(rand)
+      invented = true
+    }
+    // Only a wire this pass just made: one that was already landing somewhere
+    // keeps the depth you gave it, since a push on top of a depth that is up is
+    // a patch too — and a repair that re-rolled it would fight the hand that
+    // set it every time a shake ran.
+    if (invented) next[t.depth] = gated(rand)
+    if (next[w.depth] === 0) next[w.depth] = strong(rand)
     opened.add(to)
   }
 

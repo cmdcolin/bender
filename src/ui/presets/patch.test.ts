@@ -7,7 +7,7 @@ import {
 import { mulberry32 } from '../../dsp/util/rng'
 import { BENDS, GROUPS, choiceValue } from '../controls'
 import { bayFaults, coherePatch, solderBay, solderCascade } from './patch'
-import { randomLook, rollGroup } from './roll'
+import { mutate, randomLook, rollGroup } from './roll'
 import { SCENARIOS } from './scenarios'
 import { mine } from './testBoard'
 
@@ -158,6 +158,63 @@ test('rewire re-solders the bay onto stages the board is already running', () =>
   for (let seed = 1; seed <= 40; seed++) {
     const after = scenarioNamed('rewire')(deadBay(), mulberry32(seed))
     expect(bayFaults(after), `seed ${seed}`).toEqual([])
+  }
+})
+
+// A bay somebody soldered, on a board that can hear it: wire 1 opening wire 2,
+// and wire 3 on a stage of its own.
+const handPatched = (): Controls => ({
+  ...mine(),
+  combMix: 0.6,
+  mod0Src: choiceValue('mod0Src', 'LFO'),
+  mod0Dest: DEPTH_OF[1]!,
+  mod0Depth: 0.9,
+  mod1Src: choiceValue('mod0Src', 'envelope'),
+  mod1Dest: choiceValue('mod0Dest', 'comb pitch'),
+  mod1Depth: 0.15,
+  mod2Src: choiceValue('mod0Src', 'drum hit'),
+  mod2Dest: choiceValue('mod0Dest', 'chip clock'),
+  mod2Depth: -0.4,
+})
+
+// The repair runs on every shake, and a shake happens on a timer forever. One
+// that re-rolled a depth it had no complaint about would walk a patch you built
+// away from you a tick at a time.
+test('repairing a bay that is already one changes nothing', () => {
+  const before = handPatched()
+  expect(bayFaults(before)).toEqual([])
+  for (let seed = 1; seed <= 40; seed++) {
+    expect(coherePatch(before, mulberry32(seed)), `seed ${seed}`).toEqual(
+      before,
+    )
+    expect(
+      coherePatch(before, mulberry32(seed), { wake: false }),
+      `seed ${seed}`,
+    ).toEqual(before)
+  }
+})
+
+// A nudge re-rolls either end of a wire as freely as it moves a knob, and it
+// nudges the dry/wets a wire lands on too. Both leave a wire pointing at
+// nothing, and nothing downstream of a shake was putting it back.
+test('a shake never leaves a wire pointing at nothing', () => {
+  const before = handPatched()
+  for (const amount of [0.04, 0.12, 0.3]) {
+    for (let seed = 1; seed <= 60; seed++) {
+      const after = mutate(before, amount, mulberry32(seed))
+      expect(bayFaults(after), `${amount} seed ${seed}`).toEqual([])
+    }
+  }
+})
+
+// Drift is that shake on a timer: what matters is not one tick but where a
+// board left running for a few minutes has got to.
+test('a board left drifting still has a bay at the end of it', () => {
+  let board = handPatched()
+  const rand = mulberry32(11)
+  for (let tick = 0; tick < 200; tick++) {
+    board = mutate(board, 0.05, rand)
+    expect(bayFaults(board), `tick ${tick}`).toEqual([])
   }
 })
 

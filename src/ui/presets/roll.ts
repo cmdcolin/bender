@@ -96,7 +96,15 @@ export function mutate(
     if (def.shy && controls[def.key] === def.min) continue
     next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
-  return inTime(next, () => true)
+  inTime(next, () => true)
+  // A shake reaches the bay like it reaches anything else, and either end of a
+  // wire is one nudge from pointing at nothing — a source re-rolled onto a mic
+  // nobody has turned on, a dry/wet nudged to zero under a wire that was landing
+  // on it. Drift is this same nudge on a timer, so a board left running would
+  // shake its own patch apart over a few minutes with nobody watching. The
+  // repair leaves the stages where the shake put them: a nudge that turned a
+  // reverb up to justify a wire is a nudge rewriting the board.
+  return coherePatch(next, rand, { wake: false })
 }
 
 // Six bends wet at once is porridge — every stage half there, none of them the
