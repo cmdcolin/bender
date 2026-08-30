@@ -99,7 +99,7 @@ const SCRIPTS: Record<string, string> = {
   features: 'rewrites docs/features.md — this file',
   figure: "re-shoots the README's screenshot of the app and its panel",
   knife:
-    'sweeps every wire and fault on all five buses and reports which you can hear',
+    'sweeps every wire and fault on every bus and reports which you can hear',
   spectrum:
     'sweeps the same space and reports what each fault sounds like, by frequency',
   preview: 'serves the built bundle',

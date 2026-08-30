@@ -56,11 +56,15 @@ the main and audio threads is [dataflow.md](dataflow.md).
   crop coordinates, so a layout change moves the box on its own. Wants
   `google-chrome` (or `chromium`, or `BENDER_CHROME`) and ImageMagick's `magick`
   on PATH.
+- The bus drawing in [BENDS.md](BENDS.md#where-the-buses-run) is
+  `docs/img/buses.dot`, re-rendered in the same commit as any edit:
+  `dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg`. Nothing checks it, for
+  the reasons [dataflow.md](dataflow.md) gives about the other one.
 - `pnpm features` regenerates [features.md](features.md) from the app's own
   control tables and tooltips. Run it after changing a control, a preset, or a
   ROM — a test fails the build if the committed file falls behind.
-- `pnpm knife` sweeps every wire and fault on all five buses and reports which
-  ones are actually audible.
+- `pnpm knife` sweeps every wire and fault on every bus and reports which ones
+  are actually audible.
 - `pnpm spectrum` sweeps the same space and reports what each one _sounds_ like:
   level, spectral centroid, flatness — 0 for a sine, 1 for noise — and where the
   power sat across five bands. Each bus ends with a `reach` line, which is the

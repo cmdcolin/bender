@@ -1111,7 +1111,7 @@ on it — a link never presses play, so it is loaded and waiting.
 | `pnpm diagram`   | re-renders the README's signal path                                                                 |
 | `pnpm features`  | rewrites docs/features.md — this file                                                               |
 | `pnpm figure`    | re-shoots the README's screenshot of the app and its panel                                          |
-| `pnpm knife`     | sweeps every wire and fault on all five buses and reports which you can hear                        |
+| `pnpm knife`     | sweeps every wire and fault on every bus and reports which you can hear                             |
 | `pnpm soak`      | whether any stage gets slower the longer it runs                                                    |
 | `pnpm spectrum`  | sweeps the same space and reports what each fault sounds like, by frequency                         |
 | `pnpm preview`   | serves the built bundle                                                                             |

@@ -6,6 +6,33 @@ pitch, tempo and envelopes are the same clock divided three ways — anything th
 touches the clock touches all three at once, and there's no setting where they
 come apart.
 
+## Where the buses run
+
+<img src="img/buses.svg" alt="the address, data and wave buses on each chip" width="620">
+
+Several chips carry a **Data line** control and it means something different on
+each, so the drawing says which two blocks every bus runs between and how wide
+it is. [buses.dot](img/buses.dot) is the source.
+
+Which side of the memory a bus sits on decides what the damage sounds like. An
+address bus runs into the memory, so a knife there fetches the wrong thing and
+the chip then plays it perfectly — the tempo never moves. A data bus carries the
+answer back, so a knife there mangles a fetch that was correct. That is why the
+two controls on one chip sound nothing alike.
+
+The FM chip is the exception, and the drawing is arranged to show it: both of
+its buses run the same way, into the register file, because the processor writes
+that bus rather than reading it. A register holds what it was last told, so a
+fault there does not pass through — it accumulates, and a byte that lands wrong
+stays wrong until the processor writes that register again.
+
+One wire is one voice on the drum data bus, in the order of the rows, and that
+is the only bus here where a wire number means something fixed. A toy-chip data
+line carries a note code and an FM data line carries whichever byte the
+processor was sending, so on those the wire is something you find rather than
+something to learn. The named cuts under _knife on the bus_ are the shortcut:
+each one is a wire and a fault somebody already found worth keeping.
+
 ## The shared power rail
 
 **Starve** sags the supply the toy keyboard, the drum machine and the FM chip

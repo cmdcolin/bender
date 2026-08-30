@@ -1,0 +1,100 @@
+// Source for docs/img/buses.svg, which docs/BENDS.md embeds.
+// Regenerate with: dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg
+//
+// What this answers: "Data line" is a control on more than one panel and
+// means something different on each. The drawing says which two blocks each
+// bus runs between and how many wires it has, so a knife on one of them has a
+// direction rather than being a number you picked.
+//
+// The asymmetry is the point. On the toy chips the address bus runs INTO
+// the memory and the data bus comes back OUT of it, which is why an address
+// fault fetches the wrong thing while a data fault mangles what came back. The
+// FM chip's data bus runs the other way — into a register file that latches —
+// which is why its faults accumulate instead of passing. docs/BENDS.md says
+// the rest.
+//
+// Deliberately NOT per-wire meanings. Only the drum data bus has one worth
+// drawing, since a wire there is a voice; a toy-chip data line carries a note
+// code and an FM data line carries whatever byte the processor was sending, so
+// a fixed label on those would be a lie. What is knowable per wire lives in the
+// help text in src/ui/controls/sources.ts and in the named cuts.
+//
+// Widths track constants: ROM_DATA_LINES / ROM_ADDR_LINES in
+// src/dsp/stages/roms.ts, N_DRUM_VOICES and ADDR_LINES in src/drums.ts. Palette
+// follows docs/img/dataflow.dot so the family reads alike: blue chooses, orange
+// carries, green is the bus the processor never touches.
+digraph buses {
+  rankdir=LR
+  bgcolor="white"
+  nodesep=0.28
+  ranksep=0.5
+  compound=true
+  node [shape=box style="filled,rounded" fillcolor="#f6f8fa" color="#d0d7de"
+        fontname="Helvetica" fontsize=10 margin="0.16,0.08" fontcolor="#24292f"]
+  edge [fontname="Helvetica" fontsize=9 penwidth=1.3 arrowsize=0.8]
+
+  // Memories are square where logic is rounded — the knife lands on the wires
+  // either side of these, never inside them.
+  node [style=filled shape=box] // reset below per-cluster
+
+  subgraph cluster_fm {
+    label="FM chip"
+    labelloc="t"
+    labeljust="l"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=14
+
+    fm_cpu [label="processor" style="filled,rounded"]
+    fm_reg [label="register file" style=filled]
+    fm_phase [label="phase" style="filled,rounded"]
+    fm_sine [label="sine table" style=filled]
+
+    // Both buses run the same way here: this one is written, not read.
+    fm_cpu -> fm_reg [label="A0–A5" color="#0969da" fontcolor="#0969da"]
+    fm_cpu -> fm_reg [label="D0–D7" color="#bc4c00" fontcolor="#bc4c00"]
+    fm_phase -> fm_sine [label="W0–W9" color="#1a7f37" fontcolor="#1a7f37"]
+  }
+
+  subgraph cluster_drums {
+    label="toy drums"
+    labelloc="t"
+    labeljust="l"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=14
+
+    drum_ctr [label="step\ncounter" style="filled,rounded"]
+    drum_mem [label="pattern\nmemory" style=filled]
+    drum_bus [label=<trigger bus<br/><font color="#57606a" point-size="8">kick snare hat clap<br/>tom bell open hat cymbal</font>> style="filled,rounded"]
+
+    drum_ctr -> drum_mem [label="A0–A3" color="#0969da" fontcolor="#0969da"]
+    drum_mem -> drum_bus [label=<<font color="#bc4c00">D0–D7</font><br/><font color="#57606a" point-size="8">one wire a voice</font>>
+                          color="#bc4c00"]
+  }
+
+  subgraph cluster_toy {
+    label="toy keyboard"
+    labelloc="t"
+    labeljust="l"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=14
+
+    toy_ctr [label="program\ncounter" style="filled,rounded"]
+    toy_rom [label="tune ROM" style=filled]
+    toy_div [label="divider" style="filled,rounded"]
+
+    toy_ctr -> toy_rom [label="A0–A4" color="#0969da" fontcolor="#0969da"]
+    toy_rom -> toy_div [label="D0–D5" color="#bc4c00" fontcolor="#bc4c00"]
+  }
+}
