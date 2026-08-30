@@ -15,17 +15,25 @@ import {
   stopEffect,
 } from './fmEffects'
 import {
+  AM,
   attackSecs,
   BASS_BLOCK,
   BASS_FNUM,
+  CAR_HALF,
   fallSecs,
   KEY_ON,
   KIT,
+  kslGain,
+  KSL_SHIFT,
+  MOD_HALF,
   MULT,
   PATCH_BYTES,
   REG,
   RHY,
+  ROM_PATCH_BYTES,
+  scaledRate,
   TEST,
+  VIB,
 } from './fmVoices'
 
 // The other chip on the board: two operators a voice, four voices, and a
@@ -57,9 +65,6 @@ const RHYTHM_CH = 2
 
 /** What the hi-hat's slot runs at against the snare's, fixed on the die. */
 const HAT_MULT = 8
-
-/** The bass drum's feedback, out of its ROM patch rather than the panel. */
-const BASS_FB = Math.pow(2, (KIT.bass[REG.feedback]! & 0x07) - 8)
 
 // The shift register the percussion runs on: seventeen stages, one tap, and
 // free-running from power-on. Nothing on the panel reaches it and nothing
@@ -124,6 +129,32 @@ const sineAt = (addr: number) => {
   const s = sineQuarter[addr & MIRROR ? QUARTER - 1 - i : i]!
   return addr & SIGN ? -s : s
 }
+
+// The one LFO on the die, and the only oscillator on this chip that nothing
+// addresses. There is no register for it anywhere: no rate, no depth, no way to
+// start it or stop it, and the whole of what a patch gets to say is whether an
+// operator is soldered to it. It has been running since the board came up.
+//
+// Both shapes are counters rather than curves, the way the part built them. The
+// tremolo is a triangle off the top of the divider and only ever takes level
+// away, because attenuation is the only thing the output stage knows how to
+// add. The vibrato is a staircase of eight, which is why a chip like this
+// wobbles in steps instead of gliding. Both count off the same divider as the
+// pitch and the envelopes, so a starving board slows the wobble down with
+// everything else — one oscillator, as ever.
+const AM_HZ = 3.7
+const VIB_HZ = 6.4
+/** How much level the tremolo takes at the bottom of its triangle, in dB. */
+const AM_DB = 1.1
+/** The steps the vibrato counter walks, and how far the far ones are, in cents. */
+const VIB_CENTS = 7
+const VIB_STEPS = [0, 1, 2, 1, 0, -1, -2, -1]
+const VIB_FACTOR = VIB_STEPS.map(s => Math.pow(2, (s * VIB_CENTS) / 2 / 1200))
+
+/** The tremolo counter, six bits of it, as a gain rather than as decibels. */
+const AM_GAIN = Float64Array.from({ length: 64 }, (_, i) =>
+  Math.pow(10, -(AM_DB * i) / 63 / 20),
+)
 
 /** Which way the stale bit falls on a cut waveform line. */
 const WAVE_SEED = 0x1d
@@ -208,6 +239,14 @@ interface Rates {
   level: number
   half: number
   sustained: boolean
+  /** whether this operator is wired to the die's LFO, either way round */
+  am: boolean
+  vib: boolean
+  /** the two-bit key scaling, kept as its setting because the gain it comes to
+      depends on the note, and the note is read off the registers per sample */
+  ksl: number
+  /** how much of itself the modulator gets back; nothing on a carrier */
+  fb: number
 }
 
 const newRates = (): Rates => ({
@@ -219,7 +258,14 @@ const newRates = (): Rates => ({
   level: 1,
   half: 0,
   sustained: false,
+  am: false,
+  vib: false,
+  ksl: 0,
+  fb: 0,
 })
+
+/** The two operators of one channel, as the sample loop wants them. */
+const newPair = () => ({ mod: newRates(), car: newRates() })
 
 export class FmChip implements Stage {
   label = 'fmChip'
@@ -232,14 +278,18 @@ export class FmChip implements Stage {
     offIn: 0,
   }))
   private clock = 0
-  private modRates = newRates()
-  private carRates = newRates()
+  // One rate set per operator per channel, rather than one for the chip. Four
+  // channels can be running four different patches now: the instrument nibble
+  // is a per-channel register, so a wire under it leaves one voice reading the
+  // die's ROM while its neighbours go on reading the register file. Key scaling
+  // splits them too, since the rate an operator counts at depends on the octave
+  // the channel was keyed at.
+  private chRates = Array.from({ length: N_CH }, newPair)
   private raceRates = newRates()
   // The kit's four, which never read the register file: the bass drum's two
   // operators, and one rate set each for the two slots wired to the shift
   // register.
-  private bassMod = newRates()
-  private bassCar = newRates()
+  private bass = newPair()
   private snareRates = newRates()
   private hatRates = newRates()
   private noise = new Lfsr()
@@ -251,7 +301,11 @@ export class FmChip implements Stage {
   private snareClock = 0
   /** whether the mode bit was set last time the driver looked */
   private kitOn = false
-  private feedback = 0
+  /** where the die's LFO has got to, and what it is worth this sample */
+  private amPhase = 0
+  private vibPhase = 0
+  private amGain = 1
+  private vibFactor = 1
   private dataBus = new Bus(8)
   private addrBus = new Bus(6)
   private dataLine = -1
@@ -607,86 +661,126 @@ export class FmChip implements Stage {
   private rates(
     out: Rates,
     clockFactor: number,
+    key: number,
     flags: number,
     ad: number,
     sr: number,
     level: number,
     half: number,
+    ksl: number,
+    fb: number,
   ) {
     const scale = Math.max(clockFactor, 0.05)
+    // Every rate goes past the octave on the way out of the nibble. With the
+    // scaling bit clear that is the nibble itself; with it set the counter
+    // takes the note's own octave into the step it walks, which is what stops a
+    // patch that rings for a second at the bottom of the keyboard from ringing
+    // for a second at the top of it as well.
+    const a = scaledRate(ad >> 4, key, flags)
+    const d = scaledRate(ad & 0x0f, key, flags)
+    const r = scaledRate(sr & 0x0f, key, flags)
     out.mult = MULT[flags & 0x0f]!
     out.sustained = (flags & 0x20) !== 0
-    out.attack = 1 - Math.exp(-1 / (attackSecs(ad >> 4) * scale * this.sr))
-    out.decay = Math.exp(-1 / (fallSecs(ad & 0x0f) * scale * this.sr))
-    out.release = Math.exp(-1 / (fallSecs(sr & 0x0f) * scale * this.sr))
+    out.am = (flags & AM) !== 0
+    out.vib = (flags & VIB) !== 0
+    out.attack = 1 - Math.exp(-1 / (attackSecs(a) * scale * this.sr))
+    out.decay = Math.exp(-1 / (fallSecs(d) * scale * this.sr))
+    out.release = Math.exp(-1 / (fallSecs(r) * scale * this.sr))
     out.sustain = atten(sr >> 4, 3)
     out.level = level
     out.half = half
+    out.ksl = ksl
+    out.fb = fb
+  }
+
+  // Both operators of one channel, off eight bytes and the key register. The
+  // bytes are the register file's own or the die's, and nothing below here can
+  // tell which — a patch is eight numbers whichever side of the bus it came
+  // from, which is the whole reason the nibble is worth cutting.
+  private readOperators(
+    out: { mod: Rates; car: Rates },
+    bytes: ArrayLike<number>,
+    key: number,
+    clockFactor: number,
+  ) {
+    const shape = bytes[REG.feedback]!
+    const modLevel = bytes[REG.modLevel]!
+    this.rates(
+      out.mod,
+      clockFactor,
+      key,
+      bytes[REG.modFlags]!,
+      bytes[REG.modAttack]!,
+      bytes[REG.modSustain]!,
+      atten(modLevel & 0x3f, 0.75),
+      shape & MOD_HALF,
+      modLevel >> KSL_SHIFT,
+      (shape & 0x07) === 0 ? 0 : Math.pow(2, (shape & 0x07) - 8),
+    )
+    this.rates(
+      out.car,
+      clockFactor,
+      key,
+      bytes[REG.carFlags]!,
+      bytes[REG.carAttack]!,
+      bytes[REG.carSustain]!,
+      1,
+      shape & CAR_HALF,
+      shape >> KSL_SHIFT,
+      0,
+    )
   }
 
   // The kit's rates, which come out of ROM rather than out of the register
   // file — so a knife on the patch bytes never reaches them, and the drums stay
   // crisp on a board where nothing else does. The rail still reaches them.
   private readKit(clockFactor: number) {
-    const b = KIT.bass
-    this.rates(
-      this.bassMod,
-      clockFactor,
-      b[REG.modFlags]!,
-      b[REG.modAttack]!,
-      b[REG.modSustain]!,
-      atten(b[REG.modLevel]! & 0x3f, 0.75),
-      0,
-    )
-    this.rates(
-      this.bassCar,
-      clockFactor,
-      b[REG.carFlags]!,
-      b[REG.carAttack]!,
-      b[REG.carSustain]!,
-      1,
-      0,
-    )
+    // The kit is keyed off its own byte rather than off a key register, so
+    // there is no octave for the scaling hardware to read and every drum counts
+    // at the rate ROM gave it. A drum machine has no top of the keyboard.
+    this.readOperators(this.bass, KIT.bass, 0, clockFactor)
     this.rates(
       this.snareRates,
       clockFactor,
+      0,
       1,
       KIT.snare.ad,
       KIT.snare.sr,
       1,
       0,
+      0,
+      0,
     )
-    this.rates(this.hatRates, clockFactor, 1, KIT.hat.ad, KIT.hat.sr, 1, 0)
+    this.rates(
+      this.hatRates,
+      clockFactor,
+      0,
+      1,
+      KIT.hat.ad,
+      KIT.hat.sr,
+      1,
+      0,
+      0,
+      0,
+    )
   }
 
+  // Every melody channel's patch, once a block. Which eight bytes a channel
+  // reads is the top nibble of its volume register: zero is the register file,
+  // where the processor has just put whichever voice the panel asked for, and
+  // anything else is one of the fifteen the die holds in ROM. The driver only
+  // ever writes zero there, so on an unbroken board this is four channels
+  // reading the same eight bytes and the loop below cannot tell.
   private readPatch(clockFactor: number) {
-    const rates = (
-      out: Rates,
-      flags: number,
-      ad: number,
-      sr: number,
-      level: number,
-      half: number,
-    ) => this.rates(out, clockFactor, flags, ad, sr, level, half)
-    const r = this.regs
-    const shape = r[REG.feedback]!
-    rates(
-      this.modRates,
-      r[REG.modFlags]!,
-      r[REG.modAttack]!,
-      r[REG.modSustain]!,
-      atten(r[REG.modLevel]! & 0x3f, 0.75),
-      shape & 0x10,
-    )
-    rates(
-      this.carRates,
-      r[REG.carFlags]!,
-      r[REG.carAttack]!,
-      r[REG.carSustain]!,
-      1,
-      shape & 0x08,
-    )
-    this.feedback = (shape & 0x07) === 0 ? 0 : Math.pow(2, (shape & 0x07) - 8)
+    for (let n = 0; n < N_CH; n++) {
+      const inst = this.regs[REG.instVol + n]! >> 4
+      this.readOperators(
+        this.chRates[n]!,
+        inst === 0 ? this.regs : ROM_PATCH_BYTES[inst - 1]!,
+        this.regs[REG.keyBlock + n]!,
+        clockFactor,
+      )
+    }
 
     // What the envelope counter does with its carry forced: the fastest step it
     // has, on every operator at once, whatever the rate registers hold. It
@@ -735,12 +829,16 @@ export class FmChip implements Stage {
 
     if (n === RHYTHM_CH) {
       if (c.car.stage === IDLE) return 0
-      const mod = raced ? this.raceRates : this.bassMod
-      const car = raced ? this.raceRates : this.bassCar
-      this.stepEnv(c.mod, mod)
-      this.stepEnv(c.car, car)
+      // The test bit races the envelope counter and nothing else. What an
+      // operator is — its multiplier, its level, how much of itself it gets
+      // back — is the patch's business either way, and no counter is involved
+      // in any of it.
+      const mod = this.bass.mod
+      const car = this.bass.car
+      this.stepEnv(c.mod, raced ? this.raceRates : mod)
+      this.stepEnv(c.car, raced ? this.raceRates : car)
       c.mod.phase = (c.mod.phase + inc * mod.mult) % 1
-      const self = (c.mod.fb1 + c.mod.fb2) * BASS_FB
+      const self = (c.mod.fb1 + c.mod.fb2) * mod.fb
       const m =
         this.wave(c.mod.phase + self, 0) *
         (wideOpen ? 1 : c.mod.env) *
@@ -797,6 +895,17 @@ export class FmChip implements Stage {
         0.7
     }
     return out * vol
+  }
+
+  // The LFO, one step on. Both counters run whether or not any operator is
+  // listening — there is no enable anywhere on the die, only a pair of bits per
+  // patch deciding who is soldered to the result — so a note that arrives finds
+  // the wobble already somewhere rather than starting it.
+  private stepLfo(clockFactor: number) {
+    this.amPhase = (this.amPhase + (AM_HZ * clockFactor) / this.sr) % 1
+    this.vibPhase = (this.vibPhase + (VIB_HZ * clockFactor) / this.sr) % 1
+    this.amGain = AM_GAIN[(Math.abs(this.amPhase - 0.5) * 126) | 0]!
+    this.vibFactor = VIB_FACTOR[(this.vibPhase * 8) | 0]!
   }
 
   private stepEnv(op: Op, r: Rates) {
@@ -896,12 +1005,12 @@ export class FmChip implements Stage {
     // The keys, before the block: held, because a hand is holding them.
     for (const q of this.queued) this.keyOn(q.note, 0, q.vol)
     this.queued.length = 0
-    const mod = this.modRates
-    const car = this.carRates
     const drive = 0.4
     let load = 0
 
     for (let i = 0; i < io.n; i++) {
+      this.stepLfo(rail.clockFactor)
+
       // The effect ROM, running. Its rate is the CPU's crystal and nothing on
       // this board reaches that, so the gesture keeps its own time however far
       // the rail has dragged the chip it is writing to — which is the whole
@@ -987,25 +1096,41 @@ export class FmChip implements Stage {
         // out wrong.
         const key = this.regs[REG.keyBlock + n]!
         const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
-        const hz =
-          (fnum / FNUM_FULL) * FNUM_BASE * Math.pow(2, (key >> 1) & 7) * pitch
+        const block = (key >> 1) & 7
+        const hz = (fnum / FNUM_FULL) * FNUM_BASE * Math.pow(2, block) * pitch
 
+        const { mod, car } = this.chRates[n]!
         this.stepEnv(c.mod, raced ? this.raceRates : mod)
         this.stepEnv(c.car, raced ? this.raceRates : car)
         // Wide open is not a loud envelope, it is no envelope: the stages go on
         // running underneath, so notes still start and still end — they simply
         // stop having a shape between the two.
-        const modEnv = wideOpen ? 1 : c.mod.env
-        const carEnv = wideOpen ? 1 : c.car.env
+        //
+        // Key scaling and the tremolo ride on top of whatever is left, because
+        // neither is an envelope: one is what the octave costs an operator and
+        // the other is a counter nothing on this chip can address, and both go
+        // on taking level from a note whose envelope has stopped having a shape.
+        const modAm = mod.am ? this.amGain : 1
+        const carAm = car.am ? this.amGain : 1
+        const modEnv =
+          (wideOpen ? 1 : c.mod.env) * kslGain(mod.ksl, block, fnum) * modAm
+        const carEnv =
+          (wideOpen ? 1 : c.car.env) * kslGain(car.ksl, block, fnum) * carAm
 
         const inc = hz / this.sr
-        c.mod.phase = (c.mod.phase + inc * mod.mult) % 1
-        const self = (c.mod.fb1 + c.mod.fb2) * this.feedback
+        // The vibrato is one staircase for the die, so two operators wired to
+        // it step together and stay in ratio. An operator wired to it against
+        // one that is not is the pair coming apart and going back, which is the
+        // only detune anywhere on a chip that has no detune register.
+        c.mod.phase =
+          (c.mod.phase + inc * mod.mult * (mod.vib ? this.vibFactor : 1)) % 1
+        const self = (c.mod.fb1 + c.mod.fb2) * mod.fb
         const m = this.wave(c.mod.phase + self, mod.half) * modEnv * mod.level
         c.mod.fb2 = c.mod.fb1
         c.mod.fb1 = m
 
-        c.car.phase = (c.car.phase + inc * car.mult) % 1
+        c.car.phase =
+          (c.car.phase + inc * car.mult * (car.vib ? this.vibFactor : 1)) % 1
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
         sum +=
@@ -1060,6 +1185,10 @@ export class FmChip implements Stage {
       c.offIn = 0
     }
     this.noise.reset()
+    this.amPhase = 0
+    this.vibPhase = 0
+    this.amGain = 1
+    this.vibFactor = 1
     this.hiss = 0
     this.snareHiss = 0
     this.noiseClock = 0
