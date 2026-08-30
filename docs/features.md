@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 236 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 56 presets, 14 stage settings and 21 named cuts — and everything
+18 ROM tunes, 56 presets, 14 stage settings and 22 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -243,6 +243,10 @@ too — the knife goes on and the rows under it say which controls that was:
 - **the bottom of every octave**: The bottom bit of every byte on the floor: the
   frequency loses its top bit, the operators lose the bottom of their
   multipliers, and a chip that was ringing sits down
+- **an instrument with no button**: The top wire high, so the number naming
+  which instrument a channel plays stops being zero — the channels leave the
+  patch the panel sent and read the die’s own ROM, where seven of the fifteen
+  sounds have no button on the case
 - **a patch nearly right**: A byte wire half cut — most writes land and the odd
   one arrives off the wire next door, so patches come out wrong and stay wrong
 - **wrong register**: Every odd register filed on top of the even one below it —

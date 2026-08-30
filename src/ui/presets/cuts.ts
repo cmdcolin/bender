@@ -195,6 +195,17 @@ export const CUTS: CutDef[] = [
   {
     group: 'FM chip',
     part: KNIFE,
+    name: 'an instrument with no button',
+    blurb:
+      'The top wire high, so the number naming which instrument a channel plays stops being zero — the channels leave the patch the panel sent and read the die\u2019s own ROM, where seven of the fifteen sounds have no button on the case',
+    patch: {
+      fmDataLine: pick('fmDataLine', 'D7'),
+      fmDataFault: pick('fmDataFault', 'to +V'),
+    },
+  },
+  {
+    group: 'FM chip',
+    part: KNIFE,
     name: 'a patch nearly right',
     blurb:
       'A byte wire half cut — most writes land and the odd one arrives off the wire next door, so patches come out wrong and stay wrong',
