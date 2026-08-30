@@ -113,13 +113,25 @@ export function SampleReel() {
       // Tape outside the markers is drawn grey rather than left out: it is
       // still on the reel and simply never passes the head, which is the whole
       // difference between trimming a loop and editing a file.
-      for (let i = 0; i < PEAK_BINS; i++) {
-        const at = (i + 0.5) / PEAK_BINS
-        const v = Math.min(m.samplePeaks[i] ?? 0, 1)
-        const bar = Math.max(v * (mid - 2 * dpr), 0.5 * dpr)
-        g.fillStyle = at >= from && at < to ? '#ff5d3b' : '#3a3a40'
-        g.fillRect(Math.round((i / PEAK_BINS) * w), mid - bar, bw, bar * 2)
+      //
+      // Two passes and two fills rather than two hundred and fifty-six: the
+      // envelope is only ever drawn in the two colours, and a rect laid into a
+      // path costs a fraction of one handed over as its own draw.
+      const bars = (lit: boolean, colour: string) => {
+        g.beginPath()
+        for (let i = 0; i < PEAK_BINS; i++) {
+          const at = (i + 0.5) / PEAK_BINS
+          if ((at >= from && at < to) === lit) {
+            const v = Math.min(m.samplePeaks[i] ?? 0, 1)
+            const bar = Math.max(v * (mid - 2 * dpr), 0.5 * dpr)
+            g.rect(Math.round((i / PEAK_BINS) * w), mid - bar, bw, bar * 2)
+          }
+        }
+        g.fillStyle = colour
+        g.fill()
       }
+      bars(false, '#3a3a40')
+      bars(true, '#ff5d3b')
       g.strokeStyle = '#222226'
       g.lineWidth = dpr
       g.beginPath()

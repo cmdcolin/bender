@@ -23,6 +23,13 @@ export function RailLamp() {
     let raf = 0
     let seen = engine.meter.get().reboots
     let flashUntil = 0
+    // What the lamp is already showing. A rail that is not sagging is most
+    // boards most of the time, and the same two strings written again sixty
+    // times a second are sixty style parses and sixty text nodes swapped under
+    // a word that has not changed — which puts the whole document through
+    // layout on every frame the panel is up.
+    let litAt = ''
+    let says = ''
     const draw = (now: number) => {
       raf = requestAnimationFrame(draw)
       const { rail, reboots } = engine.meter.get()
@@ -31,17 +38,19 @@ export function RailLamp() {
         flashUntil = now + FLASH_MS
       }
       const flashing = now < flashUntil
-      if (dot.current) {
-        // Full cells are a lit lamp; a dying rail dims and reddens with it, and
-        // a reboot is the one thing that lights it right up.
-        dot.current.style.background = flashing
-          ? 'var(--danger)'
-          : `color-mix(in srgb, var(--accent2) ${Math.round(rail * 100)}%, #2a1a12)`
+      // Full cells are a lit lamp; a dying rail dims and reddens with it, and
+      // a reboot is the one thing that lights it right up.
+      const colour = flashing
+        ? 'var(--danger)'
+        : `color-mix(in srgb, var(--accent2) ${Math.round(rail * 100)}%, #2a1a12)`
+      if (dot.current && litAt !== colour) {
+        litAt = colour
+        dot.current.style.background = colour
       }
-      if (label.current) {
-        label.current.textContent = flashing
-          ? 'reboot'
-          : `${(rail * NOMINAL_V).toFixed(2)} V`
+      const volts = flashing ? 'reboot' : `${(rail * NOMINAL_V).toFixed(2)} V`
+      if (label.current && says !== volts) {
+        says = volts
+        label.current.textContent = volts
       }
     }
     raf = requestAnimationFrame(draw)

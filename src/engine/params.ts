@@ -464,8 +464,15 @@ export const TAP_MIC = MAX_SOURCES
 export const TAP_BUS = MAX_SOURCES + 1
 export const N_TAPS = MAX_SOURCES + 2
 
-export function packParams(values: Controls): Float32Array {
-  const out = new Float32Array(N_PARAMS)
-  PARAM_DEFS.forEach(([n], i) => (out[i] = values[n]))
+const PARAM_KEYS: readonly ParamName[] = PARAM_DEFS.map(([n]) => n)
+
+// Fills `out` when given one. The engine packs a board per animation frame and
+// per frame of a morph, and postMessage serializes on the thread that calls it,
+// so the one buffer it hands over is free again the moment the post returns.
+export function packParams(
+  values: Controls,
+  out = new Float32Array(N_PARAMS),
+): Float32Array {
+  for (let i = 0; i < N_PARAMS; i++) out[i] = values[PARAM_KEYS[i]!]
   return out
 }

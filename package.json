@@ -14,6 +14,7 @@
     "features": "tsx scripts/features.ts",
     "figure": "tsx scripts/figure.ts",
     "knife": "tsx scripts/knife.ts",
+    "panel": "tsx scripts/panel.ts",
     "soak": "tsx scripts/soak.ts",
     "spectrum": "tsx scripts/spectrum.ts",
     "preview": "vite preview",

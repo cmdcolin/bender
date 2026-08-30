@@ -38,7 +38,7 @@ import { snap } from '../scale'
 import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
 import { Glide } from './glide'
 import type { FromWorklet, NoteDest, RecMsg, ToWorklet } from './messages'
-import { MAX_SOURCES, N_TAPS, STEM_FILES, packParams } from './params'
+import { MAX_SOURCES, N_PARAMS, N_TAPS, STEM_FILES, packParams } from './params'
 import { encodeMonoWav, encodeWav } from './wav'
 
 const REC_MAX_S = 600 // a take stops itself at ten minutes
@@ -125,12 +125,28 @@ export function mergeNotes(
   notes: Int16Array,
   count = notes.length,
 ): ReadonlySet<number> {
-  const sounding = notes.subarray(0, count)
-  if (sounding.length === 0) return now.size === 0 ? now : new Set()
+  const n = Math.min(count, notes.length)
+  if (n === 0) return now.size === 0 ? now : new Set()
+  // Whether the report says what the panel already has, worked out without
+  // building anything: the report arrives sixty times a second and mostly
+  // repeats itself, and a subarray and a Set per post — twice over, for the two
+  // chips — is four collections a frame to find out that nothing moved. The
+  // sets match when every note reported is already lit and the two hold the same
+  // number of distinct notes, which for nine of them is cheaper to count than to
+  // allocate.
   let known = true
-  for (const note of sounding) known &&= now.has(note)
-  const next = new Set(sounding)
-  return known && next.size === now.size ? now : next
+  let distinct = 0
+  for (let i = 0; i < n; i++) {
+    const note = notes[i]!
+    known &&= now.has(note)
+    let repeat = false
+    for (let j = 0; j < i; j++) repeat ||= notes[j] === note
+    if (!repeat) distinct++
+  }
+  if (known && distinct === now.size) return now
+  const next = new Set<number>()
+  for (let i = 0; i < n; i++) next.add(notes[i]!)
+  return next
 }
 
 // Owns the AudioContext, the worklet node and the control values. The UI
@@ -241,6 +257,8 @@ export class Engine {
   private archiveRoll: AbortController | null = null
   private dirty = false
   private rafQueued = false
+  // The board on the wire, written over rather than drawn fresh each flush.
+  private readonly pack = new Float32Array(N_PARAMS)
   private huntToken = 0
   // The last step the kit reported and when it landed here, which is the clock a
   // hit played by hand is quantized against. Read off the meter rather than off
@@ -332,7 +350,10 @@ export class Engine {
     ctx.onstatechange = () => this.running.set(ctx.state === 'running')
     this.ctx = ctx
     this.node = node
-    this.post({ kind: 'params', pack: packParams(this.controls.get()) })
+    this.post({
+      kind: 'params',
+      pack: packParams(this.controls.get(), this.pack),
+    })
     this.postTransport()
   }
 
@@ -626,7 +647,10 @@ export class Engine {
       this.rafQueued = false
       if (!this.dirty) return
       this.dirty = false
-      this.post({ kind: 'params', pack: packParams(this.controls.get()) })
+      this.post({
+        kind: 'params',
+        pack: packParams(this.controls.get(), this.pack),
+      })
     })
   }
 
@@ -661,10 +685,15 @@ export class Engine {
       Math.round(LOAD_SECONDS * buf.sampleRate),
     )
     const mono = new Float32Array(frames)
-    for (let ch = 0; ch < buf.numberOfChannels; ch++) {
+    // The channel count is read once. It is an attribute on the decoded buffer
+    // rather than a number in hand, and asking for it inside the loop is a trip
+    // across the binding per sample — 135 ms of held-up page for ninety seconds
+    // of stereo against 25 ms for the same arithmetic, on a load that already
+    // has the tab to itself.
+    const channels = buf.numberOfChannels
+    for (let ch = 0; ch < channels; ch++) {
       const chan = buf.getChannelData(ch)
-      for (let i = 0; i < frames; i++)
-        mono[i]! += chan[i]! / buf.numberOfChannels
+      for (let i = 0; i < frames; i++) mono[i]! += chan[i]! / channels
     }
     // Scanned here, where 90 seconds of audio is a few milliseconds nobody is
     // listening to, rather than in the block that would otherwise have to.

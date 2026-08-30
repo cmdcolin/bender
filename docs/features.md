@@ -1098,7 +1098,7 @@ on it — a link never presses play, so it is loaded and waiting.
 ## Scripts
 
 <details>
-<summary>20 commands</summary>
+<summary>21 commands</summary>
 
 | command          | what it does                                                                                        |
 | ---------------- | --------------------------------------------------------------------------------------------------- |
@@ -1112,6 +1112,7 @@ on it — a link never presses play, so it is loaded and waiting.
 | `pnpm features`  | rewrites docs/features.md — this file                                                               |
 | `pnpm figure`    | re-shoots the README's screenshot of the app and its panel                                          |
 | `pnpm knife`     | sweeps every wire and fault on every bus and reports which you can hear                             |
+| `pnpm panel`     | what the panel costs the browser per frame, in a real Chrome                                        |
 | `pnpm soak`      | whether any stage gets slower the longer it runs                                                    |
 | `pnpm spectrum`  | sweeps the same space and reports what each fault sounds like, by frequency                         |
 | `pnpm preview`   | serves the built bundle                                                                             |

@@ -39,6 +39,24 @@ deadline once and a buffer goes out unfilled, which is an audible click.
   otherwise report a double-digit percentage difference from nothing but
   scheduling noise.
 
+Those five all render the chain offline in node, where there is no panel. The
+panel has a deadline of its own — sixty frames a second, and eight widgets that
+write straight to the DOM off the meter rather than through a render:
+
+- `pnpm panel` builds the app, opens it in a real Chrome with the audio running,
+  and reports what the main thread spends per frame and where: javascript,
+  style, layout, paint, compositing. `pnpm panel 12 morph` measures a board
+  travelling and `pnpm panel 8 drag` a slider under a hand, which are the two
+  states that write controls every frame. Wants Chrome — it looks on PATH, then
+  in `/Applications`, then at `BENDER_CHROME`.
+
+  The column to read is `layout`. Nothing on the panel changes the size of
+  anything, so layout should sit near zero; layout that does not is something
+  writing the DOM every frame whether or not it has anything new to say. That is
+  how the one in
+  [optimizations.md](optimizations.md#the-panel-is-not-what-costs-one-write-a-frame-was)
+  was found, and it was worth half the main thread.
+
 What those numbers mean, and which of them can be trusted, is
 [optimizations.md](optimizations.md). How a block actually gets rendered across
 the main and audio threads is [dataflow.md](dataflow.md).

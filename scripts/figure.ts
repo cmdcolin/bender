@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { encodeControls } from '../src/ui/share'
+import { attach, chromePath, sleep } from './chrome'
 
 // The README's one picture: the panel drawn big on the left, and the whole app
 // small beside it with the panel ringed in red where it actually sits. `pnpm figure`
@@ -13,9 +14,10 @@ import { encodeControls } from '../src/ui/share'
 // It drives a headless Chrome over the devtools protocol rather than a browser
 // library, so the repo owes nothing to a 300 MB dependency for one image, and
 // it asks the page where the panel is instead of carrying pixel coordinates
-// that a layout change would quietly invalidate.
+// that a layout change would quietly invalidate. The socket and the lookup for
+// the browser are in chrome.ts, shared with panel.ts.
 //
-// Wants `google-chrome` (or `chromium`) and ImageMagick's `magick` on PATH.
+// Wants a Chrome and ImageMagick's `magick`.
 
 const OUT = 'docs/img/panel-callout.jpg'
 const PORT = 5199
@@ -38,8 +40,6 @@ const RING = '#ff3b30'
 // signal path, not a patch.
 const BOARD: Controls = { ...DEFAULT_CONTROLS }
 
-const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
-
 function which(cmd: string) {
   try {
     return execFileSync('which', [cmd]).toString().trim()
@@ -48,23 +48,13 @@ function which(cmd: string) {
   }
 }
 
-function chromePath() {
-  const found = [
-    process.env.BENDER_CHROME,
-    'google-chrome',
-    'chromium',
-    'chromium-browser',
-  ].find(c => c && (c.includes('/') ? true : which(c)))
-  if (!found) throw new Error('no chrome on PATH — set BENDER_CHROME')
-  return found
-}
-
 async function serve() {
-  const vite = spawn(
-    'node_modules/.bin/vite',
-    ['--port', String(PORT), '--strictPort'],
-    { stdio: ['ignore', 'pipe', 'inherit'] },
-  )
+  // Asked for a port rather than pinned to one, and the url is read back out of
+  // what vite says: something else on the machine holding 5199 is not a reason
+  // for the README's picture to be unbuildable.
+  const vite = spawn('node_modules/.bin/vite', ['--port', String(PORT)], {
+    stdio: ['ignore', 'pipe', 'inherit'],
+  })
   const url = await new Promise<string>((resolve, reject) => {
     let out = ''
     const die = setTimeout(() => reject(new Error('vite never started')), 30000)
@@ -78,40 +68,6 @@ async function serve() {
     })
   })
   return { url, stop: () => vite.kill() }
-}
-
-// Enough of the devtools protocol to open a page, ask it a question and take
-// its picture.
-async function attach(port: number) {
-  let list: { webSocketDebuggerUrl: string }[] = []
-  for (let i = 0; i < 100 && !list.length; i++) {
-    try {
-      list = (
-        await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()
-      ).filter((t: { type: string }) => t.type === 'page')
-    } catch {
-      await sleep(100)
-    }
-  }
-  const first = list[0]
-  if (!first) throw new Error('chrome never opened a page')
-
-  const ws = new WebSocket(first.webSocketDebuggerUrl)
-  await new Promise(r => ws.addEventListener('open', r, { once: true }))
-  const waiting = new Map<number, (v: unknown) => void>()
-  let id = 0
-  ws.addEventListener('message', e => {
-    const msg = JSON.parse(String(e.data))
-    waiting.get(msg.id)?.(msg.result)
-    waiting.delete(msg.id)
-  })
-  const send = <T>(method: string, params: object = {}) =>
-    new Promise<T>(resolve => {
-      const at = ++id
-      waiting.set(at, resolve as (v: unknown) => void)
-      ws.send(JSON.stringify({ id: at, method, params }))
-    })
-  return { send, close: () => ws.close() }
 }
 
 async function shoot(url: string, into: string) {
@@ -166,7 +122,12 @@ async function shoot(url: string, into: string) {
     page.close()
     return rect
   } finally {
+    // Waited for, not just signalled: Chrome is still writing its profile
+    // directory on the way down, and a removal that races it fails on a
+    // directory that is not empty yet.
+    const gone = new Promise(r => chrome.on('exit', r))
     chrome.kill()
+    await gone
     rmSync(dir, { recursive: true, force: true })
   }
 }

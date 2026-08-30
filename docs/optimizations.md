@@ -191,6 +191,62 @@ reconcile, so roughly 32 ms of every second a board is travelling. The map reads
 the board on its own clock: at once when it has been still, on the trailing edge
 while it is moving.
 
+### The panel is not what costs; one write a frame was
+
+React was never the expensive thing here. On a board playing both machines with
+a tape threaded, the panel's whole share of the main thread was 13% of wall —
+2.1 ms of every 16.6 ms frame — and React's own render and commit was a fifth of
+that. Two thirds of it was style, layout and paint, and all of that came from a
+single line.
+
+`RailLamp` wrote `style.background` and `textContent` on every animation frame,
+whether or not the rail had moved — and on most boards it has not, so the same
+two strings went in sixty times a second. A `textContent` write swaps the text
+node whether the word changed or not, which dirties layout; the colour is a
+`color-mix()` over a `var()`, which is a parse and a style invalidation. The
+document went through layout on every frame the panel was up. Comparing before
+writing, which the panic bar and the desk's meters already did:
+
+| over 8 s, both machines running | before  | after  |
+| ------------------------------- | ------- | ------ |
+| main-thread task time           | 2028 ms | 659 ms |
+| js in animation frames          | 689 ms  | 172 ms |
+| paint                           | 399 ms  | 57 ms  |
+| layout                          | 263 ms  | 31 ms  |
+| style recalc                    | 42 ms   | 5.5 ms |
+
+The lesson is not about the lamp. Anything that writes the DOM off a frame
+callback has to hold what it last wrote and compare, because the browser will
+not: an unchanged write is as expensive as a changed one.
+
+Three smaller ones, measured the same way with a sampling profile of the
+renderer:
+
+- **The reel's envelope was 256 `fillRect`s a frame.** Two hundred and fifty-six
+  draws for a drawing in two colours. Laid into two paths and filled twice, the
+  reel went from 0.61% of the main thread to 0.40%.
+- **The note report allocated four times a frame to say nothing had changed.**
+  `mergeNotes` built a `subarray` and a `Set` per chip per meter post purely to
+  compare sizes. Counting the distinct notes instead — nine of them, at most —
+  took it from 0.13% to nothing.
+- **`packParams` drew a fresh 361-float buffer per flush**, which during a morph
+  is one a frame. It takes an `out` buffer now, the way `peaksOf` does, and the
+  engine keeps one: `postMessage` serializes on the calling thread, so the
+  buffer is free again the moment the post returns.
+
+### A property read inside a sample loop
+
+Dropping a file, or rolling one off archive.org, froze the tab for 212 ms. The
+downmix to mono read `buf.numberOfChannels` — an attribute on the decoded
+`AudioBuffer` — as the divisor of its inner loop, so ninety seconds of stereo
+paid 8.6 million trips across the binding. Reading it once into a local, with
+the same division and bit-identical output, took the loop from 135 ms to 25 ms
+and the freeze to about half.
+
+Same shape as the block-rate rule on the audio thread, and worth stating in the
+general form: anything the loop did not compute itself is a constant, and a host
+object's attribute is the most expensive kind of constant there is.
+
 ## What did not pay
 
 Worth recording so nobody spends the afternoon twice.
@@ -226,6 +282,20 @@ Worth recording so nobody spends the afternoon twice.
   the delay is fixed for the block.
 - **The tape's print-through** takes a second 4-point Hermite read whose output
   goes straight into a 2500 Hz lowpass at 0.05 gain, where linear would do.
+- **Paint and layerize, while the map is moving.** `pnpm panel morph` puts them
+  at 0.49 and 0.29 ms a frame, which is the two largest columns and more than
+  all the javascript. It is the signal-path drawing: 179 SVG elements replaced
+  every 120 ms, and the compositor re-recording that corner of the document each
+  time. Nothing cheap suggests itself — the throttle is already there, and the
+  next step down is either a canvas or memoising the subtrees that did not move.
+- **The scope's trace** is the largest single thing javascript does per frame at
+  about 0.25% of one core, and it is already close to minimal: 512 `lineTo` into
+  a backing store 2216 pixels wide, so the trace is sparser than the canvas and
+  there is nothing to decimate. Only drawing it less often would help, and that
+  is the one thing on screen you read a shape off.
+- **`peaksOf` over a freshly dropped file** is the 19 ms still inside the sample
+  load's long task, and it is a full scan of ninety seconds of audio to fill 256
+  bins.
 
 ## Techniques from elsewhere
 

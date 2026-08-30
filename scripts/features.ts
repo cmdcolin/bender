@@ -95,6 +95,7 @@ const SCRIPTS: Record<string, string> = {
   cold: 'the first seconds, before anything has tiered up',
   ab: 'this tree against a git ref, as a paired comparison',
   soak: 'whether any stage gets slower the longer it runs',
+  panel: 'what the panel costs the browser per frame, in a real Chrome',
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
   figure: "re-shoots the README's screenshot of the app and its panel",
