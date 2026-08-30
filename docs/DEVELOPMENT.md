@@ -66,9 +66,12 @@ the main and audio threads is [dataflow.md](dataflow.md).
   power sat across five bands. Each bus ends with a `reach` line, which is the
   one worth reading: how much of the spectrum that chip's whole bend space
   covers. A row of faults that all land in the same band is a chip whose bends
-  differ from each other by less than the panel implies. `pnpm spectrum fm` does
-  one chip and `pnpm spectrum cuts` the named cuts and the preset catalog. The
-  whole sweep takes a few minutes.
+  differ from each other by less than the panel implies. A chip that can be more
+  than one machine gets a `reach` line per machine — the FM chip is swept again
+  with its percussion bank on and again with an effect running, because the same
+  knife finds a different chip in each. `pnpm spectrum fm` does one chip and
+  `pnpm spectrum cuts` the named cuts and the preset catalog. The whole sweep
+  takes a few minutes.
 
 ## Releases
 

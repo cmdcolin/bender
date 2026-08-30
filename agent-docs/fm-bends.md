@@ -17,26 +17,43 @@ rather than about a knob. `pnpm spectrum fm` asks what it does, by frequency,
 and its `reach` line is the one to watch: how much of the space a chip's whole
 bend set covers.
 
-Where those numbers stand now:
+Where those numbers stand, per bus and per mode:
 
-| bus            | audible | flattest | with a bottom | broadband |
-| -------------- | ------- | -------- | ------------- | --------- |
-| data (8 wires) | 37/40   | 0.21     | 1             | 0         |
-| address (6)    | 23/30   | 0.38     | 1             | 3         |
-| wave (10)      | 50/50   | 1.06     | 0             | 8         |
+| bus            | mode   | audible | flattest | with a bottom | broadband |
+| -------------- | ------ | ------- | -------- | ------------- | --------- |
+| data (8 wires) | melody | 37/40   | 0.21     | 1             | 0         |
+|                | rhythm | 39/40   | 0.94     | 8             | 2         |
+|                | wind   | 37/40   | 0.10     | 5             | 0         |
+| address (6)    | melody | 23/30   | 0.38     | 1             | 3         |
+|                | rhythm | 23/30   | 0.63     | 0             | 5         |
+|                | wind   | 24/30   | 0.98     | 3             | 3         |
+| wave (10)      | melody | 50/50   | 1.06     | 0             | 8         |
+|                | rhythm | 50/50   | 1.07     | 0             | 10        |
+|                | wind   | 50/50   | 1.00     | 0             | 6         |
 
-The wave bus is still carrying the chip. The standing complaint — a part whose
-only primitive is a sine cannot get near the top of a flatness column — is
-answered for the wave ROM and the percussion bank and is not answered anywhere
-else. **A candidate that puts a number in the data bus's broadband column is
-worth more than one that does not**, and the three at the top of the list below
-are picked on that basis.
+The mode rows are new, and they corrected the premise this document was first
+written on. Measured in melody alone, the data bus reads 0.21 flat with nothing
+broadband, and the obvious conclusion is that the register file cannot make
+noise and needs help. Measured with the percussion bank on, the same forty
+faults read 0.94 flat with eight of them carrying a bottom. The register file
+was never the problem.
 
-Two things the measurement cannot see, worth fixing whenever somebody is next in
-`scripts/spectrum.ts`: its FM board never presses Rhythm and never loads an
-effect, so the two newest features are invisible to the tool built to judge
-them. The instrument nibble is invisible for the same reason — it only appears
-under a fault, and the board is measured one bus at a time.
+What the two readings have in common is the answer. The chip's one broadband
+source is the shift register, and every number above that is not near zero has
+the shift register behind it: the wave bus reaches it because a parted address
+line stops resolving to a sine at all, and the data bus reaches it in rhythm
+because that is the mode where two operators are wired to it. **The interesting
+candidates are the ones that let something reach the shift register, or give the
+chip a second thing worth reaching.** That is a sharper test than "put a number
+in the broadband column", and it moves item 3 up rather than down: soldering the
+LFSR onto the melody side is no longer a guess about what would help, it is the
+mechanism the rhythm row is already demonstrating, with the mode gate taken off.
+
+One thing the measurement still cannot see: the instrument nibble only appears
+under a fault, and the report sweeps one bus at a time against a clean board, so
+a ROM patch selected by a knife on the data bus is measured but never labelled
+as such. That is inherent to sweeping one wire at a time and probably not worth
+fixing.
 
 ## The bits still with no reader
 
@@ -98,23 +115,27 @@ amplitude at one bit position, on every operator's turn on the datapath.
 About fifteen lines. `Bus` already does all of it; `wave()` grows a second
 `read` on the way out the way it has one on the way in.
 
-Do this one before 1, whatever happens to 1. It is cheap, it is independent, and
-if log domain does land later then these pins are the mantissa of a logarithm
-and get stranger rather than redundant.
+Do this one straight after 3, which lands on the same pins, and before 1
+whatever happens to 1. It is cheap, it is independent, and if log domain does
+land later then these pins are the mantissa of a logarithm and get stranger
+rather than redundant.
 
 ## 3. The shift register on the melody side
 
-The docs state the problem outright: nothing anywhere in the register file makes
-noise. There is an LFSR on the die — `Lfsr` in `fmChip.ts` — and exactly two
-operator slots can reach it, only in rhythm mode.
+There is an LFSR on the die — `Lfsr` in `fmChip.ts` — and exactly two operator
+slots can reach it, only in rhythm mode. The measurement above says that gate is
+carrying more weight than anything else on the chip: the same forty data-bus
+faults are 0.21 flat with the bank off and 0.94 flat with it on, and the only
+thing that changed is which operators are wired to the shift register.
 
-The bender's move is a blob of solder from the shift register's output onto the
-wave ROM's data pins. It is a hardware mod rather than a register write, so
-nothing the CPU does touches it and it survives every patch, every effect and
-every panic. It composes with 2 because it is the same pins.
+The bender's move is a blob of solder from its output onto the wave ROM's data
+pins. It is a hardware mod rather than a register write, so nothing the CPU does
+touches it and it survives every patch, every effect and every panic. It
+composes with 2 because it is the same pins.
 
-This is the direct attack on `0 broadband` for the two buses that need it, and
-it is the cheapest thing on the list that could move that column.
+Do this one first. It is the cheapest thing on the list, it is the only one
+whose payoff is already measured rather than argued, and it takes the gate off a
+mechanism the chip demonstrably has.
 
 ## 4. The instrument ROM's own bus
 

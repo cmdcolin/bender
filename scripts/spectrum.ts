@@ -16,6 +16,13 @@
 // worth having spreads down those columns; one that does not is a row of
 // numbers all reading 0.00 in `sub` and 0.4 in `hi`, which is what this chip's
 // looked like before it had a percussion bank.
+//
+// A chip that can be more than one machine gets a `reach` line per machine —
+// see FM_MODES. That is not a refinement: measured in melody alone the FM
+// chip's data bus reads 0.21 flat with nothing broadband, and with the
+// percussion bank on the same forty faults read 0.94 with eight of them
+// carrying a bottom. A report that saw only the first would send you off
+// building a noise source for a chip that already has one.
 import {
   DEFAULT_CONTROLS,
   type ControlKey,
@@ -26,6 +33,8 @@ import { BANDS, spectrum } from '../src/dsp/spectrum'
 import { render, renderStems, rms, SR } from '../src/dsp/testRender'
 import { SOURCE_TAPS, type SourceTap } from '../src/engine/params'
 import { romIndex } from '../src/dsp/stages/roms'
+import { FM_EFFECT_NAMES } from '../src/dsp/stages/fmEffects'
+import { ANY_CHOICE } from '../src/dsp/trigbus'
 import { applyCut, CUTS, cutOff } from '../src/ui/presets/cuts'
 import { PRESETS } from '../src/ui/presets/table'
 import { sliderFor } from '../src/ui/controls'
@@ -53,6 +62,8 @@ interface BusDef {
   depth: ControlKey
   solo: Partial<Controls>
   tap: SourceTap
+  /** the other machines this chip can be, if it can be more than one */
+  modes?: [name: string, board: Partial<Controls>][]
 }
 
 const TOY = { drumLevel: 0, fmLevel: 0 }
@@ -61,6 +72,27 @@ const KIT = { chipLevel: 0, fmLevel: 0 }
 // and the measurement comes off the chip's own stem rather than the mix, or
 // what is being measured is two chips.
 const FM = { drumLevel: 0.4, chipLevel: 0.2, fmLevel: 0.9 }
+
+// A chip that can be more than one machine has to be measured as more than one,
+// or the report describes whichever machine it happened to be left in.
+//
+// The FM chip is three. The percussion bank hands its top two channels to a kit
+// in ROM and re-taps two operators onto a shift register; the effect ROM takes
+// a channel and turns the bus into the busiest traffic on the board. Both
+// change what a knife finds, and by more than a little: the same forty faults
+// on the data bus read 0.21 flat with one bottom in melody, and 0.94 flat with
+// eight in rhythm. Measuring melody alone reported this chip's dullest mode as
+// the chip.
+//
+// Wind rather than any other effect because what matters to a bus fault is the
+// traffic, and wind is the one that writes continuously and never stops. The
+// per-wire rows stay in melody: those are for finding a wire worth naming, and
+// you go hunting in one mode at a time. What the modes are for is the reach
+// line, which is the summary and the reason the file exists.
+const FM_MODES: [string, Partial<Controls>][] = [
+  ['rhythm', { fmRhythm: 1, fmStruck: ANY_CHOICE }],
+  ['wind', { fmEffect: FM_EFFECT_NAMES.indexOf('wind') }],
+]
 
 const BUSES: BusDef[] = [
   {
@@ -107,6 +139,7 @@ const BUSES: BusDef[] = [
     depth: 'fmBusCut',
     solo: FM,
     tap: 'fmChip',
+    modes: FM_MODES,
   },
   {
     chip: 'fm',
@@ -116,6 +149,7 @@ const BUSES: BusDef[] = [
     depth: 'fmBusCut',
     solo: FM,
     tap: 'fmChip',
+    modes: FM_MODES,
   },
   {
     chip: 'fm',
@@ -125,6 +159,7 @@ const BUSES: BusDef[] = [
     depth: 'fmBusCut',
     solo: FM,
     tap: 'fmChip',
+    modes: FM_MODES,
   },
 ]
 
@@ -182,7 +217,7 @@ function print(r: Row, dead = false) {
 }
 
 /** How much of the space a set of takes covered, which is the whole point. */
-function reach(rows: Row[]) {
+function reach(rows: Row[], mode = '') {
   const live = rows.filter(r => r.level > 0.05)
   if (!live.length) return
   const span = (pick: (r: Row) => number) => {
@@ -194,8 +229,35 @@ function reach(rows: Row[]) {
   const bassy = live.filter(r => r.bands[0]! > 0.15).length
   const noisy = live.filter(r => r.flatness > 0.3).length
   console.log(
-    `  reach: ${live.length}/${rows.length} audible · centroid ${Math.round(loC)}–${Math.round(hiC)} Hz · flattest ${hiF.toFixed(2)} · ${bassy} with a bottom · ${noisy} broadband`,
+    `  reach${mode && `, ${mode}`}: ${live.length}/${rows.length} audible · centroid ${Math.round(loC)}–${Math.round(hiC)} Hz · flattest ${hiF.toFixed(2)} · ${bassy} with a bottom · ${noisy} broadband`,
   )
+}
+
+// One bus swept end to end, on a board that is whatever the mode says. The
+// reference is that mode's own unbent take rather than the melody chip's, or
+// the level column would be reporting the mode as if it were the fault.
+function sweep(def: BusDef, board: Partial<Controls>, show: boolean): Row[] {
+  const wires = sliderFor(def.line)
+  const base = stemOf(board, def.tap)
+  const ref = rms(base)
+  if (show) {
+    header()
+    print(measure('no knife', base, ref))
+  }
+  const rows: Row[] = []
+  for (let wire = 1; wire <= wires.max; wire++) {
+    const name = wires.choices![wire]!
+    for (const [label, fault, depth] of FAULTS) {
+      const x = stemOf(
+        { ...board, [def.line]: wire, [def.fault]: fault, [def.depth]: depth },
+        def.tap,
+      )
+      const row = measure(`${name} ${label}`, x, ref)
+      rows.push(row)
+      if (show) print(row, row.level <= 0.05)
+    }
+  }
+  return rows
 }
 
 const only = process.argv[2]
@@ -225,30 +287,14 @@ if (only === 'cuts') {
   }
 } else {
   for (const def of BUSES.filter(b => !only || b.chip === only)) {
-    const wires = sliderFor(def.line)
-    const base = stemOf(def.solo, def.tap)
-    const ref = rms(base)
-    console.log(`\n${def.chip} · ${def.bus} bus · ${wires.max} wires`)
-    header()
-    print(measure('no knife', base, ref))
-    const rows: Row[] = []
-    for (let wire = 1; wire <= wires.max; wire++) {
-      const name = wires.choices![wire]!
-      for (const [label, fault, depth] of FAULTS) {
-        const x = stemOf(
-          {
-            ...def.solo,
-            [def.line]: wire,
-            [def.fault]: fault,
-            [def.depth]: depth,
-          },
-          def.tap,
-        )
-        const row = measure(`${name} ${label}`, x, ref)
-        rows.push(row)
-        print(row, row.level <= 0.05)
-      }
-    }
-    reach(rows)
+    console.log(
+      `\n${def.chip} · ${def.bus} bus · ${sliderFor(def.line).max} wires`,
+    )
+    reach(sweep(def, def.solo, true))
+    // And the same sweep again for every other machine this chip can be. Rows
+    // are not printed twice — what a second mode is here to say is how much of
+    // the space it reaches, and that is one line.
+    for (const [name, mode] of def.modes ?? [])
+      reach(sweep(def, { ...def.solo, ...mode }, false), name)
   }
 }
