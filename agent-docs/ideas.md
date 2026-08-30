@@ -13,3 +13,10 @@
   relative step — a new concept in SliderDef — and would rescale packed links
   for all 17. sampleSpeed was worth it because its band was a dead value at the
   end you reach for.
+- Further FM chip bends — ranked with hook points in agent-docs/fm-bends.md,
+  written after the dead-bit pass landed. The top three are picked on one
+  number: `pnpm spectrum fm` still puts 0 broadband on the data bus, and the
+  wave ROM's data pins, the shift register soldered onto them, and log-domain
+  operators are the three candidates that could move it. Log domain is the one
+  that changes how the chip sounds with no knife on it, so it is the one to be
+  suspicious of.
