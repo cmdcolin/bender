@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 235 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 56 presets, 14 stage settings and 20 named cuts — and everything
+18 ROM tunes, 56 presets, 14 stage settings and 21 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -103,8 +103,9 @@ too — the knife goes on and the rows under it say which controls that was:
   own first half and stays there
 - **every step twice**: The bottom address wire low — the counter counts as it
   always did and the ROM hands back each step twice
-- **two songs at once**: A trace half cut — most steps arrive, the rest come
-  back stale, and the melody flickers between two versions of itself
+- **two songs at once**: A trace half cut — most steps arrive, and the rest come
+  back off the wire next door, so the melody flickers between two versions of
+  itself
 
 <details>
 <summary>28 controls</summary>
@@ -243,12 +244,16 @@ too — the knife goes on and the rows under it say which controls that was:
   frequency loses its top bit, the operators lose the bottom of their
   multipliers, and a chip that was ringing sits down
 - **a patch nearly right**: A byte wire half cut — most writes land and the odd
-  one arrives stale, so patches come out wrong and stay wrong
+  one arrives off the wire next door, so patches come out wrong and stay wrong
 - **wrong register**: Every odd register filed on top of the even one below it —
   the four voices stop having frequencies of their own
 - **octave up, with a cliff**: The wire that mirrors the quarter wave held, so
   the quarter simply runs twice — the note is right and the wave has a step in
   it
+- **sine into noise**: The sign wire of the sine table parted most of the way.
+  Nothing drives a floating pin, and this bus is read eight times a sample by a
+  different operator each turn, so it never settles anywhere — the one knife on
+  this chip that comes out louder than no knife at all
 - **no fundamental**: The sign bit of the sine table nailed — a rectified wave,
   all octave and nothing underneath it
 - **one write late**: The latch misses often enough that every byte commits to

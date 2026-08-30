@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
-import { render, rms, SR } from '../../dsp/testRender'
+import { highEnergy, render, rms, SR } from '../../dsp/testRender'
 import { sliderFor } from '../controls'
 import {
   applyCut,
@@ -124,6 +124,24 @@ test.each([
   const knife = { ...applyCut(cut, busy()), ...alone }
   const bare = cutOff(cut.group, cut.part, knife)
   expect(tilt(render(knife, 2))).toBeGreaterThan(1.4 * tilt(render(bare, 2)))
+})
+
+// The other direction the row is short of. A knife that comes out quieter than
+// no knife is the easy result — the note stops, the level drops, and the chip is
+// worse at being a chip. This one claims the opposite in its blurb, which is a
+// falsifiable thing to have written down: nothing is driving that pin, so what
+// reaches the operator is neither the wave nor silence but the bus's own
+// traffic, and there is more of it than there was of the sine.
+test('sine into noise comes out louder and broader than no knife at all', () => {
+  const cut = CUTS.find(c => c.name === 'sine into noise')!
+  // The kit out of the mix and the toy left in under it, as the bass cuts above
+  // are measured: the FM chip has no keyboard of its own.
+  const knife = { ...applyCut(cut, busy()), drumLevel: 0, chipLevel: 0.2 }
+  const bare = cutOff(cut.group, cut.part, knife)
+  const a = render(bare, 2)
+  const b = render(knife, 2)
+  expect(rms(b)).toBeGreaterThan(1.15 * rms(a))
+  expect(highEnergy(b) / rms(b)).toBeGreaterThan(2 * (highEnergy(a) / rms(a)))
 })
 
 // The whole promise of the row: every chip on it is a knife you can hear. A cut

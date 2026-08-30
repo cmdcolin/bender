@@ -85,7 +85,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'two songs at once',
     blurb:
-      'A trace half cut — most steps arrive, the rest come back stale, and the melody flickers between two versions of itself',
+      'A trace half cut — most steps arrive, and the rest come back off the wire next door, so the melody flickers between two versions of itself',
     patch: {
       chipAddrLine: pick('chipAddrLine', 'A1'),
       chipAddrFault: pick('chipAddrFault', 'cut'),
@@ -197,7 +197,7 @@ export const CUTS: CutDef[] = [
     part: KNIFE,
     name: 'a patch nearly right',
     blurb:
-      'A byte wire half cut — most writes land and the odd one arrives stale, so patches come out wrong and stay wrong',
+      'A byte wire half cut — most writes land and the odd one arrives off the wire next door, so patches come out wrong and stay wrong',
     patch: {
       fmDataLine: pick('fmDataLine', 'D1'),
       fmDataFault: pick('fmDataFault', 'cut'),
@@ -224,6 +224,18 @@ export const CUTS: CutDef[] = [
     patch: {
       fmWaveLine: pick('fmWaveLine', 'W8'),
       fmWaveFault: pick('fmWaveFault', 'to ground'),
+    },
+  },
+  {
+    group: 'FM chip',
+    part: KNIFE,
+    name: 'sine into noise',
+    blurb:
+      'The sign wire of the sine table parted most of the way. Nothing drives a floating pin, and this bus is read eight times a sample by a different operator each turn, so it never settles anywhere — the one knife on this chip that comes out louder than no knife at all',
+    patch: {
+      fmWaveLine: pick('fmWaveLine', 'W9'),
+      fmWaveFault: pick('fmWaveFault', 'cut'),
+      fmBusCut: 0.85,
     },
   },
   {
