@@ -247,6 +247,22 @@ nothing saying when to stop, which is what **Note length** is for. Four of the
 eight voices (e.piano, bell, bass, marimba) decay on their own regardless of how
 long the key is held; the other four wait for it.
 
+**Rhythm** is the other thing the die can be. Press it and the top two channels
+stop belonging to the keyboard: they are re-tapped onto a kit held in ROM — a
+bass drum well under the bottom of the keybed, and a snare and a hi-hat fed by a
+shift register that is the only noise source anywhere on the chip. Every note
+strikes the bass drum, and the snare and hat want the kit's own trigger lines,
+so pair it with **Struck by**. It costs two of the four voices, and an effect
+wants the same two, so the two switches take turns.
+
+It is worth knowing about even if you never want drums out of it, because it is
+how this chip reaches the bottom and the far top of the spectrum at all —
+everything else it can make is a sum of sines somewhere above 200 Hz. Put a
+knife on the bus with the bank switched over and the same faults land somewhere
+new: the frequency registers those noise slots no longer use for a pitch are
+what clock the shift register, so a bend that used to move a note by an octave
+now sweeps the hiss between a rumble and sand.
+
 **Mod ratio**, **Car ratio** and **Mod decay**, under "inside the patch", shape
 the patch further. What actually happens at the register level when you put a
 fault on this chip's wires is a much bigger story — see [Bends](BENDS.md).

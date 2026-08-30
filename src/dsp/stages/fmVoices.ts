@@ -22,6 +22,8 @@ export const REG = {
   /** sustain level in the high nibble, release in the low */
   modSustain: 0x06,
   carSustain: 0x07,
+  /** the percussion bank: the mode bit and a key per drum, see RHY */
+  rhythm: 0x0e,
   /** the one the driver only ever writes zero to: see TEST */
   test: 0x0f,
   /** per channel from here down */
@@ -57,6 +59,30 @@ export const TEST = {
   dacSkew: 0x04,
   /** the latch's sign line held, so what reaches the pin is rectified */
   dacSign: 0x08,
+} as const
+
+// The percussion bank, in the register the datasheet gives half a page to and
+// the driver never touches unless the rhythm button is down.
+//
+// It is not a mode the sound passes through. It is the die handing hardware
+// over: set the top bit here and the last two channels stop belonging to the
+// keyboard, their operators re-tapped onto a kit held in ROM and keyed from the
+// low bits of this same byte instead of from the key registers. Two of those
+// operators stop reading the sine table altogether and take a shift register
+// instead — free-running since power-on, and the only noise anywhere on this
+// chip. Everything else it can make is a sine or a sum of them, which is why
+// nothing the knife finds on a chip in melody mode ever comes out as hiss.
+//
+// Being one byte is what makes it worth bending. The mode and all three keys
+// cross the data bus together, so a wire held high is a drum that never lifts,
+// and a wire held low is a rhythm button that does nothing.
+export const RHY = {
+  /** the mode bit: the top channels change hands */
+  on: 0x20,
+  /** and the keys, one per drum, in the order the die assigns them */
+  bass: 0x10,
+  snare: 0x08,
+  hat: 0x01,
 } as const
 
 // Envelope rates, four bits each. They live here rather than in the chip
@@ -223,4 +249,35 @@ export const FM_VOICES: Voice[] = [
 ]
 
 export const PATCH_BYTES = FM_VOICES.map(pack)
+
+// The kit the die keeps in ROM. The bass drum is the only one of the three
+// still running off the sine table, so it is the only one that needs a patch —
+// and because it lives in ROM rather than in the register file, nothing the
+// knife does to the patch bytes reaches it. What the knife reaches on these
+// channels is the keys, the mode, the tuning and the volume nibbles.
+export const KIT = {
+  bass: pack({
+    modMult: 1,
+    carMult: 1,
+    hold: false,
+    level: 16,
+    feedback: 7,
+    half: 0,
+    modAd: [15, 9],
+    carAd: [15, 7],
+    modSr: [0, 9],
+    carSr: [0, 7],
+  }),
+  // The two noise slots need a pair of rates each and nothing else: there is no
+  // patch to give an operator that has been cut off from the table.
+  snare: { ad: nibbles([15, 11]), sr: nibbles([0, 11]) },
+  hat: { ad: nibbles([15, 13]), sr: nibbles([0, 13]) },
+}
+
+/** Where the die keys the bass drum: not a note anybody chose, but nine bits of
+    frequency and a block fixed in ROM, an octave under the keyboard's bottom.
+    They go out through the frequency registers like any other note, so this is
+    the one part of the kit a knife on the bus can still retune. */
+export const BASS_FNUM = 268
+export const BASS_BLOCK = 1
 export const FM_VOICE_NAMES = FM_VOICES.map(v => v.name)

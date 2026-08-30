@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 234 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 235 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -255,7 +255,7 @@ too — the knife goes on and the rows under it say which controls that was:
   the register the write before it named
 
 <details>
-<summary>19 controls</summary>
+<summary>20 controls</summary>
 
 | control        | range                                                                                                                           | what it does                                                                                                         |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -267,6 +267,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Struck by      | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                                               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
 | Toy gate       | soldered or cut                                                                                                                 | The jumper from the toy’s gate line onto this chip’s key input                                                       |
 | Effect †       | off, bird, surf, wind, siren, crickets                                                                                          | The effect ROM — a bird, surf, wind, a siren, crickets                                                               |
+| Rhythm         | off or kit                                                                                                                      | The percussion bank, which is a second thing the die can be                                                          |
 | Mod ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | What the modulator runs at against the note, as a multiple of it                                                     |
 | Car ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | The same table on the carrier, which moves the note itself rather than its colour — 2 is the same patch an octave up |
 | Mod decay      | as patched, 4 ms, 6 ms, 9 ms, 15 ms, 22 ms, 34 ms, 53 ms, 81 ms, 0.12 s, 0.19 s, 0.29 s, 0.45 s, 0.69 s, 1.07 s, 1.64 s, 2.52 s | How long the modulator takes to fall away, which is what makes an FM note a bell or an organ                         |

@@ -233,6 +233,7 @@ export const DEFAULT_CONTROLS = {
   fmStruck: 0,
   fmKeyGate: 0,
   fmEffect: 0,
+  fmRhythm: 0,
   fmDataLine: 0,
   fmDataFault: 0,
   fmAddrLine: 0,

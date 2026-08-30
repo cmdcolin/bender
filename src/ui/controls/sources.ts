@@ -829,6 +829,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'The effect ROM — a bird, surf, wind, a siren, crickets. None is a sample: each is a little program firing hundreds of register writes a second, far and away the busiest thing the bus ever carries. It borrows the fourth channel, so Voice, Bright and Feedback sit still while one runs.',
       },
       {
+        key: 'fmRhythm',
+        label: 'Rhythm',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['off', 'kit'],
+        help: 'The percussion bank, which is a second thing the die can be: press it and the top two channels stop belonging to the keyboard, re-tapped onto a bass drum and a pair of slots fed by a shift register running since power-on. That register is the only noise on the chip — everything else it makes is a sine. Every note strikes the bass drum; for the snare and the hat, clip the kit’s lines on with Struck by. Costs two voices, and an effect wants the same ones.',
+      },
+      {
         key: 'fmModRatio',
         part: 'inside the patch',
         label: 'Mod ratio',

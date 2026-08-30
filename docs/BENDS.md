@@ -153,6 +153,42 @@ output latch skips every other slot for half the sample rate and full aliasing,
 and the latch's sign line held rectifies everything reaching the pin. No
 combination of legal patch bytes produces any of that.
 
+**The percussion bank** is the register next door to the test one, and it is the
+answer to a complaint anyone who bends this chip arrives at: whatever the knife
+finds, the result comes out high. That is structural rather than accidental. The
+key line hands the chip 220 Hz and up, the driver picks the tightest block for
+every note it is given, and a chip whose only primitive is a sine has no way to
+make a sound that is not a sum of sines. So faults that set a bit go up several
+octaves, faults that clear one mostly clear a bit that was already clear, and
+nothing anywhere in the register file makes noise.
+
+Press **Rhythm** and the die hands over the top two channels. Their operators
+are re-tapped onto a kit held in ROM — a bass drum an octave under the bottom of
+the keyboard, and a pair of slots cut off from the sine table altogether and
+wired instead to a shift register that has been free-running since power-on.
+That register is the only noise on the part. The two slots take it at different
+rates off one divider, which is why they do not sound alike: the hi-hat gets
+every bit and comes out as sand, and the snare latches one in eight and holds
+it, which is a rattle with a body under it. Every note strikes the bass drum;
+the snare and the hi-hat want the kit's own trigger lines, which is what
+**Struck by** clips on.
+
+What that is worth is the whole spectrum rather than the top of it. With the
+bank switched over the same knives land somewhere new — a wire that used to move
+a note by an octave now moves how coarse the hiss is, because the frequency
+registers those two slots no longer use for a pitch are what clock the shift
+register. Wind it down and the kit turns into a rumble; wind it up and it turns
+into sand, and nothing else on this chip makes that sweep.
+
+The bank is one byte, which is what makes it worth bending rather than merely
+worth having. The mode bit and all three drum keys cross the data bus together,
+so a wire held low is a rhythm button that does nothing, and a wire held high is
+a drum that never lifts — the same bend as the note that never ends, one
+register down. The kit's rates live in ROM rather than in the register file, so
+a knife on the patch bytes cannot reach them: the drums stay crisp on a board
+where nothing else does. An effect wants the same two channels and asked first,
+so pressing one puts the other down.
+
 **The effect ROM** is the source of the chip's canned effects — a bird call,
 surf, wind, a siren, crickets — and none of them are samples. Each is a short
 program in the processor firing register writes at the chip hundreds of times a

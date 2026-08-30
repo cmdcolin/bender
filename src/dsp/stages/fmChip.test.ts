@@ -4,14 +4,20 @@ import { packParams } from '../../engine/params'
 import { FAULT } from '../bus'
 import { buildChain } from '../build'
 import { BLOCK } from '../stage'
+import { ANY_CHOICE } from '../trigbus'
+import { SOURCE_TAPS } from '../../engine/params'
+import { FM_EFFECT_NAMES } from './fmEffects'
 import {
   bin,
+  bursts,
+  highEnergy,
   lowEnergy,
   makeIo,
   playHeldKey,
   playKeys,
   render,
   renderBender,
+  renderStems,
   rms,
   SR,
   tail,
@@ -328,4 +334,91 @@ test('the chip runs off the toy’s rail, so starving the toy dives it too', () 
   }
   expect(hz({})).toBe(220)
   expect(hz({ chipBattery: 1, chipStarve: 0.35 })).toBe(165)
+})
+
+// The percussion bank. Everything the button does it does through the register
+// file, so the same wires that carry a patch carry the mode bit and the keys —
+// and what the bank is for is that a chip which can only add sines suddenly has
+// a bottom octave and a shift register.
+const KIT_BOARD: Partial<Controls> = {
+  ...FM_ONLY,
+  fmRhythm: 1,
+  // the gate cut, so only the kit's trigger lines reach the chip
+  fmKeyGate: 1,
+  fmStruck: ANY_CHOICE,
+  drumLevel: 0.5,
+  drumBpm: 160,
+  drumKick: 0b1000_0010_0000_1000,
+  drumSnare: 0b0000_1000_0000_0000,
+  drumHat: 0b1010_1010_1010_1010,
+}
+
+/** The chip's own stem, so the kit next door is not in the measurement. */
+const FM_TAP = SOURCE_TAPS.indexOf('fmChip')
+const fmStem = (o: Partial<Controls>) =>
+  renderStems({ ...KIT_BOARD, ...o }, 2).stems[FM_TAP]!
+
+test('the bank gives the chip a bottom octave it does not otherwise have', () => {
+  const notes = fmStem({ fmRhythm: 0 })
+  const kit = fmStem({ drumSnare: 0, drumHat: 0 })
+  // Nothing the chip plays as notes reaches down here: the key line hands it
+  // 220 Hz and up, and the driver picks the tightest block for every one, so
+  // the bass drum's own block is one no note it is ever asked for can reach.
+  expect(lowEnergy(notes) / rms(notes)).toBeLessThan(0.25)
+  expect(lowEnergy(kit) / rms(kit)).toBeGreaterThan(0.7)
+})
+
+test('the two noise slots are the only broadband thing on the chip', () => {
+  const notes = fmStem({ fmRhythm: 0 })
+  const hat = fmStem({ drumKick: 0, drumSnare: 0 })
+  // The hi-hat takes every bit the register puts out; the snare latches one in
+  // eight and holds it, so the same generator is sand at one tap and a rattle
+  // well under it at the other.
+  expect(highEnergy(hat) / rms(hat)).toBeGreaterThan(
+    2 * (highEnergy(notes) / rms(notes)),
+  )
+  const snare = fmStem({ drumKick: 0, drumHat: 0 })
+  expect(lowEnergy(snare, 480) / rms(snare)).toBeGreaterThan(
+    lowEnergy(hat, 480) / rms(hat),
+  )
+})
+
+// The mode bit and all three keys cross the data bus in one byte, which is what
+// makes the bank worth bending: the button is on the panel and the bit is in
+// the register file, and everything between them is wire.
+const MODE_LINE = 6
+const BASS_LINE = 5
+
+test('a wire under the mode bit is a rhythm button that does nothing', () => {
+  const kit = fmStem({})
+  const held = fmStem({ fmDataLine: MODE_LINE, fmDataFault: FAULT.ground })
+  // The bit cannot rise, so the die never hands the channels over: no bass
+  // drum, and the kit's lines come out as notes again — lower ones than they
+  // would have, because the same wire is a bit of the frequency on its way past.
+  expect(lowEnergy(kit) / rms(kit)).toBeGreaterThan(0.5)
+  expect(lowEnergy(held) / rms(held)).toBeLessThan(0.35)
+})
+
+test('a wire under a drum key is a drum that never lifts', () => {
+  const struck = fmStem({ drumSnare: 0, drumHat: 0 })
+  const jammed = fmStem({
+    drumSnare: 0,
+    drumHat: 0,
+    fmDataLine: BASS_LINE,
+    fmDataFault: FAULT.supply,
+  })
+  // Held high the key never falls, so the die never sees the edge that would
+  // start the next strike: one bass drum at the top of the run and no more.
+  expect(bursts(jammed)).toBeLessThan(bursts(struck))
+})
+
+test('an effect and the bank want the same channels, and the effect wins', () => {
+  const kit = fmStem({ drumSnare: 0, drumHat: 0 })
+  const bird = fmStem({
+    drumSnare: 0,
+    drumHat: 0,
+    fmEffect: FM_EFFECT_NAMES.indexOf('bird'),
+  })
+  expect(lowEnergy(kit) / rms(kit)).toBeGreaterThan(0.5)
+  expect(lowEnergy(bird) / rms(bird)).toBeLessThan(0.2)
 })

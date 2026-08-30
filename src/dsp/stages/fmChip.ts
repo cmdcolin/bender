@@ -16,11 +16,15 @@ import {
 } from './fmEffects'
 import {
   attackSecs,
+  BASS_BLOCK,
+  BASS_FNUM,
   fallSecs,
   KEY_ON,
+  KIT,
   MULT,
   PATCH_BYTES,
   REG,
+  RHY,
   TEST,
 } from './fmVoices'
 
@@ -44,6 +48,36 @@ import {
 
 const N_CH = 4
 const N_REGS = 64
+
+// Where the percussion bank starts. Set the mode bit and everything from here
+// up stops belonging to the keyboard: the bass drum on the first of them, and
+// the snare and the hi-hat sharing the two operator slots of the last, which is
+// how a part with more channels than pins fits five drums into three voices.
+const RHYTHM_CH = 2
+
+/** What the hi-hat's slot runs at against the snare's, fixed on the die. */
+const HAT_MULT = 8
+
+/** The bass drum's feedback, out of its ROM patch rather than the panel. */
+const BASS_FB = Math.pow(2, (KIT.bass[REG.feedback]! & 0x07) - 8)
+
+// The shift register the percussion runs on: seventeen stages, one tap, and
+// free-running from power-on. Nothing on the panel reaches it and nothing
+// reseeds it, so the hiss is the same hiss every time the board comes up —
+// which is what makes it a part of a chip rather than a random number.
+class Lfsr {
+  private state = 1
+
+  step() {
+    const bit = (this.state ^ (this.state >> 14)) & 1
+    this.state = ((this.state >>> 1) | (bit << 16)) & 0x1ffff
+    return bit ? 1 : -1
+  }
+
+  reset() {
+    this.state = 1
+  }
+}
 
 // A9 down: what the frequency number is counted against. The chip holds nine
 // bits of frequency and three of octave, so the nine bits only ever have to
@@ -102,7 +136,24 @@ const ENV_FLOOR = 0.0005
 // voice in the kit's own row order is the decision the wire makes for you. They
 // are a pentatonic apart on purpose: a pattern written for drums comes out as a
 // riff rather than a cluster.
-const DRUM_NOTES = [0, 12, 24, 15, 5, 19]
+// One per voice, in the kit's own row order: kick, snare, hat, clap, tom, bell,
+// open hat, cymbal.
+const DRUM_NOTES = [0, 12, 24, 15, 5, 19, 26, 31]
+
+// And where those same lines land when the bank is switched over and the chip
+// has drums of its own to put them on. Three keys for eight voices, so the tom
+// goes on the bass drum and everything metal goes on the hat: the wire has no
+// more places to put a strike than the die has drums.
+const DRUM_KEYS = [
+  RHY.bass,
+  RHY.snare,
+  RHY.hat,
+  RHY.snare,
+  RHY.bass,
+  RHY.hat,
+  RHY.hat,
+  RHY.hat,
+]
 
 /** The noise byte the effect ROM reads, which is a table on the real part. */
 const EFFECT_SEED = 0x5e
@@ -186,6 +237,22 @@ export class FmChip implements Stage {
   private modRates = newRates()
   private carRates = newRates()
   private raceRates = newRates()
+  // The kit's four, which never read the register file: the bass drum's two
+  // operators, and one rate set each for the two slots wired to the shift
+  // register.
+  private bassMod = newRates()
+  private bassCar = newRates()
+  private snareRates = newRates()
+  private hatRates = newRates()
+  private noise = new Lfsr()
+  /** the bit the register is holding, the slower one the snare latched off it,
+      and where each of the two clocks has got to */
+  private hiss = 0
+  private snareHiss = 0
+  private noiseClock = 0
+  private snareClock = 0
+  /** whether the mode bit was set last time the driver looked */
+  private kitOn = false
   private feedback = 0
   private dataBus = new Bus(8)
   private addrBus = new Bus(6)
@@ -273,12 +340,51 @@ export class FmChip implements Stage {
     // processor can write the key up as often as it likes and the envelope has
     // no reason to move, so the note goes on — and the next note lands on the
     // same channel as a change of pitch under an envelope that never restarted.
+    // The percussion bank keys the same way and off the same kind of edge, only
+    // with three keys in one byte instead of one key per register — so a wire
+    // that cannot fall is a drum that never lifts, exactly as it is a note that
+    // never ends one register up.
+    if (reg === REG.rhythm) {
+      this.kitKeys(before, this.regs[reg]!)
+      return
+    }
     const ch = reg - REG.keyBlock
     if (ch < 0 || ch >= N_CH) return
     const was = (before & KEY_ON) !== 0
     const now = (this.regs[reg]! & KEY_ON) !== 0
     if (now && !was) this.attack(ch)
     else if (was && !now) this.release(ch)
+  }
+
+  // Three drums keyed out of one byte. The bass drum is an ordinary pair of
+  // operators so both of its slots move together; the snare and the hi-hat have
+  // a slot each on the channel above and move on their own.
+  private kitKeys(before: number, now: number) {
+    if ((now & RHY.on) === 0) return
+    const bass = this.ch[RHYTHM_CH]!
+    const pair = this.ch[RHYTHM_CH + 1]!
+    const edge = (bit: number, op: Op, other?: Op) => {
+      const was = (before & bit) !== 0
+      const is = (now & bit) !== 0
+      if (is && !was) {
+        op.stage = ATTACK
+        op.phase = 0
+        op.fb1 = 0
+        op.fb2 = 0
+        if (other) {
+          other.stage = ATTACK
+          other.phase = 0
+          other.fb1 = 0
+          other.fb2 = 0
+        }
+      } else if (was && !is) {
+        if (op.stage !== IDLE) op.stage = RELEASE
+        if (other && other.stage !== IDLE) other.stage = RELEASE
+      }
+    }
+    edge(RHY.bass, bass.car, bass.mod)
+    edge(RHY.snare, pair.car)
+    edge(RHY.hat, pair.mod)
   }
 
   private attack(i: number) {
@@ -332,11 +438,48 @@ export class FmChip implements Stage {
     }
   }
 
+  // The rhythm button, going down or coming up. Everything it does it does
+  // through the register file, because there is no other way in: the mode bit
+  // and the kit's tuning are writes like any other, so they cross the same
+  // wires and land wherever those wires let them. A knife on the bus can leave
+  // the button pressed with nothing switched over, or switched over with the
+  // button up.
+  private sendRhythm(on: boolean) {
+    if (on) {
+      // Where ROM says the bass drum sits, out through the ordinary frequency
+      // registers — the one part of the kit still tuned rather than fixed.
+      this.write(REG.fnumLo + RHYTHM_CH, BASS_FNUM & 0xff)
+      this.write(
+        REG.keyBlock + RHYTHM_CH,
+        ((BASS_FNUM >> 8) & 1) | (BASS_BLOCK << 1),
+      )
+      // And the noise pair, whose registers no longer pick a note — what they
+      // still decide is how fast the hi-hat's gate runs.
+      this.write(REG.fnumLo + RHYTHM_CH + 1, 0)
+      this.write(REG.keyBlock + RHYTHM_CH + 1, (5 << 1) | 1)
+      this.write(REG.instVol + RHYTHM_CH, 0)
+      this.write(REG.instVol + RHYTHM_CH + 1, 0)
+    }
+    this.write(REG.rhythm, on ? RHY.on : 0)
+  }
+
+  // Which drum a strike is, once it has reached a chip that has no notes left
+  // to play it as. The kit's own lines keep their voices — a kick is a bass
+  // drum — and everything arriving on the key line is a bass drum too, because
+  // that is the one a driver puts under a melody.
+  private keyDrum(bit: number) {
+    const r = this.regs[REG.rhythm]!
+    // Down and up in the same breath: the key bit has to fall before it can
+    // rise again, or the die sees no edge and the drum does not restrike.
+    this.write(REG.rhythm, r & ~bit)
+    this.write(REG.rhythm, r | bit)
+  }
+
   // A driver running an effect keeps the top channel for it and gives the
   // keyboard the rest, which is what four channels and one effect button always
   // meant: the sound the button makes is a voice you no longer have.
   private pick(note: number): Channel {
-    const free = this.effect >= 0 ? EFFECT_CH : N_CH
+    const free = this.kitOn ? RHYTHM_CH : this.effect >= 0 ? EFFECT_CH : N_CH
     for (let i = 0; i < free; i++) {
       const c = this.ch[i]!
       if (c.note === note && c.car.stage !== IDLE) return c
@@ -407,7 +550,7 @@ export class FmChip implements Stage {
   }
 
   noteOff(note: number) {
-    const n = this.effect >= 0 ? EFFECT_CH : N_CH
+    const n = this.melodyChannels()
     for (let i = 0; i < n; i++) if (this.ch[i]!.note === note) this.keyOff(i)
   }
 
@@ -417,12 +560,21 @@ export class FmChip implements Stage {
       anybody played, so a bird call lights nothing. */
   soundingNotes(out: Int16Array): number {
     let n = 0
-    const chans = this.effect >= 0 ? EFFECT_CH : N_CH
+    const chans = this.melodyChannels()
     for (let i = 0; i < chans; i++) {
       const c = this.ch[i]!
       if (c.car.stage !== IDLE) out[n++] = c.note
     }
     return n
+  }
+
+  /** How many channels the keyboard still has. The effect script takes the top
+      one; the percussion bank takes the top two, and takes them first, because
+      a driver that has been asked for drums does not have a fourth voice to
+      lend an effect either. */
+  private melodyChannels() {
+    if (this.kitOn) return RHYTHM_CH
+    return this.effect >= 0 ? EFFECT_CH : N_CH
   }
 
   // The effect button, pressed or let go. Going in, eight patch bytes; coming
@@ -448,6 +600,64 @@ export class FmChip implements Stage {
   // The patch registers turned into something a sample loop can use. Done once a
   // block, off whatever the register file holds right now — so a byte that
   // arrived wrong is read wrong here, every block, until it is written again.
+  // One operator's rate set, off the four bytes that describe it. The scale is
+  // the rail: every rate on this chip is counted off the same divider as the
+  // pitch and the tempo, so a starving board stretches all of them together.
+  private rates(
+    out: Rates,
+    clockFactor: number,
+    flags: number,
+    ad: number,
+    sr: number,
+    level: number,
+    half: number,
+  ) {
+    const scale = Math.max(clockFactor, 0.05)
+    out.mult = MULT[flags & 0x0f]!
+    out.sustained = (flags & 0x20) !== 0
+    out.attack = 1 - Math.exp(-1 / (attackSecs(ad >> 4) * scale * this.sr))
+    out.decay = Math.exp(-1 / (fallSecs(ad & 0x0f) * scale * this.sr))
+    out.release = Math.exp(-1 / (fallSecs(sr & 0x0f) * scale * this.sr))
+    out.sustain = atten(sr >> 4, 3)
+    out.level = level
+    out.half = half
+  }
+
+  // The kit's rates, which come out of ROM rather than out of the register
+  // file — so a knife on the patch bytes never reaches them, and the drums stay
+  // crisp on a board where nothing else does. The rail still reaches them.
+  private readKit(clockFactor: number) {
+    const b = KIT.bass
+    this.rates(
+      this.bassMod,
+      clockFactor,
+      b[REG.modFlags]!,
+      b[REG.modAttack]!,
+      b[REG.modSustain]!,
+      atten(b[REG.modLevel]! & 0x3f, 0.75),
+      0,
+    )
+    this.rates(
+      this.bassCar,
+      clockFactor,
+      b[REG.carFlags]!,
+      b[REG.carAttack]!,
+      b[REG.carSustain]!,
+      1,
+      0,
+    )
+    this.rates(
+      this.snareRates,
+      clockFactor,
+      1,
+      KIT.snare.ad,
+      KIT.snare.sr,
+      1,
+      0,
+    )
+    this.rates(this.hatRates, clockFactor, 1, KIT.hat.ad, KIT.hat.sr, 1, 0)
+  }
+
   private readPatch(clockFactor: number) {
     const rates = (
       out: Rates,
@@ -456,17 +666,7 @@ export class FmChip implements Stage {
       sr: number,
       level: number,
       half: number,
-    ) => {
-      const scale = Math.max(clockFactor, 0.05)
-      out.mult = MULT[flags & 0x0f]!
-      out.sustained = (flags & 0x20) !== 0
-      out.attack = 1 - Math.exp(-1 / (attackSecs(ad >> 4) * scale * this.sr))
-      out.decay = Math.exp(-1 / (fallSecs(ad & 0x0f) * scale * this.sr))
-      out.release = Math.exp(-1 / (fallSecs(sr & 0x0f) * scale * this.sr))
-      out.sustain = atten(sr >> 4, 3)
-      out.level = level
-      out.half = half
-    }
+    ) => this.rates(out, clockFactor, flags, ad, sr, level, half)
     const r = this.regs
     const shape = r[REG.feedback]!
     rates(
@@ -510,6 +710,92 @@ export class FmChip implements Stage {
     if (this.waveLine >= 0)
       addr = this.waveBus.read(addr, this.waveLine, this.waveFault, this.busCut)
     return half && addr & SIGN ? 0 : sineAt(addr)
+  }
+
+  // The two channels the mode bit took. One is an ordinary pair of operators
+  // tuned where ROM says; the other has had both its slots cut off from the
+  // sine table and handed the shift register, which is why nothing here has a
+  // pitch — what the frequency registers still decide on that one is how fast
+  // the hi-hat's gate runs, and that is the whole difference between a tick and
+  // a ring.
+  private percussion(
+    n: number,
+    c: Channel,
+    raced: boolean,
+    wideOpen: boolean,
+    pitch: number,
+  ) {
+    const key = this.regs[REG.keyBlock + n]!
+    const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
+    const inc =
+      ((fnum / FNUM_FULL) * FNUM_BASE * Math.pow(2, (key >> 1) & 7) * pitch) /
+      this.sr
+    const vol = this.volume(n)
+
+    if (n === RHYTHM_CH) {
+      if (c.car.stage === IDLE) return 0
+      const mod = raced ? this.raceRates : this.bassMod
+      const car = raced ? this.raceRates : this.bassCar
+      this.stepEnv(c.mod, mod)
+      this.stepEnv(c.car, car)
+      c.mod.phase = (c.mod.phase + inc * mod.mult) % 1
+      const self = (c.mod.fb1 + c.mod.fb2) * BASS_FB
+      const m =
+        this.wave(c.mod.phase + self, 0) *
+        (wideOpen ? 1 : c.mod.env) *
+        mod.level
+      c.mod.fb2 = c.mod.fb1
+      c.mod.fb1 = m
+      c.car.phase = (c.car.phase + inc * car.mult) % 1
+      return (
+        this.wave(c.car.phase + m * 2, 0) * (wideOpen ? 1 : c.car.env) * vol
+      )
+    }
+
+    // The shift register is clocked off this channel's own phase generator
+    // rather than off the sample, which is what gives the hiss a colour instead
+    // of being white: the bit holds between clocks, so the register these two
+    // slots no longer use for a note still decides how coarse the noise is.
+    // Wind it down and the kit turns into a rumble; wind it up and it turns
+    // into sand. Nothing else on the chip makes that sweep.
+    //
+    // The two slots take it at different rates off the one divider, which is
+    // the whole of why they do not sound alike: the hi-hat gets every bit, and
+    // the snare latches one in eight and holds it, so the same register is sand
+    // at one tap and a rattle at the other.
+    this.noiseClock += inc * HAT_MULT
+    while (this.noiseClock >= 1) {
+      this.noiseClock -= 1
+      this.hiss = this.noise.step()
+    }
+    this.snareClock += inc
+    while (this.snareClock >= 1) {
+      this.snareClock -= 1
+      this.snareHiss = this.hiss
+    }
+
+    let out = 0
+    if (c.car.stage !== IDLE) {
+      // The snare. The die switches the table out rather than disconnecting it,
+      // so a little of the operator's own phase is still in there — which is
+      // why a real one is pitched rather than pure sand.
+      this.stepEnv(c.car, raced ? this.raceRates : this.snareRates)
+      c.car.phase = (c.car.phase + inc) % 1
+      out +=
+        (this.snareHiss * 0.75 + this.wave(c.car.phase, 0) * 0.25) *
+        (wideOpen ? 1 : c.car.env)
+    }
+    if (c.mod.stage !== IDLE) {
+      // And the hi-hat, which is the same register gated off a phase eight
+      // times up: what makes it metal rather than more sand.
+      this.stepEnv(c.mod, raced ? this.raceRates : this.hatRates)
+      c.mod.phase = (c.mod.phase + inc * HAT_MULT) % 1
+      out +=
+        (this.wave(c.mod.phase, 0) > 0 ? this.hiss : -this.hiss) *
+        (wideOpen ? 1 : c.mod.env) *
+        0.7
+    }
+    return out * vol
   }
 
   private stepEnv(op: Op, r: Rates) {
@@ -571,6 +857,19 @@ export class FmChip implements Stage {
     if (effect !== this.effect) this.setEffect(effect)
     const script = EFFECTS[this.effect]
 
+    // The rhythm button. An effect and the kit want the same channels and the
+    // effect asked first, so pressing one puts the other down — which is the
+    // arithmetic of four voices and no more, not a rule anybody wrote.
+    const wantKit = p[IDX.fmRhythm]! > 0.5 && this.effect < 0
+    if (wantKit !== this.kitOn) {
+      this.kitOn = wantKit
+      this.sendRhythm(wantKit)
+    }
+    // What the die is actually doing, which is a different question: the button
+    // is on the panel and the mode bit is in the register file, and everything
+    // between them is wire.
+    const kit = (this.regs[REG.rhythm]! & RHY.on) !== 0
+
     // A driver with an effect running does not re-select the melody instrument
     // behind it. The script owns the patch registers until the button comes up,
     // and letting it go is what sends the voice again — so a knob moved while a
@@ -592,6 +891,7 @@ export class FmChip implements Stage {
     }
 
     this.readPatch(rail.clockFactor)
+    if (kit) this.readKit(rail.clockFactor)
     // The keys, before the block: held, because a hand is holding them.
     for (const q of this.queued) this.keyOn(q.note, 0, q.vol)
     this.queued.length = 0
@@ -627,8 +927,13 @@ export class FmChip implements Stage {
       // through the patch — is an edge and nothing more, and an edge is where
       // *Note length* comes in.
       const struck = gateOn ? ctx.trig.key[i]! : 0
-      if (struck !== 0)
+      if (struck !== 0) {
         this.keyOn(struck - 128, ctx.trig.keyHeld[i]! > 0 ? 0 : lengthSamples)
+        // With the bank switched over there is a bass drum sitting on the
+        // channel the note would have had, and a driver asked for rhythm puts
+        // it under every note — which is the whole of what the button was for.
+        if (kit) this.keyDrum(RHY.bass)
+      }
 
       // And the kit's own lines, for whoever clipped them on here as well. The
       // kit is wired behind this chip in the source order, so what arrives is
@@ -638,13 +943,21 @@ export class FmChip implements Stage {
         const bits = Math.round(ctx.trig.drumBits[i]!) & drumMask
         if (bits !== 0) {
           const vol = Math.round((1 - ctx.trig.drumGain[i]! / ACCENT_GAIN) * 3)
-          for (let v = 0; v < N_DRUM_VOICES; v++)
-            if (bits & (1 << v))
+          for (let v = 0; v < N_DRUM_VOICES; v++) {
+            if ((bits & (1 << v)) === 0) continue
+            // A trigger line carries a strike and nothing else, so what it
+            // becomes is decided at this end. With the bank switched over there
+            // is somewhere for a strike to go as a strike, and the kit next
+            // door lands on the kit on the die — otherwise it has to come out
+            // as a note, which is the wire's own choice of one.
+            if (kit) this.keyDrum(DRUM_KEYS[v]!)
+            else
               this.keyOn(
                 snap(DRUM_NOTES[v]!, keyScale, keyRoot),
                 lengthSamples,
                 Math.max(vol, 0),
               )
+          }
         }
       }
 
@@ -662,6 +975,10 @@ export class FmChip implements Stage {
         // The CPU coming back to write the key up. Whether that write does
         // anything is between it and the wires.
         if (c.offIn > 0 && --c.offIn === 0) this.keyOff(n)
+        if (kit && n >= RHYTHM_CH) {
+          sum += this.percussion(n, c, raced, wideOpen, pitch)
+          continue
+        }
         if (c.car.stage === IDLE) continue
 
         // Frequency straight back out of the registers rather than off the note
@@ -734,6 +1051,12 @@ export class FmChip implements Stage {
       c.car = newOp()
       c.offIn = 0
     }
+    this.noise.reset()
+    this.hiss = 0
+    this.snareHiss = 0
+    this.noiseClock = 0
+    this.snareClock = 0
+    this.kitOn = false
     this.dataBus.reset()
     this.addrBus.reset()
     this.waveBus.reset()
