@@ -1188,6 +1188,16 @@ export class FmChip implements Stage {
     return this.regs.slice(0, PATCH_BYTES[0]!.length)
   }
 
+  /** Which instrument each channel is on, off the top of its volume register.
+      The driver writes zero there with every note it sends, so anything else
+      is a number the wires put in. */
+  instRegs() {
+    return Array.from(
+      { length: N_CH },
+      (_, n) => this.regs[REG.instVol + n]! >> 4,
+    )
+  }
+
   panic() {
     this.regs.fill(0)
     this.effect = -1

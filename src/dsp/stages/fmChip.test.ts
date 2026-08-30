@@ -11,6 +11,8 @@ import type { BuiltChain } from '../build'
 import {
   bin,
   bursts,
+  deviation,
+  envelope,
   highEnergy,
   lowEnergy,
   makeIo,
@@ -23,7 +25,20 @@ import {
   SR,
   tail,
 } from '../testRender'
-import { FM_VOICE_NAMES, FM_VOICES, RHY } from './fmVoices'
+import {
+  FM_VOICE_NAMES,
+  FM_VOICES,
+  keyScaleNum,
+  kslGain,
+  KSR,
+  pack,
+  REG,
+  RHY,
+  ROM_PATCH_BYTES,
+  ROM_VOICE_NAMES,
+  ROM_VOICES,
+  scaledRate,
+} from './fmVoices'
 import { romIndex } from './roms'
 
 // The toy turned down to nothing, so what comes out is the other chip playing
@@ -442,4 +457,166 @@ test('an effect and the bank want the same channels, and the effect wins', () =>
   })
   expect(lowEnergy(kit) / rms(kit)).toBeGreaterThan(0.5)
   expect(lowEnergy(bird) / rms(bird)).toBeLessThan(0.2)
+})
+
+// The bits the register map had no reader for. Six of the eight data wires did
+// something on this chip and two barely did, because the flags bytes read five
+// of their eight, the volume byte four, and the shape and key bytes five. What
+// sits in those gaps on the part is the hardware a patch shares rather than
+// owns: one LFO, the key scaling, and which of the die's own instruments a
+// channel is playing.
+
+/** A note on the chip's own keys, off its stem so the toy is not in it. */
+const fmNote = (o: Partial<Controls>, note: number, seconds = 0.6) =>
+  renderStems({ ...FM_ONLY, fmKeyGate: 1, ...o }, seconds, built =>
+    built.fmChip.noteOn(note),
+  ).stems[FM_TAP]!
+
+const voice = (name: string) => FM_VOICE_NAMES.indexOf(name)
+
+test('key scaling wires the octave into the level', () => {
+  // Two octaves of one patch as a ratio against itself, so what is compared is
+  // how much each voice gives up on the way up rather than how loud either of
+  // them is. The bell's carrier is scaled and the organ's is not.
+  const spread = (v: number) =>
+    rms(fmNote({ fmVoice: v }, 24)) / rms(fmNote({ fmVoice: v }, 0))
+  expect(spread(voice('bell'))).toBeLessThan(0.7 * spread(voice('organ')))
+})
+
+test('the scaling table is flat at nothing and steeper by the octave', () => {
+  for (let block = 0; block < 8; block++)
+    expect(kslGain(0, block, 400), `block ${block}`).toBe(1)
+  // Three decibels an octave, which is half the level across two of them.
+  expect(kslGain(2, 4, 400) / kslGain(2, 2, 400)).toBeCloseTo(0.5, 2)
+  expect(kslGain(3, 5, 400)).toBeLessThan(kslGain(2, 5, 400))
+})
+
+test('rate scaling shortens the note at the top of the keyboard', () => {
+  // Against itself again: key scaling takes level off the high note too, and a
+  // note's tail over its own head is the measurement that does not care.
+  const shape = (v: number, note: number) => {
+    const x = fmNote({ fmVoice: v }, note)
+    return (
+      rms(x.subarray(Math.round(0.25 * SR))) /
+      rms(x.subarray(0, Math.round(0.05 * SR)))
+    )
+  }
+  const marimba = voice('marimba')
+  expect(shape(marimba, 24)).toBeLessThan(0.6 * shape(marimba, 0))
+  // A patch without the bit counts the same rate wherever it is played.
+  const piano = voice('e.piano')
+  expect(shape(piano, 24)).toBeGreaterThan(0.7 * shape(piano, 0))
+})
+
+test('the key-scale number is the key register’s low nibble, not a calculation', () => {
+  // Block five with the count's top bit set is what the die reads off those
+  // four wires, and it reads the same four whether the scaling bit is on or not.
+  const key = (5 << 1) | 1
+  expect(keyScaleNum(key)).toBe(11)
+  expect(scaledRate(4, key, KSR)).toBe(9)
+  expect(scaledRate(4, key, 0)).toBe(4)
+  // Nothing counts past the end of the table.
+  expect(scaledRate(14, 0x0f, KSR)).toBe(15)
+})
+
+// Where the level is going up and down, scanned off the envelope rather than
+// assumed — the LFO's rate is the question in both tests below, and one of them
+// is about it being somewhere other than where it was built to be.
+const ENV_STEP = 0.005
+const wobble = (x: Float32Array) => {
+  const env = envelope(x.subarray(Math.round(0.4 * SR)), ENV_STEP)
+  const mean = env.reduce((a, v) => a + v, 0) / env.length
+  for (let i = 0; i < env.length; i++) env[i]! -= mean
+  let best = 0
+  let at = 0
+  for (let hz = 1; hz <= 8; hz += 0.05) {
+    const v = bin(env, hz * ENV_STEP * SR)
+    if (v > best) {
+      best = v
+      at = hz
+    }
+  }
+  return { hz: at, depth: best / mean }
+}
+
+const organ = (o: Partial<Controls>) =>
+  fmNote({ fmVoice: voice('organ'), ...o }, 0, 2)
+
+// One switch wires both operators to the LFO, because one LFO serving the whole
+// die is one button on the case — and a modulator going up and down is a
+// brightness going up and down, which moves the meter the other way from the
+// carrier doing the same thing. They very nearly cancel at the rate they are
+// both running at, and what is left over is at twice it. So the tremolo is
+// measured with the modulator turned off: what remains is the carrier alone.
+const tremolo = (o: Partial<Controls>) => organ({ fmLfo: 2, fmBright: 0, ...o })
+
+test('the die’s LFO is a wobble no register asked for', () => {
+  const on = wobble(tremolo({}))
+  const off = wobble(tremolo({ fmLfo: 0 }))
+  expect(on.hz).toBeCloseTo(3.7, 0)
+  expect(on.depth).toBeGreaterThan(20 * off.depth)
+})
+
+test('the wobble counts off the same divider as everything else', () => {
+  // Nothing sets the LFO's rate, so the only thing that can move it is the
+  // supply — and a starved board slows the tremolo down with the pitch, the
+  // envelopes and the tempo.
+  expect(wobble(tremolo({ chipStarve: 0.45 })).hz).toBeLessThan(
+    0.8 * wobble(tremolo({})).hz,
+  )
+})
+
+test('vibrato is the only detune on a chip with no detune register', () => {
+  expect(deviation(organ({ fmLfo: 1 }), organ({}))).toBeGreaterThan(0.05)
+  // And the button reaches the chip the only way anything does. The wire that
+  // carries the bit held low is a button that does nothing at all — the patch
+  // arrives without it and the die has no other way to be told.
+  const cut = { fmDataLine: 7, fmDataFault: FAULT.ground }
+  expect(deviation(organ({ fmLfo: 1, ...cut }), organ(cut))).toBe(0)
+})
+
+// The instrument nibble, at the top of the register that also carries how loud
+// the channel is. The driver writes zero there with every note it sends,
+// because zero means the eight bytes it has just finished sending.
+const instOf = (o: Partial<Controls>) => {
+  let seen: number[] = []
+  renderBender(
+    { ...FM_ONLY, fmKeyGate: 1, ...o },
+    0.5,
+    built => built.fmChip.noteOn(0),
+    undefined,
+    built => {
+      seen = built.fmChip.instRegs()
+    },
+  )
+  return seen
+}
+
+test('a wire under the volume register hands a channel the die’s own patch', () => {
+  expect(instOf({})).toEqual([0, 0, 0, 0])
+  // D7 held high is the top bit of every byte the processor sends, and in this
+  // register that bit is half the instrument number.
+  const bent = { fmDataLine: 8, fmDataFault: FAULT.supply }
+  expect(instOf(bent).some(n => n > 0)).toBe(true)
+  expect(rms(fmNote(bent, 0))).toBeGreaterThan(0.005)
+})
+
+test('the die holds fifteen patches and the case has buttons for eight', () => {
+  expect(ROM_PATCH_BYTES).toHaveLength(15)
+  expect(ROM_VOICE_NAMES.slice(0, FM_VOICE_NAMES.length)).toEqual(
+    FM_VOICE_NAMES,
+  )
+  // Seven sounds sitting on the board wired to nothing: no button reaches them
+  // and the processor has no reason to name them.
+  expect(ROM_VOICE_NAMES.slice(FM_VOICE_NAMES.length)).toHaveLength(7)
+  expect(new Set(ROM_PATCH_BYTES.map(b => b.join(','))).size).toBe(15)
+  // And none of them is a patch that cannot sound. A carrier that never opens
+  // or a modulator attenuated to nothing is an instrument the knife would hand
+  // you as silence, which is the one thing this bend is not for.
+  for (const v of ROM_VOICES) {
+    const bytes = pack(v)
+    expect(bytes[REG.modLevel]! & 0x3f, v.name).toBeLessThan(63)
+    expect(bytes[REG.carAttack]! >> 4, v.name).toBeGreaterThan(0)
+    expect(bytes[REG.carSustain]! & 0x0f, v.name).toBeGreaterThan(0)
+  }
 })
