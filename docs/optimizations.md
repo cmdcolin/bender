@@ -219,6 +219,45 @@ The lesson is not about the lamp. Anything that writes the DOM off a frame
 callback has to hold what it last wrote and compare, because the browser will
 not: an unchanged write is as expensive as a changed one.
 
+### So is React dropping frames? Only when a stage opens
+
+The question the section above invites, measured rather than argued.
+`pnpm panel` reports what fraction of the wall clock React held the main thread
+for, and — the number that actually decides whether a frame is missed — the
+longest unbroken stretch it held it. A render averaging half a millisecond a
+frame and a render that arrives as one twenty-millisecond burst have the same
+mean and are not the same instrument.
+
+Eight seconds each, heavy board, tape threaded, both machines running:
+
+| scene                    | frames | react, of wall | react's longest render |
+| ------------------------ | ------ | -------------- | ---------------------- |
+| playing, nothing touched | 61/s   | 0.2%           | 0.6 ms                 |
+| a board travelling       | 61/s   | 1.8%           | 2.0–3.9 ms             |
+| a slider under a hand    | 61/s   | 0.4%           | 1.8 ms                 |
+| stage after stage opened | 62/s   | 2.1%           | 19–23 ms               |
+
+For the first three the answer is no, and not narrowly: React's worst single
+render is under 4 ms of a 16.7 ms frame, and no task of any kind overran the
+budget. Those runs do report one or two gaps wider than a frame per eight
+seconds, but the run with nothing touched reports them too, and React is on the
+thread for 0.2% of it there — that is the box this was measured on, not the
+panel. The morph is the interesting one: the board writes every control every
+frame, 441 renders in eight seconds, and it still costs under 2% of the wall,
+because the map that would be expensive to rebuild is on a 120 ms clock and
+everything else reads one number out of the board rather than the board.
+
+Opening a stage is the exception and it is a real one. Mounting a rack of
+controls is a single 19–23 ms render — one to two frames — and clicking through
+the stages for ten seconds dropped nine. It is the only interaction in the app
+where React is the answer to "what was that".
+
+Worth being clear about what the first three do cost, since it is not nothing:
+the panel is 6% of one core sitting still and 14% with a board travelling. It is
+just that almost none of that is React. Sitting still it is the two canvases and
+the compositor; travelling it is paint and layerize, which is the signal-path
+drawing being replaced every 120 ms.
+
 Three smaller ones, measured the same way with a sampling profile of the
 renderer:
 
@@ -262,6 +301,26 @@ Worth recording so nobody spends the afternoon twice.
   a change to the feedback character the README leans on.
 - **Wasm and SIMD.** An honest last resort for another 2–4×, and it costs the
   readability that makes the rest of this possible.
+- **Replacing floating-ui with a hand-rolled tip.** Twelve seconds of hovering,
+  twenty tips up and down: not one floating-ui function appears in the top
+  twenty by self time, React holds the thread for 0.4% of it, its longest render
+  is 2.1 ms, and nothing overran a frame. The panel is _less_ busy under a
+  hovering pointer (1.48 ms a frame) than under a travelling board (2.27 ms).
+
+  It is already built the way a hand-rolled one would have to be. `Bubble` is a
+  separate component and it is the only thing that calls `useFloating`, so an
+  idle tip costs one state hook and no listeners — which matters, because the
+  drum grid alone holds a hundred and twenty of them. The bubble is a native
+  `popover` in the top layer already, so the library is not doing the layering;
+  it is doing flip and shift, which is the part that keeps a tip on a slider at
+  the foot of the panel from opening off the bottom of the window.
+
+  What it would buy is 8.1 kB gzipped, 4% of the bundle, measured by stubbing
+  the import out and rebuilding. That is a real number and a load-time argument,
+  not a frame-time one. If it is ever worth taking, CSS anchor positioning
+  (`position-anchor`, `position-try-fallbacks: flip-block`) does flip and shift
+  declaratively with no javascript at all — but it is Chromium-only for now, so
+  it needs a fallback, which is most of the code back again.
 
 ## Still open
 
@@ -282,6 +341,13 @@ Worth recording so nobody spends the afternoon twice.
   the delay is fixed for the block.
 - **The tape's print-through** takes a second 4-point Hermite read whose output
   goes straight into a 2500 Hz lowpass at 0.05 gain, where linear would do.
+- **Opening a stage** is a 19–23 ms React render, the largest in the app, and
+  drops a frame or two every time. Some of it is unavoidable — a rack of
+  controls is a lot of elements — but `scrollParent` in reveal.ts is 2.7 ms of
+  it on its own, walking every ancestor with `getComputedStyle` and
+  `scrollHeight` in the same task that just mounted them, which is a forced
+  style and layout per step up the tree. The panel is a known element; the walk
+  is not needed to find it.
 - **Paint and layerize, while the map is moving.** `pnpm panel morph` puts them
   at 0.49 and 0.29 ms a frame, which is the two largest columns and more than
   all the javascript. It is the signal-path drawing: 179 SVG elements replaced

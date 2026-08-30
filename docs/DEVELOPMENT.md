@@ -45,10 +45,12 @@ write straight to the DOM off the meter rather than through a render:
 
 - `pnpm panel` builds the app, opens it in a real Chrome with the audio running,
   and reports what the main thread spends per frame and where: javascript,
-  style, layout, paint, compositing. `pnpm panel 12 morph` measures a board
-  travelling and `pnpm panel 8 drag` a slider under a hand, which are the two
-  states that write controls every frame. Wants Chrome — it looks on PATH, then
-  in `/Applications`, then at `BENDER_CHROME`.
+  style, layout, paint, compositing — plus how many frames went undrawn, and how
+  long React held the thread at a stretch. `pnpm panel 12 morph` measures a
+  board travelling, `pnpm panel 8 drag` a slider under a hand, and
+  `pnpm panel 10 open` stage after stage off the map, which is the one that
+  costs. Wants Chrome — it looks on PATH, then in `/Applications`, then at
+  `BENDER_CHROME`.
 
   The column to read is `layout`. Nothing on the panel changes the size of
   anything, so layout should sit near zero; layout that does not is something
@@ -71,9 +73,16 @@ the main and audio threads is [dataflow.md](dataflow.md).
   headless Chrome on a board with the bends, the tape and three patch wires
   turned on, and composes the panel enlarged beside the whole window with the
   panel ringed in red. It asks the page where the panel is rather than carrying
-  crop coordinates, so a layout change moves the box on its own. Wants
-  `google-chrome` (or `chromium`, or `BENDER_CHROME`) and ImageMagick's `magick`
-  on PATH.
+  crop coordinates, so a layout change moves the box on its own. Wants a Chrome
+  (on PATH, in `/Applications`, or at `BENDER_CHROME`) and ImageMagick's
+  `magick`.
+
+  Regenerate it on Linux, which is where the committed one came from. The shot
+  is of live text in `system-ui`, so the font the stack resolves to decides how
+  wide the boxes are: the same board re-shot on a Mac came out nine pixels wider
+  and differed from the committed image everywhere. That is the platform, not
+  the panel, and it is not worth a commit.
+
 - The bus drawing in [BENDS.md](BENDS.md#where-the-buses-run) is
   `docs/img/buses.dot`, re-rendered in the same commit as any edit:
   `dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg`. Nothing checks it, for
