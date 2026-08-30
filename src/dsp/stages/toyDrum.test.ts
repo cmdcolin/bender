@@ -3,6 +3,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { STEPS } from '../../drums'
 import { packParams } from '../../engine/params'
 import { buildBender } from '../build'
+import { spectrum } from '../spectrum'
 import {
   bin,
   deviation,
@@ -794,6 +795,40 @@ test('one chain sets the whole metal bank, so the trimmer moves all of it', () =
   // transistor and the voices built on networks are untouched.
   const snare: Partial<Controls> = { drumSnare: stepMask(2), drumBpm: 60 }
   expect(soloVoice({ ...snare, drumSpread: 1 }, 1)).toEqual(soloVoice(snare, 1))
+})
+
+// The stage that squares the bank's sum off is what makes a clatter out of six
+// tones, so the bias on it is the one knob that undoes that. Flatness is the
+// measurement, because the question is what kind of sound came out rather than
+// how loud or how bright it was: a cymbal that has stopped being a clatter and
+// a cymbal that has been detuned weigh the same in every band.
+test('backing off the squarer’s bias hands back the tones it was made of', () => {
+  const cym: Partial<Controls> = { drumCym: stepMask(2), drumBpm: 60 }
+  const clatter = spectrum(soloVoice(cym, 1), SR)
+  const chord = spectrum(soloVoice({ ...cym, drumSquare: 0 }, 1), SR)
+  expect(chord.flatness).toBeLessThan(clatter.flatness / 2.5)
+  // A bias trimmer and not a tone control: what the band passes has not moved.
+  expect(chord.centroid).toBeCloseTo(clatter.centroid, -3)
+})
+
+// The cowbell is soldered in ahead of the stage, which is the whole of why it
+// is the one metal voice with a pitch left in it — so it is also the one the
+// trimmer cannot reach. Neither can it reach anything hung off the noise
+// transistor, which shares nothing with the bank at all.
+test('the squarer’s bias reaches what is behind the stage and nothing else', () => {
+  const at = { drumBpm: 60 }
+  const bell = soloVoice({ ...at, drumBell: stepMask(2) }, 1)
+  expect(soloVoice({ ...at, drumBell: stepMask(2), drumSquare: 0 }, 1)).toEqual(
+    bell,
+  )
+  const snare = soloVoice({ ...at, drumSnare: stepMask(2) }, 1)
+  expect(
+    soloVoice({ ...at, drumSnare: stepMask(2), drumSquare: 0 }, 1),
+  ).toEqual(snare)
+  const hat = soloVoice({ ...at, drumHat: stepMask(2), drumMetal: 1 }, 1)
+  expect(
+    soloVoice({ ...at, drumHat: stepMask(2), drumMetal: 1, drumSquare: 0 }, 1),
+  ).not.toEqual(hat)
 })
 
 // Nothing on the board resets the bank — a trigger opens an amplifier and that

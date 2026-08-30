@@ -555,7 +555,10 @@ export class ToyDrum implements Stage {
     const metal = Math.min(Math.max(p[IDX.drumMetal]!, 0), 1)
     const bank = Math.sqrt(metal)
     const trans = Math.sqrt(1 - metal)
-    this.metal.tune(Math.min(Math.max(p[IDX.drumSpread]!, 0), 1))
+    this.metal.tune(
+      Math.min(Math.max(p[IDX.drumSpread]!, 0), 1),
+      Math.min(Math.max(p[IDX.drumSquare]!, 0), 1),
+    )
     const cymTone = Math.min(Math.max(p[IDX.drumCymTone]!, 0), 1)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)

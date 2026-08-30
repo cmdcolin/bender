@@ -28,6 +28,23 @@ const BELL_FROM = N_METAL - 2
 // Tune is still the thing that transposes.
 const SPREAD_OCT = 0.4
 
+// How hard the summing stage is driven, at each end of its bias trimmer.
+//
+// The stage is one inverter with a resistor around it from output back to
+// input, which is how a board this cheap gets a comparator without buying one:
+// the resistor parks the input at the trip point, where the gate's gain is in
+// the thousands, so anything at all arrives at the far side as a rail. Lean on
+// that resistor and the feedback that was holding it at the trip point starts
+// setting a gain instead, and the gate stops deciding and starts amplifying.
+//
+// The bottom of the travel is the gain a designer would have given it on
+// purpose: the six at full lean just reaching the rails and nothing clipping.
+// The top is enough that the narrowest lean the bank can make — one oscillator
+// out of six — is already there, which is where the stage stops passing how far
+// the six are leaning and passes only which way.
+const SQUARE_MIN = 1
+const SQUARE_MAX = N_METAL / 2
+
 // Where the six come up. Any spread does; this one steps by the golden ratio,
 // which divides a cycle less evenly than any other number does.
 const START = Float64Array.from(
@@ -38,6 +55,7 @@ const START = Float64Array.from(
 export class MetalBank {
   private phase = Float64Array.from(START)
   private inc = new Float64Array(N_METAL)
+  private gain = SQUARE_MAX / N_METAL
   /** What comes off the summing stage: which way the six are leaning, this
       sample. Six squares that share no harmonics lean back and forth at times
       that never come round, which is the clatter. */
@@ -49,9 +67,12 @@ export class MetalBank {
     this.tune(0)
   }
 
-  /** Where the chain leaves each oscillator, read once a block. `spread` is the
-      trimmer: 0 is the frequencies the machine shipped with. */
-  tune(spread: number) {
+  /** The bank's two trimmers, read once a block. `spread` is the resistor chain
+      the six rates come off, at 0 the frequencies the machine shipped with;
+      `square` is the bias on the stage that squares their sum, at 1 the
+      comparator the board left the factory with and at 0 an amplifier. */
+  tune(spread: number, square = 1) {
+    this.gain = (SQUARE_MIN + (SQUARE_MAX - SQUARE_MIN) * square) / N_METAL
     for (let k = 0; k < N_METAL; k++) {
       // −1 at the bottom of the chain, +1 at the top, so the middle of the bank
       // sits still whatever the trimmer is doing.
@@ -65,13 +86,15 @@ export class MetalBank {
   /** One sample on, at `pf` times where the trimmer left them — the kit's own
       pitch factor, so the bank sags with the batteries like everything else.
 
-      The summing stage has nothing like the headroom for six of them, so what
-      leaves it is which way they are leaning and not by how much — and that is
-      the difference between a clatter and six tones. Summed and left alone, the
-      loudest harmonics in the pile all belong to the fastest oscillator and a
-      hat comes out ringing on one note; squared off, the edges of all six land
-      in it at times that never come round, which measures very nearly twice as
-      flat across the top of the band.
+      The summing stage as the board wires it has nothing like the headroom for
+      six of them, so what leaves it is which way they are leaning and not by
+      how much — and that is the difference between a clatter and six tones.
+      Summed and left alone, the loudest harmonics in the pile all belong to the
+      fastest oscillator and a hat comes out ringing on one note; squared off,
+      the edges of all six land in it at times that never come round, which
+      measures six times as flat across the top of the band. The bias trimmer is
+      that sentence as a knob, and the cowbell taps out ahead of it, so it is the
+      one metal voice the trimmer never reaches.
 
       The squares themselves are the naive kind, so above a couple of kilohertz
       they are also a pile of harmonics folding back down the spectrum. On a
@@ -88,7 +111,11 @@ export class MetalBank {
       sum += sq
       if (k >= BELL_FROM) bell += sq
     }
-    this.clash = sum > 0 ? 1 : sum < 0 ? -1 : 0
+    // At the top of the trimmer this is the sign of the sum and nothing else:
+    // the narrowest lean the six can make is one of them, and the gain there is
+    // enough to put that on the rail.
+    const lean = sum * this.gain
+    this.clash = lean > 1 ? 1 : lean < -1 ? -1 : lean
     this.bell = bell
   }
 

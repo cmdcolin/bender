@@ -166,6 +166,7 @@ export const DEFAULT_CONTROLS = {
   drumMetal: 0.75,
   drumCymTone: 0.5,
   drumSpread: 0,
+  drumSquare: 1,
   drumBits: 7,
   drumSlot: 0,
   drumLadder: 0,

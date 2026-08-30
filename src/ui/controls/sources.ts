@@ -554,6 +554,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'One resistor chain sets all six oscillators, and this leans on it. The ends of the chain move and the middle stays, so the bank widens rather than transposes — which is Tune’s job. Every metal voice moves together because they are the same six parts: wind it up and the cowbell detunes, the cymbal turns to glass, and the hats get grittier.',
       },
       {
+        key: 'drumSquare',
+        part: 'inside the voices',
+        label: 'Squarer bias',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The one resistor that makes the bank a clatter. It wraps a gate from output back to input and parks it at its trip point, where the gain is in the thousands, so the six arrive at the far side as a rail and what comes out is which way they are leaning rather than how far. Back the bias off and the gate stops deciding and starts amplifying: the sum comes through as a sum, and the hat, the open hat and the cymbal turn from a clatter into the six tones they were made of — a metal chord that beats against itself. The cowbell is soldered in ahead of the stage, so it is the one metal voice this never reaches.',
+      },
+      {
         key: 'drumBits',
         part: 'the converter',
         label: 'Bit depth',

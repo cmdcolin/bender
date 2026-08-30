@@ -310,6 +310,19 @@ hat comes out ringing on a note; squared off, the edges of all six land in it at
 times that never come round. The cowbell is soldered in ahead of that stage,
 which is why it's the one metal voice with a pitch left in it.
 
+**Squarer bias** is the resistor that makes that stage a comparator, and backing
+it off is the one knob that hands the six tones back. The stage is a gate with a
+resistor from its output to its input, which parks it at its own trip point,
+where the gain is in the thousands — so anything at all arrives at the far side
+as a rail. Lean on the resistor and the feedback starts setting a gain instead
+of a threshold: the gate stops deciding and starts amplifying, the sum comes
+through as a sum, and the hat, the open hat and the cymbal turn into a metal
+chord beating against itself. It measures three times as tonal at the bottom of
+the travel as at the top and the band it comes out of hasn't moved, which is
+what separates this from a tone control. The cowbell taps out ahead of the
+stage, so it's the one metal voice this never reaches — the mirror of Bank
+spread, which reaches all four.
+
 **Metal** is the pot on the hats' amplifier, between that bank and the noise
 transistor the hat used to be made of — the same transistor the snare and the
 clap are still hanging off. Down the travel is the old hat, and every hit off it
