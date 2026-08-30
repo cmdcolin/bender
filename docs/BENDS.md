@@ -196,6 +196,52 @@ register file, so a knife on the patch bytes cannot reach them: the drums stay
 crisp on a board where nothing else does. An effect wants the same two channels
 and asked first, so pressing one puts the other down.
 
+**The bits the register map has no button for.** A byte is eight wires, and a
+register is not obliged to read all of them. Three of this chip's registers read
+five bits and throw the rest away as far as the panel is concerned — which made
+the top two data wires the least interesting on the chip for a while, since most
+of what a knife could set there landed somewhere nothing looked. What sits in
+those gaps is not spare room. It is the hardware a patch shares rather than
+owns, and it is reachable from the bus and nowhere else.
+
+There is one LFO on the die. No register sets its rate, none sets its depth, and
+nothing anywhere can start or stop it — it has been running since the board came
+up, and all a patch byte says is whether an operator is soldered to it. The top
+bit of each flags byte wires the operator to the tremolo and the next one down
+wires it to the vibrato. **Vibrato** on the panel is that pair of bits and
+nothing else, which is why it takes a patch write to apply and why a knife can
+leave the button down with nothing wobbling. Because the LFO counts off the same
+divider as everything else on this board, starving the toy slows the wobble
+along with the pitch, the envelopes and the tempo. And because one button wires
+both operators, a two-operator patch hides most of what the tremolo is doing:
+the modulator going up and down is a brightness going up and down, which moves
+the level the opposite way from the carrier doing the same thing. Turn the
+modulator off and the same setting is suddenly obvious.
+
+Key scaling is two more bits at the top of each of two level bytes, and what it
+does is wire the octave into the volume: a patch with it set gives up level the
+higher it is played, which is how one set of eight bytes covers a keyboard
+instead of shrieking at the top of it. The bend in that is the crowding. The
+octave already shares a byte with the key going down and the top of the
+frequency count, so one wire up there was already moving the pitch and whether
+the note happens at all; now it moves how loud the note is as well. A fourth bit
+does the same to the envelope rates, so a patch that rings for a second at the
+bottom of the keyboard can be made to stop ringing at the top.
+
+**The instrument nibble** is the strangest of them, because it is the only fault
+on this chip that hands you something rather than damaging something. Each
+channel's volume register carries how loud that channel is in its low nibble and
+_which instrument it is playing_ in its high one. Zero means the eight bytes in
+the register file — the patch the panel just sent — and the driver writes zero
+there with every note, because zero is the only answer it has. One to fifteen
+are patches burned into the die, and the case has buttons for eight of them. The
+other seven are on the board, wired to nothing: a violin, a flute, an oboe, a
+trumpet, a horn, a harpsichord and a vibraphone that no button reaches and the
+processor has no reason to name. A wire held high under that nibble is a channel
+that stops reading the register file mid-note and starts reading ROM, and since
+the nibble is per channel, one voice can be somewhere else entirely while its
+neighbours play what you asked for.
+
 **The effect ROM** is the source of the chip's canned effects — a bird call,
 surf, wind, a siren, crickets — and none of them are samples. Each is a short
 program in the processor firing register writes at the chip hundreds of times a

@@ -247,6 +247,21 @@ nothing saying when to stop, which is what **Note length** is for. Four of the
 eight voices (e.piano, bell, bass, marimba) decay on their own regardless of how
 long the key is held; the other four wait for it.
 
+**Vibrato** switches on the one LFO the die has. There is no register for it
+anywhere — no rate, no depth, nothing to start or stop it — so all the button
+can do is solder the operators to something that has been running since the
+board came up, and all it is, in the patch, is two bits. It counts off the same
+divider as everything else, so starving the toy slows the wobble down with the
+pitch. **tremolo** takes about a decibel off the level and **vibrato** moves the
+pitch about seven cents; **both** does the two together. Voices that came with a
+wobble of their own keep it whichever way the button is set, the same way a
+voice keeps its own ratios with the ratio knobs at _as patched_.
+
+Tremolo is quieter than it looks, and for a reason worth knowing: the button
+wires both operators, and a modulator going up and down is a brightness going up
+and down, which moves the level the opposite way from the carrier doing the same
+thing. Wind **Brightness** down and the same setting is suddenly obvious.
+
 **Rhythm** is the other thing the die can be. Press it and the top two channels
 stop belonging to the keyboard: they are re-tapped onto a kit held in ROM — a
 bass drum well under the bottom of the keybed, and a snare and a hi-hat fed by a
