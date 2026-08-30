@@ -38,16 +38,56 @@ test('a cut line freezes on the word that was on it', () => {
   expect(clean.read(0b000001, 0, FAULT.cut, 1)).toBe(0b000000)
 })
 
-test('a trace that still carries lets the bit through some of the time', () => {
-  const bus = new Bus(6, 5)
+// The other half of a cut, and the half no other fault has: nothing holds a
+// floating pin where it was left. The parted trace still runs the length of the
+// board beside its neighbour, so the pin drifts after that neighbour's edges —
+// a word or two behind, and further behind the deeper the cut goes.
+const wrong = (depth: number, words: number[]) => {
+  const bus = new Bus(6, 0)
   straight(bus, 0)
-  let stale = 0
+  let n = 0
   for (let i = 0; i < 400; i++) {
-    if (bus.read(0b000001, 0, FAULT.cut, 0.5) === 0) stale++
-    straight(bus, 0)
+    const word = words[i % words.length]!
+    if ((bus.read(word, 0, FAULT.cut, depth) & 1) !== (word & 1)) n++
   }
-  expect(stale).toBeGreaterThan(150)
-  expect(stale).toBeLessThan(250)
+  return n / 400
+}
+
+// A line the driver still reaches most of the time is a line that is mostly
+// right, and every write that lands slams it back to the truth.
+test('a trace that still carries lets the bit through most of the time', () => {
+  // D0 and D1 disagree on every word, so the neighbour pulls the wrong way
+  // whenever the driver lets go.
+  const alternating = [0b000001, 0b000010, 0b000001, 0b000010]
+  expect(wrong(0, alternating)).toBe(0)
+  expect(wrong(0.3, alternating)).toBeLessThan(0.3)
+  // and a trace parted all the way is a bit that is barely ever right again
+  expect(wrong(1, alternating)).toBeGreaterThan(0.9)
+})
+
+// And how far through the trace the knife went is a knob, not a switch.
+test('the deeper the cut the further behind the bit falls', () => {
+  const alternating = [0b000001, 0b000010, 0b000001, 0b000010]
+  const depths = [0.3, 0.6, 0.85, 0.95, 1]
+  const missed = depths.map(d => wrong(d, alternating))
+  for (let i = 1; i < missed.length; i++)
+    expect(missed[i]!, `depth ${depths[i]}`).toBeGreaterThanOrEqual(
+      missed[i - 1]!,
+    )
+})
+
+// A pin nobody drives at all is not a pin stuck on a rail: it follows the
+// traffic next door, so a bus whose neighbour moves is a bit that moves.
+test('a fully cut line follows its neighbour rather than a rail', () => {
+  const bus = new Bus(6, 0)
+  straight(bus, 0)
+  // The neighbour held high long enough for the coupling to drag the pin over.
+  let out = 0
+  for (let i = 0; i < 20; i++) out = bus.read(0b000010, 0, FAULT.cut, 1)
+  expect(out & 1).toBe(1)
+  // And back down again when it goes the other way.
+  for (let i = 0; i < 20; i++) out = bus.read(0b000000, 0, FAULT.cut, 1)
+  expect(out & 1).toBe(0)
 })
 
 // The claim the whole bend rests on: a chip reading a cut bus is not

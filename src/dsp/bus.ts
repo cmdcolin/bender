@@ -15,11 +15,15 @@ import { mulberry32, type Rng } from './util/rng'
 //
 // cut       the trace is severed and the pin behind it floats. A CMOS input
 //           with nothing driving it keeps the charge the last word left on it,
-//           so the bit goes stale rather than stuck. Cut most of the way rather
-//           than all and it still conducts sometimes, which is what the knife
-//           actually does to a trace: the bit is right on some reads and a word
-//           old on others, and the melody flickers between two versions of
-//           itself.
+//           so the bit goes stale rather than stuck. Nothing holds it there,
+//           though: the parted trace still runs the length of the board beside
+//           the one next to it, and a few picofarads of that is enough to drag
+//           a pin nobody is driving after its neighbour's edges. So the bit
+//           holds for a word or two and then starts following the traffic next
+//           door, a lap behind and never quite arriving — which is the sound
+//           the other three cannot make, because all three of them stand still.
+//           Cut most of the way rather than all and it conducts as well, so
+//           real writes keep slamming it back to the truth in between.
 // ground    shorted low. That bit is gone from every word the chip reads.
 // supply    shorted high, so every word gains it — and the codes that were not
 //           notes become notes, which is how a cut data line fills in a song's
@@ -37,15 +41,47 @@ export const lineNames = (prefix: string, width: number) => [
   ...Array.from({ length: width }, (_, i) => `${prefix}${i}`),
 ]
 
+/** How much of the neighbour's edge crosses into a parted trace, per word. */
+const COUPLING = 0.12
+
 export class Bus {
-  private held = 0
   private rng: Rng
+  /** The floating pin's charge, between the rails rather than on one of them. */
+  private charge = 0
+  /** Which pin that charge belongs to — move the knife and it is a new pin. */
+  private floating = -1
+  /** The last word an unbroken bus carried, which is what a new cut holds. */
+  private last = -1
 
   constructor(
     private readonly width: number,
-    seed = 7,
+    private readonly seed = 7,
   ) {
     this.rng = mulberry32(seed)
+  }
+
+  /** Where a floating line sits after one more word has gone past next door. */
+  private float(word: number, line: number, cut: number) {
+    const bit = 1 << line
+    // The pin floats from the moment the trace parts, so it starts on whatever
+    // the bus was carrying when the knife went through. A board that comes up
+    // with the knife already in it has no such word behind it, and a pin nobody
+    // is driving is still charged to something rather than to nothing — so
+    // there the seed decides which way it falls.
+    if (line !== this.floating) {
+      this.floating = line
+      this.charge = (this.last < 0 ? this.seed : this.last) & bit ? 1 : 0
+    }
+    // A trace parted less than all the way still conducts sometimes, and every
+    // time it does the driver wins outright: there is nothing gentle about a
+    // pin that is connected.
+    if (this.rng() >= cut) {
+      this.charge = word & bit ? 1 : 0
+      return this.charge
+    }
+    const near = line + 1 < this.width ? bit << 1 : bit >> 1
+    this.charge += COUPLING * ((word & near ? 1 : 0) - this.charge)
+    return this.charge
   }
 
   /**
@@ -55,34 +91,33 @@ export class Bus {
    */
   read(word: number, line: number, fault: number, cut: number): number {
     if (line < 0 || line >= this.width) {
-      this.held = word
+      this.last = word
       return word
     }
     const bit = 1 << line
-    let out: number
     switch (fault) {
       case FAULT.ground:
-        out = word & ~bit
-        break
+        return word & ~bit
       case FAULT.supply:
-        out = word | bit
-        break
+        return word | bit
       case FAULT.bridge: {
         // The neighbour above, or below at the top of the bus — the knife is
         // one blob of solder and there is always something on one side of it.
         const pair = bit | (line + 1 < this.width ? bit << 1 : bit >> 1)
-        out = (word & pair) === pair ? word | pair : word & ~pair
-        break
+        return (word & pair) === pair ? word | pair : word & ~pair
       }
       default:
-        out = this.rng() < cut ? (word & ~bit) | (this.held & bit) : word
+        // Whatever the pin has drifted to, read through the input's threshold —
+        // one wire's worth of analogue in the middle of a digital bus.
+        return this.float(word, line, cut) > 0.5 ? word | bit : word & ~bit
     }
-    this.held = out
-    return out
   }
 
   reset() {
-    this.held = 0
+    this.floating = -1
+    this.last = -1
+    this.charge = 0
+    this.rng = mulberry32(this.seed)
   }
 }
 

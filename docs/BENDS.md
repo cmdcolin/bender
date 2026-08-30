@@ -92,10 +92,17 @@ write happens to touch that register.
 
 Four things can happen to any one of these wires: forced **to ground**, forced
 **to +V**, **bridged** to its neighbour, or **cut**. A bridged pair can no
-longer disagree, so whichever driver pulls low wins. A cut wire floats, holding
-whatever the bus last carried at the moment it was cut — **Cut depth** says how
-completely: back it off and the trace still conducts some of the time, so the
-bit flickers between two stale values instead of freezing on one.
+longer disagree, so whichever driver pulls low wins. A cut wire floats, and a
+floating wire is the only one of the four that will not stand still: it starts
+on whatever the bus was carrying at the moment it was cut, but the parted trace
+still runs the length of the board beside the one next to it, and a few
+picofarads of that is enough to drag a pin nobody is driving after its
+neighbour's edges. So the bit holds for a word or two and then sets off after
+the traffic next door, always a lap behind and never quite arriving. **Cut
+depth** is how far through the trace the knife went: back it off and it still
+conducts some of the time, and every write that lands slams the bit back to the
+truth in between, so the melody flickers between the version the processor sent
+and the version the wire drifted to.
 
 The most obvious result is the key-up bit getting stuck. A note ends when the
 processor writes that bit back down and the chip sees it change; hold the wire
@@ -152,14 +159,14 @@ program in the processor firing register writes at the chip hundreds of times a
 second: sweeps and key-ons for the bird, the modulator's feedback pushed into
 noise for surf, that same noise under a random walk for wind, and so on. Because
 an effect is the busiest traffic the bus ever carries, the dataline bend scales
-with it — every one of those writes lands wrong, and under **Cut** the stale bit
-carries the previous write's value forward, so the corruption tracks the
-effect's own motion rather than sitting at a fixed offset. Running an effect
-also borrows the whole patch and a fourth voice, so the keyboard drops to three
-voices while it plays. Starving the rail underneath decouples the two: the
-processor's clock is a resonator that doesn't care what the supply is doing, so
-the effect keeps arriving at its usual rate while the chip it's addressed to
-dives and slurs underneath it.
+with it — every one of those writes lands wrong, and under **Cut** the drifting
+bit is chasing that traffic, so the corruption tracks the effect's own motion
+rather than sitting at a fixed offset. Running an effect also borrows the whole
+patch and a fourth voice, so the keyboard drops to three voices while it plays.
+Starving the rail underneath decouples the two: the processor's clock is a
+resonator that doesn't care what the supply is doing, so the effect keeps
+arriving at its usual rate while the chip it's addressed to dives and slurs
+underneath it.
 
 ## Inside the drum voices
 
