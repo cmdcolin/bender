@@ -21,6 +21,7 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 - Patch bay with LFO and other modulations
 - Buttons to easily randomize settings
 - Connect MIDI controller (works with Chrome, Firefox Nightly)
+- "Tape loop" sampler that has tape head re-recording-over-the-loop effect
 - Shareable URLs
 
 Uses AudioWorklet API...surpringly powerful and fast
@@ -77,3 +78,6 @@ footsteps of https://github.com/cmdcolin/ntsc.js
 
 - Glitch voice
   https://cmdcolin.github.io/bender/#p=AIwBACQBWgEYEQAlBAICD8gBAWwADAQCAAoFZAPcJApQAAoBAgCMAQA8Awgd_gEKVgIOAqYFCYQFAaINBMgBAGoB8CQBEAAiALkBAAQAEACvAQAWAZMBASQAqAECCgKMAQG8AQAEALABA6Y7CAADeAIKBAoEegBuAoIB
+
+- Aimless stalling lullaby
+  http://localhost:5174/#p=AKoBAnYAxAEBjAEACAAEAAYNLBisAQPiEAAKDsSJAQCAAwCABQB4CMgBAbgBFgEBJinyAQE8CEgAZAS6BQmqBwMGAwQByAEDZh8WAQIBVANiCQhYoAEQ6MABAJh_
