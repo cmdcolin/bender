@@ -201,10 +201,17 @@ const RELEASE = 4
 interface Panel {
   bright: number
   fb: number
+  lfo: number
   modRatio: number
   carRatio: number
   modDecay: number
 }
+
+// What the vibrato button does to a patch on its way past. There is no LFO
+// register to write, so the only thing the button can be is two bits in each of
+// two patch bytes — which is why it takes a voice change to apply it, and why a
+// knife on the bus can leave the button down with nothing wobbling.
+const LFO_BITS = [0, VIB, AM, AM | VIB]
 
 interface Op {
   phase: number
@@ -338,6 +345,7 @@ export class FmChip implements Stage {
   private sent: Panel = {
     bright: -1,
     fb: -1,
+    lfo: -1,
     modRatio: -1,
     carRatio: -1,
     modDecay: -1,
@@ -480,6 +488,12 @@ export class FmChip implements Stage {
         byte =
           (byte & 0xc0) | Math.round((byte & 0x3f) * (1 - panel.bright * 0.9))
       }
+      // The button is the same two bits in both flags bytes, because one LFO
+      // serving the whole die is one switch on the front of the case. It only
+      // ever sets them: a voice that came with a wobble keeps it with the
+      // button up, exactly as a voice keeps its ratios with the knobs at zero.
+      if (panel.lfo > 0 && (i === REG.modFlags || i === REG.carFlags))
+        byte |= LFO_BITS[panel.lfo]!
       if (i === REG.feedback) byte = (byte & ~0x07) | panel.fb
       // A ratio knob at nothing is a ratio the voice keeps, so the eight
       // patches stay the eight patches until you ask for something else.
@@ -937,6 +951,7 @@ export class FmChip implements Stage {
     const panel: Panel = {
       bright: p[IDX.fmBright]!,
       fb: Math.round(p[IDX.fmFeedback]!),
+      lfo: Math.round(p[IDX.fmLfo]!),
       modRatio: Math.round(p[IDX.fmModRatio]!),
       carRatio: Math.round(p[IDX.fmCarRatio]!),
       modDecay: Math.round(p[IDX.fmModDecay]!),
@@ -991,6 +1006,7 @@ export class FmChip implements Stage {
       voice !== this.sentVoice ||
       panel.bright !== sent.bright ||
       panel.fb !== sent.fb ||
+      panel.lfo !== sent.lfo ||
       panel.modRatio !== sent.modRatio ||
       panel.carRatio !== sent.carRatio ||
       panel.modDecay !== sent.modDecay

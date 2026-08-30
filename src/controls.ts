@@ -226,6 +226,7 @@ export const DEFAULT_CONTROLS = {
   fmVoice: 0,
   fmBright: 0.5,
   fmFeedback: 0,
+  fmLfo: 0,
   fmModRatio: 0,
   fmCarRatio: 0,
   fmModDecay: 0,

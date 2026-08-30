@@ -213,6 +213,7 @@ export const PARAM_DEFS = [
   ['fmVoice', 'step'],
   ['fmBright', 'slew'],
   ['fmFeedback', 'step'],
+  ['fmLfo', 'step'],
   ['fmModRatio', 'step'],
   ['fmCarRatio', 'step'],
   ['fmModDecay', 'step'],

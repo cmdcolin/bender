@@ -1,7 +1,12 @@
 import type { Controls } from '../../controls'
 import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
-import { fallSecs, FM_VOICE_NAMES, MULT } from '../../dsp/stages/fmVoices'
+import {
+  fallSecs,
+  FM_LFO_NAMES,
+  FM_VOICE_NAMES,
+  MULT,
+} from '../../dsp/stages/fmVoices'
 import {
   ROM_ADDR_LINES,
   ROM_DATA_LINES,
@@ -786,6 +791,16 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         help: 'How much of the modulator goes back into itself, three bits of it as the part had. Past about five the operator stops making harmonics and starts making noise, which is where the chip’s own drum sounds came from.',
+      },
+      {
+        key: 'fmLfo',
+        label: 'Vibrato',
+        min: 0,
+        max: FM_LFO_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: FM_LFO_NAMES,
+        help: 'The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it. It has been running since the board came up and all this button does is solder the operators to it, two bits in each of two patch bytes. It counts off the same divider as the pitch, so starving the toy slows the wobble down too. Voices that came with their own keep it whatever the button says.',
       },
       {
         key: 'fmLength',

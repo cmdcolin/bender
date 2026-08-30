@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 235 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 236 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 56 presets, 14 stage settings and 21 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -260,7 +260,7 @@ too — the knife goes on and the rows under it say which controls that was:
   the register the write before it named
 
 <details>
-<summary>20 controls</summary>
+<summary>21 controls</summary>
 
 | control        | range                                                                                                                           | what it does                                                                                                         |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -268,6 +268,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Voice          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                                                                   | Which of the eight patches under the voice buttons the processor sends the chip                                      |
 | Brightness     | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
 | Feedback       | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
+| Vibrato        | off, vibrato, tremolo, both                                                                                                     | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
 | Note length    | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                           |
 | Struck by      | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                                               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
 | Toy gate       | soldered or cut                                                                                                                 | The jumper from the toy’s gate line onto this chip’s key input                                                       |

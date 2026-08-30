@@ -487,6 +487,9 @@ export const KIT = {
     frequency and a block fixed in ROM, an octave under the keyboard's bottom.
     They go out through the frequency registers like any other note, so this is
     the one part of the kit a knife on the bus can still retune. */
+/** What the vibrato button steps through, which is which bits it sets. */
+export const FM_LFO_NAMES = ['off', 'vibrato', 'tremolo', 'both']
+
 export const BASS_FNUM = 268
 export const BASS_BLOCK = 1
 export const FM_VOICE_NAMES = FM_VOICES.map(v => v.name)
