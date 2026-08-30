@@ -61,6 +61,14 @@ the main and audio threads is [dataflow.md](dataflow.md).
   ROM — a test fails the build if the committed file falls behind.
 - `pnpm knife` sweeps every wire and fault on all five buses and reports which
   ones are actually audible.
+- `pnpm spectrum` sweeps the same space and reports what each one _sounds_ like:
+  level, spectral centroid, flatness — 0 for a sine, 1 for noise — and where the
+  power sat across five bands. Each bus ends with a `reach` line, which is the
+  one worth reading: how much of the spectrum that chip's whole bend space
+  covers. A row of faults that all land in the same band is a chip whose bends
+  differ from each other by less than the panel implies. `pnpm spectrum fm` does
+  one chip and `pnpm spectrum cuts` the named cuts and the preset catalog. The
+  whole sweep takes a few minutes.
 
 ## Releases
 

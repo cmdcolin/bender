@@ -15,6 +15,7 @@
     "figure": "tsx scripts/figure.ts",
     "knife": "tsx scripts/knife.ts",
     "soak": "tsx scripts/soak.ts",
+    "spectrum": "tsx scripts/spectrum.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
