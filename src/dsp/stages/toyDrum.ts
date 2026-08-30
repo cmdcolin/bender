@@ -205,6 +205,33 @@ const CHOKE_COUNT = 60
 // draws, and soldering another one on does not make the rest thirstier.
 const ACCENT_DRAW = 1 / 6
 
+// How long the noise transistor holds a mind, at the two ends of its bias.
+//
+// The hiss on a board like this is one transistor's base-emitter junction run
+// backwards until it avalanches, and an avalanche is not something a designer
+// specifies — it is a junction driven past where it breaks down. Give it plenty
+// of reverse bias and it conducts steadily and the kit has noise. Back it toward
+// the knee and it stops making its mind up: it latches into conducting and out
+// again at random, holding each for anywhere between a third of a millisecond
+// and a tenth of a second. That is a documented failure of marginal parts, and
+// it is called popcorn noise for what it sounds like.
+//
+// The one duration on this board that is not counted off the chip's oscillator.
+// Nothing clocks an avalanche — everything else here goes through perSample.
+// The trimmer is the only thing that moves it. A sagging rail is the obvious
+// second hand on this knob and it does not reach: the bias resistor has the
+// margin a bias resistor is given, so by the time the supply is far enough down
+// to walk the junction back to the knee the watchdog has the chip in reset and
+// there is nothing hanging off the transistor to hear it.
+const BURST_SHORT = 0.0003
+const BURST_LONG = 0.08
+
+// How fast the junction can change its mind, which is not instantly: there is a
+// coupling cap between it and the four voices hanging off it, and what a cap
+// hands on is an edge with a shape rather than a step. Low enough to take the
+// worst off a full-scale switch and high enough to leave the pop in it.
+const NOISE_EDGE = 2000
+
 // Where the hats' filter sits, and how much of it there is. What comes off the
 // bank's summing stage is broadband, but it is broadband with the bank's own
 // rate all through it, and a hat is only the part of that above where a pitch
@@ -285,6 +312,15 @@ export class ToyDrum implements Stage {
   private accentPull = 0
   private bellLp = 0
   private noiseLp = 0
+  // Whether the noise transistor's junction is avalanching this instant, how
+  // long it has left before it changes its mind, and what the cap between it
+  // and the four voices hung off it has made of that. It runs whether or not
+  // anything is listening — nothing on the board gates a junction — so a hit
+  // catches it wherever it happens to be.
+  private avalanche = 1
+  private burstLeft = 0
+  private noiseGate = 1
+  private burstRng: Rng
   // The metal section: one bank of six oscillators, and the filters that make
   // the four voices hung off it different from each other.
   private metal: MetalBank
@@ -365,6 +401,11 @@ export class ToyDrum implements Stage {
     this.micTrig = new Transient(sr)
     this.addrBus = new Bus(ADDR_LINES, seed ^ 0xadd4)
     this.dataBus = new Bus(N_VOICES, seed ^ 0xda7a)
+    // How long the junction holds a state is a different question from what it
+    // puts out while it holds it, so it comes off a stream of its own: a kit
+    // nobody has taken near the knee draws from this one not at all, and goes
+    // on rendering the hiss it always did.
+    this.burstRng = mulberry32(seed ^ 0xb0b)
     // Off its own stream: the resistors were soldered on before the kit made a
     // sound, and drawing them out of the noise source would move every hit.
     const parts = mulberry32(seed ^ 0x1adde4)
@@ -376,6 +417,18 @@ export class ToyDrum implements Stage {
         (LADDER_FLOOR + (1 - LADDER_FLOOR) * parts()) * LADDER_TOL * (1 << k)
       this.trim[k] = parts() < 0.5 ? -off : off
     }
+  }
+
+  // How long the junction holds the state it has just fallen into, in samples.
+  // `hold` runs from 0 for the state the bias is fighting to 1 for the one it
+  // favours, and the mean is geometric between the two ends: an avalanche is a
+  // race between the field and the lattice, and neither end of that is a time.
+  // The draw itself is exponential, because a junction that has been conducting
+  // for a while is no more likely to stop than one that just started.
+  private burstFor(hold: number): number {
+    const mean = BURST_SHORT * Math.pow(BURST_LONG / BURST_SHORT, hold)
+    const life = -Math.log(1 - this.burstRng()) * mean * this.sr
+    return Math.max(Math.round(life), 1)
   }
 
   // What the converter puts out instead of the code it was handed, in counts.
@@ -549,6 +602,10 @@ export class ToyDrum implements Stage {
     const snappy = Math.min(Math.max(p[IDX.drumSnappy]!, 0), 1)
     const hiss = Math.sqrt(snappy)
     const tone = Math.sqrt(1 - snappy)
+    // How far past the knee the noise transistor is biased, 1 being a junction
+    // that has all the reverse voltage it wants.
+    const noiseBias = Math.min(Math.max(p[IDX.drumNoiseBias]!, 0), 1)
+    const noiseEdge = lpCoef(NOISE_EDGE, this.sr)
     // The same pot on the hats' amplifier, between the same transistor and the
     // metal bank, and equal-power for the same reason: the two sources have
     // nothing in common, so an amplitude fade would dip in the middle.
@@ -745,6 +802,24 @@ export class ToyDrum implements Stage {
         // one was the supply going away. Which is why it is here, under the
         // boot check, and why two hats in a row are two different hats.
         this.metal.step(pf)
+        // And the noise transistor, for the same reason and in the same place:
+        // nothing on the board gates a junction either. Biased past the knee it
+        // avalanches steadily and there is hiss; near the knee it latches in and
+        // out at random instead, and the snare, both hats and the clap all hang
+        // off it, so they break up together and mid-hit rather than a voice at
+        // a time.
+        if (noiseBias < 1) {
+          if (--this.burstLeft <= 0) {
+            this.avalanche = this.avalanche ? 0 : 1
+            this.burstLeft = this.burstFor(
+              this.avalanche ? noiseBias : 1 - noiseBias,
+            )
+          }
+          this.noiseGate += noiseEdge * (this.avalanche - this.noiseGate)
+        } else {
+          this.avalanche = 1
+          this.noiseGate = 1
+        }
         // The bridged-T voices. Nothing here has an amplifier: the trigger
         // pulse charges the network, the network rings, and how loud the drum
         // is and how long it lasts are the same fact about the same part. What
@@ -801,7 +876,10 @@ export class ToyDrum implements Stage {
           amp[OHAT]! > AUDIBLE ||
           amp[CLAP]! > AUDIBLE
         ) {
-          const noise = this.rng() * 2 - 1
+          // Drawn either way, and gated after: the transistor is making noise
+          // or it is not, and a knob that reseeded the whole kit on its way past
+          // the knee would be a knob nobody could get back off.
+          const noise = (this.rng() * 2 - 1) * this.noiseGate
           this.noiseLp += 0.25 * (noise - this.noiseLp)
           if (amp[SNARE]! > AUDIBLE)
             out +=
@@ -953,6 +1031,9 @@ export class ToyDrum implements Stage {
     this.accentV = 1
     this.bellLp = 0
     this.noiseLp = 0
+    this.avalanche = 1
+    this.burstLeft = 0
+    this.noiseGate = 1
     this.metal.reset()
     this.hatHp.reset()
     this.cymCrash.reset()

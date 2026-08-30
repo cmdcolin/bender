@@ -295,6 +295,25 @@ under it come through instead, beating against each other. Tune reaches those
 and doesn't reach the hiss, so a snare with any tone in it moves with the rest
 of the kit.
 
+**Noise bias** is the one transistor those voices come off. It's a base-emitter
+junction run backwards until it avalanches, which is where all the hiss on this
+board comes from, and an avalanche isn't something a designer specifies — it's a
+junction driven past where it breaks down. Give it plenty of reverse bias and it
+conducts steadily. Back it toward the knee and it stops making its mind up: it
+latches into conducting and out again at random, holding each for anywhere
+between a third of a millisecond and a tenth of a second. That's a documented
+failure of marginal parts, and it's called popcorn noise for what it sounds
+like.
+
+The snare, both hats and the clap are all hanging off that one transistor, so
+they break up together and mid-hit rather than a voice at a time — half a
+snare's crack missing and the hat over it missing the same half. Down the travel
+the kit's noise stutters; near the bottom it only spits, and what's left is the
+half of each voice that isn't hiss, so Snappy and Metal decide what a spitting
+kit still has to say. It's also the only duration on this board not counted off
+the chip's oscillator: nothing clocks an avalanche, so a rail dragging the tempo
+doesn't drag this.
+
 ## The metal bank
 
 The other four voices are one part. The cowbell, the two hats and the cymbal all

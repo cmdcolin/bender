@@ -7,6 +7,7 @@ import { spectrum } from '../spectrum'
 import {
   bin,
   deviation,
+  envelope,
   highEnergy,
   lowEnergy,
   makeIo,
@@ -440,6 +441,61 @@ test('a snare and a hat on the same step are one noise source, not two', () => {
   expect(energy(crack(both))).toBeGreaterThan(
     1.4 * (energy(crack(hat)) + energy(crack(snare))),
   )
+})
+
+// A junction run backwards into avalanche does not conduct steadily once it is
+// near the knee: it latches in and out at random. Which has to read as a hiss
+// changing its mind rather than a hiss being turned down, or it is a second
+// volume — so the measurement is how far the tail moves against its own
+// average, on a voice rung long enough to sit still if nothing disturbed it.
+const wobble = (x: Float32Array) => {
+  const held = x.subarray(Math.round(0.55 * SR), Math.round(1.05 * SR))
+  const e = envelope(held, 0.002)
+  const mean = e.reduce((a, v) => a + v, 0) / e.length
+  return Math.sqrt(e.reduce((a, v) => a + (v - mean) ** 2, 0) / e.length) / mean
+}
+
+// Held hiss: the open hat off the transistor rather than the bank, rung out.
+const HELD_HISS: Partial<Controls> = {
+  drumOpen: stepMask(2),
+  drumMetal: 0,
+  drumDecay: 16,
+  drumBpm: 60,
+}
+
+test('a noise transistor near its knee stutters rather than fades', () => {
+  const steady = soloVoice(HELD_HISS, 2)
+  const marginal = soloVoice({ ...HELD_HISS, drumNoiseBias: 0.5 }, 2)
+  expect(wobble(marginal)).toBeGreaterThan(5 * wobble(steady))
+  // Still a hiss and not a fade-out: what has gone is the time it spends
+  // conducting, and half of it is still there.
+  expect(rms(marginal)).toBeGreaterThan(0.5 * rms(steady))
+})
+
+test('the junction is one part, so its four voices break up together', () => {
+  const at: Partial<Controls> = { drumBpm: 60 }
+  const off = { ...at, drumNoiseBias: 0 }
+  // Both pots hard over onto the transistor: the snare's other half is two
+  // tuned networks and the hats' is the metal bank, and neither has a junction
+  // anywhere in it.
+  for (const key of ['drumSnare', 'drumHat', 'drumClap', 'drumOpen'] as const) {
+    const hung: Partial<Controls> = {
+      [key]: stepMask(2),
+      drumMetal: 0,
+      drumSnappy: 1,
+    }
+    expect(rms(soloVoice({ ...off, ...hung }, 1)), key).toBeLessThan(
+      0.2 * rms(soloVoice({ ...at, ...hung }, 1)),
+    )
+  }
+  // And nothing that isn't hung off it moves at all — the networks and the
+  // metal bank have no transistor in them.
+  for (const key of ['drumKick', 'drumTom', 'drumBell', 'drumCym'] as const) {
+    const apart: Partial<Controls> = { [key]: stepMask(2) }
+    expect(soloVoice({ ...off, ...apart }, 1), key).toEqual(
+      soloVoice({ ...at, ...apart }, 1),
+    )
+  }
 })
 
 // The wires between the step counter and the pattern memory. Nothing here is a

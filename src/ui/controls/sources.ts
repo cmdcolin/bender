@@ -524,6 +524,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'What the snare is made of. All the way up is the noise transistor alone, which is the snare this kit used to have; down, the two tuned networks under it come through instead — 185 and 330 Hz, beating against each other. Tune reaches those and does not reach the noise, so a snare with any tone in it moves with the rest of the kit.',
       },
       {
+        key: 'drumNoiseBias',
+        part: 'inside the voices',
+        label: 'Noise bias',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How hard the kit’s one noise transistor is biased. It is a junction run backwards until it avalanches, which is where every bit of hiss on this board comes from — but a junction near the edge of avalanching does not conduct steadily. It latches in and out at random, holding each for anywhere between a third of a millisecond and a tenth of a second, which is what a marginal part does and is called popcorn noise for what it sounds like. The snare, both hats and the clap are all hanging off the one transistor, so they break up together and mid-hit rather than a voice at a time: down the travel the kit’s noise stutters, and near the bottom it only spits. What is left is the half of each voice that isn’t hiss — the snare’s tuned networks and the hats’ metal bank — so the pots beside this decide what a spitting kit still has to say.',
+      },
+      {
         key: 'drumMetal',
         part: 'inside the voices',
         label: 'Metal',

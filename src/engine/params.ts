@@ -158,6 +158,7 @@ export const PARAM_DEFS = [
   ['drumRing', 'slew'],
   ['drumPulse', 'slew'],
   ['drumSnappy', 'slew'],
+  ['drumNoiseBias', 'slew'],
   ['drumMetal', 'slew'],
   ['drumCymTone', 'slew'],
   ['drumSpread', 'slew'],

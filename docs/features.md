@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 237 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 238 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 56 presets, 14 stage settings and 22 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -177,7 +177,7 @@ too — the knife goes on and the rows under it say which controls that was:
   does not, and the pattern comes apart a step at a time
 
 <details>
-<summary>30 controls</summary>
+<summary>31 controls</summary>
 
 | control        | range                                                                                       | what it does                                                                                                          |
 | -------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -190,6 +190,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Ring           | off to full                                                                                 | How much of each swing the transistor around the kick, tom and snare hands back                                       |
 | Trigger pulse  | 0.05 to 8 ms                                                                                | How long the one-shot holds the trigger line down                                                                     |
 | Snappy         | off to full                                                                                 | What the snare is made of                                                                                             |
+| Noise bias     | off to full                                                                                 | How hard the kit’s one noise transistor is biased                                                                     |
 | Metal          | off to full                                                                                 | What the hat and the open hat are fed from                                                                            |
 | Cymbal tone    | off to full                                                                                 | Where the bottom of the cymbal’s band sits                                                                            |
 | Bank spread    | off to full                                                                                 | One resistor chain sets all six oscillators, and this leans on it                                                     |
