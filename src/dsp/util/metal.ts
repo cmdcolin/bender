@@ -91,10 +91,13 @@ export class MetalBank {
       how much — and that is the difference between a clatter and six tones.
       Summed and left alone, the loudest harmonics in the pile all belong to the
       fastest oscillator and a hat comes out ringing on one note; squared off,
-      the edges of all six land in it at times that never come round, which
-      measures six times as flat across the top of the band. The bias trimmer is
-      that sentence as a knob, and the cowbell taps out ahead of it, so it is the
-      one metal voice the trimmer never reaches.
+      the edges of all six land in it at times that never come round. Taken
+      through the hat's own high-pass, which is what "across the top of the
+      band" means here, the squared one measures six and a half times as flat as
+      the sum it was made from.
+
+      The bias trimmer is that sentence as a knob. The cowbell taps out ahead of
+      the stage, so it is the one metal voice the trimmer never reaches.
 
       The squares themselves are the naive kind, so above a couple of kilohertz
       they are also a pile of harmonics folding back down the spectrum. On a

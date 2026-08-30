@@ -208,21 +208,23 @@ const ACCENT_DRAW = 1 / 6
 // How long the noise transistor holds a mind, at the two ends of its bias.
 //
 // The hiss on a board like this is one transistor's base-emitter junction run
-// backwards until it avalanches, and an avalanche is not something a designer
-// specifies — it is a junction driven past where it breaks down. Give it plenty
-// of reverse bias and it conducts steadily and the kit has noise. Back it toward
-// the knee and it stops making its mind up: it latches into conducting and out
-// again at random, holding each for anywhere between a third of a millisecond
-// and a tenth of a second. That is a documented failure of marginal parts, and
-// it is called popcorn noise for what it sounds like.
+// backwards until it avalanches, which is not something a designer specifies —
+// it is a junction driven past where it breaks down. Given plenty of reverse
+// bias it conducts steadily and the kit has noise. Back it toward the knee and
+// it stops making its mind up: it latches into conducting and out again at
+// random, holding each for between a third of a millisecond and a tenth of a
+// second. That is a documented failure of marginal parts, and it is called
+// popcorn noise for what it sounds like.
 //
-// The one duration on this board that is not counted off the chip's oscillator.
-// Nothing clocks an avalanche — everything else here goes through perSample.
-// The trimmer is the only thing that moves it. A sagging rail is the obvious
-// second hand on this knob and it does not reach: the bias resistor has the
-// margin a bias resistor is given, so by the time the supply is far enough down
-// to walk the junction back to the knee the watchdog has the chip in reset and
-// there is nothing hanging off the transistor to hear it.
+// These two are the only durations on this board not counted off the chip's
+// oscillator, because nothing clocks an avalanche. Everything else here goes
+// through perSample and drags when the rail does.
+//
+// The trimmer is also the only thing that moves the junction. A sagging supply
+// is the obvious second hand on it and does not reach: a bias resistor is
+// specified with margin, so by the time the rail is far enough down to walk the
+// junction back to its knee the watchdog has the chip in reset and there is
+// nothing hanging off the transistor to hear it.
 const BURST_SHORT = 0.0003
 const BURST_LONG = 0.08
 
