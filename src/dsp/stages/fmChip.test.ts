@@ -7,6 +7,7 @@ import { BLOCK } from '../stage'
 import { ANY_CHOICE } from '../trigbus'
 import { SOURCE_TAPS } from '../../engine/params'
 import { FM_EFFECT_NAMES } from './fmEffects'
+import type { BuiltChain } from '../build'
 import {
   bin,
   bursts,
@@ -22,7 +23,7 @@ import {
   SR,
   tail,
 } from '../testRender'
-import { FM_VOICE_NAMES, FM_VOICES } from './fmVoices'
+import { FM_VOICE_NAMES, FM_VOICES, RHY } from './fmVoices'
 import { romIndex } from './roms'
 
 // The toy turned down to nothing, so what comes out is the other chip playing
@@ -397,6 +398,26 @@ test('a wire under the mode bit is a rhythm button that does nothing', () => {
   // would have, because the same wire is a bit of the frequency on its way past.
   expect(lowEnergy(kit) / rms(kit)).toBeGreaterThan(0.5)
   expect(lowEnergy(held) / rms(held)).toBeLessThan(0.35)
+})
+
+// The bank is put where the panel says it should be by a write the driver sends
+// with every patch, the way it clears the test register with every patch — so
+// the same wire that can hold the bank shut can hold it open, and the zero
+// meaning "no drums" arrives meaning the opposite.
+test('a wire under the mode bit can switch the bank on with nobody asking', () => {
+  const mode = (o: Partial<Controls>) => {
+    let chip: BuiltChain['fmChip'] | undefined
+    renderBender({ ...KIT_BOARD, ...o }, 1, built => (chip = built.fmChip))
+    return (chip!.rhythmReg() & RHY.on) !== 0
+  }
+  expect(mode({ fmRhythm: 0 })).toBe(false)
+  expect(mode({ fmRhythm: 1 })).toBe(true)
+  expect(
+    mode({ fmRhythm: 0, fmDataLine: MODE_LINE, fmDataFault: FAULT.supply }),
+  ).toBe(true)
+  expect(
+    mode({ fmRhythm: 1, fmDataLine: MODE_LINE, fmDataFault: FAULT.ground }),
+  ).toBe(false)
 })
 
 test('a wire under a drum key is a drum that never lifts', () => {

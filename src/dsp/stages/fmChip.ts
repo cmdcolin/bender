@@ -411,11 +411,14 @@ export class FmChip implements Stage {
   // the knob and the register: a ratio is four bits of a flags byte and a decay
   // is a nibble, so the knobs have the resolution the part had and no more.
   private sendVoice(voice: number, panel: Panel) {
-    // The write every driver for this part sends before anything else, and the
-    // only time one goes near the test register at all. It is a zero on the
-    // same eight wires as the patch, so it is a zero exactly as far as the
-    // wires allow.
+    // The two writes every driver for this part sends before anything else,
+    // and the only times one goes near either register: the test bits cleared,
+    // and the percussion bank put where the panel says it should be. Both are
+    // bytes on the same eight wires as the patch, so both are what they mean
+    // exactly as far as the wires allow — which is how a chip nobody asked for
+    // drums from can end up making them, one bit at a time.
     this.write(REG.test, 0)
+    this.write(REG.rhythm, this.kitOn ? RHY.on : 0)
     const bytes = PATCH_BYTES[voice] ?? PATCH_BYTES[0]!
     for (let i = 0; i < 8; i++) {
       let byte = bytes[i]!
@@ -1032,6 +1035,13 @@ export class FmChip implements Stage {
 
   private volume(n: number) {
     return atten(this.regs[REG.instVol + n]! & 0x0f, 3)
+  }
+
+  /** What the percussion bank's register holds, for a test to read. The button
+      is on the panel and the bit is in the register file, and the whole of the
+      bend is that those two can disagree. */
+  rhythmReg() {
+    return this.regs[REG.rhythm]!
   }
 
   /** The eight patch bytes as they currently stand, for a test to read. */

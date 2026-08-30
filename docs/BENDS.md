@@ -184,10 +184,17 @@ The bank is one byte, which is what makes it worth bending rather than merely
 worth having. The mode bit and all three drum keys cross the data bus together,
 so a wire held low is a rhythm button that does nothing, and a wire held high is
 a drum that never lifts — the same bend as the note that never ends, one
-register down. The kit's rates live in ROM rather than in the register file, so
-a knife on the patch bytes cannot reach them: the drums stay crisp on a board
-where nothing else does. An effect wants the same two channels and asked first,
-so pressing one puts the other down.
+register down. It also goes the other way, and that is the one worth finding.
+The driver puts the bank where the panel says with every patch it sends, the
+same way it clears the test register with every patch, so the byte meaning "no
+drums" crosses the bus like any other and a wire held high turns it into the
+byte meaning drums. The chip switches over with nobody having pressed anything,
+and because the driver does not know it happened, it goes on handing those two
+channels notes: the melody arrives at the die as strikes, and the tuning the kit
+would have had was never sent. The kit's rates live in ROM rather than in the
+register file, so a knife on the patch bytes cannot reach them: the drums stay
+crisp on a board where nothing else does. An effect wants the same two channels
+and asked first, so pressing one puts the other down.
 
 **The effect ROM** is the source of the chip's canned effects — a bird call,
 surf, wind, a siren, crickets — and none of them are samples. Each is a short
