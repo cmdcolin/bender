@@ -136,8 +136,6 @@ const ENV_FLOOR = 0.0005
 // voice in the kit's own row order is the decision the wire makes for you. They
 // are a pentatonic apart on purpose: a pattern written for drums comes out as a
 // riff rather than a cluster.
-// One per voice, in the kit's own row order: kick, snare, hat, clap, tom, bell,
-// open hat, cymbal.
 const DRUM_NOTES = [0, 12, 24, 15, 5, 19, 26, 31]
 
 // And where those same lines land when the bank is switched over and the chip
