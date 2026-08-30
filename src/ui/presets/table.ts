@@ -644,6 +644,42 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'struck metal',
+    blurb:
+      'The squarer biased out of the way — the hats and the cymbal come back as the six tones they are made of',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.85,
+      drumBpm: 92,
+      drumSquare: 0.06,
+      drumMetal: 1,
+      drumSpread: 0.4,
+      drumCymTone: 0.2,
+      drumDecay: 2.4,
+      ...romMasks('disco'),
+      drumCym: 0b1000_0000_0000_0000,
+      revMix: 0.32,
+      revDecayS: 2.4,
+    },
+  },
+  {
+    name: 'popcorn',
+    blurb:
+      'The noise transistor back at its knee: snare, hats and clap all missing the same gaps',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 112,
+      drumNoiseBias: 0.42,
+      drumSnappy: 0.9,
+      drumMetal: 0.25,
+      drumDecay: 1.3,
+      ...romMasks('breaks'),
+      drumClap: 0b0000_0010_0000_0010,
+      revMix: 0.24,
+    },
+  },
+  {
     name: 'found tape',
     blurb:
       'The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken',

@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 238 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 56 presets, 14 stage settings and 22 named cuts — and everything
+18 ROM tunes, 58 presets, 14 stage settings and 22 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 56 presets, and dice on every heading as
+- **Boards, rather than settings.** 58 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -953,7 +953,7 @@ became:
 
 ### Presets
 
-56 boards worth keeping. Every name is a link that opens the app with that board
+58 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -1042,6 +1042,12 @@ on it — a link never presses play, so it is loaded and waiting.
   mic level up
 - [**backbeat**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumSnare:0,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
   — Claps on two and four, shuffled hard, through four bits of DAC
+- [**struck metal**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.85,drumBpm:92,drumDecay:2.4,drumMetal:1,drumCymTone:0.2,drumSpread:0.4,drumSquare:0.06,drumKick:34952,drumHat:34952,drumOpen:8738,drumCym:32768,drumAccent:32896,revDecayS:2.4,revMix:0.32)
+  — The squarer biased out of the way — the hats and the cymbal come back as the
+  six tones they are made of
+- [**popcorn**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumDecay:1.3,drumSnappy:0.9,drumNoiseBias:0.42,drumMetal:0.25,drumKick:33312,drumSnare:2312,drumHat:44718,drumClap:514,drumAccent:2056,revMix:0.24)
+  — The noise transistor back at its knee: snare, hats and clap all missing the
+  same gaps
 - [**found tape**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,revDecayS:1.6,revMix:0.18,tapeMix:1,tapeDrive:4,tapeHiss:0.55,tapeWow:0.3)
   — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
 - [**shed oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35,tapeSqueal:0.45)
