@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 235 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 55 presets, 14 stage settings and 20 named cuts — and everything
+18 ROM tunes, 56 presets, 14 stage settings and 20 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 55 presets, and dice on every heading as
+- **Boards, rather than settings.** 56 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -941,7 +941,7 @@ became:
 
 ### Presets
 
-55 boards worth keeping. Every name is a link that opens the app with that board
+56 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -958,6 +958,8 @@ on it — a link never presses play, so it is loaded and waiting.
   — An address line on the floor: the song folds into its own first half
 - [**stuck key**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.5,fmLevel:0.8,fmVoice:1,fmBright:0.6,fmLength:0.3,fmDataLine:5,fmDataFault:2)
   — The FM chip never told the key came up, so nothing it plays ends
+- [**drum machine on the die**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.35,drumBpm:132,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmKeyGate:1,fmRhythm:1,fmBusCut:0.85,fmWaveLine:9,revMix:0.2)
+  — The chip’s own percussion bank, run through a half-parted wave line
 - [**dawn chorus**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmDataLine:3,fmBusCut:0.55)
   — Bird calls off the effect ROM, every write of them arriving wrong
 - [**weather station**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:3,fmStrobe:0.15)

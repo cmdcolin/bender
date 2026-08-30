@@ -2,6 +2,8 @@ import type { Controls } from '../../controls'
 import { DRUM_ROMS } from '../../drums'
 import { DEST } from '../../dsp/modbus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
+import { FAULT } from '../../dsp/bus'
+import { ANY_CHOICE } from '../../dsp/trigbus'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
 import { ARP_MODES } from '../../dsp/stages/toyChip'
 
@@ -117,6 +119,25 @@ export const PRESETS: PresetDef[] = [
       fmLength: 0.3,
       fmDataLine: 5,
       fmDataFault: 2,
+    },
+  },
+  {
+    name: 'drum machine on the die',
+    blurb:
+      'The chip’s own percussion bank, run through a half-parted wave line',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.35,
+      drumBpm: 132,
+      ...romMasks('disco'),
+      fmLevel: 0.85,
+      fmRhythm: 1,
+      fmStruck: ANY_CHOICE,
+      fmKeyGate: 1,
+      fmWaveLine: 9,
+      fmWaveFault: FAULT.cut,
+      fmBusCut: 0.85,
+      revMix: 0.2,
     },
   },
   {
