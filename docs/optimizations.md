@@ -235,7 +235,7 @@ Eight seconds each, heavy board, tape threaded, both machines running:
 | playing, nothing touched | 61/s   | 0.2%           | 0.6 ms                 |
 | a board travelling       | 61/s   | 1.8%           | 2.0–3.9 ms             |
 | a slider under a hand    | 61/s   | 0.4%           | 1.8 ms                 |
-| stage after stage opened | 62/s   | 2.1%           | 19–23 ms               |
+| stage after stage opened | 62/s   | 1.9%           | 14–20 ms               |
 
 For the first three the answer is no, and not narrowly: React's worst single
 render is under 4 ms of a 16.7 ms frame, and no task of any kind overran the
@@ -247,10 +247,31 @@ frame, 441 renders in eight seconds, and it still costs under 2% of the wall,
 because the map that would be expensive to rebuild is on a 120 ms clock and
 everything else reads one number out of the board rather than the board.
 
-Opening a stage is the exception and it is a real one. Mounting a rack of
-controls is a single 19–23 ms render — one to two frames — and clicking through
-the stages for ten seconds dropped nine. It is the only interaction in the app
-where React is the answer to "what was that".
+Opening a stage is the exception and it is a real one: mounting a rack of
+controls is a single render around the length of a frame, and it is the only
+interaction in the app where React is the answer to "what was that".
+
+A fifth of it was not React at all. `OpenGroup` scrolled the stage it had just
+opened into view from an effect, and every question that scroll asks — what
+overflows, how tall a box is, where it sits — wants a laid-out document, which
+is exactly what the commit it ran in had just stopped being true. So the read
+dragged the whole freshly-mounted rack through style and layout _inside_ the
+render that built it: `scrollParent` alone was 54 ms of the 233 ms React spent
+in ten seconds of opening stages, 23% of it, and the commit phase was 95 ms.
+Moved to the next animation frame — where the browser has done that layout
+anyway, and where a smooth scroll starting one frame later is invisible — the
+whole call falls out of the profile. Commit goes to 36 ms and React's total to
+187, paired and alternated.
+
+It is the rail lamp's lesson from the other side. There, the cost was writing
+the DOM when nothing had changed; here it is reading it at the one moment it is
+guaranteed to be dirty. A frame callback is the cheap place to do either.
+
+What is left is honest first-mount cost, spread thin: the render phase is
+unchanged at 135 ms for nineteen opens, and under it nothing is above 7 ms —
+`Tip` on nearly every row, `createElement`, `setInitialProperties`,
+`appendChild`, the map's own rebuild. There is no hotspot left to take out, only
+fewer elements to mount, and the panel's density is the design.
 
 Worth being clear about what the first three do cost, since it is not nothing:
 the panel is 6% of one core sitting still and 14% with a board travelling. It is
@@ -341,13 +362,11 @@ Worth recording so nobody spends the afternoon twice.
   the delay is fixed for the block.
 - **The tape's print-through** takes a second 4-point Hermite read whose output
   goes straight into a 2500 Hz lowpass at 0.05 gain, where linear would do.
-- **Opening a stage** is a 19–23 ms React render, the largest in the app, and
-  drops a frame or two every time. Some of it is unavoidable — a rack of
-  controls is a lot of elements — but `scrollParent` in reveal.ts is 2.7 ms of
-  it on its own, walking every ancestor with `getComputedStyle` and
-  `scrollHeight` in the same task that just mounted them, which is a forced
-  style and layout per step up the tree. The panel is a known element; the walk
-  is not needed to find it.
+- **Opening a stage** is still a 14–20 ms React render, the largest in the app,
+  and still around the length of a frame after the forced layout came out of it.
+  The rest is a rack of controls being mounted and there is no hotspot in it —
+  the only lever left is rendering fewer elements, which is a question about the
+  panel rather than about React.
 - **Paint and layerize, while the map is moving.** `pnpm panel morph` puts them
   at 0.49 and 0.29 ms a frame, which is the two largest columns and more than
   all the javascript. It is the signal-path drawing: 179 SVG elements replaced

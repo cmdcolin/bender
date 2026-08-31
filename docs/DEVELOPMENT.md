@@ -47,10 +47,16 @@ write straight to the DOM off the meter rather than through a render:
   and reports what the main thread spends per frame and where: javascript,
   style, layout, paint, compositing — plus how many frames went undrawn, and how
   long React held the thread at a stretch. `pnpm panel 12 morph` measures a
-  board travelling, `pnpm panel 8 drag` a slider under a hand, and
+  board travelling, `pnpm panel 8 drag` a slider under a hand,
+  `pnpm panel 12 hover` a pointer resting on control after control, and
   `pnpm panel 10 open` stage after stage off the map, which is the one that
   costs. Wants Chrome — it looks on PATH, then in `/Applications`, then at
   `BENDER_CHROME`.
+
+  It says how much, and where in the frame, but not whose. For that set
+  `BENDER_DUMP` to a path and the sampled profile lands there — open it in
+  devtools' performance panel, which is how the forced layout inside the
+  stage-open commit was found.
 
   The column to read is `layout`. Nothing on the panel changes the size of
   anything, so layout should sit near zero; layout that does not is something

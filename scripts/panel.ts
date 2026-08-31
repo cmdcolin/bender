@@ -4,6 +4,10 @@
 //   pnpm panel              the heavy board playing, 8 s
 //   pnpm panel 12 morph     the same with a board travelling for 30 s
 //   pnpm panel 8 drag       a slider held and swept
+//   pnpm panel 10 open      stage after stage opened off the map
+//   pnpm panel 12 hover     a pointer resting on control after control
+//
+//   BENDER_DUMP=/tmp/p.cpuprofile pnpm panel 10 open    keep the stacks
 //
 // The audio scripts beside this one render the chain offline in node, where the
 // panel does not exist. Nothing they report can see a style write, and a style
@@ -27,7 +31,7 @@
 // box moved these by 40% here. Run a before and after in the same sitting, and
 // read the shape rather than the digits.
 import { spawn } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
@@ -460,6 +464,15 @@ function report(events: TraceEvent[], profile: Profile) {
     `tasks: p50 ${quantile(tasks, 0.5).toFixed(2)}ms  p90 ${quantile(tasks, 0.9).toFixed(2)}ms  p99 ${quantile(tasks, 0.99).toFixed(2)}ms  max ${(tasks.at(-1) ?? 0).toFixed(2)}ms — ${over} over the frame`,
   )
 
+  // This says how much and where in the frame; the profile says whose. Set
+  // BENDER_DUMP to a path and it lands there as a .cpuprofile, which drops
+  // straight into devtools' performance panel — which is how the forced layout
+  // inside the stage-open commit was found.
+  const dump = process.env.BENDER_DUMP
+  if (dump) {
+    writeFileSync(dump, JSON.stringify(profile))
+    console.log(`profile: ${dump}`)
+  }
   const react = reactShare(profile)
   console.log(
     `react: ${react.ms.toFixed(0)}ms, ${(react.share * 100).toFixed(1)}% of wall, over ${react.count} renders — p99 ${react.p99.toFixed(2)}ms, longest ${react.longest.toFixed(2)}ms`,

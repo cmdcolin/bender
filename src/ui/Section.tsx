@@ -428,8 +428,18 @@ export function OpenGroup({
   const el = useRef<HTMLDivElement>(null)
   // A tall map can leave the stage it just opened below the fold, so the panel
   // comes to it — by as little as it takes, which is what scrollIntoPanel is for.
+  //
+  // On the next frame rather than in this commit. Every question it asks — what
+  // overflows, how tall a box is, where it sits — wants a laid-out document, and
+  // the commit it would run in has just mounted a rack of controls and made that
+  // untrue. Asking now drags the whole rack through style and layout inside the
+  // render that built it; asking a frame later reads work the browser has done
+  // anyway. The scroll is smooth and nobody can see the frame.
   useEffect(() => {
-    if (el.current) scrollIntoPanel(el.current)
+    const raf = requestAnimationFrame(() => {
+      if (el.current) scrollIntoPanel(el.current)
+    })
+    return () => cancelAnimationFrame(raf)
   }, [group.name])
   // Through the morph, so a stage travels the way a whole board does and lands
   // in the walk — a roll you don't like is one ctrl+z away.
