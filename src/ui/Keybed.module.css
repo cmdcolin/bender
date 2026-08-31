@@ -248,8 +248,7 @@
    stamped caps on a flat cap, and it goes down when you press it. */
 .hold,
 .holdOn,
-.keysOff,
-.keysOn,
+.drawer,
 .octave,
 .octaveOn {
   font-size: var(--fs-xs);
@@ -270,7 +269,7 @@
 }
 
 .hold:hover,
-.keysOff:hover,
+.drawer:hover,
 .octave:hover {
   background: var(--switch-hover);
   color: var(--fg);
@@ -278,47 +277,40 @@
 
 .hold:active,
 .holdOn:active,
-.keysOff:active,
-.keysOn:active,
+.drawer:active,
 .octave:active,
 .octaveOn:active {
   transform: translateY(1px);
 }
 
-/* The one switch on the deck that is not the machine's own: it says which of
-   the two beds the computer's keyboard plays, and the word for that was "keys"
-   on a thing already made of keys. So it is drawn instead — a cased row of keys
-   with a spacebar under it, which names the keyboard it means. */
-.keysOff,
-.keysOn {
+/* Everything about this keyboard that is not a switch on its front. A toy had
+   no such drawer, but the letters wire is not the toy's — it says which of the
+   two beds the computer's keyboard plays, and a cap stamped "keys" on a thing
+   already made of keys named nothing. Three bars, which is the one mark that
+   promises a list rather than doing something on the spot. */
+.drawer {
   display: inline-flex;
   align-items: center;
-  padding: 3px 7px;
+  padding: 6px 7px;
 }
 
-.mark {
+.bars {
   flex: none;
-  width: 20px;
-  height: 13px;
-  border: 1px solid currentColor;
-  border-radius: 2px;
+  width: 13px;
+  height: 9px;
   background-image:
     linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0),
     linear-gradient(currentColor 0 0);
-  background-size:
-    12px 1px,
-    12px 1px,
-    6px 1px;
+  background-size: 13px 1px;
   background-position:
-    3px 2px,
-    3px 5px,
-    6px 8px;
+    0 0,
+    0 4px,
+    0 8px;
   background-repeat: no-repeat;
 }
 
 /* Thrown. */
 .holdOn,
-.keysOn,
 .octaveOn {
   background: var(--accent);
   border-color: var(--accent);

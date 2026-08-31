@@ -6,6 +6,7 @@ import { useStoreValue } from './ControlsContext'
 import { blackAbove, OCTAVES, pitch, TOP, WHITE_KEYS } from './keyboard'
 import { letterKeys } from './letters'
 import styles from './Keybed.module.css'
+import { Menu, menuCheck } from './Menu'
 import { Tip } from './Tip'
 
 const KEY_MAP: Record<string, number> = {
@@ -76,6 +77,12 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   const [latched, setLatched] = useState<Set<number>>(new Set())
   const [hold, setHold] = useState(false)
   const [octave, setOctave] = useState(0)
+  // The drawer, and the button it hangs off. Held as state rather than a ref
+  // for the reason the roll menu holds its anchor that way: a ref read while
+  // rendering is whatever it was last commit, and on the render that opens the
+  // menu that is null.
+  const [drawer, setDrawer] = useState<HTMLButtonElement | null>(null)
+  const [open, setOpen] = useState(false)
   const shift = octave * 12
   const at = (key: number) => pitch(key, shift)
   // Two lights on one board. What a hand is holding down — this one's pointer,
@@ -90,6 +97,9 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
     dest === 'fm' ? engine.fmNotes : engine.chipNotes,
   )
   const owns = useStoreValue(letterKeys) === dest
+  // Two beds and one keyboard, so switching the letters off here is switching
+  // them on next door. There is nowhere else for them to go.
+  const other: NoteDest = dest === 'toy' ? 'fm' : 'toy'
   const isDown = (key: number) => held.has(at(key))
   const litBy = (key: number): Lit =>
     keysDown.has(at(key)) ? 'hand' : chipNotes.has(at(key)) ? 'chip' : 'dark'
@@ -243,22 +253,6 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
           {badge}
           <div className={styles.switches}>
             {extras}
-            <Tip
-              text={
-                owns
-                  ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave'
-                  : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and two beds on it, so it plays whichever is switched on'
-              }
-            >
-              <button
-                className={owns ? styles.keysOn : styles.keysOff}
-                aria-pressed={owns}
-                aria-label="computer keyboard"
-                onClick={() => letterKeys.set(dest)}
-              >
-                <span className={styles.mark} aria-hidden="true" />
-              </button>
-            </Tip>
             <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">
               <button
                 className={hold ? styles.holdOn : styles.hold}
@@ -287,6 +281,44 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
                 </Tip>
               ))}
             </span>
+            <Tip text="What this keyboard has that is not one of its own switches — starting with which of the two beds the computer keyboard plays.">
+              <button
+                ref={setDrawer}
+                className={styles.drawer}
+                aria-label="keyboard settings"
+                aria-haspopup="menu"
+                aria-expanded={open}
+                onClick={() => setOpen(!open)}
+              >
+                <span className={styles.bars} aria-hidden="true" />
+              </button>
+            </Tip>
+            {open && (
+              <Menu
+                anchor={drawer}
+                toggle={drawer}
+                role="group"
+                label={`${label} settings`}
+                onClose={() => setOpen(false)}
+              >
+                <Tip
+                  text={
+                    owns
+                      ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave. Turning it off hands the letters to the other bed, because there is one keyboard and it has to play one of them'
+                      : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and two beds on it, so it plays whichever is switched on'
+                  }
+                >
+                  <label className={menuCheck}>
+                    <input
+                      type="checkbox"
+                      checked={owns}
+                      onChange={() => letterKeys.set(owns ? other : dest)}
+                    />
+                    computer keyboard plays this bed
+                  </label>
+                </Tip>
+              </Menu>
+            )}
             {tail}
           </div>
         </div>

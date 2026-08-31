@@ -1,0 +1,69 @@
+/* The box a menu opens in, and the rows in it. Shared, because a menu that
+   looked like the panel's in one place and like something else in another is
+   two menus. */
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 3px;
+  background: var(--bg2);
+  border: 1px solid var(--border-hover);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px #0009;
+}
+
+.item {
+  font-size: var(--fs-sm);
+  text-align: left;
+  padding: 3px 8px;
+  background: none;
+  color: var(--fg2);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: var(--bg3);
+  color: var(--fg);
+  outline: none;
+}
+
+/* The one that is already on: the roll the face is holding, the bed the letters
+   are wired to. Marked rather than ticked, because what it says is "this is
+   what is happening" rather than "you switched this on and left it". */
+.itemOn {
+  composes: item;
+  color: var(--accent);
+}
+
+/* A row that is a setting rather than a command. The box is the difference:
+   what it does outlasts the menu, so it says so on the way in rather than
+   leaving you to remember which of the rows you last pressed. */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  padding: 3px 8px;
+  color: var(--fg2);
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.check:hover,
+.check:focus-within {
+  color: var(--fg);
+  background: var(--bg3);
+}
+
+.check input {
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}

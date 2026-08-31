@@ -233,8 +233,10 @@ one part twice. It is also on the chip's panel as **Toy gate**, so it travels in
 a link like every other control.
 
 One computer keyboard, two keybeds: `a s d f` and the octave keys `z`/`x` play
-whichever bed the **keys** switch on its deck is lit on, and the letters are
-printed on that bed's keys so you can see where they went. Both beds take the
+whichever bed has **computer keyboard plays this bed** ticked, in the drawer
+behind the three bars on its deck, and the letters are printed on that bed's
+keys so you can see where they went. Turning it off on one bed hands the letters
+to the other, since there is nowhere else for them to go. Both beds take the
 mouse either way, and a MIDI controller plays the toy's unless you split the
 keybed — see [MIDI](MIDI.md).
 

@@ -16,6 +16,24 @@ const bed = (name: string) => within(screen.getByRole('group', { name }))
 const middleC = (name: string) =>
   bed(name).getByRole('button', { name: 'key C4' })
 
+// A press, the way the browser sends one: the menu dismisses itself on the
+// pointer going down anywhere that is not itself, and the button that opens it
+// is exactly where that has to not count.
+const press = (el: HTMLElement) => {
+  fireEvent.pointerDown(el)
+  fireEvent.click(el)
+}
+
+const bars = (name: string) =>
+  bed(name).getByRole('button', { name: 'keyboard settings' })
+
+// The letters wire lives in the drawer on each bed's deck rather than on a cap
+// of its own, so moving it is two presses: open, pick.
+const wireLetters = (name: string) => {
+  press(bars(name))
+  fireEvent.click(bed(name).getByRole('checkbox'))
+}
+
 const both = () => {
   render(<Keys />)
   render(<FmKeys />)
@@ -47,9 +65,7 @@ test('the letter keys play whichever bed they are wired to', () => {
   expect(engine.fmKeysDown.get().size).toBe(0)
   fireEvent.keyUp(window, { key: 'a' })
 
-  fireEvent.click(
-    bed('fm keyboard').getByRole('button', { name: 'computer keyboard' }),
-  )
+  wireLetters('fm keyboard')
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.fmKeysDown.get().size).toBe(1)
   expect(engine.keysDown.get().size).toBe(0)
@@ -62,9 +78,7 @@ test('moving the letters lets go of what they were holding', () => {
   both()
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.keysDown.get().size).toBe(1)
-  fireEvent.click(
-    bed('fm keyboard').getByRole('button', { name: 'computer keyboard' }),
-  )
+  wireLetters('fm keyboard')
   expect(engine.keysDown.get().size).toBe(0)
 })
 
@@ -84,4 +98,25 @@ test('the FM bed is drawn once the chip is in the mix', () => {
   expect(screen.queryByRole('group', { name: 'fm keyboard' })).toBeNull()
   act(() => engine.set('fmLevel', 0.8))
   expect(screen.getByRole('group', { name: 'fm keyboard' })).toBeTruthy()
+})
+
+// One keyboard and two beds, so the box cannot just be empty: switching the
+// letters off here is switching them on next door. The drawer stays open
+// through it, which is what makes it a drawer of settings rather than a menu of
+// commands.
+test('turning the letters off one bed hands them to the other', () => {
+  both()
+  wireLetters('fm keyboard')
+  fireEvent.click(bed('fm keyboard').getByRole('checkbox'))
+  fireEvent.keyDown(window, { key: 'a' })
+  expect(engine.keysDown.get().size).toBe(1)
+  expect(engine.fmKeysDown.get().size).toBe(0)
+})
+
+test('a second press on the bars shuts the drawer again', () => {
+  both()
+  press(bars('toy keyboard'))
+  expect(bed('toy keyboard').queryByRole('checkbox')).not.toBeNull()
+  press(bars('toy keyboard'))
+  expect(bed('toy keyboard').queryByRole('checkbox')).toBeNull()
 })

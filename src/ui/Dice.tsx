@@ -1,12 +1,6 @@
-import {
-  autoUpdate,
-  flip,
-  offset,
-  shift,
-  useFloating,
-} from '@floating-ui/react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { engine } from '../engine/engine'
+import { Menu, menuItem } from './Menu'
 import type { MorphSeconds } from './morph'
 import { huntCandidates, randomLook, SCENARIOS } from './presets'
 import { HelpDot, Tip } from './Tip'
@@ -81,6 +75,9 @@ export function Dice(props: {
   // the render that opens the menu that is null, and a menu with no anchor is a
   // menu in the top left corner of the window.
   const [split, setSplit] = useState<HTMLSpanElement | null>(null)
+  // The caret as well as the box it hangs off: the menu places itself against
+  // the whole control and ignores presses on the one button that closes it.
+  const [caret, setCaret] = useState<HTMLButtonElement | null>(null)
   const { seconds, onLanded } = props
 
   const roll = useCallback(
@@ -102,6 +99,7 @@ export function Dice(props: {
       </Tip>
       <Tip text="The other ways the board has of rolling you one. Picking one rolls it, and it stays on the button, so going again is one press.">
         <button
+          ref={setCaret}
           className={open ? styles.caretOn : styles.caret}
           aria-label="pick a kind of roll"
           aria-expanded={open}
@@ -112,92 +110,23 @@ export function Dice(props: {
       </Tip>
       <HelpDot text={held.blurb} label={held.label} />
       {open && (
-        <Menu
-          anchor={split}
-          held={held}
-          onPick={r => {
-            close()
-            roll(r)
-          }}
-          onClose={close}
-        />
+        <Menu anchor={split} toggle={caret} role="menu" onClose={close}>
+          {ROLLS.map(r => (
+            <Tip key={r.name} text={r.blurb}>
+              <button
+                role="menuitem"
+                className={menuItem(r === held)}
+                onClick={() => {
+                  close()
+                  roll(r)
+                }}
+              >
+                {r.label}
+              </button>
+            </Tip>
+          ))}
+        </Menu>
       )}
     </span>
-  )
-}
-
-// A popover, for the reason the tip is one: it opens over the signal path,
-// which scrolls and clips, and the top layer clears both without a portal to
-// escape their overflow or a z-index to outbid them.
-function Menu(props: {
-  anchor: HTMLElement | null
-  held: Roll
-  onPick: (r: Roll) => void
-  onClose: () => void
-}) {
-  const { refs, floatingStyles } = useFloating({
-    open: true,
-    elements: { reference: props.anchor },
-    placement: 'bottom-start',
-    strategy: 'fixed',
-    middleware: [offset(4), flip({ padding: 8 }), shift({ padding: 8 })],
-    whileElementsMounted: autoUpdate,
-  })
-
-  // Shown from the ref rather than an effect, like the tip's bubble: a popover
-  // that is not open is display:none, and floating-ui would measure a box of
-  // nothing. The focus goes with it, so the keyboard is already in the menu it
-  // just asked for.
-  const setFloating = useCallback(
-    (el: HTMLDivElement | null) => {
-      if (el) {
-        el.showPopover()
-        el.querySelector('button')?.focus()
-      }
-      refs.setFloating(el)
-    },
-    [refs],
-  )
-
-  // Escape, and a press anywhere else. Pointerdown rather than click, so the
-  // press that dismisses the menu is not also a press on whatever it was
-  // covering.
-  const { onClose } = props
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    const onDown = (e: PointerEvent) => {
-      const el = refs.floating.current
-      if (el && !el.contains(e.target as Node)) onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('pointerdown', onDown, true)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('pointerdown', onDown, true)
-    }
-  }, [onClose, refs])
-
-  return (
-    <div
-      ref={setFloating}
-      popover="manual"
-      role="menu"
-      className={styles.menu}
-      style={floatingStyles}
-    >
-      {ROLLS.map(r => (
-        <Tip key={r.name} text={r.blurb}>
-          <button
-            role="menuitem"
-            className={r === props.held ? styles.itemOn : styles.item}
-            onClick={() => props.onPick(r)}
-          >
-            {r.label}
-          </button>
-        </Tip>
-      ))}
-    </div>
   )
 }
