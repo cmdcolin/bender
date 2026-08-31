@@ -3,7 +3,7 @@ import { engine } from '../engine/engine'
 import { Menu, menuItem } from './Menu'
 import type { MorphSeconds } from './morph'
 import { huntCandidates, randomLook, SCENARIOS } from './presets'
-import { HelpDot, Tip } from './Tip'
+import { Tip } from './Tip'
 import styles from './Dice.module.css'
 
 // Every way the panel has of handing you a board you did not ask for, behind
@@ -108,7 +108,6 @@ export function Dice(props: {
           ▾
         </button>
       </Tip>
-      <HelpDot text={held.blurb} label={held.label} />
       {open && (
         <Menu anchor={split} toggle={caret} role="menu" onClose={close}>
           {ROLLS.map(r => (

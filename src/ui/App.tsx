@@ -36,7 +36,7 @@ import { OpenGroup, PathHint } from './Section'
 import { StartOverlay } from './StartOverlay'
 import { useBoardUrl } from './useBoardUrl'
 import styles from './App.module.css'
-import { HelpDot, Tip } from './Tip'
+import { Tip } from './Tip'
 import { POOLS, detailsUrl } from '../engine/archive'
 import { YOURS } from '../dsp/stages/roms'
 
@@ -172,15 +172,12 @@ function Panic() {
     return () => cancelAnimationFrame(raf)
   }, [])
   return (
-    <span className={styles.withHelp}>
-      <Tip text={PANIC_HELP}>
-        <button className={styles.btnDanger} onClick={() => engine.panic()}>
-          <span ref={bar} className={styles.duck} />
-          <span className={styles.duckLabel}>panic</span>
-        </button>
-      </Tip>
-      <HelpDot text={PANIC_HELP} label="panic" />
-    </span>
+    <Tip text={PANIC_HELP}>
+      <button className={styles.btnDanger} onClick={() => engine.panic()}>
+        <span ref={bar} className={styles.duck} />
+        <span className={styles.duckLabel}>panic</span>
+      </button>
+    </Tip>
   )
 }
 
@@ -470,51 +467,48 @@ export function App(props: { openedFromLink?: boolean }) {
 
         <div className={styles.actions}>
           <Dice seconds={morphSeconds} onLanded={setLanded} />
-          <span className={styles.withHelp}>
-            <Tip text={MUTATE_HELP}>
-              <button
-                className={styles.btn}
-                onClick={e =>
-                  engine.morphTo(
-                    mutate(
-                      engine.controls.get(),
-                      e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
-                      Math.random,
-                    ),
-                    morphSeconds,
-                  )
-                }
-              >
-                mutate
-              </button>
-            </Tip>
-            <HelpDot text={MUTATE_HELP} label="mutate" />
-          </span>
-          {/* Beside mutate, because that is what it is: the same nudge, gentle,
-              on a timer, forever. Nothing else on the board plays itself. */}
-          <span className={styles.withHelp}>
-            <Tip
-              text={
-                drifting
-                  ? 'stop drifting and keep the board wherever it has got to'
-                  : DRIFT_HELP
+          <Tip text={MUTATE_HELP}>
+            <button
+              className={styles.btn}
+              onClick={e =>
+                engine.morphTo(
+                  mutate(
+                    engine.controls.get(),
+                    e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
+                    Math.random,
+                  ),
+                  morphSeconds,
+                )
               }
             >
-              <button
-                className={drifting ? styles.btnOn : styles.btn}
-                onClick={() =>
-                  drifting
-                    ? engine.stopDrift()
-                    : engine.startDrift(() =>
-                        mutate(engine.controls.get(), 0.05, Math.random),
-                      )
-                }
-              >
-                {drifting ? 'drifting…' : 'drift'}
-              </button>
-            </Tip>
-            <HelpDot text={DRIFT_HELP} label="drift" />
-          </span>
+              mutate
+            </button>
+          </Tip>
+          {/* Beside mutate, because that is what it is: the same nudge, gentle,
+              on a timer, forever. Nothing else on the board plays itself. */}
+          <Tip
+            text={
+              drifting
+                ? 'stop drifting and keep the board wherever it has got to'
+                : DRIFT_HELP
+            }
+          >
+            <button
+              className={drifting ? styles.btnOn : styles.btn}
+              onClick={() =>
+                drifting
+                  ? engine.stopDrift()
+                  : engine.startDrift(() =>
+                      mutate(engine.controls.get(), 0.05, Math.random),
+                    )
+              }
+            >
+              <span className={styles.holdsWidest}>
+                {drifting || <span className={styles.widest}>drifting…</span>}
+                <span>{drifting ? 'drifting…' : 'drift'}</span>
+              </span>
+            </button>
+          </Tip>
           <Tip text="Back to the board the toy ships with. It lands in the walk, so undo brings back whatever you were on.">
             <button
               className={styles.btn}

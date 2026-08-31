@@ -28,33 +28,3 @@
      otherwise swallow the click, and drags run under it either way. */
   pointer-events: none;
 }
-
-/* The mark that says there is a sentence here. Round, quiet, and the size of a
-   piece of punctuation — it stands beside a name without becoming a second word
-   in it. Never a bare glyph: it is a button, and it has to look pressable to be
-   worth pressing on a touch screen where hovering does not exist. */
-.dot {
-  flex: none;
-  width: 15px;
-  height: 15px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  color: var(--fg4);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  font: inherit;
-  font-size: var(--fs-xs);
-  line-height: 1;
-  cursor: help;
-}
-
-/* Lit the same for a hover, a focus and a pinned tip, because all three mean
-   the same thing: the sentence this dot is about is on screen right now. */
-.dotOn {
-  composes: dot;
-  color: var(--accent);
-  border-color: var(--accent);
-}

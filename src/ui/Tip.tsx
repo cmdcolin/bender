@@ -102,9 +102,8 @@ export const Tip = forwardRef<TipHandle, { text: ReactNode; children: Anchor }>(
 
     useEffect(() => {
       if (!pinned) return
-      // Anywhere else puts it away, same as HelpDot below — the bubble itself
-      // takes no pointer events, so a press that lands on it is a press on
-      // whatever is under it.
+      // Anywhere else puts it away — the bubble itself takes no pointer events,
+      // so a press that lands on it is a press on whatever is under it.
       const onDown = (e: PointerEvent) => {
         if (!anchor?.contains(e.target as Node)) setPinned(false)
       }
@@ -235,74 +234,4 @@ function mergeRefs(theirs: unknown, mine: (el: HTMLElement | null) => void) {
     else if (theirs !== null && typeof theirs === 'object')
       (theirs as { current: HTMLElement | null }).current = el
   }
-}
-
-// The tip answers "what is this", but only for someone who already suspects the
-// panel will answer. Hovering is invisible until you have done it: a first-timer
-// looking at panic sees a red button with a bar creeping up it and no sign that
-// the board has a sentence about either. The dot is that sign — the one part of
-// a tip you can see before you have found it.
-//
-// It sits next to the things whose name is not the explanation, not next to
-// everything: a dot on every row of a panel this dense is a texture rather than
-// a mark, and a mark nobody picks out is the same as no mark at all.
-//
-// Pressing it pins the tip up, which hovering cannot do. That is for reading
-// without holding the pointer still, and it is the only way a finger gets help
-// at all — every other tip here hangs off a hover no touch device has.
-export function HelpDot(props: { text: ReactNode; label: string }) {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-  const [open, setOpen] = useState(false)
-  const [hover, setHover] = useState(false)
-  const outer = useContext(NestedTip)
-  const id = useId()
-  const up = open || hover
-
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    // Anywhere else puts it away. The bubble takes no pointer events, so a
-    // press that lands on the tip itself is a press on whatever is under it.
-    const onDown = (e: PointerEvent) => {
-      if (!anchor?.contains(e.target as Node)) setOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('pointerdown', onDown)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('pointerdown', onDown)
-    }
-  }, [open, anchor])
-
-  return (
-    <button
-      ref={setAnchor}
-      type="button"
-      className={up ? styles.dotOn : styles.dot}
-      aria-label={`what ${props.label} does`}
-      aria-expanded={open}
-      aria-describedby={up ? id : undefined}
-      onClick={() => setOpen(o => !o)}
-      onPointerEnter={() => {
-        outer?.hide()
-        setHover(true)
-      }}
-      onPointerLeave={() => {
-        setHover(false)
-        if (!open) outer?.arm()
-      }}
-      onFocus={() => setHover(true)}
-      onBlur={() => {
-        setHover(false)
-        setOpen(false)
-      }}
-    >
-      ?
-      {up && anchor !== null && (
-        <Bubble anchor={anchor} id={id} text={props.text} />
-      )}
-    </button>
-  )
 }

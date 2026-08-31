@@ -276,6 +276,33 @@
   color: var(--accent2);
 }
 
+/* A verb whose word changes when it starts — lit alone is a thing you notice
+   only once you are looking for it, so drift says "drifting…" while it runs.
+   The two words are 38px and 66px, and the button used to take whichever it was
+   saying: the press that started it shoved every button after it 28px along the
+   row, and on a phone, where the row wraps, moved a whole line of them.
+
+   The wider word stands in the same grid cell as whichever word is being said,
+   hidden, and only while it is not the one being said — so the cell is as wide
+   as the widest in both states, and the word "drifting…" is never in the
+   document twice. A grid rather than a min-width in pixels, because a pixel
+   here would be a guess about a font this app does not ship. */
+.holdsWidest {
+  display: grid;
+  grid-template-areas: 'said';
+  /* the cell is wider than the word standing in it, and a button centres its
+     label — without this the two words would sit against the left edge */
+  justify-items: center;
+}
+
+.holdsWidest > * {
+  grid-area: said;
+}
+
+.widest {
+  visibility: hidden;
+}
+
 @media (max-width: 760px) {
   .app {
     flex-direction: column;
@@ -286,13 +313,4 @@
     border-left: none;
     border-top: 1px solid var(--border);
   }
-}
-
-/* A control and the dot that explains it, held tight enough to read as one
-   thing. In a row with a gap of its own, a dot at the row's spacing would sit
-   between two buttons rather than beside one, and belong to neither. */
-.withHelp {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
 }
