@@ -53,7 +53,19 @@ export interface SliderDef {
         stop that isn't there. For one whose middle is merely centred — a bias
         you want a hair off — no. */
     detent?: true
+    /** The far edge of the stretch starting at the turn that plays like an
+        ordinary machine rather than a trick — marked in red rather than the
+        row's own colours, since it isn't about which direction the knob is
+        turned but about leaving the ordinary behind. Only the far edge needs
+        marking; the turn is already the near one. */
+    normal?: number
   }
+  /** A point on a plain track worth a tick of its own, drawn on the track
+      itself rather than said in the help text — so a hand on the knob can
+      feel where it is without reading anything. The sampler's level uses this
+      for ×1: below it the knob is attenuating the file, above it the knob is
+      adding gain that was never in the recording. */
+  mark?: number
   /** A value the control has a reason to jump to that isn't a place on its own
       travel — it is worked out from the rest of the board. One press, drawn
       beside the readout. */

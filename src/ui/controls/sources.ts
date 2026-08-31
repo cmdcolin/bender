@@ -1131,8 +1131,13 @@ export const SOURCE_GROUPS: Group[] = [
         min: 0,
         max: 2,
         step: 0.01,
-        unit: '',
-        help: 'Level of the dropped audio file, looping through the chain.',
+        unit: '×',
+        // ×1 is the file playing back at its own recorded level — the tick on
+        // the track marks it. Short of it the knob is turning the file down;
+        // past it, there was never that much signal in the recording, and the
+        // knob is adding gain rather than restoring volume.
+        mark: 1,
+        help: 'Level of the dropped audio file, looping through the chain. ×1 is the file at its own recorded level; past that you are adding gain, not turning it up.',
       },
       {
         key: 'sampleSpeed',
@@ -1159,6 +1164,9 @@ export const SOURCE_GROUPS: Group[] = [
           at: 0,
           names: { below: 'reverse', above: 'forward', mid: 'stop' },
           detent: true,
+          // ×0–×1 forward is the tape sounding like a tape; past the red tick
+          // you are not playing it faster, you are speeding it up.
+          normal: 1,
         },
         action: {
           label: 'stop',
@@ -1166,7 +1174,7 @@ export const SOURCE_GROUPS: Group[] = [
             'park the tape on the spot the head is standing — the middle of this travel, with reverse below it and forward above',
           value: () => 0,
         },
-        help: 'Playback speed, with the stop in the middle of the travel and reverse below it. The left half is not slower, it is backwards: the tape freezes where the head stands and picks up the other way. The arrow on the reel says which way you are going.',
+        help: 'Playback speed, with the stop in the middle of the travel and reverse below it. The left half is not slower, it is backwards: the tape freezes where the head stands and picks up the other way. The red ticks bound ×0–×1, ordinary speed; past that you are speeding the tape up rather than just playing it faster. The arrow on the reel says which way you are going.',
       },
       {
         key: 'sampleTrig',

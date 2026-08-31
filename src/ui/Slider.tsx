@@ -187,6 +187,8 @@ export function ControlSlider({
   // Which half of the travel the knob is standing in: below the turn, above it,
   // or on it. Everything the row draws about direction comes off this.
   const way = split ? Math.sign(value - split.at) : 0
+  const normal =
+    split?.normal === undefined ? undefined : toPos(def, split.normal)
 
   // The reading in a box cut to the widest thing the panel can print, so a value
   // that grows a character mid-drag does not shove the track it came from.
@@ -257,19 +259,19 @@ export function ControlSlider({
                 '--turn': `${turn * 100}%`,
                 '--way':
                   way < 0
-                    ? 'var(--cool)'
+                    ? 'color-mix(in srgb, var(--accent) 32%, var(--bg3))'
                     : way > 0
                       ? 'var(--accent)'
                       : 'var(--fg3)',
               } as CSSProperties
             }
           >
-            {/* The travel drawn as the two things it is: a bed painted cold
-                below the turn and hot above it, the throw filled from the turn
-                out to where the knob is standing rather than from the far end,
-                and the turn itself marked. A knob sitting a hair the wrong side
-                of the middle now reads as the wrong side rather than as nearly
-                nothing. */}
+            {/* The travel drawn as the two things it is: a bed tinted dim
+                below the turn and shaded full strength above it, the throw
+                filled from the turn out to where the knob is standing rather
+                than from the far end, and the turn itself marked. A knob
+                sitting a hair the wrong side of the middle now reads as the
+                wrong side rather than as nearly nothing. */}
             <span className={styles.bed}>
               <span
                 className={styles.throw}
@@ -279,6 +281,21 @@ export function ControlSlider({
                 }}
               />
               <span className={styles.turn} />
+              {normal !== undefined && (
+                <>
+                  <span
+                    className={styles.normalBand}
+                    style={{
+                      left: `${Math.min(turn, normal) * 100}%`,
+                      width: `${Math.abs(normal - turn) * 100}%`,
+                    }}
+                  />
+                  <span
+                    className={styles.normalTick}
+                    style={{ left: `${normal * 100}%` }}
+                  />
+                </>
+              )}
             </span>
             {track}
             {split.names && (
@@ -295,8 +312,18 @@ export function ControlSlider({
               </span>
             )}
           </span>
-        ) : (
+        ) : def.mark === undefined ? (
           track
+        ) : (
+          <span
+            className={styles.plain}
+            style={
+              { '--mark': `${toPos(def, def.mark) * 100}%` } as CSSProperties
+            }
+          >
+            <span className={styles.tick} />
+            {track}
+          </span>
         )}
         <span
           className={

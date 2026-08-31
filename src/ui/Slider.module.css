@@ -188,6 +188,25 @@ select.listOn {
   padding-top: 1px;
 }
 
+/* A plain track wearing one tick, for a travel with no turn to name but a
+   point on it worth feeling for anyway. */
+.plain {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tick {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: var(--mark);
+  width: 2px;
+  margin-left: -1px;
+  background: var(--fg3);
+  pointer-events: none;
+}
+
 /* A travel whose halves are two different things: the bed under the knob, the
    knob, and the names of both ends under it. */
 .split {
@@ -208,8 +227,8 @@ select.listOn {
   pointer-events: none;
   background: linear-gradient(
     to right,
-    color-mix(in srgb, var(--cool) 22%, var(--bg3)) 0 var(--turn),
-    color-mix(in srgb, var(--accent) 22%, var(--bg3)) var(--turn) 100%
+    color-mix(in srgb, var(--accent) 7%, var(--bg3)) 0 var(--turn),
+    color-mix(in srgb, var(--accent) 36%, var(--bg3)) var(--turn) 100%
   );
 }
 
@@ -233,6 +252,25 @@ select.listOn {
   background: var(--fg);
 }
 
+/* The ordinary stretch, marked off in red because it is not one of the row's
+   own two weights — it says "this is what the machine normally does",
+   which cuts across whichever half the knob happens to be standing in. */
+.normalBand {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--danger) 18%, transparent);
+}
+
+.normalTick {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--danger);
+}
+
 .splitTrack {
   composes: track;
   appearance: none;
@@ -251,7 +289,7 @@ select.listOn {
   background: transparent;
 }
 
-/* The knob takes the colour of the half it is standing in, so the thing your
+/* The knob takes the weight of the half it is standing in, so the thing your
    hand is on says which way the tape is going without you reading anything. */
 .splitTrack::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -285,7 +323,7 @@ select.listOn {
 }
 
 .endBack {
-  color: var(--cool);
+  color: color-mix(in srgb, var(--accent) 55%, var(--fg2));
 }
 
 .endFwd {
@@ -296,10 +334,11 @@ select.listOn {
   color: var(--fg);
 }
 
-/* The number says the direction too, in the same two colours as the track. */
+/* The number says the direction too, in the same weight as the track: a dim
+   tint of the accent below the turn, the accent itself above it. */
 .readoutBack {
   composes: readout;
-  color: var(--cool);
+  color: color-mix(in srgb, var(--accent) 55%, var(--fg2));
 }
 
 .readoutFwd {
