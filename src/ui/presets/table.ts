@@ -1,5 +1,5 @@
 import type { Controls } from '../../controls'
-import { DRUM_ROMS } from '../../drums'
+import { DATA_LINES, DRUM_ROMS } from '../../drums'
 import { DEST } from '../../dsp/modbus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import { FAULT } from '../../dsp/bus'
@@ -696,6 +696,89 @@ export const PRESETS: PresetDef[] = [
       ...romMasks('breaks'),
       drumClap: 0b0000_0010_0000_0010,
       revMix: 0.24,
+    },
+  },
+  {
+    name: 'inside out',
+    blurb:
+      'The accent wire held high — every step asks the bus for one, and the crowded steps fold over the top of the converter',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 124,
+      ...romMasks('breaks'),
+      drumOpen: 0b0000_0010_0000_0000,
+      drumBell: 0b0000_0000_0001_0000,
+      // The wire above the eight voices, which is the accent's own.
+      drumDataLine: DATA_LINES,
+      drumDataFault: FAULT.supply,
+      drumAccentAmt: 2.2,
+      drumOverflow: 1,
+      revMix: 0.22,
+    },
+  },
+  {
+    name: 'never comes round',
+    blurb:
+      'A counter missing an edge here and there, under rows of five and seven — nothing lands where it did last bar',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 124,
+      ...romMasks('breaks'),
+      drumOpen: 0b0000_0010_0000_0000,
+      drumBell: 0b0000_0000_0001_0000,
+      drumSlip: 0.18,
+      drumHatLen: 5,
+      drumBellLen: 7,
+      revDecayS: 2.4,
+      revMix: 0.28,
+    },
+  },
+  {
+    name: 'coarse and late',
+    blurb:
+      'The clock slipping and the converter working a voice at a time — the doubled steps are the crowded ones, so they come out grittier than the steps either side',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 124,
+      ...romMasks('breaks'),
+      drumSlip: 0.3,
+      drumSlot: 40,
+      drumBits: 5,
+      drumDecay: 1.4,
+      revMix: 0.2,
+    },
+  },
+  {
+    name: 'stuck on one',
+    blurb:
+      'No edge ever gets over the threshold: the machine stands on one step and the retrigger turns it into a note',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 124,
+      ...romMasks('breaks'),
+      drumSlip: 1,
+      drumRetrigHz: 180,
+      drumDecay: 0.6,
+      revMix: 0.25,
+    },
+  },
+  {
+    name: 'two clocks',
+    blurb:
+      'The toy locked to the kit’s tempo and the kit’s counter slipping out from under it — a lock follows a tempo, never a downbeat',
+    patch: {
+      chipLevel: 0.7,
+      drumLevel: 0.9,
+      drumBpm: 124,
+      ...romMasks('breaks'),
+      chipSync: 1,
+      drumSlip: 0.2,
+      delayMs: 288,
+      dlyMix: 0.22,
     },
   },
   {

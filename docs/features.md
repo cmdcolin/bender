@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 239 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 59 presets, 14 stage settings and 24 named cuts — and everything
+18 ROM tunes, 64 presets, 14 stage settings and 24 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 59 presets, and dice on every heading as
+- **Boards, rather than settings.** 64 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -961,7 +961,7 @@ became:
 
 ### Presets
 
-59 boards worth keeping. Every name is a link that opens the app with that board
+64 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -1059,6 +1059,22 @@ on it — a link never presses play, so it is loaded and waiting.
 - [**popcorn**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumDecay:1.3,drumSnappy:0.9,drumNoiseBias:0.42,drumMetal:0.25,drumKick:33312,drumSnare:2312,drumHat:44718,drumClap:514,drumAccent:2056,revMix:0.24)
   — The noise transistor back at its knee: snare, hats and clap all missing the
   same gaps
+- [**inside out**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:124,drumOverflow:1,drumAccentAmt:2.2,drumDataLine:9,drumDataFault:2,drumKick:33312,drumSnare:2312,drumHat:44718,drumBell:16,drumOpen:512,drumAccent:2056,revMix:0.22)
+  — The accent wire held high — every step asks the bus for one, and the crowded
+  steps fold over the top of the converter
+- [**never comes round**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:124,drumSlip:0.18,drumKick:33312,drumSnare:2312,drumHat:44718,drumBell:16,drumOpen:512,drumAccent:2056,drumHatLen:5,drumBellLen:7,revDecayS:2.4,revMix:0.28)
+  — A counter missing an edge here and there, under rows of five and seven —
+  nothing lands where it did last bar
+- [**coarse and late**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:124,drumDecay:1.4,drumBits:5,drumSlot:40,drumSlip:0.3,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,revMix:0.2)
+  — The clock slipping and the converter working a voice at a time — the doubled
+  steps are the crowded ones, so they come out grittier than the steps either
+  side
+- [**stuck on one**](https://cmdcolin.github.io/bender/#set=chipLevel:0,drumLevel:0.9,drumBpm:124,drumDecay:0.6,drumRetrigHz:180,drumSlip:1,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,revMix:0.25)
+  — No edge ever gets over the threshold: the machine stands on one step and the
+  retrigger turns it into a note
+- [**two clocks**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipSync:1,drumLevel:0.9,drumBpm:124,drumSlip:0.2,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,delayMs:288,dlyMix:0.22)
+  — The toy locked to the kit’s tempo and the kit’s counter slipping out from
+  under it — a lock follows a tempo, never a downbeat
 - [**found tape**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,revDecayS:1.6,revMix:0.18,tapeMix:1,tapeDrive:4,tapeHiss:0.55,tapeWow:0.3)
   — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
 - [**shed oxide**](https://cmdcolin.github.io/bender/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35,tapeSqueal:0.45)
