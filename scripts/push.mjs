@@ -32,7 +32,7 @@ if (read('git status --porcelain')) {
 // Everything below asks the remote rather than the local refs, and runs before
 // the slow checks — a release cut from a stale checkout should fail in a second
 // rather than after a full test run.
-run('git fetch --tags --quiet origin main')
+run('git fetch --tags --force --quiet origin main')
 
 // `pnpm version` counts up from whatever package.json says *here*. A checkout
 // behind main therefore bumps from an old number and lands on a version already
