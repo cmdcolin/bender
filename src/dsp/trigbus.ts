@@ -21,7 +21,7 @@ export const STEP_CHOICE = N_DRUM_VOICES + 2
 // A note rides the key line as semitone + this, so an empty sample stays 0
 // whatever the octave switch is doing to the numbers — the keys reach an octave
 // under the toy's own bottom, and semitone −1 is a note somebody pressed.
-const KEY_BIAS = 128
+export const KEY_BIAS = 128
 
 // The two boxes' trigger lines, brought out to a bus so a wire can bridge them.
 // The kit stamps which voices fired and how hard; the keyboard stamps the note

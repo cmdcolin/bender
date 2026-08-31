@@ -2,7 +2,7 @@ import { IDX } from '../../engine/params'
 import { Bus, Strobe } from '../bus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
-import { N_DRUM_VOICES, voiceMask } from '../trigbus'
+import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus'
 import { ACCENT_GAIN } from '../../drums'
 import { snap } from '../../scale'
 import { softclip } from '../util/softclip'
@@ -1054,7 +1054,10 @@ export class FmChip implements Stage {
       // *Note length* comes in.
       const struck = gateOn ? ctx.trig.key[i]! : 0
       if (struck !== 0) {
-        this.keyOn(struck - 128, ctx.trig.keyHeld[i]! > 0 ? 0 : lengthSamples)
+        this.keyOn(
+          struck - KEY_BIAS,
+          ctx.trig.keyHeld[i]! > 0 ? 0 : lengthSamples,
+        )
         // With the bank switched over there is a bass drum sitting on the
         // channel the note would have had, and a driver asked for rhythm puts
         // it under every note — which is the whole of what the button was for.

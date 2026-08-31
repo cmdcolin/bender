@@ -1,4 +1,5 @@
 import type { ControlKey } from '../../controls'
+import { RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod'
 import type { Group } from './types'
 
 // Which stage each bend slot names, the short name a slot wears when it names
@@ -46,11 +47,21 @@ export const BEND_GROUPS: Group[] = [
         key: 'ringShape',
         label: 'Carrier shape',
         min: 0,
-        max: 1,
+        max: RING_SHAPES.length - 1,
         step: 1,
         unit: '',
-        choices: ['sine', 'square'],
-        help: 'Square carrier chops instead of gliding — harsh AM-radio ghosts.',
+        choices: RING_SHAPES,
+        help: 'Square carrier chops instead of gliding — harsh AM-radio ghosts. Diode is the four-diode ring the effect is named after, and the only one that answers to how hard you play it: near zero the bridge stops conducting, so a quiet passage comes out gritty and a loud one pushes through to something close to the clean multiply.',
+      },
+      {
+        key: 'ringTrack',
+        label: 'Track',
+        min: 0,
+        max: RING_TRACK.length - 1,
+        step: 1,
+        unit: '',
+        choices: RING_TRACK,
+        help: 'Solders the carrier to the note the toy is sounding — the ROM’s, your hand’s, or a drum hit that came back round and struck one — instead of leaving it on the Carrier knob. The ratio decides what survives: whole ones (unison, octave, oct+5th, two oct) put the sidebands back on the note’s own harmonics, so the note stays in tune and only its timbre moved; half ones (sub, fifth) land them an octave under it and write a new fundamental below what you played; tritone lands on nothing, so the clang is still a clang but it follows the melody. The FM chip and the sampler don’t stamp the key line, so a board playing those stays on the knob.',
       },
       {
         key: 'ringMix',

@@ -270,6 +270,7 @@ export const PARAM_DEFS = [
 
   ['ringHz', 'slew'],
   ['ringShape', 'step'],
+  ['ringTrack', 'step'],
   ['ringMix', 'slew'],
 
   ['bits', 'step'],

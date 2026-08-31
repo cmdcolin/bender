@@ -30,3 +30,10 @@ export const wrap1 = (phase: number) =>
 // 1.5e-12 cents: the disagreement is where doubles round, not where the maths
 // differs, and nothing downstream of a pitch bend can carry it.
 export const octaves = (x: number) => Math.exp(x * Math.LN2)
+
+// What the chip's semitone zero is worth in hertz. The divider counts up from
+// A3 and the key line carries the same numbering, so anything that has to agree
+// with the toy about the pitch of a note — the toy itself, and now the ring
+// mod's carrier — starts here. Two copies of this number are two chips that
+// slowly stop being in tune with each other.
+export const A3_HZ = 220

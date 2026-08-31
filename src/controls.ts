@@ -285,6 +285,7 @@ export const DEFAULT_CONTROLS = {
 
   ringHz: 300,
   ringShape: 0,
+  ringTrack: 0,
   ringMix: 0,
 
   bits: 16,

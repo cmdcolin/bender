@@ -7,7 +7,7 @@ import { voiceMask } from '../trigbus'
 import { softclip } from '../util/softclip'
 import { Burst } from '../util/burst'
 import { Drunk } from '../util/drift'
-import { octaves, wrap1 } from '../util/pitch'
+import { A3_HZ, octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 import { snap } from '../../scale'
 import { Bus } from '../bus'
@@ -37,7 +37,6 @@ import {
 const LANE_IDX = TUNE_LANE_KEYS.map(keys => keys.map(k => IDX[k]))
 const TUNE_IDX = LANE_IDX[0]!
 
-const BASE_HZ = 220
 const ENV_FLOOR = 0.003
 
 // An envelope that has fallen under the floor stops there, rather than halving
@@ -799,7 +798,7 @@ export class ToyChip implements Stage {
         const note = this.transport.tune ? this.note : REST
         if (isNote(note) && this.env > ENV_FLOOR) {
           const hz = Math.min(
-            BASE_HZ * ratio(note) * clock * rail.pitchFactor,
+            A3_HZ * ratio(note) * clock * rail.pitchFactor,
             maxHz,
           )
           const inc = hz / this.sr
@@ -810,7 +809,7 @@ export class ToyChip implements Stage {
         if (accomp > 0) {
           if (this.bassEnv > ENV_FLOOR) {
             const hz = Math.min(
-              BASE_HZ *
+              A3_HZ *
                 ratio(this.bassNote) *
                 clock *
                 rail.pitchFactorAt(BASS_TRIM),
@@ -828,7 +827,7 @@ export class ToyChip implements Stage {
             for (let c = 0; c < 3; c++) {
               const trim = CHORD_TRIM[c]!
               const hz = Math.min(
-                BASE_HZ *
+                A3_HZ *
                   ratio(this.chord[c]!) *
                   clock *
                   rail.pitchFactorAt(trim),
@@ -850,7 +849,7 @@ export class ToyChip implements Stage {
           if (v.env <= ENV_FLOOR) continue
           const trim = trimAt(k, spread)
           const hz = Math.min(
-            BASE_HZ * ratio(v.note) * clock * rail.pitchFactorAt(trim),
+            A3_HZ * ratio(v.note) * clock * rail.pitchFactorAt(trim),
             maxHz,
           )
           const inc = hz / this.sr

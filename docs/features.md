@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 238 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 239 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 59 presets, 14 stage settings and 22 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -408,13 +408,14 @@ silencing it.
 Amplitude modulation by a carrier, sine or square.
 
 <details>
-<summary>3 controls</summary>
+<summary>4 controls</summary>
 
-| control       | range           | what it does                                                    |
-| ------------- | --------------- | --------------------------------------------------------------- |
-| Carrier       | 0.1 Hz to 8 kHz | Carrier frequency                                               |
-| Carrier shape | sine or square  | Square carrier chops instead of gliding — harsh AM-radio ghosts |
-| Mix           | off to full     | Dry/wet                                                         |
+| control       | range                                                      | what it does                                                    |
+| ------------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
+| Carrier       | 0.1 Hz to 8 kHz                                            | Carrier frequency                                               |
+| Carrier shape | sine, square, diode                                        | Square carrier chops instead of gliding — harsh AM-radio ghosts |
+| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone | Solders the carrier to the note the toy is sounding             |
+| Mix           | off to full                                                | Dry/wet                                                         |
 
 </details>
 

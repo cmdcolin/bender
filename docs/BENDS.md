@@ -486,6 +486,32 @@ same ratio, so harmonic input comes out inharmonic. Its own feedback shifts
 every lap again — the barber-pole effect — which keeps the squeal inside the
 global feedback loop from ever settling on a pitch.
 
+**Ring mod** does the same thing to a note that the shifter does, and **Track**
+is what decides whether that ruins it. Left off, the carrier stands still and
+the sidebands land on a grid with nothing in common with the one the note came
+in on — the clang the effect is known for. Soldered to the note the toy is
+sounding, the ratio picks which grid comes out: a whole one (unison, octave,
+oct+5th, two oct) puts the sidebands back on the note's own harmonics, so it
+stays in tune and only its timbre moved; a half one (sub, fifth) lands them an
+octave under and writes a new fundamental below what you played; the tritone
+lands on nothing, so the clang is still a clang but it follows the melody. The
+key line only carries what the toy strikes, so a board playing the FM chip or
+the sampler stays on the Carrier knob.
+
+**Carrier shape**'s third position is a diode bridge — four diodes in a ring,
+which is the circuit the effect is named after — and it is the one that answers
+to how hard you play it. The bridge stops conducting near zero, so a quiet
+passage comes out gritty and crossover-distorted where a loud one pushes through
+to something close to the clean multiply. Neither of the other two shapes moves
+at all with level.
+
+The carrier is also one of the patch bay's destinations, and that lane is four
+octaves wide — which is where most of this bend's range actually is. A wire from
+the drum hit onto it slams the carrier up an octave or more on every kick and
+smears the sidebands into something very near noise; the bay's chaos and drunk
+shapes do the same without the rhythm; the ROM step does it locked to the tune;
+the heat does it over minutes.
+
 **Patched into** re-solders where the feedback bus returns: the source mix, the
 oscillator's FM input, the toy's own rail (so the output browns out the toy that
 made it), or straight into the tape.
