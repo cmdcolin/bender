@@ -1140,6 +1140,10 @@ export const SOURCE_GROUPS: Group[] = [
     // the one thing on this stage you watch rather than set: what is on the
     // tape, where the head is, and the two markers, drawn as a tape and
     // dragged as one.
+    caution: {
+      part: 'the record head',
+      text: 'record and erase write onto the tape itself, not just what you hear — turn record up and whatever is loaded starts going under the head for good, with nothing here to bring it back',
+    },
     sliders: [
       {
         key: 'sampleLevel',

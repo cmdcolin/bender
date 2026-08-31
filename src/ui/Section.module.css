@@ -135,6 +135,16 @@
   color: var(--fg3);
 }
 
+/* Said once, in the open fold, for the one part on a stage whose knobs
+   overwrite something rather than merely change it — --danger rather than
+   --fg3, the same red the reset-to-stock button turns under a hovering hand,
+   so a line about a knob that cannot be put back reads like one before a hand
+   is anywhere near the knob. */
+.caution {
+  composes: hint;
+  color: var(--danger);
+}
+
 /* A heading inside one stage's controls, for a stage with more of them than a
    flat list can carry. The everyday knobs stay loose at the top; everything
    under a heading folds, and the heading says how many controls are down there

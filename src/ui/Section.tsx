@@ -298,6 +298,7 @@ function PartFold({
         ? `${moved} moved`
         : `${rows.length}`
       : standing
+  const caution = group.caution?.part === name ? group.caution.text : null
   return (
     <details className={styles.fold} open={startOpen}>
       <summary className={styles.foldHead}>
@@ -310,6 +311,7 @@ function PartFold({
           {says}
         </span>
       </summary>
+      {caution && <p className={styles.caution}>{caution}</p>}
       <PartVerbs
         cuts={cuts}
         group={group}

@@ -140,4 +140,10 @@ export interface Group {
       mentions, so the six under `Signal order` clear only the slots — the
       group's own reset and roll still reach everything the door draws. */
   clearScope?: readonly ControlKey[]
+  /** A line said once inside one part's fold, for the one part on a stage
+      whose knobs do not just change what you hear — they overwrite something
+      nothing on the board can bring back. Said in the open fold rather than
+      left to the tooltip a hand has to go looking for, and only there: a
+      warning on the shut heading is a promise about controls you cannot see. */
+  caution?: { part: string; text: string }
 }
