@@ -11,8 +11,9 @@ export interface SliderDef {
   choices?: string[]
   /** `log` spends even travel per decade; `symlog` is that, mirrored around a
       `split.at`, for a knob whose middle is a stop but whose ends are still
-      wide — a speed you mostly ride near ×1 wants more of the throw than the
-      run out to ×4. `symlog` needs a `split`. */
+      wide. Naming a `split.normal` moves each half's own centre of gravity off
+      the stop and onto that value instead — a speed you mostly ride near ×1
+      wants more of the throw there than at rest. `symlog` needs a `split`. */
   curve?: 'log' | 'symlog'
   /** What the control is to the stage, where that outlives its name: a mix is
       the stage's dry/wet, a level is the whole of whether it is there at all.

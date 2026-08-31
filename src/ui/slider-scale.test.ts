@@ -62,6 +62,28 @@ test('a symlog track spends more travel near the split than the ends', () => {
   expect(fromPos(d, 0.75)).toBeLessThan(1)
 })
 
+// Naming a `normal` moves the run's centre off the stop and onto the value a
+// hand actually rides near, an equal share of each half's own throw either
+// side of it — the ends and the stop both give way to it.
+test('a symlog split with a normal spends its travel there instead of at the stop', () => {
+  const d = def({
+    min: -4,
+    max: 4,
+    step: 0.001,
+    curve: 'symlog',
+    split: { at: 0, normal: 1 },
+  })
+  expect(toPos(d, -4)).toBeCloseTo(0)
+  expect(toPos(d, 0)).toBeCloseTo(0.5)
+  expect(toPos(d, 1)).toBeCloseTo(0.75)
+  expect(toPos(d, -1)).toBeCloseTo(0.25)
+  expect(toPos(d, 4)).toBeCloseTo(1)
+  // A hair off the turn is already most of the way to ordinary speed — the
+  // stop is the coarse end of this run now, not the fine one.
+  expect(fromPos(d, 0.7)).toBeGreaterThan(0.9)
+  expect(fromPos(d, 0.501)).toBeLessThan(0.1)
+})
+
 // Where the track resolves finer than the value can, a band of positions all
 // snap to the same number and the thumb springs back out from under the hand.
 // The sampler's speed used to spend 137 of its thousand positions doing that,
@@ -88,16 +110,33 @@ test('a symlog travel never springs the thumb further than its own detent', () =
 
 // The other half of the same complaint: a speed is a ratio, so a step worth a
 // hundredth of a semitone at ×1 is worth an octave at ×0.01. The slow end is
-// where you crawl, and it is where the hundredth-wide step left barely a
-// hundred speeds to crawl between.
-test('the sampler crawls in small enough steps to crawl in', () => {
+// where you crawl, and it used to be where the hundredth-wide step left barely
+// a hundred speeds to crawl between — now that half's own throw is shared with
+// the run back up to ordinary speed, so the count is lower but still well
+// clear of that bug.
+test('the sampler still crawls in small enough steps to crawl in', () => {
   const d = sliderFor('sampleSpeed')
   const slow = new Set<number>()
   for (let i = 0; i <= 1000; i++) {
     const v = snapToStep(d, fromPos(d, i / 1000))
     if (v > 0 && v <= 1) slow.add(v)
   }
-  expect(slow.size).toBeGreaterThan(200)
+  expect(slow.size).toBeGreaterThan(100)
+})
+
+// The reason for spending it there: a hand riding near ordinary speed gets far
+// more of the travel than one parked at rest, which is the whole point of
+// pivoting the curve on `normal` instead of on the stop.
+test('the sampler spends more travel near ordinary speed than near rest', () => {
+  const d = sliderFor('sampleSpeed')
+  const nearNormal = new Set<number>()
+  const nearRest = new Set<number>()
+  for (let i = 0; i <= 1000; i++) {
+    const v = snapToStep(d, fromPos(d, i / 1000))
+    if (v >= 0.9 && v <= 1.1) nearNormal.add(v)
+    if (v > 0 && v <= 0.1) nearRest.add(v)
+  }
+  expect(nearNormal.size).toBeGreaterThan(nearRest.size * 10)
 })
 
 // Every control has to be able to reach both of its own ends off the track,

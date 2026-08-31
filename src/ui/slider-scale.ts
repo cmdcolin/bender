@@ -23,22 +23,58 @@ function symlogTurn(def: SliderDef): number {
 //
 // The clamp is only against a degenerate curve: a step as wide as the span
 // would leave nothing to be logarithmic about.
-function symlogFloor(def: SliderDef, span: number): number {
-  return Math.min(def.step, span / 2)
+function symlogFloor(step: number, span: number) {
+  return Math.min(step, span / 2)
+}
+
+// A half of a symlog travel whose split names a `normal` is not really about
+// its stop — it is ridden near `normal`, so the half splits again there, an
+// equal share of its own throw either side, each side its own log run down to
+// the same step-wide floor the plain curve uses at the turn. `near` and `far`
+// are real distances from the stop: how far the stop is from `normal`, and
+// how much span is left from `normal` out to this half's own end.
+function pivotedPos(dist: number, near: number, far: number, step: number) {
+  if (dist <= near) {
+    const floor = symlogFloor(step, near)
+    const d = near - dist
+    const frac = d <= floor ? 0 : Math.log(d / floor) / Math.log(near / floor)
+    return 0.5 - frac * 0.5
+  }
+  const floor = symlogFloor(step, far)
+  const d = dist - near
+  const frac = d <= floor ? 0 : Math.log(d / floor) / Math.log(far / floor)
+  return 0.5 + frac * 0.5
+}
+
+function pivotedDist(t: number, near: number, far: number, step: number) {
+  if (t <= 0.5) {
+    const floor = symlogFloor(step, near)
+    const frac = 1 - t / 0.5
+    return frac < 0.02 ? near : near - floor * Math.pow(near / floor, frac)
+  }
+  const floor = symlogFloor(step, far)
+  const frac = (t - 0.5) / 0.5
+  return frac < 0.02 ? near : near + floor * Math.pow(far / floor, frac)
 }
 
 export function toPos(def: SliderDef, value: number): number {
   if (def.curve === 'symlog') {
-    const at = def.split!.at
+    const { at, normal } = def.split!
     const turn = symlogTurn(def)
     if (value === at) return turn
     const below = value < at
     const span = below ? at - def.min : def.max - at
-    const floor = symlogFloor(def, span)
+    const edge = below ? 0 : 1
     const dist = Math.abs(value - at)
+    const pivot = normal === undefined ? undefined : Math.abs(normal - at)
+    if (pivot !== undefined && pivot > 0 && pivot < span)
+      return (
+        turn + pivotedPos(dist, pivot, span - pivot, def.step) * (edge - turn)
+      )
+    const floor = symlogFloor(def.step, span)
     const frac =
       dist <= floor ? 0 : Math.log(dist / floor) / Math.log(span / floor)
-    return below ? turn - frac * turn : turn + frac * (1 - turn)
+    return turn + frac * (edge - turn)
   }
   if (def.curve !== 'log') return (value - def.min) / (def.max - def.min)
   const floor = def.min > 0 ? def.min : def.max / ZERO_DECADES
@@ -48,15 +84,21 @@ export function toPos(def: SliderDef, value: number): number {
 
 export function fromPos(def: SliderDef, pos: number): number {
   if (def.curve === 'symlog') {
-    const at = def.split!.at
+    const { at, normal } = def.split!
     const turn = symlogTurn(def)
     if (pos === turn) return at
     const below = pos < turn
     const span = below ? at - def.min : def.max - at
-    const floor = symlogFloor(def, span)
-    const frac = below ? (turn - pos) / turn : (pos - turn) / (1 - turn)
-    if (frac < 0.02) return at
-    const dist = floor * Math.pow(span / floor, frac)
+    const edge = below ? 0 : 1
+    const t = (pos - turn) / (edge - turn)
+    const pivot = normal === undefined ? undefined : Math.abs(normal - at)
+    if (pivot !== undefined && pivot > 0 && pivot < span) {
+      const dist = pivotedDist(t, pivot, span - pivot, def.step)
+      return below ? at - dist : at + dist
+    }
+    const floor = symlogFloor(def.step, span)
+    if (t < 0.02) return at
+    const dist = floor * Math.pow(span / floor, t)
     return below ? at - dist : at + dist
   }
   if (def.curve !== 'log') return def.min + pos * (def.max - def.min)
