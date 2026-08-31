@@ -66,10 +66,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The reading is the way back: once a control is off stock, the number itself
-   is the press that puts it there, and it wears a ↺ to say so. The mark keeps
-   its box at stock too — a slot that appeared on the first move would shove the
-   number sideways under the hand that was dragging it. */
+/* The ↺ is the way back to stock, not the number beside it — a stray click on
+   the reading while a value is being watched must never discard it. The mark
+   keeps its box at stock too — a slot that appeared on the first move would
+   shove the number sideways under the hand that was dragging it. */
 .revert {
   font: inherit;
   color: inherit;

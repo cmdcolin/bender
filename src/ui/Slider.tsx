@@ -335,18 +335,20 @@ export function ControlSlider({
           }
         >
           {touched ? (
-            <Tip
-              text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
-            >
-              <button
-                className={styles.revert}
-                aria-label={`reset ${label} to ${formatValue(def, stock)}`}
-                onClick={() => write(def.key, stock)}
+            <>
+              {reading}
+              <Tip
+                text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
               >
-                {reading}
-                <span className={styles.mark}>↺</span>
-              </button>
-            </Tip>
+                <button
+                  className={styles.revert}
+                  aria-label={`reset ${label} to ${formatValue(def, stock)}`}
+                  onClick={() => write(def.key, stock)}
+                >
+                  <span className={styles.mark}>↺</span>
+                </button>
+              </Tip>
+            </>
           ) : (
             <>
               {reading}
