@@ -577,6 +577,81 @@ test('a bridged pair of data lines comes out only where both rows agree', () => 
   expect(bridged).toHaveLength(4)
 })
 
+// The accent is the ninth wire on that bus rather than a flag beside it, which
+// is the whole of why a knife can reach it: it is the one line that says how
+// hard rather than whether.
+test('the accent wire held high weighs every step the machine fetches', () => {
+  const bar: Partial<Controls> = {
+    drumKick: 0b1000_1000_1000_1000,
+    drumBpm: 240,
+    drumDecay: 0.3,
+  }
+  const plain = rms(soloVoice(bar, 2))
+  const forced = rms(
+    soloVoice({ ...bar, drumDataLine: 9, drumDataFault: FAULT_SUPPLY }, 2),
+  )
+  expect(forced).toBeGreaterThan(1.4 * plain)
+})
+
+test('the accent wire held low is a row you can see and cannot hear', () => {
+  const bar: Partial<Controls> = {
+    drumKick: 0b1000_1000_1000_1000,
+    drumBpm: 240,
+    drumDecay: 0.3,
+  }
+  expect(
+    soloVoice(
+      {
+        ...bar,
+        drumAccent: 0b1000_1000_1000_1000,
+        drumDataLine: 9,
+        drumDataFault: FAULT_GROUND,
+      },
+      2,
+    ),
+  ).toEqual(soloVoice(bar, 2))
+})
+
+// The one wire on this board whose fault accumulates. Everything else the knife
+// reaches leaves the counter counting and hands back the wrong cell; this leaves
+// the cell right and the counter behind.
+const SLIP_BAR: Partial<Controls> = {
+  drumKick: stepMask(0),
+  drumBpm: 60,
+  drumDecay: 0.3,
+}
+
+const gaps = (hits: number[]) =>
+  hits.slice(1).map((h, i) => (h - hits[i]!) / SR)
+
+test('a counter that never gets an edge stands on one step', () => {
+  // Four steps a second and one kick in the bar. A counter that cannot move
+  // plays that step on every strobe, so two bars come out as a roll at the step
+  // rate — the tempo is untouched, which is the whole point of the fault.
+  expect(onsets(soloVoice(SLIP_BAR, 8.05))).toHaveLength(2)
+  const stuck = onsets(soloVoice({ ...SLIP_BAR, drumSlip: 1 }, 8.05))
+  expect(stuck).toHaveLength(32)
+  expect(gaps(stuck).every(g => Math.abs(g - 0.25) < 0.01)).toBe(true)
+})
+
+test('a missed edge plays the step twice and leaves the bar a step longer', () => {
+  // A four-step row, so the kick comes round once a second and there are
+  // arrivals enough to miss. Straight, every gap is the row; slipped, they run
+  // from one step — the same step struck twice — out to four rows' worth of
+  // strobes spent getting back round.
+  const row: Partial<Controls> = { ...SLIP_BAR, drumKickLen: 4 }
+  const straight = gaps(onsets(soloVoice(row, 12.05)))
+  const slipped = gaps(onsets(soloVoice({ ...row, drumSlip: 0.5 }, 12.05)))
+  expect(new Set(straight.map(g => g.toFixed(2)))).toEqual(new Set(['1.00']))
+  expect(Math.min(...slipped)).toBeLessThan(0.3)
+  expect(Math.max(...slipped)).toBeGreaterThan(2)
+})
+
+test('a clock nobody has touched is the kit it always was', () => {
+  const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
+  expect(render({ ...look, drumSlip: 0 }, 1)).toEqual(render(look, 1))
+})
+
 test('a bus nobody has cut is the kit it always was', () => {
   const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
   expect(

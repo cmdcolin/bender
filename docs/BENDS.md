@@ -422,6 +422,43 @@ trigger line hears it too. Force one low and it's a row you can see and never
 hear. Bridge a pair and the two fire only where both rows agree, thinning a busy
 pattern down to what they have in common.
 
+There are nine wires on that side and only eight voices. The ninth is the
+accent, which is a wire on the same bus rather than a flag beside it — one line
+a row, in the order of the grid, so D8 is the accent and it is the one wire that
+says how hard rather than whether. Held high the accent bus is asked for on
+every step the machine fetches; with the bus stiff that is a kit with one weight
+again, and with **Accent sag** wound up it is a kit weighed by how many voices
+each step strikes, pumping against its own pattern with nothing in the signal
+path. Held low it is the accent row you can see and never hear. Bridged, it
+lands only where the row beside it does — an accent on the crashes and nowhere
+else.
+
+## The counter's own clock
+
+Everything above leaves the counter counting and changes what comes back. This
+is the other one: the cell is right and the counter is behind.
+
+**Clock slip** is the wire clocking the step counter, and how often an edge
+comes out too slow to get over the threshold. Nothing is fetched wrong. The
+strobe still lands, the memory still answers, the voices the step names still
+fire — the counter simply has not moved, so that step plays a second time and
+the bar comes out a step longer than the one before it.
+
+It is the only fault on this board that accumulates. A knifed address line is
+the same wrong cell every lap, for as long as you leave it; a slipped clock
+never comes back to where it started, so the pattern walks against the accent
+row, against every row whose length is not sixteen, and against anything
+following the kit. The playhead walks with it, because the playhead _is_ the
+counter — which is the visible difference between this and a bus fault, where
+the grid goes on chasing the step it always did.
+
+Two things follow it and one does not. MIDI clock out is counted off the steps
+the kit actually clocks, so every follower on the wire is dragged along. _Kit
+sync_ is not: it locks the toy to the tempo the kit was asked for rather than to
+the edges the counter produced, so a slipping kit and a locked toy come apart.
+All the way up nothing gets over the threshold at all and the machine stands on
+one step, at the step rate, with the tempo untouched.
+
 ## The trigger patch's other faults
 
 See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for how to wire it;

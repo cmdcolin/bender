@@ -2,6 +2,7 @@ import {
   ACCENT_GAIN,
   ADDR_LINES,
   asLen,
+  DATA_LINES,
   DRUM_VOICES,
   GRID_ROWS,
   STEPS,
@@ -65,6 +66,13 @@ const BELL = 5
 const OHAT = 6
 const CYM = 7
 const N_VOICES = N_DRUM_VOICES
+
+// The word the pattern memory hands back, as bits. The voices are the low end
+// of it in the order of the rows, and the accent is the wire above them: one
+// more line for the knife, and the only one that says how hard rather than
+// whether.
+const ACCENT_BIT = 1 << N_VOICES
+const VOICE_BITS = ACCENT_BIT - 1
 
 const VOICE_PARAM = DRUM_VOICES.map(v => IDX[v.key])
 const MAYBE_PARAM = DRUM_VOICES.map(v => IDX[v.maybe])
@@ -353,6 +361,7 @@ export class ToyDrum implements Stage {
   private clapTimer = 0
   private lastReboot = 0
   private rng: Rng
+  private slipRng: Rng
   private micTrig: Transient
   // The wires between the step counter and the pattern memory, and what a knife
   // has done to one of them. Read once a block: which trace you cut is not a
@@ -402,12 +411,15 @@ export class ToyDrum implements Stage {
     this.metal = new MetalBank(sr)
     this.micTrig = new Transient(sr)
     this.addrBus = new Bus(ADDR_LINES, seed ^ 0xadd4)
-    this.dataBus = new Bus(N_VOICES, seed ^ 0xda7a)
+    this.dataBus = new Bus(DATA_LINES, seed ^ 0xda7a)
     // How long the junction holds a state is a different question from what it
     // puts out while it holds it, so it comes off a stream of its own: a kit
     // nobody has taken near the knee draws from this one not at all, and goes
     // on rendering the hiss it always did.
     this.burstRng = mulberry32(seed ^ 0xb0b)
+    // And the clock's marginal edges off theirs, so a trace nobody has touched
+    // draws nothing and the counter arrives where it always arrived.
+    this.slipRng = mulberry32(seed ^ 0x5107)
     // Off its own stream: the resistors were soldered on before the kit made a
     // sound, and drawing them out of the noise source would move every hit.
     const parts = mulberry32(seed ^ 0x1adde4)
@@ -477,16 +489,19 @@ export class ToyDrum implements Stage {
     )
   }
 
-  // Which voices this tick names. Each row reads its own column, so a row five
-  // steps long is round again while the kick is still in the first bar — the
-  // pattern drifts against itself for as long as the two lengths take to line
-  // back up, which on a five against sixteen is eighty steps.
+  // What this tick names. Each row reads its own column, so a row five steps
+  // long is round again while the kick is still in the first bar — the pattern
+  // drifts against itself for as long as the two lengths take to line back up,
+  // which on a five against sixteen is eighty steps.
   //
-  // The word that comes back is one bit a voice, and it is the trigger line
+  // The word that comes back is one bit a row, and it is the trigger line
   // rather than an amplifier: a data line held high strikes the voice for real,
   // stamping the bus and lighting the row, where the cross-patch only lends an
-  // envelope. The accent rides a line of its own and is not in this word.
-  private bitsAt(p: Float32Array, tick: number): number {
+  // envelope. The accent is the wire above the voices and goes over the same
+  // bus as them, which is the whole of why it can be knifed: forced high it is
+  // an accent on every step the machine fetches, and bridged to the cymbal it
+  // is an accent only where the cymbal crashes.
+  private wordAt(p: Float32Array, tick: number): number {
     // Once a tick, and only for the voices that have a maybe step under the
     // counter — a kit nobody has wired through the dice draws nothing from the
     // noise source, so it renders the samples it always did.
@@ -505,12 +520,10 @@ export class ToyDrum implements Stage {
         if (this.open & bit) bits |= bit
       } else if ((Math.round(p[VOICE_PARAM[v]!]!) >> at) & 1) bits |= bit
     }
+    const accentStep = this.stepAt(tick, ACCENT_ROW)
+    if ((Math.round(p[IDX.drumAccent]!) >> (STEPS - 1 - accentStep)) & 1)
+      bits |= ACCENT_BIT
     return this.dataBus.read(bits, this.dataLine, this.dataFault, this.busCut)
-  }
-
-  private accentAt(p: Float32Array, tick: number): boolean {
-    const step = this.stepAt(tick, ACCENT_ROW)
-    return ((Math.round(p[IDX.drumAccent]!) >> (STEPS - 1 - step)) & 1) === 1
   }
 
   // The trigger line: every voice the step names fires at once, at the step's
@@ -570,9 +583,10 @@ export class ToyDrum implements Stage {
   // cap has caught up lands softer than the first. Left stiff, none of that
   // happens and the accent is the flag it always was.
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
-    const named = this.bitsAt(p, this.tick)
+    const word = this.wordAt(p, this.tick)
+    const named = word & VOICE_BITS
     const bits = fallback ? named || 1 : named
-    const accent = this.accentAt(p, this.tick)
+    const accent = (word & ACCENT_BIT) !== 0
     const gain = accent ? 1 + (this.accentAmt - 1) * this.accentV : 1
     const struck = this.hit(bits, gain, ctx, i)
     if (!accent || !struck || this.accentSag <= 0) return
@@ -592,6 +606,7 @@ export class ToyDrum implements Stage {
     const clock = rail.clockFactor
     const stepHz = (p[IDX.drumBpm]! / 60) * 4 * clock
     const swing = Math.min(Math.max(p[IDX.drumSwing]!, 0), 0.9)
+    const slip = Math.min(Math.max(p[IDX.drumSlip]!, 0), 1)
     const baseTune = p[IDX.drumTune]!
     const modTune = ctx.mod.read(DEST.drumTune)
     const decay = Math.max(p[IDX.drumDecay]!, 0.05)
@@ -735,7 +750,20 @@ export class ToyDrum implements Stage {
         this.stepClock += stepHz / this.sr
         if (this.stepClock >= span) {
           this.stepClock -= span
-          this.tick = (this.tick + 1) % CYCLE
+          // A knife on the counter's clock, which is the one wire on this
+          // board whose fault accumulates. The strobe still lands and the
+          // memory still answers, so the step fires either way — but the
+          // counter only moves if the edge got over the threshold, and an edge
+          // it missed leaves the bar a step longer than the one before it. The
+          // phase never comes back: the kit plays the pattern you wrote, in
+          // order, at the tempo you set, arriving somewhere else every bar.
+          //
+          // The playhead stalls with it, because the playhead is the counter —
+          // which is what separates this from the bus faults, where the
+          // counter is right and the cell is wrong. All the way up nothing
+          // gets over the threshold at all and the machine stands on one step.
+          const missed = slip > 0 && this.slipRng() < slip
+          if (!missed) this.tick = (this.tick + 1) % CYCLE
           this.fire(p, ctx, i)
         }
       }

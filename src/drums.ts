@@ -12,8 +12,8 @@ import type { ControlKey } from './controls'
 export const STEPS = 16
 
 // The wires between the step counter and the pattern memory: four to carry a
-// step number, and one per voice to carry the word that comes back. Which is
-// what there is to put a knife through — see the bus bend in toyDrum.
+// step number, and one a row to carry the word that comes back. Which is what
+// there is to put a knife through — see the bus bend in toyDrum.
 export const ADDR_LINES = 4
 
 // Every voice carries two masks. `key` is the steps that close every lap, and
@@ -101,6 +101,12 @@ const ACCENT_ROW = {
 } as const
 
 export const GRID_ROWS = [...DRUM_VOICES, ACCENT_ROW] as const
+
+// The wires carrying a word back out of the pattern memory: one a row, so the
+// accent has a wire of its own beside the eight voices. It is the trigger line
+// rather than an amplifier — a bit forced high strikes for real, and the accent
+// wire is the one that decides how hard, on every step the machine fetches.
+export const DATA_LINES = GRID_ROWS.length
 
 export const N_DRUM_VOICES = DRUM_VOICES.length
 export const VOICE_LABELS = DRUM_VOICES.map(v => v.label)

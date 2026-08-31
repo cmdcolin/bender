@@ -21,3 +21,13 @@
   list and the only one whose payoff is already measured. Log domain is the
   large one and the one to be suspicious of — it changes how the chip sounds
   with no knife on it at all.
+- Further drum machine bends — ranked with hook points in
+  agent-docs/drum-bends.md. The framing that came out of writing it: unlike the
+  FM chip the kit has no dead wires (40/40 and 20/20 audible on
+  `pnpm spectrum kit`), so "does this wire do anything" is settled and the gaps
+  are elsewhere — nothing on the kit accumulates, the step counter has no fault
+  surface at all, and every voice sees one supply where the toy keyboard's
+  voices see two. The cheap top of the list is a slipping step clock and a
+  supply for the metal bank; the large one is the pattern as a circulating shift
+  register, and it is large because of the worklet→control writeback rather than
+  the DSP.

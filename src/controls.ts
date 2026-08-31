@@ -185,6 +185,7 @@ export const DEFAULT_CONTROLS = {
   drumDataLine: 0,
   drumDataFault: 0,
   drumBusCut: 1,
+  drumSlip: 0,
   drumChance: 0.5,
 
   // The pattern: one sixteen-bit mask per voice, step 1 in the high bit so the

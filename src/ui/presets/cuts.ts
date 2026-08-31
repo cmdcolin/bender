@@ -128,6 +128,17 @@ export const CUTS: CutDef[] = [
   {
     group: 'Toy drums',
     part: KNIFE,
+    name: 'accent on everything',
+    blurb:
+      'The wire above the voices held high — the accent bus is asked for every step, so with Accent sag up the kit is weighed by how many voices each step strikes',
+    patch: {
+      drumDataLine: pick('drumDataLine', 'D8'),
+      drumDataFault: pick('drumDataFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Toy drums',
+    part: KNIFE,
     name: 'every step twice',
     blurb:
       'The bottom address wire low — the playhead runs the bar you wrote and the memory answers with half of it, twice over',
@@ -158,6 +169,14 @@ export const CUTS: CutDef[] = [
       drumAddrFault: pick('drumAddrFault', 'cut'),
       drumBusCut: 0.4,
     },
+  },
+  {
+    group: 'Toy drums',
+    part: KNIFE,
+    name: 'the bar walks',
+    blurb:
+      'The counter’s own clock, missing an edge here and there — every step still fires, but one in six of them fires twice and the bar never comes back to where it started',
+    patch: { drumSlip: 0.16 },
   },
   {
     group: 'FM chip',

@@ -180,6 +180,7 @@ export const PARAM_DEFS = [
   ['drumDataLine', 'step'],
   ['drumDataFault', 'step'],
   ['drumBusCut', 'slew'],
+  ['drumSlip', 'slew'],
   ['drumChance', 'slew'],
 
   ['drumKick', 'step'],

@@ -17,7 +17,13 @@ import {
 import { ARP_MODES, SYNC_MODES } from '../../dsp/stages/toyChip'
 import { NOTE_NAMES } from '../../notes'
 import { SCALE_NAMES } from '../../scale'
-import { ADDR_LINES, GRID_ROWS, N_DRUM_VOICES, VOICE_LABELS } from '../../drums'
+import {
+  ADDR_LINES,
+  DATA_LINES,
+  GRID_ROWS,
+  N_DRUM_VOICES,
+  VOICE_LABELS,
+} from '../../drums'
 import { CHOKE_NAMES } from '../../dsp/stages/toyDrum'
 import { TUNE_ALL_STEP_KEYS } from '../../tune'
 
@@ -709,6 +715,17 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How far each amplifier leans across. All the way over is a full swap — the kick fires on snare steps, the noise swells on kicks, and a hat tick puts a pitch blip through the kick.',
       },
       {
+        key: 'drumSlip',
+        part: 'knife on the bus',
+        label: 'Clock slip',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        shy: true,
+        help: 'The wire clocking the step counter, and how often an edge comes out too slow to get over the threshold. Nothing is fetched wrong: the strobe lands, the memory answers and the step fires — the counter simply has not moved, so that step plays twice and the bar comes out a step longer than the one before it. The phase never comes back, so the kit walks against the accent row, against every row whose length is not sixteen, and against anything following its clock. All the way up nothing gets over the threshold at all and the machine stands on one step.',
+      },
+      {
         key: 'drumAddrLine',
         part: 'knife on the bus',
         label: 'Address line',
@@ -737,12 +754,12 @@ export const SOURCE_GROUPS: Group[] = [
         part: 'knife on the bus',
         label: 'Data line',
         min: 0,
-        max: N_DRUM_VOICES,
+        max: DATA_LINES,
         step: 1,
         unit: '',
-        choices: lineNames('D', N_DRUM_VOICES),
+        choices: lineNames('D', DATA_LINES),
         shy: true,
-        help: 'Which of the wires carrying the word back the knife found — one wire a voice, in the order of the rows. To +V is that voice on every step, which is the machine-gun; to ground is a row you can see and cannot hear. It is the trigger bus, so a bit forced high reaches the sampler, keyboard and FM chip too.',
+        help: 'Which of the wires carrying the word back the knife found — one wire a row, in the order of the grid, so D8 is the accent. To +V is that voice on every step, which is the machine-gun; to ground is a row you can see and cannot hear. On the accent wire it is every step accented, and with Accent sag up that is a kit weighted by how many voices each step strikes rather than a loud one. It is the trigger bus, so a bit forced high reaches the sampler, keyboard and FM chip too.',
       },
       {
         key: 'drumDataFault',
@@ -754,7 +771,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: FAULT_NAMES,
-        help: 'The same four, on the side carrying the word. Bridged is the one worth knowing here: two voices soldered to each other come out only where both rows agree, so a busy pattern thins to what the pair have in common.',
+        help: 'The same four, on the side carrying the word. Bridged is the one worth knowing here: two rows soldered to each other come out only where both agree, so a busy pattern thins to what the pair have in common — and on the top wire that is an accent only where the cymbal crashes.',
       },
       {
         key: 'drumBusCut',
