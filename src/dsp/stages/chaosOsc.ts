@@ -1,7 +1,7 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
-import { wrap1 } from '../util/pitch'
+import { octaves, wrap1 } from '../util/pitch'
 import { flushDenormal } from '../util/softclip'
 
 // The rail A gives up at, and the rail it will start again on.
@@ -72,6 +72,7 @@ export class ChaosOsc implements Stage {
     const mode = Math.round(p[IDX.oscShape]!)
     const baseStarve = p[IDX.oscStarve]!
     const modStarve = ctx.mod.read(DEST.oscStarve)
+    const modHz = ctx.mod.read(DEST.oscHz)
     const micFm = Math.round(p[IDX.micPatch]!) === 2
     const fbFm = ctx.fbDest === 1
 
@@ -89,7 +90,11 @@ export class ChaosOsc implements Stage {
 
       let out = 0
       if (!this.stalled) {
-        let hz = aHz * pitchF + xmod * b
+        // The wire moves the note; the rail still sags whatever note that is.
+        // Four octaves either way, which is the span the ring mod's carrier
+        // gets and the same kind of thing to be turning.
+        const base = modHz ? aHz * octaves(modHz[i]! * 4) : aHz
+        let hz = base * pitchF + xmod * b
         if (micFm) hz += ctx.mic[i]! * 1500
         if (fbFm) hz += ctx.fb[i]! * 1800
         hz = Math.min(Math.max(hz, 0), this.sr * 0.45)

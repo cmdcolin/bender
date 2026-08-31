@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 238 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 58 presets, 14 stage settings and 22 named cuts — and everything
+18 ROM tunes, 59 presets, 14 stage settings and 22 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 26 destinations — among
+- **A patch bay that modulates itself.** Four wires, 27 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 58 presets, and dice on every heading as
+- **Boards, rather than settings.** 59 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -343,7 +343,7 @@ while the head plays on.
 
 | control    | range                                                                       | what it does                                                                                            |
 | ---------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Level      | 0 to 2                                                                      | Level of the dropped audio file, looping through the chain                                              |
+| Level      | 0× to 2×                                                                    | Level of the dropped audio file, looping through the chain                                              |
 | Speed      | 4.000× reverse to 4.000× forward                                            | Playback speed, with the stop in the middle of the travel and reverse below it                          |
 | Struck by  | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key, mic | Which trigger line drops the needle back at the top of the file                                         |
 | Ending     | loop or one-shot                                                            | What happens at the end of the file: round again, or stop there and wait to be struck                   |
@@ -633,13 +633,13 @@ wire’s depth — which is how the bay modulates itself.
 <details>
 <summary>14 controls</summary>
 
-| control        | range                                                                                                                                                                                                                                                                                                                 | what it does                                                                   |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                        | The bay’s own oscillator, free-running                                         |
-| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                 | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
-| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                            | What the wire picks up                                                         |
-| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve | Where the other end is soldered                                                |
-| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                         | How hard the wire pushes                                                       |
+| control        | range                                                                                                                                                                                                                                                                                                                            | what it does                                                                   |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                                   | The bay’s own oscillator, free-running                                         |
+| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                            | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
+| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                       | What the wire picks up                                                         |
+| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch | Where the other end is soldered                                                |
+| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                    | How hard the wire pushes                                                       |
 
 </details>
 
@@ -953,7 +953,7 @@ became:
 
 ### Presets
 
-58 boards worth keeping. Every name is a link that opens the app with that board
+59 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -998,6 +998,9 @@ on it — a link never presses play, so it is loaded and waiting.
   — Dirty pot sparks ringing a screaming comb
 - [**dogfight**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.85,oscBHz:2.2,oscXmod:900,oscStarve:0.5,ringHz:40,ringMix:0.3)
   — Cross-modulated oscillators starving themselves
+- [**nobody at the keys**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.8,oscStarve:0.45,delayMs:240,dlyFb:0.45,dlyMix:0.35,modLfoHz:4,modLfoShape:3,mod0Src:1,mod0Dest:26)
+  — The bay plays the oscillator: pitch off a sample-and-hold, time off its own
+  starving rail
 - [**ground loop**](https://cmdcolin.github.io/bender/#set=chipLevel:0.55,chipStarve:0.5,revDecayS:3,revMix:0.3,brownAmt:0.5,brownCrackle:0.4,humLevel:0.8)
   — Bad power: hum, sag and a straining supply
 - [**fm howl**](https://cmdcolin.github.io/bender/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)

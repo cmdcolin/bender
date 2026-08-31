@@ -311,6 +311,25 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'nobody at the keys',
+    blurb:
+      'The bay plays the oscillator: pitch off a sample-and-hold, time off its own starving rail',
+    patch: {
+      chipLevel: 0,
+      oscLevel: 0.8,
+      oscAHz: 220,
+      oscStarve: 0.45,
+      modLfoHz: 4,
+      modLfoShape: 3,
+      mod0Src: 1,
+      mod0Dest: DEST.oscHz,
+      mod0Depth: 0.5,
+      dlyMix: 0.35,
+      delayMs: 240,
+      dlyFb: 0.45,
+    },
+  },
+  {
     name: 'ground loop',
     blurb: 'Bad power: hum, sag and a straining supply',
     patch: {

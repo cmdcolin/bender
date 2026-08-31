@@ -46,8 +46,13 @@ export const DEST = {
   // runs off its own supply and was the last source in the bay with a knob no
   // wire could turn.
   oscStarve: 25,
+  // And its pitch. Every other pitched thing on the board has had a lane since
+  // the bay was built — the toy's clock, the kit's tune, the capstan, the comb,
+  // the carrier, the shifter — and the one source that is nothing but two
+  // oscillator frequencies had none, so the only way to move it was a hand.
+  oscHz: 26,
 } as const
-export const N_DEST = 26
+export const N_DEST = 27
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth,
 // in wire order, so wire i's depth is DEPTH_DEST[i]. They were once the last

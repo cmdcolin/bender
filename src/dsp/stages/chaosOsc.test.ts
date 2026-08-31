@@ -107,6 +107,41 @@ test('a wire reaches the oscillator’s own starve pot', () => {
   )
 })
 
+// The lane every other pitched thing on the board already had. With one on A
+// the oscillator is played rather than set: an S&H holds a fresh note each
+// cycle, which is the bay doing the job no keybed here does.
+test('a wire moves oscillator A off the dial it is set to', () => {
+  const look: Partial<Controls> = {
+    ...OSC,
+    modLfoHz: 3,
+    modLfoShape: 3,
+    mod0Src: 1,
+    mod0Depth: 0.5,
+  }
+  const parked = render(look, 2)
+  const played = render({ ...look, mod0Dest: DEST.oscHz }, 2)
+  expect(pitchHz(parked)).toBeGreaterThan(200)
+  expect(pitchHz(parked)).toBeLessThan(240)
+  expect(deviation(played, parked)).toBeGreaterThan(0.3)
+})
+
+// And it is the note that moved, not the level: the wire is soldered to the
+// frequency, so a run of held steps is a run of pitches rather than a tremolo.
+test('the wire on A moves the pitch and leaves the level where it was', () => {
+  const look: Partial<Controls> = {
+    ...OSC,
+    modLfoHz: 2,
+    modLfoShape: 3,
+    mod0Src: 1,
+    mod0Depth: 0.4,
+  }
+  const parked = render(look, 3)
+  const played = render({ ...look, mod0Dest: DEST.oscHz }, 3)
+  expect(pitchHz(played)).not.toBeCloseTo(pitchHz(parked), 0)
+  expect(rms(played)).toBeGreaterThan(rms(parked) * 0.8)
+  expect(rms(played)).toBeLessThan(rms(parked) * 1.2)
+})
+
 test('the feedback bus on the FM pin plays the pitch', () => {
   const look: Partial<Controls> = {
     ...OSC,
