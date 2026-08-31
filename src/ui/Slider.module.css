@@ -9,6 +9,12 @@
   margin: 3px 0;
 }
 
+/* The name is also the door to the row's help: a click pins the bubble open,
+   which a hover cannot be relied on to do. So it wears the dotted underline at
+   rest rather than on hover — hover is an answer that arrives after the
+   question, and on a touch screen it never arrives at all. Quiet enough at rest
+   to read as a name rather than a link, and it takes the text's own colour
+   under the pointer. */
 .label,
 .labelTouched {
   font-size: var(--fs-sm);
@@ -17,13 +23,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--fg4);
+  text-underline-offset: 2px;
 }
 
 .label:hover,
 .labelTouched:hover {
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 2px;
+  text-decoration-color: currentcolor;
 }
 
 .labelTouched {
@@ -88,13 +96,16 @@
 }
 
 /* A press beside the readout, for a value that is worked out rather than dialled
-   in. Quiet until you hover it: it is an offer, not a mode. */
+   in. An offer rather than a mode, which the outline and the quiet fill say; the
+   word itself reads at the panel's quiet tier and not below it. At --fg4 it was
+   2.6:1 — `stop` on the sampler and `lock` on the keybed, which are the two
+   places a row hands you a verb instead of a number. */
 .action {
   margin-left: 5px;
   font-size: var(--fs-xs);
   padding: 1px 5px;
   background: var(--bg3);
-  color: var(--fg4);
+  color: var(--fg3);
   border: 1px solid var(--border-quiet);
   border-radius: 3px;
   cursor: pointer;
@@ -172,20 +183,39 @@ select.listOn {
   max-width: 100%;
 }
 
-/* A row whose knob has a caption under it, and so is a line taller than the
-   rest of the panel. The label and readout stay on the track rather than
-   centring against the captions too. */
+/* The one travel with both a turn in the middle and names on its ends — the
+   sampler's speed, reverse through stop to forward. It takes the whole measure
+   instead of the middle column: three columns leave it 137px of the docked
+   panel and 99px on a phone, and this is the row where a hand is aiming rather
+   than sweeping. The turn is a point you want to land on, and three captions
+   sharing 99px sit close enough to read as one word.
+
+   Only the track moves. The label and the reading stay on one line above, in
+   the order the DOM already has them, so nothing here disagrees with the walk.
+   That costs a line of panel height, which one row can afford. */
 .rowSplit {
   composes: row;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name value'
+    'track track';
+  align-items: baseline;
+  row-gap: 2px;
 }
 
 .rowSplit .label,
-.rowSplit .labelTouched,
+.rowSplit .labelTouched {
+  grid-area: name;
+}
+
+.rowSplit .split {
+  grid-area: track;
+}
+
 .rowSplit .readout,
 .rowSplit .readoutBack,
 .rowSplit .readoutFwd {
-  padding-top: 1px;
+  grid-area: value;
 }
 
 /* A plain track wearing one tick, for a travel with no turn to name but a
