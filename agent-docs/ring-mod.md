@@ -4,7 +4,11 @@ Candidates, ranked, with where each one hooks. Written after measuring the stage
 as it stands against nine prototypes, so every number below is one this document
 produced rather than one it assumed.
 
-Nothing here is a decision.
+**Items 1, 2 and 3 are built.** Track, quadrature and the diode bridge all
+landed, along with the test the last section asks for. What is still open is
+section 4's reasons for leaving three things alone, section 5's setups — which
+are worth knowing about and cost nothing — and the two non-gaps below, which are
+the things to check before anyone reopens this.
 
 The stage is `src/dsp/stages/ringmod.ts`, and it is the smallest bend on the
 board: a `QuadOsc`, a sine or a hard `Math.sign` square, one multiply per
@@ -212,7 +216,11 @@ is true of the knob and says nothing about the lane.
 
 ## Before any of this
 
-**The stage has no test.** Every assertion in the repo that names `ringHz` or
-`ringMix` is about the chain map, a preset, or the patch bay proving a wire does
-something. `src/dsp/stages/ringmod.test.ts` does not exist, and items 1, 2 and 3
-all change what comes out of the stage. That file comes first.
+**The stage had no test.** Every assertion in the repo that named `ringHz` or
+`ringMix` was about the chain map, a preset, or the patch bay proving a wire
+does something, and items 1, 2 and 3 all change what comes out of the stage.
+`src/dsp/stages/ringmod.test.ts` went in first and holds the numbers above: the
+grid a tracked carrier lands on at each ratio, the channel correlation and what
+survives a fold to mono, and the one thing only the bridge does — sine and
+square measuring the same flatness at two input levels where the bridge does
+not.
