@@ -1,3 +1,9 @@
+// The board not doing what it was told: faults that arrive in bunches, a supply
+// that browns out and jams, joints that come and go, a crystal that wanders, and
+// the primitives underneath all of it. Not one stage's sound — every one of
+// these reaches the whole board — which is why it is here rather than beside a
+// stage, and why the chaos oscillator, which is a stage and has its own file,
+// is not in it.
 import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'

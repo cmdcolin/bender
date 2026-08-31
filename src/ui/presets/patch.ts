@@ -88,6 +88,7 @@ const LANDINGS: Landing[] = [
   at('tape speed (sampler)', ['sampleLevel'], { hands: true }),
   at('loop slide', ['sampleLevel'], { hands: true }),
   at('loop span', ['sampleLevel'], { hands: true }),
+  at('osc starve', ['oscLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

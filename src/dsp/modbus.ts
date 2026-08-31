@@ -41,8 +41,13 @@ export const DEST = {
   sampleSpeed: 22,
   loopSlide: 23,
   loopSpan: 24,
+  // The oscillator's own starve pot, which is not the one above it. `starve` is
+  // the toy's supply and reaches the three chips hanging off it; the chaos osc
+  // runs off its own supply and was the last source in the bay with a knob no
+  // wire could turn.
+  oscStarve: 25,
 } as const
-export const N_DEST = 25
+export const N_DEST = 26
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth,
 // in wire order, so wire i's depth is DEPTH_DEST[i]. They were once the last

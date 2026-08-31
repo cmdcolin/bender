@@ -59,7 +59,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as ControlKey,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 24,
+          max: 25,
           step: 1,
           unit: '',
           choices: [
@@ -88,8 +88,9 @@ export const PATCH_GROUPS: Group[] = [
             'tape speed (sampler)',
             'loop slide',
             'loop span',
+            'osc starve',
           ],
-          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once. Four land on a wire’s own depth, so one wire decides how hard another pushes.',
+          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once; osc starve is the chaos oscillator’s own pot, which is a different supply. Four land on a wire’s own depth, so one wire decides how hard another pushes.',
         },
         {
           key: `mod${i}Depth` as ControlKey,
