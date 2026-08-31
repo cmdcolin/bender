@@ -13,6 +13,7 @@
     "diagram": "tsx scripts/chain-svg.ts",
     "features": "tsx scripts/features.ts",
     "figure": "tsx scripts/figure.ts",
+    "ink": "tsx scripts/ink.ts",
     "knife": "tsx scripts/knife.ts",
     "panel": "tsx scripts/panel.ts",
     "soak": "tsx scripts/soak.ts",
