@@ -253,9 +253,10 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
               <button
                 className={owns ? styles.keysOn : styles.keysOff}
                 aria-pressed={owns}
+                aria-label="computer keyboard"
                 onClick={() => letterKeys.set(dest)}
               >
-                keys
+                <span className={styles.mark} aria-hidden="true" />
               </button>
             </Tip>
             <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">

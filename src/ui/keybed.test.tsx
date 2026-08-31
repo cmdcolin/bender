@@ -47,7 +47,9 @@ test('the letter keys play whichever bed they are wired to', () => {
   expect(engine.fmKeysDown.get().size).toBe(0)
   fireEvent.keyUp(window, { key: 'a' })
 
-  fireEvent.click(bed('fm keyboard').getByRole('button', { name: 'keys' }))
+  fireEvent.click(
+    bed('fm keyboard').getByRole('button', { name: 'computer keyboard' }),
+  )
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.fmKeysDown.get().size).toBe(1)
   expect(engine.keysDown.get().size).toBe(0)
@@ -60,7 +62,9 @@ test('moving the letters lets go of what they were holding', () => {
   both()
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.keysDown.get().size).toBe(1)
-  fireEvent.click(bed('fm keyboard').getByRole('button', { name: 'keys' }))
+  fireEvent.click(
+    bed('fm keyboard').getByRole('button', { name: 'computer keyboard' }),
+  )
   expect(engine.keysDown.get().size).toBe(0)
 })
 

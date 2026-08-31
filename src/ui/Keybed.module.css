@@ -285,6 +285,37 @@
   transform: translateY(1px);
 }
 
+/* The one switch on the deck that is not the machine's own: it says which of
+   the two beds the computer's keyboard plays, and the word for that was "keys"
+   on a thing already made of keys. So it is drawn instead — a cased row of keys
+   with a spacebar under it, which names the keyboard it means. */
+.keysOff,
+.keysOn {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+}
+
+.mark {
+  flex: none;
+  width: 20px;
+  height: 13px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  background-image:
+    linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0),
+    linear-gradient(currentColor 0 0);
+  background-size:
+    12px 1px,
+    12px 1px,
+    6px 1px;
+  background-position:
+    3px 2px,
+    3px 5px,
+    6px 8px;
+  background-repeat: no-repeat;
+}
+
 /* Thrown. */
 .holdOn,
 .keysOn,
