@@ -59,6 +59,64 @@ function stubAudio() {
   g.AudioWorkletNode ??= SilentNode
 }
 
+// The keybed measures its own case to decide how much of the keyboard fits in
+// it. jsdom lays nothing out, so an observer that reports nothing on its own is
+// the honest stub — the bed draws the whole three octaves, which is the board
+// every test that does not care about width is written against — and `measure`
+// is the tape, for the ones that do.
+const watched = new Map<Element, Set<() => void>>()
+
+class Tape {
+  constructor(private report: () => void) {}
+  observe(el: Element) {
+    const seen = watched.get(el)
+    if (seen) seen.add(this.report)
+    else watched.set(el, new Set([this.report]))
+  }
+  disconnect() {
+    for (const [el, seen] of watched) {
+      seen.delete(this.report)
+      if (seen.size === 0) watched.delete(el)
+    }
+  }
+}
+
+/** Hand everything being measured a width, the way a layout would. Wrap it in
+    `act`: what comes back is a component that has redrawn at that width. */
+export function measure(px: number) {
+  for (const [el, seen] of watched) {
+    Object.defineProperty(el, 'clientWidth', { value: px, configurable: true })
+    for (const report of seen) report()
+  }
+}
+
+// The other half of what a layout knows: whether the thing pressing the panel
+// is a finger. jsdom has no media queries at all, so this is the whole of one —
+// enough to answer the single question the panel asks, and to change its mind
+// while a component is watching, which is what a tablet does when a mouse is
+// plugged into it.
+let onGlass = false
+const watching = new Set<() => void>()
+
+function stubMedia() {
+  const g = globalThis as Record<string, unknown>
+  g.matchMedia ??= (media: string) => ({
+    media,
+    get matches() {
+      return media.includes('coarse') && onGlass
+    },
+    addEventListener: (_: string, fn: () => void) => void watching.add(fn),
+    removeEventListener: (_: string, fn: () => void) =>
+      void watching.delete(fn),
+  })
+}
+
+/** Put a finger on the glass, or take it off. `act`, as with `measure`. */
+export function touch(on: boolean) {
+  onGlass = on
+  for (const fn of watching) fn()
+}
+
 // The panel scrolls itself to the stage it just opened, and draws a scope and a
 // body pad on canvas. jsdom has neither — and its own getContext warns, loudly
 // and once per canvas, on the way to handing back the null we want anyway.
@@ -71,6 +129,8 @@ function stubLayout() {
   // pointer events and neither half of pointer capture.
   Element.prototype.hasPointerCapture ??= () => false
   Element.prototype.releasePointerCapture ??= () => {}
+  const g = globalThis as Record<string, unknown>
+  g.ResizeObserver ??= Tape
   // Anything the panel opens over the signal path — a tip, the roll menu — is a
   // popover, so the top layer clears the path's own scrolling and clipping
   // without a portal to escape them or a z-index to outbid them. jsdom has the
@@ -125,11 +185,13 @@ function resetBoard() {
   // never played, and the beds light off these.
   engine.keysDown.set(new Set())
   engine.fmKeysDown.set(new Set())
+  onGlass = false
 }
 
 beforeAll(() => {
   stubAudio()
   stubLayout()
+  stubMedia()
 })
 
 afterEach(() => {

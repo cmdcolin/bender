@@ -15,9 +15,11 @@
   gap: 8px;
 }
 
-/* The case. Three octaves wide and it takes the column: twenty-two white keys
-   in the 460px one octave used to sit in are 20px each, which is not a key
-   anybody can hit. */
+/* The case. It takes the column, and how much keyboard goes in it is measured
+   rather than declared: twenty-two white keys in the 460px one octave used to
+   sit in are 20px each, which is not a key anybody can hit, so a case that
+   narrow is handed a shorter board instead — `octavesFor` in keyboard.ts, and
+   `.short` below for what the case does about it. */
 .body {
   --case: #2b2b33;
   --case-edge: #14141a;
@@ -77,6 +79,25 @@
   right: 5px;
 }
 
+/* A case with no room for three octaves draws one or two instead, and the
+   switch that was always how you reached past the drawn keys is how you reach
+   the ones it stopped drawing. Fewer keys is also more room between them, so
+   the black keys take some of it: a black key is the one a finger has to find
+   between two others.
+
+   The deck goes with it. A row of switches pushed to the speaker end of a case
+   this narrow is a row hanging off the end of it, so the switches start where
+   the badge finishes and wrap when they run out. */
+.short {
+  --key-b-w: 46%;
+}
+
+.short .switches {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-left: 0;
+}
+
 /* The front panel: badge, decal, switches, speaker. On a toy every one of them
    is on the same strip above the keys, so they are here too. */
 .deck {
@@ -88,7 +109,9 @@
 }
 
 /* The bed the keys are sunk into. touch-action keeps a finger dragged across it
-   playing rather than scrolling the page. */
+   playing rather than scrolling the page, and the tap highlight is off because
+   a grey box flashed over a key that is already lit says nothing the key has
+   not said better. */
 .keys {
   display: flex;
   position: relative;
@@ -98,6 +121,7 @@
   overflow: hidden;
   user-select: none;
   touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .whiteWrap {
@@ -167,14 +191,6 @@
   transform: translateY(2px);
 }
 
-/* A key catching the light as the pointer crosses it. Plastic doesn't light up
-   under a hand, but a key that answers the pointer is the one thing the drawn
-   board can do that the toy couldn't, and the colours are spoken for. */
-.white:hover,
-.black:hover {
-  filter: brightness(1.07);
-}
-
 /* A note sounding past either end of the drawn board. The keys stay where your
    hands are; this says the wire is playing somewhere else, and which way the
    octave switch has to go to meet it. */
@@ -228,6 +244,7 @@
 .switches {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   margin-left: auto;
 }
@@ -241,7 +258,20 @@
 
 .octaves {
   display: flex;
+  align-items: center;
   gap: 3px;
+}
+
+/* Where a stepped board is standing: the note its bottom key plays, in the
+   place the lit cap held on a deck with room for five of them. It is the one
+   thing the caps never said — they named the switch's own travel, and what you
+   want to know with your hands on a short board is which octave is under them. */
+.standing {
+  min-width: 26px;
+  text-align: center;
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg2);
 }
 
 /* A switch on the machine's own panel rather than one of the app's verbs:
@@ -270,9 +300,17 @@
 
 .hold:hover,
 .drawer:hover,
-.octave:hover {
+.octave:enabled:hover {
   background: var(--switch-hover);
   color: var(--fg);
+}
+
+/* The stepper at the end of its travel. A switch that has nowhere left to go
+   stays where it is and goes dead, because a board that is two octaves down
+   should not have to grow a button back to come up again. */
+.octave:disabled {
+  color: var(--fg4);
+  cursor: default;
 }
 
 .hold:active,
@@ -315,4 +353,37 @@
   background: var(--accent);
   border-color: var(--accent);
   color: #2a0d04;
+}
+
+/* A finger on the glass rather than a pointer on a desk. Nothing here is about
+   how wide the window is — a tablet is as wide as a laptop — and everything is
+   about the thing doing the pressing: a fingertip covers a third of an inch, so
+   the bed gets deeper to be hit at all, and every cap on the deck grows the
+   edge a thumb needs to land on it and not on the one beside it. */
+@media (pointer: coarse) {
+  .body {
+    --bed-h: 100px;
+  }
+
+  .hold,
+  .holdOn,
+  .octave,
+  .octaveOn,
+  .drawer {
+    padding: 8px 12px;
+  }
+
+  .switches {
+    gap: 8px;
+  }
+}
+
+/* Plastic doesn't light up under a hand, and on a touchscreen there is no hand
+   over the key until it is being played — a hover there is the last key struck,
+   still lit, saying the finger never left. */
+@media (hover: hover) {
+  .white:hover,
+  .black:hover {
+    filter: brightness(1.07);
+  }
 }

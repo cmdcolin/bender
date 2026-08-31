@@ -4,12 +4,15 @@ How to play bender, once the board is in front of you.
 
 ## Playing the keyboard
 
-The on-screen board draws three octaves starting at C3. The sixteen keys under
-your typing hand carry their letter printed on them, the way the toys this
-models printed note names on their keys. Click a key, or drag across the board
-to play a run. `z` and `x` shift the whole board two octaves either way, down to
-a bass line well under the toy's own bottom key and up to where the tones run
-out of ticks and turn into flat squares.
+The on-screen board draws three octaves starting at C3, in a case with room for
+three octaves: on a phone, or in a window pulled in until the panel has taken
+most of it, it draws one or two instead rather than keys too thin to hit, and
+the five octave caps become a step either way with the note the bottom key plays
+between them. The sixteen keys under your typing hand carry their letter printed
+on them, the way the toys this models printed note names on their keys. Click a
+key, or drag across the board to play a run. `z` and `x` shift the whole board
+two octaves either way, down to a bass line well under the toy's own bottom key
+and up to where the tones run out of ticks and turn into flat squares.
 
 **Hold** latches every key you touch after it, so it stays on until you press it
 again. Alt-click pins down a single key on its own, which is a way to keep a
@@ -23,8 +26,8 @@ colour, and the toy playing itself — the ROM tune, the auto bass-chord, a note
 struck through the trigger patch — in amber. The chip reports what it's actually
 sounding, not what was asked for, so a note fades from the light as it fades
 from the mix, and a note cut short by a brownout goes dark early. Notes played
-past either end of the drawn three octaves put a mark at that end, which is what
-the octave switch is for.
+past either end of the drawn board put a mark at that end, which is what the
+octave switch is for — and on a short board, which is most of what it is for.
 
 **Tone** taps the divider chain at a different pulse width — 1/2, 1/4, 1/8,
 1/16. The narrower taps null out different harmonics and thin the sound out, and

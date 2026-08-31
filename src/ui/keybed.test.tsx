@@ -5,7 +5,7 @@ import { engine } from '../engine/engine'
 import { App } from './App'
 import { FmKeys } from './FmKeys'
 import { Keys } from './Keys'
-import './testDom'
+import { measure, touch } from './testDom'
 
 // Two keybeds on one panel, and one computer keyboard in front of them. What
 // makes that work at all is that a note says which bed it came off: the FM
@@ -119,4 +119,65 @@ test('a second press on the bars shuts the drawer again', () => {
   expect(bed('toy keyboard').queryByRole('checkbox')).not.toBeNull()
   press(bars('toy keyboard'))
   expect(bed('toy keyboard').queryByRole('checkbox')).toBeNull()
+})
+
+// Three octaves is twenty-two white keys, and a case narrow enough — a phone
+// held upright, a window pulled in until the panel has taken most of it — draws
+// them thin enough that a finger lands between two of them. The bed measures
+// itself and draws one octave instead, and the switch that was always how you
+// reached past the drawn keys is how you reach the ones it stopped drawing.
+test('a case with no room for three octaves draws one', () => {
+  render(<Keys />)
+  const toy = () => bed('toy keyboard')
+  expect(toy().queryByRole('button', { name: 'key C6' })).not.toBeNull()
+
+  act(() => measure(300))
+  expect(toy().queryByRole('button', { name: 'key C6' })).toBeNull()
+  expect(toy().queryByRole('button', { name: 'key C4' })).not.toBeNull()
+
+  // The five caps are one stepper, and it still reaches what the long board
+  // reached: two octaves up from a board that opens on C3 is one that closes on
+  // C6.
+  expect(toy().queryByRole('button', { name: '+2' })).toBeNull()
+  fireEvent.click(toy().getByRole('button', { name: 'octave up' }))
+  fireEvent.click(toy().getByRole('button', { name: 'octave up' }))
+  expect(toy().queryByRole('button', { name: 'key C6' })).not.toBeNull()
+  expect(toy().getByRole('button', { name: 'octave up' })).toHaveProperty(
+    'disabled',
+    true,
+  )
+})
+
+// The board narrows under a note that is still sounding. Whatever was pinned
+// down keeps playing off the end of the short bed — the arrow says so — and the
+// hold switch still lets go of it, because what a bed holds is notes rather
+// than the keys they were struck on.
+test('a note held past the end of a shortened board can still be let go', () => {
+  render(<Keys />)
+  const toy = () => bed('toy keyboard')
+  fireEvent.click(toy().getByRole('button', { name: 'hold' }))
+  const top = toy().getByRole('button', { name: 'key C5' })
+  fireEvent.pointerDown(top)
+  fireEvent.pointerUp(top)
+  expect(engine.keysDown.get().size).toBe(1)
+
+  act(() => measure(300))
+  expect(toy().queryByRole('button', { name: 'key C5' })).toBeNull()
+  fireEvent.click(toy().getByRole('button', { name: 'hold' }))
+  expect(engine.keysDown.get().size).toBe(0)
+})
+
+// The same case, and the other thing that decides how much board goes in it. A
+// key a pointer hits every time is one a thumb lands beside, so the width that
+// holds three octaves for a mouse holds two for a finger — nothing about the
+// window says which is on it.
+test('a finger is given fewer keys than a pointer in the same case', () => {
+  render(<Keys />)
+  const toy = () => bed('toy keyboard')
+  act(() => measure(600))
+  expect(toy().queryByRole('button', { name: 'key C6' })).not.toBeNull()
+
+  act(() => touch(true))
+  expect(toy().queryByRole('button', { name: 'key C6' })).toBeNull()
+  expect(toy().queryByRole('button', { name: 'key C5' })).not.toBeNull()
 })

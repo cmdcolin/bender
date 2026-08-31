@@ -3,11 +3,21 @@ import { engine } from '../engine/engine'
 import type { NoteDest } from '../engine/messages'
 import { semitoneName } from '../notes'
 import { useStoreValue } from './ControlsContext'
-import { blackAbove, OCTAVES, pitch, TOP, WHITE_KEYS } from './keyboard'
+import {
+  blackAbove,
+  MIN_KEY,
+  OCTAVES,
+  OCTAVES_DRAWN,
+  octavesFor,
+  pitch,
+  topKey,
+  whiteKeys,
+} from './keyboard'
 import { letterKeys } from './letters'
 import styles from './Keybed.module.css'
 import { Menu, menuCheck } from './Menu'
 import { Tip } from './Tip'
+import { useCoarse, useWidth } from './measure'
 
 const KEY_MAP: Record<string, number> = {
   a: 0,
@@ -83,6 +93,20 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // menu that is null.
   const [drawer, setDrawer] = useState<HTMLButtonElement | null>(null)
   const [open, setOpen] = useState(false)
+  // How much keyboard there is room for, measured off the bed itself. A phone
+  // held upright, or a window pulled in until the panel has taken most of it,
+  // gets a shorter board rather than three octaves of key too thin to hit — and
+  // the octave switch, which was always how you reached past the drawn keys,
+  // becomes the way you reach the two octaves that are no longer drawn.
+  const [bed, setBed] = useState<HTMLDivElement | null>(null)
+  const width = useWidth(bed)
+  const coarse = useCoarse()
+  const drawn =
+    width === undefined
+      ? OCTAVES_DRAWN
+      : octavesFor(width, coarse ? MIN_KEY.coarse : MIN_KEY.fine)
+  const short = drawn < OCTAVES_DRAWN
+  const top = topKey(drawn)
   const shift = octave * 12
   const at = (key: number) => pitch(key, shift)
   // Two lights on one board. What a hand is holding down — this one's pointer,
@@ -108,7 +132,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // otherwise light nothing at all and read as a dead wire.
   const playing = [...keysDown, ...chipNotes]
   const below = playing.some(s => s < at(0))
-  const above = playing.some(s => s > at(TOP))
+  const above = playing.some(s => s > at(top))
 
   // Whether letting go of a key lets go of the note.
   const sticky = (semitone: number) => hold || latched.has(semitone)
@@ -217,6 +241,40 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // No pointer-up follows any of them, so this is the last word on the note.
   const cancel = (note: number) => () => release(note)
 
+  // The octave switch on a deck with no room for five caps: one step at a time,
+  // with the note the bottom key plays standing in for the cap that would have
+  // been lit. A cap that is already the end of its travel goes dead rather than
+  // disappearing, so the switch keeps the same shape wherever the board stands.
+  const stepper = (delta: number, way: string, mark: string) => (
+    <Tip
+      text={`move the whole board one octave ${way}${owns ? ` — ${delta < 0 ? 'z' : 'x'} does the same` : ''}`}
+    >
+      <button
+        className={styles.octave}
+        aria-label={`octave ${way}`}
+        disabled={!OCTAVES.includes(octave + delta)}
+        onClick={() => shiftTo(octave + delta)}
+      >
+        {mark}
+      </button>
+    </Tip>
+  )
+
+  const settings = (
+    <Tip text="What this keyboard has that is not one of its own switches — starting with which of the two beds the computer keyboard plays.">
+      <button
+        ref={setDrawer}
+        className={styles.drawer}
+        aria-label="keyboard settings"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        <span className={styles.bars} aria-hidden="true" />
+      </button>
+    </Tip>
+  )
+
   const key = (note: number, black: boolean) => {
     const lit = litBy(note)
     return (
@@ -245,7 +303,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   return (
     <div className={styles.row}>
       <div
-        className={`${styles.body} ${caseClass ?? ''}`}
+        className={`${styles.body} ${short ? styles.short : ''} ${caseClass ?? ''}`}
         role="group"
         aria-label={label}
       >
@@ -265,34 +323,40 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
                 hold
               </button>
             </Tip>
-            <span className={styles.stamp}>octave</span>
-            <span className={styles.octaves}>
-              {OCTAVES.map(o => (
-                <Tip
-                  key={o}
-                  text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${owns ? ' — z and x do the same' : ''}`}
-                >
-                  <button
-                    className={o === octave ? styles.octaveOn : styles.octave}
-                    onClick={() => shiftTo(o)}
-                  >
-                    {o > 0 ? `+${o}` : o}
-                  </button>
+            {short ? (
+              /* The drawer travels with the octave switch on a short deck, so
+                 the two wrap together rather than the bars going over alone. */
+              <span className={styles.octaves}>
+                {stepper(-1, 'down', '◂')}
+                <Tip text="where the board is standing: the note its bottom key plays. A short board reaches the rest of the keyboard through the two switches beside it rather than by being all of it at once.">
+                  <span className={styles.standing}>{semitoneName(at(0))}</span>
                 </Tip>
-              ))}
-            </span>
-            <Tip text="What this keyboard has that is not one of its own switches — starting with which of the two beds the computer keyboard plays.">
-              <button
-                ref={setDrawer}
-                className={styles.drawer}
-                aria-label="keyboard settings"
-                aria-haspopup="menu"
-                aria-expanded={open}
-                onClick={() => setOpen(!open)}
-              >
-                <span className={styles.bars} aria-hidden="true" />
-              </button>
-            </Tip>
+                {stepper(1, 'up', '▸')}
+                {settings}
+              </span>
+            ) : (
+              <>
+                <span className={styles.stamp}>octave</span>
+                <span className={styles.octaves}>
+                  {OCTAVES.map(o => (
+                    <Tip
+                      key={o}
+                      text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${owns ? ' — z and x do the same' : ''}`}
+                    >
+                      <button
+                        className={
+                          o === octave ? styles.octaveOn : styles.octave
+                        }
+                        onClick={() => shiftTo(o)}
+                      >
+                        {o > 0 ? `+${o}` : o}
+                      </button>
+                    </Tip>
+                  ))}
+                </span>
+                {settings}
+              </>
+            )}
             {open && (
               <Menu
                 anchor={drawer}
@@ -322,11 +386,11 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
             {tail}
           </div>
         </div>
-        <div className={styles.keys}>
+        <div className={styles.keys} ref={setBed}>
           {below && <span className={styles.offLow}>◂</span>}
           {above && <span className={styles.offHigh}>▸</span>}
-          {WHITE_KEYS.map(note => {
-            const black = blackAbove(note)
+          {whiteKeys(drawn).map(note => {
+            const black = blackAbove(note, top)
             return (
               <div key={note} className={styles.whiteWrap}>
                 {key(note, false)}
