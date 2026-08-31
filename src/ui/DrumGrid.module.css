@@ -237,6 +237,9 @@
   color: var(--accent2);
 }
 
+/* The one press on the board that starts the kit, so it says so: at --fg4 the
+   sentence telling you the kit is stopped was 2.8:1, which is a instruction
+   pitched below the thing it is about. */
 .silent {
   display: block;
   margin-top: 8px;
@@ -244,7 +247,7 @@
   background: none;
   border: none;
   font-size: var(--fs-xs);
-  color: var(--fg4);
+  color: var(--fg3);
   text-decoration: underline dotted;
   cursor: pointer;
 }

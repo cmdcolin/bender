@@ -6,7 +6,7 @@
 }
 
 .caption {
-  color: var(--fg4);
+  color: var(--fg3);
   font-size: var(--fs-xs);
   padding: 2px 2px 3px;
 }
@@ -93,8 +93,13 @@
   font-size: var(--fs-xs);
 }
 
+/* The face is declared, like every other chip in this file. Left off, a button
+   takes the browser's own — a mid grey under `color-scheme: dark` — and --fg3
+   on that is 1.55:1, which is a name you cannot read on the one shelf whose
+   whole job is naming what is missing from the chain. */
 .loose {
   padding: 2px 6px;
+  background: var(--bg3);
   border: 1px dashed var(--border-quiet);
   border-radius: 3px;
   color: var(--fg3);

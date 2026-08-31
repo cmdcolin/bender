@@ -24,7 +24,7 @@
 .hint {
   flex: 1;
   font-size: var(--fs-xs);
-  color: var(--fg4);
+  color: var(--fg3);
 }
 
 .presets {

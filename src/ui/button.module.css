@@ -87,11 +87,14 @@
   border-color: var(--accent);
 }
 
-/* Quieter still, for a chip sitting in a header: the header is a label first,
-   and a row of legible buttons there would fight the controls under it. */
+/* For a chip sitting in a header, where the header is a label first and a row
+   of shouting buttons would fight the controls under it. The quiet is in the
+   shape now rather than in the ink: it was --fg4, which is 2.8:1 on this panel,
+   and `roll` is the stage's own verb on every one of thirty-four headings — the
+   last word here to make somebody lean in. --fg4 is for things whose message is
+   that they are dim, and a verb's message is the verb. */
 .chipQuiet {
   composes: chip;
-  color: var(--fg4);
 }
 
 .chipOff {

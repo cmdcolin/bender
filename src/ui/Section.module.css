@@ -38,7 +38,7 @@
 .close {
   background: none;
   border: none;
-  color: var(--fg4);
+  color: var(--fg3);
   font-size: var(--fs-lg);
   line-height: 1;
   padding: 0 2px;
@@ -122,12 +122,17 @@
   color: var(--danger);
 }
 
+/* The panel's own instructions — "click a stage for its controls" is the first
+   sentence anybody reads here. --fg3, not --fg4: the fourth tier is 2.6:1 on
+   this ground and is for things whose message is that they are dim. A sentence
+   somebody has to read is measured against what it says, not against where it
+   sits in the stack. */
 .hint {
   margin: 0;
   padding: 4px 2px;
   border-top: 1px solid var(--border-quiet);
   font-size: var(--fs-sm);
-  color: var(--fg4);
+  color: var(--fg3);
 }
 
 /* A heading inside one stage's controls, for a stage with more of them than a
@@ -155,13 +160,15 @@
   color: var(--fg4);
 }
 
-/* Over on the right, where the readout of every row it opens onto sits. */
+/* Over on the right, where the readout of every row it opens onto sits. It
+   rides a summary, so it is part of a press and reads at the panel's quiet
+   tier rather than under it. */
 .foldCount,
 .foldMoved {
   float: right;
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
-  color: var(--fg4);
+  color: var(--fg3);
 }
 
 .foldMoved {

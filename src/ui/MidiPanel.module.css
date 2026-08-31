@@ -85,7 +85,7 @@
 .close {
   background: none;
   border: none;
-  color: var(--fg4);
+  color: var(--fg3);
   font-size: var(--fs-lg);
   line-height: 1;
   padding: 0 2px;
@@ -120,7 +120,7 @@
 .hint {
   padding: 2px 2px 4px;
   font-size: var(--fs-sm);
-  color: var(--fg4);
+  color: var(--fg3);
 }
 
 /* Armed or sweeping: the board is waiting on the controller, and nothing else
