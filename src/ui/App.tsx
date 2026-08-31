@@ -9,7 +9,8 @@ import {
 import { DEFAULT_CONTROLS } from '../controls'
 import { N_DRUM_VOICES } from '../drums'
 import { engine } from '../engine/engine'
-import { gitSha, versionLabel } from '../version'
+import { versionLabel } from '../version'
+import { AboutDialog } from './AboutDialog'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { useBoardValue, useStoreValue } from './ControlsContext'
@@ -226,6 +227,7 @@ export function App(props: { openedFromLink?: boolean }) {
   // door, is the last anyone hears of it — pressing play from the row below
   // afterwards is a second gesture and gets no overlay to answer to.
   const [showStart, setShowStart] = useState(!!props.openedFromLink)
+  const [showAbout, setShowAbout] = useState(false)
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
@@ -440,9 +442,18 @@ export function App(props: { openedFromLink?: boolean }) {
             out of the rows that do — and a duration picker is not worth a line
             of the panel's height on its own. */}
         <div className={styles.head}>
-          <span className={styles.brand}>bender</span>
-          <Tip text={`Bender ${versionLabel} (${gitSha}).`}>
-            <span className={styles.version}>{versionLabel}</span>
+          {/* The nameplate is the way in to what this is: a link to the source
+              and the docs has nowhere else to live on a panel made of stages,
+              and the build it names is the first thing a bug report is asked
+              for. */}
+          <Tip text="What this is, where the docs and the source are, and which build you are on.">
+            <button
+              className={styles.nameplate}
+              onClick={() => setShowAbout(true)}
+            >
+              <span className={styles.brand}>bender</span>
+              <span className={styles.version}>{versionLabel}</span>
+            </button>
           </Tip>
           <MorphControl
             seconds={morphSeconds}
@@ -550,6 +561,8 @@ export function App(props: { openedFromLink?: boolean }) {
             press and starts both machines together, eased up rather than
             landing at whatever level the board was left. */}
         {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
+
+        {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
 
         <Presets morphSeconds={morphSeconds} />
 

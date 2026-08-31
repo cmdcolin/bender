@@ -32,6 +32,24 @@
   padding-bottom: 6px;
 }
 
+/* Brand and build as one press. Bare of everything a button is drawn with —
+   the plate is a nameplate first, and a filled box up here would read as a
+   fourth verb in a row of three. */
+.nameplate {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nameplate:hover .version,
+.nameplate:focus-visible .version {
+  color: var(--fg2);
+}
+
 .brand {
   font-size: var(--fs-xl);
   font-weight: 700;

@@ -1,0 +1,55 @@
+/* The same card the hunt puts up, at the width a paragraph wants to be read
+   at. A modal, so the browser holds it in the top layer and the panel it opens
+   over cannot clip it or outbid it. */
+.card {
+  width: min(400px, calc(100vw - 24px));
+  padding: 10px 12px;
+  background: var(--bg2);
+  color: var(--fg2);
+  border: 1px solid var(--border-hover);
+  border-radius: 4px;
+  box-shadow: 0 10px 30px #000b;
+  font-size: var(--fs-sm);
+}
+
+.card::backdrop {
+  background: #000a;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+
+.title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.close {
+  composes: chip from './button.module.css';
+}
+
+.line {
+  margin: 0 0 8px;
+  color: var(--fg3);
+  line-height: 1.45;
+}
+
+.link {
+  color: var(--accent);
+}
+
+/* Quieter than the prose above it: it is what you copy into a bug report, not
+   something to read. */
+.build {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  font-variant-numeric: tabular-nums;
+}
