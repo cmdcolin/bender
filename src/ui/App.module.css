@@ -170,38 +170,34 @@
   white-space: nowrap;
 }
 
-.playBtn,
-.playBtnOn,
-.recBtnOn,
-.ioBtn,
-.ioBtnOn {
-  font-size: var(--fs-sm);
-  padding: 3px 8px;
-  background: var(--bg3);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.ioBtnOn {
-  color: var(--danger);
-  border-color: #55232c;
-}
-
-.playBtn,
-.playBtnOn {
+/* The switches under the board: what plays, what listens, what is being
+   written to disk. The panel's loud verbs, since that is what they are — and
+   composed rather than restated, so a finger gets them at the same height as
+   everything else it can press. */
+.playBtn {
+  composes: action from './button.module.css';
   color: var(--fg);
   font-weight: 600;
 }
 
 .playBtnOn {
+  composes: actionOn from './button.module.css';
   color: var(--accent);
-  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.ioBtn {
+  composes: action from './button.module.css';
+}
+
+/* Running, and the way out of it: stopping the mic or the recorder is the
+   thing this button is for once it has started. */
+.ioBtnOn {
+  composes: actionDanger from './button.module.css';
 }
 
 .recBtnOn {
-  color: var(--danger);
+  composes: actionDanger from './button.module.css';
   border-color: var(--danger);
   font-variant-numeric: tabular-nums;
 }

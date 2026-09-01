@@ -17,6 +17,7 @@ import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Dice } from './Dice'
 import { GROUPS } from './controls'
 import { padKeyFor, useDrumKeys } from './drumKeys'
+import { useCoarse } from './measure'
 import { HuntDialog } from './HuntDialog'
 import { FmKeys } from './FmKeys'
 import { Keys } from './Keys'
@@ -197,6 +198,10 @@ export function App(props: { openedFromLink?: boolean }) {
   const yourTune = useBoardValue(c => Math.round(c.chipTune) === YOURS)
   const drumsPlaying = useStoreValue(engine.drumsPlaying)
   const recording = useStoreValue(engine.recording)
+  // A phone has no space bar and no number row, so the way in is the buttons
+  // and the keys themselves. Naming shortcuts nobody can press is a paragraph
+  // of the first thing anyone reads spent on somebody else's machine.
+  const coarse = useCoarse()
   const recSeconds = useStoreValue(engine.recSeconds)
   const recStems = useStoreValue(engine.recStems)
   const sampleName = useStoreValue(engine.sampleName)
@@ -421,12 +426,22 @@ export function App(props: { openedFromLink?: boolean }) {
               your volume low.{' '}
             </b>
           )}
-          press <b>play demo song</b> or <b>play drums</b> (
-          <span className={styles.kbd}>space</span> runs both), or play keys
-          with <span className={styles.kbd}>a s d f …</span> (
-          <span className={styles.kbd}>z</span>{' '}
-          <span className={styles.kbd}>x</span> for octaves) and the kit with{' '}
-          <span className={styles.kbd}>1 … {padKeyFor(N_DRUM_VOICES - 1)}</span>{' '}
+          press <b>play demo song</b> or <b>play drums</b>
+          {coarse ? (
+            ', or play the keyboard and tap a drum row to strike it'
+          ) : (
+            <>
+              {' ('}
+              <span className={styles.kbd}>space</span> runs both), or play keys
+              with <span className={styles.kbd}>a s d f …</span> (
+              <span className={styles.kbd}>z</span>{' '}
+              <span className={styles.kbd}>x</span> for octaves) and the kit
+              with{' '}
+              <span className={styles.kbd}>
+                1 … {padKeyFor(N_DRUM_VOICES - 1)}
+              </span>
+            </>
+          )}{' '}
           — turn up <b>Starve</b> until the toy reboots, solder the{' '}
           <b>Bend spot</b> pot, bridge the two boxes in <b>Trigger patch</b>,
           push any <b>Feedback</b> past 1

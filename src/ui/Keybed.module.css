@@ -274,51 +274,24 @@
   color: var(--fg2);
 }
 
-/* A switch on the machine's own panel rather than one of the app's verbs:
-   stamped caps on a flat cap, and it goes down when you press it. */
-.hold,
-.holdOn,
-.drawer,
-.octave,
-.octaveOn {
-  font-size: var(--fs-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  background: var(--switch);
-  color: var(--fg2);
-  border: 1px solid var(--case-edge);
-  border-radius: 3px;
-  cursor: pointer;
+/* The caps on this deck are the shared kind, in button.module.css: what is
+   here is only what a keybed adds to them. */
+.hold {
+  composes: cap from './button.module.css';
 }
 
-.octave,
-.octaveOn {
-  padding: 3px 6px;
+.holdOn {
+  composes: capOn from './button.module.css';
+}
+
+.octave {
+  composes: cap from './button.module.css';
   font-variant-numeric: tabular-nums;
 }
 
-.hold:hover,
-.drawer:hover,
-.octave:enabled:hover {
-  background: var(--switch-hover);
-  color: var(--fg);
-}
-
-/* The stepper at the end of its travel. A switch that has nowhere left to go
-   stays where it is and goes dead, because a board that is two octaves down
-   should not have to grow a button back to come up again. */
-.octave:disabled {
-  color: var(--fg4);
-  cursor: default;
-}
-
-.hold:active,
-.holdOn:active,
-.drawer:active,
-.octave:active,
-.octaveOn:active {
-  transform: translateY(1px);
+.octaveOn {
+  composes: capOn from './button.module.css';
+  font-variant-numeric: tabular-nums;
 }
 
 /* Everything about this keyboard that is not a switch on its front. A toy had
@@ -327,9 +300,7 @@
    already made of keys named nothing. Three bars, which is the one mark that
    promises a list rather than doing something on the spot. */
 .drawer {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 7px;
+  composes: cap from './button.module.css';
 }
 
 .bars {
@@ -347,30 +318,16 @@
   background-repeat: no-repeat;
 }
 
-/* Thrown. */
-.holdOn,
-.octaveOn {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #2a0d04;
-}
-
-/* A finger on the glass rather than a pointer on a desk. Nothing here is about
-   how wide the window is — a tablet is as wide as a laptop — and everything is
-   about the thing doing the pressing: a fingertip covers a third of an inch, so
-   the bed gets deeper to be hit at all, and every cap on the deck grows the
-   edge a thumb needs to land on it and not on the one beside it. */
+/* A finger on the glass rather than a pointer on a desk, and a phone's screen
+   is mostly not this keyboard: the bed gets deep enough to be hit and no
+   deeper, since two beds and the panel under them all have to fit somewhere.
+   The caps grow with every other button on the board — button.module.css sizes
+   them, so hold and rec come out the same height. */
 @media (pointer: coarse) {
   .body {
-    --bed-h: 100px;
-  }
-
-  .hold,
-  .holdOn,
-  .octave,
-  .octaveOn,
-  .drawer {
-    padding: 8px 12px;
+    --bed-h: 88px;
+    gap: 5px;
+    padding: 6px 8px 9px;
   }
 
   .switches {

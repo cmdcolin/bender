@@ -86,37 +86,19 @@
   box-shadow: inset 0 0 0 1px #0a120d;
 }
 
-/* The jumper. Soldered is the state the board shipped in, so it is the quiet
-   one; cut is a modification, and says so. */
-.soldered,
-.cut {
+/* The jumper: the deck's shared cap in the bare board's green, mono because
+   everything printed on this board is. Soldered is the state it shipped in, so
+   it is the quiet one; cut is a modification, and says so in the same dashed
+   amber the record switches use for a thing that is thrown and waiting. */
+.soldered {
+  composes: cap from './button.module.css';
   font-family: var(--mono);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  background: var(--switch);
-  color: var(--fg2);
-  border: 1px solid var(--case-edge);
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-.soldered:hover,
-.cut:hover {
-  background: var(--switch-hover);
-  color: var(--fg);
-}
-
-.soldered:active,
-.cut:active {
-  transform: translateY(1px);
 }
 
 .cut {
-  color: var(--accent2);
-  border-color: var(--accent2);
-  border-style: dashed;
+  composes: capIdle from './button.module.css';
+  font-family: var(--mono);
+  --cap-lit: var(--accent2);
 }
 
 /* The board is a module beside the toy rather than a second instrument as wide

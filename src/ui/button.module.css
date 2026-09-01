@@ -1,4 +1,4 @@
-/* Every button on the board is one of three kinds, and there is no fourth. A
+/* Every button on the board is one of four kinds, and there is no fifth. A
    module composes the kind it means and adds only structure — where the thing
    sits, how it is laid out — so no padding, colour or radius is written down
    twice in two files that then drift a pixel apart.
@@ -140,4 +140,79 @@
   color: var(--fg);
   background: var(--bg3);
   border-color: var(--fg4);
+}
+
+/* The machine's own switches rather than the app's verbs: the stamped caps on a
+   keyboard deck — hold, rec, the octave steppers, the FM board's jumper. The
+   colours come from whichever case the cap is screwed to, so the toy's grey and
+   the bare board's green are the same rule seen twice, and it goes down a pixel
+   when pressed the way a cap does. */
+.cap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 21px;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  background: var(--switch);
+  color: var(--fg2);
+  border: 1px solid var(--case-edge);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.cap:hover:not(:disabled) {
+  background: var(--switch-hover);
+  color: var(--fg);
+}
+
+.cap:active {
+  transform: translateY(1px);
+}
+
+/* The stepper at the end of its travel. A switch that has nowhere left to go
+   stays where it is and goes dead, because a board that is two octaves down
+   should not have to grow a button back to come up again. */
+.cap:disabled {
+  color: var(--fg4);
+  cursor: default;
+}
+
+/* Thrown. Which colour it lights in belongs to the case rather than to the
+   kind — hold latches in the panel's accent, the toy's memory arms in the
+   deck's amber — so it arrives as a variable the module sets on the button
+   itself, where nothing can race it. */
+.capOn {
+  composes: cap;
+  background: var(--cap-lit, var(--accent));
+  border-color: var(--cap-lit, var(--accent));
+  color: #2a0d04;
+}
+
+/* Thrown, and waiting on something else before it does anything: record armed
+   with the tune stopped, a jumper cut. The same colour, outlined and dashed,
+   which is the promise rather than the lamp. */
+.capIdle {
+  composes: cap;
+  color: var(--cap-lit, var(--accent));
+  border-color: var(--cap-lit, var(--accent));
+  border-style: dashed;
+}
+
+/* A finger on the glass rather than a pointer on a desk. Nothing here is about
+   how wide the window is — a tablet is as wide as a laptop — and everything is
+   about the thing doing the pressing: a fingertip covers a third of an inch, so
+   every kind grows to one height and one padding. One height, because the kinds
+   sit in rows together and a row of caps at three heights reads as a mistake
+   before it reads as a hierarchy. */
+@media (pointer: coarse) {
+  .action,
+  .chip,
+  .pick,
+  .cap {
+    min-height: 32px;
+    padding: 4px 10px;
+  }
 }

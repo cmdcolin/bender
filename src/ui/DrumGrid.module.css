@@ -108,6 +108,14 @@
   margin-right: 0.4em;
 }
 
+/* The number key that strikes this row, on a screen that has no number keys
+   until something asks it for text. The row's name is the whole button there. */
+@media (pointer: coarse) {
+  .padKey {
+    display: none;
+  }
+}
+
 /* Armed to record what you play in. It sits with the ROM buttons because it is
    the other way a pattern gets written. */
 .rec {

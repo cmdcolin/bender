@@ -121,6 +121,12 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
     dest === 'fm' ? engine.fmNotes : engine.chipNotes,
   )
   const owns = useStoreValue(letterKeys) === dest
+  // Whether there are letter keys worth telling anybody about. A phone has a
+  // keyboard only when something asks it for text, so the letters printed on
+  // the keys, the drawer that says which bed they play and the reminders in the
+  // tips are all hints at a thing that is not there — and the keys they were
+  // printed on are the ones a finger needs the room of.
+  const letters = owns && !coarse
   // Two beds and one keyboard, so switching the letters off here is switching
   // them on next door. There is nowhere else for them to go.
   const other: NoteDest = dest === 'toy' ? 'fm' : 'toy'
@@ -247,7 +253,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // disappearing, so the switch keeps the same shape wherever the board stands.
   const stepper = (delta: number, way: string, mark: string) => (
     <Tip
-      text={`move the whole board one octave ${way}${owns ? ` — ${delta < 0 ? 'z' : 'x'} does the same` : ''}`}
+      text={`move the whole board one octave ${way}${letters ? ` — ${delta < 0 ? 'z' : 'x'} does the same` : ''}`}
     >
       <button
         className={styles.octave}
@@ -260,7 +266,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
     </Tip>
   )
 
-  const settings = (
+  const settings = coarse ? null : (
     <Tip text="What this keyboard has that is not one of its own switches — starting with which of the two beds the computer keyboard plays.">
       <button
         ref={setDrawer}
@@ -291,7 +297,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
         onPointerLeave={() => isDown(note) && release(note)}
         onPointerCancel={cancel(note)}
       >
-        {owns && LETTER[note] && (
+        {letters && LETTER[note] && (
           <span className={black ? styles.blackLetter : styles.letter}>
             {LETTER[note]}
           </span>
@@ -341,7 +347,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
                   {OCTAVES.map(o => (
                     <Tip
                       key={o}
-                      text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${owns ? ' — z and x do the same' : ''}`}
+                      text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${letters ? ' — z and x do the same' : ''}`}
                     >
                       <button
                         className={
