@@ -9,6 +9,7 @@ export const FEEDBACK_GROUPS: Group[] = [
     sliders: [
       {
         key: 'fbAmt',
+        lane: 'fb amount',
         label: 'Amount',
         min: 0,
         max: 1.5,

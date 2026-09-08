@@ -159,6 +159,14 @@ deciding which hits land harder. Ten factory patterns sit as buttons above the
 grid; each one writes into the same steps, so it's a starting point rather than
 a mode you're stuck in.
 
+**Tempo** carries a **tap** button: press it in time and the kit takes the speed
+off your hand — two presses are a gap and a gap is a tempo, more presses sharpen
+it, and leaving it a couple of seconds starts a fresh count. The whole run is
+one step in the undo walk, so one `ctrl+z` puts back the tempo you tapped away
+from. The same button sits on the three other speeds a hand keeps rather than
+reads: both delay times, and the patch bay's own oscillator — tap a delay in
+against what you are playing, or tap a wobble at the speed you want it.
+
 **Swing** holds every offbeat step back and gives the following step less time,
 so shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
 once, and **Ring** is the one to reach for after those: the kick, tom and snare
@@ -340,6 +348,22 @@ or three wires, each from a source that is actually moving onto a stage the
 board is actually running, turning that stage up where it was dry — and
 **cascade** solders one wire onto another wire's own depth, so what the second
 wire does to the board is itself something opening and closing.
+
+Every control one of the four wires can land on carries a **+ mod** button
+beside its readout, so a knob can be set moving from the stage you are standing
+on rather than by finding the lane in the bay's own list of twenty-seven. The
+press solders the first spare wire from the LFO onto that control, turns nothing
+else up, and folds the wire out under the row: what it picks up, how hard it
+pushes, and — while it is on the LFO — the rate and shape that oscillator is
+running at. Patched, the row wears a chip saying what is driving it and how fast
+(`∿ LFO 1.0Hz`), which is the difference between a slow sweep and a buzz without
+opening anything; pressing the chip folds the wire out again, and **× unplug**
+takes it off, keeping where it landed and how hard it was pushing so the next
+**+ mod** puts that patch back rather than a fresh one. The wire is an ordinary
+bay wire throughout — the same four, in the same diagram, saved and shared with
+everything else, so the bay is where you see them all at once and the row is
+where you dial the one you are listening to. With all four soldered the button
+says so where it stood.
 
 The patch bay's own picture says when a lead reaches nothing — a wire off a mic
 nobody has turned on, or onto a reverb that is dry — and one press under the

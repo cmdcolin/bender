@@ -13,6 +13,7 @@ export const PATCH_GROUPS: Group[] = [
     sliders: [
       {
         key: 'modLfoHz',
+        tap: true,
         label: 'LFO rate',
         min: 0.02,
         max: 400,
@@ -95,6 +96,7 @@ export const PATCH_GROUPS: Group[] = [
         },
         {
           key: `mod${i}Depth` as ControlKey,
+          lane: `wire ${i + 1} depth`,
           label: `Wire ${i + 1} depth`,
           min: -1,
           max: 1,

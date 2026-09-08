@@ -39,3 +39,14 @@
 .dead:hover {
   color: var(--fg2);
 }
+
+/* The bay's other door, said where the wires are: every control one of them can
+   land on carries a `+ mod` of its own, and a reader who found the bay first
+   had no way to know that. Quiet, and beside the count of what is left to
+   solder — the two are the same sentence. */
+.spare {
+  display: block;
+  margin: 0 0 8px;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}

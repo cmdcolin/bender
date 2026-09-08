@@ -18,7 +18,9 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 - Circuit bend a toy keyboard, drum machine, and basic FM synth
 - Tape delay, reverb, and distortion 'guitar pedals'
 - Allows custom piano roll and drum sequences
-- Patch bay with LFO and other modulations
+- Patch bay with LFO and other modulations, wired from the bay or from a
+  control's own `+ mod` button
+- Tap in the tempo, either delay time, or the modulation rate
 - Buttons to easily randomize settings
 - Connect MIDI controller (works with Chrome, Firefox Nightly)
 - "Tape loop" sampler that has tape head re-recording-over-the-loop effect

@@ -35,6 +35,7 @@ export const BEND_GROUPS: Group[] = [
     sliders: [
       {
         key: 'ringHz',
+        lane: 'ring car',
         label: 'Carrier',
         min: 0.1,
         max: 8000,
@@ -81,6 +82,7 @@ export const BEND_GROUPS: Group[] = [
     sliders: [
       {
         key: 'bits',
+        lane: 'bit depth',
         label: 'Bits',
         min: 1,
         max: 16,
@@ -90,6 +92,7 @@ export const BEND_GROUPS: Group[] = [
       },
       {
         key: 'srHz',
+        lane: 'crush rate',
         label: 'Rate',
         min: 100,
         max: 48000,
@@ -189,6 +192,7 @@ export const BEND_GROUPS: Group[] = [
     sliders: [
       {
         key: 'combHz',
+        lane: 'comb pitch',
         label: 'Pitch',
         min: 20,
         max: 4000,
@@ -234,6 +238,7 @@ export const BEND_GROUPS: Group[] = [
     sliders: [
       {
         key: 'filtHz',
+        lane: 'filt cut',
         label: 'Cutoff',
         min: 30,
         max: 12000,
@@ -288,6 +293,7 @@ export const BEND_GROUPS: Group[] = [
     sliders: [
       {
         key: 'glitchProb',
+        lane: 'glitch',
         label: 'Chance',
         min: 0,
         max: 1,
@@ -361,6 +367,7 @@ export const BEND_GROUPS: Group[] = [
     sliders: [
       {
         key: 'shiftHz',
+        lane: 'shift Hz',
         label: 'Shift',
         min: 0.1,
         max: 2000,

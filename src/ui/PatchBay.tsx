@@ -63,6 +63,16 @@ export function PatchBay() {
     depth: nums[i * 3 + 2]!,
   }))
 
+  // The bay's other door, counted: every control one of these wires can land on
+  // carries a `+ mod` of its own, and somebody who found the bay first has no
+  // way to know that. Said here because this is where the four are drawn, and
+  // how many are left is the same sentence.
+  const free = wires.filter(w => w.src === 0).length
+  const spare =
+    free === 0
+      ? 'All four wires are soldered. Each says so on the row it is on.'
+      : `${free === 4 ? 'All four' : `${free} of the four`} wires ${free === 1 ? 'is' : 'are'} free — press + mod on any control row the bay can reach to solder one there.`
+
   const height = rowY(3) + ROW_H + 8
 
   return (
@@ -188,6 +198,7 @@ export function PatchBay() {
           )
         })}
       </svg>
+      <span className={styles.spare}>{spare}</span>
       {dead > 0 && (
         <Tip
           text={`${faults

@@ -119,6 +119,15 @@ export function choiceValue(key: ControlKey, choice: string): number {
   return def.min + at
 }
 
+/** The name a choice number stands for, so a row can print what a wire picked
+    up rather than the number it is stored as. */
+export function choiceName(key: ControlKey, value: number): string {
+  const def = sliderFor(key)
+  const name = def.choices?.[Math.round(value) - def.min]
+  if (name === undefined) throw new Error(`${key} has no choice at ${value}`)
+  return name
+}
+
 export function snapToStep(
   def: Pick<SliderDef, 'min' | 'max' | 'step'>,
   value: number,

@@ -3,16 +3,32 @@ import {
   useContext,
   useMemo,
   useRef,
+  useState,
   type CSSProperties,
   type ReactNode,
 } from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
-import { useControlValue, useStoreValue } from './ControlsContext'
+import {
+  bayLfoWires,
+  laneHasSpare,
+  laneReads,
+  laneSays,
+  laneWire,
+  solderLane,
+  unsolderLane,
+  wireKeys,
+} from './bayWire'
+import {
+  useBoardValue,
+  useControlValue,
+  useStoreValue,
+} from './ControlsContext'
 import type { SliderDef } from './controls'
-import { snapToStep } from './controls'
+import { choiceName, sliderFor, snapToStep } from './controls'
 import { midi } from './midi'
 import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
+import { tapRun, tapValue } from './tap'
 import styles from './Slider.module.css'
 import { Tip, type TipHandle } from './Tip'
 
@@ -62,6 +78,162 @@ function Bind({ def }: { def: SliderDef }) {
         </button>
       </Tip>
     </>
+  )
+}
+
+// A speed tapped in rather than dialled. Two presses in time are a gap, a gap
+// is the answer, and the row follows the hand from there — the same reading the
+// MIDI clock takes off arrivals, from the one clock a board always has.
+//
+// The whole run banks a single step in the walk, the way a slider's whole sweep
+// does: arming as the first write goes out means every press after it lands on
+// nothing armed, so one ctrl+z puts back the speed you were tapping away from
+// rather than the last three presses one at a time.
+function Tap({ def, label }: { def: SliderDef; label: string }) {
+  const [times, setTimes] = useState<number[]>([])
+  const press = () => {
+    const run = tapRun(times, performance.now())
+    setTimes(run)
+    const value = tapValue(def, run)
+    if (value !== undefined) {
+      if (run.length === 2) engine.armStep()
+      engine.set(def.key, value)
+    }
+  }
+  return (
+    <Tip
+      text={`Sets ${label} by hand: press it in time, twice for a reading and more to sharpen it. Leave it a couple of seconds and the next press starts a fresh count.`}
+    >
+      <button
+        className={styles.action}
+        aria-label={`tap ${label}`}
+        onClick={() => press()}
+      >
+        tap
+        {times.length > 1 ? (
+          <span className={styles.tapCount}>{times.length}</span>
+        ) : null}
+      </button>
+    </Tip>
+  )
+}
+
+// The bay's end of a row, for the controls one of its four wires can land on:
+// the same knob, moving on its own. It was always possible and never findable —
+// the wire is in the bay, the lane is one of twenty-seven names in a list, and
+// nothing on the stage you were standing on said the bay could reach it. The
+// button says it, and takes the trip.
+//
+// Patched, the row says what is on it rather than that something is: a wire off
+// the LFO at 0.05 Hz and one at 200 Hz are a sweep and a buzz, and a badge that
+// read the same for both would be sending you to the bay to answer a question
+// it could answer by standing there. Pressing it unfolds the wire's own
+// controls under the row, so the wobble is dialled where you are listening.
+//
+// Every press is one step in the walk, so a wire soldered by mistake is one
+// ctrl+z.
+function Mod({
+  lane,
+  label,
+  open,
+  onOpen,
+}: {
+  lane: string
+  label: string
+  open: boolean
+  onOpen: (next: boolean) => void
+}) {
+  const wire = useBoardValue(c => laneWire(c, lane))
+  const reads = useBoardValue(c => laneReads(c, lane))
+  const says = useBoardValue(c => laneSays(c, lane))
+  const spare = useBoardValue(c => laneHasSpare(c, lane))
+  return wire > 0 ? (
+    <Tip
+      text={`Patch bay wire ${wire} is on this — ${says} — so it moves with your hand off it. Press to ${open ? 'fold the wire away' : 'set the source, the rate and how hard it pushes'}.`}
+    >
+      <button
+        className={styles.modOn}
+        aria-expanded={open}
+        aria-label={`the bay wire on ${label}`}
+        onClick={() => onOpen(!open)}
+      >
+        ∿ {reads}
+        <span className={styles.modCaret}>{open ? '▴' : '▾'}</span>
+      </button>
+    </Tip>
+  ) : spare ? (
+    <Tip
+      text={`Solders a spare bay wire from the LFO onto ${label}, so it moves on its own — press it again afterwards for the source, the rate and how hard it pushes.`}
+    >
+      <button
+        className={styles.mod}
+        aria-label={`put a bay wire on ${label}`}
+        onClick={() => {
+          engine.armStep()
+          engine.writeBoard(solderLane(engine.controls.get(), lane))
+          onOpen(true)
+        }}
+      >
+        + mod
+      </button>
+    </Tip>
+  ) : (
+    <Tip text="All four of the bay's wires are soldered somewhere else. Unplug one — from the row it is on, or at the patch bay — to put one here.">
+      <span className={styles.modFull}>+ mod</span>
+    </Tip>
+  )
+}
+
+// The wire itself, under the row it is on: what it picks up, how hard it
+// pushes, and — while it is the bay's own oscillator it picks up — how fast
+// that is running.
+//
+// The rows are the bay's own rows, the same definitions the bay draws, so
+// learning one is learning the other and there is no second set of controls to
+// keep in step with the first. The one thing said here that the bay does not
+// have to say is that its oscillator is one oscillator: a rate dialled on this
+// row is the rate of every wire that picks the LFO up.
+function ModWire({ lane, label }: { lane: string; label: string }) {
+  const wire = useBoardValue(c => laneWire(c, lane))
+  const keys = wireKeys(wire)
+  const onLfo = useBoardValue(
+    c => keys !== undefined && choiceName('mod0Src', c[keys.src]) === 'LFO',
+  )
+  const shared = useBoardValue(c => bayLfoWires(c) > 1)
+  return keys === undefined ? null : (
+    <div className={styles.wire}>
+      <span className={styles.wireName}>
+        Patch bay wire {wire}, on {label}
+      </span>
+      <ControlSlider def={sliderFor(keys.src)} label="picks up" />
+      <ControlSlider def={sliderFor(keys.depth)} label="pushes" />
+      {onLfo && (
+        <>
+          <ControlSlider def={sliderFor('modLfoHz')} label="LFO rate" />
+          <ControlSlider def={sliderFor('modLfoShape')} label="LFO shape" />
+          {shared && (
+            <span className={styles.wireNote}>
+              The bay has one oscillator: this rate and shape are every wire
+              picking the LFO up, not just this one.
+            </span>
+          )}
+        </>
+      )}
+      <Tip
+        text={`Takes wire ${wire} off ${label}. Where it landed and how hard it was pushing stay on the wire, so + mod puts this patch back rather than a fresh one.`}
+      >
+        <button
+          className={styles.unplug}
+          aria-label={`unplug the bay wire on ${label}`}
+          onClick={() => {
+            engine.armStep()
+            engine.writeBoard(unsolderLane(engine.controls.get(), lane))
+          }}
+        >
+          × unplug
+        </button>
+      </Tip>
+    </div>
   )
 }
 
@@ -119,6 +291,10 @@ export function ControlSlider({
   label?: string
 }) {
   const value = useControlValue(def.key)
+  // Whether the wire on this row is unfolded under it. The row's own state:
+  // two rows on the same panel can be open at once, and closing the stage
+  // forgets them, which is what a fold on a row should do.
+  const [wireOpen, setWireOpen] = useState(false)
   // Whether the knob is under a hand rather than under the arrow keys. The pull
   // to a split's turn belongs to the drag: a key step is smaller than the turn
   // is wide, so a knob that pulled for the keyboard too would be one the
@@ -242,137 +418,151 @@ export function ControlSlider({
   )
 
   return (
-    <Tip ref={tip} text={def.help}>
-      <div className={split?.names ? styles.rowSplit : styles.row}>
-        <span
-          className={touched ? styles.labelTouched : styles.label}
-          onClick={() => tip.current?.toggle()}
-          onDoubleClick={() => write(def.key, stock)}
-        >
-          {label}
-        </span>
-        {split ? (
+    <>
+      <Tip ref={tip} text={def.help}>
+        <div className={split?.names ? styles.rowSplit : styles.row}>
           <span
-            className={styles.split}
-            style={
-              {
-                '--turn': `${turn * 100}%`,
-                '--way':
-                  way < 0
-                    ? 'color-mix(in srgb, var(--accent) 32%, var(--bg3))'
-                    : way > 0
-                      ? 'var(--accent)'
-                      : 'var(--fg3)',
-              } as CSSProperties
-            }
+            className={touched ? styles.labelTouched : styles.label}
+            onClick={() => tip.current?.toggle()}
+            onDoubleClick={() => write(def.key, stock)}
           >
-            {/* The travel drawn as the two things it is: a bed tinted dim
+            {label}
+          </span>
+          {split ? (
+            <span
+              className={styles.split}
+              style={
+                {
+                  '--turn': `${turn * 100}%`,
+                  '--way':
+                    way < 0
+                      ? 'color-mix(in srgb, var(--accent) 32%, var(--bg3))'
+                      : way > 0
+                        ? 'var(--accent)'
+                        : 'var(--fg3)',
+                } as CSSProperties
+              }
+            >
+              {/* The travel drawn as the two things it is: a bed tinted dim
                 below the turn and shaded full strength above it, the throw
                 filled from the turn out to where the knob is standing rather
                 than from the far end, and the turn itself marked. A knob
                 sitting a hair the wrong side of the middle now reads as the
                 wrong side rather than as nearly nothing. */}
-            <span className={styles.bed}>
-              <span
-                className={styles.throw}
-                style={{
-                  left: `${Math.min(pos, turn) * 100}%`,
-                  width: `${Math.abs(pos - turn) * 100}%`,
-                }}
-              />
-              <span className={styles.turn} />
-              {normal !== undefined && (
-                <>
-                  <span
-                    className={styles.normalBand}
-                    style={{
-                      left: `${Math.min(turn, normal) * 100}%`,
-                      width: `${Math.abs(normal - turn) * 100}%`,
-                    }}
-                  />
-                  <span
-                    className={styles.normalTick}
-                    style={{ left: `${normal * 100}%` }}
-                  />
-                </>
+              <span className={styles.bed}>
+                <span
+                  className={styles.throw}
+                  style={{
+                    left: `${Math.min(pos, turn) * 100}%`,
+                    width: `${Math.abs(pos - turn) * 100}%`,
+                  }}
+                />
+                <span className={styles.turn} />
+                {normal !== undefined && (
+                  <>
+                    <span
+                      className={styles.normalBand}
+                      style={{
+                        left: `${Math.min(turn, normal) * 100}%`,
+                        width: `${Math.abs(normal - turn) * 100}%`,
+                      }}
+                    />
+                    <span
+                      className={styles.normalTick}
+                      style={{ left: `${normal * 100}%` }}
+                    />
+                  </>
+                )}
+              </span>
+              {track}
+              {split.names && (
+                <span className={styles.ends}>
+                  <span className={way < 0 ? styles.endBack : styles.end}>
+                    ◀ {split.names.below}
+                  </span>
+                  <span className={way === 0 ? styles.endMid : styles.end}>
+                    {split.names.mid}
+                  </span>
+                  <span className={way > 0 ? styles.endFwd : styles.end}>
+                    {split.names.above} ▶
+                  </span>
+                </span>
               )}
             </span>
-            {track}
-            {split.names && (
-              <span className={styles.ends}>
-                <span className={way < 0 ? styles.endBack : styles.end}>
-                  ◀ {split.names.below}
-                </span>
-                <span className={way === 0 ? styles.endMid : styles.end}>
-                  {split.names.mid}
-                </span>
-                <span className={way > 0 ? styles.endFwd : styles.end}>
-                  {split.names.above} ▶
-                </span>
-              </span>
-            )}
-          </span>
-        ) : def.mark === undefined ? (
-          track
-        ) : (
+          ) : def.mark === undefined ? (
+            track
+          ) : (
+            <span
+              className={styles.plain}
+              style={
+                { '--mark': `${toPos(def, def.mark) * 100}%` } as CSSProperties
+              }
+            >
+              <span className={styles.tick} />
+              {track}
+            </span>
+          )}
           <span
-            className={styles.plain}
-            style={
-              { '--mark': `${toPos(def, def.mark) * 100}%` } as CSSProperties
+            className={
+              way < 0
+                ? styles.readoutBack
+                : way > 0
+                  ? styles.readoutFwd
+                  : styles.readout
             }
           >
-            <span className={styles.tick} />
-            {track}
-          </span>
-        )}
-        <span
-          className={
-            way < 0
-              ? styles.readoutBack
-              : way > 0
-                ? styles.readoutFwd
-                : styles.readout
-          }
-        >
-          {touched ? (
-            <>
-              {reading}
-              <Tip
-                text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
-              >
-                <button
-                  className={styles.revert}
-                  aria-label={`reset ${label} to ${formatValue(def, stock)}`}
-                  onClick={() => write(def.key, stock)}
+            {touched ? (
+              <>
+                {reading}
+                <Tip
+                  text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
                 >
-                  <span className={styles.mark}>↺</span>
+                  <button
+                    className={styles.revert}
+                    aria-label={`reset ${label} to ${formatValue(def, stock)}`}
+                    onClick={() => write(def.key, stock)}
+                  >
+                    <span className={styles.mark}>↺</span>
+                  </button>
+                </Tip>
+              </>
+            ) : (
+              <>
+                {reading}
+                <span className={styles.markIdle}>↺</span>
+              </>
+            )}
+            {action && (
+              <Tip text={action.title}>
+                <button
+                  className={styles.action}
+                  onClick={() =>
+                    write(
+                      def.key,
+                      snapToStep(def, action.value(engine.controls.get(), def)),
+                    )
+                  }
+                >
+                  {action.label}
                 </button>
               </Tip>
-            </>
-          ) : (
-            <>
-              {reading}
-              <span className={styles.markIdle}>↺</span>
-            </>
-          )}
-          {action && (
-            <Tip text={action.title}>
-              <button
-                className={styles.action}
-                onClick={() =>
-                  write(
-                    def.key,
-                    snapToStep(def, action.value(engine.controls.get(), def)),
-                  )
-                }
-              >
-                {action.label}
-              </button>
-            </Tip>
-          )}
-          <Bind def={def} />
-        </span>
-      </div>
-    </Tip>
+            )}
+            {def.tap === undefined ? null : <Tap def={def} label={label} />}
+            {def.lane === undefined ? null : (
+              <Mod
+                lane={def.lane}
+                label={label}
+                open={wireOpen}
+                onOpen={next => setWireOpen(next)}
+              />
+            )}
+            <Bind def={def} />
+          </span>
+        </div>
+      </Tip>
+      {def.lane === undefined || !wireOpen ? null : (
+        <ModWire lane={def.lane} label={label} />
+      )}
+    </>
   )
 }

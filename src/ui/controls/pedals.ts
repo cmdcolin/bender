@@ -18,6 +18,7 @@ export const PEDAL_GROUPS: Group[] = [
       },
       {
         key: 'stompDrive',
+        lane: 'stomp drive',
         label: 'Drive',
         min: 0,
         max: 60,
@@ -81,6 +82,8 @@ export const PEDAL_GROUPS: Group[] = [
     sliders: [
       {
         key: 'delayMs',
+        tap: true,
+        lane: 'delay time',
         label: 'Time',
         min: 20,
         max: 4000,
@@ -137,6 +140,7 @@ export const PEDAL_GROUPS: Group[] = [
       },
       {
         key: 'tapeBrake',
+        lane: 'tape speed',
         label: 'Brake',
         min: 0,
         max: 1,
@@ -181,6 +185,8 @@ export const PEDAL_GROUPS: Group[] = [
       },
       {
         key: 'echoMs',
+        tap: true,
+        lane: 'echo time',
         label: 'Time',
         min: 20,
         max: 2000,
@@ -236,6 +242,7 @@ export const PEDAL_GROUPS: Group[] = [
     sliders: [
       {
         key: 'revDecayS',
+        lane: 'verb decay',
         label: 'Decay',
         min: 0.1,
         max: 30,

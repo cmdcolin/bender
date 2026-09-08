@@ -129,6 +129,85 @@
   border-color: var(--accent2);
 }
 
+/* The bay's end of the row, in the same quiet register: an offer beside the
+   readout, on the rows one of the four wires can land on. */
+.mod {
+  composes: action;
+}
+
+/* Wearing the bay's own colour once a wire is on the lane, so a row that is
+   moving on its own says so from across the panel — the same accent the patched
+   leads in the bay's diagram are drawn in. */
+.modOn {
+  composes: action;
+  font-family: var(--mono);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Four wires and no spare: the offer stays in its place rather than vanishing
+   off every laned row at once, and says why on hover. Not a button, because
+   there is nothing to press — a dead button is a worse answer than a label. */
+.modFull {
+  composes: action;
+  color: var(--fg4);
+  border-style: dashed;
+  cursor: default;
+}
+
+/* How many presses the reading is off, while a count is going. It only appears
+   from the second press — the one that first says a speed — so the button's own
+   word never moves, and the number beside it is the answer to "did that press
+   land". */
+.tapCount {
+  margin-left: 3px;
+  color: var(--accent);
+}
+
+/* The caret on the chip, saying the wire folds out under the row rather than
+   the press being the whole of what it does. */
+.modCaret {
+  padding-left: 3px;
+  font-size: 8px;
+  opacity: 0.8;
+}
+
+/* The wire itself, unfolded under the row it is on: the bay's own rows, indented
+   under a rule in the bay's colour so the block reads as belonging to the row
+   above it rather than as three more knobs on the stage. */
+.wire {
+  margin: 2px 0 8px;
+  padding: 4px 0 4px 10px;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.wireName {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+  margin-bottom: 2px;
+}
+
+/* Said only where it is true: one oscillator serves all four wires, so a rate
+   dialled here is more than this row's business the moment a second wire is
+   picking the same oscillator up. */
+.wireNote {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  margin: 2px 0;
+}
+
+.unplug {
+  composes: action;
+  margin: 4px 0 0;
+}
+
+.unplug:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* Where the physical knob is sitting while it has yet to catch this control.
    Amber because it is the one number in the row that is not the board. */
 .pickup {

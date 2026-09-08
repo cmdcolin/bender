@@ -32,6 +32,13 @@ export interface SliderDef {
       your hand has already moved it, because a control you have set is a control
       you get to see. */
   needs?: (c: Controls) => boolean
+  /** The patch-bay destination that lands on this control, named as the bay
+      names it. A row that has one carries a `+ mod` button: the bay's lanes are
+      the same knobs the panels draw, and a wire onto one used to mean finding
+      the bay, finding the lane in a list of twenty-seven, and coming back. The
+      wire is still the bay's — this is a second door onto the same four leads.
+      One control per lane, which the tables' own test holds. */
+  lane?: string
   /** What the readout says, where the number alone is not what the control
       means. A speed of −2 is not two less than something — it is twice as fast
       the other way, and a knob whose left half is reverse rather than slow has
@@ -67,6 +74,11 @@ export interface SliderDef {
       for ×1: below it the knob is attenuating the file, above it the knob is
       adding gain that was never in the recording. */
   mark?: number
+  /** Whether the row takes a speed tapped in rather than dialled: a tempo, a
+      delay time, a wobble rate. The unit is what the press is worth — `bpm` is
+      beats a minute, `Hz` cycles a second, `ms` the gap itself — so only those
+      three can carry one, which the tables' own test holds. */
+  tap?: true
   /** A value the control has a reason to jump to that isn't a place on its own
       travel — it is worked out from the rest of the board. One press, drawn
       beside the readout. */

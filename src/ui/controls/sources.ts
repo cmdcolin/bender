@@ -241,6 +241,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipClockX',
+        lane: 'chip clock',
         label: 'Clock',
         min: 0.05,
         max: 16,
@@ -286,6 +287,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipStarve',
+        lane: 'starve',
         part: 'the supply underneath',
         label: 'Starve',
         min: 0,
@@ -447,6 +449,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumBpm',
+        tap: true,
         label: 'Tempo',
         min: 10,
         max: 3000,
@@ -475,6 +478,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumTune',
+        lane: 'drum tune',
         label: 'Tune',
         // A travel starts a whole number of its own steps from zero, or a
         // packed link and the slider count on different grids and the round
@@ -635,6 +639,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumRetrigHz',
+        lane: 'retrigger',
         part: 'triggers and cross-patch',
         label: 'Retrigger',
         min: 0,
@@ -705,6 +710,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumCrossAmt',
+        lane: 'drum cross',
         needs: c => c.drumCross > 0,
         part: 'triggers and cross-patch',
         label: 'Cross bleed',
@@ -1036,6 +1042,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'oscAHz',
+        lane: 'osc pitch',
         label: 'Osc A',
         min: 20,
         max: 12000,
@@ -1076,6 +1083,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'oscStarve',
+        lane: 'osc starve',
         label: 'Starve',
         min: 0,
         max: 1,
@@ -1162,6 +1170,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'sampleSpeed',
+        lane: 'tape speed (sampler)',
         label: 'Speed',
         min: -4,
         max: 4,
