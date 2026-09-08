@@ -123,6 +123,9 @@ export function touch(on: boolean) {
 function stubLayout() {
   Element.prototype.scrollIntoView ??= () => {}
   Element.prototype.scrollTo ??= () => {}
+  // jsdom has a scrollBy of its own, one that reports itself unimplemented on
+  // every call, so this replaces rather than fills in.
+  window.scrollBy = () => {}
   HTMLCanvasElement.prototype.getContext = () => null
   // The drum grid hands a captured touch pointer straight back, so a finger
   // dragged across it reaches cells other than the one it landed on. jsdom has

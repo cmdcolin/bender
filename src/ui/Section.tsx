@@ -516,11 +516,13 @@ export function OpenGroup({
 // group with no door on it would otherwise have no way in at all.
 export function Shelf({
   groups,
+  label,
   open,
   onOpen,
   seconds,
 }: {
   groups: Group[]
+  label: string
   open: string | null
   onOpen: (name: string) => void
   seconds: number
@@ -528,7 +530,7 @@ export function Shelf({
   if (groups.length === 0) return null
   return (
     <div className={styles.shelf}>
-      <span className={styles.shelfLabel}>off the board</span>
+      <span className={styles.shelfLabel}>{label}</span>
       {groups.map(g => (
         <ShelfPart
           key={g.name}

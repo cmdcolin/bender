@@ -3,6 +3,7 @@ import { sameControls, type Controls } from '../controls'
 import { engine } from '../engine/engine'
 import type { Glide } from '../engine/glide'
 import { useBoardValue } from './ControlsContext'
+import { useCoarse } from './measure'
 import type { MorphSeconds } from './morph'
 import { PRESETS, presetPath, type PresetDef } from './presets'
 import styles from './PresetRow.module.css'
@@ -16,11 +17,12 @@ const DRAG_SLOP = 4
 // carries on past either edge.
 const DRAG_FULL = 140
 
-// How many chips the row shows before you ask for the rest. Enough to browse
-// without the panel's first screen being nothing but presets — and picked to
-// fill its last line rather than leave one chip stranded on a third, which
-// reads as the fold having happened somewhere arbitrary.
-const COLLAPSED = 11
+// How many chips the row shows before you ask for the rest. The row lives
+// under the machines, where a desktop has a column's width and half its height
+// to spare, so two lines of them cost nothing there; a phone stacks the board
+// under this and gets one line, so the panel is not a screen further away.
+const COLLAPSED = 22
+const COLLAPSED_COARSE = 11
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 
@@ -161,12 +163,13 @@ function PresetChip(props: {
 export function Presets(props: { morphSeconds: MorphSeconds }) {
   const [scrub, setScrub] = useState<Scrub | null>(null)
   const [open, setOpen] = useState(false)
+  const collapsed = useCoarse() ? COLLAPSED_COARSE : COLLAPSED
   const standing = useBoardValue(c =>
     scrub === null ? false : sameControls(c, scrub.produced),
   )
   const held = standing ? scrub : null
 
-  const shown = open ? PRESETS : PRESETS.slice(0, COLLAPSED)
+  const shown = open ? PRESETS : PRESETS.slice(0, collapsed)
   // The chip you are standing on stays on the row even when it lives past the
   // fold: its fill is the only thing saying which board this is, and folding it
   // away would leave the row claiming you are on none of them.

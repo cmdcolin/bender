@@ -7,8 +7,16 @@
      shape of the box depending on that would be a loop. */
   aspect-ratio: 800 / 260;
   height: auto;
-  max-height: 22vh;
+  max-height: 16vh;
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
   background: #0a0a0c;
+}
+
+/* Last on the page under the narrow layout, and no more than a strip: a
+   trace is worth a glance there, not a screen. */
+@media (max-width: 760px) {
+  .canvas {
+    max-height: 11vh;
+  }
 }

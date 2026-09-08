@@ -10,6 +10,7 @@ import type { Controls } from '../controls'
 import { engine } from '../engine/engine'
 import { buildMap, drawMap } from './chain-map'
 import { useStoreValue } from './ControlsContext'
+import { useCoarse } from './measure'
 import { GROUPS, groupKeys } from './controls'
 import { resetGroup } from './presets'
 import { Shelf } from './Section'
@@ -76,6 +77,7 @@ export function ChainMap({
   seconds: number
 }) {
   const controls = useSettledControls()
+  const coarse = useCoarse()
   // Which of the two toys is sounding, which is the one thing on the map that
   // isn't in the board: what is running comes off the switches under the keys.
   const playing: string[] = []
@@ -125,15 +127,32 @@ export function ChainMap({
 
   return (
     <div className={styles.map}>
+      {/* Every stage as a chip a finger can land on. The drawing is six boxes
+          across and scales to the width it is given, which on a phone puts
+          its doors at twenty pixels; nothing about the drawing can grow them
+          without a sideways pan, so the doors are laid out again here, at
+          the height every other press on a phone gets. */}
+      {coarse && (
+        <Shelf
+          groups={GROUPS}
+          label="stages"
+          open={open}
+          onOpen={onOpen}
+          seconds={seconds}
+        />
+      )}
       <div className={styles.graph} onClick={click} onKeyDown={key}>
         {mount(drawMap(map), 0)}
       </div>
-      <Shelf
-        groups={GROUPS.filter(g => !map.doors.has(g.name))}
-        open={open}
-        onOpen={onOpen}
-        seconds={seconds}
-      />
+      {!coarse && (
+        <Shelf
+          groups={GROUPS.filter(g => !map.doors.has(g.name))}
+          label="off the board"
+          open={open}
+          onOpen={onOpen}
+          seconds={seconds}
+        />
+      )}
     </div>
   )
 }

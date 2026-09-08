@@ -3,6 +3,9 @@
   height: 100%;
 }
 
+/* Scrolls on its own, now that the presets live here: eleven chips fit under
+   the hint on any screen, and the other fifty-three unfold into whatever is
+   left rather than into the panel's map. */
 .left {
   flex: 1;
   min-width: 0;
@@ -10,15 +13,38 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px;
+  overflow-y: auto;
+}
+
+.scope {
+  flex: none;
 }
 
 .panel {
   width: 470px;
   flex: none;
   overflow-y: auto;
-  padding: 8px 12px 8px;
+  padding: 0 12px 8px;
   border-left: 1px solid var(--border);
   background: var(--bg2);
+}
+
+/* The nameplate row and the row of verbs under it, pinned to the top of the
+   panel's scroll. The panel is a header, a map and whatever stage the map has
+   open, and the stage is often taller than the screen: scrolled down to its
+   last row, panic and undo were the two things you most wanted and the two
+   that had left. The margins pull the strip out over the panel's own padding so
+   the map does not show through at either side on its way under. The panel's
+   top padding is this strip's rather than the panel's, so nothing scrolls up
+   past the strip's top edge. */
+.chrome {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 -12px;
+  padding: 8px 12px 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border-quiet);
 }
 
 /* The nameplate, and the two verbs that are about no board in particular: how
@@ -159,14 +185,16 @@
    two lines, and a button whose label wraps reads as a button that is being
    crowded rather than one that is where it wants to be. There is height under
    this row and there was never width in it. */
-.ioRow {
+.ioRow,
+.transport {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
 
-.ioRow > * {
+.ioRow > *,
+.transport > * {
   white-space: nowrap;
 }
 
@@ -299,13 +327,38 @@
   visibility: hidden;
 }
 
+/* One column, and the page is the scroller. The run switches go first and stay
+   pinned while the machines scroll under them, since a phone has no space bar
+   to run them from; the trace goes last, because a flat line was the whole
+   first screen. The panel's own strip takes over at the top once the page has
+   scrolled into the board. */
 @media (max-width: 760px) {
   .app {
     flex-direction: column;
     height: auto;
   }
+  .left {
+    overflow: visible;
+    padding-top: 0;
+  }
+  .transport {
+    order: -1;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 -10px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border-quiet);
+  }
+  .scope {
+    order: 1;
+  }
+  /* overflow back to visible on both columns, or each would be its own scroll
+     container and the strips would stick to a box that never moves. */
   .panel {
     width: auto;
+    overflow: visible;
     border-left: none;
     border-top: 1px solid var(--border);
   }

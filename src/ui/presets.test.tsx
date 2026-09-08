@@ -180,9 +180,9 @@ test('the row says what it is and what it does', () => {
   expect(head.textContent).toMatch(/drag one sideways/)
 })
 
-// Forty-five chips is a wall, so the row shows a dozen and the rest arrive when
-// you ask for them.
-const COLLAPSED = 11 // how many the row shows shut, from Presets.tsx
+// Sixty-odd chips is a wall, so the row shows two lines' worth and the rest
+// arrive when you ask for them.
+const COLLAPSED = 22 // how many the row shows shut, from PresetRow.tsx
 const toggle = () => screen.getByRole('button', { name: /show|hide/ })
 const chips = () =>
   screen.getAllByRole('button').filter(b => b !== toggle()).length

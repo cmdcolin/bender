@@ -293,14 +293,22 @@ export function App(props: { openedFromLink?: boolean }) {
       onDrop={onDrop}
     >
       <main className={styles.left}>
-        <Scope />
+        {/* Wrapped so the narrow layout can send it to the end: a trace with
+            nothing on it is the first screen of a phone otherwise. */}
+        <div className={styles.scope}>
+          <Scope />
+        </div>
         <Keys />
         {/* The second bed appears with the chip it plays. Nobody who has left
             the FM chip down needs a keyboard for it in the way, and a board
             that arrives with the chip up arrives with its keys under it. */}
         {fmUp && <FmKeys />}
         <BodyPad onOpen={setOpen} />
-        <div className={styles.ioRow}>
+        {/* The two run switches on a row of their own: on a phone it is the
+            first thing on the page and stays pinned while the rest of the
+            machines scroll under it, which a row that also held the recorder
+            and the sampler's inputs was too tall to do. */}
+        <div className={styles.transport}>
           {/* Two machines, two switches. The kit used to run off the demo
               song's line, so writing a pattern and hearing it meant putting the
               toy's ROM tune on underneath it. */}
@@ -327,6 +335,8 @@ export function App(props: { openedFromLink?: boolean }) {
               {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
             </button>
           </Tip>
+        </div>
+        <div className={styles.ioRow}>
           {/* Named for what it records, because the kit has a record button of
               its own now and one of them writes a file while the other writes
               the pattern. */}
@@ -446,118 +456,129 @@ export function App(props: { openedFromLink?: boolean }) {
           <b>Bend spot</b> pot, bridge the two boxes in <b>Trigger patch</b>,
           push any <b>Feedback</b> past 1
         </p>
+        {/* Under the machines rather than in the panel, because the half of
+            the window below the keys had nothing on it and the panel was paying
+            a hundred pixels of the stage you opened for a row of boards — and
+            unfolding the other fifty pushed the whole map off the screen. A
+            preset is a sound to play, which is what this column is for. */}
+        <Presets morphSeconds={morphSeconds} />
       </main>
 
       <aside className={styles.panel} aria-label="the board">
-        {/* The nameplate, and beside it how a board arrives and how to stop one
+        {/* Pinned to the top of the panel while the rest of it scrolls: panic
+            and undo are the two ways out of a board gone wrong, and both used
+            to leave the screen the moment a stage was opened under the map. */}
+        <div className={styles.chrome}>
+          {/* The nameplate, and beside it how a board arrives and how to stop one
             that has arrived badly. Neither of those picks a board, so they stay
             out of the rows that do — and a duration picker is not worth a line
             of the panel's height on its own. */}
-        <div className={styles.head}>
-          {/* The nameplate is the way in to what this is: a link to the source
+          <div className={styles.head}>
+            {/* The nameplate is the way in to what this is: a link to the source
               and the docs has nowhere else to live on a panel made of stages,
               and the build it names is the first thing a bug report is asked
               for. */}
-          <Tip text="What this is, where the docs and the source are, and which build you are on.">
-            <button
-              className={styles.nameplate}
-              onClick={() => setShowAbout(true)}
-            >
-              <span className={styles.brand}>bender</span>
-              <span className={styles.version}>{versionLabel}</span>
-            </button>
-          </Tip>
-          <MorphControl
-            seconds={morphSeconds}
-            drifting={drifting}
-            onSet={setMorphSeconds}
-          />
-          {/* Beside them because it is the same kind of thing: about the board
+            <Tip text="What this is, where the docs and the source are, and which build you are on.">
+              <button
+                className={styles.nameplate}
+                onClick={() => setShowAbout(true)}
+              >
+                <span className={styles.brand}>bender</span>
+                <span className={styles.version}>{versionLabel}</span>
+              </button>
+            </Tip>
+            <MorphControl
+              seconds={morphSeconds}
+              drifting={drifting}
+              onSet={setMorphSeconds}
+            />
+            {/* Beside them because it is the same kind of thing: about the board
               as a whole rather than about any one stage of it. It was a section
               of the panel, which is where the board's own stages live and where
               the wire into them does not belong. */}
-          <MidiPanel />
-          <Panic />
-        </div>
+            <MidiPanel />
+            <Panic />
+          </div>
 
-        <div className={styles.actions}>
-          <Dice seconds={morphSeconds} onLanded={setLanded} />
-          <Tip text={MUTATE_HELP}>
-            <button
-              className={styles.btn}
-              onClick={e =>
-                engine.morphTo(
-                  mutate(
-                    engine.controls.get(),
-                    e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
-                    Math.random,
-                  ),
-                  morphSeconds,
-                )
-              }
-            >
-              mutate
-            </button>
-          </Tip>
-          {/* Beside mutate, because that is what it is: the same nudge, gentle,
-              on a timer, forever. Nothing else on the board plays itself. */}
-          <Tip
-            text={
-              drifting
-                ? 'stop drifting and keep the board wherever it has got to'
-                : DRIFT_HELP
-            }
-          >
-            <button
-              className={drifting ? styles.btnOn : styles.btn}
-              onClick={() =>
-                drifting
-                  ? engine.stopDrift()
-                  : engine.startDrift(() =>
-                      mutate(engine.controls.get(), 0.05, Math.random),
-                    )
-              }
-            >
-              <span className={styles.holdsWidest}>
-                {drifting || <span className={styles.widest}>drifting…</span>}
-                <span>{drifting ? 'drifting…' : 'drift'}</span>
-              </span>
-            </button>
-          </Tip>
-          <Tip text="Back to the board the toy ships with. It lands in the walk, so undo brings back whatever you were on.">
-            <button
-              className={styles.btn}
-              onClick={() =>
-                engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
-              }
-            >
-              reset
-            </button>
-          </Tip>
-          {/* Beside reset, because what undo has in common with it is what a
-              hand reaching for either one wants: out of here. */}
-          <Tip text="Steps back through the boards you have been through (ctrl+z).">
-            <button
-              className={walk.past.length ? styles.btn : styles.btnOff}
-              onClick={() => engine.undo(morphSeconds)}
-              disabled={!walk.past.length}
-            >
-              undo
-            </button>
-          </Tip>
-          {/* Only once there is a walk to step forward into: a permanently
-              greyed redo would cost a slot in the row on every session that
-              never undid anything. */}
-          {walk.future.length > 0 && (
-            <Tip text="Steps forward again (ctrl+shift+z).">
+          <div className={styles.actions}>
+            <Dice seconds={morphSeconds} onLanded={setLanded} />
+            <Tip text={MUTATE_HELP}>
               <button
                 className={styles.btn}
-                onClick={() => engine.redo(morphSeconds)}
+                onClick={e =>
+                  engine.morphTo(
+                    mutate(
+                      engine.controls.get(),
+                      e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
+                      Math.random,
+                    ),
+                    morphSeconds,
+                  )
+                }
               >
-                redo
+                mutate
               </button>
             </Tip>
-          )}
+            {/* Beside mutate, because that is what it is: the same nudge, gentle,
+              on a timer, forever. Nothing else on the board plays itself. */}
+            <Tip
+              text={
+                drifting
+                  ? 'stop drifting and keep the board wherever it has got to'
+                  : DRIFT_HELP
+              }
+            >
+              <button
+                className={drifting ? styles.btnOn : styles.btn}
+                onClick={() =>
+                  drifting
+                    ? engine.stopDrift()
+                    : engine.startDrift(() =>
+                        mutate(engine.controls.get(), 0.05, Math.random),
+                      )
+                }
+              >
+                <span className={styles.holdsWidest}>
+                  {drifting || <span className={styles.widest}>drifting…</span>}
+                  <span>{drifting ? 'drifting…' : 'drift'}</span>
+                </span>
+              </button>
+            </Tip>
+            <Tip text="Back to the board the toy ships with. It lands in the walk, so undo brings back whatever you were on.">
+              <button
+                className={styles.btn}
+                onClick={() =>
+                  engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
+                }
+              >
+                reset
+              </button>
+            </Tip>
+            {/* Beside reset, because what undo has in common with it is what a
+              hand reaching for either one wants: out of here. */}
+            <Tip text="Steps back through the boards you have been through (ctrl+z).">
+              <button
+                className={walk.past.length ? styles.btn : styles.btnOff}
+                onClick={() => engine.undo(morphSeconds)}
+                disabled={!walk.past.length}
+              >
+                undo
+              </button>
+            </Tip>
+            {/* Only once there is a walk to step forward into: a permanently
+              greyed redo would cost a slot in the row on every session that
+              never undid anything. */}
+            {walk.future.length > 0 && (
+              <Tip text="Steps forward again (ctrl+shift+z).">
+                <button
+                  className={styles.btn}
+                  onClick={() => engine.redo(morphSeconds)}
+                >
+                  redo
+                </button>
+              </Tip>
+            )}
+          </div>
         </div>
 
         {/* What the hunt is doing while it does it, and the only way to call
@@ -572,8 +593,6 @@ export function App(props: { openedFromLink?: boolean }) {
         {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
 
         {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
-
-        <Presets morphSeconds={morphSeconds} />
 
         <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
         {openGroup ? (

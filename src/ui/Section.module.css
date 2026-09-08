@@ -256,3 +256,19 @@
   border-top: none;
   padding-top: 0;
 }
+
+/* A finger's height for the shelf, the way button.module.css gives it to
+   every other kind: on a phone the shelf is the map's doors laid out again at
+   a size a finger can find, and a row of chips at a caption's height would be
+   the same problem it is there to fix. */
+@media (pointer: coarse) {
+  .part,
+  .partOn {
+    font-size: var(--fs-sm);
+  }
+  .partName,
+  .partReset {
+    min-height: 32px;
+    padding: 4px 10px;
+  }
+}
