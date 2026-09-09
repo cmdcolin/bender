@@ -120,6 +120,17 @@ export class MetalBank {
     // the most likely state there is — sitting at zero rather than on a rail,
     // 31% of the time. A real gate at its trip point is on one side or the
     // other; this one has a third state the board does not.
+    //
+    // Leave it. The tie is not faithful and it is doing useful work anyway,
+    // which was worth finding out before somebody else spends the afternoon.
+    // No gain removes it — the zero is structural — so the fix is unequal
+    // summing resistors, which is both physically right and what the rest of
+    // this board is described with. Measured: the tie goes to 0%, the voices
+    // gain 0.3 to 0.9 dB, and they pay 2 to 3.6 dB of peak for it, because a
+    // stage that never rests at zero hands twice the edges to the hat's
+    // three-pole high-pass and every edge there is a spike. The closed hat's
+    // crest went from 36 to 50. A third of the samples at nought is what keeps
+    // that voice from being a needle.
     const lean = sum * this.gain
     this.clash = lean > 1 ? 1 : lean < -1 ? -1 : lean
     this.bell = bell
