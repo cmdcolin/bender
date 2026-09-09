@@ -1115,8 +1115,8 @@ on it — a link never presses play, so it is loaded and waiting.
 - **clap** — Three noise bursts nine milliseconds apart, then the tail.
 - **tom** — The same network as the kick, tuned higher and rung shorter — the
   fill voice.
-- **bell** — Two of the metal bank’s six oscillators through a notch: the
-  cowbell.
+- **bell** — Two of the metal bank’s six oscillators, filtered just under the
+  pair: the cowbell.
 - **open hat** — The same bank and the same filter as the hat, held open instead
   of gated. A hat step cuts it short — the two share one cap.
 - **cymbal** — All six oscillators through a wider band, and a tail nothing

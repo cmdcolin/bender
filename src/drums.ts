@@ -63,7 +63,7 @@ export const DRUM_VOICES = [
     maybe: 'drumBellMaybe',
     len: 'drumBellLen',
     label: 'bell',
-    help: 'Two of the metal bank’s six oscillators through a notch: the cowbell.',
+    help: 'Two of the metal bank’s six oscillators, filtered just under the pair: the cowbell.',
   },
   {
     key: 'drumOpen',

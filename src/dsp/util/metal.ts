@@ -7,8 +7,7 @@ import { wrap1 } from './pitch'
 // frequencies chosen not to share harmonics, a stage that squares their sum off
 // again, and a filter on each voice steep enough that what comes out the far
 // end is a clatter rather than six tones. The cowbell taps two of the six ahead
-// of that stage and puts a notch on the pair, which is why it is the one metal
-// voice you can hear a pitch in.
+// of that stage, which is why it is the one metal voice you can hear a pitch in.
 //
 // They free-run. Nothing on the board resets them — a trigger opens an
 // amplifier and that is all it does — so every hit catches the bank wherever it
@@ -114,9 +113,13 @@ export class MetalBank {
       sum += sq
       if (k >= BELL_FROM) bell += sq
     }
-    // At the top of the trimmer this is the sign of the sum and nothing else:
-    // the narrowest lean the six can make is one of them, and the gain there is
-    // enough to put that on the rail.
+    // At the top of the trimmer this is very nearly the sign of the sum. Not
+    // quite: six squares of ±1 always sum to an even number, so the narrowest
+    // lean the bank can make is two of them and not one, and the gain there
+    // puts it exactly on the rail. Which leaves the tie — three up, three down,
+    // the most likely state there is — sitting at zero rather than on a rail,
+    // 31% of the time. A real gate at its trip point is on one side or the
+    // other; this one has a third state the board does not.
     const lean = sum * this.gain
     this.clash = lean > 1 ? 1 : lean < -1 ? -1 : lean
     this.bell = bell

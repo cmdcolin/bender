@@ -909,7 +909,29 @@ test('a narrow one-shot is a click and a wide one is neither', () => {
   const sharp = struck({ drumPulse: 0.05 }, 0.6)
   const wide = struck({ drumPulse: 8 }, 0.6)
   expect(lowEnergy(sharp)).toBeGreaterThan(2 * lowEnergy(wide))
-  expect(bin(sharp, 2500)).toBeGreaterThan(4 * bin(wide, 2500))
+})
+
+// The click itself, which has to be measured where it lives or not at all. It
+// is three milliseconds long and it sits in the band the coupling cap passes,
+// so the whole of a take is the wrong window: measured over six hundred
+// milliseconds of kick the click is 50 dB under the body, and the whole of this
+// path can be cut out of the kit without the number moving. A pad strikes at a
+// known sample, so the head needs no onset search; the converter is opened up
+// because seven bits of staircase on a kick puts more hash in this band than
+// the click does.
+test('the coupling cap puts a click at the front of a hit', () => {
+  const at = { drumBits: 16, drumSlot: 0 }
+  const head = (x: Float32Array) => x.subarray(0, Math.round(0.003 * SR))
+  const body = (x: Float32Array) =>
+    x.subarray(Math.round(0.02 * SR), Math.round(0.1 * SR))
+  const sharp = struck({ ...at, drumPulse: 0.5 }, 0.3)
+  const wide = struck({ ...at, drumPulse: 8 }, 0.3)
+  // In front of the drum rather than part of it: the band the cap passes is
+  // where the tanks have nothing, so it is a spike and then the body.
+  expect(bin(head(sharp), 2500)).toBeGreaterThan(20 * bin(body(sharp), 2500))
+  // And it is the one-shot's width that decides, because that is what the cap
+  // is reading. Wide, the pulse is a shove the cap blocks.
+  expect(bin(head(sharp), 2500)).toBeGreaterThan(3 * bin(head(wide), 2500))
 })
 
 // The cowbell, the two hats and the cymbal are four voices made of one part.
