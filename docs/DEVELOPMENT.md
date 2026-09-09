@@ -109,6 +109,30 @@ the main and audio threads is [dataflow.md](dataflow.md).
   knife finds a different chip in each. `pnpm spectrum fm` does one chip and
   `pnpm spectrum cuts` the named cuts and the preset catalog. The whole sweep
   takes a few minutes.
+- `pnpm audible` asks a question the other two cannot: whether each branch of
+  the kit's summing junction is connected at all. It takes each path out — one
+  constant at a time, in a copy of `src` under the system temp dir, so nothing
+  writes to the working tree — renders the board with and without it, and
+  reports how far the take moved. `pnpm audible kick` does the paths named for
+  one voice.
+
+  Two columns, and the second is the point. `rms` is how far the whole take
+  moved, which is the number `knife` reports; `peak` is the tallest sample of
+  the difference against the tallest sample of the take. A percussive path is
+  small in the first and large in the second, and that asymmetry is not a fault
+  — the kick's coupling cap moves the take's rms by 0.7% and its peak by 8.8%,
+  because a click is three milliseconds long and a render is a second. Which is
+  exactly how that path came to be dead for a long time without any test
+  noticing: measured over a whole take, a branch that owns the attack outright
+  and a branch that is not soldered in look the same.
+
+  Anything under a thousandth on both columns is reported as a path nothing
+  hears, and anything under a fiftieth as one barely there. The second tier is
+  the more useful: a path can be connected — and so pass any test that asks only
+  whether it does _something_ — while carrying too little to be the thing it was
+  built to do. Add an entry whenever you add a branch to the output, and fix the
+  `find` string if a rename breaks it; a substitution that matches nothing is
+  reported rather than skipped.
 
 ## Releases
 

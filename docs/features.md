@@ -1125,32 +1125,33 @@ on it — a link never presses play, so it is loaded and waiting.
 ## Scripts
 
 <details>
-<summary>22 commands</summary>
+<summary>23 commands</summary>
 
-| command          | what it does                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`       | the app                                                                                                                         |
-| `pnpm build`     | typecheck and bundle                                                                                                            |
-| `pnpm ab`        | this tree against a git ref, as a paired comparison                                                                             |
-| `pnpm bench`     | what the chain costs per block, stage by stage                                                                                  |
-| `pnpm blocks`    | the distribution — p50 to p99.9, and how many blocks went over budget                                                           |
-| `pnpm cold`      | the first seconds, before anything has tiered up                                                                                |
-| `pnpm diagram`   | re-renders the README's signal path                                                                                             |
-| `pnpm features`  | rewrites docs/features.md — this file                                                                                           |
-| `pnpm figure`    | re-shoots the README's screenshot of the app and its panel                                                                      |
-| `pnpm ink`       | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read |
-| `pnpm knife`     | sweeps every wire and fault on every bus and reports which you can hear                                                         |
-| `pnpm panel`     | what the panel costs the browser per frame, in a real Chrome                                                                    |
-| `pnpm soak`      | whether any stage gets slower the longer it runs                                                                                |
-| `pnpm spectrum`  | sweeps the same space and reports what each fault sounds like, by frequency                                                     |
-| `pnpm preview`   | serves the built bundle                                                                                                         |
-| `pnpm test`      | the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom                             |
-| `pnpm typecheck` | types only                                                                                                                      |
-| `pnpm pat`       | release: patch                                                                                                                  |
-| `pnpm min`       | release: minor                                                                                                                  |
-| `pnpm maj`       | release: major                                                                                                                  |
-| `pnpm format`    | prettier                                                                                                                        |
-| `pnpm prepare`   | points git at .githooks                                                                                                         |
+| command          | what it does                                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm dev`       | the app                                                                                                                                          |
+| `pnpm build`     | typecheck and bundle                                                                                                                             |
+| `pnpm ab`        | this tree against a git ref, as a paired comparison                                                                                              |
+| `pnpm audible`   | takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible |
+| `pnpm bench`     | what the chain costs per block, stage by stage                                                                                                   |
+| `pnpm blocks`    | the distribution — p50 to p99.9, and how many blocks went over budget                                                                            |
+| `pnpm cold`      | the first seconds, before anything has tiered up                                                                                                 |
+| `pnpm diagram`   | re-renders the README's signal path                                                                                                              |
+| `pnpm features`  | rewrites docs/features.md — this file                                                                                                            |
+| `pnpm figure`    | re-shoots the README's screenshot of the app and its panel                                                                                       |
+| `pnpm ink`       | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                  |
+| `pnpm knife`     | sweeps every wire and fault on every bus and reports which you can hear                                                                          |
+| `pnpm panel`     | what the panel costs the browser per frame, in a real Chrome                                                                                     |
+| `pnpm soak`      | whether any stage gets slower the longer it runs                                                                                                 |
+| `pnpm spectrum`  | sweeps the same space and reports what each fault sounds like, by frequency                                                                      |
+| `pnpm preview`   | serves the built bundle                                                                                                                          |
+| `pnpm test`      | the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom                                              |
+| `pnpm typecheck` | types only                                                                                                                                       |
+| `pnpm pat`       | release: patch                                                                                                                                   |
+| `pnpm min`       | release: minor                                                                                                                                   |
+| `pnpm maj`       | release: major                                                                                                                                   |
+| `pnpm format`    | prettier                                                                                                                                         |
+| `pnpm prepare`   | points git at .githooks                                                                                                                          |
 
 </details>
 

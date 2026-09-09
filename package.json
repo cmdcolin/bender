@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "ab": "tsx scripts/ab.ts",
+    "audible": "tsx scripts/audible.ts",
     "bench": "tsx scripts/bench.ts",
     "blocks": "tsx scripts/blocks.ts",
     "cold": "tsx scripts/cold.ts",

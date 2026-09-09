@@ -94,6 +94,8 @@ const SCRIPTS: Record<string, string> = {
     'the distribution — p50 to p99.9, and how many blocks went over budget',
   cold: 'the first seconds, before anything has tiered up',
   ab: 'this tree against a git ref, as a paired comparison',
+  audible:
+    'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',
   soak: 'whether any stage gets slower the longer it runs',
   panel: 'what the panel costs the browser per frame, in a real Chrome',
   ink: 'walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read',
