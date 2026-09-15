@@ -1,593 +1,132 @@
-/* The page at `/`, in both of its states. Theme tokens only — the homepage and
-   the panel are the same instrument, and a landing page with colours of its own
-   would say otherwise. */
+/* bender's own site styles: the landing page's hero, the preset cards and a
+   resume card that shows a mark. The components both sites share are in
+   site.css, and the guide's prose is in guide.css. */
 
-/* Every other rule here sets `display`, and `hidden` is how the two states of
-   this page are switched. */
-[hidden] {
-  display: none !important;
+.landing {
+  padding-block: 2.5rem 1rem;
 }
-
-body {
-  min-height: 100%;
-  height: auto;
-  line-height: 1.55;
-}
-
-.bar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  height: 56px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border-quiet);
-}
-
-.barIn {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 100%;
-  max-width: 62rem;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-.brand {
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.barNav {
-  display: flex;
-  gap: 14px;
-  margin-right: auto;
-  font-size: var(--fs-sm);
-}
-
-.barNav a {
-  color: var(--fg3);
-  text-decoration: none;
-}
-
-.barNav a:hover {
-  color: var(--fg);
-}
-
-.barEnd {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font: inherit;
-  font-size: var(--fs-sm);
-  padding: 6px 12px;
-  background: var(--surface-raised);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.btn:hover {
-  color: var(--fg);
-  border-color: var(--border-hover);
-}
-
-.btn:disabled {
-  color: var(--fg4);
-  cursor: default;
-}
-
-/* The one thing the page is for. Filled in the accent, and there is exactly one
-   kind of it. */
-.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #2a0d04;
-}
-
-.primary:hover {
-  color: #2a0d04;
-  border-color: var(--accent2);
-  background: var(--accent2);
-}
-
-.big {
-  font-size: var(--fs-md);
-  padding: 9px 16px;
-}
-
-.ico {
-  width: 15px;
-  height: 15px;
-}
-
-/* --- the account end ----------------------------------------------------- */
-
-.acct {
-  position: relative;
-}
-
-.acctBtn {
-  display: block;
-  padding: 0;
-  background: none;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--surface-raised);
-  color: var(--fg2);
-  font-size: var(--fs-sm);
-  font-weight: 700;
-}
-
-.avatar img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-}
-
-.acctMenu {
-  position: absolute;
-  top: 36px;
-  right: 0;
-  min-width: 170px;
-  padding: 6px;
-  background: var(--surface);
-  border: 1px solid var(--border-hover);
-  border-radius: 4px;
-  box-shadow: 0 6px 20px #0009;
-}
-
-.acctName {
-  margin: 0 0 4px;
-  padding: 2px 6px;
-  font-size: var(--fs-xs);
-  color: var(--fg3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.acctOut {
-  width: 100%;
-  font: inherit;
-  font-size: var(--fs-sm);
-  text-align: left;
-  padding: 4px 6px;
-  background: none;
-  color: var(--fg2);
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.acctOut:hover {
-  background: var(--surface-raised);
-  color: var(--fg);
-}
-
-/* --- the landing page ---------------------------------------------------- */
-
-.wrap {
-  max-width: 62rem;
-  margin: 0 auto;
-  padding: 40px 16px 64px;
-}
-
-.head {
-  margin: 0 0 14px;
-  font-size: clamp(26px, 5vw, 40px);
+.heroHead {
+  margin: 0 0 0.9rem;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
   line-height: 1.15;
   letter-spacing: -0.01em;
 }
-
 .pitch {
-  max-width: 46rem;
-  margin: 0 0 24px;
-  font-size: var(--fs-md);
+  max-width: var(--measure);
+  margin: 0 0 1.5rem;
+  font-size: 1.05rem;
   color: var(--fg2);
 }
-
 .figure {
-  margin: 0 0 24px;
-  border: 1px solid var(--border-quiet);
-  border-radius: 4px;
+  margin: 0 0 1.5rem;
+  border: 1px solid var(--border-faint);
+  border-radius: 0.6rem;
   overflow: hidden;
 }
-
 .figure img {
   display: block;
   width: 100%;
   height: auto;
 }
-
 .cta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 0 0 14px;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
 }
-
 .dim {
   margin: 0;
-  max-width: 46rem;
-  font-size: var(--fs-sm);
-  color: var(--fg3);
+  max-width: var(--measure);
+  color: var(--fg4);
+  font-size: 0.9rem;
 }
 
-/* --- why sign in ---------------------------------------------------------- */
-
-/* A question, drawn as one: text beside the button it is about rather than a
-   second button competing with it. */
-.why {
-  font: inherit;
-  font-size: var(--fs-sm);
-  padding: 4px 2px;
-  background: none;
-  color: var(--fg3);
-  border: none;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-
-.why:hover,
-.why:focus-visible {
-  color: var(--accent);
-}
-
-.whyCard {
-  width: min(460px, calc(100vw - 24px));
-  padding: 16px 18px;
-  background: var(--surface);
-  color: var(--fg2);
-  border: 1px solid var(--border-hover);
-  border-radius: 4px;
-  box-shadow: 0 10px 30px #000b;
-}
-
-.whyCard::backdrop {
-  background: #000a;
-}
-
-.whyTop {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.whyHead {
-  margin: 0 0 12px;
-  font-size: var(--fs-lg);
-}
-
-/* The answer, at the size of the thing being answered. */
-.whyPitch {
-  margin: 0 0 10px;
-  font-size: var(--fs-md);
-  color: var(--fg2);
-}
-
-.whyLine {
-  margin: 0 0 10px;
-  font-size: var(--fs-sm);
-  color: var(--fg3);
-}
-
-.whyLine a {
-  color: var(--accent);
-  white-space: nowrap;
-}
-
-/* --- running prose, which only the privacy page has ---------------------- */
-
-.prose p,
-.prose li {
-  max-width: 46rem;
-  color: var(--fg3);
-}
-
-.prose li {
-  margin-bottom: 6px;
-}
-
-.prose b {
-  color: var(--fg2);
-}
-
-.prose a {
-  color: var(--accent);
-}
-
-.prose code {
-  font-size: 0.95em;
-  color: var(--fg2);
-}
-
-/* --- sections and the card grid ------------------------------------------ */
-
-.sec {
-  margin-top: 44px;
-  scroll-margin-top: 72px;
-}
-
-.secHead {
-  margin: 0 0 4px;
-  font-size: var(--fs-lg);
-}
-
-.secSub {
-  margin: 0 0 16px;
-  font-size: var(--fs-sm);
-  color: var(--fg3);
-}
-
+/* The preset cards: a mark drawn from the board, then its name and blurb. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
+  gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-
 .card {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.4rem;
   height: 100%;
-  padding: 12px;
+  padding: 0.85rem 0.95rem;
   background: var(--surface);
-  border: 1px solid var(--border-quiet);
-  border-radius: 4px;
+  border: 1px solid var(--border-faint);
+  border-radius: 0.6rem;
   text-decoration: none;
   color: inherit;
 }
-
-.card:hover {
-  border-color: var(--border-hover);
+.card:hover,
+.card:focus-visible {
+  border-color: var(--accent);
 }
-
 .cardTop {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
+  gap: 0.5rem;
 }
-
-/* The bars are the card's only picture, so they carry the card's colour rather
-   than the accent: a grid of a dozen all shouting is a grid you cannot read. */
+/* The bars are the card's only picture, so they carry the card's colour: a
+   grid of a dozen accents is a grid nobody can read. */
 .mark {
-  width: 70px;
-  height: 24px;
+  width: 4.5rem;
+  height: 1.5rem;
   fill: var(--fg4);
 }
-
-.card:hover .mark {
+.card:hover .mark,
+.card:focus-visible .mark {
   fill: var(--accent);
 }
-
 .open {
-  font-size: var(--fs-xs);
   color: var(--fg4);
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
-
-.card:hover .open {
+.card:hover .open,
+.card:focus-visible .open {
   color: var(--accent);
 }
-
 .cardName {
-  font-size: var(--fs-md);
+  font-size: 0.94rem;
   font-weight: 600;
   color: var(--fg);
 }
-
 .says {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--fg3);
+  color: var(--fg4);
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
-/* --- the signed-in home -------------------------------------------------- */
-
-.homeIn {
-  display: grid;
-  grid-template-columns: 9rem 1fr;
-  gap: 28px;
-  max-width: 62rem;
-  margin: 0 auto;
-  padding: 32px 16px 64px;
-}
-
-.rail {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-self: start;
-  position: sticky;
-  top: 72px;
-  font-size: var(--fs-sm);
-}
-
-.rail a {
-  padding: 4px 8px;
-  border-radius: 3px;
-  color: var(--fg3);
-  text-decoration: none;
-}
-
-.rail a:hover {
-  background: var(--surface);
-  color: var(--fg);
-}
-
-.rail .on {
-  color: var(--fg);
-  background: var(--surface);
-}
-
-.homeMain .sec:first-child {
-  margin-top: 0;
-}
-
+/* The resume card shows the board's mark where videoskillet shows a still. */
 .resumeCard {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border-quiet);
-  border-radius: 4px;
+  gap: 1.35rem;
+  padding-left: 1.35rem;
 }
-
 .resumeCard .mark {
   flex: none;
-  width: 90px;
-  height: 32px;
-  fill: var(--fg4);
+  width: 5.5rem;
+  height: 2rem;
 }
-
-.resumeBody {
-  min-width: 0;
-}
-
-.when {
-  margin: 0 0 2px;
-  font-size: var(--fs-md);
-  font-weight: 600;
-}
-
-.resumeBody .says {
-  margin-bottom: 10px;
-}
-
-.empty {
-  padding: 24px;
-  background: var(--surface);
-  border: 1px dashed var(--border);
-  border-radius: 4px;
-}
-
-.emptyHead {
-  margin: 0 0 6px;
-  font-size: var(--fs-md);
-}
-
-.empty .says {
-  max-width: 36rem;
-  margin-bottom: 14px;
-  font-size: var(--fs-sm);
-}
-
-/* A rail down the side wants a column to itself, and under 52rem there is not
-   one: it lies down over the page instead and the sections take the width. */
-@media (max-width: 52rem) {
-  .homeIn {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .rail {
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 34rem) {
-  .barNav {
-    display: none;
-  }
-
+@media (max-width: 44rem) {
   .resumeCard {
     flex-direction: column;
     align-items: flex-start;
+    padding-top: 1.35rem;
   }
-
-  .grid {
-    grid-template-columns: 1fr;
+  .resumeBody {
+    padding: 0 1.35rem 1.35rem 0;
   }
-}
-
-/* --- waiting for Firebase ------------------------------------------------ */
-
-/* The head script in index.astro sets `data-home="pending"` on a browser that
-   has signed in before. The landing page and the sign-in controls stay out of
-   sight and the home's outline stands in until main.ts paints one state. */
-/* CROSS_REPO_SYNC(home-wait-css) */
-.homeWait {
-  display: none;
-}
-html[data-home='pending'] .homeWait {
-  display: block;
-  min-height: 100vh;
-}
-html[data-home='pending'] #landing,
-html[data-home='pending'] #signIn,
-html[data-home='pending'] #why {
-  display: none;
-}
-.vh {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-.bone {
-  display: block;
-  animation: bone 1.4s ease-in-out infinite;
-}
-@keyframes bone {
-  50% {
-    opacity: 0.5;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bone {
-    animation: none;
-  }
-}
-/* CROSS_REPO_SYNC_END(home-wait-css) */
-
-.bone {
-  border-radius: 4px;
-  background: var(--surface);
-}
-
-.railBone {
-  width: 6rem;
-  height: 24px;
-}
-
-.headBone {
-  width: 10rem;
-  height: 20px;
-  margin-bottom: 16px;
 }
 
 .cardBone {
-  height: 96px;
+  height: 6rem;
+  border-radius: 0.6rem;
 }

@@ -1,6 +1,8 @@
 ---
 import Analytics from '../components/Analytics.astro'
 import Card from '../components/Card.astro'
+import Footer from '../components/Footer.astro'
+import SiteBar from '../components/SiteBar.astro'
 import { DEFAULT_CONTROLS } from '../controls'
 import { appUrl, guideUrl, privacyUrl, siteRoot } from '../home/paths'
 import { applyPreset } from '../ui/presets/apply'
@@ -9,6 +11,8 @@ import { SIGNED_IN_HINT } from '../ui/cloud'
 import { boardHash } from '../ui/share'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
 import '../theme.css'
+import '../home/site.css'
+import '../home/footer.css'
 import '../home/home.css'
 
 // Spelled by the app's own writer, so a card stays right when its preset changes.
@@ -75,66 +79,8 @@ const presets = PRESETS.map(preset => ({
     </script>
     <Analytics />
   </head>
-  <body>
-    <header class="bar">
-      <div class="barIn">
-        <a class="brand" href={siteRoot}>
-          bender
-        </a>
-        <nav class="barNav" aria-label="Site">
-          <a href={guideUrl}>User guide</a>
-          <a href="https://github.com/cmdcolin/bender">Source</a>
-          <a href={privacyUrl}>Privacy</a>
-        </nav>
-        <div class="barEnd">
-          <!-- Beside the sign-in button, where the reader meets the ask. -->
-          <button class="why" id="why" type="button">
-            Why sign in?
-          </button>
-          <button class="btn" id="signIn" type="button">
-            <svg
-              class="ico"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="8" r="3.6"></circle>
-              <path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"></path>
-            </svg>
-            Sign in
-          </button>
-          <div class="acct" id="acct" hidden>
-            <button
-              class="acctBtn"
-              id="acctBtn"
-              type="button"
-              aria-haspopup="menu"
-              aria-expanded="false"
-            >
-              <span class="avatar" id="avatar"></span>
-            </button>
-            <div class="acctMenu" id="acctMenu" role="menu" hidden>
-              <p class="acctName" id="acctName"></p>
-              <button
-                class="acctOut"
-                id="signOut"
-                type="button"
-                role="menuitem"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-          <a class="btn primary" href={appUrl}>
-            Open the app →
-          </a>
-        </div>
-      </div>
-    </header>
+  <body id="top">
+    <SiteBar />
 
     <div class="homeWait" role="status">
       <span class="vh">Loading your voices</span>
@@ -170,8 +116,8 @@ const presets = PRESETS.map(preset => ({
       </div>
     </div>
 
-    <main class="wrap" id="landing">
-      <h1 class="head">Simulated circuit bending</h1>
+    <main class="wrap wide landing" id="landing">
+      <h1 class="heroHead">Simulated circuit bending</h1>
       <p class="pitch">
         A toy keyboard, a drum machine and a small FM chip, wired up in the
         browser: starve the supply until the chip reboots, solder a bend spot,
@@ -205,9 +151,9 @@ const presets = PRESETS.map(preset => ({
           Why sign in?
         </button>
       </p>
-      <section class="sec" id="presets">
-        <h2 class="secHead">Presets</h2>
-        <p class="secSub">Open one and the board arrives set up that way.</p>
+      <section id="presets">
+        <h2 class="head">Presets</h2>
+        <p class="sub">Open one and the board arrives set up that way.</p>
         <ul class="grid">
           {presets.map(p => (
             <Card {...p} />
@@ -216,7 +162,7 @@ const presets = PRESETS.map(preset => ({
       </section>
     </main>
 
-    <div id="home" hidden></div>
+    <div id="home" class="home" hidden></div>
 
     <!-- The long answer, from the same strings the app's own card renders, so
          the two say the same thing. Built here at build time, so it is in the
@@ -234,7 +180,7 @@ const presets = PRESETS.map(preset => ({
       <p class="whyLine">
         {FREE_WITHOUT} <a href={privacyUrl}>What an account holds →</a>
       </p>
-      <p class="cta">
+      <p class="whyCta">
         <button class="btn primary" id="whySignIn" type="button">
           Sign in with Google
         </button>
@@ -243,5 +189,6 @@ const presets = PRESETS.map(preset => ({
         </a>
       </p>
     </dialog>
+    <Footer />
   </body>
 </html>

@@ -1,8 +1,11 @@
 ---
 import Analytics from '../components/Analytics.astro'
-import { appUrl, guideUrl, siteRoot } from '../home/paths'
+import Footer from '../components/Footer.astro'
+import SiteBar from '../components/SiteBar.astro'
+import { siteRoot } from '../home/paths'
 import '../theme.css'
-import '../home/home.css'
+import '../home/site.css'
+import '../home/footer.css'
 
 // Two services and what each one is for. Short on purpose.
 const REPO = 'https://github.com/cmdcolin/bender'
@@ -20,60 +23,40 @@ const REPO = 'https://github.com/cmdcolin/bender'
     />
     <Analytics />
   </head>
-  <body>
-    <header class="bar">
-      <div class="barIn">
-        <a class="brand" href={siteRoot}>
-          bender
-        </a>
-        <nav class="barNav" aria-label="Site">
-          <a href={guideUrl}>User guide</a>
-          <a href={REPO}>Source</a>
-        </nav>
-        <div class="barEnd">
-          <a class="btn primary" href={appUrl}>
-            Open the app →
-          </a>
-        </div>
-      </div>
-    </header>
+  <body id="top">
+    <SiteBar account={false} />
 
-    <main class="wrap prose">
-      <h1 class="head">Privacy</h1>
-      <p class="pitch">
+    <main class="wrap privacy">
+      <h1>Privacy</h1>
+      <p class="privacyLead">
         bender runs in your browser. Two outside services are involved, and this
         page is the whole list.
       </p>
 
-      <section class="sec">
-        <h2 class="secHead">Google Analytics</h2>
-        <p>
-          Counts visits: which pages get opened, roughly where from, and on what
-          sort of device. It sets cookies to do that. Any tracker blocker
-          switches it off, and everything here works the same without it.
-        </p>
-      </section>
+      <h2>Google Analytics</h2>
+      <p>
+        Counts visits: which pages get opened, roughly where from, and on what
+        sort of device. It sets cookies to do that. Any tracker blocker switches
+        it off, and everything here works the same without it.
+      </p>
 
-      <section class="sec">
-        <h2 class="secHead">Firebase</h2>
-        <p>
-          Only if you sign in. Google handles the sign-in, and one Firestore
-          document holds your saved voices: a name, and the board it stands for,
-          spelled the same way a shared link spells it. The same document holds
-          the board you last had open, so the home page can offer it back. Stay
-          signed out and there is no document at all.
-        </p>
-      </section>
+      <h2>Firebase</h2>
+      <p>
+        Only if you sign in. Google handles the sign-in, and one Firestore
+        document holds your saved voices: a name, and the board it stands for,
+        spelled the same way a shared link spells it. The same document holds
+        the board you last had open, so the home page can offer it back. Stay
+        signed out and there is no document at all.
+      </p>
 
-      <section class="sec">
-        <h2 class="secHead">Getting rid of it</h2>
-        <p>
-          <b>×</b> in the saved menu deletes a voice on the spot. To have the
-          whole document deleted, say so in
-          <a href={`${REPO}/issues`}>an issue</a>. Nothing is sold and there are
-          no ads.
-        </p>
-      </section>
+      <h2>Getting rid of it</h2>
+      <p>
+        <b>×</b> in the saved menu deletes a voice on the spot. To have the
+        whole document deleted, say so in
+        <a href={`${REPO}/issues`}>an issue</a>. Nothing is sold and there are
+        no ads.
+      </p>
     </main>
+    <Footer />
   </body>
 </html>

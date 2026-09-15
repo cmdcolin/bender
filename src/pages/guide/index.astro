@@ -1,9 +1,12 @@
 ---
 import { getEntry, render } from 'astro:content'
 import Analytics from '../../components/Analytics.astro'
-import { appUrl, guideUrl, siteRoot } from '../../home/paths'
+import Footer from '../../components/Footer.astro'
+import SiteBar from '../../components/SiteBar.astro'
+import { guideUrl, siteRoot } from '../../home/paths'
 import '../../theme.css'
-import '../../home/home.css'
+import '../../home/site.css'
+import '../../home/footer.css'
 import '../../home/guide.css'
 
 const entry = await getEntry('docs', 'user-guide')
@@ -23,28 +26,12 @@ const { Content } = await render(entry)
     />
     <Analytics />
   </head>
-  <body>
-    <header class="bar">
-      <div class="barIn">
-        <a class="brand" href={siteRoot}>
-          bender
-        </a>
-        <nav class="barNav" aria-label="Site">
-          <a href={guideUrl} aria-current="page">
-            User guide
-          </a>
-          <a href="https://github.com/cmdcolin/bender">Source</a>
-        </nav>
-        <div class="barEnd">
-          <a class="btn primary" href={appUrl}>
-            Open the app →
-          </a>
-        </div>
-      </div>
-    </header>
+  <body id="top">
+    <SiteBar account={false} current={guideUrl} />
 
-    <main class="wrap prose doc">
+    <main class="wrap doc">
       <Content />
     </main>
+    <Footer />
   </body>
 </html>

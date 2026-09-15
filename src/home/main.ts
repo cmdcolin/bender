@@ -78,10 +78,10 @@ function card(query: string, name: string, says: string): HTMLElement {
 }
 
 function section(id: string, heading: string, sub?: string): HTMLElement {
-  const box = el('section', 'sec')
+  const box = el('section', 'homeSec')
   box.id = id
-  box.append(el('h2', 'secHead', heading))
-  if (sub !== undefined) box.append(el('p', 'secSub', sub))
+  box.append(el('h2', 'head', heading))
+  if (sub !== undefined) box.append(el('p', 'sub', sub))
   return box
 }
 
@@ -99,11 +99,11 @@ function resumeSection(doc: HomeDoc, now: number) {
     el('p', 'when', sinceWords(current.at, now)),
     el(
       'p',
-      'says',
+      'resumeSays',
       'Resuming brings back the whole board — the bends, the pattern, the pedals and the tape.',
     ),
   )
-  const row = el('p', 'cta')
+  const row = el('p', 'resumeCta')
   const go = el('a', 'btn primary')
   go.href = boardUrl(current.query)
   go.textContent = 'Resume →'
@@ -124,7 +124,7 @@ function emptyVoices(): HTMLElement {
     el('h3', 'emptyHead', 'Nothing saved yet'),
     el(
       'p',
-      'says',
+      'emptySays',
       'Open the app, bend something, and press save in the panel — or ctrl+S, which does the same. The board lands here under the name you give it, on every machine you sign in on.',
     ),
   )
@@ -142,7 +142,7 @@ function failedSection(retry: () => void): HTMLElement {
     el('h3', 'emptyHead', 'Your voices did not load'),
     el(
       'p',
-      'says',
+      'emptySays',
       'The account is signed in, but the request for its voices failed. Check the connection and try again.',
     ),
   )
@@ -267,6 +267,7 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   const main = el('div', 'homeMain')
   // The build already rendered the preset cards into the landing page; signed
   // in, the same section moves over rather than being drawn a second time.
+  presets.classList.add('homeSec')
   main.append(...sections, presets)
 
   const inner = el('div', 'homeIn')
@@ -289,6 +290,7 @@ export function showLanding(): void {
   acct.hidden = true
   signInBtn.hidden = false
   for (const button of whyBtns) button.hidden = false
+  presets.classList.remove('homeSec')
   landing.append(presets)
   home.textContent = ''
   home.hidden = true
