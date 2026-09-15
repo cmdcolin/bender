@@ -4,7 +4,7 @@
 .card {
   width: min(400px, calc(100vw - 24px));
   padding: 10px 12px;
-  background: var(--bg2);
+  background: var(--surface);
   color: var(--fg2);
   border: 1px solid var(--border-hover);
   border-radius: 4px;
@@ -25,7 +25,7 @@
 }
 
 .title {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--accent);

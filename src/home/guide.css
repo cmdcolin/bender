@@ -13,7 +13,7 @@
 
 .doc h2 {
   margin: 40px 0 12px;
-  font-size: var(--fs-xl);
+  font-size: var(--fs-lg);
   padding-top: 8px;
   border-top: 1px solid var(--border-quiet);
 }
@@ -26,12 +26,12 @@
 
 .doc h3 {
   margin: 24px 0 8px;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
 }
 
 .doc code {
   font-family: var(--mono);
-  background: var(--bg3);
+  background: var(--surface-raised);
   border: 1px solid var(--border-quiet);
   border-radius: 3px;
   padding: 0.1em 0.35em;
@@ -41,7 +41,7 @@
   margin: 0 0 14px;
   padding: 12px 14px;
   overflow-x: auto;
-  background: var(--bg2);
+  background: var(--surface);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
 }

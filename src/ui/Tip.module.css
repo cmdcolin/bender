@@ -10,7 +10,7 @@
      on a step cell doesn't cover the row it explains. */
   max-width: 320px;
   padding: 7px 10px;
-  background: var(--bg3);
+  background: var(--surface-raised);
   /* The panel runs a step under a document's scale because everything on it has
      to be on screen at once. A tip is the opposite case: it is up on its own,
      over the top of everything, and only while you are reading it — so it gets
@@ -19,7 +19,7 @@
   border: 1px solid var(--border-hover);
   border-radius: 4px;
   box-shadow: 0 6px 20px #000c;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   line-height: 1.5;
   /* Written down because the dot renders its bubble inside itself, and a button
      centres its text. The top layer does not break inheritance. */

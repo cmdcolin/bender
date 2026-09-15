@@ -19,7 +19,7 @@ body {
   top: 0;
   z-index: 5;
   height: 56px;
-  background: var(--bg2);
+  background: var(--surface);
   border-bottom: 1px solid var(--border-quiet);
 }
 
@@ -34,7 +34,7 @@ body {
 }
 
 .brand {
-  font-size: var(--fs-xl);
+  font-size: var(--fs-lg);
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--accent);
@@ -70,7 +70,7 @@ body {
   font: inherit;
   font-size: var(--fs-sm);
   padding: 6px 12px;
-  background: var(--bg3);
+  background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
   border-radius: 3px;
@@ -103,7 +103,7 @@ body {
 }
 
 .big {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   padding: 9px 16px;
 }
 
@@ -134,7 +134,7 @@ body {
   height: 28px;
   overflow: hidden;
   border-radius: 50%;
-  background: var(--bg3);
+  background: var(--surface-raised);
   color: var(--fg2);
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -152,7 +152,7 @@ body {
   right: 0;
   min-width: 170px;
   padding: 6px;
-  background: var(--bg2);
+  background: var(--surface);
   border: 1px solid var(--border-hover);
   border-radius: 4px;
   box-shadow: 0 6px 20px #0009;
@@ -182,7 +182,7 @@ body {
 }
 
 .acctOut:hover {
-  background: var(--bg3);
+  background: var(--surface-raised);
   color: var(--fg);
 }
 
@@ -204,7 +204,7 @@ body {
 .pitch {
   max-width: 46rem;
   margin: 0 0 24px;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   color: var(--fg2);
 }
 
@@ -259,7 +259,7 @@ body {
 .whyCard {
   width: min(460px, calc(100vw - 24px));
   padding: 16px 18px;
-  background: var(--bg2);
+  background: var(--surface);
   color: var(--fg2);
   border: 1px solid var(--border-hover);
   border-radius: 4px;
@@ -279,13 +279,13 @@ body {
 
 .whyHead {
   margin: 0 0 12px;
-  font-size: var(--fs-xl);
+  font-size: var(--fs-lg);
 }
 
 /* The answer, at the size of the thing being answered. */
 .whyPitch {
   margin: 0 0 10px;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   color: var(--fg2);
 }
 
@@ -334,7 +334,7 @@ body {
 
 .secHead {
   margin: 0 0 4px;
-  font-size: var(--fs-xl);
+  font-size: var(--fs-lg);
 }
 
 .secSub {
@@ -358,7 +358,7 @@ body {
   gap: 6px;
   height: 100%;
   padding: 12px;
-  background: var(--bg2);
+  background: var(--surface);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
   text-decoration: none;
@@ -398,7 +398,7 @@ body {
 }
 
 .cardName {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--fg);
 }
@@ -438,13 +438,13 @@ body {
 }
 
 .rail a:hover {
-  background: var(--bg2);
+  background: var(--surface);
   color: var(--fg);
 }
 
 .rail .on {
   color: var(--fg);
-  background: var(--bg2);
+  background: var(--surface);
 }
 
 .homeMain .sec:first-child {
@@ -456,7 +456,7 @@ body {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--bg2);
+  background: var(--surface);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
 }
@@ -474,7 +474,7 @@ body {
 
 .when {
   margin: 0 0 2px;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
   font-weight: 600;
 }
 
@@ -484,14 +484,14 @@ body {
 
 .empty {
   padding: 24px;
-  background: var(--bg2);
+  background: var(--surface);
   border: 1px dashed var(--border);
   border-radius: 4px;
 }
 
 .emptyHead {
   margin: 0 0 6px;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
 }
 
 .empty .says {
@@ -574,7 +574,7 @@ html[data-home='pending'] #why {
 
 .bone {
   border-radius: 4px;
-  background: var(--bg2);
+  background: var(--surface);
 }
 
 .railBone {

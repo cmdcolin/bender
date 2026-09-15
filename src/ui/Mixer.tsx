@@ -64,7 +64,7 @@ export function Mixer() {
             painted[i] = width
             bar.style.transform = width
           }
-          const colour = pos > HOT ? 'var(--danger)' : 'var(--accent)'
+          const colour = pos > HOT ? 'var(--alarm)' : 'var(--accent)'
           if (lit[i] !== colour) {
             lit[i] = colour
             bar.style.background = colour

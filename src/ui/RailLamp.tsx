@@ -42,7 +42,7 @@ export function RailLamp() {
       // Full cells are a lit lamp; a dying rail dims and reddens with it, and
       // a reboot is the one thing that lights it right up.
       const colour = flashing
-        ? 'var(--danger)'
+        ? 'var(--alarm)'
         : `color-mix(in srgb, var(--accent2) ${Math.round(rail * 100)}%, #2a1a12)`
       if (dot.current && litAt !== colour) {
         litAt = colour

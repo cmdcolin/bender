@@ -458,7 +458,7 @@ export function ControlSlider({
                 '--turn': `${turn * 100}%`,
                 '--way':
                   way < 0
-                    ? 'color-mix(in srgb, var(--accent) 32%, var(--bg3))'
+                    ? 'color-mix(in srgb, var(--accent) 32%, var(--surface-raised))'
                     : way > 0
                       ? 'var(--accent)'
                       : 'var(--fg3)',

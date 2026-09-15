@@ -20,7 +20,7 @@
 .action {
   font-size: var(--fs-sm);
   padding: 3px 8px;
-  background: var(--bg3);
+  background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
   border-radius: 3px;
@@ -53,13 +53,13 @@
    brightening under the pointer: nothing about it should read as encouraging. */
 .actionDanger {
   composes: action;
-  color: var(--danger);
+  color: var(--alarm);
   border-color: #55232c;
 }
 
 .actionDanger:hover:not(:disabled) {
   background: #2a1216;
-  color: var(--danger);
+  color: var(--alarm);
   border-color: #55232c;
 }
 
@@ -112,8 +112,8 @@
 }
 
 .chipDanger:hover:not(:disabled) {
-  color: var(--danger);
-  border-color: var(--danger);
+  color: var(--alarm);
+  border-color: var(--alarm);
 }
 
 /* One of a set where exactly one is on: a kit ROM, a part. Square, because a
@@ -138,7 +138,7 @@
 .pickOn {
   composes: pick;
   color: var(--fg);
-  background: var(--bg3);
+  background: var(--surface-raised);
   border-color: var(--fg4);
 }
 

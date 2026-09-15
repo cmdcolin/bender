@@ -109,7 +109,7 @@
   padding: 0;
   border: 1px solid transparent;
   border-radius: 1px;
-  background: var(--bg2);
+  background: var(--surface);
   cursor: pointer;
   /* Sideways is a hand drawing a line of notes; up and down stays the page's,
      so a phone is not trapped on the roll. */
@@ -152,7 +152,7 @@
    content instead, so the empty part of the column is a band the lit part sits
    in, and only the note actually under the head takes the ring. */
 .cell.under {
-  background: var(--bg3);
+  background: var(--surface-raised);
 }
 
 .headOn.under,

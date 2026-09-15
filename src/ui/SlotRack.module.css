@@ -30,7 +30,7 @@
   padding: 3px 6px;
   border: 1px solid var(--border-quiet);
   border-radius: 3px;
-  background: var(--bg2);
+  background: var(--surface);
   cursor: grab;
   font-size: var(--fs-sm);
 }
@@ -99,7 +99,7 @@
    whole job is naming what is missing from the chain. */
 .loose {
   padding: 2px 6px;
-  background: var(--bg3);
+  background: var(--surface-raised);
   border: 1px dashed var(--border-quiet);
   border-radius: 3px;
   color: var(--fg3);

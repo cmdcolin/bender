@@ -160,7 +160,7 @@
   padding: 0;
   border: 1px solid var(--border-quiet);
   border-radius: 2px;
-  background: var(--bg2);
+  background: var(--surface);
   cursor: pointer;
   /* A step is a contact, not a word: no double-tap zoom, and no 300 ms wait to
      find out whether the tap was one. Sideways is ours — that is a hand drawing
@@ -192,7 +192,7 @@
       var(--accent) 0 1.6px,
       transparent 1.6px
     ),
-    color-mix(in srgb, var(--accent) 22%, var(--bg2));
+    color-mix(in srgb, var(--accent) 22%, var(--surface));
   border-color: var(--accent);
 }
 

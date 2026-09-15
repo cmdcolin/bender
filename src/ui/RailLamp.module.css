@@ -3,7 +3,7 @@
   align-items: center;
   gap: 5px;
   padding: 3px 7px;
-  background: var(--bg3);
+  background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: 3px;
   cursor: help;

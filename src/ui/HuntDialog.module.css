@@ -5,7 +5,7 @@
 .card {
   width: min(420px, calc(100vw - 24px));
   padding: 10px 12px;
-  background: var(--bg2);
+  background: var(--surface);
   color: var(--fg2);
   border: 1px solid var(--accent);
   border-radius: 4px;
@@ -53,7 +53,7 @@
   width: 100%;
   height: 3px;
   border-radius: 2px;
-  background: var(--bg3);
+  background: var(--surface-raised);
 }
 
 .pipOn {

@@ -80,7 +80,7 @@
 
 .recall:hover,
 .recall:focus-visible {
-  background: var(--bg3);
+  background: var(--surface-raised);
   color: var(--fg);
   outline: none;
 }
@@ -98,7 +98,7 @@
 .rowBtn:hover,
 .rowBtn:focus-visible {
   color: var(--fg);
-  background: var(--bg3);
+  background: var(--surface-raised);
   outline: none;
 }
 
@@ -108,8 +108,8 @@
 
 .rowDel:hover,
 .rowDel:focus-visible {
-  color: var(--danger);
-  background: var(--bg3);
+  color: var(--alarm);
+  background: var(--surface-raised);
 }
 
 .hint {
@@ -122,7 +122,7 @@
 .err {
   margin: 0;
   font-size: var(--fs-xs);
-  color: var(--danger);
+  color: var(--alarm);
 }
 
 .signIn {

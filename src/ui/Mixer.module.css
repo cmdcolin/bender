@@ -13,7 +13,7 @@
   right: 0;
   bottom: 0;
   height: 2px;
-  background: var(--bg3);
+  background: var(--surface-raised);
   border-radius: 1px;
   overflow: hidden;
   pointer-events: none;

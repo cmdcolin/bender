@@ -1,33 +1,18 @@
+/* bender's own tokens: the accent, its amber partner, the cold colour for a
+   travel that runs backwards, and the loud red of the panic and record buttons.
+   The neutrals, borders and type scale come from tokens.css, which videoskillet
+   shares. */
+@import './tokens.css';
+
 :root {
-  color-scheme: dark;
-  --bg: #0c0c0e;
-  --bg2: #131316;
-  --bg3: #1b1b1f;
-  --fg: #e8e8ea;
-  --fg2: #b9b9be;
-  --fg3: #8a8a91;
-  --fg4: #5c5c63;
   --accent: #ff5d3b;
   --accent2: #ffb03b;
   /* The other direction. Nothing else on the board is cold, which is the point:
      where a travel runs backwards below the middle, the two halves have to be
      tellable apart at a glance rather than by reading the sign. */
   --cool: #49b6ff;
-  --danger: #ff3355;
-  --border: #2c2c31;
-  --border-quiet: #202024;
-  --border-hover: #45454c;
-  /* The panel is an instrument's front plate: everything it holds has to be on
-     screen at once, so the scale runs a step under a document's. A step, and
-     not two — it ran at 10/11/12 while the signal path was being scaled down to
-     8.5px labels to fit, and a caption set smaller than the map it captions was
-     the panel apologising for room it turned out to have. */
-  --fs-xs: 11px;
-  --fs-sm: 12px;
-  --fs-md: 13px;
-  --fs-lg: 14px;
-  --fs-xl: 17px;
-  --mono: 'SF Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  /* A fill, where tokens.css's --danger is text: panic, a live recording. */
+  --alarm: #ff3355;
 }
 
 * {
@@ -44,6 +29,6 @@ body,
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family: system-ui, sans-serif;
-  font-size: var(--fs-md);
+  font-family: var(--font);
+  font-size: var(--fs);
 }

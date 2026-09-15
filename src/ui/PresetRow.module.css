@@ -11,7 +11,7 @@
   gap: 6px;
   padding: 3px 2px;
   color: var(--fg);
-  font-size: var(--fs-lg);
+  font-size: var(--fs-md);
 }
 
 .title {

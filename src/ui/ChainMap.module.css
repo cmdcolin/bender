@@ -86,10 +86,10 @@
 }
 
 .graph :global(.reset):hover :global(.hit) {
-  fill: var(--danger);
+  fill: var(--alarm);
   fill-opacity: 0.22;
 }
 
 .graph :global(.reset):hover text {
-  fill: var(--danger);
+  fill: var(--alarm);
 }
