@@ -22,8 +22,16 @@ export const RING_SHAPES = ['sine', 'square', 'diode']
 // irrational ratio they land on no grid at all — the clang is back, but it
 // follows the melody instead of sitting still under it.
 //
-// The three behaviours are why the list is these eight and not a number: what
+// The three behaviours are why the first eight are names and not a number: what
 // you are picking is which grid comes out, and only the name says that.
+//
+// The four `step` choices lock the carrier to the sequencer instead of to the
+// note — one whole turn per ROM step, or four, sixteen, sixty-four of them. At
+// ×1 that is a tremolo that lands on the same phase on every step; at ×64 it is
+// an audio-rate carrier whose pitch follows the toy's clock, its starve and its
+// drift, and whose phase restarts on every note. A wire from the ROM step onto
+// the carrier moves the *frequency* by the step phase, which is a sawtooth
+// sweep per step and a different thing.
 export const RING_TRACK = [
   'off',
   'sub',
@@ -33,8 +41,14 @@ export const RING_TRACK = [
   'oct+5th',
   'two oct',
   'tritone',
+  'step',
+  'step ×4',
+  'step ×16',
+  'step ×64',
 ]
 const TRACK_RATIO = [0, 0.5, 1, 1.5, 2, 3, 4, Math.SQRT2]
+const TRACK_STEP = [0, 0, 0, 0, 0, 0, 0, 0, 1, 4, 16, 64]
+const TAU = 2 * Math.PI
 
 // The diode drop, and the gain that gets a bridge back to the level of the
 // multiply it sits beside. The trim is not exact and is not meant to be: it
@@ -82,7 +96,9 @@ export class RingMod implements Stage {
     const base = p[IDX.ringHz]!
     const mod = ctx.mod.read(DEST.ringHz)
     const shape = Math.round(p[IDX.ringShape]!)
-    const ratio = TRACK_RATIO[Math.round(p[IDX.ringTrack]!)] ?? 0
+    const track = Math.round(p[IDX.ringTrack]!)
+    const ratio = TRACK_RATIO[track] ?? 0
+    const stepK = TRACK_STEP[track] ?? 0
     const baseMix = p[IDX.ringMix]!
     const mixMod = ctx.mod.read(DEST.ringMix)
     const micCarrier = Math.round(p[IDX.micPatch]!) === 4
@@ -98,6 +114,19 @@ export class RingMod implements Stage {
     // the last thing this wrote.
     if (mod) this.loaded = -1
     else this.tune(this.hz)
+    // The chip fills the step bus only while its sequencer is clocking, and the
+    // chain clears it every block, so a stopped transport — or a board sounding
+    // anything but the toy — reads flat zero and the knob takes the carrier
+    // back, the way the tracked ratios fall back on it.
+    let stepping = false
+    if (stepK) {
+      for (let i = 0; i < io.n; i++) {
+        if (ctx.step[i]! !== 0) {
+          stepping = true
+          break
+        }
+      }
+    }
 
     for (let i = 0; i < io.n; i++) {
       let carL: number
@@ -105,29 +134,35 @@ export class RingMod implements Stage {
       if (micCarrier) {
         carL = carR = Math.min(Math.max(ctx.mic[i]! * 2, -1), 1)
       } else {
-        if (ratio) {
-          const struck = ctx.trig.key[i]!
-          if (struck > 0) {
-            this.hz = A3_HZ * octaves((struck - KEY_BIAS) / 12) * ratio
-            if (!mod) this.tune(this.hz)
+        if (stepping) {
+          const phase = TAU * stepK * ctx.step[i]!
+          carL = Math.sin(phase)
+          carR = Math.cos(phase)
+        } else {
+          if (ratio) {
+            const struck = ctx.trig.key[i]!
+            if (struck > 0) {
+              this.hz = A3_HZ * octaves((struck - KEY_BIAS) / 12) * ratio
+              if (!mod) this.tune(this.hz)
+            }
           }
+          if (mod) {
+            carrier.setRate(
+              Math.min(this.hz * octaves(mod[i]! * 4), this.sr * 0.45),
+              this.sr,
+            )
+          }
+          carrier.step()
+          // The oscillator turns a whole vector and has been handing back half
+          // of it: sine and cosine of one phase, for the price the sine cost on
+          // its own. Giving the right channel the cosine puts a quarter turn
+          // between the two, which is the width the stage never had — and at
+          // sub-audio rates it is what makes the tremolo pan rather than pump.
+          // Folded to mono the pair is one carrier 45° over and 3 dB down, so
+          // nothing cancels.
+          carL = carrier.im
+          carR = carrier.re
         }
-        if (mod) {
-          carrier.setRate(
-            Math.min(this.hz * octaves(mod[i]! * 4), this.sr * 0.45),
-            this.sr,
-          )
-        }
-        carrier.step()
-        // The oscillator turns a whole vector and has been handing back half of
-        // it: sine and cosine of one phase, for the price the sine cost on its
-        // own. Giving the right channel the cosine puts a quarter turn between
-        // the two, which is the width the stage never had — and at sub-audio
-        // rates it is what makes the tremolo pan rather than pump. Folded to
-        // mono the pair is one carrier 45° over and 3 dB down, so nothing
-        // cancels.
-        carL = carrier.im
-        carR = carrier.re
         if (shape === 1) {
           carL = Math.sign(carL) || 1
           carR = Math.sign(carR) || 1

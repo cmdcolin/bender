@@ -556,6 +556,13 @@ lands on nothing, so the clang is still a clang but it follows the melody. The
 key line only carries what the toy strikes, so a board playing the FM chip or
 the sampler stays on the Carrier knob.
 
+**Track**'s four step positions lock the carrier to the sequencer rather than to
+the note: one whole turn per ROM step, or four, sixteen, sixty-four of them. At
+×1 that is a tremolo landing on the same phase on every step; at ×64 it is an
+audio-rate carrier whose pitch follows the toy's clock, so a starve, a drift or
+a hand on the clock multiplier bends the ring along with the tune, and its phase
+restarts on every note. Stop the sequencer and the Carrier knob takes it back.
+
 **Carrier shape**'s third position is a diode bridge — four diodes in a ring,
 which is the circuit the effect is named after — and it is the one that answers
 to how hard you play it. The bridge stops conducting near zero, so a quiet

@@ -6,7 +6,7 @@ import { DEST } from '../modbus'
 import { BLOCK, type StereoBlock } from '../stage'
 import { spectrum } from '../spectrum'
 import { RING_TRACK } from './ringmod'
-import { deviation, envelope, render, rms, SR } from '../testRender'
+import { bin, deviation, envelope, render, rms, SR } from '../testRender'
 
 // A3, the chip's semitone zero, and the note every tracking case here is
 // judged against.
@@ -201,6 +201,77 @@ test('a wire onto the mix rings where the kit hits and nowhere else', () => {
   const ratio = Array.from(moved, (v, i) => v / (level[i]! + 1e-12))
   expect(Math.max(...ratio)).toBeGreaterThan(0.5)
   expect(ratio.filter(v => v < 1e-6).length).toBeGreaterThan(ratio.length / 8)
+})
+
+// How strong a line at `hz` is in an envelope sampled at `fs`, as a fraction of
+// the envelope's own mean — a tremolo locked to something reads as one tall
+// line, a tremolo free of it as nothing in particular.
+function line(env: Float32Array, hz: number, fs: number): number {
+  let mean = 0
+  for (const v of env) mean += v / env.length
+  let re = 0
+  let im = 0
+  for (let i = 0; i < env.length; i++) {
+    const w = (2 * Math.PI * hz * i) / fs
+    re += (env[i]! - mean) * Math.cos(w)
+    im += (env[i]! - mean) * Math.sin(w)
+  }
+  return (2 * Math.hypot(re, im)) / env.length / (mean + 1e-12)
+}
+
+// The boot ROM's own step rate, which the toy's clock multiplies.
+const STEP_HZ = 3.2
+const WINDOW = 0.005
+
+// One whole turn of the carrier per ROM step, so it crosses zero at the start
+// and the middle of every step and the tremolo lands on the same phase each
+// time. What that leaves in the envelope is a line at twice the step rate,
+// where a free-running carrier at the same depth leaves nothing.
+test('the step carrier puts its tremolo on the same phase every step', () => {
+  const at = (name: string, hz: number) =>
+    line(
+      envelope(
+        render({ ...RING, ringTrack: track(name), ringHz: 3 }, 4),
+        WINDOW,
+      ),
+      hz,
+      1 / WINDOW,
+    )
+  expect(at('step', 2 * STEP_HZ)).toBeGreaterThan(4 * at('off', 2 * STEP_HZ))
+  expect(at('step ×4', 8 * STEP_HZ)).toBeGreaterThan(4 * at('off', 8 * STEP_HZ))
+})
+
+// At ×64 the carrier is an audio-rate tone made out of the sequencer, so the
+// sidebands sit where the toy's clock puts them. The programme is the chaos
+// oscillator on a steady pitch, which the clock does not reach — the toy is
+// only in the mix far enough to keep its sequencer running.
+test('the step carrier is pitched by the toy’s own clock', () => {
+  const board: Partial<Controls> = {
+    ...RING,
+    chipLevel: 0.05,
+    oscLevel: 0.8,
+    oscAHz: 400,
+    ringTrack: track('step ×64'),
+  }
+  const upper = (chipClockX: number, hz: number) =>
+    bin(render({ ...board, chipClockX }, 2).subarray(SR), hz)
+
+  for (const [clock, other] of [
+    [1, 4],
+    [4, 1],
+  ]) {
+    const here = 400 + 64 * STEP_HZ * clock!
+    const there = 400 + 64 * STEP_HZ * other!
+    expect(upper(clock!, here)).toBeGreaterThan(0.05)
+    expect(upper(clock!, there)).toBeLessThan(0.02)
+  }
+})
+
+// Nothing fills the step bus while the sequencer is stopped, so the carrier has
+// to come back to its own knob rather than standing still at zero.
+test('a stopped sequencer leaves the step carrier on its knob', () => {
+  const stepped = play({ ringTrack: track('step ×16'), ringHz: 430 })
+  expect(stepped.l).toEqual(play({ ringHz: 430 }).l)
 })
 
 test('the mic carrier still overrides the oscillator', () => {

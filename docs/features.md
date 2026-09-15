@@ -428,12 +428,12 @@ Amplitude modulation by a carrier, sine or square.
 <details>
 <summary>4 controls</summary>
 
-| control       | range                                                      | what it does                                                                                      |
-| ------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Carrier       | 0.1 Hz to 8 kHz                                            | Carrier frequency                                                                                 |
-| Carrier shape | sine, square, diode                                        | Square carrier chops instead of gliding — harsh AM-radio ghosts                                   |
-| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone | Solders the carrier to the note the toy is sounding                                               |
-| Mix           | off to full                                                | Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it |
+| control       | range                                                                                         | what it does                                                                                      |
+| ------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Carrier       | 0.1 Hz to 8 kHz                                                                               | Carrier frequency                                                                                 |
+| Carrier shape | sine, square, diode                                                                           | Square carrier chops instead of gliding — harsh AM-radio ghosts                                   |
+| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64 | Solders the carrier to the note the toy is sounding                                               |
+| Mix           | off to full                                                                                   | Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it |
 
 </details>
 

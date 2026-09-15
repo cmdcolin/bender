@@ -62,7 +62,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_TRACK,
-        help: 'Solders the carrier to the note the toy is sounding — the ROM’s, your hand’s, or a drum hit that came back round and struck one — instead of leaving it on the Carrier knob. The ratio decides what survives: whole ones (unison, octave, oct+5th, two oct) put the sidebands back on the note’s own harmonics, so the note stays in tune and only its timbre moved; half ones (sub, fifth) land them an octave under it and write a new fundamental below what you played; tritone lands on nothing, so the clang is still a clang but it follows the melody. The FM chip and the sampler don’t stamp the key line, so a board playing those stays on the knob.',
+        help: 'Solders the carrier to the note the toy is sounding — the ROM’s, your hand’s, or a drum hit that came back round and struck one — instead of leaving it on the Carrier knob. The ratio decides what survives: whole ones (unison, octave, oct+5th, two oct) put the sidebands back on the note’s own harmonics, so the note stays in tune and only its timbre moved; half ones (sub, fifth) land them an octave under it and write a new fundamental below what you played; tritone lands on nothing, so the clang is still a clang but it follows the melody. The FM chip and the sampler don’t stamp the key line, so a board playing those stays on the knob. The four step positions lock the carrier to the sequencer instead of the note — one turn per ROM step, or four, sixteen, sixty-four — so a tremolo lands on the same phase every step and an audio-rate carrier follows the toy’s clock, its starve and its drift. Stop the sequencer and they fall back on the knob too.',
       },
       {
         key: 'ringMix',
