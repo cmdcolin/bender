@@ -15,5 +15,14 @@
   "ignorePatterns": ["dist", "scripts", "**/*.mjs", ".claude"],
   // CROSS_REPO_SYNC_END(oxlint-root)
   // Rules only bender needs. Everything shared is in oxlint.shared.json.
-  "overrides": []
+  "overrides": [
+    {
+      "files": ["src/dsp/worklet.ts"],
+      "rules": {
+        // The worklet posts on its MessagePort, whose postMessage takes no
+        // targetOrigin; the rule is about window.postMessage.
+        "unicorn/require-post-message-target-origin": "off"
+      }
+    }
+  ]
 }

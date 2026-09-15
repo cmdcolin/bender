@@ -12,7 +12,7 @@ const REPO = 'https://github.com/cmdcolin/bender'
 const docs = defineCollection({
   loader: {
     name: 'user-guide',
-    load: async ({ store, renderMarkdown }) => {
+    load: async context => {
       const raw = readFileSync(
         new URL('../docs/USER-GUIDE.md', import.meta.url),
         'utf-8',
@@ -21,8 +21,8 @@ const docs = defineCollection({
         /\]\(([\w-]+\.md)(#[^)]*)?\)/g,
         (_match, file, hash = '') => `](${REPO}/blob/main/docs/${file}${hash})`,
       )
-      const rendered = await renderMarkdown(body)
-      store.set({ id: 'user-guide', body, data: {}, rendered })
+      const rendered = await context.renderMarkdown(body)
+      context.store.set({ id: 'user-guide', body, data: {}, rendered })
     },
   },
 })

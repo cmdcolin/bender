@@ -314,7 +314,7 @@ export class Chain {
   private allStages(): Stage[] {
     return [
       ...this.sources,
-      ...(this.bendById.filter(Boolean) as Stage[]),
+      ...this.bendById.filter(s => s !== undefined),
       ...this.pedals,
       ...this.post,
     ]

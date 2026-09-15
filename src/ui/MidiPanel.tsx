@@ -8,8 +8,8 @@ import {
   AUTOMAP_KEYS,
   DEVICE_PROFILES,
   midi,
+  parseRoute,
   type DeviceProfile,
-  type KeyRoute,
 } from './midi'
 import styles from './MidiPanel.module.css'
 import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
@@ -418,7 +418,7 @@ function KeyRouting() {
         <select
           className={styles.select}
           value={route}
-          onChange={e => midi.setKeyRoute(e.target.value as KeyRoute)}
+          onChange={e => midi.setKeyRoute(parseRoute(e.target.value))}
         >
           <option value="toy">→ toy keys</option>
           <option value="fm">→ fm keys</option>

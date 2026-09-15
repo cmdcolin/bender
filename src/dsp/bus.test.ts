@@ -108,7 +108,7 @@ const notesPerLap = (x: Float32Array, laps = 2) => {
     // count rather than a signed one
     return hz < 20 ? -1 : Math.round(12 * Math.log2(hz / 440))
   }
-  return Array.from({ length: laps }, (_, l) =>
+  return Array.from({ length: laps }, (_lap, l) =>
     Array.from({ length: 16 }, (_, s) => at(l * 16 + s)),
   )
 }

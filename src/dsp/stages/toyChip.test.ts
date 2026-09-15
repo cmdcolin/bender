@@ -310,7 +310,7 @@ test('a chord in the memory sounds all three of its notes', () => {
       for (const note of out.subarray(0, built.toyChip.soundingNotes(out)))
         seen.add(note)
     }
-    return [...seen].sort((a, b) => a - b)
+    return [...seen].toSorted((a, b) => a - b)
   }
 
   expect(play({ tunePoly: 1 })).toEqual([0, 4, 7])

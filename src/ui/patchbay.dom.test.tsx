@@ -63,7 +63,7 @@ test('a wire off the kit says so while the kit is stopped', () => {
     mod0Depth: 0.5,
   })
   const { container } = render(<PatchBay />)
-  const said = () => container.querySelector('title')!.textContent!
+  const said = () => container.querySelector('title')!.textContent
   expect(said()).toMatch(/kit is stopped/)
   expect(bayFaults(engine.controls.get())).toEqual([])
 })

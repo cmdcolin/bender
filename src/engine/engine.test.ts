@@ -97,17 +97,20 @@ test('panic is not a step in the walk', () => {
 // ── the hunt ─────────────────────────────────────────────────────────────────
 
 test('the edge score picks intermittent limiting over none and over pinned', () => {
-  const flat = new Array(20).fill(0)
-  const pinned = new Array(20).fill(0.6)
+  const flat = Array.from({ length: 20 }, () => 0)
+  const pinned = Array.from({ length: 20 }, () => 0.6)
   const surging = Array.from({ length: 20 }, (_, i) => (i % 4 < 2 ? 0 : 0.6))
-  const loud = new Array(20).fill(0.8)
+  const loud = Array.from({ length: 20 }, () => 0.8)
   // Nowhere near the edge, and already past it, both lose to the board that
   // keeps arriving at the ceiling and backing off.
   expect(edgeScore(surging, loud)).toBeGreaterThan(edgeScore(pinned, loud))
   expect(edgeScore(surging, loud)).toBeGreaterThan(edgeScore(flat, loud))
   // Between two boards that never reach the limiter, the audible one wins.
   expect(edgeScore(flat, loud)).toBeGreaterThan(
-    edgeScore(flat, new Array(20).fill(0)),
+    edgeScore(
+      flat,
+      Array.from({ length: 20 }, () => 0),
+    ),
   )
   expect(edgeScore([], [])).toBe(0)
 })

@@ -27,14 +27,14 @@ test('every bend names a group and a mix that exist', () => {
 test('every control has exactly one widget, slider or editor', () => {
   const keys = [...ALL_SLIDERS.map(s => s.key), ...EDITOR_KEYS]
   expect(new Set(keys).size).toBe(keys.length)
-  expect([...keys].sort()).toEqual([...CONTROL_KEYS].sort())
+  expect(keys.toSorted()).toEqual(CONTROL_KEYS.toSorted())
 })
 
 test('a grouped list puts every choice under exactly one heading', () => {
   for (const s of ALL_SLIDERS) {
     if (!s.groups) continue
     const grouped = s.groups.flatMap(g => g.choices)
-    expect([...grouped].sort(), s.key).toEqual([...s.choices!].sort())
+    expect(grouped.toSorted(), s.key).toEqual(s.choices!.toSorted())
   }
 })
 

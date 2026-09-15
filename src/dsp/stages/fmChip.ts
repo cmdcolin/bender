@@ -458,13 +458,13 @@ export class FmChip implements Stage {
     // that cannot fall is a drum that never lifts, exactly as it is a note that
     // never ends one register up.
     if (reg === REG.rhythm) {
-      this.kitKeys(before, this.regs[reg]!)
+      this.kitKeys(before, this.regs[reg])
       return
     }
     const ch = reg - REG.keyBlock
     if (ch < 0 || ch >= N_CH) return
     const was = (before & KEY_ON) !== 0
-    const now = (this.regs[reg]! & KEY_ON) !== 0
+    const now = (this.regs[reg] & KEY_ON) !== 0
     if (now && !was) this.attack(ch)
     else if (was && !now) this.release(ch)
   }

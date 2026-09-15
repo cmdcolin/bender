@@ -443,6 +443,7 @@ export function OpenGroup({
       if (el.current) scrollIntoPanel(el.current)
     })
     return () => cancelAnimationFrame(raf)
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- scrolls again each time a different stage opens
   }, [group.name])
   // Through the morph, so a stage travels the way a whole board does and lands
   // in the walk — a roll you don't like is one ctrl+z away.

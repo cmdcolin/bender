@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react'
 
 import { engine } from '../engine/engine'
 import styles from './Dice.module.css'
-import { Menu, menuItem } from './Menu'
+import { Menu } from './Menu'
+import { menuItem } from './menuItems'
 import { huntCandidates, randomLook, SCENARIOS } from './presets'
 import { Tip } from './Tip'
 

@@ -36,7 +36,7 @@ vi.mock('./cloud', () => ({
   // this one does too — which is what makes the order of the popup and the
   // subscription beside the point.
   watchAuth: (onUser: (u: unknown) => void) => {
-    cloud.listener = onUser as (u: unknown) => void
+    cloud.listener = onUser
     onUser(cloud.signedIn ? cloud.user : null)
     return Promise.resolve(() => {
       cloud.listener = null

@@ -149,15 +149,21 @@ export const corsUrl = (id: string, file: string) =>
   '/' +
   file.split('/').map(encodeURIComponent).join('/')
 
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null
+
+const responseIn = (body: unknown) =>
+  isRecord(body) && isRecord(body.response) ? body.response : undefined
+
 const docsIn = (body: unknown): Record<string, unknown>[] => {
-  const docs = (body as { response?: { docs?: unknown } })?.response?.docs
-  return Array.isArray(docs) ? (docs as Record<string, unknown>[]) : []
+  const docs = responseIn(body)?.docs
+  return Array.isArray(docs) ? docs.filter(isRecord) : []
 }
 
 /** How many pages of results the pool actually has, from a search that may have
     landed past the end of it. */
 export function pageCount(body: unknown): number {
-  const n = (body as { response?: { numFound?: unknown } })?.response?.numFound
+  const n = responseIn(body)?.numFound
   return typeof n === 'number' && n > 0 ? Math.ceil(n / CANDIDATES) : 0
 }
 
@@ -185,10 +191,10 @@ export function pickFile(
   title: string,
   body: unknown,
 ): Take | null {
-  const files = (body as { files?: unknown })?.files
+  const files = isRecord(body) ? body.files : undefined
   if (!Array.isArray(files)) return null
   let best: Take | null = null
-  for (const f of files as Record<string, unknown>[]) {
+  for (const f of files.filter(isRecord)) {
     const name = f.name
     if (typeof name !== 'string' || !PLAYABLE.test(name)) continue
     const bytes = Number(f.size)

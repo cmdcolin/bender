@@ -243,6 +243,9 @@ function ModWire({ lane, label }: { lane: string; label: string }) {
 // that much, so the tracks all end in the same place — and it is a floor rather
 // than a size, since a row drawn outside any panel, or one whose own reading
 // runs longer than its neighbours', still has to fit what it says.
+const cssVars = (vars: Record<`--${string}`, string | number>): CSSProperties =>
+  vars
+
 const Reserved = createContext(0)
 
 export function ReserveReadout({
@@ -393,9 +396,7 @@ export function ControlSlider({
   const reading = (
     <span
       className={styles.value}
-      style={
-        { '--chars': Math.max(readoutChars(def), reserved) } as CSSProperties
-      }
+      style={cssVars({ '--chars': Math.max(readoutChars(def), reserved) })}
     >
       {formatValue(def, value)}
     </span>
@@ -453,17 +454,15 @@ export function ControlSlider({
           {split ? (
             <span
               className={styles.split}
-              style={
-                {
-                  '--turn': `${turn * 100}%`,
-                  '--way':
-                    way < 0
-                      ? 'color-mix(in srgb, var(--accent) 32%, var(--bg3))'
-                      : way > 0
-                        ? 'var(--accent)'
-                        : 'var(--fg3)',
-                } as CSSProperties
-              }
+              style={cssVars({
+                '--turn': `${turn * 100}%`,
+                '--way':
+                  way < 0
+                    ? 'color-mix(in srgb, var(--accent) 32%, var(--bg3))'
+                    : way > 0
+                      ? 'var(--accent)'
+                      : 'var(--fg3)',
+              })}
             >
               {/* The travel drawn as the two things it is: a bed tinted dim
                 below the turn and shaded full strength above it, the throw
@@ -516,9 +515,7 @@ export function ControlSlider({
           ) : (
             <span
               className={styles.plain}
-              style={
-                { '--mark': `${toPos(def, def.mark) * 100}%` } as CSSProperties
-              }
+              style={cssVars({ '--mark': `${toPos(def, def.mark) * 100}%` })}
             >
               <span className={styles.tick} />
               {track}

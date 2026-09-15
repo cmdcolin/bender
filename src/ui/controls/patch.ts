@@ -1,6 +1,5 @@
 import { VOICE_LABELS } from '../../drums'
 
-import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
 export const PATCH_GROUPS: Group[] = [
@@ -33,9 +32,9 @@ export const PATCH_GROUPS: Group[] = [
         choices: ['sine', 'ramp', 'square', 'S&H', 'chaos', 'drunk'],
         help: 'Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle. Chaos and drunk never come round again — rate sets roughly how fast, but nothing about the next cycle is in the last.',
       },
-      ...[0, 1, 2, 3].flatMap(i => [
+      ...([0, 1, 2, 3] as const).flatMap(i => [
         {
-          key: `mod${i}Src` as ControlKey,
+          key: `mod${i}Src` as const,
           label: `Wire ${i + 1} from`,
           min: 0,
           max: 11,
@@ -58,7 +57,7 @@ export const PATCH_GROUPS: Group[] = [
           help: 'What the wire picks up: the bay LFO, the sag on the dying supply, the output envelope, the mic, either axis of the body pad, the feedback bus, the chip’s sequencer ramping across each ROM step, either trigger line, or how hot the board has got.',
         },
         {
-          key: `mod${i}Dest` as ControlKey,
+          key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
           min: 0,
           max: 54,
@@ -216,7 +215,7 @@ export const PATCH_GROUPS: Group[] = [
           help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once; osc starve is the chaos oscillator’s own pot, which is a different supply. The six levels are a VCA on that machine’s channel: a full push either way takes it from silent to twice the fader. The knife selectors hop: a push of one is a lap of the list, so an S&H cuts a different wire every cycle. FM cut depth and FM noise blob are the knife itself rather than a knob the factory fitted — a wire on the first is a fault that comes and goes in time. Four land on a wire’s own depth, so one wire decides how hard another pushes.',
         },
         {
-          key: `mod${i}Depth` as ControlKey,
+          key: `mod${i}Depth` as const,
           lane: `wire ${i + 1} depth`,
           label: `Wire ${i + 1} depth`,
           min: -1,

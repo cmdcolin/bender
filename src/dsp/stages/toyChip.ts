@@ -145,7 +145,7 @@ const LATCH_AMP = 0.85
 // its squares into something you feel rather than hear — which is the stock
 // value, not a ceiling: the knob is which cap you hung there, and the dive goes
 // as deep as the part you found.
-const dragDivisor = (octaves: number) => Math.pow(2, octaves) - 1
+const dragDivisor = (depth: number) => Math.pow(2, depth) - 1
 
 // One small output stage carries every voice, so a chord leans on its headroom
 // rather than coming out four times louder.
@@ -174,10 +174,10 @@ export class ToyChip implements Stage {
   // ROM's own table, or the memory's. Filled in place from the params rather
   // than built, because an array built per block is garbage per block on the
   // one thread that cannot collect it.
-  private mine = new Array<number>(TUNE_STEPS).fill(REST)
+  private mine = Array.from({ length: TUNE_STEPS }, () => REST)
   // The stacked chips' steps, in the same shape and read off the same address.
   private stacks = LANE_IDX.slice(1).map(() =>
-    new Array<number>(TUNE_STEPS).fill(REST),
+    Array.from({ length: TUNE_STEPS }, () => REST),
   )
   private poly = false
   private yours = false
@@ -277,7 +277,7 @@ export class ToyChip implements Stage {
   noteOn(semitone: number, gain = 1) {
     if (!this.heldKeys.includes(semitone)) {
       this.heldKeys.push(semitone)
-      this.arpUp = [...this.heldKeys].sort((a, b) => a - b)
+      this.arpUp = this.heldKeys.toSorted((a, b) => a - b)
       // A chord going down on an idle arpeggiator strikes its first note there
       // and then, rather than a beat later: the count starts under your hand.
       if (this.heldKeys.length === 1) this.arpClock = 1
@@ -307,7 +307,7 @@ export class ToyChip implements Stage {
     const at = this.heldKeys.indexOf(semitone)
     if (at >= 0) {
       this.heldKeys.splice(at, 1)
-      this.arpUp = [...this.heldKeys].sort((a, b) => a - b)
+      this.arpUp = this.heldKeys.toSorted((a, b) => a - b)
       // The last key up ends the figure rather than pausing it, so the next
       // chord starts on its own first note instead of halfway through the last.
       if (this.heldKeys.length === 0) this.arpStep = 0
@@ -635,13 +635,7 @@ export class ToyChip implements Stage {
     // What the board is doing, then what the board is made of. Both once a
     // block: the parts are knobs like any other, and a hand on one of them is a
     // part being swapped between blocks rather than mid-sample.
-    rail.setBoard(
-      battery,
-      ctx.heat,
-      p[IDX.chipLatch]!,
-      cluster,
-      p[IDX.chipCap]!,
-    )
+    rail.setBoard(battery, ctx.heat, p[IDX.chipLatch], cluster, p[IDX.chipCap])
     rail.setParts({
       lead: p[IDX.chipLeadR]!,
       latchHold: p[IDX.chipLatchHold]!,

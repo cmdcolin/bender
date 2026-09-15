@@ -100,7 +100,7 @@ test('an ordering pair is two different sounds', () => {
     const knobs = (rig: (typeof RIGS)[number]) =>
       Object.entries(rig.patch)
         .filter(([k]) => !k.startsWith('bendSlot'))
-        .sort()
+        .toSorted(([x], [y]) => x.localeCompare(y))
     expect(knobs(first)).toEqual(knobs(second))
     const one = render(first.patch, 2)
     const two = render(second.patch, 2)

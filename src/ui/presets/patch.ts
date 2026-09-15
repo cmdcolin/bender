@@ -19,10 +19,10 @@ import type { ControlKey, Controls } from '../../controls'
 // on — so a roll can pick both ends together, turn up the stage it landed on,
 // and leave a bay where every lead does something you can hear.
 
-const WIRES = [0, 1, 2, 3].map(i => ({
-  src: `mod${i}Src` as ControlKey,
-  dest: `mod${i}Dest` as ControlKey,
-  depth: `mod${i}Depth` as ControlKey,
+const WIRES = ([0, 1, 2, 3] as const).map(i => ({
+  src: `mod${i}Src` as const,
+  dest: `mod${i}Dest` as const,
+  depth: `mod${i}Depth` as const,
 }))
 
 const SRC_OFF = choiceValue('mod0Src', 'off')
@@ -228,6 +228,8 @@ const strong = (rand: () => number) =>
 const gated = (rand: () => number) =>
   rand() < 0.5 ? 0 : snapToStep(DEPTH, sign(rand) * rand() * 0.3)
 
+const cold = (t: Tap) => !t.hands && !t.dull
+
 // A tap that is carrying something, preferring one the board is already running
 // and one no other wire is already off — four wires off the same LFO is one
 // wire drawn four times. Now and then it reaches for a tap that is asleep and
@@ -241,7 +243,6 @@ function pickTap(
   woke: Set<ControlKey>,
   avoid: ReadonlySet<number> = new Set(),
 ): number {
-  const cold = (t: Tap) => !t.hands && !t.dull
   const fresh = TAPS.filter(t => cold(t) && !avoid.has(t.src))
   const free = fresh.length > 0 ? fresh : TAPS.filter(cold)
   const live = free.filter(t => moving(next, t))

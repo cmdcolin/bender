@@ -9,9 +9,9 @@ export function Scope() {
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas) return undefined
     const g = canvas.getContext('2d')
-    if (!g) return
+    if (!g) return undefined
     let raf = 0
     const draw = () => {
       raf = requestAnimationFrame(draw)

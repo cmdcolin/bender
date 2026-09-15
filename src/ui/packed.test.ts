@@ -26,7 +26,7 @@ const live = (key: string) => key.replace(/^gone:/, '')
 
 test('the wire order names every control the app has', () => {
   const here = URL_KEY_ORDER.filter(k => !k.startsWith('gone:'))
-  expect([...here].sort()).toEqual([...CONTROL_KEYS].sort())
+  expect(here.toSorted()).toEqual(CONTROL_KEYS.toSorted())
   expect(new Set(URL_KEY_ORDER.map(live)).size).toBe(URL_KEY_ORDER.length)
 })
 
@@ -226,7 +226,7 @@ test('a control this build has never heard of is read past', () => {
   const at = (key: ControlKey) => URL_KEY_ORDER.indexOf(key)
   const bytes: number[] = []
   let prev = -1
-  for (const key of (['dlyFb', 'filtRes'] as ControlKey[]).sort(
+  for (const key of (['dlyFb', 'filtRes'] as ControlKey[]).toSorted(
     (a, b) => at(a) - at(b),
   )) {
     const def = SLIDER_BY_KEY.get(key)

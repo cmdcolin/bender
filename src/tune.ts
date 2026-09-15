@@ -234,7 +234,7 @@ export function keyOf(steps: readonly number[]) {
     top of the memory carries the last note in it, because that is what the step
     before is when the counter comes round. */
 export function voicing(steps: readonly number[]) {
-  const carried = [...steps].reverse().find(isNote) ?? REST
+  const carried = steps.toReversed().find(isNote) ?? REST
   let note = carried
   return steps.map(step => {
     const head = isNote(step)

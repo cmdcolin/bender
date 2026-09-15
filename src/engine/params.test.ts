@@ -6,7 +6,7 @@ import { IDX, N_PARAMS, PARAM_DEFS, packParams } from './params'
 test('every control has exactly one param entry', () => {
   const names = PARAM_DEFS.map(([n]) => n)
   expect(new Set(names).size).toBe(names.length)
-  expect([...names].sort()).toEqual([...CONTROL_KEYS].sort())
+  expect(names.toSorted()).toEqual(CONTROL_KEYS.toSorted())
 })
 
 test('pack layout follows table order', () => {

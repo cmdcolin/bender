@@ -58,7 +58,7 @@ export function Mixer() {
         const bar = bars.current[i]
         if (bar) {
           held[i] = Math.max(taps[tap] ?? 0, held[i]! * FALL)
-          const pos = position(held[i]!)
+          const pos = position(held[i])
           const width = `scaleX(${pos})`
           if (painted[i] !== width) {
             painted[i] = width

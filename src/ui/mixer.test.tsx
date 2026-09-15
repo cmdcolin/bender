@@ -17,7 +17,7 @@ import './testDom'
 // per control — which the controls suite holds from the other side.
 
 const mixBus = () => {
-  const g = GROUPS.find(g => g.name === 'Mix bus')
+  const g = GROUPS.find(each => each.name === 'Mix bus')
   if (!g) throw new Error('no Mix bus')
   return g
 }

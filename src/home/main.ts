@@ -44,19 +44,25 @@ const el = <K extends keyof HTMLElementTagNameMap>(
 }
 // CROSS_REPO_SYNC_END(home-dom-helpers)
 
+const needOf = <T extends HTMLElement>(id: string, kind: new () => T): T => {
+  const node = need(id)
+  if (!(node instanceof kind)) throw new Error(`#${id} is not a ${kind.name}`)
+  return node
+}
+
 const landing = need('landing')
 const home = need('home')
 const presets = need('presets')
-const signInBtn = need('signIn') as HTMLButtonElement
+const signInBtn = needOf('signIn', HTMLButtonElement)
 const acct = need('acct')
-const acctBtn = need('acctBtn') as HTMLButtonElement
+const acctBtn = needOf('acctBtn', HTMLButtonElement)
 const acctMenu = need('acctMenu')
 const acctName = need('acctName')
 const avatar = need('avatar')
-const signOutBtn = need('signOut') as HTMLButtonElement
-const whyCard = need('whyCard') as HTMLDialogElement
+const signOutBtn = needOf('signOut', HTMLButtonElement)
+const whyCard = needOf('whyCard', HTMLDialogElement)
 const whyBtns = [need('why'), need('whyBelow')]
-const whySignInBtn = need('whySignIn') as HTMLButtonElement
+const whySignInBtn = needOf('whySignIn', HTMLButtonElement)
 
 // --- cards ------------------------------------------------------------------
 
@@ -157,7 +163,7 @@ function voicesSection(doc: HomeDoc, now: number): HTMLElement {
   // Newest save first: the list is stored in insertion order, which is what
   // keeps a re-save where it was in the app's own popover, and is the wrong
   // order for a page you come back to.
-  const sorted = [...doc.voices].sort(
+  const sorted = doc.voices.toSorted(
     (a: SavedVoice, b: SavedVoice) => (b.savedAt ?? 0) - (a.savedAt ?? 0),
   )
   const grid = el('ul', 'grid')

@@ -53,11 +53,13 @@ export const VOICE_KEYS: DrumVoiceKey[] = DRUM_VOICES.map(v => v.key)
 export const voiceLabel = (key: DrumVoiceKey) =>
   DRUM_VOICES.find(v => v.key === key)?.label ?? key
 export const voiceIndex = (key: DrumVoiceKey) => VOICE_KEYS.indexOf(key)
+const isVoiceKey = (key: string): key is DrumVoiceKey =>
+  VOICE_KEYS.some(v => v === key)
 
 const GM_VOICE_BY_NOTE = new Map<number, number>()
 for (const [key, notes] of Object.entries(GM_PADS))
-  for (const note of notes)
-    GM_VOICE_BY_NOTE.set(note, voiceIndex(key as DrumVoiceKey))
+  if (isVoiceKey(key))
+    for (const note of notes) GM_VOICE_BY_NOTE.set(note, voiceIndex(key))
 
 /** Which voice a General MIDI percussion note names, or null for a note the
     standard leaves to the machine. */
@@ -226,8 +228,8 @@ export class PadKit {
   private reindex() {
     this.voiceByPad.clear()
     for (const [key, p] of Object.entries(this.bindings.get()))
-      if (p !== undefined)
-        this.voiceByPad.set(padId(p), voiceIndex(key as DrumVoiceKey))
+      if (p !== undefined && isVoiceKey(key))
+        this.voiceByPad.set(padId(p), voiceIndex(key))
   }
 
   private report() {

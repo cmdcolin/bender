@@ -9,7 +9,7 @@
 // that talks back to a desk without being asked is a board somebody has to
 // debug.
 
-import { CONTROL_KEYS, type ControlKey } from '../controls'
+import { CONTROL_KEYS, isControlKey, type ControlKey } from '../controls'
 import { VOICE_LABELS, type DrumVoiceKey } from '../drums'
 import { engine } from '../engine/engine'
 import { createStore } from '../listeners'
@@ -448,6 +448,7 @@ class Midi {
         // pulled out mid-note never sends the note off, so what it was holding
         // is let go of here or it is held for ever.
         this.onStateChange = (e: Event) => {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- statechange on MIDIAccess only ever carries a MIDIConnectionEvent
           if ((e as MIDIConnectionEvent).port?.state === 'disconnected')
             this.allNotesOff()
           this.listen(access)
@@ -678,7 +679,8 @@ class Midi {
   private reindex() {
     this.keyBySource.clear()
     for (const [key, b] of Object.entries(this.bindings.get()))
-      if (b !== undefined) this.keyBySource.set(sourceId(b), key as ControlKey)
+      if (b !== undefined && isControlKey(key))
+        this.keyBySource.set(sourceId(b), key)
   }
 
   private persist(next: BindingMap) {
@@ -741,7 +743,7 @@ class Midi {
   private watchControls() {
     engine.controls.subscribe(() => {
       const controls = engine.controls.get()
-      for (const key of [...this.engaged]) {
+      for (const key of Array.from(this.engaged)) {
         if (controls[key] === this.sent.get(key)) continue
         this.engaged.delete(key)
         this.sent.delete(key)
@@ -772,8 +774,8 @@ class Midi {
   private lightAll() {
     if (!this.lights.get() || this.access === null) return
     const controls = engine.controls.get()
-    for (const [k, b] of Object.entries(this.bindings.get())) {
-      const key = k as ControlKey
+    for (const [key, b] of Object.entries(this.bindings.get())) {
+      if (!isControlKey(key)) continue
       const def = SLIDER_BY_KEY.get(key)
       if (b === undefined || def === undefined) continue
       const cc = Math.round(toPos(def, controls[key]) * 127)

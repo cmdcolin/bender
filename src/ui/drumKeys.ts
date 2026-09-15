@@ -40,8 +40,9 @@ export function useDrumKeys() {
       // A held pad is one hit. The kit has a bend for hammering a step at audio
       // rate and it is not the operating system's key repeat.
       if (!e.repeat && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const target = e.target as HTMLElement
-        if (!TYPING.has(target.tagName)) {
+        const typing =
+          e.target instanceof HTMLElement && TYPING.has(e.target.tagName)
+        if (!typing) {
           const voice = padVoice(e.code)
           if (voice >= 0) engine.drumHit(voiceBit(voice))
         }

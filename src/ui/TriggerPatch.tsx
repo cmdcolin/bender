@@ -8,13 +8,9 @@ const TO_DRUM = sliderFor('trigToDrum').choices!
 const NOTE = sliderFor('trigKeysNote').choices!
 const STRUCK = sliderFor('fmStruck').choices!
 
-const ROWS = [
-  'trigToKeys',
-  'trigKeysNote',
-  'trigToDrum',
-  'fmStruck',
-  'fmKeyGate',
-].map(key => sliderFor(key as Parameters<typeof sliderFor>[0]))
+const ROWS = (
+  ['trigToKeys', 'trigKeysNote', 'trigToDrum', 'fmStruck', 'fmKeyGate'] as const
+).map(key => sliderFor(key))
 
 const BOX_W = 116
 const BOX_H = 26

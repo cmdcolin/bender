@@ -436,16 +436,16 @@ test('a stuck bit in the test register races every envelope', () => {
       chip => chip.noteOn(0),
       0.6,
     )
-  const held = organ({})
+  const steady = organ({})
   const raced = organ({ fmDataLine: RACE_LINE, fmDataFault: FAULT.supply })
   const early = (x: Float32Array) => rms(x.subarray(0, Math.round(0.02 * SR)))
-  const late = (x: Float32Array) => rms(x.subarray(Math.round(0.3 * SR)))
+  const after = (x: Float32Array) => rms(x.subarray(Math.round(0.3 * SR)))
   // The organ patch holds until the key comes up, and the corruption cannot
   // reach the bit that says so — what ends the note is the envelope counter
   // running at a rate no register asked for.
-  expect(late(held) / early(held)).toBeGreaterThan(0.5)
+  expect(after(steady) / early(steady)).toBeGreaterThan(0.5)
   expect(early(raced)).toBeGreaterThan(0.01)
-  expect(late(raced) / early(raced)).toBeLessThan(0.05)
+  expect(after(raced) / early(raced)).toBeLessThan(0.05)
 })
 
 test('the chip runs off the toy’s rail, so starving the toy dives it too', () => {
@@ -517,12 +517,12 @@ const BASS_LINE = 5
 
 test('a wire under the mode bit is a rhythm button that does nothing', () => {
   const kit = fmStem({})
-  const held = fmStem({ fmDataLine: MODE_LINE, fmDataFault: FAULT.ground })
+  const grounded = fmStem({ fmDataLine: MODE_LINE, fmDataFault: FAULT.ground })
   // The bit cannot rise, so the die never hands the channels over: no bass
   // drum, and the kit's lines come out as notes again — lower ones than they
   // would have, because the same wire is a bit of the frequency on its way past.
   expect(lowEnergy(kit) / rms(kit)).toBeGreaterThan(0.5)
-  expect(lowEnergy(held) / rms(held)).toBeLessThan(0.35)
+  expect(lowEnergy(grounded) / rms(grounded)).toBeLessThan(0.35)
 })
 
 // The bank is put where the panel says it should be by a write the driver sends

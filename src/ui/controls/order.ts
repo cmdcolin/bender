@@ -1,7 +1,6 @@
 import { PEDAL_ORDER_NAMES, PEDAL_ORDERS } from '../../pedals'
 import { BENDS, BEND_SLOT_KEYS } from './bends'
 
-import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
 // One door for both runs that are yours to order: the six positions the bends
@@ -35,7 +34,7 @@ export const ORDER_GROUPS: Group[] = [
         help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one. The pedals downstream order themselves too, but they are not this: four boxes that are always all on the board, where these are six sockets seven bends compete for.',
       })),
       {
-        key: 'pedalOrder' as ControlKey,
+        key: 'pedalOrder',
         label: 'Order',
         min: 0,
         max: PEDAL_ORDERS.length - 1,

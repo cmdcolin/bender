@@ -1,5 +1,6 @@
 import {
   DEFAULT_CONTROLS,
+  isControlKey,
   type ControlKey,
   type Controls,
 } from '../../controls'
@@ -296,7 +297,7 @@ function clears(group: string): ControlKey[] {
     const scope = GROUPS.find(g => g.name === group)?.clearScope
     const set = new Set<ControlKey>(scope ?? groupKeys(group))
     for (const rig of rigsFor(group))
-      for (const key of Object.keys(rig.patch) as ControlKey[])
+      for (const key of Object.keys(rig.patch).filter(isControlKey))
         if (sliderFor(key).role !== 'level') set.add(key)
     keys = [...set]
     CLEARS.set(group, keys)

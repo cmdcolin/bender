@@ -63,7 +63,7 @@ export function Menu(props: {
     }
     const onDown = (e: PointerEvent) => {
       const el = refs.floating.current
-      const at = e.target as Node
+      const at = e.target instanceof Node ? e.target : null
       if (el && !el.contains(at) && toggle?.contains(at) !== true) onClose()
     }
     window.addEventListener('keydown', onKey)
@@ -87,8 +87,3 @@ export function Menu(props: {
     </div>
   )
 }
-
-export const menuItem = (on: boolean) => (on ? styles.itemOn : styles.item)
-
-/** A row that is a setting rather than a command, for a `group` drawer. */
-export const menuCheck = styles.check

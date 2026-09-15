@@ -76,9 +76,9 @@ export function SampleReel() {
 
   useEffect(() => {
     const el = canvas.current
-    if (!el) return
+    if (!el) return undefined
     const g = el.getContext('2d')
-    if (!g) return
+    if (!g) return undefined
     let raf = 0
     let painted = ''
     const draw = () => {
@@ -199,6 +199,7 @@ export function SampleReel() {
     }
     raf = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(raf)
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- the canvas only mounts once a tape is threaded, so the effect has to rerun then
   }, [threaded, level, rec])
 
   const at = (e: PointerEvent<HTMLCanvasElement>) => {

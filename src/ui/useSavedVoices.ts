@@ -143,12 +143,12 @@ export function useSavedVoices() {
   // arrived, because the first run had an empty list to work from: without the
   // second one, a save named "my voice" would overwrite the "my voice" the
   // account already held.
-  const landPending = (uid: string, voices: readonly SavedVoice[]) => {
+  const landPending = (uid: string, arrived: readonly SavedVoice[]) => {
     const want = pending.current
     pending.current = null
     if (want === null) return
-    const name = suggestVoiceName(voices, want.name)
-    commit(uid, upsertVoice(voices, name, want.query, Date.now()), name)
+    const name = suggestVoiceName(arrived, want.name)
+    commit(uid, upsertVoice(arrived, name, want.query, Date.now()), name)
   }
 
   // Firebase resolves the unsubscribe asynchronously, so teardown covers both

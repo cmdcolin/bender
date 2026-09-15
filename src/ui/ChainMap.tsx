@@ -119,16 +119,16 @@ export function ChainMap({
   }
 
   const click = (e: MouseEvent) => {
-    if (press(e.target as Element)) e.preventDefault()
+    if (e.target instanceof Element && press(e.target)) e.preventDefault()
   }
 
   // A door is a link and a keyboard already works it. A number is a verb with
   // nowhere to link to, so enter and space over one are taken here — and stopped
   // here, because a space anywhere else on the window is the run line.
   const key = (e: KeyboardEvent) => {
-    const target = e.target as Element
+    const target = e.target
     if (e.key !== 'Enter' && e.key !== ' ') return
-    if (!target.closest('[data-reset]')) return
+    if (!(target instanceof Element) || !target.closest('[data-reset]')) return
     e.preventDefault()
     e.stopPropagation()
     press(target)

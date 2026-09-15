@@ -136,7 +136,7 @@ test('the chain reports the walk it took, not the one it was set', () => {
   }
   expect(swapped).toBe(true)
   // A swap, not a loss: every position is still somewhere in the walk.
-  expect([...relay.walk].sort()).toEqual([0, 1, 2, 3, 4, 5])
+  expect([...relay.walk].toSorted((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5])
 })
 
 test('a cold joint reports the step it opened', () => {

@@ -102,18 +102,19 @@ export const Tip = forwardRef<TipHandle, { text: ReactNode; children: Anchor }>(
     useEffect(() => () => clearTimeout(timer.current), [])
 
     useEffect(() => {
-      if (!pinned) return
+      if (!pinned) return undefined
       // Anywhere else puts it away — the bubble itself takes no pointer events,
       // so a press that lands on it is a press on whatever is under it.
       const onDown = (e: PointerEvent) => {
-        if (!anchor?.contains(e.target as Node)) setPinned(false)
+        if (!anchor?.contains(e.target instanceof Node ? e.target : null))
+          setPinned(false)
       }
       window.addEventListener('pointerdown', onDown)
       return () => window.removeEventListener('pointerdown', onDown)
     }, [pinned, anchor])
 
     useEffect(() => {
-      if (!up) return
+      if (!up) return undefined
       const onKey = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           self.hide()
@@ -140,10 +141,12 @@ export const Tip = forwardRef<TipHandle, { text: ReactNode; children: Anchor }>(
           'aria-describedby': up ? id : child.props['aria-describedby'],
           // Touch is left alone: every tip here sits on something you press or
           // drag, and a finger has no way to hover one without doing that.
+          // oxlint-disable-next-line react/refs -- the handler reads the timer ref on the event, not during render
           onPointerEnter: chain(child.props.onPointerEnter, () => {
             outer?.hide()
             self.arm()
           }),
+          // oxlint-disable-next-line react/refs -- the handler reads the timer ref on the event, not during render
           onPointerLeave: chain(child.props.onPointerLeave, () => {
             self.hide()
             outer?.arm()
@@ -152,6 +155,7 @@ export const Tip = forwardRef<TipHandle, { text: ReactNode; children: Anchor }>(
           // the way rather than sitting over what the press just changed — unless
           // the press is what pinned it, which arrives through the ref rather
           // than through this handler and so is untouched by it.
+          // oxlint-disable-next-line react/refs -- the handler reads the timer ref on the event, not during render
           onPointerDown: chain(child.props.onPointerDown, () => {
             self.hide()
             outer?.hide()
@@ -162,6 +166,7 @@ export const Tip = forwardRef<TipHandle, { text: ReactNode; children: Anchor }>(
           onFocus: chain(child.props.onFocus, () => {
             if (anchor?.matches(':focus-visible') === true) setOpen(true)
           }),
+          // oxlint-disable-next-line react/refs -- the handler reads the timer ref on the event, not during render
           onBlur: chain(child.props.onBlur, () => self.hide()),
         })}
         {up && anchor !== null && (
@@ -233,6 +238,7 @@ function mergeRefs(theirs: unknown, mine: (el: HTMLElement | null) => void) {
     mine(el)
     if (typeof theirs === 'function') theirs(el)
     else if (theirs !== null && typeof theirs === 'object')
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a ref the child was given that is not a callback is a ref object
       (theirs as { current: HTMLElement | null }).current = el
   }
 }

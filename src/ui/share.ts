@@ -1,6 +1,7 @@
 import {
   CONTROL_KEYS,
   DEFAULT_CONTROLS,
+  isControlKey,
   type ControlKey,
   type Controls,
 } from '../controls'
@@ -60,11 +61,11 @@ export function decodeControls(encoded: string): Partial<Controls> {
   for (const part of encoded.split(',')) {
     const at = part.indexOf(':')
     if (at <= 0) continue
-    const key = part.slice(0, at) as ControlKey
+    const key = part.slice(0, at)
     // Own keys only: `in` also answers yes to every name Object's prototype
     // carries, so `#set=toString:1` used to get past here and take the whole
     // app down on the way to a slider that was never going to exist.
-    if (!Object.hasOwn(DEFAULT_CONTROLS, key) || PRIVATE.has(key)) continue
+    if (!isControlKey(key) || PRIVATE.has(key)) continue
     const raw = part.slice(at + 1).trim()
     const v = Number(raw)
     if (raw === '' || !Number.isFinite(v)) continue

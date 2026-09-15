@@ -196,9 +196,9 @@ export const EFFECTS: Effect[] = [
       cpu.s[0] = reflect(cpu.s[0]! + (cpu.rng() * 2 - 1) * 9, 40, 320)
       cpu.s[1] = reflect(cpu.s[1]! + (cpu.rng() * 2 - 1) * 1.2, 8, 44)
       cpu.s[2] = reflect(cpu.s[2]! + (cpu.rng() * 2 - 1) * 0.35, 0, 9)
-      setFreq(cpu, cpu.s[0]!, WEATHER_BLOCK, true)
-      modLevel(cpu, cpu.s[1]!)
-      vol(cpu, cpu.s[2]!)
+      setFreq(cpu, cpu.s[0], WEATHER_BLOCK, true)
+      modLevel(cpu, cpu.s[1])
+      vol(cpu, cpu.s[2])
     },
   },
   {

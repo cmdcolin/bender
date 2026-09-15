@@ -312,10 +312,10 @@ test('a carrier off the kit gates the board to the hits', () => {
 })
 
 test('the mic carrier still overrides the oscillator', () => {
-  const quiet = play({ ringHz: 430, micPatch: 4 })
+  const silent = play({ ringHz: 430, micPatch: 4 })
   // nothing is coming in the mic, so the carrier is flat zero and the wet path
   // is silence — which at full mix is the whole output
-  expect(rms(quiet.l)).toBeLessThan(1e-6)
+  expect(rms(silent.l)).toBeLessThan(1e-6)
 })
 
 // The one thing a multiply cannot do. Sine and square put out the same shape at
@@ -334,9 +334,9 @@ test('only the diode bridge changes its spectrum with input level', () => {
   for (const shape of [0, 1]) {
     expect(flatnessAt(shape, 0.15)).toBeCloseTo(flatnessAt(shape, 1), 2)
   }
-  const quiet = flatnessAt(2, 0.15)
+  const soft = flatnessAt(2, 0.15)
   const loud = flatnessAt(2, 1)
-  expect(quiet).toBeGreaterThan(loud * 1.3)
+  expect(soft).toBeGreaterThan(loud * 1.3)
 })
 
 test('the bridge sits beside the multiply rather than above it', () => {

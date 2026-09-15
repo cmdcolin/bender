@@ -25,7 +25,8 @@ import { FmKeys } from './FmKeys'
 import { HuntDialog } from './HuntDialog'
 import { Keys } from './Keys'
 import { useCoarse } from './measure'
-import { Menu, menuItem } from './Menu'
+import { Menu } from './Menu'
+import { menuItem } from './menuItems'
 import { MidiPanel } from './MidiPanel'
 import {
   loadMorph,
@@ -201,6 +202,17 @@ function Panic() {
   )
 }
 
+// The board as the address bar spells it, which is what a voice holds.
+const boardQuery = () => boardHash(window.location.hash, engine.controls.get())
+
+const copyLink = (query: string) => {
+  const { origin, pathname } = window.location
+  return navigator.clipboard
+    .writeText(`${origin}${pathname}#${query}`)
+    .then(() => true)
+    .catch(() => false)
+}
+
 // Two questions, because the button asks two: what pressing it does, and what
 // the bar creeping across it is. The bar is the limiter, and the limiter is the
 // only reason it is on this button rather than on a meter of its own.
@@ -260,10 +272,6 @@ export function App(props: { openedFromLink?: boolean }) {
   const libUid = lib.user?.uid ?? null
   const signedIn = lib.status === 'ready'
 
-  // The board as the address bar spells it, which is what a voice holds.
-  const boardQuery = () =>
-    boardHash(window.location.hash, engine.controls.get())
-
   // What the name box offers: the preset the board is standing on, or the voice
   // last saved or recalled, counted up once that name is taken.
   const suggestName = () =>
@@ -280,13 +288,6 @@ export function App(props: { openedFromLink?: boolean }) {
     if (patch !== null)
       engine.morphTo(boardFrom(patch, engine.controls.get()), morphSeconds)
     lib.markRecalled(voice.name)
-  }
-  const copyLink = (query: string) => {
-    const { origin, pathname } = window.location
-    return navigator.clipboard
-      .writeText(`${origin}${pathname}#${query}`)
-      .then(() => true)
-      .catch(() => false)
   }
   const openVoice = (voice: SavedVoice) => {
     window.location.hash = voice.query
@@ -308,8 +309,8 @@ export function App(props: { openedFromLink?: boolean }) {
       // panel picks a morph duration, a row length and half its choices that
       // way. A focused button is not — space over one is still the run line,
       // which is the point of running it over the whole window.
-      const target = e.target as HTMLElement
-      if (TYPING.has(target.tagName)) return
+      if (e.target instanceof HTMLElement && TYPING.has(e.target.tagName))
+        return
       e.preventDefault()
       engine.toggleRun()
     }
@@ -330,6 +331,7 @@ export function App(props: { openedFromLink?: boolean }) {
   // so the handler goes on the window once and still saves the board and the
   // library as they are now.
   const save = useRef(() => {})
+  // oxlint-disable-next-line react/refs -- the keydown listener reads the latest save handler through this ref
   save.current = askSave
 
   // Save, on the key every application that saves anything puts it on. The
@@ -383,7 +385,11 @@ export function App(props: { openedFromLink?: boolean }) {
         setDragging(true)
       }}
       onDragLeave={e => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+        if (
+          !e.currentTarget.contains(
+            e.relatedTarget instanceof Node ? e.relatedTarget : null,
+          )
+        )
           setDragging(false)
       }}
       onDrop={onDrop}

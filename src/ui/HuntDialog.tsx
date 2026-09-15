@@ -25,7 +25,7 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
   const { landed, onDismiss } = props
 
   useEffect(() => {
-    if (!landed) return
+    if (!landed) return undefined
     const t = setTimeout(onDismiss, LANDED_MS)
     return () => clearTimeout(t)
   }, [landed, onDismiss])

@@ -435,7 +435,11 @@ export const DEFAULT_CONTROLS = {
 
 export type Controls = typeof DEFAULT_CONTROLS
 export type ControlKey = keyof Controls
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.keys widens to string; these are exactly the keys of DEFAULT_CONTROLS
 export const CONTROL_KEYS = Object.keys(DEFAULT_CONTROLS) as ControlKey[]
+
+export const isControlKey = (key: string): key is ControlKey =>
+  Object.hasOwn(DEFAULT_CONTROLS, key)
 
 export const sameControls = (a: Controls, b: Controls) =>
   CONTROL_KEYS.every(k => a[k] === b[k])

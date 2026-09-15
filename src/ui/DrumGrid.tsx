@@ -103,6 +103,32 @@ const NEXT: Record<StepState, StepState> = {
   maybe: 'off',
 }
 
+// Through the walk, like every other verb on the panel: a ROM lands on top of
+// whatever you had drawn, and an afternoon of writing a pattern is not a thing
+// a mis-aimed click gets to take. Written straight rather than travelled to —
+// a pattern is sixteen bits, and there is nothing between two of them.
+const load = (r: DrumRom) => {
+  engine.armStep()
+  engine.writeBoard({ ...engine.controls.get(), ...r.masks })
+}
+
+// The moves land the same way a ROM does, and for the same reason: one entry
+// in the walk, so a fill you don't like is one ctrl+z away from the bar you
+// spent the afternoon on.
+const play = (move: DrumMove, back: boolean) => {
+  const board = engine.controls.get()
+  engine.armStep()
+  engine.writeBoard({
+    ...board,
+    ...move.play({
+      masks: masksOf(board),
+      lens: board,
+      rand: Math.random,
+      back,
+    }),
+  })
+}
+
 // The pattern, as the plugboard it is: a row per voice, a column per step, and
 // the accent row underneath deciding how hard each column lands. The ROM
 // buttons write into the same masks, so a factory pattern is a starting point
@@ -144,32 +170,6 @@ export function DrumGrid() {
       window.removeEventListener('pointercancel', done)
     }
   }, [])
-
-  // Through the walk, like every other verb on the panel: a ROM lands on top of
-  // whatever you had drawn, and an afternoon of writing a pattern is not a thing
-  // a mis-aimed click gets to take. Written straight rather than travelled to —
-  // a pattern is sixteen bits, and there is nothing between two of them.
-  const load = (r: DrumRom) => {
-    engine.armStep()
-    engine.writeBoard({ ...engine.controls.get(), ...r.masks })
-  }
-
-  // The moves land the same way a ROM does, and for the same reason: one entry
-  // in the walk, so a fill you don't like is one ctrl+z away from the bar you
-  // spent the afternoon on.
-  const play = (move: DrumMove, back: boolean) => {
-    const board = engine.controls.get()
-    engine.armStep()
-    engine.writeBoard({
-      ...board,
-      ...move.play({
-        masks: masksOf(board),
-        lens: board,
-        rand: Math.random,
-        back,
-      }),
-    })
-  }
 
   return (
     <div className={styles.wrap}>
@@ -463,6 +463,7 @@ const Cell = memo(function Cell(props: {
               e.currentTarget.releasePointerCapture(e.pointerId)
             engine.armStep()
             if (e.shiftKey) {
+              // oxlint-disable-next-line react/immutability -- paint is a ref the grid shares with every step
               paint.current = null
               engine.set(row.len, step + 1)
             } else {

@@ -11,8 +11,8 @@ const input = { name: 'MPK mini IV MIDI Port', onmidimessage: null as Handler }
 const access = {
   inputs: new Map([['one', input]]),
   outputs: new Map(),
-  addEventListener() {},
-  removeEventListener() {},
+  addEventListener: () => {},
+  removeEventListener: () => {},
 }
 
 vi.stubGlobal('navigator', {

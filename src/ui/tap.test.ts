@@ -59,7 +59,7 @@ test('only rows in a unit a press can be worth carry one', () => {
   const tapped = ALL_SLIDERS.filter(s => s.tap)
   // The beat, the two delay times, and the bay's own oscillator: the speeds a
   // hand keeps rather than reads.
-  expect([...tapped.map(s => s.key)].sort()).toEqual([
+  expect(tapped.map(s => s.key).toSorted()).toEqual([
     'delayMs',
     'drumBpm',
     'echoMs',

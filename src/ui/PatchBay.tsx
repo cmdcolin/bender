@@ -5,8 +5,6 @@ import styles from './PatchBay.module.css'
 import { coherePatch, wireFault } from './presets/patch'
 import { Tip } from './Tip'
 
-import type { ControlKey } from '../controls'
-
 const SRC = sliderFor('mod0Src').choices!
 const DEST = sliderFor('mod0Dest').choices!
 // Where the 'wire N depth' destinations start in the list — a wire patched
@@ -14,10 +12,10 @@ const DEST = sliderFor('mod0Dest').choices!
 // one thing on this bay that closes a loop on itself.
 const WIRE_DEPTH_AT = DEST.indexOf('wire 1 depth')
 
-const MOD_KEYS = [0, 1, 2, 3].map(i => ({
-  src: `mod${i}Src` as ControlKey,
-  dest: `mod${i}Dest` as ControlKey,
-  depth: `mod${i}Depth` as ControlKey,
+const MOD_KEYS = ([0, 1, 2, 3] as const).map(i => ({
+  src: `mod${i}Src` as const,
+  dest: `mod${i}Dest` as const,
+  depth: `mod${i}Depth` as const,
 }))
 
 // The two sources that are a sequencer running rather than a control being up.

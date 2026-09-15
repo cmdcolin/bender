@@ -1059,13 +1059,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   taken[fbSide].push([fbY - LABEL_H / 2, fbY + LABEL_H / 2])
   const clear = (side: Side, want: number) => {
     let y = want
-    for (const [top, bottom] of taken[side].sort((a, b) => a[0] - b[0]))
+    for (const [top, bottom] of taken[side].toSorted((a, b) => a[0] - b[0]))
       if (y < bottom && y + LABEL_H > top) y = bottom + 3
     taken[side].push([y, y + LABEL_H])
     return y
   }
 
-  for (const tap of taps.sort((a, b) => tapY(a) - tapY(b))) {
+  for (const tap of taps.toSorted((a, b) => tapY(a) - tapY(b))) {
     const side = tapSide.get(tap)!
     const y = clear(side, tapY(tap) - LABEL_H / 2)
     const edge = side === 'left' ? tap.edge.x : tap.edge.x + tap.edge.w

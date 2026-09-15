@@ -16,7 +16,8 @@ import {
 } from './keyboard'
 import { letterKeys } from './letters'
 import { useCoarse, useWidth } from './measure'
-import { Menu, menuCheck } from './Menu'
+import { Menu } from './Menu'
+import { menuCheck } from './menuItems'
 import { Tip } from './Tip'
 
 import type { NoteDest } from '../engine/messages'
@@ -200,8 +201,12 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (!owns || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
-      const target = e.target as HTMLElement
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
+      const target = e.target
+      if (
+        target instanceof HTMLElement &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+      )
+        return
       const pressed = e.key.toLowerCase()
       const step = pressed === 'z' ? -1 : pressed === 'x' ? 1 : 0
       if (step !== 0) {
@@ -231,7 +236,9 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // them: a note struck by a letter key whose wire has just moved has nothing
   // left that can let it go.
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- releaseLoose sets state; this runs only when the letters move to another bed
     if (!owns) releaseLoose()
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies, react-hooks/exhaustive-deps -- releaseLoose is rebuilt every render; this runs only when the letters move to another bed
   }, [owns])
 
   // A hand dragged across three octaves plays what it crosses. The capture a

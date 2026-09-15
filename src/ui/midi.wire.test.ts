@@ -29,7 +29,7 @@ const access = {
   addEventListener(_kind: string, fn: (e: Event) => void) {
     onStateChange = fn
   },
-  removeEventListener() {},
+  removeEventListener: () => {},
 }
 const unplug = () =>
   onStateChange?.({ port: { state: 'disconnected' } } as unknown as Event)

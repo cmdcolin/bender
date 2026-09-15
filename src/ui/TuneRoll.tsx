@@ -75,6 +75,14 @@ function useLanes(): number[][] {
 // because the roll draws none of it, the same as the kit's grid holds its own.
 type Paint = RefObject<boolean>
 
+const wipe = () => {
+  engine.armStep()
+  engine.writeBoard({
+    ...engine.controls.get(),
+    ...Object.fromEntries(TUNE_ALL_STEP_KEYS.map(k => [k, REST])),
+  })
+}
+
 // The melody memory, drawn the way a memory of notes wants to be drawn: a row
 // per pitch, a column per step, and a bar across the steps a note is held for.
 //
@@ -124,14 +132,6 @@ export function TuneRoll() {
 
   // Top row is the highest note, the way every roll and every stave is drawn.
   const notes = Array.from({ length: ROWS }, (_, i) => base + ROWS - 1 - i)
-
-  const wipe = () => {
-    engine.armStep()
-    engine.writeBoard({
-      ...engine.controls.get(),
-      ...Object.fromEntries(TUNE_ALL_STEP_KEYS.map(k => [k, REST])),
-    })
-  }
 
   return (
     <div className={styles.wrap}>
@@ -338,6 +338,7 @@ const Cell = memo(function Cell(props: {
           if (e.currentTarget.hasPointerCapture(e.pointerId))
             e.currentTarget.releasePointerCapture(e.pointerId)
           engine.armStep()
+          // oxlint-disable-next-line react/immutability -- paint is a ref the roll shares with every step
           paint.current = true
           put(e.shiftKey)
         }

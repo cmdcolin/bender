@@ -358,6 +358,7 @@ export class Engine {
       numberOfOutputs: 1,
       outputChannelCount: [2],
     })
+    // oxlint-disable-next-line unicorn/prefer-add-event-listener -- assigning onmessage starts the port; a listener would need its own start()
     node.port.onmessage = (e: MessageEvent<FromWorklet>) => {
       const msg = e.data
       if (msg.kind === 'meter') {
@@ -392,7 +393,9 @@ export class Engine {
     const masterGain = ctx.createGain()
     node.connect(masterGain).connect(ctx.destination)
     this.masterGain = masterGain
-    ctx.onstatechange = () => this.running.set(ctx.state === 'running')
+    ctx.addEventListener('statechange', () =>
+      this.running.set(ctx.state === 'running'),
+    )
     this.ctx = ctx
     this.node = node
     this.post({
@@ -848,7 +851,10 @@ export class Engine {
     this.stemLive = 0
     if (!take.length) return
     const at = stamp()
-    if (!stems.length) return this.download(encodeWav(take, sr), `bender-${at}`)
+    if (!stems.length) {
+      this.download(encodeWav(take, sr), `bender-${at}`)
+      return
+    }
     this.download(encodeWav(take, sr), `bender-${at}-master`)
     for (let k = 0; k < MAX_SOURCES; k++) {
       if (!(live & (1 << k))) continue
@@ -1055,12 +1061,13 @@ export class Engine {
       // round, so a key down for no time and one down for exactly a bar are the
       // same reading — and of the two, filling the whole memory with holds off a
       // tap is the one that ruins what you played.
-      for (let i = 1; i < len && to !== from; i++) {
-        const at = (from + i) % len
-        const key = this.stepKey(at, lane)
-        if (at === to || this.controls.get()[key] !== REST) break
-        held[key] = HOLD
-      }
+      if (to !== from)
+        for (let i = 1; i < len; i++) {
+          const at = (from + i) % len
+          const key = this.stepKey(at, lane)
+          if (at === to || this.controls.get()[key] !== REST) break
+          held[key] = HOLD
+        }
       if (Object.keys(held).length > 0) this.patch(held)
     }
   }
@@ -1146,9 +1153,10 @@ export class Engine {
   }
 }
 
+const pad = (n: number) => String(n).padStart(2, '0')
+
 function stamp(): string {
   const d = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
 }
 

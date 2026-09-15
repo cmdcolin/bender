@@ -16,7 +16,7 @@ import './testDom'
 // real group, to check what it does with both racks in it.
 
 const rack = () => {
-  const g = GROUPS.find(g => g.name === 'Signal order')
+  const g = GROUPS.find(each => each.name === 'Signal order')
   if (!g) throw new Error('no Signal order')
   return g
 }

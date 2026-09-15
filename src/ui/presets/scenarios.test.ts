@@ -52,8 +52,8 @@ test('rewire shuffles the slots without retuning a single bend', () => {
   const wiring = new Set<string>()
   for (let seed = 1; seed <= 20; seed++) {
     const after = scenarioNamed('rewire')(before, mulberry32(seed))
-    expect(BEND_SLOT_KEYS.map(k => after[k]).sort()).toEqual(
-      BEND_SLOT_KEYS.map(k => before[k]).sort(),
+    expect(BEND_SLOT_KEYS.map(k => after[k]).toSorted((a, b) => a - b)).toEqual(
+      BEND_SLOT_KEYS.map(k => before[k]).toSorted((a, b) => a - b),
     )
     expect(after.ringHz).toBe(before.ringHz)
     expect(after.combHz).toBe(before.combHz)

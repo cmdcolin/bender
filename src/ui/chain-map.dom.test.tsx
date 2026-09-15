@@ -54,7 +54,9 @@ test('enter on the number puts the stage back', () => {
     engine.armStep()
     engine.set('revMix', 0.5)
   })
-  act(() => fireEvent.keyDown(resets()[0]!, { key: 'Enter', bubbles: true }))
+  act(() => {
+    fireEvent.keyDown(resets()[0]!, { key: 'Enter', bubbles: true })
+  })
   expect(engine.controls.get().revMix).toBe(DEFAULT_CONTROLS.revMix)
 })
 
@@ -67,9 +69,9 @@ test('space on the number resets it and stops there', () => {
     cut()
     engine.set('revMix', 0.5)
   })
-  act(() =>
-    fireEvent.keyDown(resets()[0]!, { key: ' ', code: 'Space', bubbles: true }),
-  )
+  act(() => {
+    fireEvent.keyDown(resets()[0]!, { key: ' ', code: 'Space', bubbles: true })
+  })
   expect(engine.controls.get().revMix).toBe(DEFAULT_CONTROLS.revMix)
   expect(run).not.toHaveBeenCalled()
   run.mockRestore()
@@ -79,9 +81,9 @@ test('space on the number resets it and stops there', () => {
 test('space away from a number is still the run line', () => {
   const run = vi.spyOn(engine, 'toggleRun').mockImplementation(() => {})
   render(<App />)
-  act(() =>
-    fireEvent.keyDown(map(), { key: ' ', code: 'Space', bubbles: true }),
-  )
+  act(() => {
+    fireEvent.keyDown(map(), { key: ' ', code: 'Space', bubbles: true })
+  })
   expect(run).toHaveBeenCalledTimes(1)
   run.mockRestore()
 })

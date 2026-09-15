@@ -129,7 +129,7 @@ test('shifting turns a row within its own length, and turns it back', () => {
   expect(steps(there.drumKick)).toEqual(
     steps(before.drumKick)
       .map(s => (s + 1) % STEPS)
-      .sort((a, b) => a - b),
+      .toSorted((a, b) => a - b),
   )
   expect(shiftPattern(there, EVEN_LENS, -1)).toEqual(before)
 })
@@ -183,5 +183,7 @@ test('no move is named after a factory pattern', () => {
 
 test('a board hands over every mask in the pattern and none of its other numbers', () => {
   const board = { ...romNamed('disco'), drumBpm: 118, revMix: 0.4 }
-  expect(Object.keys(masksOf(board)).sort()).toEqual([...PATTERN_KEYS].sort())
+  expect(Object.keys(masksOf(board)).toSorted()).toEqual(
+    PATTERN_KEYS.toSorted(),
+  )
 })

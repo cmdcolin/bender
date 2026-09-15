@@ -12,11 +12,10 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 export function useWidth(el: Element | null) {
   const [width, setWidth] = useState<number>()
   useLayoutEffect(() => {
-    if (el) {
-      const observer = new ResizeObserver(() => setWidth(el.clientWidth))
-      observer.observe(el)
-      return () => observer.disconnect()
-    }
+    if (!el) return undefined
+    const observer = new ResizeObserver(() => setWidth(el.clientWidth))
+    observer.observe(el)
+    return () => observer.disconnect()
   }, [el])
   return width
 }

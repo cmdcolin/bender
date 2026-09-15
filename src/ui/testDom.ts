@@ -23,14 +23,14 @@ import { letterKeys } from './letters'
 // arriving as a fault in the app.
 class SilentGainNode {
   gain = {
-    cancelScheduledValues() {},
-    setValueAtTime() {},
-    linearRampToValueAtTime() {},
+    cancelScheduledValues: () => {},
+    setValueAtTime: () => {},
+    linearRampToValueAtTime: () => {},
   }
   connect(dest: any) {
     return dest
   }
-  disconnect() {}
+  disconnect = () => {}
 }
 
 class SilentContext {
@@ -38,7 +38,7 @@ class SilentContext {
   currentTime = 0
   destination = {}
   audioWorklet = { addModule: async () => {} }
-  onstatechange: (() => void) | null = null
+  addEventListener = () => {}
   resume = async () => {}
   close = async () => {}
   createGain() {
@@ -47,11 +47,11 @@ class SilentContext {
 }
 
 class SilentNode {
-  port = { onmessage: null, postMessage() {} }
+  port = { onmessage: null, postMessage: () => {} }
   connect(dest: any) {
     return dest
   }
-  disconnect() {}
+  disconnect = () => {}
 }
 
 function stubAudio() {
@@ -122,7 +122,9 @@ export function touch(on: boolean) {
 // body pad on canvas. jsdom has neither — and its own getContext warns, loudly
 // and once per canvas, on the way to handing back the null we want anyway.
 function stubLayout() {
+  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
   Element.prototype.scrollIntoView ??= () => {}
+  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
   Element.prototype.scrollTo ??= () => {}
   // jsdom has a scrollBy of its own, one that reports itself unimplemented on
   // every call, so this replaces rather than fills in.
@@ -131,7 +133,9 @@ function stubLayout() {
   // The drum grid hands a captured touch pointer straight back, so a finger
   // dragged across it reaches cells other than the one it landed on. jsdom has
   // pointer events and neither half of pointer capture.
+  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
   Element.prototype.hasPointerCapture ??= () => false
+  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
   Element.prototype.releasePointerCapture ??= () => {}
   const g = globalThis as Record<string, unknown>
   g.ResizeObserver ??= Tape

@@ -421,6 +421,7 @@ export const PARAM_DEFS = [
 export type ParamName = (typeof PARAM_DEFS)[number][0]
 export const N_PARAMS = PARAM_DEFS.length
 
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; the entries are every param name
 export const IDX = Object.fromEntries(
   PARAM_DEFS.map(([n], i) => [n, i]),
 ) as Record<ParamName, number>

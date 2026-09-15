@@ -13,7 +13,7 @@ import './testDom'
 // anywhere saying they were the same kind of thing as the other two.
 
 const patch = () => {
-  const g = GROUPS.find(g => g.name === 'Trigger patch')
+  const g = GROUPS.find(each => each.name === 'Trigger patch')
   if (!g) throw new Error('no Trigger patch')
   return g
 }

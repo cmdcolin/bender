@@ -63,6 +63,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       n: BLOCK,
     }
     this.target.set(packParams(DEFAULT_CONTROLS))
+    // oxlint-disable-next-line unicorn/prefer-add-event-listener -- assigning onmessage starts the port; a listener would need its own start()
     this.port.onmessage = (e: MessageEvent<ToWorklet>) => {
       const msg = e.data
       switch (msg.kind) {

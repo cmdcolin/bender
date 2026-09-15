@@ -18,7 +18,7 @@ import './testDom'
 // something, and none of them is a sentence about a signal path.
 
 const group = (name: string) => {
-  const g = GROUPS.find(g => g.name === name)
+  const g = GROUPS.find(each => each.name === name)
   if (!g) throw new Error(`no group ${name}`)
   return g
 }
@@ -39,9 +39,9 @@ const knife = () => {
     /knife on the bus/.test(s.textContent ?? ''),
   )
   if (!head) throw new Error('no knife fold')
-  return head as HTMLElement
+  return head
 }
-const said = (head: HTMLElement) => Number(head.textContent!.replace(/\D/g, ''))
+const said = (head: HTMLElement) => Number(head.textContent.replace(/\D/g, ''))
 
 const openFmChip = () =>
   render(<OpenGroup group={group('FM chip')} onClose={() => {}} seconds={0} />)
@@ -375,7 +375,9 @@ test('a drift leaves the morph picker where it is', async () => {
 
   // And stopping keeps the board where it has got to, rather than letting the
   // leg carry it somewhere else for another twelve seconds.
-  act(() => fireEvent.click(screen.getByText('drifting…')))
+  act(() => {
+    fireEvent.click(screen.getByText('drifting…'))
+  })
   expect(engine.drifting.get()).toBe(false)
   expect(engine.morphProgress.get()).toBeNull()
 })
@@ -409,7 +411,9 @@ test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
     .map(s => s.key)
   const was = { ...engine.controls.get() }
 
-  act(() => fireEvent.click(inFold(knife(), /^roll$/)))
+  act(() => {
+    fireEvent.click(inFold(knife(), /^roll$/))
+  })
   const now = engine.controls.get()
   expect(rows.some(k => now[k] !== was[k])).toBe(true)
   for (const k of outside) expect(now[k]).toBe(was[k])
@@ -420,7 +424,9 @@ test('a fold puts back only what is under it', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS, fmDataLine: 3, fmBright: 0.9 }))
   openFmChip()
   fireEvent.click(knife())
-  act(() => fireEvent.click(inFold(knife(), /^reset 1$/)))
+  act(() => {
+    fireEvent.click(inFold(knife(), /^reset 1$/))
+  })
   expect(engine.controls.get().fmDataLine).toBe(DEFAULT_CONTROLS.fmDataLine)
   expect(engine.controls.get().fmBright).toBe(0.9)
 })

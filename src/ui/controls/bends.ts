@@ -25,8 +25,8 @@ export const BENDS = [
 /** The bend a slot value names — nothing, for the empty slot at zero. */
 export const bendAt = (slot: number) => BENDS[Math.round(slot) - 1]
 
-export const BEND_SLOT_KEYS = [0, 1, 2, 3, 4, 5].map(
-  i => `bendSlot${i}` as ControlKey,
+export const BEND_SLOT_KEYS: ControlKey[] = ([0, 1, 2, 3, 4, 5] as const).map(
+  i => `bendSlot${i}` as const,
 )
 
 export const BEND_GROUPS: Group[] = [

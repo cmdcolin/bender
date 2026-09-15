@@ -22,7 +22,7 @@ const writer = (label: string, l: number, r: number): Stage => ({
       io.r[i]! += r
     }
   },
-  panic() {},
+  panic: () => {},
 })
 
 // The whole point of the switch. Two machines running into one bus, and the

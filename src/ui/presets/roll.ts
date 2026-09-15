@@ -222,7 +222,8 @@ export function rollKeys(
   const stirred = (r: ReturnType<typeof once>) =>
     [...r.moved].some(k => r.board[k] !== current[k])
   let roll = once()
-  for (let i = 1; named && i < ROLL_TRIES && !stirred(roll); i++) roll = once()
+  if (named)
+    for (let i = 1; i < ROLL_TRIES && !stirred(roll); i++) roll = once()
   return roll.board
 }
 
@@ -251,6 +252,7 @@ const DRIFTERS = [
 
 function rollLengths(rand: () => number): Record<DrumLenKey, number> {
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; the entries are every row's length key
   const lens = Object.fromEntries(GRID_ROWS.map(r => [r.len, STEPS])) as Record<
     DrumLenKey,
     number

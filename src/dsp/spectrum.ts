@@ -82,7 +82,7 @@ export function spectrum(x: Float32Array, sr: number, n = 4096): Spectrum {
     for (let k = 0; k < m.length; k++) m[k]! += w[k]! / hops
   }
   const hzPer = sr / n
-  const bands = new Array<number>(BANDS.length).fill(0)
+  const bands = Array.from({ length: BANDS.length }, () => 0)
   let weighted = 0
   let total = 0
   let logs = 0

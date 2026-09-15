@@ -16,7 +16,9 @@ import './testDom'
 // jsdom has the calls and no implementation, and a chip that threw on press
 // would fail every test below for the wrong reason.
 beforeAll(() => {
+  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
   Element.prototype.setPointerCapture ??= () => {}
+  // oxlint-disable-next-line typescript/unbound-method -- reads the prototype slot only to see whether jsdom left it empty
   Element.prototype.releasePointerCapture ??= () => {}
 })
 
@@ -59,7 +61,9 @@ test('the click trailing a release does not apply it twice', () => {
 test('a keyboard press applies it', () => {
   render(<Presets morphSeconds={0} />)
   const target = applyPreset(first, engine.controls.get())
-  act(() => fireEvent.click(chip(), { detail: 0 }))
+  act(() => {
+    fireEvent.click(chip(), { detail: 0 })
+  })
   expect(engine.controls.get()).toEqual(target)
 })
 
@@ -92,7 +96,7 @@ test('a drag stops the board part of the way there', () => {
     move(10 + DRAG_FULL / 2)
   })
   const half = engine.controls.get()[key]
-  const ends = [from[key], target[key]].sort((a, b) => a - b)
+  const ends = [from[key], target[key]].toSorted((a, b) => a - b)
   expect(half).toBeGreaterThan(ends[0]!)
   expect(half).toBeLessThan(ends[1]!)
 
@@ -121,7 +125,7 @@ test('a drag past the end does not bank travel the board never made', () => {
     move(10 + DRAG_FULL * 3 - DRAG_FULL / 2) // and half a trip back
   })
   const back = engine.controls.get()[key]
-  const ends = [from[key], target[key]].sort((a, b) => a - b)
+  const ends = [from[key], target[key]].toSorted((a, b) => a - b)
   expect(back).toBeGreaterThan(ends[0]!)
   expect(back).toBeLessThan(ends[1]!)
 })
@@ -193,11 +197,15 @@ test('the row starts folded and opens on ask', () => {
   expect(chips()).toBe(COLLAPSED)
   expect(toggle().textContent).toBe(`show ${PRESETS.length - COLLAPSED} more`)
 
-  act(() => fireEvent.click(toggle(), { detail: 1 }))
+  act(() => {
+    fireEvent.click(toggle(), { detail: 1 })
+  })
   expect(chips()).toBe(PRESETS.length)
   expect(toggle().textContent).toBe('hide')
 
-  act(() => fireEvent.click(toggle(), { detail: 1 }))
+  act(() => {
+    fireEvent.click(toggle(), { detail: 1 })
+  })
   expect(chips()).toBe(COLLAPSED)
 })
 
@@ -206,16 +214,20 @@ test('the row starts folded and opens on ask', () => {
 test('the chip you are standing on survives the fold', () => {
   const past = PRESETS[COLLAPSED + 5]!
   render(<Presets morphSeconds={0} />)
-  act(() => fireEvent.click(toggle(), { detail: 1 }))
-  act(() =>
+  act(() => {
+    fireEvent.click(toggle(), { detail: 1 })
+  })
+  act(() => {
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(past.name) }),
       {
         detail: 0,
       },
-    ),
-  )
-  act(() => fireEvent.click(toggle(), { detail: 1 }))
+    )
+  })
+  act(() => {
+    fireEvent.click(toggle(), { detail: 1 })
+  })
 
   screen.getByRole('button', { name: new RegExp(past.name) })
   expect(chips()).toBe(COLLAPSED + 1)
