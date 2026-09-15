@@ -326,6 +326,7 @@ export const PARAM_DEFS = [
   ['dlyToneHz', 'slew'],
   ['tapeBrake', 'slew'],
   ['tapeMotorRail', 'slew'],
+  ['dlyHeads', 'step'],
   ['dlySplice', 'slew'],
   ['dlyErase', 'slew'],
   ['dlyMix', 'slew'],

@@ -906,6 +906,34 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'beat repeat',
+    blurb:
+      'Every hit lifts the record head, and the box goes round what it just heard',
+    patch: {
+      chipLevel: 0.6,
+      drumLevel: 0.8,
+      drumBpm: 110,
+      echoMode: 4,
+      echoLevel: 0.8,
+      echoMs: 136,
+      echoFb: 0.85,
+    },
+  },
+  {
+    name: 'three heads',
+    blurb:
+      'One repeat, three play heads along the tape — a rhythm off a single tap',
+    patch: {
+      chipLevel: 0.75,
+      chipAccomp: 0.3,
+      dlyMix: 0.45,
+      delayMs: 170,
+      dlyHeads: 4,
+      dlyFb: 0.4,
+      wowDepthMs: 2,
+    },
+  },
+  {
     name: 'clock whine',
     blurb:
       'A bucket brigade clocked too slow to hide it — grit, fold and whistle',

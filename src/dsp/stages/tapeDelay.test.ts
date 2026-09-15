@@ -78,3 +78,23 @@ test('a dead erase head lets the last lap of the reel through', () => {
     rms(renderBender({ ...look, ...over }, 5.8, load).subarray(5.5 * SR))
   expect(lap({ dlyErase: 1 })).toBeGreaterThan(20 * lap({}))
 })
+
+test('a second head up is a second repeat at twice the spacing', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    sampleLevel: 1,
+    sampleMode: 1,
+    dlyMix: 1,
+    delayMs: 200,
+    dlyFb: 0,
+  }
+  const burst = (b: BuiltChain) => b.sampler.setBuffer(sine(400, 0.1))
+  const second = (over: Partial<Controls>) =>
+    rms(
+      renderBender({ ...look, ...over }, 1, burst).subarray(
+        0.42 * SR,
+        0.48 * SR,
+      ),
+    )
+  expect(second({ dlyHeads: 1 })).toBeGreaterThan(10 * second({}))
+})

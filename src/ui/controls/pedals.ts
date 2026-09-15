@@ -1,4 +1,5 @@
 import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo'
+import { HEAD_CHOICES } from '../../dsp/stages/tapeDelay'
 import type { Group } from './types'
 
 export const PEDAL_GROUPS: Group[] = [
@@ -91,6 +92,16 @@ export const PEDAL_GROUPS: Group[] = [
         unit: 'ms',
         curve: 'log',
         help: 'Delay time. Grabbing it drags the tape — pitch smears while it settles.',
+      },
+      {
+        key: 'dlyHeads',
+        label: 'Heads',
+        min: 0,
+        max: HEAD_CHOICES.length - 1,
+        step: 1,
+        unit: '',
+        choices: [...HEAD_CHOICES],
+        help: 'Which play heads are up. Three sit along the tape at one, two and three times the spacing the Time knob sets, so bringing up more than one is a rhythm off a single repeat — and every head goes round the same loop, so the feedback carries all of them.',
       },
       {
         key: 'dlyFb',
@@ -199,7 +210,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ECHO_MODE_NAMES,
-        help: 'Which delay the box is being. Standard is flat repeats that keep their pitch as you move the time; analog is a bucket brigade, so every step longer is a step muddier, and past a second a step grittier, as the clock folds what it cannot carry back into the band and whistles through; reverse plays each window backwards; modulate puts the head on an LFO.',
+        help: 'Which delay the box is being. Standard is flat repeats that keep their pitch as you move the time; hold lifts the record head on every hit — a drum, a key or an attack at the input — and goes round the window the time names, each lap the feedback quieter, until the next hit takes another; analog is a bucket brigade, so every step longer is a step muddier, and past a second a step grittier, as the clock folds what it cannot carry back into the band and whistles through; reverse plays each window backwards; modulate puts the head on an LFO.',
       },
       {
         key: 'echoMs',
@@ -211,7 +222,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: 'ms',
         curve: 'log',
-        help: 'Delay time. Standard and modulate cross to the new one over 25 ms and nothing bends; analog has to walk there, so it smears like tape; reverse relocks at the next seam, so it changes on the beat.',
+        help: 'Delay time. Standard and modulate cross to the new one over 25 ms and nothing bends; analog has to walk there, so it smears like tape; reverse relocks at the next seam, so it changes on the beat; hold takes the new length at the next hit.',
       },
       {
         key: 'echoFb',

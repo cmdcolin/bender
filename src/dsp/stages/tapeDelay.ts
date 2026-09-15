@@ -14,6 +14,12 @@ import { mulberry32, type Rng } from '../util/rng'
 const GAP_MS = 12
 const THUMP = 0.5
 
+// Three play heads along the tape, one, two and three spacings from the
+// record head, and which of them the switch brings up. Their bits, in the
+// switch's order.
+export const HEAD_CHOICES = ['1', '1+2', '1+3', '2+3', '1+2+3'] as const
+const HEAD_MASKS = [1, 3, 5, 6, 7]
+
 // Fractional delay with wow/flutter transport wobble and a saturating
 // feedback loop that runs away musically past unity. The capstan is a real
 // motor: it has weight, it answers the brake, and it can be wired to the same
@@ -75,6 +81,8 @@ export class TapeDelay implements Stage {
     const railDrag = p[IDX.tapeMotorRail]!
     const splice = p[IDX.dlySplice]!
     const erase = p[IDX.dlyErase]!
+    const heads = HEAD_MASKS[Math.round(p[IDX.dlyHeads]!)] ?? 1
+    const nHeads = (heads & 1) + ((heads >> 1) & 1) + ((heads >> 2) & 1)
     const lap = fixedTap(this.loop, this.maxDelay)
     const modSpeed = ctx.mod.read(DEST.tapeSpeed)
     // Two ways to move the repeats, and they don't sound alike: the motor has
@@ -111,15 +119,23 @@ export class TapeDelay implements Stage {
         Math.max(this.slide, 1 - delaySamples),
         this.maxDelay - delaySamples - 4,
       )
-      const d = Math.min(
-        Math.max(delaySamples + this.slide + wobble, 1),
-        this.maxDelay,
-      )
-
-      const tapL = this.toneL.process(this.lineL.readHermite(d), coef)
-      const tapR = this.toneR.process(this.lineR.readHermite(d * 1.007), coef)
-      let wl = io.l[i]! + softclip(fb * tapL)
-      let wr = io.r[i]! + softclip(fb * tapR)
+      // The transport's slip and wobble are the tape's, so every head sees
+      // the same pitch; the spacing is the head's own.
+      let sumL = 0
+      let sumR = 0
+      for (let k = 1; k <= 3; k++) {
+        if (!(heads & (1 << (k - 1)))) continue
+        const d = Math.min(
+          Math.max(k * delaySamples + this.slide + wobble, 1),
+          this.maxDelay,
+        )
+        sumL += this.lineL.readHermite(d)
+        sumR += this.lineR.readHermite(d * 1.007)
+      }
+      const tapL = this.toneL.process(sumL, coef)
+      const tapR = this.toneR.process(sumR, coef)
+      let wl = io.l[i]! + softclip((fb / nHeads) * tapL)
+      let wr = io.r[i]! + softclip((fb / nHeads) * tapR)
       if (micInject) {
         wl += ctx.mic[i]!
         wr += ctx.mic[i]!

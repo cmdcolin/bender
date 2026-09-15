@@ -163,3 +163,19 @@ test('the clock whistles through once the time is long enough to hear it', () =>
     0.1 * bin(out, clockHz),
   )
 })
+
+// Hold lifts the record head at a hit. A tone with an attack is its own hit,
+// so a tenth of a second of it goes round for as long as the feedback says.
+test('hold catches the window after a hit and goes round it', () => {
+  const src = (b: BuiltChain) => b.sampler.setBuffer(sine(400, 0.3))
+  const held = (fb: number) =>
+    tail(
+      renderBender(
+        { ...look, echoMode: ECHO_MODE.hold, echoMs: 100, echoFb: fb },
+        2,
+        src,
+      ),
+    )
+  expect(pitchHz(held(1))).toBeCloseTo(400, -2)
+  expect(rms(held(1))).toBeGreaterThan(20 * rms(held(0)))
+})

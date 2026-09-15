@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 243 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 67 presets, 14 stage settings and 24 named cuts — and everything
+ruin. 244 knobs and switches in 29 groups, seven bends competing for six slots,
+18 ROM tunes, 69 presets, 14 stage settings and 24 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 67 presets, and dice on every heading as
+- **Boards, rather than settings.** 69 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -568,26 +568,28 @@ to the edge of cutoff.
 
 The capstan is a real motor: it has weight, it answers the brake slowly, and
 _Supply drag_ wires it to the same dying rail as the toy, so the repeats dive in
-pitch as the board browns out. The tape is a five-second loop joined once:
-_Splice_ is how bad the join is, and _Erase_ how much of the last lap the erase
-head lets through under the new one.
+pitch as the board browns out. Three play heads sit along the tape at one, two
+and three spacings, and _Heads_ is which of them are up. The tape is a
+five-second loop joined once: _Splice_ is how bad the join is, and _Erase_ how
+much of the last lap the erase head lets through under the new one.
 
 <details>
-<summary>11 controls</summary>
+<summary>12 controls</summary>
 
-| control     | range            | what it does                                                                                               |
-| ----------- | ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| Time        | 20 ms to 4 s     | Delay time                                                                                                 |
-| Feedback    | 0 to 1.5         | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                  |
-| Wow         | 0 to 50 ms       | Slow speed wobble of the transport                                                                         |
-| Wow rate    | 0.1 to 8 Hz      | How fast the wobble cycles                                                                                 |
-| Flutter     | off to full      | Fast random speed jitter — worn pinch roller                                                               |
-| Tone        | 500 Hz to 15 kHz | High-frequency loss per repeat — tape generation loss                                                      |
-| Brake       | off to full      | Drags the capstan                                                                                          |
-| Supply drag | off to full      | Wires the motor to the same dying supply as the toy                                                        |
-| Splice      | off to full      | How bad the join in the loop is                                                                            |
-| Erase       | off to full      | How much the erase head misses                                                                             |
-| Echo level  | off to full      | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
+| control     | range                   | what it does                                                                                               |
+| ----------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Time        | 20 ms to 4 s            | Delay time                                                                                                 |
+| Heads       | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                    |
+| Feedback    | 0 to 1.5                | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                  |
+| Wow         | 0 to 50 ms              | Slow speed wobble of the transport                                                                         |
+| Wow rate    | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                 |
+| Flutter     | off to full             | Fast random speed jitter — worn pinch roller                                                               |
+| Tone        | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                      |
+| Brake       | off to full             | Drags the capstan                                                                                          |
+| Supply drag | off to full             | Wires the motor to the same dying supply as the toy                                                        |
+| Splice      | off to full             | How bad the join in the loop is                                                                            |
+| Erase       | off to full             | How much the erase head misses                                                                             |
+| Echo level  | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
 
 </details>
 
@@ -601,19 +603,20 @@ next to it. _Analog_ is a bucket brigade whose clock sets the delay and the
 bandwidth together — and the line really is clocked, so past a second the
 repeats turn to grit before they turn to mud, the clock itself whistles through,
 and the compander breathes behind it all. _Reverse_ plays each window backwards,
-relocking at the seam.
+relocking at the seam. _Hold_ lifts the record head on every hit and goes round
+the window it just took, which with the kit running is a beat repeat.
 
 <details>
 <summary>6 controls</summary>
 
-| control   | range                               | what it does                                                                                               |
-| --------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Mode      | standard, analog, reverse, modulate | Which delay the box is being                                                                               |
-| Time      | 20 ms to 2 s                        | Delay time                                                                                                 |
-| Feedback  | 0 to 1.1                            | How much of the repeat goes back in                                                                        |
-| Tone      | 800 Hz to 16 kHz                    | High cut in the loop, so each lap comes back darker than the last                                          |
-| Mod depth | off to full                         | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
-| E. level  | off to full                         | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
+| control   | range                                     | what it does                                                                                               |
+| --------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Mode      | standard, analog, reverse, modulate, hold | Which delay the box is being                                                                               |
+| Time      | 20 ms to 2 s                              | Delay time                                                                                                 |
+| Feedback  | 0 to 1.1                                  | How much of the repeat goes back in                                                                        |
+| Tone      | 800 Hz to 16 kHz                          | High cut in the loop, so each lap comes back darker than the last                                          |
+| Mod depth | off to full                               | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
+| E. level  | off to full                               | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
 
 </details>
 
@@ -969,7 +972,7 @@ became:
 
 ### Presets
 
-67 boards worth keeping. Every name is a link that opens the app with that board
+69 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -1099,6 +1102,10 @@ on it — a link never presses play, so it is loaded and waiting.
   — The plain box, set the plain way — one repeat, close behind
 - [**bucket brigade**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6)
   — Every lap through the chips comes back darker than the last
+- [**beat repeat**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.8,drumBpm:110,echoMode:4,echoMs:136,echoFb:0.85,echoLevel:0.8)
+  — Every hit lifts the record head, and the box goes round what it just heard
+- [**three heads**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipAccomp:0.3,delayMs:170,dlyFb:0.4,wowDepthMs:2,dlyHeads:4,dlyMix:0.45)
+  — One repeat, three play heads along the tape — a rhythm off a single tap
 - [**clock whine**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,echoMode:1,echoMs:1400,echoFb:0.8,echoToneHz:12000,echoLevel:0.7)
   — A bucket brigade clocked too slow to hide it — grit, fold and whistle
 - [**spliced reel**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.4,delayMs:380,dlyFb:0.55,flutter:0.25,dlySplice:0.8,dlyErase:0.7,dlyMix:0.5)

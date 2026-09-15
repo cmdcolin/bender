@@ -28,14 +28,19 @@ export class Comb implements Stage {
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const baseHz = p[IDX.combHz]!
     const mod = ctx.mod.read(DEST.combHz)
-    const delayBase = this.sr / baseHz
+    // The line hands back one sample more than it is asked for, read before
+    // the write the way every stage reads it, so the period asked for is one
+    // short of the pitch.
+    const delayBase = this.sr / baseHz - 1
     const fb = p[IDX.combFb]!
     const mix = p[IDX.combMix]!
     const coef = lpCoef(p[IDX.combDampHz]!, this.sr)
 
     for (let i = 0; i < io.n; i++) {
       const delay = mod
-        ? this.sr / Math.min(Math.max(baseHz * octaves(mod[i]! * 2), 20), 4000)
+        ? this.sr /
+            Math.min(Math.max(baseHz * octaves(mod[i]! * 2), 20), 4000) -
+          1
         : delayBase
       const wl = softclip(
         io.l[i]! + fb * this.dampL.process(this.lineL.read(delay), coef),
