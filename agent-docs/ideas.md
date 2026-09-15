@@ -31,3 +31,5 @@
   supply for the metal bank; the large one is the pattern as a circulating shift
   register, and it is large because of the worklet→control writeback rather than
   the DSP.
+- verb comb modulation to break up the static tail at very long decays, tape
+  dropouts, and a pitch-shifting echo mode.
