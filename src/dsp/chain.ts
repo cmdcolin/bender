@@ -434,9 +434,10 @@ export class Chain {
     // them only when the tape is on: the stem loop is written out beside the
     // meter loop rather than branching inside it, because a branch per sample
     // per source is the shape this file spends its comments avoiding.
-    // Which machine the ring mod is asking to multiply by, as an index into the
-    // sources rather than a choice — the carrier bus is one source's own output,
-    // and the difference the meters are already taking is where that is.
+    //
+    // The carrier bus comes off the same difference: the ring mod can multiply
+    // by a machine rather than by its own oscillator, and one source on its own
+    // is a thing only this loop has.
     const carFrom = Math.round(p[IDX.ringFrom]!) - 1
     let carRan = false
     const prev = this.tapPrev
