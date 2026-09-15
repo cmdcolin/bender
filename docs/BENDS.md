@@ -539,6 +539,19 @@ it — the same as the real thing.
 existing echoes sag on the way down and spin back up on release, and wiring the
 motor to the supply means the repeats dive whenever the power fails.
 
+**Ring** puts a multiplier inside the tape delay's regeneration, ahead of the
+sum that writes the tape, so every repeat is shifted again and the tail builds a
+lattice rather than a row of copies. At unison with the note the even harmonics
+appear a lap at a time — the toy's square hasn't got any, and the product writes
+them in. An octave under, the echoes carry a new fundamental below the note
+while what you played stays clean. A few hertz puts each repeat a little further
+out of tune with the last, so the cluster round every harmonic widens as the
+tail goes on. **Ring depth** crossfades the plain tap against the product, which
+is the depth of the modulation, and the ring path is lifted by √2 — otherwise a
+sine carrier would cost the tail 3 dB a lap and the repeats would simply die
+sooner. A dc block sits on the multiplied tap, since at unison the product has a
+constant term and the tone filter is a low-pass rather than a block.
+
 **Freq shifter** moves every partial by the same number of hertz rather than the
 same ratio, so harmonic input comes out inharmonic. Its own feedback shifts
 every lap again — the barber-pole effect — which keeps the squeal inside the

@@ -98,3 +98,62 @@ test('a second head up is a second repeat at twice the spacing', () => {
     )
   expect(second({ dlyHeads: 1 })).toBeGreaterThan(10 * second({}))
 })
+
+// A square burst, then the echoes on their own. The carrier lands on the tap
+// before the regen sum, so what it does compounds lap by lap and the tail is
+// where it shows.
+function square(hz: number, seconds: number, amp = 0.6): Float32Array {
+  const buf = new Float32Array(Math.round(seconds * SR))
+  for (let i = 0; i < buf.length; i++)
+    buf[i] = amp * (Math.sign(Math.sin((2 * Math.PI * hz * i) / SR)) || 1)
+  return buf
+}
+
+const BURST: Partial<Controls> = {
+  chipLevel: 0,
+  sampleLevel: 1,
+  sampleMode: 1,
+  dlyMix: 1,
+  delayMs: 375,
+  dlyFb: 0.7,
+}
+
+// One second of A3 in, then two seconds of nothing but repeats.
+const echoes = (o: Partial<Controls>) =>
+  renderBender({ ...BURST, ...o }, 3, b =>
+    b.sampler.setBuffer(square(220, 1)),
+  ).subarray(SR)
+
+// A square has no even harmonics, and the tail of a plain tape machine has none
+// either. At unison the product writes them in, a lap at a time.
+test('a unison carrier fills the even harmonics into the repeats', () => {
+  const plain = echoes({})
+  const ringed = echoes({ dlyRing: 1, dlyRingHz: 220 })
+  expect(bin(plain, 440)).toBeLessThan(0.001)
+  expect(bin(ringed, 440)).toBeGreaterThan(20 * bin(plain, 440))
+  expect(bin(ringed, 880)).toBeGreaterThan(20 * bin(plain, 880))
+})
+
+// An octave under puts a new fundamental in the echoes and leaves the note that
+// went in clean, since the carrier only reaches what is already on the tape.
+test('a sub carrier writes a fundamental an octave under into the echoes', () => {
+  const plain = echoes({})
+  const ringed = echoes({ dlyRing: 1, dlyRingHz: 110 })
+  expect(bin(plain, 110)).toBeLessThan(0.001)
+  expect(bin(ringed, 110)).toBeGreaterThan(20 * bin(plain, 110))
+  expect(bin(ringed, 330)).toBeGreaterThan(20 * bin(plain, 330))
+})
+
+// Modulation costs 3 dB, and the ring path hands it back, so turning the depth
+// up is a change of sound rather than a shorter tail. Unison is the worst case
+// — the dc block takes the product's constant term with it — and measures
+// 2.9 dB down.
+test('the ring path costs the tail no level', () => {
+  const plain = echoes({})
+  for (const dlyRingHz of [220, 110, 3]) {
+    const ringed = echoes({ dlyRing: 1, dlyRingHz })
+    expect(rms(ringed), String(dlyRingHz)).toBeGreaterThan(
+      rms(plain) / Math.SQRT2,
+    )
+  }
+})

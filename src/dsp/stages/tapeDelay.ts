@@ -4,8 +4,8 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 import { octaves } from '../util/pitch'
 import { DelayLine, fixedTap } from '../util/delayline'
 import { coef as timeCoef } from '../util/follower'
-import { SineOsc } from '../util/lfo'
-import { OnePoleLP, lpCoef } from '../util/onepole'
+import { QuadOsc, SineOsc } from '../util/lfo'
+import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
 import { flushDenormal, softclip } from '../util/softclip'
 import { mulberry32, type Rng } from '../util/rng'
 
@@ -19,6 +19,11 @@ const THUMP = 0.5
 // switch's order.
 export const HEAD_CHOICES = ['1', '1+2', '1+3', '2+3', '1+2+3'] as const
 const HEAD_MASKS = [1, 3, 5, 6, 7]
+
+// A sine carrier at full depth costs the tail 3 dB a lap, so the repeats die
+// faster for no reason anyone asked for. √2 is exactly what the modulation took
+// out, handed back to the ring path alone.
+const RING_MAKEUP = Math.SQRT2
 
 // Fractional delay with wow/flutter transport wobble and a saturating
 // feedback loop that runs away musically past unity. The capstan is a real
@@ -38,6 +43,12 @@ export class TapeDelay implements Stage {
   private toneL = new OnePoleLP()
   private toneR = new OnePoleLP()
   private wow = new SineOsc()
+  // The multiplier inside the regeneration, and the block that keeps a unison
+  // carrier's DC term from circulating — the tone filter is a low-pass and
+  // passes DC straight round the loop.
+  private ring = new QuadOsc()
+  private ringDcL = new DcBlocker()
+  private ringDcR = new DcBlocker()
   private flutterWalk = 0
   private motor = 1
   private slide = 0
@@ -93,6 +104,14 @@ export class TapeDelay implements Stage {
     const inertia = timeCoef(0.3, this.sr)
     const recenter = 1 / (3 * this.sr)
     const wowK = SineOsc.rate(wowHz, this.sr)
+    // Crossfade between the plain tap and the tap times a carrier, which by the
+    // AM identity is the depth of the modulation. It lands on the tap before
+    // the regen sum, so every repeat is shifted again and the tail becomes a
+    // lattice rather than a chorus on the last lap alone.
+    const ringDepth = p[IDX.dlyRing]!
+    const ringing = ringDepth > 0
+    const ringDc = 1 - (2 * Math.PI * 10) / this.sr
+    if (ringing) this.ring.setRate(p[IDX.dlyRingHz]!, this.sr)
 
     for (let i = 0; i < io.n; i++) {
       const delaySamples = modTime
@@ -132,8 +151,15 @@ export class TapeDelay implements Stage {
         sumL += this.lineL.readHermite(d)
         sumR += this.lineR.readHermite(d * 1.007)
       }
-      const tapL = this.toneL.process(sumL, coef)
-      const tapR = this.toneR.process(sumR, coef)
+      let tapL = this.toneL.process(sumL, coef)
+      let tapR = this.toneR.process(sumR, coef)
+      if (ringing) {
+        this.ring.step()
+        const rl = this.ringDcL.process(tapL * this.ring.im, ringDc)
+        const rr = this.ringDcR.process(tapR * this.ring.re, ringDc)
+        tapL += ringDepth * (RING_MAKEUP * rl - tapL)
+        tapR += ringDepth * (RING_MAKEUP * rr - tapR)
+      }
       let wl = io.l[i]! + softclip((fb / nHeads) * tapL)
       let wr = io.r[i]! + softclip((fb / nHeads) * tapR)
       if (micInject) {
@@ -175,6 +201,9 @@ export class TapeDelay implements Stage {
     this.toneL.reset()
     this.toneR.reset()
     this.wow.reset()
+    this.ring.reset()
+    this.ringDcL.reset()
+    this.ringDcR.reset()
     this.flutterWalk = 0
     this.motor = 1
     this.slide = 0

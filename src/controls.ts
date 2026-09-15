@@ -343,6 +343,8 @@ export const DEFAULT_CONTROLS = {
   wowHz: 0.8,
   flutter: 0,
   dlyToneHz: 6000,
+  dlyRingHz: 220,
+  dlyRing: 0,
   tapeBrake: 0,
   tapeMotorRail: 0,
   dlyHeads: 0,

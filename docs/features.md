@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 248 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 250 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 69 presets, 14 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -586,22 +586,24 @@ five-second loop joined once: _Splice_ is how bad the join is, and _Erase_ how
 much of the last lap the erase head lets through under the new one.
 
 <details>
-<summary>12 controls</summary>
+<summary>14 controls</summary>
 
-| control     | range                   | what it does                                                                                               |
-| ----------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Time        | 20 ms to 4 s            | Delay time                                                                                                 |
-| Heads       | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                    |
-| Feedback    | 0 to 1.5                | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                  |
-| Wow         | 0 to 50 ms              | Slow speed wobble of the transport                                                                         |
-| Wow rate    | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                 |
-| Flutter     | off to full             | Fast random speed jitter — worn pinch roller                                                               |
-| Tone        | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                      |
-| Brake       | off to full             | Drags the capstan                                                                                          |
-| Supply drag | off to full             | Wires the motor to the same dying supply as the toy                                                        |
-| Splice      | off to full             | How bad the join in the loop is                                                                            |
-| Erase       | off to full             | How much the erase head misses                                                                             |
-| Echo level  | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
+| control     | range                   | what it does                                                                                                                                        |
+| ----------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Time        | 20 ms to 4 s            | Delay time                                                                                                                                          |
+| Heads       | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                                                             |
+| Feedback    | 0 to 1.5                | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
+| Wow         | 0 to 50 ms              | Slow speed wobble of the transport                                                                                                                  |
+| Wow rate    | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                                          |
+| Flutter     | off to full             | Fast random speed jitter — worn pinch roller                                                                                                        |
+| Tone        | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
+| Ring        | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy |
+| Ring depth  | off to full             | How much of the tap goes through the carrier                                                                                                        |
+| Brake       | off to full             | Drags the capstan                                                                                                                                   |
+| Supply drag | off to full             | Wires the motor to the same dying supply as the toy                                                                                                 |
+| Splice      | off to full             | How bad the join in the loop is                                                                                                                     |
+| Erase       | off to full             | How much the erase head misses                                                                                                                      |
+| Echo level  | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
 
 </details>
 

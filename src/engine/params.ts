@@ -328,6 +328,8 @@ export const PARAM_DEFS = [
   ['wowHz', 'slew'],
   ['flutter', 'slew'],
   ['dlyToneHz', 'slew'],
+  ['dlyRingHz', 'slew'],
+  ['dlyRing', 'slew'],
   ['tapeBrake', 'slew'],
   ['tapeMotorRail', 'slew'],
   ['dlyHeads', 'step'],
