@@ -15,5 +15,11 @@
     "verbatimModuleSyntax": true,
     "types": ["vite/client", "@types/react", "node"]
   },
-  "include": ["src", "scripts", "astro.config.ts", "vitest.config.ts"]
+  "include": [
+    "src",
+    "scripts",
+    "astro.config.ts",
+    "vitest.config.ts",
+    ".astro/types.d.ts"
+  ]
 }

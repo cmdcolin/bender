@@ -4,4 +4,6 @@ export const appUrl = `${siteRoot}app/`
 
 export const privacyUrl = `${siteRoot}privacy/`
 
+export const guideUrl = `${siteRoot}guide/`
+
 export const boardUrl = (query: string) => `${appUrl}#${query}`

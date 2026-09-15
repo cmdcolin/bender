@@ -2,7 +2,7 @@
 import Analytics from '../components/Analytics.astro'
 import Card from '../components/Card.astro'
 import { DEFAULT_CONTROLS } from '../controls'
-import { appUrl, privacyUrl, siteRoot } from '../home/paths'
+import { appUrl, guideUrl, privacyUrl, siteRoot } from '../home/paths'
 import { applyPreset } from '../ui/presets/apply'
 import { PRESETS } from '../ui/presets/table'
 import { SIGNED_IN_HINT } from '../ui/cloud'
@@ -78,10 +78,7 @@ const presets = PRESETS.map(preset => ({
       <div class="barIn">
         <a class="brand" href={siteRoot}>bender</a>
         <nav class="barNav" aria-label="Site">
-          <a
-            href="https://github.com/cmdcolin/bender/blob/main/docs/USER-GUIDE.md"
-            >User guide</a
-          >
+          <a href={guideUrl}>User guide</a>
           <a href="https://github.com/cmdcolin/bender">Source</a>
           <a href={privacyUrl}>Privacy</a>
         </nav>

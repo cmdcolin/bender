@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "tsc -b && astro build",
+    "build": "astro sync && tsc -b && astro build",
     "ab": "tsx scripts/ab.ts",
     "audible": "tsx scripts/audible.ts",
     "bench": "tsx scripts/bench.ts",
@@ -21,7 +21,7 @@
     "spectrum": "tsx scripts/spectrum.ts",
     "preview": "astro preview",
     "test": "vitest run",
-    "typecheck": "tsc -b",
+    "typecheck": "astro sync && tsc -b",
     "pat": "node scripts/push.mjs patch",
     "min": "node scripts/push.mjs minor",
     "maj": "node scripts/push.mjs major",

@@ -1,4 +1,4 @@
-import { privacyUrl } from '../home/paths'
+import { guideUrl, privacyUrl } from '../home/paths'
 import { gitSha, versionLabel } from '../version'
 import styles from './AboutDialog.module.css'
 
@@ -39,7 +39,7 @@ export function AboutDialog(props: { onClose: () => void }) {
       <p className={styles.line}>
         <a
           className={styles.link}
-          href={`${REPO}/blob/main/docs/USER-GUIDE.md`}
+          href={guideUrl}
           target="_blank"
           rel="noreferrer"
         >

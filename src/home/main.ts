@@ -21,7 +21,7 @@ import {
 } from '../ui/cloud'
 import { sinceWords } from '../ui/relativeTime'
 import { markFor } from './mark'
-import { appUrl, boardUrl, siteRoot } from './paths'
+import { appUrl, boardUrl, guideUrl, siteRoot } from './paths'
 import type { SavedVoice } from '../ui/voiceModel'
 
 const need = (id: string): HTMLElement => {
@@ -244,11 +244,7 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
     [siteRoot, 'Home', true],
     ['#voices', 'Voices', false],
     ['#presets', 'Presets', false],
-    [
-      'https://github.com/cmdcolin/bender/blob/main/docs/USER-GUIDE.md',
-      'User guide',
-      false,
-    ],
+    [guideUrl, 'User guide', false],
   ]
   for (const [href, label, on] of links) {
     const link = el('a', on ? 'on' : undefined, label)
