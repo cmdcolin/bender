@@ -131,17 +131,21 @@ function thinOut(next: Controls, rand: () => number): Controls {
 // preset it lands on hands over its board and nothing else.
 export function randomLook(current: Controls, rand: () => number): Controls {
   const preset = PRESETS[Math.floor(rand() * PRESETS.length)]!
-  const rolled = thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand)
-  // The bay, after the thinning rather than before it: a preset can name a wire
-  // onto a bend this roll just took off the board, and a wire onto a stage that
-  // isn't there is a row of the panel claiming something is happening. It moves
-  // that end of the wire onto something the board is running — and only that,
-  // since turning the stage back on would undo the thinning that dried it.
-  const next = coherePatch(rolled, rand, { wake: false })
   // A preset that names crackle names it loud, and a roll that landed on that
   // preset never asked for it. The shy controls get rolled shy whatever the
   // preset had to say about them.
-  return keepYours(calmShy(next, rand), current)
+  const rolled = calmShy(
+    thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand),
+    rand,
+  )
+  // The bay, after the thinning and the calming rather than before them: a
+  // preset can name a wire onto a bend this roll just took off the board, or
+  // onto the fault of a bus line the calming just put back, and a wire onto a
+  // stage that isn't there is a row of the panel claiming something is
+  // happening. It moves that end of the wire onto something the board is
+  // running — and only that, since turning the stage back on would undo what
+  // dried it.
+  return keepYours(coherePatch(rolled, rand, { wake: false }), current)
 }
 
 // A roll, as against a nudge: the control takes a fresh value from anywhere on

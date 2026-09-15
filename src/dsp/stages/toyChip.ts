@@ -1,5 +1,5 @@
 import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
+import { DEST, hop } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
@@ -10,7 +10,7 @@ import { Drunk } from '../util/drift'
 import { A3_HZ, octaves, wrap1 } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 import { snap } from '../../scale'
-import { Bus } from '../bus'
+import { Bus, FAULT_NAMES } from '../bus'
 import {
   decodeStep,
   encodeStep,
@@ -570,10 +570,29 @@ export class ToyChip implements Stage {
     const pot = p[IDX.chipBendPot]!
     // Choice 0 on either selector is a bus nobody has been at, so the lines
     // count from -1 and every read below is a straight one.
-    this.dataLine = Math.round(p[IDX.chipDataLine]!) - 1
-    this.dataFault = Math.round(p[IDX.chipDataFault]!)
-    this.addrLine = Math.round(p[IDX.chipAddrLine]!) - 1
-    this.addrFault = Math.round(p[IDX.chipAddrFault]!)
+    const bay = ctx.mod
+    this.dataLine =
+      hop(
+        p[IDX.chipDataLine]!,
+        ROM_DATA_LINES + 1,
+        bay.read(DEST.chipDataLine),
+      ) - 1
+    this.dataFault = hop(
+      p[IDX.chipDataFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.chipDataFault),
+    )
+    this.addrLine =
+      hop(
+        p[IDX.chipAddrLine]!,
+        ROM_ADDR_LINES + 1,
+        bay.read(DEST.chipAddrLine),
+      ) - 1
+    this.addrFault = hop(
+      p[IDX.chipAddrFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.chipAddrFault),
+    )
     this.busCut = p[IDX.chipBusCut]!
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps

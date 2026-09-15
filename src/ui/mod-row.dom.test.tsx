@@ -139,3 +139,16 @@ test('a wire patched anywhere else shows up on the row', () => {
   expect(plug()).toBeNull()
   expect(chip()!.textContent).toBe('∿ body X▾')
 })
+
+test('a selector row solders a wire onto its own lane too', () => {
+  const group = GROUPS.find(g => g.name === 'FM chip')
+  if (!group) throw new Error('no FM chip')
+  render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
+  fireEvent.click(
+    screen.getByRole('button', { name: 'put a bay wire on Data line' }),
+  )
+  const wired = engine.controls.get()
+  expect(wired.mod0Src).toBe(SRC_LFO)
+  expect(wired.mod0Dest).toBe(choiceValue('mod0Dest', 'FM data line'))
+  expect(screen.getByRole('combobox', { name: 'picks up' })).toBeTruthy()
+})

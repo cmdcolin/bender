@@ -29,6 +29,14 @@ test('every control has exactly one widget, slider or editor', () => {
   expect([...keys].sort()).toEqual([...CONTROL_KEYS].sort())
 })
 
+test('a grouped list puts every choice under exactly one heading', () => {
+  for (const s of ALL_SLIDERS) {
+    if (!s.groups) continue
+    const grouped = s.groups.flatMap(g => g.choices)
+    expect([...grouped].sort(), s.key).toEqual([...s.choices!].sort())
+  }
+})
+
 test('defaults sit inside slider ranges', () => {
   for (const k of CONTROL_KEYS) {
     if (EDITOR_KEYS.has(k)) continue

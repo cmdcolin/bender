@@ -4,7 +4,7 @@ import { choiceName, choiceValue } from './controls'
 // The patch bay, from the far end: a control row asking whether the bay is on
 // it, and putting a lead there when it isn't.
 //
-// The bay itself is four wires and a list of thirty-six places to land, and
+// The bay itself is four wires and a list of fifty places to land, and
 // wiring the knob in front of you meant leaving the stage, finding a free wire,
 // finding the lane's name in that list, and coming back to hear it. Every one
 // of those steps is the same three writes this file does. Nothing here is a

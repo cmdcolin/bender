@@ -8,8 +8,8 @@ import {
   STEPS,
 } from '../../drums'
 import { IDX } from '../../engine/params'
-import { Bus } from '../bus'
-import { DEST } from '../modbus'
+import { Bus, FAULT_NAMES } from '../bus'
+import { DEST, hop } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import type { Transport } from '../transport'
@@ -723,10 +723,28 @@ export class ToyDrum implements Stage {
     const q = Math.pow(2, bits - 1)
     const ladder = p[IDX.drumLadder]!
     const ladderTol = p[IDX.drumLadderTol]!
-    this.addrLine = Math.round(p[IDX.drumAddrLine]!) - 1
-    this.addrFault = Math.round(p[IDX.drumAddrFault]!)
-    this.dataLine = Math.round(p[IDX.drumDataLine]!) - 1
-    this.dataFault = Math.round(p[IDX.drumDataFault]!)
+    this.addrLine =
+      hop(
+        p[IDX.drumAddrLine]!,
+        ADDR_LINES + 1,
+        ctx.mod.read(DEST.drumAddrLine),
+      ) - 1
+    this.addrFault = hop(
+      p[IDX.drumAddrFault]!,
+      FAULT_NAMES.length,
+      ctx.mod.read(DEST.drumAddrFault),
+    )
+    this.dataLine =
+      hop(
+        p[IDX.drumDataLine]!,
+        DATA_LINES + 1,
+        ctx.mod.read(DEST.drumDataLine),
+      ) - 1
+    this.dataFault = hop(
+      p[IDX.drumDataFault]!,
+      FAULT_NAMES.length,
+      ctx.mod.read(DEST.drumDataFault),
+    )
     this.busCut = p[IDX.drumBusCut]!
     this.chokeFrom =
       CHOKE_WIRING[Math.round(p[IDX.drumChoke]!)] ?? CHOKE_WIRING[0]!

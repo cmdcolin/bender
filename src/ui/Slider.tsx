@@ -120,7 +120,7 @@ function Tap({ def, label }: { def: SliderDef; label: string }) {
 
 // The bay's end of a row, for the controls one of its four wires can land on:
 // the same knob, moving on its own. It was always possible and never findable —
-// the wire is in the bay, the lane is one of thirty-six names in a list, and
+// the wire is in the bay, the lane is one of fifty names in a list, and
 // nothing on the stage you were standing on said the bay could reach it. The
 // button says it, and takes the trip.
 //
@@ -312,48 +312,68 @@ export function ControlSlider({
   if (def.choices) {
     const choices = def.choices
     const pick = (i: number) => write(def.key, def.min + i)
+    const option = (i: number) => (
+      <option key={`${i}${choices[i]}`} value={i}>
+        {choices[i]}
+      </option>
+    )
     return (
-      <Tip ref={tip} text={def.help}>
-        <div className={styles.row}>
-          <span
-            className={touched ? styles.labelTouched : styles.label}
-            onClick={() => tip.current?.toggle()}
-          >
-            {label}
-          </span>
-          <span className={styles.choices}>
-            {choices.length > CHOICES_AS_BUTTONS ? (
-              <select
-                className={touched ? styles.listOn : styles.list}
-                aria-label={label}
-                value={Math.round(value) - def.min}
-                onChange={e => pick(Number(e.currentTarget.value))}
-              >
-                {choices.map((c, i) => (
-                  <option key={`${i}${c}`} value={i}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              choices.map((c, i) => (
-                <button
-                  key={c}
-                  className={
-                    Math.round(value) - def.min === i
-                      ? styles.choiceOn
-                      : styles.choice
-                  }
-                  onClick={() => pick(i)}
+      <>
+        <Tip ref={tip} text={def.help}>
+          <div className={styles.row}>
+            <span
+              className={touched ? styles.labelTouched : styles.label}
+              onClick={() => tip.current?.toggle()}
+            >
+              {label}
+            </span>
+            <span className={styles.choices}>
+              {choices.length > CHOICES_AS_BUTTONS ? (
+                <select
+                  className={touched ? styles.listOn : styles.list}
+                  aria-label={label}
+                  value={Math.round(value) - def.min}
+                  onChange={e => pick(Number(e.currentTarget.value))}
                 >
-                  {c}
-                </button>
-              ))
-            )}
-            <Bind def={def} />
-          </span>
-        </div>
-      </Tip>
+                  {def.groups
+                    ? def.groups.map(g => (
+                        <optgroup key={g.name} label={g.name}>
+                          {g.choices.map(c => option(choices.indexOf(c)))}
+                        </optgroup>
+                      ))
+                    : choices.map((_, i) => option(i))}
+                </select>
+              ) : (
+                choices.map((c, i) => (
+                  <button
+                    key={c}
+                    className={
+                      Math.round(value) - def.min === i
+                        ? styles.choiceOn
+                        : styles.choice
+                    }
+                    onClick={() => pick(i)}
+                  >
+                    {c}
+                  </button>
+                ))
+              )}
+              {def.lane === undefined ? null : (
+                <Mod
+                  lane={def.lane}
+                  label={label}
+                  open={wireOpen}
+                  onOpen={next => setWireOpen(next)}
+                />
+              )}
+              <Bind def={def} />
+            </span>
+          </div>
+        </Tip>
+        {def.lane === undefined || !wireOpen ? null : (
+          <ModWire lane={def.lane} label={label} />
+        )}
+      </>
     )
   }
 

@@ -60,8 +60,36 @@ export const DEST = {
   filtRes: 33,
   fmBright: 34,
   fbMs: 35,
+  chipDataLine: 36,
+  chipDataFault: 37,
+  chipAddrLine: 38,
+  chipAddrFault: 39,
+  drumDataLine: 40,
+  drumDataFault: 41,
+  drumAddrLine: 42,
+  drumAddrFault: 43,
+  fmDataLine: 44,
+  fmDataFault: 45,
+  fmAddrLine: 46,
+  fmAddrFault: 47,
+  fmWaveLine: 48,
+  fmWaveFault: 49,
 } as const
-export const N_DEST = 36
+export const N_DEST = 50
+
+/** A selector moved by its lane, read once a block. A push of one is a lap of
+    the list, and it wraps round, so an S&H lands anywhere on it and a sweep
+    walks it in order. */
+export function hop(
+  choice: number,
+  choices: number,
+  lane: Float32Array | null,
+): number {
+  const at = Math.round(choice)
+  if (!lane) return at
+  const k = (at + Math.round(lane[0]! * choices)) % choices
+  return k < 0 ? k + choices : k
+}
 
 // A fader's lane, in the order the chain sums the sources. The chain applies it
 // to what the source put on the bus, so a wire there is a VCA on the channel.

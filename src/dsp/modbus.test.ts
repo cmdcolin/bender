@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'
 import { buildBender } from './build'
-import { DEST } from './modbus'
+import { DEST, hop } from './modbus'
 import { BLOCK } from './stage'
 import { makeIo, pitchHz, render, rms, SR, tail } from './testRender'
 
@@ -285,4 +285,85 @@ test('a held wire on the loop time is the same squeal as turning the knob there'
   const stock = pitchHz(tail(render(desk, 2)))
   expect(wired).toBeCloseTo(byHand, -1)
   expect(Math.abs(wired - stock)).toBeGreaterThan(0.1 * stock)
+})
+
+test('a selector lane wraps round the list either way', () => {
+  const lane = (v: number) => Float32Array.of(v)
+  expect(hop(2, 5, null)).toBe(2)
+  expect(hop(2, 5, lane(0.2))).toBe(3)
+  expect(hop(2, 5, lane(1))).toBe(2)
+  expect(hop(4, 5, lane(0.4))).toBe(1)
+  expect(hop(0, 5, lane(-0.2))).toBe(4)
+})
+
+// Nine choices on the FM chip's data line, so a third of a push is three steps:
+// from off to D2.
+test.each([
+  {
+    chip: 'FM data line',
+    board: { chipLevel: 0, drumLevel: 0, fmLevel: 0.8, fmDataFault: 1 },
+    dest: DEST.fmDataLine,
+    depth: 0.34,
+    byHand: { fmDataLine: 3 },
+  },
+  {
+    chip: 'toy data fault',
+    board: { chipLevel: 0.8, chipDataLine: 2 },
+    dest: DEST.chipDataFault,
+    depth: 0.5,
+    byHand: { chipDataFault: 2 },
+  },
+  {
+    chip: 'kit addr line',
+    board: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 120,
+      drumKick: 0b1000_1000_1000_1000,
+      drumAddrFault: 2,
+    },
+    dest: DEST.drumAddrLine,
+    depth: 0.2,
+    byHand: { drumAddrLine: 1 },
+  },
+] satisfies {
+  chip: string
+  board: Partial<Controls>
+  dest: number
+  depth: number
+  byHand: Partial<Controls>
+}[])(
+  'a held wire on the $chip is the knife moved there by hand',
+  ({ board, dest, depth, byHand }) => {
+    const wired = render(
+      { ...board, bodyX: 1, mod0Src: 5, mod0Dest: dest, mod0Depth: depth },
+      1,
+    )
+    const clean = render(board, 1)
+    expect(wired).not.toEqual(clean)
+    expect(wired).toEqual(render({ ...board, ...byHand }, 1))
+  },
+)
+
+test('an S&H on a line cuts a different wire as it goes', () => {
+  const fm: Partial<Controls> = {
+    chipLevel: 0,
+    drumLevel: 0,
+    fmLevel: 0.8,
+    fmDataFault: 1,
+  }
+  const hopping = render(
+    {
+      ...fm,
+      modLfoHz: 8,
+      modLfoShape: 3,
+      mod0Src: 1,
+      mod0Dest: DEST.fmDataLine,
+      mod0Depth: 1,
+    },
+    2,
+  )
+  for (let line = 0; line <= 8; line++) {
+    expect(hopping).not.toEqual(render({ ...fm, fmDataLine: line }, 2))
+  }
 })

@@ -363,6 +363,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipDataLine',
+        lane: 'toy data line',
         part: 'knife on the bus',
         label: 'Data line',
         min: 0,
@@ -375,6 +376,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipDataFault',
+        lane: 'toy data fault',
         needs: c => c.chipDataLine > 0,
         part: 'knife on the bus',
         label: 'Data fault',
@@ -387,6 +389,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipAddrLine',
+        lane: 'toy addr line',
         part: 'knife on the bus',
         label: 'Address line',
         min: 0,
@@ -399,6 +402,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipAddrFault',
+        lane: 'toy addr fault',
         needs: c => c.chipAddrLine > 0,
         part: 'knife on the bus',
         label: 'Address fault',
@@ -735,6 +739,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumAddrLine',
+        lane: 'kit addr line',
         part: 'knife on the bus',
         label: 'Address line',
         min: 0,
@@ -747,6 +752,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumAddrFault',
+        lane: 'kit addr fault',
         needs: c => c.drumAddrLine > 0,
         part: 'knife on the bus',
         label: 'Address fault',
@@ -759,6 +765,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumDataLine',
+        lane: 'kit data line',
         part: 'knife on the bus',
         label: 'Data line',
         min: 0,
@@ -771,6 +778,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumDataFault',
+        lane: 'kit data fault',
         needs: c => c.drumDataLine > 0,
         part: 'knife on the bus',
         label: 'Data fault',
@@ -935,6 +943,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmDataLine',
+        lane: 'FM data line',
         part: 'knife on the bus',
         label: 'Data line',
         min: 0,
@@ -947,6 +956,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmDataFault',
+        lane: 'FM data fault',
         part: 'knife on the bus',
         needs: c => c.fmDataLine > 0,
         label: 'Data fault',
@@ -959,6 +969,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmAddrLine',
+        lane: 'FM addr line',
         part: 'knife on the bus',
         label: 'Address line',
         min: 0,
@@ -971,6 +982,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmAddrFault',
+        lane: 'FM addr fault',
         part: 'knife on the bus',
         needs: c => c.fmAddrLine > 0,
         label: 'Address fault',
@@ -983,6 +995,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmWaveLine',
+        lane: 'FM wave line',
         part: 'knife on the bus',
         label: 'Wave line',
         min: 0,
@@ -995,6 +1008,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmWaveFault',
+        lane: 'FM wave fault',
         part: 'knife on the bus',
         needs: c => c.fmWaveLine > 0,
         label: 'Wave fault',

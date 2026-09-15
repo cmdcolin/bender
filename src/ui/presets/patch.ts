@@ -99,6 +99,20 @@ const LANDINGS: Landing[] = [
   at('filt res', ['filtMix'], { bend: 'filt' }),
   at('FM bright', ['fmLevel']),
   at('fb time', ['fbAmt']),
+  at('toy data line', ['chipLevel']),
+  at('toy addr line', ['chipLevel']),
+  at('toy data fault', ['chipLevel', 'chipDataLine']),
+  at('toy addr fault', ['chipLevel', 'chipAddrLine']),
+  at('kit data line', ['drumLevel']),
+  at('kit addr line', ['drumLevel']),
+  at('kit data fault', ['drumLevel', 'drumDataLine']),
+  at('kit addr fault', ['drumLevel', 'drumAddrLine']),
+  at('FM data line', ['fmLevel']),
+  at('FM addr line', ['fmLevel']),
+  at('FM wave line', ['fmLevel']),
+  at('FM data fault', ['fmLevel', 'fmDataLine']),
+  at('FM addr fault', ['fmLevel', 'fmAddrLine']),
+  at('FM wave fault', ['fmLevel', 'fmWaveLine']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

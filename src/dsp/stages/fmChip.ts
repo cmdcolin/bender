@@ -1,6 +1,6 @@
 import { IDX } from '../../engine/params'
-import { Bus, Strobe } from '../bus'
-import { DEST } from '../modbus'
+import { Bus, FAULT_NAMES, Strobe } from '../bus'
+import { DEST, hop } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus'
@@ -56,6 +56,8 @@ import {
 // glitch; it simply never ends.
 
 const N_CH = 4
+const DATA_WIDTH = 8
+const ADDR_WIDTH = 6
 const N_REGS = 64
 
 // Where the percussion bank starts. Set the mode bit and everything from here
@@ -319,8 +321,8 @@ export class FmChip implements Stage {
   private vibPhase = 0
   private amGain = 1
   private vibFactor = 1
-  private dataBus = new Bus(8)
-  private addrBus = new Bus(6)
+  private dataBus = new Bus(DATA_WIDTH)
+  private addrBus = new Bus(ADDR_WIDTH)
   private dataLine = -1
   private dataFault = 0
   private addrLine = -1
@@ -961,14 +963,30 @@ export class FmChip implements Stage {
       carRatio: Math.round(p[IDX.fmCarRatio]!),
       modDecay: Math.round(p[IDX.fmModDecay]!),
     }
-    this.dataLine = Math.round(p[IDX.fmDataLine]!) - 1
-    this.dataFault = Math.round(p[IDX.fmDataFault]!)
-    this.addrLine = Math.round(p[IDX.fmAddrLine]!) - 1
-    this.addrFault = Math.round(p[IDX.fmAddrFault]!)
+    const bay = ctx.mod
+    this.dataLine =
+      hop(p[IDX.fmDataLine]!, DATA_WIDTH + 1, bay.read(DEST.fmDataLine)) - 1
+    this.dataFault = hop(
+      p[IDX.fmDataFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmDataFault),
+    )
+    this.addrLine =
+      hop(p[IDX.fmAddrLine]!, ADDR_WIDTH + 1, bay.read(DEST.fmAddrLine)) - 1
+    this.addrFault = hop(
+      p[IDX.fmAddrFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmAddrFault),
+    )
     this.busCut = p[IDX.fmBusCut]!
     this.strobe = p[IDX.fmStrobe]!
-    this.waveLine = Math.round(p[IDX.fmWaveLine]!) - 1
-    this.waveFault = Math.round(p[IDX.fmWaveFault]!)
+    this.waveLine =
+      hop(p[IDX.fmWaveLine]!, SINE_BITS + 1, bay.read(DEST.fmWaveLine)) - 1
+    this.waveFault = hop(
+      p[IDX.fmWaveFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmWaveFault),
+    )
     const rail = this.rail
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 

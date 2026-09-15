@@ -1,7 +1,7 @@
 - Knob automation — the assistant-suggested one you'd blessed. Needs an arm
   affordance, a control-rate recorder, transport-locked playback, and a real
   decision about whether a recorded sweep rides in presets/URL/undo. The patch
-  bay can't host it: its 36 destinations are DSP lanes, not the 331 control
+  bay can't host it: its 50 destinations are DSP lanes, not the 331 control
   keys.
 - The agent interface — your idea, scoped in agent-docs/agent-interface.md.
   engine.ts already has patch/morphTo/meter as real methods, so the facade is

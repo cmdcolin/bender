@@ -126,15 +126,13 @@ test('the bay counts what is picking its oscillator up', () => {
 })
 
 // The tables' half of the same promise: a lane is a name the bay knows, one
-// control owns it, and the row that owns it is a knob rather than a list of
-// picks — the `+ mod` button is drawn beside a readout.
+// control owns it.
 test('every lane a control claims is a lane the bay has, and claimed once', () => {
   const dests = sliderFor('mod0Dest').choices ?? []
   const claimed = new Map<string, string>()
   for (const s of ALL_SLIDERS)
     if (s.lane !== undefined) {
       expect(dests).toContain(s.lane)
-      expect(s.choices).toBeUndefined()
       expect(claimed.get(s.lane)).toBeUndefined()
       claimed.set(s.lane, s.key)
     }

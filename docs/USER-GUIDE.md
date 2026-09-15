@@ -351,11 +351,11 @@ wire does to the board is itself something opening and closing.
 
 Every control one of the four wires can land on carries a **+ mod** button
 beside its readout, so a knob can be set moving from the stage you are standing
-on rather than by finding the lane in the bay's own list of thirty-six. The
-press solders the first spare wire from the LFO onto that control, turns nothing
-else up, and folds the wire out under the row: what it picks up, how hard it
-pushes, and — while it is on the LFO — the rate and shape that oscillator is
-running at. Patched, the row wears a chip saying what is driving it and how fast
+on rather than by finding the lane in the bay's own list of fifty. The press
+solders the first spare wire from the LFO onto that control, turns nothing else
+up, and folds the wire out under the row: what it picks up, how hard it pushes,
+and — while it is on the LFO — the rate and shape that oscillator is running at.
+Patched, the row wears a chip saying what is driving it and how fast
 (`∿ LFO 1.0Hz`), which is the difference between a slow sweep and a buzz without
 opening anything; pressing the chip folds the wire out again, and **× unplug**
 takes it off, keeping where it landed and how hard it was pushing so the next
