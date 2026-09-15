@@ -2,6 +2,14 @@
 
 All notable changes to bender are documented here.
 
+## [0.20.5](https://github.com/cmdcolin/bender/compare/v0.20.4...v0.20.5) - 2026-09-15
+
+### Features
+- *(ui)* [`eb94f94`](https://github.com/cmdcolin/bender/commit/eb94f9481df0475a3effb535c67629cf9a2eacbe) put the home page in the why-sign-in card, and lighten the prose
+
+### Other Changes
+- [`2c3ecb9`](https://github.com/cmdcolin/bender/commit/2c3ecb9faad9a83681f5a74cad27c7f5afef0373) Rename source to github
+
 ## [0.20.4](https://github.com/cmdcolin/bender/compare/v0.20.3...v0.20.4) - 2026-09-15
 
 ### Features
