@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   fetchHome,
   putVoices,
@@ -8,28 +8,44 @@ import {
   watchAuth,
   type CloudUser,
 } from './cloud'
-import { markOpened, removeVoice, upsertVoice } from './voiceModel'
+import {
+  markOpened,
+  removeVoice,
+  suggestVoiceName,
+  upsertVoice,
+} from './voiceModel'
 import type { CurrentSession, SavedVoice } from './voiceModel'
 
 // The voice library: who is signed in, what they have saved, and the verbs over
-// it. Firestore is the only store — nothing is written to this device — so
-// **signed out there is nothing to save into**, and that shapes the hook.
-// `user === null` is not a degraded mode with a local fallback behind it; it is
-// the state where saving does not exist yet, and the popover says so instead of
-// taking a save that would go nowhere.
+// it. Firestore is the only store, and the hook writes nothing to this device,
+// so **signed out there is nowhere to save into**. `user === null` is the state
+// where the library does not exist yet.
+//
+// `saveVoice` holds a save pressed in that state: it answers `needs-auth`,
+// keeps the board, and writes it as soon as a sign-in lands. The caller's job
+// is to ask why an account, which App does with the why-sign-in card.
 //
 // What it buys: a voice named on the laptop is on the phone, and clearing site
-// data no longer loses the library. What it costs: no saving without an
+// data no longer loses the library. What it costs: no library without an
 // account. Presets, the walk and the address bar are untouched, so a session
-// that never signs in is the app exactly as it was.
+// that never signs in is the app it always was.
 export type CloudStatus = 'signed-out' | 'loading' | 'ready' | 'error'
 
-// What the button says for a beat after a save. One value rather than three
-// flags, because as separate booleans they could contradict each other on
-// screen. All three exist because ctrl+S saves with the popover shut, so the
-// button is the only surface that can answer.
-export type VoiceFlash =
-  { kind: 'saved'; name: string } | { kind: 'needs-auth' } | { kind: 'failed' }
+// What the save button says for a beat after a save. One value, because two
+// booleans could contradict each other on screen. ctrl+S and the panel's save
+// button both save with the popover shut, so the button is the only surface
+// that can answer.
+export type VoiceFlash = { kind: 'saved'; name: string } | { kind: 'failed' }
+
+// What came of asking to save. On `needs-auth` the hook has kept the board, and
+// the caller opens the why-sign-in card.
+export type SaveOutcome = 'saving' | 'needs-auth'
+
+/** A save waiting on a sign-in: the board as it was when the key was pressed. */
+interface PendingSave {
+  name: string
+  query: string
+}
 
 export function useSavedVoices() {
   const [voices, setVoices] = useState<SavedVoice[]>([])
@@ -41,6 +57,14 @@ export function useSavedVoices() {
   const [error, setError] = useState<string | null>(null)
   const [lastName, setLastName] = useState<string | null>(null)
   const [flash, setFlash] = useState<VoiceFlash | null>(null)
+
+  // A save pressed with nobody signed in, kept until the list it belongs in has
+  // been fetched. Press save, sign in, and the board is saved, so keeping a
+  // board costs one gesture and a popup.
+  //
+  // A ref, because the auth subscription's callback closes over the render that
+  // installed it and has to read a press made since.
+  const pending = useRef<PendingSave | null>(null)
 
   // Up for a beat, then down — but only if it is still the one this call put
   // up, compared by identity so a second save does not have its own answer cut
@@ -61,6 +85,30 @@ export function useSavedVoices() {
   // would close on success with nothing listening.
   const [wantAuth, setWantAuth] = useState(wasSignedIn)
 
+  // Every write is cloud-only, and the list moves once the document has been
+  // accepted rather than before: an optimistic row is a row that looks saved
+  // and is not, which is the one thing a save must never show.
+  const commit = (uid: string, next: SavedVoice[], landed?: string) => {
+    putVoices(uid, next)
+      .then(() => {
+        setVoices(next)
+        setError(null)
+        if (landed !== undefined) {
+          setLastName(landed)
+          showFlash({ kind: 'saved', name: landed })
+        }
+      })
+      .catch((e: unknown) => {
+        console.error('saving voices failed', e)
+        setError('could not save — check your connection')
+        showFlash({ kind: 'failed' })
+      })
+  }
+
+  const write = (next: SavedVoice[], landed?: string) => {
+    if (user !== null) commit(user.uid, next, landed)
+  }
+
   // Signing in, signing out and the restore-on-load all arrive here, so there
   // is one path that fetches the list rather than one per way in.
   const applyUser = (next: CloudUser | null) => {
@@ -79,12 +127,26 @@ export function useSavedVoices() {
         setCurrent(home.current)
         setStatus('ready')
         setError(null)
+        landPending(next.uid, home.voices)
       })
       .catch((e: unknown) => {
         console.error('loading saved voices failed', e)
         setStatus('error')
         setError('could not load your saved voices')
       })
+  }
+
+  // The save somebody pressed on the way in, written now that there is an
+  // account to write it to. suggestVoiceName runs again over the list that just
+  // arrived, because the first run had an empty list to work from: without the
+  // second one, a save named "my voice" would overwrite the "my voice" the
+  // account already held.
+  const landPending = (uid: string, voices: readonly SavedVoice[]) => {
+    const want = pending.current
+    pending.current = null
+    if (want === null) return
+    const name = suggestVoiceName(voices, want.name)
+    commit(uid, upsertVoice(voices, name, want.query, Date.now()), name)
   }
 
   // Firebase resolves the unsubscribe asynchronously, so teardown covers both
@@ -114,27 +176,6 @@ export function useSavedVoices() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wantAuth])
 
-  // Every write is cloud-only, and the list moves once the document has been
-  // accepted rather than before: an optimistic row is a row that looks saved
-  // and is not, which is the one thing a save must never show.
-  const write = (next: SavedVoice[], landed?: string) => {
-    if (user === null) return
-    putVoices(user.uid, next)
-      .then(() => {
-        setVoices(next)
-        setError(null)
-        if (landed !== undefined) {
-          setLastName(landed)
-          showFlash({ kind: 'saved', name: landed })
-        }
-      })
-      .catch((e: unknown) => {
-        console.error('saving voices failed', e)
-        setError('could not save — check your connection')
-        showFlash({ kind: 'failed' })
-      })
-  }
-
   return {
     voices,
     /** The board this account last had open. The home page is what reads it. */
@@ -144,13 +185,13 @@ export function useSavedVoices() {
     error,
     lastName,
     flash,
-    canSave: status === 'ready',
-    saveVoice: (name: string, query: string) => {
+    saveVoice: (name: string, query: string): SaveOutcome => {
       if (status !== 'ready') {
-        showFlash({ kind: 'needs-auth' })
-        return
+        pending.current = { name, query }
+        return 'needs-auth'
       }
       write(upsertVoice(voices, name, query, Date.now()), name)
+      return 'saving'
     },
     deleteVoice: (name: string) => {
       write(removeVoice(voices, name))
@@ -179,15 +220,18 @@ export function useSavedVoices() {
           code === 'auth/popup-closed-by-user' ||
           code === 'auth/cancelled-popup-request'
         ) {
+          pending.current = null
           setStatus('signed-out')
         } else {
           console.error('sign-in failed', e)
+          pending.current = null
           setStatus('error')
           setError('sign-in failed — try again')
         }
       })
     },
     signOut: () => {
+      pending.current = null
       cloudSignOut().catch((e: unknown) => {
         console.error('sign-out failed', e)
       })

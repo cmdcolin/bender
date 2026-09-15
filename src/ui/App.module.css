@@ -123,6 +123,12 @@
   composes: action from './button.module.css';
 }
 
+/* A verb that did not land — a save the network refused. Red for as long as the
+   ✕ is up, which is longer than a ✓ stays. */
+.btnBad {
+  composes: actionDanger from './button.module.css';
+}
+
 .btnOn {
   composes: actionOn from './button.module.css';
 }

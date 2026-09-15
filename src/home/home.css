@@ -235,6 +235,119 @@ body {
   color: var(--fg3);
 }
 
+/* --- why sign in ---------------------------------------------------------- */
+
+/* A question, drawn as one: text beside the button it is about rather than a
+   second button competing with it. */
+.why {
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: 4px 2px;
+  background: none;
+  color: var(--fg3);
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.why:hover,
+.why:focus-visible {
+  color: var(--accent);
+}
+
+.whyCard {
+  width: min(560px, calc(100vw - 24px));
+  padding: 16px 18px;
+  background: var(--bg2);
+  color: var(--fg2);
+  border: 1px solid var(--border-hover);
+  border-radius: 4px;
+  box-shadow: 0 10px 30px #000b;
+}
+
+.whyCard::backdrop {
+  background: #000a;
+}
+
+.whyTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.whyHead {
+  margin: 0 0 12px;
+  font-size: var(--fs-xl);
+}
+
+.whyList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.whyList li {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.whyList b {
+  color: var(--fg);
+}
+
+.whyList span {
+  font-size: var(--fs-sm);
+  color: var(--fg3);
+}
+
+.whyLine {
+  margin: 0 0 10px;
+  font-size: var(--fs-sm);
+  color: var(--fg3);
+}
+
+.whyLine a {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.whyFine {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--fg4);
+}
+
+/* --- running prose, which only the privacy page has ---------------------- */
+
+.prose p,
+.prose li {
+  max-width: 46rem;
+  color: var(--fg3);
+}
+
+.prose li {
+  margin-bottom: 6px;
+}
+
+.prose b {
+  color: var(--fg2);
+}
+
+.prose a {
+  color: var(--accent);
+}
+
+.prose code {
+  font-size: 0.95em;
+  color: var(--fg2);
+}
+
 /* --- sections and the card grid ------------------------------------------ */
 
 .sec {

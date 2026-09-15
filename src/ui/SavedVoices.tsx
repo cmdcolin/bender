@@ -45,6 +45,9 @@ export function SavedVoices(props: {
   error: string | null
   onSignIn: () => void
   onSignOut: () => void
+  /** Opens the why-sign-in card, which the panel's menu and the save button
+      open too. The pane here gives the one-sentence version. */
+  onWhy: () => void
 }) {
   const signedIn = props.status === 'ready'
   const [open, setOpen] = useState(false)
@@ -212,6 +215,10 @@ export function SavedVoices(props: {
               <SignInPane
                 status={props.status}
                 onSignIn={props.onSignIn}
+                onWhy={() => {
+                  setOpen(false)
+                  props.onWhy()
+                }}
                 error={props.error}
               />
             )}
@@ -225,12 +232,14 @@ export function SavedVoices(props: {
   )
 }
 
-// What an account is for here, and the button. One sentence, because the honest
-// version is short: this is the only thing in the app that needs one.
+// What an account is for here, and the button. One sentence, because the
+// library is the only thing in the app that needs one. `why sign in?` opens the
+// long answer for anyone who wants it.
 function SignInPane(props: {
   status: CloudStatus
   error: string | null
   onSignIn: () => void
+  onWhy: () => void
 }) {
   // Picking a session back up is not being asked to start one: a returning user
   // would otherwise read the pitch for something they already have.
@@ -244,9 +253,14 @@ function SignInPane(props: {
         so they follow you to another machine. Everything else here works signed
         out.
       </p>
-      <button className={styles.save} onClick={props.onSignIn}>
-        sign in with Google
-      </button>
+      <div className={styles.signInRow}>
+        <button className={styles.save} onClick={props.onSignIn}>
+          sign in with Google
+        </button>
+        <button className={styles.why} onClick={props.onWhy}>
+          why sign in?
+        </button>
+      </div>
       {props.error === null ? null : (
         <p className={styles.err}>{props.error}</p>
       )}

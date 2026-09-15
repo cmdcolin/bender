@@ -1,10 +1,17 @@
 ---
+import Analytics from '../components/Analytics.astro'
 import Card from '../components/Card.astro'
 import { DEFAULT_CONTROLS } from '../controls'
-import { appUrl, siteRoot } from '../home/paths'
+import { appUrl, privacyUrl, siteRoot } from '../home/paths'
 import { applyPreset } from '../ui/presets/apply'
 import { PRESETS } from '../ui/presets/table'
 import { boardHash } from '../ui/share'
+import {
+  FREE_WITHOUT,
+  LINKS_INSTEAD,
+  REASONS,
+  WHAT_IT_HOLDS,
+} from '../ui/whySignIn'
 import '../theme.css'
 import '../home/home.css'
 
@@ -39,6 +46,7 @@ const presets = PRESETS.map(preset => ({
     <script>
       import '../home/main'
     </script>
+    <Analytics />
   </head>
   <body>
     <header class="bar">
@@ -50,8 +58,11 @@ const presets = PRESETS.map(preset => ({
             >User guide</a
           >
           <a href="https://github.com/cmdcolin/bender">Source</a>
+          <a href={privacyUrl}>Privacy</a>
         </nav>
         <div class="barEnd">
+          <!-- Beside the sign-in button, where the reader meets the ask. -->
+          <button class="why" id="why" type="button">Why sign in?</button>
           <button class="btn" id="signIn" type="button">
             <svg
               class="ico"
@@ -123,7 +134,8 @@ const presets = PRESETS.map(preset => ({
       </p>
       <p class="dim">
         Sign in to keep voices under a name and pick a session up on another
-        machine. Everything else works signed out.
+        machine. Everything else works signed out.{' '}
+        <button class="why" id="whyBelow" type="button">Why sign in?</button>
       </p>
       <section class="sec" id="presets">
         <h2 class="secHead">Presets</h2>
@@ -135,5 +147,36 @@ const presets = PRESETS.map(preset => ({
     </main>
 
     <div id="home" hidden></div>
+
+    <!-- The long answer, from the same strings the app's own card renders, so
+         the two say the same thing. Built here at build time, so it is in the
+         page for a reader with no JavaScript. -->
+    <dialog class="whyCard" id="whyCard" aria-labelledby="whyHead">
+      <div class="whyTop">
+        <h2 class="whyHead" id="whyHead">Why sign in?</h2>
+        <button class="btn" id="whyClose" type="button">Close</button>
+      </div>
+      <ul class="whyList">
+        {
+          REASONS.map(reason => (
+            <li>
+              <b>{reason.head}</b>
+              <span>{reason.says}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="whyLine">{FREE_WITHOUT}</p>
+      <p class="whyLine">
+        {WHAT_IT_HOLDS} <a href={privacyUrl}>What is stored, in full →</a>
+      </p>
+      <p class="cta">
+        <button class="btn primary" id="whySignIn" type="button"
+          >Sign in with Google</button
+        >
+        <a class="btn" href={appUrl}>Open the app instead →</a>
+      </p>
+      <p class="whyFine">{LINKS_INSTEAD}</p>
+    </dialog>
   </body>
 </html>

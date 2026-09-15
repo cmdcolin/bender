@@ -1,0 +1,117 @@
+/* The about card's box, a little wider: three headed paragraphs read as a wall
+   at 400px. Modal for the same reason about is — it opens over a panel that
+   scrolls and clips, and the top layer clears both. */
+.card {
+  width: min(460px, calc(100vw - 24px));
+  padding: 10px 12px;
+  background: var(--bg2);
+  color: var(--fg2);
+  border: 1px solid var(--border-hover);
+  border-radius: 4px;
+  box-shadow: 0 10px 30px #000b;
+  font-size: var(--fs-sm);
+}
+
+.card::backdrop {
+  background: #000a;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+
+.title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.close {
+  composes: chip from './button.module.css';
+}
+
+/* The save waiting on the button below, called out because it is the only
+   thing here that is about this press rather than about accounts. */
+.pending {
+  margin: 0 0 10px;
+  padding: 6px 8px;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--fg2);
+  background: var(--bg3);
+  border-left: 2px solid var(--accent);
+  border-radius: 3px;
+}
+
+.pendingName {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.reason {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.reasonHead {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.reasonSays {
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--fg3);
+}
+
+.link {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.line {
+  margin: 0 0 8px;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--fg3);
+}
+
+/* Two ways on, side by side and at the same size: the second one is not a
+   consolation prize. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 2px 0 8px;
+}
+
+.go {
+  composes: action from './button.module.css';
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+.alt {
+  composes: action from './button.module.css';
+}
+
+.fine {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--fg4);
+}

@@ -516,16 +516,25 @@ written this way.
 
 ## Signing in and saved voices
 
-A voice is a whole board under a name, the way a synth keeps a patch. The panel
-carries a **saved** button beside the nameplate — it says **sign in** until you
-have an account behind it — and the popover it opens is where voices are saved
-and brought back.
+A voice is a whole board under a name, the way a synth keeps a patch. Three
+things save one, and all three save the same thing:
 
-Saving takes one press: the name box already holds a suggestion, which is the
-preset the board is standing on if it is standing on one, and the voice you last
-saved or recalled otherwise. **ctrl+S** (**⌘S** on a Mac) saves under that same
-suggestion without opening anything. Saving under a name that is already in the
-list overwrites that voice in place rather than adding a second one.
+- **save**, in the panel's row of verbs between reset and undo. One press, no
+  typing.
+- **ctrl+S** (**⌘S** on a Mac), which does what that button does.
+- the **saved** popover beside the nameplate — it says **sign in** until you
+  have an account behind it — where the name box lets you type a name first.
+
+A press saves under the name the popover is already showing: the preset the
+board is standing on if it is standing on one, and otherwise the voice you last
+saved or recalled. A name already in the list overwrites that voice in place, so
+re-saving a voice leaves the list in the order it was.
+
+Pressing save with nobody signed in holds the board and opens **why sign in?**,
+the same card the panel's ☰ menu opens. Sign in from that card and the board
+you were looking at is saved under the name the card named. If the account turns
+out to hold that name already, the save lands beside the voice there and counts
+up: _dying toy 2_.
 
 Each row in the list does four things:
 
@@ -540,7 +549,9 @@ Each row in the list does four things:
 The list lives on your Google account rather than on this machine, so a voice
 named on the laptop is there on the phone, and clearing site data does not lose
 it. Signing in is a popup, and nothing else in bender needs an account: presets,
-rolls, MIDI, recording and every link all work signed out.
+rolls, MIDI, recording and every link all work signed out. The
+[privacy page](https://cmdcolin.github.io/bender/privacy/) lists what the
+account holds, and the sign-in card and the about card both link to it.
 
 Signed in, the app also mirrors the board you have open onto your account, and
 the [home page](https://cmdcolin.github.io/bender/) offers it back under

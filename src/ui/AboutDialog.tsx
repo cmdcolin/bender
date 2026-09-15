@@ -1,3 +1,4 @@
+import { privacyUrl } from '../home/paths'
 import { gitSha, versionLabel } from '../version'
 import styles from './AboutDialog.module.css'
 
@@ -56,6 +57,15 @@ export function AboutDialog(props: { onClose: () => void }) {
         ·{' '}
         <a className={styles.link} href={REPO} target="_blank" rel="noreferrer">
           source on GitHub ↗
+        </a>{' '}
+        ·{' '}
+        <a
+          className={styles.link}
+          href={privacyUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          privacy ↗
         </a>
       </p>
       {/* The sha as well as the tag: a bug report against "v0.17.2" cannot say

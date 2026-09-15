@@ -39,6 +39,7 @@ import { StartOverlay } from './StartOverlay'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { SavedVoices } from './SavedVoices'
 import { useBoardUrl } from './useBoardUrl'
+import { WhySignInDialog } from './WhySignInDialog'
 import { useCurrentSession } from './useCurrentSession'
 import { useSavedVoices } from './useSavedVoices'
 import { suggestVoiceName, type SavedVoice } from './voiceModel'
@@ -90,6 +91,17 @@ const MUTATE_HELP =
 // timer, forever. Nothing else on the board plays itself.
 const DRIFT_HELP =
   'Lets the board nudge itself somewhere near where it stands, every fifteen seconds, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
+
+// Save sits in the row of verbs, among the other things you do to the board on
+// screen. The library button beside the nameplate holds the list and the
+// account.
+const SAVE_HELP =
+  'Keeps the board on screen as a voice, under the name the saved menu is offering. ctrl+S does the same. Saving again under that name overwrites that voice.'
+
+// The same button with nobody signed in. It stays live, and a press opens the
+// card that says what an account is for.
+const SAVE_SIGNED_OUT_HELP =
+  'Keeps the board on screen under a name, on your account. Press it to read what an account is for; the board you are looking at is saved as soon as you sign in.'
 
 function MorphControl(props: {
   seconds: MorphSeconds
@@ -236,11 +248,16 @@ export function App(props: { openedFromLink?: boolean }) {
   // afterwards is a second gesture and gets no overlay to answer to.
   const [showStart, setShowStart] = useState(!!props.openedFromLink)
   const [showAbout, setShowAbout] = useState(false)
+  // Why an account, and the name of the save waiting on the answer. `null` is
+  // shut, and `{ pending: null }` is the card opened from the menu with no save
+  // behind it.
+  const [why, setWhy] = useState<{ pending: string | null } | null>(null)
   const [showMenu, setShowMenu] = useState(false)
   const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
 
   const lib = useSavedVoices()
   const libUid = lib.user?.uid ?? null
+  const signedIn = lib.status === 'ready'
 
   // The board as the address bar spells it, which is what a voice holds.
   const boardQuery = () =>
@@ -263,10 +280,10 @@ export function App(props: { openedFromLink?: boolean }) {
       engine.morphTo(boardFrom(patch, engine.controls.get()), morphSeconds)
     lib.markRecalled(voice.name)
   }
-  const copyVoiceLink = (voice: SavedVoice) => {
+  const copyLink = (query: string) => {
     const { origin, pathname } = window.location
     return navigator.clipboard
-      .writeText(`${origin}${pathname}#${voice.query}`)
+      .writeText(`${origin}${pathname}#${query}`)
       .then(() => true)
       .catch(() => false)
   }
@@ -299,13 +316,20 @@ export function App(props: { openedFromLink?: boolean }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // A save with nobody signed in opens the why-sign-in card. useSavedVoices
+  // holds the board, so signing in from the card saves what was on screen when
+  // the key went down.
+  const askSave = () => {
+    const name = suggestName()
+    if (lib.saveVoice(name, boardQuery()) === 'needs-auth')
+      setWhy({ pending: name })
+  }
+
   // Read at keypress time rather than closed over when the listener went on,
   // so the handler goes on the window once and still saves the board and the
   // library as they are now.
   const save = useRef(() => {})
-  save.current = () => {
-    lib.saveVoice(suggestName(), boardQuery())
-  }
+  save.current = askSave
 
   // Save, on the key every application that saves anything puts it on. The
   // board is not a document and the browser's own dialog would offer to write
@@ -577,13 +601,14 @@ export function App(props: { openedFromLink?: boolean }) {
               onRecall={recall}
               onOpen={openVoice}
               onDelete={lib.deleteVoice}
-              onCopyLink={copyVoiceLink}
+              onCopyLink={voice => copyLink(voice.query)}
               flash={lib.flash}
               status={lib.status}
               user={lib.user}
               error={lib.error}
               onSignIn={lib.signIn}
               onSignOut={lib.signOut}
+              onWhy={() => setWhy({ pending: null })}
             />
             <Panic />
             {/* Everything about the board rather than a stage of it, and rare
@@ -607,6 +632,20 @@ export function App(props: { openedFromLink?: boolean }) {
                 role="menu"
                 onClose={() => setShowMenu(false)}
               >
+                {/* Only with nobody signed in; a signed-in reader has the
+                    answer already. */}
+                {signedIn || (
+                  <button
+                    role="menuitem"
+                    className={menuItem(false)}
+                    onClick={() => {
+                      setShowMenu(false)
+                      setWhy({ pending: null })
+                    }}
+                  >
+                    why sign in?
+                  </button>
+                )}
                 <button
                   role="menuitem"
                   className={menuItem(false)}
@@ -675,6 +714,28 @@ export function App(props: { openedFromLink?: boolean }) {
                 reset
               </button>
             </Tip>
+            {/* Between the verbs that change the board and the two that step
+              back through it. The label holds the width of its own ✓, so the
+              row keeps still as a save lands. */}
+            <Tip text={signedIn ? SAVE_HELP : SAVE_SIGNED_OUT_HELP}>
+              <button
+                className={
+                  lib.flash?.kind === 'failed' ? styles.btnBad : styles.btn
+                }
+                onClick={askSave}
+              >
+                <span className={styles.holdsWidest}>
+                  <span className={styles.widest}>saved ✓</span>
+                  <span>
+                    {lib.flash?.kind === 'saved'
+                      ? 'saved ✓'
+                      : lib.flash?.kind === 'failed'
+                        ? 'save ✕'
+                        : 'save'}
+                  </span>
+                </span>
+              </button>
+            </Tip>
             {/* Beside reset, because what undo has in common with it is what a
               hand reaching for either one wants: out of here. */}
             <Tip text="Steps back through the boards you have been through (ctrl+z).">
@@ -714,6 +775,20 @@ export function App(props: { openedFromLink?: boolean }) {
         {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
 
         {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
+
+        {/* Closing on the way to the popup leaves the Google window clear.
+            The save the card was holding lands on the save button below. */}
+        {why && (
+          <WhySignInDialog
+            pendingName={why.pending}
+            onClose={() => setWhy(null)}
+            onSignIn={() => {
+              setWhy(null)
+              lib.signIn()
+            }}
+            onCopyLink={() => copyLink(boardQuery())}
+          />
+        )}
 
         <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
         {openGroup ? (

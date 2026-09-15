@@ -1,0 +1,21 @@
+---
+// Google Analytics, on every page the site serves. It counts visits, and
+// /privacy/ says what it collects and how to switch it off.
+//
+// `is:inline` on both halves. Astro bundles an ordinary script as a module,
+// which would leave `gtag` out of the global scope the page calls it from.
+const ID = 'G-9C9T63Z1N2'
+---
+
+<script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ID}`}
+></script>
+<script is:inline define:vars={{ ID }}>
+  // `define:vars` wraps the script in a function, so these two go on `window`
+  // explicitly to stay global, as they are in Google's own snippet.
+  window.dataLayer = window.dataLayer || []
+  window.gtag = function gtag() {
+    window.dataLayer.push(arguments)
+  }
+  gtag('js', new Date())
+  gtag('config', ID)
+</script>
