@@ -19,6 +19,7 @@ export const FEEDBACK_GROUPS: Group[] = [
       },
       {
         key: 'fbDelayMs',
+        lane: 'fb time',
         label: 'Loop time',
         min: 0.05,
         max: 500,

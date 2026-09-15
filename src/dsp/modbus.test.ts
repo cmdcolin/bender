@@ -222,3 +222,67 @@ test('every wire in the bay is the same wire', () => {
   )
   for (const out of rest) expect(out).toEqual(first)
 })
+
+test('a wire on a fader shuts that channel and leaves the rest of the bus alone', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0.6,
+    noiseLevel: 0.5,
+    bodyX: 1,
+    mod0Dest: DEST.noiseLevel,
+    mod0Depth: -1,
+  }
+  expect(render({ ...look, mod0Src: 5 }, 1)).toEqual(
+    render({ ...look, noiseLevel: 0 }, 1),
+  )
+})
+
+test('and pushed the other way it lifts the channel over its fader', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    noiseLevel: 0.3,
+    bodyX: 1,
+    mod0Dest: DEST.noiseLevel,
+    mod0Depth: 1,
+  }
+  expect(rms(render({ ...look, mod0Src: 5 }, 1))).toBeGreaterThan(
+    1.6 * rms(render(look, 1)),
+  )
+})
+
+test('a wire on the resonance takes the filter into self-oscillation', () => {
+  const look: Partial<Controls> = {
+    chipLevel: 0,
+    crackleAmp: 0.2,
+    bendSlot0: 6,
+    filtMix: 1,
+    filtHz: 800,
+    filtRes: 0.2,
+    bodyX: 1,
+    mod0Dest: DEST.filtRes,
+    mod0Depth: 1,
+  }
+  const tame = render(look, 1)
+  const screaming = render({ ...look, mod0Src: 5 }, 1)
+  const byHand = render({ ...look, filtRes: 1.3 }, 1)
+  expect(rms(tail(screaming))).toBeGreaterThan(3 * rms(tail(tame)))
+  expect(pitchHz(tail(screaming))).toBeCloseTo(pitchHz(tail(byHand)), -1)
+})
+
+test('a held wire on the loop time is the same squeal as turning the knob there', () => {
+  const desk: Partial<Controls> = {
+    chipLevel: 0,
+    crackleAmp: 0.2,
+    fbAmt: 1.4,
+    fbDelayMs: 5,
+    fbTone: 0.3,
+    bodyX: 1,
+    mod0Dest: DEST.fbMs,
+    mod0Depth: 0.5,
+  }
+  // Half depth is an octave of time: 5 ms becomes 10.
+  const wired = pitchHz(tail(render({ ...desk, mod0Src: 5 }, 2)))
+  const byHand = pitchHz(tail(render({ ...desk, fbDelayMs: 10 }, 2)))
+  const stock = pitchHz(tail(render(desk, 2)))
+  expect(wired).toBeCloseTo(byHand, -1)
+  expect(Math.abs(wired - stock)).toBeGreaterThan(0.1 * stock)
+})

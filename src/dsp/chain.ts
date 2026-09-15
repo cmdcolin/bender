@@ -1,6 +1,6 @@
 import { IDX, MAX_SOURCES, N_TAPS, TAP_BUS, TAP_MIC } from '../engine/params'
 import { pedalOrderAt } from '../pedals'
-import { DEST, ModBus } from './modbus'
+import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
 import { Thermal } from './thermal'
 import { Burst } from './util/burst'
@@ -11,6 +11,7 @@ import { mulberry32, type Rng } from './util/rng'
 import { flushDenormal, softclip } from './util/softclip'
 import { DelayLine } from './util/delayline'
 import { LoopAmp, ampVoicing, type AmpVoicing } from './util/loopamp'
+import { octaves } from './util/pitch'
 
 const LIMIT_CEIL = 0.891 // −1 dBFS
 
@@ -102,7 +103,7 @@ class DeskLoop {
   private readonly tiltLpR = new OnePoleLP()
   private tilt = 0
   private tiltCoef = 0
-  private delay = 1
+  delay = 1
   /** Fader up and a line to come back down: what makes this strip exist. */
   on = false
   amt = 0
@@ -446,7 +447,16 @@ export class Chain {
     for (let k = 0; k < this.sources.length; k++) {
       const s = this.sources[k]!
       if (!s.when || s.when(p, ctx)) {
+        const vca = k < MAX_SOURCES ? ctx.mod.read(SOURCE_LEVEL_DEST[k]!) : null
+        if (vca && !cap) for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
         s.process(io, p, ctx)
+        if (vca) {
+          for (let i = 0; i < n; i++) {
+            const g = Math.min(Math.max(1 + vca[i]!, 0), 2)
+            io.l[i] = prev[i]! + (io.l[i]! - prev[i]!) * g
+            io.r[i] = prevR[i]! + (io.r[i]! - prevR[i]!) * g
+          }
+        }
         let peak = 0
         if (cap && k < MAX_SOURCES) {
           const base = k * BLOCK
@@ -691,6 +701,7 @@ export class Chain {
     const { n } = io
     const base = p[IDX.fbAmt]!
     const modAmt = this.ctx.mod.read(DEST.fbAmt)
+    const modMs = this.ctx.mod.read(DEST.fbMs)
     const loops = this.loops
     loops[0]!.open(base, p[IDX.fbDelayMs]!, p[IDX.fbTone]!, this.sr)
     loops[1]!.open(p[IDX.fb2Amt]!, p[IDX.fb2Ms]!, p[IDX.fb2Tone]!, this.sr)
@@ -698,6 +709,7 @@ export class Chain {
     // A wire on the amount can bring the first strip up from a fader that is
     // all the way down, so the desk is running whenever anything could open it.
     if (modAmt) loops[0]!.on = true
+    const baseDelay = loops[0]!.delay
 
     let live = 0
     for (const lp of loops) if (lp.on) live++
@@ -748,6 +760,8 @@ export class Chain {
       if (modAmt) {
         loops[0]!.setAmt(Math.min(Math.max(base + modAmt[i]! * 1.5, 0), 1.5))
       }
+      if (modMs)
+        loops[0]!.delay = Math.max(baseDelay * octaves(2 * modMs[i]!), 1)
       const l = io.l[i]!
       const r = io.r[i]!
       // What the amps are drawing, and what is left of the rail to draw it

@@ -1,4 +1,4 @@
-import { IDX } from '../engine/params'
+import { IDX, type SOURCE_TAPS } from '../engine/params'
 import { BLOCK } from './stage'
 import type { TriggerBus } from './trigbus'
 import { Chaos, Drunk } from './util/drift'
@@ -51,8 +51,28 @@ export const DEST = {
   // the carrier, the shifter — and the one source that is nothing but two
   // oscillator frequencies had none, so the only way to move it was a hand.
   oscHz: 26,
+  chipLevel: 27,
+  drumLevel: 28,
+  fmLevel: 29,
+  oscLevel: 30,
+  noiseLevel: 31,
+  sampleLevel: 32,
+  filtRes: 33,
+  fmBright: 34,
+  fbMs: 35,
 } as const
-export const N_DEST = 27
+export const N_DEST = 36
+
+// A fader's lane, in the order the chain sums the sources. The chain applies it
+// to what the source put on the bus, so a wire there is a VCA on the channel.
+export const SOURCE_LEVEL_DEST = [
+  DEST.chipLevel,
+  DEST.drumLevel,
+  DEST.fmLevel,
+  DEST.oscLevel,
+  DEST.noiseLevel,
+  DEST.sampleLevel,
+] as const satisfies { length: typeof SOURCE_TAPS.length }
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth,
 // in wire order, so wire i's depth is DEPTH_DEST[i]. They were once the last

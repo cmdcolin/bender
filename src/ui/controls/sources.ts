@@ -118,6 +118,7 @@ export const SOURCE_GROUPS: Group[] = [
     sliders: [
       {
         key: 'chipLevel',
+        lane: 'toy level',
         label: 'Level',
         role: 'level',
         min: 0,
@@ -439,6 +440,7 @@ export const SOURCE_GROUPS: Group[] = [
     sliders: [
       {
         key: 'drumLevel',
+        lane: 'kit level',
         label: 'Level',
         role: 'level',
         min: 0,
@@ -799,6 +801,7 @@ export const SOURCE_GROUPS: Group[] = [
     sliders: [
       {
         key: 'fmLevel',
+        lane: 'FM level',
         label: 'Level',
         role: 'level',
         min: 0,
@@ -819,6 +822,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmBright',
+        lane: 'FM bright',
         label: 'Brightness',
         min: 0,
         max: 1,
@@ -1032,6 +1036,7 @@ export const SOURCE_GROUPS: Group[] = [
     sliders: [
       {
         key: 'oscLevel',
+        lane: 'osc level',
         label: 'Level',
         role: 'level',
         min: 0,
@@ -1099,6 +1104,7 @@ export const SOURCE_GROUPS: Group[] = [
     sliders: [
       {
         key: 'noiseLevel',
+        lane: 'noise level',
         label: 'Noise',
         min: 0,
         max: 1,
@@ -1155,6 +1161,7 @@ export const SOURCE_GROUPS: Group[] = [
     sliders: [
       {
         key: 'sampleLevel',
+        lane: 'sampler level',
         label: 'Level',
         role: 'level',
         min: 0,

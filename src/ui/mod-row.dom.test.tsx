@@ -122,7 +122,7 @@ test('a full bay says so where the offer was', () => {
   openFilter()
   expect(plug()).toBeNull()
   expect(chip()).toBeNull()
-  expect(screen.getByText('+ mod')).toBeTruthy()
+  expect(screen.getAllByText('+ mod')).toHaveLength(2)
 })
 
 // The row is a door onto the bay rather than a bay of its own: a wire the bay

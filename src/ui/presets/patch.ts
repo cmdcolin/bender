@@ -90,6 +90,15 @@ const LANDINGS: Landing[] = [
   at('loop span', ['sampleLevel'], { hands: true }),
   at('osc starve', ['oscLevel']),
   at('osc pitch', ['oscLevel']),
+  at('toy level', ['chipLevel']),
+  at('kit level', ['drumLevel']),
+  at('FM level', ['fmLevel']),
+  at('osc level', ['oscLevel']),
+  at('noise level', ['noiseLevel']),
+  at('sampler level', ['sampleLevel'], { hands: true }),
+  at('filt res', ['filtMix'], { bend: 'filt' }),
+  at('FM bright', ['fmLevel']),
+  at('fb time', ['fbAmt']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

@@ -1,5 +1,6 @@
 import { IDX } from '../../engine/params'
 import { Bus, Strobe } from '../bus'
+import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import type { ToyRail } from '../toyRail'
 import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus'
@@ -96,6 +97,11 @@ const FNUM_FULL = 256
 // a decibel for the modulator's six bits, three for the carrier's four.
 const atten = (steps: number, perStep: number) =>
   Math.pow(10, (-steps * perStep) / 20)
+
+// Brightness is the modulator's own volume, and the register counts
+// attenuation, so a brighter patch is a smaller number.
+const brightened = (byte: number, bright: number) =>
+  (byte & 0xc0) | Math.round((byte & 0x3f) * (1 - bright * 0.9))
 
 // Envelope rates come off the same divider as everything else on this board, so
 // a starving rail drags the envelopes out along with the pitch and the tempo —
@@ -337,6 +343,9 @@ export class FmChip implements Stage {
   // The write strobe, and how often its pulse comes out too narrow for the
   // address latch to catch.
   private strobe = 0
+  // The modulator level a wire on the brightness last wrote, or -1 while the
+  // register holds what the knob sent.
+  private laneBright = -1
   private addrLatch = new Strobe(STROBE_SEED)
   // What the CPU last sent the chip, so it only sends the patch again when
   // something it knows about has moved. A processor that rewrote eight registers
@@ -480,14 +489,10 @@ export class FmChip implements Stage {
     this.write(REG.test, 0)
     this.write(REG.rhythm, this.kitOn ? RHY.on : 0)
     const bytes = PATCH_BYTES[voice] ?? PATCH_BYTES[0]!
+    this.laneBright = -1
     for (let i = 0; i < 8; i++) {
       let byte = bytes[i]!
-      if (i === REG.modLevel) {
-        // Brightness is the modulator's own volume, and the register counts
-        // attenuation, so a brighter patch is a smaller number.
-        byte =
-          (byte & 0xc0) | Math.round((byte & 0x3f) * (1 - panel.bright * 0.9))
-      }
+      if (i === REG.modLevel) byte = brightened(byte, panel.bright)
       // The button is the same two bits in both flags bytes, because one LFO
       // serving the whole die is one switch on the front of the case. It only
       // ever sets them: a voice that came with a wobble keeps it with the
@@ -1016,6 +1021,18 @@ export class FmChip implements Stage {
       if (this.effect < 0) this.sendVoice(voice, panel)
     }
 
+    const modBright = ctx.mod.read(DEST.fmBright)
+    if (this.effect < 0 && (modBright || this.laneBright >= 0)) {
+      const byte = brightened(
+        (PATCH_BYTES[voice] ?? PATCH_BYTES[0]!)[REG.modLevel]!,
+        modBright
+          ? Math.min(Math.max(panel.bright + modBright[0]!, 0), 1)
+          : panel.bright,
+      )
+      if (byte !== this.laneBright) this.write(REG.modLevel, byte)
+      this.laneBright = modBright ? byte : -1
+    }
+
     this.readPatch(rail.clockFactor)
     if (kit) this.readKit(rail.clockFactor)
     // The keys, before the block: held, because a hand is holding them.
@@ -1231,5 +1248,6 @@ export class FmChip implements Stage {
     this.addrLatch.reset()
     this.sentVoice = -1
     this.sent.bright = -1
+    this.laneBright = -1
   }
 }

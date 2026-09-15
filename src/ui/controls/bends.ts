@@ -249,6 +249,7 @@ export const BEND_GROUPS: Group[] = [
       },
       {
         key: 'filtRes',
+        lane: 'filt res',
         label: 'Resonance',
         min: 0,
         max: 1.3,

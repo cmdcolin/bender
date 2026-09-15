@@ -33,6 +33,11 @@ class Svf {
 // resonance knob alone reaches at its top, and no further.
 const DAMP_FLOOR = -1
 
+const RES_MAX = 1.3
+
+const dampAt = (res: number) =>
+  2 * (1 - Math.min(res, 1)) + (res > 1 ? -(res - 1) * 1.5 : 0)
+
 // MS-20-flavored resonant 2-pole. Resonance past 1.0 goes to negative damping
 // and the filter self-oscillates at the cutoff — ping it with crackle, or park
 // it inside the global feedback loop and let it pick the squeal's pitch.
@@ -59,7 +64,8 @@ export class Screech implements Stage {
     const mod = ctx.mod.read(DEST.filtHz)
     const fBase = 2 * Math.sin((Math.PI * Math.min(base, nyq)) / this.sr)
     const res = p[IDX.filtRes]!
-    const damp = 2 * (1 - Math.min(res, 1)) + (res > 1 ? -(res - 1) * 1.5 : 0)
+    const modRes = ctx.mod.read(DEST.filtRes)
+    const damp = dampAt(res)
     const mode = Math.round(p[IDX.filtMode]!)
     const gain = Math.pow(10, p[IDX.filtDriveDb]! / 20)
     const mix = p[IDX.filtMix]!
@@ -74,10 +80,13 @@ export class Screech implements Stage {
               this.sr,
           )
         : fBase
+      const dampHere = modRes
+        ? dampAt(Math.min(Math.max(res + modRes[i]! * RES_MAX, 0), RES_MAX))
+        : damp
       const d =
         couple > 0
-          ? Math.max(damp - couple * ctx.bright[i]! * 0.9, DAMP_FLOOR)
-          : damp
+          ? Math.max(dampHere - couple * ctx.bright[i]! * 0.9, DAMP_FLOOR)
+          : dampHere
       const wl = this.svfL.process(softclip(io.l[i]! * gain), f, d, mode)
       const wr = this.svfR.process(softclip(io.r[i]! * gain), f, d, mode)
       io.l[i] = io.l[i]! * (1 - mix) + wl * mix

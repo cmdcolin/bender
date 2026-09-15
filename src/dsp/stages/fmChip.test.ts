@@ -3,6 +3,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { FAULT } from '../bus'
 import { buildChain } from '../build'
+import { DEST } from '../modbus'
 import { BLOCK } from '../stage'
 import { ANY_CHOICE } from '../trigbus'
 import { SOURCE_TAPS } from '../../engine/params'
@@ -121,6 +122,17 @@ test('two operators, so the modulator piles harmonics onto the note', () => {
   const bright = at(1)
   expect(bin(dull, 220)).toBeGreaterThan(0.01)
   expect(overtones(bright)).toBeGreaterThan(overtones(dull) * 1.8)
+})
+
+test('a wire on the brightness writes the register the knob would', () => {
+  const at = (o: Partial<Controls>) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+      chip => chip.noteOn(0),
+      0.6,
+    )
+  const wire = { bodyX: 1, mod0Src: 5, mod0Dest: DEST.fmBright, mod0Depth: 1 }
+  expect(at({ fmBright: 0, ...wire })).toEqual(at({ fmBright: 1 }))
 })
 
 // The bend the FM keyboards are known for. A note ends because the processor

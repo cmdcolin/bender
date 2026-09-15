@@ -120,7 +120,7 @@ function Tap({ def, label }: { def: SliderDef; label: string }) {
 
 // The bay's end of a row, for the controls one of its four wires can land on:
 // the same knob, moving on its own. It was always possible and never findable —
-// the wire is in the bay, the lane is one of twenty-seven names in a list, and
+// the wire is in the bay, the lane is one of thirty-six names in a list, and
 // nothing on the stage you were standing on said the bay could reach it. The
 // button says it, and takes the trip.
 //
