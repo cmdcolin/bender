@@ -4,7 +4,7 @@ import { hasStep, quantizeStep, STEPS } from '../drums'
 import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
 import { SCALE_NAMES } from '../scale'
-import { edgeScore, Engine, mergeNotes } from './engine'
+import { edgeScore, Engine, mergeNotes, soundingMask } from './engine'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
 // out to nothing, so a morph asked for in seconds stays in flight for the whole
@@ -225,6 +225,21 @@ test('an unchanged note report hands back the set it was given', () => {
     new Set([3, 7, 10]),
   )
   expect(mergeNotes(now, new Int16Array(0))).toEqual(new Set())
+})
+
+// What the map lights its sources off. A fader says how far it is up and a run
+// switch says a sequencer is walking; neither says whether anything is coming
+// out, which is the question — the FM chip has no switch at all, and a fader at
+// zero is silence whatever is behind it.
+test('a source is sounding when the bus says so, not when a switch does', () => {
+  const hold = new Float32Array(3)
+  expect(soundingMask(Float32Array.from([0, 0, 0]), hold)).toBe(0)
+  expect(soundingMask(Float32Array.from([0.4, 0, 0.2]), hold)).toBe(0b101)
+  // A kick is one post at full and then nothing, so the needle falls rather
+  // than dropping — a kit playing a pattern reads as sounding between its hits.
+  expect(soundingMask(new Float32Array(3), hold)).toBe(0b101)
+  for (let i = 0; i < 60; i++) soundingMask(new Float32Array(3), hold)
+  expect(soundingMask(new Float32Array(3), hold)).toBe(0)
 })
 
 // The worklet hands over its own buffer rather than a slice of it, so what sits

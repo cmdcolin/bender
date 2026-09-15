@@ -480,6 +480,32 @@ test('a bridged trigger line draws between the two boxes', () => {
   expect(box(both, 'no_trig')).toBeUndefined()
 })
 
+// The third box on the board is on the end of two of these wires, and neither
+// of them was on the drawing: the chip has no sequencer, so every note it plays
+// arrives over one of them.
+test('the kit’s line onto the FM chip is a bridge like the other two', () => {
+  const struck = buildMap({ ...DEFAULT_CONTROLS, fmStruck: ANY_CHOICE })
+  const trig = hop(struck, 'Toy_drums', 'FM_chip')!
+  expect(trig.label?.text).toBe('any hit trig')
+  expect(trig.color).toBe(PANEL.mod)
+  expect(trig.dash).toBeTruthy()
+  // Patched from the chip's own panel rather than from the bay, because the
+  // chip has no sequencer and where it is struck from is a setting of the chip.
+  expect(trig.door).toBe('FM chip')
+  expect(box(struck, 'no_trig')).toBeUndefined()
+  checkLayout(struck)
+})
+
+// The wire off the toy's gate is the one that was always drawn, and it is not
+// one of these: it came soldered, so it is neither dashed nor in the patch
+// colour.
+test('the key line is soldered and the bridges are patched', () => {
+  const map = buildMap({ ...DEFAULT_CONTROLS, fmStruck: ANY_CHOICE })
+  const key = hop(map, 'Toy_keyboard', 'FM_chip')!
+  expect(key.color).toBe(PANEL.accent2)
+  expect(key.dash).toBeUndefined()
+})
+
 // The bay and the pad are bolted to the board whether or not you have patched
 // anything, the same as the feedback bus, so they sit at the foot of the
 // drawing — where everything that goes round the path rather than along it is —

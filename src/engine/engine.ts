@@ -96,6 +96,24 @@ export interface Meter {
   sampleOut: number
 }
 
+// Which sources are putting something on the bus, as a bit per tap, from the
+// peaks the worklet posts. Rise is instant and fall is not, which is what every
+// meter with a needle in it does and for the same reason: the taps come back as
+// the peak since the last post, so a kick read that way is one post at full and
+// then nothing, and a mask taken straight off them would call a kit playing a
+// pattern silent between its own hits.
+//
+// `hold` is what each needle is falling from, and this writes back into it.
+export function soundingMask(taps: Float32Array, hold: Float32Array): number {
+  let mask = 0
+  for (let k = 0; k < hold.length; k++) {
+    const held = Math.max(taps[k] ?? 0, hold[k]! * SOUND_FALL)
+    hold[k] = held
+    if (held > SOUND_FLOOR) mask |= 1 << k
+  }
+  return mask
+}
+
 // What a board on the edge of running away sounds like from the main thread.
 //
 // The limiter is the one thing that knows. A board that never reaches it is
@@ -366,7 +384,7 @@ export class Engine {
           sampleIn: msg.sampleIn,
           sampleOut: msg.sampleOut,
         })
-        this.sounding.set(this.readSounding(msg.taps))
+        this.sounding.set(soundingMask(msg.taps, this.soundHold))
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     const masterGain = ctx.createGain()
@@ -380,18 +398,6 @@ export class Engine {
       pack: packParams(this.controls.get(), this.pack),
     })
     this.postTransport()
-  }
-
-  // The six taps as one mask. Rise is instant and fall is not, which is what
-  // every meter with a needle in it does and for the same reason.
-  private readSounding(taps: Float32Array): number {
-    let mask = 0
-    for (let k = 0; k < MAX_SOURCES; k++) {
-      const held = Math.max(taps[k] ?? 0, this.soundHold[k]! * SOUND_FALL)
-      this.soundHold[k] = held
-      if (held > SOUND_FLOOR) mask |= 1 << k
-    }
-    return mask
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {

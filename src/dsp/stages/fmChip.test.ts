@@ -325,6 +325,102 @@ test('the wave bend leaves nothing behind when the knife comes off', () => {
   expect(Math.sqrt(sum / clean.length) / rms(clean)).toBeLessThan(0.05)
 })
 
+// The other side of the sine table: the eight wires it answers on. The address
+// side picks which sample; this side is the sample itself, so nothing here can
+// move a note.
+const TABLE_TOP = 8
+
+test('cutting the table’s output changes the sample, not the note', () => {
+  const at = (o: Partial<Controls>) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+      chip => chip.noteOn(0),
+      0.6,
+    ).subarray(Math.round(0.2 * SR))
+  const clean = at({})
+  // The top of the word held high: no sample the chip reads is worth less than
+  // half of full scale, so the quiet parts of the wave fill in and the shape
+  // comes out square-edged, with everything that does to the harmonics. The
+  // note it was told is the note it is still playing.
+  const floored = at({
+    fmWaveDataLine: TABLE_TOP,
+    fmWaveDataFault: FAULT.supply,
+  })
+  expect(bin(floored, 220)).toBeGreaterThan(bin(clean, 220) * 0.7)
+  expect(highEnergy(floored) / rms(floored)).toBeGreaterThan(
+    2 * (highEnergy(clean) / rms(clean)),
+  )
+})
+
+test('the table’s output pins leave nothing behind either', () => {
+  const clean = afterTheFault({}, {}, 4)
+  const after = afterTheFault(
+    { fmWaveDataLine: TABLE_TOP, fmWaveDataFault: FAULT.ground },
+    {},
+    4,
+  )
+  let sum = 0
+  for (let i = 0; i < clean.length; i++) sum += (after[i]! - clean[i]!) ** 2
+  expect(Math.sqrt(sum / clean.length) / rms(clean)).toBeLessThan(0.05)
+})
+
+// The blob of solder from the shift register onto those same pins. The register
+// is the one broadband thing on the die and the percussion bank was the only
+// way to reach it; this is a bodge wire, so it needs no mode bit.
+test('the blob reaches the shift register with the bank switched off', () => {
+  const at = (o: Partial<Controls>) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+      chip => chip.noteOn(0),
+      0.6,
+    ).subarray(Math.round(0.2 * SR))
+  const clean = at({})
+  const sanded = at({ fmNoiseBlob: 0.85 })
+  // The chip's one broadband source, on a board whose rhythm button is up.
+  expect(highEnergy(sanded) / rms(sanded)).toBeGreaterThan(
+    3 * (highEnergy(clean) / rms(clean)),
+  )
+})
+
+test('the blob is a bodge wire, so a panic does not take it off', () => {
+  const board = { ...FM_ONLY, fmVoice: 0, fmLength: 2, fmNoiseBlob: 0.85 }
+  const after = playKeys(
+    board,
+    chip => {
+      chip.panic()
+      chip.noteOn(0)
+    },
+    0.6,
+  ).subarray(Math.round(0.2 * SR))
+  const clean = playKeys(
+    { ...board, fmNoiseBlob: 0 },
+    chip => {
+      chip.panic()
+      chip.noteOn(0)
+    },
+    0.6,
+  ).subarray(Math.round(0.2 * SR))
+  expect(highEnergy(after) / rms(after)).toBeGreaterThan(
+    3 * (highEnergy(clean) / rms(clean)),
+  )
+})
+
+test('a wire on the blob is the bay reaching a knife', () => {
+  const at = (o: Partial<Controls>) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmLength: 2, ...o },
+      chip => chip.noteOn(0),
+      0.6,
+    )
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmNoiseBlob,
+    mod0Depth: 1,
+  }
+  expect(at({ fmNoiseBlob: 0, ...wire })).toEqual(at({ fmNoiseBlob: 1 }))
+})
+
 // The register the processor only ever writes zero to. That write is on the same
 // eight wires as every other, so a line held high is a bit set in a register
 // nothing on the chip was meant to set — and the clear that would undo it goes

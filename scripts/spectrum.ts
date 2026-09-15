@@ -161,6 +161,16 @@ const BUSES: BusDef[] = [
     tap: 'fmChip',
     modes: FM_MODES,
   },
+  {
+    chip: 'fm',
+    bus: 'wave data',
+    line: 'fmWaveDataLine',
+    fault: 'fmWaveDataFault',
+    depth: 'fmBusCut',
+    solo: FM,
+    tap: 'fmChip',
+    modes: FM_MODES,
+  },
 ]
 
 const FAULTS: [name: string, fault: number, depth: number][] = [

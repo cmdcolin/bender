@@ -117,6 +117,14 @@ const BUSES: BusDef[] = [
     depth: 'fmBusCut',
     solo: FM,
   },
+  {
+    chip: 'fm',
+    bus: 'wave data',
+    line: 'fmWaveDataLine',
+    fault: 'fmWaveDataFault',
+    depth: 'fmBusCut',
+    solo: FM,
+  },
 ]
 
 // Weight under a two-pole at 180 Hz as a share of the whole, which is enough to

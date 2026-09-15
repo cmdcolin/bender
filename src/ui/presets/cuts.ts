@@ -282,6 +282,28 @@ export const CUTS: CutDef[] = [
   {
     group: 'FM chip',
     part: KNIFE,
+    name: 'nothing is ever quiet',
+    blurb:
+      'The top wire out of the sine table held high, so no sample the chip reads is worth less than half of full scale — the quiet parts of every wave fill in and the note comes out square-edged and buzzing, at the same pitch it always was',
+    patch: {
+      fmWaveDataLine: pick('fmWaveDataLine', 'T7'),
+      fmWaveDataFault: pick('fmWaveDataFault', 'to +V'),
+    },
+  },
+  {
+    group: 'FM chip',
+    part: KNIFE,
+    name: 'the table goes stale',
+    blurb:
+      'The same wire parted instead. Eight operators a sample take turns on this one datapath, so the pin is left holding whichever of them went last — the amplitude arrives from a different operator every turn and the chip turns to gravel',
+    patch: {
+      fmWaveDataLine: pick('fmWaveDataLine', 'T7'),
+      fmWaveDataFault: pick('fmWaveDataFault', 'cut'),
+    },
+  },
+  {
+    group: 'FM chip',
+    part: KNIFE,
     name: 'one write late',
     blurb:
       'The latch misses often enough that every byte commits to the register the write before it named',

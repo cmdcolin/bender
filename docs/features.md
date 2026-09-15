@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 244 knobs and switches in 29 groups, seven bends competing for six slots,
-18 ROM tunes, 69 presets, 14 stage settings and 24 named cuts — and everything
+ruin. 243 knobs and switches in 29 groups, seven bends competing for six slots,
+18 ROM tunes, 64 presets, 14 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 50 destinations — among
+- **A patch bay that modulates itself.** Four wires, 38 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 69 presets, and dice on every heading as
+- **Boards, rather than settings.** 64 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 20 of them, mostly the ones that cover the
+preset that names it still gets it. 22 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -269,35 +269,46 @@ too — the knife goes on and the rows under it say which controls that was:
   this chip that comes out louder than no knife at all
 - **no fundamental**: The sign bit of the sine table nailed — a rectified wave,
   all octave and nothing underneath it
+- **nothing is ever quiet**: The top wire out of the sine table held high, so no
+  sample the chip reads is worth less than half of full scale — the quiet parts
+  of every wave fill in and the note comes out square-edged and buzzing, at the
+  same pitch it always was
+- **the table goes stale**: The same wire parted instead. Eight operators a
+  sample take turns on this one datapath, so the pin is left holding whichever
+  of them went last — the amplitude arrives from a different operator every turn
+  and the chip turns to gravel
 - **one write late**: The latch misses often enough that every byte commits to
   the register the write before it named
 
 <details>
-<summary>21 controls</summary>
+<summary>24 controls</summary>
 
-| control        | range                                                                                                                           | what it does                                                                                                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Level          | off to full                                                                                                                     | How loud the FM chip is in the source mix                                                                            |
-| Voice          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                                                                   | Which of the eight patches under the voice buttons the processor sends the chip                                      |
-| Brightness     | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
-| Feedback       | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
-| Vibrato        | off, vibrato, tremolo, both                                                                                                     | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
-| Note length    | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                           |
-| Struck by      | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                                               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
-| Toy gate       | soldered or cut                                                                                                                 | The jumper from the toy’s gate line onto this chip’s key input                                                       |
-| Effect †       | off, bird, surf, wind, siren, crickets                                                                                          | The effect ROM — a bird, surf, wind, a siren, crickets                                                               |
-| Rhythm         | off or kit                                                                                                                      | The percussion bank, which is a second thing the die can be                                                          |
-| Mod ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | What the modulator runs at against the note, as a multiple of it                                                     |
-| Car ratio      | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | The same table on the carrier, which moves the note itself rather than its colour — 2 is the same patch an octave up |
-| Mod decay      | as patched, 4 ms, 6 ms, 9 ms, 15 ms, 22 ms, 34 ms, 53 ms, 81 ms, 0.12 s, 0.19 s, 0.29 s, 0.45 s, 0.69 s, 1.07 s, 1.64 s, 2.52 s | How long the modulator takes to fall away, which is what makes an FM note a bell or an organ                         |
-| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                                             | Which of the eight wires carrying bytes to the register file the knife found                                         |
-| Data fault     | cut, to ground, to +V, bridged                                                                                                  | What happened to the wire — the same four things a knife does to any trace                                           |
-| Address line † | off, A0, A1, A2, A3, A4, A5                                                                                                     | Which of the six wires choosing the register the knife found                                                         |
-| Address fault  | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the address side                                                                            |
-| Wave line †    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                                                                     | Which of the ten wires addressing the sine table the knife found                                                     |
-| Wave fault †   | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the wave ROM’s address                                                                      |
-| Cut depth      | off to full                                                                                                                     | How far through the trace the knife went — the cut fault is the only one that reads it                               |
-| Strobe slip †  | off to full                                                                                                                     | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
+| control           | range                                                                                                                           | what it does                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Level             | off to full                                                                                                                     | How loud the FM chip is in the source mix                                                                            |
+| Voice             | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                                                                   | Which of the eight patches under the voice buttons the processor sends the chip                                      |
+| Brightness        | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
+| Feedback          | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
+| Vibrato           | off, vibrato, tremolo, both                                                                                                     | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
+| Note length       | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                           |
+| Struck by         | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                                               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
+| Toy gate          | soldered or cut                                                                                                                 | The jumper from the toy’s gate line onto this chip’s key input                                                       |
+| Effect †          | off, bird, surf, wind, siren, crickets                                                                                          | The effect ROM — a bird, surf, wind, a siren, crickets                                                               |
+| Noise blob        | off to full                                                                                                                     | A blob of solder from the shift register’s output onto the pins the sine table reads out on                          |
+| Rhythm            | off or kit                                                                                                                      | The percussion bank, which is a second thing the die can be                                                          |
+| Mod ratio         | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | What the modulator runs at against the note, as a multiple of it                                                     |
+| Car ratio         | as patched, 0.5×, 1×, 2×, 3×, 4×, 5×, 6×, 7×, 8×, 9×, 10×, 10×, 12×, 12×, 15×, 15×                                              | The same table on the carrier, which moves the note itself rather than its colour — 2 is the same patch an octave up |
+| Mod decay         | as patched, 4 ms, 6 ms, 9 ms, 15 ms, 22 ms, 34 ms, 53 ms, 81 ms, 0.12 s, 0.19 s, 0.29 s, 0.45 s, 0.69 s, 1.07 s, 1.64 s, 2.52 s | How long the modulator takes to fall away, which is what makes an FM note a bell or an organ                         |
+| Data line †       | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                                             | Which of the eight wires carrying bytes to the register file the knife found                                         |
+| Data fault        | cut, to ground, to +V, bridged                                                                                                  | What happened to the wire — the same four things a knife does to any trace                                           |
+| Address line †    | off, A0, A1, A2, A3, A4, A5                                                                                                     | Which of the six wires choosing the register the knife found                                                         |
+| Address fault     | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the address side                                                                            |
+| Wave line †       | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                                                                     | Which of the ten wires addressing the sine table the knife found                                                     |
+| Wave fault †      | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the wave ROM’s address                                                                      |
+| Wave data line †  | off, T0, T1, T2, T3, T4, T5, T6, T7                                                                                             | Which of the eight wires the sine table answers on the knife found                                                   |
+| Wave data fault † | cut, to ground, to +V, bridged                                                                                                  | The same four things, on the table’s way out                                                                         |
+| Cut depth         | off to full                                                                                                                     | How far through the trace the knife went — the cut fault is the only one that reads it                               |
+| Strobe slip †     | off to full                                                                                                                     | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
 
 </details>
 
@@ -568,28 +579,22 @@ to the edge of cutoff.
 
 The capstan is a real motor: it has weight, it answers the brake slowly, and
 _Supply drag_ wires it to the same dying rail as the toy, so the repeats dive in
-pitch as the board browns out. Three play heads sit along the tape at one, two
-and three spacings, and _Heads_ is which of them are up. The tape is a
-five-second loop joined once: _Splice_ is how bad the join is, and _Erase_ how
-much of the last lap the erase head lets through under the new one.
+pitch as the board browns out.
 
 <details>
-<summary>12 controls</summary>
+<summary>9 controls</summary>
 
-| control     | range                   | what it does                                                                                               |
-| ----------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Time        | 20 ms to 4 s            | Delay time                                                                                                 |
-| Heads       | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                    |
-| Feedback    | 0 to 1.5                | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                  |
-| Wow         | 0 to 50 ms              | Slow speed wobble of the transport                                                                         |
-| Wow rate    | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                 |
-| Flutter     | off to full             | Fast random speed jitter — worn pinch roller                                                               |
-| Tone        | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                      |
-| Brake       | off to full             | Drags the capstan                                                                                          |
-| Supply drag | off to full             | Wires the motor to the same dying supply as the toy                                                        |
-| Splice      | off to full             | How bad the join in the loop is                                                                            |
-| Erase       | off to full             | How much the erase head misses                                                                             |
-| Echo level  | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
+| control     | range            | what it does                                                                                               |
+| ----------- | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| Time        | 20 ms to 4 s     | Delay time                                                                                                 |
+| Feedback    | 0 to 1.5         | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                  |
+| Wow         | 0 to 50 ms       | Slow speed wobble of the transport                                                                         |
+| Wow rate    | 0.1 to 8 Hz      | How fast the wobble cycles                                                                                 |
+| Flutter     | off to full      | Fast random speed jitter — worn pinch roller                                                               |
+| Tone        | 500 Hz to 15 kHz | High-frequency loss per repeat — tape generation loss                                                      |
+| Brake       | off to full      | Drags the capstan                                                                                          |
+| Supply drag | off to full      | Wires the motor to the same dying supply as the toy                                                        |
+| Echo level  | off to full      | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
 
 </details>
 
@@ -600,42 +605,37 @@ _Standard_ moves its time by crossing between two read heads rather than
 dragging one, so the repeats already in the buffer keep their pitch while your
 hand is on the knob — the whole difference between this and the tape machine
 next to it. _Analog_ is a bucket brigade whose clock sets the delay and the
-bandwidth together — and the line really is clocked, so past a second the
-repeats turn to grit before they turn to mud, the clock itself whistles through,
-and the compander breathes behind it all. _Reverse_ plays each window backwards,
-relocking at the seam. _Hold_ lifts the record head on every hit and goes round
-the window it just took, which with the kit running is a beat repeat.
+bandwidth together, so long is muddy by construction and the compander breathes
+behind the repeats. _Reverse_ plays each window backwards, relocking at the
+seam.
 
 <details>
 <summary>6 controls</summary>
 
-| control   | range                                     | what it does                                                                                               |
-| --------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Mode      | standard, analog, reverse, modulate, hold | Which delay the box is being                                                                               |
-| Time      | 20 ms to 2 s                              | Delay time                                                                                                 |
-| Feedback  | 0 to 1.1                                  | How much of the repeat goes back in                                                                        |
-| Tone      | 800 Hz to 16 kHz                          | High cut in the loop, so each lap comes back darker than the last                                          |
-| Mod depth | off to full                               | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
-| E. level  | off to full                               | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
+| control   | range                               | what it does                                                                                               |
+| --------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Mode      | standard, analog, reverse, modulate | Which delay the box is being                                                                               |
+| Time      | 20 ms to 2 s                        | Delay time                                                                                                 |
+| Feedback  | 0 to 1.1                            | How much of the repeat goes back in                                                                        |
+| Tone      | 800 Hz to 16 kHz                    | High cut in the loop, so each lap comes back darker than the last                                          |
+| Mod depth | off to full                         | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
+| E. level  | off to full                         | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
 
 </details>
 
 ### Spring verb
 
 Dispersive allpass cascade into short parallel combs — metallic, boingy,
-deliberately cheap. The springs can only swing so far before they meet the box,
-and _Kick_ is how easily they are thrown against it: a slam at the input or a
-hit from the kit crashes the tank, the sound of kicking the amp.
+deliberately cheap.
 
 <details>
-<summary>6 controls</summary>
+<summary>5 controls</summary>
 
 | control      | range            | what it does                                                                                                 |
 | ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------ |
 | Decay        | 0.1 to 30 s      | How long the springs ring                                                                                    |
 | Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                                      |
 | Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                                         |
-| Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp           |
 | Reverb level | off to full      | Volume of the spring tank on its own fader, added on top of the dry signal rather than crossfaded against it |
 | Dry cut †    | off to full      | Separately fades out the dry signal, independent of Reverb level above                                       |
 
@@ -652,13 +652,13 @@ wire’s depth — which is how the bay modulates itself.
 <details>
 <summary>14 controls</summary>
 
-| control        | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | what it does                                                                   |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | The bay’s own oscillator, free-running                                         |
-| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
-| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | What the wire picks up                                                         |
-| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch, toy level, kit level, FM level, osc level, noise level, sampler level, filt res, FM bright, fb time, toy data line, toy data fault, toy addr line, toy addr fault, kit data line, kit data fault, kit addr line, kit addr fault, FM data line, FM data fault, FM addr line, FM addr fault, FM wave line, FM wave fault | Where the other end is soldered                                                |
-| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | How hard the wire pushes                                                       |
+| control        | range                                                                                                                                                                                                                                                                                                                                                                                                                                                              | what it does                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                                                                                                                                                                     | The bay’s own oscillator, free-running                                         |
+| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                                                                                                                                                              | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
+| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                                                                                                                                                         | What the wire picks up                                                         |
+| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch, toy level, kit level, FM level, osc level, noise level, sampler level, filt res, FM bright, fb time, FM cut depth, FM noise blob | Where the other end is soldered                                                |
+| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                      | How hard the wire pushes                                                       |
 
 </details>
 
@@ -972,7 +972,7 @@ became:
 
 ### Presets
 
-69 boards worth keeping. Every name is a link that opens the app with that board
+64 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -1102,17 +1102,6 @@ on it — a link never presses play, so it is loaded and waiting.
   — The plain box, set the plain way — one repeat, close behind
 - [**bucket brigade**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6)
   — Every lap through the chips comes back darker than the last
-- [**beat repeat**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.8,drumBpm:110,echoMode:4,echoMs:136,echoFb:0.85,echoLevel:0.8)
-  — Every hit lifts the record head, and the box goes round what it just heard
-- [**three heads**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipAccomp:0.3,delayMs:170,dlyFb:0.4,wowDepthMs:2,dlyHeads:4,dlyMix:0.45)
-  — One repeat, three play heads along the tape — a rhythm off a single tap
-- [**clock whine**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,echoMode:1,echoMs:1400,echoFb:0.8,echoToneHz:12000,echoLevel:0.7)
-  — A bucket brigade clocked too slow to hide it — grit, fold and whistle
-- [**spliced reel**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.4,delayMs:380,dlyFb:0.55,flutter:0.25,dlySplice:0.8,dlyErase:0.7,dlyMix:0.5)
-  — A loop joined badly and an erase head that gave up — the last lap bleeds
-  through
-- [**kicked amp**](https://cmdcolin.github.io/bender/app/#set=drumBpm:96,revDecayS:3,revBoing:0.8,revKick:0.7,revMix:0.6)
-  — Every hit from the kit throws the springs against the housing
 - [**played backwards**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,echoMode:2,echoMs:500,echoLevel:0.75,revMix:0.25)
   — Half a second at a time, each one handed back the other way round
 - [**wandering loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.45,sampleLevel:1,loopRec:0.7,loopErase:0.3,loopOut:0.14,modLfoHz:0.06,mod0Src:1,mod0Dest:23,mod0Depth:0.9,tapeMix:0.6)
