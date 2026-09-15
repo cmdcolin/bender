@@ -126,6 +126,25 @@ function emptyVoices(): HTMLElement {
   return box
 }
 
+function failedSection(retry: () => void): HTMLElement {
+  const box = section('voices', 'Your voices')
+  const empty = el('div', 'empty')
+  empty.append(
+    el('h3', 'emptyHead', 'Your voices did not load'),
+    el(
+      'p',
+      'says',
+      'The account is signed in, but the request for its voices failed. Check the connection and try again.',
+    ),
+  )
+  const again = el('button', 'btn primary', 'Try again')
+  again.type = 'button'
+  again.addEventListener('click', retry)
+  empty.append(again)
+  box.append(empty)
+  return box
+}
+
 function voicesSection(doc: HomeDoc, now: number): HTMLElement {
   const box = section('voices', 'Your voices')
   if (doc.voices.length === 0) {
@@ -212,11 +231,7 @@ whyCard.addEventListener('click', event => {
 
 // --- the two states ---------------------------------------------------------
 
-export function showHome(
-  user: CloudUser,
-  doc: HomeDoc,
-  now = Date.now(),
-): void {
+function showFrame(user: CloudUser, sections: HTMLElement[]) {
   paintAvatar(user)
   whyCard.close()
   signInBtn.hidden = true
@@ -243,11 +258,9 @@ export function showHome(
   }
 
   const main = el('div', 'homeMain')
-  const resume = resumeSection(doc, now)
-  if (resume !== undefined) main.append(resume)
   // The build already rendered the preset cards into the landing page; signed
   // in, the same section moves over rather than being drawn a second time.
-  main.append(voicesSection(doc, now), presets)
+  main.append(...sections, presets)
 
   const inner = el('div', 'homeIn')
   inner.append(rail, main)
@@ -256,6 +269,12 @@ export function showHome(
   home.hidden = false
   landing.hidden = true
   delete document.documentElement.dataset.home
+}
+
+export function showHome(user: CloudUser, doc: HomeDoc, now = Date.now()) {
+  const resume = resumeSection(doc, now)
+  const voices = voicesSection(doc, now)
+  showFrame(user, resume === undefined ? [voices] : [resume, voices])
 }
 
 export function showLanding(): void {
@@ -270,15 +289,26 @@ export function showLanding(): void {
   delete document.documentElement.dataset.home
 }
 
-async function paint(user: CloudUser | null) {
-  if (user === null) showLanding()
-  else showHome(user, await fetchHome(user.uid))
+async function paint(user: CloudUser) {
+  let doc: HomeDoc
+  try {
+    doc = await fetchHome(user.uid)
+  } catch {
+    showFrame(user, [failedSection(() => void paint(user))])
+    return
+  }
+  showHome(user, doc)
 }
+
+let signedIn: CloudUser | null = null
 
 const startSignIn = (button: HTMLButtonElement) => {
   button.disabled = true
   signIn()
-    .then(paint)
+    .then(user => {
+      signedIn = user
+      return paint(user)
+    })
     .catch(() => {
       // A popup the reader closed, or one the browser blocked. The page is the
       // landing page already and there is nothing to report.
@@ -297,14 +327,24 @@ whySignInBtn.addEventListener('click', () => {
 })
 
 signOutBtn.addEventListener('click', () => {
+  signedIn = null
   showLanding()
   void signOut()
 })
 
+// Back from the app restores this page from the back-forward cache as it was,
+// so a voice saved in the app would be missing until a reload.
+addEventListener('pageshow', event => {
+  if (event.persisted && signedIn !== null) void paint(signedIn)
+})
+
 // The one path that costs a load anything: a browser that has signed in before
 // subscribes here, which is what fetches the SDK. Everyone else waits for the
-// button.
+// button. A failure here is the SDK failing to load, and a page with no SDK can
+// only be the landing page.
 if (wasSignedIn())
   watchAuth(user => {
-    paint(user).catch(showLanding)
+    signedIn = user
+    if (user === null) showLanding()
+    else void paint(user)
   }).catch(showLanding)
