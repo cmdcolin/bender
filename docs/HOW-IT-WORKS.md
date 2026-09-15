@@ -60,10 +60,12 @@ chaos oscillator, the noise generator and the sampler. The mic isn't a source
 box at all — it's drawn as a wire, landing on whichever of its seven possible
 solder points **Mic patch** puts it on.
 
-Each box carries a glyph for the machine it is, a meter for its fader level,
-and, on the two sources with a run switch, a light that only comes on while
-something is actually playing. That distinction matters: a fader says how far up
-a channel is, not whether anything is coming out of it.
+Each box carries a glyph for the machine it is and a meter for its fader level,
+and lights both while something is actually coming out of it. The light comes
+off the same taps on the bus the desk's meters read, so a fader at
+three-quarters on a chip nothing has struck stays grey: a fader says how far up
+a channel is, not whether anything is coming out of it, and the map answers the
+second question rather than repeating the first.
 
 ## The mix bus
 
@@ -75,11 +77,12 @@ rather than at the final output, so it says which channel is eating the headroom
 rather than what the limiter did about it afterward.
 
 That's how you notice the FM chip sitting at three-quarters fader and completely
-silent, because nothing on the toy has struck a note for it to play. **Bus
-drive** is the desk's own knob: the summing amp all six sources meet in, unity
-gain and the first saturation stage ahead of any bend, with the feedback return
-landing on the same bus — so a runaway feedback loop saturates in the same amp
-everything else does.
+silent, because nothing on the toy has struck a note for it to play — and it is
+the same reading that leaves its box on the map unlit. **Bus drive** is the
+desk's own knob: the summing amp all six sources meet in, unity gain and the
+first saturation stage ahead of any bend, with the feedback return landing on
+the same bus — so a runaway feedback loop saturates in the same amp everything
+else does.
 
 ## Real-time engine
 

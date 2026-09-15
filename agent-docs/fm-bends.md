@@ -8,6 +8,12 @@ Nothing here is a decision. Several of these are cheap and a couple are large
 enough to change how the chip sounds with no knife on it at all, which is a
 different kind of cost and is called out where it applies.
 
+**Three have landed since.** The table's output pins (2), the shift register
+soldered onto them (3) and the bay's reach onto the chip (6) are all built, and
+their sections say what came out. The remaining candidates are 1, 4, 5, 7, 8 and
+the small ones, and they are ranked against each other below rather than
+renumbered — the numbers are how this document has been referred to elsewhere.
+
 ## How to judge one of these before building it
 
 Two scripts already answer the two questions.
@@ -30,6 +36,15 @@ Where those numbers stand, per bus and per mode:
 | wave (10)      | melody | 50/50   | 1.06     | 0             | 8         |
 |                | rhythm | 50/50   | 1.07     | 0             | 10        |
 |                | wind   | 50/50   | 1.00     | 0             | 6         |
+| wave data (8)  | melody | 40/40   | 0.81     | 0             | 4         |
+|                | rhythm | 40/40   | 0.81     | 0             | 5         |
+|                | wind   | 40/40   | 0.43     | 0             | 2         |
+
+The last row is item 2, measured. It is the only bus on the chip that reads the
+same in melody as in rhythm, which is the point of it: it sits after the mode
+bit has decided anything, on the one datapath all eight operators take their
+turn on. `pnpm knife fm` is stricter than this report and calls 36 of its 40
+audible; the four it does not are the bottom bit of an eight-bit magnitude.
 
 The mode rows are new, and they corrected the premise this document was first
 written on. Measured in melody alone, the data bus reads 0.21 flat with nothing
@@ -105,37 +120,52 @@ proposal on the list whose _success_ condition includes not moving things:
 after is what says whether this chip's ten named cuts still sound like their
 names. There is no golden-render mechanism in the repo to lean on instead.
 
-## 2. The wave ROM's data pins
+## 2. The wave ROM's data pins — landed
 
-`waveBus` is on the address side only. The table's output word is the other half
-of it, and it behaves oppositely: an address fault reads a different correct
-sample, a data fault reads a corrupted one — a sine with a step cut into its
-amplitude at one bit position, on every operator's turn on the datapath.
+`waveBus` was on the address side only. The table's output word is the other
+half of it, and it behaves oppositely: an address fault reads a different
+correct sample, a data fault reads a corrupted one — a sine with a step cut into
+its amplitude at one bit position, on every operator's turn on the datapath.
 
-About fifteen lines. `Bus` already does all of it; `wave()` grows a second
-`read` on the way out the way it has one on the way in.
+Built as `fmWaveDataLine` / `fmWaveDataFault`, a `Bus(8)` on the way out of
+`wave()` the way there was already one on the way in. The table keeps a
+magnitude and takes the sign off the phase, exactly as the part does, which is
+what makes the output a word of its own and why nothing on this side can move a
+note. Neither side of the table is in the path on an unbent board: `wave()`
+returns the float straight out of the table until a line is chosen or the blob
+is up, so the eight-bit word only exists once something is across the pins.
 
-Do this one straight after 3, which lands on the same pins, and before 1
-whatever happens to 1. It is cheap, it is independent, and if log domain does
-land later then these pins are the mantissa of a logarithm and get stranger
-rather than redundant.
+Two of the forty are named in the cuts row — the top pin to +V, which is a floor
+under every sample, and the same pin parted, which leaves it holding whichever
+of the eight operators went last.
 
-## 3. The shift register on the melody side
+## 3. The shift register on the melody side — landed
 
 There is an LFSR on the die — `Lfsr` in `fmChip.ts` — and exactly two operator
-slots can reach it, only in rhythm mode. The measurement above says that gate is
-carrying more weight than anything else on the chip: the same forty data-bus
+slots could reach it, only in rhythm mode. The measurement above said that gate
+was carrying more weight than anything else on the chip: the same forty data-bus
 faults are 0.21 flat with the bank off and 0.94 flat with it on, and the only
 thing that changed is which operators are wired to the shift register.
 
-The bender's move is a blob of solder from its output onto the wave ROM's data
-pins. It is a hardware mod rather than a register write, so nothing the CPU does
-touches it and it survives every patch, every effect and every panic. It
-composes with 2 because it is the same pins.
+Built as `fmNoiseBlob`, a blob of solder from the register's output onto the
+wave ROM's data pins. It sits on the pins from the least significant up, so a
+touch of it is dirt riding on the sample and all the way across is eight pins
+holding one bit — the sine gone, and a square at the carrier gated by the
+register, since the sign line is not a data pin and still comes off the phase.
+The pin at the edge of the blob is only sometimes under it, which is what makes
+the travel a sweep rather than eight steps.
 
-Do this one first. It is the cheapest thing on the list, it is the only one
-whose payoff is already measured rather than argued, and it takes the gate off a
-mechanism the chip demonstrably has.
+It is a hardware mod rather than a register write, so nothing the CPU does
+touches it: it survives every patch, every effect and every panic. Measured on
+the melody board with the rhythm button up, high-band energy against rms goes
+from 0.06 with no blob to 0.24 at 0.85 of the travel, and the flatness of the
+chip's own stem from 0.001 to 0.67.
+
+One thing fell out of it that was not designed: the register has one clock, and
+the bank's own slot is what runs it. So the blob's divider runs it only while
+the mode bit is clear, and pressing Rhythm hands the register's clock back to
+the hi-hat — the blob goes on working and changes grain. Both clocks count off
+the rail, so a starving board turns the sand into a rumble either way.
 
 ## 4. The instrument ROM's own bus
 
@@ -172,19 +202,25 @@ construction, so they are two controls rather than one:
 Both are classic clock-injection bends and both belong in the patch bay as well
 as on the panel.
 
-## 6. The patch bay cannot reach this chip
+## 6. The patch bay cannot reach this chip — landed
 
-`DEST` has 25 lanes and none of them is FM. It is the only source on the board
-nothing can modulate.
+`DEST` had 25 lanes and none of them was FM. It was the only source on the board
+nothing could modulate.
 
-`fmBright` first, for a second-order reason specific to how the chip is built:
-the driver only re-sends the patch when a knob _moves_ (`fmChip.ts`, the `sent`
-comparison). Put an LFO on brightness and the driver never stops writing — which
-converts a fault that bites four times a note into one that bites continuously.
-That is the effect ROM's traffic profile, reached from the panel, on any patch.
+`fmBright` went in first, for a second-order reason specific to how the chip is
+built: the driver only re-sends the patch when a knob _moves_ (`fmChip.ts`, the
+`sent` comparison). Put an LFO on brightness and the driver never stops writing
+— which converts a fault that bites four times a note into one that bites
+continuously. That is the effect ROM's traffic profile, reached from the panel,
+on any patch. It writes `REG.modLevel` alone rather than the whole patch, so
+what an LFO there floods the bus with is the one byte it is actually moving.
 
-Then the two clocks from 5, then `fmBusCut` so the knife itself can be
-modulated.
+`fmBusCut` and `fmNoiseBlob` followed, which are the knife itself: how far
+through the trace it went, and how far across the pins the solder ran. Neither
+is a setting the factory shipped, which makes them the two strangest lanes in
+the bay — an LFO on the cut depth is a fault that comes and goes in time.
+
+Still to do here: the two clocks from 5.
 
 ## 7. Rhythm at full width
 
@@ -228,13 +264,31 @@ output side, and this chip has nothing like it.
   timers. A round-robin stuck on one channel is a four-voice chip playing
   monophonically while still being told about four notes.
 
-## Two compositions to try before building anything
+## What is left, ranked against each other
 
-Both are already possible and neither is surfaced.
+4 is the cheapest — `ROM_PATCH_BYTES` is read in one place and fifteen patches
+already sit behind a nibble nothing has a knife on. 5 is the one that buys the
+most, because both clocks reach things no control on the chip can: the missing
+bottom octave is down the chip's crystal, and they are two more lanes for the
+bay now that the bay can get here. 7 and 8 are structural and worth doing
+together, since both are about what four voices and one output stage can
+actually carry. 1 stays last and stays the one to be suspicious of.
 
-**A brightness LFO against a marginal strobe.** Needs 6 to exist. A control-rate
-write storm through a latch that sometimes does not clock means the patch smears
+## Compositions to try
+
+All four are possible now and none is surfaced.
+
+**A brightness LFO against a marginal strobe.** A control-rate write storm
+through a latch that sometimes does not clock means the patch smears
 continuously across the register file instead of four times a note.
+
+**An LFO on the cut depth.** A knife whose trace conducts in time: most writes
+land, and the ones that do not land on the beat. Nothing else on this board has
+a fault that comes and goes on a clock.
+
+**The blob against a knife on the wave address.** They are the two halves of the
+same table, and one is now broadband: a parted address line that no longer
+resolves to a sine, reading a word the shift register is holding down.
 
 **A knife on the block bits, now that key scaling reads them.** KSL wired the
 octave into the level, so a fault on the frequency's top bits moves pitch,

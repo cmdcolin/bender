@@ -167,6 +167,27 @@ around, giving a sawtooth edge and an extra octave; hold the sign bit and every
 read comes from the top half of the table, an all-octave rectified tone; cut low
 enough down the bus and the effect is nearly inaudible.
 
+That is the way into the table. **Wave data line** is the way out, and the two
+behave oppositely: an address fault reads a different sample, correctly, and a
+data fault reads the sample it asked for with a step cut into its amplitude at
+one bit position. The table keeps a magnitude and takes the sign off the phase,
+the way the part does, so nothing on this side of it can move a note — hold the
+top pin high and no sample the chip reads is worth less than half of full scale,
+which fills in the quiet parts of every wave and leaves the note buzzing at the
+pitch it always was. Part the same pin instead and it holds whichever of the
+eight operators a sample went last, so the amplitude arrives from a different
+operator every turn and the chip turns to gravel.
+
+**Noise blob** is a bodge wire rather than a knife, on those same eight pins.
+The shift register the percussion bank runs on is the only broadband thing on
+this die, and pressing Rhythm was the only way to hear it; a blob of solder from
+its output onto the table's pins is the way round. It sits on them from the
+least significant up, so a touch of it is dirt riding on the note and all the
+way across is eight pins holding one bit — no sine left, and what comes out is
+the carrier's own square gated by the register, since the sign is not one of
+these pins. Nothing the processor does touches it. It is there on every patch,
+under an effect, and through a panic, which no other bend on this chip is.
+
 **The hidden test register** is undocumented — the factory used it to test the
 die, and the only write a driver ever makes to it is the one that clears it at
 power-on, since a chip that booted with a stray test bit set would never sound

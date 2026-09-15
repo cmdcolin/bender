@@ -13,14 +13,13 @@
   relative step — a new concept in SliderDef — and would rescale packed links
   for all 17. sampleSpeed was worth it because its band was a dead value at the
   end you reach for.
-- Further FM chip bends — ranked with hook points in agent-docs/fm-bends.md,
-  written after the dead-bit pass landed and re-ranked once `pnpm spectrum`
-  learned to measure the chip in more than one mode. The shift register is the
-  whole story: it is the chip's only broadband source, it is gated behind the
-  percussion bank, and taking that gate off is both the cheapest item on the
-  list and the only one whose payoff is already measured. Log domain is the
-  large one and the one to be suspicious of — it changes how the chip sounds
-  with no knife on it at all.
+- Further FM chip bends — ranked with hook points in agent-docs/fm-bends.md.
+  Three have landed: the sine table's output pins, the shift register soldered
+  onto them, and the bay's reach onto the chip. What is left is the instrument
+  ROM's own bus (cheapest), the two clocks (buys the most — the missing bottom
+  octave is down the chip's crystal), rhythm at full width with the DAC's slot
+  counter beside it, and log domain, which stays last and stays the one to be
+  suspicious of: it changes how the chip sounds with no knife on it at all.
 - Further drum machine bends — ranked with hook points in
   agent-docs/drum-bends.md. The framing that came out of writing it: unlike the
   FM chip the kit has no dead wires (40/40 and 20/20 audible on

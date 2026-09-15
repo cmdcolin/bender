@@ -291,14 +291,30 @@ new: the frequency registers those noise slots no longer use for a pitch are
 what clock the shift register, so a bend that used to move a note by an octave
 now sweeps the hiss between a rumble and sand.
 
+**Noise blob** is the way to that shift register with the rhythm button up. It
+is a blob of solder from the register's output onto the pins the sine table
+answers on, so it is a bodge wire rather than a switch: nothing the processor
+does touches it, and it is there on every patch, under an effect and through a
+panic. A touch of it is dirt riding on the note; wind it across and the sine
+goes, leaving the carrier gated by the register. Starving the toy slows the
+register down with everything else, so the sand turns into a rumble.
+
 **Mod ratio**, **Car ratio** and **Mod decay**, under "inside the patch", shape
 the patch further. What actually happens at the register level when you put a
 fault on this chip's wires is a much bigger story — see [Bends](BENDS.md).
 
+The patch bay reaches this chip now, at **FM bright**, **FM cut depth** and **FM
+noise blob**. Brightness is the one to try: the processor only re-sends a patch
+when a knob moves, so a wire there leaves it writing the register file every
+block instead of four times a note — which is what every fault on that bus has
+been waiting for.
+
 ## The trigger patch
 
 The keyboard and the drum machine share a power rail by accident; the trigger
-patch is what you wire between them on purpose.
+patch is what you wire between them on purpose. Its picture has three boxes in
+it, because there are three machines on that board and four wires that make one
+strike another.
 
 **Kit fires keys** bridges a drum hit onto the keyboard's gate, so a hit plays a
 note. What note is its own setting: the one already standing, the next step of
@@ -313,6 +329,15 @@ the grid instead, so a key fires whatever column the sequencer is sitting on.
 Bridge both directions and the two machines play each other — a rattle at the
 audio block rate, held in check by the safety tail, which is what a trigger loop
 closed on itself has always done.
+
+The other two wires land on the FM chip, which has no sequencer, so they are the
+whole of how anything reaches it. **Toy gate** is the factory jumper off the
+keyboard's gate line; cut it and the chip stops following the keyboard next
+door. **Struck by** is the kit's trigger lines clipped onto the same input — a
+trigger carries a strike and nothing else, so the note is decided at this end,
+one per voice a pentatonic apart, which turns a pattern written for drums into a
+riff. Both are on the chip's own panel too; this is the one place all four wires
+are in the same picture.
 
 Every wire in the trigger patch, and the rail the two machines share, can also
 be bent — see [Bends](BENDS.md) for the full list.
