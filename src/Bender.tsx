@@ -1,4 +1,3 @@
-import { createRoot } from 'react-dom/client'
 import { engine } from './engine/engine'
 import { App } from './ui/App'
 import { keepRunState } from './ui/runState'
@@ -16,6 +15,6 @@ if (shared) engine.patch(shared)
 // never carried either way — see runState.
 keepRunState()
 
-createRoot(document.getElementById('root')!).render(
-  <App openedFromLink={!!shared} />,
-)
+export default function Bender() {
+  return <App openedFromLink={!!shared} />
+}

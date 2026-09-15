@@ -1,5 +1,5 @@
 // Bump the version, tag it, and push — the version is stamped into the build
-// (vite.config.ts `define`) and shown in the panel masthead.
+// (astro.config.ts `define`) and shown in the panel masthead.
 // Usage: node scripts/push.mjs <patch|minor|major>   (via pnpm {pat,min,maj})
 
 import { execSync } from 'node:child_process'

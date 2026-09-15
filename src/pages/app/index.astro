@@ -1,4 +1,7 @@
-<!doctype html>
+---
+import Bender from '../../Bender'
+---
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,7 +9,6 @@
     <title>bender</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="root"><Bender client:only="react" /></div>
   </body>
 </html>

@@ -1,0 +1,16 @@
+---
+import { BARS, markBars } from '../home/mark'
+
+interface Props {
+  query: string
+}
+const { query } = Astro.props
+---
+
+<svg viewBox={`0 0 ${BARS * 6 - 2} 24`} class="mark" aria-hidden="true">
+  {
+    markBars(query).map((v, i) => (
+      <rect x={i * 6} width="4" y={24 - v * 24} height={v * 24} rx="1" />
+    ))
+  }
+</svg>

@@ -1,4 +1,21 @@
-<!doctype html>
+---
+import Card from '../components/Card.astro'
+import { DEFAULT_CONTROLS } from '../controls'
+import { appUrl, siteRoot } from '../home/paths'
+import { applyPreset } from '../ui/presets/apply'
+import { PRESETS } from '../ui/presets/table'
+import { boardHash } from '../ui/share'
+import '../theme.css'
+import '../home/home.css'
+
+// Spelled by the app's own writer, so a card stays right when its preset changes.
+const presets = PRESETS.map(preset => ({
+  query: boardHash('', applyPreset(preset, { ...DEFAULT_CONTROLS })),
+  name: preset.name,
+  says: preset.blurb,
+}))
+---
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -12,19 +29,21 @@
          hash, and for a while some carried `?set=` instead. The app moved to
          /app/, so this runs before anything else on the page loads and hands
          the board straight on rather than opening a homepage over it. -->
-    <script>
+    <script is:inline define:vars={{ appUrl }}>
       if (
         location.hash !== '' ||
         new URLSearchParams(location.search).has('set')
       )
-        location.replace('./app/' + location.search + location.hash)
+        location.replace(appUrl + location.search + location.hash)
     </script>
-    <script type="module" src="/src/home/main.ts"></script>
+    <script>
+      import '../home/main'
+    </script>
   </head>
   <body>
     <header class="bar">
       <div class="barIn">
-        <a class="brand" href="./">bender</a>
+        <a class="brand" href={siteRoot}>bender</a>
         <nav class="barNav" aria-label="Site">
           <a
             href="https://github.com/cmdcolin/bender/blob/main/docs/USER-GUIDE.md"
@@ -71,7 +90,7 @@
               </button>
             </div>
           </div>
-          <a class="btn primary" href="./app/">Open the app →</a>
+          <a class="btn primary" href={appUrl}>Open the app →</a>
         </div>
       </div>
     </header>
@@ -88,14 +107,14 @@
       </p>
       <figure class="figure">
         <img
-          src="./panel-callout.jpg"
+          src={`${siteRoot}panel-callout.jpg`}
           width="1600"
           height="900"
           alt="The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run"
         />
       </figure>
       <p class="cta">
-        <a class="btn primary big" href="./app/">Open the app →</a>
+        <a class="btn primary big" href={appUrl}>Open the app →</a>
         <a
           class="btn big"
           href="https://github.com/cmdcolin/bender/blob/main/docs/GETTING-STARTED.md"
@@ -109,7 +128,9 @@
       <section class="sec" id="presets">
         <h2 class="secHead">Presets</h2>
         <p class="secSub">Open one and the board arrives set up that way.</p>
-        <ul class="grid" id="presetGrid"></ul>
+        <ul class="grid">
+          {presets.map(p => <Card {...p} />)}
+        </ul>
       </section>
     </main>
 

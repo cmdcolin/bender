@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { encodeControls } from '../src/ui/share'
 import { attach, chromePath, sleep } from './chrome'
+import { serveDev } from './serve'
 
 // The README's one picture: the panel drawn big on the left, and the whole app
 // small beside it with the panel ringed in red where it actually sits. `pnpm figure`
@@ -46,28 +47,6 @@ function which(cmd: string) {
   } catch {
     return ''
   }
-}
-
-async function serve() {
-  // Asked for a port rather than pinned to one, and the url is read back out of
-  // what vite says: something else on the machine holding 5199 is not a reason
-  // for the README's picture to be unbuildable.
-  const vite = spawn('node_modules/.bin/vite', ['--port', String(PORT)], {
-    stdio: ['ignore', 'pipe', 'inherit'],
-  })
-  const url = await new Promise<string>((resolve, reject) => {
-    let out = ''
-    const die = setTimeout(() => reject(new Error('vite never started')), 30000)
-    vite.stdout.on('data', (d: Buffer) => {
-      out += d.toString()
-      const hit = out.match(/(http:\/\/localhost:\d+\/\S*)/)?.[1]
-      if (hit) {
-        clearTimeout(die)
-        resolve(hit.replace(/\x1b\[[0-9;]*m/g, ''))
-      }
-    })
-  })
-  return { url, stop: () => vite.kill() }
 }
 
 async function shoot(url: string, into: string) {
@@ -137,7 +116,7 @@ const magick = (args: string[]) => execFileSync('magick', args)
 async function main() {
   if (!which('magick')) throw new Error('no imagemagick on PATH')
 
-  const { url, stop } = await serve()
+  const { url, stop } = await serveDev(PORT)
   const work = mkdtempSync(join(tmpdir(), 'bender-figure-out-'))
   const shot = join(work, 'shot.png')
   const panel = join(work, 'panel.png')
@@ -227,7 +206,7 @@ async function main() {
     ])
     console.log(`${OUT} — ${canvas.w}x${canvas.h}`)
   } finally {
-    stop()
+    await stop()
     rmSync(work, { recursive: true, force: true })
   }
 }

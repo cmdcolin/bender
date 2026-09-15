@@ -29,6 +29,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { attach, chromePath, sleep, type Page } from './chrome'
+import { serveDev } from './serve'
 
 const PORT = 5197
 const DEBUG_PORT = 9336
@@ -84,26 +85,6 @@ const note = (kind: string, line: string, where: string) => {
     if (had) had.seen++
     else fails.set(key, { seen: 1, first: where })
   }
-}
-
-function serve() {
-  const vite = spawn(
-    `${process.cwd()}/node_modules/.bin/vite`,
-    ['--port', String(PORT)],
-    { stdio: ['ignore', 'pipe', 'inherit'], cwd: process.env.INK_ROOT },
-  )
-  return new Promise<{ url: string; stop: () => void }>((resolve, reject) => {
-    let out = ''
-    const die = setTimeout(() => reject(new Error('vite never served')), 30000)
-    vite.stdout.on('data', (d: Buffer) => {
-      out += d.toString()
-      const hit = out.match(/(http:\/\/localhost:\d+\/)/)?.[1]
-      if (hit) {
-        clearTimeout(die)
-        resolve({ url: hit, stop: () => vite.kill() })
-      }
-    })
-  })
 }
 
 const ask = async (page: Page, expression: string) => {
@@ -312,7 +293,7 @@ async function walk(page: Page, shell: string) {
 
 async function main() {
   const profile = mkdtempSync(join(tmpdir(), 'bender-ink-'))
-  const { url, stop } = await serve()
+  const { url, stop } = await serveDev(PORT, process.env.INK_ROOT)
   const chrome = spawn(
     chromePath(),
     [
@@ -365,7 +346,7 @@ async function main() {
     const gone = new Promise(r => chrome.on('exit', r))
     chrome.kill()
     await gone
-    stop()
+    await stop()
     rmSync(profile, { recursive: true, force: true })
   }
 

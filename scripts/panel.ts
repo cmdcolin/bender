@@ -38,6 +38,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { encodeControls } from '../src/ui/share'
 import { attach, chromePath, sleep, type Page } from './chrome'
 import { HEAVY } from './boards'
+import { buildAndPreview } from './serve'
 
 const seconds = Number(process.argv[2] ?? 8)
 const scene = process.argv[3] ?? 'still'
@@ -89,28 +90,6 @@ interface Profile {
 // Every frame React puts on the stack sits under this one, so a sample with it
 // anywhere below the top is a sample React is responsible for.
 const REACT_ROOT = 'performWorkOnRoot'
-
-function serve(dir: string) {
-  // The url comes back out of what vite says rather than being assumed, so a
-  // port already taken moves the server rather than stopping the run.
-  const vite = spawn(
-    'node_modules/.bin/vite',
-    ['preview', '--outDir', dir, '--port', String(PORT)],
-    { stdio: ['ignore', 'pipe', 'inherit'] },
-  )
-  return new Promise<{ url: string; stop: () => void }>((resolve, reject) => {
-    let out = ''
-    const die = setTimeout(() => reject(new Error('vite never served')), 30000)
-    vite.stdout.on('data', (d: Buffer) => {
-      out += d.toString()
-      const hit = out.match(/(http:\/\/localhost:\d+\/)/)?.[1]
-      if (hit) {
-        clearTimeout(die)
-        resolve({ url: hit, stop: () => vite.kill() })
-      }
-    })
-  })
-}
 
 const ask = async (page: Page, expression: string) => {
   const { result, exceptionDetails } = await page.send<{
@@ -233,24 +212,12 @@ async function run(page: Page) {
 }
 
 async function main() {
-  const out = mkdtempSync(join(tmpdir(), 'bender-panel-'))
   const profile = mkdtempSync(join(tmpdir(), 'bender-panel-chrome-'))
   // Not minified. The report names which function was on the stack, and a
   // profile of `Sr` and `Ld` answers nothing — it is the same code either way,
   // and what this measures is where a frame goes rather than how long the
   // bundle takes to parse.
-  const build = spawn(
-    'node_modules/.bin/vite',
-    ['build', '--minify', 'false', '--outDir', out],
-    { stdio: ['ignore', 'pipe', 'pipe'] },
-  )
-  let said = ''
-  build.stdout.on('data', (d: Buffer) => (said += d.toString()))
-  build.stderr.on('data', (d: Buffer) => (said += d.toString()))
-  const built = await new Promise(r => build.on('exit', r))
-  if (built !== 0) throw new Error(`build failed:\n${said}`)
-
-  const { url, stop } = await serve(out)
+  const { url, stop } = await buildAndPreview(PORT, { minify: false })
   // Headed. Headless rasters through a different path, and paint is one of the
   // columns this is here to report.
   const chrome = spawn(
@@ -324,8 +291,7 @@ async function main() {
     const gone = new Promise(r => chrome.on('exit', r))
     chrome.kill()
     await gone
-    stop()
-    rmSync(out, { recursive: true, force: true })
+    await stop()
     rmSync(profile, { recursive: true, force: true })
   }
 }

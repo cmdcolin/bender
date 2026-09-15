@@ -6,7 +6,7 @@
 // Deliberately not a reading of the board. The bars are not levels and do not
 // mean anything; a mark that looked like a spectrum would be claiming to show
 // what a voice sounds like.
-const BARS = 11
+export const BARS = 11
 
 // FNV-1a, for a spread that changes everywhere when one character does.
 function hash(text: string): number {

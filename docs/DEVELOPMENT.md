@@ -5,6 +5,12 @@ pnpm install
 pnpm dev
 ```
 
+The site is an [Astro](https://astro.build) project with two pages:
+`src/pages/index.astro`, the homepage, and `src/pages/app/index.astro`, which
+mounts the React app as a client-only island. Both sit under `/bender/`, the
+path GitHub Pages serves the repo at, so the dev server has the app at
+`http://localhost:4321/bender/app/`.
+
 ## Testing
 
 `pnpm test` runs the DSP test suite, including a torture test that pins every

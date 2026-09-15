@@ -1,15 +1,15 @@
 // The page at `/`: a landing page for a stranger, and the same URL rendered as
 // a home once Firebase says who is signed in.
 //
-// The landing markup is in index.html and stays there, so a visitor gets it
-// with no JavaScript run at all. cloud.ts fetches the SDK on the first call
-// that needs it, so the only loads that reach Google are the ones that already
-// know this browser signed in and the ones where somebody pressed the button.
+// index.astro builds the landing markup, preset cards included, so a visitor
+// gets it with no JavaScript run at all. cloud.ts fetches the SDK on the first
+// call that needs it, so the only loads that reach Google are the ones that
+// already know this browser signed in and the ones where somebody pressed the
+// button.
 //
 // Everything below builds nodes and sets `textContent`. A voice's name is a
 // string somebody typed, and `innerHTML` anywhere here would hand it to the
 // parser.
-import { DEFAULT_CONTROLS } from '../controls'
 import {
   fetchHome,
   signIn,
@@ -19,14 +19,10 @@ import {
   type CloudUser,
   type HomeDoc,
 } from '../ui/cloud'
-import { applyPreset } from '../ui/presets/apply'
-import { PRESETS } from '../ui/presets/table'
 import { sinceWords } from '../ui/relativeTime'
-import { boardHash } from '../ui/share'
 import { markFor } from './mark'
+import { appUrl, boardUrl, siteRoot } from './paths'
 import type { SavedVoice } from '../ui/voiceModel'
-import '../theme.css'
-import './home.css'
 
 const need = (id: string): HTMLElement => {
   const node = document.getElementById(id)
@@ -47,7 +43,7 @@ const el = <K extends keyof HTMLElementTagNameMap>(
 
 const landing = need('landing')
 const home = need('home')
-const presetGrid = need('presetGrid')
+const presets = need('presets')
 const signInBtn = need('signIn') as HTMLButtonElement
 const acct = need('acct')
 const acctBtn = need('acctBtn') as HTMLButtonElement
@@ -56,20 +52,12 @@ const acctName = need('acctName')
 const avatar = need('avatar')
 const signOutBtn = need('signOut') as HTMLButtonElement
 
-const linkFor = (query: string) => `./app/#${query}`
-
-// A preset as the board it names, spelled the way the address bar spells it —
-// the same writer the app and a saved voice use, so these links stay right when
-// a preset changes.
-const presetQuery = (i: number) =>
-  boardHash('', applyPreset(PRESETS[i]!, { ...DEFAULT_CONTROLS }))
-
 // --- cards ------------------------------------------------------------------
 
 function card(query: string, name: string, says: string): HTMLElement {
   const item = el('li')
   const link = el('a', 'card')
-  link.href = linkFor(query)
+  link.href = boardUrl(query)
   const top = el('span', 'cardTop')
   top.append(markFor(query), el('span', 'open', 'open →'))
   link.append(top, el('span', 'cardName', name), el('span', 'says', says))
@@ -77,29 +65,11 @@ function card(query: string, name: string, says: string): HTMLElement {
   return item
 }
 
-const fillPresets = (grid: HTMLElement) => {
-  PRESETS.forEach((preset, i) => {
-    grid.append(card(presetQuery(i), preset.name, preset.blurb))
-  })
-}
-
 function section(id: string, heading: string, sub?: string): HTMLElement {
   const box = el('section', 'sec')
   box.id = id
   box.append(el('h2', 'secHead', heading))
   if (sub !== undefined) box.append(el('p', 'secSub', sub))
-  return box
-}
-
-function presetSection(): HTMLElement {
-  const box = section(
-    'presets',
-    'Presets',
-    'Open one and the board arrives set up that way.',
-  )
-  const grid = el('ul', 'grid')
-  fillPresets(grid)
-  box.append(grid)
   return box
 }
 
@@ -123,10 +93,10 @@ function resumeSection(doc: HomeDoc, now: number) {
   )
   const row = el('p', 'cta')
   const go = el('a', 'btn primary')
-  go.href = linkFor(current.query)
+  go.href = boardUrl(current.query)
   go.textContent = 'Resume →'
   const fresh = el('a', 'btn')
-  fresh.href = './app/'
+  fresh.href = appUrl
   fresh.textContent = 'Start fresh'
   row.append(go, fresh)
   body.append(row)
@@ -147,7 +117,7 @@ function emptyVoices(): HTMLElement {
     ),
   )
   const go = el('a', 'btn primary')
-  go.href = './app/'
+  go.href = appUrl
   go.textContent = 'Open the app →'
   box.append(go)
   return box
@@ -232,7 +202,7 @@ export function showHome(
   const rail = el('nav', 'rail')
   rail.setAttribute('aria-label', 'Home')
   const links: [string, string, boolean][] = [
-    ['./', 'Home', true],
+    [siteRoot, 'Home', true],
     ['#voices', 'Voices', false],
     ['#presets', 'Presets', false],
     [
@@ -251,7 +221,9 @@ export function showHome(
   const main = el('div', 'homeMain')
   const resume = resumeSection(doc, now)
   if (resume !== undefined) main.append(resume)
-  main.append(voicesSection(doc, now), presetSection())
+  // The build already rendered the preset cards into the landing page; signed
+  // in, the same section moves over rather than being drawn a second time.
+  main.append(voicesSection(doc, now), presets)
 
   const inner = el('div', 'homeIn')
   inner.append(rail, main)
@@ -265,6 +237,7 @@ export function showLanding(): void {
   closeMenu()
   acct.hidden = true
   signInBtn.hidden = false
+  landing.append(presets)
   home.textContent = ''
   home.hidden = true
   landing.hidden = false
@@ -292,8 +265,6 @@ signOutBtn.addEventListener('click', () => {
   showLanding()
   void signOut()
 })
-
-fillPresets(presetGrid)
 
 // The one path that costs a load anything: a browser that has signed in before
 // subscribes here, which is what fetches the SDK. Everyone else waits for the
