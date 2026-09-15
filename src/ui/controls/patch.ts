@@ -60,7 +60,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as ControlKey,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 49,
+          max: 53,
           step: 1,
           unit: '',
           choices: [
@@ -114,6 +114,10 @@ export const PATCH_GROUPS: Group[] = [
             'FM addr fault',
             'FM wave line',
             'FM wave fault',
+            'FM wave data line',
+            'FM wave data fault',
+            'FM cut depth',
+            'FM noise blob',
           ],
           groups: [
             {
@@ -152,6 +156,10 @@ export const PATCH_GROUPS: Group[] = [
                 'FM addr fault',
                 'FM wave line',
                 'FM wave fault',
+                'FM wave data line',
+                'FM wave data fault',
+                'FM cut depth',
+                'FM noise blob',
               ],
             },
             {
@@ -202,7 +210,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
           ],
-          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once; osc starve is the chaos oscillator’s own pot, which is a different supply. The six levels are a VCA on that machine’s channel: a full push either way takes it from silent to twice the fader. The knife selectors hop: a push of one is a lap of the list, so an S&H cuts a different wire every cycle. Four land on a wire’s own depth, so one wire decides how hard another pushes.',
+          help: 'Where the other end is soldered. Pitch-like destinations move in octaves; glitch and feedback amount just add. Starve is the supply the toy runs on rather than a stage on it, so a wire there reaches everything at once; osc starve is the chaos oscillator’s own pot, which is a different supply. The six levels are a VCA on that machine’s channel: a full push either way takes it from silent to twice the fader. The knife selectors hop: a push of one is a lap of the list, so an S&H cuts a different wire every cycle. FM cut depth and FM noise blob are the knife itself rather than a knob the factory fitted — a wire on the first is a fault that comes and goes in time. Four land on a wire’s own depth, so one wire decides how hard another pushes.',
         },
         {
           key: `mod${i}Depth` as ControlKey,
@@ -225,10 +233,22 @@ export const PATCH_GROUPS: Group[] = [
   {
     name: 'Trigger patch',
     place: 'Patch',
-    // The loop drawn above these rows, in TriggerPatch: the kit and the
-    // keyboard as two boxes, with the wire each direction can carry between
-    // them — solder both and they play each other.
+    // The loop drawn above these rows, in TriggerPatch: the kit, the keyboard
+    // and the chip with no keyboard of its own as three boxes, with every wire
+    // that makes one strike another between them. Solder both of the pair and
+    // the toys play each other; the chip is on the end of two more.
+    //
+    // The widget draws all five rows itself, its own three and the chip's two,
+    // because the picture is only half an answer if the knobs it names are on
+    // another panel — and the order it wants them in is the order of the wires
+    // in the picture.
     editor: { kind: 'trigger' },
+    handled: ['trigToKeys', 'trigKeysNote', 'trigToDrum'],
+    // The chip's end of those two wires. They belong to the chip's own panel,
+    // where a hand reaching for the FM chip finds them; they are also two of
+    // the four wires this patch is, which is the only place all four are one
+    // thing you can see.
+    borrows: ['fmStruck', 'fmKeyGate'],
     sliders: [
       {
         key: 'trigToKeys',

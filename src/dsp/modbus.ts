@@ -74,8 +74,16 @@ export const DEST = {
   fmAddrFault: 47,
   fmWaveLine: 48,
   fmWaveFault: 49,
+  fmWaveDataLine: 50,
+  fmWaveDataFault: 51,
+  // How far through the trace the knife went, and how far across the table's
+  // pins the blob of solder ran. Every other lane here moves something the
+  // board was built to move; neither of these is a setting the factory
+  // shipped.
+  fmBusCut: 52,
+  fmNoiseBlob: 53,
 } as const
-export const N_DEST = 50
+export const N_DEST = 54
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

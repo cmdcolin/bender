@@ -53,6 +53,14 @@ const REC_MAX_STEM_S = 120
 // zero, because a source can leave dc dust behind a fader on its way to zero.
 const STEM_FLOOR = 1e-4
 
+// Where a source stops counting as sounding, and how fast its needle falls to
+// get there. The floor is about 60 dB down — quieter than anything anybody is
+// listening for and loud enough to ignore the dc dust a fader leaves behind on
+// its way to zero. The fall is the desk's, so the map and the meters beside the
+// faders decide a channel is quiet at the same moment.
+const SOUND_FLOOR = 1e-3
+const SOUND_FALL = 0.86
+
 export interface Meter {
   peak: number
   scope: Float32Array
@@ -248,6 +256,17 @@ export class Engine {
   // wherever that jumper is still on, and whatever the kit's lines struck.
   readonly fmKeysDown = createStore<ReadonlySet<number>>(new Set())
   readonly fmNotes = createStore<ReadonlySet<number>>(new Set())
+  // Which sources are actually putting something on the bus, as a bit per
+  // SOURCE_TAPS slot. A run switch says a sequencer is walking; this says the
+  // fader in front of it is up and the machine behind it is making a sound,
+  // which is a different question and the one the map wanted — the FM chip has
+  // no switch to read at all, a sampler with nothing threaded has one that
+  // lies, and a fader at zero is silence whatever is running.
+  //
+  // A mask rather than a set, so an unchanged report costs a number compare:
+  // this is worked out sixty times a second and the map it feeds is a hundred
+  // and seventy-nine elements to rebuild.
+  readonly sounding = createStore(0)
 
   private ctx: AudioContext | null = null
   private booting: Promise<void> | undefined
@@ -266,6 +285,11 @@ export class Engine {
   // both agree the kit is standing.
   private lastTick = -1
   private tickAt = 0
+  // What each source's meter is falling from. The taps come back as the peak
+  // since the last post, so a kick read that way is one frame at full and then
+  // nothing — the same needle the desk draws, held here so a source playing a
+  // pattern reads as sounding between its own hits rather than flickering.
+  private readonly soundHold = new Float32Array(MAX_SOURCES)
 
   private driftTimer: ReturnType<typeof setInterval> | undefined
 
@@ -342,6 +366,7 @@ export class Engine {
           sampleIn: msg.sampleIn,
           sampleOut: msg.sampleOut,
         })
+        this.sounding.set(this.readSounding(msg.taps))
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     const masterGain = ctx.createGain()
@@ -355,6 +380,18 @@ export class Engine {
       pack: packParams(this.controls.get(), this.pack),
     })
     this.postTransport()
+  }
+
+  // The six taps as one mask. Rise is instant and fall is not, which is what
+  // every meter with a needle in it does and for the same reason.
+  private readSounding(taps: Float32Array): number {
+    let mask = 0
+    for (let k = 0; k < MAX_SOURCES; k++) {
+      const held = Math.max(taps[k] ?? 0, this.soundHold[k]! * SOUND_FALL)
+      this.soundHold[k] = held
+      if (held > SOUND_FLOOR) mask |= 1 << k
+    }
+    return mask
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {

@@ -11,13 +11,18 @@ import { engine } from '../engine/engine'
 import { buildMap, drawMap } from './chain-map'
 import { useStoreValue } from './ControlsContext'
 import { useCoarse } from './measure'
-import { GROUPS, groupKeys } from './controls'
+import { CHANNELS, GROUPS, groupKeys } from './controls'
+import { MAX_SOURCES } from '../engine/params'
 import { resetGroup } from './presets'
 import { Shelf } from './Section'
 import type { El } from './svg'
 import styles from './ChainMap.module.css'
 
 const GROUP_BY_NAME = new Map(GROUPS.map(g => [g.name, g]))
+
+// The channels the bus meters, by the name the map draws them under. The mic is
+// a wire rather than a machine and has no box of its own, so it is not here.
+const SOUNDING = CHANNELS.filter(c => c.tap < MAX_SOURCES)
 
 // Graphviz used to lay the map out again for any change to the string at all,
 // and it was debounced for that. Drawing it ourselves is far cheaper but not
@@ -78,11 +83,13 @@ export function ChainMap({
 }) {
   const controls = useSettledControls()
   const coarse = useCoarse()
-  // Which of the two toys is sounding, which is the one thing on the map that
-  // isn't in the board: what is running comes off the switches under the keys.
-  const playing: string[] = []
-  if (useStoreValue(engine.songPlaying)) playing.push('Toy keyboard')
-  if (useStoreValue(engine.drumsPlaying)) playing.push('Toy drums')
+  // Which sources are sounding, which is the one thing on the map that isn't in
+  // the board: it comes off the meters on the bus rather than off any control.
+  // The run switches used to answer it and could only answer it for two of the
+  // six — the FM chip has no switch, the sampler's lies when nothing is
+  // threaded, and a switch says nothing about the fader in front of it.
+  const lit = useStoreValue(engine.sounding)
+  const playing = SOUNDING.filter(c => lit & (1 << c.tap)).map(c => c.name)
   const map = buildMap(controls, {
     wrap: true,
     open: open ?? undefined,

@@ -419,6 +419,9 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'dlyErase',
   'revKick',
   'dlyHeads',
+  'fmWaveDataLine',
+  'fmWaveDataFault',
+  'fmNoiseBlob',
 ]
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))

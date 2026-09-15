@@ -40,6 +40,14 @@ const WIRE_TARGET = [
   'Patch bay',
   'Patch bay',
   'Delay pedal',
+  'Sampler',
+  'Sampler',
+  'Sampler',
+  'Chaos osc',
+  'Chaos osc',
+  'FM chip',
+  'FM chip',
+  'FM chip',
 ] as const
 
 // The stages that can be wired to droop with the board's supply, and the
@@ -226,7 +234,7 @@ export interface MapNode {
   anchor?: 'start' | 'end'
   /** 'inst' only: how far its fader is up, along that fader's own travel */
   level?: number
-  /** 'inst' only: running right now, off a switch of its own */
+  /** 'inst' only: something is coming out of it right now */
   playing?: boolean
 }
 
@@ -270,8 +278,8 @@ export interface Options {
   wrap?: boolean
   /** The stage whose controls the panel is showing, lit on the map. */
   open?: string
-  /** Sources sounding right now, which is a thing about the run switches
-      rather than about the board — the panel knows it and the README doesn't. */
+  /** Sources putting something on the bus right now, off the meters the desk
+      reads — the panel knows it and the README doesn't. */
   playing?: readonly string[]
 }
 
@@ -328,14 +336,21 @@ interface Bridge {
   from: string
   to: string
   label: string
+  /** the panel the wire is patched from, which is not the same for all three */
+  door: string
 }
 
-/** The trigger lines you can bridge the two toys with, where one is patched. */
+// The trigger lines you can bridge the three boxes on the board with, where one
+// is patched. Two of them are the bay's and live on the trigger patch; the
+// third is the kit's lines clipped onto the FM chip's key input, and it lives
+// on that chip's own panel — the chip has no sequencer, so where it is struck
+// from is a setting of the chip rather than of the patch.
 function triggerBridges(c: Controls): Bridge[] {
   const bridges: Bridge[] = []
-  for (const [key, from, to] of [
-    ['trigToKeys', 'Toy drums', 'Toy keyboard'],
-    ['trigToDrum', 'Toy keyboard', 'Toy drums'],
+  for (const [key, from, to, door] of [
+    ['trigToKeys', 'Toy drums', 'Toy keyboard', 'Trigger patch'],
+    ['trigToDrum', 'Toy keyboard', 'Toy drums', 'Trigger patch'],
+    ['fmStruck', 'Toy drums', FM_CHIP, FM_CHIP],
   ] as const) {
     const choice = Math.round(c[key])
     if (choice <= 0) continue
@@ -343,6 +358,7 @@ function triggerBridges(c: Controls): Bridge[] {
       id: key,
       from,
       to,
+      door,
       label: `${sliderFor(key).choices?.[choice] ?? 'trig'} trig`,
     })
   }
@@ -886,7 +902,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       {
         color: k.mod,
         dash: '4 3',
-        door: 'Trigger patch',
+        door: t.door,
         label: {
           text: t.label,
           x: (midX(from) + midX(to)) / 2,
@@ -1360,9 +1376,10 @@ function resetButton(
   ]
 }
 
-// How far up a source's fader is, along the foot of its own box. A source
-// running off its own switch lights the bar, which is the map saying that what
-// you are hearing starts here.
+// How far up a source's fader is, along the foot of its own box. A source with
+// something coming out of it lights the bar, which is the map saying that what
+// you are hearing starts here — the fader is where it is set to, and the colour
+// is whether that setting is doing anything.
 function levelBar(n: MapNode, k: Palette): El[] {
   // The empty part of the travel is drawn too: a bar that stops where the level
   // does is a bar with nothing to read it against.
@@ -1392,8 +1409,8 @@ function levelBar(n: MapNode, k: Palette): El[] {
 
 // What each source is, drawn rather than spelt: a 12px glyph in the left of its
 // own box, so the six read as six different machines before the names are. It
-// carries the run state too — the two toys with a switch of their own light
-// their glyph while they play, which is one marker doing the work of two.
+// carries the run state too — a machine lights its glyph while something is
+// coming out of it, which is one marker doing the work of two.
 const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
   'Toy keyboard': (x, y, c) => [
     el('rect', {

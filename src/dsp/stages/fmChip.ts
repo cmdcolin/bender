@@ -132,11 +132,24 @@ const sineQuarter = Float64Array.from({ length: QUARTER }, (_, i) =>
   Math.sin(((i + 0.5) / QUARTER) * (Math.PI / 2)),
 )
 
-const sineAt = (addr: number) => {
+// The table's own output word, before the sign goes back on it. The part keeps
+// a magnitude here and takes the sign off the phase — which is what makes the
+// output word eight wires of its own rather than the sample itself, and is why
+// a knife on those wires cuts a step into the amplitude without ever moving
+// the note.
+const sineMag = (addr: number) => {
   const i = addr & (QUARTER - 1)
-  const s = sineQuarter[addr & MIRROR ? QUARTER - 1 - i : i]!
+  return sineQuarter[addr & MIRROR ? QUARTER - 1 - i : i]!
+}
+
+const sineAt = (addr: number) => {
+  const s = sineMag(addr)
   return addr & SIGN ? -s : s
 }
+
+/** The table's word, and the count a full-scale magnitude comes out as. */
+const WAVE_DATA_BITS = 8
+const WAVE_DATA_FULL = (1 << WAVE_DATA_BITS) - 1
 
 // The one LFO on the die, and the only oscillator on this chip that nothing
 // addresses. There is no register for it anywhere: no rate, no depth, no way to
@@ -166,8 +179,21 @@ const AM_GAIN = Float64Array.from({ length: 64 }, (_, i) =>
 
 /** Which way the stale bit falls on a cut waveform line. */
 const WAVE_SEED = 0x1d
+/** And on a cut line out of the table, which is a different pin. */
+const WAVE_DATA_SEED = 0x6b
+/** Which reads the blob's last pin is holding down, for a bridge part-made. */
+const BLOB_SEED = 0xc4
+
+// What the shift register clocks at with no drum keying it. The bank writes
+// block 5 and a count of 256 into the slot the register runs on, so the kit's
+// own clock works out at this — the die has one divider for it, and taking the
+// mode bit off does not give it another.
+const NOISE_HZ = FNUM_BASE * Math.pow(2, 5) * HAT_MULT
 
 const ENV_FLOOR = 0.0005
+
+/** Where a wire off the bay lands on a control that only has 0 to 1 to give. */
+const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 
 // What the kit plays when its trigger lines are clipped to this chip's key
 // input. A drum machine has no notes to send — a trigger line carries a strike
@@ -335,6 +361,21 @@ export class FmChip implements Stage {
   private waveBus = new Bus(SINE_BITS, WAVE_SEED)
   private waveLine = -1
   private waveFault = 0
+  // And the table's output word, which behaves the other way round: a fault on
+  // the address reads a different correct sample, a fault here reads a
+  // corrupted one — a step cut into the amplitude at one bit position, on every
+  // operator's turn on the datapath.
+  private waveDataBus = new Bus(WAVE_DATA_BITS, WAVE_DATA_SEED)
+  private waveDataLine = -1
+  private waveDataFault = 0
+  // The blob of solder from the shift register's output onto those same pins,
+  // and how far across them it ran. A hardware mod rather than a register
+  // write, so nothing the CPU does touches it: it survives every patch, every
+  // effect and every panic, and it is the one thing on this chip that reaches
+  // the shift register without the percussion bank's mode bit.
+  private blob = 0
+  private blobRng = mulberry32(BLOB_SEED)
+  private blobClock = 0
   /** what the output latch is holding, for the test bit that stops it taking */
   private held = 0
   // Notes struck on the chip's own keys, waiting for the block to start. A key
@@ -821,11 +862,47 @@ export class FmChip implements Stage {
   // half a sine is not a rectifier but the sign bit's half of the table read as
   // silence, which is how the part did it — so a sign line held low is a reedy
   // patch that has forgotten how to be reedy.
+  //
+  // Both sides of the table are in the path, and neither is in it on a board
+  // nobody has been at: the word only comes out as a word once something is
+  // soldered or cut across the pins carrying it, so an unbent chip reads the
+  // table at the width the table is stored at.
   private wave(phase: number, half: number) {
     let addr = Math.floor(phase * SINE_STEPS) & (SINE_STEPS - 1)
     if (this.waveLine >= 0)
       addr = this.waveBus.read(addr, this.waveLine, this.waveFault, this.busCut)
-    return half && addr & SIGN ? 0 : sineAt(addr)
+    if (half && addr & SIGN) return 0
+    if (this.waveDataLine < 0 && this.blob <= 0) return sineAt(addr)
+    let word = Math.round(sineMag(addr) * WAVE_DATA_FULL)
+    // The blob first and the knife after, because a pin the knife has taken to
+    // a rail is a pin the blob has lost: one is a bodge wire and the other is
+    // a short, and a short wins.
+    if (this.blob > 0) word = this.solder(word)
+    if (this.waveDataLine >= 0)
+      word = this.waveDataBus.read(
+        word,
+        this.waveDataLine,
+        this.waveDataFault,
+        this.busCut,
+      )
+    const s = word / WAVE_DATA_FULL
+    return addr & SIGN ? -s : s
+  }
+
+  // The blob, on one word. It sits on the pins from the least significant up,
+  // because that is the end of the bus the solder can reach without bridging
+  // the whole table: a touch of it is dirt riding on the sample, and all the
+  // way across is eight pins holding one bit, which is the sine gone and the
+  // shift register in its place. The pin at the edge of the blob is only
+  // sometimes under it, so the sweep between those two is a sweep rather than
+  // eight steps.
+  private solder(word: number) {
+    const reach = this.blob * WAVE_DATA_BITS
+    const whole = Math.floor(reach)
+    let mask = (1 << whole) - 1
+    if (whole < WAVE_DATA_BITS && this.blobRng() < reach - whole)
+      mask |= 1 << whole
+    return this.hiss > 0 ? word | mask : word & ~mask
   }
 
   // The two channels the mode bit took. One is an ordinary pair of operators
@@ -929,6 +1006,21 @@ export class FmChip implements Stage {
     this.vibFactor = VIB_FACTOR[(this.vibPhase * 8) | 0]!
   }
 
+  // The shift register's own clock, for a chip whose percussion bank is not
+  // switched over. The bank's slot runs the register when the mode bit is set
+  // and nothing runs it when the bit is clear — which is the gate the blob is
+  // there to take off, so the divider the bank would have used runs it here
+  // instead. One register and one clock either way, and the rail drags this one
+  // like everything else on the die: starve the board and the sand turns into
+  // a rumble.
+  private stepNoise(clockFactor: number) {
+    this.blobClock += (NOISE_HZ * clockFactor) / this.sr
+    while (this.blobClock >= 1) {
+      this.blobClock -= 1
+      this.hiss = this.noise.step()
+    }
+  }
+
   private stepEnv(op: Op, r: Rates) {
     switch (op.stage) {
       case ATTACK:
@@ -987,6 +1079,26 @@ export class FmChip implements Stage {
       FAULT_NAMES.length,
       bay.read(DEST.fmWaveFault),
     )
+    this.waveDataLine =
+      hop(
+        p[IDX.fmWaveDataLine]!,
+        WAVE_DATA_BITS + 1,
+        bay.read(DEST.fmWaveDataLine),
+      ) - 1
+    this.waveDataFault = hop(
+      p[IDX.fmWaveDataFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmWaveDataFault),
+    )
+    // And the knife's own two: how far through the trace it went, and how far
+    // across the pins the solder ran. Read per block like everything else here,
+    // except the blob, which is a sound rather than a setting and takes its
+    // wire per sample down in the loop.
+    const modCut = bay.read(DEST.fmBusCut)
+    const modBlob = bay.read(DEST.fmNoiseBlob)
+    if (modCut) this.busCut = clamp01(this.busCut + modCut[0]!)
+    const baseBlob = p[IDX.fmNoiseBlob]!
+    this.blob = baseBlob
     const rail = this.rail
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
 
@@ -1061,6 +1173,8 @@ export class FmChip implements Stage {
 
     for (let i = 0; i < io.n; i++) {
       this.stepLfo(rail.clockFactor)
+      if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
+      if (this.blob > 0 && !kit) this.stepNoise(rail.clockFactor)
 
       // The effect ROM, running. Its rate is the CPU's crystal and nothing on
       // this board reaches that, so the gesture keeps its own time however far
@@ -1249,6 +1363,8 @@ export class FmChip implements Stage {
       c.offIn = 0
     }
     this.noise.reset()
+    this.blobRng = mulberry32(BLOB_SEED)
+    this.blobClock = 0
     this.amPhase = 0
     this.vibPhase = 0
     this.amGain = 1
@@ -1261,6 +1377,7 @@ export class FmChip implements Stage {
     this.dataBus.reset()
     this.addrBus.reset()
     this.waveBus.reset()
+    this.waveDataBus.reset()
     this.queued.length = 0
     this.held = 0
     this.addrLatch.reset()
