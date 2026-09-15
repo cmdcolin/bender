@@ -5,8 +5,8 @@ import { buildBender, type BuiltChain } from '../build'
 import { DEST } from '../modbus'
 import { BLOCK, type StereoBlock } from '../stage'
 import { spectrum } from '../spectrum'
-import { RING_TRACK } from './ringmod'
-import { bin, deviation, envelope, render, rms, SR } from '../testRender'
+import { RING_FROM, RING_TRACK } from './ringmod'
+import { bin, deviation, envelope, quiet, render, rms, SR } from '../testRender'
 
 // A3, the chip's semitone zero, and the note every tracking case here is
 // judged against.
@@ -272,6 +272,42 @@ test('the step carrier is pitched by the toy’s own clock', () => {
 test('a stopped sequencer leaves the step carrier on its knob', () => {
   const stepped = play({ ringTrack: track('step ×16'), ringHz: 430 })
   expect(stepped.l).toEqual(play({ ringHz: 430 }).l)
+})
+
+const from = (name: string) => RING_FROM.indexOf(name)
+
+// A machine's own output as the carrier, lifted by five — the number that puts
+// the chaos oscillator's product 2 dB under the knob carrier's rms on the study
+// board, and clips a peaky machine into a gate rather than a fade.
+//
+// The oscillator is a sine and nothing else; the chaos oscillator never comes
+// round again, so the sidebands never settle and the take reads far broader.
+test('a carrier off the chaos oscillator is broader than the knob’s', () => {
+  const board: Partial<Controls> = { ...RING, ringHz: 300, oscLevel: 0.4 }
+  const knob = render(board, 4)
+  const chaos = render({ ...board, ringFrom: from('chaos osc') }, 4)
+  expect(deviation(chaos, knob)).toBeGreaterThan(0.5)
+  expect(spectrum(chaos, SR).flatness).toBeGreaterThan(
+    4 * spectrum(knob, SR).flatness,
+  )
+})
+
+// The kit is a different effect rather than a louder one: its carrier is
+// silence between hits, so the board only sounds through the drums.
+test('a carrier off the kit gates the board to the hits', () => {
+  const board: Partial<Controls> = {
+    ...RING,
+    ringHz: 300,
+    drumLevel: 0.3,
+    drumKick: 0b1000_0000_1000_0000,
+    drumSnare: 0b0000_1000_0000_1000,
+    drumHat: 0,
+  }
+  const knob = render(board, 4)
+  const kit = render({ ...board, ringFrom: from('kit') }, 4)
+  expect(rms(kit)).toBeLessThan(0.4 * rms(knob))
+  expect(quiet(kit)).toBeGreaterThan(0.5)
+  expect(quiet(knob)).toBeLessThan(0.2)
 })
 
 test('the mic carrier still overrides the oscillator', () => {

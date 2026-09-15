@@ -1,5 +1,5 @@
 import type { ControlKey } from '../../controls'
-import { RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod'
+import { RING_FROM, RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod'
 import type { Group } from './types'
 
 // Which stage each bend slot names, the short name a slot wears when it names
@@ -63,6 +63,16 @@ export const BEND_GROUPS: Group[] = [
         unit: '',
         choices: RING_TRACK,
         help: 'Solders the carrier to the note the toy is sounding — the ROM’s, your hand’s, or a drum hit that came back round and struck one — instead of leaving it on the Carrier knob. The ratio decides what survives: whole ones (unison, octave, oct+5th, two oct) put the sidebands back on the note’s own harmonics, so the note stays in tune and only its timbre moved; half ones (sub, fifth) land them an octave under it and write a new fundamental below what you played; tritone lands on nothing, so the clang is still a clang but it follows the melody. The FM chip and the sampler don’t stamp the key line, so a board playing those stays on the knob. The four step positions lock the carrier to the sequencer instead of the note — one turn per ROM step, or four, sixteen, sixty-four — so a tremolo lands on the same phase every step and an audio-rate carrier follows the toy’s clock, its starve and its drift. Stop the sequencer and they fall back on the knob too.',
+      },
+      {
+        key: 'ringFrom',
+        label: 'Carrier from',
+        min: 0,
+        max: RING_FROM.length - 1,
+        step: 1,
+        unit: '',
+        choices: RING_FROM,
+        help: 'Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it. The kit is a gate — the programme only sounds through the hits, and Mix hands the dry back underneath; the chaos oscillator never comes round again, so nothing about the next second is in the last; the FM chip and the toy are pitched, so what comes out is intermodulation on a grid rather than a clang. Whichever you pick has to be up in the mix to make a carrier at all, so it is in the programme it is multiplying too.',
       },
       {
         key: 'ringMix',

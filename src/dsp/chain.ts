@@ -295,6 +295,7 @@ export class Chain {
       env: new Float32Array(BLOCK),
       out: new Float32Array(BLOCK),
       step: new Float32Array(BLOCK),
+      carrier: new Float32Array(BLOCK),
       bright: new Float32Array(BLOCK),
       heat: 0,
       fbDest: 0,
@@ -338,6 +339,7 @@ export class Chain {
     this.ctx.env.fill(0)
     this.ctx.out.fill(0)
     this.ctx.step.fill(0)
+    this.ctx.carrier.fill(0)
     this.ctx.bright.fill(0)
     this.ctx.heat = 0
     this.thermal.reset()
@@ -432,6 +434,11 @@ export class Chain {
     // them only when the tape is on: the stem loop is written out beside the
     // meter loop rather than branching inside it, because a branch per sample
     // per source is the shape this file spends its comments avoiding.
+    // Which machine the ring mod is asking to multiply by, as an index into the
+    // sources rather than a choice — the carrier bus is one source's own output,
+    // and the difference the meters are already taking is where that is.
+    const carFrom = Math.round(p[IDX.ringFrom]!) - 1
+    let carRan = false
     const prev = this.tapPrev
     const cap = this.capturing
     const prevR = this.tapPrevR
@@ -449,7 +456,13 @@ export class Chain {
       if (!s.when || s.when(p, ctx)) {
         const vca = k < MAX_SOURCES ? ctx.mod.read(SOURCE_LEVEL_DEST[k]!) : null
         if (vca && !cap) for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
+        // The bus before this source ran, so what the source put there is what
+        // the meter loop leaves behind minus it — a subtract afterwards rather
+        // than a branch inside the loop that reads it.
+        const carrying = k === carFrom
+        if (carrying) for (let i = 0; i < n; i++) ctx.carrier[i] = prev[i]!
         s.process(io, p, ctx)
+        if (carrying) carRan = true
         if (vca) {
           for (let i = 0; i < n; i++) {
             const g = Math.min(Math.max(1 + vca[i]!, 0), 2)
@@ -479,12 +492,19 @@ export class Chain {
             prev[i] = l
           }
         }
+        if (carrying) {
+          for (let i = 0; i < n; i++)
+            ctx.carrier[i] = prev[i]! - ctx.carrier[i]!
+        }
         // There are six slots and the instrument is built with six sources; a
         // seventh would still sound, and a test holds the two numbers together
         // rather than letting a stray channel land on the mic's meter.
         if (k < MAX_SOURCES && peak > this.taps[k]!) this.taps[k] = peak
       }
     }
+    // A machine whose own `when` said no put nothing on the bus, so the carrier
+    // is silence rather than last block's copy of it.
+    if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
 
     // The summing amp the six of them meet in. Every desk has one and it is
     // never a wire: at unity it is skipped outright, because a soft clipper

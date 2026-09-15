@@ -570,6 +570,16 @@ passage comes out gritty and crossover-distorted where a loud one pushes through
 to something close to the clean multiply. Neither of the other two shapes moves
 at all with level.
 
+**Carrier from** takes the carrier off another machine on the board rather than
+off the stage's own oscillator, which retires the Carrier knob and Track with
+it. The kit is a gate — the programme sounds only through the hits, and Mix
+hands the dry back underneath. The chaos oscillator never comes round again, so
+its sidebands never settle, and it is the furthest thing from a plain ring the
+board can make. The FM chip and the toy are pitched, so what comes out is
+intermodulation on a grid rather than a clang, and the noise source reads white.
+Whichever machine you pick has to be up in the mix to make a carrier at all, so
+it is also in the programme it is multiplying.
+
 **Mix** on a ring modulator is the depth of the modulation rather than a balance
 beside it: the travel runs from clean, through amplitude modulation with the
 note still audible under its own sidebands, to the suppressed-carrier ring at

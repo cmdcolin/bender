@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 247 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 248 knobs and switches in 29 groups, seven bends competing for six slots,
 18 ROM tunes, 69 presets, 14 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -426,14 +426,15 @@ silencing it.
 Amplitude modulation by a carrier, sine or square.
 
 <details>
-<summary>4 controls</summary>
+<summary>5 controls</summary>
 
-| control       | range                                                                                         | what it does                                                                                      |
-| ------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Carrier       | 0.1 Hz to 8 kHz                                                                               | Carrier frequency                                                                                 |
-| Carrier shape | sine, square, diode                                                                           | Square carrier chops instead of gliding — harsh AM-radio ghosts                                   |
-| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64 | Solders the carrier to the note the toy is sounding                                               |
-| Mix           | off to full                                                                                   | Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it |
+| control       | range                                                                                         | what it does                                                                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Carrier       | 0.1 Hz to 8 kHz                                                                               | Carrier frequency                                                                                                                          |
+| Carrier shape | sine, square, diode                                                                           | Square carrier chops instead of gliding — harsh AM-radio ghosts                                                                            |
+| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64 | Solders the carrier to the note the toy is sounding                                                                                        |
+| Carrier from  | knob, toy, kit, FM chip, chaos osc, noise, sampler                                            | Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it |
+| Mix           | off to full                                                                                   | Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it                                          |
 
 </details>
 

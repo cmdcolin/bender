@@ -26,6 +26,14 @@ export interface Ctx {
   /** the chip's sequencer phase, 0 to 1 across the current ROM step */
   step: Float32Array
   /**
+   * One source on its own, mono and dry, for whatever wants to multiply by a
+   * machine rather than by an oscillator. Taken the same way the meters are —
+   * as the difference that source made to the sum — and written only for the
+   * one source `ringFrom` names, so a board that asks for nothing carries a
+   * bus of zeros.
+   */
+  carrier: Float32Array
+  /**
    * How bright the chain is running, signed: positive when there is more
    * high-frequency energy in the loop than programme, negative when it has gone
    * dull. The second global bus, and deliberately the fast one — droop is slow
