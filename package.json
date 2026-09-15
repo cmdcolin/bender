@@ -1,7 +1,7 @@
 {
   "name": "bender",
   "private": true,
-  "version": "0.17.7",
+  "version": "0.18.0",
   "type": "module",
   "scripts": {
     "dev": "astro dev",
