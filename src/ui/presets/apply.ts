@@ -1,6 +1,6 @@
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
+import { DEFAULT_CONTROLS, sameControls, type Controls } from '../../controls'
 import { Glide } from '../../engine/glide'
-import type { PresetDef } from './table'
+import { PRESETS, type PresetDef } from './table'
 import { keepYours } from './yours'
 
 export function applyPreset(preset: PresetDef, current: Controls): Controls {
@@ -22,4 +22,11 @@ export function applyPreset(preset: PresetDef, current: Controls): Controls {
 // can actually be played rather than half a distortion circuit.
 export function presetPath(preset: PresetDef, from: Controls): Glide {
   return new Glide(from, applyPreset(preset, from))
+}
+
+// Which preset the board on screen is, if it is one. What a save offers as a
+// name: land on "wrong song", press save, and that is what it is called.
+// Nothing calls this per frame — working it out is a pass over the catalog.
+export function presetNameFor(current: Controls): string | undefined {
+  return PRESETS.find(p => sameControls(applyPreset(p, current), current))?.name
 }

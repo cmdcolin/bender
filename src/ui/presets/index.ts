@@ -1,7 +1,7 @@
 // The looks the board ships with, and the rolls that go looking for the ones it
 // doesn't: the table in table.ts, and a file per thing a roll is about.
 export { PRESETS, type PresetDef } from './table'
-export { applyPreset, presetPath } from './apply'
+export { applyPreset, presetNameFor, presetPath } from './apply'
 export {
   mutate,
   randomLook,

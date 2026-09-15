@@ -1,0 +1,163 @@
+/* The library button in the panel's chrome, and the popover it opens. */
+
+.trigger {
+  composes: action from './button.module.css';
+}
+
+/* A write that did not land. Red for as long as the ✕ is up, because two of the
+   three ways to save happen with this menu shut. */
+.triggerBad {
+  composes: actionDanger from './button.module.css';
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 260px;
+  padding: 4px;
+}
+
+.saveRow {
+  display: flex;
+  gap: 4px;
+}
+
+.nameInput {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: 3px 6px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.nameInput:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.save {
+  composes: action from './button.module.css';
+}
+
+/* Scrolls at about eight rows: a library of forty must not push the account
+   footer off the bottom of the window. */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* The name is the recall, and it takes the width: the three glyphs beside it
+   are the same size on every row, so the eye runs down one column of names. */
+.recall {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  padding: 3px 6px;
+  background: none;
+  color: var(--fg2);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.recall:hover,
+.recall:focus-visible {
+  background: var(--bg3);
+  color: var(--fg);
+  outline: none;
+}
+
+.rowBtn {
+  font-size: var(--fs-xs);
+  padding: 3px 5px;
+  background: none;
+  color: var(--fg3);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.rowBtn:hover,
+.rowBtn:focus-visible {
+  color: var(--fg);
+  background: var(--bg3);
+  outline: none;
+}
+
+.rowDel {
+  composes: rowBtn;
+}
+
+.rowDel:hover,
+.rowDel:focus-visible {
+  color: var(--danger);
+  background: var(--bg3);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  color: var(--fg3);
+}
+
+.err {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--danger);
+}
+
+.signIn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.acct {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-quiet);
+}
+
+.acctUser {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.acctName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}
+
+.avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}

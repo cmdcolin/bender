@@ -29,13 +29,18 @@ import {
   saveMorph,
   type MorphSeconds,
 } from './morph'
-import { mutate } from './presets'
+import { mutate, presetNameFor } from './presets'
 import { Presets } from './PresetRow'
 import { SampleReel } from './SampleReel'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { StartOverlay } from './StartOverlay'
+import { boardFrom, boardFromUrl, boardHash } from './share'
+import { SavedVoices } from './SavedVoices'
 import { useBoardUrl } from './useBoardUrl'
+import { useCurrentSession } from './useCurrentSession'
+import { useSavedVoices } from './useSavedVoices'
+import { suggestVoiceName, type SavedVoice } from './voiceModel'
 import styles from './App.module.css'
 import { Tip } from './Tip'
 import { POOLS, detailsUrl } from '../engine/archive'
@@ -231,8 +236,45 @@ export function App(props: { openedFromLink?: boolean }) {
   const [showStart, setShowStart] = useState(!!props.openedFromLink)
   const [showAbout, setShowAbout] = useState(false)
 
+  const lib = useSavedVoices()
+  const libUid = lib.user?.uid ?? null
+
+  // The board as the address bar spells it, which is what a voice holds.
+  const boardQuery = () =>
+    boardHash(window.location.hash, engine.controls.get())
+
+  // What the name box offers: the preset the board is standing on, or the voice
+  // last saved or recalled, counted up once that name is taken.
+  const suggestName = () =>
+    suggestVoiceName(
+      lib.voices,
+      lib.lastName ?? presetNameFor(engine.controls.get()) ?? 'my voice',
+    )
+
+  // Recall morphs, the way pressing a preset chip does. An open lands the whole
+  // board at once by putting it on the address bar — useBoardUrl hears the
+  // hashchange and applies it, which is exactly what arriving on a link does.
+  const recall = (voice: SavedVoice) => {
+    const patch = boardFromUrl('', `#${voice.query}`)
+    if (patch !== null)
+      engine.morphTo(boardFrom(patch, engine.controls.get()), morphSeconds)
+    lib.markRecalled(voice.name)
+  }
+  const copyVoiceLink = (voice: SavedVoice) => {
+    const { origin, pathname } = window.location
+    return navigator.clipboard
+      .writeText(`${origin}${pathname}#${voice.query}`)
+      .then(() => true)
+      .catch(() => false)
+  }
+  const openVoice = (voice: SavedVoice) => {
+    window.location.hash = voice.query
+    lib.markRecalled(voice.name)
+  }
+
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
+  useCurrentSession(libUid)
   useDrumKeys()
 
   // Space is the run/stop line over both machines, wherever the focus is; the
@@ -249,6 +291,32 @@ export function App(props: { openedFromLink?: boolean }) {
       if (TYPING.has(target.tagName)) return
       e.preventDefault()
       engine.toggleRun()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Read at keypress time rather than closed over when the listener went on,
+  // so the handler goes on the window once and still saves the board and the
+  // library as they are now.
+  const save = useRef(() => {})
+  save.current = () => {
+    lib.saveVoice(suggestName(), boardQuery())
+  }
+
+  // Save, on the key every application that saves anything puts it on. The
+  // board is not a document and the browser's own dialog would offer to write
+  // the page to disk, so the default goes either way.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        e.key.toLowerCase() !== 's' ||
+        !(e.ctrlKey || e.metaKey) ||
+        e.shiftKey
+      )
+        return
+      e.preventDefault()
+      save.current()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -497,6 +565,23 @@ export function App(props: { openedFromLink?: boolean }) {
               of the panel, which is where the board's own stages live and where
               the wire into them does not belong. */}
             <MidiPanel />
+            {/* Beside the MIDI drawer for the same reason it is: a fact about
+              the session rather than a verb over the board. */}
+            <SavedVoices
+              voices={lib.voices}
+              suggestName={suggestName}
+              onSave={name => lib.saveVoice(name, boardQuery())}
+              onRecall={recall}
+              onOpen={openVoice}
+              onDelete={lib.deleteVoice}
+              onCopyLink={copyVoiceLink}
+              flash={lib.flash}
+              status={lib.status}
+              user={lib.user}
+              error={lib.error}
+              onSignIn={lib.signIn}
+              onSignOut={lib.signOut}
+            />
             <Panic />
           </div>
 
