@@ -1187,7 +1187,7 @@ on it — a link never presses play, so it is loaded and waiting.
 | `pnpm pat`          | release: patch                                                                                                                                   |
 | `pnpm min`          | release: minor                                                                                                                                   |
 | `pnpm maj`          | release: major                                                                                                                                   |
-| `pnpm format`       | prettier                                                                                                                                         |
+| `pnpm format`       | oxfmt, and prettier for .astro                                                                                                                   |
 | `pnpm prepare`      | points git at .githooks                                                                                                                          |
 | `pnpm format:check` | the same, checking only                                                                                                                          |
 | `pnpm lint`         | oxlint, type-aware                                                                                                                               |

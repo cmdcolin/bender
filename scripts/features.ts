@@ -116,7 +116,6 @@ const SCRIPTS: Record<string, string> = {
   spectrum:
     'sweeps the same space and reports what each fault sounds like, by frequency',
   preview: 'serves the built bundle',
-  format: 'prettier',
   prepare: 'points git at .githooks',
   pat: 'release: patch',
   min: 'release: minor',
