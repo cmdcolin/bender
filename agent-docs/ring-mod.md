@@ -224,3 +224,105 @@ grid a tracked carrier lands on at each ratio, the channel correlation and what
 survives a fold to mono, and the one thing only the bridge does — sine and
 square measuring the same flatness at two input levels where the bridge does
 not.
+
+---
+
+# Second study: other places for the multiplier
+
+Written after the three items above landed. Everything the first study measured
+put the multiplier in one place — the bend slot — with a carrier nothing else on
+the board makes. What follows is what changes when either of those moves. Same
+board as before (the toy on `sakura`, kit at 160, four seconds), same columns,
+read with `src/dsp/spectrum.ts`; `vs ring` is how far a take sits from a plain
+300 Hz sine ring. The products below were computed off the dry stems, which at
+unity drive is the same sum the slot rack sees.
+
+**Items 1 to 4 are built**, in the order they are ranked; item 5 is a sub-case
+of 1 and is not.
+
+## 1. A carrier from another machine
+
+The mic carrier (`micPatch` = `ring car`) was the only carrier not made by the
+stage's own oscillator, and five other machines are on the bus beside it. The
+chain already isolates each source as the difference it made to the sum, in the
+meter loop; copying the chosen one into a bus costs one block copy.
+
+| toy × carrier | rms   | flat  | centroid | vs ring |
+| ------------- | ----- | ----- | -------- | ------- |
+| sine 300      | 0.154 | 0.057 | 4527     | 0.00    |
+| chaos osc     | 0.217 | 0.280 | 5216     | 1.73    |
+| FM chip       | 0.084 | 0.399 | 4565     | 1.17    |
+| kit           | 0.035 | 0.419 | 5143     | 1.03    |
+| noise         | 0.089 | 0.986 | 11997    | 1.16    |
+
+The chaos oscillator is the one to have: the furthest thing from today's ring on
+any table in this file, at full level, from a carrier that never repeats. The
+kit is a different effect rather than a louder one — the toy only sounds through
+drum hits, a rhythmic gate with sidebands, and the Mix knob hands the dry back
+underneath. Noise is a gated hiss and reads white.
+
+## 2. Mix as a patch bay lane
+
+The first study showed the Mix knob is the AM depth. A wire on it is therefore a
+VCA on the carrier, and no lane reached it. Drum hit onto Mix is a clang on
+every kick that fades into the clean note; key env is a ring-mod attack
+transient; the output envelope means only loud passages clang. The spectrum
+average hides all of that by design, so there is no table — the measurement is
+that an envelope-driven mix sits 0.30 from the static ring and its inverse 1.54,
+which is the range of a knob being turned in time.
+
+## 3. The multiplier inside the tape delay's regeneration
+
+Not the global loop, which is 2.7 ms and already contains the slot rack. Here
+every _repeat_ is shifted again, so a tail becomes a lattice.
+
+| regen × carrier | flat  | centroid |
+| --------------- | ----- | -------- |
+| plain, fb 0.7   | 0.042 | 4405     |
+| sine 300        | 0.094 | 4342     |
+| square 300      | 0.226 | 4689     |
+| chaos osc       | 0.374 | 5231     |
+
+On a one-second burst of A3 the tail alone says what it does. At unison the even
+harmonics appear — 440 and 880 Hz, where the plain tail has none — so the toy's
+square fills in lap by lap. At sub the tail carries 110, 330, 550, 770 and 990:
+a new fundamental an octave under, in the echoes only, while the note you played
+stays clean. At 3 Hz each harmonic spreads into a cluster spaced 3 Hz apart, a
+chorus that widens with every lap.
+
+Two things to build with. A sine carrier costs 3 dB a lap, so the tail dies
+faster unless the feedback compensates or the square is used (tail rms 0.069
+sine, 0.119 square, 0.227 plain). And at unison the product has a DC term that
+would go round the loop, so the regen wants a DC block; the tape delay's tone
+filter is not one.
+
+## 4. A carrier phase-locked to the sequencer
+
+`ctx.step` carries the chip's step phase. A carrier of `sin(2π·k·step)` is a
+tremolo that lands identically on every step at low k, and at high k an
+audio-rate carrier whose pitch follows the toy's clock, its starve and its
+drift, and whose phase restarts on every note. The bay's ROM-step wire moves the
+_frequency_ by the step phase, which is a sawtooth sweep per step and not this.
+Zero cost, one choice.
+
+## 5. The toy against its own last note
+
+Multiplying the toy by itself one step or one beat late reads 0.29 to 0.37 flat
+and, alone on this page, puts 14% of the power under 480 Hz where the dry has
+none: the difference tones between successive notes land as bass. It is item 1
+with the delay tap as a carrier source, and waits on that.
+
+## Reachable today
+
+The sampler loop re-recorded through the ring mod works with no code, since the
+record head lays down the whole chain. Plain, the loop piles up (rms 0.31 to
+0.47 over eight seconds); through a 300 Hz ring the level holds near 0.18
+because each lap halves, and at unison flatness climbs 0.096 to 0.154 — a
+lattice that grows a lap at a time.
+
+## Not worth building
+
+A narrow pulse carrier reads 0.404 flat and 9 dB down, and the square already
+reads 0.239 at full level. A carrier phase reset on the gate: the toy keeps its
+oscillator phase across strikes, so the waveform never locks and only the attack
+is made consistent, which item 4 does better.
