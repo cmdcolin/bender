@@ -90,6 +90,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Pinned to the row's right edge whatever width the middle controls take, so
+   it stays where a masthead menu is expected rather than drifting with them. */
+.menuBtn {
+  composes: action from './button.module.css';
+  align-self: center;
+  margin-left: auto;
+  padding: 3px 7px;
+  color: var(--fg3);
+}
+
 /* The panel's row of verbs: buttons at their own width, wrapping when they run
    out. Nothing stretches to fill a line, so a button's width says how long its
    label is and nothing else — a row that wrapped used to hand its last two

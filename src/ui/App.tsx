@@ -21,6 +21,7 @@ import { useCoarse } from './measure'
 import { HuntDialog } from './HuntDialog'
 import { FmKeys } from './FmKeys'
 import { Keys } from './Keys'
+import { Menu, menuItem } from './Menu'
 import { MidiPanel } from './MidiPanel'
 import {
   loadMorph,
@@ -235,6 +236,8 @@ export function App(props: { openedFromLink?: boolean }) {
   // afterwards is a second gesture and gets no overlay to answer to.
   const [showStart, setShowStart] = useState(!!props.openedFromLink)
   const [showAbout, setShowAbout] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
 
   const lib = useSavedVoices()
   const libUid = lib.user?.uid ?? null
@@ -583,6 +586,39 @@ export function App(props: { openedFromLink?: boolean }) {
               onSignOut={lib.signOut}
             />
             <Panic />
+            {/* Everything about the board rather than a stage of it, and rare
+                enough to earn no room of its own — pinned to the row's far end,
+                clear of the verbs that matter more often. */}
+            <Tip text="About this build, and where the docs and source are.">
+              <button
+                ref={setMenuBtn}
+                className={styles.menuBtn}
+                aria-label="menu"
+                aria-expanded={showMenu}
+                onClick={() => setShowMenu(o => !o)}
+              >
+                ☰
+              </button>
+            </Tip>
+            {showMenu && (
+              <Menu
+                anchor={menuBtn}
+                toggle={menuBtn}
+                role="menu"
+                onClose={() => setShowMenu(false)}
+              >
+                <button
+                  role="menuitem"
+                  className={menuItem(false)}
+                  onClick={() => {
+                    setShowMenu(false)
+                    setShowAbout(true)
+                  }}
+                >
+                  about
+                </button>
+              </Menu>
+            )}
           </div>
 
           <div className={styles.actions}>
