@@ -6,7 +6,7 @@ import { DEST } from '../modbus'
 import { BLOCK, type StereoBlock } from '../stage'
 import { spectrum } from '../spectrum'
 import { RING_TRACK } from './ringmod'
-import { rms, SR } from '../testRender'
+import { deviation, envelope, render, rms, SR } from '../testRender'
 
 // A3, the chip's semitone zero, and the note every tracking case here is
 // judged against.
@@ -174,6 +174,33 @@ test('the two channels come out a quarter turn apart', () => {
 test('a sub-audio carrier pans rather than pumping both channels at once', () => {
   const wet = play({ ringHz: 3 }, 2)
   expect(corr(wet.l, wet.r)).toBeLessThan(0.5)
+})
+
+// The Mix knob is the carrier's own depth rather than a balance beside it, so
+// a wire on it is a VCA on the carrier: the stage opens from a knob all the way
+// down, and what comes out is the clean board everywhere the kit is not hitting.
+test('a wire onto the mix rings where the kit hits and nowhere else', () => {
+  const board: Partial<Controls> = {
+    ...RING,
+    ringMix: 0,
+    ringHz: 430,
+    drumLevel: 0.9,
+    drumKick: 0b0000_1000_0000_1000,
+    drumSnare: 0,
+    drumHat: 0,
+  }
+  const dry = render(board, 2)
+  const wired = render(
+    { ...board, mod0Src: 9, mod0Dest: DEST.ringMix, mod0Depth: 1 },
+    2,
+  )
+  expect(deviation(wired, dry)).toBeGreaterThan(0.2)
+
+  const moved = envelope(Float32Array.from(dry, (v, i) => wired[i]! - v))
+  const level = envelope(dry)
+  const ratio = Array.from(moved, (v, i) => v / (level[i]! + 1e-12))
+  expect(Math.max(...ratio)).toBeGreaterThan(0.5)
+  expect(ratio.filter(v => v < 1e-6).length).toBeGreaterThan(ratio.length / 8)
 })
 
 test('the mic carrier still overrides the oscillator', () => {

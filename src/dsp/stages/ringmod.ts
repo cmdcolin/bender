@@ -72,8 +72,10 @@ export class RingMod implements Stage {
     this.loaded = hz
   }
 
-  when(p: Float32Array) {
-    return p[IDX.ringMix]! > 0
+  // A wire on the mix can open the stage from a knob that is all the way down,
+  // so the multiplier runs whenever anything could put it in the path.
+  when(p: Float32Array, ctx: Ctx) {
+    return p[IDX.ringMix]! > 0 || !!ctx.mod.read(DEST.ringMix)
   }
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
@@ -81,7 +83,8 @@ export class RingMod implements Stage {
     const mod = ctx.mod.read(DEST.ringHz)
     const shape = Math.round(p[IDX.ringShape]!)
     const ratio = TRACK_RATIO[Math.round(p[IDX.ringTrack]!)] ?? 0
-    const mix = p[IDX.ringMix]!
+    const baseMix = p[IDX.ringMix]!
+    const mixMod = ctx.mod.read(DEST.ringMix)
     const micCarrier = Math.round(p[IDX.micPatch]!) === 4
     const carrier = this.carrier
     // Untracked, the knob is the whole story. Tracked, it is where the carrier
@@ -134,6 +137,9 @@ export class RingMod implements Stage {
       const r = io.r[i]!
       const wl = shape === 2 ? bridge(l, carL) : l * carL
       const wr = shape === 2 ? bridge(r, carR) : r * carR
+      const mix = mixMod
+        ? Math.min(Math.max(baseMix + mixMod[i]!, 0), 1)
+        : baseMix
       io.l[i] = l * (1 - mix) + wl * mix
       io.r[i] = r * (1 - mix) + wr * mix
     }

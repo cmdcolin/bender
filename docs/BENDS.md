@@ -563,6 +563,13 @@ passage comes out gritty and crossover-distorted where a loud one pushes through
 to something close to the clean multiply. Neither of the other two shapes moves
 at all with level.
 
+**Mix** on a ring modulator is the depth of the modulation rather than a balance
+beside it: the travel runs from clean, through amplitude modulation with the
+note still audible under its own sidebands, to the suppressed-carrier ring at
+the top. So the bay's lane on it is a VCA on the carrier — a wire from the drum
+hit clangs every kick and fades back to the clean note, and one from the output
+envelope rings only the loud passages.
+
 The carrier is also one of the patch bay's destinations, and that lane is four
 octaves wide — which is where most of this bend's range actually is. A wire from
 the drum hit onto it slams the carrier up an octave or more on every kick and

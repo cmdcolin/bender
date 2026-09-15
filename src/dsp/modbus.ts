@@ -82,8 +82,13 @@ export const DEST = {
   // shipped.
   fmBusCut: 52,
   fmNoiseBlob: 53,
+  // The ring mod's dry/wet, which is the carrier's own depth rather than a
+  // balance beside it. A wire here is a VCA on the carrier: a drum hit clangs
+  // every kick and fades back to the clean note, and the output envelope means
+  // only the loud passages ring at all.
+  ringMix: 54,
 } as const
-export const N_DEST = 54
+export const N_DEST = 55
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

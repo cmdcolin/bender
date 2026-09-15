@@ -60,7 +60,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as ControlKey,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 53,
+          max: 54,
           step: 1,
           unit: '',
           choices: [
@@ -118,6 +118,7 @@ export const PATCH_GROUPS: Group[] = [
             'FM wave data fault',
             'FM cut depth',
             'FM noise blob',
+            'ring mix',
           ],
           groups: [
             {
@@ -182,6 +183,7 @@ export const PATCH_GROUPS: Group[] = [
                 'filt cut',
                 'filt res',
                 'ring car',
+                'ring mix',
                 'comb pitch',
                 'crush rate',
                 'bit depth',
