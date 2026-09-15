@@ -6,12 +6,7 @@ import { appUrl, privacyUrl, siteRoot } from '../home/paths'
 import { applyPreset } from '../ui/presets/apply'
 import { PRESETS } from '../ui/presets/table'
 import { boardHash } from '../ui/share'
-import {
-  FREE_WITHOUT,
-  LINKS_INSTEAD,
-  REASONS,
-  WHAT_IT_HOLDS,
-} from '../ui/whySignIn'
+import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
 import '../theme.css'
 import '../home/home.css'
 
@@ -156,19 +151,9 @@ const presets = PRESETS.map(preset => ({
         <h2 class="whyHead" id="whyHead">Why sign in?</h2>
         <button class="btn" id="whyClose" type="button">Close</button>
       </div>
-      <ul class="whyList">
-        {
-          REASONS.map(reason => (
-            <li>
-              <b>{reason.head}</b>
-              <span>{reason.says}</span>
-            </li>
-          ))
-        }
-      </ul>
-      <p class="whyLine">{FREE_WITHOUT}</p>
+      <p class="whyPitch">{PITCH}</p>
       <p class="whyLine">
-        {WHAT_IT_HOLDS} <a href={privacyUrl}>What is stored, in full →</a>
+        {FREE_WITHOUT} <a href={privacyUrl}>What an account holds →</a>
       </p>
       <p class="cta">
         <button class="btn primary" id="whySignIn" type="button"
@@ -176,7 +161,6 @@ const presets = PRESETS.map(preset => ({
         >
         <a class="btn" href={appUrl}>Open the app instead →</a>
       </p>
-      <p class="whyFine">{LINKS_INSTEAD}</p>
     </dialog>
   </body>
 </html>

@@ -1,11 +1,6 @@
 import { useState } from 'react'
 import { privacyUrl } from '../home/paths'
-import {
-  FREE_WITHOUT,
-  LINKS_INSTEAD,
-  REASONS,
-  WHAT_IT_HOLDS,
-} from './whySignIn'
+import { FREE_WITHOUT, PITCH } from './whySignIn'
 import styles from './WhySignInDialog.module.css'
 
 // Why an account, and the two ways on from the question: sign in, or copy the
@@ -45,7 +40,7 @@ export function WhySignInDialog(props: {
       className={styles.card}
     >
       <div className={styles.head}>
-        <span className={styles.title}>Why sign in?</span>
+        <span className={styles.title}>why sign in?</span>
         <button className={styles.close} onClick={() => onClose()}>
           close
         </button>
@@ -58,17 +53,9 @@ export function WhySignInDialog(props: {
           <b className={styles.pendingName}>{props.pendingName}</b>.
         </p>
       )}
-      <ul className={styles.list}>
-        {REASONS.map(reason => (
-          <li className={styles.reason} key={reason.head}>
-            <b className={styles.reasonHead}>{reason.head}</b>
-            <span className={styles.reasonSays}>{reason.says}</span>
-          </li>
-        ))}
-      </ul>
-      <p className={styles.line}>{FREE_WITHOUT}</p>
+      <p className={styles.pitch}>{PITCH}</p>
       <p className={styles.line}>
-        {WHAT_IT_HOLDS}{' '}
+        {FREE_WITHOUT}{' '}
         {/* A new tab, like every link on the about card. Navigating away from
             the app tears down the audio graph. */}
         <a
@@ -77,18 +64,19 @@ export function WhySignInDialog(props: {
           target="_blank"
           rel="noreferrer"
         >
-          what is stored, in full ↗
+          what an account holds ↗
         </a>
       </p>
       <div className={styles.row}>
         <button className={styles.go} autoFocus onClick={props.onSignIn}>
           sign in with Google
         </button>
+        {/* The other way to keep a board, for anyone who would rather not have
+            an account: every board is already a link. */}
         <button className={styles.alt} onClick={copy}>
           {copied ? 'link copied ✓' : 'copy this board as a link'}
         </button>
       </div>
-      <p className={styles.fine}>{LINKS_INSTEAD}</p>
     </dialog>
   )
 }

@@ -257,7 +257,7 @@ body {
 }
 
 .whyCard {
-  width: min(560px, calc(100vw - 24px));
+  width: min(460px, calc(100vw - 24px));
   padding: 16px 18px;
   background: var(--bg2);
   color: var(--fg2);
@@ -282,28 +282,11 @@ body {
   font-size: var(--fs-xl);
 }
 
-.whyList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0 0 14px;
-  padding: 0;
-  list-style: none;
-}
-
-.whyList li {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.whyList b {
-  color: var(--fg);
-}
-
-.whyList span {
-  font-size: var(--fs-sm);
-  color: var(--fg3);
+/* The answer, at the size of the thing being answered. */
+.whyPitch {
+  margin: 0 0 10px;
+  font-size: var(--fs-lg);
+  color: var(--fg2);
 }
 
 .whyLine {
@@ -315,12 +298,6 @@ body {
 .whyLine a {
   color: var(--accent);
   white-space: nowrap;
-}
-
-.whyFine {
-  margin: 0;
-  font-size: var(--fs-sm);
-  color: var(--fg4);
 }
 
 /* --- running prose, which only the privacy page has ---------------------- */

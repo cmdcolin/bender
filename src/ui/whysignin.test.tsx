@@ -2,6 +2,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { App } from './App'
+import { PITCH } from './whySignIn'
 import './testDom'
 
 // Signed out, a save is the moment somebody wants an account — so it is the
@@ -42,7 +43,7 @@ test('the menu carries the question for anyone who wants it unasked', () => {
   const card = screen.getByRole('dialog', { name: 'why sign in' })
   // Opened cold rather than by a save, so there is no board waiting.
   expect(card.textContent).not.toMatch(/Signing in saves/)
-  expect(card.textContent).toMatch(/Keep a board under a name/)
+  expect(card.textContent).toContain(PITCH)
 })
 
 test('the library popover answers it, and gets out of the way', () => {

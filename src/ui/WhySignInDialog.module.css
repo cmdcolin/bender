@@ -1,8 +1,8 @@
-/* The about card's box, a little wider: three headed paragraphs read as a wall
-   at 400px. Modal for the same reason about is — it opens over a panel that
-   scrolls and clips, and the top layer clears both. */
+/* The about card's box, at the same width: two sentences and two buttons.
+   Modal for the reason about is — it opens over a panel that scrolls and clips,
+   and the top layer clears both. */
 .card {
-  width: min(460px, calc(100vw - 24px));
+  width: min(400px, calc(100vw - 24px));
   padding: 10px 12px;
   background: var(--bg2);
   color: var(--fg2);
@@ -52,35 +52,11 @@
   font-weight: 600;
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0 0 10px;
-  padding: 0;
-  list-style: none;
-}
-
-.reason {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.reasonHead {
+/* The answer, at the size of the thing being answered. */
+.pitch {
+  margin: 0 0 8px;
   color: var(--fg);
-  font-weight: 600;
-}
-
-.reasonSays {
-  font-size: var(--fs-xs);
   line-height: 1.45;
-  color: var(--fg3);
-}
-
-.link {
-  color: var(--accent);
-  white-space: nowrap;
 }
 
 .line {
@@ -90,13 +66,13 @@
   color: var(--fg3);
 }
 
-/* Two ways on, side by side and at the same size: the second one is not a
-   consolation prize. */
+/* Two ways on, side by side and at the same size: the second one is a way to
+   keep the board, not a way to decline. */
 .row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 2px 0 8px;
+  padding: 2px 0;
 }
 
 .go {
@@ -107,11 +83,4 @@
 
 .alt {
   composes: action from './button.module.css';
-}
-
-.fine {
-  margin: 0;
-  font-size: var(--fs-xs);
-  line-height: 1.45;
-  color: var(--fg4);
 }
