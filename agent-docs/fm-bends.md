@@ -218,7 +218,9 @@ what an LFO there floods the bus with is the one byte it is actually moving.
 `fmBusCut` and `fmNoiseBlob` followed, which are the knife itself: how far
 through the trace it went, and how far across the pins the solder ran. Neither
 is a setting the factory shipped, which makes them the two strangest lanes in
-the bay — an LFO on the cut depth is a fault that comes and goes in time.
+the bay — an LFO on the cut depth is a fault that comes and goes in time. Every
+line and fault selector on the chip has a lane too, hopping the way the toy's
+and the kit's do.
 
 Still to do here: the two clocks from 5.
 

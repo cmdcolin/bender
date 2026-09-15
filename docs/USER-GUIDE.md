@@ -303,11 +303,14 @@ register down with everything else, so the sand turns into a rumble.
 the patch further. What actually happens at the register level when you put a
 fault on this chip's wires is a much bigger story — see [Bends](BENDS.md).
 
-The patch bay reaches this chip now, at **FM bright**, **FM cut depth** and **FM
-noise blob**. Brightness is the one to try: the processor only re-sends a patch
-when a knob moves, so a wire there leaves it writing the register file every
-block instead of four times a note — which is what every fault on that bus has
-been waiting for.
+The patch bay reaches every knob on this chip that matters now, the knife
+included: **FM cut depth** is how far through the trace the blade went and **FM
+noise blob** is how far the solder ran, so a wire on either is a fault that
+comes and goes in time rather than one you set and leave. **FM bright** is the
+one to try first, for a reason that is nothing to do with tone: the processor
+only re-sends a patch when a knob moves, so a wire there leaves it writing the
+register file every block instead of four times a note — which is what every
+fault on that bus has been waiting for.
 
 ## The trigger patch
 
@@ -376,11 +379,11 @@ wire does to the board is itself something opening and closing.
 
 Every control one of the four wires can land on carries a **+ mod** button
 beside its readout, so a knob can be set moving from the stage you are standing
-on rather than by finding the lane in the bay's own list of fifty. The press
-solders the first spare wire from the LFO onto that control, turns nothing else
-up, and folds the wire out under the row: what it picks up, how hard it pushes,
-and — while it is on the LFO — the rate and shape that oscillator is running at.
-Patched, the row wears a chip saying what is driving it and how fast
+on rather than by finding the lane in the bay's own list of fifty-four. The
+press solders the first spare wire from the LFO onto that control, turns nothing
+else up, and folds the wire out under the row: what it picks up, how hard it
+pushes, and — while it is on the LFO — the rate and shape that oscillator is
+running at. Patched, the row wears a chip saying what is driving it and how fast
 (`∿ LFO 1.0Hz`), which is the difference between a slow sweep and a buzz without
 opening anything; pressing the chip folds the wire out again, and **× unplug**
 takes it off, keeping where it landed and how hard it was pushing so the next

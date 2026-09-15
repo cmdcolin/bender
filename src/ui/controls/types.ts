@@ -35,7 +35,7 @@ export interface SliderDef {
   /** The patch-bay destination that lands on this control, named as the bay
       names it. A row that has one carries a `+ mod` button: the bay's lanes are
       the same knobs the panels draw, and a wire onto one used to mean finding
-      the bay, finding the lane in a list of fifty, and coming back. The
+      the bay, finding the lane in a list of fifty-four, and coming back. The
       wire is still the bay's — this is a second door onto the same four leads.
       One control per lane, which the tables' own test holds. */
   lane?: string
