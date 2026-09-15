@@ -1033,6 +1033,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmWaveDataLine',
+        lane: 'FM wave data line',
         part: 'knife on the bus',
         label: 'Wave data line',
         min: 0,
@@ -1045,6 +1046,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmWaveDataFault',
+        lane: 'FM wave data fault',
         part: 'knife on the bus',
         needs: c => c.fmWaveDataLine > 0,
         label: 'Wave data fault',
