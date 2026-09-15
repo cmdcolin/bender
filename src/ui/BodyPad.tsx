@@ -2,6 +2,7 @@ import { useState, type PointerEvent } from 'react'
 import { engine } from '../engine/engine'
 import { useBoardValue, useControlValue } from './ControlsContext'
 import { groupFor, sliderFor } from './controls'
+import { Tip } from './Tip'
 import styles from './BodyPad.module.css'
 
 const DEST_LABELS = sliderFor('mod0Dest').choices ?? []
@@ -57,37 +58,39 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
 
   return (
     <div className={styles.wrap}>
-      <div
-        className={held ? styles.padOn : styles.pad}
-        onPointerDown={e => {
-          e.currentTarget.setPointerCapture(e.pointerId)
-          setHeld(true)
-          track(e)
-        }}
-        onPointerMove={e => held && track(e)}
-        onPointerUp={lift}
-        onPointerCancel={lift}
-      >
-        <span className={styles.contact} style={{ left: '7%' }} />
-        <span className={styles.contact} style={{ left: '93%' }} />
-        {held && (
-          <>
-            <span className={styles.vline} style={{ left: `${x * 100}%` }} />
-            <span
-              className={styles.hline}
-              style={{ top: `${(1 - y) * 100}%` }}
-            />
-            <span
-              className={styles.dot}
-              style={{
-                left: `${x * 100}%`,
-                top: `${(1 - y) * 100}%`,
-              }}
-            />
-          </>
-        )}
-        <span className={styles.legend}>body contact</span>
-      </div>
+      <Tip text="Two bare contacts, like a bent toy's. Press between them and drag — position sets Contact X and Y, patchable in the bay like any other source. Nothing plays until you wire one.">
+        <div
+          className={held ? styles.padOn : styles.pad}
+          onPointerDown={e => {
+            e.currentTarget.setPointerCapture(e.pointerId)
+            setHeld(true)
+            track(e)
+          }}
+          onPointerMove={e => held && track(e)}
+          onPointerUp={lift}
+          onPointerCancel={lift}
+        >
+          <span className={styles.contact} style={{ left: '7%' }} />
+          <span className={styles.contact} style={{ left: '93%' }} />
+          {held && (
+            <>
+              <span className={styles.vline} style={{ left: `${x * 100}%` }} />
+              <span
+                className={styles.hline}
+                style={{ top: `${(1 - y) * 100}%` }}
+              />
+              <span
+                className={styles.dot}
+                style={{
+                  left: `${x * 100}%`,
+                  top: `${(1 - y) * 100}%`,
+                }}
+              />
+            </>
+          )}
+          <span className={styles.legend}>body contact</span>
+        </div>
+      </Tip>
       <div className={styles.readout}>
         <span className={held ? styles.ohmsOn : styles.ohms}>
           {held ? resistance(x, y) : '∞ Ω'}
