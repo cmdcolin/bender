@@ -89,6 +89,7 @@ const SCRIPTS: Record<string, string> = {
   build: 'typecheck and bundle',
   test: 'the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom',
   typecheck: 'types only',
+  'sync:check': 'compare the regions shared with videoskillet',
   bench: 'what the chain costs per block, stage by stage',
   blocks:
     'the distribution — p50 to p99.9, and how many blocks went over budget',

@@ -1,3 +1,4 @@
+// CROSS_REPO_SYNC_FILE(undo-history)
 // A bounded undo/redo walk over whole-board snapshots.
 //
 // One step back would be enough if every destructive move were deliberate. It

@@ -24,6 +24,7 @@ import { markFor } from './mark'
 import { appUrl, boardUrl, guideUrl, siteRoot } from './paths'
 import type { SavedVoice } from '../ui/voiceModel'
 
+// CROSS_REPO_SYNC(home-dom-helpers)
 const need = (id: string): HTMLElement => {
   const node = document.getElementById(id)
   if (node === null) throw new Error(`no #${id}`)
@@ -40,6 +41,7 @@ const el = <K extends keyof HTMLElementTagNameMap>(
   if (text !== undefined) node.textContent = text
   return node
 }
+// CROSS_REPO_SYNC_END(home-dom-helpers)
 
 const landing = need('landing')
 const home = need('home')
@@ -171,6 +173,7 @@ function voicesSection(doc: HomeDoc, now: number): HTMLElement {
 
 // --- the account end of the bar ---------------------------------------------
 
+// CROSS_REPO_SYNC(home-account)
 function paintAvatar(user: CloudUser) {
   avatar.textContent = ''
   avatar.classList.remove('initial')
@@ -228,6 +231,7 @@ whyCard.addEventListener('click', event => {
   // landed on the backdrop.
   if (event.target === whyCard) whyCard.close()
 })
+// CROSS_REPO_SYNC_END(home-account)
 
 // --- the two states ---------------------------------------------------------
 
@@ -296,6 +300,7 @@ async function paint(user: CloudUser) {
   showHome(user, doc)
 }
 
+// CROSS_REPO_SYNC(home-sign-in)
 let signedIn: CloudUser | null = null
 
 const startSignIn = (button: HTMLButtonElement) => {
@@ -344,3 +349,4 @@ if (wasSignedIn())
     if (user === null) showLanding()
     else void paint(user)
   }).catch(showLanding)
+// CROSS_REPO_SYNC_END(home-sign-in)

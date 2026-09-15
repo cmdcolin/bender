@@ -40,6 +40,7 @@ const presets = PRESETS.map(preset => ({
       )
         location.replace(appUrl + location.search + location.hash)
     </script>
+    <!-- CROSS_REPO_SYNC(home-hint-script) -->
     <!-- Runs before the first paint. A browser that has signed in before
          gets the skeleton in place of the landing page, so the home does not
          replace a landing page the reader has already started reading, and
@@ -68,6 +69,7 @@ const presets = PRESETS.map(preset => ({
         }
       } catch {}
     </script>
+    <!-- CROSS_REPO_SYNC_END(home-hint-script) -->
     <script>
       import '../home/main'
     </script>

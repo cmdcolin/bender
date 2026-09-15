@@ -1,3 +1,4 @@
+// CROSS_REPO_SYNC_FILE(version-stamp)
 // Stamped at build time from package.json + the current git commit
 // (see astro.config.ts `define`). Bumped via `pnpm {pat,min,maj}`.
 declare const __APP_VERSION__: string

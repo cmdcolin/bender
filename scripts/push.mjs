@@ -82,7 +82,7 @@ if (highest !== undefined && compare(next, highest) <= 0) {
 }
 
 // Catch what CI would catch, before it's a remote failure blocking the release.
-for (const check of ['pnpm typecheck', 'pnpm test']) {
+for (const check of ['pnpm typecheck', 'pnpm sync:check', 'pnpm test']) {
   run(check)
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { putCurrent } from './cloud'
 import { boardHash } from './share'
@@ -13,10 +14,11 @@ import { boardHash } from './share'
 // no two writes land closer together than `MIN_GAP_MS`. A morph therefore
 // writes once every ten seconds while the address bar writes four times a
 // second, and a board identical to the one on the account writes nothing.
+// CROSS_REPO_SYNC(current-session-gate)
 export const SETTLE_MS = 5000
 export const MIN_GAP_MS = 10000
 
-/** What the account holds and when it was put there. */
+// What the account holds and when it was put there.
 export interface WriteGate {
   query: string | null
   at: number
@@ -33,6 +35,14 @@ export function nextWriteAt(
   if (query === gate.query) return null
   return Math.max(now + SETTLE_MS, gate.at + MIN_GAP_MS)
 }
+// CROSS_REPO_SYNC_END(current-session-gate)
+
+// Whether the board is one the home page should offer back. The app button on
+// the home page opens the stock board, so a visitor who presses it and leaves
+// has not made a session: writing the stock board would put it over the one
+// they last played, which is what the resume card then opened on.
+export const worthResuming = (query: string): boolean =>
+  query !== boardHash('', DEFAULT_CONTROLS)
 
 // Subscribed to the engine rather than given the board as a prop: a slider drag
 // and a morph each move controls every frame, and whoever held that prop would
@@ -40,7 +50,7 @@ export function nextWriteAt(
 // gesture ends.
 export function useCurrentSession(uid: string | null) {
   const gate = useRef<WriteGate>({ query: null, at: 0 })
-  const live = useRef('')
+  const live = useRef<string | null>(null)
 
   useEffect(() => {
     if (uid === null) {
@@ -61,6 +71,7 @@ export function useCurrentSession(uid: string | null) {
     }
     const settle = () => {
       const query = boardHash(window.location.hash, engine.controls.get())
+      if (!worthResuming(query)) return
       live.current = query
       const due = nextWriteAt(gate.current, query, Date.now())
       if (due === null) return
@@ -75,6 +86,7 @@ export function useCurrentSession(uid: string | null) {
     const onHide = () => {
       if (
         document.visibilityState === 'hidden' &&
+        live.current !== null &&
         live.current !== gate.current.query
       )
         send(live.current)

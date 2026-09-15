@@ -10,6 +10,7 @@
 //
 // This file is the storage-agnostic half — the list algebra and the name rules.
 // cloud.ts reads and writes it.
+// CROSS_REPO_SYNC(saved-list-model)
 export interface SavedVoice {
   name: string
   query: string
@@ -18,16 +19,16 @@ export interface SavedVoice {
   openedAt?: number
 }
 
-/** The board a signed-in user last had open, offered back by the home page. */
+// The board a signed-in user last had open, offered back by the home page.
 export interface CurrentSession {
   query: string
   at: number
 }
 
-/** How many voices one account holds. The rules refuse a longer list. */
+// How many voices one account holds. The rules refuse a longer list.
 export const VOICE_MAX = 200
 
-/** The longest query the rules accept, which a packed board never approaches. */
+// The longest query the rules accept, which a packed board never approaches.
 export const QUERY_MAX = 8000
 
 export const VOICE_NAME_MAX = 40
@@ -37,7 +38,7 @@ export const newVoiceId = (): string => Math.random().toString(36).slice(2, 10)
 const num = (v: unknown): number | undefined =>
   typeof v === 'number' && Number.isFinite(v) ? v : undefined
 
-/** Collapse the whitespace a paste brings, and cap the length. */
+// Collapse the whitespace a paste brings, and cap the length.
 export const cleanVoiceName = (raw: string): string =>
   raw.replaceAll(/\s+/g, ' ').trim().slice(0, VOICE_NAME_MAX).trim()
 
@@ -66,8 +67,8 @@ function readVoice(raw: unknown): SavedVoice | undefined {
 
 export const readVoices = (raw: unknown): SavedVoice[] =>
   (Array.isArray(raw) ? raw : [])
-    .flatMap(v => {
-      const voice = readVoice(v)
+    .flatMap(item => {
+      const voice = readVoice(item)
       return voice === undefined ? [] : [voice]
     })
     .slice(0, VOICE_MAX)
@@ -92,7 +93,7 @@ export function upsertVoice(
 ): SavedVoice[] {
   const clean = cleanVoiceName(name)
   if (clean === '') return [...voices]
-  const index = voices.findIndex(v => v.name === clean)
+  const index = voices.findIndex(item => item.name === clean)
   const prior = index === -1 ? undefined : voices[index]
   const entry: SavedVoice = { name: clean, query }
   if (prior?.id !== undefined) entry.id = prior.id
@@ -101,22 +102,22 @@ export function upsertVoice(
     entry.id ??= newVoiceId()
     entry.savedAt = at
   }
-  if (index !== -1) return voices.map((v, i) => (i === index ? entry : v))
+  if (index !== -1) return voices.map((item, i) => (i === index ? entry : item))
   return [...voices, entry].slice(-VOICE_MAX)
 }
 
-/** A recall or an open, so the home page can sort by what you reach for. */
+// A recall or an open, so the home page can sort by what you reach for.
 export const markOpened = (
   voices: readonly SavedVoice[],
   name: string,
   at: number,
 ): SavedVoice[] =>
-  voices.map(v => (v.name === name ? { ...v, openedAt: at } : v))
+  voices.map(item => (item.name === name ? { ...item, openedAt: at } : item))
 
 export const removeVoice = (
   voices: readonly SavedVoice[],
   name: string,
-): SavedVoice[] => voices.filter(v => v.name !== name)
+): SavedVoice[] => voices.filter(item => item.name !== name)
 
 // What the name box offers, so saving is type-nothing-and-press-save. `base` is
 // whatever the board is already called — the preset it matches, or the voice
@@ -127,10 +128,11 @@ export function suggestVoiceName(
 ): string {
   const clean = cleanVoiceName(base)
   const stem = clean === '' ? 'my voice' : clean
-  if (!voices.some(v => v.name === stem)) return stem
+  if (!voices.some(item => item.name === stem)) return stem
   for (let n = 2; n < 1000; n++) {
     const candidate = `${stem} ${n}`
-    if (!voices.some(v => v.name === candidate)) return candidate
+    if (!voices.some(item => item.name === candidate)) return candidate
   }
   return stem
 }
+// CROSS_REPO_SYNC_END(saved-list-model)

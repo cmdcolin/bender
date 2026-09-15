@@ -1,0 +1,12 @@
+{
+  "name": "bender",
+  "sibling": "videoskillet",
+  "terms": {
+    "SavedVoice": "SavedItem",
+    "Voice": "Item",
+    "VOICE": "ITEM",
+    "voices": "items",
+    "voice": "item",
+    "my voice": "my item"
+  }
+}

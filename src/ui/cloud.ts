@@ -1,4 +1,8 @@
-import { read, forget, write } from './persist'
+import {
+  forget as removeStored,
+  read as readStored,
+  write as writeString,
+} from './persist'
 import { readCurrent, readVoices, VOICE_MAX } from './voiceModel'
 
 import type { CurrentSession, SavedVoice } from './voiceModel'
@@ -26,6 +30,7 @@ import type { Firestore } from 'firebase/firestore/lite'
 // Google's endpoints. The rules are what stop a stranger writing, and the
 // authorized-domains list is what stops one using the project as their own auth
 // backend.
+// CROSS_REPO_SYNC(firebase-config)
 const CONFIG = {
   apiKey: 'AIzaSyBHZnQdnaDc5BEYbqwKO8zs0t_wyzLaGFo',
   authDomain: 'ntscjs-d4f56.firebaseapp.com',
@@ -35,6 +40,7 @@ const CONFIG = {
   appId: '1:881016589781:web:9eabd469a30d89b6d7815c',
   measurementId: 'G-ZFH59EM495',
 }
+// CROSS_REPO_SYNC_END(firebase-config)
 
 const COLLECTION = 'benderUsers'
 
@@ -44,7 +50,8 @@ const COLLECTION = 'benderUsers'
 // look. Wrong in the harmless direction either way: stale-true costs one fetch,
 // stale-false costs one click.
 export const SIGNED_IN_HINT = 'bender_signed_in'
-export const wasSignedIn = () => read(SIGNED_IN_HINT) === '1'
+// CROSS_REPO_SYNC(firebase-auth)
+export const wasSignedIn = () => readStored(SIGNED_IN_HINT) === '1'
 
 // What the popover needs to know about who is signed in. Deliberately not the
 // firebase User, which carries tokens and a dozen methods where all anything
@@ -106,8 +113,8 @@ export async function watchAuth(
 ): Promise<() => void> {
   const { auth, authMod } = await loadSdk()
   return authMod.onAuthStateChanged(auth, user => {
-    if (user === null) forget(SIGNED_IN_HINT)
-    else write(SIGNED_IN_HINT, '1')
+    if (user === null) removeStored(SIGNED_IN_HINT)
+    else writeString(SIGNED_IN_HINT, '1')
     onUser(user === null ? null : asCloudUser(user))
   })
 }
@@ -119,17 +126,19 @@ export async function signIn(): Promise<CloudUser> {
   const { auth, authMod } = await loadSdk()
   const provider = new authMod.GoogleAuthProvider()
   const result = await authMod.signInWithPopup(auth, provider)
-  write(SIGNED_IN_HINT, '1')
+  writeString(SIGNED_IN_HINT, '1')
   return asCloudUser(result.user)
 }
 
 export async function signOut(): Promise<void> {
   const { auth } = await loadSdk()
-  forget(SIGNED_IN_HINT)
+  removeStored(SIGNED_IN_HINT)
   await auth.signOut()
 }
+// CROSS_REPO_SYNC_END(firebase-auth)
 
-/** Everything the user document holds. */
+// CROSS_REPO_SYNC(saved-list-cloud)
+// Everything the user document holds.
 export interface HomeDoc {
   voices: SavedVoice[]
   current: CurrentSession | null
@@ -142,17 +151,20 @@ export async function fetchHome(uid: string): Promise<HomeDoc> {
   const snap = await fs.getDoc(fs.doc(db, COLLECTION, uid))
   if (!snap.exists()) return { voices: [], current: null }
   const data = snap.data()
-  return { voices: readVoices(data.voices), current: readCurrent(data.current) }
+  return {
+    voices: readVoices(data.voices),
+    current: readCurrent(data.current),
+  }
 }
 
 // Firestore refuses a field set to undefined, so an entry carries only the
 // fields it has.
-const voiceEntry = (v: SavedVoice) => ({
-  name: v.name,
-  query: v.query,
-  ...(v.id === undefined ? {} : { id: v.id }),
-  ...(v.savedAt === undefined ? {} : { savedAt: v.savedAt }),
-  ...(v.openedAt === undefined ? {} : { openedAt: v.openedAt }),
+const voiceEntry = (item: SavedVoice) => ({
+  name: item.name,
+  query: item.query,
+  ...(item.id === undefined ? {} : { id: item.id }),
+  ...(item.savedAt === undefined ? {} : { savedAt: item.savedAt }),
+  ...(item.openedAt === undefined ? {} : { openedAt: item.openedAt }),
 })
 
 // The whole list in one write. A document per voice would make two machines
@@ -172,7 +184,7 @@ export async function putVoices(
   )
 }
 
-/** The session last open, or null to clear it. Merged for the same reason. */
+// The session last open, or null to clear it. Merged for the same reason.
 export async function putCurrent(
   uid: string,
   current: CurrentSession | null,
@@ -180,3 +192,4 @@ export async function putCurrent(
   const { db, fs } = await loadSdk()
   await fs.setDoc(fs.doc(db, COLLECTION, uid), { current }, { merge: true })
 }
+// CROSS_REPO_SYNC_END(saved-list-cloud)

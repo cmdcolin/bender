@@ -22,6 +22,7 @@
     "preview": "astro preview",
     "test": "vitest run",
     "typecheck": "astro sync && tsc -b",
+    "sync:check": "node scripts/sync-check.mjs",
     "pat": "node scripts/push.mjs patch",
     "min": "node scripts/push.mjs minor",
     "maj": "node scripts/push.mjs major",

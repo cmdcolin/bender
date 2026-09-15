@@ -7,6 +7,7 @@
 import { GA_ID } from '../analytics'
 ---
 
+<!-- CROSS_REPO_SYNC(analytics-snippet) -->
 <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
 ></script>
 <script is:inline define:vars={{ GA_ID }}>
@@ -19,3 +20,4 @@ import { GA_ID } from '../analytics'
   gtag('js', new Date())
   gtag('config', GA_ID)
 </script>
+<!-- CROSS_REPO_SYNC_END(analytics-snippet) -->

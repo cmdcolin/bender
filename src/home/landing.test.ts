@@ -11,6 +11,9 @@ import Privacy from '../pages/privacy.astro'
 // card renders, and it answers in the HTML rather than from script: a reader
 // with JavaScript off still gets it, and the two cards cannot drift apart.
 
+const privacyHref = `href="${privacyUrl}"`
+
+// CROSS_REPO_SYNC(landing-page-test)
 let landing = ''
 let privacy = ''
 
@@ -32,12 +35,20 @@ test('the question is asked where the ask is, and the card can be opened', () =>
 })
 
 test('the card sends anyone who wants the rest to the privacy page', () => {
-  expect(landing).toContain(privacyUrl)
+  expect(landing).toContain(privacyHref)
   expect(privacy).toContain('Google Analytics')
   expect(privacy).toContain('Firebase')
+})
+
+test('the privacy page leaves out the account controls it cannot work', () => {
+  // The bar's sign-in half needs src/home/main.ts, which this page does not
+  // load, and a button that answers nothing is worse than no button.
+  expect(privacy).not.toContain('id="signIn"')
+  expect(privacy).toContain('Open the app')
 })
 
 test('every page the site serves counts its visit', () => {
   for (const page of [landing, privacy])
     expect(page).toContain(`gtag/js?id=${GA_ID}`)
 })
+// CROSS_REPO_SYNC_END(landing-page-test)
