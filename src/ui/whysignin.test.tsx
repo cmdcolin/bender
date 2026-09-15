@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { App } from './App'
-import { PITCH } from './whySignIn'
+import { PITCH, SHOT, SHOT_ALT } from './whySignIn'
 import './testDom'
 
 // Signed out, a save is the moment somebody wants an account — so it is the
@@ -45,6 +45,14 @@ test('the menu carries the question for anyone who wants it unasked', () => {
   // Opened cold rather than by a save, so there is no board waiting.
   expect(card.textContent).not.toMatch(/Signing in saves/)
   expect(card.textContent).toContain(PITCH)
+})
+
+test('the card shows the home page it is asking for an account to fill', () => {
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: 'menu' }))
+  fireEvent.click(screen.getByRole('menuitem', { name: 'why sign in?' }))
+  const shot = screen.getByAltText(SHOT_ALT)
+  expect(shot.getAttribute('src')?.endsWith(SHOT)).toBe(true)
 })
 
 test('the library popover answers it, and gets out of the way', () => {

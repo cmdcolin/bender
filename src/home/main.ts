@@ -309,6 +309,10 @@ async function paint(user: CloudUser) {
   showHome(user, doc)
 }
 
+// scripts/dash.ts paints the signed-in home for its screenshot without an
+// account. Only the dev server hands it over; the built site never does.
+if (import.meta.env.DEV) Object.assign(window, { benderShowHome: showHome })
+
 // CROSS_REPO_SYNC(home-sign-in)
 let signedIn: CloudUser | null = null
 

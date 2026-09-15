@@ -1,8 +1,9 @@
-/* The about card's box, at the same width: two sentences and two buttons.
-   Modal for the reason about is — it opens over a panel that scrolls and clips,
-   and the top layer clears both. */
+/* Wider than the about card, because it carries a picture of the home page and
+   a shrunk-down screenshot is no use to anybody. Modal for the reason about is
+   — it opens over a panel that scrolls and clips, and the top layer clears
+   both. */
 .card {
-  width: min(400px, calc(100vw - 24px));
+  width: min(460px, calc(100vw - 24px));
   padding: 10px 12px;
   background: var(--surface);
   color: var(--fg2);
@@ -57,6 +58,25 @@
   margin: 0 0 8px;
   color: var(--fg);
   line-height: 1.45;
+}
+
+/* What the saving is for, shown rather than described. */
+.figure {
+  margin: 0 0 8px;
+}
+
+.shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.caption {
+  padding-top: 4px;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
 }
 
 .line {

@@ -9,7 +9,16 @@ import { applyPreset } from '../ui/presets/apply'
 import { PRESETS } from '../ui/presets/table'
 import { SIGNED_IN_HINT } from '../ui/cloud'
 import { boardHash } from '../ui/share'
-import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
+import {
+  FREE_WITHOUT,
+  HOW,
+  PITCH,
+  SHOT,
+  SHOT_ALT,
+  SHOT_CAPTION,
+  SHOT_H,
+  SHOT_W,
+} from '../ui/whySignIn'
 import '../theme.css'
 import '../home/site.css'
 import '../home/footer.css'
@@ -177,8 +186,20 @@ const presets = PRESETS.map(preset => ({
         </button>
       </div>
       <p class="whyPitch">{PITCH}</p>
+      <figure class="whyFigure">
+        <img
+          class="whyShot"
+          src={`${siteRoot}${SHOT}`}
+          alt={SHOT_ALT}
+          width={SHOT_W}
+          height={SHOT_H}
+          loading="lazy"
+        />
+        <figcaption class="whyCaption">{SHOT_CAPTION}</figcaption>
+      </figure>
       <p class="whyLine">
-        {FREE_WITHOUT} <a href={privacyUrl}>What an account stores →</a>
+        {FREE_WITHOUT} {HOW}
+        <a href={privacyUrl}>What an account stores →</a>
       </p>
       <p class="whyCta">
         <button class="btn primary" id="whySignIn" type="button">

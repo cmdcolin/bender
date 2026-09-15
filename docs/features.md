@@ -1161,7 +1161,7 @@ on it — a link never presses play, so it is loaded and waiting.
 ## Scripts
 
 <details>
-<summary>28 commands</summary>
+<summary>29 commands</summary>
 
 | command             | what it does                                                                                                                                     |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -1172,6 +1172,7 @@ on it — a link never presses play, so it is loaded and waiting.
 | `pnpm bench`        | what the chain costs per block, stage by stage                                                                                                   |
 | `pnpm blocks`       | the distribution — p50 to p99.9, and how many blocks went over budget                                                                            |
 | `pnpm cold`         | the first seconds, before anything has tiered up                                                                                                 |
+| `pnpm dash`         | re-shoots the why-sign-in card's screenshot of the signed-in home page                                                                           |
 | `pnpm diagram`      | re-renders the README's signal path                                                                                                              |
 | `pnpm features`     | rewrites docs/features.md — this file                                                                                                            |
 | `pnpm figure`       | re-shoots the README's screenshot of the app and its panel                                                                                       |

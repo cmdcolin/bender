@@ -4,13 +4,28 @@
 // with no JavaScript still gets the answer. Keep the file free of React and of
 // the DOM so both callers can use it.
 //
-// Two sentences, and the card is over. Anyone who wants the long answer is
-// already looking at the privacy page's link.
+// Somebody who presses save wants to know what they are being asked for and
+// whether they can skip it. Both cards answer in that order and stop.
 
 /** The answer. */
 export const PITCH =
-  'Sign in and you can save the board you are playing under a name, then come back to it later — on this machine or any other.'
+  'It’s a small thing for keeping the sounds you like. Save a board under a name and it turns up on your home page afterwards, on this machine or any other.'
 
 /** What it costs, which is nothing. */
 export const FREE_WITHOUT =
-  'Nothing else here needs an account: presets, the dice, MIDI, recording and every shared link work signed out.'
+  'Skip it if you’d rather — presets, the dice, MIDI, recording and every shared link work signed out.'
+
+/** Who you are actually signing in to. */
+export const HOW = 'It’s a Google login, and the boards are stored in Firebase.'
+
+/** The screenshot in both cards: the home page with a few voices on it. Its
+    size is written into both <img> tags so the card does not reflow around it,
+    and `pnpm dash` fails if the shot it takes comes out any other size. */
+export const SHOT = 'dashboard.jpg'
+export const SHOT_W = 982
+export const SHOT_H = 662
+
+export const SHOT_ALT =
+  'The home page signed in: a card for the board you had open last, and six saved boards in a grid with the day each one was saved'
+
+export const SHOT_CAPTION = 'Your home page, once you’re signed in.'

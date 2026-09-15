@@ -1,7 +1,16 @@
 import { useState } from 'react'
 
-import { privacyUrl } from '../home/paths'
-import { FREE_WITHOUT, PITCH } from './whySignIn'
+import { siteRoot, privacyUrl } from '../home/paths'
+import {
+  FREE_WITHOUT,
+  HOW,
+  PITCH,
+  SHOT,
+  SHOT_ALT,
+  SHOT_CAPTION,
+  SHOT_H,
+  SHOT_W,
+} from './whySignIn'
 import styles from './WhySignInDialog.module.css'
 
 // Why an account, and the two ways on from the question: sign in, or copy the
@@ -55,8 +64,18 @@ export function WhySignInDialog(props: {
         </p>
       )}
       <p className={styles.pitch}>{PITCH}</p>
+      <figure className={styles.figure}>
+        <img
+          className={styles.shot}
+          src={`${siteRoot}${SHOT}`}
+          alt={SHOT_ALT}
+          width={SHOT_W}
+          height={SHOT_H}
+        />
+        <figcaption className={styles.caption}>{SHOT_CAPTION}</figcaption>
+      </figure>
       <p className={styles.line}>
-        {FREE_WITHOUT}{' '}
+        {FREE_WITHOUT} {HOW}{' '}
         {/* A new tab, like every link on the about card. Navigating away from
             the app tears down the audio graph. */}
         <a

@@ -11,6 +11,7 @@
     "bench": "tsx scripts/bench.ts",
     "blocks": "tsx scripts/blocks.ts",
     "cold": "tsx scripts/cold.ts",
+    "dash": "tsx scripts/dash.ts",
     "diagram": "tsx scripts/chain-svg.ts",
     "features": "tsx scripts/features.ts",
     "figure": "tsx scripts/figure.ts",

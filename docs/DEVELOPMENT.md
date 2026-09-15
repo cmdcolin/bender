@@ -95,6 +95,13 @@ the main and audio threads is [dataflow.md](dataflow.md).
   and differed from the committed image everywhere. That is the platform, not
   the panel, and it is not worth a commit.
 
+- `pnpm dash` regenerates the screenshot in the why-sign-in card
+  (`public/dashboard.jpg`): it starts the dev server, opens the home page in a
+  headless Chrome, and calls `showHome` with voices invented in the script, so
+  the shot needs no account and reaches nothing but localhost. Only the dev
+  server hands `showHome` to the page. Same Chrome and `magick` as
+  `pnpm figure`, and the same reason to regenerate it on Linux.
+
 - The bus drawing in [BENDS.md](BENDS.md#where-the-buses-run) is
   `docs/img/buses.dot`, re-rendered in the same commit as any edit:
   `dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg`. Nothing checks it, for
