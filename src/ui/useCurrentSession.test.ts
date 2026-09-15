@@ -9,7 +9,7 @@ import {
   worthResuming,
 } from './useCurrentSession'
 
-test('a board the account already holds is not written again', () => {
+test('a board already written to the account is not written again', () => {
   expect(nextWriteAt({ query: 'p=1', at: 0 }, 'p=1', 1000)).toBeNull()
 })
 

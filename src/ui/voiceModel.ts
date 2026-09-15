@@ -25,7 +25,7 @@ export interface CurrentSession {
   at: number
 }
 
-// How many voices one account holds. The rules refuse a longer list.
+// How many voices one account has. The rules refuse a longer list.
 export const VOICE_MAX = 200
 
 // The longest query the rules accept, which a packed board never approaches.
