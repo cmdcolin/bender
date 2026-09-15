@@ -43,7 +43,7 @@ const COLLECTION = 'benderUsers'
 // is only the hint saying whether a fresh load should fetch the SDK to go and
 // look. Wrong in the harmless direction either way: stale-true costs one fetch,
 // stale-false costs one click.
-const SIGNED_IN_HINT = 'bender_signed_in'
+export const SIGNED_IN_HINT = 'bender_signed_in'
 export const wasSignedIn = () => read(SIGNED_IN_HINT) === '1'
 
 // What the popover needs to know about who is signed in. Deliberately not the

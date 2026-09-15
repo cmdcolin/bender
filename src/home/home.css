@@ -529,3 +529,57 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- waiting for Firebase ------------------------------------------------ */
+
+/* The head script in index.astro sets `data-home="pending"` on a browser that
+   has signed in before. The landing page and the sign-in controls stay out of
+   sight and the home's outline stands in until main.ts paints one state. */
+.homeWait {
+  display: none;
+}
+
+html[data-home='pending'] .homeWait {
+  display: block;
+  min-height: 100vh;
+}
+
+html[data-home='pending'] #landing,
+html[data-home='pending'] #signIn,
+html[data-home='pending'] #why {
+  display: none;
+}
+
+.bone {
+  display: block;
+  border-radius: 4px;
+  background: var(--bg2);
+  animation: bone 1.4s ease-in-out infinite;
+}
+
+.railBone {
+  width: 6rem;
+  height: 24px;
+}
+
+.headBone {
+  width: 10rem;
+  height: 20px;
+  margin-bottom: 16px;
+}
+
+.cardBone {
+  height: 96px;
+}
+
+@keyframes bone {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}
