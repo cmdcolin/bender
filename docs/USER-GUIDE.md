@@ -454,7 +454,7 @@ has never seen.
 It comes out short by default. Here is **bucket brigade**:
 
 ```
-https://cmdcolin.github.io/bender/#p=AJYBL1p-AgDABwCQAQDoBwF4
+https://cmdcolin.github.io/bender/app/#p=AJYBL1p-AgDABwCQAQDoBwF4
 ```
 
 That's the board written as bytes, and it stays that board. Each control rides
@@ -465,7 +465,7 @@ room underneath it rather than sliding what it already says.
 The long form spells the same board out, and the app both reads and writes it:
 
 ```
-https://cmdcolin.github.io/bender/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6
+https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6
 ```
 
 Four times the characters, which is why the bar carries the short one — the
@@ -485,3 +485,37 @@ the panel, and a name the app no longer has is dropped. A bar already carrying
 that way rather than turning back to bytes under the cursor — type a bare
 `#set=` to switch a tab over. Every preset link in [features.md](features.md) is
 written this way.
+
+## Signing in and saved voices
+
+A voice is a whole board under a name, the way a synth keeps a patch. The panel
+carries a **saved** button beside the nameplate — it says **sign in** until you
+have an account behind it — and the popover it opens is where voices are saved
+and brought back.
+
+Saving takes one press: the name box already holds a suggestion, which is the
+preset the board is standing on if it is standing on one, and the voice you last
+saved or recalled otherwise. **ctrl+S** (**⌘S** on a Mac) saves under that same
+suggestion without opening anything. Saving under a name that is already in the
+list overwrites that voice in place rather than adding a second one.
+
+Each row in the list does four things:
+
+- press the name to **recall** it, which morphs the board across on the panel's
+  own duration, the way pressing a preset chip does. Shift+click overwrites that
+  voice with the board on screen.
+- **↗** opens it whole and at once, which is what arriving on a link does.
+- **⧉** copies a link to it. It is an ordinary board link, so anyone can open it
+  signed out.
+- **×** deletes it.
+
+The list lives on your Google account rather than on this machine, so a voice
+named on the laptop is there on the phone, and clearing site data does not lose
+it. Signing in is a popup, and nothing else in bender needs an account: presets,
+rolls, MIDI, recording and every link all work signed out.
+
+Signed in, the app also mirrors the board you have open onto your account, and
+the [home page](https://cmdcolin.github.io/bender/) offers it back under
+**Continue where you left off** — so a board you were in the middle of on one
+machine is a click away on the next. The home page lists your voices beside it,
+newest save first.

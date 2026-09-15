@@ -2,6 +2,12 @@
    the panel are the same instrument, and a landing page with colours of its own
    would say otherwise. */
 
+/* Every other rule here sets `display`, and `hidden` is how the two states of
+   this page are switched. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   min-height: 100%;
   height: auto;

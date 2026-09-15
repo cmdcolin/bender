@@ -8,7 +8,7 @@ real cheap toy do that.
 
 It runs in the browser, on one AudioWorklet. There's nothing to install.
 
-**[Open the app →](https://cmdcolin.github.io/bender/)**
+**[Open the app →](https://cmdcolin.github.io/bender/app/)**
 
 ## Things to try
 

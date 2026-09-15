@@ -114,7 +114,7 @@ const SCRIPTS: Record<string, string> = {
   maj: 'release: major',
 }
 
-const LIVE = 'https://cmdcolin.github.io/bender/'
+const LIVE = 'https://cmdcolin.github.io/bender/app/'
 
 // A preset as a link, written by the same function the address bar is written
 // with — so what the doc hands somebody is a board, not a screenshot of one.
