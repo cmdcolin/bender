@@ -2,7 +2,21 @@
 
 All notable changes to bender are documented here.
 
-## [Unreleased]
+## [0.20.4](https://github.com/cmdcolin/bender/compare/v0.20.3...v0.20.4) - 2026-09-15
+
+### Features
+- *(ui)* [`58244cb`](https://github.com/cmdcolin/bender/commit/58244cbf1c621620315c39de28b211452638a434) take videoskillet's site bar, footer and site styles
+
+### Fixes
+- *(docs)* [`fe3bdf5`](https://github.com/cmdcolin/bender/commit/fe3bdf5e02809cc49ce45bb53c89b52dcd660268) drop the stale duplicate format entry from the features script
+- *(lint)* [`f772c91`](https://github.com/cmdcolin/bender/commit/f772c915b7b5b8b2ec24487a169227dec9bc89ff) clear every oxlint diagnostic
+- *(ui)* [`9bb99ae`](https://github.com/cmdcolin/bender/commit/9bb99ae4f1c92bdd9efc29cd4596e40b43163757) stop personifying the account as something that holds data
+
+### Refactor
+- *(ui)* [`baa5afd`](https://github.com/cmdcolin/bender/commit/baa5afd4a60988597c84a5dbc2dbf5bfba015f39) take the neutrals and type scale from the shared tokens.css
+
+### Chores
+- [`5da9160`](https://github.com/cmdcolin/bender/commit/5da916050361e1b93e4ca5112ac4a379bc49d987) adopt videoskillet's lint, format, hook and changelog tooling
 
 ### Other Changes
 - [`6b6e0b6`](https://github.com/cmdcolin/bender/commit/6b6e0b6fbb462cf3f5dd2c9a179a40bd177a9022) Give the user guide its own page instead of a GitHub link
