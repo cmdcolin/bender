@@ -62,11 +62,6 @@ const RAIL_LINK = [
 
 const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 
-/** what the rack calls the bends riding in it rather than in one of its slots.
-    They are on the board — every one of them is soldered in and has a panel of
-    its own — and out of the path, which is the thing worth saying. */
-const OFF_BOARD = 'in no slot'
-
 /** what the empty trigger lane calls itself, which is also its door */
 const NO_TRIG = 'no trig patched'
 
@@ -460,9 +455,6 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const bends = bendOrder(c)
   const loose = BENDS.filter(b => !bends.includes(b.group))
   const chipW = loose.map(b => textWidth(b.label, SMALL) + CHIP_PAD * 2)
-  // With nothing in any slot, every bend on the board is a loose chip, which
-  // is plain enough without a caption saying so.
-  const capW = bends.length ? textWidth(OFF_BOARD, SMALL) + 6 : 0
   for (const b of loose) doors.add(b.group)
   // No box of its own, and no door: which bend runs where is Signal order's to
   // open, off the foot of the drawing. What's left of the rack is a place to
@@ -574,9 +566,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       cols *
         Math.max(
           MIN_W,
-          // Whatever the widest chip in the rack needs beside the caption: a
-          // column cut to the names on the path would spill them out of it.
-          PAD_X * 2 + capW + Math.max(0, ...chipW),
+          // Whatever the widest chip in the rack needs: a column cut to the
+          // names on the path would spill them out of it.
+          PAD_X * 2 + Math.max(0, ...chipW),
           // The rack draws no box of its own, so its label costs no width —
           // only the stages actually on the path do.
           ...[...path, bus]
@@ -612,14 +604,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     let [x, row] = [0, 0]
     for (const [i, b] of loose.entries()) {
       const w = chipW[i]!
-      if (x > 0 && PAD_X + capW + x + w > boxW - PAD_X) {
+      if (x > 0 && PAD_X + x + w > boxW - PAD_X) {
         row++
         x = 0
       }
       rackChips.push({
         group: b.group,
         label: b.label,
-        x: PAD_X + capW + x,
+        x: PAD_X + x,
         row,
         w,
       })
@@ -704,17 +696,6 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     ]),
   )
   const parts: MapNode[] = [...loosePart.values()]
-  if (capW > 0)
-    parts.push(
-      node('off_board', 'label', OFF_BOARD, {
-        active: false,
-        x: rack.x + PAD_X,
-        y: rack.y + BOX_H + 2,
-        w: capW,
-        h: LABEL_H,
-        anchor: 'start',
-      }),
-    )
   const band = [...chips, ...lines]
   const byId = new Map(
     [...path, ...band, ...foot, mix, bus].map(n => [n.id, n]),
