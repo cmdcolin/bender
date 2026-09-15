@@ -116,7 +116,7 @@ function emptyVoices(): HTMLElement {
     el(
       'p',
       'says',
-      'Open the app, bend something, and press ctrl+S — or open the saved menu in the panel and press save. The board lands here under the name you give it, on every machine you sign in on.',
+      'Open the app, bend something, and press save in the panel — or ctrl+S, which does the same. The board lands here under the name you give it, on every machine you sign in on.',
     ),
   )
   const go = el('a', 'btn primary')
