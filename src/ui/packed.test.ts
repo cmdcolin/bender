@@ -1,18 +1,19 @@
 import { expect, test } from 'vitest'
+
 import {
   CONTROL_KEYS,
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
 } from '../controls'
-import { ALL_SLIDERS, EDITOR_KEYS, SLIDER_BY_KEY, sliderFor } from './controls'
 import { LEN_KEYS } from '../drums'
 import { TUNE_STEP_KEYS } from '../tune'
+import { ALL_SLIDERS, EDITOR_KEYS, SLIDER_BY_KEY, sliderFor } from './controls'
+import { packControls, unpackControls, URL_KEY_ORDER } from './packed'
 import { applyPreset } from './presets/apply'
 import { randomLook } from './presets/roll'
 import { PRESETS } from './presets/table'
 import { encodeControls } from './share'
-import { packControls, unpackControls, URL_KEY_ORDER } from './packed'
 
 const nothing = () => false
 const stock = (): Controls => ({ ...DEFAULT_CONTROLS })

@@ -1,7 +1,8 @@
-import type { ControlKey, Controls } from '../controls'
 import { PEDALS, pedalOrderAt } from '../pedals'
 import { bendAt, BENDS, sliderFor, touchedCount } from './controls'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg'
+
+import type { ControlKey, Controls } from '../controls'
 
 // The signal path, laid out and drawn: live bend order, the feedback wire, and
 // where it lands. The panel mounts the drawing as React elements and

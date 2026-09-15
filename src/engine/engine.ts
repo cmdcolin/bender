@@ -1,17 +1,9 @@
-import workletUrl from '../dsp/worklet.ts?worker&url'
 import {
   DEFAULT_CONTROLS,
   sameControls,
   type ControlKey,
   type Controls,
 } from '../controls'
-import {
-  EMPTY_HISTORY,
-  record,
-  stepBack,
-  stepForward,
-  type History,
-} from '../history'
 import {
   asLen,
   asMask,
@@ -22,8 +14,18 @@ import {
   type DrumMaybeKey,
   type DrumStepKey,
 } from '../drums'
+import { YOURS } from '../dsp/stages/roms'
+import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
+import workletUrl from '../dsp/worklet.ts?worker&url'
+import {
+  EMPTY_HISTORY,
+  record,
+  stepBack,
+  stepForward,
+  type History,
+} from '../history'
 import { createStore, type Store } from '../listeners'
-import { LOAD_SECONDS, roll, type Pool } from './archive'
+import { snap } from '../scale'
 import {
   asTuneLen,
   foldNote,
@@ -33,13 +35,12 @@ import {
   laneForNote,
   type TuneStepKey,
 } from '../tune'
-import { YOURS } from '../dsp/stages/roms'
-import { snap } from '../scale'
-import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
+import { LOAD_SECONDS, roll, type Pool } from './archive'
 import { Glide } from './glide'
-import type { FromWorklet, NoteDest, RecMsg, ToWorklet } from './messages'
 import { MAX_SOURCES, N_PARAMS, N_TAPS, STEM_FILES, packParams } from './params'
 import { encodeMonoWav, encodeWav } from './wav'
+
+import type { FromWorklet, NoteDest, RecMsg, ToWorklet } from './messages'
 
 const REC_MAX_S = 600 // a take stops itself at ten minutes
 // And sooner with the stems running, because the tape is seven tracks instead

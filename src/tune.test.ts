@@ -1,4 +1,6 @@
 import { expect, test } from 'vitest'
+
+import { DEFAULT_CONTROLS } from './controls'
 import {
   asTuneLen,
   asTuneStep,
@@ -15,7 +17,6 @@ import {
   TUNE_STEP_KEYS,
   voicing,
 } from './tune'
-import { DEFAULT_CONTROLS } from './controls'
 
 test('the memory has a control per step, and they start empty', () => {
   expect(TUNE_STEP_KEYS).toHaveLength(TUNE_STEPS)

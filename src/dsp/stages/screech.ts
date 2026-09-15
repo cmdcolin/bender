@@ -1,8 +1,9 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { octaves } from '../util/pitch'
 import { flushDenormal, softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 class Svf {
   low = 0

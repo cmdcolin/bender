@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+
 import { engine } from '../engine/engine'
 import styles from './RailLamp.module.css'
 import { Tip } from './Tip'

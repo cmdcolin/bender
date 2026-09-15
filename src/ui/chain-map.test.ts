@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { readFileSync } from 'node:fs'
+
 import { renderDiagrams } from '../../scripts/chain-svg'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus'
@@ -13,6 +13,8 @@ import {
 } from './chain-map'
 import { BENDS, GROUPS } from './controls'
 import { serialize } from './svg'
+
+import { readFileSync } from 'node:fs'
 
 const hop = (map: ChainMap, from: string, to: string) =>
   map.wires.find(w => w.from === from && w.to === to)

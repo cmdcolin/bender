@@ -1,10 +1,11 @@
 import { IDX } from '../../engine/params'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
 import { SineOsc } from '../util/lfo'
 import { lpCoef } from '../util/onepole'
-import { flushDenormal, softclip } from '../util/softclip'
 import { gaussian, mulberry32, type Rng } from '../util/rng'
+import { flushDenormal, softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Speed moves the whole machine at once: the head gap loses highs at a
 // wavelength, so a slower tape loses them lower; the replay bump sits at a

@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { ALL_SLIDERS, sliderFor, snapToStep, type SliderDef } from './controls'
 import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
 

@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../../controls'
+
 import {
   bin,
   crest,
@@ -9,6 +9,8 @@ import {
   sine,
   tail,
 } from '../testRender'
+
+import type { Controls } from '../../controls'
 
 // A 400 Hz sine on the sampler, so what comes back out of the pedal is only
 // what the pedal made of it.

@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest'
+
 import { CONTROL_KEYS } from '../controls'
-import { ALL_SLIDERS, sliderFor } from './controls'
 import { ACCENT_GAIN, N_DRUM_VOICES } from '../drums'
+import { ALL_SLIDERS, sliderFor } from './controls'
 import {
   applyDelta,
   AUTOMAP_KEYS,

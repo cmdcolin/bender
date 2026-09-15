@@ -10,9 +10,6 @@ import {
 import { IDX } from '../../engine/params'
 import { Bus, FAULT_NAMES } from '../bus'
 import { DEST, hop } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
-import type { Transport } from '../transport'
 import { N_DRUM_VOICES, STEP_CHOICE, voiceMask } from '../trigbus'
 import { BridgedT } from '../util/bridged'
 import { coef, Transient } from '../util/follower'
@@ -20,6 +17,10 @@ import { MetalBank } from '../util/metal'
 import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole'
 import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { ToyRail } from '../toyRail'
+import type { Transport } from '../transport'
 
 const TAU = 2 * Math.PI
 

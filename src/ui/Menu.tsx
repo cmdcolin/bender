@@ -6,6 +6,7 @@ import {
   useFloating,
 } from '@floating-ui/react'
 import { useCallback, useEffect, type ReactNode } from 'react'
+
 import styles from './Menu.module.css'
 
 // A popover, for the reason the tip is one: it opens over the signal path,

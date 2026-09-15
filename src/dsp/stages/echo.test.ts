@@ -1,9 +1,11 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../../controls'
-import type { BuiltChain } from '../build'
+
 import { IDX } from '../../engine/params'
 import { SR, bin, pitchHz, renderBender, rms, sine, tail } from '../testRender'
 import { ECHO_MODE } from './echo'
+
+import type { Controls } from '../../controls'
+import type { BuiltChain } from '../build'
 
 // A one-shot second of tone, listened to over the next one, where the only
 // thing still sounding is what came back off the pedal.

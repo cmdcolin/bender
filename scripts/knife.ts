@@ -22,8 +22,8 @@ import {
   type Controls,
 } from '../src/controls'
 import { FAULT } from '../src/dsp/bus'
-import { pitchHz, render, rms, SR } from '../src/dsp/testRender'
 import { romIndex } from '../src/dsp/stages/roms'
+import { pitchHz, render, rms, SR } from '../src/dsp/testRender'
 import { sliderFor } from '../src/ui/controls'
 
 // The song and the pattern a knife is judged on. Stock sakura is 32 steps at

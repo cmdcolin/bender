@@ -1,25 +1,5 @@
 import { IDX } from '../../engine/params'
-import { DEST, hop } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
-import type { Transport } from '../transport'
-import { voiceMask } from '../trigbus'
-import { softclip } from '../util/softclip'
-import { Burst } from '../util/burst'
-import { Drunk } from '../util/drift'
-import { A3_HZ, octaves, wrap1 } from '../util/pitch'
-import { mulberry32, type Rng } from '../util/rng'
 import { snap } from '../../scale'
-import { Bus, FAULT_NAMES } from '../bus'
-import {
-  decodeStep,
-  encodeStep,
-  ROM_ADDR_LINES,
-  ROM_DATA_LINES,
-  ROMS,
-  YOURS,
-  type Rom,
-} from './roms'
 import {
   asTuneLen,
   decodeTune,
@@ -31,6 +11,27 @@ import {
   TUNE_LANE_KEYS,
   TUNE_STEPS,
 } from '../../tune'
+import { Bus, FAULT_NAMES } from '../bus'
+import { DEST, hop } from '../modbus'
+import { voiceMask } from '../trigbus'
+import { Burst } from '../util/burst'
+import { Drunk } from '../util/drift'
+import { A3_HZ, octaves, wrap1 } from '../util/pitch'
+import { mulberry32, type Rng } from '../util/rng'
+import { softclip } from '../util/softclip'
+import {
+  decodeStep,
+  encodeStep,
+  ROM_ADDR_LINES,
+  ROM_DATA_LINES,
+  ROMS,
+  YOURS,
+  type Rom,
+} from './roms'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { ToyRail } from '../toyRail'
+import type { Transport } from '../transport'
 
 // One index table per lane: the melody the oscillator plays, then the two
 // stacked chips whose notes come out on the key line.

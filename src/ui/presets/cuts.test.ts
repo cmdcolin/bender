@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
 import { highEnergy, render, rms, SR } from '../../dsp/testRender'
 import { sliderFor } from '../controls'

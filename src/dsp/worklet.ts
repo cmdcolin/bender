@@ -1,10 +1,11 @@
-import type { ToWorklet } from '../engine/messages'
-import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params'
 import { DEFAULT_CONTROLS } from '../controls'
+import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params'
 import { buildBender, type BuiltChain } from './build'
 import { Smoother } from './smoother'
-import { ToyChip } from './stages/toyChip'
 import { BLOCK, type StereoBlock } from './stage'
+import { ToyChip } from './stages/toyChip'
+
+import type { ToWorklet } from '../engine/messages'
 
 const SCOPE_LEN = 512 // a power of two, so the ring wraps on a mask
 const SCOPE_MASK = SCOPE_LEN - 1

@@ -1,5 +1,5 @@
-import { useControlValue } from './ControlsContext'
 import { sliderFor } from './controls'
+import { useControlValue } from './ControlsContext'
 import styles from './MicPatch.module.css'
 
 const DEST = sliderFor('micPatch').choices!

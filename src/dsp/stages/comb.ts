@@ -1,10 +1,11 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import { octaves } from '../util/pitch'
 import { DelayLine } from '../util/delayline'
 import { OnePoleLP, lpCoef } from '../util/onepole'
+import { octaves } from '../util/pitch'
 import { softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Karplus-style feedback resonator. Feedback past unity self-oscillates at the
 // comb pitch, held by the in-loop saturation.

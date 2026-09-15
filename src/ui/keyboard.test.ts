@@ -4,6 +4,7 @@
 // third away from the one under the player's finger.
 
 import { expect, test } from 'vitest'
+
 import { isSharp, semitoneName, toSemitone } from '../notes'
 import {
   blackAbove,

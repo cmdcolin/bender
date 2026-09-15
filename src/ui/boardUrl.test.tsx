@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render } from '@testing-library/react'
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { useBoardUrl } from './useBoardUrl'

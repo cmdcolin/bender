@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../controls'
+
 import { playKeys, SR } from './testRender'
 import { DEAD_V, PARTS, ToyRail } from './toyRail'
+
+import type { Controls } from '../controls'
 
 test('a starving rail collapses the voices raggedly, not in lockstep', () => {
   const rail = new ToyRail(SR)

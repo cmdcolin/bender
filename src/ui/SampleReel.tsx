@@ -4,8 +4,9 @@ import {
   useSyncExternalStore,
   type PointerEvent,
 } from 'react'
-import { engine } from '../engine/engine'
+
 import { PEAK_BINS } from '../dsp/stages/sampler'
+import { engine } from '../engine/engine'
 import { useBoardValue, useStoreValue } from './ControlsContext'
 import styles from './SampleReel.module.css'
 import { Tip } from './Tip'

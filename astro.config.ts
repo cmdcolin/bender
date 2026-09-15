@@ -1,7 +1,9 @@
-import { execSync } from 'node:child_process'
 import react from '@astrojs/react'
 import { defineConfig } from 'astro/config'
+
 import pkg from './package.json' with { type: 'json' }
+
+import { execSync } from 'node:child_process'
 
 function gitSha() {
   try {

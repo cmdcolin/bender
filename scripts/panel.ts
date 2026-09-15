@@ -1,3 +1,9 @@
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
+import { encodeControls } from '../src/ui/share'
+import { HEAVY } from './boards'
+import { attach, chromePath, sleep, type Page } from './chrome'
+import { buildAndPreview } from './serve'
+
 // What the panel costs the *browser's* main thread, and which part of a frame
 // it costs it in.
 //
@@ -34,11 +40,6 @@ import { spawn } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { encodeControls } from '../src/ui/share'
-import { attach, chromePath, sleep, type Page } from './chrome'
-import { HEAVY } from './boards'
-import { buildAndPreview } from './serve'
 
 const seconds = Number(process.argv[2] ?? 8)
 const scene = process.argv[3] ?? 'still'

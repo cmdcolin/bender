@@ -1,7 +1,8 @@
-import { writeFileSync } from 'node:fs'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { buildMap, drawMap, type Palette } from '../src/ui/chain-map'
 import { serialize } from '../src/ui/svg'
+
+import { writeFileSync } from 'node:fs'
 
 // The README's signal path, drawn by the same code the panel draws with, in a
 // pair of themes so it reads on GitHub light and dark. `pnpm diagram` rewrites

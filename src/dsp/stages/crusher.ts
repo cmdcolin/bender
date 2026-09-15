@@ -1,8 +1,9 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Bit depth quantizer plus a jittered sample-and-hold. The hold phases are
 // offset per channel so heavy crush smears into stereo hash.

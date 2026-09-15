@@ -1,9 +1,10 @@
 import { IDX } from '../../engine/params'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import { flushDenormal } from '../util/softclip'
 import { Burst } from '../util/burst'
 import { SineOsc } from '../util/lfo'
 import { mulberry32, type Rng } from '../util/rng'
+import { flushDenormal } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Master supply starve: loud passages sag the rail and pump the whole mix,
 // a loose power jack drops out at random, and the harder the supply works the

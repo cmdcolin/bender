@@ -1,3 +1,20 @@
+import { format, resolveConfig } from 'prettier'
+
+import pkg from '../package.json' with { type: 'json' }
+import { DEFAULT_CONTROLS } from '../src/controls'
+import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums'
+import { ROMS } from '../src/dsp/stages/roms'
+import { PEDAL_ORDERS } from '../src/pedals'
+import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls'
+import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends'
+import { STAGE_ORDER } from '../src/ui/controls/types'
+import { CUTS } from '../src/ui/presets/cuts'
+import { RIGS } from '../src/ui/presets/rigs'
+import { PRESETS } from '../src/ui/presets/table'
+import { boardHash } from '../src/ui/share'
+
+import type { Group, SliderDef } from '../src/ui/controls/types'
+
 // Generates docs/features.md. `pnpm features` rewrites it; features.test.ts
 // fails if the committed copy falls behind.
 //
@@ -15,20 +32,6 @@
 // counted rather than typed.
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { format, resolveConfig } from 'prettier'
-import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends'
-import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls'
-import type { Group, SliderDef } from '../src/ui/controls/types'
-import { STAGE_ORDER } from '../src/ui/controls/types'
-import { CUTS } from '../src/ui/presets/cuts'
-import { RIGS } from '../src/ui/presets/rigs'
-import { PRESETS } from '../src/ui/presets/table'
-import { boardHash } from '../src/ui/share'
-import { DEFAULT_CONTROLS } from '../src/controls'
-import { ROMS } from '../src/dsp/stages/roms'
-import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums'
-import { PEDAL_ORDERS } from '../src/pedals'
-import pkg from '../package.json' with { type: 'json' }
 
 const BLURBS: Record<string, string> = {
   'Toy keyboard':
@@ -90,6 +93,11 @@ const SCRIPTS: Record<string, string> = {
   test: 'the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom',
   typecheck: 'types only',
   'sync:check': 'compare the regions shared with videoskillet',
+  lint: 'oxlint, type-aware',
+  'lint:fix': 'oxlint, fixing what it can',
+  format: 'oxfmt, and prettier for .astro',
+  'format:check': 'the same, checking only',
+  version: 'writes CHANGELOG.md for the release commit (npm runs it)',
   bench: 'what the chain costs per block, stage by stage',
   blocks:
     'the distribution — p50 to p99.9, and how many blocks went over budget',

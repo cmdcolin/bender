@@ -1,11 +1,12 @@
 // @vitest-environment node
 import { experimental_AstroContainer } from 'astro/container'
 import { beforeAll, expect, test } from 'vitest'
+
 import { GA_ID } from '../analytics'
-import { privacyUrl } from './paths'
-import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
+import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
+import { privacyUrl } from './paths'
 
 // The landing page answers "why sign in?" out of the same strings the app's own
 // card renders, and it answers in the HTML rather than from script: a reader

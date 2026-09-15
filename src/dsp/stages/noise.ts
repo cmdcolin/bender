@@ -1,7 +1,8 @@
 import { IDX } from '../../engine/params'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import { flushDenormal } from '../util/softclip'
 import { mulberry32, type Rng } from '../util/rng'
+import { flushDenormal } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // White noise through a tilt, plus dirty-pot contact crackle: Poisson spikes
 // rung through a 2-pole resonator.

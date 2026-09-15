@@ -1,12 +1,13 @@
 import { expect, test } from 'vitest'
+
 import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
 } from '../../controls'
+import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums'
 import { mulberry32 } from '../../dsp/util/rng'
 import { BENDS, GROUPS, choiceValue } from '../controls'
-import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums'
 import { applyPreset } from './apply'
 import {
   bayFaults,

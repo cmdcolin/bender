@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest'
+
+import { pitchHz, renderBender, sine, tail } from '../testRender'
+
 import type { Controls } from '../../controls'
 import type { BuiltChain } from '../build'
-import { pitchHz, renderBender, sine, tail } from '../testRender'
 
 // Past unity the comb is a note, and the note is the pitch on the knob.
 test('a comb driven into oscillation rings at the pitch it is tuned to', () => {

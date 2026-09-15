@@ -12,9 +12,10 @@
 // is where the fingers are, and on a layout that shifts for its digits the
 // character is not what was pressed.
 
+import { useEffect } from 'react'
+
 import { N_DRUM_VOICES, voiceBit } from '../drums'
 import { engine } from '../engine/engine'
-import { useEffect } from 'react'
 
 // Where a keypress belongs to the control rather than to the kit.
 const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])

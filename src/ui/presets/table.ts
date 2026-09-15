@@ -1,11 +1,12 @@
-import type { Controls } from '../../controls'
 import { DATA_LINES, DRUM_ROMS } from '../../drums'
+import { FAULT } from '../../dsp/bus'
 import { DEST } from '../../dsp/modbus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
-import { FAULT } from '../../dsp/bus'
-import { ANY_CHOICE } from '../../dsp/trigbus'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
 import { ARP_MODES } from '../../dsp/stages/toyChip'
+import { ANY_CHOICE } from '../../dsp/trigbus'
+
+import type { Controls } from '../../controls'
 
 export interface PresetDef {
   name: string

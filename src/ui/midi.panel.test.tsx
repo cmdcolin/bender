@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
-import { MidiPanel } from './MidiPanel'
+
 import { midi } from './midi'
+import { MidiPanel } from './MidiPanel'
 import './testDom'
 
 // The wire lives behind a button in the nameplate row now rather than in a

@@ -1,5 +1,6 @@
-import { readFileSync } from 'node:fs'
 import { defineCollection } from 'astro:content'
+
+import { readFileSync } from 'node:fs'
 
 const REPO = 'https://github.com/cmdcolin/bender'
 

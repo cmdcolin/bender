@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS } from '../controls'
-import { ECHO_MODE } from '../dsp/stages/echo'
 import { GRID_ROWS, hasStep } from '../drums'
+import { ECHO_MODE } from '../dsp/stages/echo'
 import { engine } from '../engine/engine'
 import { App } from './App'
 import { GROUPS } from './controls'

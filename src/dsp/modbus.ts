@@ -1,10 +1,11 @@
 import { IDX, type SOURCE_TAPS } from '../engine/params'
 import { BLOCK } from './stage'
-import type { TriggerBus } from './trigbus'
 import { Chaos, Drunk } from './util/drift'
 import { Decay, Follower, coef } from './util/follower'
 import { wrap1 } from './util/pitch'
 import { mulberry32, type Rng } from './util/rng'
+
+import type { TriggerBus } from './trigbus'
 
 // Where a patch wire can land. Ids match the mod*Dest choices.
 export const DEST = {

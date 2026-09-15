@@ -1,7 +1,7 @@
 import { engine } from '../engine/engine'
 import { useControlValue } from './ControlsContext'
-import { Keybed } from './Keybed'
 import styles from './FmKeys.module.css'
+import { Keybed } from './Keybed'
 import { Tip } from './Tip'
 
 // The FM chip's own keys: a bare board rather than a moulded shell, because the

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS } from '../controls'
 import { ANY_CHOICE } from '../dsp/trigbus'
 import { GROUPS, groupKeys, touchedCount } from './controls'

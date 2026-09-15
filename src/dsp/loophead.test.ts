@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../controls'
+
 import { SR, renderBender, rms, sine } from './testRender'
+
+import type { Controls } from '../controls'
 
 // A short reel with a tone already on it, so what a lap costs is measurable
 // against what went on.

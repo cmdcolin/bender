@@ -1,8 +1,10 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../../controls'
-import type { BuiltChain } from '../build'
+
 import { DEST } from '../modbus'
 import { pitchHz, renderBender, sine, tail } from '../testRender'
+
+import type { Controls } from '../../controls'
+import type { BuiltChain } from '../build'
 
 test('the frequency shifter moves a sine by its shift, both ways', () => {
   const look: Partial<Controls> = {

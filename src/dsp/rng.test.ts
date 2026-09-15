@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { gaussian, mulberry32 } from './util/rng'
 
 // The table is drawn once and read for the life of the process, so whatever it

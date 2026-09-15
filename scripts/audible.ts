@@ -1,3 +1,7 @@
+import { EMPTY_MASKS } from '../src/drums'
+
+import type { Controls } from '../src/controls'
+
 // Which paths in the kit actually reach the output, measured by taking each one
 // out and listening to what changed.
 //
@@ -35,8 +39,6 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import type { Controls } from '../src/controls'
-import { EMPTY_MASKS } from '../src/drums'
 
 // A voice on its own with the pedals out of the way, so what moves is the kit
 // and not the room. One hit per render at the top of a bar the render reaches.

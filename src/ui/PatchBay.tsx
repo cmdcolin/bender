@@ -1,10 +1,11 @@
-import type { ControlKey } from '../controls'
 import { engine } from '../engine/engine'
-import { useBoardValue, useStoreValue } from './ControlsContext'
 import { sliderFor } from './controls'
+import { useBoardValue, useStoreValue } from './ControlsContext'
+import styles from './PatchBay.module.css'
 import { coherePatch, wireFault } from './presets/patch'
 import { Tip } from './Tip'
-import styles from './PatchBay.module.css'
+
+import type { ControlKey } from '../controls'
 
 const SRC = sliderFor('mod0Src').choices!
 const DEST = sliderFor('mod0Dest').choices!

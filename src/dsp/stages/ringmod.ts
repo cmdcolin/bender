@@ -1,9 +1,10 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { KEY_BIAS } from '../trigbus'
-import { A3_HZ, octaves } from '../util/pitch'
 import { QuadOsc } from '../util/lfo'
+import { A3_HZ, octaves } from '../util/pitch'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 export const RING_SHAPES = ['sine', 'square', 'diode']
 

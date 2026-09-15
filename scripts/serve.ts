@@ -1,7 +1,9 @@
+import { build, dev, preview } from 'astro'
+
+import config from '../astro.config'
+
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
-import { build, dev, preview } from 'astro'
-import config from '../astro.config'
 
 // The browser scripts drive Astro in-process rather than spawning its CLI and
 // reading the url back out of stdout: `astro dev` detaches into a background

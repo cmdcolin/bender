@@ -1,14 +1,12 @@
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
-import { FAULT } from '../bus'
+import { SOURCE_TAPS } from '../../engine/params'
 import { buildChain } from '../build'
+import { FAULT } from '../bus'
 import { DEST } from '../modbus'
 import { BLOCK } from '../stage'
-import { ANY_CHOICE } from '../trigbus'
-import { SOURCE_TAPS } from '../../engine/params'
-import { FM_EFFECT_NAMES } from './fmEffects'
-import type { BuiltChain } from '../build'
 import {
   bin,
   bursts,
@@ -26,6 +24,8 @@ import {
   SR,
   tail,
 } from '../testRender'
+import { ANY_CHOICE } from '../trigbus'
+import { FM_EFFECT_NAMES } from './fmEffects'
 import {
   FM_VOICE_NAMES,
   FM_VOICES,
@@ -41,6 +41,8 @@ import {
   scaledRate,
 } from './fmVoices'
 import { romIndex } from './roms'
+
+import type { BuiltChain } from '../build'
 
 // The toy turned down to nothing, so what comes out is the other chip playing
 // the key line the toy brings out.

@@ -7,9 +7,9 @@
 //
 //   pnpm soak 600
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { packParams } from '../src/engine/params'
 import { buildBender } from '../src/dsp/build'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../src/dsp/stage'
+import { packParams } from '../src/engine/params'
 
 const SR = 48000
 const WINDOW_S = 20

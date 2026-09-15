@@ -1,5 +1,6 @@
-import type { ControlKey } from '../../controls'
 import { SOURCE_TAPS, TAP_MIC, type SourceTap } from '../../engine/params'
+
+import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
 // Where the six of them meet.

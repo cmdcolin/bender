@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
 import styles from './HuntDialog.module.css'

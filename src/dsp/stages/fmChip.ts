@@ -1,13 +1,11 @@
+import { ACCENT_GAIN } from '../../drums'
 import { IDX } from '../../engine/params'
+import { snap } from '../../scale'
 import { Bus, FAULT_NAMES, Strobe } from '../bus'
 import { DEST, hop } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
 import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus'
-import { ACCENT_GAIN } from '../../drums'
-import { snap } from '../../scale'
-import { softclip } from '../util/softclip'
 import { mulberry32 } from '../util/rng'
+import { softclip } from '../util/softclip'
 import {
   type Cpu,
   EFFECT_CH,
@@ -36,6 +34,9 @@ import {
   TEST,
   VIB,
 } from './fmVoices'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { ToyRail } from '../toyRail'
 
 // The other chip on the board: two operators a voice, four voices, and a
 // register file the CPU writes over a bus.

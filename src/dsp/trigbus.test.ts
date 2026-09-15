@@ -1,7 +1,5 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../controls'
-import type { BuiltChain } from './build'
-import { ANY_CHOICE, STEP_CHOICE } from './trigbus'
+
 import {
   bin,
   lowEnergy,
@@ -12,6 +10,10 @@ import {
   stepMask,
   tail,
 } from './testRender'
+import { ANY_CHOICE, STEP_CHOICE } from './trigbus'
+
+import type { Controls } from '../controls'
+import type { BuiltChain } from './build'
 
 // The two boxes' trigger lines, bridged. The kit's hit arrives at the chip a
 // block late, so these run long enough for that to be beside the point.

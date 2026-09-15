@@ -30,14 +30,14 @@ import {
 } from '../src/controls'
 import { FAULT } from '../src/dsp/bus'
 import { BANDS, spectrum } from '../src/dsp/spectrum'
-import { render, renderStems, rms, SR } from '../src/dsp/testRender'
-import { SOURCE_TAPS, type SourceTap } from '../src/engine/params'
-import { romIndex } from '../src/dsp/stages/roms'
 import { FM_EFFECT_NAMES } from '../src/dsp/stages/fmEffects'
+import { romIndex } from '../src/dsp/stages/roms'
+import { render, renderStems, rms, SR } from '../src/dsp/testRender'
 import { ANY_CHOICE } from '../src/dsp/trigbus'
+import { SOURCE_TAPS, type SourceTap } from '../src/engine/params'
+import { sliderFor } from '../src/ui/controls'
 import { applyCut, CUTS, cutOff } from '../src/ui/presets/cuts'
 import { PRESETS } from '../src/ui/presets/table'
-import { sliderFor } from '../src/ui/controls'
 
 // The same board `knife.ts` judges a wire on, for the same reasons: the song
 // run up to where all of it goes past, and a bar whose halves differ.

@@ -1,4 +1,3 @@
-import type { ControlKey, Controls } from '../../controls'
 import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums'
 import {
   BEND_SLOT_KEYS,
@@ -9,6 +8,8 @@ import {
 } from '../controls'
 import { fromPos } from '../slider-scale'
 import { inTime } from './quantize'
+
+import type { ControlKey, Controls } from '../../controls'
 
 // A patch bay rolled at random hands back four wires that read as a patch and
 // mostly aren't one: a wire onto a reverb that is dry, one off a mic nobody has

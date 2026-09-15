@@ -1,11 +1,12 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import { octaves } from '../util/pitch'
 import { Follower, coef } from '../util/follower'
 import { SineOsc } from '../util/lfo'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
+import { octaves } from '../util/pitch'
 import { flushDenormal, softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Ids match the stompCircuit choices, from 1: the screamer is 0 and it is the
 // default arm of both switches, so it never needs naming.

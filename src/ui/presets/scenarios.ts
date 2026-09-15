@@ -1,4 +1,3 @@
-import type { ControlKey, Controls } from '../../controls'
 import {
   bendAt,
   BEND_SLOT_KEYS,
@@ -19,6 +18,8 @@ import {
 import { inTime } from './quantize'
 import { rollGroup, rollKeys } from './roll'
 import { CLOCK_KEYS, YOURS } from './yours'
+
+import type { ControlKey, Controls } from '../../controls'
 
 export interface ScenarioDef {
   name: string

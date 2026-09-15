@@ -12,13 +12,14 @@
 import { CONTROL_KEYS, type ControlKey } from '../controls'
 import { VOICE_LABELS, type DrumVoiceKey } from '../drums'
 import { engine } from '../engine/engine'
-import type { NoteDest } from '../engine/messages'
-import { noteName, toMidiNote, toSemitone } from '../notes'
 import { createStore } from '../listeners'
+import { noteName, toMidiNote, toSemitone } from '../notes'
 import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
 import { PadKit } from './pads'
 import { forget, omit, parseMap, read, write } from './persist'
 import { fromPos, toPos } from './slider-scale'
+
+import type { NoteDest } from '../engine/messages'
 import type { SliderDef } from './controls'
 
 // One CC source = a (channel, controller) pair. The channel is kept so two
@@ -39,7 +40,11 @@ export type BindingMap = Partial<Record<ControlKey, Binding>>
 export type PickupMap = Partial<Record<ControlKey, number>>
 
 export type MidiStatus =
-  'unsupported' | 'idle' | 'requesting' | 'ready' | 'denied'
+  | 'unsupported'
+  | 'idle'
+  | 'requesting'
+  | 'ready'
+  | 'denied'
 
 // The last thing to come down the wire, and how many have come down it at all.
 // A controller that looks dead is either not sending or not being understood,

@@ -1,8 +1,10 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../controls'
+
 import { DEST } from './modbus'
 import { peaksOf, PEAK_BINS } from './stages/sampler'
 import { bin, deviation, sine, SR, renderBender, rms } from './testRender'
+
+import type { Controls } from '../controls'
 
 const REEL_S = 1
 

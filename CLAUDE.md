@@ -19,3 +19,16 @@ markers and the workflow.
 - Keep product-specific values in constants outside a region.
 
 <!-- CROSS_REPO_SYNC_END(agent-sync-rules) -->
+
+<!-- CROSS_REPO_SYNC(commit-conventions) -->
+
+## Commits
+
+Use Conventional Commits (`type(scope): description`). `cliff.toml` groups the
+changelog by type and renders the scope inline. `Release vX.Y.Z` commits come
+from `scripts/push.mjs` and stay out of the changelog.
+
+<!-- CROSS_REPO_SYNC_END(commit-conventions) -->
+
+Scope is optional; when used, pick from `dsp`, `engine`, `ui`, `home`, `midi` or
+`docs`.

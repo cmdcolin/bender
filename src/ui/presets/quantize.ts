@@ -1,5 +1,6 @@
-import type { ControlKey, Controls } from '../../controls'
 import { type SliderDef, sliderFor, snapToStep } from '../controls'
+
+import type { ControlKey, Controls } from '../../controls'
 
 // Note lengths as a fraction of a beat: sixteenth up to a bar, with the
 // triplets and the dotted values in between.

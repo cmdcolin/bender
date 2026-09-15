@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { markBars } from './mark'
 
 test('a mark is the same every time and different for a different board', () => {

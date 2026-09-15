@@ -1,3 +1,5 @@
+import { CAR_HALF, KEY_ON, MOD_HALF, pack, REG, type Voice } from './fmVoices'
+
 // The effect ROM: the CPU spraying writes.
 //
 // A nature sound on a chip like this is not a sample. There is no sample memory
@@ -26,7 +28,6 @@
 // It is the counterpart to the toy's tune ROM. That one holds notes; this one
 // holds register writes.
 import type { Rng } from '../util/rng'
-import { CAR_HALF, KEY_ON, MOD_HALF, pack, REG, type Voice } from './fmVoices'
 
 /** The channel the CPU keeps for itself while an effect runs. */
 export const EFFECT_CH = 3

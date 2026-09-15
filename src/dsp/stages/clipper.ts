@@ -1,7 +1,8 @@
 import { IDX } from '../../engine/params'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { OnePoleLP, lpCoef } from '../util/onepole'
 import { softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 function fold(x: number): number {
   // reflect off ±1 until inside

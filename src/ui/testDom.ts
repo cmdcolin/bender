@@ -1,8 +1,9 @@
-import { afterEach, beforeAll } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import { afterEach, beforeAll } from 'vitest'
+
 import { DEFAULT_CONTROLS } from '../controls'
-import { EMPTY_HISTORY } from '../history'
 import { engine } from '../engine/engine'
+import { EMPTY_HISTORY } from '../history'
 import { letterKeys } from './letters'
 
 // What the panel needs under it that jsdom does not have, and a board back

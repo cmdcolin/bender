@@ -78,7 +78,9 @@ const presets = PRESETS.map(preset => ({
   <body>
     <header class="bar">
       <div class="barIn">
-        <a class="brand" href={siteRoot}>bender</a>
+        <a class="brand" href={siteRoot}>
+          bender
+        </a>
         <nav class="barNav" aria-label="Site">
           <a href={guideUrl}>User guide</a>
           <a href="https://github.com/cmdcolin/bender">Source</a>
@@ -86,7 +88,9 @@ const presets = PRESETS.map(preset => ({
         </nav>
         <div class="barEnd">
           <!-- Beside the sign-in button, where the reader meets the ask. -->
-          <button class="why" id="why" type="button">Why sign in?</button>
+          <button class="why" id="why" type="button">
+            Why sign in?
+          </button>
           <button class="btn" id="signIn" type="button">
             <svg
               class="ico"
@@ -125,7 +129,9 @@ const presets = PRESETS.map(preset => ({
               </button>
             </div>
           </div>
-          <a class="btn primary" href={appUrl}>Open the app →</a>
+          <a class="btn primary" href={appUrl}>
+            Open the app →
+          </a>
         </div>
       </div>
     </header>
@@ -141,12 +147,24 @@ const presets = PRESETS.map(preset => ({
         <div class="homeMain">
           <span class="bone headBone"></span>
           <ul class="grid">
-            <li><span class="bone cardBone"></span></li>
-            <li><span class="bone cardBone"></span></li>
-            <li><span class="bone cardBone"></span></li>
-            <li><span class="bone cardBone"></span></li>
-            <li><span class="bone cardBone"></span></li>
-            <li><span class="bone cardBone"></span></li>
+            <li>
+              <span class="bone cardBone"></span>
+            </li>
+            <li>
+              <span class="bone cardBone"></span>
+            </li>
+            <li>
+              <span class="bone cardBone"></span>
+            </li>
+            <li>
+              <span class="bone cardBone"></span>
+            </li>
+            <li>
+              <span class="bone cardBone"></span>
+            </li>
+            <li>
+              <span class="bone cardBone"></span>
+            </li>
           </ul>
         </div>
       </div>
@@ -156,11 +174,10 @@ const presets = PRESETS.map(preset => ({
       <h1 class="head">Simulated circuit bending</h1>
       <p class="pitch">
         A toy keyboard, a drum machine and a small FM chip, wired up in the
-        browser: starve the supply until the chip
-        reboots, solder a bend spot, bridge the trigger pins, and run the whole
-        thing through tape delay, reverb and distortion. You work it from the
-        signal path diagram rather than a wall of sliders, and every board it
-        makes is a link you can send.
+        browser: starve the supply until the chip reboots, solder a bend spot,
+        bridge the trigger pins, and run the whole thing through tape delay,
+        reverb and distortion. You work it from the signal path diagram rather
+        than a wall of sliders, and every board it makes is a link you can send.
       </p>
       <figure class="figure">
         <img
@@ -171,23 +188,30 @@ const presets = PRESETS.map(preset => ({
         />
       </figure>
       <p class="cta">
-        <a class="btn primary big" href={appUrl}>Open the app →</a>
+        <a class="btn primary big" href={appUrl}>
+          Open the app →
+        </a>
         <a
           class="btn big"
           href="https://github.com/cmdcolin/bender/blob/main/docs/GETTING-STARTED.md"
-          >Getting started</a
         >
+          Getting started
+        </a>
       </p>
       <p class="dim">
         Sign in to keep voices under a name and pick a session up on another
         machine. Everything else works signed out.{' '}
-        <button class="why" id="whyBelow" type="button">Why sign in?</button>
+        <button class="why" id="whyBelow" type="button">
+          Why sign in?
+        </button>
       </p>
       <section class="sec" id="presets">
         <h2 class="secHead">Presets</h2>
         <p class="secSub">Open one and the board arrives set up that way.</p>
         <ul class="grid">
-          {presets.map(p => <Card {...p} />)}
+          {presets.map(p => (
+            <Card {...p} />
+          ))}
         </ul>
       </section>
     </main>
@@ -199,18 +223,24 @@ const presets = PRESETS.map(preset => ({
          page for a reader with no JavaScript. -->
     <dialog class="whyCard" id="whyCard" aria-labelledby="whyHead">
       <div class="whyTop">
-        <h2 class="whyHead" id="whyHead">Why sign in?</h2>
-        <button class="btn" id="whyClose" type="button">Close</button>
+        <h2 class="whyHead" id="whyHead">
+          Why sign in?
+        </h2>
+        <button class="btn" id="whyClose" type="button">
+          Close
+        </button>
       </div>
       <p class="whyPitch">{PITCH}</p>
       <p class="whyLine">
         {FREE_WITHOUT} <a href={privacyUrl}>What an account holds →</a>
       </p>
       <p class="cta">
-        <button class="btn primary" id="whySignIn" type="button"
-          >Sign in with Google</button
-        >
-        <a class="btn" href={appUrl}>Open the app instead →</a>
+        <button class="btn primary" id="whySignIn" type="button">
+          Sign in with Google
+        </button>
+        <a class="btn" href={appUrl}>
+          Open the app instead →
+        </a>
       </p>
     </dialog>
   </body>

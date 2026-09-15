@@ -6,17 +6,19 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react'
-import type { Controls } from '../controls'
+
 import { engine } from '../engine/engine'
+import { MAX_SOURCES } from '../engine/params'
 import { buildMap, drawMap } from './chain-map'
+import styles from './ChainMap.module.css'
+import { CHANNELS, GROUPS, groupKeys } from './controls'
 import { useStoreValue } from './ControlsContext'
 import { useCoarse } from './measure'
-import { CHANNELS, GROUPS, groupKeys } from './controls'
-import { MAX_SOURCES } from '../engine/params'
 import { resetGroup } from './presets'
 import { Shelf } from './Section'
+
+import type { Controls } from '../controls'
 import type { El } from './svg'
-import styles from './ChainMap.module.css'
 
 const GROUP_BY_NAME = new Map(GROUPS.map(g => [g.name, g]))
 

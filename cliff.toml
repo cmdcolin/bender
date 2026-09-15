@@ -1,0 +1,66 @@
+# git-cliff ~ configuration file
+# https://git-cliff.org/docs/configuration
+#
+# Commits use Conventional Commits type prefixes from 2026-09-15 on. Earlier
+# history is plain sentences, which land under "Other Changes".
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to bender are documented here.
+"""
+body = """
+
+{% if version %}\
+    {% if previous.version %}\
+        ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/cmdcolin/bender/compare/{{ previous.version }}...{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% else %}\
+        ## [{{ version | trim_start_matches(pat="v") }}](https://github.com/cmdcolin/bender/releases/tag/{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% endif %}\
+{% else %}\
+    ## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim }}
+{% for commit in commits %}\
+- {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+[`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/cmdcolin/bender/commit/{{ commit.id }}) \
+{% if commit.breaking %}[**breaking**] {% endif %}\
+{{ commit.message | split(pat="\n") | first | trim }}
+{% endfor %}\
+{% endfor %}\
+"""
+trim = true
+footer = ""
+
+# CROSS_REPO_SYNC(cliff-git)
+[git]
+conventional_commits = true
+filter_unconventional = false
+require_conventional = false
+split_commits = false
+commit_preprocessors = []
+protect_breaking_commits = false
+commit_parsers = [
+  { message = "^Release v", skip = true },
+  { message = "^feat", group = "<!-- 0 -->Features" },
+  { message = "^fix", group = "<!-- 1 -->Fixes" },
+  { message = "^perf", group = "<!-- 2 -->Performance" },
+  { message = "^refactor", group = "<!-- 3 -->Refactor" },
+  { message = "^docs", group = "<!-- 4 -->Documentation" },
+  { message = "^style", group = "<!-- 5 -->Style" },
+  { message = "^test", group = "<!-- 6 -->Tests" },
+  { message = "^(chore|ci|build)", group = "<!-- 7 -->Chores" },
+  { message = "^revert", group = "<!-- 8 -->Reverts" },
+  { message = ".*", group = "<!-- 9 -->Other Changes" },
+]
+filter_commits = false
+fail_on_unmatched_commit = false
+link_parsers = []
+use_branch_tags = false
+topo_order = false
+topo_order_commits = true
+sort_commits = "oldest"
+recurse_submodules = false
+# CROSS_REPO_SYNC_END(cliff-git)

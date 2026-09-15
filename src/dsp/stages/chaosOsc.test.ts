@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../../controls'
+
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import {
@@ -14,6 +14,8 @@ import {
   SR,
   tail,
 } from '../testRender'
+
+import type { Controls } from '../../controls'
 
 // The oscillator on its own, with the other two boxes down: everything here is
 // about the pair and the supply under them, and the kit — which is up on a

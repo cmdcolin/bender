@@ -6,12 +6,8 @@ import {
   useSyncExternalStore,
   type RefObject,
 } from 'react'
-import { engine } from '../engine/engine'
-import {
-  useBoardValue,
-  useControlValue,
-  useStoreValue,
-} from './ControlsContext'
+
+import { DRUM_MOVES, masksOf, type DrumMove } from '../drum-moves'
 import {
   asLen,
   DRUM_ROMS,
@@ -27,9 +23,14 @@ import {
   type DrumRow,
   type StepState,
 } from '../drums'
-import { DRUM_MOVES, masksOf, type DrumMove } from '../drum-moves'
-import { padKeyFor } from './drumKeys'
+import { engine } from '../engine/engine'
+import {
+  useBoardValue,
+  useControlValue,
+  useStoreValue,
+} from './ControlsContext'
 import styles from './DrumGrid.module.css'
+import { padKeyFor } from './drumKeys'
 import { Tip } from './Tip'
 
 // The playhead only moves when a step does, so the grid redraws at the step rate

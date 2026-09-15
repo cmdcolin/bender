@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { hasStep, quantizeStep, STEPS } from '../drums'
-import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
 import { YOURS } from '../dsp/stages/roms'
 import { SCALE_NAMES } from '../scale'
+import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
 import { edgeScore, Engine, mergeNotes, soundingMask } from './engine'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed

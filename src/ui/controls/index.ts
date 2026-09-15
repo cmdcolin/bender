@@ -12,6 +12,7 @@ import { PATCH_GROUPS } from './patch'
 import { PEDAL_GROUPS } from './pedals'
 import { SOURCE_GROUPS } from './sources'
 import { TAPE_GROUPS } from './tape'
+
 import type { Group, SliderDef } from './types'
 
 export { BENDS, BEND_SLOT_KEYS, bendAt } from './bends'

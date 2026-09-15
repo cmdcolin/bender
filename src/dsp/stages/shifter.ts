@@ -1,9 +1,10 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import { octaves } from '../util/pitch'
 import { QuadOsc } from '../util/lfo'
+import { octaves } from '../util/pitch'
 import { flushDenormal, softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Two allpass chains whose outputs stay about 90° apart across the band.
 const COEF_A = [0.6923878, 0.9360654322959, 0.988229522686, 0.9987488452737]

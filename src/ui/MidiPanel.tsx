@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useControlValue, useStoreValue } from './ControlsContext'
-import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
+
 import { engine } from '../engine/engine'
+import { noteName } from '../notes'
+import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
+import { useControlValue, useStoreValue } from './ControlsContext'
 import {
   AUTOMAP_KEYS,
   DEVICE_PROFILES,
@@ -9,9 +11,8 @@ import {
   type DeviceProfile,
   type KeyRoute,
 } from './midi'
-import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
-import { noteName } from '../notes'
 import styles from './MidiPanel.module.css'
+import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
 import { Tip } from './Tip'
 
 function label(key: Parameters<typeof sliderFor>[0]): string {

@@ -1,3 +1,9 @@
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
+import { buildBender } from '../src/dsp/build'
+import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../src/dsp/stage'
+import { packParams } from '../src/engine/params'
+import { BOARDS } from './boards'
+
 // What the board costs per block, offline. The worklet gets 2.7 ms to render
 // 2.7 ms of audio; anything the whole chain spends past a few percent of that
 // on one machine is what runs out of budget on a slower one.
@@ -5,11 +11,6 @@
 //   pnpm bench            the everything-on board, 20 s
 //   pnpm bench stock 10   the board as it boots
 import { PerformanceObserver } from 'node:perf_hooks'
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { packParams } from '../src/engine/params'
-import { buildBender } from '../src/dsp/build'
-import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../src/dsp/stage'
-import { BOARDS } from './boards'
 
 const SR = 48000
 

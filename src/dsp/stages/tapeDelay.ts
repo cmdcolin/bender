@@ -1,13 +1,14 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import { octaves } from '../util/pitch'
 import { DelayLine, fixedTap } from '../util/delayline'
 import { coef as timeCoef } from '../util/follower'
 import { QuadOsc, SineOsc } from '../util/lfo'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
-import { flushDenormal, softclip } from '../util/softclip'
+import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
+import { flushDenormal, softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // The reel is a loop, joined once. How long the join is past the heads, and
 // how much of it is tape with no oxide on it.

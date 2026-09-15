@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
 import { hasStep } from '../../drums'
 import { mulberry32 } from '../../dsp/util/rng'

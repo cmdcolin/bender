@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { ALL_SLIDERS, sliderFor } from './controls'
 import { TAP_GAP_MS, tapRun, tapValue } from './tap'
 

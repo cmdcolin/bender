@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../../controls'
+
 import { renderBender, rms } from '../testRender'
+
+import type { Controls } from '../../controls'
 
 const kit = (overrides: Partial<Controls>) =>
   rms(

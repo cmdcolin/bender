@@ -1,17 +1,18 @@
 import { expect, test } from 'vitest'
+
+import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
 import {
   CONTROL_KEYS,
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
 } from '../../controls'
+import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo'
+import { KEY_CHOICE, MIC_CHOICE } from '../../dsp/stages/sampler'
 import { DEAD_V, PARTS } from '../../dsp/toyRail'
+import { STEP_CHOICE } from '../../dsp/trigbus'
 import { mutate } from '../presets/roll'
 import { PART_KEYS } from '../presets/yours'
-import { KEY_CHOICE, MIC_CHOICE } from '../../dsp/stages/sampler'
-import { STEP_CHOICE } from '../../dsp/trigbus'
-import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo'
-import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
 
 // A slot's choices are derived from the table, so the counts can't drift. What
 // still can is a table entry naming a group or a dry/wet that isn't there.

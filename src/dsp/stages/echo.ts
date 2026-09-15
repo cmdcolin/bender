@@ -1,6 +1,5 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
 import { Follower, coef as timeCoef } from '../util/follower'
 import { SineOsc } from '../util/lfo'
@@ -8,6 +7,8 @@ import { Lowpass, OnePoleLP, lpCoef } from '../util/onepole'
 import { octaves } from '../util/pitch'
 import { gaussian, mulberry32, type Rng } from '../util/rng'
 import { softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 export const ECHO_MODE = {
   standard: 0,

@@ -3,6 +3,8 @@ import {
   type ControlKey,
   type Controls,
 } from '../../controls'
+import { randomPattern } from '../../drum-moves'
+import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums'
 import {
   ALL_SLIDERS,
   BENDS,
@@ -13,8 +15,6 @@ import {
   sliderFor,
   snapToStep,
 } from '../controls'
-import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums'
-import { randomPattern } from '../../drum-moves'
 import { fromPos, toPos } from '../slider-scale'
 import { applyPreset } from './apply'
 import { coherePatch, cohereTriggers } from './patch'

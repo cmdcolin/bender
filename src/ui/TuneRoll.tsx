@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import type { RefObject } from 'react'
+
+import { YOURS } from '../dsp/stages/roms'
 import { engine } from '../engine/engine'
 import { isSharp, semitoneName } from '../notes'
 import {
@@ -16,14 +17,15 @@ import {
   TUNE_STEPS,
   voicing,
 } from '../tune'
-import { YOURS } from '../dsp/stages/roms'
 import {
   useBoardValue,
   useControlValue,
   useStoreValue,
 } from './ControlsContext'
-import styles from './TuneRoll.module.css'
 import { Tip } from './Tip'
+import styles from './TuneRoll.module.css'
+
+import type { RefObject } from 'react'
 
 // How much of the keyboard the roll shows at once. Two octaves is what a toy
 // melody stays inside of and what fits the panel without the grid becoming the

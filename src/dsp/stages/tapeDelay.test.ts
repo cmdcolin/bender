@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest'
+
+import { SR, bin, pitchHz, renderBender, rms, sine, tail } from '../testRender'
+
 import type { Controls } from '../../controls'
 import type { BuiltChain } from '../build'
-import { SR, bin, pitchHz, renderBender, rms, sine, tail } from '../testRender'
 
 // The echo returns on a fader of its own, so the dry is always in the room
 // with it. These play a one-shot second and listen to the last half of the

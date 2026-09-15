@@ -1,8 +1,9 @@
 import { useEffect, useState, type PointerEvent, type ReactNode } from 'react'
+
 import { engine } from '../engine/engine'
-import type { NoteDest } from '../engine/messages'
 import { semitoneName } from '../notes'
 import { useStoreValue } from './ControlsContext'
+import styles from './Keybed.module.css'
 import {
   blackAbove,
   MIN_KEY,
@@ -14,10 +15,11 @@ import {
   whiteKeys,
 } from './keyboard'
 import { letterKeys } from './letters'
-import styles from './Keybed.module.css'
+import { useCoarse, useWidth } from './measure'
 import { Menu, menuCheck } from './Menu'
 import { Tip } from './Tip'
-import { useCoarse, useWidth } from './measure'
+
+import type { NoteDest } from '../engine/messages'
 
 const KEY_MAP: Record<string, number> = {
   a: 0,

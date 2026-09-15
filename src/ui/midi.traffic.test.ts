@@ -2,6 +2,7 @@
 // the first question a controller that does nothing raises.
 
 import { beforeEach, expect, test, vi } from 'vitest'
+
 import { describe, isLoopback, midi } from './midi'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null

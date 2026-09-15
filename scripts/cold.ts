@@ -14,9 +14,9 @@
 // report is a dropout on page load, and they are gone by the time the other two
 // scripts start looking.
 import { DEFAULT_CONTROLS } from '../src/controls'
-import { packParams } from '../src/engine/params'
 import { buildBender } from '../src/dsp/build'
 import { BLOCK, type StereoBlock } from '../src/dsp/stage'
+import { packParams } from '../src/engine/params'
 import { BOARDS } from './boards'
 
 const SR = 48000

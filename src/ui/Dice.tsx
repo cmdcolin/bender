@@ -1,10 +1,12 @@
 import { useCallback, useState } from 'react'
+
 import { engine } from '../engine/engine'
+import styles from './Dice.module.css'
 import { Menu, menuItem } from './Menu'
-import type { MorphSeconds } from './morph'
 import { huntCandidates, randomLook, SCENARIOS } from './presets'
 import { Tip } from './Tip'
-import styles from './Dice.module.css'
+
+import type { MorphSeconds } from './morph'
 
 // Every way the panel has of handing you a board you did not ask for, behind
 // one button.

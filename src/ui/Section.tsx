@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { groupAnchor } from './chain-map'
-import { useBoardValue } from './ControlsContext'
 import { engine } from '../engine/engine'
+import { groupAnchor } from './chain-map'
 import {
   groupKeys,
   touchedCount,
@@ -10,14 +10,13 @@ import {
   type Group,
   type SliderDef,
 } from './controls'
+import { useBoardValue } from './ControlsContext'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
 import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
 import { OrderRack } from './OrderRack'
 import { PatchBay } from './PatchBay'
-import { TriggerPatch } from './TriggerPatch'
-import { TuneRoll } from './TuneRoll'
 import {
   applyCut,
   applyRig,
@@ -35,9 +34,11 @@ import {
   rollKeys,
 } from './presets'
 import { scrollIntoPanel } from './reveal'
-import { ControlSlider, ReserveReadout } from './Slider'
 import styles from './Section.module.css'
+import { ControlSlider, ReserveReadout } from './Slider'
 import { Tip } from './Tip'
+import { TriggerPatch } from './TriggerPatch'
+import { TuneRoll } from './TuneRoll'
 
 // A count rather than the board it is counted off, so the eight parts on the
 // shelf sit still through a morph instead of each recounting its group sixty

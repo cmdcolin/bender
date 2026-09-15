@@ -5,6 +5,7 @@
 // stage, and why the chaos oscillator, which is a stage and has its own file,
 // is not in it.
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { packParams } from '../engine/params'
 import { buildBender, buildChain } from './build'

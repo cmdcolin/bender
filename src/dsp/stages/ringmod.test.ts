@@ -1,12 +1,13 @@
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { IDX, packParams } from '../../engine/params'
 import { buildBender, type BuiltChain } from '../build'
 import { DEST } from '../modbus'
-import { BLOCK, type StereoBlock } from '../stage'
 import { spectrum } from '../spectrum'
-import { RING_FROM, RING_TRACK } from './ringmod'
+import { BLOCK, type StereoBlock } from '../stage'
 import { bin, deviation, envelope, quiet, render, rms, SR } from '../testRender'
+import { RING_FROM, RING_TRACK } from './ringmod'
 
 // A3, the chip's semitone zero, and the note every tracking case here is
 // judged against.

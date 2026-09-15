@@ -20,6 +20,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react'
+
 import styles from './Tip.module.css'
 
 // The panel explains itself in sentences, and the browser's own tooltip is the

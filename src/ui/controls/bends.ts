@@ -1,5 +1,6 @@
-import type { ControlKey } from '../../controls'
 import { RING_FROM, RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod'
+
+import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
 // Which stage each bend slot names, the short name a slot wears when it names

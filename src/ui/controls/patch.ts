@@ -1,5 +1,6 @@
-import type { ControlKey } from '../../controls'
 import { VOICE_LABELS } from '../../drums'
+
+import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
 export const PATCH_GROUPS: Group[] = [

@@ -1,10 +1,11 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { rail } from '../util/bridged'
 import { Transient } from '../util/follower'
 import { lpCoef } from '../util/onepole'
 import { mulberry32, type Rng } from '../util/rng'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Six allpasses rather than three: the chirp is how far the low end lags the
 // top through the chain, and three stages was a drip where a spring is a boing.

@@ -3,13 +3,14 @@
 // shipping code path — binding, soft takeover, the undo walk and the keyboard.
 
 import { beforeEach, expect, test, vi } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { bursts, render } from '../dsp/testRender'
-import { YOURS } from '../dsp/stages/roms'
-import { REST, TUNE_STEP_KEYS } from '../tune'
-import { engine } from '../engine/engine'
-import { sliderFor } from './controls'
 import { ACCENT_GAIN, hasStep } from '../drums'
+import { YOURS } from '../dsp/stages/roms'
+import { bursts, render } from '../dsp/testRender'
+import { engine } from '../engine/engine'
+import { REST, TUNE_STEP_KEYS } from '../tune'
+import { sliderFor } from './controls'
 import { ccToValue, midi, velocity } from './midi'
 import { padGain } from './pads'
 

@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { engine } from '../engine/engine'
+
 import { YOURS } from '../dsp/stages/roms'
+import { engine } from '../engine/engine'
 import { HOLD, REST } from '../tune'
 import { GROUPS } from './controls'
 import { OpenGroup } from './Section'

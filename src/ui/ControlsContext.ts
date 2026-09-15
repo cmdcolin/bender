@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react'
-import type { ControlKey, Controls } from '../controls'
+
 import { engine, type Meter } from '../engine/engine'
+
+import type { ControlKey, Controls } from '../controls'
 
 // One figure read off the board, rather than the board. Every write hands the
 // store a fresh object — and a morph writes one per animation frame for as long

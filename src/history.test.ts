@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import {
   EMPTY_HISTORY,
   HISTORY_MAX,

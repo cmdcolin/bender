@@ -1,8 +1,9 @@
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
-import { Strobe } from '../bus'
 import { buildBender } from '../build'
+import { Strobe } from '../bus'
 import {
   deviation,
   makeIo,

@@ -12,7 +12,10 @@ const { query, name, says } = Astro.props
 
 <li>
   <a class="card" href={boardUrl(query)}>
-    <span class="cardTop"><Mark query={query} /><span class="open">open →</span></span>
+    <span class="cardTop">
+      <Mark query={query} />
+      <span class="open">open →</span>
+    </span>
     <span class="cardName">{name}</span>
     <span class="says">{says}</span>
   </a>

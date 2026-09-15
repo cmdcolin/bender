@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { choiceValue } from './controls'
-import { bayFaults } from './presets/patch'
 import { PatchBay } from './PatchBay'
+import { bayFaults } from './presets/patch'
 import './testDom'
 
 // A wire off a mic nobody has turned on, onto a reverb that is dry: two rows of

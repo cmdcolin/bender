@@ -1,11 +1,12 @@
-import { execFileSync, spawn } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
 import { encodeControls } from '../src/ui/share'
 import { attach, chromePath, sleep } from './chrome'
 import { serveDev } from './serve'
+
+import { execFileSync, spawn } from 'node:child_process'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 // The README's one picture: the panel drawn big on the left, and the whole app
 // small beside it with the panel ringed in red where it actually sits. `pnpm figure`

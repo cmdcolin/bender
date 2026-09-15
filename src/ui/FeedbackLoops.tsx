@@ -1,5 +1,5 @@
-import { useBoardValue } from './ControlsContext'
 import { sliderFor } from './controls'
+import { useBoardValue } from './ControlsContext'
 import styles from './FeedbackLoops.module.css'
 
 const DEST = sliderFor('fbDest').choices!

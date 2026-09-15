@@ -1,9 +1,10 @@
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
 import { GRID_ROWS } from '../../drums'
+import { render, renderBender, rms } from '../../dsp/testRender'
 import { HOLD_KEYS } from '../controls'
 import { applyPreset, presetPath } from './apply'
-import { render, renderBender, rms } from '../../dsp/testRender'
 import { PRESETS } from './table'
 import { mine } from './testBoard'
 

@@ -6,21 +6,25 @@ import {
   useSyncExternalStore,
   type DragEvent,
 } from 'react'
+
 import { DEFAULT_CONTROLS } from '../controls'
 import { N_DRUM_VOICES } from '../drums'
+import { YOURS } from '../dsp/stages/roms'
+import { POOLS, detailsUrl } from '../engine/archive'
 import { engine } from '../engine/engine'
 import { versionLabel } from '../version'
 import { AboutDialog } from './AboutDialog'
+import styles from './App.module.css'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
+import { GROUPS } from './controls'
 import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Dice } from './Dice'
-import { GROUPS } from './controls'
 import { padKeyFor, useDrumKeys } from './drumKeys'
-import { useCoarse } from './measure'
-import { HuntDialog } from './HuntDialog'
 import { FmKeys } from './FmKeys'
+import { HuntDialog } from './HuntDialog'
 import { Keys } from './Keys'
+import { useCoarse } from './measure'
 import { Menu, menuItem } from './Menu'
 import { MidiPanel } from './MidiPanel'
 import {
@@ -30,23 +34,20 @@ import {
   saveMorph,
   type MorphSeconds,
 } from './morph'
-import { mutate, presetNameFor } from './presets'
 import { Presets } from './PresetRow'
+import { mutate, presetNameFor } from './presets'
 import { SampleReel } from './SampleReel'
+import { SavedVoices } from './SavedVoices'
 import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
-import { StartOverlay } from './StartOverlay'
 import { boardFrom, boardFromUrl, boardHash } from './share'
-import { SavedVoices } from './SavedVoices'
+import { StartOverlay } from './StartOverlay'
+import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
-import { WhySignInDialog } from './WhySignInDialog'
 import { useCurrentSession } from './useCurrentSession'
 import { useSavedVoices } from './useSavedVoices'
 import { suggestVoiceName, type SavedVoice } from './voiceModel'
-import styles from './App.module.css'
-import { Tip } from './Tip'
-import { POOLS, detailsUrl } from '../engine/archive'
-import { YOURS } from '../dsp/stages/roms'
+import { WhySignInDialog } from './WhySignInDialog'
 
 // Where a keypress belongs to the control rather than to the board.
 const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])

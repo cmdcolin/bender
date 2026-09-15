@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
+
 import { App } from './App'
 import { PITCH } from './whySignIn'
 import './testDom'

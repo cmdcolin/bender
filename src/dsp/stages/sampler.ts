@@ -1,10 +1,11 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import { octaves } from '../util/pitch'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus'
 import { Transient } from '../util/follower'
+import { octaves } from '../util/pitch'
 import { softclip } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Past the voices and the whole kit, the two lines that aren't the kit at all.
 // The offsets are the tail of sampleTrig's own choices, which is a different

@@ -1,5 +1,5 @@
-import { useControlValue } from './ControlsContext'
 import { sliderFor } from './controls'
+import { useControlValue } from './ControlsContext'
 import { ControlSlider } from './Slider'
 import styles from './TriggerPatch.module.css'
 

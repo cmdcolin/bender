@@ -1,8 +1,9 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { octaves, wrap1 } from '../util/pitch'
 import { flushDenormal } from '../util/softclip'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // The rail A gives up at, and the rail it will start again on.
 //

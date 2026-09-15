@@ -1,5 +1,6 @@
 import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo'
 import { HEAD_CHOICES } from '../../dsp/stages/tapeDelay'
+
 import type { Group } from './types'
 
 export const PEDAL_GROUPS: Group[] = [

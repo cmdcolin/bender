@@ -1,4 +1,10 @@
-import type { Controls } from '../../controls'
+import {
+  ADDR_LINES,
+  DATA_LINES,
+  GRID_ROWS,
+  N_DRUM_VOICES,
+  VOICE_LABELS,
+} from '../../drums'
 import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import {
@@ -15,17 +21,12 @@ import {
   YOURS,
 } from '../../dsp/stages/roms'
 import { ARP_MODES, SYNC_MODES } from '../../dsp/stages/toyChip'
+import { CHOKE_NAMES } from '../../dsp/stages/toyDrum'
 import { NOTE_NAMES } from '../../notes'
 import { SCALE_NAMES } from '../../scale'
-import {
-  ADDR_LINES,
-  DATA_LINES,
-  GRID_ROWS,
-  N_DRUM_VOICES,
-  VOICE_LABELS,
-} from '../../drums'
-import { CHOKE_NAMES } from '../../dsp/stages/toyDrum'
 import { TUNE_ALL_STEP_KEYS } from '../../tune'
+
+import type { Controls } from '../../controls'
 
 /** True while the chip is playing the memory rather than one of its own songs. */
 const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS

@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
+
 import { engine } from '../engine/engine'
 import { TAP_BUS } from '../engine/params'
 import { CHANNELS, sliderFor } from './controls'
-import { ControlSlider } from './Slider'
 import styles from './Mixer.module.css'
+import { ControlSlider } from './Slider'
 import { Tip } from './Tip'
 
 // Where a channel doing nothing at all sits on the bar. A fader is linear and

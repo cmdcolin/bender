@@ -1,7 +1,7 @@
 import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
-import { SLIDER_BY_KEY, snapToStep } from './controls'
 import { asLen, asMask, LEN_KEYS } from '../drums'
 import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune'
+import { SLIDER_BY_KEY, snapToStep } from './controls'
 
 // The short form of a board: the same controls the long form names, written as
 // bytes instead of words. A dice roll is 433 characters by name and 92 packed,

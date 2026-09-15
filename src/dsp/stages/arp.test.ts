@@ -1,8 +1,10 @@
 import { expect, test } from 'vitest'
-import type { Controls } from '../../controls'
+
 import { envelope, render, renderBender, rms, SR } from '../testRender'
-import { ARP_MODES, ToyChip } from './toyChip'
 import { YOURS } from './roms'
+import { ARP_MODES, ToyChip } from './toyChip'
+
+import type { Controls } from '../../controls'
 
 // The arpeggiator is the chip's own counter walking your hand instead of the
 // ROM, so what has to hold is that it is *that* counter: the figure runs at the

@@ -1,9 +1,10 @@
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { bin, renderBender, sine } from './testRender'
 import { packParams } from '../engine/params'
 import { buildChain, type BuiltChain } from './build'
 import { BLOCK, type StereoBlock } from './stage'
+import { bin, renderBender, sine } from './testRender'
 
 const SR = 48000
 

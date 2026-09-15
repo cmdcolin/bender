@@ -1,9 +1,11 @@
 import { expect, test } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { renderFeatures } from './features'
+
+import { DEFAULT_CONTROLS, type ControlKey } from '../src/controls'
 import { PRESETS } from '../src/ui/presets/table'
 import { boardFromUrl, boardHash } from '../src/ui/share'
-import { DEFAULT_CONTROLS, type ControlKey } from '../src/controls'
+import { renderFeatures } from './features'
+
+import { readFileSync } from 'node:fs'
 
 // The inventory is generated because a hand-written one drifts, and this is the
 // half that makes that true: adding a control, a preset or a ROM without

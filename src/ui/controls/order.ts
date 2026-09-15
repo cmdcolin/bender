@@ -1,6 +1,7 @@
-import type { ControlKey } from '../../controls'
 import { PEDAL_ORDER_NAMES, PEDAL_ORDERS } from '../../pedals'
 import { BENDS, BEND_SLOT_KEYS } from './bends'
+
+import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
 // One door for both runs that are yours to order: the six positions the bends

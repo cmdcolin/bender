@@ -1,9 +1,10 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
-import type { Ctx, Stage, StereoBlock } from '../stage'
 import { Burst } from '../util/burst'
 import { Transient } from '../util/follower'
 import { mulberry32, type Rng } from '../util/rng'
+
+import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Rolling record buffer with probabilistic stutter/reverse/repitch replay of
 // the last slice — the broken CD player.

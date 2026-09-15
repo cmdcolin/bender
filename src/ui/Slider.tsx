@@ -7,6 +7,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react'
+
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import {
@@ -19,18 +20,19 @@ import {
   unsolderLane,
   wireKeys,
 } from './bayWire'
+import { choiceName, sliderFor, snapToStep } from './controls'
 import {
   useBoardValue,
   useControlValue,
   useStoreValue,
 } from './ControlsContext'
-import type { SliderDef } from './controls'
-import { choiceName, sliderFor, snapToStep } from './controls'
 import { midi } from './midi'
 import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
-import { tapRun, tapValue } from './tap'
 import styles from './Slider.module.css'
+import { tapRun, tapValue } from './tap'
 import { Tip, type TipHandle } from './Tip'
+
+import type { SliderDef } from './controls'
 
 // A discrete write is its own step in the undo walk: arm one, take it. A drag
 // arms on the way down instead, so the whole sweep banks a single step — see

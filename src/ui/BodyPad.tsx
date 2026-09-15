@@ -1,9 +1,10 @@
 import { useState, type PointerEvent } from 'react'
+
 import { engine } from '../engine/engine'
-import { useBoardValue, useControlValue } from './ControlsContext'
-import { groupFor, sliderFor } from './controls'
-import { Tip } from './Tip'
 import styles from './BodyPad.module.css'
+import { groupFor, sliderFor } from './controls'
+import { useBoardValue, useControlValue } from './ControlsContext'
+import { Tip } from './Tip'
 
 const DEST_LABELS = sliderFor('mod0Dest').choices ?? []
 const PATCH_BAY = groupFor('mod0Src')

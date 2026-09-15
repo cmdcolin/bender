@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { BANDS, spectrum } from './spectrum'
 import { sine, SR } from './testRender'
 import { mulberry32 } from './util/rng'

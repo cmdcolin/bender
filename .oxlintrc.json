@@ -1,0 +1,19 @@
+{
+  // CROSS_REPO_SYNC(oxlint-root)
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": ["./oxlint.shared.json"],
+  // Type-aware linting is a root-config option, so it stays here.
+  "options": {
+    "typeAware": true
+  },
+  // `.claude/worktrees/` holds `git worktree` copies — full checkouts with their
+  // own `src/` and their own `.oxlintrc.json`. A nested config is an error here
+  // ("typeAware is only supported in the root config"), so a worktree someone
+  // else is working in takes `pnpm lint` down in a checkout that is itself
+  // clean. `vitest.config.ts` excludes the same path from vitest, for the same
+  // reason and with the same blast radius.
+  "ignorePatterns": ["dist", "scripts", "**/*.mjs", ".claude"],
+  // CROSS_REPO_SYNC_END(oxlint-root)
+  // Rules only bender needs. Everything shared is in oxlint.shared.json.
+  "overrides": []
+}

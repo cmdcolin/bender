@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest'
+
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
+import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune'
 import { buildBender, buildChain, type BuiltChain } from '../build'
 import { BLOCK } from '../stage'
 import {
@@ -14,9 +16,8 @@ import {
   SR,
   tail,
 } from '../testRender'
-import { ToyChip } from './toyChip'
 import { YOURS } from './roms'
-import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune'
+import { ToyChip } from './toyChip'
 
 // A memory written out as the controls that carry it. Anything not named is a
 // step with nothing on it.

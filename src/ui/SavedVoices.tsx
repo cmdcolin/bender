@@ -1,11 +1,13 @@
 import { useState } from 'react'
+
 import { Menu } from './Menu'
+import styles from './SavedVoices.module.css'
 import { Tip } from './Tip'
 import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel'
-import styles from './SavedVoices.module.css'
+
 import type { CloudUser } from './cloud'
-import type { SavedVoice } from './voiceModel'
 import type { CloudStatus, VoiceFlash } from './useSavedVoices'
+import type { SavedVoice } from './voiceModel'
 
 // The voice library, and the account it lives on: one button in the panel's
 // chrome, beside the nameplate and the MIDI drawer. A synth's save and recall,
