@@ -3,10 +3,116 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bender</title>
+    <title>bender — a circuit bender in the browser</title>
+    <meta
+      name="description"
+      content="A toy keyboard, a drum machine and an FM chip, bent in the browser. Every board is a link."
+    />
+    <!-- Every board bender has ever shared is a link to this page carrying a
+         hash, and for a while some carried `?set=` instead. The app moved to
+         /app/, so this runs before anything else on the page loads and hands
+         the board straight on rather than opening a homepage over it. -->
+    <script>
+      if (
+        location.hash !== '' ||
+        new URLSearchParams(location.search).has('set')
+      )
+        location.replace('./app/' + location.search + location.hash)
+    </script>
+    <script type="module" src="/src/home/main.ts"></script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <header class="bar">
+      <div class="barIn">
+        <a class="brand" href="./">bender</a>
+        <nav class="barNav" aria-label="Site">
+          <a
+            href="https://github.com/cmdcolin/bender/blob/main/docs/USER-GUIDE.md"
+            >User guide</a
+          >
+          <a href="https://github.com/cmdcolin/bender">Source</a>
+        </nav>
+        <div class="barEnd">
+          <button class="btn" id="signIn" type="button">
+            <svg
+              class="ico"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="8" r="3.6"></circle>
+              <path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"></path>
+            </svg>
+            Sign in
+          </button>
+          <div class="acct" id="acct" hidden>
+            <button
+              class="acctBtn"
+              id="acctBtn"
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded="false"
+            >
+              <span class="avatar" id="avatar"></span>
+            </button>
+            <div class="acctMenu" id="acctMenu" role="menu" hidden>
+              <p class="acctName" id="acctName"></p>
+              <button
+                class="acctOut"
+                id="signOut"
+                type="button"
+                role="menuitem"
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+          <a class="btn primary" href="./app/">Open the app →</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap" id="landing">
+      <h1 class="head">Bend a toy keyboard that cannot break</h1>
+      <p class="pitch">
+        A toy keyboard, a drum machine and a small FM chip, wired up in the
+        browser and open to a screwdriver: starve the supply until the chip
+        reboots, solder a bend spot, bridge the trigger pins, and run the whole
+        thing through tape delay, reverb and distortion. You work it from the
+        signal path diagram rather than a wall of sliders, and every board it
+        makes is a link you can send.
+      </p>
+      <figure class="figure">
+        <img
+          src="./panel-callout.jpg"
+          width="1600"
+          height="900"
+          alt="The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run"
+        />
+      </figure>
+      <p class="cta">
+        <a class="btn primary big" href="./app/">Open the app →</a>
+        <a
+          class="btn big"
+          href="https://github.com/cmdcolin/bender/blob/main/docs/GETTING-STARTED.md"
+          >Getting started</a
+        >
+      </p>
+      <p class="dim">
+        Sign in to keep voices under a name and pick a session up on another
+        machine. Everything else works signed out.
+      </p>
+      <section class="sec" id="presets">
+        <h2 class="secHead">Presets</h2>
+        <p class="secSub">Open one and the board arrives set up that way.</p>
+        <ul class="grid" id="presetGrid"></ul>
+      </section>
+    </main>
+
+    <div id="home" hidden></div>
   </body>
 </html>

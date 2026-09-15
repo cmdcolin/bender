@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process'
+import { resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defaultExclude, defineConfig } from 'vitest/config'
 import pkg from './package.json' with { type: 'json' }
@@ -14,6 +15,17 @@ function gitSha() {
 export default defineConfig({
   base: './',
   plugins: [react()],
+  // Two pages. `/` is the homepage — static markup plus one module, and no
+  // React — and the app it links to lives at `/app/`. Relative base throughout,
+  // so a page one directory down finds the same assets.
+  build: {
+    rollupOptions: {
+      input: {
+        home: resolve(import.meta.dirname, 'index.html'),
+        app: resolve(import.meta.dirname, 'app/index.html'),
+      },
+    },
+  },
   worker: { format: 'es' },
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),

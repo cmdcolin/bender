@@ -1,0 +1,435 @@
+/* The page at `/`, in both of its states. Theme tokens only — the homepage and
+   the panel are the same instrument, and a landing page with colours of its own
+   would say otherwise. */
+
+body {
+  min-height: 100%;
+  height: auto;
+  line-height: 1.55;
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 56px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border-quiet);
+}
+
+.barIn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.brand {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.barNav {
+  display: flex;
+  gap: 14px;
+  margin-right: auto;
+  font-size: var(--fs-sm);
+}
+
+.barNav a {
+  color: var(--fg3);
+  text-decoration: none;
+}
+
+.barNav a:hover {
+  color: var(--fg);
+}
+
+.barEnd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: 6px 12px;
+  background: var(--bg3);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+.btn:disabled {
+  color: var(--fg4);
+  cursor: default;
+}
+
+/* The one thing the page is for. Filled in the accent, and there is exactly one
+   kind of it. */
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #2a0d04;
+}
+
+.primary:hover {
+  color: #2a0d04;
+  border-color: var(--accent2);
+  background: var(--accent2);
+}
+
+.big {
+  font-size: var(--fs-lg);
+  padding: 9px 16px;
+}
+
+.ico {
+  width: 15px;
+  height: 15px;
+}
+
+/* --- the account end ----------------------------------------------------- */
+
+.acct {
+  position: relative;
+}
+
+.acctBtn {
+  display: block;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--bg3);
+  color: var(--fg2);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+
+.avatar img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.acctMenu {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  min-width: 170px;
+  padding: 6px;
+  background: var(--bg2);
+  border: 1px solid var(--border-hover);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px #0009;
+}
+
+.acctName {
+  margin: 0 0 4px;
+  padding: 2px 6px;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.acctOut {
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  padding: 4px 6px;
+  background: none;
+  color: var(--fg2);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.acctOut:hover {
+  background: var(--bg3);
+  color: var(--fg);
+}
+
+/* --- the landing page ---------------------------------------------------- */
+
+.wrap {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+}
+
+.head {
+  margin: 0 0 14px;
+  font-size: clamp(26px, 5vw, 40px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.pitch {
+  max-width: 46rem;
+  margin: 0 0 24px;
+  font-size: var(--fs-lg);
+  color: var(--fg2);
+}
+
+.figure {
+  margin: 0 0 24px;
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.dim {
+  margin: 0;
+  max-width: 46rem;
+  font-size: var(--fs-sm);
+  color: var(--fg3);
+}
+
+/* --- sections and the card grid ------------------------------------------ */
+
+.sec {
+  margin-top: 44px;
+  scroll-margin-top: 72px;
+}
+
+.secHead {
+  margin: 0 0 4px;
+  font-size: var(--fs-xl);
+}
+
+.secSub {
+  margin: 0 0 16px;
+  font-size: var(--fs-sm);
+  color: var(--fg3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* The bars are the card's only picture, so they carry the card's colour rather
+   than the accent: a grid of a dozen all shouting is a grid you cannot read. */
+.mark {
+  width: 70px;
+  height: 24px;
+  fill: var(--fg4);
+}
+
+.card:hover .mark {
+  fill: var(--accent);
+}
+
+.open {
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.card:hover .open {
+  color: var(--accent);
+}
+
+.cardName {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.says {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}
+
+/* --- the signed-in home -------------------------------------------------- */
+
+.homeIn {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 28px;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: start;
+  position: sticky;
+  top: 72px;
+  font-size: var(--fs-sm);
+}
+
+.rail a {
+  padding: 4px 8px;
+  border-radius: 3px;
+  color: var(--fg3);
+  text-decoration: none;
+}
+
+.rail a:hover {
+  background: var(--bg2);
+  color: var(--fg);
+}
+
+.rail .on {
+  color: var(--fg);
+  background: var(--bg2);
+}
+
+.homeMain .sec:first-child {
+  margin-top: 0;
+}
+
+.resumeCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
+}
+
+.resumeCard .mark {
+  flex: none;
+  width: 90px;
+  height: 32px;
+  fill: var(--fg4);
+}
+
+.resumeBody {
+  min-width: 0;
+}
+
+.when {
+  margin: 0 0 2px;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.resumeBody .says {
+  margin-bottom: 10px;
+}
+
+.empty {
+  padding: 24px;
+  background: var(--bg2);
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+}
+
+.emptyHead {
+  margin: 0 0 6px;
+  font-size: var(--fs-lg);
+}
+
+.empty .says {
+  max-width: 36rem;
+  margin-bottom: 14px;
+  font-size: var(--fs-sm);
+}
+
+/* A rail down the side wants a column to itself, and under 52rem there is not
+   one: it lies down over the page instead and the sections take the width. */
+@media (max-width: 52rem) {
+  .homeIn {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .rail {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 34rem) {
+  .barNav {
+    display: none;
+  }
+
+  .resumeCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
