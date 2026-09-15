@@ -63,11 +63,11 @@ const BLURBS: Record<string, string> = {
   Stompbox:
     'Each circuit is its own model rather than one circuit with a knob on it. *Screamer* clips inside the feedback loop so the dry note walks under it; *rat* clips to ground behind a slew-limited op-amp; *muff* is two clipping stages and a scooped tone stack; *germanium* is the lopsided one, riding its bias down on the signal; *octave* rectifies into a ringing transformer; *gate* is misbiased to the edge of cutoff.',
   'Tape delay':
-    'The capstan is a real motor: it has weight, it answers the brake slowly, and *Supply drag* wires it to the same dying rail as the toy, so the repeats dive in pitch as the board browns out.',
+    'The capstan is a real motor: it has weight, it answers the brake slowly, and *Supply drag* wires it to the same dying rail as the toy, so the repeats dive in pitch as the board browns out. The tape is a five-second loop joined once: *Splice* is how bad the join is, and *Erase* how much of the last lap the erase head lets through under the new one.',
   'Delay pedal':
-    'The normal box on a board of abused ones, and the one thing here that behaves. *Standard* moves its time by crossing between two read heads rather than dragging one, so the repeats already in the buffer keep their pitch while your hand is on the knob — the whole difference between this and the tape machine next to it. *Analog* is a bucket brigade whose clock sets the delay and the bandwidth together, so long is muddy by construction and the compander breathes behind the repeats. *Reverse* plays each window backwards, relocking at the seam.',
+    'The normal box on a board of abused ones, and the one thing here that behaves. *Standard* moves its time by crossing between two read heads rather than dragging one, so the repeats already in the buffer keep their pitch while your hand is on the knob — the whole difference between this and the tape machine next to it. *Analog* is a bucket brigade whose clock sets the delay and the bandwidth together — and the line really is clocked, so past a second the repeats turn to grit before they turn to mud, the clock itself whistles through, and the compander breathes behind it all. *Reverse* plays each window backwards, relocking at the seam.',
   'Spring verb':
-    'Dispersive allpass cascade into short parallel combs — metallic, boingy, deliberately cheap.',
+    'Dispersive allpass cascade into short parallel combs — metallic, boingy, deliberately cheap. The springs can only swing so far before they meet the box, and *Kick* is how easily they are thrown against it: a slam at the input or a hit from the kit crashes the tank, the sound of kicking the amp.',
   'Patch bay':
     'Wires, each from a source to a destination at a signed depth. A wire can land on the toy’s supply rail, on the sampler’s capstan and loop markers, or on another wire’s depth — which is how the bay modulates itself.',
   'Trigger patch':

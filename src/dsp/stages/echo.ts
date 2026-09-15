@@ -4,7 +4,7 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 import { DelayLine } from '../util/delayline'
 import { Follower, coef as timeCoef } from '../util/follower'
 import { SineOsc } from '../util/lfo'
-import { OnePoleLP, lpCoef } from '../util/onepole'
+import { Lowpass, OnePoleLP, lpCoef } from '../util/onepole'
 import { octaves } from '../util/pitch'
 import { gaussian, mulberry32, type Rng } from '../util/rng'
 import { softclip } from '../util/softclip'
@@ -24,13 +24,17 @@ const MAX_MS = 2000
 const HEADROOM = 1.2
 // Two 4096-stage chips in series, which is how a bucket brigade gets past a
 // third of a second. The clock has to walk the charge through all of them
-// inside the delay time, so a long setting is a slow clock, and the filters
-// either side of the line sit a third of the way to it: the delay time is the
-// bandwidth, on the same knob, and that is the whole of why an analog delay
-// goes muddy as it gets longer. Two poles, because one is a tone control and
-// what a bucket brigade has is a wall — it has to be, or the clock comes back
-// through the line as a whistle.
+// inside the delay time, so a long setting is a slow clock — and the line
+// really is clocked here: the input is sampled once a tick and held, so
+// anything above half the clock folds back down into the band rather than
+// disappearing. The filters either side of the line sit a fraction of the way
+// to the clock, two poles each, which is what the pedals had: enough to keep
+// the fold quiet at a third of a second and nowhere near enough past a second,
+// where a bucket brigade turns to grit before it turns to mud. What the filter
+// cannot stop of the clock itself comes through as a whistle, dropping into
+// earshot as the time goes up.
 const BBD_STAGES = 8192
+const WHINE = 0.004
 const MOD_HZ = 0.7
 const MOD_MS = 6
 
@@ -45,10 +49,14 @@ export class Echo implements Stage {
   private lineR: DelayLine
   private toneL = new OnePoleLP()
   private toneR = new OnePoleLP()
-  private bbdL1 = new OnePoleLP()
-  private bbdL2 = new OnePoleLP()
-  private bbdR1 = new OnePoleLP()
-  private bbdR2 = new OnePoleLP()
+  private preL = new Lowpass(2)
+  private preR = new Lowpass(2)
+  private postL = new Lowpass(2)
+  private postR = new Lowpass(2)
+  private clock = 0
+  private heldL = 0
+  private heldR = 0
+  private whine = new SineOsc()
   private lfo = new SineOsc()
   private comp = new Follower()
   private noise: Rng
@@ -103,18 +111,23 @@ export class Echo implements Stage {
     const envA = timeCoef(0.01, this.sr)
     const envR = timeCoef(0.25, this.sr)
 
-    const standard = mode === ECHO_MODE.standard
     const reverse = mode === ECHO_MODE.reverse
     const bbd = mode === ECHO_MODE.analog
+    // The two digital modes cross heads; the brigade has a clock to walk.
+    const crosses = !reverse && !bbd
     const wobble =
       mode === ECHO_MODE.modulate
         ? p[IDX.echoMod]! * (MOD_MS / 1000) * this.sr
         : 0
-    const bbdCoef = lpCoef(
-      Math.min(Math.max((BBD_STAGES * this.sr) / (6 * target), 600), 14000),
+    const clockHz = (BBD_STAGES * this.sr) / target
+    const preCoef = lpCoef(Math.min(Math.max(clockHz / 3, 600), 14000), this.sr)
+    const postCoef = lpCoef(
+      Math.min(Math.max(clockHz / 4, 600), 14000),
       this.sr,
     )
-    if (standard && this.fade >= 1 && Math.abs(target - this.cur) > 8) {
+    const whineK = SineOsc.rate(clockHz, this.sr)
+    const whine = WHINE * Math.min(Math.max((16000 - clockHz) / 12000, 0), 1)
+    if (crosses && this.fade >= 1 && Math.abs(target - this.cur) > 8) {
       this.next = target
       this.fade = 0
     }
@@ -156,7 +169,7 @@ export class Echo implements Stage {
           }
         }
         const v = wobble ? wobble * this.lfo.step(lfoK) : 0
-        const base = standard ? this.cur : this.glide
+        const base = crosses ? this.cur : this.glide
         const dl = this.tap(base + v, bend)
         const dr = this.tap(base - v, bend)
         tapL = this.lineL.readHermite(dl)
@@ -176,8 +189,9 @@ export class Echo implements Stage {
       tapL = this.toneL.process(tapL, toneCoef)
       tapR = this.toneR.process(tapR, toneCoef)
       if (bbd) {
-        tapL = this.bbdL2.process(this.bbdL1.process(tapL, bbdCoef), bbdCoef)
-        tapR = this.bbdR2.process(this.bbdR1.process(tapR, bbdCoef), bbdCoef)
+        const w = whine * this.whine.step(whineK)
+        tapL = this.postL.process(tapL, postCoef) + w
+        tapR = this.postR.process(tapR, postCoef) + w
       }
 
       let wl = io.l[i]! + fb * tapL
@@ -187,8 +201,22 @@ export class Echo implements Stage {
         // behind it — a bucket brigade breathes rather than hisses evenly.
         const quiet = 1 - Math.min(this.comp.process(wl, envA, envR), 1)
         const hiss = 0.004 * (0.2 + 0.8 * quiet)
-        wl = softclip(1.5 * (wl + hiss * this.noise())) * 0.7
-        wr = softclip(1.5 * (wr + hiss * this.noise())) * 0.7
+        wl = this.preL.process(
+          softclip(1.5 * (wl + hiss * this.noise())) * 0.7,
+          preCoef,
+        )
+        wr = this.preR.process(
+          softclip(1.5 * (wr + hiss * this.noise())) * 0.7,
+          preCoef,
+        )
+        this.clock += BBD_STAGES / this.glide
+        if (this.clock >= 1) {
+          this.clock -= Math.floor(this.clock)
+          this.heldL = wl
+          this.heldR = wr
+        }
+        wl = this.heldL
+        wr = this.heldR
       } else {
         wl = Math.min(Math.max(wl, -HEADROOM), HEADROOM)
         wr = Math.min(Math.max(wr, -HEADROOM), HEADROOM)
@@ -209,10 +237,14 @@ export class Echo implements Stage {
     this.lineR.reset()
     this.toneL.reset()
     this.toneR.reset()
-    this.bbdL1.reset()
-    this.bbdL2.reset()
-    this.bbdR1.reset()
-    this.bbdR2.reset()
+    this.preL.reset()
+    this.preR.reset()
+    this.postL.reset()
+    this.postR.reset()
+    this.clock = 0
+    this.heldL = 0
+    this.heldR = 0
+    this.whine.reset()
     this.lfo.reset()
     this.comp.reset()
     this.primed = false

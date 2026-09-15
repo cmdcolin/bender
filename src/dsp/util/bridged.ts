@@ -15,7 +15,7 @@ const KNEE = 1.4
 const CEILING = 2.2
 const OVER = CEILING - KNEE
 
-const rail = (x: number): number => {
+export const rail = (x: number): number => {
   const a = Math.abs(x)
   if (a <= KNEE) return x
   const y = KNEE + OVER * softclip((a - KNEE) / OVER)

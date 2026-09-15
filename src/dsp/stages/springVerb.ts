@@ -1,14 +1,25 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
+import { rail } from '../util/bridged'
+import { Transient } from '../util/follower'
 import { lpCoef } from '../util/onepole'
+import { mulberry32, type Rng } from '../util/rng'
 
-const AP_MS = [4.7, 8.3, 11.9]
+// Six allpasses rather than three: the chirp is how far the low end lags the
+// top through the chain, and three stages was a drip where a spring is a boing.
+const AP_MS = [1.7, 2.9, 4.7, 6.3, 8.3, 11.9]
 const COMB_MS = [31, 37, 41, 43]
 const N_AP = AP_MS.length
 const N_COMB = COMB_MS.length
 
 const ringSize = (n: number) => 1 << Math.ceil(Math.log2(Math.max(n, 2)))
+
+// A crash: the springs thrown against the housing. What comes off them is a
+// clatter that lasts about this long and falls about this fast, and it goes in
+// at the top of the chain so it disperses like anything else that hits a spring.
+const CRASH_S = 0.05
+const CRASH_AMP = 2.5
 
 // One channel's tank, as flat memory rather than a graph of objects.
 //
@@ -75,7 +86,10 @@ class Tank {
       // is one of the places the denormal guard actually earns its compare
       const y = this.damp[j]! + dampCoef * (d - this.damp[j]!)
       this.damp[j] = Math.abs(y) < 1e-15 ? 0 : y
-      buf[o + pos[k]!] = x + fb[j]! * y
+      // A spring can only swing so far before it meets the box it is in, and
+      // rail is transparent under that: how long the tank rings stays the
+      // damping's business, and only a crash reaches the wall.
+      buf[o + pos[k]!] = rail(x + fb[j]! * y)
       pos[k] = (pos[k]! + 1) & m
       wet += d
     }
@@ -97,8 +111,15 @@ export class SpringVerb implements Stage {
   private tankR: Tank
   private readonly fbL = new Float64Array(N_COMB)
   private readonly fbR = new Float64Array(N_COMB)
+  private readonly slam: Transient
+  private readonly noise: Rng
+  private crashEnv = 0
+  private readonly crashFall: number
 
   constructor(private readonly sr: number) {
+    this.slam = new Transient(sr)
+    this.noise = mulberry32(0x5c4a)
+    this.crashFall = Math.exp(-1 / (CRASH_S * sr))
     const ms = (x: number) => (x / 1000) * sr
     this.tankL = new Tank([...AP_MS.map(ms), ...COMB_MS.map(ms)], sr)
     this.tankR = new Tank(
@@ -146,9 +167,29 @@ export class SpringVerb implements Stage {
     // construction, damped per comb and dispersed before that, so the trade read
     // as the board going dull rather than as more room.
     const dry = 1 - p[IDX.revDryCut]!
+    const kick = p[IDX.revKick]!
+    // What it takes to throw the springs: a slam at the input past this, or a
+    // hit on the kit's trigger line that lands this hard, scaled by the knob.
+    // The trigger line is a wire, so the kit kicks the amp however quiet it is.
+    const slamAt = 0.03 + 1.5 * (1 - kick) * (1 - kick)
+    const hitAt = 1.7 - 1.5 * kick
+    const trig = ctx.trig
     for (let i = 0; i < io.n; i++) {
-      const wl = this.tankL.step(l[i]!, boing, fbL, dampCoef)
-      const wr = this.tankR.step(r[i]!, boing, fbR, dampCoef)
+      let inL = l[i]!
+      let inR = r[i]!
+      if (kick > 0) {
+        const slammed = this.slam.process(0.5 * (inL + inR), slamAt)
+        const hit = trig.drumBits[i]! !== 0 && trig.drumGain[i]! >= hitAt
+        if (slammed || hit) this.crashEnv = 1
+      }
+      if (this.crashEnv > 1e-4) {
+        this.crashEnv *= this.crashFall
+        const a = CRASH_AMP * this.crashEnv
+        inL += a * (this.noise() - 0.5)
+        inR += a * (this.noise() - 0.5)
+      }
+      const wl = this.tankL.step(inL, boing, fbL, dampCoef)
+      const wr = this.tankR.step(inR, boing, fbR, dampCoef)
       l[i] = l[i]! * dry + wl * wetGain
       r[i] = r[i]! * dry + wr * wetGain
     }
@@ -157,5 +198,7 @@ export class SpringVerb implements Stage {
   panic() {
     this.tankL.reset()
     this.tankR.reset()
+    this.slam.reset()
+    this.crashEnv = 0
   }
 }

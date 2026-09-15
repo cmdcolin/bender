@@ -130,3 +130,36 @@ test('a runaway loop stays bounded', () => {
   expect(Number.isFinite(rms(out))).toBe(true)
   expect(out.reduce((a, v) => Math.max(a, Math.abs(v)), 0)).toBeLessThan(1.1)
 })
+
+// A second and a half of delay is a clock under six kilohertz, so a tone above
+// half of that has nowhere to go but back down: it comes off the line folded
+// about the clock, at a pitch the box was never given.
+test('the analog mode folds what is above half its clock back into the band', () => {
+  const clockHz = (8192 * SR) / (1.5 * SR)
+  const src = (b: BuiltChain) => b.sampler.setBuffer(sine(3500, 1))
+  const at = (mode: number) =>
+    bin(
+      tail(
+        renderBender({ ...look, echoMode: mode, echoMs: 1500 }, 3, src),
+        1.2,
+      ),
+      clockHz - 3500,
+    )
+  expect(at(ECHO_MODE.analog)).toBeGreaterThan(5 * at(ECHO_MODE.standard))
+})
+
+test('the clock whistles through once the time is long enough to hear it', () => {
+  const clockHz = (8192 * SR) / (1.5 * SR)
+  const quiet: Partial<Controls> = {
+    chipLevel: 0,
+    echoLevel: 1,
+    echoMode: ECHO_MODE.analog,
+    echoMs: 1500,
+  }
+  const out = tail(renderBender(quiet, 1))
+  expect(bin(out, clockHz)).toBeGreaterThan(10 * bin(out, clockHz * 0.8))
+  const short = tail(renderBender({ ...quiet, echoMs: 200 }, 1))
+  expect(bin(short, (8192 * SR) / (0.2 * SR))).toBeLessThan(
+    0.1 * bin(out, clockHz),
+  )
+})

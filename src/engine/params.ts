@@ -326,6 +326,8 @@ export const PARAM_DEFS = [
   ['dlyToneHz', 'slew'],
   ['tapeBrake', 'slew'],
   ['tapeMotorRail', 'slew'],
+  ['dlySplice', 'slew'],
+  ['dlyErase', 'slew'],
   ['dlyMix', 'slew'],
 
   ['echoMode', 'step'],
@@ -338,6 +340,7 @@ export const PARAM_DEFS = [
   ['revDecayS', 'slew'],
   ['revToneHz', 'slew'],
   ['revBoing', 'slew'],
+  ['revKick', 'slew'],
   ['revMix', 'slew'],
   ['revDryCut', 'slew'],
 

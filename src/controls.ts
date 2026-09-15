@@ -341,6 +341,8 @@ export const DEFAULT_CONTROLS = {
   dlyToneHz: 6000,
   tapeBrake: 0,
   tapeMotorRail: 0,
+  dlySplice: 0,
+  dlyErase: 0,
   dlyMix: 0,
 
   echoMode: 0,
@@ -353,6 +355,7 @@ export const DEFAULT_CONTROLS = {
   revDecayS: 2,
   revToneHz: 4000,
   revBoing: 0.5,
+  revKick: 0,
   revMix: 0,
   revDryCut: 0,
 

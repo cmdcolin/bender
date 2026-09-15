@@ -2,17 +2,29 @@ import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import type { Ctx, Stage, StereoBlock } from '../stage'
 import { octaves } from '../util/pitch'
-import { DelayLine } from '../util/delayline'
+import { DelayLine, fixedTap } from '../util/delayline'
 import { coef as timeCoef } from '../util/follower'
 import { SineOsc } from '../util/lfo'
 import { OnePoleLP, lpCoef } from '../util/onepole'
 import { flushDenormal, softclip } from '../util/softclip'
 import { mulberry32, type Rng } from '../util/rng'
 
+// The reel is a loop, joined once. How long the join is past the heads, and
+// how much of it is tape with no oxide on it.
+const GAP_MS = 12
+const THUMP = 0.5
+
 // Fractional delay with wow/flutter transport wobble and a saturating
 // feedback loop that runs away musically past unity. The capstan is a real
 // motor: it has weight, it answers the brake, and it can be wired to the same
 // dying supply as the toy.
+//
+// The buffer is the tape, and the tape is a loop: what the record head lays
+// down comes back round to it one revolution later, where the erase head is
+// meant to wipe it before the new take goes on. An erase head that misses lets
+// the last lap through underneath, and the splice that closes the loop is a
+// gap in the oxide that goes past both heads once a lap — recorded as a gap,
+// so the play head finds it however slowly the transport is dragging.
 export class TapeDelay implements Stage {
   label = 'tapeDelay'
   private lineL: DelayLine
@@ -23,7 +35,11 @@ export class TapeDelay implements Stage {
   private flutterWalk = 0
   private motor = 1
   private slide = 0
+  private spliceIn = 0
+  private gapLeft = 0
   private readonly maxDelay: number
+  private readonly loop: number
+  private readonly gap: number
   private rng: Rng
 
   constructor(
@@ -34,6 +50,8 @@ export class TapeDelay implements Stage {
     // this is the same buffer 4.5 s asked for — the last second of it was
     // allocated either way and simply wasn't reachable.
     this.maxDelay = 5.3 * sr
+    this.loop = Math.floor(this.maxDelay)
+    this.gap = Math.floor((GAP_MS / 1000) * sr)
     this.lineL = new DelayLine(this.maxDelay + 4)
     this.lineR = new DelayLine(this.maxDelay + 4)
     this.rng = mulberry32(seed)
@@ -55,6 +73,9 @@ export class TapeDelay implements Stage {
     const fbInject = ctx.fbDest === 3
     const brake = p[IDX.tapeBrake]!
     const railDrag = p[IDX.tapeMotorRail]!
+    const splice = p[IDX.dlySplice]!
+    const erase = p[IDX.dlyErase]!
+    const lap = fixedTap(this.loop, this.maxDelay)
     const modSpeed = ctx.mod.read(DEST.tapeSpeed)
     // Two ways to move the repeats, and they don't sound alike: the motor has
     // weight, so a wire on the speed dives in pitch on its way there, while a
@@ -107,6 +128,22 @@ export class TapeDelay implements Stage {
         wl += ctx.fb[i]!
         wr += ctx.fb[i]!
       }
+      if (erase > 0) {
+        wl += softclip(erase * this.lineL.readAt(lap.whole, lap.frac))
+        wr += softclip(erase * this.lineR.readAt(lap.whole, lap.frac))
+      }
+      if (splice > 0) {
+        if (++this.spliceIn >= this.loop) {
+          this.spliceIn = 0
+          this.gapLeft = this.gap
+        }
+        if (this.gapLeft > 0) {
+          this.gapLeft--
+          const bump = THUMP * Math.sin((Math.PI * this.gapLeft) / this.gap)
+          wl += splice * (bump - wl)
+          wr += splice * (bump - wr)
+        }
+      }
       this.lineL.write(wl)
       this.lineR.write(wr)
       // The echo returns on its own fader, the way it does off a send: the dry
@@ -125,5 +162,7 @@ export class TapeDelay implements Stage {
     this.flutterWalk = 0
     this.motor = 1
     this.slide = 0
+    this.spliceIn = 0
+    this.gapLeft = 0
   }
 }

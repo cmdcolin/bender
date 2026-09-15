@@ -906,6 +906,47 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'clock whine',
+    blurb:
+      'A bucket brigade clocked too slow to hide it — grit, fold and whistle',
+    patch: {
+      chipLevel: 0.8,
+      echoMode: 1,
+      echoLevel: 0.7,
+      echoMs: 1400,
+      echoFb: 0.8,
+      echoToneHz: 12000,
+    },
+  },
+  {
+    name: 'spliced reel',
+    blurb:
+      'A loop joined badly and an erase head that gave up — the last lap bleeds through',
+    patch: {
+      chipLevel: 0.7,
+      chipAccomp: 0.4,
+      dlyMix: 0.5,
+      delayMs: 380,
+      dlyFb: 0.55,
+      dlySplice: 0.8,
+      dlyErase: 0.7,
+      flutter: 0.25,
+    },
+  },
+  {
+    name: 'kicked amp',
+    blurb: 'Every hit from the kit throws the springs against the housing',
+    patch: {
+      chipLevel: 0.6,
+      drumLevel: 0.7,
+      drumBpm: 96,
+      revMix: 0.6,
+      revDecayS: 3,
+      revBoing: 0.8,
+      revKick: 0.7,
+    },
+  },
+  {
     name: 'played backwards',
     blurb: 'Half a second at a time, each one handed back the other way round',
     patch: {
