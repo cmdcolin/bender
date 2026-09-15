@@ -11,7 +11,7 @@ export const SITE = {
   app: appUrl,
   nav: [
     [guideUrl, 'User guide'],
-    [REPO, 'Source'],
+    [REPO, 'GitHub'],
     [privacyUrl, 'Privacy'],
   ],
   footer: [
