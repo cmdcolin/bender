@@ -358,6 +358,10 @@ const BOARDS: Record<string, Controls> = {
     bendSlot5: 0,
   },
   bridged: { ...DEFAULT_CONTROLS, trigToKeys: ANY_CHOICE, trigToDrum: 1 },
+  // The lane with only the chip's wire in it: the note that says the lane is
+  // empty is gone, so whatever draws the wire has to be the trigger patch's
+  // door as well or the group goes off the map.
+  struck: { ...DEFAULT_CONTROLS, fmStruck: ANY_CHOICE },
   wired: {
     ...DEFAULT_CONTROLS,
     tapeMix: 0.5,
@@ -489,9 +493,10 @@ test('the kit’s line onto the FM chip is a bridge like the other two', () => {
   expect(trig.label?.text).toBe('any hit trig')
   expect(trig.color).toBe(PANEL.mod)
   expect(trig.dash).toBeTruthy()
-  // Patched from the chip's own panel rather than from the bay, because the
-  // chip has no sequencer and where it is struck from is a setting of the chip.
-  expect(trig.door).toBe('FM chip')
+  // It opens the trigger patch with the other two, which is where all four of
+  // the board's trigger wires are drawn — a lane where one wire opened
+  // somewhere else would be a lane you have to click to find out about.
+  expect(trig.door).toBe('Trigger patch')
   expect(box(struck, 'no_trig')).toBeUndefined()
   checkLayout(struck)
 })

@@ -384,7 +384,8 @@ export class Engine {
           sampleIn: msg.sampleIn,
           sampleOut: msg.sampleOut,
         })
-        this.sounding.set(soundingMask(msg.taps, this.soundHold))
+        const lit = soundingMask(msg.taps, this.soundHold)
+        if (lit !== this.sounding.get()) this.sounding.set(lit)
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
     }
     const masterGain = ctx.createGain()

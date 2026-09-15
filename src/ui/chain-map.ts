@@ -336,21 +336,21 @@ interface Bridge {
   from: string
   to: string
   label: string
-  /** the panel the wire is patched from, which is not the same for all three */
-  door: string
 }
 
 // The trigger lines you can bridge the three boxes on the board with, where one
-// is patched. Two of them are the bay's and live on the trigger patch; the
-// third is the kit's lines clipped onto the FM chip's key input, and it lives
-// on that chip's own panel — the chip has no sequencer, so where it is struck
-// from is a setting of the chip rather than of the patch.
+// is patched. The third is the kit's lines clipped onto the FM chip's key
+// input, which the chip's own panel carries — the chip has no sequencer, so
+// where it is struck from is a setting of the chip. It runs in this lane and
+// opens the trigger patch with the other two all the same: the patch draws all
+// four of the board's trigger wires, and a lane where one wire opened somewhere
+// else would be a lane you have to click to find out about.
 function triggerBridges(c: Controls): Bridge[] {
   const bridges: Bridge[] = []
-  for (const [key, from, to, door] of [
-    ['trigToKeys', 'Toy drums', 'Toy keyboard', 'Trigger patch'],
-    ['trigToDrum', 'Toy keyboard', 'Toy drums', 'Trigger patch'],
-    ['fmStruck', 'Toy drums', FM_CHIP, FM_CHIP],
+  for (const [key, from, to] of [
+    ['trigToKeys', 'Toy drums', 'Toy keyboard'],
+    ['trigToDrum', 'Toy keyboard', 'Toy drums'],
+    ['fmStruck', 'Toy drums', FM_CHIP],
   ] as const) {
     const choice = Math.round(c[key])
     if (choice <= 0) continue
@@ -358,7 +358,6 @@ function triggerBridges(c: Controls): Bridge[] {
       id: key,
       from,
       to,
-      door,
       label: `${sliderFor(key).choices?.[choice] ?? 'trig'} trig`,
     })
   }
@@ -902,7 +901,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       {
         color: k.mod,
         dash: '4 3',
-        door: t.door,
+        door: 'Trigger patch',
         label: {
           text: t.label,
           x: (midX(from) + midX(to)) / 2,
