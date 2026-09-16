@@ -26,12 +26,27 @@ gesture, so `bender.start()` waits one second and then reports the state. A CDP
 `Runtime.evaluate` with `userGesture: true` starts audio, and `scripts/agent.ts`
 checks the API that way in headless Chrome.
 
-Four items remain open. They are step 2 (`queue`), step 4 (`bender.find` and
+Three items remain open. They are step 2 (`queue`), step 4 (`bender.find` and
 `bender.describe` read the control tables at runtime for an agent in the page,
-and an agent working from a shell still reads `controls.ts`), step 5, and an
-eval harness modelled on jbrowse's `scripts/agent-evals/webAgentEval.ts`, which
-runs `claude -p --chrome` against a task list and grades the session state
-afterwards.
+and an agent working from a shell still reads `controls.ts`), and step 5.
+
+`pnpm agent:eval`, modelled on jbrowse's `scripts/agent-evals/webAgentEval.ts`,
+runs `claude -p --chrome` against four tasks and grades the board each session
+leaves. The first run, on 2026-09-16, passed 1 of 4 tasks. The extension
+replaced the 3104-character `bender.help` with
+`[BLOCKED: Cookie/query string data]` and cuts any returned string at 1000
+characters, so every agent read the help in slices. One agent turned up
+`tapeMix` where the task needed `dlyMix`, and the grader read the wrong tab in
+two tasks. After `bender.help` became an overview with `bender.guide(topic)`
+beside it, `find` began ranking named groups first, and the grader began reading
+the agent's own tab, the second run passed 4 of 4 with 44 JavaScript calls
+against 71, in 315 s against 533 s, for $0.85 against $1.19.
+
+Two behaviours in that run are unexplained. Extension clicks in the middle of
+the page sometimes left the AudioContext suspended while clicks near the top
+started it, and a protocol click in headless Chrome at the same spots starts
+audio every time. One three-second glide of `dlyFb` had not moved after a click
+and a three-second wait, and the agent's second `set` landed.
 
 ## What the board already is
 
