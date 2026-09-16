@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 250 knobs and switches in 29 groups, seven bends competing for six slots,
+ruin. 261 knobs and switches in 30 groups, seven bends competing for six slots,
 18 ROM tunes, 69 presets, 14 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 55 destinations — among
+- **A patch bay that modulates itself.** Four wires, 62 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 22 of them, mostly the ones that cover the
+preset that names it still gets it. 24 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -373,6 +373,36 @@ while the head plays on.
 
 </details>
 
+### Talking pet
+
+A furry talking toy on the same batteries as the keyboard: an LPC speech chip
+with a 10-stage lattice filter, a phrase ROM of made-up pet words, and a cam
+motor for the eyes and ears. A mood machine picks what it says: sound wakes it,
+a loud sound scares it, kit hits tickle it, quiet and a low supply send it to
+sleep. The motor loads the shared rail, so a talking pet sags the toys beside
+it. The knife reaches the ROM’s address and data lines, _Frame hold_ stutters
+the frames, and _K bits_ flips coefficient bits until the lattice screeches
+against its clamp.
+
+<details>
+<summary>11 controls</summary>
+
+| control        | range                                                 | what it does                                                                                                                 |
+| -------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Level          | off to full                                           | How loud the talking pet is in the source mix                                                                                |
+| Motor          | off to full                                           | How much of the cam motor you hear: a brush buzz and a gear click that run while the pet talks or blinks                     |
+| Pitch          | 0.25× to 4×                                           | Scales the pitch period the frames ask for, so the voice goes up or down while the formants stay put                         |
+| Clock          | 0.25× to 4×                                           | The speech chip’s 8 kHz clock                                                                                                |
+| Chatter        | off to full                                           | How often the pet talks with nobody prompting it                                                                             |
+| Frame hold     | off to full                                           | The chance at each 25 ms frame that the decoder keeps the frame it has and reads nothing new                                 |
+| K bits         | off to full                                           | Flips bits in the latch that holds the ten reflection coefficients of the lattice filter, a chance per coefficient per frame |
+| Address line † | off, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11 | Which of the twelve wires addressing the phrase ROM the knife found                                                          |
+| Address fault  | cut, to ground, to +V, bridged                        | What happened to the wire                                                                                                    |
+| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                   | Which of the eight wires the ROM answers on the knife found                                                                  |
+| Data fault     | cut, to ground, to +V, bridged                        | The same four things on the data side                                                                                        |
+
+</details>
+
 ### Mic
 
 A live microphone, and the one source that does not have to reach the mix. _Mic
@@ -393,25 +423,25 @@ simply being loud.
 
 ### Mix bus
 
-The desk the six sources meet at, and the only place their balance against each
-other is a thing you can see. Every fader is drawn here as well as on its own
-machine’s panel, under the machine’s name, with a meter beside it reading what
-that channel is putting on the bus and the bus’s own meter under the lot. A
+The desk the seven sources meet at, and the only place their balance against
+each other is a thing you can see. Every fader is drawn here as well as on its
+own machine’s panel, under the machine’s name, with a meter beside it reading
+what that channel is putting on the bus and the bus’s own meter under the lot. A
 fader says how far it is up, not whether anything is coming out — the FM chip is
 the reason: it boots at zero, and turned up with nothing striking it — no hand
 on its keys, no tune next door — it is three quarters and silence. _Bus drive_
 is the summing amp: a wire at unity, and the one saturation ahead of the bends.
 
-The desk is a widget rather than a row of sliders, and its seven faders are
+The desk is a widget rather than a row of sliders, and its eight faders are
 counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.
 
 <details>
 <summary>1 control</summary>
 
-| control   | range         | what it does                            |
-| --------- | ------------- | --------------------------------------- |
-| Bus drive | −12 to +24 dB | The summing amp the six of them meet in |
+| control   | range         | what it does                              |
+| --------- | ------------- | ----------------------------------------- |
+| Bus drive | −12 to +24 dB | The summing amp the seven sources meet in |
 
 </details>
 
@@ -666,13 +696,13 @@ wire’s depth — which is how the bay modulates itself.
 <details>
 <summary>14 controls</summary>
 
-| control        | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | what it does                                                                   |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | The bay’s own oscillator, free-running                                         |
-| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
-| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | What the wire picks up                                                         |
-| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch, toy level, kit level, FM level, osc level, noise level, sampler level, filt res, FM bright, fb time, toy data line, toy data fault, toy addr line, toy addr fault, kit data line, kit data fault, kit addr line, kit addr fault, FM data line, FM data fault, FM addr line, FM addr fault, FM wave line, FM wave fault, FM wave data line, FM wave data fault, FM cut depth, FM noise blob, ring mix | Where the other end is soldered                                                |
-| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | How hard the wire pushes                                                       |
+| control        | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | what it does                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | The bay’s own oscillator, free-running                                         |
+| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
+| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | What the wire picks up                                                         |
+| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch, toy level, kit level, FM level, osc level, noise level, sampler level, filt res, FM bright, fb time, toy data line, toy data fault, toy addr line, toy addr fault, kit data line, kit data fault, kit addr line, kit addr fault, FM data line, FM data fault, FM addr line, FM addr fault, FM wave line, FM wave fault, FM wave data line, FM wave data fault, FM cut depth, FM noise blob, ring mix, pet level, pet pitch, pet rate, pet addr line, pet addr fault, pet data line, pet data fault | Where the other end is soldered                                                |
+| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | How hard the wire pushes                                                       |
 
 </details>
 

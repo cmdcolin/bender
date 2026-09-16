@@ -312,6 +312,26 @@ only re-sends a patch when a knob moves, so a wire there leaves it writing the
 register file every block instead of four times a note — which is what every
 fault on that bus has been waiting for.
 
+## The talking pet
+
+The talking pet is a furry toy wired onto the keyboard's batteries. It starts at
+zero; raise **Level** and it says hello. What it says next depends on its mood:
+
+- **asleep**: snores now and then. Any sound or kit hit wakes it.
+- **awake**: greets you and chats. Twenty seconds of quiet makes it sleepy, and
+  a long time awake makes it hungry.
+- **chatty**: after a kit hit (a tickle). It laughs and sings.
+- **hungry**: asks for food until the next kit hit.
+- **scared**: after a loud sound or a burst of hits.
+- **sleepy**: yawns, then falls asleep. A low supply keeps it here.
+
+The pet hears the mic and the board's own output, and ignores the board's output
+while it is talking. **Chatter** sets how often it talks unprompted. **Pitch**
+moves the voice alone; **Clock** moves pitch, formants and speed together.
+**Motor** is the sound of the eye and ear motor, which loads the shared supply
+whenever it turns. The knife, **Frame hold** and **K bits** are covered in
+[Bends](BENDS.md).
+
 ## The trigger patch
 
 The keyboard and the drum machine share a power rail by accident; the trigger
@@ -440,19 +460,20 @@ out of the speakers.
 The selector beside it says what a take comes back as. **Master only** is one
 file of what you heard. **Master + stems** adds one wav per source that had
 anything on it — the toy keyboard, the drums, the FM chip, the chaos oscillator,
-the noise and the sampler — named `bender-<stamp>-toy.wav`, `-drums`, `-fm`,
-`-chaos`, `-noise`, `-sampler`, beside `bender-<stamp>-master.wav` under the
-same stamp. A source you left down writes no file. The selector locks while a
-take is running: what the tape is threaded for is settled when you press record.
+the noise, the sampler and the talking pet — named `bender-<stamp>-toy.wav`,
+`-drums`, `-fm`, `-chaos`, `-noise`, `-sampler`, `-pet`, beside
+`bender-<stamp>-master.wav` under the same stamp. A source you left down writes
+no file. The selector locks while a take is running: what the tape is threaded
+for is settled when you press record.
 
-**A stem is the dry machine.** The six sources sum into the mix bus, and
+**A stem is the dry machine.** The seven sources sum into the mix bus, and
 everything after that point — the bus drive, the bends, the pedals, the
 brownout, the tape and the limiter — is applied to the sum. There is one signal
-path, not six, so a stem taken after the bus would mean running the whole board
-six times over. What you get is each source as it arrived at the summing amp,
-with none of the board on it; the master is the take with all of it on. Bring
-the stems into a DAW and they will not add up to the master, and they are not
-meant to — the master is the instrument, the stems are what went into it.
+path, not seven, so a stem taken after the bus would mean running the whole
+board seven times over. What you get is each source as it arrived at the summing
+amp, with none of the board on it; the master is the take with all of it on.
+Bring the stems into a DAW and they will not add up to the master, and they are
+not meant to — the master is the instrument, the stems are what went into it.
 
 The mic and the feedback return are not stems. Neither is a source: the mic is a
 wire that lands on the bus (or on the toy's supply rail), and the return is the

@@ -35,16 +35,16 @@ each one is a wire and a fault somebody already found worth keeping.
 
 ## The shared power rail
 
-**Starve** sags the supply the toy keyboard, the drum machine and the FM chip
-all share. It's a resistor to ground, so it keeps drawing current even after the
-chip has gone quiet — a quarter of the way up, the toy runs flat and dives;
-three-quarters, it reboots several times a second. Past a threshold the watchdog
-decides the supply has failed and resets the chip, restarting the tune from
-wherever it was. Reboots never land on a metronome: the watchdog's own trip
-point drifts with heat, and the reset line holds for somewhere between 40 and
-130 ms, by which point the rail has moved somewhere different anyway. The lamp
-above the keys reads the rail itself, in volts — 4.5 V on fresh cells — and
-shows **reboot** whenever the watchdog fires.
+**Starve** sags the supply the toy keyboard, the drum machine, the FM chip and
+the talking pet all share. It's a resistor to ground, so it keeps drawing
+current even after the chip has gone quiet — a quarter of the way up, the toy
+runs flat and dives; three-quarters, it reboots several times a second. Past a
+threshold the watchdog decides the supply has failed and resets the chip,
+restarting the tune from wherever it was. Reboots never land on a metronome: the
+watchdog's own trip point drifts with heat, and the reset line holds for
+somewhere between 40 and 130 ms, by which point the rail has moved somewhere
+different anyway. The lamp above the keys reads the rail itself, in volts — 4.5
+V on fresh cells — and shows **reboot** whenever the watchdog fires.
 
 **Reservoir** is how much capacitance sits behind the supply, and it decides
 whether a starve lands or travels. Stock, the rail follows its load in under a
@@ -422,6 +422,39 @@ accented step takes off it. Left at nothing the bus is stiff and every accent is
 the full one. Wound up, a step stacking four voices hands each of them less than
 a step stacking one, and a second accent arriving before the cap has caught up
 lands softer than the first — so a roll comes out shaped without a knob moving.
+
+## The talking pet's speech chip
+
+The talking pet speaks through an LPC decoder in the style of the late-70s
+speech chips. Every 25 ms it reads a frame out of the phrase ROM: an energy, a
+pitch period (or noise, for an unvoiced sound) and up to ten reflection
+coefficients, each a short code into a quantizer table. A pulse train or noise
+drives a 10-stage lattice filter with those coefficients, and the chip eases
+between frames in eight steps. The ROM holds made-up pet words, a laugh, a yawn,
+a snore and a song fragment, all encoded when the app loads from formant
+targets.
+
+**Address line** faults move the read into the middle of another word. The
+decoder reads a phrase as a stream of bits with no markers, so a wrong byte
+shifts every field after it: syllables skip and stutter, frames decode from
+garbage, and the phrase runs until a stop code turns up or the pet's processor
+gives up after four seconds. **Data line** faults corrupt each byte on the way
+back, which changes energies, pitches and coefficient codes, and a stop code can
+arrive early and cut a word short. Garbage codes land on the extreme table
+entries, which ring as sharp, near-oscillating resonances.
+
+**Frame hold** is the chance that a frame boundary reads nothing new, so the
+chip keeps interpolating toward the frame it already has. A latched supply holds
+every frame. **K bits** flips a bit in the latch holding each coefficient. The
+latch spans ±2, so a flip in a top bit pushes a coefficient past one and the
+lattice goes unstable. Saturating adders clamp every stage, so the instability
+comes out as a steady screech with every value finite.
+
+The cam motor draws current from the shared rail whenever the pet talks or
+blinks, more while it spins up. On a board with flat cells or a lead resistor
+every phrase dips the keyboard's pitch. The pet reads the rail back as well: a
+low supply makes it sleepy, slows its clock and drops its pitch, and a watchdog
+reboot wakes it with a greeting.
 
 ## The drum machine's pattern bus
 
