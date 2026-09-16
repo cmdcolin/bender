@@ -14,10 +14,25 @@
   align-items: center;
   justify-content: flex-end;
   min-width: 150px;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
   user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pet:focus-visible,
+.petScared:focus-visible {
+  outline: 1px solid var(--accent);
 }
 
 .perch {
+  display: block;
   position: relative;
   padding-top: 18px;
 }
@@ -27,14 +42,15 @@
   width: 118px;
   height: auto;
   overflow: visible;
+  transform-origin: 50% 95%;
 }
 
-.petScared .perch {
-  position: relative;
-  padding-top: 18px;
+/* A press squashes the pet down onto its feet. */
+.pet:active .figure {
+  transform: scale(1.05, 0.93);
 }
 
-.figure {
+.petScared .figure {
   animation: shiver 90ms linear infinite alternate;
 }
 
@@ -48,12 +64,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .petScared .perch {
-    position: relative;
-    padding-top: 18px;
-  }
-
-  .figure {
+  .petScared .figure {
     animation: none;
   }
 }
@@ -155,6 +166,7 @@
 }
 
 .caption {
+  display: block;
   font-size: var(--fs-xs);
   color: var(--fg4);
 }
