@@ -5,8 +5,9 @@ import { boardHash } from './share'
 import {
   MIN_GAP_MS,
   nextWriteAt,
+  observe,
   SETTLE_MS,
-  worthResuming,
+  type Opened,
 } from './useCurrentSession'
 
 test('a board already written to the account is not written again', () => {
@@ -24,8 +25,21 @@ test('a write close behind the last one waits for the gap instead', () => {
   )
 })
 
-test('the stock board is not a session worth resuming', () => {
-  expect(worthResuming(boardHash('', DEFAULT_CONTROLS))).toBe(false)
+const fresh: Opened = { query: null, moved: false }
+
+test('the board the page opened on is not a session', () => {
+  const stock = boardHash('', DEFAULT_CONTROLS)
+  const at = observe(fresh, stock)
+  expect(observe(at, stock).moved).toBe(false)
+})
+
+test('the session starts when the board moves off the one it opened on', () => {
+  const at = observe(fresh, boardHash('', DEFAULT_CONTROLS))
   const bent = { ...DEFAULT_CONTROLS, chipStarve: 0.8 }
-  expect(worthResuming(boardHash('', bent))).toBe(true)
+  expect(observe(at, boardHash('', bent)).moved).toBe(true)
+})
+
+test('a started session stays started, back on the opening board included', () => {
+  const moved = observe(observe(fresh, 'p=1'), 'p=2')
+  expect(observe(moved, 'p=1').moved).toBe(true)
 })

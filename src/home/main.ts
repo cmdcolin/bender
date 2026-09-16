@@ -14,6 +14,7 @@ import {
   fetchHome,
   signIn,
   signOut,
+  warmSignIn,
   wasSignedIn,
   watchAuth,
   type CloudUser,
@@ -63,6 +64,7 @@ const signOutBtn = needOf('signOut', HTMLButtonElement)
 const whyCard = needOf('whyCard', HTMLDialogElement)
 const whyBtns = [need('why'), need('whyBelow')]
 const whySignInBtn = needOf('whySignIn', HTMLButtonElement)
+const whyTrouble = need('whyTrouble')
 
 // --- cards ------------------------------------------------------------------
 
@@ -216,8 +218,11 @@ acctBtn.addEventListener('click', event => {
   acctBtn.setAttribute('aria-expanded', String(!acctMenu.hidden))
 })
 document.addEventListener('click', closeMenu)
+// A disclosure, so Escape hands focus back to the button that opened it.
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') closeMenu()
+  if (event.key !== 'Escape' || acctMenu.hidden) return
+  closeMenu()
+  acctBtn.focus()
 })
 
 // --- why sign in ------------------------------------------------------------
@@ -316,16 +321,40 @@ if (import.meta.env.DEV) Object.assign(window, { benderShowHome: showHome })
 // CROSS_REPO_SYNC(home-sign-in)
 let signedIn: CloudUser | null = null
 
+// Whether the subscription at the bottom is installed. It paints a sign-in by
+// itself, and a second paint from the button fetched the whole home twice.
+const watching = wasSignedIn()
+
+// What the why card says about a sign-in that did not finish, or undefined for
+// a popup the reader closed: they changed their mind, and the page they are
+// looking at is already the right one.
+function signInTrouble(e: unknown): string | undefined {
+  const code = typeof e === 'object' && e !== null && 'code' in e ? e.code : ''
+  if (
+    code === 'auth/popup-closed-by-user' ||
+    code === 'auth/cancelled-popup-request'
+  )
+    return undefined
+  if (code === 'auth/popup-blocked')
+    return 'The browser blocked the Google sign-in window. Allow pop-ups for this site and try again.'
+  return 'Signing in did not finish. Check the connection and try again.'
+}
+
 const startSignIn = (button: HTMLButtonElement) => {
   button.disabled = true
+  whyTrouble.hidden = true
   signIn()
     .then(user => {
       signedIn = user
-      return paint(user)
+      return watching ? undefined : paint(user)
     })
-    .catch(() => {
-      // A popup the reader closed, or one the browser blocked. The page is the
-      // landing page already and there is nothing to report.
+    .catch((e: unknown) => {
+      const trouble = signInTrouble(e)
+      if (trouble === undefined) return
+      console.error('sign-in failed', e)
+      whyTrouble.textContent = trouble
+      whyTrouble.hidden = false
+      if (!whyCard.open) whyCard.showModal()
     })
     .finally(() => {
       button.disabled = false
@@ -339,6 +368,10 @@ signInBtn.addEventListener('click', () => {
 whySignInBtn.addEventListener('click', () => {
   startSignIn(whySignInBtn)
 })
+
+for (const button of [signInBtn, whySignInBtn, ...whyBtns])
+  for (const type of ['pointerenter', 'focus'])
+    button.addEventListener(type, warmSignIn, { once: true })
 
 signOutBtn.addEventListener('click', () => {
   signedIn = null

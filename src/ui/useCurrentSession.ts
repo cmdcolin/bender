@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { putCurrent } from './cloud'
 import { boardHash } from './share'
@@ -36,14 +35,24 @@ export function nextWriteAt(
   if (query === gate.query) return null
   return Math.max(now + SETTLE_MS, gate.at + MIN_GAP_MS)
 }
-// CROSS_REPO_SYNC_END(current-session-gate)
 
-// Whether the board is one the home page should offer back. The app button on
-// the home page opens the stock board, so a visitor who presses it and leaves
-// has not made a session: writing the stock board would put it over the one
-// they last played, which is what the resume card then opened on.
-export const worthResuming = (query: string): boolean =>
-  query !== boardHash('', DEFAULT_CONTROLS)
+// The board this page opened on, and whether it has moved off it since.
+export interface Opened {
+  query: string | null
+  moved: boolean
+}
+
+// The app button on the home page opens the stock board, and a demo or a
+// shared link opens a finished one. None of those is a session the visitor
+// made, and writing one put it over the board the account held, which is what
+// the resume card then opened on. The first board the page shows is where it
+// opened, and the session starts when the board first differs from it.
+export function observe(opened: Opened, query: string | null): Opened {
+  if (query === null || opened.moved) return opened
+  if (opened.query === null) return { query, moved: false }
+  return query === opened.query ? opened : { ...opened, moved: true }
+}
+// CROSS_REPO_SYNC_END(current-session-gate)
 
 // Subscribed to the engine rather than given the board as a prop: a slider drag
 // and a morph each move controls every frame, and whoever held that prop would
@@ -52,6 +61,12 @@ export const worthResuming = (query: string): boolean =>
 export function useCurrentSession(uid: string | null) {
   const gate = useRef<WriteGate>({ query: null, at: 0 })
   const live = useRef<string | null>(null)
+  // Bender.tsx patches a linked board into the engine before the first render,
+  // so the board at the first render is the one the page opened on.
+  const [start] = useState(() =>
+    boardHash(window.location.hash, engine.controls.get()),
+  )
+  const opened = useRef<Opened>({ query: start, moved: false })
 
   useEffect(() => {
     if (uid === null) {
@@ -72,12 +87,20 @@ export function useCurrentSession(uid: string | null) {
     }
     const settle = () => {
       const query = boardHash(window.location.hash, engine.controls.get())
-      if (!worthResuming(query)) return
+      opened.current = observe(opened.current, query)
+      if (!opened.current.moved) return
       live.current = query
       const due = nextWriteAt(gate.current, query, Date.now())
       if (due === null) return
       clearTimeout(timer)
-      timer = setTimeout(() => send(query), Math.max(0, due - Date.now()))
+      timer = setTimeout(
+        () => {
+          // The hide handler below may have written this board while the timer
+          // waited.
+          if (query !== gate.current.query) send(query)
+        },
+        Math.max(0, due - Date.now()),
+      )
     }
     // One last write on the way out, so a tab closed mid-debounce still leaves
     // the board the home page offers back. `visibilitychange` rather than
