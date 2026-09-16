@@ -268,7 +268,7 @@ function resumeSection(doc: HomeDoc, now: number) {
     el(
       'p',
       'resumeSays',
-      'Resuming brings back the whole board — the bends, the pattern, the pedals and the tape.',
+      'Resuming brings back the whole board — the bends, the pattern, the pedals and the tape. A recording on the sampler and the mic have to be brought in again.',
     ),
   )
   const row = el('p', 'resumeCta')

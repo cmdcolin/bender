@@ -23,7 +23,7 @@ export const HOW = 'It’s a Google login, and the boards are stored in Firebase
     and `pnpm dash` fails if the shot it takes comes out any other size. */
 export const SHOT = 'dashboard.jpg'
 export const SHOT_W = 982
-export const SHOT_H = 749
+export const SHOT_H = 774
 
 export const SHOT_ALT =
   'The home page signed in: a card for the board you had open last, and six saved boards in a grid with the day each one was saved'

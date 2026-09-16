@@ -556,5 +556,12 @@ account holds, and the sign-in card and the about card both link to it.
 Signed in, the app also mirrors the board you have open onto your account, and
 the [home page](https://cmdcolin.github.io/bender/) offers it back under
 **Continue where you left off** — so a board you were in the middle of on one
-machine is a click away on the next. The home page lists your voices beside it,
-newest save first.
+machine is a click away on the next. A recording on the sampler and the mic do
+not travel with it, so bring them in again. Opening the app, a demo or a link
+someone sent is not the board you were in the middle of, so nothing is mirrored
+until you change something on it.
+
+The home page lists your voices beside it, newest save first. Under each card,
+**Copy link** puts its link on the clipboard, **Rename** edits its name in place
+and refuses a name another voice already has, and **Delete** asks once and then
+removes it.
