@@ -65,6 +65,8 @@ pnpm dev
 - [Features](docs/features.md) — every control, generated from the app's own
   tables
 - [MIDI](docs/MIDI.md) — setting up a controller
+- [AI usage](docs/AI-USAGE.md) — playing bender from Claude in Chrome or Claude
+  Code through `window.bender`
 - [Development](docs/DEVELOPMENT.md) — testing, benchmarking, releases
 - [Data flow](docs/dataflow.md) — how a block gets rendered across the two
   threads

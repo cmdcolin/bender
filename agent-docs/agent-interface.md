@@ -4,6 +4,35 @@ Notes toward letting an agent play bender. The conclusion is that the transport
 — WebMCP, MIDI, a URL, Puppeteer — is the least consequential choice here, and
 that two small pieces of the engine are worth exposing before picking one.
 
+## Status, 2026-09-16
+
+`src/ui/agentApi.ts` implements plan steps 1 and 3, and `docs/AI-USAGE.md`
+documents the result. The app page publishes `window.bender` on every load, with
+no flag, because Claude in Chrome calls page JavaScript directly and a flag
+would make the user edit the URL before an agent could reach the API. The API
+allows nothing the DevTools console does not already allow.
+
+Two sibling projects use the two main approaches. jbrowse-components publishes
+`window.jb`, documented by a `jb.help` string, and Claude in Chrome's JavaScript
+tool calls it in the page; JBrowse Desktop serves the same library over MCP.
+videoskillet has no agent API, and an agent drives its panel through a command
+palette that accepts a control name and a value. bender follows jbrowse, because
+writing a melody or a drum pattern through a palette takes one call per step.
+
+`bender.set` goes through `morphTo`, so each call adds one undo step, and
+`Engine.flush` posts the controls to the worklet without waiting for an
+animation frame. `AudioContext.resume()` stays pending until the page receives a
+gesture, so `bender.start()` waits one second and then reports the state. A CDP
+`Runtime.evaluate` with `userGesture: true` starts audio, and `scripts/agent.ts`
+checks the API that way in headless Chrome.
+
+Four items remain open. They are step 2 (`queue`), step 4 (`bender.find` and
+`bender.describe` read the control tables at runtime for an agent in the page,
+and an agent working from a shell still reads `controls.ts`), step 5, and an
+eval harness modelled on jbrowse's `scripts/agent-evals/webAgentEval.ts`, which
+runs `claude -p --chrome` against a task list and grades the session state
+afterwards.
+
 ## What the board already is
 
 The control record is a named, float-valued parameter namespace. `controls.ts`
