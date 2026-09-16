@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 import {
+  editVoices,
   fetchHome,
-  putVoices,
   signIn as cloudSignIn,
   signOut as cloudSignOut,
   wasSignedIn,
@@ -87,17 +87,22 @@ export function useSavedVoices() {
   // would close on success with nothing listening.
   const [wantAuth, setWantAuth] = useState(wasSignedIn)
 
-  // Every write is cloud-only, and the list moves once the document has been
-  // accepted rather than before: an optimistic row is a row that looks saved
-  // and is not, which is the one thing a save must never show.
-  const commit = (uid: string, next: SavedVoice[], landed?: string) => {
-    putVoices(uid, next)
-      .then(() => {
+  // The list updates after Firestore accepts the write, so a row on screen is a
+  // saved row. Each write sends an edit, and editVoices applies it to the
+  // stored list: two saves in quick succession both land.
+  const commit = (
+    uid: string,
+    edit: (list: SavedVoice[]) => SavedVoice[],
+    landed?: () => string,
+  ) => {
+    editVoices(uid, edit)
+      .then(next => {
         setVoices(next)
         setError(null)
         if (landed !== undefined) {
-          setLastName(landed)
-          showFlash({ kind: 'saved', name: landed })
+          const name = landed()
+          setLastName(name)
+          showFlash({ kind: 'saved', name })
         }
       })
       .catch((e: unknown) => {
@@ -107,8 +112,11 @@ export function useSavedVoices() {
       })
   }
 
-  const write = (next: SavedVoice[], landed?: string) => {
-    if (user !== null) commit(user.uid, next, landed)
+  const write = (
+    edit: (list: SavedVoice[]) => SavedVoice[],
+    landed?: () => string,
+  ) => {
+    if (user !== null) commit(user.uid, edit, landed)
   }
 
   // Signing in, signing out and the restore-on-load all arrive here, so there
@@ -129,7 +137,7 @@ export function useSavedVoices() {
         setCurrent(home.current)
         setStatus('ready')
         setError(null)
-        landPending(next.uid, home.voices)
+        landPending(next.uid)
       })
       .catch((e: unknown) => {
         console.error('loading saved voices failed', e)
@@ -138,17 +146,23 @@ export function useSavedVoices() {
       })
   }
 
-  // The save somebody pressed on the way in, written now that there is an
-  // account to write it to. suggestVoiceName runs again over the list that just
-  // arrived, because the first run had an empty list to work from: without the
-  // second one, a save named "my voice" would overwrite the "my voice" the
-  // account already held.
-  const landPending = (uid: string, arrived: readonly SavedVoice[]) => {
+  // Writes the save pressed before sign-in. The name was suggested against an
+  // empty list, so suggestVoiceName runs again over the stored list: a save
+  // named "my voice" then lands as "my voice 2" beside an existing "my voice".
+  const landPending = (uid: string) => {
     const want = pending.current
     pending.current = null
     if (want === null) return
-    const name = suggestVoiceName(arrived, want.name)
-    commit(uid, upsertVoice(arrived, name, want.query, Date.now()), name)
+    const at = Date.now()
+    let name = want.name
+    commit(
+      uid,
+      list => {
+        name = suggestVoiceName(list, want.name)
+        return upsertVoice(list, name, want.query, at)
+      },
+      () => name,
+    )
   }
 
   // Firebase resolves the unsubscribe asynchronously, so teardown covers both
@@ -192,11 +206,15 @@ export function useSavedVoices() {
         pending.current = { name, query }
         return 'needs-auth'
       }
-      write(upsertVoice(voices, name, query, Date.now()), name)
+      const at = Date.now()
+      write(
+        list => upsertVoice(list, name, query, at),
+        () => name,
+      )
       return 'saving'
     },
     deleteVoice: (name: string) => {
-      write(removeVoice(voices, name))
+      write(list => removeVoice(list, name))
       // Deleting the voice you were in frees its name again: the next save
       // should offer "dying toy", not "dying toy 2" against a row that is gone.
       setLastName(cur => (cur === name ? null : cur))
@@ -206,7 +224,8 @@ export function useSavedVoices() {
     // matches. It stamps `openedAt`, which is what the home page reads.
     markRecalled: (name: string) => {
       setLastName(name)
-      write(markOpened(voices, name, Date.now()))
+      const at = Date.now()
+      write(list => markOpened(list, name, at))
     },
     signIn: () => {
       setStatus('loading')

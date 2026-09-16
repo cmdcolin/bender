@@ -167,21 +167,24 @@ const voiceEntry = (item: SavedVoice) => ({
   ...(item.openedAt === undefined ? {} : { openedAt: item.openedAt }),
 })
 
-// The whole list in one write. A document per voice would make two machines
-// editing different voices conflict-free, and it would turn one save into a
-// write plus a delete-detection pass to protect a case — the same person on two
-// machines inside the same second — that costs a re-save. Merged, so the write
-// leaves `current` standing.
-export async function putVoices(
+// Applies `edit` to the stored list and writes the result in one transaction.
+// Firestore reruns `edit` when another write lands between the read and the
+// write, so `edit` must be pure. A caller that builds the list from its own
+// copy drops whatever another tab, device or pending write added. Merged, so
+// the write keeps `current`.
+export async function editVoices(
   uid: string,
-  voices: readonly SavedVoice[],
-): Promise<void> {
+  edit: (voices: SavedVoice[]) => SavedVoice[],
+): Promise<SavedVoice[]> {
   const { db, fs } = await loadSdk()
-  await fs.setDoc(
-    fs.doc(db, COLLECTION, uid),
-    { voices: voices.slice(0, VOICE_MAX).map(voiceEntry) },
-    { merge: true },
-  )
+  const ref = fs.doc(db, COLLECTION, uid)
+  return fs.runTransaction(db, async tx => {
+    const snap = await tx.get(ref)
+    const stored = snap.exists() ? readVoices(snap.data().voices) : []
+    const next = edit(stored).slice(0, VOICE_MAX)
+    tx.set(ref, { voices: next.map(voiceEntry) }, { merge: true })
+    return next
+  })
 }
 
 // The session last open, or null to clear it. Merged for the same reason.

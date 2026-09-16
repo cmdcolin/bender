@@ -52,9 +52,15 @@ vi.mock('./cloud', () => ({
   },
   signOut: () => Promise.resolve(),
   fetchHome: () => Promise.resolve({ voices: cloud.voices, current: null }),
-  putVoices: (_uid: string, voices: readonly SavedVoice[]) => {
-    cloud.writes.push([...voices])
-    return Promise.resolve()
+  editVoices: async (
+    _uid: string,
+    edit: (voices: SavedVoice[]) => SavedVoice[],
+  ) => {
+    await Promise.resolve()
+    const next = edit([...cloud.voices])
+    cloud.voices = next
+    cloud.writes.push([...next])
+    return next
   },
   putCurrent: () => Promise.resolve(),
 }))
