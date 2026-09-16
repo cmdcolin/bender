@@ -2,6 +2,15 @@
 
 All notable changes to bender are documented here.
 
+## [1.0.2](https://github.com/cmdcolin/bender/compare/v1.0.1...v1.0.2) - 2026-09-16
+
+### Features
+- *(engine)* [`e78435b`](https://github.com/cmdcolin/bender/commit/e78435bb977d394745374c1d9d88096930b3b232) report the pet's mood, phrase, motor speed and speech level on the meter
+- *(ui)* [`61121f9`](https://github.com/cmdcolin/bender/commit/61121f9eeff04b4fa4361ed24df133c6847bdc6c) draw the toy drum kit, a circuit-board FM keyboard and the talking pet
+
+### Documentation
+- *(ui)* [`31fbf7b`](https://github.com/cmdcolin/bender/commit/31fbf7beeb214b4c9b236da6859dd5024af547d2) describe the account control, and plain up the prose around it
+
 ## [1.0.1](https://github.com/cmdcolin/bender/compare/v1.0.0...v1.0.1) - 2026-09-16
 
 ### Features
