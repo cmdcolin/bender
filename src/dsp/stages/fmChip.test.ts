@@ -11,6 +11,7 @@ import { BLOCK } from '../stage'
 import {
   bin,
   bursts,
+  crest,
   deviation,
   envelope,
   highEnergy,
@@ -168,6 +169,17 @@ test('the boosters sit still while an effect runs', () => {
   const plain = at({ fmFeedback: 7, fmBright: 1 })
   expect(rms(plain)).toBeGreaterThan(0.01)
   expect(deviation(at({ fmFeedback: 11, fmBright: 4 }), plain)).toBe(0)
+})
+
+test('output drive squares the wave off and brings a quiet voice up', () => {
+  const fm = (fmDrive: number) =>
+    renderStems({ ...FM_ONLY, fmVoice: 3, fmDrive }, 2).stems[
+      SOURCE_TAPS.indexOf('fmChip')
+    ]!
+  const clean = fm(0)
+  const driven = fm(36)
+  expect(crest(driven)).toBeLessThan(crest(clean) * 0.5)
+  expect(rms(driven)).toBeGreaterThan(rms(clean) * 2)
 })
 
 test('level past 1 is gain on the chip’s output', () => {

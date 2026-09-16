@@ -273,7 +273,9 @@ red past it. Level goes to ×4. Past 1 on Brightness and past 7 on Feedback, a
 booster wired around the chip takes over from the register: each unit of
 brightness multiplies the modulation index by four, and each step of feedback
 doubles the feedback, so the top of either track is noise. The boosters do
-nothing while an effect runs.
+nothing while an effect runs. **Drive** pushes the four voices into the chip's
+output stage, up to 36 dB, which squares the notes off into fuzz and brings a
+quiet voice up toward the level of a loud one.
 
 **Vibrato** switches on the one LFO the die has. There is no register for it
 anywhere — no rate, no depth, nothing to start or stop it — so all the button

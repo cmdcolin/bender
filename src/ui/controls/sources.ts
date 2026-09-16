@@ -856,6 +856,15 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How much of the modulator goes back into itself, three bits of it as the part had. Past about five the operator stops making harmonics and starts making noise, which is where the chip’s own drum sounds came from. Past 7 a booster wired around the chip doubles the feedback at each step, and by 10 the modulator puts out broadband noise. The booster does nothing while an effect runs.',
       },
       {
+        key: 'fmDrive',
+        label: 'Drive',
+        min: 0,
+        max: 36,
+        step: 0.5,
+        unit: 'dB',
+        help: 'How hard the four voices drive the one output stage on the chip. At 0 dB the stage clips only the loudest chords. Turned up, every note clips into a square-edged fuzz. Makeup gain puts a full-scale note out near its level at 0 dB, so quiet voices and decay tails come up toward it.',
+      },
+      {
         key: 'fmLfo',
         label: 'Vibrato',
         min: 0,

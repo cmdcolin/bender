@@ -113,6 +113,17 @@ const brightened = (byte: number, bright: number) =>
 const FB_REGISTER_MAX = 7
 const INDEX_BOOST = 4
 
+const DAC_DRIVE = 0.4
+
+// Output-stage gain for a drive knob in dB, with makeup that puts a full-scale
+// sum out at the level it has at 0 dB.
+function dacGains(driveDb: number) {
+  if (driveDb === 0) return { drive: DAC_DRIVE, makeup: 1 }
+  const drive = DAC_DRIVE * Math.pow(10, driveDb / 20)
+  const makeup = (softclip(DAC_DRIVE) * drive) / (DAC_DRIVE * softclip(drive))
+  return { drive, makeup }
+}
+
 // Envelope rates come off the same divider as everything else on this board, so
 // a starving rail drags the envelopes out along with the pitch and the tempo —
 // one oscillator, as ever. The table itself lives with the register map.
@@ -1187,7 +1198,7 @@ export class FmChip implements Stage {
     // The keys, before the block: held, because a hand is holding them.
     for (const q of this.queued) this.keyOn(q.note, 0, q.vol)
     this.queued.length = 0
-    const drive = 0.4
+    const { drive, makeup } = dacGains(p[IDX.fmDrive]!)
     let load = 0
 
     for (let i = 0; i < io.n; i++) {
@@ -1332,7 +1343,7 @@ export class FmChip implements Stage {
       // one it missed, and a sign line held is everything below the line folded
       // back over it.
       if ((test & TEST.dacSkew) === 0 || (i & 1) === 0) {
-        const word = softclip(sum * drive) / drive
+        const word = (softclip(sum * drive) / drive) * makeup
         this.held = test & TEST.dacSign ? Math.abs(word) : word
       }
       const out = this.held * rail.ampFactor * level * 0.3

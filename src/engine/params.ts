@@ -236,6 +236,7 @@ export const PARAM_DEFS = [
   ['fmWaveDataLine', 'step'],
   ['fmWaveDataFault', 'step'],
   ['fmNoiseBlob', 'slew'],
+  ['fmDrive', 'slew'],
 
   ['oscLevel', 'slew'],
   ['oscAHz', 'slew'],

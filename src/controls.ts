@@ -249,6 +249,7 @@ export const DEFAULT_CONTROLS = {
   fmWaveDataLine: 0,
   fmWaveDataFault: 0,
   fmNoiseBlob: 0,
+  fmDrive: 0,
 
   oscLevel: 0,
   oscAHz: 220,
