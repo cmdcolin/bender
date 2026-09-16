@@ -215,6 +215,34 @@ test('a struck key is sounding until it decays, and a silent chip reports none',
   expect(sounding()).toEqual([])
 })
 
+test('a released key decays at the memory rate set after the chip started', () => {
+  const ringBlocks = (startRate: number) => {
+    const built = buildBender(SR)
+    const io = makeIo()
+    const out = new Int16Array(ToyChip.MAX_SOUNDING)
+    const board = {
+      ...DEFAULT_CONTROLS,
+      ...CHIP_ONLY,
+      chipLevel: 1,
+      chipTune: YOURS,
+    }
+    built.chain.process(io, packParams({ ...board, tuneRate: startRate }))
+    const p = packParams({ ...board, tuneRate: 6 })
+    built.chain.process(io, p)
+    built.toyChip.noteOn(7)
+    built.chain.process(io, p)
+    built.toyChip.noteOff(7)
+    let blocks = 0
+    while (built.toyChip.soundingNotes(out) > 0 && blocks < (4 * SR) / BLOCK) {
+      built.chain.process(io, p)
+      blocks++
+    }
+    return blocks
+  }
+  expect(ringBlocks(6)).toBeLessThan((2 * SR) / BLOCK)
+  expect(ringBlocks(3.2)).toBe(ringBlocks(6))
+})
+
 // The memory is a tune like any other once it is in there: the chip plays it off
 // the same counter, at the rate its own knob says rather than a ROM's.
 test('the chip plays the melody you played into it', () => {

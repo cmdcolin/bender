@@ -237,7 +237,7 @@ export class ToyChip implements Stage {
   // Whether a hand is still on the key the gate is about to report. The ROM and
   // a trigger line strike and let go in the same instant; a finger does not.
   private keyHeldPending = false
-  private lastTiming = 0
+  private lastEnvRate = 0
   private envDecay = 1
   // The last block's accompaniment level, kept for the note report: bass and
   // chord envelopes run whether or not anyone can hear them.
@@ -788,13 +788,13 @@ export class ToyChip implements Stage {
       }
 
       // One envelope generator, timed off the ROM's own step rate the way a
-      // cheap chip ties decay to its tempo clock. Only a moving clock — the bend
-      // walking, the crystal wandering, or a wire on it — makes that a fresh exp
-      // every sample; a latch holds the envelope where it stood along with
-      // everything else it froze.
-      if (timing !== this.lastTiming) {
-        this.lastTiming = timing
-        this.envDecay = Math.exp(-(0.8 * stepHz * timing) / this.sr)
+      // cheap chip ties decay to its tempo clock. The exp is recomputed only
+      // when the step rate or the clock changes; a latch holds the envelope
+      // where it stood along with everything else it froze.
+      const envRate = stepHz * timing
+      if (envRate !== this.lastEnvRate) {
+        this.lastEnvRate = envRate
+        this.envDecay = Math.exp(-(0.8 * envRate) / this.sr)
       }
       const envDecay = latched ? 1 : this.envDecay
       this.env = fade(this.env, envDecay)
