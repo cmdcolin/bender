@@ -45,6 +45,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # scripts/demoreel.ts encodes the landing page's demo clips with ffmpeg.
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
       - run: pnpm build
       - uses: actions/upload-pages-artifact@v5
         with:
