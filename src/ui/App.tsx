@@ -788,7 +788,10 @@ export function App(props: { openedFromLink?: boolean }) {
         {why && (
           <WhySignInDialog
             pendingName={why.pending}
-            onClose={() => setWhy(null)}
+            onClose={() => {
+              setWhy(null)
+              lib.dropPending()
+            }}
             onSignIn={() => {
               setWhy(null)
               lib.signIn()

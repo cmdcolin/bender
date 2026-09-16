@@ -147,6 +147,24 @@ test('a save keeps a voice another machine saved after this tab loaded', async (
   expect(cloud.writes[0]!.length).toBe(2)
 })
 
+test('closing the card drops the held save', async () => {
+  render(<App />)
+  act(() => {
+    engine.writeBoard({ ...DEFAULT_CONTROLS, chipStarve: 0.8 })
+  })
+  fireEvent.click(saveBtn())
+  expect(pendingName()).not.toBe('')
+  fireEvent.click(screen.getByRole('button', { name: 'close' }))
+
+  fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
+  fireEvent.click(screen.getByRole('button', { name: 'sign in with Google' }))
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: /^saved/ })).toBeTruthy()
+  })
+  await new Promise(r => setTimeout(r, 20))
+  expect(cloud.writes).toEqual([])
+})
+
 test('a sign-in nobody was mid-save for writes nothing', async () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
