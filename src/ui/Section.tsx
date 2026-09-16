@@ -47,10 +47,10 @@ function useTouchedCount(group: Group): number {
   return useBoardValue(c => touchedCount(group, c))
 }
 
-// Every stage's way back, wherever the stage is being shown from: the number of
-// controls you have moved is the button that puts them back. It travels and
+// Every stage's way back, wherever the stage is being shown from: its own
+// reset button, once it is open, puts its moved controls back. It travels and
 // lands in the walk like every other verb, so pressing it by mistake costs one
-// ctrl+z. The map draws its own copy of this in SVG, to the same rule.
+// ctrl+z.
 function putBack(group: Group, seconds: number) {
   engine.morphTo(
     resetGroup(group, engine.controls.get()),
@@ -591,8 +591,8 @@ export function PathHint() {
   return (
     <>
       <p className={styles.hint}>
-        click a stage for its controls — the number on it is how many you have
-        moved, and puts them back
+        click a stage for its controls — a dot on it means something in there
+        has moved
       </p>
       <p className={styles.hintPath}>
         the drawing is the path the sound takes: the sources sum onto the mix

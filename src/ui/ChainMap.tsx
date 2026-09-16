@@ -2,7 +2,6 @@ import {
   createElement,
   useEffect,
   useState,
-  type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
 } from 'react'
@@ -11,10 +10,9 @@ import { engine } from '../engine/engine'
 import { MAX_SOURCES } from '../engine/params'
 import { buildMap, drawMap } from './chain-map'
 import styles from './ChainMap.module.css'
-import { CHANNELS, GROUPS, groupKeys } from './controls'
+import { CHANNELS, GROUPS } from './controls'
 import { useStoreValue } from './ControlsContext'
 import { useCoarse } from './measure'
-import { resetGroup } from './presets'
 import { Shelf } from './Section'
 
 import type { Controls } from '../controls'
@@ -98,40 +96,18 @@ export function ChainMap({
     playing,
   })
 
-  // The number on a box is how far off stock that stage is sitting, and it is
-  // also the way back: pressing it puts the stage where it booted, travelling
-  // and landing in the walk like every other verb, so a mis-aimed click is one
-  // ctrl+z away. Checked before the door, because it sits over one.
+  // Clicking a stage's door opens its panel. The touched dot beside a box is
+  // signage rather than a control, so it takes no click of its own.
   const press = (target: Element): boolean => {
-    const back = target.closest('[data-reset]')?.getAttribute('data-reset')
-    const group = GROUP_BY_NAME.get(
-      back ?? target.closest('[data-door]')?.getAttribute('data-door') ?? '',
-    )
+    const door = target.closest('[data-door]')?.getAttribute('data-door')
+    const group = GROUP_BY_NAME.get(door ?? '')
     if (!group) return false
-    if (back)
-      engine.morphTo(
-        resetGroup(group, engine.controls.get()),
-        seconds,
-        new Set(groupKeys(group)),
-      )
-    else onOpen(group.name)
+    onOpen(group.name)
     return true
   }
 
   const click = (e: MouseEvent) => {
     if (e.target instanceof Element && press(e.target)) e.preventDefault()
-  }
-
-  // A door is a link and a keyboard already works it. A number is a verb with
-  // nowhere to link to, so enter and space over one are taken here — and stopped
-  // here, because a space anywhere else on the window is the run line.
-  const key = (e: KeyboardEvent) => {
-    const target = e.target
-    if (e.key !== 'Enter' && e.key !== ' ') return
-    if (!(target instanceof Element) || !target.closest('[data-reset]')) return
-    e.preventDefault()
-    e.stopPropagation()
-    press(target)
   }
 
   return (
@@ -150,7 +126,7 @@ export function ChainMap({
           seconds={seconds}
         />
       )}
-      <div className={styles.graph} onClick={click} onKeyDown={key}>
+      <div className={styles.graph} onClick={click}>
         {mount(drawMap(map), 0)}
       </div>
       {!coarse && (

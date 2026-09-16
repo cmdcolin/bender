@@ -2,17 +2,16 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { App } from './App'
 import './testDom'
 
-// The map is the panel's only index, so everything on it has to be reachable
-// without a pointer: the boxes are links and always were, and the number over a
-// box — the way back — is a verb with nowhere to link to.
+// The map is the panel's only index, so every door on it has to be reachable
+// without a pointer: the boxes are links and always were. The touched dot
+// beside a box is signage, not a control — it takes no click and traps no key.
 
 const map = () => document.querySelector('svg')!
-const resets = () => [...map().querySelectorAll('[data-reset]')]
+const touched = () => [...map().querySelectorAll('[data-touched]')]
 
 test('every door on the map is a tab stop', () => {
   render(<App />)
@@ -21,48 +20,46 @@ test('every door on the map is a tab stop', () => {
   for (const door of doors) expect(door.getAttribute('href')).toBeTruthy()
 })
 
-test('a stage with nothing moved offers no way back', () => {
+test('a stage with nothing moved draws no touched mark', () => {
   render(<App />)
-  expect(resets()).toHaveLength(0)
+  expect(touched()).toHaveLength(0)
 })
 
-test('the number over a box is a button, named and reachable', () => {
+test('a touched stage draws a mark that is not a button', () => {
   act(() => engine.set('revMix', 0.5))
   render(<App />)
-  const back = resets()
-  expect(back.length).toBeGreaterThan(0)
-  for (const el of back) {
-    expect(el.getAttribute('role')).toBe('button')
-    expect(el.getAttribute('tabindex')).toBe('0')
-    expect(el.getAttribute('aria-label')).toMatch(/back where it booted/)
+  const marks = touched()
+  expect(marks.length).toBeGreaterThan(0)
+  for (const mark of marks) {
+    expect(mark.getAttribute('role')).toBeNull()
+    expect(mark.hasAttribute('data-reset')).toBe(false)
   }
 })
 
-// A board arrives however the morph row says boards arrive, and the way back is
-// a board like any other — so these press cut first, or the assertion reads a
-// board still in flight.
+// A board arrives however the morph row says boards arrive, so this cuts it
+// first, or the assertion below reads a board still in flight.
 const cut = () =>
   fireEvent.change(screen.getByDisplayValue(/^morph:/), {
     target: { value: '0' },
   })
 
-// Enter over the number puts the stage back, the same as clicking it.
-test('enter on the number puts the stage back', () => {
+// The mark used to double as a reset button; this is the regression, aimed at
+// proving it no longer does.
+test('clicking the touched mark does not put the stage back', () => {
   render(<App />)
   act(() => {
     cut()
-    engine.armStep()
     engine.set('revMix', 0.5)
   })
   act(() => {
-    fireEvent.keyDown(resets()[0]!, { key: 'Enter', bubbles: true })
+    fireEvent.click(touched()[0]!)
   })
-  expect(engine.controls.get().revMix).toBe(DEFAULT_CONTROLS.revMix)
+  expect(engine.controls.get().revMix).toBe(0.5)
 })
 
-// Space is the run/stop line over the whole window, so a space the map has
-// taken must not also reach the machines.
-test('space on the number resets it and stops there', () => {
+// Space used to be trapped over the number to keep it off the run line; now
+// there is nothing to trap it, over a touched stage or anywhere else.
+test('space over a touched mark still reaches the run line', () => {
   const run = vi.spyOn(engine, 'toggleRun').mockImplementation(() => {})
   render(<App />)
   act(() => {
@@ -70,19 +67,11 @@ test('space on the number resets it and stops there', () => {
     engine.set('revMix', 0.5)
   })
   act(() => {
-    fireEvent.keyDown(resets()[0]!, { key: ' ', code: 'Space', bubbles: true })
-  })
-  expect(engine.controls.get().revMix).toBe(DEFAULT_CONTROLS.revMix)
-  expect(run).not.toHaveBeenCalled()
-  run.mockRestore()
-})
-
-// And a space anywhere else on the map still belongs to the transport.
-test('space away from a number is still the run line', () => {
-  const run = vi.spyOn(engine, 'toggleRun').mockImplementation(() => {})
-  render(<App />)
-  act(() => {
-    fireEvent.keyDown(map(), { key: ' ', code: 'Space', bubbles: true })
+    fireEvent.keyDown(touched()[0]!, {
+      key: ' ',
+      code: 'Space',
+      bubbles: true,
+    })
   })
   expect(run).toHaveBeenCalledTimes(1)
   run.mockRestore()

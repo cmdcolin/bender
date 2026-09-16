@@ -294,18 +294,18 @@ test('a mic on a bend that is in no slot lands on it in the rack', () => {
   expect(box(map, 'mic')!.x).toBeLessThan(box(map, 'rack')!.x)
 })
 
-// The count is the way back as well as the reading, everywhere it is drawn: on
-// a stage of the path, on a source in the rack, and on a part on the shelf,
-// which the panel draws itself.
-test('a stage off stock draws its count as the button that puts it back', () => {
+// The touched mark is read state only, everywhere it is drawn: on a stage of
+// the path, on a source in the rack, and on a part on the shelf, which the
+// panel draws itself.
+test('a stage off stock draws a touched mark', () => {
   const board = { ...DEFAULT_CONTROLS, ringMix: 0.5, chipStarve: 0.3 }
   const svg = serialize(drawMap(buildMap(board)))
-  expect(svg).toContain('data-reset="Ring mod"')
-  expect(svg).toContain('data-reset="Toy keyboard"')
-  expect(svg).not.toContain('data-reset="Crusher"')
+  expect(svg).toContain('data-touched="Ring mod"')
+  expect(svg).toContain('data-touched="Toy keyboard"')
+  expect(svg).not.toContain('data-touched="Crusher"')
   // The README's copy takes no clicks at all, so it draws none of them.
   expect(serialize(drawMap(buildMap(board, { live: false })))).not.toContain(
-    'data-reset',
+    'data-touched',
   )
 })
 

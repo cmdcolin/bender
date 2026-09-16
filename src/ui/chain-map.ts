@@ -245,8 +245,7 @@ const ICON_COL = 16
 const CHIP_H = 16
 const CHIP_GAP = 4
 const CHIP_PAD = 5
-/** the column a stage's off-stock count, and its way back, sits in — wide
-    enough that a two-digit count is inside the button it is the face of */
+/** the column a stage's touched mark sits in, at the right of its box */
 const COUNT_COL = 18
 const COUNT_INSET = 6
 const LABEL_H = 12
@@ -583,9 +582,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const foot = [pad, bay, wear, order]
 
   // How wide a box has to be to hold what is written on it. The count column is
-  // held open whether or not anything is off stock yet: it is a button, and a
-  // rack that grows a column the first time a control moves would resize itself
-  // under every morph.
+  // held open whether or not anything is off stock yet: a rack that grows a
+  // column the first time a control moves would resize itself under every
+  // morph.
   const countCol = live ? COUNT_COL : 0
   const natural = (n: MapNode) =>
     PAD_X * 2 +
@@ -1347,60 +1346,29 @@ function words(
   )
 }
 
-// How far off stock a stage is sitting, and the way back: the number is the
-// button, in a column of its own down the right of the rack. It draws over the
-// door rather than inside it — a link inside a link is not a thing — and takes
-// the whole column as its hit box, because two digits is not a target.
-function resetButton(
+// How far off stock a stage is sitting: a dot in the column at the right of
+// its box, lit when the stage differs from default. It draws over the door
+// rather than inside it — a link inside a link is not a thing — and is
+// signage rather than a control: putting a stage back is its own panel's job.
+function touchedMark(
   name: string,
   count: number,
   right: number,
   y: number,
   h: number,
   k: Palette,
-  links: boolean,
 ): El[] {
   if (count === 0) return []
-  const digits = words(
-    String(count),
-    right - COUNT_INSET,
-    baseline(y, h, FONT),
-    FONT,
-    k.accent,
-    'end',
-  )
-  if (!links) return [digits]
-  const moved = `${count} control${count === 1 ? '' : 's'} moved`
   return [
-    el(
-      'g',
-      {
-        className: 'reset',
-        'data-reset': name,
-        // The doors are links, so a keyboard already reaches them. A number is
-        // a verb rather than a place and has no link to be, so it says what it
-        // is and takes a tab stop of its own — the panel offers no other way to
-        // put a stage back without opening it first.
-        role: 'button',
-        tabIndex: 0,
-        'aria-label': `put ${name} back where it booted — ${moved}`,
-      },
-      [
-        el('title', {}, [
-          `${name}: ${moved} — click to put them back where they booted, ctrl+z to bring them again`,
-        ]),
-        el('rect', {
-          className: 'hit',
-          x: right - COUNT_COL,
-          y: y + 1,
-          width: COUNT_COL,
-          height: h - 2,
-          rx: 3,
-          fill: 'transparent',
-        }),
-        digits,
-      ],
-    ),
+    el('g', { className: 'touched', 'data-touched': name }, [
+      el('title', {}, [`${count} control${count === 1 ? '' : 's'} moved`]),
+      el('circle', {
+        cx: right - COUNT_INSET,
+        cy: y + h / 2,
+        r: 3,
+        fill: k.accent,
+      }),
+    ]),
   ]
 }
 
@@ -1751,7 +1719,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
     ]
     return el('g', { className: 'node' }, [
       ...door(inner, n.door, links),
-      ...resetButton(n.door ?? n.label, n.count, n.x + n.w, n.y, 20, k, links),
+      ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, 20, k),
     ])
   }
   const lit = n.open ? k.fg : n.count > 0 ? k.accent : k.border
@@ -1769,7 +1737,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
       strokeWidth: n.open ? 2 : 1,
     }),
     ...glyph(n, k, n.y + (n.h - ICON) / 2),
-    // Centred on what is left between the glyph and the count's column, not on
+    // Centred on what is left between the glyph and the marker's column, not on
     // the box: both columns are there whether or not they hold anything, so a
     // label centred on the box would sit off to one side of the space it has.
     words(
@@ -1782,7 +1750,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   ]
   return el('g', { className: 'node' }, [
     ...door(inner, n.door, links),
-    ...resetButton(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k, links),
+    ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
   ])
 }
 
