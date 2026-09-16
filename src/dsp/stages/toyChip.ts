@@ -394,7 +394,12 @@ export class ToyChip implements Stage {
   // shared rail tick, and it owns the key line the FM chip is soldered onto, so
   // the demo song has to keep clocking even with the toy itself turned down.
   when(p: Float32Array) {
-    return p[IDX.chipLevel]! > 0 || p[IDX.drumLevel]! > 0 || p[IDX.fmLevel]! > 0
+    return (
+      p[IDX.chipLevel]! > 0 ||
+      p[IDX.drumLevel]! > 0 ||
+      p[IDX.fmLevel]! > 0 ||
+      p[IDX.petLevel]! > 0
+    )
   }
 
   // The only way anything here reads the ROM. The counter puts an address on

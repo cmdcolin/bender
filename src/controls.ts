@@ -274,6 +274,18 @@ export const DEFAULT_CONTROLS = {
   loopIn: 0,
   loopOut: 1,
 
+  petLevel: 0,
+  petMotor: 0.4,
+  petPitch: 1,
+  petRate: 1,
+  petChatter: 0.5,
+  petAddrLine: 0,
+  petAddrFault: 0,
+  petDataLine: 0,
+  petDataFault: 0,
+  petHold: 0,
+  petKBits: 0,
+
   // The bus the six of them sum onto, and the one thing about it that is not
   // one of their faders.
   mixDrive: 0,
