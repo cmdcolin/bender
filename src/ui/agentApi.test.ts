@@ -88,6 +88,20 @@ test('find ranks a group named as a phrase above controls matching its words', (
   expect(rows[at('dlyMix')]).toContain('Tape delay: Echo level (mix)')
 })
 
+test('find rows stay short enough that the default page of them fits in one result', () => {
+  for (const query of ['delay', 'tape delay', 'signal order', 'drum']) {
+    const rows = bender.find(query)
+    expect(rows.length).toBeLessThanOrEqual(8)
+    expect(JSON.stringify(rows).length).toBeLessThanOrEqual(1600)
+  }
+})
+
+test('describe names find for a group name', () => {
+  expect(() => bender.describe('tape delay')).toThrow(
+    "'tape delay' is a group; bender.find('Tape delay') lists its controls",
+  )
+})
+
 test('help and every guide topic fit in one browser tool result', () => {
   expect(bender.help.length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
   for (const topic of ['read', 'change', 'music', 'sound'])
