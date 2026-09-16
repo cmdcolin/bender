@@ -177,7 +177,7 @@ function cardActions(voice: SavedVoice, edits: CardEdits): HTMLElement {
         },
         () => {
           rename(to)
-          status.textContent = 'Could not rename. Check the connection.'
+          status.textContent = 'Could not rename. Try again.'
         },
       )
     }
@@ -214,7 +214,7 @@ function cardActions(voice: SavedVoice, edits: CardEdits): HTMLElement {
       },
       () => {
         idle('Delete')
-        status.textContent = 'Could not delete. Check the connection.'
+        status.textContent = 'Could not delete. Try again.'
       },
     )
   }
@@ -438,8 +438,9 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
 export function showHome(user: CloudUser, doc: HomeDoc, now = Date.now()) {
   const edits: CardEdits = {
     user,
+    // An edit that lands after a sign-out has nothing left to draw on.
     redraw: voices => {
-      showHome(user, { ...doc, voices })
+      if (signedIn?.uid === user.uid) showHome(user, { ...doc, voices })
     },
   }
   const resume = resumeSection(doc, now)
