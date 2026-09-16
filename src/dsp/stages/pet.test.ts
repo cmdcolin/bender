@@ -188,7 +188,7 @@ test('frame hold repeats frames and stretches the phrase', () => {
 })
 
 test('left in silence the pet grows sleepy and falls asleep', () => {
-  const { pet, run } = bench()
+  const { pet, run } = bench({ petChatter: 0 })
   expect(pet.mood).toBe(MOOD.awake)
   run(22)
   expect(pet.mood).toBe(MOOD.sleepy)
@@ -197,7 +197,7 @@ test('left in silence the pet grows sleepy and falls asleep', () => {
 })
 
 test('noise at the mic wakes a sleeping pet, and a shout scares it', () => {
-  const { pet, run } = bench()
+  const { pet, run } = bench({ petChatter: 0 })
   run(35)
   expect(pet.mood).toBe(MOOD.asleep)
   run(0.5, ctx => {
@@ -225,7 +225,7 @@ test('a kit hit tickles the pet chatty, and a drum roll scares it', () => {
   })
   expect(rolled.pet.mood).toBe(MOOD.scared)
 
-  const asleep = bench()
+  const asleep = bench({ petChatter: 0 })
   asleep.run(35)
   expect(asleep.pet.mood).toBe(MOOD.asleep)
   asleep.run(0.2, (ctx, secs) => {
@@ -303,4 +303,14 @@ test('the chip clock scales with the rate knob and the rail', () => {
   const stock = frames({ petChatter: 0 })
   expect(frames({ petChatter: 0, petRate: 2 })).toBeLessThan(stock * 0.7)
   expect(frames({ petChatter: 0 }, 0.3)).toBeGreaterThan(stock * 1.3)
+})
+
+test('at full Chatter a pet left in silence keeps waking up to talk', () => {
+  const { pet, run } = bench({ petChatter: 1 })
+  let awake = 0
+  for (let s = 0; s < 300; s++) {
+    run(1)
+    if (pet.mood !== MOOD.asleep) awake++
+  }
+  expect(awake).toBeGreaterThan(150)
 })

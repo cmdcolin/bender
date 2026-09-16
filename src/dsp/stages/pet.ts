@@ -72,6 +72,9 @@ const SCARE = 0.6
 const ENV_EARS = 0.5
 const DEAF_SECS = 0.4
 const QUIET_TO_SLEEPY = 20
+/** Extra seconds of quiet before sleep, and wakes a second while asleep, at full Chatter. */
+const CHATTER_STAYS_UP = 100
+const CHATTER_WAKES = 0.05
 const SLEEPY_TO_ASLEEP = 6
 const CHATTY_SECS = 8
 const SCARED_SECS = 5
@@ -366,12 +369,15 @@ export class Pet implements Stage {
     const loud = this.sound > SCARE
     const heardAny = this.sound > WAKE
     const mood = this.moodNow
+    const chatter = p[IDX.petChatter]! ** 2
     this.quiet = heardAny || hit ? 0 : this.quiet + dt
     if (mood !== MOOD.asleep) this.hunger += dt
 
     switch (mood) {
       case MOOD.asleep:
         if (hit || heardAny) this.enter(low ? MOOD.sleepy : MOOD.awake)
+        else if (!low && this.rng() < chatter * CHATTER_WAKES * dt)
+          this.enter(MOOD.awake)
         break
       case MOOD.sleepy:
         if (loud) this.enter(MOOD.scared)
@@ -392,7 +398,8 @@ export class Pet implements Stage {
             this.moodTime = 0
             if (!this.speaking) this.pending = PHRASE.laugh
           } else this.enter(MOOD.chatty)
-        } else if (this.quiet > QUIET_TO_SLEEPY) this.enter(MOOD.sleepy)
+        } else if (this.quiet > QUIET_TO_SLEEPY + CHATTER_STAYS_UP * chatter)
+          this.enter(MOOD.sleepy)
         else if (mood === MOOD.chatty && this.moodTime > CHATTY_SECS)
           this.enter(MOOD.awake)
         else if (mood === MOOD.awake && this.hunger > HUNGER_SECS)

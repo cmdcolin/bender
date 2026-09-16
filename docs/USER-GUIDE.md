@@ -326,7 +326,8 @@ zero; raise **Level** and it says hello. What it says next depends on its mood:
 - **sleepy**: yawns, then falls asleep. A low supply keeps it here.
 
 The pet hears the mic and the board's own output, and ignores the board's output
-while it is talking. **Chatter** sets how often it talks unprompted. **Pitch**
+while it is talking. **Chatter** sets how often it talks unprompted; turned up,
+the pet also stays awake longer in quiet and wakes up on its own. **Pitch**
 moves the voice alone; **Clock** moves pitch, formants and speed together.
 **Motor** is the sound of the eye and ear motor, which loads the shared supply
 whenever it turns. The knife, **Frame hold** and **K bits** are covered in

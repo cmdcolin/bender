@@ -1396,7 +1396,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How often the pet talks with nobody prompting it. The phrase comes from its mood. Sound wakes it, a loud sound scares it, kit hits tickle it, quiet sends it to sleep, a long time awake makes it hungry, and a low supply makes it sleepy.',
+        help: 'How often the pet talks with nobody prompting it. Higher settings also keep it awake longer in quiet and wake it on its own. The phrase comes from its mood. Sound wakes it, a loud sound scares it, kit hits tickle it, quiet sends it to sleep, a long time awake makes it hungry, and a low supply makes it sleepy.',
       },
       {
         key: 'petHold',
