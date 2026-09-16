@@ -148,7 +148,13 @@ test('the open stage is lit, and nothing else is', () => {
 
 test('each source is a box of its own, and a door of its own', () => {
   const map = buildMap(DEFAULT_CONTROLS)
-  for (const name of ['Toy keyboard', 'FM chip', 'Chaos osc', 'Sampler'])
+  for (const name of [
+    'Toy keyboard',
+    'FM chip',
+    'Chaos osc',
+    'Sampler',
+    'Talking pet',
+  ])
     expect(box(map, name.replace(/\W+/g, '_'))?.kind).toBe('inst')
   expect(hop(map, 'Chaos_osc', 'mix')).toBeTruthy()
   const svg = serialize(drawMap(map))
@@ -156,10 +162,9 @@ test('each source is a box of its own, and a door of its own', () => {
   expect(svg).toContain('Noise &amp; crackle')
 })
 
-// The three chips share one supply and one key line, and the map says so with a
-// frame round them and a wire between two of them — which is the whole reason
-// the sources stopped being six alike rows.
-test('the toy board frames its three chips, and wires the key line', () => {
+// The four boxes on the toy board share one supply, and two share a key line;
+// the map says so with a frame round them and a wire between two of them.
+test('the toy board frames its four boxes, and wires the key line', () => {
   const map = buildMap(DEFAULT_CONTROLS)
   const frame = box(map, 'toy_board')!
   expect(frame.kind).toBe('frame')
@@ -168,15 +173,13 @@ test('the toy board frames its three chips, and wires the key line', () => {
   // them, the way every other door on the drawing is named for what it opens.
   expect(frame.door).toBe('Board parts')
   expect(frame.label).toBe('board parts')
-  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums']) {
+  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums', 'Talking_pet']) {
     const chip = box(map, id)!
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)
     expect(chip.x + chip.w).toBeLessThanOrEqual(frame.x + frame.w)
   }
-  // The bar drops onto all three, which is what one supply means. It reached
-  // only two while the chip sat under the keyboard rather than beside it, and
-  // being inside the frame was what said the chip took the supply too.
-  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums'])
+  // The bar drops onto every box in the frame, which is what one supply means.
+  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums', 'Talking_pet'])
     expect(hop(map, 'toy_board', id)?.color).toBe(PANEL.dim)
   // Soldered, so it is on the map whatever the board is set to — and it is the
   // warm colour, because a patched cable is the cool one.
@@ -186,11 +189,11 @@ test('the toy board frames its three chips, and wires the key line', () => {
   expect(key.label?.text).toBe('key')
 })
 
-// One row of three, and which one the chip stands next to is the whole of what
+// One row, and which one the chip stands next to is the whole of what
 // the drawing has left to say about the key line: it is soldered to the
 // keyboard's gate and to nothing else, so it sits against the keyboard and the
 // drums sit the far side of it.
-test('the three chips make one row, the FM chip against the keyboard', () => {
+test('the toy board makes one row, the FM chip against the keyboard', () => {
   const map = buildMap(DEFAULT_CONTROLS)
   const keys = box(map, 'Toy_keyboard')!
   const drums = box(map, 'Toy_drums')!
@@ -199,6 +202,9 @@ test('the three chips make one row, the FM chip against the keyboard', () => {
   expect(drums.y).toBe(keys.y)
   expect(keys.x + keys.w).toBeLessThanOrEqual(fm.x)
   expect(fm.x + fm.w).toBeLessThanOrEqual(drums.x)
+  const pet = box(map, 'Talking_pet')!
+  expect(pet.y).toBe(keys.y)
+  expect(drums.x + drums.w).toBeLessThanOrEqual(pet.x)
   // By its label and not the row's: the one you do not play should not come out
   // the size of the two you do.
   expect(fm.w).toBeLessThan(keys.w)
@@ -230,6 +236,10 @@ test('a source box carries how far up its fader is, on its own travel', () => {
   expect(level({ ...DEFAULT_CONTROLS, sampleLevel: 1 }, 'Sampler')).toBeCloseTo(
     0.5,
   )
+  expect(box(buildMap(DEFAULT_CONTROLS), 'Talking_pet')!.active).toBe(false)
+  expect(
+    level({ ...DEFAULT_CONTROLS, petLevel: 0.4 }, 'Talking_pet'),
+  ).toBeCloseTo(0.4)
 })
 
 // Every source draws its own glyph, and the one that is running draws it in the

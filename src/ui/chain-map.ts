@@ -103,6 +103,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
   Sampler: ['sampleLevel'],
+  'Talking pet': ['petLevel'],
 }
 
 // The two you play, side by side across the head of the toy board. They are the
@@ -117,10 +118,14 @@ const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
 // beside it empty. Adjacency says it for nothing, and the row had the width to
 // give — two boxes were being stretched to 190 to carry labels wanting 128.
 //
-// All three are inside the frame because all three are one piece of hardware on
+// All of them are inside the frame because they are one piece of hardware on
 // one supply, which is what the frame and its rail are there to say; the starve
 // knob on the keyboard's panel bends every one of them.
 const FM_CHIP = 'FM chip'
+
+// On the same batteries as the other three, so inside the frame and under the
+// rail, at the far end of the row from the keyboard.
+const PET = 'Talking pet'
 
 // The three that take no supply and no trigger from anything: they start where
 // they stand, and they are the only sources on the board that do.
@@ -399,9 +404,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     })
   }
 
-  // The sources, as the six boxes they are. Which of them is wired to which is
-  // the thing the map is here to say, and a rack of six alike rows said none of
-  // it: three of these share a supply, one of the three has no keyboard of its
+  // The sources, as the seven boxes they are. Which of them is wired to which is
+  // the thing the map is here to say, and a rack of seven alike rows said none of
+  // it: four of these share a supply, one of the four has no keyboard of its
   // own, and the other three start where they stand.
   const playing = new Set(o.playing ?? [])
   const instrument = (name: string): MapNode => {
@@ -418,11 +423,12 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
   const toys = TOY_ROW.map(instrument)
   const fm = instrument(FM_CHIP)
-  const chips = [...toys, fm]
+  const pet = instrument(PET)
+  const chips = [...toys, fm, pet]
   const lines = LINE_ROW.map(instrument)
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
-  // So the lip says what it opens rather than what the outline is: three named
+  // So the lip says what it opens rather than what the outline is: four named
   // machines and a supply rail across them already say that this is the toy
   // board, and nothing else on the drawing said where its parts were.
   doors.add('Board parts')
@@ -430,7 +436,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     door: 'Board parts',
   })
   // The bus is a stage like any other: it has a door, a count and a way back,
-  // because what the six faders are set to against each other is a setting of
+  // because what the seven faders are set to against each other is a setting of
   // the board and was the one the panel had nowhere to show. Its id stays 'mix'
   // — the feedback return and the mic wire both name it by that.
   doors.add('Mix bus')
@@ -558,10 +564,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // One content width for the whole drawing, wide enough for the source band
   // and for the folded path both, and whichever came out narrower stretches to
-  // it. The band is the usual winner: six boxes across beats two columns.
+  // it. The band is the usual winner: seven boxes across beats two columns.
   const content = Math.ceil(
     Math.max(
-      sum(chips) + INST_GAP * 2 + FRAME_PAD * 2,
+      sum(chips) + INST_GAP * (chips.length - 1) + FRAME_PAD * 2,
       sum(lines) + INST_GAP * (lines.length - 1),
       sum(foot) + INST_GAP * (foot.length - 1),
       cols *
@@ -658,10 +664,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // By their labels rather than evenly: the chip is the one you do not play and
   // it should not come out the size of the two you do.
   spread(
-    [toys[0]!, fm, toys[1]!],
+    [toys[0]!, fm, toys[1]!, pet],
     FRAME_PAD,
     content - FRAME_PAD * 2,
-    [INST_GAP, INST_GAP],
+    [INST_GAP, INST_GAP, INST_GAP],
     natural,
   )
   spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
@@ -771,9 +777,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // --- inside the toy board -------------------------------------------------
 
-  // The supply: one bar over all three, because it is one rail. The starve knob
+  // The supply: one bar over all four, because it is one rail. The starve knob
   // that drags it sits on the keyboard's panel, and this is the only thing on
-  // the map that says the other two go with it.
+  // the map that says the other three go with it.
   bar(
     'rail',
     board,
@@ -1389,7 +1395,7 @@ function levelBar(n: MapNode, k: Palette): El[] {
 }
 
 // What each source is, drawn rather than spelt: a 12px glyph in the left of its
-// own box, so the six read as six different machines before the names are. It
+// own box, so the seven read as seven different machines before the names are. It
 // carries the run state too — a machine lights its glyph while something is
 // coming out of it, which is one marker doing the work of two.
 const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
@@ -1542,6 +1548,25 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       strokeWidth: 0.9,
     }),
   ],
+  'Talking pet': (x, y, c) => [
+    el('path', {
+      d: `M ${x + 2.2} ${y + 4.6} L ${x + 1.2} ${y + 0.8} L ${x + 4.6} ${y + 2.6} M ${x + 9.8} ${y + 4.6} L ${x + 10.8} ${y + 0.8} L ${x + 7.4} ${y + 2.6}`,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+      strokeLinejoin: 'round',
+    }),
+    el('circle', {
+      cx: x + 6,
+      cy: y + 7,
+      r: 4.6,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('circle', { cx: x + 4.3, cy: y + 6.4, r: 0.9, fill: c }),
+    el('circle', { cx: x + 7.7, cy: y + 6.4, r: 0.9, fill: c }),
+  ],
   Sampler: (x, y, c) => [
     el('path', {
       d: [3.4, 8, 5, 10.4, 6, 2.8]
@@ -1586,7 +1611,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
     ])
   }
   // The toy board: an outline round what is one piece of hardware, and the
-  // cheapest way on a drawing to say that three things share a supply. Dashed,
+  // cheapest way on a drawing to say that four things share a supply. Dashed,
   // because it is a boundary rather than anything signal travels along. The lip
   // carries the door onto the parts the outline is round — the ones that are
   // hardware rather than a stage, and so have no box of their own — and is

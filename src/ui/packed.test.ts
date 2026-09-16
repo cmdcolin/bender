@@ -47,6 +47,9 @@ const PINNED_ORDER = [
   { keys: 261, digest: '3af9e04e' },
   // the stacked memory chips and the switch that reads them
   { keys: 326, digest: '2e0026f0' },
+  // everything up to the talking pet, and the pet's eleven
+  { keys: 373, digest: '0f65a968' },
+  { keys: 384, digest: '99a9b1e1' },
 ]
 
 const digest = (keys: readonly string[]) => {
@@ -102,6 +105,14 @@ test('a link made the day the format was pinned still opens its own board', () =
   const board: Controls = { ...stock(), ...GOLDEN_BOARD }
   expect(packControls(board, nothing)).toBe(GOLDEN_LINK)
   expect(unpackControls(GOLDEN_LINK, nothing)).toEqual(GOLDEN_BOARD)
+})
+
+test('a link made before the talking pet opens with the pet at zero', () => {
+  const board = { ...stock(), ...unpackControls(GOLDEN_LINK, nothing) }
+  expect(board.petLevel).toBe(0)
+  expect(packControls(board, nothing)).toBe(GOLDEN_LINK)
+  const talking = { ...board, petLevel: 0.5, petKBits: 0.3, petAddrLine: 4 }
+  expect(round(talking)).toEqual(talking)
 })
 
 // The failure this format is built against: someone widens a travel, and every

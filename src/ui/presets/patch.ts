@@ -70,9 +70,11 @@ const LANDINGS: Landing[] = [
   at('glitch', ['glitchMix'], { bend: 'glitch' }),
   at('shift Hz', ['shiftMix'], { bend: 'shift' }),
   at('chip clock', ['chipLevel']),
-  // The rail the whole toy runs off, so any of the three machines on it being
+  // The rail the whole toy runs off, so any of the four machines on it being
   // up is a wire there you can hear.
-  at('starve', [], { oneOf: ['chipLevel', 'drumLevel', 'fmLevel'] }),
+  at('starve', [], {
+    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'petLevel'],
+  }),
   at('drum tune', ['drumLevel']),
   // The retrigger is a multiplier on the rate you set: a wire onto a kit that
   // isn't retriggering multiplies zero.
@@ -114,6 +116,13 @@ const LANDINGS: Landing[] = [
   at('FM data fault', ['fmLevel', 'fmDataLine']),
   at('FM addr fault', ['fmLevel', 'fmAddrLine']),
   at('FM wave fault', ['fmLevel', 'fmWaveLine']),
+  at('pet level', ['petLevel']),
+  at('pet pitch', ['petLevel']),
+  at('pet rate', ['petLevel']),
+  at('pet addr line', ['petLevel']),
+  at('pet data line', ['petLevel']),
+  at('pet addr fault', ['petLevel', 'petAddrLine']),
+  at('pet data fault', ['petLevel', 'petDataLine']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

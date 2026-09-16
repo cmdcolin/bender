@@ -3,7 +3,7 @@ import { SOURCE_TAPS, TAP_MIC, type SourceTap } from '../../engine/params'
 import type { ControlKey } from '../../controls'
 import type { Group } from './types'
 
-// Where the six of them meet.
+// Where the seven of them meet.
 //
 // Every source has a fader and every fader was on its own machine's panel, one
 // press and a scroll away from the next — so the one question a mix is actually
@@ -19,11 +19,11 @@ import type { Group } from './types'
 
 // One strip of the desk: the fader, the machine it belongs to — which is the
 // name the map draws it under, not the word the fader carries on its own panel,
-// where six rows all reading *Level* would be a mixer nobody can use — and which
+// where seven rows all reading *Level* would be a mixer nobody can use — and which
 // tap on the bus reads it back.
 //
-// The first six are in the order the chain sums them, taken off the same list
-// the audio thread lays its taps out in; the mic is the seventh because it is a
+// The first seven are in the order the chain sums them, taken off the same list
+// the audio thread lays its taps out in; the mic is the eighth because it is a
 // wire rather than a channel, and only one of its seven settings reaches the
 // bus at all.
 export interface Channel {
@@ -50,6 +50,7 @@ export const CHANNELS: readonly Channel[] = [
     tap: sourceTap('sampler'),
     yours: true,
   },
+  { key: 'petLevel', name: 'Talking pet', tap: sourceTap('pet') },
   { key: 'micLevel', name: 'Mic', tap: TAP_MIC, yours: true },
 ]
 
@@ -67,7 +68,7 @@ export const MIX_GROUPS: Group[] = [
         max: 24,
         step: 0.5,
         unit: 'dB',
-        help: 'The summing amp the six of them meet in. At unity it is a wire, so nothing happens here until you move it. Wound up it is the one saturation ahead of the bends, so the whole board arrives at them driven together — and whatever is loudest is what ducks the rest.',
+        help: 'The summing amp the seven sources meet in. At unity it is a wire, so nothing happens here until you move it. Wound up it is the one saturation ahead of the bends, so the whole board arrives at them driven together — and whatever is loudest is what ducks the rest.',
       },
     ],
   },
