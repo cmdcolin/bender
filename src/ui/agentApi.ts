@@ -32,19 +32,23 @@ import { applyPreset, PRESETS, presetNameFor } from './presets'
 import { coerceControl, encodeControls } from './share'
 import { formatValue } from './slider-scale'
 
-const HELP = `window.bender controls bender, a circuit-bent toy keyboard, drum machine and effects chain built on Web Audio. Each call reads or changes the controls the panel shows. A person can move a control between two of your calls, so read the state again before relying on it.
+// The Claude in Chrome extension cuts a returned string at 1000 characters and
+// blocks some longer ones outright, so each text an agent reads stays under
+// GUIDE_MAX_CHARS.
+export const GUIDE_MAX_CHARS = 900
 
-Reading state: bender.summary() reports whether audio is running, what is playing, the preset and the undo depth. bender.board() lists each control that differs from its default as "key = value", the melody and drum pattern as text, and a link to the board. bender has about 250 controls. bender.find('starve rail') searches control keys, labels, groups and help text, and bender.find() with no argument lists the groups. bender.describe('chipStarve') returns one control's range, unit, choices and help.
+const HELP = `window.bender controls bender, a circuit-bent toy keyboard and drum machine built on Web Audio. Each call reads or changes the controls the panel shows, and a person can move a control between two of your calls, so read the state again before relying on it. Start with bender.summary(). The rest of the contract is in four short topics: bender.guide('read') covers board, find and describe; bender.guide('change') covers set, presets, load, reset and undo; bender.guide('music') covers tune and drums; bender.guide('sound') covers start, play, stop, listen and link.`
 
-Changing controls: bender.set({ chipStarve: 0.8, chipTone: 'reed' }, seconds?) accepts numbers, choice names, and unique prefixes of choice names. It returns { applied, adjusted, unknown, failed }: adjusted lists values clamped to the range or rounded to the step, unknown lists keys that match no control, and failed lists values set could not read. set leaves the controls in unknown and failed unchanged. With seconds > 0 the controls glide to the new values on animation frames, and the browser pauses animation frames in a hidden tab. Each call to set adds one undo step: bender.undo() and bender.redo(). bender.presets(search?) lists the presets, bender.load('dying toy', seconds?) loads one, and bender.reset(seconds?) restores the defaults.
+const GUIDE = {
+  read: `Reading the board. bender.summary() reports whether audio is running, what is playing, the preset, how many controls differ from their defaults, and the undo depth. bender.board() lists each changed control as a row with its key, value, group and default, plus the melody lanes and drum rows as text. bender has about 250 controls, so search before guessing a key. bender.find('delay feedback') ranks controls by key, label, group and help text and returns one row per control with its range; bender.find() with no argument lists the groups. A row marked mix or level belongs to the control that makes its stage audible, and the stage adds nothing while that control is at 0. bender.describe('chipStarve') returns one control's range, step, unit, choices and help.`,
+  change: `Changing controls. bender.set({ chipStarve: 0.8, chipTone: 'reed' }) accepts numbers, choice names and unique prefixes of choice names, and returns four lists. applied names what changed, adjusted lists values clamped to the range or rounded to the step, unknown lists keys that match no control with the closest real keys, and failed lists values set could not read; set leaves those controls unchanged. A number of seconds as the second argument glides the controls there on animation frames, which the browser pauses in a hidden tab. Each call adds one undo step, and bender.undo() and bender.redo() walk them. bender.presets('word') lists presets, bender.load('dying toy') loads one, and bender.reset() restores the defaults; load and reset also take seconds.`,
+  music: `Writing music. bender.tune('C4 E4 G4 ~ . C5') writes the melody memory with one token per step, up to 32: a note name from C2 to C#7, a dot for a rest, or a tilde to hold the previous note. tune also switches the chip to play the memory at tuneRate steps per second. An array of up to three strings writes chords, one string per lane. bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. An x is a hit, a question mark is a hit with probability drumChance, and a dot is a rest. Each character is a sixteenth note, so a beat is four characters. The string length sets the row's loop length, an empty string clears the row, and rows missing from the call keep their pattern. drumBpm sets the tempo.`,
+  sound: `Sound. The browser keeps audio suspended until the page receives a click or key press. await bender.start() returns running, or a message while audio is still suspended; then click an empty area of the page and call start again. bender.play() starts the melody and the drums, bender.play('song') or bender.play('drums') starts one, and bender.stop() stops both. A screenshot shows the panel and contains no measurement of the sound. await bender.listen(1500) reads the meters for that many milliseconds, at most 20000, and returns the peak level in dBFS, the largest limiter gain reduction, the lowest toy supply rail level (1 is full batteries), the watchdog reboots, the sources with signal, the notes each chip played and the drum voices hit. bender.link() returns a URL that loads the current board in any tab.`,
+}
 
-Writing music: bender.tune('C4 E4 G4 ~ . C5 | ...') writes the melody memory, one token per step: a note name from C2 to C#7, '.' for a rest, or '~' to hold the previous note, up to 32 steps. tune also switches the chip to play the melody memory, at tuneRate steps per second. An array of up to three strings writes chords, one string per lane. bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }) writes the named rows: kick, snare, hat, clap, tom, bell, open hat, cymbal and accent. 'x' is a hit, '?' is a hit with probability drumChance, and '.' is a rest. The string length sets the row's loop length, an empty string clears the row, and drums leaves the rows missing from the call unchanged. drumBpm sets the tempo.
+type Topic = keyof typeof GUIDE
 
-Starting audio: the browser keeps the AudioContext suspended until the page receives a click or key press. await bender.start() returns 'running' or a suspended message; while suspended, click anywhere on the page and call start again. bender.play('both' | 'song' | 'drums') starts the sequencers, and bender.stop() stops both.
-
-Measuring sound: a screenshot shows the panel and the scope and contains no measurement of the sound. await bender.listen(ms) reads the meters for ms milliseconds (default 1500, maximum 20000) and returns the peak level in dBFS, the largest limiter gain reduction, the lowest level of the toy supply rail (1 is full batteries), the number of watchdog reboots, the sources with signal, the notes each chip played and the drum voices hit.
-
-bender.link() returns a #set= URL that loads the current board in any tab.`
+const isTopic = (topic: string): topic is Topic => Object.hasOwn(GUIDE, topic)
 
 const MAX_LISTEN_MS = 20000
 const START_WAIT_MS = 1000
@@ -89,13 +93,22 @@ function score(def: SliderDef, word: string): number {
   return def.help.toLowerCase().includes(word) ? 5 : 0
 }
 
+// A query naming a group or a label as a phrase ranks that group's controls
+// above controls that match its words one at a time, so 'tape delay' lists the
+// Tape delay controls before tapeMix.
 function search(query: string, limit: number) {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean)
+  const phrase = query.toLowerCase().trim()
+  const words = phrase.split(/\s+/).filter(Boolean)
   return ALL_SLIDERS.map(def => {
     const scores = words.map(w => score(def, w))
+    if (scores.includes(0)) return { def, score: 0 }
+    const named = `${groupOf(def.key)} ${def.label}`.toLowerCase()
     return {
       def,
-      score: scores.includes(0) ? 0 : scores.reduce((a, b) => a + b, 0),
+      score:
+        scores.reduce((a, b) => a + b, 0) +
+        (words.length > 1 && named.includes(phrase) ? 100 : 0) +
+        (def.role ? 5 : 0),
     }
   })
     .filter(hit => hit.score > 0)
@@ -199,7 +212,7 @@ function drumLines(c: Controls) {
 const audioState = () =>
   engine.running.get()
     ? 'running'
-    : 'suspended: click anywhere on the page, then call bender.start() again'
+    : 'suspended: click an empty area of the page, then call bender.start() again'
 
 const presetName = (c: Controls) =>
   presetNameFor(c) ??
@@ -295,6 +308,15 @@ async function listen(ms = 1500) {
 export function createBenderApi() {
   return {
     help: HELP,
+
+    guide(topic = '') {
+      if (!isTopic(topic))
+        throw new Error(
+          `no guide topic '${topic}'; topics: ${Object.keys(GUIDE).join(', ')}`,
+        )
+      return GUIDE[topic]
+    },
+
     summary,
 
     board() {
@@ -308,7 +330,6 @@ export function createBenderApi() {
         song: show('chipTune', c.chipTune),
         tune: tuneLines(c),
         drums: drumLines(c),
-        link: link(),
       }
     },
 
@@ -318,7 +339,7 @@ export function createBenderApi() {
       const c = engine.controls.get()
       return search(query, limit).map(
         def =>
-          `${def.key} = ${formatValue(def, c[def.key])}  ${groupOf(def.key)}: ${def.label}, ${range(def)}. ${firstSentence(def.help)}`,
+          `${def.key} = ${formatValue(def, c[def.key])}  ${groupOf(def.key)}: ${def.label}${def.role ? ` (${def.role})` : ''}, ${range(def)}. ${firstSentence(def.help)}`,
       )
     },
 

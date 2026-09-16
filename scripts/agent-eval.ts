@@ -30,7 +30,6 @@ const outDir = path.resolve(
 let deviceId = flag('device', '')
 
 const BASE = '/bender'
-const HELP_END = 'loads the current board in any tab.'
 
 interface Task {
   name: string
@@ -92,13 +91,11 @@ const BRIDGE_JS = `
   const AsyncFunction = (async () => {}).constructor
   async function poll() {
     let job
-    if (document.visibilityState === 'visible') {
-      try {
-        const q = new URLSearchParams({ token, href: location.href })
-        const r = await fetch('/__eval/next?' + q, { cache: 'no-store' })
-        job = r.status === 200 ? await r.json() : undefined
-      } catch {}
-    }
+    try {
+      const q = new URLSearchParams({ token, href: location.href })
+      const r = await fetch('/__eval/next?' + q, { cache: 'no-store' })
+      job = r.status === 200 ? await r.json() : undefined
+    } catch {}
     if (job) {
       let body
       try {
@@ -238,16 +235,18 @@ function serve(root: string) {
     fs.createReadStream(file).pipe(res)
   })
 
+  // Chrome throttles timers in a background tab to one a second, so a page
+  // polling every 250 ms can still go a second between polls.
   const live = () =>
     [...pages.values()]
-      .filter(p => Date.now() - p.lastPoll < 2000)
+      .filter(p => Date.now() - p.lastPoll < 5000)
       .toSorted((a, b) => b.loadedAt - a.loadedAt)
 
   return new Promise<{
     origin: string
-    current: () => Page | undefined
-    waitForPage: (timeoutMs: number, after: number) => Promise<Page>
+    newestSince: (after: number) => Page | undefined
     evaluate: (
+      page: Page,
       code: string,
       answer?: string,
       timeoutMs?: number,
@@ -258,29 +257,11 @@ function serve(root: string) {
       const address = server.address()
       const port = typeof address === 'object' && address ? address.port : 0
       const origin = `http://localhost:${port}`
-      const current = () => live().find(p => p.href.startsWith(origin))
       resolve({
         origin,
-        current,
-        waitForPage: async (timeoutMs, after) => {
-          const deadline = Date.now() + timeoutMs
-          for (;;) {
-            const page = live().find(
-              p => p.href.startsWith(origin) && p.loadedAt > after,
-            )
-            if (page) return page
-            if (Date.now() > deadline)
-              throw new Error('no page with the eval bridge polled in time')
-            await new Promise(r => setTimeout(r, 200))
-          }
-        },
-        evaluate: (code, answer = '', timeoutMs = 60_000) =>
+        newestSince: after => live().find(p => p.loadedAt > after),
+        evaluate: (page, code, answer = '', timeoutMs = 60_000) =>
           new Promise((resolveValue, reject) => {
-            const page = current()
-            if (!page) {
-              reject(new Error('no live page to evaluate in'))
-              return
-            }
             const id = ++nextId
             const timer = setTimeout(() => {
               inFlight.delete(id)
@@ -406,9 +387,8 @@ function count(events: StreamEvent[]) {
     other: 0,
     errors: 0,
   }
-  let helpChars = 0
-  let helpWhole = false
   let blocked = 0
+  let truncated = 0
   for (const ev of events) {
     for (const block of ev.message?.content ?? []) {
       if (block.type === 'tool_use') {
@@ -423,32 +403,21 @@ function count(events: StreamEvent[]) {
       if (block.type === 'tool_result') {
         const text = resultText(block)
         if (block.is_error) calls.errors++
-        if (text.includes('window.bender controls bender')) {
-          helpChars = Math.max(helpChars, text.length)
-          helpWhole ||= text.includes(HELP_END)
-        }
         blocked += text.split('[BLOCKED').length - 1
+        truncated += text.split('[TRUNCATED').length - 1
       }
     }
   }
   const result = events.find(ev => ev.type === 'result')
   return {
     ...calls,
-    helpChars,
-    helpWhole,
     blocked,
+    truncated,
     turns: result?.num_turns ?? 0,
     seconds: Math.round((result?.duration_ms ?? 0) / 1000),
     usd: Number((result?.total_cost_usd ?? 0).toFixed(3)),
     answer: result?.result ?? '',
   }
-}
-
-function openTab(url: string) {
-  spawn('google-chrome', ['--profile-directory=Default', url], {
-    detached: true,
-    stdio: 'ignore',
-  }).unref()
 }
 
 fs.mkdirSync(outDir, { recursive: true })
@@ -467,47 +436,41 @@ if (!deviceId) {
   console.log(`connected browser ${deviceId}`)
 }
 
-const systemPrompt = `You are playing bender, a circuit-bent toy keyboard and drum machine, through the Claude in Chrome tools. The bender tab is already open at ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes window.bender, a scripting API; evaluate bender.help for the contract, then orient with bender.summary(). javascript_tool returns the value of the last expression. Do the task, check the result, then reply with one line. Do not ask questions and do not open other sites.`
+const systemPrompt = `You are playing bender, a circuit-bent toy keyboard and drum machine, through the Claude in Chrome tools. Open ${appUrl} in the only connected browser, whose deviceId is ${deviceId}: call select_browser with it before the first browser action and do not ask which browser to use. The page exposes window.bender, a scripting API; evaluate bender.help for the contract, then orient with bender.summary(). javascript_tool returns the value of the last expression. Do the task, check the result, then reply with one line. Do not ask questions and do not open other sites.`
 
-async function resetPage() {
-  const before = Date.now()
-  if (bridge.current()) {
+// Each session opens the app in a tab of its own, so the grader reads the page
+// loaded most recently after the session started, then stops its audio and
+// blanks the tab.
+async function grade(task: Task, startedAt: number, answer: string) {
+  const page = bridge.newestSince(startedAt)
+  if (!page) return { pass: false, detail: 'the agent never loaded the app' }
+  try {
+    const graded = (await bridge.evaluate(page, task.grade, answer)) as {
+      pass?: boolean
+      detail?: unknown
+    } | null
+    return { pass: graded?.pass === true, detail: graded?.detail }
+  } catch (e) {
+    return { pass: false, detail: `grader threw: ${String(e)}` }
+  } finally {
     await bridge
       .evaluate(
-        `bender.stop(); bender.reset(); history.replaceState(null, '', ${JSON.stringify(appUrl)}); setTimeout(() => location.reload(), 50); return true`,
+        page,
+        `bender.stop(); setTimeout(() => location.replace('about:blank'), 50); return true`,
         '',
-        5000,
+        10_000,
       )
       .catch(() => undefined)
-  } else {
-    openTab(appUrl)
   }
-  await bridge.waitForPage(60_000, before)
-  await bridge.evaluate(
-    `for (let i = 0; i < 100 && !window.bender; i++) await new Promise(r => setTimeout(r, 200))
-     if (!window.bender) throw new Error('window.bender never appeared')
-     return true`,
-    '',
-    30_000,
-  )
 }
 
 const rows: Record<string, unknown>[] = []
 try {
   for (const task of TASKS.filter(t => t.name.includes(filter))) {
-    await resetPage()
+    const startedAt = Date.now()
     const events = await claudeChrome(task.prompt, systemPrompt, cwd, 30)
     const counted = count(events)
-    let verdict: { pass: boolean; detail: unknown }
-    try {
-      const graded = (await bridge.evaluate(task.grade, counted.answer)) as {
-        pass?: boolean
-        detail?: unknown
-      } | null
-      verdict = { pass: graded?.pass === true, detail: graded?.detail }
-    } catch (e) {
-      verdict = { pass: false, detail: `grader threw: ${String(e)}` }
-    }
+    const verdict = await grade(task, startedAt, counted.answer)
     const row = { task: task.name, ...verdict, ...counted }
     rows.push(row)
     fs.writeFileSync(
@@ -515,7 +478,7 @@ try {
       JSON.stringify({ task, row, events }, null, 2),
     )
     console.log(
-      `${verdict.pass ? 'pass' : 'FAIL'}  ${task.name.padEnd(16)} js=${counted.javascript} clicks=${counted.clicks} shots=${counted.screenshots} other=${counted.other} errors=${counted.errors} help=${counted.helpChars}${counted.helpWhole ? '' : ' (clipped)'} blocked=${counted.blocked} ${counted.seconds}s $${counted.usd}`,
+      `${verdict.pass ? 'pass' : 'FAIL'}  ${task.name.padEnd(16)} js=${counted.javascript} clicks=${counted.clicks} shots=${counted.screenshots} other=${counted.other} errors=${counted.errors} blocked=${counted.blocked} truncated=${counted.truncated} ${counted.seconds}s $${counted.usd}`,
     )
     console.log(`      ${JSON.stringify(verdict.detail)}`)
     console.log(`      answer: ${counted.answer.slice(0, 240)}`)

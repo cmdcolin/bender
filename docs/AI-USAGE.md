@@ -4,7 +4,8 @@ bender publishes `window.bender`, a JavaScript API that a browsing agent calls
 to read and change the board, write melodies and drum patterns, and measure the
 sound. The app page also carries a `<meta name="ai-instructions">` tag and logs
 a console message, and both tell the agent to read `bender.help` first.
-`bender.help` documents every call.
+`bender.help` gives an overview and names four topics, and `bender.guide(topic)`
+documents the calls in each.
 
 ## Claude in Chrome
 
@@ -36,8 +37,9 @@ Then ask Claude Code to open the public URL, or
 
 | Call                                   | Effect                                                                                 |
 | -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `bender.guide(topic)`                  | the calls for `read`, `change`, `music` or `sound`                                     |
 | `bender.summary()`                     | audio state, what is playing, the preset and the undo depth                            |
-| `bender.board()`                       | changed controls as `key = value`, the melody and drum pattern as text, and a link     |
+| `bender.board()`                       | changed controls as `key = value`, and the melody and drum pattern as text             |
 | `bender.find(words)`                   | ranked search over control keys, labels, groups and help text                          |
 | `bender.describe(key)`                 | one control's range, unit, choices and help                                            |
 | `bender.set(values, seconds?)`         | sets controls and returns `{ applied, adjusted, unknown, failed }`                     |
@@ -63,6 +65,10 @@ Then ask Claude Code to open the public URL, or
   values to the audio worklet immediately, in any tab.
 - A screenshot shows the panel and the scope. `bender.listen` measures the sound
   from the meters.
+- The Claude in Chrome JavaScript tool cuts a returned string at 1000 characters
+  and replaces some longer strings with `[BLOCKED: Cookie/query string data]`.
+  The help, each guide topic and each result row stay under that length. A link
+  to a board with a long melody can exceed it.
 - The API covers the controls, presets, sequencers and meters. Sign-in, saved
   voices, recording, the microphone and sample loading have no API calls.
 
@@ -74,10 +80,11 @@ tune and a kit, and checks the readings from `bender.listen`, including that the
 board goes quiet after `bender.stop()`. The script exits non-zero when a check
 fails.
 
-`pnpm agent:eval` builds the site, opens it in the Chrome that runs the Claude
-extension, and runs one `claude -p --chrome` session per task in
-`scripts/agent-eval.ts`. A script injected into the served page reads
-`window.bender` after each session to grade the task. The script prints tool
-calls, clicks, cost and time per task, and whether `bender.help` reached the
-model whole. The extension has to be signed in to the same claude.ai account as
-`claude`, or `list_connected_browsers` returns an empty list.
+`pnpm agent:eval` builds and serves the site, then runs one `claude -p --chrome`
+session per task in `scripts/agent-eval.ts`. Each session opens the app in a tab
+of the Chrome that runs the Claude extension. A script injected into the served
+page reads `window.bender` in that tab to grade the task, then stops the audio
+and blanks the tab. The script prints tool calls, clicks, blocked and truncated
+results, cost and time per task. The extension has to be signed in to the same
+claude.ai account as `claude`, or `list_connected_browsers` returns an empty
+list.

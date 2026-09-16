@@ -5,7 +5,7 @@ import { DEFAULT_CONTROLS } from '../controls'
 import { YOURS } from '../dsp/stages/roms'
 import { engine } from '../engine/engine'
 import { HOLD, REST, TUNE_LANE_KEYS } from '../tune'
-import { createBenderApi } from './agentApi'
+import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi'
 import { boardFromUrl } from './share'
 import './testDom'
 
@@ -65,8 +65,11 @@ test('board lists changed controls by key, and its link loads the same board', (
   expect(
     board.controls.some(row => row.startsWith('chipTone = clav 1/8')),
   ).toBe(true)
-  const hash = board.link.slice(board.link.indexOf('#'))
-  expect(boardFromUrl('', hash)).toEqual({ chipStarve: 0.8, chipTone: 2 })
+  const link = bender.link()
+  expect(boardFromUrl('', link.slice(link.indexOf('#')))).toEqual({
+    chipStarve: 0.8,
+    chipTone: 2,
+  })
 })
 
 test('find ranks an exact key or label match first', () => {
@@ -75,6 +78,23 @@ test('find ranks an exact key or label match first', () => {
     true,
   )
   expect(bender.find()[0]).toMatch(/^\S.* \(\d+ controls\)$/)
+})
+
+test('find ranks a group named as a phrase above controls matching its words', () => {
+  const rows = bender.find('tape delay', 20)
+  const at = (key: string) => rows.findIndex(r => r.startsWith(`${key} = `))
+  expect(at('dlyMix')).toBeGreaterThanOrEqual(0)
+  expect(at('dlyMix')).toBeLessThan(at('tapeMix') === -1 ? 99 : at('tapeMix'))
+  expect(rows[at('dlyMix')]).toContain('Tape delay: Echo level (mix)')
+})
+
+test('help and every guide topic fit in one browser tool result', () => {
+  expect(bender.help.length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
+  for (const topic of ['read', 'change', 'music', 'sound'])
+    expect(bender.guide(topic).length).toBeLessThanOrEqual(GUIDE_MAX_CHARS)
+  expect(() => bender.guide('nope')).toThrow(
+    "no guide topic 'nope'; topics: read, change, music, sound",
+  )
 })
 
 test('describe lists a control’s choices and suggests keys for a typo', () => {
@@ -159,6 +179,6 @@ test('listen ignores the meter message that covers audio from before the call', 
 test('listen before audio starts returns how to start it', async () => {
   expect(await bender.listen(100)).toEqual({
     audio:
-      'suspended: click anywhere on the page, then call bender.start() again',
+      'suspended: click an empty area of the page, then call bender.start() again',
   })
 })
