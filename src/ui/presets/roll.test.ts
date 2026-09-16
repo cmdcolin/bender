@@ -165,6 +165,24 @@ test('a shy control on a list of choices can still reach the whole list', () => 
   expect(on / (600 * keys.length)).toBeLessThan(0.15)
 })
 
+test('random rarely pulls the reverb dry down, and never far', () => {
+  const before = mine()
+  let cut = 0
+  for (let seed = 1; seed <= 300; seed++) {
+    const after = randomLook(before, mulberry32(seed))
+    expect(after.revDry, `${seed}`).toBeGreaterThanOrEqual(0.7)
+    if (after.revDry < 1) cut++
+  }
+  expect(cut).toBeGreaterThan(0)
+  expect(cut / 300).toBeLessThan(0.15)
+})
+
+test('mutate leaves a full reverb dry at full', () => {
+  for (let seed = 1; seed <= 60; seed++) {
+    expect(mutate(mine(), 0.3, mulberry32(seed)).revDry).toBe(1)
+  }
+})
+
 test('mutate does not turn crackle on from nothing', () => {
   const off = { ...mine(), crackleAmp: 0, brownCrackle: 0 }
   for (let seed = 1; seed <= 60; seed++) {

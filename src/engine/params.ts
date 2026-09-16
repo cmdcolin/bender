@@ -361,7 +361,7 @@ export const PARAM_DEFS = [
   ['revBoing', 'slew'],
   ['revKick', 'slew'],
   ['revMix', 'slew'],
-  ['revDryCut', 'slew'],
+  ['revDry', 'slew'],
 
   ['modLfoHz', 'slew'],
   ['modLfoShape', 'step'],

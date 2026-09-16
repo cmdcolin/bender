@@ -8,7 +8,7 @@ import {
 import { asLen, asMask, LEN_KEYS } from '../drums'
 import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune'
 import { EDITOR_KEYS, sliderFor, snapToStep } from './controls'
-import { packControls, unpackControls } from './packed'
+import { packControls, RENAMED, unpackControls } from './packed'
 
 const TUNE_KEYS = new Set<ControlKey>(TUNE_ALL_STEP_KEYS)
 
@@ -62,13 +62,18 @@ export function decodeControls(encoded: string): Partial<Controls> {
     const at = part.indexOf(':')
     if (at <= 0) continue
     const key = part.slice(0, at)
+    const raw = part.slice(at + 1).trim()
+    const v = Number(raw)
+    if (raw === '' || !Number.isFinite(v)) continue
+    const renamed = RENAMED.get(key)
+    if (renamed) {
+      out[renamed.key] = coerceControl(renamed.key, renamed.value(v))
+      continue
+    }
     // Own keys only: `in` also answers yes to every name Object's prototype
     // carries, so `#set=toString:1` used to get past here and take the whole
     // app down on the way to a slider that was never going to exist.
     if (!isControlKey(key) || PRIVATE.has(key)) continue
-    const raw = part.slice(at + 1).trim()
-    const v = Number(raw)
-    if (raw === '' || !Number.isFinite(v)) continue
     out[key] = coerceControl(key, v)
   }
   return out

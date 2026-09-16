@@ -527,7 +527,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     Stompbox: c.stompMix > 0,
     'Tape delay': c.dlyMix > 0,
     'Delay pedal': c.echoLevel > 0,
-    'Spring verb': c.revMix > 0 || c.revDryCut > 0,
+    'Spring verb': c.revMix > 0 || c.revDry < 1,
   }
   for (const i of pedalOrderAt(c.pedalOrder)) {
     const name = PEDALS[i]!.group

@@ -376,7 +376,7 @@ export const DEFAULT_CONTROLS = {
   revBoing: 0.5,
   revKick: 0,
   revMix: 0,
-  revDryCut: 0,
+  revDry: 1,
 
   modLfoHz: 1,
   modLfoShape: 0,

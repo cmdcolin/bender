@@ -1,7 +1,7 @@
 import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { asLen, asMask, LEN_KEYS } from '../drums'
 import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune'
-import { SLIDER_BY_KEY, snapToStep } from './controls'
+import { SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
 
 // The short form of a board: the same controls the long form names, written as
 // bytes instead of words. A dice roll is 433 characters by name and 92 packed,
@@ -234,7 +234,7 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'revToneHz',
   'revBoing',
   'revMix',
-  'revDryCut',
+  'gone:revDryCut',
   'modLfoHz',
   'modLfoShape',
   'mod0Src',
@@ -436,7 +436,15 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'petDataFault',
   'petHold',
   'petKBits',
+  'revDry',
 ]
+
+// Retired controls that old links still carry, each read into the control that
+// replaced it. `step` is the retired control's step, which a packed value counts in.
+export const RENAMED = new Map<
+  string,
+  { key: ControlKey; step: number; value: (old: number) => number }
+>([['revDryCut', { key: 'revDry', step: 0.01, value: v => 1 - v }]])
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))
 const TUNE = new Set<ControlKey>(TUNE_ALL_STEP_KEYS)
@@ -593,7 +601,15 @@ export function unpackControls(
     // one. That covers both directions of drift — a link made by a newer app
     // naming something not built yet, and an old link still naming a control
     // that has since been retired out of the app.
-    if (!isLive(key) || skip(key)) continue
+    if (!isLive(key)) {
+      const renamed = key && RENAMED.get(key.slice('gone:'.length))
+      if (renamed && !skip(renamed.key)) {
+        const v = renamed.value(unzigzag(value) * renamed.step)
+        out[renamed.key] = snapToStep(sliderFor(renamed.key), v)
+      }
+      continue
+    }
+    if (skip(key)) continue
     out[key] = fromInt(key, unzigzag(value))
   }
   return out

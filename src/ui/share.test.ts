@@ -46,6 +46,13 @@ test('a link from another version drops what it no longer names', () => {
   })
 })
 
+test('a long link with the retired Dry cut opens at the matching Dry level', () => {
+  expect(decodeControls('revMix:0.75,revDryCut:0.75')).toEqual({
+    revMix: 0.75,
+    revDry: 0.25,
+  })
+})
+
 test('a name Object lends every object is not a control', () => {
   // `in` says yes to all of these, and each one used to reach a slider lookup
   // that throws — which on a load is the whole app rather than one bad name.

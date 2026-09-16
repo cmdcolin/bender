@@ -50,6 +50,8 @@ const PINNED_ORDER = [
   // everything up to the talking pet, and the pet's eleven
   { keys: 373, digest: '0f65a968' },
   { keys: 384, digest: '99a9b1e1' },
+  // the reverb's Dry level, replacing Dry cut
+  { keys: 385, digest: '15a03621' },
 ]
 
 const digest = (keys: readonly string[]) => {
@@ -154,6 +156,16 @@ test('a retired control holds its slot rather than renumbering the rest', () => 
   } finally {
     order[at] = 'drumTune'
   }
+})
+
+test('a short link with the retired Dry cut opens at the matching Dry level', () => {
+  // packed before the rename, from revMix 0.75 and revDryCut 0.75
+  expect(unpackControls('uAGWAQCWAQ', nothing)).toEqual({
+    revMix: 0.75,
+    revDry: 0.25,
+  })
+  expect(unpackControls('uQHIAQ', nothing)).toEqual({ revDry: 0 })
+  expect(unpackControls('uQHIAQ', k => k === 'revDry')).toEqual({})
 })
 
 test('every control has a shape the wire knows how to carry', () => {

@@ -18,7 +18,7 @@ const look: Partial<Controls> = {
   chipLevel: 0,
   drumLevel: 0.01,
   revMix: 1,
-  revDryCut: 1,
+  revDry: 0,
   revDecayS: 1,
 }
 

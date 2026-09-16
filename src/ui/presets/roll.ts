@@ -48,11 +48,16 @@ const shakeShare = (amount: number) => 0.12 + 0.5 * amount
 // Crackle is the loudest thing on the board per notch of its slider, and it
 // lands on top of the rest rather than beside it: bring it up and it is the only
 // thing the roll did that you can hear. A shy control mostly sits a roll out, and
-// comes on in the bottom of its travel when it comes on at all. Nothing here
-// reaches your hand or the preset list — dial it where you like, and a preset
-// that names crackle still crackles when you pick it by name.
+// comes on near its off end when it comes on at all. Nothing here reaches your
+// hand or the preset list — dial it where you like, and a preset that names
+// crackle still crackles when you pick it by name.
 const SHY_ODDS = 0.08
 const SHY_TOP = 0.3
+
+// Off is the bottom of the travel, except on a control that boots at the top,
+// such as the reverb's Dry level.
+const shyOff = (def: SliderDef) =>
+  DEFAULT_CONTROLS[def.key] === def.max ? def.max : def.min
 
 // The bottom of the travel only means anything on a control whose travel is an
 // amount. A list of choices is not ordered by how much of itself it is — a
@@ -61,10 +66,12 @@ const SHY_TOP = 0.3
 // unreachable. A shy control with choices stays off exactly as often; when it
 // does come on it takes any of them.
 const shyValue = (def: SliderDef, rand: () => number) => {
-  if (rand() >= SHY_ODDS) return def.min
+  const off = shyOff(def)
+  if (rand() >= SHY_ODDS) return off
   if (def.choices)
     return def.min + 1 + Math.floor(rand() * (def.choices.length - 1))
-  return snapToStep(def, fromPos(def, rand() * SHY_TOP))
+  const pos = rand() * SHY_TOP
+  return snapToStep(def, fromPos(def, off === def.max ? 1 - pos : pos))
 }
 
 const calmShy = (next: Controls, rand: () => number): Controls => {
@@ -93,7 +100,7 @@ export function mutate(
     // A shy control already off stays off: a nudge is a small move, and off to
     // faintly crackling is not a small move. One you turned up yourself is a
     // control like any other from here on.
-    if (def.shy && controls[def.key] === def.min) continue
+    if (def.shy && controls[def.key] === shyOff(def)) continue
     next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
   inTime(next, () => true)

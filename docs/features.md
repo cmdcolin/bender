@@ -674,14 +674,14 @@ hit from the kit crashes the tank, the sound of kicking the amp.
 <details>
 <summary>6 controls</summary>
 
-| control      | range            | what it does                                                                                                 |
-| ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| Decay        | 0.1 to 30 s      | How long the springs ring                                                                                    |
-| Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                                      |
-| Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                                         |
-| Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp           |
-| Reverb level | off to full      | Volume of the spring tank on its own fader, added on top of the dry signal rather than crossfaded against it |
-| Dry cut †    | off to full      | Separately fades out the dry signal, independent of Reverb level above                                       |
+| control      | range            | what it does                                                                                       |
+| ------------ | ---------------- | -------------------------------------------------------------------------------------------------- |
+| Decay        | 0.1 to 30 s      | How long the springs ring                                                                          |
+| Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                            |
+| Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                               |
+| Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp |
+| Reverb level | off to full      | Level of the spring tank, added on top of the dry signal                                           |
+| Dry level †  | off to full      | Level of the dry signal, set separately from Reverb level                                          |
 
 </details>
 
@@ -1055,7 +1055,7 @@ on it — a link never presses play, so it is loaded and waiting.
   — Runaway delay feedback, warped transport
 - [**no-input squeal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,driveDb:26,distMode:1,distMix:0.4,fbAmt:1.35,fbDelayMs:0.6,fbTone:0.4)
   — The mixer patched into itself, nothing at the input
-- [**haunted spring**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.45,chipClockX:0.5,noiseLevel:0.08,noiseColor:-0.5,ringHz:3.5,ringMix:0.35,revDecayS:6,revBoing:0.9,revMix:0.75,revDryCut:0.75)
+- [**haunted spring**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.45,chipClockX:0.5,noiseLevel:0.08,noiseColor:-0.5,ringHz:3.5,ringMix:0.35,revDecayS:6,revBoing:0.9,revMix:0.75,revDry:0.25)
   — Slow chip through a huge dispersive tank
 - [**contact crackle**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.9,crackleRate:55,combHz:220,combFb:1.15,combMix:0.8,revMix:0.4)
   — Dirty pot sparks ringing a screaming comb
