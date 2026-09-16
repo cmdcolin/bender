@@ -2,6 +2,46 @@
 
 All notable changes to bender are documented here.
 
+## [1.0.0](https://github.com/cmdcolin/bender/compare/v0.20.5...v1.0.0) - 2026-09-16
+
+### Features
+- *(home)* [`9332291`](https://github.com/cmdcolin/bender/commit/933229129938905b3bb57fab8196b9a9a82e4323) show the README's demos on the home page instead of every preset
+- *(home)* [`d3c7027`](https://github.com/cmdcolin/bender/commit/d3c7027ff516910c8e06aec8dfd1b3b848baf7fc) a Listen showcase of rendered demo clips on the landing page
+- *(ui)* [`cfcee3c`](https://github.com/cmdcolin/bender/commit/cfcee3ccb40e62e78d6787b78f4d2009343eef02) expose window.bender, a scripting API for browsing agents
+- *(ui)* [`4521182`](https://github.com/cmdcolin/bender/commit/45211824dbf026fd2b4f445fea4dcb7117112bf1) ask before loading Google Analytics
+- *(home)* [`7a635a3`](https://github.com/cmdcolin/bender/commit/7a635a34072f6f01df390269787fd7fcce3b8ac1) copy, rename and delete a voice from the home page
+- *(home)* [`334d5cf`](https://github.com/cmdcolin/bender/commit/334d5cf3638b4b133e85b5b0ae7641cf83618808) a board of the day at the head of the demos
+- *(ui)* [`5489c28`](https://github.com/cmdcolin/bender/commit/5489c287706c79708257c3304a49efe1c6950841) wire App Check, inert until a site key is registered
+- *(dsp)* [`6bc816d`](https://github.com/cmdcolin/bender/commit/6bc816d31408a1f56a6f37d1e6c03219f1308d07) talking pet source with an LPC speech chip, phrase ROM and cam motor
+- *(ui)* [`1494ba8`](https://github.com/cmdcolin/bender/commit/1494ba84d4d783969277a39977dfa55a4cdc42fe) talking pet panel, desk strip, patch bay lanes and map box
+
+### Fixes
+- *(ui)* [`2bd5928`](https://github.com/cmdcolin/bender/commit/2bd5928c2c2459d6d93c73019c4665cb79a22408) stop a quick second save from erasing the first
+- *(ui)* [`57050cc`](https://github.com/cmdcolin/bender/commit/57050ccc73a60644f5bd9eccc645c198131c545e) stop writing on recall, and retry a failed SDK download
+- *(home)* [`411764f`](https://github.com/cmdcolin/bender/commit/411764fa71fc0424df644824451dc46b69c8f280) say why a sign-in failed, and keep the resume card on your own board
+- *(dsp)* [`05edb0f`](https://github.com/cmdcolin/bender/commit/05edb0f2377ca4453fb711e743b5451b51a8b621) recompute the toy chip envelope decay when the step rate changes
+- *(ui)* [`e7958ae`](https://github.com/cmdcolin/bender/commit/e7958aeb4b55f95d1a665ed46a3777bf18899792) measure only audio after the listen call in bender.listen
+- *(ui)* [`8b4885d`](https://github.com/cmdcolin/bender/commit/8b4885de3b650d3e397f435761d88f11b75e77bd) say why a save failed, and drop replies that arrive after sign-out
+- *(home)* [`8780de4`](https://github.com/cmdcolin/bender/commit/8780de4cc03c386bf4f5d4fef74d85433e54d8ff) a card edit that lands after sign-out draws nothing, and its failure blames nobody
+- *(ui)* [`c25f038`](https://github.com/cmdcolin/bender/commit/c25f03845f3a884f037fc95032fc0de0555400d8) split bender.help into short guide topics, and rank named groups first in find
+- *(ui)* [`b6fd308`](https://github.com/cmdcolin/bender/commit/b6fd3083159b9eea079a73f5e5666afeea4b132c) keep find results under the browser tool's string limit
+- *(ui)* [`93d7663`](https://github.com/cmdcolin/bender/commit/93d7663c8a4d5fae3e791102dbc95cc78daeebb3) recover sign-in after a failed SDK load or list fetch, and keep held saves in step
+- *(ui)* [`224e3b4`](https://github.com/cmdcolin/bender/commit/224e3b4e46d8e7db40e169f34fab1fc2b9f68daa) paint the home page after a sign-in when the auth subscription failed to load
+- *(dsp)* [`429f639`](https://github.com/cmdcolin/bender/commit/429f639519644f92519989246c7367db322521ea) keep a chatty pet awake in a quiet room
+- *(ui)* [`885ecbc`](https://github.com/cmdcolin/bender/commit/885ecbc2245f00c4c0e1fae834876e018ebf7c45) draw patch wires onto every destination's box on the map
+
+### Documentation
+- [`56e67d5`](https://github.com/cmdcolin/bender/commit/56e67d5376828fec83a8dc37693f2b12226a9468) document window.bender for Claude in Chrome and Claude Code
+- [`773ae99`](https://github.com/cmdcolin/bender/commit/773ae99e0bd70931013397cf2769f756cb98a71c) record the Claude in Chrome eval results in agent-interface.md
+- [`de45764`](https://github.com/cmdcolin/bender/commit/de45764ae393ee32ba2211942029106fb2d99ec0) say what a resume cannot bring back, and document the card verbs
+- [`eba2b2b`](https://github.com/cmdcolin/bender/commit/eba2b2b8103027f900db978f8732f57b6eb3a3b6) add a Claude in Chrome screenshot to the AI usage page
+- *(ui)* [`25e6b6e`](https://github.com/cmdcolin/bender/commit/25e6b6e0f77edb55a2bc41eb48032a963c2b628e) describe the talking pet in the guide, bends and features
+
+### Tests
+- [`d027768`](https://github.com/cmdcolin/bender/commit/d02776806e9972d9ab5920d3016e26e78625ec24) add pnpm agent, and check that the chord lane goes quiet after stop
+- [`c14fa3d`](https://github.com/cmdcolin/bender/commit/c14fa3d72602058e72511395abc2123c1e0d327d) add pnpm agent:eval, which grades claude -p --chrome sessions against the app
+- *(dsp)* [`2956f9b`](https://github.com/cmdcolin/bender/commit/2956f9bd5511ff85191ce3570f7444acd666b22f) hold the talking pet to its lattice bounds, moods and rail load
+
 ## [0.20.5](https://github.com/cmdcolin/bender/compare/v0.20.4...v0.20.5) - 2026-09-15
 
 ### Features
