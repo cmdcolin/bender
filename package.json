@@ -9,6 +9,7 @@
     "ab": "tsx scripts/ab.ts",
     "agent": "tsx scripts/agent.ts",
     "agent:eval": "tsx scripts/agent-eval.ts",
+    "arrive": "tsx scripts/arrive.ts",
     "audible": "tsx scripts/audible.ts",
     "bench": "tsx scripts/bench.ts",
     "blocks": "tsx scripts/blocks.ts",
