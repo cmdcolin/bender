@@ -1,0 +1,38 @@
+---
+// Each play button is a link to its clip, so the clip still opens with no
+// JavaScript; src/home/listen.ts plays it in place.
+import { clipPath, showcase } from '../home/demos'
+import { boardUrl, siteRoot } from '../home/paths'
+---
+
+<section class="listen" aria-labelledby="listenHead">
+  <h2 class="head" id="listenHead">
+    Listen
+  </h2>
+  <ul class="tracks">
+    {showcase.map(demo => (
+      <li class="track">
+        <a
+          class="play"
+          href={`${siteRoot}${clipPath(demo)}`}
+          aria-label={`Play ${demo.name}`}
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path class="iPlay" d="M4 2.5v11l9.5-5.5z" />
+            <path class="iPause" d="M3.5 2.5h3.2v11H3.5zM9.3 2.5h3.2v11H9.3z" />
+          </svg>
+        </a>
+        <span class="trackText">
+          <span class="cardName">{demo.name}</span>
+          <span class="says">{demo.says}</span>
+          <span class="bar">
+            <span class="fill" />
+          </span>
+        </span>
+        <a class="open" href={boardUrl(demo.query)}>
+          open →
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

@@ -2,11 +2,11 @@
 import { experimental_AstroContainer } from 'astro/container'
 import { beforeAll, expect, test } from 'vitest'
 
-import demos from '../../demos.json'
 import { GA_ID } from '../analytics'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
+import { demos, showcase, slug } from './demos'
 import { privacyUrl } from './paths'
 
 // The landing page answers "why sign in?" out of the same strings the app's own
@@ -58,4 +58,11 @@ test('every page the site serves counts its visit', () => {
 test('the landing page shows the demos from demos.json and no presets', () => {
   for (const demo of demos) expect(landing).toContain(demo.name)
   expect(landing.match(/class="card"/g)?.length).toBe(demos.length)
+})
+
+test('the showcase links each of its clips and nothing else', () => {
+  expect(showcase.length).toBeGreaterThan(0)
+  expect(landing.match(/class="play"/g)?.length).toBe(showcase.length)
+  for (const demo of showcase)
+    expect(landing).toContain(`demos/${slug(demo.name)}.mp3`)
 })

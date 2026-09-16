@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro sync && tsc -b && node scripts/demogen.mjs --check && astro build",
+    "build": "astro sync && tsc -b && node scripts/demogen.mjs --check && tsx scripts/demoreel.ts && astro build",
     "ab": "tsx scripts/ab.ts",
     "audible": "tsx scripts/audible.ts",
     "bench": "tsx scripts/bench.ts",
@@ -13,6 +13,7 @@
     "cold": "tsx scripts/cold.ts",
     "dash": "tsx scripts/dash.ts",
     "demos": "node scripts/demogen.mjs",
+    "reel": "tsx scripts/demoreel.ts",
     "diagram": "tsx scripts/chain-svg.ts",
     "features": "tsx scripts/features.ts",
     "figure": "tsx scripts/figure.ts",

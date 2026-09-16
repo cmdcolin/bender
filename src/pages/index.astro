@@ -2,8 +2,9 @@
 import Analytics from '../components/Analytics.astro'
 import Card from '../components/Card.astro'
 import Footer from '../components/Footer.astro'
+import Showcase from '../components/Showcase.astro'
 import SiteBar from '../components/SiteBar.astro'
-import demos from '../../demos.json'
+import { demos } from '../home/demos'
 import { appUrl, guideUrl, privacyUrl, siteRoot } from '../home/paths'
 import { SIGNED_IN_HINT } from '../ui/cloud'
 import {
@@ -75,6 +76,7 @@ import '../home/home.css'
     <!-- CROSS_REPO_SYNC_END(home-hint-script) -->
     <script>
       import '../home/main'
+      import '../home/listen'
     </script>
     <Analytics />
   </head>
@@ -124,6 +126,7 @@ import '../home/home.css'
         reverb and distortion. You work it from the signal path diagram rather
         than a wall of sliders, and every board it makes is a link you can send.
       </p>
+      <Showcase />
       <figure class="figure">
         <img
           src={`${siteRoot}panel-callout.jpg`}

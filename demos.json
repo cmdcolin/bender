@@ -1,21 +1,25 @@
 [
   {
     "name": "Dubby drums",
+    "showcase": true,
     "says": "A drum kit with a faulted address line and a cut bus, through a long echo, under a chip on a bent data line.",
     "query": "p=ACwAJAHIAQYEAAYCwAEAAgCgAQC0AQASDBgBEgEMAQgABAEAAAUABwALAA8CBgCuAQKuAgCMAQAYAJoBAD4CogEBAAECAnoAoIAEAIICAICiBAKAgAQAgoIEBRYBEAFyAAIDQAECAAgCBhCQAwB2AjQBZCcCCaYFAQgC7gkCmAEBoB8AZgDyAgFEBfAkARAAGgAaAAYAFgAdAA4ACgBlABIADgCFAQr2FwYJAAYACBYI"
   },
   {
     "name": "More dubby drum with wandering synth",
+    "showcase": false,
     "says": "The kit swung at 162 bpm with its trigger lines crossed, an FM voice on a faulted address line, and three feedback loops.",
     "query": "p=AAAAJAFSAA4HAgACAQIAqAEAyAEFCAcEAAQACgAMAAQADgAGAAoABwAFAAMACgABAAAAAgEWAMgBAMQCALQBAJgCAMoIBH4AVgHIAQiAZgDwnQEAgAQA8B8HyAEABgCsAQAMABoAFAAWANwCAAQABgICAAIAHAN6AORDAMACAIB9AAIAWADIAQACNQIAbgAOAHcD4iwAgAEBAgFkBNAQA4IBABQBIgBOAbQBAAoBAgDEAQAOABwAqAEADgAsADkADgASABkGzhMAIgEGALQHACwAaACUAgAIAIwBAccBAH4AMgsuCHAAyAEAwAEAlgEBBAAEAAYABgAIAAoADAAOABIAFAAKAAgABAAEAAQABAcUABIAEgASABIAEgASABIAEgASABQAFAAWHBQ"
   },
   {
     "name": "Glitch voice",
+    "showcase": true,
     "says": "The FM chip struck by the kit through the trigger patch, into a sampler loop that keeps recording over itself.",
     "query": "p=AIwBACQBWgEYEQAlBAICD8gBAWwADAQCAAoFZAPcJApQAAoBAgCMAQA8Awgd_gEKVgIOAqYFCYQFAaINBMgBAGoB8CQBEAAiALkBAAQAEACvAQAWAZMBASQAqAECCgKMAQG8AQAEALABA6Y7CAADeAIKBAoEegBuAoIB"
   },
   {
     "name": "Aimless stalling lullaby",
+    "showcase": true,
     "says": "A demo song on a flat battery with its clock jittering, a crushed kit, crackle and tape hiss.",
     "query": "p=AKoBAnYAxAEBjAEACAAEAAYNLBisAQPiEAAKDsSJAQCAAwCABQB4CMgBAbgBFgEBJinyAQE8CEgAZAS6BQmqBwMGAwQByAEDZh8WAQIBVANiCQhYoAEQ6MABAJh_"
   }

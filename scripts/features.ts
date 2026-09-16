@@ -108,6 +108,8 @@ const SCRIPTS: Record<string, string> = {
   soak: 'whether any stage gets slower the longer it runs',
   panel: 'what the panel costs the browser per frame, in a real Chrome',
   ink: 'walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read',
+  demos: "writes demos.json into the README's Demos block",
+  reel: "renders the showcase demos to mp3 for the landing page's Listen section",
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
   figure: "re-shoots the README's screenshot of the app and its panel",
