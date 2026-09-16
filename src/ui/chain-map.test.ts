@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest'
 
+import { HEAVY } from '../../scripts/boards'
 import { renderDiagrams } from '../../scripts/chain-svg'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { DEST, N_DEST } from '../dsp/modbus'
 import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus'
 import {
   buildMap,
@@ -10,6 +12,7 @@ import {
   groupAnchor,
   PANEL,
   type ChainMap,
+  WIRE_TARGET,
 } from './chain-map'
 import { BENDS, GROUPS } from './controls'
 import { serialize } from './svg'
@@ -592,4 +595,34 @@ test('the fold halves the drawing and hands the path across', () => {
   const fold = folded.wires.find(w => w.id === 'fold')!
   expect(fold.color).toBe(PANEL.accent)
   expect(box(folded, fold.to)!.x).toBeGreaterThan(box(folded, fold.from)!.x)
+})
+
+test('a patch wire onto any destination draws onto that destination’s box', () => {
+  const board: Controls = {
+    ...DEFAULT_CONTROLS,
+    ...HEAVY,
+    petLevel: 0.5,
+    oscLevel: 0.5,
+    noiseLevel: 0.5,
+    sampleLevel: 0.5,
+    echoLevel: 0.5,
+  }
+  // HEAVY slots six of the seven bends and leaves out the glitch buffer.
+  const glitchIn = { bendSlot4: 5 }
+  expect(WIRE_TARGET.length).toBe(N_DEST)
+  const undrawn: string[] = []
+  for (let dest = 0; dest < N_DEST; dest++) {
+    const map = buildMap({
+      ...board,
+      ...(dest === DEST.glitch ? glitchIn : {}),
+      mod0Src: 1,
+      mod0Dest: dest,
+      mod0Depth: 1,
+    })
+    const wire = map.wires.find(w => w.from === 'wire0')
+    const want = WIRE_TARGET[dest]!.replace(/\W+/g, '_')
+    if (wire?.to !== want)
+      undrawn.push(`${dest}→${WIRE_TARGET[dest]} (${wire?.to})`)
+  }
+  expect(undrawn).toEqual([])
 })

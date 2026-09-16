@@ -1,3 +1,4 @@
+import { DEST } from '../dsp/modbus'
 import { PEDALS, pedalOrderAt } from '../pedals'
 import { bendAt, BENDS, sliderFor, touchedCount } from './controls'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg'
@@ -16,40 +17,80 @@ import type { ControlKey, Controls } from '../controls'
 const FB_TARGET = ['mix', 'Chaos osc', 'Toy keyboard', 'Tape delay'] as const
 
 // Which group owns each patch-bay destination, in mod*Dest order.
-const WIRE_TARGET = [
-  'Screech filter',
-  'Ring mod',
-  'Comb',
-  'Crusher',
-  'Toy keyboard',
-  'Toy drums',
-  'Tape delay',
-  'Glitch buffer',
-  'Feedback bus',
-  'Stompbox',
-  'Freq shifter',
-  'Crusher',
-  'Toy drums',
-  'Toy keyboard',
-  'Toy drums',
-  'Spring verb',
-  'Tape delay',
-  // A wire onto another wire's depth lands inside the bay rather than on any
-  // stage, so it draws onto the bay's own box at the foot of the map.
-  'Patch bay',
-  'Patch bay',
-  'Patch bay',
-  'Patch bay',
-  'Delay pedal',
-  'Sampler',
-  'Sampler',
-  'Sampler',
-  'Chaos osc',
-  'Chaos osc',
-  'FM chip',
-  'FM chip',
-  'FM chip',
-] as const
+// The box a patch wire onto each destination draws to. Keyed by name, so a
+// destination added to DEST without a box here fails the type check.
+const WIRE_BOX: Record<keyof typeof DEST, string> = {
+  filtHz: 'Screech filter',
+  ringHz: 'Ring mod',
+  combHz: 'Comb',
+  crushHz: 'Crusher',
+  chipClock: 'Toy keyboard',
+  retrig: 'Toy drums',
+  tapeSpeed: 'Tape delay',
+  glitch: 'Glitch buffer',
+  fbAmt: 'Feedback bus',
+  stompDrive: 'Stompbox',
+  shiftHz: 'Freq shifter',
+  bits: 'Crusher',
+  drumCross: 'Toy drums',
+  starve: 'Toy keyboard',
+  drumTune: 'Toy drums',
+  revDecay: 'Spring verb',
+  delayMs: 'Tape delay',
+  // A wire onto another wire's depth draws onto the bay's box.
+  wDepth0: 'Patch bay',
+  wDepth1: 'Patch bay',
+  wDepth2: 'Patch bay',
+  wDepth3: 'Patch bay',
+  echoMs: 'Delay pedal',
+  sampleSpeed: 'Sampler',
+  loopSlide: 'Sampler',
+  loopSpan: 'Sampler',
+  oscStarve: 'Chaos osc',
+  oscHz: 'Chaos osc',
+  chipLevel: 'Toy keyboard',
+  drumLevel: 'Toy drums',
+  fmLevel: 'FM chip',
+  oscLevel: 'Chaos osc',
+  noiseLevel: 'Noise & crackle',
+  sampleLevel: 'Sampler',
+  filtRes: 'Screech filter',
+  fmBright: 'FM chip',
+  fbMs: 'Feedback bus',
+  chipDataLine: 'Toy keyboard',
+  chipDataFault: 'Toy keyboard',
+  chipAddrLine: 'Toy keyboard',
+  chipAddrFault: 'Toy keyboard',
+  drumDataLine: 'Toy drums',
+  drumDataFault: 'Toy drums',
+  drumAddrLine: 'Toy drums',
+  drumAddrFault: 'Toy drums',
+  fmDataLine: 'FM chip',
+  fmDataFault: 'FM chip',
+  fmAddrLine: 'FM chip',
+  fmAddrFault: 'FM chip',
+  fmWaveLine: 'FM chip',
+  fmWaveFault: 'FM chip',
+  fmWaveDataLine: 'FM chip',
+  fmWaveDataFault: 'FM chip',
+  fmBusCut: 'FM chip',
+  fmNoiseBlob: 'FM chip',
+  ringMix: 'Ring mod',
+  petLevel: 'Talking pet',
+  petPitch: 'Talking pet',
+  petRate: 'Talking pet',
+  petAddrLine: 'Talking pet',
+  petAddrFault: 'Talking pet',
+  petDataLine: 'Talking pet',
+  petDataFault: 'Talking pet',
+}
+
+export const WIRE_TARGET: readonly string[] = (() => {
+  const ids = new Map<string, number>(Object.entries(DEST))
+  const boxes: string[] = []
+  for (const [key, box] of Object.entries(WIRE_BOX)) boxes[ids.get(key)!] = box
+  return boxes
+})()
 
 // The stages that can be wired to droop with the board's supply, and the
 // control on each that wires it. Brownout drags that rail — so does the toy's
