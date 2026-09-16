@@ -95,6 +95,10 @@ export interface Meter {
       off the bay lands on the markers, and the wire's answer after that. */
   sampleIn: number
   sampleOut: number
+  petMood: number
+  petPhrase: number
+  petMotor: number
+  petMouth: number
 }
 
 // Which sources are putting something on the bus, as a bit per tap, from the
@@ -201,6 +205,10 @@ export class Engine {
       samplePeaks: new Float32Array(PEAK_BINS),
       sampleIn: 0,
       sampleOut: 1,
+      petMood: 1,
+      petPhrase: -1,
+      petMotor: 0,
+      petMouth: 0,
     })
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
@@ -385,6 +393,10 @@ export class Engine {
           samplePeaks: msg.samplePeaks,
           sampleIn: msg.sampleIn,
           sampleOut: msg.sampleOut,
+          petMood: msg.petMood,
+          petPhrase: msg.petPhrase,
+          petMotor: msg.petMotor,
+          petMouth: msg.petMouth,
         })
         const lit = soundingMask(msg.taps, this.soundHold)
         if (lit !== this.sounding.get()) this.sounding.set(lit)

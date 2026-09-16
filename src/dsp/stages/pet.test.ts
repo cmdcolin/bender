@@ -314,3 +314,23 @@ test('at full Chatter a pet left in silence keeps waking up to talk', () => {
   }
   expect(awake).toBeGreaterThan(150)
 })
+
+test('the mouth and motor readings rise during a phrase and fall back to zero after it', () => {
+  const { pet, run } = bench({ petChatter: 0 })
+  expect(pet.mouth).toBe(0)
+  expect(pet.motor).toBe(0)
+  pet.say(PHRASE.hello)
+  let mouth = 0
+  let motor = 0
+  run(0.4, () => {
+    mouth = Math.max(mouth, pet.mouth)
+    motor = Math.max(motor, pet.motor)
+  })
+  expect(mouth).toBeGreaterThan(0.2)
+  expect(mouth).toBeLessThanOrEqual(1)
+  expect(motor).toBeGreaterThan(0.9)
+  run(3)
+  expect(pet.phrase).toBe(-1)
+  expect(pet.mouth).toBe(0)
+  expect(pet.motor).toBeLessThan(0.01)
+})

@@ -272,6 +272,10 @@ class BenderProcessor extends AudioWorkletProcessor {
         samplePeaks: sampler.peaks,
         sampleIn: sampler.windowIn,
         sampleOut: sampler.windowOut,
+        petMood: this.built.pet.mood,
+        petPhrase: this.built.pet.phrase,
+        petMotor: this.built.pet.motor,
+        petMouth: this.built.pet.mouth,
       })
       this.peak = 0
       this.duck = 0

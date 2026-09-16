@@ -100,6 +100,9 @@ const MOTOR_SPIN_SECS = 0.08
 const MOTOR_RUN_LOAD = 0.3
 const MOTOR_INRUSH = 0.6
 
+const ENERGY_QUIET = ENERGY[1]!
+const ENERGY_SPAN = Math.log(ENERGY[E_STOP - 1]! / ENERGY_QUIET)
+
 const clamp = (x: number) => (x > CLAMP ? CLAMP : x < -CLAMP ? -CLAMP : x)
 
 // A talking pet toy: a speech chip reading LPC frames out of a phrase ROM, a
@@ -193,6 +196,18 @@ export class Pet implements Stage {
   /** The phrase being spoken, or -1. */
   get phrase(): number {
     return this.speaking ? this.saying : -1
+  }
+
+  /** How fast the cam motor turns, 0 to 1. */
+  get motor(): number {
+    return this.speed
+  }
+
+  /** How loud the current speech frame is, 0 to 1 on the log scale the energy
+      codes step along. */
+  get mouth(): number {
+    if (!this.speaking || this.energy <= ENERGY_QUIET) return 0
+    return Math.min(Math.log(this.energy / ENERGY_QUIET) / ENERGY_SPAN, 1)
   }
 
   private fetch(addr: number): number {
