@@ -50,6 +50,38 @@ const COLLECTION = 'benderUsers'
 // look. Wrong in the harmless direction either way: stale-true costs one fetch,
 // stale-false costs one click.
 export const SIGNED_IN_HINT = 'bender_signed_in'
+
+// The reCAPTCHA v3 site key App Check attests with, out of the Firebase
+// console's App Check page. Public in the way the config above is: it names the
+// site to Google's reCAPTCHA endpoint, and it buys a token saying a request came
+// from this app. Empty until somebody registers one, and an empty key installs
+// nothing — requests then carry no App Check token, which is what every session
+// has sent since the project was created.
+//
+// Outside the shared region because each site attests as itself.
+const APPCHECK_SITE_KEY = ''
+
+// Attest that a request comes from this app, before the first one goes.
+//
+// The rules say who may write what, and they cannot say what is making the
+// request: the web config is public by design, so anyone can sign in with a
+// Google account and write from a script. App Check is what bounds that, and it
+// started mattering when the shared project moved to a paid plan — a loop of
+// writes is a bill there, where on the free plan it stopped at the day's quota.
+// videoskillet's docs/adr/0011 carries the decision for both apps, including why
+// the rules do not try to rate limit.
+//
+// Dynamic like every other firebase import here, and reached only when a key is
+// set, so a build without one fetches none of it.
+async function installAppCheck(app: FirebaseApp, siteKey: string) {
+  if (siteKey === '') return
+  const mod = await import('firebase/app-check')
+  mod.initializeAppCheck(app, {
+    provider: new mod.ReCaptchaV3Provider(siteKey),
+    isTokenAutoRefreshEnabled: true,
+  })
+}
+
 // CROSS_REPO_SYNC(firebase-auth)
 export const wasSignedIn = () => readStored(SIGNED_IN_HINT) === '1'
 
@@ -95,6 +127,7 @@ function loadSdk(): Promise<Sdk> {
       import('firebase/firestore/lite'),
     ])
     const app = appMod.initializeApp(CONFIG)
+    await installAppCheck(app, APPCHECK_SITE_KEY)
     return {
       app,
       auth: authMod.getAuth(app),
