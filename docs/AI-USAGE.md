@@ -1,25 +1,46 @@
 # AI usage
 
-bender publishes `window.bender`, a JavaScript API that a browsing agent calls
-to read and change the board, write melodies and drum patterns, and measure the
-sound. The app page also carries a `<meta name="ai-instructions">` tag and logs
-a console message, and both tell the agent to read `bender.help` first.
-`bender.help` gives an overview and names four topics, and `bender.guide(topic)`
-documents the calls in each.
+bender publishes `window.bender`, a JavaScript API for the page. A browsing
+agent such as Claude in Chrome calls it to read and change the board, write
+melodies and drum patterns, and measure the sound. The app page carries a
+`<meta name="ai-instructions">` tag and logs a console message, and both tell
+the agent to read `bender.help` first. `bender.help` gives an overview and names
+four topics, and `bender.guide(topic)` documents the calls in each.
+
+![bender in Chrome with the Claude side panel open on the right. The panel shows the request "This page is bender, a circuit-bent toy keyboard, and it has a scripting API on window.bender. Load the dying toy preset, write a C minor arpeggio into the melody memory with a kick on every beat, play both, and tell me what bender.listen hears", followed by the steps Claude took: capturing the page, clicking, reading page text. On the left, the Toy keyboard section is open with its tune set to yours and the notes of the arpeggio in the piano roll.](img/claude-in-chrome.jpg)
+
+The screenshot shows Claude in Chrome with Sonnet 5 in the side panel, partway
+through a request. It has loaded the dying toy preset and is entering a C minor
+arpeggio into the melody memory. The bar across the top of the page and the Stop
+Claude button show that the extension is controlling the tab.
 
 ## Claude in Chrome
 
-1. Open https://cmdcolin.github.io/bender/app/ in Chrome.
-2. Open the Claude side panel and describe a sound.
+1. Install the
+   [Claude in Chrome](https://chromewebstore.google.com/detail/fcoeoabgfenejglbffodgkkbkcdhcgfn)
+   extension and sign in.
+2. Open https://cmdcolin.github.io/bender/app/.
+3. Click the Claude icon in the toolbar to open the side panel.
+4. Describe a sound, and mention `window.bender` so Claude knows the API exists.
 
-The extension's JavaScript tool runs code in the page, where `window.bender` is
-defined, so this setup needs no install and no configuration. Example requests:
+The extension can run JavaScript in the page, where `window.bender` is defined,
+so bender needs no setup beyond the extension. Example requests:
 
 - load the dying toy preset, then starve the rail until the chip reboots
 - write an eight-step melody in A minor into the memory, with a
   four-on-the-floor kit under it
 - find the controls that make the delay feed back, and raise them over five
   seconds
+
+Claude takes one of two routes. In the second eval run described under
+[Testing](#testing), where the prompt told Claude to evaluate `bender.help`,
+every session read the help and a guide topic with JavaScript, then made its
+changes with calls such as `bender.load`, `bender.tune` and `bender.set`. In the
+side-panel session in the screenshot, where the request only mentioned
+`window.bender`, Claude loaded the preset by clicking its chip and entered the
+notes by clicking cells in the piano roll. Both routes change the same controls,
+and the clicking route takes many more steps. A request that asks Claude to run
+`bender.help` with JavaScript points it at the API route.
 
 ## Claude Code
 
@@ -58,7 +79,9 @@ Then ask Claude Code to open the public URL, or
 
 - The browser keeps audio suspended until the page receives a click or key
   press. The Claude in Chrome click tool and the chrome-devtools-mcp `click`
-  tool send real input events. A Chrome started with
+  tool send real input events. In our evals, extension clicks in the middle of
+  the page sometimes left audio suspended, and the agent clicked again near the
+  top of the page. A Chrome started with
   `--autoplay-policy=no-user-gesture-required` needs no click.
 - `bender.set` with `seconds` glides on animation frames, and Chrome pauses
   animation frames in a hidden tab. Without `seconds`, `set` posts the new
@@ -88,3 +111,9 @@ and blanks the tab. The script prints tool calls, clicks, blocked and truncated
 results, cost and time per task. The extension has to be signed in to the same
 claude.ai account as `claude`, or `list_connected_browsers` returns an empty
 list.
+
+The first eval run passed 1 of 4 tasks. The extension blocked the original
+3104-character `bender.help`, so every agent read it in slices, one agent raised
+the wrong control, and the grader read the wrong tab in two tasks. After those
+fixes the second run passed 4 of 4, with 44 JavaScript calls against 71, in 315
+s against 533 s. `agent-docs/agent-interface.md` has the details.
