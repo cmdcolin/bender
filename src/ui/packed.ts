@@ -533,6 +533,7 @@ function toBase64Url(bytes: readonly number[]): string {
 // next word autolinked along with it: a link that arrives with one character
 // too many has lost no more of itself than one whose tail a chat window ate,
 // and that one already opens the board it can still read.
+// CROSS_REPO_SYNC(packed-base64)
 function fromBase64Url(text: string): number[] {
   const bytes: number[] = []
   let acc = 0
@@ -549,6 +550,7 @@ function fromBase64Url(text: string): number[] {
   }
   return bytes
 }
+// CROSS_REPO_SYNC_END(packed-base64)
 
 /** A board as bytes: every control off stock, by position in URL_KEY_ORDER. */
 export function packControls(
