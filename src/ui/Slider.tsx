@@ -324,57 +324,57 @@ export function ControlSlider({
     )
     return (
       <>
-        <Tip ref={tip} text={def.help}>
-          <div className={styles.row}>
+        <div className={styles.row}>
+          <Tip ref={tip} text={def.help}>
             <span
               className={touched ? styles.labelTouched : styles.label}
               onClick={() => tip.current?.toggle()}
             >
               {label}
             </span>
-            <span className={styles.choices}>
-              {choices.length > CHOICES_AS_BUTTONS ? (
-                <select
-                  className={touched ? styles.listOn : styles.list}
-                  aria-label={label}
-                  value={Math.round(value) - def.min}
-                  onChange={e => pick(Number(e.currentTarget.value))}
+          </Tip>
+          <span className={styles.choices}>
+            {choices.length > CHOICES_AS_BUTTONS ? (
+              <select
+                className={touched ? styles.listOn : styles.list}
+                aria-label={label}
+                value={Math.round(value) - def.min}
+                onChange={e => pick(Number(e.currentTarget.value))}
+              >
+                {def.groups
+                  ? def.groups.map(g => (
+                      <optgroup key={g.name} label={g.name}>
+                        {g.choices.map(c => option(choices.indexOf(c)))}
+                      </optgroup>
+                    ))
+                  : choices.map((_, i) => option(i))}
+              </select>
+            ) : (
+              choices.map((c, i) => (
+                <button
+                  key={c}
+                  className={
+                    Math.round(value) - def.min === i
+                      ? styles.choiceOn
+                      : styles.choice
+                  }
+                  onClick={() => pick(i)}
                 >
-                  {def.groups
-                    ? def.groups.map(g => (
-                        <optgroup key={g.name} label={g.name}>
-                          {g.choices.map(c => option(choices.indexOf(c)))}
-                        </optgroup>
-                      ))
-                    : choices.map((_, i) => option(i))}
-                </select>
-              ) : (
-                choices.map((c, i) => (
-                  <button
-                    key={c}
-                    className={
-                      Math.round(value) - def.min === i
-                        ? styles.choiceOn
-                        : styles.choice
-                    }
-                    onClick={() => pick(i)}
-                  >
-                    {c}
-                  </button>
-                ))
-              )}
-              {def.lane === undefined ? null : (
-                <Mod
-                  lane={def.lane}
-                  label={label}
-                  open={wireOpen}
-                  onOpen={next => setWireOpen(next)}
-                />
-              )}
-              <Bind def={def} />
-            </span>
-          </div>
-        </Tip>
+                  {c}
+                </button>
+              ))
+            )}
+            {def.lane === undefined ? null : (
+              <Mod
+                lane={def.lane}
+                label={label}
+                open={wireOpen}
+                onOpen={next => setWireOpen(next)}
+              />
+            )}
+            <Bind def={def} />
+          </span>
+        </div>
         {def.lane === undefined || !wireOpen ? null : (
           <ModWire lane={def.lane} label={label} />
         )}
@@ -442,8 +442,8 @@ export function ControlSlider({
 
   return (
     <>
-      <Tip ref={tip} text={def.help}>
-        <div className={split?.names ? styles.rowSplit : styles.row}>
+      <div className={split?.names ? styles.rowSplit : styles.row}>
+        <Tip ref={tip} text={def.help}>
           <span
             className={touched ? styles.labelTouched : styles.label}
             onClick={() => tip.current?.toggle()}
@@ -451,134 +451,134 @@ export function ControlSlider({
           >
             {label}
           </span>
-          {split ? (
-            <span
-              className={styles.split}
-              style={cssVars({
-                '--turn': `${turn * 100}%`,
-                '--way':
-                  way < 0
-                    ? 'color-mix(in srgb, var(--accent) 32%, var(--surface-raised))'
-                    : way > 0
-                      ? 'var(--accent)'
-                      : 'var(--fg3)',
-              })}
-            >
-              {/* The travel drawn as the two things it is: a bed tinted dim
-                below the turn and shaded full strength above it, the throw
-                filled from the turn out to where the knob is standing rather
-                than from the far end, and the turn itself marked. A knob
-                sitting a hair the wrong side of the middle now reads as the
-                wrong side rather than as nearly nothing. */}
-              <span className={styles.bed}>
-                <span
-                  className={styles.throw}
-                  style={{
-                    left: `${Math.min(pos, turn) * 100}%`,
-                    width: `${Math.abs(pos - turn) * 100}%`,
-                  }}
-                />
-                <span className={styles.turn} />
-                {normal !== undefined && (
-                  <>
-                    <span
-                      className={styles.normalBand}
-                      style={{
-                        left: `${Math.min(turn, normal) * 100}%`,
-                        width: `${Math.abs(normal - turn) * 100}%`,
-                      }}
-                    />
-                    <span
-                      className={styles.normalTick}
-                      style={{ left: `${normal * 100}%` }}
-                    />
-                  </>
-                )}
-              </span>
-              {track}
-              {split.names && (
-                <span className={styles.ends}>
-                  <span className={way < 0 ? styles.endBack : styles.end}>
-                    ◀ {split.names.below}
-                  </span>
-                  <span className={way === 0 ? styles.endMid : styles.end}>
-                    {split.names.mid}
-                  </span>
-                  <span className={way > 0 ? styles.endFwd : styles.end}>
-                    {split.names.above} ▶
-                  </span>
-                </span>
+        </Tip>
+        {split ? (
+          <span
+            className={styles.split}
+            style={cssVars({
+              '--turn': `${turn * 100}%`,
+              '--way':
+                way < 0
+                  ? 'color-mix(in srgb, var(--accent) 32%, var(--surface-raised))'
+                  : way > 0
+                    ? 'var(--accent)'
+                    : 'var(--fg3)',
+            })}
+          >
+            {/* The travel drawn as the two things it is: a bed tinted dim
+              below the turn and shaded full strength above it, the throw
+              filled from the turn out to where the knob is standing rather
+              than from the far end, and the turn itself marked. A knob
+              sitting a hair the wrong side of the middle now reads as the
+              wrong side rather than as nearly nothing. */}
+            <span className={styles.bed}>
+              <span
+                className={styles.throw}
+                style={{
+                  left: `${Math.min(pos, turn) * 100}%`,
+                  width: `${Math.abs(pos - turn) * 100}%`,
+                }}
+              />
+              <span className={styles.turn} />
+              {normal !== undefined && (
+                <>
+                  <span
+                    className={styles.normalBand}
+                    style={{
+                      left: `${Math.min(turn, normal) * 100}%`,
+                      width: `${Math.abs(normal - turn) * 100}%`,
+                    }}
+                  />
+                  <span
+                    className={styles.normalTick}
+                    style={{ left: `${normal * 100}%` }}
+                  />
+                </>
               )}
             </span>
-          ) : def.mark === undefined ? (
-            track
-          ) : (
-            <span
-              className={styles.plain}
-              style={cssVars({ '--mark': `${toPos(def, def.mark) * 100}%` })}
-            >
-              <span className={styles.tick} />
-              {track}
-            </span>
-          )}
-          <span
-            className={
-              way < 0
-                ? styles.readoutBack
-                : way > 0
-                  ? styles.readoutFwd
-                  : styles.readout
-            }
-          >
-            {touched ? (
-              <>
-                {reading}
-                <Tip
-                  text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
-                >
-                  <button
-                    className={styles.revert}
-                    aria-label={`reset ${label} to ${formatValue(def, stock)}`}
-                    onClick={() => write(def.key, stock)}
-                  >
-                    <span className={styles.mark}>↺</span>
-                  </button>
-                </Tip>
-              </>
-            ) : (
-              <>
-                {reading}
-                <span className={styles.markIdle}>↺</span>
-              </>
+            {track}
+            {split.names && (
+              <span className={styles.ends}>
+                <span className={way < 0 ? styles.endBack : styles.end}>
+                  ◀ {split.names.below}
+                </span>
+                <span className={way === 0 ? styles.endMid : styles.end}>
+                  {split.names.mid}
+                </span>
+                <span className={way > 0 ? styles.endFwd : styles.end}>
+                  {split.names.above} ▶
+                </span>
+              </span>
             )}
-            {action && (
-              <Tip text={action.title}>
+          </span>
+        ) : def.mark === undefined ? (
+          track
+        ) : (
+          <span
+            className={styles.plain}
+            style={cssVars({ '--mark': `${toPos(def, def.mark) * 100}%` })}
+          >
+            <span className={styles.tick} />
+            {track}
+          </span>
+        )}
+        <span
+          className={
+            way < 0
+              ? styles.readoutBack
+              : way > 0
+                ? styles.readoutFwd
+                : styles.readout
+          }
+        >
+          {touched ? (
+            <>
+              {reading}
+              <Tip
+                text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
+              >
                 <button
-                  className={styles.action}
-                  onClick={() =>
-                    write(
-                      def.key,
-                      snapToStep(def, action.value(engine.controls.get(), def)),
-                    )
-                  }
+                  className={styles.revert}
+                  aria-label={`reset ${label} to ${formatValue(def, stock)}`}
+                  onClick={() => write(def.key, stock)}
                 >
-                  {action.label}
+                  <span className={styles.mark}>↺</span>
                 </button>
               </Tip>
-            )}
-            {def.tap === undefined ? null : <Tap def={def} label={label} />}
-            {def.lane === undefined ? null : (
-              <Mod
-                lane={def.lane}
-                label={label}
-                open={wireOpen}
-                onOpen={next => setWireOpen(next)}
-              />
-            )}
-            <Bind def={def} />
-          </span>
-        </div>
-      </Tip>
+            </>
+          ) : (
+            <>
+              {reading}
+              <span className={styles.markIdle}>↺</span>
+            </>
+          )}
+          {action && (
+            <Tip text={action.title}>
+              <button
+                className={styles.action}
+                onClick={() =>
+                  write(
+                    def.key,
+                    snapToStep(def, action.value(engine.controls.get(), def)),
+                  )
+                }
+              >
+                {action.label}
+              </button>
+            </Tip>
+          )}
+          {def.tap === undefined ? null : <Tap def={def} label={label} />}
+          {def.lane === undefined ? null : (
+            <Mod
+              lane={def.lane}
+              label={label}
+              open={wireOpen}
+              onOpen={next => setWireOpen(next)}
+            />
+          )}
+          <Bind def={def} />
+        </span>
+      </div>
       {def.lane === undefined || !wireOpen ? null : (
         <ModWire lane={def.lane} label={label} />
       )}

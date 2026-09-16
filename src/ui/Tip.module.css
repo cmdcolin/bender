@@ -25,6 +25,9 @@
      centres its text. The top layer does not break inheritance. */
   text-align: left;
   /* It is never a target: a tip that opened over the control it explains would
-     otherwise swallow the click, and drags run under it either way. */
+     otherwise swallow the click, and drags run under it either way. Selection
+     goes with it — otherwise the pointer parked on a sentence reads as
+     something to select rather than something to read. */
   pointer-events: none;
+  user-select: none;
 }
