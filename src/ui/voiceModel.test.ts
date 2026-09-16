@@ -5,6 +5,7 @@ import {
   readCurrent,
   readVoices,
   removeVoice,
+  renameVoice,
   suggestVoiceName,
   upsertVoice,
   VOICE_NAME_MAX,
@@ -72,4 +73,18 @@ test('a stored session needs both halves', () => {
 test('delete takes the one name', () => {
   const list = upsertVoice(upsertVoice([], 'a', 'p=1'), 'b', 'p=2')
   expect(removeVoice(list, 'a').map(v => v.name)).toEqual(['b'])
+})
+
+test('rename keeps the place, the id and the stamp', () => {
+  const list = upsertVoice(upsertVoice([], 'a', 'p=1', 10), 'b', 'p=2')
+  const renamed = renameVoice(list, 'a', '  dying   toy ')
+  expect(renamed.map(v => v.name)).toEqual(['dying toy', 'b'])
+  expect(renamed[0]!.id).toBe(list[0]!.id)
+  expect(renamed[0]!.savedAt).toBe(10)
+})
+
+test('rename refuses a name in use, or no name', () => {
+  const list = upsertVoice(upsertVoice([], 'a', 'p=1'), 'b', 'p=2')
+  expect(renameVoice(list, 'a', 'b')).toEqual(list)
+  expect(renameVoice(list, 'a', '  ')).toEqual(list)
 })

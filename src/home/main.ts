@@ -11,6 +11,7 @@
 // string somebody typed, and `innerHTML` anywhere here would hand it to the
 // parser.
 import {
+  editVoices,
   fetchHome,
   signIn,
   signOut,
@@ -21,6 +22,12 @@ import {
   type HomeDoc,
 } from '../ui/cloud'
 import { sinceWords } from '../ui/relativeTime'
+import {
+  VOICE_NAME_MAX,
+  cleanVoiceName,
+  removeVoice,
+  renameVoice,
+} from '../ui/voiceModel'
 import { markFor } from './mark'
 import { appUrl, boardUrl, guideUrl, siteRoot } from './paths'
 
@@ -78,6 +85,144 @@ function card(query: string, name: string, says: string): HTMLElement {
   item.append(link)
   return item
 }
+
+// The link a copied card carries, whole, so it opens from a chat window.
+const shareLink = (query: string) =>
+  new URL(boardUrl(query), location.href).href
+
+// A voice has nothing stored beside it to clean up.
+const deleted = (_user: CloudUser, _voice: SavedVoice) => undefined
+
+// CROSS_REPO_SYNC(home-card-actions)
+// What a card's verbs need: who is signed in, and how to draw the home again
+// from the list an edit left on the account.
+interface CardEdits {
+  user: CloudUser
+  redraw: (voices: SavedVoice[]) => void
+}
+
+// Copy link, rename and delete, in a row under a saved card. The row sits
+// beside the card's link, since a button inside an <a> follows the link. A
+// rename or a delete runs through the same transaction the app saves with, and
+// the home redraws from the list that landed.
+function cardActions(voice: SavedVoice, edits: CardEdits): HTMLElement {
+  const row = el('div', 'cardActions')
+  const status = el('span', 'cardStatus')
+  status.setAttribute('role', 'status')
+
+  const act = (label: string, run: () => void) => {
+    const button = el('button', 'cardAct', label)
+    button.type = 'button'
+    button.addEventListener('click', run)
+    return button
+  }
+  const show = (...nodes: HTMLElement[]) => {
+    row.replaceChildren(...nodes, status)
+  }
+  const busy = () => {
+    for (const node of row.querySelectorAll<
+      HTMLButtonElement | HTMLInputElement
+    >('button, input'))
+      node.disabled = true
+  }
+
+  const idle = (focus?: string) => {
+    const buttons = [
+      act('Copy link', copy),
+      act('Rename', () => {
+        rename(voice.name)
+      }),
+      act('Delete', askDelete),
+    ]
+    show(...buttons)
+    buttons.find(button => button.textContent === focus)?.focus()
+  }
+
+  function copy() {
+    const link = shareLink(voice.query)
+    // An insecure origin has no clipboard at all, and reading it throws before
+    // there is a promise to reject.
+    Promise.resolve()
+      .then(() => navigator.clipboard.writeText(link))
+      .then(
+        () => {
+          status.textContent = 'Link copied'
+        },
+        () => {
+          status.textContent = 'Could not copy the link'
+        },
+      )
+  }
+
+  function rename(start: string) {
+    const input = el('input', 'cardRename')
+    input.value = start
+    input.maxLength = VOICE_NAME_MAX
+    input.setAttribute('aria-label', `New name for ${voice.name}`)
+    const save = () => {
+      const to = cleanVoiceName(input.value)
+      if (to === '' || to === voice.name) {
+        idle('Rename')
+        return
+      }
+      busy()
+      editVoices(edits.user.uid, list =>
+        renameVoice(list, voice.name, to),
+      ).then(
+        next => {
+          if (next.some(p => p.name === voice.name)) {
+            rename(to)
+            status.textContent = `Another one is already called “${to}”`
+          } else edits.redraw(next)
+        },
+        () => {
+          rename(to)
+          status.textContent = 'Could not rename. Check the connection.'
+        },
+      )
+    }
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') save()
+      if (event.key === 'Escape') idle('Rename')
+    })
+    status.textContent = ''
+    show(
+      input,
+      act('Save', save),
+      act('Cancel', () => idle('Rename')),
+    )
+    input.select()
+  }
+
+  function askDelete() {
+    status.textContent = ''
+    const keep = act('Keep', () => idle('Delete'))
+    show(
+      el('span', 'cardAsk', `Delete “${voice.name}”?`),
+      act('Delete', remove),
+      keep,
+    )
+    keep.focus()
+  }
+
+  function remove() {
+    busy()
+    editVoices(edits.user.uid, list => removeVoice(list, voice.name)).then(
+      next => {
+        deleted(edits.user, voice)
+        edits.redraw(next)
+      },
+      () => {
+        idle('Delete')
+        status.textContent = 'Could not delete. Check the connection.'
+      },
+    )
+  }
+
+  idle()
+  return row
+}
+// CROSS_REPO_SYNC_END(home-card-actions)
 
 function section(id: string, heading: string, sub?: string): HTMLElement {
   const box = el('section', 'homeSec')
@@ -156,7 +301,11 @@ function failedSection(retry: () => void): HTMLElement {
   return box
 }
 
-function voicesSection(doc: HomeDoc, now: number): HTMLElement {
+function voicesSection(
+  doc: HomeDoc,
+  now: number,
+  edits: CardEdits,
+): HTMLElement {
   const box = section('voices', 'Your voices')
   if (doc.voices.length === 0) {
     box.append(emptyVoices())
@@ -174,7 +323,9 @@ function voicesSection(doc: HomeDoc, now: number): HTMLElement {
       voice.savedAt === undefined
         ? 'saved'
         : `saved ${sinceWords(voice.savedAt, now)}`
-    grid.append(card(voice.query, voice.name, says))
+    const item = card(voice.query, voice.name, says)
+    item.append(cardActions(voice, edits))
+    grid.append(item)
   }
   box.append(grid)
   return box
@@ -285,8 +436,14 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
 }
 
 export function showHome(user: CloudUser, doc: HomeDoc, now = Date.now()) {
+  const edits: CardEdits = {
+    user,
+    redraw: voices => {
+      showHome(user, { ...doc, voices })
+    },
+  }
   const resume = resumeSection(doc, now)
-  const voices = voicesSection(doc, now)
+  const voices = voicesSection(doc, now, edits)
   showFrame(user, resume === undefined ? [voices] : [resume, voices])
 }
 
