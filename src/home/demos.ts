@@ -1,6 +1,6 @@
-// `demos.json` lists the demos. Every one gets a card on the landing page and a
-// line in the README; the ones marked `showcase` also get a clip under the
-// hero, which `scripts/demoreel.ts` renders offline at build time.
+// `demos.json` lists the demos. Every one gets a line in the README; the ones
+// marked `showcase` also get a row in the landing page's Demos section, playing
+// a clip `scripts/demoreel.ts` renders offline at build time.
 import listed from '../../demos.json'
 
 export interface Demo {

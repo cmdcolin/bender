@@ -1,14 +1,18 @@
 ---
-// Each play button is a link to its clip, so the clip still opens with no
-// JavaScript; src/home/listen.ts plays it in place.
+// The demos, down the bottom of the landing page. Each play button is a link to
+// its clip, so the clip still opens with no JavaScript; src/home/listen.ts
+// plays it in place, and src/home/main.ts puts the board of the day on top.
 import { clipPath, showcase } from '../home/demos'
 import { boardUrl, siteRoot } from '../home/paths'
 ---
 
-<section class="listen" aria-labelledby="listenHead">
+<section id="demos" aria-labelledby="listenHead">
   <h2 class="head" id="listenHead">
-    Listen
+    Demos
   </h2>
+  <p class="sub">
+    Play one here, or open it and the board arrives set up that way.
+  </p>
   <ul class="tracks">
     {showcase.map(demo => (
       <li class="track">

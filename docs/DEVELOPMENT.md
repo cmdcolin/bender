@@ -104,7 +104,7 @@ the main and audio threads is [dataflow.md](dataflow.md).
 
 - `demos.json` lists the demos. `pnpm demos` writes them into the README, and
   the build fails if that block is stale. `pnpm reel` renders the ones marked
-  `showcase` into `public/demos/*.mp3` for the landing page's Listen section,
+  `showcase` into `public/demos/*.mp3` for the landing page's Demos section,
   offline and through the worklet's own board. The build runs it too, so the
   clips stay out of git; it needs `ffmpeg` on PATH.
 

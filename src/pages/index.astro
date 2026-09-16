@@ -1,10 +1,8 @@
 ---
 import Analytics from '../components/Analytics.astro'
-import Card from '../components/Card.astro'
 import Footer from '../components/Footer.astro'
 import Showcase from '../components/Showcase.astro'
 import SiteBar from '../components/SiteBar.astro'
-import { demos } from '../home/demos'
 import { appUrl, guideUrl, privacyUrl, siteRoot } from '../home/paths'
 import { SIGNED_IN_HINT } from '../ui/cloud'
 import {
@@ -126,7 +124,6 @@ import '../home/home.css'
         reverb and distortion. You work it from the signal path diagram rather
         than a wall of sliders, and every board it makes is a link you can send.
       </p>
-      <Showcase />
       <figure class="figure">
         <img
           src={`${siteRoot}panel-callout.jpg`}
@@ -153,15 +150,7 @@ import '../home/home.css'
           Why sign in?
         </button>
       </p>
-      <section id="demos">
-        <h2 class="head">Demos</h2>
-        <p class="sub">Open one and the board arrives set up that way.</p>
-        <ul class="grid">
-          {demos.map(demo => (
-            <Card {...demo} />
-          ))}
-        </ul>
-      </section>
+      <Showcase />
     </main>
 
     <div id="home" class="home" hidden></div>

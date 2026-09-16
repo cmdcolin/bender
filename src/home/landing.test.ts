@@ -5,7 +5,7 @@ import { beforeAll, expect, test } from 'vitest'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
-import { demos, showcase, slug } from './demos'
+import { showcase, slug } from './demos'
 import { privacyUrl } from './paths'
 
 // The landing page answers "why sign in?" out of the same strings the app's own
@@ -55,8 +55,8 @@ test('no page loads Google Analytics before the visitor says yes', () => {
 // CROSS_REPO_SYNC_END(landing-page-test)
 
 test('the landing page shows the demos from demos.json and no presets', () => {
-  for (const demo of demos) expect(landing).toContain(demo.name)
-  expect(landing.match(/class="card"/g)?.length).toBe(demos.length)
+  for (const demo of showcase) expect(landing).toContain(demo.name)
+  expect(landing.match(/class="track"/g)?.length).toBe(showcase.length)
 })
 
 test('the showcase links each of its clips and nothing else', () => {
@@ -64,4 +64,10 @@ test('the showcase links each of its clips and nothing else', () => {
   expect(landing.match(/class="play"/g)?.length).toBe(showcase.length)
   for (const demo of showcase)
     expect(landing).toContain(`demos/${slug(demo.name)}.mp3`)
+})
+
+test('the demos come after the panel figure, at the foot of the page', () => {
+  expect(landing.indexOf('id="demos"')).toBeGreaterThan(
+    landing.indexOf('panel-callout.jpg'),
+  )
 })

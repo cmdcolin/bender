@@ -115,7 +115,7 @@ const SCRIPTS: Record<string, string> = {
     'runs claude -p --chrome sessions against the app, one per task, and grades the board each one leaves',
   ink: 'walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read',
   demos: "writes demos.json into the README's Demos block",
-  reel: "renders the showcase demos to mp3 for the landing page's Listen section",
+  reel: "renders the showcase demos to mp3 for the landing page's Demos section",
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
   figure: "re-shoots the README's screenshot of the app and its panel",

@@ -87,6 +87,9 @@ function card(query: string, name: string, says: string): HTMLElement {
 }
 
 // The roll code is a separate chunk, so the landing page paints before it loads.
+// Today's board heads the demos as a track with no clip: it is rolled in the
+// browser, so there is nothing rendered for it to play. Its mark takes the slot
+// the play button holds on the rest.
 async function addDailyCard() {
   const { dailyBoard } = await import('../ui/daily')
   const today = dailyBoard(Date.now())
@@ -94,13 +97,22 @@ async function addDailyCard() {
     undefined,
     { month: 'long', day: 'numeric', timeZone: 'UTC' },
   )
-  const item = card(
-    today.query,
-    'Board of the day',
-    `${date}: a roll from the “${today.from}” preset, the same for everyone until midnight UTC.`,
+  const item = el('li', 'track today')
+  const mark = el('span', 'todayMark')
+  mark.append(markFor(today.query))
+  const text = el('span', 'trackText')
+  text.append(
+    el('span', 'cardName', 'Board of the day'),
+    el(
+      'span',
+      'says',
+      `${date}: a roll from the “${today.from}” preset, the same for everyone until midnight UTC.`,
+    ),
   )
-  item.classList.add('today')
-  demos.querySelector('.grid')?.prepend(item)
+  const open = el('a', 'open', 'open →')
+  open.href = boardUrl(today.query)
+  item.append(mark, text, open)
+  demos.querySelector('.tracks')?.prepend(item)
 }
 
 addDailyCard().catch((e: unknown) => {

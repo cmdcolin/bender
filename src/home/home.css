@@ -41,12 +41,8 @@
   font-size: 0.9rem;
 }
 
-/* The showcase: a play button, the demo's name and blurb over a progress bar,
-   and a link into the app. */
-.listen {
-  padding: 0;
-  margin: 0 0 1.5rem;
-}
+/* The demos: a play button, the demo's name and blurb over a progress bar, and
+   a link into the app. */
 .tracks {
   display: grid;
   gap: 0.5rem;
@@ -110,6 +106,23 @@
   transform: scaleX(0);
   transform-origin: left;
 }
+/* The board of the day, which has no clip: its mark stands where the play
+   button stands on the rest, at the same width. */
+.todayMark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+.todayMark .mark {
+  width: 2.5rem;
+  height: 1.4rem;
+  fill: var(--accent);
+}
+.track.today {
+  border-color: var(--accent);
+}
 .track .open {
   text-decoration: none;
 }
@@ -142,12 +155,6 @@
 .card:hover,
 .card:focus-visible {
   border-color: var(--accent);
-}
-.today .card {
-  border-color: var(--accent);
-}
-.today .mark {
-  fill: var(--accent);
 }
 .cardTop {
   display: flex;
