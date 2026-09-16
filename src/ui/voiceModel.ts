@@ -16,7 +16,6 @@ export interface SavedVoice {
   query: string
   id?: string
   savedAt?: number
-  openedAt?: number
 }
 
 // The board a signed-in user last had open, offered back by the home page.
@@ -55,13 +54,11 @@ function readVoice(raw: unknown): SavedVoice | undefined {
   if (clean === '') return undefined
   const id = 'id' in raw && typeof raw.id === 'string' ? raw.id : undefined
   const savedAt = 'savedAt' in raw ? num(raw.savedAt) : undefined
-  const openedAt = 'openedAt' in raw ? num(raw.openedAt) : undefined
   return {
     name: clean,
     query,
     ...(id === undefined ? {} : { id }),
     ...(savedAt === undefined ? {} : { savedAt }),
-    ...(openedAt === undefined ? {} : { openedAt }),
   }
 }
 
@@ -84,7 +81,7 @@ export function readCurrent(raw: unknown): CurrentSession | null {
 // Save under a name, overwriting any voice already using it **in place**. The
 // list is read by eye during a set, so a re-save must not reshuffle everything
 // above it. `at` stamps the save and mints an id for a voice that has none; an
-// overwrite keeps the id and the openedAt it already had.
+// overwrite keeps the id it already had.
 export function upsertVoice(
   voices: readonly SavedVoice[],
   name: string,
@@ -97,7 +94,6 @@ export function upsertVoice(
   const prior = index === -1 ? undefined : voices[index]
   const entry: SavedVoice = { name: clean, query }
   if (prior?.id !== undefined) entry.id = prior.id
-  if (prior?.openedAt !== undefined) entry.openedAt = prior.openedAt
   if (at !== undefined) {
     entry.id ??= newVoiceId()
     entry.savedAt = at
@@ -105,14 +101,6 @@ export function upsertVoice(
   if (index !== -1) return voices.map((item, i) => (i === index ? entry : item))
   return [...voices, entry].slice(-VOICE_MAX)
 }
-
-// A recall or an open, so the home page can sort by what you reach for.
-export const markOpened = (
-  voices: readonly SavedVoice[],
-  name: string,
-  at: number,
-): SavedVoice[] =>
-  voices.map(item => (item.name === name ? { ...item, openedAt: at } : item))
 
 export const removeVoice = (
   voices: readonly SavedVoice[],

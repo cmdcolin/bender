@@ -83,7 +83,8 @@ interface Sdk {
 let sdk: Promise<Sdk> | null = null
 
 function loadSdk(): Promise<Sdk> {
-  sdk ??= (async () => {
+  if (sdk !== null) return sdk
+  const load = (async () => {
     const [appMod, authMod, fs] = await Promise.all([
       import('firebase/app'),
       import('firebase/auth'),
@@ -102,7 +103,21 @@ function loadSdk(): Promise<Sdk> {
       authMod,
     }
   })()
-  return sdk
+  sdk = load
+  // A download that failed, offline or on a flaky connection, is let go, so the
+  // next press tries again instead of failing until a reload.
+  load.catch(() => {
+    if (sdk === load) sdk = null
+  })
+  return load
+}
+
+// Starts the SDK downloading ahead of a sign-in. The popup can only open inside
+// the browser's allowance for the click that asked for it, and a first sign-in
+// on a slow connection spent that allowance on the download, so the browser
+// blocked the window. Pointing at a sign-in button is reason enough to fetch.
+export const warmSignIn = (): void => {
+  loadSdk().catch(() => undefined)
 }
 
 // Subscribe to who is signed in. Resolves to the unsubscribe once the SDK is
@@ -164,7 +179,6 @@ const voiceEntry = (item: SavedVoice) => ({
   query: item.query,
   ...(item.id === undefined ? {} : { id: item.id }),
   ...(item.savedAt === undefined ? {} : { savedAt: item.savedAt }),
-  ...(item.openedAt === undefined ? {} : { openedAt: item.openedAt }),
 })
 
 // Applies `edit` to the stored list and writes the result in one transaction.

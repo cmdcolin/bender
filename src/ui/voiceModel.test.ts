@@ -2,7 +2,6 @@ import { expect, test } from 'vitest'
 
 import {
   cleanVoiceName,
-  markOpened,
   readCurrent,
   readVoices,
   removeVoice,
@@ -24,12 +23,10 @@ test('a save lands at the end and an overwrite stays where it was', () => {
   expect(upsertVoice(two, 'a', 'p=9')[0]!.query).toBe('p=9')
 })
 
-test('an overwrite keeps the id and the last open, and restamps the save', () => {
+test('an overwrite keeps the id and restamps the save', () => {
   const first = upsertVoice([], 'a', 'p=1', 10)
-  const opened = markOpened(first, 'a', 20)
-  const again = upsertVoice(opened, 'a', 'p=2', 30)
+  const again = upsertVoice(first, 'a', 'p=2', 30)
   expect(again[0]!.id).toBe(first[0]!.id)
-  expect(again[0]!.openedAt).toBe(20)
   expect(again[0]!.savedAt).toBe(30)
 })
 

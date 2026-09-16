@@ -125,6 +125,28 @@ test('the held save never overwrites a voice the account already had', async () 
   expect(saved[0]!.query).toBe('chipStarve=1')
 })
 
+test('a save keeps a voice another machine saved after this tab loaded', async () => {
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
+  fireEvent.click(screen.getByRole('button', { name: 'sign in with Google' }))
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'saved' })).toBeTruthy()
+  })
+  // This tab fetched an empty list. Another machine saves a voice after that.
+  cloud.voices = [{ name: 'from the phone', query: 'chipStarve=1' }]
+
+  act(() => {
+    engine.writeBoard({ ...DEFAULT_CONTROLS, chipStarve: 0.8 })
+  })
+  fireEvent.keyDown(window, { key: 's', ctrlKey: true })
+
+  await waitFor(() => {
+    expect(cloud.writes.length).toBe(1)
+  })
+  expect(cloud.writes[0]!.map(v => v.name)[0]).toBe('from the phone')
+  expect(cloud.writes[0]!.length).toBe(2)
+})
+
 test('a sign-in nobody was mid-save for writes nothing', async () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'sign in' }))

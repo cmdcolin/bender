@@ -9,12 +9,7 @@ import {
   watchAuth,
   type CloudUser,
 } from './cloud'
-import {
-  markOpened,
-  removeVoice,
-  suggestVoiceName,
-  upsertVoice,
-} from './voiceModel'
+import { removeVoice, suggestVoiceName, upsertVoice } from './voiceModel'
 
 import type { CurrentSession, SavedVoice } from './voiceModel'
 
@@ -221,11 +216,10 @@ export function useSavedVoices() {
     },
     // A recall makes that voice the one you are in, so the next save offers its
     // name rather than falling back to whichever preset the board still
-    // matches. It stamps `openedAt`, which is what the home page reads.
+    // matches. It writes nothing: a transaction per recall paid for a field
+    // nothing read.
     markRecalled: (name: string) => {
       setLastName(name)
-      const at = Date.now()
-      write(list => markOpened(list, name, at))
     },
     signIn: () => {
       setStatus('loading')
@@ -247,7 +241,11 @@ export function useSavedVoices() {
           console.error('sign-in failed', e)
           pending.current = null
           setStatus('error')
-          setError('sign-in failed — try again')
+          setError(
+            code === 'auth/popup-blocked'
+              ? 'the browser blocked the sign-in window — allow pop-ups for this site and try again'
+              : 'sign-in failed — try again',
+          )
         }
       })
     },
