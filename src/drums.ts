@@ -270,3 +270,29 @@ export const DRUM_ROMS: DrumRom[] = [
 export function romMatching(masks: DrumMasks): DrumRom | undefined {
   return DRUM_ROMS.find(r => PATTERN_KEYS.every(k => r.masks[k] === masks[k]))
 }
+
+const STEP_CHARS: Record<StepState, string> = { on: 'x', maybe: '?', off: '.' }
+
+/** Formats a row up to its length with one character per step: `x` for a hit,
+    `?` for a hit on the dice, `.` for a rest. */
+export const rowText = (mask: number, maybe: number, len: number) =>
+  Array.from(
+    { length: asLen(len) },
+    (_, s) => STEP_CHARS[stepState(mask, maybe, s)],
+  ).join('')
+
+/** Parses the format rowText writes, ignoring spaces and `|`. The text length
+    sets the row length, and an empty string gives sixteen rests. */
+export function parseRow(text: string) {
+  const steps = text.toLowerCase().replace(/[\s|]/g, '').split('')
+  if (steps.length > STEPS)
+    throw new Error(`${steps.length} steps; the maximum is ${STEPS}`)
+  let mask = 0
+  let maybe = 0
+  for (const [s, ch] of steps.entries()) {
+    if (ch === 'x') mask |= stepBit(s)
+    else if (ch === '?') maybe |= stepBit(s)
+    else if (ch !== '.') throw new Error(`'${ch}' is not a step; use x, ? or .`)
+  }
+  return { mask, maybe, len: steps.length || STEPS }
+}

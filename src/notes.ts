@@ -41,3 +41,13 @@ export const semitoneName = (semitone: number) => noteName(toMidiNote(semitone))
 /** True for the semitones a keyboard draws black. */
 export const isSharp = (semitone: number) =>
   semitoneName(semitone).includes('#')
+
+/** Converts a note name to a MIDI note number, or returns null. C4 is 60, and
+    A#3 and Bb3 are both 58. */
+export function midiFromName(name: string): number | null {
+  const m = /^([A-Ga-g])([#b]?)(-?\d)$/.exec(name)
+  if (!m) return null
+  const pc = NOTE_NAMES.indexOf(m[1]!.toUpperCase())
+  const shift = m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0
+  return (Number(m[3]) + 1) * 12 + pc + shift
+}

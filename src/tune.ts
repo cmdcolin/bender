@@ -1,3 +1,5 @@
+import { midiFromName, semitoneName, toSemitone } from './notes'
+
 import type { ControlKey, Controls } from './controls'
 
 // The melody memory: the thirty-two steps the toy keeps of what you played,
@@ -287,3 +289,30 @@ export function laneForNote(
     reads its key off and what the roll opens its window on. */
 export const tuneNotes = (c: Controls) =>
   TUNE_LANE_KEYS.flatMap((_, lane) => laneSteps(c, lane)).filter(isNote)
+
+/** Formats a lane with one token per step: a note name, `.` for a rest or `~`
+    for a hold. */
+export const laneText = (steps: readonly number[]) =>
+  steps
+    .map(s => (s === REST ? '.' : s === HOLD ? '~' : semitoneName(s)))
+    .join(' ')
+
+/** Parses the format laneText writes, ignoring `|` bar lines. */
+export function parseLane(text: string): number[] {
+  const tokens = text.split(/\s+/).filter(t => t !== '' && t !== '|')
+  if (tokens.length > TUNE_STEPS)
+    throw new Error(`${tokens.length} steps; the maximum is ${TUNE_STEPS}`)
+  return tokens.map(token => {
+    if (token === '.') return REST
+    if (token === '~') return HOLD
+    const midi = midiFromName(token)
+    if (midi === null)
+      throw new Error(`'${token}' is not a note name, '.' or '~'`)
+    const note = toSemitone(midi)
+    if (note < NOTE_LO || note > NOTE_HI)
+      throw new Error(
+        `${token} is outside the range ${semitoneName(NOTE_LO)} to ${semitoneName(NOTE_HI)}`,
+      )
+    return note
+  })
+}

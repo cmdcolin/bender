@@ -10,13 +10,31 @@ import {
   HOLD,
   isNote,
   keyOf,
+  laneText,
   NOTE_HI,
   NOTE_LO,
+  parseLane,
   REST,
   TUNE_STEPS,
   TUNE_STEP_KEYS,
   voicing,
 } from './tune'
+
+test('parseLane reads notes, rests and holds, and laneText writes them back', () => {
+  const steps = parseLane('A3 C4 | ~ . Bb3 A#3 C2 C#7')
+  expect(steps).toEqual([0, 3, HOLD, REST, 1, 1, NOTE_LO, NOTE_HI])
+  expect(laneText(steps)).toBe('A3 C4 ~ . A#3 A#3 C2 C#7')
+  expect(parseLane(laneText(steps))).toEqual(steps)
+  expect(parseLane('')).toEqual([])
+})
+
+test('parseLane throws on an unknown token, an out-of-range note or too many steps', () => {
+  expect(() => parseLane('B1')).toThrow('B1 is outside the range C2 to C#7')
+  expect(() => parseLane('C4 x')).toThrow("'x' is not a note name")
+  expect(() => parseLane(' .'.repeat(TUNE_STEPS + 1))).toThrow(
+    `${TUNE_STEPS + 1} steps; the maximum is ${TUNE_STEPS}`,
+  )
+})
 
 test('the memory has a control per step, and they start empty', () => {
   expect(TUNE_STEP_KEYS).toHaveLength(TUNE_STEPS)

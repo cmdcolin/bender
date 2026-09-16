@@ -693,12 +693,17 @@ export class Engine {
     this.rafQueued = true
     requestAnimationFrame(() => {
       this.rafQueued = false
-      if (!this.dirty) return
-      this.dirty = false
-      this.post({
-        kind: 'params',
-        pack: packParams(this.controls.get(), this.pack),
-      })
+      if (this.dirty) this.flush()
+    })
+  }
+
+  // A script calls this directly, because the browser pauses animation frames
+  // in a hidden tab and flushSoon waits for one.
+  flush() {
+    this.dirty = false
+    this.post({
+      kind: 'params',
+      pack: packParams(this.controls.get(), this.pack),
     })
   }
 

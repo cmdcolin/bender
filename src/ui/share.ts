@@ -69,21 +69,25 @@ export function decodeControls(encoded: string): Partial<Controls> {
     const raw = part.slice(at + 1).trim()
     const v = Number(raw)
     if (raw === '' || !Number.isFinite(v)) continue
-    // The controls a widget turns have no slider to snap to, and they are not
-    // all the same shape: a pattern is sixteen bits or nothing, a row's length
-    // is a whole number of steps it can play, and a step of the memory is a
-    // note, a rest or a hold.
-    out[key] = LEN_KEYS.has(key)
-      ? asLen(v)
-      : TUNE_KEYS.has(key)
-        ? asTuneStep(v)
-        : key === 'tuneLen'
-          ? asTuneLen(v)
-          : EDITOR_KEYS.has(key)
-            ? asMask(v)
-            : snapToStep(sliderFor(key), v)
+    out[key] = coerceControl(key, v)
   }
   return out
+}
+
+// The controls a widget turns have no slider to snap to, and they are not all
+// the same shape: a pattern is sixteen bits or nothing, a row's length is a
+// whole number of steps it can play, and a step of the memory is a note, a rest
+// or a hold.
+export function coerceControl(key: ControlKey, v: number): number {
+  return LEN_KEYS.has(key)
+    ? asLen(v)
+    : TUNE_KEYS.has(key)
+      ? asTuneStep(v)
+      : key === 'tuneLen'
+        ? asTuneLen(v)
+        : EDITOR_KEYS.has(key)
+          ? asMask(v)
+          : snapToStep(sliderFor(key), v)
 }
 
 // Which form the bar is already in, and so which one the next write uses. A

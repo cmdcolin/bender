@@ -1,4 +1,5 @@
 import { engine } from './engine/engine'
+import { exposeBenderApi } from './ui/agentApi'
 import { App } from './ui/App'
 import { keepRunState } from './ui/runState'
 import { boardFromLocation } from './ui/share'
@@ -14,6 +15,8 @@ if (shared) engine.patch(shared)
 // What a reload does put back is what this tab was running, which the link
 // never carried either way — see runState.
 keepRunState()
+
+exposeBenderApi()
 
 export default function Bender() {
   return <App openedFromLink={!!shared} />

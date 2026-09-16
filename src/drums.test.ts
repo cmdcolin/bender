@@ -7,11 +7,26 @@ import {
   PATTERN_KEYS,
   STEPS,
   hasStep,
+  parseRow,
   romMatching,
+  rowText,
   stepBit,
   toggleStep,
   type DrumMasks,
 } from './drums'
+
+test('parseRow reads hits, dice hits and rests, and rowText writes them back', () => {
+  const row = parseRow('X...|?.x.')
+  expect(row).toEqual({
+    mask: stepBit(0) | stepBit(6),
+    maybe: stepBit(4),
+    len: 8,
+  })
+  expect(rowText(row.mask, row.maybe, row.len)).toBe('x...?.x.')
+  expect(parseRow('')).toEqual({ mask: 0, maybe: 0, len: STEPS })
+  expect(() => parseRow('x-x')).toThrow("'-' is not a step")
+  expect(() => parseRow('.'.repeat(STEPS + 1))).toThrow(`${STEPS + 1} steps`)
+})
 
 test('step 1 is the high bit, so a mask literal reads like the grid', () => {
   expect(stepBit(0)).toBe(0b1000_0000_0000_0000)
