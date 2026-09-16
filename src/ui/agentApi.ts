@@ -7,7 +7,7 @@ import {
 } from '../controls'
 import { DRUM_VOICES, GRID_ROWS, parseRow, rowText } from '../drums'
 import { YOURS } from '../dsp/stages/roms'
-import { engine } from '../engine/engine'
+import { engine, SOUND_FLOOR } from '../engine/engine'
 import { STEM_FILES } from '../engine/params'
 import { semitoneName } from '../notes'
 import {
@@ -253,14 +253,22 @@ async function listen(ms = 1500) {
   let sounding = 0
   const toy = new Set<number>()
   const fm = new Set<number>()
+  // Each meter message carries peaks since the previous one, so the first
+  // message after subscribing covers audio from before this call.
+  let first = true
   const off = engine.meter.subscribe(() => {
+    if (first) {
+      first = false
+      return
+    }
     const m = engine.meter.get()
     meters++
     peak = Math.max(peak, m.peak)
     duck = Math.max(duck, m.duck)
     rail = Math.min(rail, m.rail)
     hits |= m.hits
-    sounding |= engine.sounding.get()
+    for (let k = 0; k < STEM_FILES.length; k++)
+      if ((m.taps[k] ?? 0) > SOUND_FLOOR) sounding |= 1 << k
     for (const n of engine.chipNotes.get()) toy.add(n)
     for (const n of engine.fmNotes.get()) fm.add(n)
   })

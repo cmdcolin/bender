@@ -59,7 +59,7 @@ const STEM_FLOOR = 1e-4
 // listening for and loud enough to ignore the dc dust a fader leaves behind on
 // its way to zero. The fall is the desk's, so the map and the meters beside the
 // faders decide a channel is quiet at the same moment.
-const SOUND_FLOOR = 1e-3
+export const SOUND_FLOOR = 1e-3
 const SOUND_FALL = 0.86
 
 export interface Meter {

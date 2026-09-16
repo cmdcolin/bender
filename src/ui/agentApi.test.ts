@@ -132,6 +132,30 @@ test('load finds a preset by name prefix and throws on an unknown name', () => {
   expect(() => bender.load('nope')).toThrow(/bender.presets\(\) lists all/)
 })
 
+test('listen ignores the meter message that covers audio from before the call', async () => {
+  const meter = (peak: number, taps: number[], hits = 0) =>
+    engine.meter.set({
+      ...engine.meter.get(),
+      peak,
+      hits,
+      taps: Float32Array.from(taps),
+    })
+  engine.running.set(true)
+  try {
+    const heard = bender.listen(150)
+    setTimeout(() => meter(0.9, [0.9, 0.5], 1), 20)
+    setTimeout(() => meter(0.05, [0.05, 0]), 40)
+    setTimeout(() => meter(0.01, [0.0005, 0]), 60)
+    expect(await heard).toMatchObject({
+      peak: '-26.0 dBFS',
+      sources: ['toy'],
+      drumHits: [],
+    })
+  } finally {
+    engine.running.set(false)
+  }
+})
+
 test('listen before audio starts returns how to start it', async () => {
   expect(await bender.listen(100)).toEqual({
     audio:
