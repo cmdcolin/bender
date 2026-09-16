@@ -32,6 +32,10 @@ const BODY = furPath(70, 70, 44, 42, 56)
 const BELLY = furPath(70, 96, 25, 17, 28)
 const EYES = [54, 86]
 
+// The effect rounds each value before writing it, so a change too small to see
+// leaves the SVG untouched.
+const half = (v: number) => Math.round(v * 2) / 2
+
 const setAttr = (el: Element | null, name: string, value: string) => {
   if (el && el.getAttribute(name) !== value) el.setAttribute(name, value)
 }
@@ -70,19 +74,19 @@ export function TalkingPet() {
         setAttr(
           ear,
           'transform',
-          `translate(${i === 0 ? 44 : 96} 38) scale(${i === 0 ? 1 : -1} 1) rotate(${swing.toFixed(1)})`,
+          `translate(${i === 0 ? 44 : 96} 38) scale(${i === 0 ? 1 : -1} 1) rotate(${Math.round(swing)})`,
         ),
       )
       const base = MOOD_LID[moodRef.current] ?? 0
       const blink = m.petPhrase < 0 ? Math.min(m.petMotor * 1.5, 1) : 0
       const lid = base + (1 - base) * blink
       lids.forEach(el =>
-        setAttr(el, 'height', (lid * EYE_R * 2 + 1).toFixed(1)),
+        setAttr(el, 'height', String(half(lid * EYE_R * 2 + 1))),
       )
       setAttr(
         beak,
         'transform',
-        `translate(0 ${Math.min(m.petMouth * BEAK_DROP, BEAK_MAX).toFixed(1)})`,
+        `translate(0 ${half(Math.min(m.petMouth * BEAK_DROP, BEAK_MAX))})`,
       )
     })
   }, [])

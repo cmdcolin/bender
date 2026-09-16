@@ -1,4 +1,6 @@
-import { DRUM_VOICES, STEPS, voiceBit } from '../drums'
+import { memo } from 'react'
+
+import { DRUM_VOICES, STEPS, voiceBit, type DrumVoice } from '../drums'
 import { engine } from '../engine/engine'
 import {
   useControlValue,
@@ -17,33 +19,18 @@ const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 // sixteen step lamps and switches that run the pattern and arm recording. A pad
 // lights on every hit the kit reports, from the pads, the number keys, the
 // pattern or a trigger patch.
+//
+// The lamps, the pads and the switches render as separate components, so a step
+// redraws only the lamps and a hit redraws only the pads that changed.
 export function DrumKit() {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
-  const level = useControlValue('drumLevel')
-  const tick = useMeterValue(m => m.tick)
-  const struck = useStruck()
-  const coarse = useCoarse()
-  const step = playing && level > 0 ? tick % STEPS : -1
 
   return (
     <div className={styles.kit} role="group" aria-label="toy drums">
       <div className={styles.deck}>
         <span className={styles.brand}>drums</span>
-        <span className={styles.lamps} aria-hidden="true">
-          {Array.from({ length: STEPS }, (_, s) => (
-            <span
-              key={s}
-              className={
-                s === step
-                  ? styles.lampOn
-                  : s % 4 === 0
-                    ? styles.lampBeat
-                    : styles.lamp
-              }
-            />
-          ))}
-        </span>
+        <StepLamps playing={playing} />
         <div className={styles.switches}>
           <Tip
             text={
@@ -82,28 +69,79 @@ export function DrumKit() {
           </Tip>
         </div>
       </div>
-      <div className={styles.pads}>
-        {DRUM_VOICES.map((voice, i) => (
-          <Tip
-            key={voice.key}
-            text={`Plays the ${voice.label}.${coarse ? '' : ` The ${padKeyFor(i)} key plays it too.`}`}
-          >
-            <button
-              className={struck & voiceBit(i) ? styles.padOn : styles.pad}
-              aria-label={`${voice.label} pad`}
-              onPointerDown={e => {
-                if (e.button === 0) hit(i)
-              }}
-              onClick={e => {
-                if (e.detail === 0) hit(i)
-              }}
-            >
-              {!coarse && <span className={styles.padKey}>{padKeyFor(i)}</span>}
-              <span className={styles.padName}>{voice.label}</span>
-            </button>
-          </Tip>
-        ))}
-      </div>
+      <Pads />
     </div>
   )
 }
+
+function StepLamps({ playing }: { playing: boolean }) {
+  const level = useControlValue('drumLevel')
+  const tick = useMeterValue(m => m.tick)
+  const step = playing && level > 0 ? tick % STEPS : -1
+  return (
+    <span className={styles.lamps} aria-hidden="true">
+      {Array.from({ length: STEPS }, (_, s) => (
+        <span
+          key={s}
+          className={
+            s === step
+              ? styles.lampOn
+              : s % 4 === 0
+                ? styles.lampBeat
+                : styles.lamp
+          }
+        />
+      ))}
+    </span>
+  )
+}
+
+function Pads() {
+  const struck = useStruck()
+  const coarse = useCoarse()
+  return (
+    <div className={styles.pads}>
+      {DRUM_VOICES.map((voice, i) => (
+        <Pad
+          key={voice.key}
+          voice={voice}
+          index={i}
+          lit={(struck & voiceBit(i)) !== 0}
+          coarse={coarse}
+        />
+      ))}
+    </div>
+  )
+}
+
+const Pad = memo(function Pad({
+  voice,
+  index,
+  lit,
+  coarse,
+}: {
+  voice: DrumVoice
+  index: number
+  lit: boolean
+  coarse: boolean
+}) {
+  return (
+    <Tip
+      text={`Plays the ${voice.label}.${coarse ? '' : ` The ${padKeyFor(index)} key plays it too.`}`}
+    >
+      <button
+        className={lit ? styles.padOn : styles.pad}
+        aria-label={`${voice.label} pad`}
+        onPointerDown={e => {
+          if (e.button === 0) hit(index)
+        }}
+        onClick={e => {
+          if (e.detail === 0) hit(index)
+        }}
+      >
+        {!coarse && <span className={styles.padKey}>{padKeyFor(index)}</span>}
+        <span className={styles.padName}>{voice.label}</span>
+      </button>
+    </Tip>
+  )
+})
