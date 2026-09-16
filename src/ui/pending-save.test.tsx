@@ -32,6 +32,7 @@ const cloud = vi.hoisted(() => {
 
 vi.mock('./cloud', () => ({
   wasSignedIn: () => false,
+  warmSignIn: () => {},
   // Firebase's own subscription fires immediately with whoever is restored, so
   // this one does too — which is what makes the order of the popup and the
   // subscription beside the point.
@@ -72,7 +73,9 @@ beforeEach(() => {
   cloud.listener = null
 })
 
-const saveBtn = () => screen.getByRole('button', { name: /^save/ })
+const saveBtn = () => screen.getByRole('button', { name: 'save' })
+/** The account control once somebody is in it: the avatar, under their name. */
+const avatar = () => screen.getByRole('button', { name: 'Tester' })
 
 /** The name the dialog says the waiting save will land under. */
 const pendingName = () =>
@@ -128,9 +131,8 @@ test('the held save never overwrites a voice the account already had', async () 
 test('a save keeps a voice another machine saved after this tab loaded', async () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
-  fireEvent.click(screen.getByRole('button', { name: 'sign in with Google' }))
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'saved' })).toBeTruthy()
+    expect(avatar()).toBeTruthy()
   })
   // This tab fetched an empty list. Another machine saves a voice after that.
   cloud.voices = [{ name: 'from the phone', query: 'chipStarve=1' }]
@@ -157,22 +159,37 @@ test('closing the card drops the held save', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'close' }))
 
   fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
-  fireEvent.click(screen.getByRole('button', { name: 'sign in with Google' }))
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: /^saved/ })).toBeTruthy()
+    expect(avatar()).toBeTruthy()
   })
   await new Promise(r => setTimeout(r, 20))
   expect(cloud.writes).toEqual([])
 })
 
-test('a sign-in nobody was mid-save for writes nothing', async () => {
+// Signing in is signing in, and nothing else. It used to hand back an open
+// library with a name box in it, which read as being asked to save something.
+test('a sign-in nobody was mid-save for writes nothing, and opens nothing', async () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
-  fireEvent.click(screen.getByRole('button', { name: 'sign in with Google' }))
 
-  // The library button, which says `saved` once there is an account behind it.
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'saved' })).toBeTruthy()
+    expect(avatar()).toBeTruthy()
   })
   expect(cloud.writes).toEqual([])
+  expect(screen.queryByRole('group', { name: 'saved voices' })).toBe(null)
+  expect(screen.queryByLabelText('name for this voice')).toBe(null)
+})
+
+test('sign out lives under the avatar, not in the library', async () => {
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
+  await waitFor(() => {
+    expect(avatar()).toBeTruthy()
+  })
+
+  fireEvent.click(screen.getByRole('button', { name: 'saved' }))
+  expect(screen.queryByRole('button', { name: 'sign out' })).toBe(null)
+
+  fireEvent.click(avatar())
+  expect(screen.getByRole('menuitem', { name: 'sign out' })).toBeTruthy()
 })

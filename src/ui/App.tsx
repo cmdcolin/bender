@@ -14,6 +14,7 @@ import { POOLS, detailsUrl } from '../engine/archive'
 import { engine } from '../engine/engine'
 import { versionLabel } from '../version'
 import { AboutDialog } from './AboutDialog'
+import { Account } from './Account'
 import styles from './App.module.css'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
@@ -95,7 +96,7 @@ const DRIFT_HELP =
   'Lets the board nudge itself somewhere near where it stands, every fifteen seconds, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
 
 // Save sits in the row of verbs, among the other things you do to the board on
-// screen. The library button beside the nameplate holds the list and the
+// screen. Beside the nameplate, `saved` holds the list and the avatar holds the
 // account.
 const SAVE_HELP =
   'Keeps the board on screen as a voice, under the name the saved menu is offering. ctrl+S does the same. Saving again under that name overwrites that voice.'
@@ -611,11 +612,18 @@ export function App(props: { openedFromLink?: boolean }) {
               onCopyLink={voice => copyLink(voice.query)}
               flash={lib.flash}
               status={lib.status}
-              user={lib.user}
               error={lib.error}
               onSignIn={lib.signIn}
-              onSignOut={lib.signOut}
               onWhy={() => setWhy({ pending: null })}
+            />
+            {/* Beside the library rather than inside it: the list and the
+                account are two facts, and one button that relabelled itself
+                `sign in` answered for neither. */}
+            <Account
+              user={lib.user}
+              status={lib.status}
+              onSignIn={lib.signIn}
+              onSignOut={lib.signOut}
             />
             <Panic />
             {/* Everything about the board rather than a stage of it, and rare
@@ -706,7 +714,11 @@ export function App(props: { openedFromLink?: boolean }) {
                 }
               >
                 <span className={styles.holdsWidest}>
-                  {drifting || <span className={styles.widest}>drifting…</span>}
+                  {drifting || (
+                    <span className={styles.widest} aria-hidden>
+                      drifting…
+                    </span>
+                  )}
                   <span>{drifting ? 'drifting…' : 'drift'}</span>
                 </span>
               </button>
@@ -732,7 +744,9 @@ export function App(props: { openedFromLink?: boolean }) {
                 onClick={askSave}
               >
                 <span className={styles.holdsWidest}>
-                  <span className={styles.widest}>saved ✓</span>
+                  <span className={styles.widest} aria-hidden>
+                    saved ✓
+                  </span>
                   <span>
                     {lib.flash?.kind === 'saved'
                       ? 'saved ✓'

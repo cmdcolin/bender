@@ -5,13 +5,11 @@ import styles from './SavedVoices.module.css'
 import { Tip } from './Tip'
 import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel'
 
-import type { CloudUser } from './cloud'
 import type { CloudStatus, VoiceFlash } from './useSavedVoices'
 import type { SavedVoice } from './voiceModel'
 
-// The voice library, and the account it lives on: one button in the panel's
-// chrome, beside the nameplate and the MIDI drawer. A synth's save and recall,
-// plus who the voices belong to.
+// The voice library: one button in the panel's chrome, beside the nameplate and
+// the MIDI drawer. A synth's save and recall.
 //
 // It sits with those rather than in the row of verbs under it, because it is
 // not a verb over the board on screen — it is a fact about the session, the
@@ -22,8 +20,10 @@ import type { SavedVoice } from './voiceModel'
 // presets row stays what it is — the app's own catalog, browsed by eye. This
 // list is yours and starts empty.
 //
-// The button says `saved` while signed in and `sign in` otherwise, so whether
-// there is an account behind this is answered without opening anything.
+// The button always says `saved`. It used to read `sign in` with nobody signed
+// in, which made one button stand for two different things: press it, answer
+// Google, and the save form you never opened was what came back. The account
+// is its own control now (`Account`), and this one only ever opens the list.
 export function SavedVoices(props: {
   voices: readonly SavedVoice[]
   /** What the name box offers when you type nothing. A function rather than a
@@ -43,10 +43,8 @@ export function SavedVoices(props: {
   onCopyLink: (voice: SavedVoice) => Promise<boolean>
   flash: VoiceFlash | null
   status: CloudStatus
-  user: CloudUser | null
   error: string | null
   onSignIn: () => void
-  onSignOut: () => void
   /** Opens the why-sign-in card, which the panel's menu and the save button
       open too. The pane here gives the one-sentence version. */
   onWhy: () => void
@@ -79,7 +77,7 @@ export function SavedVoices(props: {
         text={
           signedIn
             ? 'Save this board under a name and bring it back later, the way a synth keeps its voices (ctrl+S saves without opening this). The list lives on your account.'
-            : 'Sign in to keep boards under a name. Everything else here works signed out.'
+            : 'The boards you keep under a name. An account holds the list, so this one opens onto what an account is for.'
         }
       >
         <button
@@ -93,15 +91,15 @@ export function SavedVoices(props: {
             setOpen(o => !o)
           }}
         >
-          {signedIn
-            ? `saved${props.voices.length === 0 ? '' : ` ${props.voices.length}`}${
-                props.flash?.kind === 'saved'
-                  ? ' ✓'
-                  : props.flash?.kind === 'failed'
-                    ? ' ✕'
-                    : ''
-              }`
-            : 'sign in'}
+          {`saved${
+            signedIn && props.voices.length > 0 ? ` ${props.voices.length}` : ''
+          }${
+            props.flash?.kind === 'saved'
+              ? ' ✓'
+              : props.flash?.kind === 'failed'
+                ? ' ✕'
+                : ''
+          }`}
         </button>
       </Tip>
       {open && (
@@ -191,27 +189,6 @@ export function SavedVoices(props: {
                     </p>
                   </>
                 )}
-                {/* The account, at the foot and small: once you are in it is
-                    the least interesting thing here, and it is the only place
-                    sign out lives. */}
-                <div className={styles.acct}>
-                  <span className={styles.acctUser}>
-                    {props.user?.photo == null ? null : (
-                      <img
-                        className={styles.avatar}
-                        src={props.user.photo}
-                        alt=""
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
-                    <span className={styles.acctName}>
-                      {props.user?.name ?? props.user?.uid.slice(0, 6) ?? ''}
-                    </span>
-                  </span>
-                  <button className={styles.rowBtn} onClick={props.onSignOut}>
-                    sign out
-                  </button>
-                </div>
               </>
             ) : (
               <SignInPane

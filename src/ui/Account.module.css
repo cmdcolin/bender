@@ -1,0 +1,73 @@
+/* The account control in the panel's chrome, and the menu it opens. */
+
+.signIn {
+  composes: action from './button.module.css';
+}
+
+/* Round and picture-sized, because once you are in the picture is the label.
+   Bare of the action's fill and border: a filled square around a circular photo
+   reads as a second control behind it.
+
+   Centred rather than on the row's baseline, which is what the rest of the row
+   sits on: a photo has no baseline, so a browser aligns it by its bottom edge
+   and it rides up out of the row and makes the row taller. */
+.acctBtn {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.acctBtn:hover,
+.acctBtn:focus-visible {
+  border-color: var(--border-hover);
+  outline: none;
+}
+
+/* Shorter than the buttons beside it, so the account is never what decides how
+   tall the row is. */
+.avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Google serves no photo for plenty of accounts, and a broken image is worse
+   than no image. The first letter of the name, drawn the way the home page
+   draws it. */
+.initial {
+  composes: avatar;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-xs);
+  background: var(--surface-raised);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+}
+
+/* Who, at the head of the menu, so the photo has a name under it. Text rather
+   than a row: there is nothing to press here. */
+.who {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+  font-size: var(--fs-xs);
+  padding: 3px 8px;
+  color: var(--fg3);
+}
+
+@media (pointer: coarse) {
+  .acctBtn {
+    min-height: 32px;
+    min-width: 32px;
+  }
+}

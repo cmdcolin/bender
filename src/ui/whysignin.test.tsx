@@ -11,7 +11,7 @@ import './testDom'
 // under test is the question, and that a press that cannot land yet still says
 // something.
 
-const saveBtn = () => screen.getByRole('button', { name: /^save/ })
+const saveBtn = () => screen.getByRole('button', { name: 'save' })
 const dialog = () => screen.queryByRole('dialog', { name: 'why sign in' })
 
 test('save with nobody signed in asks the question, and names the board', () => {
@@ -57,8 +57,17 @@ test('the card shows the home page it is asking for an account to fill', () => {
 
 test('the library popover answers it, and gets out of the way', () => {
   render(<App />)
-  fireEvent.click(screen.getByRole('button', { name: 'sign in' }))
+  fireEvent.click(screen.getByRole('button', { name: 'saved' }))
   fireEvent.click(screen.getByRole('button', { name: 'why sign in?' }))
   expect(dialog()).not.toBe(null)
   expect(screen.queryByRole('group', { name: 'saved voices' })).toBe(null)
+})
+
+// The library button and the account are two controls, and each says only what
+// it is: `saved` opens the list, `sign in` asks Google. One button that read
+// `sign in` until you answered it and `saved` after was the whole confusion.
+test('the library button never offers itself as the sign-in', () => {
+  render(<App />)
+  expect(screen.getByRole('button', { name: 'saved' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'sign in' })).toBeTruthy()
 })

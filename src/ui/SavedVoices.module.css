@@ -44,8 +44,8 @@
   composes: action from './button.module.css';
 }
 
-/* Scrolls at about eight rows: a library of forty must not push the account
-   footer off the bottom of the window. */
+/* Scrolls at about eight rows: a library of forty must not run off the bottom
+   of the window. */
 .list {
   display: flex;
   flex-direction: column;
@@ -156,34 +156,4 @@
 .why:focus-visible {
   color: var(--accent);
   outline: none;
-}
-
-.acct {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  padding-top: 4px;
-  border-top: 1px solid var(--border-quiet);
-}
-
-.acctUser {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-}
-
-.acctName {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--fs-xs);
-  color: var(--fg3);
-}
-
-.avatar {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
 }
