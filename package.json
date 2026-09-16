@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "build": "astro sync && tsc -b && node scripts/demogen.mjs --check && tsx scripts/demoreel.ts && astro build",
     "ab": "tsx scripts/ab.ts",
+    "agent": "tsx scripts/agent.ts",
     "audible": "tsx scripts/audible.ts",
     "bench": "tsx scripts/bench.ts",
     "blocks": "tsx scripts/blocks.ts",

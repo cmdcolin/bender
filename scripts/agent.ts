@@ -91,7 +91,7 @@ try {
 
   await evaluate(
     page,
-    `bender.tune('C4 E4 G4 C5 G4 E4 C4 ~'),
+    `bender.tune(['C4 E4 G4 C5 G4 E4 C4 ~', 'C3 ~ G2 ~ C3 ~ G2 ~']),
      bender.drums({ kick: 'x...x...x...x...', hat: '..x...x...x...x.' }),
      bender.play()`,
   )
@@ -106,6 +106,19 @@ try {
     clean,
   )
 
+  // At 6 Hz the stacked lane strikes every 0.33 s, and a struck voice falls
+  // below the envelope floor 1.21 s later.
+  await evaluate(page, 'bender.set({ tuneRate: 6 }), bender.listen(1000)')
+  await evaluate(page, 'bender.stop()')
+  await evaluate(page, 'bender.listen(1500)')
+  const after = (await evaluate(page, 'bender.listen(1000)')) as Heard
+  check(
+    'the chord lane goes quiet within 1.5 s of stop at the new tune rate',
+    after.peak === 'silent' && after.toyNotes?.length === 0,
+    after,
+  )
+
+  await evaluate(page, 'bender.play()')
   const report = await evaluate(
     page,
     'bender.set({ chipStarve: 1, chipBattery: 1, chipStarv: 1 })',

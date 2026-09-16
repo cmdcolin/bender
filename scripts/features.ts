@@ -107,6 +107,8 @@ const SCRIPTS: Record<string, string> = {
     'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',
   soak: 'whether any stage gets slower the longer it runs',
   panel: 'what the panel costs the browser per frame, in a real Chrome',
+  agent:
+    'drives window.bender in headless Chrome and checks what bender.listen reports',
   ink: 'walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read',
   demos: "writes demos.json into the README's Demos block",
   reel: "renders the showcase demos to mp3 for the landing page's Listen section",

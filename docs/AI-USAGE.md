@@ -68,7 +68,8 @@ Then ask Claude Code to open the public URL, or
 
 ## Testing
 
-`src/ui/agentApi.test.ts` runs the API in jsdom.
-`pnpm exec tsx scripts/agent.ts` serves the app, opens it in headless Chrome,
-starts audio with a synthesized gesture, writes a tune and a kit, and checks the
-readings from `bender.listen`. The script exits non-zero when a check fails.
+`src/ui/agentApi.test.ts` runs the API in jsdom. `pnpm agent` serves the app,
+opens it in headless Chrome, starts audio with a synthesized gesture, writes a
+tune and a kit, and checks the readings from `bender.listen`, including that the
+board goes quiet after `bender.stop()`. The script exits non-zero when a check
+fails.
