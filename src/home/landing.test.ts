@@ -2,7 +2,6 @@
 import { experimental_AstroContainer } from 'astro/container'
 import { beforeAll, expect, test } from 'vitest'
 
-import { GA_ID } from '../analytics'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
@@ -49,9 +48,9 @@ test('the privacy page leaves out the account controls it cannot work', () => {
   expect(privacy).toContain('Open the app')
 })
 
-test('every page the site serves counts its visit', () => {
+test('no page loads Google Analytics before the visitor says yes', () => {
   for (const page of [landing, privacy])
-    expect(page).toContain(`gtag/js?id=${GA_ID}`)
+    expect(page).not.toContain('googletagmanager.com')
 })
 // CROSS_REPO_SYNC_END(landing-page-test)
 

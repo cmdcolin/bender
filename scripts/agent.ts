@@ -52,6 +52,7 @@ const chrome = spawn(
   chromePath(),
   [
     '--headless=new',
+    '--enable-automation',
     `--remote-debugging-port=${DEBUG_PORT}`,
     `--user-data-dir=${profile}`,
     '--no-first-run',

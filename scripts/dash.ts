@@ -71,6 +71,7 @@ async function shoot(url: string, into: string) {
     chromePath(),
     [
       '--headless',
+      '--enable-automation',
       '--disable-gpu',
       '--hide-scrollbars',
       `--window-size=${VIEW.width},${VIEW.height}`,

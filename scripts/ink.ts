@@ -299,6 +299,7 @@ async function main() {
     chromePath(),
     [
       `--remote-debugging-port=${DEBUG_PORT}`,
+      '--enable-automation',
       `--user-data-dir=${profile}`,
       '--no-first-run',
       '--no-default-browser-check',
