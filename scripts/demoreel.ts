@@ -15,7 +15,7 @@ import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const SR = 48000
-const SECONDS = 15
+const SECONDS = 24
 const FADE = 1.5
 
 function take(query: string) {
