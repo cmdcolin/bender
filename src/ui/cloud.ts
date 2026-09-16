@@ -51,7 +51,7 @@ const COLLECTION = 'benderUsers'
 // stale-false costs one click.
 export const SIGNED_IN_HINT = 'bender_signed_in'
 
-// The reCAPTCHA v3 site key App Check attests with, out of the Firebase
+// The reCAPTCHA Enterprise key App Check attests with, out of the Firebase
 // console's App Check page. Public in the way the config above is: it names the
 // site to Google's reCAPTCHA endpoint, and it buys a token saying a request came
 // from this app. Empty until somebody registers one, and an empty key installs
@@ -77,7 +77,7 @@ async function installAppCheck(app: FirebaseApp, siteKey: string) {
   if (siteKey === '') return
   const mod = await import('firebase/app-check')
   mod.initializeAppCheck(app, {
-    provider: new mod.ReCaptchaV3Provider(siteKey),
+    provider: new mod.ReCaptchaEnterpriseProvider(siteKey),
     isTokenAutoRefreshEnabled: true,
   })
 }
