@@ -2,7 +2,6 @@ import {
   memo,
   useEffect,
   useRef,
-  useState,
   useSyncExternalStore,
   type RefObject,
 } from 'react'
@@ -13,7 +12,6 @@ import {
   DRUM_ROMS,
   DRUM_VOICES,
   GRID_ROWS,
-  N_DRUM_VOICES,
   STEPS,
   romMatching,
   stepBit,
@@ -32,6 +30,7 @@ import {
 import styles from './DrumGrid.module.css'
 import { padKeyFor } from './drumKeys'
 import { Tip } from './Tip'
+import { useStruck } from './useStruck'
 
 // The playhead only moves when a step does, so the grid redraws at the step rate
 // rather than at the meter's.
@@ -40,50 +39,6 @@ function usePlayTick(): number {
     engine.meter.subscribe,
     () => engine.meter.get().tick,
   )
-}
-
-// How long a row stays lit after a hit. Long enough to see at a glance, short
-// enough that sixteenth hats still read as sixteen hits rather than one lamp.
-const FLASH_MS = 110
-
-// Which rows are lit, from what the kit reports firing. The report is every
-// hit, not every step: the mic on the trigger line, a bridged patch, a pad and
-// the retrigger bend all land on steps the playhead gives no warning of, and
-// this is the only place they show.
-//
-// The meter arrives sixty times a second and mostly says nothing fired, so the
-// bits are compared before they are set — an unchanged mask re-renders nothing.
-function useStruck(): number {
-  const [lit, setLit] = useState(0)
-  useEffect(() => {
-    const at = new Float64Array(N_DRUM_VOICES)
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const settle = () => {
-      const now = performance.now()
-      let bits = 0
-      for (let v = 0; v < N_DRUM_VOICES; v++)
-        if (now - at[v]! < FLASH_MS) bits |= voiceBit(v)
-      setLit(bits)
-      // A kit that stops reporting — the engine suspended, the page hidden —
-      // would otherwise leave whatever was lit at that moment lit for ever.
-      clearTimeout(timer)
-      if (bits !== 0) timer = setTimeout(settle, FLASH_MS)
-    }
-    const off = engine.meter.subscribe(() => {
-      const hits = engine.meter.get().hits
-      if (hits !== 0) {
-        const now = performance.now()
-        for (let v = 0; v < N_DRUM_VOICES; v++)
-          if (hits & voiceBit(v)) at[v] = now
-      }
-      settle()
-    })
-    return () => {
-      clearTimeout(timer)
-      off()
-    }
-  }, [])
-  return lit
 }
 
 // What a drag across the grid is writing. Held in a ref rather than in state

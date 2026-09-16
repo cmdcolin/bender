@@ -295,6 +295,8 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
     return (
       <button
         className={KEY_CLASS[black ? 'black' : 'white'][lit]}
+        data-key={black ? 'black' : 'white'}
+        data-lit={lit}
         aria-label={`key ${semitoneName(at(note))}`}
         aria-pressed={lit !== 'dark'}
         onPointerDown={e => {
@@ -316,104 +318,100 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   }
 
   return (
-    <div className={styles.row}>
-      <div
-        className={`${styles.body} ${short ? styles.short : ''} ${caseClass ?? ''}`}
-        role="group"
-        aria-label={label}
-      >
-        <div className={styles.deck}>
-          {badge}
-          <div className={styles.switches}>
-            {extras}
-            <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">
-              <button
-                className={hold ? styles.holdOn : styles.hold}
-                aria-pressed={hold}
-                onClick={() => {
-                  if (hold) releaseAll()
-                  setHold(!hold)
-                }}
-              >
-                hold
-              </button>
-            </Tip>
-            {short ? (
-              /* The drawer travels with the octave switch on a short deck, so
-                 the two wrap together rather than the bars going over alone. */
+    <div
+      className={`${styles.body} ${short ? styles.short : ''} ${caseClass ?? ''}`}
+      role="group"
+      aria-label={label}
+    >
+      <div className={styles.deck}>
+        {badge}
+        <div className={styles.switches}>
+          {extras}
+          <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">
+            <button
+              className={hold ? styles.holdOn : styles.hold}
+              aria-pressed={hold}
+              onClick={() => {
+                if (hold) releaseAll()
+                setHold(!hold)
+              }}
+            >
+              hold
+            </button>
+          </Tip>
+          {short ? (
+            /* The drawer travels with the octave switch on a short deck, so
+               the two wrap together rather than the bars going over alone. */
+            <span className={styles.octaves}>
+              {stepper(-1, 'down', '◂')}
+              <Tip text="where the board is standing: the note its bottom key plays. A short board reaches the rest of the keyboard through the two switches beside it rather than by being all of it at once.">
+                <span className={styles.standing}>{semitoneName(at(0))}</span>
+              </Tip>
+              {stepper(1, 'up', '▸')}
+              {settings}
+            </span>
+          ) : (
+            <>
+              <span className={styles.stamp}>octave</span>
               <span className={styles.octaves}>
-                {stepper(-1, 'down', '◂')}
-                <Tip text="where the board is standing: the note its bottom key plays. A short board reaches the rest of the keyboard through the two switches beside it rather than by being all of it at once.">
-                  <span className={styles.standing}>{semitoneName(at(0))}</span>
-                </Tip>
-                {stepper(1, 'up', '▸')}
-                {settings}
-              </span>
-            ) : (
-              <>
-                <span className={styles.stamp}>octave</span>
-                <span className={styles.octaves}>
-                  {OCTAVES.map(o => (
-                    <Tip
-                      key={o}
-                      text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${letters ? ' — z and x do the same' : ''}`}
+                {OCTAVES.map(o => (
+                  <Tip
+                    key={o}
+                    text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${letters ? ' — z and x do the same' : ''}`}
+                  >
+                    <button
+                      className={o === octave ? styles.octaveOn : styles.octave}
+                      onClick={() => shiftTo(o)}
                     >
-                      <button
-                        className={
-                          o === octave ? styles.octaveOn : styles.octave
-                        }
-                        onClick={() => shiftTo(o)}
-                      >
-                        {o > 0 ? `+${o}` : o}
-                      </button>
-                    </Tip>
-                  ))}
-                </span>
-                {settings}
-              </>
-            )}
-            {open && (
-              <Menu
-                anchor={drawer}
-                toggle={drawer}
-                role="group"
-                label={`${label} settings`}
-                onClose={() => setOpen(false)}
+                      {o > 0 ? `+${o}` : o}
+                    </button>
+                  </Tip>
+                ))}
+              </span>
+              {settings}
+            </>
+          )}
+          {open && (
+            <Menu
+              anchor={drawer}
+              toggle={drawer}
+              role="group"
+              label={`${label} settings`}
+              onClose={() => setOpen(false)}
+            >
+              <Tip
+                text={
+                  owns
+                    ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave. Turning it off hands the letters to the other bed, because there is one keyboard and it has to play one of them'
+                    : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and two beds on it, so it plays whichever is switched on'
+                }
               >
-                <Tip
-                  text={
-                    owns
-                      ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave. Turning it off hands the letters to the other bed, because there is one keyboard and it has to play one of them'
-                      : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and two beds on it, so it plays whichever is switched on'
-                  }
-                >
-                  <label className={menuCheck}>
-                    <input
-                      type="checkbox"
-                      checked={owns}
-                      onChange={() => letterKeys.set(owns ? other : dest)}
-                    />
-                    computer keyboard plays this bed
-                  </label>
-                </Tip>
-              </Menu>
-            )}
-            {tail}
-          </div>
+                <label className={menuCheck}>
+                  <input
+                    type="checkbox"
+                    checked={owns}
+                    onChange={() => letterKeys.set(owns ? other : dest)}
+                  />
+                  computer keyboard plays this bed
+                </label>
+              </Tip>
+            </Menu>
+          )}
+          {tail}
         </div>
-        <div className={styles.keys} ref={setBed}>
-          {below && <span className={styles.offLow}>◂</span>}
-          {above && <span className={styles.offHigh}>▸</span>}
-          {whiteKeys(drawn).map(note => {
-            const black = blackAbove(note, top)
-            return (
-              <div key={note} className={styles.whiteWrap}>
-                {key(note, false)}
-                {black !== undefined && key(black, true)}
-              </div>
-            )
-          })}
-        </div>
+      </div>
+      <div className={styles.keys} data-bed ref={setBed}>
+        {below && <span className={styles.offLow}>◂</span>}
+        {above && <span className={styles.offHigh}>▸</span>}
+        {whiteKeys(drawn).map(note => {
+          const black = blackAbove(note, top)
+          return (
+            <div key={note} className={styles.whiteWrap}>
+              {key(note, false)}
+              {black !== undefined && key(black, true)}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

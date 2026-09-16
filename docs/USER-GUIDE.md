@@ -221,6 +221,12 @@ row too — `1` is the kick through `8` the cymbal, printed on each row the way
 the number is on the on-screen grid. A held key is a single hit, not the
 operating system's key repeat.
 
+The toy drum machine beside the toy keyboard has a rubber pad for each voice.
+Clicking a pad plays its voice, and a pad lights whenever its voice fires, from
+the pattern, a number key, a pad or a trigger patch. The lamps along its top
+follow the step counter, and its **▶** and **rec** switches run the pattern and
+arm recording, the same as the grid's buttons.
+
 **Record** arms the kit to write a pattern from what you play: hit a number key,
 a row's name, or a pad, and it lands on the nearest step, with each row keeping
 its own timing. It needs the kit running to have a step to land on, so arming it
@@ -235,13 +241,14 @@ note the toy strikes. **Struck by** can wire a kit voice onto that same line as
 well, so a drum hit plays a note.
 
 It does have keys, though somebody had to screw them on. Bring the chip up in
-the mix and a second keybed appears under the toy's, wired to this chip and
-nothing else, with a hold switch and an octave switch of its own. The switch on
-its deck is the jumper off the toy's gate: **toy gate** is how the board
-shipped, and pressing it to **gate cut** leaves the chip answering only its own
-keys and the kit's trigger lines — two synthesisers playing two parts instead of
-one part twice. It is also on the chip's panel as **Toy gate**, so it travels in
-a link like every other control.
+the mix and a second keybed appears under the toy's, drawn as a green circuit
+board with push-button switches for keys. It is wired to this chip and nothing
+else, with a hold switch and an octave switch of its own. The switch on its deck
+is the jumper off the toy's gate: **toy gate** is how the board shipped, and
+pressing it to **gate cut** leaves the chip answering only its own keys and the
+kit's trigger lines — two synthesisers playing two parts instead of one part
+twice. It is also on the chip's panel as **Toy gate**, so it travels in a link
+like every other control.
 
 One computer keyboard, two keybeds: `a s d f` and the octave keys `z`/`x` play
 whichever bed has **computer keyboard plays this bed** ticked, in the drawer
@@ -332,6 +339,11 @@ moves the voice alone; **Clock** moves pitch, formants and speed together.
 **Motor** is the sound of the eye and ear motor, which loads the shared supply
 whenever it turns. The knife, **Frame hold** and **K bits** are covered in
 [Bends](BENDS.md).
+
+While **Level** is above zero, the pet appears under the toy keyboard and drum
+machine, next to the FM keyboard when the FM chip is up. Its ears swing and its
+eyelids close while the motor turns, its beak opens with its speech, a bubble
+shows the phrase it is saying, and the caption under it names its mood.
 
 ## The trigger patch
 

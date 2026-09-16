@@ -4,10 +4,9 @@ import styles from './FmKeys.module.css'
 import { Keybed } from './Keybed'
 import { Tip } from './Tip'
 
-// The FM chip's own keys: a bare board rather than a moulded shell, because the
-// chip never had a keyboard — this is one somebody soldered onto it. The switch
-// on its deck is the other end of that job: the jumper from the toy's gate, cut
-// or left alone.
+// FmKeys draws the FM chip's keyboard as a green circuit board with the chip on
+// it and push-button switches for keys. The switch on the deck cuts or solders
+// the jumper from the toy's gate.
 export function FmKeys() {
   const cut = useControlValue('fmKeyGate') > 0.5
 
@@ -17,8 +16,11 @@ export function FmKeys() {
       label="fm keyboard"
       caseClass={styles.board}
       badge={
-        <span className={styles.badge}>
-          fm2<span className={styles.part}>2-op</span>
+        <span className={styles.chip}>
+          <span className={styles.package}>
+            <span className={styles.part}>fm2</span>
+            <span className={styles.sub}>2-op</span>
+          </span>
         </span>
       }
       extras={

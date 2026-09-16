@@ -64,11 +64,16 @@
   composes: capIdle from './button.module.css';
 }
 
-/* Nothing decorative survives the squeeze: on a narrow board the deck is for the
-   switches, and the badge is the last thing anybody needs. */
-@media (max-width: 640px) {
-  .stripe,
+/* A narrow case hides the speaker grille first and then the decal, so the
+   switches stay on one line in a narrower case. */
+@container (max-width: 680px) {
   .grille {
+    display: none;
+  }
+}
+
+@container (max-width: 600px) {
+  .stripe {
     display: none;
   }
 }

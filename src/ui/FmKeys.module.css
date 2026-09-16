@@ -1,95 +1,114 @@
-/* The FM chip's bed, drawn as the thing it is: a bare board with a short grey
-   keybed screwed to it, next to three octaves of moulded cream plastic. Nothing
-   here is decoration for its own sake — every difference is a way of saying at
-   a glance which machine your hand is on.
-
-   Green solder mask with a silkscreen hairline inside the edge, square corners
-   because a board is cut rather than moulded, plated holes instead of screws,
-   and a pin header where the toy has its speaker. */
+/* These rules draw the FM chip's keybed as a green circuit board with copper
+   traces, a DIP chip on the deck, gold mounting holes, a pin header and two
+   staggered rows of push-button switches for keys. Keybed.tsx marks the bed
+   with `data-bed` and each key with `data-key` and `data-lit`, and the rules
+   below restyle those parts. */
 
 .board {
-  --case: #16241c;
-  --case-edge: #0a120d;
-  --stamp: #6f8f7c;
-  --bed: #070d09;
-  --case-round: 3px;
-  --fixing: #0a120d;
+  --case: #1c4a31;
+  --case-edge: #0c2517;
+  --stamp: #b9d6c2;
+  --bed: transparent;
+  --case-round: 4px;
+  --fixing: #0c2517;
   --fixing-size: 7px;
-  --switch: #24382d;
-  --switch-hover: #2e4639;
+  --switch: #256040;
+  --switch-hover: #2d714c;
+  --silk: #e3efe6;
+  --copper: #2b6645;
+  --gold: #c9a74f;
 
-  /* Two thirds of a keybed and half the width of a key: a module keybed, not a
-     three-octave toy. */
-  --bed-h: 56px;
-  --key-w: #c6cbc6;
-  --key-w-edge: #7d857f;
-  --key-b: #0c100d;
-  --key-b-edge: #050706;
-  --key-b-w: 34%;
-  --key-b-h: 64%;
-  --key-round: 0 0 1px 1px;
-
-  /* The silkscreen outline every board of the period had printed just inside
-     its edge, and the plated ring around each mounting hole. */
-  box-shadow: inset 0 0 0 1px rgba(150, 200, 170, 0.13);
+  flex: 1 1 380px;
+  max-width: 600px;
+  background-color: var(--case);
+  background-image:
+    linear-gradient(
+      90deg,
+      transparent 0 18%,
+      var(--copper) 18% 18.4%,
+      transparent 18.4%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 0 63%,
+      var(--copper) 63% 63.4%,
+      transparent 63.4%
+    ),
+    linear-gradient(transparent 0 38%, var(--copper) 38% 40%, transparent 40%);
+  box-shadow: inset 0 0 0 1px rgba(227, 239, 230, 0.16);
 }
 
 .board::before,
 .board::after {
-  box-shadow: 0 0 0 1.5px #43604f;
+  box-shadow: 0 0 0 2px var(--gold);
 }
 
-/* Silkscreen: the part number the way it is printed on the package, with the
-   pin-1 dot beside it. */
-.badge {
+/* The badge draws the chip as a black DIP package with a pin-1 notch, with the
+   legs showing above and below the package. */
+.chip {
   display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--mono);
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #d3e4d8;
+  padding: 3px 0;
+  background: repeating-linear-gradient(
+      90deg,
+      #b8bcc0 0 3px,
+      transparent 3px 7px
+    )
+    center / calc(100% - 12px) 100% no-repeat;
 }
 
-.badge::before {
+.package {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 2px 10px 2px 14px;
+  background: #121314;
+  border-radius: 2px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+}
+
+.package::before {
   content: '';
-  width: 5px;
-  height: 5px;
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
   border-radius: 50%;
-  background: #d3e4d8;
-  opacity: 0.55;
+  background: var(--case);
 }
 
 .part {
-  font-weight: 400;
-  letter-spacing: 0.12em;
-  color: var(--stamp);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--silk);
 }
 
-/* The header the keybed's ribbon plugs into — eight tinned pins in a row, which
-   is what sits where the toy has a speaker. */
+.sub {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  color: #8d9690;
+}
+
+/* A ribbon header sits where the toy keyboard has its speaker grille. */
 .header {
   flex: none;
   width: 46px;
   height: 13px;
   border-radius: 1px;
-  background-color: #101a14;
+  background-color: #111;
   background-image: repeating-linear-gradient(
     90deg,
-    #b79a4a 0 4px,
+    var(--gold) 0 4px,
     transparent 4px 6px
   );
   background-position: 2px 0;
-  background-size: auto 100%;
-  box-shadow: inset 0 0 0 1px #0a120d;
+  box-shadow: inset 0 0 0 1px #000;
 }
 
-/* The jumper: the deck's shared cap in the bare board's green, mono because
-   everything printed on this board is. Soldered is the state it shipped in, so
-   it is the quiet one; cut is a modification, and says so in the same dashed
-   amber the record switches use for a thing that is thrown and waiting. */
 .soldered {
   composes: cap from './button.module.css';
   font-family: var(--mono);
@@ -101,14 +120,84 @@
   --cap-lit: var(--accent2);
 }
 
-/* The board is a module beside the toy rather than a second instrument as wide
-   as it: narrower, and it stops growing well before the toy does. */
-.board {
-  flex: 0 1 380px;
-  max-width: 560px;
+/* Each white key is a switch on the bottom row, and each black key is a switch
+   on the top row between the two white keys next to it. A switch is a square
+   steel body with a round cap. The cap turns the accent colour while a hand
+   holds the key and amber while the chip plays the note. */
+.board [data-bed] {
+  --sw: min(82%, 26px);
+  height: 68px;
+  overflow: visible;
+  border-radius: 0;
+  border-top: 1px dashed rgba(227, 239, 230, 0.22);
 }
 
-@media (max-width: 640px) {
+.board [data-key] {
+  --cap: #1a1b1d;
+  position: absolute;
+  left: 50%;
+  width: var(--sw);
+  height: auto;
+  aspect-ratio: 1;
+  align-items: center;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 1px solid #3a3e42;
+  border-radius: 2px;
+  background:
+    radial-gradient(circle, var(--cap) 0 52%, #0a0a0a 55% 60%, transparent 62%),
+    linear-gradient(145deg, #c3c8cc, #7f858a);
+  box-shadow: 0 1px 0 #0c2517;
+}
+
+.board [data-key='white'] {
+  bottom: 5px;
+}
+
+.board [data-key='black'] {
+  top: 6px;
+  right: auto;
+  left: 100%;
+  z-index: 2;
+}
+
+.board [data-lit='hand'] {
+  --cap: var(--accent);
+  box-shadow: 0 0 8px rgba(255, 93, 59, 0.6);
+  transform: translate(-50%, 1px);
+}
+
+.board [data-lit='chip'] {
+  --cap: var(--accent2);
+  box-shadow: 0 0 8px rgba(255, 176, 59, 0.5);
+  transform: translate(-50%, 1px);
+}
+
+.board [data-key] > span {
+  color: #cfd6d1;
+  font-family: var(--mono);
+}
+
+.board [data-lit='hand'] > span,
+.board [data-lit='chip'] > span {
+  color: rgba(40, 10, 0, 0.75);
+}
+
+@media (hover: hover) {
+  .board [data-key][data-lit='dark']:hover {
+    --cap: #2c2e31;
+    filter: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .board [data-bed] {
+    --sw: min(84%, 34px);
+    height: 86px;
+  }
+}
+
+@container (max-width: 620px) {
   .header {
     display: none;
   }

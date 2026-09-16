@@ -22,6 +22,7 @@ import { GROUPS } from './controls'
 import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Dice } from './Dice'
 import { padKeyFor, useDrumKeys } from './drumKeys'
+import { DrumKit } from './DrumKit'
 import { FmKeys } from './FmKeys'
 import { HuntDialog } from './HuntDialog'
 import { Keys } from './Keys'
@@ -44,6 +45,7 @@ import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { StartOverlay } from './StartOverlay'
+import { TalkingPet } from './TalkingPet'
 import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
 import { useCurrentSession } from './useCurrentSession'
@@ -240,6 +242,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
   const fmUp = useBoardValue(c => c.fmLevel > 0)
+  const petUp = useBoardValue(c => c.petLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [pool, setPool] = useState(0)
   // Which stage's controls the panel is showing. The map is the way in — every
@@ -401,11 +404,18 @@ export function App(props: { openedFromLink?: boolean }) {
         <div className={styles.scope}>
           <Scope />
         </div>
-        <Keys />
-        {/* The second bed appears with the chip it plays. Nobody who has left
-            the FM chip down needs a keyboard for it in the way, and a board
-            that arrives with the chip up arrives with its keys under it. */}
-        {fmUp && <FmKeys />}
+        <div className={styles.shelf}>
+          <Keys />
+          <DrumKit />
+        </div>
+        {/* The FM board and the pet show only while their levels are above
+            zero. */}
+        {(fmUp || petUp) && (
+          <div className={styles.shelf}>
+            {fmUp && <FmKeys />}
+            {petUp && <TalkingPet />}
+          </div>
+        )}
         <BodyPad onOpen={setOpen} />
         {/* The two run switches on a row of their own: on a phone it is the
             first thing on the page and stays pinned while the rest of the

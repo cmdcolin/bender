@@ -8,19 +8,17 @@
    The case palette is variables, because there are two machines with keys on
    this board and only one of them is moulded plastic. */
 
-.row {
-  display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 /* The case. It takes the column, and how much keyboard goes in it is measured
    rather than declared: twenty-two white keys in the 460px one octave used to
    sit in are 20px each, which is not a key anybody can hit, so a case that
    narrow is handed a shorter board instead — `octavesFor` in keyboard.ts, and
-   `.short` below for what the case does about it. */
-.body {
+   `.short` below for what the case does about it.
+
+   `:where` holds these rules at zero specificity, so a case class such as the
+   FM board's `.board` overrides them whichever stylesheet loads last. The case
+   is a size container, so the deck hides decoration based on the case width. */
+:where(.body) {
+  container-type: inline-size;
   --case: #2b2b33;
   --case-edge: #14141a;
   /* The ink every label on a toy's front panel is printed in. */
@@ -44,7 +42,7 @@
   --switch-hover: #44444f;
 
   position: relative;
-  flex: 1 1 460px;
+  flex: 1 1 420px;
   min-width: 280px;
   max-width: 820px;
   display: flex;
@@ -324,7 +322,7 @@
    The caps grow with every other button on the board — button.module.css sizes
    them, so hold and rec come out the same height. */
 @media (pointer: coarse) {
-  .body {
+  :where(.body) {
     --bed-h: 88px;
     gap: 5px;
     padding: 6px 8px 9px;
