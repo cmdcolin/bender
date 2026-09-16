@@ -11,10 +11,16 @@ import { readSession, writeSession } from './persist'
 // and was silent, with nothing on screen to say why.
 //
 // So the run lines ride in the tab's own storage rather than in the link: a
-// reload picks them up, a pasted link never has them, and the tab beside this
-// one is a second machine. Audio still waits for a gesture, so what a restored
-// run line means is that the click that powers the page on starts the same thing
-// that was playing before.
+// reload picks them up, a tab that has not been here has nothing to pick up,
+// and the tab beside this one is a second machine. Audio still waits for a
+// gesture, so what a restored run line means is that the click that powers the
+// page on starts the same thing that was playing before.
+//
+// Whether the shelf had anything on it is worth knowing on its own, which is
+// what keepRunState hands back. The address bar carries every board now, so a
+// hash naming one says nothing about where it came from — but a tab with no run
+// state on it has never run this app, and that is a board that arrived from
+// outside rather than your own reload.
 const KEY = 'bender.run'
 
 interface RunState {
@@ -36,8 +42,9 @@ function stored(): RunState | null {
   }
 }
 
-/** Put back what this tab was running, and keep the shelf up to date after. */
-export function keepRunState() {
+/** Puts back what this tab was running, keeps the shelf up to date after, and
+    answers whether the tab had been here before. */
+export function keepRunState(): boolean {
   const was = stored()
   if (was) {
     engine.setSongPlaying(was.song)
@@ -51,6 +58,10 @@ export function keepRunState() {
         drums: engine.drumsPlaying.get(),
       }),
     )
+  // On the way in as well as on every change, so a tab where you turned knobs
+  // and never pressed play still counts as a tab that has been here.
+  save()
   engine.songPlaying.subscribe(save)
   engine.drumsPlaying.subscribe(save)
+  return was !== null
 }

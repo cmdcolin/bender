@@ -13,7 +13,7 @@ export function StartOverlay(props: { onClose: () => void }) {
   const start = async () => {
     await engine.start()
     engine.fadeIn()
-    engine.toggleRun()
+    engine.runAll()
     onClose()
   }
 

@@ -943,10 +943,6 @@ export class Engine {
   // "play" means play the board.
   private lastRun = { song: true, drums: true }
 
-  // Space is one run/stop line over both machines. It stops whatever is running
-  // and the next press starts that same thing again, so a board running the kit
-  // on its own comes back running the kit on its own rather than breaking into
-  // the demo song.
   // What a board arriving already running plays into: a link opens a full
   // circuit nobody has heard yet, so the first sound out of it starts from
   // nothing and climbs rather than landing at whatever level it was left.
@@ -962,6 +958,10 @@ export class Engine {
     gain.gain.linearRampToValueAtTime(1, now + seconds)
   }
 
+  // Space is one run/stop line over both machines. It stops whatever is running
+  // and the next press starts that same thing again, so a board running the kit
+  // on its own comes back running the kit on its own rather than breaking into
+  // the demo song.
   toggleRun() {
     const song = this.songPlaying.get()
     const drums = this.drumsPlaying.get()
@@ -971,6 +971,14 @@ export class Engine {
     } else {
       this.setRun(this.lastRun.song, this.lastRun.drums)
     }
+  }
+
+  /** Every run line up, whatever each was doing. A button that says start has
+      to start: the toggle above reads a board that is already running as one to
+      stop, and the run lines can be up before anybody has pressed anything —
+      a tab puts back what it was running (see runState). */
+  runAll() {
+    this.setRun(true, true)
   }
 
   // A key, on one keybed or the other. The memory is the toy's, so only the

@@ -550,3 +550,15 @@ test('with the memory in mono a chord played in is one note', () => {
   expect(c.tuneStep0).toBe(4)
   expect(c.tuneStackA0).toBe(REST)
 })
+
+// A tab puts back what it was running when a board lands in it, so the run
+// lines can be up with nothing audible behind them — and the toggle reads that
+// as a board to stop. A button that says start has to start.
+test('the start line starts, where the toggle would have stopped', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+
+  engine.runAll()
+  expect(engine.songPlaying.get()).toBe(true)
+  expect(engine.drumsPlaying.get()).toBe(true)
+})
