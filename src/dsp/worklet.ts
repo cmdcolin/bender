@@ -107,6 +107,9 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'panic':
           this.built.chain.panic()
           break
+        case 'petPoke':
+          this.built.pet.poke()
+          break
       }
     }
   }

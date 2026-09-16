@@ -334,3 +334,26 @@ test('the mouth and motor readings rise during a phrase and fall back to zero af
   expect(pet.mouth).toBe(0)
   expect(pet.motor).toBeLessThan(0.01)
 })
+
+test('a poke wakes a sleeping pet', () => {
+  const { pet, run } = bench({ petChatter: 0 })
+  run(32)
+  expect(pet.mood).toBe(MOOD.asleep)
+  pet.poke()
+  run(0.05)
+  expect(pet.mood).toBe(MOOD.awake)
+})
+
+test('a poke makes an awake pet chatty, and it laughs', () => {
+  const { pet, run } = bench({ petChatter: 0 })
+  pet.poke()
+  run(0.05)
+  expect(pet.mood).toBe(MOOD.chatty)
+  expect(pet.phrase).toBe(PHRASE.laugh)
+})
+
+test('a quick run of pokes scares the pet', () => {
+  const { pet, run } = bench({ petChatter: 0 })
+  run(0.2, () => pet.poke())
+  expect(pet.mood).toBe(MOOD.scared)
+})

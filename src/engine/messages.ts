@@ -65,6 +65,10 @@ export interface PanicMsg {
   kind: 'panic'
 }
 
+export interface PetPokeMsg {
+  kind: 'petPoke'
+}
+
 export type ToWorklet =
   | ParamsMsg
   | SampleMsg
@@ -74,6 +78,7 @@ export type ToWorklet =
   | TransportMsg
   | RecordMsg
   | PanicMsg
+  | PetPokeMsg
 
 export interface MeterMsg {
   kind: 'meter'

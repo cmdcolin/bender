@@ -97,13 +97,13 @@ export function TalkingPet() {
   const lid = MOOD_LID[mood] ?? 0
 
   return (
-    <Tip text="The talking pet wakes on sound, gets scared by a loud sound or a run of drum hits, gets chatty on drum hits and falls asleep after a long quiet. Its motor draws current from the same batteries as the keyboard.">
-      <div
+    <Tip text="The talking pet wakes on sound, gets scared by a loud sound or a run of drum hits, gets chatty on drum hits and falls asleep after a long quiet. Clicking it tickles it the same as a drum hit. Its motor draws current from the same batteries as the keyboard.">
+      <button
         className={scared ? styles.petScared : styles.pet}
-        role="img"
         aria-label={`talking pet, ${name}${saying ? `, saying ${saying}` : ''}`}
+        onClick={() => engine.pokePet()}
       >
-        <div className={styles.perch}>
+        <span className={styles.perch}>
           {saying ? (
             <span className={styles.bubble}>{saying}</span>
           ) : (
@@ -183,11 +183,11 @@ export function TalkingPet() {
             <ellipse className={styles.foot} cx="54" cy="112" rx="11" ry="5" />
             <ellipse className={styles.foot} cx="86" cy="112" rx="11" ry="5" />
           </svg>
-        </div>
+        </span>
         <span className={styles.caption}>
           talking pet · <span className={styles.mood}>{name}</span>
         </span>
-      </div>
+      </button>
     </Tip>
   )
 }

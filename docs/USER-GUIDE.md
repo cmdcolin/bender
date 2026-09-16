@@ -353,7 +353,9 @@ whenever it turns. The knife, **Frame hold** and **K bits** are covered in
 While **Level** is above zero, the pet appears under the toy keyboard and drum
 machine, next to the FM keyboard when the FM chip is up. Its ears swing and its
 eyelids close while the motor turns, its beak opens with its speech, a bubble
-shows the phrase it is saying, and the caption under it names its mood.
+shows the phrase it is saying, and the caption under it names its mood. Clicking
+the pet tickles it the same as a kit hit: a sleeping pet wakes, an awake one
+gets chatty and laughs, and a quick run of clicks scares it.
 
 ## The trigger patch
 

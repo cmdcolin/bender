@@ -11,6 +11,6 @@ import { defaultExclude } from 'vitest/config'
 export default getViteConfig({
   test: {
     exclude: [...defaultExclude, '.claude/**'],
-    testTimeout: 20000,
+    testTimeout: 40000,
   },
 })

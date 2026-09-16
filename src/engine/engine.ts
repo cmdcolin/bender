@@ -1097,6 +1097,11 @@ export class Engine {
     }
   }
 
+  /** Tickles the talking pet, the same as a kit hit. */
+  pokePet() {
+    this.post({ kind: 'petPoke' })
+  }
+
   // A hit on the kit that no step named: a pad on a controller, or the row's own
   // name on the grid, played by hand. Neither sequencer need be running — the
   // kit answers a finger the way it answers the mic — but the kit does have to

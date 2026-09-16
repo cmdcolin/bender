@@ -160,6 +160,7 @@ export class Pet implements Stage {
   private pending: number = PHRASE.hello
   private blink = 0
   private lastReboot = 0
+  private poked = false
 
   private speed = 0
   private revPhase = 0
@@ -357,7 +358,8 @@ export class Pet implements Stage {
 
   private think(p: Float32Array, ctx: Ctx, n: number, dt: number) {
     let peak = 0
-    let hit = false
+    let hit = this.poked
+    this.poked = false
     for (let i = 0; i < n; i++) {
       const a = Math.abs(ctx.mic[i]!)
       if (a > peak) peak = a
@@ -531,8 +533,14 @@ export class Pet implements Stage {
     }
   }
 
+  /** A click on the pet, which it treats the same as a kit hit. */
+  poke() {
+    this.poked = true
+  }
+
   panic() {
     this.hush()
+    this.poked = false
     this.deaf = 0
     this.chipAcc = 0
     this.pulse = 0

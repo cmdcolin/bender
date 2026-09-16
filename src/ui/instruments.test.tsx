@@ -50,9 +50,9 @@ test('the kit record switch arms drum recording', () => {
 
 test('the talking pet appears once its level is above zero', () => {
   render(<App />)
-  expect(screen.queryByRole('img', { name: /talking pet/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /talking pet/ })).toBeNull()
   act(() => engine.set('petLevel', 0.5))
-  expect(screen.getByRole('img', { name: /talking pet/ })).toBeTruthy()
+  expect(screen.getByRole('button', { name: /talking pet/ })).toBeTruthy()
 })
 
 test('the pet label and speech bubble follow the mood and phrase in the meter', () => {
@@ -65,7 +65,9 @@ test('the pet label and speech bubble follow the mood and phrase in the meter', 
     }),
   )
   expect(
-    screen.getByRole('img', { name: 'talking pet, chatty, saying la la loo' }),
+    screen.getByRole('button', {
+      name: 'talking pet, chatty, saying la la loo',
+    }),
   ).toBeTruthy()
   expect(screen.getByText('la la loo')).toBeTruthy()
   act(() =>
@@ -75,6 +77,16 @@ test('the pet label and speech bubble follow the mood and phrase in the meter', 
       petPhrase: -1,
     }),
   )
-  expect(screen.getByRole('img', { name: 'talking pet, asleep' })).toBeTruthy()
+  expect(
+    screen.getByRole('button', { name: 'talking pet, asleep' }),
+  ).toBeTruthy()
   expect(screen.getByText('z z z')).toBeTruthy()
+})
+
+test('clicking the pet pokes it', () => {
+  const poke = vi.spyOn(engine, 'pokePet')
+  render(<TalkingPet />)
+  fireEvent.click(screen.getByRole('button', { name: /talking pet/ }))
+  expect(poke).toHaveBeenCalledTimes(1)
+  poke.mockRestore()
 })
