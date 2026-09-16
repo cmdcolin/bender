@@ -112,7 +112,7 @@ too — the knife goes on and the rows under it say which controls that was:
 
 | control         | range                                                                                                                                                                               | what it does                                                                                                                           |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Level           | off to full                                                                                                                                                                         | How loud the toy keyboard chip is in the source mix                                                                                    |
+| Level           | 0 to 4, normal 0 to 1                                                                                                                                                               | How loud the toy keyboard chip is in the source mix                                                                                    |
 | Tune            | lullaby, march, arp, scale, für elise, ode to joy, rondo turca, yankee, camptown, wm tell, ragtime, danube, gymnopédie, gnossienne, sakura, dies irae, funeral, greensleeves, yours | Which song the chip plays                                                                                                              |
 | Memory rate     | 0.2 to 24 Hz                                                                                                                                                                        | How fast the memory plays its steps back, which the ROM songs each carry for themselves                                                |
 | Memory notes    | mono or poly                                                                                                                                                                        | Whether the chip reads the two memory chips stacked on the first one                                                                   |
@@ -187,7 +187,7 @@ too — the knife goes on and the rows under it say which controls that was:
 
 | control        | range                                                                                       | what it does                                                                                                              |
 | -------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Level          | off to full                                                                                 | How loud the toy drum machine is in the source mix                                                                        |
+| Level          | 0 to 4, normal 0 to 1                                                                       | How loud the toy drum machine is in the source mix                                                                        |
 | Tempo          | 10 to 3000 bpm                                                                              | Sequencer clock                                                                                                           |
 | Swing          | 0 to 0.9                                                                                    | Holds every offbeat step back and takes the time off the step after, so the pattern shuffles without the tempo moving     |
 | Chance         | off to full                                                                                 | How often a maybe step closes                                                                                             |
@@ -285,10 +285,10 @@ too — the knife goes on and the rows under it say which controls that was:
 
 | control           | range                                                                                                                           | what it does                                                                                                         |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Level             | off to full                                                                                                                     | How loud the FM chip is in the source mix                                                                            |
+| Level             | 0 to 4, normal 0 to 1                                                                                                           | How loud the FM chip is in the source mix                                                                            |
 | Voice             | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                                                                   | Which of the eight patches under the voice buttons the processor sends the chip                                      |
-| Brightness        | off to full                                                                                                                     | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
-| Feedback          | 0 to 7                                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
+| Brightness        | 0 to 4, normal 0 to 1                                                                                                           | How loud the modulator is into the carrier, which on a two-operator chip is the whole of the tone control            |
+| Feedback          | 0 to 11, normal 0 to 7                                                                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
 | Vibrato           | off, vibrato, tremolo, both                                                                                                     | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
 | Note length       | 0.02 to 4 s                                                                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                           |
 | Struck by         | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                                               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
@@ -321,14 +321,14 @@ stall-and-recover cycle motorboats on its own.
 <details>
 <summary>6 controls</summary>
 
-| control   | range              | what it does                                      |
-| --------- | ------------------ | ------------------------------------------------- |
-| Level     | off to full        | How loud the oscillator pair is in the source mix |
-| Osc A     | 20 Hz to 12 kHz    | The audible oscillator                            |
-| Osc B     | 0.1 Hz to 12 kHz   | The modulator                                     |
-| Cross-mod | 0 Hz to 8 kHz      | How many Hz of deviation B drags A through        |
-| Shape     | square, saw, pulse | Waveform of both oscillators                      |
-| Starve    | off to full        | Sags the oscillator supply                        |
+| control   | range                 | what it does                                      |
+| --------- | --------------------- | ------------------------------------------------- |
+| Level     | 0 to 4, normal 0 to 1 | How loud the oscillator pair is in the source mix |
+| Osc A     | 20 Hz to 12 kHz       | The audible oscillator                            |
+| Osc B     | 0.1 Hz to 12 kHz      | The modulator                                     |
+| Cross-mod | 0 Hz to 8 kHz         | How many Hz of deviation B drags A through        |
+| Shape     | square, saw, pulse    | Waveform of both oscillators                      |
+| Starve    | off to full           | Sags the oscillator supply                        |
 
 </details>
 
@@ -341,7 +341,7 @@ Hiss with a colour control, and sparse crackle with a rate of its own.
 
 | control      | range                    | what it does                                                            |
 | ------------ | ------------------------ | ----------------------------------------------------------------------- |
-| Noise        | off to full              | White noise level into the chain                                        |
+| Noise        | 0 to 4, normal 0 to 1    | White noise level into the chain                                        |
 | Color        | 1.00 dark to 1.00 bright | Tilts the noise dark (rumble) or bright (hiss)                          |
 | Crackle †    | off to full              | Dirty-pot contact crackle: random spikes rung through a resonant filter |
 | Crackle rate | 0 to 2000 per second     | How often the contact sparks                                            |
@@ -361,7 +361,7 @@ while the head plays on.
 
 | control     | range                                                                       | what it does                                                                                                                                        |
 | ----------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Level       | 0× to 2×                                                                    | Level of the dropped audio file, looping through the chain                                                                                          |
+| Level       | 0× to 4×, normal 0× to 1×                                                   | Level of the dropped audio file, looping through the chain                                                                                          |
 | Speed       | 4.000× reverse to 4.000× forward                                            | Playback speed, with the stop in the middle of the travel and reverse below it                                                                      |
 | Struck by   | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit, key, mic | Which trigger line drops the needle back at the top of the file                                                                                     |
 | Ending      | loop or one-shot                                                            | What happens at the end of the file: round again, or stop there and wait to be struck                                                               |
@@ -389,7 +389,7 @@ against its clamp.
 
 | control        | range                                                 | what it does                                                                                                                 |
 | -------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Level          | off to full                                           | How loud the talking pet is in the source mix                                                                                |
+| Level          | 0 to 4, normal 0 to 1                                 | How loud the talking pet is in the source mix                                                                                |
 | Motor          | off to full                                           | How much of the cam motor you hear: a brush buzz and a gear click that run while the pet talks or blinks                     |
 | Pitch          | 0.25× to 4×                                           | Scales the pitch period the frames ask for, so the voice goes up or down while the formants stay put                         |
 | Clock          | 0.25× to 4×                                           | The speech chip’s 8 kHz clock                                                                                                |
@@ -416,7 +416,7 @@ simply being loud.
 
 | control   | range                                                              | what it does                         |
 | --------- | ------------------------------------------------------------------ | ------------------------------------ |
-| Mic       | 0 to 2                                                             | Microphone gain into the patch point |
+| Mic       | 0 to 4, normal 0 to 1                                              | Microphone gain into the patch point |
 | Mic patch | mix, chip rail, osc FM, delay fb, ring car, drum trig, glitch trig | Where the mic wire is soldered       |
 
 </details>
@@ -510,12 +510,12 @@ A tuned delay with feedback past unity — a pitch you can drive into oscillatio
 <details>
 <summary>4 controls</summary>
 
-| control  | range            | what it does                                                                         |
-| -------- | ---------------- | ------------------------------------------------------------------------------------ |
-| Pitch    | 20 Hz to 4 kHz   | The comb’s resonant pitch — it plays like a string                                   |
-| Feedback | 0 to 1.2         | Past 1.0 it self-oscillates and the saturation holds the scream instead of exploding |
-| Damping  | 500 Hz to 15 kHz | In-loop low-pass                                                                     |
-| Mix      | off to full      | Dry/wet                                                                              |
+| control  | range                 | what it does                                                                         |
+| -------- | --------------------- | ------------------------------------------------------------------------------------ |
+| Pitch    | 20 Hz to 4 kHz        | The comb’s resonant pitch — it plays like a string                                   |
+| Feedback | 0 to 2, normal 0 to 1 | Past 1.0 it self-oscillates and the saturation holds the scream instead of exploding |
+| Damping  | 500 Hz to 15 kHz      | In-loop low-pass                                                                     |
+| Mix      | off to full           | Dry/wet                                                                              |
 
 </details>
 
@@ -527,13 +527,13 @@ own.
 <details>
 <summary>5 controls</summary>
 
-| control   | range           | what it does                                                                  |
-| --------- | --------------- | ----------------------------------------------------------------------------- |
-| Cutoff    | 30 Hz to 12 kHz | Where the filter bites — and the pitch it screams at when resonance passes 1  |
-| Resonance | 0 to 1.3        | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
-| Mode      | LP, BP, HP      | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
-| Drive     | 0 to 36 dB      | Gain into the filter — overdriving the input fights the resonance             |
-| Mix       | off to full     | Dry/wet                                                                       |
+| control   | range                 | what it does                                                                  |
+| --------- | --------------------- | ----------------------------------------------------------------------------- |
+| Cutoff    | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1  |
+| Resonance | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
+| Mode      | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
+| Drive     | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance             |
+| Mix       | off to full           | Dry/wet                                                                       |
 
 </details>
 
@@ -566,12 +566,12 @@ again and partials climb forever.
 <details>
 <summary>4 controls</summary>
 
-| control   | range           | what it does                                                                                              |
-| --------- | --------------- | --------------------------------------------------------------------------------------------------------- |
-| Shift     | 0.1 Hz to 2 kHz | Moves every partial by the same number of Hz instead of the same ratio, so harmonics stop being harmonics |
-| Direction | up or down      | Which sideband survives                                                                                   |
-| Feedback  | 0 to 1.1        | Each lap shifts again, so partials climb (or fall) forever — the barber pole                              |
-| Mix       | off to full     | Dry/wet                                                                                                   |
+| control   | range                 | what it does                                                                                              |
+| --------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
+| Shift     | 0.1 Hz to 2 kHz       | Moves every partial by the same number of Hz instead of the same ratio, so harmonics stop being harmonics |
+| Direction | up or down            | Which sideband survives                                                                                   |
+| Feedback  | 0 to 2, normal 0 to 1 | Each lap shifts again, so partials climb (or fall) forever — the barber pole                              |
+| Mix       | off to full           | Dry/wet                                                                                                   |
 
 </details>
 
@@ -622,7 +622,7 @@ much of the last lap the erase head lets through under the new one.
 | ----------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Time        | 20 ms to 4 s            | Delay time                                                                                                                                          |
 | Heads       | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                                                             |
-| Feedback    | 0 to 1.5                | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
+| Feedback    | 0 to 2, normal 0 to 1   | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
 | Wow         | 0 to 50 ms              | Slow speed wobble of the transport                                                                                                                  |
 | Wow rate    | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                                          |
 | Flutter     | off to full             | Fast random speed jitter — worn pinch roller                                                                                                        |
@@ -657,7 +657,7 @@ the window it just took, which with the kit running is a beat repeat.
 | --------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Mode      | standard, analog, reverse, modulate, hold | Which delay the box is being                                                                               |
 | Time      | 20 ms to 2 s                              | Delay time                                                                                                 |
-| Feedback  | 0 to 1.1                                  | How much of the repeat goes back in                                                                        |
+| Feedback  | 0 to 2, normal 0 to 1                     | How much of the repeat goes back in                                                                        |
 | Tone      | 800 Hz to 16 kHz                          | High cut in the loop, so each lap comes back darker than the last                                          |
 | Mod depth | off to full                               | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
 | E. level  | off to full                               | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
@@ -702,7 +702,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | What the wire picks up                                                         |
 | Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch, toy level, kit level, FM level, osc level, noise level, sampler level, filt res, FM bright, fb time, toy data line, toy data fault, toy addr line, toy addr fault, kit data line, kit data fault, kit addr line, kit addr fault, FM data line, FM data fault, FM addr line, FM addr fault, FM wave line, FM wave fault, FM wave data line, FM wave data fault, FM cut depth, FM noise blob, ring mix, pet level, pet pitch, pet rate, pet addr line, pet addr fault, pet data line, pet data fault | Where the other end is soldered                                                |
-| Wire 1–4 depth | 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | How hard the wire pushes                                                       |
+| Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | How hard the wire pushes                                                       |
 
 </details>
 
@@ -777,15 +777,15 @@ became:
 
 | control      | range                           | what it does                                                                                                           |
 | ------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Amount       | 0 to 1.5                        | Output patched back into the source mix                                                                                |
+| Amount       | 0 to 2, normal 0 to 1           | Output patched back into the source mix                                                                                |
 | Loop time    | 0.05 to 500 ms                  | The loop’s own comb delay                                                                                              |
 | Tilt         | 1.00 dark to 1.00 bright        | Darkens or brightens the loop — decides which register the squeal settles into                                         |
 | Patched into | mix, osc FM, chip rail, delay   | Where the return wire is soldered                                                                                      |
 | Cross        | off to full                     | Sends each strip round the next one’s delay instead of its own                                                         |
-| Strip 2      | 0 to 1.5                        | A second send and return, on its own fader                                                                             |
+| Strip 2      | 0 to 2, normal 0 to 1           | A second send and return, on its own fader                                                                             |
 | Strip 2 time | 0.05 to 500 ms                  | How long strip 2’s cord and its circuit take                                                                           |
 | Strip 2 tilt | 1.00 dark to 1.00 bright        | Strip 2’s own tilt                                                                                                     |
-| Strip 3      | 0 to 1.5                        | The third send and return                                                                                              |
+| Strip 3      | 0 to 2, normal 0 to 1           | The third send and return                                                                                              |
 | Strip 3 time | 0.05 to 500 ms                  | How long strip 3’s cord takes                                                                                          |
 | Strip 3 tilt | 1.00 dark to 1.00 bright        | Strip 3’s own tilt                                                                                                     |
 | Rails        | off to full                     | How hard the return amps hit their supply                                                                              |
@@ -814,7 +814,7 @@ machine they are one thing.
 | Level         | −12 to +15 dB           | Record level                                                                                          |
 | Bias          | 1.00 under to 1.00 over | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
 | Hysteresis    | off to full             | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
-| Head bump     | 0 to 1.5                | The lift where the wavelength past the replay head is the size of the head                            |
+| Head bump     | 0 to 1.5, normal 0 to 1 | The lift where the wavelength past the replay head is the size of the head                            |
 | Squeal        | off to full             | Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal      |
 | Hiss          | off to full             | Noise laid on the medium, not on the mix                                                              |
 | Wow           | off to full             | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |

@@ -6,7 +6,7 @@ import {
   sliderFor,
   snapToStep,
 } from '../controls'
-import { fromPos } from '../slider-scale'
+import { fromPos, ordinary } from '../slider-scale'
 import { inTime } from './quantize'
 
 import type { ControlKey, Controls } from '../../controls'
@@ -210,7 +210,7 @@ function turnUp(
     next[key] = def.min + 1 + Math.floor(rand() * (def.choices.length - 1))
   } else {
     const [lo, hi] = WAKE_POS[key] ?? [0.35, 1]
-    next[key] = snapToStep(def, fromPos(def, lo + rand() * (hi - lo)))
+    next[key] = snapToStep(def, fromPos(ordinary(def), lo + rand() * (hi - lo)))
   }
   woke.add(key)
 }

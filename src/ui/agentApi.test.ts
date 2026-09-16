@@ -21,10 +21,10 @@ test('set applies valid values and reports adjusted, unknown and failed ones', (
   })
   expect(report.applied).toMatchObject({
     chipStarve: '0.80',
-    dlyFb: '1.50',
+    dlyFb: '2.00',
     chipTone: 'reed 1/4',
   })
-  expect(report.adjusted).toEqual(['dlyFb: asked 9, set 1.50'])
+  expect(report.adjusted).toEqual(['dlyFb: asked 9, set 2.00'])
   expect(report.unknown[0]).toMatch(
     /^chipStarv: no control has this key; closest keys: chipStarve/,
   )
@@ -32,7 +32,7 @@ test('set applies valid values and reports adjusted, unknown and failed ones', (
 
   expect(engine.controls.get()).toMatchObject({
     chipStarve: 0.8,
-    dlyFb: 1.5,
+    dlyFb: 2,
     chipTone: 1,
     chipArp: DEFAULT_CONTROLS.chipArp,
   })

@@ -67,6 +67,7 @@ export class Screech implements Stage {
     const res = p[IDX.filtRes]!
     const modRes = ctx.mod.read(DEST.filtRes)
     const damp = dampAt(res)
+    const resTop = Math.max(res, RES_MAX)
     const mode = Math.round(p[IDX.filtMode]!)
     const gain = Math.pow(10, p[IDX.filtDriveDb]! / 20)
     const mix = p[IDX.filtMix]!
@@ -82,7 +83,7 @@ export class Screech implements Stage {
           )
         : fBase
       const dampHere = modRes
-        ? dampAt(Math.min(Math.max(res + modRes[i]! * RES_MAX, 0), RES_MAX))
+        ? dampAt(Math.min(Math.max(res + modRes[i]! * RES_MAX, 0), resTop))
         : damp
       const d =
         couple > 0

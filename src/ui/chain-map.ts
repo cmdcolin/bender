@@ -134,9 +134,7 @@ const MIC_TARGET = [
 ] as const
 
 // What each source is turned up to, which is also whether it is in the mix at
-// all. The loudest of its levels, as a share of that fader's own travel, so the
-// sampler — which goes to 2 — reads against the same wall as the chip, which
-// goes to 1.
+// all: the loudest of its levels, as a share of the top of its normal stretch.
 const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Toy keyboard': ['chipLevel'],
   'FM chip': ['fmLevel'],
@@ -172,8 +170,13 @@ const PET = 'Talking pet'
 // they stand, and they are the only sources on the board that do.
 const LINE_ROW = ['Chaos osc', 'Noise & crackle', 'Sampler'] as const
 
+const fullLevel = (key: ControlKey) => {
+  const def = sliderFor(key)
+  return def.normal?.[1] ?? def.max
+}
+
 const sourceLevel = (name: string, c: Controls): number =>
-  Math.max(...SOURCE_LEVELS[name]!.map(key => c[key] / sliderFor(key).max))
+  Math.max(...SOURCE_LEVELS[name]!.map(key => c[key] / fullLevel(key)))
 
 export interface Palette {
   bg: string

@@ -43,9 +43,8 @@ test('never-NaN torture: random param slams for 10 s', () => {
               ? def.max
               : def.min + rng() * (def.max - def.min)
       }
-      target[IDX.fbAmt] = rng() < 0.5 ? 1.5 : target[IDX.fbAmt]!
-      target[IDX.dlyFb] = rng() < 0.5 ? 1.5 : target[IDX.dlyFb]!
-      target[IDX.combFb] = rng() < 0.5 ? 1.2 : target[IDX.combFb]!
+      for (const key of ['fbAmt', 'dlyFb', 'combFb'] as const)
+        if (rng() < 0.5) target[IDX[key]] = sliderFor(key).max
       target[IDX.outGain] = rng() < 0.3 ? 12 : target[IDX.outGain]!
     }
     for (let i = 0; i < BLOCK; i++) mic[i] = (rng() * 2 - 1) * 0.5

@@ -267,6 +267,14 @@ nothing saying when to stop, which is what **Note length** is for. Four of the
 eight voices (e.piano, bell, bass, marimba) decay on their own regardless of how
 long the key is held; the other four wait for it.
 
+**Level**, **Brightness** and **Feedback** run past the chip's normal range. A
+red tick on the track marks the top of the normal range, and the readout turns
+red past it. Level goes to ×4. Past 1 on Brightness and past 7 on Feedback, a
+booster wired around the chip takes over from the register: each unit of
+brightness multiplies the modulation index by four, and each step of feedback
+doubles the feedback, so the top of either track is noise. The boosters do
+nothing while an effect runs.
+
 **Vibrato** switches on the one LFO the die has. There is no register for it
 anywhere — no rate, no depth, nothing to start or stop it — so all the button
 can do is solder the operators to something that has been running since the
@@ -390,6 +398,13 @@ A roll moves only a handful of controls, not the whole board, and it keeps its
 hands off time: any control that counts in beats — delay time, glitch slice,
 drum retrigger — lands back on a division of the beat rather than an arbitrary
 value, so a roll is still playable with the pattern.
+
+A control with red ticks on its track has a normal range: every source level, FM
+brightness and feedback, feedback on the comb, freq shifter, tape delay, delay
+pedal and feedback bus strips, the screech filter's resonance, the tape
+machine's head bump, and the patch bay's wire depths. Rolls, **mutate** and
+**drift** keep such a control inside its normal range unless you have already
+set it past. **Wreck it**, **slam** and **on the edge** use the whole track.
 
 Every stage's own panel has a **roll** and a **reset** for asking one question
 at a time — a new spring tank without losing the rest of the board, or that one

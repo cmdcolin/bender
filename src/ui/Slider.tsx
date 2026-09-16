@@ -27,7 +27,14 @@ import {
   useStoreValue,
 } from './ControlsContext'
 import { midi } from './midi'
-import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
+import {
+  formatValue,
+  fromPos,
+  normalEdges,
+  pastNormal,
+  readoutChars,
+  toPos,
+} from './slider-scale'
 import styles from './Slider.module.css'
 import { tapRun, tapValue } from './tap'
 import { Tip, type TipHandle } from './Tip'
@@ -277,6 +284,48 @@ function pull(def: SliderDef, pos: number): number {
     : fromPos(def, pos)
 }
 
+function helpWithNormal(def: SliderDef) {
+  if (!def.normal) return def.help
+  const [lo, hi] = def.normal.map(v => formatValue(def, v))
+  return def.normal[0] === def.min
+    ? `${def.help} The red tick marks the top of the normal range, ${hi}.`
+    : `${def.help} The red ticks mark the normal range, ${lo} to ${hi}.`
+}
+
+function NormalTrack({
+  def,
+  children,
+}: {
+  def: SliderDef
+  children: ReactNode
+}) {
+  const [start, end] = normalEdges(def)
+  const at = (pos: number) => cssVars({ '--at': pos })
+  return (
+    <span className={styles.plain}>
+      {start > 0 && (
+        <>
+          <span
+            className={styles.over}
+            style={cssVars({ '--from': 0, '--to': start })}
+          />
+          <span className={styles.tick} style={at(start)} />
+        </>
+      )}
+      {end < 1 && (
+        <>
+          <span
+            className={styles.over}
+            style={cssVars({ '--from': end, '--to': 1 })}
+          />
+          <span className={styles.tick} style={at(end)} />
+        </>
+      )}
+      {children}
+    </span>
+  )
+}
+
 // Where a row of picks stops being a row you can read. Up to this many, the
 // choices are all on screen and taking one is a single press; past it they wrap
 // into a paragraph of buttons and the panel turns into a wall — a sixteen-rate
@@ -443,7 +492,7 @@ export function ControlSlider({
   return (
     <>
       <div className={split?.names ? styles.rowSplit : styles.row}>
-        <Tip ref={tip} text={def.help}>
+        <Tip ref={tip} text={helpWithNormal(def)}>
           <span
             className={touched ? styles.labelTouched : styles.label}
             onClick={() => tip.current?.toggle()}
@@ -480,6 +529,16 @@ export function ControlSlider({
                 }}
               />
               <span className={styles.turn} />
+              {def.normal &&
+                normalEdges(def)
+                  .filter(edge => edge > 0 && edge < 1)
+                  .map(edge => (
+                    <span
+                      key={edge}
+                      className={styles.normalTick}
+                      style={{ left: `${edge * 100}%` }}
+                    />
+                  ))}
               {normal !== undefined && (
                 <>
                   <span
@@ -511,24 +570,20 @@ export function ControlSlider({
               </span>
             )}
           </span>
-        ) : def.mark === undefined ? (
+        ) : def.normal === undefined ? (
           track
         ) : (
-          <span
-            className={styles.plain}
-            style={cssVars({ '--mark': `${toPos(def, def.mark) * 100}%` })}
-          >
-            <span className={styles.tick} />
-            {track}
-          </span>
+          <NormalTrack def={def}>{track}</NormalTrack>
         )}
         <span
           className={
-            way < 0
-              ? styles.readoutBack
-              : way > 0
-                ? styles.readoutFwd
-                : styles.readout
+            pastNormal(def, value)
+              ? styles.readoutOver
+              : way < 0
+                ? styles.readoutBack
+                : way > 0
+                  ? styles.readoutFwd
+                  : styles.readout
           }
         >
           {touched ? (

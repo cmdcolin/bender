@@ -297,9 +297,10 @@ select.listOn {
   grid-area: value;
 }
 
-/* A plain track wearing one tick, for a travel with no turn to name but a
-   point on it worth feeling for anyway. */
+/* A plain track with a normal stretch. The native thumb is 16px wide and its
+   centre travels 8px in from each end, so positions are laid out on that. */
 .plain {
+  --thumb: 16px;
   position: relative;
   display: flex;
   align-items: center;
@@ -307,13 +308,28 @@ select.listOn {
 
 .tick {
   position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: var(--mark);
+  top: 1px;
+  bottom: 1px;
+  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--at));
   width: 2px;
   margin-left: -1px;
-  background: var(--fg3);
+  background: var(--alarm);
   pointer-events: none;
+}
+
+.over {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--from));
+  width: calc((100% - var(--thumb)) * (var(--to) - var(--from)));
+  background: color-mix(in srgb, var(--alarm) 55%, transparent);
+  pointer-events: none;
+}
+
+.readoutOver {
+  composes: readout;
+  color: var(--alarm);
 }
 
 /* A travel whose halves are two different things: the bed under the knob, the

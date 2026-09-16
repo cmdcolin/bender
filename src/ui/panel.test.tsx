@@ -471,3 +471,20 @@ test('a split travel still steps off its turn under the arrow keys', () => {
   fireEvent.change(knob, { target: { value: '650' } })
   expect(engine.controls.get().sampleSpeed).toBeGreaterThan(0)
 })
+
+test('a normal stretch draws its tick and reddens the readout past it', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  openFmChip()
+  const knob = screen.getByRole('slider', { name: 'Feedback' })
+  const row = knob.closest<HTMLElement>('[class*="row"]')!
+  const over = () => row.querySelector('[class*="readoutOver"]')
+  expect(row.querySelectorAll('[class*="tick"]')).toHaveLength(1)
+
+  fireEvent.change(knob, { target: { value: '750' } })
+  expect(engine.controls.get().fmFeedback).toBe(7)
+  expect(over()).toBeNull()
+
+  fireEvent.change(knob, { target: { value: '1000' } })
+  expect(engine.controls.get().fmFeedback).toBe(11)
+  expect(over()?.textContent).toMatch(/^11/)
+})

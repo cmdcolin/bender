@@ -234,11 +234,12 @@ test('a source box carries how far up its fader is, on its own travel', () => {
     DEFAULT_CONTROLS.chipLevel,
   )
   expect(box(buildMap(DEFAULT_CONTROLS), 'FM_chip')!.active).toBe(false)
-  // The sampler's fader goes to 2 and the chip's to 1, so half up reads as half
-  // up on both rather than as twice as loud on one.
-  expect(level({ ...DEFAULT_CONTROLS, sampleLevel: 1 }, 'Sampler')).toBeCloseTo(
-    0.5,
-  )
+  // The bar counts up to the top of the normal stretch, so ×1 fills it and an
+  // overdriven fader stays full.
+  expect(
+    level({ ...DEFAULT_CONTROLS, sampleLevel: 0.5 }, 'Sampler'),
+  ).toBeCloseTo(0.5)
+  expect(level({ ...DEFAULT_CONTROLS, fmLevel: 3 }, 'FM_chip')).toBeCloseTo(3)
   expect(box(buildMap(DEFAULT_CONTROLS), 'Talking_pet')!.active).toBe(false)
   expect(
     level({ ...DEFAULT_CONTROLS, petLevel: 0.4 }, 'Talking_pet'),

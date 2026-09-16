@@ -3,7 +3,14 @@ import { expect, test } from 'vitest'
 import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
 import { hasStep } from '../../drums'
 import { mulberry32 } from '../../dsp/util/rng'
-import { BENDS, GROUPS, type Group, groupKeys, sliderFor } from '../controls'
+import {
+  ALL_SLIDERS,
+  BENDS,
+  GROUPS,
+  type Group,
+  groupKeys,
+  sliderFor,
+} from '../controls'
 import { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll'
 import { mine, yours } from './testBoard'
 
@@ -211,6 +218,32 @@ test('pressing the dice on the crackle stage asks for crackle', () => {
     )
   }
   expect(Math.max(...levels)).toBeGreaterThan(0.5)
+})
+
+test('rolls and nudges from stock land inside every normal stretch', () => {
+  const stretched = ALL_SLIDERS.filter(s => s.normal)
+  for (let seed = 1; seed <= 10; seed++) {
+    const rand = mulberry32(seed)
+    const boards = [
+      mutate(DEFAULT_CONTROLS, 0.3, rand),
+      ...GROUPS.map(g => rollGroup(g, DEFAULT_CONTROLS, rand)),
+    ]
+    for (const board of boards)
+      for (const def of stretched) {
+        const [lo, hi] = def.normal!
+        expect(board[def.key], def.key).toBeGreaterThanOrEqual(lo)
+        expect(board[def.key], def.key).toBeLessThanOrEqual(hi)
+      }
+  }
+})
+
+test('a nudge on a control past its normal stretch can leave it there', () => {
+  const hot = { ...mine(), dlyFb: 1.8 }
+  const after = Array.from({ length: 20 }, (_, seed) =>
+    mutate(hot, 0.3, mulberry32(seed + 1)),
+  ).map(c => c.dlyFb)
+  expect(after.some(v => v !== 1.8)).toBe(true)
+  expect(after.every(v => v > 1)).toBe(true)
 })
 
 test('rolling a stage leaves every other stage alone', () => {

@@ -1,6 +1,13 @@
 import { expect, test } from 'vitest'
 
-import { ALL_SLIDERS, BENDS, EDITOR_KEYS, GROUPS, sliderFor } from '.'
+import {
+  ALL_SLIDERS,
+  BENDS,
+  EDITOR_KEYS,
+  GROUPS,
+  sliderFor,
+  snapToStep,
+} from '.'
 import {
   CONTROL_KEYS,
   DEFAULT_CONTROLS,
@@ -45,6 +52,24 @@ test('defaults sit inside slider ranges', () => {
     const v = DEFAULT_CONTROLS[k]
     expect(v, k).toBeGreaterThanOrEqual(def.min)
     expect(v, k).toBeLessThanOrEqual(def.max)
+  }
+})
+
+test('a normal stretch sits on a linear track, around the default, with travel past it', () => {
+  for (const def of ALL_SLIDERS) {
+    if (!def.normal) continue
+    const [lo, hi] = def.normal
+    const stock = DEFAULT_CONTROLS[def.key]
+    expect(def.curve, def.key).toBeUndefined()
+    expect(lo, def.key).toBeGreaterThanOrEqual(def.min)
+    expect(hi, def.key).toBeLessThanOrEqual(def.max)
+    expect(lo > def.min || hi < def.max, def.key).toBe(true)
+    expect(stock, def.key).toBeGreaterThanOrEqual(lo)
+    expect(stock, def.key).toBeLessThanOrEqual(hi)
+    expect([snapToStep(def, lo), snapToStep(def, hi)], def.key).toEqual([
+      lo,
+      hi,
+    ])
   }
 })
 

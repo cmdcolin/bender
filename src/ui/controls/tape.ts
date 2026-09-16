@@ -62,6 +62,7 @@ export const TAPE_GROUPS: Group[] = [
         label: 'Head bump',
         min: 0,
         max: 1.5,
+        normal: [0, 1],
         step: 0.01,
         unit: '',
         help: 'The lift where the wavelength past the replay head is the size of the head — the low end every tape machine adds unasked, paid for by a scoop above it. Speed moves where both sit; this is how much comes back.',

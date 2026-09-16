@@ -1,7 +1,13 @@
 import { expect, test } from 'vitest'
 
 import { ALL_SLIDERS, sliderFor, snapToStep, type SliderDef } from './controls'
-import { formatValue, fromPos, readoutChars, toPos } from './slider-scale'
+import {
+  formatValue,
+  fromPos,
+  ordinary,
+  readoutChars,
+  toPos,
+} from './slider-scale'
 
 // The maths under every knob: where a value sits on a thousand-position track,
 // what comes back when you drop the thumb there, and what the row prints.
@@ -148,6 +154,40 @@ test('every slider reaches both of its ends', () => {
     expect([d.key, snapToStep(d, fromPos(d, 0))]).toEqual([d.key, d.min])
     expect([d.key, snapToStep(d, fromPos(d, 1))]).toEqual([d.key, d.max])
   }
+})
+
+test('a normal stretch takes three quarters of the track', () => {
+  const d = def({ min: 0, max: 4, normal: [0, 1] })
+  expect(toPos(d, 0)).toBe(0)
+  expect(toPos(d, 1)).toBeCloseTo(0.75)
+  expect(toPos(d, 4)).toBe(1)
+  expect(fromPos(d, 0.375)).toBeCloseTo(0.5)
+  expect(fromPos(d, 0.875)).toBeCloseTo(2.5)
+})
+
+test('a normal stretch in the middle shares the rest between both ends', () => {
+  const d = def({ min: -2, max: 2, normal: [-1, 1] })
+  expect(toPos(d, -1)).toBeCloseTo(0.125)
+  expect(toPos(d, 0)).toBeCloseTo(0.5)
+  expect(toPos(d, 1)).toBeCloseTo(0.875)
+  expect(fromPos(d, 0)).toBe(-2)
+  expect(fromPos(d, 1)).toBe(2)
+})
+
+test('every value on a normal-stretch slider maps back to itself', () => {
+  for (const d of ALL_SLIDERS) {
+    if (!d.normal) continue
+    for (let v = d.min; v <= d.max; v += d.step * 7) {
+      const back = snapToStep(d, fromPos(d, toPos(d, v)))
+      expect([d.key, back]).toEqual([d.key, snapToStep(d, v)])
+    }
+  }
+})
+
+test('ordinary cuts a slider down to its normal stretch', () => {
+  const d = sliderFor('fmFeedback')
+  expect(ordinary(d)).toMatchObject({ min: 0, max: 7, normal: undefined })
+  expect(ordinary(sliderFor('fmVoice'))).toBe(sliderFor('fmVoice'))
 })
 
 test('the readout keeps significant figures, not decimal places', () => {

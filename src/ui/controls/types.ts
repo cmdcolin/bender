@@ -71,12 +71,11 @@ export interface SliderDef {
         marking; the turn is already the near one. */
     normal?: number
   }
-  /** A point on a plain track worth a tick of its own, drawn on the track
-      itself rather than said in the help text — so a hand on the knob can
-      feel where it is without reading anything. The sampler's level uses this
-      for ×1: below it the knob is attenuating the file, above it the knob is
-      adding gain that was never in the recording. */
-  mark?: number
+  /** The stretch of a linear track the circuit was designed for. The track
+      gives it three quarters of the throw and draws a red tick at each edge
+      that has travel past it, the readout turns red beyond it, and the dice
+      roll inside it. */
+  normal?: readonly [number, number]
   /** Whether the row takes a speed tapped in rather than dialled: a tempo, a
       delay time, a wobble rate. The unit is what the press is worth — `bpm` is
       beats a minute, `Hz` cycles a second, `ms` the gap itself — so only those

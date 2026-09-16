@@ -57,7 +57,52 @@ function pivotedDist(t: number, near: number, far: number, step: number) {
   return frac < 0.02 ? near : near + floor * Math.pow(far / floor, frac)
 }
 
+const NORMAL_SHARE = 0.75
+
+/** Where the edges of a `normal` stretch sit on the track. */
+export function normalEdges(def: SliderDef): [number, number] {
+  const [lo, hi] = def.normal!
+  const below = lo - def.min
+  const outside = below + def.max - hi
+  const start = outside === 0 ? 0 : ((1 - NORMAL_SHARE) * below) / outside
+  return [start, outside === 0 ? 1 : start + NORMAL_SHARE]
+}
+
+function normalToPos(def: SliderDef, value: number): number {
+  const [lo, hi] = def.normal!
+  const [start, end] = normalEdges(def)
+  if (value < lo) return (start * (value - def.min)) / (lo - def.min)
+  if (value <= hi) return start + ((end - start) * (value - lo)) / (hi - lo)
+  return end + ((1 - end) * (value - hi)) / (def.max - hi)
+}
+
+function normalFromPos(def: SliderDef, pos: number): number {
+  const [lo, hi] = def.normal!
+  const [start, end] = normalEdges(def)
+  if (pos < start) return def.min + ((lo - def.min) * pos) / start
+  if (pos <= end) return lo + ((hi - lo) * (pos - start)) / (end - start)
+  return hi + ((def.max - hi) * (pos - end)) / (1 - end)
+}
+
+const ordinaries = new WeakMap<SliderDef, SliderDef>()
+
+/** The control cut down to its `normal` stretch, for code that picks a value
+    without a hand on the knob. */
+export function ordinary(def: SliderDef): SliderDef {
+  if (!def.normal) return def
+  let cut = ordinaries.get(def)
+  if (!cut) {
+    cut = { ...def, min: def.normal[0], max: def.normal[1], normal: undefined }
+    ordinaries.set(def, cut)
+  }
+  return cut
+}
+
+export const pastNormal = (def: SliderDef, value: number) =>
+  def.normal !== undefined && (value < def.normal[0] || value > def.normal[1])
+
 export function toPos(def: SliderDef, value: number): number {
+  if (def.normal) return normalToPos(def, value)
   if (def.curve === 'symlog') {
     const { at, normal } = def.split!
     const turn = symlogTurn(def)
@@ -83,6 +128,7 @@ export function toPos(def: SliderDef, value: number): number {
 }
 
 export function fromPos(def: SliderDef, pos: number): number {
+  if (def.normal) return normalFromPos(def, pos)
   if (def.curve === 'symlog') {
     const { at, normal } = def.split!
     const turn = symlogTurn(def)

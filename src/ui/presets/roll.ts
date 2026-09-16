@@ -15,7 +15,7 @@ import {
   sliderFor,
   snapToStep,
 } from '../controls'
-import { fromPos, toPos } from '../slider-scale'
+import { fromPos, ordinary, pastNormal, toPos } from '../slider-scale'
 import { applyPreset } from './apply'
 import { coherePatch, cohereTriggers } from './patch'
 import { inTime } from './quantize'
@@ -24,14 +24,17 @@ import { CLOCK_KEYS, keepYours, PART_KEYS, YOURS } from './yours'
 
 // Along the control's own travel, not across its span: a log slider moves by a
 // proportion of where it sits, so a 40 ms delay comes back a few milliseconds
-// away rather than halfway across the two-second range.
-const nudge = (
+// away rather than halfway across the two-second range. A control inside its
+// normal stretch stays inside it.
+function nudge(
   def: SliderDef,
   value: number,
   amount: number,
   rand: () => number,
-) =>
-  snapToStep(def, fromPos(def, toPos(def, value) + (rand() * 2 - 1) * amount))
+) {
+  const d = pastNormal(def, value) ? def : ordinary(def)
+  return snapToStep(d, fromPos(d, toPos(d, value) + (rand() * 2 - 1) * amount))
+}
 
 // A shake lands on a handful of controls rather than on all of them. Nudging
 // every one of the hundred-odd at once is the central limit theorem with a
@@ -71,7 +74,10 @@ const shyValue = (def: SliderDef, rand: () => number) => {
   if (def.choices)
     return def.min + 1 + Math.floor(rand() * (def.choices.length - 1))
   const pos = rand() * SHY_TOP
-  return snapToStep(def, fromPos(def, off === def.max ? 1 - pos : pos))
+  return snapToStep(
+    def,
+    fromPos(ordinary(def), off === def.max ? 1 - pos : pos),
+  )
 }
 
 const calmShy = (next: Controls, rand: () => number): Controls => {
@@ -170,7 +176,7 @@ export function randomLook(current: Controls, rand: () => number): Controls {
 // `named` says the roll pointed at this control's own stage, which is the one
 // case a shy control rolls like any other.
 function rollValue(def: SliderDef, rand: () => number, named = false): number {
-  const at = (pos: number) => snapToStep(def, fromPos(def, pos))
+  const at = (pos: number) => snapToStep(def, fromPos(ordinary(def), pos))
   // Ahead of everything below, including the levels: a shy control is one the
   // roll is allowed to leave off however loud its stage ends up.
   if (def.shy && !named) return shyValue(def, rand)
@@ -188,7 +194,7 @@ function rollValue(def: SliderDef, rand: () => number, named = false): number {
 
 /** Somewhere in the top two thirds of the travel: on, and audibly so. */
 const audible = (def: SliderDef, rand: () => number) =>
-  snapToStep(def, fromPos(def, 0.35 + rand() * 0.65))
+  snapToStep(def, fromPos(ordinary(def), 0.35 + rand() * 0.65))
 
 // Fresh values for the controls named, and nothing else on the board moved.
 // What is yours and the clock sit this out, the same as they do under a nudge.

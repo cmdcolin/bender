@@ -6,6 +6,7 @@ import { SOURCE_TAPS } from '../../engine/params'
 import { buildChain } from '../build'
 import { FAULT } from '../bus'
 import { DEST } from '../modbus'
+import { spectrum } from '../spectrum'
 import { BLOCK } from '../stage'
 import {
   bin,
@@ -135,6 +136,48 @@ test('a wire on the brightness writes the register the knob would', () => {
     )
   const wire = { bodyX: 1, mod0Src: 5, mod0Dest: DEST.fmBright, mod0Depth: 1 }
   expect(at({ fmBright: 0, ...wire })).toEqual(at({ fmBright: 1 }))
+})
+
+test('brightness past 1 raises the modulation index past the register', () => {
+  const at = (fmBright: number) =>
+    playKeys(
+      { ...FM_ONLY, fmVoice: 0, fmBright, fmLength: 2 },
+      chip => chip.noteOn(0),
+      1,
+    ).subarray(Math.round(0.2 * SR))
+  const centroid = (fmBright: number) => spectrum(at(fmBright), SR).centroid
+  expect(centroid(2.5)).toBeGreaterThan(centroid(1) * 4)
+  expect(spectrum(at(4), SR).flatness).toBeGreaterThan(0.1)
+})
+
+test('feedback past 7 turns the modulator to noise and writes 7 to the register', () => {
+  let chip: BuiltChain['fmChip'] | undefined
+  const at = (fmFeedback: number) =>
+    renderBender({ ...FM_ONLY, fmKeyGate: 1, fmFeedback }, 1, built => {
+      chip = built.fmChip
+      built.fmChip.noteOn(0)
+    }).subarray(Math.round(0.2 * SR))
+  expect(spectrum(at(7), SR).flatness).toBeLessThan(0.05)
+  expect(spectrum(at(10), SR).flatness).toBeGreaterThan(0.5)
+  expect(chip!.patchRegs()[REG.feedback]! & 0x07).toBe(7)
+})
+
+test('the boosters sit still while an effect runs', () => {
+  const at = (o: Partial<Controls>) =>
+    renderBender({ ...FM_ONLY, chipTune: 0, fmEffect: 1, ...o }, 1)
+  const plain = at({ fmFeedback: 7, fmBright: 1 })
+  expect(rms(plain)).toBeGreaterThan(0.01)
+  expect(deviation(at({ fmFeedback: 11, fmBright: 4 }), plain)).toBe(0)
+})
+
+test('level past 1 is gain on the chip’s output', () => {
+  const fm = (fmLevel: number) =>
+    rms(
+      renderStems({ ...FM_ONLY, fmLevel }, 2).stems[
+        SOURCE_TAPS.indexOf('fmChip')
+      ]!,
+    )
+  expect(fm(4) / fm(1)).toBeCloseTo(4, 3)
 })
 
 // The bend the FM keyboards are known for. A note ends because the processor

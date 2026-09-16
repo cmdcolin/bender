@@ -106,6 +106,13 @@ const atten = (steps: number, perStep: number) =>
 const brightened = (byte: number, bright: number) =>
   (byte & 0xc0) | Math.round((byte & 0x3f) * (1 - bright * 0.9))
 
+// Feedback tops out at 7 in its three register bits, and brightness at 1. Past
+// those the panel drives a booster wired around the die: each step of feedback
+// past 7 doubles the modulator's feedback, and each unit of brightness past 1
+// multiplies the modulation index by four.
+const FB_REGISTER_MAX = 7
+const INDEX_BOOST = 4
+
 // Envelope rates come off the same divider as everything else on this board, so
 // a starving rail drags the envelopes out along with the pitch and the tempo —
 // one oscillator, as ever. The table itself lives with the register map.
@@ -1048,9 +1055,11 @@ export class FmChip implements Stage {
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const level = p[IDX.fmLevel]!
     const voice = Math.round(p[IDX.fmVoice]!)
+    const brightKnob = p[IDX.fmBright]!
+    const fbKnob = Math.round(p[IDX.fmFeedback]!)
     const panel: Panel = {
-      bright: p[IDX.fmBright]!,
-      fb: Math.round(p[IDX.fmFeedback]!),
+      bright: Math.min(brightKnob, 1),
+      fb: Math.min(fbKnob, FB_REGISTER_MAX),
       lfo: Math.round(p[IDX.fmLfo]!),
       modRatio: Math.round(p[IDX.fmModRatio]!),
       carRatio: Math.round(p[IDX.fmCarRatio]!),
@@ -1153,16 +1162,25 @@ export class FmChip implements Stage {
     }
 
     const modBright = ctx.mod.read(DEST.fmBright)
+    const bright = modBright
+      ? Math.min(
+          Math.max(brightKnob + modBright[0]!, 0),
+          Math.max(brightKnob, 1),
+        )
+      : brightKnob
     if (this.effect < 0 && (modBright || this.laneBright >= 0)) {
       const byte = brightened(
         (PATCH_BYTES[voice] ?? PATCH_BYTES[0]!)[REG.modLevel]!,
-        modBright
-          ? Math.min(Math.max(panel.bright + modBright[0]!, 0), 1)
-          : panel.bright,
+        Math.min(bright, 1),
       )
       if (byte !== this.laneBright) this.write(REG.modLevel, byte)
       this.laneBright = modBright ? byte : -1
     }
+
+    const boosted = this.effect < 0
+    const fbBoost =
+      boosted && fbKnob > FB_REGISTER_MAX ? 2 ** (fbKnob - FB_REGISTER_MAX) : 1
+    const indexBoost = boosted && bright > 1 ? INDEX_BOOST ** (bright - 1) : 1
 
     this.readPatch(rail.clockFactor)
     if (kit) this.readKit(rail.clockFactor)
@@ -1293,7 +1311,7 @@ export class FmChip implements Stage {
         // only detune anywhere on a chip that has no detune register.
         c.mod.phase =
           (c.mod.phase + inc * mod.mult * (mod.vib ? this.vibFactor : 1)) % 1
-        const self = (c.mod.fb1 + c.mod.fb2) * mod.fb
+        const self = (c.mod.fb1 + c.mod.fb2) * mod.fb * fbBoost
         const m = this.wave(c.mod.phase + self, mod.half) * modEnv * mod.level
         c.mod.fb2 = c.mod.fb1
         c.mod.fb1 = m
@@ -1303,7 +1321,9 @@ export class FmChip implements Stage {
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
         sum +=
-          this.wave(c.car.phase + m * 2, car.half) * carEnv * this.volume(n)
+          this.wave(c.car.phase + m * 2 * indexBoost, car.half) *
+          carEnv *
+          this.volume(n)
       }
 
       // One small output stage for four voices, as ever on a board like this,

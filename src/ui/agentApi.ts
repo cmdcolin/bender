@@ -85,7 +85,9 @@ function range(def: SliderDef) {
     const listed = def.choices.slice(0, CHOICES_SHOWN).join(' | ')
     return `choices ${listed}${more > 0 ? ` | and ${more} more` : ''}`
   }
-  return `${def.min}..${def.max}${def.unit ? ` ${def.unit}` : ''}`
+  const unit = def.unit ? ` ${def.unit}` : ''
+  const normal = def.normal ? `, normal ${def.normal[0]}..${def.normal[1]}` : ''
+  return `${def.min}..${def.max}${unit}${normal}`
 }
 
 function score(def: SliderDef, word: string): number {
