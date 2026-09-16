@@ -1,7 +1,7 @@
 // The page at `/`: a landing page for a stranger, and the same URL rendered as
 // a home once Firebase says who is signed in.
 //
-// index.astro builds the landing markup, preset cards included, so a visitor
+// index.astro builds the landing markup, demo cards included, so a visitor
 // gets it with no JavaScript run at all. cloud.ts fetches the SDK on the first
 // call that needs it, so the only loads that reach Google are the ones that
 // already know this browser signed in and the ones where somebody pressed the
@@ -52,7 +52,7 @@ const needOf = <T extends HTMLElement>(id: string, kind: new () => T): T => {
 
 const landing = need('landing')
 const home = need('home')
-const presets = need('presets')
+const demos = need('demos')
 const signInBtn = needOf('signIn', HTMLButtonElement)
 const acct = need('acct')
 const acctBtn = needOf('acctBtn', HTMLButtonElement)
@@ -254,7 +254,7 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   const links: [string, string, boolean][] = [
     [siteRoot, 'Home', true],
     ['#voices', 'Voices', false],
-    ['#presets', 'Presets', false],
+    ['#demos', 'Demos', false],
     [guideUrl, 'User guide', false],
   ]
   for (const [href, label, on] of links) {
@@ -265,10 +265,10 @@ function showFrame(user: CloudUser, sections: HTMLElement[]) {
   }
 
   const main = el('div', 'homeMain')
-  // The build already rendered the preset cards into the landing page; signed
+  // The build already rendered the demo cards into the landing page; signed
   // in, the same section moves over rather than being drawn a second time.
-  presets.classList.add('homeSec')
-  main.append(...sections, presets)
+  demos.classList.add('homeSec')
+  main.append(...sections, demos)
 
   const inner = el('div', 'homeIn')
   inner.append(rail, main)
@@ -290,8 +290,8 @@ export function showLanding(): void {
   acct.hidden = true
   signInBtn.hidden = false
   for (const button of whyBtns) button.hidden = false
-  presets.classList.remove('homeSec')
-  landing.append(presets)
+  demos.classList.remove('homeSec')
+  landing.append(demos)
   home.textContent = ''
   home.hidden = true
   landing.hidden = false

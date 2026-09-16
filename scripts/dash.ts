@@ -115,7 +115,7 @@ async function shoot(url: string, into: string) {
     const rect = JSON.parse(result.value) as Rect
 
     // The page from the site bar down to the last voice: the whole of what an
-    // account gets you, and nothing of the presets under it, which the landing
+    // account gets you, and nothing of the demos under it, which the landing
     // page already shows to everybody.
     const shot = await page.send<{ data: string }>('Page.captureScreenshot', {
       format: 'png',

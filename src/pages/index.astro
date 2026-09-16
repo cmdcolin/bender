@@ -3,12 +3,9 @@ import Analytics from '../components/Analytics.astro'
 import Card from '../components/Card.astro'
 import Footer from '../components/Footer.astro'
 import SiteBar from '../components/SiteBar.astro'
-import { DEFAULT_CONTROLS } from '../controls'
+import demos from '../../demos.json'
 import { appUrl, guideUrl, privacyUrl, siteRoot } from '../home/paths'
-import { applyPreset } from '../ui/presets/apply'
-import { PRESETS } from '../ui/presets/table'
 import { SIGNED_IN_HINT } from '../ui/cloud'
-import { boardHash } from '../ui/share'
 import {
   FREE_WITHOUT,
   HOW,
@@ -23,13 +20,6 @@ import '../theme.css'
 import '../home/site.css'
 import '../home/footer.css'
 import '../home/home.css'
-
-// Spelled by the app's own writer, so a card stays right when its preset changes.
-const presets = PRESETS.map(preset => ({
-  query: boardHash('', applyPreset(preset, { ...DEFAULT_CONTROLS })),
-  name: preset.name,
-  says: preset.blurb,
-}))
 ---
 
 <html lang="en">
@@ -160,12 +150,12 @@ const presets = PRESETS.map(preset => ({
           Why sign in?
         </button>
       </p>
-      <section id="presets">
-        <h2 class="head">Presets</h2>
+      <section id="demos">
+        <h2 class="head">Demos</h2>
         <p class="sub">Open one and the board arrives set up that way.</p>
         <ul class="grid">
-          {presets.map(p => (
-            <Card {...p} />
+          {demos.map(demo => (
+            <Card {...demo} />
           ))}
         </ul>
       </section>

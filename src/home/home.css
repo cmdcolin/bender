@@ -1,4 +1,4 @@
-/* bender's own site styles: the landing page's hero, the preset cards and a
+/* bender's own site styles: the landing page's hero, the demo cards and a
    resume card that shows a mark. The components both sites share are in
    site.css, and the guide's prose is in guide.css. */
 
@@ -41,7 +41,7 @@
   font-size: 0.9rem;
 }
 
-/* The preset cards: a mark drawn from the board, then its name and blurb. */
+/* The demo cards: a mark drawn from the board, then its name and blurb. */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));

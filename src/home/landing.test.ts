@@ -2,6 +2,7 @@
 import { experimental_AstroContainer } from 'astro/container'
 import { beforeAll, expect, test } from 'vitest'
 
+import demos from '../../demos.json'
 import { GA_ID } from '../analytics'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
@@ -53,3 +54,8 @@ test('every page the site serves counts its visit', () => {
     expect(page).toContain(`gtag/js?id=${GA_ID}`)
 })
 // CROSS_REPO_SYNC_END(landing-page-test)
+
+test('the landing page shows the demos from demos.json and no presets', () => {
+  for (const demo of demos) expect(landing).toContain(demo.name)
+  expect(landing.match(/class="card"/g)?.length).toBe(demos.length)
+})

@@ -78,6 +78,8 @@ footsteps of https://github.com/cmdcolin/ntsc.js
 
 ## Demos
 
+<!-- generated:demos -->
+
 - Dubby drums
   https://cmdcolin.github.io/bender/app/#p=ACwAJAHIAQYEAAYCwAEAAgCgAQC0AQASDBgBEgEMAQgABAEAAAUABwALAA8CBgCuAQKuAgCMAQAYAJoBAD4CogEBAAECAnoAoIAEAIICAICiBAKAgAQAgoIEBRYBEAFyAAIDQAECAAgCBhCQAwB2AjQBZCcCCaYFAQgC7gkCmAEBoB8AZgDyAgFEBfAkARAAGgAaAAYAFgAdAA4ACgBlABIADgCFAQr2FwYJAAYACBYI
 
@@ -88,4 +90,6 @@ footsteps of https://github.com/cmdcolin/ntsc.js
   https://cmdcolin.github.io/bender/app/#p=AIwBACQBWgEYEQAlBAICD8gBAWwADAQCAAoFZAPcJApQAAoBAgCMAQA8Awgd_gEKVgIOAqYFCYQFAaINBMgBAGoB8CQBEAAiALkBAAQAEACvAQAWAZMBASQAqAECCgKMAQG8AQAEALABA6Y7CAADeAIKBAoEegBuAoIB
 
 - Aimless stalling lullaby
-  http://localhost:5174/#p=AKoBAnYAxAEBjAEACAAEAAYNLBisAQPiEAAKDsSJAQCAAwCABQB4CMgBAbgBFgEBJinyAQE8CEgAZAS6BQmqBwMGAwQByAEDZh8WAQIBVANiCQhYoAEQ6MABAJh_
+  https://cmdcolin.github.io/bender/app/#p=AKoBAnYAxAEBjAEACAAEAAYNLBisAQPiEAAKDsSJAQCAAwCABQB4CMgBAbgBFgEBJinyAQE8CEgAZAS6BQmqBwMGAwQByAEDZh8WAQIBVANiCQhYoAEQ6MABAJh_
+
+<!-- /generated:demos -->
