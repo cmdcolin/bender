@@ -525,15 +525,21 @@ function toBase64Url(bytes: readonly number[]): string {
   return out
 }
 
-function fromBase64Url(text: string): number[] | null {
+// '+' and '/' are read as themselves because the plain alphabet is what most
+// encoders reach for. Everything else outside the alphabet ends the board
+// rather than voiding it — '=' from something that pads, and, the case this is
+// really for, whatever the link picked up on its way here. A full stop at the
+// end of the sentence it was pasted into, the bracket of a markdown link, the
+// next word autolinked along with it: a link that arrives with one character
+// too many has lost no more of itself than one whose tail a chat window ate,
+// and that one already opens the board it can still read.
+function fromBase64Url(text: string): number[] {
   const bytes: number[] = []
   let acc = 0
   let bits = 0
-  // '=' because a link may have been through something that pads, and the
-  // other two because the plain alphabet is what most encoders reach for.
-  for (const ch of text.replace(/=+$/, '')) {
+  for (const ch of text) {
     const v = B64.indexOf(ch === '+' ? '-' : ch === '/' ? '_' : ch)
-    if (v < 0) return null
+    if (v < 0) break
     acc = (acc << 6) | v
     bits += 6
     if (bits >= 8) {
@@ -571,7 +577,6 @@ export function unpackControls(
   skip: (key: ControlKey) => boolean,
 ): Partial<Controls> {
   const bytes = fromBase64Url(text)
-  if (bytes === null) return {}
   const out: Partial<Controls> = {}
   let at = 0
   let prev = -1

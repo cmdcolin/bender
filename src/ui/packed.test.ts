@@ -288,6 +288,27 @@ test('a link that lost its tail is still most of a board', () => {
     expect(v).toBe(board[key as ControlKey])
 })
 
+// The other direction of the same thing: a link that lost its tail opens the
+// board it can still read, so one that picked up a character on the way has no
+// more of itself missing. Trailing junk used to void the whole board, and a
+// board voided silently is the stock board — the chip back on its first ROM,
+// and nothing on screen to say a link was ever there.
+test('a link that arrived with a character too many still opens its board', () => {
+  const board: Controls = {
+    ...stock(),
+    chipStarve: 0.85,
+    filtRes: 1.15,
+    dlyFb: 1.4,
+  }
+  const packed = packControls(board, nothing)
+  const whole = unpackControls(packed, nothing)
+  expect(Object.keys(whole)).toHaveLength(3)
+  // The full stop of the sentence it was pasted into, the bracket of a markdown
+  // link, the next word autolinked along with it.
+  for (const tail of ['.', ')', '>', ' and the kit'])
+    expect(unpackControls(packed + tail, nothing)).toEqual(whole)
+})
+
 test('padding a link the way an encoder would does not change it', () => {
   const board: Controls = { ...stock(), dlyFb: 1.4, filtRes: 1.15 }
   const packed = packControls(board, nothing)
