@@ -63,9 +63,8 @@ test('the library popover answers it, and gets out of the way', () => {
   expect(screen.queryByRole('group', { name: 'saved voices' })).toBe(null)
 })
 
-// The library button and the account are two controls, and each says only what
-// it is: `saved` opens the list, `sign in` asks Google. One button that read
-// `sign in` until you answered it and `saved` after was the whole confusion.
+// `saved` opens the list and `sign in` asks Google. They were one button, which
+// read `sign in` until you answered it and `saved` afterwards.
 test('the library button never offers itself as the sign-in', () => {
   render(<App />)
   expect(screen.getByRole('button', { name: 'saved' })).toBeTruthy()

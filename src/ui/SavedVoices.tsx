@@ -21,9 +21,9 @@ import type { SavedVoice } from './voiceModel'
 // list is yours and starts empty.
 //
 // The button always says `saved`. It used to read `sign in` with nobody signed
-// in, which made one button stand for two different things: press it, answer
-// Google, and the save form you never opened was what came back. The account
-// is its own control now (`Account`), and this one only ever opens the list.
+// in, so one button stood for two things, and answering Google handed back a
+// save form nobody had opened. `Account` holds the account now, and this button
+// only opens the list.
 export function SavedVoices(props: {
   voices: readonly SavedVoice[]
   /** What the name box offers when you type nothing. A function rather than a
@@ -77,7 +77,7 @@ export function SavedVoices(props: {
         text={
           signedIn
             ? 'Save this board under a name and bring it back later, the way a synth keeps its voices (ctrl+S saves without opening this). The list lives on your account.'
-            : 'The boards you keep under a name. An account holds the list, so this one opens onto what an account is for.'
+            : 'The boards you keep under a name. The list lives on an account, so with nobody signed in this opens onto what an account is for.'
         }
       >
         <button

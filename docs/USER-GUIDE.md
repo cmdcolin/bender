@@ -556,8 +556,8 @@ things save one, and all three save the same thing:
 - **save**, in the panel's row of verbs between reset and undo. One press, no
   typing.
 - **ctrl+S** (**⌘S** on a Mac), which does what that button does.
-- the **saved** popover beside the nameplate — it says **sign in** until you
-  have an account behind it — where the name box lets you type a name first.
+- the **saved** popover beside the nameplate, where the name box lets you type a
+  name first.
 
 A press saves under the name the popover is already showing: the preset the
 board is standing on if it is standing on one, and otherwise the voice you last
@@ -582,8 +582,10 @@ Each row in the list does four things:
 
 The list lives on your Google account rather than on this machine, so a voice
 named on the laptop is there on the phone, and clearing site data does not lose
-it. Signing in is a popup, and nothing else in bender needs an account: presets,
-rolls, MIDI, recording and every link all work signed out. The
+it. **sign in** sits beside **saved** in the panel's chrome, and becomes your
+account photo once you are in — press the photo to sign out. Signing in is a
+popup, and nothing else in bender needs an account: presets, rolls, MIDI,
+recording and every link all work signed out. The
 [privacy page](https://cmdcolin.github.io/bender/privacy/) lists what the
 account holds, and the sign-in card and the about card both link to it.
 

@@ -74,7 +74,8 @@ beforeEach(() => {
 })
 
 const saveBtn = () => screen.getByRole('button', { name: 'save' })
-/** The account control once somebody is in it: the avatar, under their name. */
+/** The avatar the account control shows once somebody is signed in. Its
+    accessible name is the account name. */
 const avatar = () => screen.getByRole('button', { name: 'Tester' })
 
 /** The name the dialog says the waiting save will land under. */
@@ -166,8 +167,8 @@ test('closing the card drops the held save', async () => {
   expect(cloud.writes).toEqual([])
 })
 
-// Signing in is signing in, and nothing else. It used to hand back an open
-// library with a name box in it, which read as being asked to save something.
+// A sign-in with no save behind it used to hand back an open library with a
+// name box in it, which read as a prompt to save.
 test('a sign-in nobody was mid-save for writes nothing, and opens nothing', async () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'sign in' }))

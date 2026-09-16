@@ -4,13 +4,13 @@
   composes: action from './button.module.css';
 }
 
-/* Round and picture-sized, because once you are in the picture is the label.
-   Bare of the action's fill and border: a filled square around a circular photo
-   reads as a second control behind it.
+/* Round and photo-sized — once you are signed in the photo is the label. The
+   button drops the action's fill and border, because a filled square around a
+   circular photo reads as a second control behind it.
 
-   Centred rather than on the row's baseline, which is what the rest of the row
-   sits on: a photo has no baseline, so a browser aligns it by its bottom edge
-   and it rides up out of the row and makes the row taller. */
+   The row aligns its items on the text baseline. A photo has no baseline, so a
+   browser aligns this one by its bottom edge, where it rides up out of the row
+   and makes the row taller. `align-self: center` puts it back. */
 .acctBtn {
   display: inline-flex;
   align-self: center;
@@ -29,8 +29,8 @@
   outline: none;
 }
 
-/* Shorter than the buttons beside it, so the account is never what decides how
-   tall the row is. */
+/* 18px, under the height of the buttons beside it, so the row's height comes
+   from them. */
 .avatar {
   width: 18px;
   height: 18px;
@@ -38,9 +38,9 @@
   object-fit: cover;
 }
 
-/* Google serves no photo for plenty of accounts, and a broken image is worse
-   than no image. The first letter of the name, drawn the way the home page
-   draws it. */
+/* Google serves no photo for plenty of accounts, and an <img> with no src
+   renders as a broken image. This draws the first letter of the name, the way
+   the home page's site bar does. */
 .initial {
   composes: avatar;
   display: flex;
@@ -52,8 +52,8 @@
   border: 1px solid var(--border);
 }
 
-/* Who, at the head of the menu, so the photo has a name under it. Text rather
-   than a row: there is nothing to press here. */
+/* The name at the head of the menu, so the photo has a name under it. Plain
+   text, because pressing it would do nothing. */
 .who {
   margin: 0;
   overflow: hidden;

@@ -348,10 +348,10 @@
   grid-area: said;
 }
 
-/* Holds the width of the longest thing the label can say, so the row keeps
-   still as a verb answers. aria-hidden as well as invisible: visibility is what
-   keeps a browser's accessible name clean, and a test renderer with no CSS
-   would otherwise read the ghost out beside the real label. */
+/* Holds the width of the longest label the button can show, so the row keeps
+   still as a verb answers. A browser leaves a `visibility: hidden` span out of
+   the accessible name; a test renderer with no CSS does not, so the span is
+   aria-hidden too. */
 .widest {
   visibility: hidden;
 }
