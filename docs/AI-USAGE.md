@@ -73,3 +73,11 @@ opens it in headless Chrome, starts audio with a synthesized gesture, writes a
 tune and a kit, and checks the readings from `bender.listen`, including that the
 board goes quiet after `bender.stop()`. The script exits non-zero when a check
 fails.
+
+`pnpm agent:eval` builds the site, opens it in the Chrome that runs the Claude
+extension, and runs one `claude -p --chrome` session per task in
+`scripts/agent-eval.ts`. A script injected into the served page reads
+`window.bender` after each session to grade the task. The script prints tool
+calls, clicks, cost and time per task, and whether `bender.help` reached the
+model whole. The extension has to be signed in to the same claude.ai account as
+`claude`, or `list_connected_browsers` returns an empty list.

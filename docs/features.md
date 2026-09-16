@@ -1161,7 +1161,7 @@ on it — a link never presses play, so it is loaded and waiting.
 ## Scripts
 
 <details>
-<summary>32 commands</summary>
+<summary>33 commands</summary>
 
 | command             | what it does                                                                                                                                     |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -1169,6 +1169,7 @@ on it — a link never presses play, so it is loaded and waiting.
 | `pnpm build`        | typecheck and bundle                                                                                                                             |
 | `pnpm ab`           | this tree against a git ref, as a paired comparison                                                                                              |
 | `pnpm agent`        | drives window.bender in headless Chrome and checks what bender.listen reports                                                                    |
+| `pnpm agent:eval`   | runs claude -p --chrome sessions against the app, one per task, and grades the board each one leaves                                             |
 | `pnpm audible`      | takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible |
 | `pnpm bench`        | what the chain costs per block, stage by stage                                                                                                   |
 | `pnpm blocks`       | the distribution — p50 to p99.9, and how many blocks went over budget                                                                            |
