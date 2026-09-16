@@ -59,7 +59,9 @@ export const PERIOD = Float32Array.from({ length: 1 << PITCH_BITS }, (_, i) =>
 /** One glottal pulse, unit energy. */
 export const CHIRP = (() => {
   const c = Float32Array.from({ length: 24 }, (_, n) =>
-    n === 0 ? 0 : Math.exp(-n / 3.5) * Math.cos(Math.PI * n * (0.12 + 0.02 * n)),
+    n === 0
+      ? 0
+      : Math.exp(-n / 3.5) * Math.cos(Math.PI * n * (0.12 + 0.02 * n)),
   )
   let e = 0
   for (const v of c) e += v * v
@@ -139,29 +141,32 @@ type Seg = readonly [Ph, number, number?, number?]
 // The pet's formants sit above an adult's.
 const FORMANT_SCALE = 1.1
 
-export const PHRASE_NAMES = [
-  'hello',
-  'dah noh loo',
-  'koh mah',
-  'hungry',
-  'yum yum',
-  'sleep',
-  'laugh',
-  'yawn',
-  'la la loo',
-  'uh oh',
-  'wee',
-  'snore',
-  'may may',
-  'nighty',
-] as const
+export const PHRASE = {
+  hello: 0,
+  'dah noh loo': 1,
+  'koh mah': 2,
+  hungry: 3,
+  'yum yum': 4,
+  sleep: 5,
+  laugh: 6,
+  yawn: 7,
+  'la la loo': 8,
+  'uh oh': 9,
+  wee: 10,
+  snore: 11,
+  'may may': 12,
+  nighty: 13,
+} as const
 
-export const PHRASE = Object.fromEntries(
-  PHRASE_NAMES.map((name, i) => [name, i]),
-) as Record<(typeof PHRASE_NAMES)[number], number>
+export const PHRASE_NAMES = Object.keys(PHRASE)
 
 const SCRIPT: readonly (readonly Seg[])[] = [
-  [['H', 2, 330], ['EH', 6, 360], ['L', 3, 390], ['OW', 11, 380, 290]],
+  [
+    ['H', 2, 330],
+    ['EH', 6, 360],
+    ['L', 3, 390],
+    ['OW', 11, 380, 290],
+  ],
   [
     ['D', 1, 300],
     ['AA', 6, 330],
@@ -170,7 +175,12 @@ const SCRIPT: readonly (readonly Seg[])[] = [
     ['L', 3, 300],
     ['UW', 9, 290, 260],
   ],
-  [['K', 2, 380], ['OW', 7, 390], ['M', 3, 330], ['AA', 11, 320, 280]],
+  [
+    ['K', 2, 380],
+    ['OW', 7, 390],
+    ['M', 3, 330],
+    ['AA', 11, 320, 280],
+  ],
   [
     ['H', 2, 320],
     ['AH', 6, 320],
@@ -188,7 +198,12 @@ const SCRIPT: readonly (readonly Seg[])[] = [
     ['AH', 5, 420],
     ['M', 6, 360, 330],
   ],
-  [['S', 4, 260], ['L', 3, 260], ['IY', 9, 250, 210], ['P', 2, 210]],
+  [
+    ['S', 4, 260],
+    ['L', 3, 260],
+    ['IY', 9, 250, 210],
+    ['P', 2, 210],
+  ],
   [
     ['H', 2, 450],
     ['IY', 4, 470, 430],
@@ -213,9 +228,21 @@ const SCRIPT: readonly (readonly Seg[])[] = [
     ['L', 2, 440],
     ['UW', 13, 440, 430],
   ],
-  [['AH', 6, 400, 420], ['_', 2], ['OW', 11, 330, 280]],
-  [['W', 3, 450], ['IY', 13, 480, 620]],
-  [['N', 10, 110, 100], ['_', 3], ['SH', 12], ['_', 4]],
+  [
+    ['AH', 6, 400, 420],
+    ['_', 2],
+    ['OW', 11, 330, 280],
+  ],
+  [
+    ['W', 3, 450],
+    ['IY', 13, 480, 620],
+  ],
+  [
+    ['N', 10, 110, 100],
+    ['_', 3],
+    ['SH', 12],
+    ['_', 4],
+  ],
   [
     ['M', 2, 420],
     ['EH', 4, 440],
@@ -249,7 +276,7 @@ export function formantsToK(
     const radius = Math.exp((-Math.PI * b[r]!) / CHIP_HZ)
     const c1 = -2 * radius * Math.cos((2 * Math.PI * hz) / CHIP_HZ)
     const c2 = radius * radius
-    const next = new Array<number>(poly.length + 2).fill(0)
+    const next = Array.from({ length: poly.length + 2 }, () => 0)
     for (let i = 0; i < poly.length; i++) {
       next[i]! += poly[i]!
       next[i + 1]! += c1 * poly[i]!

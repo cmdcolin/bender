@@ -80,6 +80,8 @@ const RINGING: Partial<Controls> = {
   combMix: 0.3,
   stompMix: 0.4,
   tapeMix: 0.4,
+  petLevel: 0.5,
+  petKBits: 0.3,
 }
 
 test('a board left ringing itself out never settles into denormal range', () => {

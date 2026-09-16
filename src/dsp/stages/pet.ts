@@ -212,7 +212,7 @@ export class Pet implements Stage {
     return v
   }
 
-  private say(phrase: number) {
+  say(phrase: number) {
     this.saying = phrase
     this.speaking = true
     this.pending = -1
@@ -295,9 +295,7 @@ export class Pet implements Stage {
     this.energy = this.eFrom + (this.eTo - this.eFrom) * t
     this.period = this.voiced ? this.pFrom + (this.pTo - this.pFrom) * t : 0
     if (this.voiced && this.pFrom === 0) this.period = this.pTo
-    this.amp = this.voiced
-      ? this.energy * Math.sqrt(this.period)
-      : this.energy
+    this.amp = this.voiced ? this.energy * Math.sqrt(this.period) : this.energy
   }
 
   private chipSample(stretch: number): number {
@@ -349,8 +347,10 @@ export class Pet implements Stage {
     }
     const busy = this.speaking || this.blink > 0 || this.deaf > 0
     const heard = busy ? peak : Math.max(peak, ctx.env[n - 1]! * ENV_EARS)
-    this.sound = Math.max(heard, this.sound * Math.exp(-dt / 0.3))
-    this.hits = this.hits * Math.exp(-dt / 1.5) + (hit ? 1 : 0)
+    this.sound = flushDenormal(
+      Math.max(heard, this.sound * Math.exp(-dt / 0.3)),
+    )
+    this.hits = flushDenormal(this.hits * Math.exp(-dt / 1.5) + (hit ? 1 : 0))
     this.railAvg += (this.rail.v - this.railAvg) * Math.min(dt / 0.5, 1)
     this.deaf = Math.max(this.deaf - dt, 0)
     this.blink = Math.max(this.blink - dt, 0)

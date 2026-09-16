@@ -85,5 +85,14 @@ export const HEAVY: Partial<Controls> = {
 
 export const BOARDS: Record<string, Partial<Controls>> = {
   heavy: HEAVY,
+  pet: {
+    ...HEAVY,
+    petLevel: 0.6,
+    petChatter: 1,
+    petRate: 4,
+    petHold: 0.9,
+    petKBits: 0.2,
+    chipBattery: 0,
+  },
   stock: {},
 }
