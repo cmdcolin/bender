@@ -2,6 +2,25 @@
 
 All notable changes to bender are documented here.
 
+## [1.0.3](https://github.com/cmdcolin/bender/compare/v1.0.2...v1.0.3) - 2026-09-16
+
+### Features
+- *(ui)* [`236de83`](https://github.com/cmdcolin/bender/commit/236de83537340e6a851c37c24dcb22b91aac5282) swap the diagram's off-stock count for a touched dot
+
+### Fixes
+- *(ui)* [`0cebe52`](https://github.com/cmdcolin/bender/commit/0cebe52eb6a760c703d916ddad2cb82f74f704c9) open a link that picked up a character on the way
+- *(ui)* [`5a6fffb`](https://github.com/cmdcolin/bender/commit/5a6fffb10eaaebab4c7a5c4cfa1003d281027e1b) let the start button on a board somebody sent start it
+- *(ui)* [`dd00ca6`](https://github.com/cmdcolin/bender/commit/dd00ca6f4cdb8a323b2d06c275f9952d99df1f3a) open a slider's tooltip from its label only
+
+### Documentation
+- [`11c6460`](https://github.com/cmdcolin/bender/commit/11c6460a226f9ebd21ac4d4e3a96e3d89e7c7afa) describe pnpm arrive in the script table
+
+### Tests
+- *(ui)* [`622780f`](https://github.com/cmdcolin/bender/commit/622780f3ec92c74b1c5f26d69e677d078f776be5) drive a board arriving from a link in a real browser
+
+### Chores
+- *(ui)* [`7949137`](https://github.com/cmdcolin/bender/commit/79491372a6b441d5ec451343f6095308212abc1a) mark the base64 reader as shared with videoskillet
+
 ## [1.0.2](https://github.com/cmdcolin/bender/compare/v1.0.1...v1.0.2) - 2026-09-16
 
 ### Features
