@@ -9,7 +9,12 @@ import {
   watchAuth,
   type CloudUser,
 } from './cloud'
-import { removeVoice, suggestVoiceName, upsertVoice } from './voiceModel'
+import {
+  QUERY_MAX,
+  removeVoice,
+  suggestVoiceName,
+  upsertVoice,
+} from './voiceModel'
 
 import type { CurrentSession, SavedVoice } from './voiceModel'
 
@@ -35,13 +40,33 @@ export type CloudStatus = 'signed-out' | 'loading' | 'ready' | 'error'
 export type VoiceFlash = { kind: 'saved'; name: string } | { kind: 'failed' }
 
 // What came of asking to save. On `needs-auth` the hook has kept the board, and
-// the caller opens the why-sign-in card.
-export type SaveOutcome = 'saving' | 'needs-auth'
+// the caller opens the why-sign-in card. On `too-long` the hook sets `error`.
+export type SaveOutcome = 'saving' | 'needs-auth' | 'too-long'
 
 /** A save waiting on a sign-in: the board as it was when the key was pressed. */
 interface PendingSave {
   name: string
   query: string
+}
+
+const errorCode = (e: unknown): unknown =>
+  typeof e === 'object' && e !== null && 'code' in e ? e.code : undefined
+
+const saveError = (e: unknown): string => {
+  switch (errorCode(e)) {
+    case 'unavailable':
+    case 'deadline-exceeded':
+      return 'could not save — check your connection'
+    case 'permission-denied':
+    case 'unauthenticated':
+      return 'could not save — sign-in expired, sign out and back in'
+    case 'invalid-argument':
+      return 'could not save — Firestore rejected the saved list'
+    case 'resource-exhausted':
+      return 'could not save — too many saves, try again in a minute'
+    default:
+      return 'could not save — try again'
+  }
 }
 
 export function useSavedVoices() {
@@ -62,6 +87,10 @@ export function useSavedVoices() {
   // A ref, because the auth subscription's callback closes over the render that
   // installed it and has to read a press made since.
   const pending = useRef<PendingSave | null>(null)
+
+  // The uid signed in now. A fetch or write that resolves after sign-out, or
+  // after a different account signs in, checks it and leaves the state alone.
+  const uid = useRef<string | null>(null)
 
   // Up for a beat, then down — but only if it is still the one this call put
   // up, compared by identity so a second save does not have its own answer cut
@@ -86,12 +115,13 @@ export function useSavedVoices() {
   // saved row. Each write sends an edit, and editVoices applies it to the
   // stored list: two saves in quick succession both land.
   const commit = (
-    uid: string,
+    owner: string,
     edit: (list: SavedVoice[]) => SavedVoice[],
     landed?: () => string,
   ) => {
-    editVoices(uid, edit)
+    editVoices(owner, edit)
       .then(next => {
+        if (uid.current !== owner) return
         setVoices(next)
         setError(null)
         if (landed !== undefined) {
@@ -102,7 +132,8 @@ export function useSavedVoices() {
       })
       .catch((e: unknown) => {
         console.error('saving voices failed', e)
-        setError('could not save — check your connection')
+        if (uid.current !== owner) return
+        setError(saveError(e))
         showFlash({ kind: 'failed' })
       })
   }
@@ -117,6 +148,7 @@ export function useSavedVoices() {
   // Signing in, signing out and the restore-on-load all arrive here, so there
   // is one path that fetches the list rather than one per way in.
   const applyUser = (next: CloudUser | null) => {
+    uid.current = next?.uid ?? null
     setUser(next)
     if (next === null) {
       setVoices([])
@@ -128,6 +160,7 @@ export function useSavedVoices() {
     setStatus('loading')
     fetchHome(next.uid)
       .then(home => {
+        if (uid.current !== next.uid) return
         setVoices(home.voices)
         setCurrent(home.current)
         setStatus('ready')
@@ -136,6 +169,7 @@ export function useSavedVoices() {
       })
       .catch((e: unknown) => {
         console.error('loading saved voices failed', e)
+        if (uid.current !== next.uid) return
         setStatus('error')
         setError('could not load your saved voices')
       })
@@ -144,14 +178,14 @@ export function useSavedVoices() {
   // Writes the save pressed before sign-in. The name was suggested against an
   // empty list, so suggestVoiceName runs again over the stored list: a save
   // named "my voice" then lands as "my voice 2" beside an existing "my voice".
-  const landPending = (uid: string) => {
+  const landPending = (owner: string) => {
     const want = pending.current
     pending.current = null
     if (want === null) return
     const at = Date.now()
     let name = want.name
     commit(
-      uid,
+      owner,
       list => {
         name = suggestVoiceName(list, want.name)
         return upsertVoice(list, name, want.query, at)
@@ -197,9 +231,20 @@ export function useSavedVoices() {
     lastName,
     flash,
     saveVoice: (name: string, query: string): SaveOutcome => {
+      if (query.length > QUERY_MAX) {
+        setError(
+          `could not save — this board is ${query.length} characters long, and the limit is ${QUERY_MAX}`,
+        )
+        showFlash({ kind: 'failed' })
+        return 'too-long'
+      }
       if (status !== 'ready') {
         pending.current = { name, query }
-        return 'needs-auth'
+        if (user === null) return 'needs-auth'
+        // Signed in with the list still loading, or with a failed load: the
+        // save lands when the list arrives, and a failed load is retried.
+        if (status === 'error') applyUser(user)
+        return 'saving'
       }
       const at = Date.now()
       write(
@@ -229,8 +274,7 @@ export function useSavedVoices() {
         // A popup somebody dismissed is not a failure worth a message: they
         // changed their mind, and the button they came from is the right thing
         // to be looking at again.
-        const code =
-          typeof e === 'object' && e !== null && 'code' in e ? e.code : ''
+        const code = errorCode(e)
         if (
           code === 'auth/popup-closed-by-user' ||
           code === 'auth/cancelled-popup-request'
