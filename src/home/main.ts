@@ -86,6 +86,27 @@ function card(query: string, name: string, says: string): HTMLElement {
   return item
 }
 
+// The roll code is a separate chunk, so the landing page paints before it loads.
+async function addDailyCard() {
+  const { dailyBoard } = await import('../ui/daily')
+  const today = dailyBoard(Date.now())
+  const date = new Date(`${today.day}T00:00:00Z`).toLocaleDateString(
+    undefined,
+    { month: 'long', day: 'numeric', timeZone: 'UTC' },
+  )
+  const item = card(
+    today.query,
+    'Board of the day',
+    `${date}: a roll from the “${today.from}” preset, the same for everyone until midnight UTC.`,
+  )
+  item.classList.add('today')
+  demos.querySelector('.grid')?.prepend(item)
+}
+
+addDailyCard().catch((e: unknown) => {
+  console.error('the board of the day did not load', e)
+})
+
 // The link a copied card carries, whole, so it opens from a chat window.
 const shareLink = (query: string) =>
   new URL(boardUrl(query), location.href).href

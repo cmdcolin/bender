@@ -143,6 +143,12 @@
 .card:focus-visible {
   border-color: var(--accent);
 }
+.today .card {
+  border-color: var(--accent);
+}
+.today .mark {
+  fill: var(--accent);
+}
 .cardTop {
   display: flex;
   align-items: flex-end;

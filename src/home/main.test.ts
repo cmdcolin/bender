@@ -18,7 +18,7 @@ const flush = () => new Promise(r => setTimeout(r, 0))
 
 test('a sign-in after the subscription failed to load paints the home', async () => {
   document.body.innerHTML = `
-    <div id="landing"><section id="demos"></section></div>
+    <div id="landing"><section id="demos"><ul class="grid"></ul></section></div>
     <div id="home" hidden></div>
     <button id="signIn"></button>
     <div id="acct" hidden>
@@ -39,4 +39,13 @@ test('a sign-in after the subscription failed to load paints the home', async ()
 
   expect(document.getElementById('home')!.hidden).toBe(false)
   expect(document.getElementById('landing')!.hidden).toBe(true)
+})
+
+test('the demos grid opens with the board of the day', async () => {
+  await vi.waitFor(() => {
+    expect(document.querySelector('#demos .grid > li.today')).not.toBe(null)
+  })
+  const link = document.querySelector<HTMLAnchorElement>('.today a')!
+  expect(link.href).toContain('#p=')
+  expect(link.textContent).toContain('Board of the day')
 })
