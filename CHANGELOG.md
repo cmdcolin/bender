@@ -2,6 +2,21 @@
 
 All notable changes to bender are documented here.
 
+## [1.0.1](https://github.com/cmdcolin/bender/compare/v1.0.0...v1.0.1) - 2026-09-16
+
+### Features
+- *(ui)* [`27e121b`](https://github.com/cmdcolin/bender/commit/27e121ba94d3c00d7a87356ba0d20691dab17d63) set the App Check key, so sessions start attesting
+- *(home)* [`d8b3ffc`](https://github.com/cmdcolin/bender/commit/d8b3ffc61ad842d513c1f9a4546d9e7c48ea5e03) put the demos at the foot of the page, as clips
+- *(home)* [`df88d44`](https://github.com/cmdcolin/bender/commit/df88d446fb65dd0c9719b2b2c5d899b235091e6e) render the demo clips 24 seconds long, up from 15
+- *(ui)* [`ad0caaa`](https://github.com/cmdcolin/bender/commit/ad0caaa10a2222c6e20d7cd9d57d549db7849228) give the account its own control, with the avatar on it
+- *(ui)* [`ae0a760`](https://github.com/cmdcolin/bender/commit/ae0a760ce9168d9cc230e111d4e34bedfff9f958) replace the reverb's Dry cut with a Dry level that starts at full
+
+### Fixes
+- *(ui)* [`d0a2ad4`](https://github.com/cmdcolin/bender/commit/d0a2ad48034cf2f7a250f3155005067815f686df) attest with reCAPTCHA Enterprise, which is what the console offers
+
+### Chores
+- [`acf1439`](https://github.com/cmdcolin/bender/commit/acf143913562f8c846efc5c07b2cf7955a9d1959) install ffmpeg in the deploy build for the demo reel
+
 ## [1.0.0](https://github.com/cmdcolin/bender/compare/v0.20.5...v1.0.0) - 2026-09-16
 
 ### Features
