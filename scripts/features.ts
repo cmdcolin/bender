@@ -104,6 +104,7 @@ const SCRIPTS: Record<string, string> = {
   blocks:
     'the distribution — p50 to p99.9, and how many blocks went over budget',
   cold: 'the first seconds, before anything has tiered up',
+  cpu: 'CPU time on every Chrome thread, and the underruns Chrome counted',
   ab: 'this tree against a git ref, as a paired comparison',
   audible:
     'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',

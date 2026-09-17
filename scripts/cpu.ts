@@ -17,7 +17,10 @@ import { buildAndPreview } from './serve'
 //
 // BENDER_BUILT=dirA,dirB serves prebuilt sites instead of building this tree,
 // and BENDER_ROUNDS alternates between them, so a before and after meet the
-// same machine state. Linux only: run time and timeslices come from
+// same machine state. BENDER_VARIANTS names a JSON file of [label, script]
+// pairs, each script run in the page before measuring. BENDER_HEADLESS runs
+// Chrome headless, which keeps drawing when the screen is locked but rasters in
+// software, so read its GPU column as relative. Linux only: run time and timeslices come from
 // /proc/<pid>/task/<tid>/schedstat.
 import { spawn } from 'node:child_process'
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
@@ -64,6 +67,15 @@ const RECORD_CONTEXTS = `(() => {
   }
 })()`
 
+// Animation frames in one second. Zero means Chrome is not drawing the page,
+// which happens with the display off, and every drawing column reads low.
+const FPS = `new Promise(r => {
+  let n = 0
+  const f = () => { n++; requestAnimationFrame(f) }
+  requestAnimationFrame(f)
+  setTimeout(() => r(n), 1000)
+})`
+
 const STATS = `(() => {
   const s = window.__contexts?.[0]?.playbackStats
   return s ? { events: s.underrunEvents, secs: s.underrunDuration, total: s.totalDuration } : null
@@ -93,32 +105,35 @@ function kindOf(pid: number): string {
   return sub ? `utility:${sub.replace(/\.mojom\..*/, '')}` : type
 }
 
-function descendants(root: number): number[] {
-  const children = new Map<number, number[]>()
+// Every process started with this profile. The zygote and the renderers it
+// forks are not always descendants of the browser pid, and they all carry the
+// profile directory on their command line.
+function processesOf(profile: string): number[] {
+  const out: number[] = []
   for (const entry of readdirSync('/proc')) {
     const pid = Number(entry)
     if (!Number.isInteger(pid)) continue
     try {
-      const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
-      const ppid = Number(stat.slice(stat.lastIndexOf(')') + 2).split(' ')[1])
-      children.set(ppid, [...(children.get(ppid) ?? []), pid])
+      if (readFileSync(`/proc/${pid}/cmdline`, 'utf8').includes(profile))
+        out.push(pid)
     } catch {}
   }
-  const out: number[] = []
-  const walk = (pid: number) => {
-    out.push(pid)
-    for (const c of children.get(pid) ?? []) walk(c)
-  }
-  walk(root)
   return out
 }
 
-function snapshot(root: number): Map<string, Thread> {
+function snapshot(profile: string): Map<string, Thread> {
   const threads = new Map<string, Thread>()
-  for (const pid of descendants(root)) {
+  for (const pid of processesOf(profile)) {
+    let kind: string
+    let tids: string[]
     try {
-      const kind = kindOf(pid)
-      for (const tid of readdirSync(`/proc/${pid}/task`)) {
+      kind = kindOf(pid)
+      tids = readdirSync(`/proc/${pid}/task`)
+    } catch {
+      continue
+    }
+    for (const tid of tids) {
+      try {
         const at = `/proc/${pid}/task/${tid}`
         const name = readFileSync(`${at}/comm`, 'utf8').trim()
         const [runNs, , slices] = readFileSync(`${at}/schedstat`, 'utf8')
@@ -131,8 +146,8 @@ function snapshot(root: number): Map<string, Thread> {
           runNs: runNs!,
           slices: slices!,
         })
-      }
-    } catch {}
+      } catch {}
+    }
   }
   return threads
 }
@@ -193,7 +208,7 @@ function usage(before: Map<string, Thread>, after: Map<string, Thread>): Row {
   return row
 }
 
-async function session(url: string, scene: Scene) {
+async function session(url: string, scene: Scene, setup = '') {
   const profile = mkdtempSync(join(tmpdir(), 'bender-cpu-chrome-'))
   const chrome = spawn(
     chromePath(),
@@ -204,6 +219,8 @@ async function session(url: string, scene: Scene) {
       '--no-default-browser-check',
       '--mute-audio',
       '--autoplay-policy=no-user-gesture-required',
+      '--disable-backgrounding-occluded-windows',
+      ...(process.env.BENDER_HEADLESS ? ['--headless=new'] : []),
       '--window-size=1600,1000',
       'about:blank',
     ],
@@ -229,11 +246,13 @@ async function session(url: string, scene: Scene) {
       await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/new?about:blank`, {
         method: 'PUT',
       })
+    if (setup) await ask(page, setup)
+    const fps = (await ask(page, FPS)) as number
     await sleep(4000)
     const statsBefore = (await ask(page, STATS)) as Underruns | null
-    const before = snapshot(chrome.pid!)
+    const before = snapshot(profile)
     await sleep(seconds * 1000)
-    const after = snapshot(chrome.pid!)
+    const after = snapshot(profile)
     const statsAfter = (await ask(page, STATS)) as Underruns | null
     page.close()
     const underruns =
@@ -243,7 +262,7 @@ async function session(url: string, scene: Scene) {
             secs: statsAfter.secs - statsBefore.secs,
           }
         : null
-    return { row: usage(before, after), underruns }
+    return { row: usage(before, after), underruns, fps }
   } finally {
     const gone = new Promise(r => chrome.on('exit', r))
     chrome.kill()
@@ -279,6 +298,7 @@ const HEAD = [
 
 function line(
   label: string,
+  fps: number,
   row: Row,
   underruns: Pick<Underruns, 'events' | 'secs'> | null,
 ) {
@@ -288,38 +308,38 @@ function line(
     ? `${underruns.events} (${(underruns.secs * 1000).toFixed(0)} ms)`
     : 'n/a'
   console.log(
-    `${label.padEnd(28)} ${cells.join('  ')}  ${wake.padStart(9)}  ${lost}`,
+    `${label.padEnd(28)} ${String(fps).padStart(3)}  ${cells.join('  ')}  ${wake.padStart(9)}  ${lost}`,
   )
 }
 
 async function main() {
   const dirs = process.env.BENDER_BUILT?.split(',') ?? []
+  const variants: [string, string][] = process.env.BENDER_VARIANTS
+    ? JSON.parse(readFileSync(process.env.BENDER_VARIANTS, 'utf8'))
+    : [['', '']]
   console.log(
     `% of one core over ${seconds}s; wakeups are renderer timeslices a second; underruns as Chrome counted them`,
   )
   console.log(
-    `${'run'.padEnd(28)} ${HEAD.join('  ')}  ${'wakeups/s'}  underruns`,
+    `${'run'.padEnd(28)} fps  ${HEAD.join('  ')}  ${'wakeups/s'}  underruns`,
   )
-  if (dirs.length === 0) {
-    const served = await buildAndPreview(PORT, { minify: true })
-    try {
-      for (let r = 0; r < rounds; r++)
-        for (const scene of scenes) {
-          const { row, underruns } = await session(served.url, scene)
-          line(scene, row, underruns)
-        }
-    } finally {
-      await served.stop()
-    }
-    return
-  }
+  const sites = dirs.length === 0 ? [''] : dirs
   for (let r = 0; r < rounds; r++)
     for (const scene of scenes)
-      for (const dir of r % 2 === 0 ? dirs : [...dirs].reverse()) {
-        const served = await serve(dir)
+      for (const dir of r % 2 === 0 ? sites : [...sites].reverse()) {
+        const served = dir
+          ? await serve(dir)
+          : await buildAndPreview(PORT, { minify: true })
         try {
-          const { row, underruns } = await session(served.url, scene)
-          line(`${scene} ${dir.split('/').pop()}`, row, underruns)
+          for (const [label, setup] of variants) {
+            const { row, underruns, fps } = await session(
+              served.url,
+              scene,
+              setup,
+            )
+            const name = [scene, dir.split('/').pop(), label].filter(Boolean)
+            line(name.join(' '), fps, row, underruns)
+          }
         } finally {
           await served.stop()
         }

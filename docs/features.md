@@ -1192,7 +1192,7 @@ on it — a link never presses play, so it is loaded and waiting.
 ## Scripts
 
 <details>
-<summary>35 commands</summary>
+<summary>36 commands</summary>
 
 | command             | what it does                                                                                                                                                                            |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1206,6 +1206,7 @@ on it — a link never presses play, so it is loaded and waiting.
 | `pnpm bench`        | what the chain costs per block, stage by stage                                                                                                                                          |
 | `pnpm blocks`       | the distribution — p50 to p99.9, and how many blocks went over budget                                                                                                                   |
 | `pnpm cold`         | the first seconds, before anything has tiered up                                                                                                                                        |
+| `pnpm cpu`          | CPU time on every Chrome thread, and the underruns Chrome counted                                                                                                                       |
 | `pnpm dash`         | re-shoots the why-sign-in card's screenshot of the signed-in home page                                                                                                                  |
 | `pnpm demos`        | writes demos.json into the README's Demos block                                                                                                                                         |
 | `pnpm reel`         | renders the showcase demos to mp3 for the landing page's Demos section                                                                                                                  |
