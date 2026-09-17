@@ -22,6 +22,8 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 ## Features
 
 - Circuit bend a toy keyboard, drum machine, and basic FM synth
+- The kit can sample itself: a 12-bit ROM mode with pitch and truncation, the
+  lofi drum machine
 - Tape delay, reverb, and distortion 'guitar pedals'
 - Allows custom piano roll and drum sequences
 - Patch bay with LFO and other modulations, wired from the bay or from a

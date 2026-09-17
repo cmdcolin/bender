@@ -1,3 +1,4 @@
+import { DEFAULT_CONTROLS } from '../../controls'
 import {
   ACCENT_GAIN,
   ADDR_LINES,
@@ -7,10 +8,13 @@ import {
   GRID_ROWS,
   STEPS,
 } from '../../drums'
-import { IDX } from '../../engine/params'
+import { IDX, packParams } from '../../engine/params'
 import { Bus, FAULT_NAMES } from '../bus'
-import { DEST, hop } from '../modbus'
-import { N_DRUM_VOICES, STEP_CHOICE, voiceMask } from '../trigbus'
+import { DEST, hop, ModBus } from '../modbus'
+import { BLOCK } from '../stage'
+import { ToyRail } from '../toyRail'
+import { Transport } from '../transport'
+import { N_DRUM_VOICES, STEP_CHOICE, TriggerBus, voiceMask } from '../trigbus'
 import { BridgedT } from '../util/bridged'
 import { coef, Transient } from '../util/follower'
 import { MetalBank } from '../util/metal'
@@ -19,8 +23,6 @@ import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 
 import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
-import type { Transport } from '../transport'
 
 const TAU = 2 * Math.PI
 
@@ -354,6 +356,64 @@ const HAT_METAL = 7.8
 const CYM_CRASH_GAIN = 1.27
 const CYM_SPLASH_GAIN = 11.0
 
+// The kit sampling itself, which is the only way a box with no samples in it
+// gets a sampled kit. On its way up it strikes each of its eight voices once,
+// through the ordinary circuits at the settings the board shipped with, and
+// files what came out as one slab a voice. In sampled mode a hit plays the slab
+// back; the circuits behind it do nothing at all.
+//
+// The rate is the one the machines this mode is named for ran at. It is not a
+// round number because nobody chose it — it is a crystal divided down, and the
+// records made on those boxes are records of that divider.
+export const ROM_RATE = 26040
+export const ROM_BITS = 12
+
+// How long each voice is given, in the order of the rows. Long enough to hold
+// the tail at the stock decay and no longer: a slab is memory, and the cymbal
+// on its own is a third of the kit.
+export const ROM_SECS = [0.6, 0.35, 0.1, 0.3, 0.45, 0.35, 0.6, 1.4] as const
+
+// The filter in front of the converter and the one behind it. Both were real
+// parts and both are half of why these boxes sound the way they do: with
+// nothing in front, everything the metal bank puts above half the rate folds
+// back down as hash that playing slowly never gets rid of; with nothing behind,
+// what leaves is the staircase rather than the recording.
+const ROM_AA = 10000
+const ROM_AA_POLES = 2
+const ROM_LP = 10000
+const ROM_LP_POLES = 2
+
+// How long the truncation gate takes to shut. A slab cut off mid-swing is a
+// click, and two milliseconds is under a step and over an edge.
+const ROM_FADE = 0.002
+
+// What the kit's own fader is worth. The cut divides it back out: what belongs
+// in a slab is what the voices put on the summing junction, not what the fader
+// did to it afterwards.
+const KIT_GAIN = 0.6
+
+// One stream for the whole ROM, fixed, because a ROM is a ROM. The hiss in the
+// snare slab is the same hiss every boot, which is the whole difference between
+// a recording of a circuit and the circuit.
+const ROM_SEED = 0x50f7
+
+/** The kit's recording of itself: one slab a voice, in the bit order of a
+    step, at `ROM_RATE` and on a twelve-bit grid. */
+export type DrumSlabs = readonly Float32Array[]
+
+// Cut once and shared by every kit ever built. The slabs are read-only and the
+// cut is deterministic, so the second board costs nothing — and, because the
+// cut runs at the ROM's own rate rather than the context's, every machine gets
+// the same eight slabs. A link that sounds one way on a 44.1 kHz browser and
+// another on a 48 kHz one is not a ROM, it is a recording of whoever pressed
+// play first.
+let ROM: DrumSlabs | null = null
+
+// Whether a kit is being built to cut the ROM rather than to play it. The
+// scratch kit runs this same constructor, and one that cut a ROM on its way to
+// cutting a ROM would never finish.
+let cutting = false
+
 export class ToyDrum implements Stage {
   label = 'toyDrum'
   /**
@@ -473,6 +533,16 @@ export class ToyDrum implements Stage {
   // reach into the middle of one.
   private struckBits = 0
   private struckGain = 0
+  // The ROM this kit cut of itself, where each voice is reading in its own
+  // slab, and what the choke resistor has left of it. A position past the end
+  // is a voice that has finished. The gate is there because a recording has no
+  // envelope to drain: everything else on this board chokes by running an
+  // envelope down in a hurry, and a slab has none to run.
+  private readonly rom: DrumSlabs | null
+  private romPos = new Float64Array(N_VOICES)
+  private romGate = new Float32Array(N_VOICES).fill(1)
+  private romLp = new Lowpass(ROM_LP_POLES)
+  private playingRom = false
   // Voices that have fired since the panel last looked. Every hit stamps it —
   // the sequencer's, the retrigger bend's, the mic's, a bridged trigger line's,
   // a pad's — because the grid lights for whatever strikes the kit, and all but
@@ -485,6 +555,10 @@ export class ToyDrum implements Stage {
     private readonly transport: Transport,
     seed = 202,
   ) {
+    // Before anything else draws on the board: the scratch kit inside cutRom
+    // runs this same constructor, and it has to find the flag rather than a
+    // half-built instance.
+    this.rom = cutting ? null : kitRom()
     this.rng = mulberry32(seed)
     this.metal = new MetalBank(sr)
     this.micTrig = new Transient(sr)
@@ -640,6 +714,11 @@ export class ToyDrum implements Stage {
       // Same charge whatever the one-shot's width: the pulse is where it goes,
       // not how much of it there is.
       this.pulse[v] = gain * (1 - this.pulseFall)
+      // And the needle goes back to the top of the slab. Unconditionally: the
+      // mode is a switch on the output stage, not on the trigger line, so the
+      // line does the same thing either way and only what listens to it moves.
+      this.romPos[v] = 0
+      this.romGate[v] = 1
       struck |= 1 << v
     }
     if (!struck) return 0
@@ -759,6 +838,26 @@ export class ToyDrum implements Stage {
     // nothing is ever locked out.
     this.trigFloor = 1 - (1 - AUDIBLE) * p[IDX.drumTrigFloor]!
     const wrap = Math.round(p[IDX.drumOverflow]!) === 1
+    // Which kit is on the output this block. Null is the analog one, whether
+    // because the switch says so or because this instance is the scratch kit
+    // that cut the ROM in the first place.
+    const slabs = Math.round(p[IDX.drumRom]!) === 1 ? this.rom : null
+    const sampled = slabs !== null
+    if (sampled !== this.playingRom) {
+      this.playingRom = sampled
+      this.swapKit()
+    }
+    // The clock the slabs are read off, which is the whole of the mode: pitch
+    // and brightness move together because they are one fact about a recording
+    // — a slab cut at 26 k and read at 13 k is an octave down and half as
+    // bright.
+    const romHz = Math.max(p[IDX.drumRomHz]!, 1)
+    const romRate = romHz / this.sr
+    const romLpCoef = lpCoef(ROM_LP, this.sr)
+    // Decay is truncation on a recording rather than a time constant: under 1x
+    // the gate shuts part way in, and over it the slab plays whole.
+    const romCut = Math.min(decay, 1)
+    const romFade = Math.max(ROM_FADE * romHz, 1)
     this.accentAmt = p[IDX.drumAccentAmt]!
     this.accentSag = p[IDX.drumAccentSag]!
     this.accentPull = coef(ACCENT_RECHARGE / clock, this.sr)
@@ -933,63 +1032,68 @@ export class ToyDrum implements Stage {
         // voice together — two octaves either way at full depth.
         const tune = modTune ? baseTune * octaves(2 * modTune[i]!) : baseTune
         const pf = rail.pitchFactor * tune
-        // The metal bank turns whether or not the pattern is asking it for
-        // anything, because nothing on the board stops it: it is six RC
-        // oscillators across the supply, and the only thing that ever silenced
-        // one was the supply going away. Which is why it is here, under the
-        // boot check, and why two hats in a row are two different hats.
-        this.metal.step(pf)
-        // And the noise transistor, for the same reason and in the same place:
-        // nothing on the board gates a junction either. Biased past the knee it
-        // avalanches steadily and there is hiss; near the knee it latches in and
-        // out at random instead, and the snare, both hats and the clap all hang
-        // off it, so they break up together and mid-hit rather than a voice at
-        // a time.
-        if (noiseBias < 1) {
-          if (--this.burstLeft <= 0) {
-            this.avalanche = this.avalanche ? 0 : 1
-            this.burstLeft = this.burstFor(
-              this.avalanche ? noiseBias : 1 - noiseBias,
-            )
+        if (!sampled) {
+          // The metal bank turns whether or not the pattern is asking it for
+          // anything, because nothing on the board stops it: it is six RC
+          // oscillators across the supply, and the only thing that ever silenced
+          // one was the supply going away. Which is why it is here, under the
+          // boot check, and why two hats in a row are two different hats.
+          this.metal.step(pf)
+          // And the noise transistor, for the same reason and in the same place:
+          // nothing on the board gates a junction either. Biased past the knee it
+          // avalanches steadily and there is hiss; near the knee it latches in and
+          // out at random instead, and the snare, both hats and the clap all hang
+          // off it, so they break up together and mid-hit rather than a voice at
+          // a time.
+          if (noiseBias < 1) {
+            if (--this.burstLeft <= 0) {
+              this.avalanche = this.avalanche ? 0 : 1
+              this.burstLeft = this.burstFor(
+                this.avalanche ? noiseBias : 1 - noiseBias,
+              )
+            }
+            this.noiseGate += noiseEdge * (this.avalanche - this.noiseGate)
+          } else {
+            this.avalanche = 1
+            this.noiseGate = 1
           }
-          this.noiseGate += noiseEdge * (this.avalanche - this.noiseGate)
-        } else {
-          this.avalanche = 1
-          this.noiseGate = 1
-        }
-        // The bridged-T voices. Nothing here has an amplifier: the trigger
-        // pulse charges the network, the network rings, and how loud the drum
-        // is and how long it lasts are the same fact about the same part. What
-        // the panel calls Ring is how much of that the transistor hands back,
-        // so past the crossing these three stop running down and the pattern
-        // starts retuning a note instead of restriking a drum.
-        for (let t = 0; t < N_TANKS; t++) {
-          const v = TANKS[t]!.voice
-          const drive = shock[v]!
-          const tank = this.tanks[t]!
-          if (drive === 0 && tank.level <= AUDIBLE) continue
+          // The bridged-T voices. Nothing here has an amplifier: the trigger
+          // pulse charges the network, the network rings, and how loud the drum
+          // is and how long it lasts are the same fact about the same part. What
+          // the panel calls Ring is how much of that the transistor hands back,
+          // so past the crossing these three stop running down and the pattern
+          // starts retuning a note instead of restriking a drum.
+          for (let t = 0; t < N_TANKS; t++) {
+            const v = TANKS[t]!.voice
+            const drive = shock[v]!
+            const tank = this.tanks[t]!
+            if (drive === 0 && tank.level <= AUDIBLE) continue
+            out +=
+              tank.process(
+                drive,
+                this.tankF[t]! * pf,
+                this.tankRate[t]!,
+                TANKS[t]!.sweep,
+              ) * this.tankGain[t]!
+          }
+          // What gets past the coupling cap on the way to the output rather than
+          // into a network: the click at the front of a kick, and the only part
+          // of it that survives a small speaker.
+          let click = 0
+          for (let v = 0; v < N_VOICES; v++) {
+            if (CLICK[v]! > 0) click += shock[v]! * CLICK[v]!
+          }
           out +=
-            tank.process(
-              drive,
-              this.tankF[t]! * pf,
-              this.tankRate[t]!,
-              TANKS[t]!.sweep,
-            ) * this.tankGain[t]!
+            this.clickSlew.process(
+              this.clickCap.process(click * clickHeight, clickCapCoef),
+              clickSlewCoef,
+            ) * CLICK_GAIN
         }
-        // What gets past the coupling cap on the way to the output rather than
-        // into a network: the click at the front of a kick, and the only part
-        // of it that survives a small speaker.
-        let click = 0
-        for (let v = 0; v < N_VOICES; v++) {
-          if (CLICK[v]! > 0) click += shock[v]! * CLICK[v]!
-        }
-        out +=
-          this.clickSlew.process(
-            this.clickCap.process(click * clickHeight, clickCapCoef),
-            clickSlewCoef,
-          ) * CLICK_GAIN
         // The clap is three bursts nine milliseconds apart and then the room:
         // one noise source, retriggered, with the last hit left to ring on.
+        // Outside the branch, because it is the clap's one-shot rather than its
+        // sound: it is what lets the trigger line answer a fourth time, and the
+        // sampled kit needs that as much as the circuits do.
         if (this.clapsLeft > 0) {
           this.clapTimer -= 1 / this.sr
           if (this.clapTimer <= 0) {
@@ -999,77 +1103,111 @@ export class ToyDrum implements Stage {
             amp[CLAP] = 1
           }
         }
-        // There is one noise transistor on the board, and the snare, both hats
-        // and the clap are all hung off it. Two of them on the same step hear
-        // the same hiss, so they sum coherently into one crack instead of
-        // standing beside each other as two — and the hats are a high-pass
-        // rather than a second noise minus a first one, because what they
-        // subtract is the filtered version of the sample being held.
-        //
-        // The filter is a cap on the board and it keeps its charge between hits,
-        // so it runs when anything is drawing on the transistor and stops when
-        // nothing is: the kit's idle cost is one branch, not one draw.
-        if (
-          amp[SNARE]! > AUDIBLE ||
-          amp[HAT]! > AUDIBLE ||
-          amp[OHAT]! > AUDIBLE ||
-          amp[CLAP]! > AUDIBLE
-        ) {
-          // Drawn either way, and gated after: the transistor is making noise
-          // or it is not, and a knob that reseeded the whole kit on its way past
-          // the knee would be a knob nobody could get back off.
-          const noise = this.noiseLid.process(
-            (this.rng() * 2 - 1) * this.noiseGate,
-            noiseLidCoef,
-          )
-          this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
-          if (amp[SNARE]! > AUDIBLE) {
-            const band = this.snareBand.process(noise, snareHpCoef)
-            out += band * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
-          }
-          // One tap for both hats, because there is one amplifier: what
-          // separates them is the cap under it, not what is fed into it.
-          const hatHiss = noise - this.noiseLp
-          if (amp[HAT]! > AUDIBLE)
-            out += hatHiss * amp[HAT]! * weight[HAT]! * HAT_NOISE * trans
-          if (amp[OHAT]! > AUDIBLE)
-            out += hatHiss * amp[OHAT]! * weight[OHAT]! * HAT_NOISE * trans
-          if (amp[CLAP]! > AUDIBLE) {
-            this.clapFast += clapLpCoef * (noise - this.clapFast)
-            this.clapSlow += clapHpCoef * (noise - this.clapSlow)
+        if (sampled) {
+          // Zero-order hold, deliberately. The steps a slab read slowly comes
+          // out in are the images of its own clock, and those images are what
+          // this mode is for — interpolate them away and what is left is a dull
+          // recording of a drum machine.
+          const step = romRate * pf
+          for (let v = 0; v < N_VOICES; v++) {
+            const slab = slabs[v]!
+            const pos = this.romPos[v]!
+            const len = slab.length
+            if (pos >= len) continue
+            // Where the truncation gate stands. Counted off the slab's own
+            // length rather than off a clock, so winding Decay down shortens
+            // every voice by the same fraction of itself.
+            const left = romCut * len - pos
+            if (left <= 0) {
+              this.romPos[v] = len
+              continue
+            }
+            const gate = this.romGate[v]!
             out +=
-              (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
+              slab[pos | 0]! *
+              this.gain[v]! *
+              gate *
+              (left < romFade ? left / romFade : 1)
+            this.romPos[v] = pos + step
+            if (this.chokedBits & (1 << v)) this.romGate[v] = gate * chokeFall
           }
-        }
-        // Four voices off the one bank, and what separates them is the filter
-        // each is soldered behind. The cowbell taps the top pair ahead of the
-        // summing stage and takes them through a corner just under the lower of
-        // the two, which is what leaves a pitch in it; the hats take what comes
-        // off that stage through a corner high enough that only the clatter
-        // survives; the cymbal takes the same through a lower band with a lid on
-        // it, which is the body a hat throws away.
-        if (amp[BELL]! > AUDIBLE) {
-          const hp = this.bellHp.process(this.metal.bell, bellHpCoef)
-          out += hp * amp[BELL]! * weight[BELL]! * BELL_GAIN
-        }
-        if (amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE) {
-          const hp = this.hatLp.process(
-            this.hatHp.process(this.metal.clash, hatHpCoef),
-            hatLpCoef,
-          )
-          if (amp[HAT]! > AUDIBLE)
-            out += hp * amp[HAT]! * weight[HAT]! * HAT_METAL * bank
-          if (amp[OHAT]! > AUDIBLE)
-            out += hp * amp[OHAT]! * weight[OHAT]! * HAT_METAL * bank
-        }
-        if (amp[CYM]! > AUDIBLE) {
-          const sq = this.metal.clash
-          const band = this.cymLp.process(
-            this.cymCrash.process(sq, cymCrashCoef) * crashMix +
-              this.cymSplash.process(sq, cymSplashCoef) * splashMix,
-            cymLpCoef,
-          )
-          out += band * amp[CYM]! * weight[CYM]!
+          out = this.romLp.process(out, romLpCoef)
+        } else {
+          // There is one noise transistor on the board, and the snare, both hats
+          // and the clap are all hung off it. Two of them on the same step hear
+          // the same hiss, so they sum coherently into one crack instead of
+          // standing beside each other as two — and the hats are a high-pass
+          // rather than a second noise minus a first one, because what they
+          // subtract is the filtered version of the sample being held.
+          //
+          // The filter is a cap on the board and it keeps its charge between hits,
+          // so it runs when anything is drawing on the transistor and stops when
+          // nothing is: the kit's idle cost is one branch, not one draw.
+          if (
+            amp[SNARE]! > AUDIBLE ||
+            amp[HAT]! > AUDIBLE ||
+            amp[OHAT]! > AUDIBLE ||
+            amp[CLAP]! > AUDIBLE
+          ) {
+            // Drawn either way, and gated after: the transistor is making noise
+            // or it is not, and a knob that reseeded the whole kit on its way past
+            // the knee would be a knob nobody could get back off.
+            const noise = this.noiseLid.process(
+              (this.rng() * 2 - 1) * this.noiseGate,
+              noiseLidCoef,
+            )
+            this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
+            if (amp[SNARE]! > AUDIBLE) {
+              const band = this.snareBand.process(noise, snareHpCoef)
+              out += band * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
+            }
+            // One tap for both hats, because there is one amplifier: what
+            // separates them is the cap under it, not what is fed into it.
+            const hatHiss = noise - this.noiseLp
+            if (amp[HAT]! > AUDIBLE)
+              out += hatHiss * amp[HAT]! * weight[HAT]! * HAT_NOISE * trans
+            if (amp[OHAT]! > AUDIBLE)
+              out += hatHiss * amp[OHAT]! * weight[OHAT]! * HAT_NOISE * trans
+            if (amp[CLAP]! > AUDIBLE) {
+              this.clapFast += clapLpCoef * (noise - this.clapFast)
+              this.clapSlow += clapHpCoef * (noise - this.clapSlow)
+              out +=
+                (this.clapFast - this.clapSlow) *
+                amp[CLAP]! *
+                weight[CLAP]! *
+                1.6
+            }
+          }
+          // Four voices off the one bank, and what separates them is the filter
+          // each is soldered behind. The cowbell taps the top pair ahead of the
+          // summing stage and takes them through a corner just under the lower of
+          // the two, which is what leaves a pitch in it; the hats take what comes
+          // off that stage through a corner high enough that only the clatter
+          // survives; the cymbal takes the same through a lower band with a lid on
+          // it, which is the body a hat throws away.
+          if (amp[BELL]! > AUDIBLE) {
+            const hp = this.bellHp.process(this.metal.bell, bellHpCoef)
+            out += hp * amp[BELL]! * weight[BELL]! * BELL_GAIN
+          }
+          if (amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE) {
+            const hp = this.hatLp.process(
+              this.hatHp.process(this.metal.clash, hatHpCoef),
+              hatLpCoef,
+            )
+            if (amp[HAT]! > AUDIBLE)
+              out += hp * amp[HAT]! * weight[HAT]! * HAT_METAL * bank
+            if (amp[OHAT]! > AUDIBLE)
+              out += hp * amp[OHAT]! * weight[OHAT]! * HAT_METAL * bank
+          }
+          if (amp[CYM]! > AUDIBLE) {
+            const sq = this.metal.clash
+            const band = this.cymLp.process(
+              this.cymCrash.process(sq, cymCrashCoef) * crashMix +
+                this.cymSplash.process(sq, cymSplashCoef) * splashMix,
+              cymLpCoef,
+            )
+            out += band * amp[CYM]! * weight[CYM]!
+          }
         }
         // Every voice's envelope falls on its own, whatever its amplifier is
         // hearing. Decaying the envelope inside the output test instead left a
@@ -1090,7 +1228,8 @@ export class ToyDrum implements Stage {
           // amplifier leans on is the swing of the network itself. Which is why
           // a latched tank cannot be restruck: nothing about it ever drains.
           const t = VOICE_TANK[v]!
-          if (t >= 0) env[v] = Math.max(env[v]!, this.tanks[t]!.level)
+          if (t >= 0 && !sampled)
+            env[v] = Math.max(env[v]!, this.tanks[t]!.level)
           // The one-shot runs down, and what the networks and the output see
           // is that shape with its own edge on it rather than the step the
           // counter made.
@@ -1132,18 +1271,34 @@ export class ToyDrum implements Stage {
               : 0
           let code = Math.round(out * q)
           if (wrap) code = ((((code + q) % (2 * q)) + 2 * q) % (2 * q)) - q
+          // Sixteen rungs walked to add nothing is the shape of the stock
+          // board: the knob rests at zero and the error scales by it.
           this.muxHeld =
-            (code + this.ladderErr(code, bits, ladder, ladderTol)) / q
+            (ladder > 0
+              ? code + this.ladderErr(code, bits, ladder, ladderTol)
+              : code) / q
         }
         out = this.muxHeld * rail.ampFactor
       }
 
-      out *= level * 0.6
+      out *= level * KIT_GAIN
       loadSum += Math.abs(out)
       io.l[i]! += out
       io.r[i]! += out
     }
     rail.reported = loadSum / io.n
+  }
+
+  // Crossing between the two kits, and whatever the other one was holding stops
+  // being anybody's. A tank left ringing pins a voice's envelope with nothing
+  // running it down, and a slab left half read resumes mid-hit — both of which
+  // are the last board's sound arriving under this one's.
+  private swapKit() {
+    for (const tank of this.tanks) tank.reset()
+    this.romLp.reset()
+    this.romGate.fill(1)
+    const rom = this.rom
+    for (let v = 0; v < N_VOICES; v++) this.romPos[v] = rom ? rom[v]!.length : 0
   }
 
   /** Voices that have fired since the last read, as the bit order of a step.
@@ -1168,7 +1323,6 @@ export class ToyDrum implements Stage {
     this.pulse.fill(0)
     this.pulseOut.fill(0)
     this.pulseX.fill(0)
-    for (const tank of this.tanks) tank.reset()
     this.accentV = 1
     this.bellHp.reset()
     this.noiseLp = 0
@@ -1183,6 +1337,7 @@ export class ToyDrum implements Stage {
     this.cymCrash.reset()
     this.cymSplash.reset()
     this.cymLp.reset()
+    this.swapKit()
     this.chokedBits = 0
     this.muxHeld = 0
     this.muxLeft = 0
@@ -1196,4 +1351,95 @@ export class ToyDrum implements Stage {
     this.addrBus.reset()
     this.dataBus.reset()
   }
+}
+
+// Striking the kit once a voice and filing what came out.
+//
+// The scratch kit is the real one: same class, same circuits, same constructor,
+// with the sequencer stopped and a rail nobody is starving, so what lands in a
+// slab is the voice as the board shipped it.
+//
+// It runs at the ROM's own rate rather than at the context's, which is what
+// makes this a ROM rather than a recording. Every browser opens its context at
+// whatever rate the hardware hands it, and a slab cut at 44.1 kHz and one cut
+// at 48 kHz are two different chips: the same link would arrive as two
+// different kits. Cut once, at the rate it is read back at, and the chip in
+// every unit is the same chip.
+//
+// Ahead of the converter, two poles at 10 kHz. It is the part that was there —
+// a sampler on one of these boxes had a real filter in front of it, and it is
+// half of why they sound the way they do. What it takes off is the top of the
+// metal bank, which is where this kit keeps the energy a converter this narrow
+// has nothing to do with.
+//
+// The converter itself is left wide open and dead straight, because the kit's
+// own seven-bit ladder is downstream of both kits: a slab that had already been
+// through it would go through it twice.
+function cutRom(): DrumSlabs {
+  const sr = ROM_RATE
+  const io: StereoBlock = {
+    l: new Float32Array(BLOCK),
+    r: new Float32Array(BLOCK),
+    n: BLOCK,
+  }
+  const ctx: Ctx = {
+    sr,
+    mic: new Float32Array(BLOCK),
+    fb: new Float32Array(BLOCK),
+    railV: new Float32Array(BLOCK).fill(1),
+    sag: new Float32Array(BLOCK),
+    droop: new Float32Array(BLOCK),
+    env: new Float32Array(BLOCK),
+    out: new Float32Array(BLOCK),
+    step: new Float32Array(BLOCK),
+    carrier: new Float32Array(BLOCK),
+    bright: new Float32Array(BLOCK),
+    heat: 0,
+    fbDest: 0,
+    mod: new ModBus(sr, ROM_SEED),
+    trig: new TriggerBus(),
+  }
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    drumLevel: 1,
+    drumBits: LADDER_BITS,
+    drumLadder: 0,
+    drumSlot: 0,
+    drumOverflow: 0,
+    drumRom: 0,
+  })
+  cutting = true
+  let drum
+  try {
+    drum = new ToyDrum(sr, new ToyRail(sr, ROM_SEED), new Transport(), ROM_SEED)
+  } finally {
+    cutting = false
+  }
+  const lp = new Lowpass(ROM_AA_POLES)
+  const aa = lpCoef(ROM_AA, sr)
+  const q = 1 << (ROM_BITS - 1)
+  const slabs: Float32Array[] = []
+  for (let v = 0; v < N_VOICES; v++) {
+    const slab = new Float32Array(Math.round(ROM_SECS[v]! * ROM_RATE))
+    drum.panic()
+    lp.reset()
+    drum.strike(1 << v, 1)
+    let k = 0
+    while (k < slab.length) {
+      io.l.fill(0)
+      io.r.fill(0)
+      drum.process(io, p, ctx)
+      for (let i = 0; i < BLOCK && k < slab.length; i++) {
+        slab[k++] = Math.round(lp.process(io.l[i]! / KIT_GAIN, aa) * q) / q
+      }
+    }
+    slabs.push(slab)
+  }
+  return slabs
+}
+
+/** The kit's ROM, cut on the first kit built and shared by every one after. */
+export function kitRom(): DrumSlabs {
+  ROM ??= cutRom()
+  return ROM
 }

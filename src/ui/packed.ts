@@ -438,6 +438,8 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'petKBits',
   'revDry',
   'fmDrive',
+  'drumRom',
+  'drumRomHz',
 ]
 
 // Retired controls that old links still carry, each read into the control that

@@ -178,6 +178,23 @@ back. The kit also has its own cheap-DAC quirks — see [Bends](BENDS.md) for wh
 the one that ties the kit together: there is one converter for eight voices, so
 a step that stacks the kit comes out coarser than the same voice on its own.
 
+**Kit** switches the whole box between two of them. The rule here is that
+nothing is a sample, so the sampled kit is this kit sampled by itself: on its
+way up the machine strikes all eight voices once through the ordinary circuits
+and files what came out as twelve-bit slabs, and a hit plays the slab back
+instead of ringing the network. The pattern, the accent, the trigger floor,
+retrigger, choke and every knife on the bus work exactly as before — none of
+those were ever the circuits. What goes quiet is everything that shapes a voice,
+because the ROM was cut with those knobs where they were: **Snappy**, **Noise
+bias**, **Metal**, **Bank spread**, **Squarer bias**, **Cymbal tone** and
+**Ring** have nothing left to reach, and the cross-patch bridges amplifier pins
+a recording does not have. In their place sit the two knobs those machines
+actually had. **ROM clock** is how fast the slabs are read: they were cut at
+26,040 Hz, and reading one at half that is an octave down and half as bright at
+once, which is the trick every record made on one of those boxes is built from.
+**Decay** stops being a time and becomes truncation — under 1× it cuts every
+slab to that fraction of itself, over it they play whole.
+
 Four of the voices are one part. The cowbell, both hats and the cymbal come off
 a single bank of six square oscillators that never stops turning — the cowbell
 taps two of them and keeps a pitch, the rest take all six through filters that
