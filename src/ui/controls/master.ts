@@ -91,6 +91,11 @@ export const MASTER_GROUPS: Group[] = [
           at: 1,
           names: { below: 'slow', above: 'fast', mid: '×1' },
           detent: true,
+          // A capstan trimmer is a ten percent adjustment; the rest of this
+          // travel is a transposer wearing its clothes. Marking ×0.9/×1.1 puts
+          // half of each side's throw in that ten percent, which is where a
+          // hand riding the deck actually works.
+          normal: 0.9,
         },
         help: 'The capstan trimmer on the deck the whole instrument comes off. Everything on the board is printed to it — the tape machine and the output limiter included — and this is the speed you are hearing that printing played back at: pitch, tempo, every envelope, every delay time and every reverb tail stretch together, and nothing upstream knows it is running slow. A wire from the bay lands here too, so one LFO wobbles the whole board at once. At the stop the deck stops.',
       },
