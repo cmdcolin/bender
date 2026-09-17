@@ -74,6 +74,9 @@ const RINGING: Partial<Controls> = {
   chipLevel: 0.6,
   chipAccomp: 1,
   drumLevel: 0.6,
+  // Both kits, because the sampled one has a gate and a reconstruction filter
+  // that settle on their own clock rather than on the circuits'.
+  drumRom: 1,
   revMix: 0.4,
   dlyMix: 0.3,
   echoLevel: 0.3,

@@ -243,7 +243,12 @@ test('a nudge on a control past its normal stretch can leave it there', () => {
     mutate(hot, 0.3, mulberry32(seed + 1)),
   ).map(c => c.dlyFb)
   expect(after.some(v => v !== 1.8)).toBe(true)
-  expect(after.every(v => v > 1)).toBe(true)
+  // Some of them, not all: the stretch takes three quarters of the track, so a
+  // nudge wide enough to move a control sitting in the last quarter is wide
+  // enough to put it back inside — and a nudge that can only ever go further
+  // out is a ratchet rather than a nudge. What the full travel buys is that it
+  // can also stay out, which a nudge clamped to the stretch never could.
+  expect(after.some(v => v > 1)).toBe(true)
 })
 
 test('rolling a stage leaves every other stage alone', () => {

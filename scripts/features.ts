@@ -515,6 +515,10 @@ ${PRESETS.map(p => `- [**${p.name}**](${presetUrl(p.patch)}) — ${p.blurb}`).jo
 
 ### Kit voices
 
+What each voice is made of, which is what *Kit* switches away from: on the
+sampled setting the machine has struck all eight of these once through these
+same circuits and is playing the recording back.
+
 ${DRUM_VOICES.map(v => `- **${v.label}** — ${v.help}`).join('\n')}
 
 ## Scripts

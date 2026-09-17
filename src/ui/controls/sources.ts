@@ -99,6 +99,13 @@ const drumCutSomewhere = cutOn(
   ['drumAddrLine', 'drumAddrFault'],
 )
 
+// Which of the kit's two halves a control belongs to. Everything that shapes a
+// voice was decided when the ROM was cut, so those rows wait for the switch to
+// come back rather than sitting there doing nothing; the ROM clock waits the
+// other way round.
+const analogKit = (c: Controls) => c.drumRom === 0
+const sampledKit = (c: Controls) => c.drumRom === 1
+
 export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Toy keyboard',
@@ -511,10 +518,11 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '×',
         curve: 'log',
-        help: 'Stretches or chokes every envelope at once. Short is a click track; long lets the kick and toms run into each other. Past about eight the kick stops being a hit and becomes a note held under the pattern — and it leans on the supply for as long as it rings.',
+        help: 'Stretches or chokes every envelope at once. Short is a click track; long lets the kick and toms run into each other. Past about eight the kick stops being a hit and becomes a note held under the pattern — and it leans on the supply for as long as it rings. On the sampled kit it is the other knob those boxes had: a recording cannot be stretched, so under 1× this truncates every slab to that fraction of itself and over it they play whole.',
       },
       {
         key: 'drumRing',
+        needs: analogKit,
         part: 'inside the voices',
         label: 'Ring',
         min: 0,
@@ -536,6 +544,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumSnappy',
+        needs: analogKit,
         part: 'inside the voices',
         label: 'Snappy',
         min: 0,
@@ -546,6 +555,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumNoiseBias',
+        needs: analogKit,
         part: 'inside the voices',
         label: 'Noise bias',
         min: 0,
@@ -556,6 +566,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumMetal',
+        needs: analogKit,
         part: 'inside the voices',
         label: 'Metal',
         min: 0,
@@ -566,6 +577,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumCymTone',
+        needs: analogKit,
         part: 'inside the voices',
         label: 'Cymbal tone',
         min: 0,
@@ -576,6 +588,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumSpread',
+        needs: analogKit,
         part: 'inside the voices',
         label: 'Bank spread',
         min: 0,
@@ -586,6 +599,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumSquare',
+        needs: analogKit,
         part: 'inside the voices',
         label: 'Squarer bias',
         min: 0,
@@ -647,6 +661,29 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: ['off', 'wrap'],
         help: 'What the converter does with a sum too wide for its word. A cheap one rolls over rather than stopping at the top: a step stacking four voices under an accent comes out inside-out, while the quiet steps either side are untouched. Off, the sum leaves the box past full scale.',
+      },
+      {
+        key: 'drumRom',
+        part: 'Sample ROM',
+        label: 'Kit',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['analog', 'sampled'],
+        help: 'Which kit is on the output. Nothing here is a sample, so the sampled one is this kit sampled by itself: on its way up the machine strikes all eight voices once through the ordinary circuits and files what came out as twelve-bit slabs, and a hit plays the slab back instead of ringing the network. Everything on the trigger side still works — accent, the floor, retrigger, choke, the pattern and every knife on its bus — because none of that was ever the circuits. Everything that shapes a voice was baked in at the factory and goes quiet: Snappy, Noise bias, Metal, Bank spread, Squarer bias, Cymbal tone and Ring have nothing left to reach, and the cross-patch bridges envelope pins on amplifiers a recording does not have. What is left is the pair that made these boxes: the ROM clock below, and Decay, which is a truncation knob here rather than a time.',
+      },
+      {
+        key: 'drumRomHz',
+        needs: sampledKit,
+        part: 'Sample ROM',
+        label: 'ROM clock',
+        min: 8000,
+        max: 44100,
+        step: 10,
+        unit: 'Hz',
+        curve: 'log',
+        help: 'How fast the slabs are read back. 26,040 Hz is where they were cut, so that is the kit as it was recorded; anywhere else is a pitch and a brightness at once, because a recording has no way to separate them. A slab cut at 26 k and played at 13 k is an octave down and half as bright, with the converter’s own images an octave down with it — which is the trick every record made on one of these boxes is built out of. Tune moves the slabs on top of this the way it moves the circuits, and the two multiply.',
       },
       {
         key: 'drumRetrigHz',
@@ -717,7 +754,7 @@ export const SOURCE_GROUPS: Group[] = [
           'rotate',
           'whole kit',
         ],
-        help: 'Bridges two voices’ envelope pins so each amplifier hears the wrong envelope. Rotate passes the original three around the ring; whole kit passes every voice, so the cowbell rings on a kick and the clap answers a tom.',
+        help: 'Bridges two voices’ envelope pins so each amplifier hears the wrong envelope. Rotate passes the original three around the ring; whole kit passes every voice, so the cowbell rings on a kick and the clap answers a tom. It is a wire between two amplifiers, so the sampled kit is the one place on this board it does nothing: a slab carries its own envelope baked into it and has no pin to bridge.',
       },
       {
         key: 'drumCrossAmt',
