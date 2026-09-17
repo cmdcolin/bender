@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { MAX_SOURCES, packParams } from '../engine/params'
+import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params'
 import { buildBender, type BuiltChain } from './build'
 import { Deck } from './deck'
 import { DEST } from './modbus'
@@ -39,7 +39,8 @@ function runDeck(
   const deck = new Deck(built.chain, SR)
   const smoother = new Smoother(SR, BLOCK)
   let board: Controls = { ...DEFAULT_CONTROLS, ...overrides }
-  const target = packParams(board)
+  const target = new Float32Array(N_PARAMS)
+  packParams(board, target)
   const io = makeIo()
   const mic = new Float32Array(BLOCK)
   const blocks = Math.ceil((seconds * SR) / BLOCK)
