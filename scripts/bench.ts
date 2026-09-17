@@ -10,7 +10,7 @@ import { BOARDS } from './boards'
 //
 //   pnpm bench            the everything-on board, 20 s
 //   pnpm bench stock 10   the board as it boots
-import { PerformanceObserver } from 'node:perf_hooks'
+import { GCProfiler } from 'node:v8'
 
 const SR = 48000
 
@@ -62,6 +62,8 @@ function bench(overrides: Partial<Controls>, seconds: number) {
   // mean makes two runs an hour apart incomparable.
   let total = Infinity
   let best: Row[] = rows
+  const gc = new GCProfiler()
+  gc.start()
   for (let pass = 0; pass < REPS; pass++) {
     for (const r of rows) r.ms = 0
     const t0 = performance.now()
@@ -71,8 +73,14 @@ function bench(overrides: Partial<Controls>, seconds: number) {
     total = took
     best = rows.map(r => ({ ...r }))
   }
+  const { statistics } = gc.stop()
   best.sort((a, b) => b.ms - a.ms)
-  return { total, blocks, rows: best }
+  return {
+    total,
+    blocks,
+    rows: best,
+    collections: statistics.length / REPS,
+  }
 }
 
 const which = process.argv[2] ?? 'heavy'
@@ -80,19 +88,7 @@ const seconds = Number(process.argv[3] ?? 20)
 const board = BOARDS[which]
 if (!board) throw new Error(`no board '${which}' — try ${Object.keys(BOARDS)}`)
 
-// A collection on the audio thread is a gap in the sound, so what the render
-// loop hands the collector matters as much as what it spends. The number to
-// aim at is none at all.
-let collections = 0
-let collectedMs = 0
-new PerformanceObserver(list => {
-  for (const e of list.getEntries()) {
-    collections++
-    collectedMs += e.duration
-  }
-}).observe({ entryTypes: ['gc'] })
-
-const { total, blocks, rows } = bench(board, seconds)
+const { total, blocks, rows, collections } = bench(board, seconds)
 const audioMs = (blocks * BLOCK * 1000) / SR
 const pct = (ms: number) => `${((ms / audioMs) * 100).toFixed(2)}%`
 
@@ -113,6 +109,8 @@ for (const r of rows) {
 console.log(
   `  ${'chain'.padEnd(12)} ${(total - stageMs).toFixed(0).padStart(6)}ms  ${pct(total - stageMs)}`,
 )
-console.log(
-  `\ncollections while rendering: ${collections}${collections ? ` (${collectedMs.toFixed(0)}ms)` : ''}`,
-)
+// A collection on the audio thread is a gap in the sound. GCProfiler counts
+// them synchronously; a PerformanceObserver delivers its entries after the
+// render loop returns, which is after this line prints. Per pass, and with the
+// stages wrapped for timing, so inlining differs from the worklet's.
+console.log(`\ncollections per pass: ${collections.toFixed(0)}`)

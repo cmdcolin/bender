@@ -14,6 +14,7 @@
     "bench": "tsx scripts/bench.ts",
     "blocks": "tsx scripts/blocks.ts",
     "cold": "tsx scripts/cold.ts",
+    "cpu": "tsx scripts/cpu.ts",
     "dash": "tsx scripts/dash.ts",
     "demos": "node scripts/demogen.mjs",
     "reel": "tsx scripts/demoreel.ts",
