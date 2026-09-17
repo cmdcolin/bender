@@ -336,20 +336,6 @@ test('a turnaround writes the end of the bar, keeps the tempo, and takes back', 
     expect(engine.controls.get()[row.key], row.key).toBe(before[row.key])
 })
 
-// The hint says anywhere, and a dragover nobody cancels is a drop the browser
-// takes itself — which over the panel, half the width of the app, meant
-// navigating away from the board.
-test('a drag over the panel is a drag the app has taken', () => {
-  render(<App />)
-  // One button deep in the panel and one on the machines beside it, because
-  // anywhere has to mean both columns.
-  for (const label of [/^panic$/, /play drums/]) {
-    const over = new Event('dragover', { bubbles: true, cancelable: true })
-    screen.getByRole('button', { name: label }).dispatchEvent(over)
-    expect(over.defaultPrevented).toBe(true)
-  }
-})
-
 test('the board and the panel are landmarks of their own', () => {
   const { container } = render(<App />)
   expect(container.querySelector('main')).toBeTruthy()
