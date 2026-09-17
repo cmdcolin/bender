@@ -686,6 +686,16 @@ export function App(props: { openedFromLink?: boolean }) {
                 </span>
               </button>
             </Tip>
+            {drifting && (
+              <Tip text="Stop drifting and go back to where it was ten seconds ago.">
+                <button
+                  className={styles.btn}
+                  onClick={() => engine.driftBack(10, morphSeconds)}
+                >
+                  ⟲ 10s
+                </button>
+              </Tip>
+            )}
             <Tip text="Back to the board the toy ships with. It lands in the walk, so undo brings back whatever you were on.">
               <button
                 className={styles.btn}

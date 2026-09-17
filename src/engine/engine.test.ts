@@ -585,3 +585,22 @@ test('a held throw reaches the worklet and leaves the board alone', () => {
   engine.flush()
   expect(posted.at(-1)![IDX.dlyFb]).toBeCloseTo(DEFAULT_CONTROLS.dlyFb)
 })
+
+test('drift back lands on where the drift was, and banks one step', () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+  try {
+    const engine = new Engine()
+    engine.startDrift(() => board({ dlyFb: 0.4 }), 1)
+    engine.patch({ dlyFb: 0.1 })
+    vi.advanceTimersByTime(2600)
+    engine.patch({ dlyFb: 0.7 })
+    vi.advanceTimersByTime(2600)
+    engine.patch({ dlyFb: 0.9 })
+    engine.driftBack(5, 0)
+    expect(engine.drifting.get()).toBe(false)
+    expect(engine.controls.get().dlyFb).toBe(0.1)
+    expect(engine.history.get().past).toHaveLength(1)
+  } finally {
+    vi.useRealTimers()
+  }
+})

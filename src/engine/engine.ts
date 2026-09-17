@@ -50,6 +50,8 @@ import type {
 
 const REC_MAX_S = 600 // a take stops itself at ten minutes
 export const RETRO_S = 30
+const DRIFT_TAP_S = 2.5
+const DRIFT_TRAIL = 12
 // And sooner with the stems running, because the tape is seven tracks instead
 // of one. A second of master costs 384 kB of float in this tab; a second of
 // stems costs 1.15 MB on top, so ten minutes of stems would be 900 MB held in
@@ -329,6 +331,9 @@ export class Engine {
   private readonly soundHold = new Float32Array(MAX_SOURCES)
 
   private driftTimer: ReturnType<typeof setInterval> | undefined
+  private driftTap: ReturnType<typeof setInterval> | undefined
+  // Where a drift has been, a snapshot every DRIFT_TAP_S, newest last.
+  private driftTrail: Controls[] = []
 
   constructor() {
     this.meter.subscribe(() => {
@@ -576,6 +581,12 @@ export class Engine {
     this.stopDrift()
     this.stopHunt()
     this.drifting.set(true)
+    this.driftTrail = [this.controls.get()]
+    this.driftTap = setInterval(() => {
+      this.driftTrail = [...this.driftTrail, this.controls.get()].slice(
+        -DRIFT_TRAIL,
+      )
+    }, DRIFT_TAP_S * 1000)
     const leg = () => {
       this.armed = null
       this.travel(next(), everyS * 0.85)
@@ -586,7 +597,9 @@ export class Engine {
 
   stopDrift() {
     if (this.driftTimer !== undefined) clearInterval(this.driftTimer)
+    if (this.driftTap !== undefined) clearInterval(this.driftTap)
     this.driftTimer = undefined
+    this.driftTap = undefined
     if (!this.drifting.get()) return
     this.drifting.set(false)
     // The leg in flight goes with the timer. Stopping says it keeps the board
@@ -594,6 +607,15 @@ export class Engine {
     // twelve seconds carrying it somewhere you did not ask for — which is the
     // drift still running by any name you would use for it.
     this.cancelMorph()
+  }
+
+  /** Stop drifting and go back to where the drift was `seconds` ago. */
+  driftBack(seconds: number, travel = 1) {
+    const back = Math.round(seconds / DRIFT_TAP_S)
+    const trail = this.driftTrail
+    const then = trail[Math.max(trail.length - back, 0)]
+    this.stopDrift()
+    if (then) this.morphTo(then, travel)
   }
 
   /** Cancel a hunt in flight and leave whatever board is playing on the board. */

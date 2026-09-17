@@ -313,6 +313,8 @@ passed through land in the undo history — the whole hunt is a single step.
 toward a new nearby setting, so the sound never cuts and never quite arrives.
 One `ctrl+z` restores the board from before it started.
 
+While it drifts, **⟲ 10s** stops and goes back to where it was ten seconds ago.
+
 **Share** copies the current board into the page's URL.
 
 ## Demo songs
