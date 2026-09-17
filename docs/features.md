@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 289 knobs and switches in 32 groups, seven bends competing for six slots,
-18 ROM tunes, 80 presets, 14 stage settings and 32 named cuts — and everything
+ruin. 299 knobs and switches in 32 groups, seven bends competing for six slots,
+18 ROM tunes, 83 presets, 16 stage settings and 32 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 69 destinations — among
+- **A patch bay that modulates itself.** Four wires, 75 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 80 presets, and dice on every heading as
+- **Boards, rather than settings.** 83 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 26 of them, mostly the ones that cover the
+preset that names it still gets it. 27 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -154,10 +154,10 @@ counter goes on counting, the grid goes on chasing it, and the machine plays
 somebody else’s pattern.
 
 The pattern grid is a widget rather than a row of sliders, so the table below
-leaves it out: nine rows (the eight voices and an accent), each carrying 16
-steps and a length of its own, and a second 16-step mask on every voice for the
-steps that only sometimes fire. That is 26 more controls, and they ride in a
-link like the rest.
+leaves it out: ten rows (the eight voices, an accent and an echo row), each
+carrying 16 steps and a length of its own, and a second 16-step mask on every
+voice for the steps that only sometimes fire. That is 28 more controls, and they
+ride in a link like the rest.
 
 Named cuts, one press each under _knife on the bus_, where the panel keeps them
 too — the knife goes on and the rows under it say which controls that was:
@@ -183,7 +183,7 @@ too — the knife goes on and the rows under it say which controls that was:
   comes back to where it started
 
 <details>
-<summary>34 controls</summary>
+<summary>35 controls</summary>
 
 | control        | range                                                                                       | what it does                                                                                                              |
 | -------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -210,6 +210,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | ROM clock      | 8 to 44.1 kHz                                                                               | How fast the slabs are read back                                                                                          |
 | Retrigger      | 0 Hz to 4 kHz                                                                               | Retriggers the current step at this rate                                                                                  |
 | Trigger floor  | off to full                                                                                 | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                      |
+| Scan           | 0 to 40 ms                                                                                  | The chip strikes one voice per scan                                                                                       |
 | Accent         | 1× to 4×                                                                                    | How far the accent bus swings when it is rested                                                                           |
 | Accent sag     | off to full                                                                                 | The accent is one cap feeding every voice, and this is how much each accented step takes off it                           |
 | Choke          | off, hat cuts cymbal, kick cuts tom, snare cuts clap, each cuts the next, kick cuts the kit | Where the board’s one choke resistor is soldered                                                                          |
@@ -592,16 +593,27 @@ A tuned delay with feedback past unity — a pitch you can drive into oscillatio
 Resonant filter with drive, taken past self-oscillation so it screams on its
 own.
 
-<details>
-<summary>5 controls</summary>
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
 
-| control   | range                 | what it does                                                                  |
-| --------- | --------------------- | ----------------------------------------------------------------------------- |
-| Cutoff    | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1  |
-| Resonance | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
-| Mode      | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
-| Drive     | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance             |
-| Mix       | off to full           | Dry/wet                                                                       |
+- **dropped in the post**: A dark low-pass that crackles along with whatever
+  goes through it
+- **sputter**: Self-oscillating into a cap that keeps shorting
+
+<details>
+<summary>8 controls</summary>
+
+| control    | range                 | what it does                                                                  |
+| ---------- | --------------------- | ----------------------------------------------------------------------------- |
+| Cutoff     | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1  |
+| Resonance  | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
+| Mode       | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
+| Drive      | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance             |
+| Mix        | off to full           | Dry/wet                                                                       |
+| Popcorn †  | off to full           | A bad junction inside the filter                                              |
+| Arcing cap | off to full           | The cap shorts when its swing gets too big                                    |
+| Dirty pot  | off to full           | The cutoff pot loses contact while it moves                                   |
 
 </details>
 
@@ -684,24 +696,30 @@ five-second loop joined once: _Splice_ is how bad the join is, and _Erase_ how
 much of the last lap the erase head lets through under the new one.
 
 <details>
-<summary>14 controls</summary>
+<summary>20 controls</summary>
 
-| control     | range                   | what it does                                                                                                                                        |
-| ----------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Time        | 20 ms to 4 s            | Delay time                                                                                                                                          |
-| Heads       | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                                                             |
-| Feedback    | 0 to 2, normal 0 to 1   | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
-| Wow         | 0 to 50 ms              | Slow speed wobble of the transport                                                                                                                  |
-| Wow rate    | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                                          |
-| Flutter     | off to full             | Fast random speed jitter — worn pinch roller                                                                                                        |
-| Tone        | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
-| Ring        | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy |
-| Ring depth  | off to full             | How much of the tap goes through the carrier                                                                                                        |
-| Brake       | off to full             | Drags the capstan                                                                                                                                   |
-| Supply drag | off to full             | Wires the motor to the same dying supply as the toy                                                                                                 |
-| Splice      | off to full             | How bad the join in the loop is                                                                                                                     |
-| Erase       | off to full             | How much the erase head misses                                                                                                                      |
-| Echo level  | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
+| control        | range                   | what it does                                                                                                                                        |
+| -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Time           | 20 ms to 4 s            | Delay time                                                                                                                                          |
+| Heads          | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                                                             |
+| Feedback       | 0 to 2, normal 0 to 1   | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
+| Wow            | 0 to 50 ms              | Slow speed wobble of the transport                                                                                                                  |
+| Wow rate       | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                                          |
+| Flutter        | off to full             | Fast random speed jitter — worn pinch roller                                                                                                        |
+| Tone           | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
+| Ring           | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy |
+| Ring depth     | off to full             | How much of the tap goes through the carrier                                                                                                        |
+| Brake          | off to full             | Drags the capstan                                                                                                                                   |
+| Supply drag    | off to full             | Wires the motor to the same dying supply as the toy                                                                                                 |
+| Splice         | off to full             | How bad the join in the loop is                                                                                                                     |
+| Erase          | off to full             | How much the erase head misses                                                                                                                      |
+| Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                                      |
+| Echo level     | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
+| Loop filter    | off, LP, BP, HP         | A resonant filter inside the feedback, so every lap goes through it again                                                                           |
+| Loop cutoff    | 60 Hz to 8 kHz          | Sweep it while the repeats ring                                                                                                                     |
+| Loop resonance | 0 to 1.3, normal 0 to 1 | Past 1 the loop whistles at the cutoff on its own                                                                                                   |
+| Lamp           | off to full             | A bulb that dims the loop as it heats                                                                                                               |
+| Filament       | 0.02 to 3 s             | How slowly the bulb heats and cools                                                                                                                 |
 
 </details>
 
@@ -800,7 +818,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 69 of them, filt cut through keys data fault                                               | Where the other end is soldered                                                |
+| Wire 1–4 to    | 75 of them, filt cut through keys data fault                                               | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>
@@ -1117,7 +1135,7 @@ became:
 
 ### Presets
 
-80 boards worth keeping. Every name is a link that opens the app with that board
+83 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1302,6 +1320,12 @@ on it — a link never presses play, so it is loaded and waiting.
   spring
 - [**tape stop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.6,drumLevel:0.6,drumBpm:104,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,revMix:0.2,deckInertia:1.5)
   — A heavy platter under a running board — Varispeed is a stop lever
+- [**dropped in the post**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumTune:0.7,drumDecay:1.6,drumKick:34952,drumSnare:0,drumClap:2056,drumThrow:8,filtHz:650,filtRes:0.8,filtPop:0.45,filtMix:1,delayMs:381,dlyFb:0.72,dlyToneHz:2500,dlySend:0,dlyLoopMode:2,dlyLoopRes:0.55,dlyMix:0.7,revDecayS:3,revKick:0.3,revMix:0.25,modLfoHz:0.12,mod0Src:1,mod0Dest:67)
+  — A dub kit through a crackling filter, the last clap thrown into a dark echo
+- [**breathing echo**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.3,delayMs:330,dlyFb:1.35,wowDepthMs:1.5,dlyToneHz:3500,dlyLamp:0.8,dlyLampS:1.4,dlyMix:0.6)
+  — Feedback past 1 through a lamp that dims as it heats
+- [**fills feed fills**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:96,drumSwing:0.15,drumScan:12,drumChance:0.05,drumKick:32896,drumHat:0,drumHatMaybe:30583,drumTomMaybe:257,revMix:0.2,mod0Src:9,mod0Dest:64,mod0Depth:1.6)
+  — Every hit raises the odds of the next ghost hit, and a slow scan flams them
 
 ### Kit voices
 
@@ -1328,7 +1352,7 @@ same circuits and is playing the recording back.
 ## Scripts
 
 <details>
-<summary>34 commands</summary>
+<summary>36 commands</summary>
 
 | command             | what it does                                                                                                                                                                            |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1342,12 +1366,14 @@ same circuits and is playing the recording back.
 | `pnpm bench`        | what the chain costs per block, stage by stage                                                                                                                                          |
 | `pnpm blocks`       | the distribution — p50 to p99.9, and how many blocks went over budget                                                                                                                   |
 | `pnpm cold`         | the first seconds, before anything has tiered up                                                                                                                                        |
+| `pnpm cpu`          | CPU time on every Chrome thread, and the underruns Chrome counted                                                                                                                       |
 | `pnpm dash`         | re-shoots the why-sign-in card's screenshot of the signed-in home page                                                                                                                  |
 | `pnpm demos`        | writes demos.json into the README's Demos block                                                                                                                                         |
 | `pnpm reel`         | renders the showcase demos to mp3 for the landing page's Demos section                                                                                                                  |
 | `pnpm diagram`      | re-renders the README's signal path                                                                                                                                                     |
 | `pnpm features`     | rewrites docs/features.md — this file                                                                                                                                                   |
 | `pnpm figure`       | re-shoots the README's screenshot of the app and its panel                                                                                                                              |
+| `pnpm guide-shots`  | re-shoots the six pictures in docs/USER-GUIDE.md                                                                                                                                        |
 | `pnpm ink`          | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                         |
 | `pnpm knife`        | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                 |
 | `pnpm panel`        | what the panel costs the browser per frame, in a real Chrome                                                                                                                            |

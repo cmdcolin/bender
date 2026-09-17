@@ -1,0 +1,63 @@
+/* videoskillet's drawn range input: a 4px trough filled from stock out to the
+   thumb, and a round grey thumb. The layer lets a row's own rules win. */
+@layer prim {
+  /* CROSS_REPO_SYNC(range-track) */
+  .range {
+    --thumb-size: 12px;
+    margin: 0;
+    appearance: none;
+    background: none;
+  }
+  .range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--track-bg);
+  }
+  .range::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--track-bg);
+  }
+  .range::-moz-range-progress {
+    background: none;
+  }
+  .range::-webkit-slider-thumb {
+    appearance: none;
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    margin-top: calc((4px - var(--thumb-size)) / 2);
+    border-radius: 50%;
+    border: none;
+    background: #b8b8c8;
+  }
+  .range::-moz-range-thumb {
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    border-radius: 50%;
+    border: none;
+    background: #b8b8c8;
+  }
+
+  /* The caller sets --lo, --hi and --def as percentages of the travel. A caller
+     that draws its own stock mark sets --def-tick to transparent. */
+  .track {
+    composes: range;
+    --def-tick: #55555f;
+    --track-bg:
+      linear-gradient(
+        to right,
+        transparent calc(var(--def) - 1px),
+        var(--def-tick) calc(var(--def) - 1px),
+        var(--def-tick) calc(var(--def) + 1px),
+        transparent calc(var(--def) + 1px)
+      ),
+      linear-gradient(
+        to right,
+        #31313c var(--lo),
+        var(--ctl-on-bg) var(--lo),
+        var(--ctl-on-bg) var(--hi),
+        #31313c var(--hi)
+      );
+  }
+  /* CROSS_REPO_SYNC_END(range-track) */
+}

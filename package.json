@@ -14,12 +14,14 @@
     "bench": "tsx scripts/bench.ts",
     "blocks": "tsx scripts/blocks.ts",
     "cold": "tsx scripts/cold.ts",
+    "cpu": "tsx scripts/cpu.ts",
     "dash": "tsx scripts/dash.ts",
     "demos": "node scripts/demogen.mjs",
     "reel": "tsx scripts/demoreel.ts",
     "diagram": "tsx scripts/chain-svg.ts",
     "features": "tsx scripts/features.ts",
     "figure": "tsx scripts/figure.ts",
+    "guide-shots": "tsx scripts/guide-shots.ts",
     "ink": "tsx scripts/ink.ts",
     "knife": "tsx scripts/knife.ts",
     "panel": "tsx scripts/panel.ts",
@@ -58,14 +60,14 @@
     "husky": "^9.1.7",
     "jsdom": "^30.0.1",
     "lint-staged": "^17.5.1",
-    "oxfmt": "^0.67.0",
+    "oxfmt": "^0.68.0",
     "oxlint": "^1.83.0",
     "oxlint-tsgolint": "^7.0.2001",
     "prettier-plugin-astro": "^1.0.0",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.1"
   },
   "lint-staged": {
     "*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}": [

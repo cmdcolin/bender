@@ -40,9 +40,18 @@ import { Glide } from './glide'
 import { MAX_SOURCES, N_PARAMS, N_TAPS, STEM_FILES, packParams } from './params'
 import { encodeMonoWav, encodeWav } from './wav'
 
-import type { FromWorklet, NoteDest, RecMsg, ToWorklet } from './messages'
+import type {
+  FromWorklet,
+  NoteDest,
+  RecMsg,
+  RetroMsg,
+  ToWorklet,
+} from './messages'
 
 const REC_MAX_S = 600 // a take stops itself at ten minutes
+export const RETRO_S = 30
+const DRIFT_TAP_S = 2.5
+const DRIFT_TRAIL = 12
 // And sooner with the stems running, because the tape is seven tracks instead
 // of one. A second of master costs 384 kB of float in this tab; a second of
 // stems costs 1.15 MB on top, so ten minutes of stems would be 900 MB held in
@@ -140,6 +149,35 @@ export function edgeScore(ducks: number[], peaks: number[]): number {
   const loud = peaks.reduce((a, v) => a + v, 0) / peaks.length
   return sd + 0.12 * Math.min(loud, 1)
 }
+
+// How much of a board lives between the hits: level on meter posts with no kit
+// hit against level on posts with one. Echo, spring and feedback tails score;
+// a dry kit and a board pinned on the limiter do not. With nothing hitting it
+// falls back on the edge.
+export function tailScore(
+  ducks: number[],
+  peaks: number[],
+  hits: number[],
+): number {
+  let head = 0
+  let heads = 0
+  let tail = 0
+  let tails = 0
+  for (const [i, p] of peaks.entries()) {
+    if (hits[i]) {
+      head += p
+      heads++
+    } else {
+      tail += p
+      tails++
+    }
+  }
+  if (heads === 0 || tails === 0) return edgeScore(ducks, peaks)
+  const duck = ducks.reduce((a, v) => a + v, 0) / ducks.length
+  return Math.min(tail / tails / (head / heads + 1e-6), 1) - duck
+}
+
+export type HuntJudge = 'edge' | 'tail'
 
 // The chip's note report folded into what the panel already believes. It posts
 // every 16 ms whether or not anything changed, and a store that turned over that
@@ -267,8 +305,13 @@ export class Engine {
   // board cutting to strangers and the only thing that makes that read as work
   // rather than as a fault is a count going up. Null between hunts.
   readonly huntStep = createStore<{ board: number; of: number } | null>(null)
+  /** The last hunt's candidates, best first, to pick another one from. */
+  readonly hunted = createStore<Controls[]>([])
   /** True while the board is nudging itself along on a timer. */
   readonly drifting = createStore(false)
+  /** Controls pushed while a throw is held. They reach the audio thread over
+      the board and never touch the board, the link or the walk. */
+  readonly held = createStore<ReadonlyMap<string, Partial<Controls>>>(new Map())
   // Which semitones are down under a hand: the on-screen keys, the computer
   // keyboard, a controller on the wire. Held here rather than read back off the
   // chip because it is exact and immediate — the keys light on the press, not on
@@ -323,6 +366,9 @@ export class Engine {
   private readonly soundHold = new Float32Array(MAX_SOURCES)
 
   private driftTimer: ReturnType<typeof setInterval> | undefined
+  private driftTap: ReturnType<typeof setInterval> | undefined
+  // Where a drift has been, a snapshot every DRIFT_TAP_S, newest last.
+  private driftTrail: Controls[] = []
 
   constructor() {
     this.meter.subscribe(() => {
@@ -411,6 +457,7 @@ export class Engine {
         const lit = soundingMask(msg.taps, this.soundHold)
         if (lit !== this.sounding.get()) this.sounding.set(lit)
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
+      else if (msg.kind === 'retro') this.onRetro(msg)
     }
     const masterGain = ctx.createGain()
     node.connect(masterGain).connect(ctx.destination)
@@ -420,10 +467,7 @@ export class Engine {
     )
     this.ctx = ctx
     this.node = node
-    this.post({
-      kind: 'params',
-      pack: packParams(this.controls.get(), this.pack),
-    })
+    this.post({ kind: 'params', pack: this.packLive() })
     this.postTransport()
   }
 
@@ -541,29 +585,41 @@ export class Engine {
   //
   // Only one banked step for the whole hunt, taken before the first candidate:
   // the boards it tried on the way are not boards you chose.
-  async hunt(candidates: Controls[], holdMs = 1400): Promise<Controls | null> {
+  async hunt(
+    candidates: Controls[],
+    holdMs = 1400,
+    judge: HuntJudge = 'edge',
+  ): Promise<Controls | null> {
     if (candidates.length === 0) return null
     const token = ++this.huntToken
     this.stopDrift()
     this.bank()
     this.hunting.set(true)
-    let best: Controls | null = null
-    let bestScore = -Infinity
+    this.hunted.set([])
+    const scored: { board: Controls; score: number }[] = []
     for (const [i, board] of candidates.entries()) {
       if (token !== this.huntToken) return null
       this.huntStep.set({ board: i + 1, of: candidates.length })
       this.writeLive(board)
-      const score = await this.audition(holdMs, token)
+      const score = await this.audition(holdMs, token, judge)
       if (token !== this.huntToken) return null
-      if (score > bestScore) {
-        bestScore = score
-        best = board
-      }
+      scored.push({ board, score })
     }
     this.hunting.set(false)
     this.huntStep.set(null)
+    const ranked = scored
+      .toSorted((a, b) => b.score - a.score)
+      .map(s => s.board)
+    this.hunted.set(ranked)
+    const best = ranked[0] ?? null
     if (best) this.writeLive(best)
     return best
+  }
+
+  /** Swap in another of the last hunt's boards. The hunt already banked its step. */
+  pickHunted(i: number) {
+    const board = this.hunted.get()[i]
+    if (board) this.writeLive(board)
   }
 
   // Installation mode: every so often the board sets off for somewhere near
@@ -578,6 +634,12 @@ export class Engine {
     this.stopDrift()
     this.stopHunt()
     this.drifting.set(true)
+    this.driftTrail = [this.controls.get()]
+    this.driftTap = setInterval(() => {
+      this.driftTrail = [...this.driftTrail, this.controls.get()].slice(
+        -DRIFT_TRAIL,
+      )
+    }, DRIFT_TAP_S * 1000)
     const leg = () => {
       this.armed = null
       this.travel(next(), everyS * 0.85)
@@ -588,7 +650,9 @@ export class Engine {
 
   stopDrift() {
     if (this.driftTimer !== undefined) clearInterval(this.driftTimer)
+    if (this.driftTap !== undefined) clearInterval(this.driftTap)
     this.driftTimer = undefined
+    this.driftTap = undefined
     if (!this.drifting.get()) return
     this.drifting.set(false)
     // The leg in flight goes with the timer. Stopping says it keeps the board
@@ -596,6 +660,15 @@ export class Engine {
     // twelve seconds carrying it somewhere you did not ask for — which is the
     // drift still running by any name you would use for it.
     this.cancelMorph()
+  }
+
+  /** Stop drifting and go back to where the drift was `seconds` ago. */
+  driftBack(seconds: number, travel = 1) {
+    const back = Math.round(seconds / DRIFT_TAP_S)
+    const trail = this.driftTrail
+    const then = trail[Math.max(trail.length - back, 0)]
+    this.stopDrift()
+    if (then) this.morphTo(then, travel)
   }
 
   /** Cancel a hunt in flight and leave whatever board is playing on the board. */
@@ -617,22 +690,32 @@ export class Engine {
   // Listen to one candidate. The first stretch is thrown away: a board that has
   // just been cut to is still the tail of the last one, and a delay line full of
   // somebody else's squeal would score this one.
-  private audition(ms: number, token: number): Promise<number> {
+  private audition(
+    ms: number,
+    token: number,
+    judge: HuntJudge,
+  ): Promise<number> {
     return new Promise(resolve => {
       const ducks: number[] = []
       const peaks: number[] = []
+      const hits: number[] = []
       let settled = false
       const off = this.meter.subscribe(() => {
         if (!settled) return
         const m = this.meter.get()
         ducks.push(m.duck)
         peaks.push(m.peak)
+        hits.push(m.hits)
       })
       const settle = setTimeout(() => (settled = true), Math.min(400, ms / 3))
       setTimeout(() => {
         clearTimeout(settle)
         off()
-        resolve(token === this.huntToken ? edgeScore(ducks, peaks) : -Infinity)
+        const score =
+          judge === 'tail'
+            ? tailScore(ducks, peaks, hits)
+            : edgeScore(ducks, peaks)
+        resolve(token === this.huntToken ? score : -Infinity)
       }, ms)
     })
   }
@@ -723,10 +806,28 @@ export class Engine {
   // in a hidden tab and flushSoon waits for one.
   flush() {
     this.dirty = false
-    this.post({
-      kind: 'params',
-      pack: packParams(this.controls.get(), this.pack),
-    })
+    this.post({ kind: 'params', pack: this.packLive() })
+  }
+
+  private packLive(): Float32Array {
+    const held = this.held.get()
+    if (held.size === 0) return packParams(this.controls.get(), this.pack)
+    const live = { ...this.controls.get() }
+    for (const patch of held.values()) Object.assign(live, patch)
+    return packParams(live, this.pack)
+  }
+
+  holdThrow(name: string, patch: Partial<Controls>) {
+    this.held.set(new Map(this.held.get()).set(name, patch))
+    this.flushSoon()
+  }
+
+  letGoThrow(name: string) {
+    if (!this.held.get().has(name)) return
+    const next = new Map(this.held.get())
+    next.delete(name)
+    this.held.set(next)
+    this.flushSoon()
   }
 
   async enableMic() {
@@ -899,6 +1000,48 @@ export class Engine {
     a.download = `${name}.wav`
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  }
+
+  private retro: { l: Float32Array; r: Float32Array }[] = []
+  private retroWant: 'wav' | 'reel' | null = null
+
+  private onRetro(msg: RetroMsg) {
+    const sr = this.ctx?.sampleRate ?? 48000
+    if (msg.n) {
+      this.retro.push({ l: msg.l.slice(0, msg.n), r: msg.r.slice(0, msg.n) })
+      let frames = this.retro.reduce((n, c) => n + c.l.length, 0)
+      while (frames - this.retro[0]!.l.length >= RETRO_S * sr) {
+        frames -= this.retro.shift()!.l.length
+      }
+    }
+    if (!msg.done || !this.retroWant) return
+    const want = this.retroWant
+    this.retroWant = null
+    if (want === 'wav') {
+      this.download(
+        encodeWav(this.retro, sr),
+        `bender-${stamp()}-last${RETRO_S}s`,
+      )
+      return
+    }
+    const frames = this.retro.reduce((n, c) => n + c.l.length, 0)
+    const mono = new Float32Array(frames)
+    let at = 0
+    for (const c of this.retro) {
+      for (let i = 0; i < c.l.length; i++)
+        mono[at + i] = 0.5 * (c.l[i]! + c.r[i]!)
+      at += c.l.length
+    }
+    const peaks = peaksOf(mono)
+    this.post({ kind: 'sample', mono, peaks }, [mono.buffer, peaks.buffer])
+    this.sampleName.set(`last ${RETRO_S}s`)
+  }
+
+  /** The last half minute of output, kept whether or not anything was recording. */
+  keepLast(to: 'wav' | 'reel') {
+    if (!this.node) return
+    this.retroWant = to
+    this.post({ kind: 'retroFlush' })
   }
 
   startRecording() {
@@ -1191,6 +1334,7 @@ export class Engine {
   }
 
   panic() {
+    this.held.set(new Map())
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
     this.post({ kind: 'panic' })
     if (this.keysDown.get().size > 0) this.keysDown.set(new Set())

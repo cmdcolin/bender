@@ -15,6 +15,9 @@
   --cool: #49b6ff;
   /* A fill, where tokens.css's --danger is text: panic, a live recording. */
   --alarm: #ff3355;
+  /* A slider's fill, from stock out to the thumb. range.module.css shares the
+     name with videoskillet. */
+  --ctl-on-bg: color-mix(in srgb, var(--accent) 62%, var(--surface-raised));
 }
 
 * {

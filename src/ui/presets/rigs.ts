@@ -271,6 +271,30 @@ export const RIGS: RigDef[] = [
       ...COMB,
     },
   },
+  {
+    group: 'Screech filter',
+    name: 'dropped in the post',
+    blurb: 'A dark low-pass that crackles along with whatever goes through it',
+    patch: {
+      filtHz: 520,
+      filtRes: 0.85,
+      filtDriveDb: 4,
+      filtPop: 0.55,
+      filtMix: 1,
+    },
+  },
+  {
+    group: 'Screech filter',
+    name: 'sputter',
+    blurb: 'Self-oscillating into a cap that keeps shorting',
+    patch: {
+      filtHz: 380,
+      filtRes: 1.08,
+      filtMode: 1,
+      filtArc: 0.55,
+      filtMix: 1,
+    },
+  },
 ]
 
 export const rigsFor = (group: string): RigDef[] =>

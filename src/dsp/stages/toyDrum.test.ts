@@ -4,6 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { STEPS } from '../../drums'
 import { packParams } from '../../engine/params'
 import { buildBender } from '../build'
+import { DEST } from '../modbus'
 import { spectrum } from '../spectrum'
 import {
   bin,
@@ -1143,4 +1144,118 @@ test('the choke wire moves, and the hats keep their pedal wherever it goes', () 
   const open = tail(soloVoice(hats, 1))
   const pedal = tail(soloVoice({ ...hats, drumHat: stepMask(4) }, 1))
   expect(pedal).toBeLessThan(open * 0.3)
+})
+
+// A wire held flat out by the contact pad, so a lane reads as a turned knob.
+const held = (dest: number, depth = 1): Partial<Controls> => ({
+  mod0Src: 5,
+  bodyX: 1,
+  mod0Dest: dest,
+  mod0Depth: depth,
+})
+
+test('a wire on the kit tempo moves the step clock an octave a push', () => {
+  expect(onsets(soloVoice(SLIP_BAR, 8.05))).toHaveLength(2)
+  const fast = onsets(soloVoice({ ...SLIP_BAR, ...held(DEST.drumBpm) }, 8.05))
+  expect(fast).toHaveLength(4)
+  expect(gaps(fast).every(g => Math.abs(g - 2) < 0.02)).toBe(true)
+})
+
+test('a wire on the swing shuffles a straight kit', () => {
+  const pattern: Partial<Controls> = {
+    drumHat: stepMask(2, 3, 4),
+    drumBpm: 60,
+    drumDecay: 0.3,
+  }
+  const straight = onsets(soloVoice(pattern, 1.4))
+  const swung = onsets(
+    soloVoice({ ...pattern, ...held(DEST.drumSwing, 0.6) }, 1.4),
+  )
+  const gap = (h: number[], i: number) => h[i + 1]! - h[i]!
+  expect(swung).toHaveLength(3)
+  expect(gap(swung, 0)).toBeGreaterThan(gap(straight, 0) * 1.2)
+})
+
+test('a wire on Chance opens a dice the knob has shut', () => {
+  const shut = { drumKickMaybe: stepMask(2), drumChance: 0, drumBpm: 480 }
+  expect(onsets(soloVoice(shut, 4))).toHaveLength(0)
+  expect(
+    onsets(soloVoice({ ...shut, ...held(DEST.drumChance) }, 4)),
+  ).toHaveLength(8)
+})
+
+// Each hit lifts the odds of the maybe steps after it, and the steps that come
+// up are hits too: a fill that feeds itself until the dice run cold.
+test('hits wired onto Chance set off more hits', () => {
+  const kit: Partial<Controls> = {
+    drumKick: stepMask(0, 4, 8, 12),
+    drumHatMaybe: 0xffff,
+    drumChance: 0,
+    drumBpm: 140,
+  }
+  const hats = (x: Float32Array) => highEnergy(x, 3000)
+  const cold = hats(soloVoice(kit, 4))
+  const fed = hats(
+    soloVoice(
+      { ...kit, mod0Src: 9, mod0Dest: DEST.drumChance, mod0Depth: 2 },
+      4,
+    ),
+  )
+  expect(fed).toBeGreaterThan(cold * 3)
+})
+
+test('a wire on the decay stretches every tail', () => {
+  const kick = { drumKick: stepMask(1), drumBpm: 30 }
+  const late = (x: Float32Array) => rms(x.subarray(SR, Math.round(1.4 * SR)))
+  const plain = late(soloVoice(kick, 1.5))
+  const long = late(soloVoice({ ...kick, ...held(DEST.drumDecay) }, 1.5))
+  expect(long).toBeGreaterThan(plain * 3)
+})
+
+test('a wire on the ring carries the kick across the latch', () => {
+  const note = struck(held(DEST.drumRing), 2)
+  expect(rms(after(note, 1.5))).toBeGreaterThan(rms(after(note, 0.2)) * 0.9)
+})
+
+test('a hit on an echo step goes into the tape with the bus send shut', () => {
+  const dub: Partial<Controls> = {
+    drumSnare: stepMask(1),
+    drumBpm: 60,
+    drumDecay: 0.3,
+    dlyMix: 1,
+    dlySend: 0,
+    dlyFb: 0.6,
+    delayMs: 300,
+  }
+  const tail = (x: Float32Array) =>
+    rms(x.subarray(Math.round(0.5 * SR), Math.round(1.5 * SR)))
+  expect(tail(soloVoice(dub, 2))).toBeLessThan(1e-4)
+  expect(
+    tail(soloVoice({ ...dub, drumThrow: stepMask(1) }, 2)),
+  ).toBeGreaterThan(3e-3)
+  expect(tail(soloVoice({ ...dub, drumThrow: stepMask(2) }, 2))).toBeLessThan(
+    1e-4,
+  )
+})
+
+test('a slow scan strikes a crowded step one voice at a time', () => {
+  const step: Partial<Controls> = {
+    drumKick: stepMask(1),
+    drumHat: stepMask(1),
+    drumBpm: 60,
+    drumDecay: 0.3,
+  }
+  // The hat is the second voice in scan order, and the only one up here.
+  const hatAt = (x: Float32Array) => {
+    const hi = envelope(
+      Float32Array.from(x, (v, i) => v - (x[i - 1] ?? 0)),
+      0.002,
+    )
+    const peak = Math.max(...hi)
+    return hi.findIndex(v => v > peak * 0.3) * 0.002
+  }
+  const tight = hatAt(soloVoice(step, 0.5))
+  const flam = hatAt(soloVoice({ ...step, drumScan: 30 }, 0.5))
+  expect(flam - tight).toBeGreaterThan(0.02)
+  expect(flam - tight).toBeLessThan(0.04)
 })

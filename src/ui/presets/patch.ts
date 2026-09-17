@@ -53,7 +53,10 @@ interface Landing {
   oneOf?: ControlKey[]
   bend?: string
   hands?: true
+  needs?: (c: Controls) => boolean
 }
+
+const hasMaybes = (c: Controls) => DRUM_VOICES.some(v => c[v.maybe] !== 0)
 
 const at = (
   name: string,
@@ -76,6 +79,11 @@ const LANDINGS: Landing[] = [
     oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'petLevel'],
   }),
   at('drum tune', ['drumLevel']),
+  at('kit tempo', ['drumLevel']),
+  at('kit swing', ['drumLevel']),
+  at('kit chance', ['drumLevel'], { needs: hasMaybes }),
+  at('kit decay', ['drumLevel']),
+  at('kit ring', ['drumLevel']),
   // The retrigger is a multiplier on the rate you set: a wire onto a kit that
   // isn't retriggering multiplies zero.
   at('retrigger', ['drumLevel', 'drumRetrigHz']),
@@ -85,6 +93,7 @@ const LANDINGS: Landing[] = [
   at('stomp drive', ['stompMix']),
   at('verb decay', ['revMix']),
   at('delay time', ['dlyMix']),
+  at('delay filt', ['dlyMix', 'dlyLoopMode']),
   at('tape speed', ['dlyMix']),
   at('echo time', ['echoLevel']),
   at('fb amount', []),
@@ -136,11 +145,12 @@ const FB_AMOUNT = choiceValue('mod0Dest', 'fb amount')
 const heard = (c: Controls, l: Landing) =>
   l.up.every(k => isUp(c, k)) &&
   (!l.oneOf || l.oneOf.some(k => isUp(c, k))) &&
-  (!l.bend || slotted(c, l.bend))
+  (!l.bend || slotted(c, l.bend)) &&
+  (!l.needs || l.needs(c))
 
 /** True when a roll is allowed to turn this landing on. */
 const reachable = (c: Controls, l: Landing) =>
-  !l.hands && (!l.bend || slotted(c, l.bend))
+  !l.hands && (!l.bend || slotted(c, l.bend)) && (!l.needs || l.needs(c))
 
 // Where a wire can pick up, and what has to be running for it to be carrying
 // anything.

@@ -11,7 +11,12 @@ export {
   rollKeys,
 } from './roll'
 export { applyRig, RIGS, rigsFor, rigStands, type RigDef } from './rigs'
-export { huntCandidates, SCENARIOS, type ScenarioDef } from './scenarios'
+export {
+  huntCandidates,
+  SCENARIOS,
+  tailCandidates,
+  type ScenarioDef,
+} from './scenarios'
 export {
   applyCut,
   CUTS,

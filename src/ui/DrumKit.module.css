@@ -139,7 +139,7 @@
   justify-content: center;
   min-width: 0;
   padding: 0 3px 5px;
-  background: radial-gradient(ellipse at 50% 35%, #26262d, var(--rubber) 70%);
+  background: var(--rubber);
   border: 1px solid var(--rubber-edge);
   border-radius: 9px;
   box-shadow:

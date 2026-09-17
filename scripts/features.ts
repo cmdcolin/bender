@@ -108,6 +108,7 @@ const SCRIPTS: Record<string, string> = {
   blocks:
     'the distribution — p50 to p99.9, and how many blocks went over budget',
   cold: 'the first seconds, before anything has tiered up',
+  cpu: 'CPU time on every Chrome thread, and the underruns Chrome counted',
   ab: 'this tree against a git ref, as a paired comparison',
   audible:
     'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',
@@ -125,6 +126,7 @@ const SCRIPTS: Record<string, string> = {
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
   figure: "re-shoots the README's screenshot of the app and its panel",
+  'guide-shots': 're-shoots the six pictures in docs/USER-GUIDE.md',
   dash: "re-shoots the why-sign-in card's screenshot of the signed-in home page",
   knife:
     'sweeps every wire and fault on every bus and reports which you can hear',
@@ -298,7 +300,7 @@ have no equivalent to read back: all five are always on the board.\n`
   if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table
-below leaves it out: ${num(GRID_ROWS.length)} rows (the ${num(DRUM_VOICES.length)} voices and an accent), each
+below leaves it out: ${num(GRID_ROWS.length + 1)} rows (the ${num(DRUM_VOICES.length)} voices, an accent and an echo row), each
 carrying ${STEPS} steps and a length of its own, and a second ${STEPS}-step mask on every
 voice for the steps that only sometimes fire. That is ${n} more controls, and they
 ride in a link like the rest.\n`

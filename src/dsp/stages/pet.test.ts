@@ -35,6 +35,7 @@ function makeCtx(sr: number): Ctx {
     env: buf(),
     step: buf(),
     carrier: buf(),
+    send: buf(),
     bright: buf(),
     out: buf(),
     heat: 0,

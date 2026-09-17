@@ -4,7 +4,12 @@ import { engine } from '../engine/engine'
 import styles from './Dice.module.css'
 import { Menu } from './Menu'
 import { menuItem } from './menuItems'
-import { huntCandidates, randomLook, SCENARIOS } from './presets'
+import {
+  huntCandidates,
+  randomLook,
+  SCENARIOS,
+  tailCandidates,
+} from './presets'
 import { Tip } from './Tip'
 
 import type { MorphSeconds } from './morph'
@@ -55,6 +60,19 @@ const HUNT: Roll = {
   },
 }
 
+const HUNT_TAIL: Roll = {
+  name: 'hunt tail',
+  label: 'hunt a tail',
+  blurb:
+    'Plays six dub boards and keeps the one that rings on most between the kit’s hits. Run the drums first.',
+  run: (_seconds, onLanded) => {
+    onLanded(false)
+    void engine
+      .hunt(tailCandidates(engine.controls.get(), Math.random), 1600, 'tail')
+      .then(best => onLanded(best !== null))
+  },
+}
+
 const ROLLS: Roll[] = [
   BLIND,
   ...SCENARIOS.map(s => ({
@@ -65,6 +83,7 @@ const ROLLS: Roll[] = [
       engine.morphTo(s.roll(engine.controls.get(), Math.random), seconds),
   })),
   HUNT,
+  HUNT_TAIL,
 ]
 
 export function Dice(props: {

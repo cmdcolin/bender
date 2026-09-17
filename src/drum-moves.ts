@@ -440,6 +440,20 @@ export const DRUM_MOVES: DrumMove[] = [
   },
 ]
 
+const lastStep = (mask: number) => {
+  for (let s = STEPS - 1; s >= 0; s--) if (hasStep(mask, s)) return s
+  return -1
+}
+
+/** The echo row with the bar's last snare or clap on it, or its last hit of
+    any kind when there is neither. */
+export function throwLast(masks: DrumMasks): number {
+  const back = lastStep(masks.drumSnare | masks.drumClap)
+  const any = lastStep(DRUM_VOICES.reduce((m, v) => m | masks[v.key], 0))
+  const step = back >= 0 ? back : any
+  return step < 0 ? 0 : stepBit(step)
+}
+
 /** Only the seven rows, out of a board that carries a hundred other numbers. */
 export const masksOf = (board: DrumMasks): DrumMasks =>
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; the entries are every pattern key

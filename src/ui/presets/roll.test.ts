@@ -239,8 +239,8 @@ test('rolls and nudges from stock land inside every normal stretch', () => {
 
 test('a nudge on a control past its normal stretch can leave it there', () => {
   const hot = { ...mine(), dlyFb: 1.8 }
-  const after = Array.from({ length: 20 }, (_, seed) =>
-    mutate(hot, 0.3, mulberry32(seed + 1)),
+  const after = Array.from({ length: 60 }, (_, seed) =>
+    mutate(hot, 0.1, mulberry32(seed + 1)),
   ).map(c => c.dlyFb)
   expect(after.some(v => v !== 1.8)).toBe(true)
   // Some of them, not all: the stretch takes three quarters of the track, so a

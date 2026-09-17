@@ -1,0 +1,32 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--fs-xs);
+  font-family: var(--mono);
+  color: var(--fg4);
+}
+
+.pad {
+  composes: action from './button.module.css';
+  touch-action: none;
+  user-select: none;
+}
+
+.padOn {
+  composes: pad;
+  color: var(--accent-ink);
+  background: var(--cool);
+  border-color: var(--cool);
+}
+
+.key {
+  margin-left: 0.5em;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  opacity: 0.55;
+}

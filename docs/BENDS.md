@@ -551,6 +551,9 @@ the edges the counter produced, so a slipping kit and a locked toy come apart.
 All the way up nothing gets over the threshold at all and the machine stands on
 one step, at the step rate, with the tempo untouched.
 
+**Scan** is how long the chip takes to get from one voice to the next. Slow it
+and a step that strikes several voices comes out as a flam, in row order.
+
 ## The trigger patch's other faults
 
 See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for how to wire it;
@@ -595,6 +598,10 @@ destination, **starve**, isn't a stage at all — it's the shared rail, so a wir
 landed there reaches everything powered from it at once, whether that's a drum
 hit browning the chip out on every kick or an LFO that ages the rail in time.
 
+Five lanes reach the kit: **tempo**, **swing**, **chance**, **decay** and
+**ring**. Drum hit onto chance makes every hit raise the odds of the next maybe
+step, so fills feed themselves.
+
 The bay's oscillator also offers two shapes beyond the usual LFO set: **chaos**,
 which folds along a Rössler-style band and passes near where it's been without
 ever landing there twice, and **drunk**, a bounded random walk that reflects off
@@ -622,6 +629,10 @@ is the depth of the modulation, and the ring path is lifted by √2 — otherwis
 sine carrier would cost the tail 3 dB a lap and the repeats would simply die
 sooner. A dc block sits on the multiplied tap, since at unison the product has a
 constant term and the tone filter is a low-pass rather than a block.
+
+**Loop filter** is a resonant filter inside the regeneration: sweep it while the
+repeats ring, the dub delay move. **Lamp** is a bulb in the same loop. It dims
+as it heats, so Feedback past 1 swells and backs off instead of pinning.
 
 **Freq shifter** moves every partial by the same number of hertz rather than the
 same ratio, so harmonic input comes out inharmonic. Its own feedback shifts
@@ -703,6 +714,11 @@ Starve and Latch-up drag it down too.
 
 Every feedback path in the instrument — the delay, the comb filter, the screech
 filter, the global feedback bus — is designed to run past unity on purpose.
+
+The screech filter's **dropped** fold is a filter that fell off the rack.
+**Popcorn** is a bad junction whose crackle rides the input and rings at the
+cutoff. **Arcing cap** shorts the resonance when it swings too far. **Dirty
+pot** jumps the cutoff while it sweeps.
 
 ## The parts rack
 

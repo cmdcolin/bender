@@ -23,34 +23,43 @@ export class OnePoleLP {
 // go is tens of decibels louder than what has to stay, the number of poles is
 // the whole of whether the filter does anything at all.
 export class Highpass {
-  private poles: OnePoleLP[]
+  private readonly y: Float64Array
   constructor(n: number) {
-    this.poles = Array.from({ length: n }, () => new OnePoleLP())
+    this.y = new Float64Array(n)
   }
   process(x: number, coef: number): number {
+    const state = this.y
     let y = x
-    for (const pole of this.poles) y -= pole.process(y, coef)
+    for (let k = 0; k < state.length; k++) {
+      const lp = flushDenormal(state[k]! + coef * (y - state[k]!))
+      state[k] = lp
+      y -= lp
+    }
     return y
   }
   reset() {
-    for (const pole of this.poles) pole.reset()
+    this.y.fill(0)
   }
 }
 
 // The same again the other way up: a low-pass steep enough to be a lid rather
 // than a lean.
 export class Lowpass {
-  private poles: OnePoleLP[]
+  private readonly y: Float64Array
   constructor(n: number) {
-    this.poles = Array.from({ length: n }, () => new OnePoleLP())
+    this.y = new Float64Array(n)
   }
   process(x: number, coef: number): number {
+    const state = this.y
     let y = x
-    for (const pole of this.poles) y = pole.process(y, coef)
+    for (let k = 0; k < state.length; k++) {
+      y = flushDenormal(state[k]! + coef * (y - state[k]!))
+      state[k] = y
+    }
     return y
   }
   reset() {
-    for (const pole of this.poles) pole.reset()
+    this.y.fill(0)
   }
 }
 

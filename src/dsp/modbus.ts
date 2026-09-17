@@ -95,22 +95,28 @@ export const DEST = {
   petAddrFault: 59,
   petDataLine: 60,
   petDataFault: 61,
+  drumBpm: 62,
+  drumSwing: 63,
+  drumChance: 64,
+  drumDecay: 65,
+  drumRing: 66,
+  dlyLoopHz: 67,
   // Outside the chain altogether: the deck the whole board is printed to, so a
   // wire here drags the machine playing everything above it back rather than
   // any one stage on it.
-  deckSpeed: 62,
+  deckSpeed: 68,
   // The ensemble's sweep, which is the one thing on that pedal a hand alone
   // cannot move in time with anything else.
-  ensRate: 63,
+  ensRate: 69,
   // The home keyboard's fader and its two buses, after the deck and the
   // ensemble because they landed after them.
-  pcmLevel: 64,
-  pcmAddrLine: 65,
-  pcmAddrFault: 66,
-  pcmDataLine: 67,
-  pcmDataFault: 68,
+  pcmLevel: 70,
+  pcmAddrLine: 71,
+  pcmAddrFault: 72,
+  pcmDataLine: 73,
+  pcmDataFault: 74,
 } as const
-export const N_DEST = 69
+export const N_DEST = 75
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
@@ -166,6 +172,21 @@ const SRC = {
   key: 10,
   heat: 11,
 }
+
+// Sources pick() answers with a lane of their own. Every other source reads the
+// LFO.
+const OWN_LANE = new Set<number>([
+  SRC.supply,
+  SRC.env,
+  SRC.mic,
+  SRC.fb,
+  SRC.rom,
+  SRC.drum,
+  SRC.key,
+  SRC.heat,
+  SRC.bodyX,
+  SRC.bodyY,
+])
 
 const WIRES = [
   [IDX.mod0Src, IDX.mod0Dest, IDX.mod0Depth],
@@ -249,16 +270,21 @@ export class ModBus {
     const attack = coef(0.005, this.sr)
     const release = coef(0.12, this.sr)
     const fall = Math.exp(-1 / (0.12 * this.sr))
+    // The phase, the held value and the chaos and drunk walks carry state and
+    // advance every sample. The other shapes are functions of the phase, so
+    // their lane is only written when a wire reads it.
+    let wired = false
+    for (let w = 0; w < WIRES.length; w++) {
+      const from = Math.round(p[WIRES[w]![0]]!)
+      if (from !== SRC.off && !OWN_LANE.has(from)) wired = true
+    }
     for (let i = 0; i < n; i++) {
       const prev = this.lfoPhase
       this.lfoPhase = wrap1(this.lfoPhase + hz / this.sr)
       if (this.lfoPhase < prev) this.shValue = this.rng() * 2 - 1
-      this.lfo[i] =
-        shape === 4
-          ? this.chaos.step(hz, this.sr)
-          : shape === 5
-            ? this.drunk.step(hz, this.sr, this.rng)
-            : lfoShape(this.lfoPhase, shape, this.shValue)
+      if (shape === 4) this.lfo[i] = this.chaos.step(hz, this.sr)
+      else if (shape === 5) this.lfo[i] = this.drunk.step(hz, this.sr, this.rng)
+      else if (wired) this.lfo[i] = lfoShape(this.lfoPhase, shape, this.shValue)
       this.micEnv[i] = Math.min(
         this.mic.process(src.mic[i]!, attack, release) * 2,
         1,

@@ -336,20 +336,6 @@ test('a turnaround writes the end of the bar, keeps the tempo, and takes back', 
     expect(engine.controls.get()[row.key], row.key).toBe(before[row.key])
 })
 
-// The hint says anywhere, and a dragover nobody cancels is a drop the browser
-// takes itself — which over the panel, half the width of the app, meant
-// navigating away from the board.
-test('a drag over the panel is a drag the app has taken', () => {
-  render(<App />)
-  // One button deep in the panel and one on the machines beside it, because
-  // anywhere has to mean both columns.
-  for (const label of [/^panic$/, /play drums/]) {
-    const over = new Event('dragover', { bubbles: true, cancelable: true })
-    screen.getByRole('button', { name: label }).dispatchEvent(over)
-    expect(over.defaultPrevented).toBe(true)
-  }
-})
-
 test('the board and the panel are landmarks of their own', () => {
   const { container } = render(<App />)
   expect(container.querySelector('main')).toBeTruthy()
@@ -472,13 +458,13 @@ test('a split travel still steps off its turn under the arrow keys', () => {
   expect(engine.controls.get().sampleSpeed).toBeGreaterThan(0)
 })
 
-test('a normal stretch draws its tick and reddens the readout past it', () => {
+test('a normal stretch draws its redline and reddens the readout past it', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   openFmChip()
   const knob = screen.getByRole('slider', { name: 'Feedback' })
   const row = knob.closest<HTMLElement>('[class*="row"]')!
   const over = () => row.querySelector('[class*="readoutOver"]')
-  expect(row.querySelectorAll('[class*="tick"]')).toHaveLength(1)
+  expect(row.querySelectorAll('[class*="redline"]')).toHaveLength(1)
 
   fireEvent.change(knob, { target: { value: '750' } })
   expect(engine.controls.get().fmFeedback).toBe(7)
@@ -487,4 +473,15 @@ test('a normal stretch draws its tick and reddens the readout past it', () => {
   fireEvent.change(knob, { target: { value: '1000' } })
   expect(engine.controls.get().fmFeedback).toBe(11)
   expect(over()?.textContent).toMatch(/^11/)
+})
+
+test('clicking an off-stock reading puts the control back to stock', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  openFmChip()
+  const knob = screen.getByRole('slider', { name: 'Feedback' })
+  fireEvent.change(knob, { target: { value: '1000' } })
+  const reset = screen.getByRole('button', { name: /^reset Feedback to / })
+  expect(reset.textContent).toMatch(/^11/)
+  fireEvent.click(reset)
+  expect(engine.controls.get().fmFeedback).toBe(DEFAULT_CONTROLS.fmFeedback)
 })

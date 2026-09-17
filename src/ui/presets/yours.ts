@@ -1,4 +1,4 @@
-import { GRID_ROWS } from '../../drums'
+import { GRID_ROWS, THROW_ROW } from '../../drums'
 import { TUNE_ALL_STEP_KEYS } from '../../tune'
 import { HOLD_KEYS } from '../controls'
 
@@ -36,6 +36,8 @@ export const YOURS = new Set<ControlKey>([
   ...GRID_ROWS.flatMap(r =>
     r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
   ),
+  THROW_ROW.key,
+  THROW_ROW.len,
   ...TUNE_ALL_STEP_KEYS,
   'tuneLen',
   'tuneRate',

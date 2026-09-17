@@ -74,3 +74,22 @@
 .btn {
   composes: action from './button.module.css';
 }
+
+.tray {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.pick,
+.pickOn {
+  composes: action from './button.module.css';
+  min-width: 2em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pickOn {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}

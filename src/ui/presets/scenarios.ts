@@ -1,6 +1,9 @@
 import {
   bendAt,
   BEND_SLOT_KEYS,
+  BENDS,
+  choiceValue,
+  groupFor,
   GROUPS,
   ALL_SLIDERS,
   sliderFor,
@@ -17,7 +20,7 @@ import {
 } from './patch'
 import { inTime } from './quantize'
 import { rollGroup, rollKeys } from './roll'
-import { CLOCK_KEYS, YOURS } from './yours'
+import { CLOCK_KEYS, PART_KEYS, YOURS } from './yours'
 
 import type { ControlKey, Controls } from '../../controls'
 
@@ -129,11 +132,44 @@ const WRECK: [ControlKey, number, number][] = [
   ['crushMix', 0.4, 1],
 ]
 
+// What has to be up for a stage to be heard at all, where its own mix or level
+// does not say.
+const GATE_OF: Partial<Record<string, ControlKey>> = {
+  'Feedback bus': 'fbAmt',
+  'Tape machine': 'tapeMix',
+  Stompbox: 'stompMix',
+}
+
+const gateOf = (group: string): ControlKey | undefined => {
+  if (GATE_OF[group]) return GATE_OF[group]
+  const sliders = GROUPS.find(g => g.name === group)?.sliders ?? []
+  return (
+    sliders.find(s => s.role === 'mix') ?? sliders.find(s => s.role === 'level')
+  )?.key
+}
+
+const inChain = (c: Controls, group: string) =>
+  !BENDS.some(b => b.group === group) ||
+  BEND_SLOT_KEYS.some(k => bendAt(c[k])?.group === group)
+
+/** Whether moving this control can be heard on the board as it stands. */
+const heard = (c: Controls, key: ControlKey) => {
+  const group = groupFor(key)
+  const gate = gateOf(group)
+  return inChain(c, group) && (!gate || c[gate] > sliderFor(gate).min)
+}
+
 // Controls worth driving to an end of their travel: everything with a travel to
-// drive, minus what is yours and the clock.
-const slammable = () =>
+// drive, minus what is yours and the clock, on a stage you can hear.
+const slammable = (c: Controls) =>
   ALL_SLIDERS.filter(
-    d => !d.choices && !YOURS.has(d.key) && !CLOCK_KEYS.has(d.key),
+    d =>
+      !d.choices &&
+      !YOURS.has(d.key) &&
+      !CLOCK_KEYS.has(d.key) &&
+      !PART_KEYS.has(d.key) &&
+      (!d.needs || d.needs(c)) &&
+      heard(c, d.key),
   )
 
 // One, two or three controls all the way to an end, and nothing else touched.
@@ -142,7 +178,7 @@ const slammable = () =>
 // once and hands back a hundred answers you can't tell apart. Either end counts:
 // a control slammed shut is as much an answer as one slammed open.
 function slam(current: Controls, rand: () => number): Controls {
-  const pool = slammable()
+  const pool = slammable(current)
   const next = { ...current }
   const moved = new Set<ControlKey>()
   const count = 1 + Math.floor(rand() * 3)
@@ -185,15 +221,24 @@ const ANTAGONISTS: [ControlKey, ControlKey][] = [
 // pair rather than the middle of it. Everything else is left where it stood, so
 // what comes back is the board you had, standing on an edge.
 function edge(current: Controls, rand: () => number): Controls {
-  const pairs = [...ANTAGONISTS]
+  const pairs = ANTAGONISTS.filter(([a]) => inChain(current, groupFor(a)))
   const next = { ...current }
   const moved = new Set<ControlKey>()
   for (let i = 0; i < 2 && pairs.length > 0; i++) {
     const [a, b] = pairs.splice(Math.floor(rand() * pairs.length), 1)[0]!
-    const high = rand() < 0.5
+    const gate = gateOf(groupFor(a))
+    if (gate && !heard(next, a)) {
+      next[gate] = snapToStep(
+        sliderFor(gate),
+        fromPos(sliderFor(gate), 0.6 + rand() * 0.3),
+      )
+      moved.add(gate)
+    }
+    // The first of a pair is the one wound up; the second decides which way
+    // it goes.
     for (const [key, top] of [
-      [a, high],
-      [b, !high],
+      [a, true],
+      [b, rand() < 0.5],
     ] as const) {
       const def = sliderFor(key)
       const pos = top ? 0.82 + rand() * 0.18 : rand() * 0.18
@@ -241,6 +286,65 @@ function wreck(current: Controls, rand: () => number): Controls {
   return inTime(next, key => moved.has(key))
 }
 
+const pos = (key: ControlKey, lo: number, hi: number, rand: () => number) =>
+  snapToStep(sliderFor(key), lo + rand() * (hi - lo))
+
+// A dub desk around whatever is playing: a dark tape echo on a dotted time with
+// a filter in its loop, a spring, a dropped filter and a slow tape machine.
+// Tempo, pattern and throws stay yours.
+function dub(current: Controls, rand: () => number): Controls {
+  const next = { ...current }
+  const set = (key: ControlKey, lo: number, hi: number) => {
+    next[key] = pos(key, lo, hi, rand)
+  }
+  const beatMs = 60000 / current.drumBpm
+  next.delayMs = snapToStep(
+    sliderFor('delayMs'),
+    beatMs * [0.75, 0.375, 1.5, 0.5][Math.floor(rand() * 4)]!,
+  )
+  set('dlyFb', 0.6, 0.85)
+  set('dlyMix', 0.5, 0.8)
+  set('dlyToneHz', 1800, 4000)
+  set('wowDepthMs', 0.5, 3)
+  set('flutter', 0.05, 0.2)
+  if (rand() < 0.6) {
+    next.dlyLoopMode = rand() < 0.5 ? 1 : 2
+    set('dlyLoopHz', 400, 1600)
+    set('dlyLoopRes', 0.4, 0.8)
+  }
+  if (rand() < 0.4) {
+    set('dlyLamp', 0.4, 0.8)
+    set('dlyLampS', 0.6, 2)
+    set('dlyFb', 1.05, 1.3)
+  }
+  set('revDecayS', 2, 5)
+  set('revMix', 0.2, 0.4)
+  set('revKick', 0.2, 0.5)
+  set('drumTune', 0.6, 0.9)
+  set('drumDecay', 1.3, 3)
+  if (
+    rand() < 0.5 &&
+    BEND_SLOT_KEYS.some(k => bendAt(current[k])?.label === 'filt')
+  ) {
+    next.filtMode = 0
+    set('filtHz', 500, 1200)
+    set('filtRes', 0.6, 0.9)
+    set('filtPop', 0.2, 0.5)
+    next.filtMix = 1
+  }
+  set('tapeMix', 0.4, 0.8)
+  set('tapeWow', 0.2, 0.5)
+  set('tapeHiss', 0.15, 0.35)
+  const free = ([0, 1, 2, 3] as const).find(i => current[`mod${i}Src`] === 0)
+  if (next.dlyLoopMode > 0 && free !== undefined) {
+    next[`mod${free}Src`] = choiceValue('mod0Src', 'LFO')
+    next[`mod${free}Dest`] = choiceValue('mod0Dest', 'delay filt')
+    set(`mod${free}Depth`, 0.4, 0.8)
+    set('modLfoHz', 0.05, 0.3)
+  }
+  return next
+}
+
 // A row of boards for the hunt to listen through, rather than one board handed
 // over unheard. The two rolls that go looking for an edge do most of it, with a
 // rewire among them because the same parts in a different order is often the one
@@ -255,6 +359,13 @@ export function huntCandidates(
     rolls[i % rolls.length]!(current, rand),
   )
 }
+
+/** Dub boards for a hunt that judges by what rings on between the hits. */
+export const tailCandidates = (
+  current: Controls,
+  rand: () => number,
+  count = 6,
+): Controls[] => Array.from({ length: count }, () => dub(current, rand))
 
 // The rolls a single panel can't offer, because each one is about how the
 // stages sit together rather than about what any one of them is set to. Every
@@ -315,6 +426,13 @@ export const SCENARIOS: ScenarioDef[] = [
     blurb:
       'One wire soldered onto another wire’s own depth, and that one onto something running — modulation that opens and shuts itself',
     roll: solderCascade,
+  },
+  {
+    name: 'dub',
+    label: 'random dub',
+    blurb:
+      'A dark tape echo on a dotted time with a filter in its loop, a spring and a dropped filter — your tempo, pattern and throws stay put',
+    roll: dub,
   },
   {
     name: 'let it age',

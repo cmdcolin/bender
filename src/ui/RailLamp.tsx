@@ -21,26 +21,24 @@ export function RailLamp() {
   const label = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    let raf = 0
     let seen = engine.meter.get().reboots
     let flashUntil = 0
-    // What the lamp is already showing. A rail that is not sagging is most
-    // boards most of the time, and the same two strings written again sixty
-    // times a second are sixty style parses and sixty text nodes swapped under
-    // a word that has not changed — which puts the whole document through
-    // layout on every frame the panel is up.
+    let timer: ReturnType<typeof setTimeout> | undefined
     let litAt = ''
     let says = ''
-    const draw = (now: number) => {
-      raf = requestAnimationFrame(draw)
+    // Runs on each meter post and writes only what changed. An unchanged
+    // `textContent` write still swaps the text node and lays the document out
+    // again.
+    const paint = () => {
+      const now = performance.now()
       const { rail, reboots } = engine.meter.get()
       if (reboots !== seen) {
         seen = reboots
         flashUntil = now + FLASH_MS
+        clearTimeout(timer)
+        timer = setTimeout(paint, FLASH_MS + 20)
       }
       const flashing = now < flashUntil
-      // Full cells are a lit lamp; a dying rail dims and reddens with it, and
-      // a reboot is the one thing that lights it right up.
       const colour = flashing
         ? 'var(--alarm)'
         : `color-mix(in srgb, var(--accent2) ${Math.round(rail * 100)}%, #2a1a12)`
@@ -54,8 +52,11 @@ export function RailLamp() {
         label.current.textContent = volts
       }
     }
-    raf = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(raf)
+    const off = engine.meter.subscribe(paint)
+    return () => {
+      off()
+      clearTimeout(timer)
+    }
   }, [])
 
   return (

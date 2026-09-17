@@ -5,7 +5,14 @@ import { hasStep, quantizeStep, STEPS } from '../drums'
 import { YOURS } from '../dsp/stages/roms'
 import { SCALE_NAMES } from '../scale'
 import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
-import { edgeScore, Engine, mergeNotes, soundingMask } from './engine'
+import {
+  edgeScore,
+  Engine,
+  mergeNotes,
+  soundingMask,
+  tailScore,
+} from './engine'
+import { IDX } from './params'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
 // out to nothing, so a morph asked for in seconds stays in flight for the whole
@@ -561,4 +568,69 @@ test('the start line starts, where the toggle would have stopped', () => {
   engine.runAll()
   expect(engine.songPlaying.get()).toBe(true)
   expect(engine.drumsPlaying.get()).toBe(true)
+})
+
+test('a held throw reaches the worklet and leaves the board alone', () => {
+  const engine = new Engine()
+  const posted: Float32Array[] = []
+  Object.assign(engine, {
+    node: {
+      port: {
+        postMessage: (m: { kind: string; pack?: Float32Array }) => {
+          if (m.kind === 'params') posted.push(Float32Array.from(m.pack!))
+        },
+      },
+    },
+  })
+  engine.holdThrow('spin', { dlyFb: 1.25 })
+  engine.flush()
+  expect(posted.at(-1)![IDX.dlyFb]).toBeCloseTo(1.25)
+  expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
+  expect(engine.history.get().past).toHaveLength(0)
+  engine.letGoThrow('spin')
+  engine.flush()
+  expect(posted.at(-1)![IDX.dlyFb]).toBeCloseTo(DEFAULT_CONTROLS.dlyFb)
+})
+
+test('drift back lands on where the drift was, and banks one step', () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+  try {
+    const engine = new Engine()
+    engine.startDrift(() => board({ dlyFb: 0.4 }), 1)
+    engine.patch({ dlyFb: 0.1 })
+    vi.advanceTimersByTime(2600)
+    engine.patch({ dlyFb: 0.7 })
+    vi.advanceTimersByTime(2600)
+    engine.patch({ dlyFb: 0.9 })
+    engine.driftBack(5, 0)
+    expect(engine.drifting.get()).toBe(false)
+    expect(engine.controls.get().dlyFb).toBe(0.1)
+    expect(engine.history.get().past).toHaveLength(1)
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+test('the tail score picks what rings between the hits over a dry kit and a pinned one', () => {
+  const hits = Array.from({ length: 24 }, (_, i) => (i % 6 === 0 ? 1 : 0))
+  const quiet = Array.from({ length: 24 }, () => 0)
+  const dry = hits.map(h => (h ? 0.8 : 0.02))
+  const ringing = hits.map(h => (h ? 0.8 : 0.5))
+  const pinned = Array.from({ length: 24 }, () => 0.9)
+  expect(tailScore(quiet, ringing, hits)).toBeGreaterThan(
+    tailScore(quiet, dry, hits),
+  )
+  expect(tailScore(quiet, ringing, hits)).toBeGreaterThan(
+    tailScore(pinned, pinned, hits),
+  )
+})
+
+test('a hunt keeps every candidate it heard, to pick another from', async () => {
+  const engine = new Engine()
+  const boards = [board({ dlyFb: 0.4 }), board({ dlyFb: 0.9 })]
+  await engine.hunt(boards, 20)
+  expect(engine.hunted.get()).toHaveLength(2)
+  engine.pickHunted(1)
+  expect(engine.controls.get()).toEqual(engine.hunted.get()[1])
+  expect(engine.history.get().past).toHaveLength(1)
 })

@@ -44,6 +44,9 @@ class BenderProcessor extends AudioWorkletProcessor {
   private recL = new Float32Array(REC_CHUNK)
   private recR = new Float32Array(REC_CHUNK)
   private recFill = 0
+  private retroL = new Float32Array(REC_CHUNK)
+  private retroR = new Float32Array(REC_CHUNK)
+  private retroFill = 0
   private recStems = false
   // The six source tapes, one mono slab each, standing whether anybody ever
   // records stems or not. 768 kB of the worklet's heap sitting idle is the
@@ -123,6 +126,9 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'petPoke':
           this.built.pet.poke()
           break
+        case 'retroFlush':
+          this.postRetro(true)
+          break
       }
     }
   }
@@ -189,6 +195,33 @@ class BenderProcessor extends AudioWorkletProcessor {
     }
   }
 
+  private postRetro(done: boolean) {
+    const n = this.retroFill
+    this.retroFill = 0
+    this.port.postMessage({
+      kind: 'retro',
+      l: this.retroL,
+      r: this.retroR,
+      n,
+      done,
+    })
+  }
+
+  private keepRetro(l: Float32Array, r: Float32Array, n: number) {
+    let at = 0
+    while (at < n) {
+      const take = Math.min(n - at, REC_CHUNK - this.retroFill)
+      const fill = this.retroFill
+      for (let i = 0; i < take; i++) {
+        this.retroL[fill + i] = l[at + i]!
+        this.retroR[fill + i] = r[at + i]!
+      }
+      this.retroFill = fill + take
+      at += take
+      if (this.retroFill === REC_CHUNK) this.postRetro(false)
+    }
+  }
+
   process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean {
     const out = outputs[0]
     if (!out || !out[0]) return true
@@ -239,6 +272,7 @@ class BenderProcessor extends AudioWorkletProcessor {
     this.peak = peak
 
     if (this.recording) this.lay(l, r, n)
+    this.keepRetro(l, r, n)
 
     this.duck = Math.max(this.duck, this.built.chain.duck)
     if (--this.meterCountdown <= 0) {

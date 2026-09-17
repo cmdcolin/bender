@@ -4,6 +4,11 @@ import { engine } from '../engine/engine'
 import styles from './Scope.module.css'
 
 // Oscilloscope + peak meter fed by the worklet's meter posts.
+//
+// A frame is requested per meter post rather than looped. A post with a peak of
+// zero carries an all-zero trace, since the trace is the tail of the samples
+// the peak was taken over, so once a flat line is on the canvas a silent board
+// requests no frames and hands the compositor nothing to redraw.
 export function Scope() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -13,21 +18,22 @@ export function Scope() {
     const g = canvas.getContext('2d')
     if (!g) return undefined
     let raf = 0
+    let flat = false
+    let resized = true
     const draw = () => {
-      raf = requestAnimationFrame(draw)
-      // The panel is elastic and the trace was not: a fixed 800-wide backing
-      // store stretched to whatever width it landed in, and stretched again by
-      // the device pixel ratio, which is two hairlines' worth of blur on the one
-      // thing here you are meant to read a shape off. Sized to the box it is
-      // actually in, so a pixel of trace is a pixel of screen.
+      raf = 0
       const dpr = window.devicePixelRatio || 1
       const w = Math.max(Math.round(canvas.clientWidth * dpr), 1)
       const h = Math.max(Math.round(canvas.clientHeight * dpr), 1)
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w
         canvas.height = h
+        resized = true
       }
       const { peak, scope } = engine.meter.get()
+      if (peak === 0 && flat && !resized) return
+      flat = peak === 0
+      resized = false
       g.fillStyle = '#0a0a0c'
       g.fillRect(0, 0, w, h)
       g.strokeStyle = '#222226'
@@ -48,8 +54,23 @@ export function Scope() {
       g.fillStyle = peak > 0.85 ? '#ff3355' : '#3a3a40'
       g.fillRect(0, h - 4 * dpr, Math.min(peak, 1) * w, 4 * dpr)
     }
-    draw()
-    return () => cancelAnimationFrame(raf)
+    const schedule = () => {
+      if (raf === 0) raf = requestAnimationFrame(draw)
+    }
+    const off = engine.meter.subscribe(() => {
+      if (!flat || engine.meter.get().peak !== 0) schedule()
+    })
+    const observer = new ResizeObserver(() => {
+      resized = true
+      schedule()
+    })
+    observer.observe(canvas)
+    schedule()
+    return () => {
+      off()
+      observer.disconnect()
+      cancelAnimationFrame(raf)
+    }
   }, [])
 
   return (

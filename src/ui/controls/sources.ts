@@ -3,6 +3,7 @@ import {
   DATA_LINES,
   GRID_ROWS,
   N_DRUM_VOICES,
+  THROW_ROW,
   VOICE_LABELS,
 } from '../../drums'
 import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus'
@@ -461,9 +462,13 @@ export const SOURCE_GROUPS: Group[] = [
     ],
     editor: {
       kind: 'drums',
-      keys: GRID_ROWS.flatMap(r =>
-        r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
-      ),
+      keys: [
+        ...GRID_ROWS.flatMap(r =>
+          r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
+        ),
+        THROW_ROW.key,
+        THROW_ROW.len,
+      ],
     },
     sliders: [
       {
@@ -480,6 +485,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumBpm',
+        lane: 'kit tempo',
         tap: true,
         label: 'Tempo',
         min: 10,
@@ -491,6 +497,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumSwing',
+        lane: 'kit swing',
         label: 'Swing',
         min: 0,
         max: 0.9,
@@ -500,6 +507,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumChance',
+        lane: 'kit chance',
         label: 'Chance',
         min: 0,
         max: 1,
@@ -525,6 +533,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumDecay',
+        lane: 'kit decay',
         label: 'Decay',
         min: 0.25,
         max: 16,
@@ -536,6 +545,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'drumRing',
         needs: analogKit,
+        lane: 'kit ring',
         part: 'inside the voices',
         label: 'Ring',
         min: 0,
@@ -719,6 +729,16 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'How far a voice has to have drained before the one-shot behind it will answer the trigger line again. At nothing every pulse strikes; wound up, a line hammered faster than a voice can empty comes out divided — a rattle at the rate Decay sets rather than Retrigger.',
+      },
+      {
+        key: 'drumScan',
+        part: 'triggers and cross-patch',
+        label: 'Scan',
+        min: 0,
+        max: 40,
+        step: 0.1,
+        unit: 'ms',
+        help: 'The chip strikes one voice per scan. Slow it down and a crowded step smears into a flam while a lone hit stays on time.',
       },
       {
         key: 'drumAccentAmt',

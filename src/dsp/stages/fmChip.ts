@@ -101,6 +101,13 @@ const FNUM_FULL = 256
 const atten = (steps: number, perStep: number) =>
   Math.pow(10, (-steps * perStep) / 20)
 
+// The two powers the operator loop takes every sample, as tables: a block is
+// three bits and a channel volume four.
+const OCTAVE = Float64Array.from({ length: 8 }, (_, block) =>
+  Math.pow(2, block),
+)
+const VOLUME = Float64Array.from({ length: 16 }, (_, steps) => atten(steps, 3))
+
 // Brightness is the modulator's own volume, and the register counts
 // attenuation, so a brighter patch is a smaller number.
 const brightened = (byte: number, bright: number) =>
@@ -1295,7 +1302,7 @@ export class FmChip implements Stage {
         const key = this.regs[REG.keyBlock + n]!
         const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
         const block = (key >> 1) & 7
-        const hz = (fnum / FNUM_FULL) * FNUM_BASE * Math.pow(2, block) * pitch
+        const hz = (fnum / FNUM_FULL) * FNUM_BASE * OCTAVE[block]! * pitch
 
         const { mod, car } = this.chRates[n]!
         this.stepEnv(c.mod, raced ? this.raceRates : mod)
@@ -1357,7 +1364,7 @@ export class FmChip implements Stage {
   }
 
   private volume(n: number) {
-    return atten(this.regs[REG.instVol + n]! & 0x0f, 3)
+    return VOLUME[this.regs[REG.instVol + n]! & 0x0f]!
   }
 
   /** What the percussion bank's register holds, for a test to read. The button

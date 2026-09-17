@@ -81,19 +81,47 @@ export function SampleReel() {
     if (!g) return undefined
     let raf = 0
     let painted = ''
+    // What the last frame drew from. The meter posts sixty times a second
+    // whether or not the tape moved, and a reel standing still redraws nothing.
+    const drawn = new Float64Array(10).fill(Number.NaN)
+    const drawnPeaks = new Float32Array(PEAK_BINS)
+    const unchanged = (now: Float64Array, peaks: Float32Array) => {
+      let same = true
+      for (let i = 0; i < now.length; i++) {
+        if (drawn[i] !== now[i]) same = false
+        drawn[i] = now[i]!
+      }
+      for (let i = 0; i < PEAK_BINS; i++) {
+        const v = peaks[i] ?? 0
+        if (drawnPeaks[i] !== v) same = false
+        drawnPeaks[i] = v
+      }
+      return same
+    }
+    const inputs = new Float64Array(10)
     const draw = () => {
-      raf = requestAnimationFrame(draw)
-      // Sized to the box it landed in rather than stretched into it, the same
-      // as the trace: a hairline is the one thing here you read a position off.
+      raf = 0
       const dpr = window.devicePixelRatio || 1
       const w = Math.max(Math.round(el.clientWidth * dpr), 1)
       const h = Math.max(Math.round(el.clientHeight * dpr), 1)
       if (el.width !== w || el.height !== h) {
         el.width = w
         el.height = h
+        drawn.fill(Number.NaN)
       }
       const m = engine.meter.get()
       const c = engine.controls.get()
+      inputs[0] = w
+      inputs[1] = h
+      inputs[2] = m.samplePos
+      inputs[3] = m.sampleIn
+      inputs[4] = m.sampleOut
+      inputs[5] = c.loopIn
+      inputs[6] = c.loopOut
+      inputs[7] = c.sampleSpeed
+      inputs[8] = m.samplePlaying ? 1 : 0
+      inputs[9] = m.sampleSecs
+      if (unchanged(inputs, m.samplePeaks)) return
       // Two windows, and they are the same window until a wire off the bay
       // lands on the markers. What is lit is the tape that came round last
       // block, because that is what you are hearing; the handles stay on the
@@ -197,8 +225,20 @@ export function SampleReel() {
         }
       }
     }
-    raf = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(raf)
+    const schedule = () => {
+      if (raf === 0) raf = requestAnimationFrame(draw)
+    }
+    const offMeter = engine.meter.subscribe(schedule)
+    const offControls = engine.controls.subscribe(schedule)
+    const observer = new ResizeObserver(schedule)
+    observer.observe(el)
+    schedule()
+    return () => {
+      offMeter()
+      offControls()
+      observer.disconnect()
+      cancelAnimationFrame(raf)
+    }
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- the canvas only mounts once a tape is threaded, so the effect has to rerun then
   }, [threaded, level, rec])
 

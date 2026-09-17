@@ -292,34 +292,39 @@ function helpWithNormal(def: SliderDef) {
     : `${def.help} The red ticks mark the normal range, ${lo} to ${hi}.`
 }
 
-function NormalTrack({
+// A point on the travel where the thumb's centre sits, half a thumb in from
+// each end of the trough.
+const along = (pos: number) =>
+  `calc(var(--thumb-size) / 2 + (100% - var(--thumb-size)) * ${pos})`
+
+function PlainTrack({
   def,
+  pos,
   children,
 }: {
   def: SliderDef
+  pos: number
   children: ReactNode
 }) {
-  const [start, end] = normalEdges(def)
-  const at = (pos: number) => cssVars({ '--at': pos })
+  const stock = toPos(def, DEFAULT_CONTROLS[def.key])
+  const [start, end] = def.normal ? normalEdges(def) : [0, 1]
   return (
-    <span className={styles.plain}>
+    <span
+      className={styles.plain}
+      style={cssVars({
+        '--lo': along(Math.min(pos, stock)),
+        '--hi': along(Math.max(pos, stock)),
+        '--def': along(stock),
+      })}
+    >
+      {stock > 0 && stock < 1 && (
+        <span className={styles.defmark} style={{ left: along(stock) }} />
+      )}
       {start > 0 && (
-        <>
-          <span
-            className={styles.over}
-            style={cssVars({ '--from': 0, '--to': start })}
-          />
-          <span className={styles.tick} style={at(start)} />
-        </>
+        <span className={styles.redline} style={{ left: along(start) }} />
       )}
       {end < 1 && (
-        <>
-          <span
-            className={styles.over}
-            style={cssVars({ '--from': end, '--to': 1 })}
-          />
-          <span className={styles.tick} style={at(end)} />
-        </>
+        <span className={styles.redline} style={{ left: along(end) }} />
       )}
       {children}
     </span>
@@ -570,10 +575,10 @@ export function ControlSlider({
               </span>
             )}
           </span>
-        ) : def.normal === undefined ? (
-          track
         ) : (
-          <NormalTrack def={def}>{track}</NormalTrack>
+          <PlainTrack def={def} pos={pos}>
+            {track}
+          </PlainTrack>
         )}
         <span
           className={
@@ -583,24 +588,24 @@ export function ControlSlider({
                 ? styles.readoutBack
                 : way > 0
                   ? styles.readoutFwd
-                  : styles.readout
+                  : touched
+                    ? styles.readoutTouched
+                    : styles.readout
           }
         >
           {touched ? (
-            <>
-              {reading}
-              <Tip
-                text={`Off stock — click to put it back to ${formatValue(def, stock)}.`}
+            <Tip
+              text={`Off stock — click to put it back to ${formatValue(def, stock)}, or double-click the track.`}
+            >
+              <button
+                className={styles.revert}
+                aria-label={`reset ${label} to ${formatValue(def, stock)}`}
+                onClick={() => write(def.key, stock)}
               >
-                <button
-                  className={styles.revert}
-                  aria-label={`reset ${label} to ${formatValue(def, stock)}`}
-                  onClick={() => write(def.key, stock)}
-                >
-                  <span className={styles.mark}>↺</span>
-                </button>
-              </Tip>
-            </>
+                {reading}
+                <span className={styles.mark}>↺</span>
+              </button>
+            </Tip>
           ) : (
             <>
               {reading}

@@ -1,11 +1,10 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
+import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage'
 import { rail } from '../util/bridged'
 import { Transient } from '../util/follower'
 import { lpCoef } from '../util/onepole'
 import { mulberry32, type Rng } from '../util/rng'
-
-import type { Ctx, Stage, StereoBlock } from '../stage'
 
 // Six allpasses rather than three: the chirp is how far the low end lags the
 // top through the chain, and three stages was a drip where a spring is a boing.
@@ -56,45 +55,59 @@ class Tank {
     this.delaySec = Float64Array.from(delays, d => d / sr)
   }
 
-  /** Allpass cascade into the comb cluster; returns the summed wet sample. */
-  step(x: number, boing: number, fb: Float64Array, dampCoef: number): number {
+  /** Allpass cascade into the comb cluster, a block at a time: `wet` gets the
+      summed wet sample for each sample of `input`. */
+  run(
+    input: Float64Array,
+    wet: Float64Array,
+    n: number,
+    boing: number,
+    fb: Float64Array,
+    dampCoef: number,
+  ) {
     const buf = this.buf
     const off = this.off
     const mask = this.mask
     const pos = this.pos
+    const whole = this.whole
+    const frac = this.frac
+    const damp = this.damp
 
-    for (let k = 0; k < N_AP; k++) {
-      const o = off[k]!
-      const m = mask[k]!
-      const p = pos[k]! - 1 - this.whole[k]!
-      const a = buf[o + (p & m)]!
-      const d = a + this.frac[k]! * (buf[o + ((p - 1) & m)]! - a)
-      const w = x + boing * d
-      buf[o + pos[k]!] = w
-      pos[k] = (pos[k]! + 1) & m
-      x = d - boing * w
-    }
+    for (let i = 0; i < n; i++) {
+      let x = input[i]!
+      for (let k = 0; k < N_AP; k++) {
+        const o = off[k]!
+        const m = mask[k]!
+        const p = pos[k]! - 1 - whole[k]!
+        const a = buf[o + (p & m)]!
+        const d = a + frac[k]! * (buf[o + ((p - 1) & m)]! - a)
+        const w = x + boing * d
+        buf[o + pos[k]!] = w
+        pos[k] = (pos[k]! + 1) & m
+        x = d - boing * w
+      }
 
-    let wet = 0
-    for (let j = 0; j < N_COMB; j++) {
-      const k = N_AP + j
-      const o = off[k]!
-      const m = mask[k]!
-      const p = pos[k]! - 1 - this.whole[k]!
-      const a = buf[o + (p & m)]!
-      const d = a + this.frac[k]! * (buf[o + ((p - 1) & m)]! - a)
-      // the damping filter's state is a double that decays toward zero, so this
-      // is one of the places the denormal guard actually earns its compare
-      const y = this.damp[j]! + dampCoef * (d - this.damp[j]!)
-      this.damp[j] = Math.abs(y) < 1e-15 ? 0 : y
-      // A spring can only swing so far before it meets the box it is in, and
-      // rail is transparent under that: how long the tank rings stays the
-      // damping's business, and only a crash reaches the wall.
-      buf[o + pos[k]!] = rail(x + fb[j]! * y)
-      pos[k] = (pos[k]! + 1) & m
-      wet += d
+      let sum = 0
+      for (let j = 0; j < N_COMB; j++) {
+        const k = N_AP + j
+        const o = off[k]!
+        const m = mask[k]!
+        const p = pos[k]! - 1 - whole[k]!
+        const a = buf[o + (p & m)]!
+        const d = a + frac[k]! * (buf[o + ((p - 1) & m)]! - a)
+        // the damping filter's state is a double that decays toward zero, so
+        // this is one of the places the denormal guard actually earns its compare
+        const y = damp[j]! + dampCoef * (d - damp[j]!)
+        damp[j] = Math.abs(y) < 1e-15 ? 0 : y
+        // A spring can only swing so far before it meets the box it is in, and
+        // rail is transparent under that: how long the tank rings stays the
+        // damping's business, and only a crash reaches the wall.
+        buf[o + pos[k]!] = rail(x + fb[j]! * y)
+        pos[k] = (pos[k]! + 1) & m
+        sum += d
+      }
+      wet[i] = sum
     }
-    return wet
   }
 
   reset() {
@@ -112,6 +125,10 @@ export class SpringVerb implements Stage {
   private tankR: Tank
   private readonly fbL = new Float64Array(N_COMB)
   private readonly fbR = new Float64Array(N_COMB)
+  private readonly inL = new Float64Array(BLOCK)
+  private readonly inR = new Float64Array(BLOCK)
+  private readonly wetL = new Float64Array(BLOCK)
+  private readonly wetR = new Float64Array(BLOCK)
   private readonly slam: Transient
   private readonly noise: Rng
   private crashEnv = 0
@@ -166,24 +183,32 @@ export class SpringVerb implements Stage {
     const slamAt = 0.03 + 1.5 * (1 - kick) * (1 - kick)
     const hitAt = 1.7 - 1.5 * kick
     const trig = ctx.trig
-    for (let i = 0; i < io.n; i++) {
-      let inL = l[i]!
-      let inR = r[i]!
+    const n = io.n
+    const inL = this.inL
+    const inR = this.inR
+    for (let i = 0; i < n; i++) {
+      let xl = l[i]!
+      let xr = r[i]!
       if (kick > 0) {
-        const slammed = this.slam.process(0.5 * (inL + inR), slamAt)
+        const slammed = this.slam.process(0.5 * (xl + xr), slamAt)
         const hit = trig.drumBits[i]! !== 0 && trig.drumGain[i]! >= hitAt
         if (slammed || hit) this.crashEnv = 1
       }
       if (this.crashEnv > 1e-4) {
         this.crashEnv *= this.crashFall
         const a = CRASH_AMP * this.crashEnv
-        inL += a * (this.noise() - 0.5)
-        inR += a * (this.noise() - 0.5)
+        xl += a * (this.noise() - 0.5)
+        xr += a * (this.noise() - 0.5)
       }
-      const wl = this.tankL.step(inL, boing, fbL, dampCoef)
-      const wr = this.tankR.step(inR, boing, fbR, dampCoef)
-      l[i] = l[i]! * dry + wl * wetGain
-      r[i] = r[i]! * dry + wr * wetGain
+      inL[i] = xl
+      inR[i] = xr
+    }
+    // The two tanks share nothing, so each runs its whole block in one call.
+    this.tankL.run(inL, this.wetL, n, boing, fbL, dampCoef)
+    this.tankR.run(inR, this.wetR, n, boing, fbR, dampCoef)
+    for (let i = 0; i < n; i++) {
+      l[i] = l[i]! * dry + this.wetL[i]! * wetGain
+      r[i] = r[i]! * dry + this.wetR[i]! * wetGain
     }
   }
 

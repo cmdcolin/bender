@@ -83,3 +83,17 @@ test('wreck it winds up everything that can run away', () => {
     expect(after.bits).toBeLessThan(8)
   }
 })
+
+test('random dub puts the echo on a dotted or straight division of the beat', () => {
+  const before = mine()
+  const beat = 60000 / before.drumBpm
+  for (let seed = 1; seed <= 20; seed++) {
+    const after = scenarioNamed('dub')(before, mulberry32(seed))
+    const ratio = after.delayMs / beat
+    const near = [0.75, 0.375, 1.5, 0.5].some(
+      r => Math.abs(ratio / r - 1) < 0.02,
+    )
+    expect(near, `seed ${seed}: ${ratio}`).toBe(true)
+    expect(after.dlyMix).toBeGreaterThan(0)
+  }
+})
