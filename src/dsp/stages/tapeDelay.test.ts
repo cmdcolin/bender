@@ -1,6 +1,15 @@
 import { expect, test } from 'vitest'
 
-import { SR, bin, pitchHz, renderBender, rms, sine, tail } from '../testRender'
+import {
+  SR,
+  bin,
+  envelope,
+  pitchHz,
+  renderBender,
+  rms,
+  sine,
+  tail,
+} from '../testRender'
 
 import type { Controls } from '../../controls'
 import type { BuiltChain } from '../build'
@@ -158,4 +167,48 @@ test('the ring path costs the tail no level', () => {
       rms(plain) / Math.SQRT2,
     )
   }
+})
+
+const ECHO: Partial<Controls> = {
+  chipLevel: 0,
+  sampleLevel: 1,
+  sampleMode: 1,
+  dlyMix: 1,
+  delayMs: 200,
+  dlyFb: 0.7,
+}
+
+test('a band-pass in the loop keeps its band and drops the rest', () => {
+  const chord = (b: BuiltChain) => {
+    const hi = sine(2500, 0.5)
+    b.sampler.setBuffer(sine(400, 0.5).map((v, i) => 0.5 * (v + hi[i]!)))
+  }
+  const tones = (over: Partial<Controls>) => {
+    const t = renderBender({ ...ECHO, ...over }, 2.5, chord).subarray(1.2 * SR)
+    return { low: bin(t, 400), high: bin(t, 2500) }
+  }
+  const open = tones({})
+  const band = tones({ dlyLoopMode: 2, dlyLoopHz: 2500, dlyLoopRes: 0.6 })
+  expect(band.low).toBeLessThan(open.low / 100)
+  expect(band.high).toBeGreaterThan(open.high / 2)
+})
+
+const swing = (x: Float32Array) => {
+  const e = envelope(x, 0.05)
+  const mean = e.reduce((a, v) => a + v, 0) / e.length
+  return Math.sqrt(e.reduce((a, v) => a + (v - mean) ** 2, 0) / e.length) / mean
+}
+
+test('a lamp in the loop breathes where runaway feedback would pin', () => {
+  const runaway = { ...ECHO, dlyFb: 1.5, delayMs: 150 }
+  const ping = (b: BuiltChain) => b.sampler.setBuffer(sine(400, 0.3))
+  const pinned = renderBender(runaway, 8, ping).subarray(2 * SR)
+  const lit = renderBender(
+    { ...runaway, dlyLamp: 1, dlyLampS: 1.5 },
+    8,
+    ping,
+  ).subarray(2 * SR)
+  expect(swing(pinned)).toBeLessThan(0.01)
+  expect(swing(lit)).toBeGreaterThan(0.15)
+  expect(rms(lit)).toBeGreaterThan(0.05)
 })

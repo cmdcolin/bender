@@ -2,43 +2,16 @@ import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
 import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
-import { flushDenormal, softclip } from '../util/softclip'
+import { softclip } from '../util/softclip'
+import { dampAt, Svf } from '../util/svf'
 
 import type { Ctx, Stage, StereoBlock } from '../stage'
-
-class Svf {
-  low = 0
-  band = 0
-  process(x: number, f: number, damp: number, mode: number): number {
-    this.low = flushDenormal(this.low + f * this.band)
-    const high = x - this.low - damp * this.band
-    // saturating the band path is what turns negative damping into a held
-    // scream instead of a blowup, and flushing it is what stops a tank left
-    // ringing down from coming to rest on a denormal it then pays for for ever
-    this.band = flushDenormal(softclip(this.band + f * high))
-    switch (mode) {
-      case 1:
-        return this.band
-      case 2:
-        return high
-      default:
-        return this.low
-    }
-  }
-  reset() {
-    this.low = 0
-    this.band = 0
-  }
-}
 
 // The floor the coupled damping can be driven to: as far negative as the
 // resonance knob alone reaches at its top, and no further.
 const DAMP_FLOOR = -1
 
 const RES_MAX = 1.3
-
-const dampAt = (res: number) =>
-  2 * (1 - Math.min(res, 1)) + (res > 1 ? -(res - 1) * 1.5 : 0)
 
 // A dropped filter. Popcorn: a junction flipping between two levels, faster
 // the louder the input, stepping the integrators so each flip rings at the

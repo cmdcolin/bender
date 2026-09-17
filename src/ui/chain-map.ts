@@ -88,6 +88,7 @@ const WIRE_BOX: Record<keyof typeof DEST, string> = {
   drumChance: 'Toy drums',
   drumDecay: 'Toy drums',
   drumRing: 'Toy drums',
+  dlyLoopHz: 'Tape delay',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

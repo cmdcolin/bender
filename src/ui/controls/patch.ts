@@ -60,7 +60,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 66,
+          max: 67,
           step: 1,
           unit: '',
           choices: [
@@ -131,6 +131,7 @@ export const PATCH_GROUPS: Group[] = [
             'kit chance',
             'kit decay',
             'kit ring',
+            'delay filt',
           ],
           groups: [
             {
@@ -225,6 +226,7 @@ export const PATCH_GROUPS: Group[] = [
               choices: [
                 'stomp drive',
                 'delay time',
+                'delay filt',
                 'tape speed',
                 'echo time',
                 'verb decay',

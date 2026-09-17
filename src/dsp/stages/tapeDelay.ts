@@ -7,6 +7,7 @@ import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
 import { octaves } from '../util/pitch'
 import { mulberry32, type Rng } from '../util/rng'
 import { flushDenormal, softclip } from '../util/softclip'
+import { dampAt, Svf, svfF } from '../util/svf'
 
 import type { Ctx, Stage, StereoBlock } from '../stage'
 
@@ -25,6 +26,11 @@ const HEAD_MASKS = [1, 3, 5, 6, 7]
 // faster for no reason anyone asked for. √2 is exactly what the modulation took
 // out, handed back to the ring path alone.
 const RING_MAKEUP = Math.SQRT2
+
+// A bulb in the regeneration: its filament heats with what goes round and its
+// resistance pulls the loop gain down, so feedback past unity swells, backs
+// off and swells again instead of pinning.
+const LAMP_GAIN = 12
 
 // Fractional delay with wow/flutter transport wobble and a saturating
 // feedback loop that runs away musically past unity. The capstan is a real
@@ -50,6 +56,9 @@ export class TapeDelay implements Stage {
   private ring = new QuadOsc()
   private ringDcL = new DcBlocker()
   private ringDcR = new DcBlocker()
+  private loopL = new Svf()
+  private loopR = new Svf()
+  private filament = 0
   private flutterWalk = 0
   private motor = 1
   private slide = 0
@@ -113,6 +122,16 @@ export class TapeDelay implements Stage {
     const ringing = ringDepth > 0
     const ringDc = 1 - (2 * Math.PI * 10) / this.sr
     if (ringing) this.ring.setRate(p[IDX.dlyRingHz]!, this.sr)
+    const loopMode = Math.round(p[IDX.dlyLoopMode]!) - 1
+    const loopHz = p[IDX.dlyLoopHz]!
+    const modLoop = ctx.mod.read(DEST.dlyLoopHz)
+    const loopDamp = dampAt(p[IDX.dlyLoopRes]!)
+    const loopF = svfF(loopHz, this.sr)
+    // Band-pass peaks at 1/damp, so it gives that back and a narrow band rings
+    // rather than exploding.
+    const bandTrim = loopMode === 1 ? Math.max(loopDamp, 0.15) : 1
+    const lamp = p[IDX.dlyLamp]!
+    const lampK = 1 / (p[IDX.dlyLampS]! * this.sr)
 
     for (let i = 0; i < io.n; i++) {
       const delaySamples = modTime
@@ -154,6 +173,13 @@ export class TapeDelay implements Stage {
       }
       let tapL = this.toneL.process(sumL, coef)
       let tapR = this.toneR.process(sumR, coef)
+      if (loopMode >= 0) {
+        const f = modLoop
+          ? svfF(loopHz * octaves(modLoop[i]! * 3), this.sr)
+          : loopF
+        tapL = bandTrim * this.loopL.process(tapL, f, loopDamp, loopMode)
+        tapR = bandTrim * this.loopR.process(tapR, f, loopDamp, loopMode)
+      }
       if (ringing) {
         this.ring.step()
         const rl = this.ringDcL.process(tapL * this.ring.im, ringDc)
@@ -161,8 +187,16 @@ export class TapeDelay implements Stage {
         tapL += ringDepth * (RING_MAKEUP * rl - tapL)
         tapR += ringDepth * (RING_MAKEUP * rr - tapR)
       }
-      let wl = io.l[i]! + softclip((fb / nHeads) * tapL)
-      let wr = io.r[i]! + softclip((fb / nHeads) * tapR)
+      let regen = fb / nHeads
+      if (lamp > 0) {
+        this.filament = flushDenormal(
+          this.filament +
+            lampK * (0.5 * (tapL * tapL + tapR * tapR) - this.filament),
+        )
+        regen /= 1 + LAMP_GAIN * lamp * this.filament
+      }
+      let wl = io.l[i]! + softclip(regen * tapL)
+      let wr = io.r[i]! + softclip(regen * tapR)
       if (micInject) {
         wl += ctx.mic[i]!
         wr += ctx.mic[i]!
@@ -205,6 +239,9 @@ export class TapeDelay implements Stage {
     this.ring.reset()
     this.ringDcL.reset()
     this.ringDcR.reset()
+    this.loopL.reset()
+    this.loopR.reset()
+    this.filament = 0
     this.flutterWalk = 0
     this.motor = 1
     this.slide = 0

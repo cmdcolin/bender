@@ -589,6 +589,10 @@ sine carrier would cost the tail 3 dB a lap and the repeats would simply die
 sooner. A dc block sits on the multiplied tap, since at unison the product has a
 constant term and the tone filter is a low-pass rather than a block.
 
+**Loop filter** is a resonant filter inside the regeneration: sweep it while the
+repeats ring, the dub delay move. **Lamp** is a bulb in the same loop. It dims as
+it heats, so Feedback past 1 swells and backs off instead of pinning.
+
 **Freq shifter** moves every partial by the same number of hertz rather than the
 same ratio, so harmonic input comes out inharmonic. Its own feedback shifts
 every lap again — the barber-pole effect — which keeps the squeal inside the

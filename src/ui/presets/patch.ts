@@ -93,6 +93,7 @@ const LANDINGS: Landing[] = [
   at('stomp drive', ['stompMix']),
   at('verb decay', ['revMix']),
   at('delay time', ['dlyMix']),
+  at('delay filt', ['dlyMix', 'dlyLoopMode']),
   at('tape speed', ['dlyMix']),
   at('echo time', ['echoLevel']),
   at('fb amount', []),
