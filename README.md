@@ -30,6 +30,8 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 - Buttons to easily randomize settings
 - Connect MIDI controller (works with Chrome, Firefox Nightly)
 - "Tape loop" sampler that has tape head re-recording-over-the-loop effect
+- Varispeed deck under the whole board — slow the entire instrument for real,
+  tempo and pitch together, with a motor that winds down
 - Shareable URLs
 
 Uses AudioWorklet API...surpringly powerful and fast

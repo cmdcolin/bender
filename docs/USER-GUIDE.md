@@ -487,6 +487,21 @@ actual audio output as a 16-bit stereo wav file, where the keyboard's **Rec**
 and the drum machine's **Record** capture what you played rather than what comes
 out of the speakers.
 
+### Varispeed
+
+**Varispeed**, in the Output panel, is the deck the whole instrument is printed
+to. Everything else on the board — the tape machine and the limiter included —
+is upstream of it, so turning it down slows the pitch, the tempo, every envelope
+and every delay and reverb tail together, and nothing upstream knows. **Motor
+weight** beside it is how long the platter takes to get where the knob is: wind
+it up and dragging Varispeed to the stop is a tape stop that runs down, and
+letting it back up is a spin-up.
+
+A wire from the patch bay lands on `deck speed` like any other lane, so one LFO
+wobbles the whole board. The mic is resampled on the way in, so a voice through
+a slowed board still comes out at the pitch you sang it. A take, master and
+stems both, is what the deck played.
+
 ### Stems
 
 The selector beside it says what a take comes back as. **Master only** is one
