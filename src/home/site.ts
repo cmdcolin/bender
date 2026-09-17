@@ -19,5 +19,6 @@ export const SITE = {
     [guideUrl, 'User guide'],
     [REPO, 'GitHub ↗'],
     [privacyUrl, 'Privacy'],
+    ['https://videoskillet.com/', "bender's sibling: videoskillet ↗"],
   ],
 } as const
