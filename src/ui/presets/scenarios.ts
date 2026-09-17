@@ -1,7 +1,9 @@
 import {
   bendAt,
   BEND_SLOT_KEYS,
+  BENDS,
   choiceValue,
+  groupFor,
   GROUPS,
   ALL_SLIDERS,
   sliderFor,
@@ -18,7 +20,7 @@ import {
 } from './patch'
 import { inTime } from './quantize'
 import { rollGroup, rollKeys } from './roll'
-import { CLOCK_KEYS, YOURS } from './yours'
+import { CLOCK_KEYS, PART_KEYS, YOURS } from './yours'
 
 import type { ControlKey, Controls } from '../../controls'
 
@@ -130,11 +132,44 @@ const WRECK: [ControlKey, number, number][] = [
   ['crushMix', 0.4, 1],
 ]
 
+// What has to be up for a stage to be heard at all, where its own mix or level
+// does not say.
+const GATE_OF: Partial<Record<string, ControlKey>> = {
+  'Feedback bus': 'fbAmt',
+  'Tape machine': 'tapeMix',
+  Stompbox: 'stompMix',
+}
+
+const gateOf = (group: string): ControlKey | undefined => {
+  if (GATE_OF[group]) return GATE_OF[group]
+  const sliders = GROUPS.find(g => g.name === group)?.sliders ?? []
+  return (
+    sliders.find(s => s.role === 'mix') ?? sliders.find(s => s.role === 'level')
+  )?.key
+}
+
+const inChain = (c: Controls, group: string) =>
+  !BENDS.some(b => b.group === group) ||
+  BEND_SLOT_KEYS.some(k => bendAt(c[k])?.group === group)
+
+/** Whether moving this control can be heard on the board as it stands. */
+const heard = (c: Controls, key: ControlKey) => {
+  const group = groupFor(key)
+  const gate = gateOf(group)
+  return inChain(c, group) && (!gate || c[gate] > sliderFor(gate).min)
+}
+
 // Controls worth driving to an end of their travel: everything with a travel to
-// drive, minus what is yours and the clock.
-const slammable = () =>
+// drive, minus what is yours and the clock, on a stage you can hear.
+const slammable = (c: Controls) =>
   ALL_SLIDERS.filter(
-    d => !d.choices && !YOURS.has(d.key) && !CLOCK_KEYS.has(d.key),
+    d =>
+      !d.choices &&
+      !YOURS.has(d.key) &&
+      !CLOCK_KEYS.has(d.key) &&
+      !PART_KEYS.has(d.key) &&
+      (!d.needs || d.needs(c)) &&
+      heard(c, d.key),
   )
 
 // One, two or three controls all the way to an end, and nothing else touched.
@@ -143,7 +178,7 @@ const slammable = () =>
 // once and hands back a hundred answers you can't tell apart. Either end counts:
 // a control slammed shut is as much an answer as one slammed open.
 function slam(current: Controls, rand: () => number): Controls {
-  const pool = slammable()
+  const pool = slammable(current)
   const next = { ...current }
   const moved = new Set<ControlKey>()
   const count = 1 + Math.floor(rand() * 3)
@@ -186,15 +221,24 @@ const ANTAGONISTS: [ControlKey, ControlKey][] = [
 // pair rather than the middle of it. Everything else is left where it stood, so
 // what comes back is the board you had, standing on an edge.
 function edge(current: Controls, rand: () => number): Controls {
-  const pairs = [...ANTAGONISTS]
+  const pairs = ANTAGONISTS.filter(([a]) => inChain(current, groupFor(a)))
   const next = { ...current }
   const moved = new Set<ControlKey>()
   for (let i = 0; i < 2 && pairs.length > 0; i++) {
     const [a, b] = pairs.splice(Math.floor(rand() * pairs.length), 1)[0]!
-    const high = rand() < 0.5
+    const gate = gateOf(groupFor(a))
+    if (gate && !heard(next, a)) {
+      next[gate] = snapToStep(
+        sliderFor(gate),
+        fromPos(sliderFor(gate), 0.6 + rand() * 0.3),
+      )
+      moved.add(gate)
+    }
+    // The first of a pair is the one wound up; the second decides which way
+    // it goes.
     for (const [key, top] of [
-      [a, high],
-      [b, !high],
+      [a, true],
+      [b, rand() < 0.5],
     ] as const) {
       const def = sliderFor(key)
       const pos = top ? 0.82 + rand() * 0.18 : rand() * 0.18
