@@ -701,12 +701,26 @@ export class ToyDrum implements Stage {
     // and everything else this chip counts — see perSample below.
     const clock = rail.clockFactor
     const stepHz = (p[IDX.drumBpm]! / 60) * 4 * clock
-    const swing = Math.min(Math.max(p[IDX.drumSwing]!, 0), 0.9)
+    const modTempo = ctx.mod.read(DEST.drumBpm)
+    const baseSwing = p[IDX.drumSwing]!
+    const modSwing = ctx.mod.read(DEST.drumSwing)
     const slip = Math.min(Math.max(p[IDX.drumSlip]!, 0), 1)
     const baseTune = p[IDX.drumTune]!
     const modTune = ctx.mod.read(DEST.drumTune)
-    const decay = Math.max(p[IDX.drumDecay]!, 0.05)
-    const ring = p[IDX.drumRing]!
+    // Decay and Ring set per-block constants, so their lanes are read once a
+    // block: 2.7 ms is finer than any envelope they reach.
+    const modDecay = ctx.mod.read(DEST.drumDecay)
+    const decay = Math.min(
+      Math.max(
+        p[IDX.drumDecay]! * (modDecay ? octaves(2 * modDecay[0]!) : 1),
+        0.05,
+      ),
+      64,
+    )
+    const modRing = ctx.mod.read(DEST.drumRing)
+    const ring = modRing
+      ? Math.min(Math.max(p[IDX.drumRing]! + modRing[0]!, 0), 1)
+      : p[IDX.drumRing]!
     // The two halves of the snare are a transistor's hiss and a pair of tuned
     // networks, and nothing in one is in the other. So the pot between them has
     // to fade on power rather than on amplitude, or the middle of its travel —
@@ -771,7 +785,9 @@ export class ToyDrum implements Stage {
     // like every other duration on this board: a sagging rail slows the pass
     // as well as the tempo, so a flat kit is a coarse kit.
     const slotS = Math.max(p[IDX.drumSlot]!, 0) / 1e6 / clock
-    this.chance = Math.min(Math.max(p[IDX.drumChance]!, 0), 1)
+    const baseChance = p[IDX.drumChance]!
+    const modChance = ctx.mod.read(DEST.drumChance)
+    this.chance = Math.min(Math.max(baseChance, 0), 1)
     // All the way up is a voice that will not answer again until it has stopped
     // sounding; at nothing the floor sits above where an envelope starts, so
     // nothing is ever locked out.
@@ -868,11 +884,18 @@ export class ToyDrum implements Stage {
         this.struckBits = 0
         this.struckGain = 0
       }
+      if (modChance)
+        this.chance = Math.min(Math.max(baseChance + modChance[i]!, 0), 1)
       if (this.transport.drums) {
         // Swing holds the offbeat back and takes it off the step after, so a
         // pair still spans two steps and the tempo is what the knob says.
+        const swing = Math.min(
+          Math.max(modSwing ? baseSwing + 0.9 * modSwing[i]! : baseSwing, 0),
+          0.9,
+        )
         const span = this.tick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
-        this.stepClock += stepHz / this.sr
+        this.stepClock +=
+          (modTempo ? stepHz * octaves(modTempo[i]!) : stepHz) / this.sr
         if (this.stepClock >= span) {
           this.stepClock -= span
           // A knife on the counter's clock, which is the one wire on this

@@ -460,6 +460,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumBpm',
+        lane: 'kit tempo',
         tap: true,
         label: 'Tempo',
         min: 10,
@@ -471,6 +472,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumSwing',
+        lane: 'kit swing',
         label: 'Swing',
         min: 0,
         max: 0.9,
@@ -480,6 +482,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumChance',
+        lane: 'kit chance',
         label: 'Chance',
         min: 0,
         max: 1,
@@ -505,6 +508,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumDecay',
+        lane: 'kit decay',
         label: 'Decay',
         min: 0.25,
         max: 16,
@@ -515,6 +519,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'drumRing',
+        lane: 'kit ring',
         part: 'inside the voices',
         label: 'Ring',
         min: 0,

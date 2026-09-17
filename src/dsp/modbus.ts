@@ -95,8 +95,13 @@ export const DEST = {
   petAddrFault: 59,
   petDataLine: 60,
   petDataFault: 61,
+  drumBpm: 62,
+  drumSwing: 63,
+  drumChance: 64,
+  drumDecay: 65,
+  drumRing: 66,
 } as const
-export const N_DEST = 62
+export const N_DEST = 67
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

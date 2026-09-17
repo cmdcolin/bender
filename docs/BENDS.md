@@ -557,6 +557,10 @@ destination, **starve**, isn't a stage at all — it's the shared rail, so a wir
 landed there reaches everything powered from it at once, whether that's a drum
 hit browning the chip out on every kick or an LFO that ages the rail in time.
 
+Five lanes reach the kit: **tempo**, **swing**, **chance**, **decay** and
+**ring**. Drum hit onto chance makes every hit raise the odds of the next maybe
+step, so fills feed themselves.
+
 The bay's oscillator also offers two shapes beyond the usual LFO set: **chaos**,
 which folds along a Rössler-style band and passes near where it's been without
 ever landing there twice, and **drunk**, a bounded random walk that reflects off
