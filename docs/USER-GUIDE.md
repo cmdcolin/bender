@@ -296,6 +296,9 @@ ageing controls up together, **patch** solders two or three wires from a moving
 source onto a stage that's actually running, and **cascade** solders one wire
 onto another wire's own depth.
 
+**Dub** builds a dub desk around what is playing: a dark tape echo in time, a
+filter in its loop, a spring and a crackling filter.
+
 ![The patch bay: three of four LFO wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](img/guide-patchbay.jpg)
 
 Every control a wire can land on carries a **+ mod** button beside its readout:
