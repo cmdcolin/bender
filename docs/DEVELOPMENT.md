@@ -71,6 +71,19 @@ write straight to the DOM off the meter rather than through a render:
   [optimizations.md](optimizations.md#the-panel-is-not-what-costs-one-write-a-frame-was)
   was found, and it was worth half the main thread.
 
+- `pnpm cpu` runs the built app in Chrome and reports the CPU time of the audio
+  worklet thread, the renderer's main thread and compositor, and the GPU
+  process. It also reports wakeups a second and the underruns Chrome counted in
+  `AudioContext.playbackStats`. `pnpm cpu 20 idle` measures the stock board with
+  nothing playing, `stock` the stock board playing, `heavy` the heavy board with
+  a tape threaded, and `hidden` the heavy board in a background tab. Linux only,
+  since it reads `/proc`.
+
+  Battery power moves every column, so compare two builds in one sitting:
+  `BENDER_BUILT=dirA,dirB BENDER_ROUNDS=4` alternates prebuilt sites. The `fps`
+  column reads 0 when Chrome is not drawing the page, which happens with the
+  display off, and the drawing columns mean nothing in that run.
+
 What those numbers mean, and which of them can be trusted, is
 [optimizations.md](optimizations.md). How a block actually gets rendered across
 the main and audio threads is [dataflow.md](dataflow.md).

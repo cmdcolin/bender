@@ -29,7 +29,8 @@ measurement behind it is worth, and the obvious way to measure here is wrong.
 the distribution — p50 through p99.9, and how many blocks went over budget —
 because the mean is not what glitches. `pnpm cold` reports the first seconds,
 before anything has tiered up. `pnpm ab <ref>` compares the working tree against
-a git ref.
+a git ref. `pnpm cpu` runs the built app in Chrome and reports CPU time per
+thread and the underruns Chrome counted.
 
 **The minimum across processes is a lottery.** `bench.ts` takes the best of
 several passes, on the reasonable argument that anything else sharing the
@@ -163,6 +164,44 @@ schedule can see it, where an allocation lands whenever the collector decides.
 Because serialization is synchronous, reusing the buffer immediately afterwards
 is safe.
 
+**The chain allocates anyway, and `bench.ts` reported zero.** Its
+`PerformanceObserver` delivers `gc` entries on a later tick, so the count
+printed before any entry arrived. `GCProfiler` counts synchronously, and it puts
+the heavy board at 82 collections per pass. A sampling heap profile of a Node
+render measures 62 MB allocated per second of audio on the heavy board and 6.4
+MB on the stock board. In Chrome the worklet allocated 34 MB a second on the
+heavy board and ran about 20 scavenges a second on the audio thread, each around
+0.35 ms on AC power.
+
+Nearly all of it is boxed doubles. V8 keeps a double unboxed inside one
+optimized function and writes a double field in place, but a call that stays out
+of line passes its double arguments and its double return value as heap numbers.
+A micro-benchmark of one pole written both ways measured 489 ms and 305
+collections for 20 million out-of-line calls that return the value, and 266 ms
+and no collections when the callee stores it in a field and the caller reads the
+field. TurboFan inlines a callee only while the caller's inlined bytecode stays
+under 920 bytes, and several stage `process` methods are over 4,000 bytes of
+bytecode on their own, so the helpers they call per sample stay out of line.
+
+## Give V8 small loops to compile
+
+A small method that runs a whole block gets its own compile and its own inlining
+budget, so TurboFan inlines the helpers it calls:
+
+| change                                                        | measured, paired               |
+| ------------------------------------------------------------- | ------------------------------ |
+| spring tanks run a whole block per call                       | heavy board 9% faster, 8 of 8  |
+| safety tail and limiter moved out of `Chain.process`          | stock board 3% faster, 7 of 8  |
+| multi-pole filters in one `Float64Array`, FM powers as tables | stock board 11% faster, 7 of 8 |
+
+`--trace-turbo-inlining` confirms the tail: `tail` inlines both dc blockers, all
+three followers, the one-pole and both clippers. The tape heads took the same
+block conversion and measured no change, because a head's per-sample body is
+large enough that its own calls to `readHermite`, `softclip` and the noise
+closure still stay out of line. The drum kit is the largest remaining case: on
+the stock board it is half the DSP time and 60% of the allocation, all inside
+one `process` method.
+
 ## Block rate against sample rate
 
 A knob holds still for the length of a block, so anything derived only from
@@ -190,6 +229,32 @@ SVG elements to diff — about half a millisecond to build and as much again to
 reconcile, so roughly 32 ms of every second a board is travelling. The map reads
 the board on its own clock: at once when it has been still, on the trailing edge
 while it is moving.
+
+### Every thread, and on battery
+
+`pnpm cpu` reads each Chrome thread's run time from `/proc`, so it covers the
+audio thread, the compositor and the GPU process as well as the main thread, and
+it reads the underrun count from `AudioContext.playbackStats`. On the i9-9880H
+laptop this was measured on, with the heavy board playing and a tape threaded,
+battery power roughly tripled the audio thread's cost:
+
+| thread, % of one core | on battery | on AC |
+| --------------------- | ---------- | ----- |
+| audio worklet         | 67         | 20    |
+| GPU process main      | 48         | 16    |
+| renderer main         | 19         | 7     |
+
+Node renders the same board at 21% of a core on battery. The worklet renders in
+bursts of two or three quanta per device callback, and a power-saving CPU
+governor keeps the core at a low frequency between bursts.
+
+The stock board with nothing playing cost 14% of a core on the audio thread, 5%
+on the renderer main thread, 4% on the compositor and 14% in the GPU process, on
+battery. The scope, the reel and the desk each ran a `requestAnimationFrame`
+loop for as long as they were mounted and repainted a canvas every frame, so a
+silent board kept the compositor and the GPU process drawing. They now request a
+frame when a meter post carries something new to draw, and the scope stops once
+it has drawn a flat trace.
 
 ### The panel is not what costs; one write a frame was
 
@@ -342,6 +407,17 @@ Worth recording so nobody spends the afternoon twice.
   (`position-anchor`, `position-try-fallbacks: flip-block`) does flip and shift
   declaratively with no javascript at all — but it is Chromium-only for now, so
   it needs a fallback, which is most of the code back again.
+
+- **`flushDenormal` as two compares.** `x < 1e-15 && x > -1e-15 ? 0 : x` returns
+  the same value as the `Math.abs` form for every input and is 20 bytes of
+  bytecode against 28, under V8's 27-byte limit for inlining regardless of
+  budget. Paired against the `Math.abs` form it measured 0.996 on the stock
+  board and 1.029 on the heavy board, so V8 already inlined it where it counted.
+- **Skipping silent toy-chip voices.** Skipping the fade on a voice at zero,
+  reading the rail's amp factor only when the melody sounds and skipping the mix
+  clipper on a zero sum measured 1.021 on the stock board, 4 of 8.
+- **Tape heads a block at a time.** 1.037 on the heavy board, 3 of 8. See
+  [Give V8 small loops to compile](#give-v8-small-loops-to-compile).
 
 ## Still open
 
