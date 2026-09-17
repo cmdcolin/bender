@@ -247,8 +247,8 @@ async function session(url: string, scene: Scene, setup = '') {
         method: 'PUT',
       })
     if (setup) await ask(page, setup)
-    const fps = (await ask(page, FPS)) as number
     await sleep(4000)
+    const fps = (await ask(page, FPS)) as number
     const statsBefore = (await ask(page, STATS)) as Underruns | null
     const before = snapshot(profile)
     await sleep(seconds * 1000)
