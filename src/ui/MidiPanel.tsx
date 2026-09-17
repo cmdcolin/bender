@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine'
 import { noteName } from '../notes'
@@ -10,6 +10,7 @@ import {
   midi,
   parseRoute,
   type DeviceProfile,
+  type MidiStatus,
 } from './midi'
 import styles from './MidiPanel.module.css'
 import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
@@ -449,37 +450,18 @@ function KeyRouting() {
   )
 }
 
-// The wire, behind a button in the nameplate row. Everything it offers is
-// meaningless without a controller plugged in, and it is not a stage of the
-// board — so it takes no room in the panel at all until you ask for it, which
-// is what a row of it was costing the stage under the map.
+// The wire, behind a button in the nameplate row. Everything it offers needs a
+// controller plugged in, so it takes no room in the panel until asked for.
 //
-// What stays outside is the status, and only the status, because the status is
-// the half that is live: a stranded knob is a knob gone inert, and a board whose
-// knobs have all gone quiet with nothing on screen saying why is the one thing
-// this must never become. Managing them — unbinding, encoder mode, pads,
-// profiles — is sit-down work with no reason to be on screen while you play.
+// The button carries the status, because a stranded knob is a knob gone inert,
+// and a board whose knobs have gone quiet has to say why with the card shut.
 export function MidiPanel() {
   const status = useStoreValue(midi.status)
   const bindings = useStoreValue(midi.bindings)
   const stranded = Object.keys(useStoreValue(midi.pickups)).length
   const count = Object.keys(bindings).length
   const [open, setOpen] = useState(false)
-
-  const note =
-    status === 'ready'
-      ? count === 0
-        ? 'connected'
-        : stranded > 0
-          ? `${stranded} waiting`
-          : `${count} bound`
-      : status === 'unsupported'
-        ? 'n/a'
-        : status === 'denied'
-          ? 'refused'
-          : status === 'requesting'
-            ? 'asking…'
-            : null
+  const note = midiTabNote(status, count, stranded)
 
   return (
     <>
@@ -509,20 +491,44 @@ export function MidiPanel() {
           )}
         </button>
       </Tip>
-      {open && <MidiDialog onClose={() => setOpen(false)} />}
+      {open && (
+        <MidiDialog
+          status={status}
+          onEnable={() => midi.enable()}
+          onClose={() => setOpen(false)}
+        >
+          <Wired />
+        </MidiDialog>
+      )}
     </>
   )
 }
 
-// Shown rather than modal. Binding a control is not done in here — every slider
-// row in an open stage carries its own ⚟ — so a dialog that took the panel away
-// would be a dialog you have to close to use what it is about. Non-modal, the
-// list of what is bound stays up while you reach past it and bind another.
-//
-// Which also means nothing traps the focus, so escape is taken by hand: a
-// non-modal dialog gets no `cancel` event.
-function MidiDialog(props: { onClose: () => void }) {
-  const status = useStoreValue(midi.status)
+// CROSS_REPO_SYNC(midi-dialog)
+function midiTabNote(
+  status: MidiStatus,
+  bound: number,
+  stranded: number,
+): string | null {
+  if (status === 'ready') {
+    if (bound === 0) return 'connected'
+    return stranded > 0 ? `${stranded} waiting` : `${bound} bound`
+  }
+  if (status === 'unsupported') return 'n/a'
+  if (status === 'denied') return 'refused'
+  if (status === 'requesting') return 'asking…'
+  return null
+}
+
+// Non-modal: every control binds from its own ⚟, in the panel behind this card,
+// so the panel has to stay reachable with the card up. A shown dialog gets no
+// `cancel` event, so Escape is bound by hand.
+function MidiDialog(props: {
+  status: MidiStatus
+  onEnable: () => void
+  onClose: () => void
+  children: ReactNode
+}) {
   const { onClose } = props
 
   useEffect(() => {
@@ -551,28 +557,21 @@ function MidiDialog(props: { onClose: () => void }) {
           ×
         </button>
       </div>
-      {status === 'ready' ? (
-        <Wired />
-      ) : status === 'unsupported' ? (
+      {props.status === 'ready' ? (
+        props.children
+      ) : props.status === 'unsupported' ? (
         <div className={styles.hint}>
-          this browser has no Web MIDI — Chrome and Edge do, Safari and Firefox
-          don’t.
+          this browser has no Web MIDI — try Chrome or Edge.
         </div>
       ) : (
         <div className={styles.row}>
-          {/* Focus lands here rather than on the close, which is what opening a
-              dialog gives it by default: the close is first in the markup
-              because it belongs to the heading, and it is the last thing you
-              opened this to press. */}
-          <button
-            className={styles.btn}
-            autoFocus
-            onClick={() => midi.enable()}
-          >
+          {/* Focus lands on the button that does the work, not on the close
+              that comes first in the markup. */}
+          <button className={styles.btn} autoFocus onClick={props.onEnable}>
             connect a controller
           </button>
           <span className={styles.hint}>
-            {status === 'denied'
+            {props.status === 'denied'
               ? 'the browser refused — allow MIDI for this site and try again'
               : 'the browser will ask once, then remember'}
           </span>
@@ -581,3 +580,4 @@ function MidiDialog(props: { onClose: () => void }) {
     </dialog>
   )
 }
+// CROSS_REPO_SYNC_END(midi-dialog)

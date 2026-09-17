@@ -38,23 +38,19 @@
   opacity: 0.85;
 }
 
-/* Shown and not modal, so it sits over the panel rather than taking it: the
-   mark that binds a control is on the control, in whatever stage is open behind
-   this. In the panel's own corner rather than centred, for the same reason —
-   centred it would sit on the stage you are reaching past it for. */
+/* CROSS_REPO_SYNC(midi-card-css) */
+/* Shown, not modal: the ⚟ that binds a control is on the control, in the panel
+   behind this card. It opens in the panel's corner so it covers as little of
+   that panel as it can. */
 .card {
   position: fixed;
-  /* left, explicitly, because the UA sheet sets inset-inline-start: 0 on every
-     dialog and leaving it there over-constrains the box: with both sides fixed
-     and a width, the start edge wins and the card opens in the far corner of
-     the window from the button that opened it. */
+  /* The UA sheet sets inset-inline-start: 0 on every dialog, and with both
+     sides and a width set the start edge wins, opening the card in the far
+     corner of the window. */
   left: auto;
   right: 12px;
-  top: 44px;
-  /* Shown, not modal (see the comment above MidiDialog), so it never reaches
-     the top layer: without this it paints at the same stack level as later
-     siblings like the preset buttons, which then win by DOM order and show
-     through. */
+  /* A shown dialog never reaches the top layer, so later siblings would paint
+     over it by DOM order without a stack level of its own. */
   z-index: 10;
   margin: 0;
   max-width: min(440px, calc(100vw - 24px));
@@ -94,6 +90,12 @@
 
 .close:hover {
   color: var(--fg);
+}
+/* CROSS_REPO_SYNC_END(midi-card-css) */
+
+/* Just under the nameplate row. */
+.card {
+  top: 44px;
 }
 
 /* Raw bytes, which are only ever read a character at a time. */
