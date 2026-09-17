@@ -2,6 +2,22 @@
 
 All notable changes to bender are documented here.
 
+## [1.0.4](https://github.com/cmdcolin/bender/compare/v1.0.3...v1.0.4) - 2026-09-17
+
+### Features
+- *(ui)* [`5a3caf8`](https://github.com/cmdcolin/bender/commit/5a3caf8b1044430ed73212ded75c134131583082) mark each slider's normal range and let the knob run past it
+- *(dsp)* [`be01c1b`](https://github.com/cmdcolin/bender/commit/be01c1b26795e9c025b47516c27b610660412fa7) add an output drive to the FM chip
+- *(ui)* [`34df032`](https://github.com/cmdcolin/bender/commit/34df03267446e8d9e45b58ef2ec795ded621e792) tickle the talking pet with a click
+
+### Fixes
+- *(ui)* [`3aad637`](https://github.com/cmdcolin/bender/commit/3aad637e592136ad6916ecb0753a4eb4f96532c7) shiver the pet only while it is scared
+
+### Performance
+- *(ui)* [`e68fc67`](https://github.com/cmdcolin/bender/commit/e68fc679bb699f36d4e8b2195d1a5c0e40fc58e4) redraw only the kit lamps on a step and the changed pads on a hit
+
+### Documentation
+- [`e3dc4d3`](https://github.com/cmdcolin/bender/commit/e3dc4d379074a5bc000aca9c7cd4b725727df232) regenerate the panel figure with the drum kit beside the keyboard
+
 ## [1.0.3](https://github.com/cmdcolin/bender/compare/v1.0.2...v1.0.3) - 2026-09-16
 
 ### Features
