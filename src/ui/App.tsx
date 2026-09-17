@@ -56,16 +56,6 @@ import { WhySignInDialog } from './WhySignInDialog'
 // Where a keypress belongs to the control rather than to the board.
 const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 
-// The limiter's whole travel is one decibel, and the bar is scaled to it: the
-// soft clip runs ahead of the limiter and bounds the output to ±1, so a limiter
-// sitting at −1 dBFS never has more than that to give back and a reading of
-// 0.109 is a board pinned flat. Anything scaled as though gain reduction could
-// reach unity would leave the button a tenth full at the worst it ever gets.
-//
-// How fast it empties is what makes one kick's worth visible at all.
-const DUCK_FULL = 0.109
-const DUCK_FALL = 0.9
-
 function clock(seconds: number): string {
   const s = Math.floor(seconds)
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
@@ -158,53 +148,6 @@ function MorphControl(props: {
   )
 }
 
-// How hard the safety limiter is leaning, laid into the button it is about.
-//
-// The limiter is the one thing on the board that knows a board is running away.
-// It has always known — the hunt judges six strangers off it — and the panel has
-// never said so, which left panic as a button you press once you have decided
-// for yourself that this is a howl rather than the sound you asked for. Filling
-// as the ceiling arrives, it is the panel saying which of the two it is.
-//
-// Gain reduction rather than level: the scope over on the left already draws
-// peak, and peak has no more to say once everything is pinned flat against the
-// same ceiling. Written straight to the DOM off the meter, like the rail lamp —
-// a React render every 16 ms to move one bar is a render the board can feel.
-function Panic() {
-  const bar = useRef<HTMLSpanElement>(null)
-  useEffect(() => {
-    let raf = 0
-    let held = 0
-    // What the bar is already painted. A board that is not being leaned on is
-    // most boards most of the time, and this loop runs for as long as the panel
-    // is up: an empty bar written again sixty times a second is sixty style
-    // writes to say what the last one said.
-    let painted = ''
-    const draw = () => {
-      raf = requestAnimationFrame(draw)
-      // The same fall every meter with a needle in it has, for the same reason:
-      // the reading is the mean over sixteen milliseconds, and a limiter caught
-      // by one kick is one frame of full bar and then nothing.
-      held = Math.max(engine.meter.get().duck, held * DUCK_FALL)
-      const width = `scaleX(${Math.min(held / DUCK_FULL, 1)})`
-      if (bar.current && painted !== width) {
-        painted = width
-        bar.current.style.transform = width
-      }
-    }
-    raf = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(raf)
-  }, [])
-  return (
-    <Tip text={PANIC_HELP}>
-      <button className={styles.btnDanger} onClick={() => engine.panic()}>
-        <span ref={bar} className={styles.duck} />
-        <span className={styles.duckLabel}>panic</span>
-      </button>
-    </Tip>
-  )
-}
-
 // The board as the address bar spells it, which is what a voice holds.
 const boardQuery = () => boardHash(window.location.hash, engine.controls.get())
 
@@ -215,12 +158,6 @@ const copyLink = (query: string) => {
     .then(() => true)
     .catch(() => false)
 }
-
-// Two questions, because the button asks two: what pressing it does, and what
-// the bar creeping across it is. The bar is the limiter, and the limiter is the
-// only reason it is on this button rather than on a meter of its own.
-const PANIC_HELP =
-  'Kills a runaway howl: feedback to zero, and every delay line, buffer and held note emptied. Your knobs stay where you left them — only the sound already in flight goes. The bar fills as the safety limiter leans on the output, so a bar that keeps filling is the board running away.'
 
 export function App(props: { openedFromLink?: boolean }) {
   const running = useStoreValue(engine.running)
@@ -634,7 +571,6 @@ export function App(props: { openedFromLink?: boolean }) {
               onSignIn={lib.signIn}
               onSignOut={lib.signOut}
             />
-            <Panic />
             {/* Everything about the board rather than a stage of it, and rare
                 enough to earn no room of its own — pinned to the row's far end,
                 clear of the verbs that matter more often. */}
