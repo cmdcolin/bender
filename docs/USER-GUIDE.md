@@ -312,6 +312,9 @@ like the rest.
 rides closest to the limiter without burying it. None of the candidates it
 passed through land in the undo history — the whole hunt is a single step.
 
+**Hunt a tail** plays six dub boards and keeps whichever rings on most between
+the kit's hits. After either hunt, the numbered row picks any of the six.
+
 **Drift** is mutate on a timer: roughly every fifteen seconds the board sets off
 toward a new nearby setting, so the sound never cuts and never quite arrives.
 One `ctrl+z` restores the board from before it started.

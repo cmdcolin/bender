@@ -150,6 +150,35 @@ export function edgeScore(ducks: number[], peaks: number[]): number {
   return sd + 0.12 * Math.min(loud, 1)
 }
 
+// How much of a board lives between the hits: level on meter posts with no kit
+// hit against level on posts with one. Echo, spring and feedback tails score;
+// a dry kit and a board pinned on the limiter do not. With nothing hitting it
+// falls back on the edge.
+export function tailScore(
+  ducks: number[],
+  peaks: number[],
+  hits: number[],
+): number {
+  let head = 0
+  let heads = 0
+  let tail = 0
+  let tails = 0
+  for (const [i, p] of peaks.entries()) {
+    if (hits[i]) {
+      head += p
+      heads++
+    } else {
+      tail += p
+      tails++
+    }
+  }
+  if (heads === 0 || tails === 0) return edgeScore(ducks, peaks)
+  const duck = ducks.reduce((a, v) => a + v, 0) / ducks.length
+  return Math.min(tail / tails / (head / heads + 1e-6), 1) - duck
+}
+
+export type HuntJudge = 'edge' | 'tail'
+
 // The chip's note report folded into what the panel already believes. It posts
 // every 16 ms whether or not anything changed, and a store that turned over that
 // often would re-render the keyboard sixty times a second to draw the same keys
@@ -276,6 +305,8 @@ export class Engine {
   // board cutting to strangers and the only thing that makes that read as work
   // rather than as a fault is a count going up. Null between hunts.
   readonly huntStep = createStore<{ board: number; of: number } | null>(null)
+  /** The last hunt's candidates, best first, to pick another one from. */
+  readonly hunted = createStore<Controls[]>([])
   /** True while the board is nudging itself along on a timer. */
   readonly drifting = createStore(false)
   /** Controls pushed while a throw is held. They reach the audio thread over
@@ -544,29 +575,41 @@ export class Engine {
   //
   // Only one banked step for the whole hunt, taken before the first candidate:
   // the boards it tried on the way are not boards you chose.
-  async hunt(candidates: Controls[], holdMs = 1400): Promise<Controls | null> {
+  async hunt(
+    candidates: Controls[],
+    holdMs = 1400,
+    judge: HuntJudge = 'edge',
+  ): Promise<Controls | null> {
     if (candidates.length === 0) return null
     const token = ++this.huntToken
     this.stopDrift()
     this.bank()
     this.hunting.set(true)
-    let best: Controls | null = null
-    let bestScore = -Infinity
+    this.hunted.set([])
+    const scored: { board: Controls; score: number }[] = []
     for (const [i, board] of candidates.entries()) {
       if (token !== this.huntToken) return null
       this.huntStep.set({ board: i + 1, of: candidates.length })
       this.writeLive(board)
-      const score = await this.audition(holdMs, token)
+      const score = await this.audition(holdMs, token, judge)
       if (token !== this.huntToken) return null
-      if (score > bestScore) {
-        bestScore = score
-        best = board
-      }
+      scored.push({ board, score })
     }
     this.hunting.set(false)
     this.huntStep.set(null)
+    const ranked = scored
+      .toSorted((a, b) => b.score - a.score)
+      .map(s => s.board)
+    this.hunted.set(ranked)
+    const best = ranked[0] ?? null
     if (best) this.writeLive(best)
     return best
+  }
+
+  /** Swap in another of the last hunt's boards. The hunt already banked its step. */
+  pickHunted(i: number) {
+    const board = this.hunted.get()[i]
+    if (board) this.writeLive(board)
   }
 
   // Installation mode: every so often the board sets off for somewhere near
@@ -637,22 +680,32 @@ export class Engine {
   // Listen to one candidate. The first stretch is thrown away: a board that has
   // just been cut to is still the tail of the last one, and a delay line full of
   // somebody else's squeal would score this one.
-  private audition(ms: number, token: number): Promise<number> {
+  private audition(
+    ms: number,
+    token: number,
+    judge: HuntJudge,
+  ): Promise<number> {
     return new Promise(resolve => {
       const ducks: number[] = []
       const peaks: number[] = []
+      const hits: number[] = []
       let settled = false
       const off = this.meter.subscribe(() => {
         if (!settled) return
         const m = this.meter.get()
         ducks.push(m.duck)
         peaks.push(m.peak)
+        hits.push(m.hits)
       })
       const settle = setTimeout(() => (settled = true), Math.min(400, ms / 3))
       setTimeout(() => {
         clearTimeout(settle)
         off()
-        resolve(token === this.huntToken ? edgeScore(ducks, peaks) : -Infinity)
+        const score =
+          judge === 'tail'
+            ? tailScore(ducks, peaks, hits)
+            : edgeScore(ducks, peaks)
+        resolve(token === this.huntToken ? score : -Infinity)
       }, ms)
     })
   }

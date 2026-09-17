@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
@@ -22,13 +22,18 @@ const LANDED_MS = 6000
 export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
   const hunting = useStoreValue(engine.hunting)
   const step = useStoreValue(engine.huntStep)
+  const hunted = useStoreValue(engine.hunted)
+  const [pick, setPick] = useState({ of: hunted, i: 0 })
+  const picked = pick.of === hunted ? pick.i : 0
   const { landed, onDismiss } = props
 
+  // A tray of runners-up stays until you close it.
+  const tray = hunted.length > 1
   useEffect(() => {
-    if (!landed) return undefined
+    if (!landed || tray) return undefined
     const t = setTimeout(onDismiss, LANDED_MS)
     return () => clearTimeout(t)
-  }, [landed, onDismiss])
+  }, [landed, onDismiss, tray])
 
   if (!hunting && !landed) return null
 
@@ -96,9 +101,26 @@ export function HuntDialog(props: { landed: boolean; onDismiss: () => void }) {
             <span className={styles.title}>hunt landed</span>
           </div>
           <p className={styles.line}>
-            It kept the board that came nearest the edge. Undo puts back the one
-            you were on before it started.
+            It kept the best board. Undo puts back the one you were on before it
+            started.
           </p>
+          {tray && (
+            <div className={styles.tray}>
+              {hunted.map((_, i) => (
+                <button
+                  key={i}
+                  className={i === picked ? styles.pickOn : styles.pick}
+                  aria-label={`candidate ${i + 1}`}
+                  onClick={() => {
+                    engine.pickHunted(i)
+                    setPick({ of: hunted, i })
+                  }}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
           <div className={styles.row}>
             <button className={styles.btn} autoFocus onClick={onDismiss}>
               close

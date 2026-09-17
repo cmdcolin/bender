@@ -316,6 +316,13 @@ export function huntCandidates(
   )
 }
 
+/** Dub boards for a hunt that judges by what rings on between the hits. */
+export const tailCandidates = (
+  current: Controls,
+  rand: () => number,
+  count = 6,
+): Controls[] => Array.from({ length: count }, () => dub(current, rand))
+
 // The rolls a single panel can't offer, because each one is about how the
 // stages sit together rather than about what any one of them is set to. Every
 // label carries "random" because that is the part a name like "rewire" hides:
