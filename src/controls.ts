@@ -251,6 +251,26 @@ export const DEFAULT_CONTROLS = {
   fmNoiseBlob: 0,
   fmDrive: 0,
 
+  // The home keyboard. Its fader boots at the floor for the reason the FM
+  // chip's does: it is soldered onto the toy's gate line, so a board that came
+  // up with it turned up would play two instruments before you touched
+  // anything.
+  pcmLevel: 0,
+  pcmVoice: 0,
+  pcmEnv: 0,
+  pcmRelease: 0.35,
+  pcmTone: 4000,
+  pcmVibrato: 0,
+  pcmChord: 0,
+  pcmClockX: 1,
+  pcmStruck: 0,
+  pcmKeyGate: 0,
+  pcmAddrLine: 0,
+  pcmAddrFault: 0,
+  pcmDataLine: 0,
+  pcmDataFault: 0,
+  pcmBusCut: 1,
+
   oscLevel: 0,
   oscAHz: 220,
   oscBHz: 55,

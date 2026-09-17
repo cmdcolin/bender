@@ -59,6 +59,9 @@ interface BusDef {
 const TOY = { drumLevel: 0, fmLevel: 0 }
 const KIT = { chipLevel: 0, fmLevel: 0 }
 const FM = { drumLevel: 0, chipLevel: 0.2, fmLevel: 0.9 }
+// Same arrangement for the home keyboard, and for the same reason: it has no
+// sequencer either, so the toy stays in underneath it striking the notes.
+const KEYS = { drumLevel: 0, fmLevel: 0, chipLevel: 0.2, pcmLevel: 0.9 }
 
 const BUSES: BusDef[] = [
   {
@@ -124,6 +127,22 @@ const BUSES: BusDef[] = [
     fault: 'fmWaveDataFault',
     depth: 'fmBusCut',
     solo: FM,
+  },
+  {
+    chip: 'keys',
+    bus: 'addr',
+    line: 'pcmAddrLine',
+    fault: 'pcmAddrFault',
+    depth: 'pcmBusCut',
+    solo: KEYS,
+  },
+  {
+    chip: 'keys',
+    bus: 'data',
+    line: 'pcmDataLine',
+    fault: 'pcmDataFault',
+    depth: 'pcmBusCut',
+    solo: KEYS,
   },
 ]
 

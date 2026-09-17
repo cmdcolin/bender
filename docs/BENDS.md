@@ -26,12 +26,13 @@ that bus rather than reading it. A register holds what it was last told, so a
 fault there does not pass through — it accumulates, and a byte that lands wrong
 stays wrong until the processor writes that register again.
 
-One wire is one voice on the drum data bus, in the order of the rows, and that
-is the only bus here where a wire number means something fixed. A toy-chip data
-line carries a note code and an FM data line carries whichever byte the
-processor was sending, so on those the wire is something you find rather than
-something to learn. The named cuts under _knife on the bus_ are the shortcut:
-each one is a wire and a fault somebody already found worth keeping.
+One wire is one voice on the drum data bus, in the order of the rows, and one
+wire is one bit of the sample word on the home keyboard's, so those two are the
+buses where a wire number means something fixed. A toy-chip data line carries a
+note code and an FM data line carries whichever byte the processor was sending,
+so on those the wire is something you find rather than something to learn. The
+named cuts under _knife on the bus_ are the shortcut: each one is a wire and a
+fault somebody already found worth keeping.
 
 ## The shared power rail
 
@@ -422,6 +423,43 @@ accented step takes off it. Left at nothing the bus is stiff and every accent is
 the full one. Wound up, a step stacking four voices hands each of them less than
 a step stacking one, and a second accent arriving before the cap has caught up
 lands softer than the first — so a roll comes out shaped without a knob moving.
+
+## The home keyboard's sample bus
+
+The home keyboard is the plainest machine on the board and the most bent one
+ever built, and those are the same fact. There is no oscillator in it: a ROM
+holds one short recording of each voice — an attack segment and then a loop —
+and a counter walks that ROM at the rate the note asks for. So the whole
+instrument is a counter, a memory and a DAC, and a knife reaches two of the
+three.
+
+**Address line** is the counter's own wires, running into the memory, so it
+behaves the way the toy chips' address buses do: every word that comes back is a
+real word from the wrong place, and the note never moves. A low wire held down
+reads each word more than once, which drops the voice an octave and coarsens it;
+a high one folds the whole recording onto a fixed half of itself, so a voice
+loops inside its own attack and never reaches the part it was cut for. There are
+fourteen wires because the counter has to reach the sample memory as well as the
+wave ROM, and the wave ROM fits under the top two — so on every voice but
+_sampled_ those two are wires nothing ever drives high.
+
+**Data line** is the answer coming back, and it is the fault the whole hobby is
+named after. The address is right, the sample is not, and it is wrong on every
+word of every voice, so the note keeps its pitch and loses its surface. D7 is
+the top of the word: held high, the bottom half of every wave folds up onto the
+top of it and a string pad comes back as a rectified buzz at the pitch it always
+was. The lower wires punch a notch through each word, which is the gravel. A
+bridge collapses two of them onto a lattice and the wave comes out in steps.
+
+Two things about the clock are as much of the sound as the ROM is. It was cut at
+9.9 kHz and nothing interpolates on the way out, so every voice arrives with its
+own images sitting over it — _Tone_ is the two-pole reconstruction filter and
+the whole of what stands between you and them. And the rate is a twelve-bit
+_divider_ rather than a frequency, so what the chip plays is the nearest number
+the counter can be told: dead in tune at the bottom of the keyboard and a few
+cents sharp at the top, which is why one of these never quite sounded in tune
+with anything. _ROM clock_ drags that counter directly, and pitch and aliasing
+move together because on this part they are the same thing.
 
 ## The talking pet's speech chip
 

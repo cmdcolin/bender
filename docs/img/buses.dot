@@ -20,7 +20,8 @@
 // help text in src/ui/controls/sources.ts and in the named cuts.
 //
 // Widths track constants: ROM_DATA_LINES / ROM_ADDR_LINES in
-// src/dsp/stages/roms.ts, N_DRUM_VOICES and ADDR_LINES in src/drums.ts. Palette
+// src/dsp/stages/roms.ts, N_DRUM_VOICES and ADDR_LINES in src/drums.ts,
+// PCM_ADDR_LINES / PCM_DATA_LINES in src/dsp/stages/pcmKeys' own ROM. Palette
 // follows docs/img/dataflow.dot so the family reads alike: blue chooses, orange
 // carries, green is the bus the processor never touches.
 digraph buses {
@@ -77,6 +78,28 @@ digraph buses {
     drum_ctr -> drum_mem [label="A0–A3" color="#0969da" fontcolor="#0969da"]
     drum_mem -> drum_bus [label=<<font color="#bc4c00">D0–D7</font><br/><font color="#57606a" point-size="8">one wire a voice</font>>
                           color="#bc4c00"]
+  }
+
+  subgraph cluster_keys {
+    label="home keyboard"
+    labelloc="t"
+    labeljust="l"
+    fontname="Helvetica"
+    fontsize=10
+    fontcolor="#57606a"
+    color="#d0d7de"
+    style="rounded"
+    margin=14
+
+    // One counter, one memory, and the widest address bus on the board — the
+    // top two wires only ever go high on the sampled voice, because the wave
+    // ROM fits under them and the sample memory does not.
+    pcm_ctr [label="address\ncounter" style="filled,rounded"]
+    pcm_rom [label=<sample ROM<br/><font color="#57606a" point-size="8">attack + loop a voice</font>> style=filled]
+    pcm_dac [label="8-bit DAC" style="filled,rounded"]
+
+    pcm_ctr -> pcm_rom [label="A0–A13" color="#0969da" fontcolor="#0969da"]
+    pcm_rom -> pcm_dac [label="D0–D7" color="#bc4c00" fontcolor="#bc4c00"]
   }
 
   subgraph cluster_toy {

@@ -37,6 +37,7 @@ import {
   saveMorph,
   type MorphSeconds,
 } from './morph'
+import { PcmKeys } from './PcmKeys'
 import { Presets } from './PresetRow'
 import { mutate, presetNameFor } from './presets'
 import { SampleReel } from './SampleReel'
@@ -242,6 +243,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
   const fmUp = useBoardValue(c => c.fmLevel > 0)
+  const pcmUp = useBoardValue(c => c.pcmLevel > 0)
   const petUp = useBoardValue(c => c.petLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [pool, setPool] = useState(0)
@@ -410,9 +412,10 @@ export function App(props: { openedFromLink?: boolean }) {
         </div>
         {/* The FM board and the pet show only while their levels are above
             zero. */}
-        {(fmUp || petUp) && (
+        {(fmUp || pcmUp || petUp) && (
           <div className={styles.shelf}>
             {fmUp && <FmKeys />}
+            {pcmUp && <PcmKeys />}
             {petUp && <TalkingPet />}
           </div>
         )}

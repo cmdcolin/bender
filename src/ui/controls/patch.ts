@@ -60,7 +60,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 61,
+          max: 66,
           step: 1,
           unit: '',
           choices: [
@@ -126,6 +126,11 @@ export const PATCH_GROUPS: Group[] = [
             'pet addr fault',
             'pet data line',
             'pet data fault',
+            'keys level',
+            'keys addr line',
+            'keys addr fault',
+            'keys data line',
+            'keys data fault',
           ],
           groups: [
             {
@@ -168,6 +173,16 @@ export const PATCH_GROUPS: Group[] = [
                 'FM wave data fault',
                 'FM cut depth',
                 'FM noise blob',
+              ],
+            },
+            {
+              name: 'Home keyboard',
+              choices: [
+                'keys level',
+                'keys addr line',
+                'keys addr fault',
+                'keys data line',
+                'keys data fault',
               ],
             },
             {

@@ -31,6 +31,7 @@ import {
 import { FAULT } from '../src/dsp/bus'
 import { BANDS, spectrum } from '../src/dsp/spectrum'
 import { FM_EFFECT_NAMES } from '../src/dsp/stages/fmEffects'
+import { PCM_VOICE_NAMES } from '../src/dsp/stages/pcmRom'
 import { romIndex } from '../src/dsp/stages/roms'
 import { render, renderStems, rms, SR } from '../src/dsp/testRender'
 import { ANY_CHOICE } from '../src/dsp/trigbus'
@@ -72,6 +73,19 @@ const KIT = { chipLevel: 0, fmLevel: 0 }
 // and the measurement comes off the chip's own stem rather than the mix, or
 // what is being measured is two chips.
 const FM = { drumLevel: 0.4, chipLevel: 0.2, fmLevel: 0.9 }
+// And the home keyboard, which is the same arrangement again: no sequencer of
+// its own, so the toy stays in underneath it striking the notes, and the
+// measurement comes off this chip's own stem.
+const KEYS = { drumLevel: 0.4, chipLevel: 0.2, pcmLevel: 0.9 }
+
+// The keyboard is two machines as well, and the second one is not a mode the
+// panel switches — it is whether there is a file on the sampler. A ROM voice is
+// a few partials on a loop; the sampled voice is whatever you dropped, and the
+// same knife on the same wires finds a different chip in each.
+const KEYS_MODES: [string, Partial<Controls>][] = [
+  ['chime', { pcmVoice: PCM_VOICE_NAMES.indexOf('chime'), pcmEnv: 3 }],
+  ['pad', { pcmVoice: PCM_VOICE_NAMES.indexOf('glass pad'), pcmEnv: 2 }],
+]
 
 // A chip that can be more than one machine has to be measured as more than one,
 // or the report describes whichever machine it happened to be left in.
@@ -170,6 +184,26 @@ const BUSES: BusDef[] = [
     solo: FM,
     tap: 'fmChip',
     modes: FM_MODES,
+  },
+  {
+    chip: 'keys',
+    bus: 'addr',
+    line: 'pcmAddrLine',
+    fault: 'pcmAddrFault',
+    depth: 'pcmBusCut',
+    solo: KEYS,
+    tap: 'pcmKeys',
+    modes: KEYS_MODES,
+  },
+  {
+    chip: 'keys',
+    bus: 'data',
+    line: 'pcmDataLine',
+    fault: 'pcmDataFault',
+    depth: 'pcmBusCut',
+    solo: KEYS,
+    tap: 'pcmKeys',
+    modes: KEYS_MODES,
   },
 ]
 

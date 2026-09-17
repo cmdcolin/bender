@@ -1,15 +1,10 @@
-import { engine } from '../engine/engine'
-import { useControlValue } from './ControlsContext'
 import styles from './FmKeys.module.css'
-import { Keybed } from './Keybed'
-import { Tip } from './Tip'
+import { GateJumper, Keybed } from './Keybed'
 
 // FmKeys draws the FM chip's keyboard as a green circuit board with the chip on
 // it and push-button switches for keys. The switch on the deck cuts or solders
 // the jumper from the toy's gate.
 export function FmKeys() {
-  const cut = useControlValue('fmKeyGate') > 0.5
-
   return (
     <Keybed
       dest="fm"
@@ -24,24 +19,13 @@ export function FmKeys() {
         </span>
       }
       extras={
-        <Tip
-          text={
-            cut
-              ? 'the jumper off the toy’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on'
-              : 'the chip’s key input is soldered onto the toy’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper'
-          }
-        >
-          <button
-            className={cut ? styles.cut : styles.soldered}
-            aria-pressed={cut}
-            onClick={() => {
-              engine.armStep()
-              engine.set('fmKeyGate', cut ? 0 : 1)
-            }}
-          >
-            {cut ? 'gate cut' : 'toy gate'}
-          </button>
-        </Tip>
+        <GateJumper
+          control="fmKeyGate"
+          cut={styles.cut}
+          soldered={styles.soldered}
+          cutTip="the jumper off the toy’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+          solderedTip="the chip’s key input is soldered onto the toy’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
+        />
       }
       tail={<span className={styles.header} aria-hidden="true" />}
     />

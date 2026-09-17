@@ -302,6 +302,73 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'Home keyboard',
+    part: KNIFE,
+    name: 'the top bit sticks',
+    blurb:
+      'The top wire out of the sample ROM held high — the bottom half of every wave folds up onto the top of it, and the pad comes back as a rectified buzz at the pitch it always was. The bend everybody knows',
+    patch: {
+      pcmDataLine: pick('pcmDataLine', 'D7'),
+      pcmDataFault: pick('pcmDataFault', 'to +V'),
+    },
+  },
+  {
+    group: 'Home keyboard',
+    part: KNIFE,
+    name: 'gravel',
+    blurb:
+      'A notch punched through every word the ROM hands back. The address is right and the sample is not, on every voice, so the note keeps its pitch and loses its surface',
+    patch: {
+      pcmDataLine: pick('pcmDataLine', 'D5'),
+      pcmDataFault: pick('pcmDataFault', 'to ground'),
+    },
+  },
+  {
+    group: 'Home keyboard',
+    part: KNIFE,
+    name: 'the voice in clumps',
+    blurb:
+      'Two of the top wires the ROM answers on soldered to each other — the words collapse onto a lattice and a voice that was a curve comes out in steps',
+    patch: {
+      pcmDataLine: pick('pcmDataLine', 'D6'),
+      pcmDataFault: pick('pcmDataFault', 'bridged'),
+    },
+  },
+  {
+    group: 'Home keyboard',
+    part: KNIFE,
+    name: 'half the wave',
+    blurb:
+      'The top address wire on the floor. The counter walks the whole recording and the ROM keeps handing back its first half, so every voice loops inside its own attack',
+    patch: {
+      pcmAddrLine: pick('pcmAddrLine', 'A11'),
+      pcmAddrFault: pick('pcmAddrFault', 'to ground'),
+    },
+  },
+  {
+    group: 'Home keyboard',
+    part: KNIFE,
+    name: 'a word in four',
+    blurb:
+      'Two address wires soldered to each other, so the counter can only name one word in four — it walks the recording at the rate it always did and gets a staircase back',
+    patch: {
+      pcmAddrLine: pick('pcmAddrLine', 'A3'),
+      pcmAddrFault: pick('pcmAddrFault', 'bridged'),
+    },
+  },
+  {
+    group: 'Home keyboard',
+    part: KNIFE,
+    name: 'the loop goes stale',
+    blurb:
+      'An address trace parted most of the way. Nothing drives that pin, so it holds whatever the last address left on it and then starts drifting after its neighbour — the one knife on this chip that never stands still',
+    patch: {
+      pcmAddrLine: pick('pcmAddrLine', 'A7'),
+      pcmAddrFault: pick('pcmAddrFault', 'cut'),
+      pcmBusCut: 0.85,
+    },
+  },
+  {
     group: 'FM chip',
     part: KNIFE,
     name: 'one write late',

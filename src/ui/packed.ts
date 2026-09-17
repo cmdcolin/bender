@@ -438,6 +438,21 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'petKBits',
   'revDry',
   'fmDrive',
+  'pcmLevel',
+  'pcmVoice',
+  'pcmEnv',
+  'pcmRelease',
+  'pcmTone',
+  'pcmVibrato',
+  'pcmChord',
+  'pcmClockX',
+  'pcmStruck',
+  'pcmKeyGate',
+  'pcmAddrLine',
+  'pcmAddrFault',
+  'pcmDataLine',
+  'pcmDataFault',
+  'pcmBusCut',
 ]
 
 // Retired controls that old links still carry, each read into the control that

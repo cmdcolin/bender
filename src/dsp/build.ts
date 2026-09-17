@@ -8,6 +8,7 @@ import { Echo } from './stages/echo'
 import { FmChip } from './stages/fmChip'
 import { GlitchBuf } from './stages/glitchBuf'
 import { Noise } from './stages/noise'
+import { PcmKeys } from './stages/pcmKeys'
 import { Pet } from './stages/pet'
 import { RingMod } from './stages/ringmod'
 import { Sampler } from './stages/sampler'
@@ -28,6 +29,7 @@ export interface BuiltChain {
   toyChip: ToyChip
   toyDrum: ToyDrum
   fmChip: FmChip
+  pcmKeys: PcmKeys
   sampler: Sampler
   pet: Pet
   transport: Transport
@@ -35,11 +37,12 @@ export interface BuiltChain {
       from outside the audio thread: the panel draws it, and a test asks it
       whether the watchdog tripped. */
   rail: ToyRail
-  /** A key let go of, which reaches two chips. The strike travels the gate line
+  /** A key let go of, which reaches all three chips. The strike travels the gate line
       on its own, so nobody has to hand it anywhere; a finger coming up is the
       half of a note no wire between them carries, and both ends need it — the
       toy to drop the voice it is holding, the FM chip to write the key back up
-      on a note it was told to hold. */
+      on a note it was told to hold, the home keyboard to let go of whatever its
+      chord button put under that key. */
   noteOff(semitone: number): void
 }
 
@@ -63,6 +66,10 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   // After the kit, because the kit assigns the rail's reported load and the FM
   // chip adds its own to it: one supply, two chips drawing on it.
   const fmChip = new FmChip(sr, rail)
+  // And the third die on the same rail, which needs the sampler as well as the
+  // supply: its last voice is not a ROM at all, it is whatever is threaded next
+  // door.
+  const pcmKeys = new PcmKeys(sr, rail, sampler)
   // In SOURCE_TAPS order, which is the order their meter taps come home in — a
   // test holds the two lists together, because the panel reads a channel off
   // its slot number and a source in the wrong one would meter as its neighbour.
@@ -70,6 +77,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     toyChip,
     toyDrum,
     fmChip,
+    pcmKeys,
     new ChaosOsc(sr),
     new Noise(sr, next()),
     sampler,
@@ -102,6 +110,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     toyChip,
     toyDrum,
     fmChip,
+    pcmKeys,
     sampler,
     pet,
     transport,
@@ -109,6 +118,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     noteOff(semitone: number) {
       toyChip.noteOff(semitone)
       fmChip.noteOff(semitone)
+      pcmKeys.noteOff(semitone)
     },
   }
 }

@@ -398,6 +398,7 @@ export class ToyChip implements Stage {
       p[IDX.chipLevel]! > 0 ||
       p[IDX.drumLevel]! > 0 ||
       p[IDX.fmLevel]! > 0 ||
+      p[IDX.pcmLevel]! > 0 ||
       p[IDX.petLevel]! > 0
     )
   }

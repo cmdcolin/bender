@@ -283,6 +283,10 @@ export class Engine {
   // wherever that jumper is still on, and whatever the kit's lines struck.
   readonly fmKeysDown = createStore<ReadonlySet<number>>(new Set())
   readonly fmNotes = createStore<ReadonlySet<number>>(new Set())
+  // And the same pair again for the home keyboard, whose four voices one key
+  // can fill on its own once the chord button is down.
+  readonly pcmKeysDown = createStore<ReadonlySet<number>>(new Set())
+  readonly pcmNotes = createStore<ReadonlySet<number>>(new Set())
   // Which sources are actually putting something on the bus, as a bit per
   // SOURCE_TAPS slot. A run switch says a sequencer is walking; this says the
   // fader in front of it is up and the machine behind it is making a sound,
@@ -374,6 +378,12 @@ export class Engine {
         if (notes !== this.chipNotes.get()) this.chipNotes.set(notes)
         const fm = mergeNotes(this.fmNotes.get(), msg.fmNotes, msg.fmNoteCount)
         if (fm !== this.fmNotes.get()) this.fmNotes.set(fm)
+        const pcm = mergeNotes(
+          this.pcmNotes.get(),
+          msg.pcmNotes,
+          msg.pcmNoteCount,
+        )
+        if (pcm !== this.pcmNotes.get()) this.pcmNotes.set(pcm)
         this.meter.set({
           peak: msg.peak,
           scope: msg.scope,
@@ -1166,7 +1176,12 @@ export class Engine {
   // Striking a note that is already down is no news to anything watching, so
   // the set only turns over when it really changes.
   private hold(semitone: number, down: boolean, dest: NoteDest) {
-    const store = dest === 'fm' ? this.fmKeysDown : this.keysDown
+    const store =
+      dest === 'fm'
+        ? this.fmKeysDown
+        : dest === 'pcm'
+          ? this.pcmKeysDown
+          : this.keysDown
     const notes = store.get()
     if (notes.has(semitone) === down) return
     const next = new Set(notes)
@@ -1180,6 +1195,7 @@ export class Engine {
     this.post({ kind: 'panic' })
     if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
     if (this.fmKeysDown.get().size > 0) this.fmKeysDown.set(new Set())
+    if (this.pcmKeysDown.get().size > 0) this.pcmKeysDown.set(new Set())
   }
 }
 

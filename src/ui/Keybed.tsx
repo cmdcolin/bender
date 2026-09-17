@@ -2,7 +2,7 @@ import { useEffect, useState, type PointerEvent, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine'
 import { semitoneName } from '../notes'
-import { useStoreValue } from './ControlsContext'
+import { useControlValue, useStoreValue } from './ControlsContext'
 import styles from './Keybed.module.css'
 import {
   blackAbove,
@@ -20,7 +20,63 @@ import { Menu } from './Menu'
 import { menuCheck } from './menuItems'
 import { Tip } from './Tip'
 
+import type { ControlKey } from '../controls'
 import type { NoteDest } from '../engine/messages'
+
+// The three machines with keys on them, and the two stores each one reports
+// through: what a hand is holding down on that bed, and what the chip behind it
+// is sounding on its own. Three beds drawn from one component means the wiring
+// is a table rather than a chain of conditionals that has to grow a branch
+// every time somebody solders another keyboard on.
+const DECK = {
+  toy: { down: engine.keysDown, notes: engine.chipNotes },
+  fm: { down: engine.fmKeysDown, notes: engine.fmNotes },
+  pcm: { down: engine.pcmKeysDown, notes: engine.pcmNotes },
+} satisfies Record<NoteDest, unknown>
+
+// There is one computer keyboard in front of the panel and three beds on it, so
+// switching the letters off here is switching them on somewhere. The toy is the
+// only bed that is always drawn — the other two appear when their fader comes
+// up — so it is where the letters go back to, and handing them on from the toy
+// is the one move that has anywhere else to go.
+const NEXT_BED: Record<NoteDest, NoteDest> = {
+  toy: 'fm',
+  fm: 'toy',
+  pcm: 'toy',
+}
+
+/** The jumper off the toy's gate line, which two of the three beds carry. Same
+    switch, same two states, and the words are the caller's because the machine
+    on the other end of the wire is what they are about. */
+export function GateJumper({
+  control,
+  cut: cutClass,
+  soldered,
+  cutTip,
+  solderedTip,
+}: {
+  control: ControlKey
+  cut?: string
+  soldered?: string
+  cutTip: string
+  solderedTip: string
+}) {
+  const cut = useControlValue(control) > 0.5
+  return (
+    <Tip text={cut ? cutTip : solderedTip}>
+      <button
+        className={cut ? cutClass : soldered}
+        aria-pressed={cut}
+        onClick={() => {
+          engine.armStep()
+          engine.set(control, cut ? 0 : 1)
+        }}
+      >
+        {cut ? 'gate cut' : 'toy gate'}
+      </button>
+    </Tip>
+  )
+}
 
 const KEY_MAP: Record<string, number> = {
   a: 0,
@@ -115,14 +171,10 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // Two lights on one board. What a hand is holding down — this one's pointer,
   // the letter keys, a controller — and what the chip is sounding on its own,
   // which for the toy is the ROM's tune and the backing under it, and for the
-  // FM chip is the toy's gate and the kit's trigger lines. Your own notes are
+  // other two is the toy's gate and the kit's trigger lines. Your own notes are
   // in both, a meter apart, so yours wins and the chip's is what is left.
-  const keysDown = useStoreValue(
-    dest === 'fm' ? engine.fmKeysDown : engine.keysDown,
-  )
-  const chipNotes = useStoreValue(
-    dest === 'fm' ? engine.fmNotes : engine.chipNotes,
-  )
+  const keysDown = useStoreValue(DECK[dest].down)
+  const chipNotes = useStoreValue(DECK[dest].notes)
   const owns = useStoreValue(letterKeys) === dest
   // Whether there are letter keys worth telling anybody about. A phone has a
   // keyboard only when something asks it for text, so the letters printed on
@@ -130,9 +182,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // tips are all hints at a thing that is not there — and the keys they were
   // printed on are the ones a finger needs the room of.
   const letters = owns && !coarse
-  // Two beds and one keyboard, so switching the letters off here is switching
-  // them on next door. There is nowhere else for them to go.
-  const other: NoteDest = dest === 'toy' ? 'fm' : 'toy'
+  const other = NEXT_BED[dest]
   const isDown = (key: number) => held.has(at(key))
   const litBy = (key: number): Lit =>
     keysDown.has(at(key)) ? 'hand' : chipNotes.has(at(key)) ? 'chip' : 'dark'
@@ -382,8 +432,8 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
               <Tip
                 text={
                   owns
-                    ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave. Turning it off hands the letters to the other bed, because there is one keyboard and it has to play one of them'
-                    : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and two beds on it, so it plays whichever is switched on'
+                    ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave. Turning it off hands the letters back to the toy, because there is one keyboard and it has to play one of them'
+                    : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and three beds on it, so it plays whichever is switched on'
                 }
               >
                 <label className={menuCheck}>

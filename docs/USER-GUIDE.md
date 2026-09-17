@@ -250,13 +250,13 @@ kit's trigger lines — two synthesisers playing two parts instead of one part
 twice. It is also on the chip's panel as **Toy gate**, so it travels in a link
 like every other control.
 
-One computer keyboard, two keybeds: `a s d f` and the octave keys `z`/`x` play
+One computer keyboard, three keybeds: `a s d f` and the octave keys `z`/`x` play
 whichever bed has **computer keyboard plays this bed** ticked, in the drawer
 behind the three bars on its deck, and the letters are printed on that bed's
-keys so you can see where they went. Turning it off on one bed hands the letters
-to the other, since there is nowhere else for them to go. Both beds take the
-mouse either way, and a MIDI controller plays the toy's unless you split the
-keybed — see [MIDI](MIDI.md).
+keys so you can see where they went. Turning it off on a bed hands the letters
+back to the toy's, which is the one bed always on the page. Every bed takes the
+mouse either way, and a MIDI controller plays the toy's unless you point it
+somewhere else or split the keybed — see [MIDI](MIDI.md).
 
 **Voice** picks one of eight patches, **Brightness** sets how much of the
 modulator reaches the carrier, and **Feedback** sets how much of the modulator
@@ -328,6 +328,47 @@ one to try first, for a reason that is nothing to do with tone: the processor
 only re-sends a patch when a knob moves, so a wire there leaves it writing the
 register file every block instead of four times a note — which is what every
 fault on that bus has been waiting for.
+
+## Playing the home keyboard
+
+The third machine on the rail is the eight-bit sampling keyboard, and it is the
+only thing on the board that makes pads, strings, choirs and bells. There is no
+oscillator in it: a ROM holds one short recording of each voice — an attack and
+then a loop — and a counter walks that ROM at whatever rate the note asks for.
+Bring **Level** up and its bed appears under the toy's, in grey plastic, with
+the same **toy gate** jumper the FM chip has: soldered out of the box, so the
+demo song plays it.
+
+**Voice** picks the recording and **Envelope** picks one of the four buttons
+down the side of the case — _piano_ falls away whether or not you are holding
+the key, _organ_ holds, _pad_ swells, _chime_ rings. **Release** is the one
+capacitor the buttons do not choose, and it is also what decides how long a
+strike off the toy's gate or the kit's trigger lines lasts, since neither of
+those has a hand on it. **Chord memory** puts a whole voicing under one key,
+which fills all four voices doing it — press a second key and the first is
+stolen, exactly as one of these always did.
+
+Two knobs are the part rather than the sound. The ROM was cut at 9.9 kHz with
+nothing interpolating on the way out, so every voice comes back with its own
+images sitting over it, and **Tone** is the two-pole reconstruction filter
+deciding how much of that you hear: up is the grit, down is the underwater
+version the same chip sounds like through a plastic speaker. **ROM clock** drags
+the counter itself, which is the classic bend on a keyboard like this — pitch
+and aliasing move together, because on this part they are the same thing.
+
+**sampled** is the voice the machine is famous for. It plays whatever you
+dropped on the sampler across the keys, out of a second and a half of memory at
+the ROM's own rate, with the reel's own loop markers as its loop — so a file on
+the page and a chord button is a vaporwave part. Turn the sampler's own fader
+down and the keyed copy is the only one you hear. With nothing threaded it is
+silent.
+
+The knife reaches both of the chip's buses. **Address line** is the counter's
+own wires: every word that comes back is a real word from the wrong place, so a
+voice folds onto its own first half or reads every sample twice. **Data line**
+is the famous one — the top wire held high and the bottom half of every wave
+folds up onto the top of it. The named cuts under that heading are the six worth
+hearing first.
 
 ## The talking pet
 

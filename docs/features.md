@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 262 knobs and switches in 30 groups, seven bends competing for six slots,
-18 ROM tunes, 69 presets, 14 stage settings and 26 named cuts — and everything
+ruin. 277 knobs and switches in 31 groups, seven bends competing for six slots,
+18 ROM tunes, 72 presets, 14 stage settings and 32 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 62 destinations — among
+- **A patch bay that modulates itself.** Four wires, 67 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 69 presets, and dice on every heading as
+- **Boards, rather than settings.** 72 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 24 of them, mostly the ones that cover the
+preset that names it still gets it. 26 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -313,6 +313,71 @@ too — the knife goes on and the rows under it say which controls that was:
 
 </details>
 
+### Home keyboard
+
+The eight-bit sampling home keyboard, and the only thing on this board that
+makes pads, strings, choirs and bells. There is no oscillator in it: a ROM holds
+one short recording of each voice — an attack and then a loop — and a counter
+walks that ROM at whatever rate the note asks for, which is the whole
+architecture and the whole reason it is the most bent instrument ever built. The
+ROM was cut at 9.9 kHz with nothing interpolating on the way out, so every voice
+comes back with its own images over it and _Tone_ is the two-pole reconstruction
+filter that decides how much of that you hear. The rate is a twelve-bit divider
+rather than a frequency, so the top octave arrives a few cents sharp and the
+bottom is dead in tune. _Address line_ is the counter’s own wires — a real word
+from the wrong place, so a voice folds onto its own first half or reads every
+sample twice — and _Data line_ is the famous one: the top wire held high and the
+bottom half of every wave folds up onto the top of it. _Chord memory_ puts a
+voicing under one key and fills all four voices doing it, and _sampled_ plays
+whatever you dropped on the sampler across the keyboard, out of a second and a
+half of memory with the reel’s own loop markers as its loop.
+
+Named cuts, one press each under _knife on the bus_, where the panel keeps them
+too — the knife goes on and the rows under it say which controls that was:
+
+- **the top bit sticks**: The top wire out of the sample ROM held high — the
+  bottom half of every wave folds up onto the top of it, and the pad comes back
+  as a rectified buzz at the pitch it always was. The bend everybody knows
+- **gravel**: A notch punched through every word the ROM hands back. The address
+  is right and the sample is not, on every voice, so the note keeps its pitch
+  and loses its surface
+- **the voice in clumps**: Two of the top wires the ROM answers on soldered to
+  each other — the words collapse onto a lattice and a voice that was a curve
+  comes out in steps
+- **half the wave**: The top address wire on the floor. The counter walks the
+  whole recording and the ROM keeps handing back its first half, so every voice
+  loops inside its own attack
+- **a word in four**: Two address wires soldered to each other, so the counter
+  can only name one word in four — it walks the recording at the rate it always
+  did and gets a staircase back
+- **the loop goes stale**: An address trace parted most of the way. Nothing
+  drives that pin, so it holds whatever the last address left on it and then
+  starts drifting after its neighbour — the one knife on this chip that never
+  stands still
+
+<details>
+<summary>15 controls</summary>
+
+| control        | range                                                                                                     | what it does                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Level          | 0 to 4, normal 0 to 1                                                                                     | How loud the home keyboard is in the source mix                                                                               |
+| Voice          | strings, choir, pipe organ, e.piano, flute, brass, vibes, chime, music box, glass pad, synth pad, sampled | Which recording in the ROM the address counter walks                                                                          |
+| Envelope       | piano, organ, pad, chime                                                                                  | The four buttons down the side of the case                                                                                    |
+| Release        | 0.02 to 8 s                                                                                               | The one capacitor the envelope generator has that the buttons do not pick: how long a note takes to die once the key comes up |
+| Tone           | 1 to 8 kHz                                                                                                | The reconstruction filter behind the DAC — two poles and no more, which is all a keyboard at this price ever had              |
+| Vibrato        | off, vibrato, delayed                                                                                     | One LFO on the die with no rate register, no depth register and nothing that can stop it                                      |
+| Chord memory   | off, maj7, min7, min9, sus4, add9, power                                                                  | One key, a whole voicing under it                                                                                             |
+| ROM clock      | 0.05× to 16×                                                                                              | Drags the counter that walks the ROM                                                                                          |
+| Struck by      | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                                         | The kit’s trigger lines, clipped onto this keyboard’s key input                                                               |
+| Toy gate       | soldered or cut                                                                                           | The same jumper the FM chip has, off the toy’s gate line onto this keyboard’s key input                                       |
+| Address line † | off, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13                                           | Which of the wires the counter addresses the ROM on the knife found                                                           |
+| Address fault  | cut, to ground, to +V, bridged                                                                            | The same four things a knife does to any trace                                                                                |
+| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                                       | Which of the eight wires the ROM answers on the knife found — the famous one                                                  |
+| Data fault     | cut, to ground, to +V, bridged                                                                            | To +V is the bend everybody knows                                                                                             |
+| Cut depth      | off to full                                                                                               | How far through the trace the knife went — the cut fault is the only one that reads it                                        |
+
+</details>
+
 ### Chaos osc
 
 Two oscillators on one starving supply. B drags A’s frequency around, the output
@@ -433,7 +498,7 @@ the reason: it boots at zero, and turned up with nothing striking it — no hand
 on its keys, no tune next door — it is three quarters and silence. _Bus drive_
 is the summing amp: a wire at unity, and the one saturation ahead of the bends.
 
-The desk is a widget rather than a row of sliders, and its eight faders are
+The desk is a widget rather than a row of sliders, and its nine faders are
 counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.
 
@@ -697,13 +762,13 @@ wire’s depth — which is how the bay modulates itself.
 <details>
 <summary>14 controls</summary>
 
-| control        | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | what it does                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | The bay’s own oscillator, free-running                                         |
-| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
-| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | What the wire picks up                                                         |
-| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch, toy level, kit level, FM level, osc level, noise level, sampler level, filt res, FM bright, fb time, toy data line, toy data fault, toy addr line, toy addr fault, kit data line, kit data fault, kit addr line, kit addr fault, FM data line, FM data fault, FM addr line, FM addr fault, FM wave line, FM wave fault, FM wave data line, FM wave data fault, FM cut depth, FM noise blob, ring mix, pet level, pet pitch, pet rate, pet addr line, pet addr fault, pet data line, pet data fault | Where the other end is soldered                                                |
-| Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | How hard the wire pushes                                                       |
+| control        | range                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | what it does                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| LFO rate       | 0.02 to 400 Hz                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | The bay’s own oscillator, free-running                                         |
+| LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
+| Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | What the wire picks up                                                         |
+| Wire 1–4 to    | filt cut, ring car, comb pitch, crush rate, chip clock, retrigger, tape speed, glitch, fb amount, stomp drive, shift Hz, bit depth, drum cross, starve, drum tune, verb decay, delay time, wire 1 depth, wire 2 depth, wire 3 depth, wire 4 depth, echo time, tape speed (sampler), loop slide, loop span, osc starve, osc pitch, toy level, kit level, FM level, osc level, noise level, sampler level, filt res, FM bright, fb time, toy data line, toy data fault, toy addr line, toy addr fault, kit data line, kit data fault, kit addr line, kit addr fault, FM data line, FM data fault, FM addr line, FM addr fault, FM wave line, FM wave fault, FM wave data line, FM wave data fault, FM cut depth, FM noise blob, ring mix, pet level, pet pitch, pet rate, pet addr line, pet addr fault, pet data line, pet data fault, keys level, keys addr line, keys addr fault, keys data line, keys data fault | Where the other end is soldered                                                |
+| Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | How hard the wire pushes                                                       |
 
 </details>
 
@@ -1017,9 +1082,19 @@ became:
 
 ### Presets
 
-69 boards worth keeping. Every name is a link that opens the app with that board
+72 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
+- [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
+  — The home keyboard on strings with the toy’s gate still soldered on, so the
+  demo song plays a pad through a long spring and a tape that wanders
+- [**plaza chimes**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.3,keyScale:5,keyRoot:3,pcmLevel:0.85,pcmVoice:7,pcmEnv:3,pcmRelease:4,pcmTone:6000,pcmChord:5,echoMs:420,echoFb:0.45,echoLevel:0.55,revMix:0.3)
+  — Tube bells off the eight-bit ROM, locked to a pentatonic and hung in the
+  delay pedal
+- [**bent sampler**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.3,pcmLevel:0.9,pcmVoice:11,pcmEnv:1,pcmRelease:0.4,pcmTone:5000,pcmAddrLine:2,pcmAddrFault:3,pcmDataLine:8,pcmDataFault:2,delayMs:260,dlyMix:0.3)
+  — Whatever you dropped, played across the keyboard off the sample memory with
+  a data line on the rail and the address bus bridged — the sampler’s own fader
+  down, so the only copy you hear is the keyed one
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
   — Starved rail, sagging pitch, watchdog reboots mid-tune
 - [**paperclip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.5,chipStarve:0.3,chipCap:0.6,chipClipHz:3,chipClipClock:0.45,drumLevel:0.25,brownAmt:0.25,humLevel:0.2,faultCluster:0.55)

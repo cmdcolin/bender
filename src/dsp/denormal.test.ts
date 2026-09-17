@@ -82,6 +82,9 @@ const RINGING: Partial<Controls> = {
   tapeMix: 0.4,
   petLevel: 0.5,
   petKBits: 0.3,
+  pcmLevel: 0.5,
+  pcmEnv: 2,
+  pcmVibrato: 1,
 }
 
 test('a board left ringing itself out never settles into denormal range', () => {
