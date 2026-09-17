@@ -2,6 +2,67 @@
 
 All notable changes to bender are documented here.
 
+## [1.1.0](https://github.com/cmdcolin/bender/compare/v1.0.4...v1.1.0) - 2026-09-17
+
+### Features
+- *(dsp)* [`989ace7`](https://github.com/cmdcolin/bender/commit/989ace7db45bf903fa73a99e327760501359570c) a varispeed deck under the whole board
+- *(ui)* [`8ce2033`](https://github.com/cmdcolin/bender/commit/8ce2033004020fd6c33f722acc804bda0aa142d3) two presets off the varispeed deck
+- *(dsp)* [`b1ba564`](https://github.com/cmdcolin/bender/commit/b1ba5648d1898662c5763827eb3c016119b81c93) an ensemble pedal, the fifth on the board
+- *(dsp)* [`f37477a`](https://github.com/cmdcolin/bender/commit/f37477a9df2909952212c0489aba5850c4c06b3f) the kit samples itself into a 12-bit ROM
+- *(dsp)* [`2e97772`](https://github.com/cmdcolin/bender/commit/2e97772cdb3de476313173d36d3e2be225da9289) a PCM home keyboard with pads, chimes and a sampled voice
+- *(ui)* [`505c7a3`](https://github.com/cmdcolin/bender/commit/505c7a35907ec2e944e31d85162e1d1c892d231b) draw sliders the way videoskillet does
+- *(dsp)* [`28ccab6`](https://github.com/cmdcolin/bender/commit/28ccab6ce3cc09de15166e15430d3f9ee7bde780) patch bay lanes for kit tempo, swing, chance, decay and ring
+- *(dsp)* [`aefc90c`](https://github.com/cmdcolin/bender/commit/aefc90c10afced88b03073d3b37fc0a57dab8e71) dropped filter — popcorn, arcing cap and dirty pot
+- *(dsp)* [`62325d4`](https://github.com/cmdcolin/bender/commit/62325d47d18cccf240e78637ba607f4fccfbca04) loop filter and lamp in the tape delay's regeneration
+- *(ui)* [`6224045`](https://github.com/cmdcolin/bender/commit/6224045617de26dd567d6bc441a2f054dcc601e2) echo row on the drum grid throws hits into the tape delay
+- *(ui)* [`4a6feab`](https://github.com/cmdcolin/bender/commit/4a6feab11b842db64ad644cde7caf67c76758c66) hold-to-throw pads that spring back on release
+- *(engine)* [`ba6c261`](https://github.com/cmdcolin/bender/commit/ba6c2614466baf6e5f257424f99bcfa971da6d77) keep the last 30 seconds of output, to wav or onto the reel
+- *(ui)* [`8f0e343`](https://github.com/cmdcolin/bender/commit/8f0e343cddfe91b18a742127817b66c1085c675a) drift rewind goes back ten seconds along the drift
+- *(ui)* [`2336ad1`](https://github.com/cmdcolin/bender/commit/2336ad1dfe264ea37825e3d62b3aceba9cf213cd) random dub roll
+- *(ui)* [`1bec4ab`](https://github.com/cmdcolin/bender/commit/1bec4ab9e448e372c6bcbf5b7d267d34dae7f4eb) hunt a tail, and pick any of a hunt's six boards afterwards
+- *(dsp)* [`0e834c3`](https://github.com/cmdcolin/bender/commit/0e834c3e49033cf3024a98aaa23c365c74fed047) scan flam smears crowded kit steps
+- *(ui)* [`1c70d6b`](https://github.com/cmdcolin/bender/commit/1c70d6b8dd20fb66d976ac5a55f0f99aad513a40) presets for the dropped filter, the lamp and self-feeding fills
+- *(ui)* [`a5b36d6`](https://github.com/cmdcolin/bender/commit/a5b36d662094e00ac860430a2e77337452f9c60a) seven bass presets built from the kick tank, comb, filter, delay loop, retrigger, rail and organ ROM
+
+### Fixes
+- *(ui)* [`63e1778`](https://github.com/cmdcolin/bender/commit/63e1778f3028218d9fdbe5060343427a330fd324) pivot Varispeed's travel on a real trimmer's ten percent
+- *(dsp)* [`68ea9e4`](https://github.com/cmdcolin/bender/commit/68ea9e437ad76ba98de5734e6050f29c02065084) bound the deck's mic lag while the tape is parked
+- *(ui)* [`d9e4789`](https://github.com/cmdcolin/bender/commit/d9e47890164abd5e182551871321780a42bac0d7) remove the panic button
+- *(ui)* [`ab2fd93`](https://github.com/cmdcolin/bender/commit/ab2fd933ab3ea76c1a53d2a1af91c1bf0d66238c) drop gradients from the drum machine
+- *(ui)* [`8869034`](https://github.com/cmdcolin/bender/commit/8869034ec59b51132dc916946707d77369bb6fa1) slam and edge only move stages you can hear
+
+### Performance
+- [`7d07201`](https://github.com/cmdcolin/bender/commit/7d07201d934f7ea287e0e1d4331dee684115c08d) measure every Chrome thread and count collections synchronously
+- [`a5f85a1`](https://github.com/cmdcolin/bender/commit/a5f85a115da4bb09f8970341464dac39f31cd572) fix the thread harness's process discovery and flag undrawn runs
+- *(dsp)* [`179bea9`](https://github.com/cmdcolin/bender/commit/179bea99f29ba2c3967626488103c4e2026d980d) read the tank's cached swing and skip the unread LFO shape
+- *(ui)* [`ee2bc4f`](https://github.com/cmdcolin/bender/commit/ee2bc4fe13c6386e5adcb6b0c7d2961eebaac7c9) draw the scope, reel, desk and rail lamp when the meter changes
+- *(dsp)* [`76ab78e`](https://github.com/cmdcolin/bender/commit/76ab78efdb381fd19da5c25499a864fa56dbae01) flatten the multi-pole filters and table the kit's and FM chip's per-sample math
+- *(dsp)* [`0274938`](https://github.com/cmdcolin/bender/commit/0274938551f8b5435330cd294110b7706b062161) run the safety tail and limiter in methods of their own
+- *(dsp)* [`a07a787`](https://github.com/cmdcolin/bender/commit/a07a787f7a03c24a93a51b964fcc550663c9d973) run each spring tank a block at a time
+- [`dd2ec8f`](https://github.com/cmdcolin/bender/commit/dd2ec8fe1f1d275dc5be4868536df0d70cc6a54d) probe the frame rate just before the measured window
+
+### Refactor
+- *(dsp)* [`79459ba`](https://github.com/cmdcolin/bender/commit/79459ba572d8ebadfe16ab5ed12280e63b7b1aae) factor the bucket brigade out of the delay pedal
+
+### Documentation
+- [`523b7b1`](https://github.com/cmdcolin/bender/commit/523b7b1d38732f96f00035229c618d0fbf1748a2) reflow the ensemble line in the feature list
+- [`711b3fb`](https://github.com/cmdcolin/bender/commit/711b3fb7ceb0d1195cd84b31da9aad3d4f84dc0c) cut the user guide's wordiness and add screenshots
+- [`a0cc958`](https://github.com/cmdcolin/bender/commit/a0cc9583a102d012a60701a6687ea057864a10fc) record the allocation count, the block-loop wins and the battery numbers
+- [`cb354a4`](https://github.com/cmdcolin/bender/commit/cb354a418cc6bf54a54ee99643721cd64958e91d) rewrap the new guide and bends paragraphs
+
+### Tests
+- *(dsp)* [`44e143e`](https://github.com/cmdcolin/bender/commit/44e143e9daec81f747b0ad82c8136bcec83d9d03) pack the deck rig's params into a buffer it owns
+- *(ui)* [`5205af0`](https://github.com/cmdcolin/bender/commit/5205af077a5ec157de9b4a5f5a9e4ba3ede45e71) drop the drag test that aimed at the panic button
+- *(ui)* [`7080953`](https://github.com/cmdcolin/bender/commit/7080953a5618579ef7041bff383c199f91809ee3) count the frames the scope and the desk request
+- *(ui)* [`2f48421`](https://github.com/cmdcolin/bender/commit/2f48421e552bbc5df138b19769d6eec9b4a440cb) play each roll in its own test so a busy box cannot time it out
+
+### Other Changes
+- [`ca1398d`](https://github.com/cmdcolin/bender/commit/ca1398d293ef0b9a25642b36efce52d48d805133) Merge branch 'vw-kit' into worktree-vaporwave
+- [`e2bdf02`](https://github.com/cmdcolin/bender/commit/e2bdf027b251241d79892bbace9d20cda5fa73c0) Merge branch 'vw-pcm' into worktree-vaporwave
+- [`95714eb`](https://github.com/cmdcolin/bender/commit/95714ebd89daf527140c59261acf4443297bfaab) Sibling link
+- [`93092de`](https://github.com/cmdcolin/bender/commit/93092dece5a3a93ab740dcb862c78a372c7aa741) Format guide
+- [`7547ead`](https://github.com/cmdcolin/bender/commit/7547ead104b40b69f2774070d6c80a9d09743292) Merge branch 'main' into worktree-vaporwave
+
 ## [1.0.4](https://github.com/cmdcolin/bender/compare/v1.0.3...v1.0.4) - 2026-09-17
 
 ### Features
