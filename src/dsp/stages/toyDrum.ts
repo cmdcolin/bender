@@ -467,6 +467,8 @@ export class ToyDrum implements Stage {
   // What this board's resistors came out at, in counts of the rung they sit on.
   // Drawn once: the knob says how bad the ladder is, not which parts are wrong.
   private trim = new Float32Array(LADDER_BITS)
+  private words = new Float64Array(1 << LADDER_BITS)
+  private wordsBits = 0
   // A hit from outside the box — a pad on a controller, struck by hand rather
   // than by the sequencer. It waits here for the top of the next block: the
   // trigger line is a wire the DSP reads, and nothing on the main thread can
@@ -534,8 +536,24 @@ export class ToyDrum implements Stage {
     tol: number,
   ): number {
     const word = code + (1 << (bits - 1))
-    let err = 0
-    for (let k = 0; k < bits; k++) if ((word >> k) & 1) err += this.trim[k]!
+    if (bits > LADDER_BITS) {
+      let err = 0
+      for (let k = 0; k < bits; k++) if ((word >> k) & 1) err += this.trim[k]!
+      return err * amt * (tol / LADDER_TOL)
+    }
+    // Each word's sum, taken in the same order the first time the word comes
+    // up, and read back after that. NaN marks a word not yet summed.
+    if (bits !== this.wordsBits) {
+      this.words.fill(Number.NaN, 0, 1 << bits)
+      this.wordsBits = bits
+    }
+    const at = (word | 0) & ((1 << bits) - 1)
+    let err = this.words[at]!
+    if (err !== err) {
+      err = 0
+      for (let k = 0; k < bits; k++) if ((at >> k) & 1) err += this.trim[k]!
+      this.words[at] = err
+    }
     return err * amt * (tol / LADDER_TOL)
   }
 
@@ -1078,11 +1096,17 @@ export class ToyDrum implements Stage {
         // nothing was left to run its envelope down, and unpatching the bridge
         // dropped a hit that had been waiting there for minutes.
         let live = 0
+        const pulse = this.pulse
+        const pulseOut = this.pulseOut
+        const pulseFall = this.pulseFall
+        const pulseRise = this.pulseRise
+        const choked = this.chokedBits
+        const clapping = this.clapsLeft > 0
         for (let v = 0; v < N_VOICES; v++) {
           env[v]! *=
-            v === CLAP && this.clapsLeft > 0
+            v === CLAP && clapping
               ? clapBurstFall
-              : this.chokedBits & (1 << v)
+              : choked & (1 << v)
                 ? chokeFall
                 : falls[v]!
           // A voice built on a network has no envelope to run down, so what the
@@ -1094,12 +1118,10 @@ export class ToyDrum implements Stage {
           // The one-shot runs down, and what the networks and the output see
           // is that shape with its own edge on it rather than the step the
           // counter made.
-          this.pulse[v] =
-            this.pulse[v]! > 1e-7 ? this.pulse[v]! * this.pulseFall : 0
-          const lp =
-            this.pulseOut[v]! +
-            this.pulseRise * (this.pulse[v]! - this.pulseOut[v]!)
-          this.pulseOut[v] = lp > 1e-7 ? lp : 0
+          const was = pulse[v]!
+          pulse[v] = was > 1e-7 ? was * pulseFall : 0
+          const lp = pulseOut[v]! + pulseRise * (pulse[v]! - pulseOut[v]!)
+          pulseOut[v] = lp > 1e-7 ? lp : 0
           if (env[v]! > AUDIBLE) live++
         }
         // What the next pass has to get through. One, at the least: a chip with
