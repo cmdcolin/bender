@@ -38,12 +38,13 @@
   color: var(--accent);
 }
 
+/* The row draws its own stock mark (.defmark), so the trough's is off. */
 .track {
+  composes: track from './range.module.css';
+  --def-tick: transparent;
+  display: block;
   width: 100%;
-  height: 16px;
-  margin: 0;
-  accent-color: var(--accent);
-  background: transparent;
+  height: 14px;
 }
 
 .readout {
@@ -52,6 +53,12 @@
   color: var(--fg3);
   text-align: right;
   white-space: nowrap;
+}
+
+/* Accent is the panel's word for "you moved this", the same as the label. */
+.readoutTouched {
+  composes: readout;
+  color: var(--accent);
 }
 
 /* The number itself, in a box wide enough for the widest reading anything in
@@ -66,10 +73,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The ↺ is the way back to stock, not the number beside it — a stray click on
-   the reading while a value is being watched must never discard it. The mark
-   keeps its box at stock too — a slot that appeared on the first move would
-   shove the number sideways under the hand that was dragging it. */
+/* Off stock, the reading and its ↺ are one button back to stock. The ↺ keeps
+   its box at stock too, so the number never shifts under a dragging hand. */
 .revert {
   font: inherit;
   color: inherit;
@@ -79,15 +84,15 @@
   cursor: pointer;
 }
 
-.revert:hover .mark {
-  color: var(--accent);
+.revert:hover {
+  filter: brightness(1.3);
 }
 
 .mark {
   display: inline-block;
   width: 1em;
   text-align: center;
-  color: var(--fg4);
+  opacity: 0.75;
 }
 
 .markIdle {
@@ -297,33 +302,41 @@ select.listOn {
   grid-area: value;
 }
 
-/* A plain track with a normal stretch. The native thumb is 16px wide and its
-   centre travels 8px in from each end, so positions are laid out on that. */
+/* Slider.tsx lays marks out along the thumb's centre, which runs half a thumb
+   in from each end. */
 .plain {
-  --thumb: 16px;
+  --thumb-size: 12px;
   position: relative;
-  display: flex;
-  align-items: center;
+  display: block;
 }
 
-.tick {
+/* Where the control rests at stock, standing clear of the trough at both
+   edges. Grey, because stock is a property of the track rather than of the
+   value. */
+.defmark {
   position: absolute;
-  top: 1px;
-  bottom: 1px;
-  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--at));
+  top: 3px;
   width: 2px;
+  height: 10px;
   margin-left: -1px;
-  background: var(--alarm);
+  border-radius: 1px;
+  background: #8a8a9c;
+  opacity: 0.7;
   pointer-events: none;
 }
 
-.over {
+/* Where the normal stretch ends. Half height and hanging under the trough, so
+   it reads as a scale marking beneath the thumb rather than competing with the
+   stock mark. */
+.redline {
   position: absolute;
-  bottom: 0;
-  height: 2px;
-  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--from));
-  width: calc((100% - var(--thumb)) * (var(--to) - var(--from)));
-  background: color-mix(in srgb, var(--alarm) 55%, transparent);
+  top: 7px;
+  width: 2px;
+  height: 6px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--alarm);
+  opacity: 0.85;
   pointer-events: none;
 }
 
@@ -345,9 +358,9 @@ select.listOn {
   left: 0;
   right: 0;
   top: 8px;
-  height: 6px;
+  height: 4px;
   transform: translateY(-50%);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
   pointer-events: none;
   background: linear-gradient(
@@ -397,40 +410,25 @@ select.listOn {
   background: var(--alarm);
 }
 
+/* The bed draws the trough, so the input's own is bare. */
 .splitTrack {
-  composes: track;
-  appearance: none;
-  -webkit-appearance: none;
+  composes: range from './range.module.css';
+  --track-bg: transparent;
   position: relative;
-  background: transparent;
-}
-
-.splitTrack::-webkit-slider-runnable-track {
+  display: block;
+  width: 100%;
   height: 16px;
-  background: transparent;
-}
-
-.splitTrack::-moz-range-track {
-  height: 16px;
-  background: transparent;
 }
 
 /* The knob takes the weight of the half it is standing in, so the thing your
    hand is on says which way the tape is going without you reading anything. */
 .splitTrack::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 10px;
-  height: 16px;
-  border-radius: 2px;
   border: 1px solid var(--bg);
   background: var(--way);
   cursor: pointer;
 }
 
 .splitTrack::-moz-range-thumb {
-  width: 10px;
-  height: 16px;
-  border-radius: 2px;
   border: 1px solid var(--bg);
   background: var(--way);
   cursor: pointer;
