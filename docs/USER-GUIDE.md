@@ -4,619 +4,415 @@ How to play bender, once the board is in front of you.
 
 ## Playing the keyboard
 
-The on-screen board draws three octaves starting at C3, in a case with room for
-three octaves: on a phone, or in a window pulled in until the panel has taken
-most of it, it draws one or two instead rather than keys too thin to hit, and
-the five octave caps become a step either way with the note the bottom key plays
-between them. The sixteen keys under your typing hand carry their letter printed
-on them, the way the toys this models printed note names on their keys. Click a
-key, or drag across the board to play a run. `z` and `x` shift the whole board
-two octaves either way, down to a bass line well under the toy's own bottom key
-and up to where the tones run out of ticks and turn into flat squares.
+![The toy keyboard: the deck with REC, HOLD and the octave switches above three octaves of keys, letters printed on the sixteen keys under a typing hand.](img/guide-keyboard.jpg)
 
-**Hold** latches every key you touch after it, so it stays on until you press it
-again. Alt-click pins down a single key on its own, which is a way to keep a
-drone going under both hands while the rest of the board plays normally. Either
-way, a second press on a lit key lets it go — and a key that never gets a proper
-release (the window losing focus mid-press, a key still down when a controller
-unplugs) lets go on its own rather than ringing forever.
+The on-screen board draws three octaves starting at C3, fewer on a narrow
+window or phone. `z`/`x` shift the whole board two octaves either way. The
+sixteen keys under your typing hand carry their letter, printed the way the
+toy printed note names on its own keys.
 
-Keys light up for whatever is actually playing them: your own hand in the accent
-colour, and the toy playing itself — the ROM tune, the auto bass-chord, a note
-struck through the trigger patch — in amber. The chip reports what it's actually
-sounding, not what was asked for, so a note fades from the light as it fades
-from the mix, and a note cut short by a brownout goes dark early. Notes played
-past either end of the drawn board put a mark at that end, which is what the
-octave switch is for — and on a short board, which is most of what it is for.
+**Hold** latches every key you touch until you press it again. Alt-click pins
+down a single key on its own, for a drone under both hands. A key that loses
+its release — the window loses focus, a controller unplugs mid-press —
+releases itself, so the note doesn't ring forever.
 
-**Tone** taps the divider chain at a different pulse width — 1/2, 1/4, 1/8,
-1/16. The narrower taps null out different harmonics and thin the sound out, and
-nothing corrects for that, exactly as it was on the original chips. A counter
-can't strike a pulse narrower than one clock tick, so at the top of the
-keyboard's range the narrow settings widen back out toward a plain square.
+Keys light for whatever is actually playing them: your hand in the accent
+colour, the toy playing itself (the ROM tune, the auto bass-chord, the trigger
+patch) in amber. A note fades from the light as it fades from the mix, and a
+note cut short by a brownout goes dark early. A note played past either end of
+the drawn board marks that end instead.
+
+**Tone** taps the divider chain at 1/2, 1/4, 1/8 or 1/16 pulse width. The
+narrower taps thin the sound by nulling different harmonics, uncorrected, same
+as the original chips. Near the top of the keyboard's range a counter can't
+strike a pulse that narrow, so the narrow settings widen back toward a plain
+square.
 
 ## The melody memory
 
-**Rec** on the deck, or **record** on the piano roll, arms recording. Once
-armed, every key you press — on-screen, on the letter keys, or from a controller
-— is written to the step the chip is currently standing on. Arm it even with the
-chip silent; the memory still records, since a memory that only worked while the
-chip was making noise would be misleading with every light on the panel still
-saying it was working.
+**Rec** on the deck, or **record** on the piano roll, arms recording — even
+with the chip silent. Every key you press after that, on-screen, on the letter
+keys, or from a controller, writes to the step the chip is standing on.
 
-What you record isn't a separate sequencer. It's the 19th entry on the **Tune**
-selector, one past the 18 songs in the ROM bank, and from there the chip treats
-it exactly like any other tune: it runs at the rate **Memory rate** sets, the
-auto bass-chord plays under it, the clock bend and a brownout affect it the same
-way they affect a ROM song, and **Struck by** can have the drum machine clock it
-instead of the crystal.
+What you record isn't a separate sequencer: it's the 19th entry on **Tune**,
+one past the 18 ROM songs, and the chip treats it the same as any of them —
+**Memory rate** sets its speed, the auto bass-chord plays under it, the clock
+bend and a brownout affect it the same way, and **Struck by** can clock it
+from the drum machine instead of the crystal.
 
-The **piano roll** on the keyboard's panel is that memory drawn out: one row per
-pitch, one column per step. Click a cell to place a note, drag to draw a run of
-them, click a note again to remove it, and shift-click a step to hold whatever
-the previous step played. A held note draws as one bar across the steps it
-covers, rather than a note followed by empty cells. Two octaves show at a time,
-with arrows to move the window. The memory is 32 steps, the same length as the
-songs in the ROM bank, and it keeps its own length — a four-step phrase you
-write loops eight times against a sixteen-step drum pattern.
+The **piano roll** draws that memory: one row per pitch, one column per step.
+Click a cell to place a note, drag to draw a run, click again to remove it,
+shift-click to hold the previous step's note. A held note draws as one bar
+across its steps. Two octaves show at a time, with arrows to move the window.
+The memory is 32 steps and keeps its own length, so a four-step phrase loops
+eight times against a sixteen-step drum pattern.
 
-A step is stored as one of 64 codes on six bits: 62 of them are pitches (a
-little over five octaves), and the other two are a rest and a hold. The octave
-switch (`z`/`x`) can shift the keyboard further than those codes reach, so a
-note played at the far ends of its range wraps to the nearest octave that fits,
-rather than dropping the note or playing the wrong one. The accompaniment needs
-a key to play in, and since a melody you played doesn't name one, it takes your
-lowest note as the tonic and checks for a flat third to decide major or minor.
+A step is one of 64 codes: 62 pitches (a little over five octaves) plus rest
+and hold. The octave switch can move the keyboard further than those codes
+reach; a note at the far end wraps to the nearest octave that fits. The
+accompaniment takes the melody's lowest note as its tonic and checks for a
+flat third to pick major or minor.
 
-The memory is yours the way the pattern you draw on the drum machine is yours:
-nothing about random rolls, mutate or a morph will touch it, it rides in the
-shared link along with everything else, and every note you play in — plus every
-hold — is its own step in the undo history, so a wrong note is one `ctrl+z`
-away.
+The memory is undo-tracked like the drum pattern — random rolls, mutate and
+morph never touch it, it rides in the shared link, and every note or hold you
+play is its own step in the undo history.
 
 ## Auto bass-chord
 
-Auto bass-chord is the accompaniment section — the thing that made a toy
-keyboard sound like a whole bad band on its own. It runs off the melody's own
-step clock: bass on the beat, a chord stab on the offbeat, the bass alternating
-root and fifth. It reads its chord from the tune currently playing rather than
-from a chord button, and it runs on the same divider and the same rail as
-everything else, so starving the chip or dragging its clock takes the backing
-band down with the tune.
+Auto bass-chord is the accompaniment section: bass on the beat, a chord stab
+on the offbeat, the bass alternating root and fifth. It runs off the melody's
+own step clock, reads its chord from the tune currently playing, and runs on
+the same divider and rail as everything else — starving the chip or dragging
+its clock takes the backing band down with the tune.
 
 ## The arpeggiator
 
-The other thing the counter can walk is your hand. **Arpeggio** on the toy's
-panel takes the keys you are holding and plays them one at a time — **up**,
-**down**, **up-down**, **random**, or **as played**, which is the order your
-fingers went down in rather than the order of the pitches. Hold a chord, or
-throw the **hold** switch on the keybed and let go: latched keys arpeggiate the
-same as held ones, which leaves both hands free for the panel or for the other
-keybed.
+**Arpeggio** takes the keys you're holding and plays them one at a time:
+**up**, **down**, **up-down**, **random**, or **as played** (the order your
+fingers went down). Hold a chord, or throw the **hold** switch and let go —
+latched keys arpeggiate the same as held ones.
 
-**Arp rate** is notes a second and **Arp range** is how many octaves the figure
-climbs before it starts again. Neither is a clock of its own — the arpeggiator
-runs off the chip's divider like everything else on that die, so **Clock**, a
-pot on the timing pin and a flat rail all drag the figure along with the tune,
-the tempo and the envelopes. Nudging the rate lands it on a division of the
-kit's tempo, and **Kit sync** below does not reach it: the arp rate is its own
-knob rather than the number the ROM carries, so what the figure takes from the
-kit is what the divider takes, which is every bend and no tempo.
+**Arp rate** is notes a second; **Arp range** is how many octaves the figure
+climbs before repeating. Neither is its own clock — the arpeggiator runs off
+the chip's divider, so **Clock**, a pot on the timing pin and a flat rail all
+drag the figure with the tune. **Kit sync** does not reach it.
 
 The figure goes out on the gate line like any other note, so it plays the FM
-chip too wherever that jumper is still soldered on, and **Keys fire kit** in the
-trigger patch turns it into a drum pattern.
+chip too wherever that jumper is soldered on, and **Keys fire kit** turns it
+into a drum pattern.
 
 ## Kit sync
 
-**Kit sync** on the toy's panel is the wire the keyboard never had: the drum
-machine's step clock brought over to the toy's timing chain, so the tune counts
-off the kit's tempo instead of its own crystal. Pick how much of a beat one step
-of the tune is worth — **sixteenths** is one step of the tune per step of the
-pattern, **eighths** and **quarters** are half and a quarter of that. It reaches
-the melody, the two stacked memory lanes and the auto bass-chord, which all run
-off the one step clock. It does not reach the arpeggiator, whose rate is a knob
-of its own.
+**Kit sync** brings the drum machine's step clock to the toy's timing chain,
+so the tune counts off the kit's tempo instead of its own crystal. Pick how
+much of a beat one step of the tune is worth: **sixteenths**, **eighths**, or
+**quarters**. It reaches the melody, both memory lanes, and the auto
+bass-chord — not the arpeggiator, which keeps its own rate knob.
 
-What it replaces is the rate the song was written at — the ROM's own number, or
-**Memory rate** for your melody — and nothing else. Everything downstream of
-that still drags the tune: **Clock**, a pot on the timing pin, **Crystal drift**
-and a rail going flat all move a locked toy exactly as far as they ever moved a
-free one, so a synced keyboard on dying batteries still goes low, late and long.
-It is a wire on the timing pin, not a phase detector. That also means the tempo
-is read as the panel has it written: both machines hang off the one divider, so
-a sag arrives on both sides on its own and they go flat together.
+It replaces the rate the song was written at, nothing else: **Clock**, a pot
+on the timing pin, **Crystal drift** and a flat rail still move a locked toy
+the same as a free one. It's a wire on the timing pin, not a phase detector —
+both machines hang off the one divider, so a sag lands on both sides at once.
 
-Off is the crystal, and off is what every board made before the wire went in
-has. The **lock** button beside **Clock** is the older, blunter way to the same
-place — it sets the crystal to the nearest speed at which this song's steps
-divide into the kit's, once, and then nothing holds it there.
+Off is the crystal, and off is the default. **lock**, beside **Clock**, is the
+older way to the same place: it sets the crystal to the nearest speed at which
+this song's steps divide into the kit's, once, then holds nothing.
 
 ## The key lock
 
-**Key lock** on the toy's panel is a diode matrix across the key contacts: a key
-off the scale closes the one under it instead. Pick a scale — **major**,
-**minor**, **dorian**, **mixolydian**, either **pentatonic**, **blues** or
-**whole tone** — and a **Key** for it to be wired around, and everything played
-into the board comes out in that key. Both keybeds, a controller on MIDI, the
-arpeggiator's figure, and the notes the trigger patch invents: **Kit fires
-keys** set to play **any step** picks a note off the ROM per hit, and that is
-the one the lock is really for. It moves a note by a semitone or two, never by
-an octave, so what you hear is still the key you pressed.
+**Key lock** closes a key off the scale onto the one under it. Pick a scale
+(**major**, **minor**, **dorian**, **mixolydian**, either **pentatonic**,
+**blues**, **whole tone**) and a **Key**, and everything played into the board
+comes out in that key: both keybeds, a MIDI controller, the arpeggiator, and
+the trigger patch's **any step**. It moves a note by a semitone or two, never
+an octave.
 
-It is on the key line and not on the ROM. The demo songs and your own melody
-memory come out as they were written, in whatever key they were written in — a
-lock that reached them would quietly rewrite eighteen songs and every tune
-anybody has saved into a link. Off is the default and off is what every board
-made before the matrix went in has.
+It sits on the key line: the demo songs and your melody memory always play in
+whatever key they were written in. Off is the default.
 
 ## The drum machine
 
-The kit is a sixteen-step grid rather than a fixed pattern. Eight voices —
-**kick**, **snare**, **hat**, **clap**, **tom**, **cowbell**, **open hat**,
-**cymbal** — each get a row of steps you click, with an accent row underneath
-deciding which hits land harder. Ten factory patterns sit as buttons above the
-grid; each one writes into the same steps, so it's a starting point rather than
-a mode you're stuck in.
+The kit is a sixteen-step grid. Eight voices — **kick**, **snare**, **hat**,
+**clap**, **tom**, **cowbell**, **open hat**, **cymbal** — each get a row of
+steps, with an accent row underneath. Ten factory patterns sit as buttons
+above the grid, each an editable starting point.
 
-**Tempo** carries a **tap** button: press it in time and the kit takes the speed
-off your hand — two presses are a gap and a gap is a tempo, more presses sharpen
-it, and leaving it a couple of seconds starts a fresh count. The whole run is
-one step in the undo walk, so one `ctrl+z` puts back the tempo you tapped away
-from. The same button sits on the three other speeds a hand keeps rather than
-reads: both delay times, and the patch bay's own oscillator — tap a delay in
-against what you are playing, or tap a wobble at the speed you want it.
+**Tempo** carries a **tap** button: press it in time and the kit takes the
+speed off your hand. The same button sits on both delay times and the patch
+bay's oscillator.
 
-**Swing** holds every offbeat step back and gives the following step less time,
-so shuffle costs nothing in tempo. **Tune** and **Decay** move the whole kit at
-once, and **Ring** is the one to reach for after those: the kick, tom and snare
-body are resonant networks rather than oscillators, and winding Ring past nine
-tenths of its travel latches them into notes that ring on until you wind it
-back. The kit also has its own cheap-DAC quirks — see [Bends](BENDS.md) for what
-**Ring**, **Trigger pulse**, **Snappy**, **Accent sag**, **Bit depth**,
-**Ladder**, **Voice slot** and **Overflow** actually do to it. **Voice slot** is
-the one that ties the kit together: there is one converter for eight voices, so
-a step that stacks the kit comes out coarser than the same voice on its own.
+**Swing** holds every offbeat step back and gives the next step less time.
+**Tune** and **Decay** move the whole kit; **Ring** is the one to reach for
+after those — the kick, tom and snare body are resonant networks, and winding
+Ring past nine tenths latches them into notes that ring until you wind it
+back. See [Bends](BENDS.md) for what **Ring**, **Trigger pulse**, **Snappy**,
+**Accent sag**, **Bit depth**, **Ladder**, **Voice slot** and **Overflow** do
+to the kit's cheap-DAC quirks. **Voice slot** ties the kit together: one
+converter serves eight voices, so a step that stacks the kit comes out
+coarser than the same voice alone.
 
-Four of the voices are one part. The cowbell, both hats and the cymbal come off
-a single bank of six square oscillators that never stops turning — the cowbell
-taps two of them and keeps a pitch, the rest take all six through filters that
-leave only the clatter. **Bank spread** widens the bank, so it detunes the
-cowbell and roughens the hats in one gesture; **Metal** is the pot between that
-bank and the noise transistor the hat used to be made of, and **Cymbal tone**
-slides the cymbal between a crash and a splash. The two hats share a cap, which
-is what a hi-hat pedal is: writing a hat step under a ringing open hat cuts it
-short, so the pair play against each other the way a foot does — and **Choke**
-moves the resistor that does it, so any voice can cut any other.
+Four voices are one part: the cowbell, both hats and the cymbal come off a
+single bank of six square oscillators. **Bank spread** widens the bank,
+detuning the cowbell and roughening the hats together. **Metal** blends
+between that bank and the noise transistor the hat used to be made of;
+**Cymbal tone** slides the cymbal between a crash and a splash. The two hats
+share a cap — writing a hat step under a ringing open hat cuts it short, the
+way a foot does — and **Choke** moves that resistor to any pair of voices.
 
-Drawing a run of steps is a drag rather than sixteen separate clicks: press a
-step and drag across the grid, and every cell the pointer crosses goes the way
-the first one did. Each row also has its own length — shift-click a step to make
-the row loop back from there, with a badge on the right showing where it ends
-(press the badge to give the row all sixteen steps back). A five-step hat
-against a sixteen-step kick is polymeter: the two only line back up every eighty
-steps, so the pattern takes the better part of a minute to properly repeat.
+Press a step and drag across the grid to draw a run. Each row has its own
+length: shift-click a step to loop the row back from there, with a badge
+showing where it ends (press the badge to give it all sixteen back). A
+five-step hat against a sixteen-step kick is polymeter — the two line up
+again only every eighty steps.
 
-Clicking a step again, past lit, wires it through the kit's dice instead: it is
-drawn as a ring with a dot in it rather than a filled lamp, and it fires as
-often as **Chance** says rather than every lap. One knob decides for the whole
-kit, so a few loose contacts on the hats are all it takes for a sixteen-step
-pattern to stop repeating exactly. A third click puts the step out. Chance at
-nothing makes those steps silent and Chance all the way up makes them ordinary
-steps, which are the two ends worth knowing. The accent row has no dice on it —
-an accent is a weight rather than a hit, and a hit the machine decided still
-lands as hard as the accent row asks. A drag carries whichever of the three the
-step under your finger became, so a run of hats goes maybe in one gesture.
+Click a step past lit and it wires through the kit's dice instead: drawn as a
+ring with a dot, it fires as often as **Chance** says. A third click turns it
+off. Chance at zero silences those steps; Chance at max makes them ordinary.
+An accent is a weight on whatever step already fires, so the accent row
+carries no dice.
 
-Alongside the factory patterns is a row of verbs that rewrite the grid without
-touching tempo or tone: **Roll** writes an entirely new pattern, **Vary** makes
-a couple of small changes to the one you have, **Turnaround** drops a fill over
-the end of the bar, **Shift** moves every row one step later (shift-click to
-move it back), and **Half**/**Double** stretch or compress the bar. Each of
-these is a single step in the undo history, however much it changed.
+**Roll**, **Vary**, **Turnaround**, **Shift**, and **Half**/**Double** rewrite
+the grid without touching tempo or tone: a new pattern, a couple of small
+changes, a fill over the end of the bar, every row moved one step later
+(shift-click to move back), and the bar stretched or compressed.
 
-A row's name is also a button: press it to hear that voice without waiting for
-the playhead to reach a step you've written. The kit is playable on the number
-row too — `1` is the kick through `8` the cymbal, printed on each row the way
-the number is on the on-screen grid. A held key is a single hit, not the
-operating system's key repeat.
+![The toy drum machine's pad deck: eight numbered rubber pads, kick through cymbal, above the play and REC switches.](img/guide-drums.jpg)
 
-The toy drum machine beside the toy keyboard has a rubber pad for each voice.
-Clicking a pad plays its voice, and a pad lights whenever its voice fires, from
-the pattern, a number key, a pad or a trigger patch. The lamps along its top
-follow the step counter, and its **▶** and **rec** switches run the pattern and
-arm recording, the same as the grid's buttons.
-
-**Record** arms the kit to write a pattern from what you play: hit a number key,
-a row's name, or a pad, and it lands on the nearest step, with each row keeping
-its own timing. It needs the kit running to have a step to land on, so arming it
-while stopped shows as an outline rather than lit. It's never on when you
-arrive, and each hit is its own step in the undo history.
+A row's name is also a preview button. The kit plays on the number row too:
+`1` is the kick through `8` the cymbal. The toy drum machine's rubber pads do
+the same, with lamps that follow the step counter and its own **▶**/**rec**
+switches. **Record** arms the kit to write from what you play — needs the kit
+running to land on a step.
 
 ## Playing the FM chip
 
-The board's second synthesiser has no sequencer of its own — its key input is
-soldered onto the toy keyboard's gate line, so out of the box it plays whatever
-note the toy strikes. **Struck by** can wire a kit voice onto that same line as
-well, so a drum hit plays a note.
+The FM chip has no sequencer of its own; its key input is wired onto the toy
+keyboard's gate line, so it plays whatever the toy strikes. **Struck by** can
+wire a kit voice onto that line too.
 
-It does have keys, though somebody had to screw them on. Bring the chip up in
-the mix and a second keybed appears under the toy's, drawn as a green circuit
-board with push-button switches for keys. It is wired to this chip and nothing
-else, with a hold switch and an octave switch of its own. The switch on its deck
-is the jumper off the toy's gate: **toy gate** is how the board shipped, and
-pressing it to **gate cut** leaves the chip answering only its own keys and the
-kit's trigger lines — two synthesisers playing two parts instead of one part
-twice. It is also on the chip's panel as **Toy gate**, so it travels in a link
-like every other control.
+![The FM chip's keybed: a green circuit board with TOY GATE and HOLD switches, an octave switch, and rows of push-button keys.](img/guide-fm.jpg)
 
-One computer keyboard, two keybeds: `a s d f` and the octave keys `z`/`x` play
-whichever bed has **computer keyboard plays this bed** ticked, in the drawer
-behind the three bars on its deck, and the letters are printed on that bed's
-keys so you can see where they went. Turning it off on one bed hands the letters
-to the other, since there is nowhere else for them to go. Both beds take the
-mouse either way, and a MIDI controller plays the toy's unless you split the
-keybed — see [MIDI](MIDI.md).
+Bring the chip up in the mix and a second keybed appears, drawn as a green
+circuit board, wired to this chip only, with its own hold and octave
+switches. **toy gate** is how the board ships; pressing it to **gate cut**
+leaves the chip answering only its own keys and the kit's trigger lines. One
+computer keyboard plays whichever bed has **computer keyboard plays this
+bed** ticked, and a MIDI controller plays the toy's keybed unless you split it
+— see [MIDI](MIDI.md).
 
-**Voice** picks one of eight patches, **Brightness** sets how much of the
-modulator reaches the carrier, and **Feedback** sets how much of the modulator
-feeds back into itself. Under your own hands a note is genuinely held: the key
-stays down for as long as you hold it. Everything else that can trigger the chip
-— the demo song, a drum hit, a bridged trigger line — only sends an edge, with
-nothing saying when to stop, which is what **Note length** is for. Four of the
-eight voices (e.piano, bell, bass, marimba) decay on their own regardless of how
-long the key is held; the other four wait for it.
+**Voice** picks one of eight patches, **Brightness** sets how much modulator
+reaches the carrier, **Feedback** sets how much modulator feeds back into
+itself. A key held under your hand stays on for as long as you hold it;
+anything else that triggers the chip — the demo song, a drum hit, a trigger
+line — sends only an edge, so **Note length** decides when it stops. Four
+voices (e.piano, bell, bass, marimba) decay on their own regardless of key
+state; the other four wait for release.
 
-**Level**, **Brightness** and **Feedback** run past the chip's normal range. A
-red tick on the track marks the top of the normal range, and the readout turns
-red past it. Level goes to ×4. Past 1 on Brightness and past 7 on Feedback, a
-booster wired around the chip takes over from the register: each unit of
-brightness multiplies the modulation index by four, and each step of feedback
-doubles the feedback, so the top of either track is noise. The boosters do
-nothing while an effect runs. **Drive** pushes the four voices into the chip's
-output stage, up to 36 dB, which squares the notes off into fuzz and brings a
-quiet voice up toward the level of a loud one.
+**Level**, **Brightness** and **Feedback** run past the chip's normal range —
+a red tick marks it, and the readout turns red past it. Level goes to ×4; past
+1 on Brightness and past 7 on Feedback a booster takes over from the
+register, multiplying modulation and feedback further. **Drive** pushes the
+four voices into the output stage, up to 36 dB, squaring notes into fuzz.
 
-**Vibrato** switches on the one LFO the die has. There is no register for it
-anywhere — no rate, no depth, nothing to start or stop it — so all the button
-can do is solder the operators to something that has been running since the
-board came up, and all it is, in the patch, is two bits. It counts off the same
-divider as everything else, so starving the toy slows the wobble down with the
-pitch. **tremolo** takes about a decibel off the level and **vibrato** moves the
-pitch about seven cents; **both** does the two together. Voices that came with a
-wobble of their own keep it whichever way the button is set, the same way a
-voice keeps its own ratios with the ratio knobs at _as patched_.
+**Vibrato** switches on the die's one LFO — no rate or depth register, just
+two bits wiring the operators to a wobble that's been running since the board
+came up. **tremolo** takes about a decibel off the level, **vibrato** moves
+pitch about seven cents, **both** does both. Tremolo reads quieter than
+expected because a modulator moving up and down moves brightness the opposite
+way from the carrier's level — wind **Brightness** down and it's obvious.
 
-Tremolo is quieter than it looks, and for a reason worth knowing: the button
-wires both operators, and a modulator going up and down is a brightness going up
-and down, which moves the level the opposite way from the carrier doing the same
-thing. Wind **Brightness** down and the same setting is suddenly obvious.
+**Rhythm** re-taps the top two channels onto a ROM kit instead of the
+keyboard: a bass drum, and a snare and hi-hat fed by the chip's one noise
+source, a shift register. It costs two of the four voices, the same two an
+effect wants. **Noise blob** solders that shift register onto the sine table
+with the rhythm bank switched over — a touch is dirt on the note, wound
+across it gates the carrier by the register instead.
 
-**Rhythm** is the other thing the die can be. Press it and the top two channels
-stop belonging to the keyboard: they are re-tapped onto a kit held in ROM — a
-bass drum well under the bottom of the keybed, and a snare and a hi-hat fed by a
-shift register that is the only noise source anywhere on the chip. Every note
-strikes the bass drum, and the snare and hat want the kit's own trigger lines,
-so pair it with **Struck by**. It costs two of the four voices, and an effect
-wants the same two, so the two switches take turns.
-
-It is worth knowing about even if you never want drums out of it, because it is
-how this chip reaches the bottom and the far top of the spectrum at all —
-everything else it can make is a sum of sines somewhere above 200 Hz. Put a
-knife on the bus with the bank switched over and the same faults land somewhere
-new: the frequency registers those noise slots no longer use for a pitch are
-what clock the shift register, so a bend that used to move a note by an octave
-now sweeps the hiss between a rumble and sand.
-
-**Noise blob** is the way to that shift register with the rhythm button up. It
-is a blob of solder from the register's output onto the pins the sine table
-answers on, so it is a bodge wire rather than a switch: nothing the processor
-does touches it, and it is there on every patch, under an effect and through a
-panic. A touch of it is dirt riding on the note; wind it across and the sine
-goes, leaving the carrier gated by the register. Starving the toy slows the
-register down with everything else, so the sand turns into a rumble.
-
-**Mod ratio**, **Car ratio** and **Mod decay**, under "inside the patch", shape
-the patch further. What actually happens at the register level when you put a
-fault on this chip's wires is a much bigger story — see [Bends](BENDS.md).
-
-The patch bay reaches every knob on this chip that matters now, the knife
-included: **FM cut depth** is how far through the trace the blade went and **FM
-noise blob** is how far the solder ran, so a wire on either is a fault that
-comes and goes in time rather than one you set and leave. **FM bright** is the
-one to try first, for a reason that is nothing to do with tone: the processor
-only re-sends a patch when a knob moves, so a wire there leaves it writing the
-register file every block instead of four times a note — which is what every
-fault on that bus has been waiting for.
+**Mod ratio**, **Car ratio** and **Mod decay** shape the patch further; see
+[Bends](BENDS.md) for what a fault actually does at the register level. The
+patch bay reaches every knob that matters, knife included: **FM cut depth**,
+**FM noise blob**, **FM bright** — and **FM bright** is worth trying first,
+since the processor only re-sends a patch when a knob moves, so a wire there
+writes the register every block instead of four times a note.
 
 ## The talking pet
 
-The talking pet is a furry toy wired onto the keyboard's batteries. It starts at
-zero; raise **Level** and it says hello. What it says next depends on its mood:
+The talking pet is a furry toy wired onto the keyboard's batteries. Raise
+**Level** and it says hello. What it says depends on its mood:
 
-- **asleep**: snores now and then. Any sound or kit hit wakes it.
-- **awake**: greets you and chats. Twenty seconds of quiet makes it sleepy, and
-  a long time awake makes it hungry.
-- **chatty**: after a kit hit (a tickle). It laughs and sings.
-- **hungry**: asks for food until the next kit hit.
-- **scared**: after a loud sound or a burst of hits.
-- **sleepy**: yawns, then falls asleep. A low supply keeps it here.
+- **asleep** — snores now and then; any sound or kit hit wakes it.
+- **awake** — greets you and chats; twenty seconds of quiet makes it sleepy, a
+  long stretch awake makes it hungry.
+- **chatty** — after a kit hit; laughs and sings.
+- **hungry** — asks for food until the next kit hit.
+- **scared** — after a loud sound or a burst of hits.
+- **sleepy** — yawns, then sleeps; a low supply keeps it here.
 
-The pet hears the mic and the board's own output, and ignores the board's output
-while it is talking. **Chatter** sets how often it talks unprompted; turned up,
-the pet also stays awake longer in quiet and wakes up on its own. **Pitch**
-moves the voice alone; **Clock** moves pitch, formants and speed together.
-**Motor** is the sound of the eye and ear motor, which loads the shared supply
-whenever it turns. The knife, **Frame hold** and **K bits** are covered in
-[Bends](BENDS.md).
+It hears the mic and the board's own output, ignoring the output while it
+talks. **Chatter** sets how often it talks unprompted and how long it stays
+awake in quiet. **Pitch** moves the voice alone; **Clock** moves pitch,
+formants and speed together. **Motor** is the eye-and-ear motor, which loads
+the shared supply when it turns. The knife, **Frame hold** and **K bits** are
+in [Bends](BENDS.md).
 
-While **Level** is above zero, the pet appears under the toy keyboard and drum
-machine, next to the FM keyboard when the FM chip is up. Its ears swing and its
-eyelids close while the motor turns, its beak opens with its speech, a bubble
-shows the phrase it is saying, and the caption under it names its mood. Clicking
-the pet tickles it the same as a kit hit: a sleeping pet wakes, an awake one
-gets chatty and laughs, and a quick run of clicks scares it.
+While **Level** is above zero the pet appears under the toy keyboard and drum
+machine. Its ears swing and eyelids close while the motor turns, its beak
+opens with speech, a bubble shows the phrase, and a caption names its mood.
+Clicking it tickles it: a sleeping pet wakes, an awake one gets chatty, a
+quick run of clicks scares it.
 
 ## The trigger patch
 
-The keyboard and the drum machine share a power rail by accident; the trigger
-patch is what you wire between them on purpose. Its picture has three boxes in
-it, because there are three machines on that board and four wires that make one
-strike another.
+The keyboard and drum machine share a power rail by accident; the trigger
+patch is what you wire between them on purpose.
 
-**Kit fires keys** bridges a drum hit onto the keyboard's gate, so a hit plays a
-note. What note is its own setting: the one already standing, the next step of
-the ROM tune, a random step, or a tone from the accompaniment's current chord.
-The next step is the one to try first — it means one drum hit clocks one step of
-the melody, so the whole board, bass and chord stabs included, moves together.
+![The trigger patch diagram: Toy drums, Toy keyboard and FM chip as three boxes with wires between them, plus dropdowns for Kit fires keys, Keys fire kit, Struck by and Toy gate.](img/guide-trigger.jpg)
 
-**Keys fire kit** is the wire back: every note the chip plays also fires a drum
-voice, whether the pattern is running or not. **The step** option hands it to
-the grid instead, so a key fires whatever column the sequencer is sitting on.
+**Kit fires keys** bridges a drum hit onto the keyboard's gate: the note
+played is its own setting — the one already standing, the next step of the
+ROM tune, a random step, or a tone from the current chord. **Next step** is
+the one to try first, since it clocks the whole board, bass and chord stabs
+included, off one drum hit.
+
+**Keys fire kit** is the wire back: every note the chip plays also fires a
+drum voice, pattern running or not. **The step** option hands it to the grid
+instead, so a key fires whatever column the sequencer sits on.
 
 Bridge both directions and the two machines play each other — a rattle at the
-audio block rate, held in check by the safety tail, which is what a trigger loop
-closed on itself has always done.
+audio block rate, held in check by the safety tail.
 
-The other two wires land on the FM chip, which has no sequencer, so they are the
-whole of how anything reaches it. **Toy gate** is the factory jumper off the
-keyboard's gate line; cut it and the chip stops following the keyboard next
-door. **Struck by** is the kit's trigger lines clipped onto the same input — a
-trigger carries a strike and nothing else, so the note is decided at this end,
-one per voice a pentatonic apart, which turns a pattern written for drums into a
-riff. Both are on the chip's own panel too; this is the one place all four wires
-are in the same picture.
-
-Every wire in the trigger patch, and the rail the two machines share, can also
-be bent — see [Bends](BENDS.md) for the full list.
+Two more wires land on the FM chip, the only way anything reaches it. **Toy
+gate** is the factory jumper off the keyboard's gate line; cut it and the
+chip stops following the keyboard. **Struck by** clips the kit's trigger
+lines onto the same input, one voice per pentatonic step, turning a drum
+pattern into a riff. Every wire here, and the shared rail, can also be bent —
+see [Bends](BENDS.md).
 
 ## Presets and rolls
 
-Click a preset chip to load the whole board. Drag it sideways instead and it
-morphs only part of the way there, under your finger rather than on a clock;
-drag back and the board retraces to where it stood. None of the random rolls,
-**mutate**, or **drift** below ever touch the demo song you picked, the pattern
-you wrote, or the output, mic and sample levels — those stay yours.
+Click a preset to load the whole board. Drag it sideways and it morphs only
+part of the way there, under your finger; drag back and it retraces. Random
+rolls, **mutate**, and **drift** never touch the demo song, the pattern, or
+the output/mic/sample levels.
 
-A roll moves only a handful of controls, not the whole board, and it keeps its
-hands off time: any control that counts in beats — delay time, glitch slice,
-drum retrigger — lands back on a division of the beat rather than an arbitrary
-value, so a roll is still playable with the pattern.
+A roll moves only a handful of controls, and any control that counts in beats (delay time, glitch slice, drum retrigger) lands on a
+division of the beat. A control with red ticks has a normal range — rolls,
+**mutate** and **drift** stay inside it unless you've already set it past.
+**Wreck it**, **slam** and **on the edge** use the whole track.
 
-A control with red ticks on its track has a normal range: every source level, FM
-brightness and feedback, feedback on the comb, freq shifter, tape delay, delay
-pedal and feedback bus strips, the screech filter's resonance, the tape
-machine's head bump, and the patch bay's wire depths. Rolls, **mutate** and
-**drift** keep such a control inside its normal range unless you have already
-set it past. **Wreck it**, **slam** and **on the edge** use the whole track.
+Every stage's panel has its own **roll** and **reset**; the signal path map's
+control count, pressed, does the same reset without opening the panel.
 
-Every stage's own panel has a **roll** and a **reset** for asking one question
-at a time — a new spring tank without losing the rest of the board, or that one
-stage back to where it booted. The signal path map shows a count of how many
-controls you've moved on each stage; pressing that number is the same reset,
-without needing the panel open.
+Whole-board rolls sit above the presets: **rewire** shuffles the bend order
+without retuning, **one bend** clears the slots to one and rolls it hard,
+**wreck it** pushes feedback, supply and bit depth all at once (the safety
+tail holds it), **slam** drives one to three controls to an extreme, **on the
+edge** drives two opposing controls to opposite extremes, **let it age**
+turns all five ageing controls up together, **patch** solders two or three
+wires from a moving source onto a stage that's actually running, and
+**cascade** solders one wire onto another wire's own depth.
 
-Above the presets are rolls that work on the whole board at once: **rewire**
-shuffles the bend order and re-patches the wires without retuning anything,
-**one bend** clears the slots down to one and rolls it hard, and **wreck it**
-pushes everything that can run away — feedback, supply, bit depth — all the way
-at once (the safety tail holds all of it). **Slam** drives one to three controls
-to an extreme and leaves the rest alone. **On the edge** takes two controls that
-fight each other and drives them to opposite extremes. **Let it age** turns all
-five ageing controls up together. **Patch** re-solders the modulation bay — two
-or three wires, each from a source that is actually moving onto a stage the
-board is actually running, turning that stage up where it was dry — and
-**cascade** solders one wire onto another wire's own depth, so what the second
-wire does to the board is itself something opening and closing.
+![The patch bay: three of four LFO wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](img/guide-patchbay.jpg)
 
-Every control one of the four wires can land on carries a **+ mod** button
-beside its readout, so a knob can be set moving from the stage you are standing
-on rather than by finding the lane in the bay's own list of fifty-four. The
-press solders the first spare wire from the LFO onto that control, turns nothing
-else up, and folds the wire out under the row: what it picks up, how hard it
-pushes, and — while it is on the LFO — the rate and shape that oscillator is
-running at. Patched, the row wears a chip saying what is driving it and how fast
-(`∿ LFO 1.0Hz`), which is the difference between a slow sweep and a buzz without
-opening anything; pressing the chip folds the wire out again, and **× unplug**
-takes it off, keeping where it landed and how hard it was pushing so the next
-**+ mod** puts that patch back rather than a fresh one. The wire is an ordinary
-bay wire throughout — the same four, in the same diagram, saved and shared with
-everything else, so the bay is where you see them all at once and the row is
-where you dial the one you are listening to. With all four soldered the button
-says so where it stood.
+Every control a wire can land on carries a **+ mod** button beside its
+readout: the press solders the first spare LFO wire onto that control and
+folds the wire out under the row, tagged with what's driving it and how fast
+(`∿ LFO 1.0Hz`). Press the chip to fold it back, **× unplug** to remove it —
+the next **+ mod** restores the same patch. It's an ordinary bay wire
+throughout, saved and shared like the rest.
 
-The patch bay's own picture says when a lead reaches nothing — a wire off a mic
-nobody has turned on, or onto a reverb that is dry — and one press under the
-diagram moves the loose end onto a stage the board is running. It turns nothing
-up, so the stages stay where you left them.
+**Hunt** tries six boards, plays each a second and a half, and keeps
+whichever rides closest to the limiter without burying it. None of the
+candidates it passed through land in the undo history — the whole hunt is a
+single step.
 
-**Hunt** is the one roll that listens to what it rolled: it tries six boards,
-plays each for a second and a half, and keeps whichever rides closest to the
-limiter without burying it — a dialog shows which candidate is currently
-playing, and clicking it or pressing escape stops on the one that's playing.
-None of the candidates it passed through land in the undo history — the whole
-hunt banks a single step, back to the board you were on before it started.
+**Drift** is mutate on a timer: roughly every fifteen seconds the board sets
+off toward a new nearby setting, so the sound never cuts and never quite
+arrives. One `ctrl+z` restores the board from before it started.
 
-**Drift** is mutate on a timer: roughly every fifteen seconds the board sets off
-toward a new nearby setting and mostly gets there before the next leg starts, so
-the sound never cuts and never quite arrives anywhere. It's meant to run
-unattended — your levels, the song and the pattern stay put, and one `ctrl+z`
-restores the board you had before you started drifting.
-
-**Share** copies the current board into the page's URL, so a board travels as a
-link you can send.
+**Share** copies the current board into the page's URL.
 
 ## Demo songs
 
-The ROM bank holds 18 built-in tunes: four factory demos, eight public-domain
-pieces every cheap keyboard of the era shipped (Für Elise, Ode to Joy, Rondo
-alla Turca, William Tell, and others), and six slower ones in minor and modal
-keys. Once you've played something into the melody memory, it becomes the 19th
-entry on the same selector.
+The ROM bank holds 18 tunes: four factory demos, eight public-domain pieces
+(Für Elise, Ode to Joy, Rondo alla Turca, William Tell, and others), and six
+slower ones in minor and modal keys. Once you've played something into the
+melody memory, it's the 19th entry on the same selector.
 
 ## Playback and recording
 
-**play demo song** and **play drums** are independent run switches for the
-keyboard's tune and the drum pattern. `space` toggles both at once and restores
-whatever was actually running before, rather than starting everything
-unconditionally — nothing else on the board presses play on its own, including a
-preset, a roll, or a shared link.
+**play demo song** and **play drums** are independent run switches. `space`
+toggles both at once and restores whatever was actually running before.
 
-**Record wav** is different from the two record buttons above: it captures the
-actual audio output as a 16-bit stereo wav file, where the keyboard's **Rec**
-and the drum machine's **Record** capture what you played rather than what comes
-out of the speakers.
+**Record wav** captures the actual audio output as a 16-bit stereo wav file —
+different from the keyboard's **Rec** and the drum machine's **Record**,
+which capture what you played rather than what comes out of the speakers.
 
 ### Stems
 
-The selector beside it says what a take comes back as. **Master only** is one
-file of what you heard. **Master + stems** adds one wav per source that had
-anything on it — the toy keyboard, the drums, the FM chip, the chaos oscillator,
-the noise, the sampler and the talking pet — named `bender-<stamp>-toy.wav`,
-`-drums`, `-fm`, `-chaos`, `-noise`, `-sampler`, `-pet`, beside
-`bender-<stamp>-master.wav` under the same stamp. A source you left down writes
-no file. The selector locks while a take is running: what the tape is threaded
-for is settled when you press record.
+The selector beside it sets what a take comes back as. **Master only** is one
+file. **Master + stems** adds one wav per source that had anything on it —
+toy keyboard, drums, FM chip, chaos oscillator, noise, sampler, pet — named
+`bender-<stamp>-toy.wav`, `-drums`, `-fm`, `-chaos`, `-noise`, `-sampler`,
+`-pet`, beside `bender-<stamp>-master.wav`.
 
-**A stem is the dry machine.** The seven sources sum into the mix bus, and
-everything after that point — the bus drive, the bends, the pedals, the
-brownout, the tape and the limiter — is applied to the sum. There is one signal
-path, not seven, so a stem taken after the bus would mean running the whole
-board seven times over. What you get is each source as it arrived at the summing
-amp, with none of the board on it; the master is the take with all of it on.
-Bring the stems into a DAW and they will not add up to the master, and they are
-not meant to — the master is the instrument, the stems are what went into it.
+A stem is the dry source, taken where it sums into the mix bus — before the
+bus drive, bends, pedals, brownout, tape and limiter, all of which apply only
+to the sum. Stems won't add up to the master in a DAW; the master is the
+instrument, the stems are what went into it. The mic and the feedback return
+aren't stems — the mic lands on the bus, the return feeds the desk back into
+itself — both are in the master only.
 
-The mic and the feedback return are not stems. Neither is a source: the mic is a
-wire that lands on the bus (or on the toy's supply rail), and the return is the
-desk feeding itself. Both are in the master only.
-
-Stems are **mono**. Five of the six sources put the identical sample on both
-channels, so a stereo stem would be the same file twice at twice the size; the
-noise is the exception, and its stem is the middle of its two streams — the
-width it has stays in the master.
-
-Two practical limits. A stem take stops itself at **two minutes** rather than
-the ten a master take gets: seven tracks of 48 kHz float is about 1.5 MB for
-every second held in the tab, so two minutes is around 184 MB before a byte is
-encoded. And there is no zip here — the dependency list is four packages and
-staying that way — so stopping a stem take fires up to seven downloads at once.
-Your browser may ask whether this site can download multiple files; say yes, or
-you will get the master and nothing else.
+Stems are mono: five of the six sources put the same sample on both channels,
+and noise takes the middle of its two streams. A stem take stops at two
+minutes (a master take gets ten) — seven tracks of 48 kHz float run about 1.5
+MB per second held in the tab. There's no zip, so stopping a stem take fires
+up to seven downloads at once; your browser may ask permission for multiple
+files.
 
 ## The link is the board
 
-The address bar carries the whole board at all times — every control off stock,
-the drum pattern and the melody — so copying it is the share button and
-reloading keeps what you had. There is no server involved: it all rides in the
-`#`, which is also why no host has to be taught to serve the app for a url it
-has never seen.
-
-It comes out short by default. Here is **bucket brigade**:
+The address bar carries the whole board — every control off stock, the drum
+pattern, the melody — in the `#`, with no server involved. It comes out short
+by default:
 
 ```
 https://cmdcolin.github.io/bender/app/#p=AJYBL1p-AgDABwCQAQDoBwF4
 ```
 
-That's the board written as bytes, and it stays that board. Each control rides
-as a count of its own steps up from zero rather than up from the bottom of its
-travel, so a version that widens a control's range later gives the link more
-room underneath it rather than sliding what it already says.
-
-The long form spells the same board out, and the app both reads and writes it:
+The long form spells the same board out, and the app reads and writes both:
 
 ```
 https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6
 ```
 
-Four times the characters, which is why the bar carries the short one — the
-difference between a link that survives a chat window and one that arrives in
-three pieces.
-
-What the long form buys is a board you can program by hand: a control name from
-[features.md](features.md), a colon, a number, commas between.
+The long form is four times the characters, which is why the bar carries the
+short one, but it's what lets you program a board by hand: a control name
+from [features.md](features.md), a colon, a number, commas between.
 
 ```
 #set=chipStarve:0.8,dlyFb:0.6,drumKick:33825
 ```
 
-Anything you leave out is at stock, anything out of range is pulled back onto
-the panel, and a name the app no longer has is dropped. A bar already carrying
-`#set=` keeps carrying it, so the board stays readable while you are working
-that way rather than turning back to bytes under the cursor — type a bare
-`#set=` to switch a tab over. Every preset link in [features.md](features.md) is
-written this way.
+Anything left out is stock, anything out of range is pulled back, and an
+unknown name is dropped. A bar already carrying `#set=` keeps carrying it;
+type a bare `#set=` to switch a tab over. Every preset link in
+[features.md](features.md) is written this way.
 
 ## Signing in and saved voices
 
-A voice is a whole board under a name, the way a synth keeps a patch. Three
-things save one, and all three save the same thing:
+A voice is a whole board under a name. Three things save one, all saving the
+same thing: **save** in the panel's row of verbs, **ctrl+S** (**⌘S** on a
+Mac), and the **saved** popover's name box.
 
-- **save**, in the panel's row of verbs between reset and undo. One press, no
-  typing.
-- **ctrl+S** (**⌘S** on a Mac), which does what that button does.
-- the **saved** popover beside the nameplate, where the name box lets you type a
-  name first.
+A press saves under the name the popover is already showing — the preset the
+board is standing on, or the voice you last saved or recalled. A name already
+in the list overwrites that voice in place.
 
-A press saves under the name the popover is already showing: the preset the
-board is standing on if it is standing on one, and otherwise the voice you last
-saved or recalled. A name already in the list overwrites that voice in place, so
-re-saving a voice leaves the list in the order it was.
+![The saved popover, signed out: "Sign in to keep voices under a name — they live on your Google account, so they follow you to another machine. Everything else here works signed out," with a "sign in with Google" button.](img/guide-saved.jpg)
 
-Pressing save with nobody signed in holds the board and opens **why sign in?**,
-the same card the panel's ☰ menu opens. Sign in from that card and the board
-you were looking at is saved under the name the card named. If the account turns
-out to hold that name already, the save lands beside the voice there and counts
-up: _dying toy 2_.
+Pressing save with nobody signed in opens **why sign in?**. Sign in from
+there and the board you were looking at saves under the name you gave it; a
+name your account already holds gets a number appended (_dying toy 2_).
 
-Each row in the list does four things:
+Each row in the list: press the name to **recall** it (shift+click to
+overwrite it with the current board); **↗** opens it whole and at once; **⧉**
+copies a link to it, playable signed out; **×** deletes it.
 
-- press the name to **recall** it, which morphs the board across on the panel's
-  own duration, the way pressing a preset chip does. Shift+click overwrites that
-  voice with the board on screen.
-- **↗** opens it whole and at once, which is what arriving on a link does.
-- **⧉** copies a link to it. It is an ordinary board link, so anyone can open it
-  signed out.
-- **×** deletes it.
-
-The list lives on your Google account rather than on this machine, so a voice
-named on the laptop is there on the phone, and clearing site data does not lose
-it. **sign in** sits beside **saved** in the panel's chrome, and becomes your
-account photo once you are in — press the photo to sign out. Signing in is a
-popup, and nothing else in bender needs an account: presets, rolls, MIDI,
-recording and every link all work signed out. The
+The list lives on your Google account, so a voice named on the laptop is
+there on the phone, and clearing site data doesn't lose it. **sign in**
+becomes your account photo once you're in; press it to sign out. Nothing else
+in bender needs an account — presets, rolls, MIDI, recording and every link
+work signed out. The
 [privacy page](https://cmdcolin.github.io/bender/privacy/) lists what the
-account holds, and the sign-in card and the about card both link to it.
+account holds.
 
-Signed in, the app also mirrors the board you have open onto your account, and
+Signed in, the app also mirrors the board you have open onto your account;
 the [home page](https://cmdcolin.github.io/bender/) offers it back under
-**Continue where you left off** — so a board you were in the middle of on one
-machine is a click away on the next. A recording on the sampler and the mic do
-not travel with it, so bring them in again. Opening the app, a demo or a link
-someone sent is not the board you were in the middle of, so nothing is mirrored
-until you change something on it.
+**Continue where you left off**. A recording on the sampler and the mic don't
+travel with it. Opening the app, a demo, or a shared link doesn't touch the
+mirror until you change something.
 
-The home page lists your voices beside it, newest save first. Under each card,
-**Copy link** puts its link on the clipboard, **Rename** edits its name in place
-and refuses a name another voice already has, and **Delete** asks once and then
-removes it.
+The home page lists your voices, newest first. **Copy link**, **Rename**
+(refuses a name another voice already has), and **Delete** (asks once) sit
+under each card.

@@ -20,6 +20,7 @@
     "diagram": "tsx scripts/chain-svg.ts",
     "features": "tsx scripts/features.ts",
     "figure": "tsx scripts/figure.ts",
+    "guide-shots": "tsx scripts/guide-shots.ts",
     "ink": "tsx scripts/ink.ts",
     "knife": "tsx scripts/knife.ts",
     "panel": "tsx scripts/panel.ts",
