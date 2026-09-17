@@ -14,6 +14,10 @@ import { Tip } from './Tip'
 const FLOOR_DB = 48
 const HOT = 0.7
 
+// Where a falling bar stops, 120 dB down, so the fall ends in a finite number
+// of frames.
+const SILENT = 1e-6
+
 // How fast a bar falls. The taps come back as the peak since the last meter,
 // sixteen milliseconds of it, and a kick read that way is one frame at full and
 // then nothing — so the rise is instant and the fall is not, which is what every
@@ -52,12 +56,15 @@ export function Mixer() {
     const painted: (string | undefined)[] = []
     const lit: (string | undefined)[] = []
     const draw = () => {
-      raf = requestAnimationFrame(draw)
+      raf = 0
       const taps = engine.meter.get().taps
+      let moving = false
       for (const [i, tap] of TAPS.entries()) {
         const bar = bars.current[i]
         if (bar) {
-          held[i] = Math.max(taps[tap] ?? 0, held[i]! * FALL)
+          const fell = held[i]! * FALL
+          held[i] = Math.max(taps[tap] ?? 0, fell < SILENT ? 0 : fell)
+          if (held[i] > 0) moving = true
           const pos = position(held[i])
           const width = `scaleX(${pos})`
           if (painted[i] !== width) {
@@ -75,9 +82,22 @@ export function Mixer() {
       const peak = bus > 0 ? `${(20 * Math.log10(bus)).toFixed(0)} dB` : '-∞ dB'
       if (readout.current && readout.current.textContent !== peak)
         readout.current.textContent = peak
+      if (moving) schedule()
     }
-    raf = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(raf)
+    // A frame per meter post that carries a level, and frames after that only
+    // while a bar is still falling. A desk with nothing on it requests none.
+    const schedule = () => {
+      if (raf === 0) raf = requestAnimationFrame(draw)
+    }
+    const off = engine.meter.subscribe(() => {
+      const taps = engine.meter.get().taps
+      if (TAPS.some(tap => (taps[tap] ?? 0) > 0)) schedule()
+    })
+    schedule()
+    return () => {
+      off()
+      cancelAnimationFrame(raf)
+    }
   }, [])
 
   const bar = (i: number) => (
