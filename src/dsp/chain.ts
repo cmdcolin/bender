@@ -560,6 +560,26 @@ export class Chain {
       if (!s.when || s.when(p, ctx)) s.process(io, p, ctx)
     }
 
+    this.tail(io, p, n)
+    this.computeFeedback(io, p)
+    this.duck = this.limit(io, n)
+
+    if (
+      !Number.isFinite(io.l[0]!) ||
+      !Number.isFinite(io.l[n - 1]!) ||
+      !Number.isFinite(io.r[0]!) ||
+      !Number.isFinite(this.fbRetL[0]!)
+    ) {
+      this.panic()
+      io.l.fill(0, 0, n)
+      io.r.fill(0, 0, n)
+    }
+  }
+
+  // The safety tail, in a method of its own so V8 compiles the loop apart from
+  // process() and inlines the dc blockers, the clipper and the followers.
+  private tail(io: StereoBlock, p: Float32Array, n: number) {
+    const ctx = this.ctx
     const gain = Math.pow(10, p[IDX.outGain]! / 20)
     const dcCoef = 1 - (2 * Math.PI * 10) / this.sr
     const envA = coef(0.005, this.sr)
@@ -592,9 +612,9 @@ export class Chain {
           ? Math.min(Math.max((hf / all - BRIGHT_REF) * 2.5, -1), 1)
           : 0
     }
+  }
 
-    this.computeFeedback(io, p)
-
+  private limit(io: StereoBlock, n: number): number {
     const rel = Math.exp(-1 / (0.1 * this.sr))
     let held = 0
     for (let i = 0; i < n; i++) {
@@ -605,18 +625,7 @@ export class Chain {
       io.l[i]! *= g
       io.r[i]! *= g
     }
-    this.duck = held / n
-
-    if (
-      !Number.isFinite(io.l[0]!) ||
-      !Number.isFinite(io.l[n - 1]!) ||
-      !Number.isFinite(io.r[0]!) ||
-      !Number.isFinite(this.fbRetL[0]!)
-    ) {
-      this.panic()
-      io.l.fill(0, 0, n)
-      io.r.fill(0, 0, n)
-    }
+    return held / n
   }
 
   // Everything the board is being made to dissipate, on one scale. Signal is
