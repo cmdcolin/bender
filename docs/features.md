@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 272 knobs and switches in 30 groups, seven bends competing for six slots,
-18 ROM tunes, 69 presets, 16 stage settings and 26 named cuts — and everything
+18 ROM tunes, 72 presets, 16 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 69 presets, and dice on every heading as
+- **Boards, rather than settings.** 72 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -543,10 +543,10 @@ became:
 | Resonance  | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
 | Mode       | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
 | Drive      | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance             |
+| Mix        | off to full           | Dry/wet                                                                       |
 | Popcorn †  | off to full           | A bad junction inside the filter                                              |
 | Arcing cap | off to full           | The cap shorts when its swing gets too big                                    |
 | Dirty pot  | off to full           | The cutoff pot loses contact while it moves                                   |
-| Mix        | off to full           | Dry/wet                                                                       |
 
 </details>
 
@@ -642,17 +642,17 @@ much of the last lap the erase head lets through under the new one.
 | Tone           | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
 | Ring           | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy |
 | Ring depth     | off to full             | How much of the tap goes through the carrier                                                                                                        |
-| Loop filter    | off, LP, BP, HP         | A resonant filter inside the feedback, so every lap goes through it again                                                                           |
-| Loop cutoff    | 60 Hz to 8 kHz          | Sweep it while the repeats ring                                                                                                                     |
-| Loop resonance | 0 to 1.3, normal 0 to 1 | Past 1 the loop whistles at the cutoff on its own                                                                                                   |
-| Lamp           | off to full             | A bulb that dims the loop as it heats                                                                                                               |
-| Filament       | 0.02 to 3 s             | How slowly the bulb heats and cools                                                                                                                 |
 | Brake          | off to full             | Drags the capstan                                                                                                                                   |
 | Supply drag    | off to full             | Wires the motor to the same dying supply as the toy                                                                                                 |
 | Splice         | off to full             | How bad the join in the loop is                                                                                                                     |
 | Erase          | off to full             | How much the erase head misses                                                                                                                      |
 | Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                                      |
 | Echo level     | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
+| Loop filter    | off, LP, BP, HP         | A resonant filter inside the feedback, so every lap goes through it again                                                                           |
+| Loop cutoff    | 60 Hz to 8 kHz          | Sweep it while the repeats ring                                                                                                                     |
+| Loop resonance | 0 to 1.3, normal 0 to 1 | Past 1 the loop whistles at the cutoff on its own                                                                                                   |
+| Lamp           | off to full             | A bulb that dims the loop as it heats                                                                                                               |
+| Filament       | 0.02 to 3 s             | How slowly the bulb heats and cools                                                                                                                 |
 
 </details>
 
@@ -1035,7 +1035,7 @@ became:
 
 ### Presets
 
-69 boards worth keeping. Every name is a link that opens the app with that board
+72 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
@@ -1188,6 +1188,12 @@ on it — a link never presses play, so it is loaded and waiting.
   — Gate jumper cut — the toy on one keybed, the FM chip on the other
 - [**doubled**](https://cmdcolin.github.io/bender/app/#set=fmLevel:0.6,fmVoice:6,fmBright:0.6,fmLength:1.2,revDecayS:3,revMix:0.3)
   — The gate jumper left on: one key, a square and an FM string on it
+- [**dropped in the post**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumTune:0.7,drumDecay:1.6,drumKick:34952,drumSnare:0,drumClap:2056,drumThrow:8,filtHz:650,filtRes:0.8,filtPop:0.45,filtMix:1,delayMs:381,dlyFb:0.72,dlyToneHz:2500,dlySend:0,dlyLoopMode:2,dlyLoopRes:0.55,dlyMix:0.7,revDecayS:3,revKick:0.3,revMix:0.25,modLfoHz:0.12,mod0Src:1,mod0Dest:67)
+  — A dub kit through a crackling filter, the last clap thrown into a dark echo
+- [**breathing echo**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.3,delayMs:330,dlyFb:1.35,wowDepthMs:1.5,dlyToneHz:3500,dlyLamp:0.8,dlyLampS:1.4,dlyMix:0.6)
+  — Feedback past 1 through a lamp that dims as it heats
+- [**fills feed fills**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:96,drumSwing:0.15,drumScan:12,drumChance:0.05,drumKick:32896,drumHat:0,drumHatMaybe:30583,drumTomMaybe:257,revMix:0.2,mod0Src:9,mod0Dest:64,mod0Depth:1.6)
+  — Every hit raises the odds of the next ghost hit, and a slow scan flams them
 
 ### Kit voices
 
