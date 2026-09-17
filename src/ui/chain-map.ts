@@ -83,6 +83,7 @@ const WIRE_BOX: Record<keyof typeof DEST, string> = {
   petAddrFault: 'Talking pet',
   petDataLine: 'Talking pet',
   petDataFault: 'Talking pet',
+  deckSpeed: 'Output',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

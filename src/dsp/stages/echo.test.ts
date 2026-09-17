@@ -1,7 +1,16 @@
 import { expect, test } from 'vitest'
 
 import { IDX } from '../../engine/params'
-import { SR, bin, pitchHz, renderBender, rms, sine, tail } from '../testRender'
+import {
+  SR,
+  bin,
+  pitchHz,
+  render,
+  renderBender,
+  rms,
+  sine,
+  tail,
+} from '../testRender'
 import { ECHO_MODE } from './echo'
 
 import type { Controls } from '../../controls'
@@ -180,4 +189,43 @@ test('hold catches the window after a hit and goes round it', () => {
     )
   expect(pitchHz(held(1))).toBeCloseTo(400, -2)
   expect(rms(held(1))).toBeGreaterThan(20 * rms(held(0)))
+})
+
+// The bucket brigade moved out to util/bbd.ts so the ensemble could be built
+// out of the same chip, and this is what says the delay pedal did not change
+// on the way: three clock rates, sample for sample, against the bytes the
+// committed stage rendered before the move. A tolerance would pass a refactor
+// that quietly retuned the filters, so this is the bits.
+const digest = (x: Float32Array) => {
+  let h = 0x811c9dc5
+  const view = new DataView(x.buffer, x.byteOffset, x.byteLength)
+  for (let i = 0; i < x.length; i++) {
+    let n = view.getUint32(i * 4, true)
+    for (let b = 0; b < 4; b++) {
+      h = Math.imul(h ^ (n & 0xff), 0x01000193)
+      n >>>= 8
+    }
+  }
+  return (h >>> 0).toString(16).padStart(8, '0')
+}
+
+test('the analog mode renders what it rendered before the chip was shared', () => {
+  const at = (echoMs: number) =>
+    digest(
+      render(
+        {
+          chipLevel: 0.7,
+          echoMode: ECHO_MODE.analog,
+          echoLevel: 1,
+          echoMs,
+          echoFb: 0.6,
+        },
+        0.5,
+      ),
+    )
+  expect([at(150), at(900), at(1500)]).toEqual([
+    '08aee11c',
+    'f1ff37ca',
+    '90d2987e',
+  ])
 })

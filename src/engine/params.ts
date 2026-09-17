@@ -429,6 +429,9 @@ export const PARAM_DEFS = [
   ['couple', 'slew'],
 
   ['outGain', 'ramp'],
+
+  ['deckSpeed', 'slew'],
+  ['deckInertia', 'slew'],
 ] as const satisfies readonly (readonly [ControlKey, Smooth])[]
 
 export type ParamName = (typeof PARAM_DEFS)[number][0]

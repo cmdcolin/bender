@@ -311,6 +311,16 @@ export class Chain {
     )
   }
 
+  /**
+   * The bay's lane for one destination, for whatever reads the bus from outside
+   * the chain. Stages get theirs off `ctx.mod` on the way past; the deck runs
+   * around the chain rather than in it, so it asks here once the block it wants
+   * the lane from has been rendered.
+   */
+  lane(dest: number): Float32Array | null {
+    return this.ctx.mod.read(dest)
+  }
+
   private allStages(): Stage[] {
     return [
       ...this.sources,

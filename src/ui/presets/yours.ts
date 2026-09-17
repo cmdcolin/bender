@@ -22,8 +22,13 @@ import type { ControlKey, Controls } from '../../controls'
 // recording is the loop is a statement about what is playing, and the dice
 // rewriting it would hand back a different piece of music rather than a
 // different circuit.
+// The deck goes with them. Varispeed is a hand on the machine playing the board
+// back rather than a setting of the circuit, and the dice reaching it would
+// hand back boards that are silent for a reason no control on screen explains.
 export const YOURS = new Set<ControlKey>([
   ...HOLD_KEYS,
+  'deckSpeed',
+  'deckInertia',
   'sampleLevel',
   'loopIn',
   'loopOut',

@@ -438,6 +438,10 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'petKBits',
   'revDry',
   'fmDrive',
+
+  // The deck the whole board comes off, which is not a stage on it.
+  'deckSpeed',
+  'deckInertia',
 ]
 
 // Retired controls that old links still carry, each read into the control that

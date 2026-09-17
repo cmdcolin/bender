@@ -69,6 +69,41 @@ export const MASTER_GROUPS: Group[] = [
         unit: 'dB',
         help: 'Master gain before the safety clipper and limiter.',
       },
+      {
+        key: 'deckSpeed',
+        lane: 'deck speed',
+        label: 'Varispeed',
+        min: 0,
+        max: 2,
+        step: 0.001,
+        unit: '×',
+        curve: 'symlog',
+        // ×1 is not a number you read, it is the machine not doing anything
+        // — and 0 is a stopped tape rather than a very slow one. Both want
+        // saying in words where the eye already is.
+        reads: v =>
+          v === 0
+            ? 'stopped'
+            : v === 1
+              ? '×1'
+              : `${v.toFixed(3)}× ${v < 1 ? 'slow' : 'fast'}`,
+        split: {
+          at: 1,
+          names: { below: 'slow', above: 'fast', mid: '×1' },
+          detent: true,
+        },
+        help: 'The capstan trimmer on the deck the whole instrument comes off. Everything on the board is printed to it — the tape machine and the output limiter included — and this is the speed you are hearing that printing played back at: pitch, tempo, every envelope, every delay time and every reverb tail stretch together, and nothing upstream knows it is running slow. A wire from the bay lands here too, so one LFO wobbles the whole board at once. At the stop the deck stops.',
+      },
+      {
+        key: 'deckInertia',
+        label: 'Motor weight',
+        min: 0,
+        max: 3,
+        step: 0.01,
+        unit: 's',
+        curve: 'log',
+        help: 'How much weight the deck’s motor carries. Varispeed says where the trimmer is set; this is how long the platter takes to arrive, so winding the knob to the stop is a tape stop that runs down over that long and letting it back up is a spin-up rather than a cut.',
+      },
     ],
   },
   {

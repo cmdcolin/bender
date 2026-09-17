@@ -1,12 +1,11 @@
 import { IDX } from '../../engine/params'
 import { DEST } from '../modbus'
+import { Bbd } from '../util/bbd'
 import { DelayLine } from '../util/delayline'
 import { Follower, coef as timeCoef } from '../util/follower'
 import { SineOsc } from '../util/lfo'
-import { Lowpass, OnePoleLP, lpCoef } from '../util/onepole'
+import { OnePoleLP, lpCoef } from '../util/onepole'
 import { octaves } from '../util/pitch'
-import { gaussian, mulberry32, type Rng } from '../util/rng'
-import { softclip } from '../util/softclip'
 
 import type { Ctx, Stage, StereoBlock } from '../stage'
 
@@ -25,18 +24,19 @@ export const ECHO_MODE_NAMES = Object.keys(ECHO_MODE)
 const MAX_MS = 2000
 const HEADROOM = 1.2
 // Two 4096-stage chips in series, which is how a bucket brigade gets past a
-// third of a second. The clock has to walk the charge through all of them
-// inside the delay time, so a long setting is a slow clock — and the line
-// really is clocked here: the input is sampled once a tick and held, so
-// anything above half the clock folds back down into the band rather than
-// disappearing. The filters either side of the line sit a fraction of the way
-// to the clock, two poles each, which is what the pedals had: enough to keep
-// the fold quiet at a third of a second and nowhere near enough past a second,
-// where a bucket brigade turns to grit before it turns to mud. What the filter
-// cannot stop of the clock itself comes through as a whistle, dropping into
-// earshot as the time goes up.
-const BBD_STAGES = 8192
-const WHINE = 0.004
+// third of a second: the clock has to walk the charge through all of them
+// inside the delay time, so a long setting is a slow clock. Eight thousand
+// buckets keep the fold quiet at a third of a second and nowhere near quiet
+// past a second, where a bucket brigade turns to grit before it turns to mud,
+// and they put the whistle in earshot from about 16 kHz down. util/bbd.ts is
+// the chip itself.
+const BBD = {
+  stages: 8192,
+  bleed: [4000, 16000],
+  level: 0.004,
+  hiss: 0.004,
+  seed: 0x0dd8,
+} as const
 const MOD_HZ = 0.7
 const MOD_MS = 6
 // Hold: a hit lifts the record head. The window the time knob names is taken
@@ -63,23 +63,14 @@ export class Echo implements Stage {
   private lineR: DelayLine
   private toneL = new OnePoleLP()
   private toneR = new OnePoleLP()
-  private preL = new Lowpass(2)
-  private preR = new Lowpass(2)
-  private postL = new Lowpass(2)
-  private postR = new Lowpass(2)
-  private clock = 0
-  private heldL = 0
-  private heldR = 0
-  private whine = new SineOsc()
+  private readonly bbd: Bbd
   private lfo = new SineOsc()
-  private comp = new Follower()
   private slam = new Follower()
   private armed = true
   private holdLeft = 0
   private holdLen = 0
   private holdPhase = 0
   private holdGain = 1
-  private noise: Rng
   private primed = false
   private cur = 0
   private next = 0
@@ -99,7 +90,7 @@ export class Echo implements Stage {
     this.maxRead = 2 * this.maxDelay
     this.lineL = new DelayLine(this.maxRead + 8)
     this.lineR = new DelayLine(this.maxRead + 8)
-    this.noise = gaussian(mulberry32(0x0dd8))
+    this.bbd = new Bbd(sr, 2, BBD)
     this.fadeStep = 1 / (0.025 * sr)
   }
 
@@ -128,8 +119,6 @@ export class Echo implements Stage {
     const modTime = ctx.mod.read(DEST.echoMs)
     const glideCoef = timeCoef(0.04, this.sr)
     const lfoK = SineOsc.rate(MOD_HZ, this.sr)
-    const envA = timeCoef(0.01, this.sr)
-    const envR = timeCoef(0.25, this.sr)
 
     const reverse = mode === ECHO_MODE.reverse
     const bbd = mode === ECHO_MODE.analog
@@ -144,14 +133,7 @@ export class Echo implements Stage {
       mode === ECHO_MODE.modulate
         ? p[IDX.echoMod]! * (MOD_MS / 1000) * this.sr
         : 0
-    const clockHz = (BBD_STAGES * this.sr) / target
-    const preCoef = lpCoef(Math.min(Math.max(clockHz / 3, 600), 14000), this.sr)
-    const postCoef = lpCoef(
-      Math.min(Math.max(clockHz / 4, 600), 14000),
-      this.sr,
-    )
-    const whineK = SineOsc.rate(clockHz, this.sr)
-    const whine = WHINE * Math.min(Math.max((16000 - clockHz) / 12000, 0), 1)
+    if (bbd) this.bbd.setClock(target)
     if (crosses && this.fade >= 1 && Math.abs(target - this.cur) > 8) {
       this.next = target
       this.fade = 0
@@ -257,34 +239,21 @@ export class Echo implements Stage {
       tapL = this.toneL.process(tapL, toneCoef)
       tapR = this.toneR.process(tapR, toneCoef)
       if (bbd) {
-        const w = whine * this.whine.step(whineK)
-        tapL = this.postL.process(tapL, postCoef) + w
-        tapR = this.postR.process(tapR, postCoef) + w
+        const w = this.bbd.bleed()
+        tapL = this.bbd.band(0, tapL) + w
+        tapR = this.bbd.band(1, tapR) + w
       }
 
       let wl = io.l[i]! + fb * tapL
       let wr = io.r[i]! + fb * tapR
       if (bbd) {
-        // The compander's noise floor, which is loudest with nothing to hide
-        // behind it — a bucket brigade breathes rather than hisses evenly.
-        const quiet = 1 - Math.min(this.comp.process(wl, envA, envR), 1)
-        const hiss = 0.004 * (0.2 + 0.8 * quiet)
-        wl = this.preL.process(
-          softclip(1.5 * (wl + hiss * this.noise())) * 0.7,
-          preCoef,
-        )
-        wr = this.preR.process(
-          softclip(1.5 * (wr + hiss * this.noise())) * 0.7,
-          preCoef,
-        )
-        this.clock += BBD_STAGES / this.glide
-        if (this.clock >= 1) {
-          this.clock -= Math.floor(this.clock)
-          this.heldL = wl
-          this.heldR = wr
-        }
-        wl = this.heldL
-        wr = this.heldR
+        this.bbd.feed[0] = wl
+        this.bbd.feed[1] = wr
+        // The clock walks where the head is rather than where the knob is: a
+        // time being dragged drags the clock with it.
+        this.bbd.sample(this.bbd.rate(this.glide))
+        wl = this.bbd.held[0]!
+        wr = this.bbd.held[1]!
       } else {
         wl = Math.min(Math.max(wl, -HEADROOM), HEADROOM)
         wr = Math.min(Math.max(wr, -HEADROOM), HEADROOM)
@@ -305,16 +274,8 @@ export class Echo implements Stage {
     this.lineR.reset()
     this.toneL.reset()
     this.toneR.reset()
-    this.preL.reset()
-    this.preR.reset()
-    this.postL.reset()
-    this.postR.reset()
-    this.clock = 0
-    this.heldL = 0
-    this.heldR = 0
-    this.whine.reset()
+    this.bbd.reset()
     this.lfo.reset()
-    this.comp.reset()
     this.slam.reset()
     this.armed = true
     this.holdLeft = 0

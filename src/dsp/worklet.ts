@@ -1,6 +1,7 @@
 import { DEFAULT_CONTROLS } from '../controls'
 import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params'
 import { buildBender, type BuiltChain } from './build'
+import { Deck } from './deck'
 import { Smoother } from './smoother'
 import { BLOCK, type StereoBlock } from './stage'
 import { ToyChip } from './stages/toyChip'
@@ -18,6 +19,7 @@ const METER_EVERY = 6 // ~16 ms at 48 k
 class BenderProcessor extends AudioWorkletProcessor {
   private target = new Float32Array(N_PARAMS)
   private built: BuiltChain
+  private deck: Deck
   private smoother: Smoother
   private io: StereoBlock
   private micMono = new Float32Array(BLOCK)
@@ -56,6 +58,10 @@ class BenderProcessor extends AudioWorkletProcessor {
     // session's rather than the same stream every page load. A board is still a
     // board — what it does is reproducible — but a take is a take.
     this.built = buildBender(sampleRate, (Date.now() ^ 0x5bd1) >>> 0)
+    // Around the chain rather than after it: the chain renders at its own rate
+    // into the deck's rings and the deck reads them back at whatever the
+    // varispeed is set to, so every rate on the board moves together.
+    this.deck = new Deck(this.built.chain, sampleRate)
     this.smoother = new Smoother(sampleRate, BLOCK)
     this.io = {
       l: new Float32Array(BLOCK),
@@ -106,6 +112,7 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
         case 'panic':
           this.built.chain.panic()
+          this.deck.panic()
           break
         case 'petPoke':
           this.built.pet.poke()
@@ -154,7 +161,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   // It goes round twice for a short block that straddles the seam, which is
   // the case that has to be right rather than fast.
   private lay(l: Float32Array, r: Float32Array, n: number) {
-    const stems = this.recStems ? this.built.chain.stems : undefined
+    const stems = this.recStems ? this.deck.stems : undefined
     let at = 0
     while (at < n) {
       const take = Math.min(n - at, REC_CHUNK - this.recFill)
@@ -189,16 +196,14 @@ class BenderProcessor extends AudioWorkletProcessor {
       for (let i = 0; i < n; i++) {
         this.micMono[i] = mic2 ? 0.5 * (mic[i]! + mic2[i]!) : mic[i]!
       }
-    } else {
-      this.micMono.fill(0, 0, n)
     }
+    // At the rate it arrived, whatever the deck is doing. The chain's own copy
+    // is read back out of that ring a block at a time, resampled, so a mic at
+    // half speed still comes out at the pitch it went in.
+    this.deck.pushMic(mic ? this.micMono : null, n)
 
     this.smoother.step(this.target)
-    this.built.chain.process(
-      io,
-      this.smoother.cur,
-      mic ? this.micMono : undefined,
-    )
+    this.deck.process(io, this.smoother.cur)
 
     // subarray builds a view object, and a view object on the audio thread is
     // garbage on the audio thread. A full block is what the host asks for

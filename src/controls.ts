@@ -444,6 +444,9 @@ export const DEFAULT_CONTROLS = {
   couple: 0,
 
   outGain: 0,
+
+  deckSpeed: 1,
+  deckInertia: 0.12,
 }
 
 export type Controls = typeof DEFAULT_CONTROLS
