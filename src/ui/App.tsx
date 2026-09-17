@@ -46,6 +46,7 @@ import { OpenGroup, PathHint } from './Section'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { StartOverlay } from './StartOverlay'
 import { TalkingPet } from './TalkingPet'
+import { Throws } from './Throws'
 import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
 import { useCurrentSession } from './useCurrentSession'
@@ -386,6 +387,7 @@ export function App(props: { openedFromLink?: boolean }) {
             </button>
           </Tip>
         </div>
+        <Throws />
         <div className={styles.ioRow}>
           {/* Named for what it records, because the kit has a record button of
               its own now and one of them writes a file while the other writes

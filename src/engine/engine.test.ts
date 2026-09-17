@@ -6,6 +6,7 @@ import { YOURS } from '../dsp/stages/roms'
 import { SCALE_NAMES } from '../scale'
 import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
 import { edgeScore, Engine, mergeNotes, soundingMask } from './engine'
+import { IDX } from './params'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
 // out to nothing, so a morph asked for in seconds stays in flight for the whole
@@ -561,4 +562,26 @@ test('the start line starts, where the toggle would have stopped', () => {
   engine.runAll()
   expect(engine.songPlaying.get()).toBe(true)
   expect(engine.drumsPlaying.get()).toBe(true)
+})
+
+test('a held throw reaches the worklet and leaves the board alone', () => {
+  const engine = new Engine()
+  const posted: Float32Array[] = []
+  Object.assign(engine, {
+    node: {
+      port: {
+        postMessage: (m: { kind: string; pack?: Float32Array }) => {
+          if (m.kind === 'params') posted.push(Float32Array.from(m.pack!))
+        },
+      },
+    },
+  })
+  engine.holdThrow('spin', { dlyFb: 1.25 })
+  engine.flush()
+  expect(posted.at(-1)![IDX.dlyFb]).toBeCloseTo(1.25)
+  expect(engine.controls.get().dlyFb).toBe(DEFAULT_CONTROLS.dlyFb)
+  expect(engine.history.get().past).toHaveLength(0)
+  engine.letGoThrow('spin')
+  engine.flush()
+  expect(posted.at(-1)![IDX.dlyFb]).toBeCloseTo(DEFAULT_CONTROLS.dlyFb)
 })

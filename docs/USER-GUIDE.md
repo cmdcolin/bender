@@ -322,6 +322,13 @@ Elise, Ode to Joy, Rondo alla Turca, William Tell, and others), and six slower
 ones in minor and modal keys. Once you've played something into the melody
 memory, it's the 19th entry on the same selector.
 
+## Throws
+
+The **hold** row under the run buttons pushes the board somewhere while you hold
+it and springs back when you let go: **spin** (`c`), **dive** (`v`), **brake**
+(`b`), **crash** (`n`), **drop** (`m`) and **crush** (`,`). A throw never lands
+in the link or the undo walk.
+
 ## Playback and recording
 
 **play demo song** and **play drums** are independent run switches. `space`

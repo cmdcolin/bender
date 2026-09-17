@@ -269,6 +269,9 @@ export class Engine {
   readonly huntStep = createStore<{ board: number; of: number } | null>(null)
   /** True while the board is nudging itself along on a timer. */
   readonly drifting = createStore(false)
+  /** Controls pushed while a throw is held. They reach the audio thread over
+      the board and never touch the board, the link or the walk. */
+  readonly held = createStore<ReadonlyMap<string, Partial<Controls>>>(new Map())
   // Which semitones are down under a hand: the on-screen keys, the computer
   // keyboard, a controller on the wire. Held here rather than read back off the
   // chip because it is exact and immediate — the keys light on the press, not on
@@ -410,10 +413,7 @@ export class Engine {
     )
     this.ctx = ctx
     this.node = node
-    this.post({
-      kind: 'params',
-      pack: packParams(this.controls.get(), this.pack),
-    })
+    this.post({ kind: 'params', pack: this.packLive() })
     this.postTransport()
   }
 
@@ -713,10 +713,28 @@ export class Engine {
   // in a hidden tab and flushSoon waits for one.
   flush() {
     this.dirty = false
-    this.post({
-      kind: 'params',
-      pack: packParams(this.controls.get(), this.pack),
-    })
+    this.post({ kind: 'params', pack: this.packLive() })
+  }
+
+  private packLive(): Float32Array {
+    const held = this.held.get()
+    if (held.size === 0) return packParams(this.controls.get(), this.pack)
+    const live = { ...this.controls.get() }
+    for (const patch of held.values()) Object.assign(live, patch)
+    return packParams(live, this.pack)
+  }
+
+  holdThrow(name: string, patch: Partial<Controls>) {
+    this.held.set(new Map(this.held.get()).set(name, patch))
+    this.flushSoon()
+  }
+
+  letGoThrow(name: string) {
+    if (!this.held.get().has(name)) return
+    const next = new Map(this.held.get())
+    next.delete(name)
+    this.held.set(next)
+    this.flushSoon()
   }
 
   async enableMic() {
@@ -1176,6 +1194,7 @@ export class Engine {
   }
 
   panic() {
+    this.held.set(new Map())
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
     this.post({ kind: 'panic' })
     if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
