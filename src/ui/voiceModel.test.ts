@@ -2,7 +2,10 @@ import { expect, test } from 'vitest'
 
 import {
   cleanVoiceName,
+  pushRecent,
+  RECENT_MAX,
   readCurrent,
+  readRecent,
   readVoices,
   removeVoice,
   renameVoice,
@@ -87,4 +90,28 @@ test('rename refuses a name in use, or no name', () => {
   const list = upsertVoice(upsertVoice([], 'a', 'p=1'), 'b', 'p=2')
   expect(renameVoice(list, 'a', 'b')).toEqual(list)
   expect(renameVoice(list, 'a', '  ')).toEqual(list)
+})
+
+const r = (id: string, query = `p=${id}`, at = 1) => ({ id, query, at })
+
+test('the recent list reads in stored order and drops bad entries', () => {
+  expect(
+    readRecent([r('a'), { query: 'p=1', at: 2 }, r('b'), null, r('a')]),
+  ).toEqual([r('a'), r('b')])
+  expect(readRecent(undefined, { query: 'p=1', at: 9 })).toEqual([
+    { id: '', query: 'p=1', at: 9 },
+  ])
+  expect(readRecent([], { query: 'p=1', at: 9 })).toEqual([])
+})
+
+test('a session write moves its entry first and drops what falls off', () => {
+  expect(pushRecent([r('a'), r('b')], r('b', 'p=moved', 5)).recent).toEqual([
+    r('b', 'p=moved', 5),
+    r('a'),
+  ])
+  expect(pushRecent([r('a'), r('b')], r('c', 'p=b')).dropped).toEqual(['b'])
+  const full = Array.from({ length: RECENT_MAX }, (_, i) => r(`s${i}`))
+  const { recent, dropped } = pushRecent(full, r('new'))
+  expect(recent).toHaveLength(RECENT_MAX)
+  expect(dropped).toEqual([`s${RECENT_MAX - 1}`])
 })

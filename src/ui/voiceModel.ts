@@ -18,11 +18,21 @@ export interface SavedVoice {
   savedAt?: number
 }
 
-// The board a signed-in user last had open, offered back by the home page.
+// A board a signed-in user had open, as the autosave writes it.
 export interface CurrentSession {
   query: string
   at: number
 }
+
+// One autosaved session, offered back by the home page. `id` names the page
+// load that wrote it, so a load keeps rewriting its own entry and a later one
+// adds the next.
+export interface RecentSession extends CurrentSession {
+  id: string
+}
+
+// How many sessions one account keeps. The rules refuse a longer list.
+export const RECENT_MAX = 8
 
 // How many voices one account has. The rules refuse a longer list.
 export const VOICE_MAX = 200
@@ -76,6 +86,46 @@ export function readCurrent(raw: unknown): CurrentSession | null {
   const at = 'at' in raw ? num(raw.at) : undefined
   if (typeof query !== 'string' || query.length > QUERY_MAX) return null
   return at === undefined ? null : { query, at }
+}
+
+// The stored list, newest first. An account written before the list existed
+// holds one `current` session, which reads as an entry with an empty id.
+export function readRecent(raw: unknown, legacy?: unknown): RecentSession[] {
+  if (!Array.isArray(raw)) {
+    const current = readCurrent(legacy)
+    return current === null ? [] : [{ id: '', ...current }]
+  }
+  const seen = new Set<string>()
+  return raw
+    .flatMap(item => {
+      const session = readCurrent(item)
+      const id =
+        typeof item === 'object' && item !== null && 'id' in item
+          ? item.id
+          : undefined
+      if (session === null || typeof id !== 'string' || seen.has(id)) return []
+      seen.add(id)
+      return [{ id, ...session }]
+    })
+    .slice(0, RECENT_MAX)
+}
+
+// Puts `entry` first. The entry with the same id is the same page load, and an
+// entry with the same query is the same board, so both give up their place to
+// it. `dropped` lists the ids no longer in the list.
+export function pushRecent(
+  recent: readonly RecentSession[],
+  entry: RecentSession,
+): { recent: RecentSession[]; dropped: string[] } {
+  const next = [
+    entry,
+    ...recent.filter(s => s.id !== entry.id && s.query !== entry.query),
+  ].slice(0, RECENT_MAX)
+  const kept = new Set(next.map(s => s.id))
+  return {
+    recent: next,
+    dropped: recent.flatMap(s => (kept.has(s.id) ? [] : [s.id])),
+  }
 }
 
 // Save under a name, overwriting any voice already using it **in place**. The

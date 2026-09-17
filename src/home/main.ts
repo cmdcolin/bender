@@ -22,6 +22,7 @@ import {
   type HomeDoc,
 } from '../ui/cloud'
 import { sinceWords } from '../ui/relativeTime'
+import { handOffSession } from '../ui/resumeHandoff'
 import {
   VOICE_NAME_MAX,
   cleanVoiceName,
@@ -31,7 +32,7 @@ import {
 import { markFor } from './mark'
 import { appUrl, boardUrl, guideUrl, siteRoot } from './paths'
 
-import type { SavedVoice } from '../ui/voiceModel'
+import type { RecentSession, SavedVoice } from '../ui/voiceModel'
 
 // CROSS_REPO_SYNC(home-dom-helpers)
 const need = (id: string): HTMLElement => {
@@ -75,10 +76,16 @@ const whyTrouble = need('whyTrouble')
 
 // --- cards ------------------------------------------------------------------
 
-function card(query: string, name: string, says: string): HTMLElement {
+function card(
+  query: string,
+  name: string,
+  says: string,
+  onOpen?: () => void,
+): HTMLElement {
   const item = el('li')
   const link = el('a', 'card')
   link.href = boardUrl(query)
+  if (onOpen !== undefined) link.addEventListener('click', onOpen)
   const top = el('span', 'cardTop')
   top.append(markFor(query), el('span', 'open', 'open →'))
   link.append(top, el('span', 'cardName', name), el('span', 'says', says))
@@ -268,8 +275,8 @@ function section(id: string, heading: string, sub?: string): HTMLElement {
 // --- the signed-in sections -------------------------------------------------
 
 function resumeSection(doc: HomeDoc, now: number) {
-  const current = doc.current
-  if (current === null) return undefined
+  const current = doc.recent[0]
+  if (current === undefined) return undefined
   const box = section('resume', 'Continue where you left off')
   const cardBox = el('div', 'resumeCard')
   cardBox.append(markFor(current.query))
@@ -286,6 +293,9 @@ function resumeSection(doc: HomeDoc, now: number) {
   const row = el('p', 'resumeCta')
   const go = el('a', 'btn primary')
   go.href = boardUrl(current.query)
+  go.addEventListener('click', () => {
+    handOffSession(current.id)
+  })
   go.textContent = 'Resume →'
   const fresh = el('a', 'btn')
   fresh.href = appUrl
@@ -295,6 +305,38 @@ function resumeSection(doc: HomeDoc, now: number) {
 
   cardBox.append(body)
   box.append(cardBox)
+  return box
+}
+
+// A voice with the session's board names its card.
+const savedAs = (doc: HomeDoc, session: RecentSession) =>
+  doc.voices
+    .filter(v => v.query === session.query)
+    .toSorted((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))[0]
+
+function earlierSection(doc: HomeDoc, now: number) {
+  const earlier = doc.recent.slice(1)
+  if (earlier.length === 0) return undefined
+  const box = section(
+    'recent',
+    'Earlier sessions',
+    'The app saves each visit as you play. Opening one carries on from where that visit stopped.',
+  )
+  const grid = el('ul', 'grid')
+  for (const session of earlier) {
+    const match = savedAs(doc, session)
+    grid.append(
+      card(
+        session.query,
+        sinceWords(session.at, now),
+        match === undefined ? 'a session' : `saved as “${match.name}”`,
+        () => {
+          handOffSession(session.id)
+        },
+      ),
+    )
+  }
+  box.append(grid)
   return box
 }
 
@@ -476,9 +518,14 @@ export function showHome(user: CloudUser, doc: HomeDoc, now = Date.now()) {
       if (signedIn?.uid === user.uid) showHome(user, { ...doc, voices })
     },
   }
-  const resume = resumeSection(doc, now)
-  const voices = voicesSection(doc, now, edits)
-  showFrame(user, resume === undefined ? [voices] : [resume, voices])
+  showFrame(
+    user,
+    [
+      resumeSection(doc, now),
+      earlierSection(doc, now),
+      voicesSection(doc, now, edits),
+    ].filter(box => box !== undefined),
+  )
 }
 
 export function showLanding(): void {

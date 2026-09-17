@@ -3,9 +3,9 @@ import {
   read as readStored,
   write as writeString,
 } from './persist'
-import { readCurrent, readVoices, VOICE_MAX } from './voiceModel'
+import { pushRecent, readRecent, readVoices, VOICE_MAX } from './voiceModel'
 
-import type { CurrentSession, SavedVoice } from './voiceModel'
+import type { RecentSession, SavedVoice } from './voiceModel'
 import type { FirebaseApp } from 'firebase/app'
 import type { Auth, User } from 'firebase/auth'
 import type { Firestore } from 'firebase/firestore/lite'
@@ -189,7 +189,7 @@ export async function signOut(): Promise<void> {
 // Everything the user document holds.
 export interface HomeDoc {
   voices: SavedVoice[]
-  current: CurrentSession | null
+  recent: RecentSession[]
 }
 
 // Read through the same sanitizers the list always uses: a document is exactly
@@ -197,11 +197,11 @@ export interface HomeDoc {
 export async function fetchHome(uid: string): Promise<HomeDoc> {
   const { db, fs } = await loadSdk()
   const snap = await fs.getDoc(fs.doc(db, COLLECTION, uid))
-  if (!snap.exists()) return { voices: [], current: null }
+  if (!snap.exists()) return { voices: [], recent: [] }
   const data = snap.data()
   return {
     voices: readVoices(data.voices),
-    current: readCurrent(data.current),
+    recent: readRecent(data.recent, data.current),
   }
 }
 
@@ -218,7 +218,7 @@ const voiceEntry = (item: SavedVoice) => ({
 // Firestore reruns `edit` when another write lands between the read and the
 // write, so `edit` must be pure. A caller that builds the list from its own
 // copy drops whatever another tab, device or pending write added. Merged, so
-// the write keeps `current`.
+// the write keeps the sessions.
 export async function editVoices(
   uid: string,
   edit: (voices: SavedVoice[]) => SavedVoice[],
@@ -234,12 +234,32 @@ export async function editVoices(
   })
 }
 
-// The session last open, or null to clear it. Merged for the same reason.
-export async function putCurrent(
+// Puts `entry` at the front of the recent sessions in one transaction, merged
+// for the same reason, and resolves to the ids that left the list. The write
+// removes `current`, the single session older builds kept, since the list read
+// it in.
+export async function putSession(
   uid: string,
-  current: CurrentSession | null,
-): Promise<void> {
+  entry: RecentSession,
+): Promise<string[]> {
   const { db, fs } = await loadSdk()
-  await fs.setDoc(fs.doc(db, COLLECTION, uid), { current }, { merge: true })
+  const ref = fs.doc(db, COLLECTION, uid)
+  return fs.runTransaction(db, async tx => {
+    const snap = await tx.get(ref)
+    const data = snap.exists() ? snap.data() : undefined
+    const { recent, dropped } = pushRecent(
+      readRecent(data?.recent, data?.current),
+      entry,
+    )
+    tx.set(
+      ref,
+      {
+        recent: recent.map(s => ({ id: s.id, query: s.query, at: s.at })),
+        current: fs.deleteField(),
+      },
+      { merge: true },
+    )
+    return dropped
+  })
 }
 // CROSS_REPO_SYNC_END(saved-list-cloud)

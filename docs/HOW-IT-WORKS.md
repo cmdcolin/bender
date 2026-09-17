@@ -102,9 +102,11 @@ actually does to the circuit is [Bends](BENDS.md).
 
 Signing in puts two things on your account, and nothing else: your **voices**
 (each one a name and the board hash the address bar carries) and the **board you
-last had open**, written a few seconds after the board stops moving and once
-more when the tab is hidden. That is what lets the home page offer a session
-back on another machine.
+last had open**, one per visit and the last eight of them, each written a few
+seconds after the board stops moving and once more when the tab is hidden. That
+is what lets the home page offer a session back on another machine. Resuming a
+session from the home page carries on writing to it; any other visit starts a
+new one.
 
 Everything else stays on the device it was set on, in `localStorage` — MIDI knob
 and pad maps, the morph duration, whether the machines were running — because it

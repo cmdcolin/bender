@@ -16,7 +16,7 @@ import {
   upsertVoice,
 } from './voiceModel'
 
-import type { CurrentSession, SavedVoice } from './voiceModel'
+import type { SavedVoice } from './voiceModel'
 
 // The voice library: who is signed in, what they have saved, and the verbs over
 // it. Firestore is the only store, and the hook writes nothing to this device,
@@ -71,7 +71,6 @@ const saveError = (e: unknown): string => {
 
 export function useSavedVoices() {
   const [voices, setVoices] = useState<SavedVoice[]>([])
-  const [current, setCurrent] = useState<CurrentSession | null>(null)
   const [user, setUser] = useState<CloudUser | null>(null)
   const [status, setStatus] = useState<CloudStatus>(() =>
     wasSignedIn() ? 'loading' : 'signed-out',
@@ -161,7 +160,6 @@ export function useSavedVoices() {
     setUser(next)
     if (next === null) {
       setVoices([])
-      setCurrent(null)
       setLastName(null)
       setStatus('signed-out')
       return
@@ -171,7 +169,6 @@ export function useSavedVoices() {
       .then(home => {
         if (uid.current !== next.uid) return
         setVoices(home.voices)
-        setCurrent(home.current)
         setStatus('ready')
         setError(null)
         landPending(next.uid)
@@ -234,8 +231,6 @@ export function useSavedVoices() {
 
   return {
     voices,
-    /** The board this account last had open. The home page is what reads it. */
-    current,
     user,
     status,
     error,

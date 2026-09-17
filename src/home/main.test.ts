@@ -11,7 +11,7 @@ vi.mock('../ui/cloud', () => ({
   warmSignIn: () => {},
   signIn: () => Promise.resolve(user),
   signOut: () => Promise.resolve(),
-  fetchHome: () => Promise.resolve({ voices: [], current: null }),
+  fetchHome: () => Promise.resolve({ voices: [], recent: [] }),
 }))
 
 const flush = () => new Promise(r => setTimeout(r, 0))

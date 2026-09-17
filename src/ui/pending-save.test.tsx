@@ -52,7 +52,7 @@ vi.mock('./cloud', () => ({
     return Promise.resolve(cloud.user)
   },
   signOut: () => Promise.resolve(),
-  fetchHome: () => Promise.resolve({ voices: cloud.voices, current: null }),
+  fetchHome: () => Promise.resolve({ voices: cloud.voices, recent: [] }),
   editVoices: async (
     _uid: string,
     edit: (voices: SavedVoice[]) => SavedVoice[],
@@ -63,7 +63,7 @@ vi.mock('./cloud', () => ({
     cloud.writes.push([...next])
     return next
   },
-  putCurrent: () => Promise.resolve(),
+  putSession: () => Promise.resolve([]),
 }))
 
 beforeEach(() => {

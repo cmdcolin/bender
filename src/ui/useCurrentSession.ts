@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { engine } from '../engine/engine'
-import { putCurrent } from './cloud'
+import { putSession } from './cloud'
+import { takeSessionId } from './resumeHandoff'
 import { boardHash } from './share'
+import { newVoiceId } from './voiceModel'
 
 // The board a signed-in user has open, mirrored onto their account so the home
 // page can offer it back on the next machine. The same hash the address bar
@@ -59,6 +61,7 @@ export function observe(opened: Opened, query: string | null): Opened {
 // put the whole panel through React to build a string nobody reads until the
 // gesture ends.
 export function useCurrentSession(uid: string | null) {
+  const [sessionId] = useState(() => takeSessionId() ?? newVoiceId())
   const gate = useRef<WriteGate>({ query: null, at: 0 })
   const live = useRef<string | null>(null)
   // Bender.tsx patches a linked board into the engine before the first render,
@@ -79,7 +82,7 @@ export function useCurrentSession(uid: string | null) {
     const send = (query: string) => {
       const at = Date.now()
       gate.current = { query, at }
-      putCurrent(uid, { query, at }).catch((e: unknown) => {
+      putSession(uid, { id: sessionId, query, at }).catch((e: unknown) => {
         // Dropped. The account keeps the previous board, the next settled
         // change tries again, and nothing on screen depends on this landing.
         console.error('saving the current session failed', e)
@@ -123,5 +126,5 @@ export function useCurrentSession(uid: string | null) {
       clearTimeout(timer)
       document.removeEventListener('visibilitychange', onHide)
     }
-  }, [uid])
+  }, [uid, sessionId])
 }
