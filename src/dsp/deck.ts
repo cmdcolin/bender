@@ -268,6 +268,10 @@ export class Deck {
       this.readPos -= laps
       this.write -= laps
     }
+    // A stopped deck still takes mic in and reads none of it, so the two heads
+    // would otherwise drift apart for as long as the tape is parked. Nothing
+    // that far back is still in the ring to read.
+    this.micRead = Math.max(this.micRead, this.micWrite - MIC_SPAN)
     const micLaps = Math.floor(this.micRead / MIC_RING) * MIC_RING
     if (micLaps > 0) {
       this.micRead -= micLaps
