@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 299 knobs and switches in 32 groups, seven bends competing for six slots,
-18 ROM tunes, 83 presets, 16 stage settings and 32 named cuts — and everything
+18 ROM tunes, 90 presets, 16 stage settings and 32 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 83 presets, and dice on every heading as
+- **Boards, rather than settings.** 90 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -1135,7 +1135,7 @@ became:
 
 ### Presets
 
-83 boards worth keeping. Every name is a link that opens the app with that board
+90 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1326,6 +1326,29 @@ on it — a link never presses play, so it is loaded and waiting.
   — Feedback past 1 through a lamp that dims as it heats
 - [**fills feed fills**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:96,drumSwing:0.15,drumScan:12,drumChance:0.05,drumKick:32896,drumHat:0,drumHatMaybe:30583,drumTomMaybe:257,revMix:0.2,mod0Src:9,mod0Dest:64,mod0Depth:1.6)
   — Every hit raises the odds of the next ghost hit, and a slow scan flams them
+- [**ringing kick bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumTune:0.7,drumRing:0.88,drumKick:33312,drumSnare:0,drumClap:2056,modLfoHz:1.97,modLfoShape:3,mod0Src:1,mod0Dest:14,mod0Depth:0.3)
+  — Ring at 0.88 keeps the kick’s network sounding between hits, and a
+  sample-and-hold wire on the kit’s tune moves it to a new pitch every beat
+- [**string under the hats**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumKick:32896,drumSnare:0,drumHat:43690,combHz:44,combFb:0.99,combDampHz:700,combMix:1,modLfoHz:0.99,modLfoShape:3,mod0Src:1,mod0Dest:2,mod0Depth:0.2)
+  — The comb at 44 Hz just under self-oscillation, struck by every hat, with a
+  sample-and-hold wire moving its pitch every two beats
+- [**pinged filter**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,filtHz:45,filtRes:1.25,filtDriveDb:6,filtPop:0.5,filtArc:0.4,filtMix:1,mod0Src:9)
+  — The filter self-oscillating at 45 Hz with the kit’s hits wired onto the
+  cutoff, so each hit comes out as a low sine, with popcorn and an arcing cap
+  crackling through it
+- [**sub siren**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:90,drumKick:33312,drumSnare:0,drumHat:0,drumClap:2056,delayMs:500,dlyFb:0.9,dlyToneHz:1500,dlyLoopMode:1,dlyLoopHz:70,dlyLoopRes:1.3,dlyMix:0.8,modLfoHz:0.07,mod0Src:1,mod0Dest:67,mod0Depth:0.35)
+  — The tape delay’s loop filter resonating at 70 Hz, so the repeats whistle at
+  a sub pitch, with an LFO sweeping the cutoff once every fourteen seconds
+- [**retrigger bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumTune:0.5,drumDecay:1.5,drumRetrigHz:45,drumKick:33312,drumSnare:0,drumClap:2056,stompCircuit:2,stompDrive:20,stompTone:0.2,stompMix:0.5,modLfoHz:0.25,mod0Src:1,mod0Dest:5,mod0Depth:0.15,tapeMix:1,tapeSpeed:0,tapeDrive:8,tapeBump:1.2)
+  — The kit retriggered 45 times a second, which turns the kick into a buzzing
+  45 Hz note, through the muff and onto slow tape for the head bump
+- [**bass on a sagging rail**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipAccomp:1,chipClockX:0.25,drumLevel:0,fbAmt:0.8,fbDelayMs:40,fbTone:-0.5,fbDest:2)
+  — The toy two octaves down on auto bass-chord, with the feedback return
+  soldered onto its supply rail, so loud notes pull the rail down and the pitch
+  falls with it
+- [**basement organ**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.5,pcmLevel:1,pcmVoice:2,pcmEnv:1,pcmChord:6,pcmClockX:0.12)
+  — The home keyboard’s pipe organ with the ROM clock at 0.12×, three octaves
+  down, playing the toy’s song in power chords
 
 ### Kit voices
 

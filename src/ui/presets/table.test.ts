@@ -2,7 +2,8 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
 import { GRID_ROWS } from '../../drums'
-import { deviation, render, renderBender, rms } from '../../dsp/testRender'
+import { spectrum } from '../../dsp/spectrum'
+import { deviation, render, renderBender, rms, SR } from '../../dsp/testRender'
 import { HOLD_KEYS } from '../controls'
 import { applyPreset, presetPath } from './apply'
 import { PRESETS } from './table'
@@ -167,5 +168,27 @@ test('every preset that names the record head is one you can hear the tape on', 
     const wet = rms(render(preset.patch, 8))
     const dry = rms(render({ ...preset.patch, sampleLevel: 0 }, 8))
     expect(wet, preset.name).toBeGreaterThan(1.02 * dry)
+  }
+})
+
+const BASS = [
+  'ringing kick bass',
+  'string under the hats',
+  'pinged filter',
+  'sub siren',
+  'retrigger bass',
+  'bass on a sagging rail',
+  'basement organ',
+]
+
+const subShare = (patch: Partial<typeof DEFAULT_CONTROLS>) =>
+  spectrum(render(patch, 3), SR).bands[0]!
+
+test('every bass preset puts most of its power between 30 and 120 Hz', () => {
+  expect(subShare({})).toBeLessThan(0.3)
+  for (const name of BASS) {
+    const preset = PRESETS.find(p => p.name === name)
+    expect(preset, name).toBeDefined()
+    expect(subShare(preset!.patch), name).toBeGreaterThan(0.6)
   }
 })
