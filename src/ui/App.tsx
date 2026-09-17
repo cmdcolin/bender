@@ -427,6 +427,22 @@ export function App(props: { openedFromLink?: boolean }) {
               <option value="stems">master + stems</option>
             </select>
           </Tip>
+          <Tip text="Saves the last 30 seconds you heard, recording or not.">
+            <button
+              className={styles.ioBtn}
+              onClick={() => engine.keepLast('wav')}
+            >
+              ⟲ last 30s
+            </button>
+          </Tip>
+          <Tip text="Puts the last 30 seconds on the sampler reel, to play back through the board.">
+            <button
+              className={styles.ioBtn}
+              onClick={() => engine.keepLast('reel')}
+            >
+              ⟲ → reel
+            </button>
+          </Tip>
           <button
             className={micOn ? styles.ioBtnOn : styles.ioBtn}
             onClick={() => engine.enableMic()}

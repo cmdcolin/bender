@@ -69,6 +69,11 @@ export interface PetPokeMsg {
   kind: 'petPoke'
 }
 
+/** Post whatever the rolling tape holds right now, however short the slab. */
+export interface RetroFlushMsg {
+  kind: 'retroFlush'
+}
+
 export type ToWorklet =
   | ParamsMsg
   | SampleMsg
@@ -79,6 +84,7 @@ export type ToWorklet =
   | RecordMsg
   | PanicMsg
   | PetPokeMsg
+  | RetroFlushMsg
 
 export interface MeterMsg {
   kind: 'meter'
@@ -169,4 +175,14 @@ export interface RecMsg {
   stems?: Float32Array[]
 }
 
-export type FromWorklet = MeterMsg | RecMsg
+// The output, always, a slab at a time, so the last half minute can be kept
+// after the fact. `done` answers a flush.
+export interface RetroMsg {
+  kind: 'retro'
+  l: Float32Array
+  r: Float32Array
+  n: number
+  done: boolean
+}
+
+export type FromWorklet = MeterMsg | RecMsg | RetroMsg

@@ -40,9 +40,16 @@ import { Glide } from './glide'
 import { MAX_SOURCES, N_PARAMS, N_TAPS, STEM_FILES, packParams } from './params'
 import { encodeMonoWav, encodeWav } from './wav'
 
-import type { FromWorklet, NoteDest, RecMsg, ToWorklet } from './messages'
+import type {
+  FromWorklet,
+  NoteDest,
+  RecMsg,
+  RetroMsg,
+  ToWorklet,
+} from './messages'
 
 const REC_MAX_S = 600 // a take stops itself at ten minutes
+export const RETRO_S = 30
 // And sooner with the stems running, because the tape is seven tracks instead
 // of one. A second of master costs 384 kB of float in this tab; a second of
 // stems costs 1.15 MB on top, so ten minutes of stems would be 900 MB held in
@@ -404,6 +411,7 @@ export class Engine {
         const lit = soundingMask(msg.taps, this.soundHold)
         if (lit !== this.sounding.get()) this.sounding.set(lit)
       } else if (msg.kind === 'rec') this.onRecChunk(msg)
+      else if (msg.kind === 'retro') this.onRetro(msg)
     }
     const masterGain = ctx.createGain()
     node.connect(masterGain).connect(ctx.destination)
@@ -907,6 +915,48 @@ export class Engine {
     a.download = `${name}.wav`
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  }
+
+  private retro: { l: Float32Array; r: Float32Array }[] = []
+  private retroWant: 'wav' | 'reel' | null = null
+
+  private onRetro(msg: RetroMsg) {
+    const sr = this.ctx?.sampleRate ?? 48000
+    if (msg.n) {
+      this.retro.push({ l: msg.l.slice(0, msg.n), r: msg.r.slice(0, msg.n) })
+      let frames = this.retro.reduce((n, c) => n + c.l.length, 0)
+      while (frames - this.retro[0]!.l.length >= RETRO_S * sr) {
+        frames -= this.retro.shift()!.l.length
+      }
+    }
+    if (!msg.done || !this.retroWant) return
+    const want = this.retroWant
+    this.retroWant = null
+    if (want === 'wav') {
+      this.download(
+        encodeWav(this.retro, sr),
+        `bender-${stamp()}-last${RETRO_S}s`,
+      )
+      return
+    }
+    const frames = this.retro.reduce((n, c) => n + c.l.length, 0)
+    const mono = new Float32Array(frames)
+    let at = 0
+    for (const c of this.retro) {
+      for (let i = 0; i < c.l.length; i++)
+        mono[at + i] = 0.5 * (c.l[i]! + c.r[i]!)
+      at += c.l.length
+    }
+    const peaks = peaksOf(mono)
+    this.post({ kind: 'sample', mono, peaks }, [mono.buffer, peaks.buffer])
+    this.sampleName.set(`last ${RETRO_S}s`)
+  }
+
+  /** The last half minute of output, kept whether or not anything was recording. */
+  keepLast(to: 'wav' | 'reel') {
+    if (!this.node) return
+    this.retroWant = to
+    this.post({ kind: 'retroFlush' })
   }
 
   startRecording() {

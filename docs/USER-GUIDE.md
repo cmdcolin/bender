@@ -338,6 +338,9 @@ toggles both at once and restores whatever was actually running before.
 different from the keyboard's **Rec** and the drum machine's **Record**, which
 capture what you played rather than what comes out of the speakers.
 
+**⟲ last 30s** saves the last half minute of output even if nothing was
+recording, and **⟲ → reel** puts it on the sampler instead.
+
 ### Stems
 
 The selector beside it sets what a take comes back as. **Master only** is one
