@@ -53,14 +53,14 @@ test('escape and the close button both shut it', () => {
 // The one thing that must survive being folded away. A stranded knob is one the
 // board has moved out from under — it does nothing until you sweep it back
 // through its value — and the count is the only thing on screen that says so.
-test('the button carries what is bound, and what has gone inert', () => {
+test('the button carries only what has gone inert', () => {
   const { rerender } = render(<MidiPanel />)
   expect(tab().textContent).toBe('midi')
 
   midi.status.set('ready')
   midi.bindings.set({ combMix: { controller: 1, channel: 0 } })
   rerender(<MidiPanel />)
-  expect(tab().textContent).toContain('1 bound')
+  expect(tab().textContent).toBe('midi')
 
   midi.pickups.set({ combMix: 0.5 })
   rerender(<MidiPanel />)
