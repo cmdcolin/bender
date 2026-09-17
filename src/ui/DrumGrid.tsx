@@ -6,7 +6,7 @@ import {
   type RefObject,
 } from 'react'
 
-import { DRUM_MOVES, masksOf, type DrumMove } from '../drum-moves'
+import { DRUM_MOVES, masksOf, throwLast, type DrumMove } from '../drum-moves'
 import {
   asLen,
   DRUM_ROMS,
@@ -16,9 +16,10 @@ import {
   romMatching,
   stepBit,
   stepState,
+  THROW_ROW,
   voiceBit,
   type DrumRom,
-  type DrumRow,
+  type PanelRow,
   type StepState,
 } from '../drums'
 import { engine } from '../engine/engine'
@@ -31,6 +32,8 @@ import styles from './DrumGrid.module.css'
 import { padKeyFor } from './drumKeys'
 import { Tip } from './Tip'
 import { useStruck } from './useStruck'
+
+import type { Controls } from '../controls'
 
 // The playhead only moves when a step does, so the grid redraws at the step rate
 // rather than at the meter's.
@@ -82,6 +85,13 @@ const play = (move: DrumMove, back: boolean) => {
       back,
     }),
   })
+}
+
+const throwIt = (clear: boolean) => {
+  const board = engine.controls.get()
+  engine.armStep()
+  engine.set('drumThrow', clear ? 0 : throwLast(masksOf(board)))
+  if (!clear) wakeEcho(board)
 }
 
 // The pattern, as the plugboard it is: a row per voice, a column per step, and
@@ -223,10 +233,15 @@ export function DrumGrid() {
             </button>
           </Tip>
         ))}
+        <Tip text="Throw the bar's last snare into the tape delay. Shift-click clears the echo row.">
+          <button className={styles.move} onClick={e => throwIt(e.shiftKey)}>
+            throw
+          </button>
+        </Tip>
       </div>
 
       <div className={styles.grid}>
-        {GRID_ROWS.map((row, v) => (
+        {[...GRID_ROWS, THROW_ROW].map((row, v) => (
           <Row
             key={row.key}
             row={row}
@@ -265,7 +280,7 @@ function Row({
   lit,
   paint,
 }: {
-  row: DrumRow
+  row: PanelRow
   tick: number | null
   lit: boolean
   paint: Paint
@@ -277,7 +292,12 @@ function Row({
   const dice = useControlValue(row.maybe ?? row.key)
   const maybe = row.maybe ? dice : 0
   const len = asLen(useControlValue(row.len))
-  const accent = row.key === 'drumAccent'
+  const kind =
+    row.key === 'drumAccent'
+      ? 'accent'
+      : row.key === 'drumThrow'
+        ? 'echo'
+        : 'voice'
   // Each row's own playhead: the counter is steps clocked, so a short row is
   // round again while the long ones are still in the bar.
   const under = tick === null ? -1 : tick % len
@@ -321,7 +341,7 @@ function Row({
               step={s}
               paint={paint}
               className={cellClass({
-                accent,
+                kind,
                 state: stepState(mask, maybe, s),
                 beat: s % 4 === 0,
                 under: s === under,
@@ -364,7 +384,7 @@ function Row({
 // arrive at the same box it already had. Only the two cells whose class changed
 // have anything to do.
 const Cell = memo(function Cell(props: {
-  row: DrumRow
+  row: PanelRow
   step: number
   className: string
   state: StepState
@@ -382,6 +402,7 @@ const Cell = memo(function Cell(props: {
     const bit = stepBit(step)
     const mask = to === 'on' ? board[row.key] | bit : board[row.key] & ~bit
     if (mask !== board[row.key]) engine.set(row.key, mask)
+    if (row.key === THROW_ROW.key && to === 'on') wakeEcho(board)
     if (!row.maybe) return
     const dice =
       to === 'maybe' ? board[row.maybe] | bit : board[row.maybe] & ~bit
@@ -452,22 +473,36 @@ const Cell = memo(function Cell(props: {
   )
 })
 
+// A throw onto a tape delay that is switched off would do nothing, so the first
+// one brings the echo up with only the throws going in.
+function wakeEcho(board: Controls) {
+  if (board.dlyMix > 0) return
+  engine.set('dlyMix', 0.7)
+  engine.set('dlySend', 0)
+  if (board.dlyFb < 0.55) engine.set('dlyFb', 0.55)
+}
+
 function cellClass(s: {
-  accent: boolean
+  kind: 'voice' | 'accent' | 'echo'
   state: StepState
   beat: boolean
   under: boolean
   past: boolean
 }): string {
-  const base = s.accent
-    ? s.state === 'on'
-      ? styles.accentOn
-      : styles.accent
-    : s.state === 'maybe'
-      ? styles.cellMaybe
-      : s.state === 'on'
-        ? styles.cellOn
-        : styles.cell
+  const base =
+    s.kind === 'accent'
+      ? s.state === 'on'
+        ? styles.accentOn
+        : styles.accent
+      : s.kind === 'echo'
+        ? s.state === 'on'
+          ? styles.echoOn
+          : styles.echo
+        : s.state === 'maybe'
+          ? styles.cellMaybe
+          : s.state === 'on'
+            ? styles.cellOn
+            : styles.cell
   return [
     base,
     s.beat && styles.beat,

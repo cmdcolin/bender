@@ -3,6 +3,7 @@ import {
   DATA_LINES,
   GRID_ROWS,
   N_DRUM_VOICES,
+  THROW_ROW,
   VOICE_LABELS,
 } from '../../drums'
 import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus'
@@ -441,9 +442,13 @@ export const SOURCE_GROUPS: Group[] = [
     ],
     editor: {
       kind: 'drums',
-      keys: GRID_ROWS.flatMap(r =>
-        r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
-      ),
+      keys: [
+        ...GRID_ROWS.flatMap(r =>
+          r.maybe ? [r.key, r.maybe, r.len] : [r.key, r.len],
+        ),
+        THROW_ROW.key,
+        THROW_ROW.len,
+      ],
     },
     sliders: [
       {

@@ -211,6 +211,8 @@ export const PARAM_DEFS = [
   ['drumOpenLen', 'step'],
   ['drumCymLen', 'step'],
   ['drumAccentLen', 'step'],
+  ['drumThrow', 'step'],
+  ['drumThrowLen', 'step'],
 
   ['fmLevel', 'slew'],
   ['fmVoice', 'step'],
@@ -346,6 +348,7 @@ export const PARAM_DEFS = [
   ['dlyToneHz', 'slew'],
   ['dlyRingHz', 'slew'],
   ['dlyRing', 'slew'],
+  ['dlySend', 'slew'],
   ['dlyLoopMode', 'step'],
   ['dlyLoopHz', 'slew'],
   ['dlyLoopRes', 'ramp'],

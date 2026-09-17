@@ -154,7 +154,9 @@
 .cellOn,
 .cellMaybe,
 .accent,
-.accentOn {
+.accentOn,
+.echo,
+.echoOn {
   position: relative;
   height: 15px;
   min-width: 0;
@@ -172,7 +174,8 @@
 }
 
 .cell:hover,
-.accent:hover {
+.accent:hover,
+.echo:hover {
   border-color: var(--border-hover);
 }
 
@@ -204,8 +207,15 @@
 }
 
 .accent,
-.accentOn {
+.accentOn,
+.echo,
+.echoOn {
   height: 12px;
+}
+
+.echoOn {
+  background: var(--cool);
+  border-color: var(--cool);
 }
 
 .accentOn {

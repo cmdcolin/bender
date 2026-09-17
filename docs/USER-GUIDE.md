@@ -156,6 +156,10 @@ the grid without touching tempo or tone: a new pattern, a couple of small
 changes, a fill over the end of the bar, every row moved one step later
 (shift-click to move back), and the bar stretched or compressed.
 
+The **echo** row under the accents throws hits into the tape delay. **Throw**
+lights the bar's last snare. The first throw on a silent delay brings it up with
+**Bus send** at zero, so only the throws echo.
+
 ![The toy drum machine's pad deck: eight numbered rubber pads, kick through cymbal, above the play and REC switches.](img/guide-drums.jpg)
 
 A row's name is also a preview button. The kit plays on the number row too: `1`

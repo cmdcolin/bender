@@ -33,6 +33,8 @@ export interface Ctx {
    * bus of zeros.
    */
   carrier: Float32Array
+  /** Kit hits thrown to the tape delay this block, mono and dry. */
+  send: Float32Array
   /**
    * How bright the chain is running, signed: positive when there is more
    * high-frequency energy in the loop than programme, negative when it has gone

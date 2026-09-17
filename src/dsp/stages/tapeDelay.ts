@@ -91,6 +91,7 @@ export class TapeDelay implements Stage {
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const baseDelay = (p[IDX.delayMs]! / 1000) * this.sr
     const fb = p[IDX.dlyFb]!
+    const busSend = p[IDX.dlySend]!
     const wowDepth = (p[IDX.wowDepthMs]! / 1000) * this.sr
     const wowHz = p[IDX.wowHz]!
     const flutter = p[IDX.flutter]!
@@ -195,8 +196,8 @@ export class TapeDelay implements Stage {
         )
         regen /= 1 + LAMP_GAIN * lamp * this.filament
       }
-      let wl = io.l[i]! + softclip(regen * tapL)
-      let wr = io.r[i]! + softclip(regen * tapR)
+      let wl = busSend * io.l[i]! + ctx.send[i]! + softclip(regen * tapL)
+      let wr = busSend * io.r[i]! + ctx.send[i]! + softclip(regen * tapR)
       if (micInject) {
         wl += ctx.mic[i]!
         wr += ctx.mic[i]!

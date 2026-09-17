@@ -480,6 +480,11 @@ export class ToyDrum implements Stage {
   // a pad's — because the grid lights for whatever strikes the kit, and all but
   // the first of those land on steps nobody can see coming.
   private firedSince = 0
+  // Voices whose ringing hit came off an echo step, and whether the step being
+  // fired is one.
+  private thrown = 0
+  private throwing = false
+  private throwLen = STEPS
 
   constructor(
     private readonly sr: number,
@@ -662,6 +667,7 @@ export class ToyDrum implements Stage {
     }
     if (!struck) return 0
     this.firedSince |= struck
+    this.thrown = this.throwing ? this.thrown | struck : this.thrown & ~struck
     ctx.trig.drumFired(i, struck, gain)
     return struck
   }
@@ -680,11 +686,14 @@ export class ToyDrum implements Stage {
   // happens and the accent is the flag it always was.
   private fire(p: Float32Array, ctx: Ctx, i: number, fallback = false) {
     const word = this.wordAt(p, this.tick)
+    const at = STEPS - 1 - (this.tick % this.throwLen)
+    this.throwing = ((Math.round(p[IDX.drumThrow]!) >> at) & 1) === 1
     const named = word & VOICE_BITS
     const bits = fallback ? named || 1 : named
     const accent = (word & ACCENT_BIT) !== 0
     const gain = accent ? 1 + (this.accentAmt - 1) * this.accentV : 1
     const struck = this.hit(bits, gain, ctx, i)
+    this.throwing = false
     if (!accent || !struck || this.accentSag <= 0) return
     let load = 0
     for (let v = 0; v < N_VOICES; v++) if (struck & (1 << v)) load++
@@ -802,6 +811,7 @@ export class ToyDrum implements Stage {
     for (let r = 0; r < this.lens.length; r++) {
       this.lens[r] = asLen(p[LEN_PARAM[r]!]!)
     }
+    this.throwLen = asLen(p[IDX.drumThrowLen]!)
 
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
@@ -969,6 +979,8 @@ export class ToyDrum implements Stage {
       }
 
       let out = 0
+      let send = 0
+      const th = this.thrown
       if (!rail.booting) {
         // One trimmer for the whole kit, so a wire on it moves every struck
         // voice together — two octaves either way at full depth.
@@ -1009,26 +1021,34 @@ export class ToyDrum implements Stage {
           const drive = shock[v]!
           const tank = this.tanks[t]!
           if (drive === 0 && tank.level <= AUDIBLE) continue
-          out +=
+          const y =
             tank.process(
               drive,
               this.tankF[t]! * pf,
               this.tankRate[t]!,
               TANKS[t]!.sweep,
             ) * this.tankGain[t]!
+          out += y
+          if (th & (1 << v)) send += y
         }
         // What gets past the coupling cap on the way to the output rather than
         // into a network: the click at the front of a kick, and the only part
         // of it that survives a small speaker.
         let click = 0
+        let clickThrown = 0
         for (let v = 0; v < N_VOICES; v++) {
-          if (CLICK[v]! > 0) click += shock[v]! * CLICK[v]!
+          if (CLICK[v] === 0) continue
+          const c = shock[v]! * CLICK[v]!
+          click += c
+          if (th & (1 << v)) clickThrown += c
         }
-        out +=
+        const clicked =
           this.clickSlew.process(
             this.clickCap.process(click * clickHeight, clickCapCoef),
             clickSlewCoef,
           ) * CLICK_GAIN
+        out += clicked
+        if (clickThrown !== 0) send += (clicked * clickThrown) / click
         // The clap is three bursts nine milliseconds apart and then the room:
         // one noise source, retriggered, with the last hit left to ring on.
         if (this.clapsLeft > 0) {
@@ -1066,20 +1086,30 @@ export class ToyDrum implements Stage {
           this.noiseLp += noiseLpCoef * (noise - this.noiseLp)
           if (amp[SNARE]! > AUDIBLE) {
             const band = this.snareBand.process(noise, snareHpCoef)
-            out += band * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
+            const y = band * amp[SNARE]! * weight[SNARE]! * SNARE_NOISE * hiss
+            out += y
+            if (th & (1 << SNARE)) send += y
           }
           // One tap for both hats, because there is one amplifier: what
           // separates them is the cap under it, not what is fed into it.
           const hatHiss = noise - this.noiseLp
-          if (amp[HAT]! > AUDIBLE)
-            out += hatHiss * amp[HAT]! * weight[HAT]! * HAT_NOISE * trans
-          if (amp[OHAT]! > AUDIBLE)
-            out += hatHiss * amp[OHAT]! * weight[OHAT]! * HAT_NOISE * trans
+          if (amp[HAT]! > AUDIBLE) {
+            const y = hatHiss * amp[HAT]! * weight[HAT]! * HAT_NOISE * trans
+            out += y
+            if (th & (1 << HAT)) send += y
+          }
+          if (amp[OHAT]! > AUDIBLE) {
+            const y = hatHiss * amp[OHAT]! * weight[OHAT]! * HAT_NOISE * trans
+            out += y
+            if (th & (1 << OHAT)) send += y
+          }
           if (amp[CLAP]! > AUDIBLE) {
             this.clapFast += clapLpCoef * (noise - this.clapFast)
             this.clapSlow += clapHpCoef * (noise - this.clapSlow)
-            out +=
+            const y =
               (this.clapFast - this.clapSlow) * amp[CLAP]! * weight[CLAP]! * 1.6
+            out += y
+            if (th & (1 << CLAP)) send += y
           }
         }
         // Four voices off the one bank, and what separates them is the filter
@@ -1091,17 +1121,25 @@ export class ToyDrum implements Stage {
         // it, which is the body a hat throws away.
         if (amp[BELL]! > AUDIBLE) {
           const hp = this.bellHp.process(this.metal.bell, bellHpCoef)
-          out += hp * amp[BELL]! * weight[BELL]! * BELL_GAIN
+          const y = hp * amp[BELL]! * weight[BELL]! * BELL_GAIN
+          out += y
+          if (th & (1 << BELL)) send += y
         }
         if (amp[HAT]! > AUDIBLE || amp[OHAT]! > AUDIBLE) {
           const hp = this.hatLp.process(
             this.hatHp.process(this.metal.clash, hatHpCoef),
             hatLpCoef,
           )
-          if (amp[HAT]! > AUDIBLE)
-            out += hp * amp[HAT]! * weight[HAT]! * HAT_METAL * bank
-          if (amp[OHAT]! > AUDIBLE)
-            out += hp * amp[OHAT]! * weight[OHAT]! * HAT_METAL * bank
+          if (amp[HAT]! > AUDIBLE) {
+            const y = hp * amp[HAT]! * weight[HAT]! * HAT_METAL * bank
+            out += y
+            if (th & (1 << HAT)) send += y
+          }
+          if (amp[OHAT]! > AUDIBLE) {
+            const y = hp * amp[OHAT]! * weight[OHAT]! * HAT_METAL * bank
+            out += y
+            if (th & (1 << OHAT)) send += y
+          }
         }
         if (amp[CYM]! > AUDIBLE) {
           const sq = this.metal.clash
@@ -1110,7 +1148,9 @@ export class ToyDrum implements Stage {
               this.cymSplash.process(sq, cymSplashCoef) * splashMix,
             cymLpCoef,
           )
-          out += band * amp[CYM]! * weight[CYM]!
+          const y = band * amp[CYM]! * weight[CYM]!
+          out += y
+          if (th & (1 << CYM)) send += y
         }
         // Every voice's envelope falls on its own, whatever its amplifier is
         // hearing. Decaying the envelope inside the output test instead left a
@@ -1181,9 +1221,11 @@ export class ToyDrum implements Stage {
             (code + this.ladderErr(code, bits, ladder, ladderTol)) / q
         }
         out = this.muxHeld * rail.ampFactor
+        send *= rail.ampFactor
       }
 
       out *= level * 0.6
+      if (send !== 0) ctx.send[i]! += send * level * 0.6
       loadSum += Math.abs(out)
       io.l[i]! += out
       io.r[i]! += out
@@ -1204,6 +1246,7 @@ export class ToyDrum implements Stage {
     this.struckBits = 0
     this.struckGain = 0
     this.firedSince = 0
+    this.thrown = 0
     this.open = 0
     this.rolledAt = -1
     this.env.fill(0)

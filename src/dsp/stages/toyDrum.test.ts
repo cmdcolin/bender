@@ -1216,3 +1216,24 @@ test('a wire on the ring carries the kick across the latch', () => {
   const note = struck(held(DEST.drumRing), 2)
   expect(rms(after(note, 1.5))).toBeGreaterThan(rms(after(note, 0.2)) * 0.9)
 })
+
+test('a hit on an echo step goes into the tape with the bus send shut', () => {
+  const dub: Partial<Controls> = {
+    drumSnare: stepMask(1),
+    drumBpm: 60,
+    drumDecay: 0.3,
+    dlyMix: 1,
+    dlySend: 0,
+    dlyFb: 0.6,
+    delayMs: 300,
+  }
+  const tail = (x: Float32Array) =>
+    rms(x.subarray(Math.round(0.5 * SR), Math.round(1.5 * SR)))
+  expect(tail(soloVoice(dub, 2))).toBeLessThan(1e-4)
+  expect(
+    tail(soloVoice({ ...dub, drumThrow: stepMask(1) }, 2)),
+  ).toBeGreaterThan(3e-3)
+  expect(tail(soloVoice({ ...dub, drumThrow: stepMask(2) }, 2))).toBeLessThan(
+    1e-4,
+  )
+})

@@ -263,6 +263,15 @@ export const PEDAL_GROUPS: Group[] = [
         help: 'How much the erase head misses. Up from nothing, whatever was on the tape a lap of the reel ago bleeds through under the new recording; at full the head is dead and the reel is sound on sound, every five seconds landing on top of the last until the tape saturates.',
       },
       {
+        key: 'dlySend',
+        label: 'Bus send',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much of the whole board goes onto the tape. At zero only hits thrown from the kit’s echo row do.',
+      },
+      {
         key: 'dlyMix',
         label: 'Echo level',
         role: 'mix',

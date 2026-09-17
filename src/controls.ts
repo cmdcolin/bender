@@ -224,6 +224,8 @@ export const DEFAULT_CONTROLS = {
   drumOpenLen: 16,
   drumCymLen: 16,
   drumAccentLen: 16,
+  drumThrow: 0,
+  drumThrowLen: 16,
 
   fmLevel: 0,
   fmVoice: 0,
@@ -361,6 +363,7 @@ export const DEFAULT_CONTROLS = {
   dlyToneHz: 6000,
   dlyRingHz: 220,
   dlyRing: 0,
+  dlySend: 1,
   dlyLoopMode: 0,
   dlyLoopHz: 900,
   dlyLoopRes: 0.5,

@@ -296,6 +296,7 @@ export class Chain {
       out: new Float32Array(BLOCK),
       step: new Float32Array(BLOCK),
       carrier: new Float32Array(BLOCK),
+      send: new Float32Array(BLOCK),
       bright: new Float32Array(BLOCK),
       heat: 0,
       fbDest: 0,
@@ -340,6 +341,7 @@ export class Chain {
     this.ctx.out.fill(0)
     this.ctx.step.fill(0)
     this.ctx.carrier.fill(0)
+    this.ctx.send.fill(0)
     this.ctx.bright.fill(0)
     this.ctx.heat = 0
     this.thermal.reset()
@@ -385,6 +387,7 @@ export class Chain {
     ctx.railV.fill(1, 0, n)
     ctx.sag.fill(0, 0, n)
     ctx.step.fill(0, 0, n)
+    ctx.send.fill(0, 0, n)
 
     const cluster = p[IDX.faultCluster]!
     this.updateHeat(p, n)

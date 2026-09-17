@@ -102,6 +102,17 @@ const ACCENT_ROW = {
 
 export const GRID_ROWS = [...DRUM_VOICES, ACCENT_ROW] as const
 
+// Not on the pattern bus either: hits on these steps also go to the tape delay.
+export const THROW_ROW = {
+  key: 'drumThrow',
+  maybe: null,
+  len: 'drumThrowLen',
+  label: 'echo',
+  help: 'Hits on these steps also go into the tape delay.',
+} as const
+
+export type PanelRow = (typeof GRID_ROWS)[number] | typeof THROW_ROW
+
 // The wires carrying a word back out of the pattern memory: one a row, so the
 // accent has a wire of its own beside the eight voices. It is the trigger line
 // rather than an amplifier — a bit forced high strikes for real, and the accent
@@ -125,7 +136,10 @@ export type DrumRow = (typeof GRID_ROWS)[number]
 export type DrumStepKey = DrumRow['key']
 export type DrumLenKey = DrumRow['len']
 
-export const LEN_KEYS = new Set<ControlKey>(GRID_ROWS.map(r => r.len))
+export const LEN_KEYS = new Set<ControlKey>([
+  ...GRID_ROWS.map(r => r.len),
+  THROW_ROW.len,
+])
 
 export const MAYBE_KEYS = DRUM_VOICES.map(v => v.maybe)
 

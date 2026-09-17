@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 270 knobs and switches in 30 groups, seven bends competing for six slots,
+ruin. 271 knobs and switches in 30 groups, seven bends competing for six slots,
 18 ROM tunes, 69 presets, 16 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -154,10 +154,10 @@ counter goes on counting, the grid goes on chasing it, and the machine plays
 somebody else’s pattern.
 
 The pattern grid is a widget rather than a row of sliders, so the table below
-leaves it out: nine rows (the eight voices and an accent), each carrying 16
-steps and a length of its own, and a second 16-step mask on every voice for the
-steps that only sometimes fire. That is 26 more controls, and they ride in a
-link like the rest.
+leaves it out: ten rows (the eight voices, an accent and an echo row), each
+carrying 16 steps and a length of its own, and a second 16-step mask on every
+voice for the steps that only sometimes fire. That is 28 more controls, and they
+ride in a link like the rest.
 
 Named cuts, one press each under _knife on the bus_, where the panel keeps them
 too — the knife goes on and the rows under it say which controls that was:
@@ -628,7 +628,7 @@ five-second loop joined once: _Splice_ is how bad the join is, and _Erase_ how
 much of the last lap the erase head lets through under the new one.
 
 <details>
-<summary>19 controls</summary>
+<summary>20 controls</summary>
 
 | control        | range                   | what it does                                                                                                                                        |
 | -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -650,6 +650,7 @@ much of the last lap the erase head lets through under the new one.
 | Supply drag    | off to full             | Wires the motor to the same dying supply as the toy                                                                                                 |
 | Splice         | off to full             | How bad the join in the loop is                                                                                                                     |
 | Erase          | off to full             | How much the erase head misses                                                                                                                      |
+| Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                                      |
 | Echo level     | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
 
 </details>
