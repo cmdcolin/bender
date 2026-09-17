@@ -155,6 +155,7 @@
 .cellMaybe,
 .accent,
 .accentOn {
+  position: relative;
   height: 15px;
   min-width: 0;
   padding: 0;
@@ -186,14 +187,20 @@
    from reading as a dimmed lamp, which is what the grid already does to the
    steps past a row's own length. */
 .cellMaybe {
-  background:
-    radial-gradient(
-      circle at 50% 50%,
-      var(--accent) 0 1.6px,
-      transparent 1.6px
-    ),
-    color-mix(in srgb, var(--accent) 22%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
   border-color: var(--accent);
+}
+
+.cellMaybe::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3.2px;
+  height: 3.2px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translate(-50%, -50%);
 }
 
 .accent,
