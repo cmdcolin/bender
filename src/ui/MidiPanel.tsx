@@ -404,9 +404,10 @@ function Wired() {
   )
 }
 
-// Which of the two beds the wire plays. A controller is one keybed and the panel
-// has two, so this is the same question a workstation with two sounds in it has
-// always asked: one, the other, both at once, or the keybed cut in half.
+// Which of the three beds the wire plays. A controller is one keybed and the
+// panel has three, so this is the same question a workstation with more than one
+// sound in it has always asked: one of them, all of them at once, or the keybed
+// cut in half.
 function KeyRouting() {
   const route = useStoreValue(midi.keyRoute)
   const split = useStoreValue(midi.split)
@@ -414,7 +415,7 @@ function KeyRouting() {
 
   return (
     <>
-      <Tip text="Which keybed the controller plays: the toy, the FM chip, both at once, or the keybed cut in half with the toy below the split and the FM chip from it up. Both is two synthesisers on one key — the FM chip has to be up in the mix to be heard.">
+      <Tip text="Which keybed the controller plays: the toy, the FM chip, the home keyboard, all three at once, or the keybed cut in half with the toy below the split and the FM chip from it up. All is three synthesisers on one key — each has to be up in the mix to be heard.">
         <select
           className={styles.select}
           value={route}
@@ -422,7 +423,8 @@ function KeyRouting() {
         >
           <option value="toy">→ toy keys</option>
           <option value="fm">→ fm keys</option>
-          <option value="layer">→ both</option>
+          <option value="pcm">→ home keys</option>
+          <option value="layer">→ all</option>
           <option value="split">→ split</option>
         </select>
       </Tip>

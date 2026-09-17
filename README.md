@@ -64,7 +64,7 @@ pnpm dev
 
 - [Getting started](docs/GETTING-STARTED.md)
 - [User guide](docs/USER-GUIDE.md) — playing the keyboard, the drum machine, the
-  FM chip, presets and rolls
+  FM chip, the home keyboard, presets and rolls
 - [Bends](docs/BENDS.md) — what each fault does to the circuit, and why
 - [How it works](docs/HOW-IT-WORKS.md) — the signal path map and the app's own
   architecture

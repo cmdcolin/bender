@@ -1,0 +1,97 @@
+/* The home keyboard's case: the grey-and-black moulding every sampling
+   keyboard of the decade came in, with a window over the sample memory and a
+   row of narrow rubber keys. The bed itself is Keybed.module.css, which all
+   three machines on this board share. */
+
+.case {
+  --case: #3a3b40;
+  --case-edge: #17181b;
+  --stamp: #9fa2ab;
+  --bed: #0b0b0e;
+  --case-round: 5px 5px 4px 4px;
+  --fixing: #17181b;
+  --fixing-size: 6px;
+  /* Shorter, narrower keys than the toy's: this one had sixty of them in the
+     same width of moulding and the travel to match. */
+  --bed-h: 64px;
+  --key-w: #d9d6ce;
+  --key-w-edge: #8e8b84;
+  --key-b: #1b1c1f;
+  --key-b-edge: #000;
+  --key-b-w: 36%;
+  --key-b-h: 56%;
+  --key-round: 0 0 2px 2px;
+  --switch: #4a4b52;
+  --switch-hover: #565862;
+
+  flex: 1 1 380px;
+  max-width: 640px;
+  background-image: linear-gradient(
+    var(--case) 0 62%,
+    #303136 62% 63%,
+    var(--case) 63%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* The badge: the model name in the extruded lettering these all wore, over a
+   line of colour nobody has ever been able to explain. */
+.badge {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.model {
+  font-family: var(--mono);
+  font-size: var(--fs-md);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #e8e9ee;
+  text-transform: uppercase;
+}
+
+.strip {
+  width: 54px;
+  height: 3px;
+  border-radius: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--decal-cyan, #2fd3d3) 0 40%,
+    var(--decal-pink, #ff3d8b) 40% 70%,
+    var(--decal-yellow, #ffd23b) 70% 100%
+  );
+}
+
+/* The window over the sample memory, which on the real thing showed a level
+   and nothing else. */
+.window {
+  flex: none;
+  width: 44px;
+  height: 16px;
+  border-radius: 2px;
+  background-color: #1d2a24;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(120, 220, 170, 0.5) 0 2px,
+    transparent 2px 5px
+  );
+  box-shadow: inset 0 0 0 1px #0a100d;
+}
+
+.soldered {
+  composes: cap from './button.module.css';
+  font-family: var(--mono);
+}
+
+.cut {
+  composes: capIdle from './button.module.css';
+  font-family: var(--mono);
+  --cap-lit: var(--accent2);
+}
+
+@container (max-width: 620px) {
+  .window {
+    display: none;
+  }
+}

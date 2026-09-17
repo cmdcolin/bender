@@ -4,6 +4,7 @@ import { DEST } from '../../dsp/modbus'
 import { ENS_MODE } from '../../dsp/stages/ensemble'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
+import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom'
 import { ARP_MODES } from '../../dsp/stages/toyChip'
 import { ANY_CHOICE } from '../../dsp/trigbus'
 
@@ -25,7 +26,70 @@ const voice = (name: string) => FM_VOICE_NAMES.indexOf(name)
 
 const arp = (name: string) => ARP_MODES.indexOf(name)
 
+/** And the recordings in the home keyboard's ROM. */
+const keys = (name: string) => PCM_VOICE_NAMES.indexOf(name)
+
 export const PRESETS: PresetDef[] = [
+  {
+    name: 'mall strings',
+    blurb:
+      'The home keyboard on strings with the toy’s gate still soldered on, so the demo song plays a pad through a long spring and a tape that wanders',
+    patch: {
+      pcmLevel: 0.9,
+      pcmVoice: keys('strings'),
+      pcmEnv: 2,
+      pcmRelease: 1.4,
+      pcmTone: 3200,
+      pcmVibrato: 2,
+      pcmKeyGate: 0,
+      chipLevel: 0.25,
+      revMix: 0.55,
+      revDecayS: 6,
+      tapeMix: 0.6,
+      tapeWow: 0.55,
+      tapeHiss: 0.3,
+    },
+  },
+  {
+    name: 'plaza chimes',
+    blurb:
+      'Tube bells off the eight-bit ROM, locked to a pentatonic and hung in the delay pedal',
+    patch: {
+      pcmLevel: 0.85,
+      pcmVoice: keys('chime'),
+      pcmEnv: 3,
+      pcmRelease: 4,
+      pcmTone: 6000,
+      pcmChord: 5,
+      keyScale: 5,
+      keyRoot: 3,
+      chipLevel: 0.3,
+      echoLevel: 0.55,
+      echoMs: 420,
+      echoFb: 0.45,
+      revMix: 0.3,
+    },
+  },
+  {
+    name: 'bent sampler',
+    blurb:
+      'Whatever you dropped, played across the keyboard off the sample memory with a data line on the rail and the address bus bridged — the sampler’s own fader down, so the only copy you hear is the keyed one',
+    patch: {
+      pcmLevel: 0.9,
+      pcmVoice: keys('sampled'),
+      pcmEnv: 1,
+      pcmRelease: 0.4,
+      pcmTone: 5000,
+      pcmDataLine: 8,
+      pcmDataFault: FAULT.supply,
+      pcmAddrLine: 2,
+      pcmAddrFault: FAULT.bridge,
+      sampleLevel: 0,
+      chipLevel: 0.3,
+      dlyMix: 0.3,
+      delayMs: 260,
+    },
+  },
   {
     name: 'dying toy',
     blurb: 'Starved rail, sagging pitch, watchdog reboots mid-tune',

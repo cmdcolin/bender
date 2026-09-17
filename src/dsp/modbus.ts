@@ -102,8 +102,15 @@ export const DEST = {
   // The ensemble's sweep, which is the one thing on that pedal a hand alone
   // cannot move in time with anything else.
   ensRate: 63,
+  // The home keyboard's fader and its two buses, after the deck and the
+  // ensemble because they landed after them.
+  pcmLevel: 64,
+  pcmAddrLine: 65,
+  pcmAddrFault: 66,
+  pcmDataLine: 67,
+  pcmDataFault: 68,
 } as const
-export const N_DEST = 64
+export const N_DEST = 69
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
@@ -125,6 +132,7 @@ export const SOURCE_LEVEL_DEST = [
   DEST.chipLevel,
   DEST.drumLevel,
   DEST.fmLevel,
+  DEST.pcmLevel,
   DEST.oscLevel,
   DEST.noiseLevel,
   DEST.sampleLevel,

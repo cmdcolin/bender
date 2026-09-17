@@ -156,14 +156,15 @@ export const AUTOMAP_KEYS: ControlKey[] = [
 // would just make the chip permanently quieter than the on-screen keys with
 // nothing to show for it.
 const VELOCITY_FLOOR = 0.3
-// Which keybed the wire plays. There are two on the panel and one controller in
-// front of them, which is the same problem every workstation with two sounds in
-// it has had: play one, play the other, play both, or cut the keybed in half.
-export type KeyRoute = 'toy' | 'fm' | 'layer' | 'split'
+// Which keybed the wire plays. There are three on the panel and one controller
+// in front of them, which is the same problem every workstation with more than
+// one sound in it has had: play one, play another, play the lot, or cut the
+// keybed in half.
+export type KeyRoute = 'toy' | 'fm' | 'pcm' | 'layer' | 'split'
 
-const ROUTES: KeyRoute[] = ['toy', 'fm', 'layer', 'split']
+const ROUTES: KeyRoute[] = ['toy', 'fm', 'pcm', 'layer', 'split']
 
-const BOTH_BEDS: NoteDest[] = ['toy', 'fm']
+const ALL_BEDS: NoteDest[] = ['toy', 'fm', 'pcm']
 
 export const parseRoute = (raw: string | null): KeyRoute =>
   ROUTES.find(r => r === raw) ?? 'toy'
@@ -183,7 +184,7 @@ export const routeDests = (
   midiNote: number,
 ): NoteDest[] =>
   route === 'layer'
-    ? BOTH_BEDS
+    ? ALL_BEDS
     : route === 'split'
       ? [midiNote < split ? 'toy' : 'fm']
       : [route]
@@ -309,11 +310,12 @@ const PULSES_PER_STEP = 6
 // past this the clock resyncs silently rather than paying the debt off.
 const MAX_CATCHUP_STEPS = 8
 
-// The two chips get a channel each — the toy on 1, the FM chip on 2. Fixed
-// rather than settable: whatever is on the far end wants a stable pair, and a
-// setting for this is one nobody would ever have moved.
+// The three chips get a channel each — the toy on 1, the FM chip on 2, the home
+// keyboard on 3. Fixed rather than settable: whatever is on the far end wants a
+// stable set, and a setting for this is one nobody would ever have moved.
 const TOY_OUT_CHANNEL = 0
 const FM_OUT_CHANNEL = 1
+const PCM_OUT_CHANNEL = 2
 
 // The chips report what they are sounding, never how hard it was struck, so
 // everything leaves at one velocity.
@@ -795,8 +797,8 @@ class Midi {
     }
   }
 
-  // The board's own side of the wire: the kit's clock and the two chips' notes,
-  // both off the meter, both switchable and both off until asked for.
+  // The board's own side of the wire: the kit's clock and the three chips'
+  // notes, all off the meter, all switchable and all off until asked for.
   private watchBoard() {
     engine.drumsPlaying.subscribe(() => {
       if (!this.clockOut.get()) return
@@ -809,6 +811,9 @@ class Midi {
     )
     engine.fmNotes.subscribe(() =>
       this.mirror(FM_OUT_CHANNEL, engine.fmNotes.get()),
+    )
+    engine.pcmNotes.subscribe(() =>
+      this.mirror(PCM_OUT_CHANNEL, engine.pcmNotes.get()),
     )
   }
 
@@ -979,7 +984,7 @@ class Midi {
     // that has stuck — a controller that lost its place, or a note left over
     // from before the route moved — so it goes to both beds rather than
     // nowhere. The chips ignore a note they are not holding.
-    const dests = this.notesOn.get(semitone) ?? BOTH_BEDS
+    const dests = this.notesOn.get(semitone) ?? ALL_BEDS
     if (this.pedal) {
       this.sustained.set(semitone, dests)
       return

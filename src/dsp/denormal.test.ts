@@ -87,6 +87,9 @@ const RINGING: Partial<Controls> = {
   petLevel: 0.5,
   petKBits: 0.3,
   ensMix: 0.4,
+  pcmLevel: 0.5,
+  pcmEnv: 2,
+  pcmVibrato: 1,
 }
 
 // Minutes of simulated board per run, and every stage added to the path adds to

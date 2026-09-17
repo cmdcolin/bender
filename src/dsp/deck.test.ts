@@ -1,7 +1,12 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params'
+import {
+  MAX_SOURCES,
+  N_PARAMS,
+  packParams,
+  SOURCE_TAPS,
+} from '../engine/params'
 import { buildBender, type BuiltChain } from './build'
 import { Deck } from './deck'
 import { DEST } from './modbus'
@@ -204,7 +209,7 @@ test('the stems come off the deck at the speed the mix did', () => {
       runDeck({ ...TONE, deckSpeed }, 1, {
         setup: loadTone,
         stems: true,
-      }).stems[5]!.subarray(SR / 2),
+      }).stems[SOURCE_TAPS.indexOf('sampler')]!.subarray(SR / 2),
     )
   expect(at(1)).toBeCloseTo(TONE_HZ, -2)
   expect(at(0.5)).toBeCloseTo(TONE_HZ / 2, -2)

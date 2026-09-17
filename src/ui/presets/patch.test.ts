@@ -11,6 +11,7 @@ import { BENDS, GROUPS, choiceValue } from '../controls'
 import { applyPreset } from './apply'
 import {
   bayFaults,
+  cohereGates,
   coherePatch,
   cohereTriggers,
   solderBay,
@@ -301,4 +302,15 @@ test('rewire solders no wire the board has nothing at the end of', () => {
 
 test('an unpatched bay is no fault at all', () => {
   expect(bayFaults(DEFAULT_CONTROLS)).toEqual([])
+})
+
+test('a played chip nothing strikes gets its gate jumper back', () => {
+  const cut = { ...DEFAULT_CONTROLS, fmLevel: 0.8, fmKeyGate: 1 }
+  expect(cohereGates(cut).fmKeyGate).toBe(0)
+  expect(cohereGates({ ...cut, fmStruck: 1 }).fmKeyGate).toBe(1)
+  expect(cohereGates({ ...cut, fmEffect: 1 }).fmKeyGate).toBe(1)
+  expect(cohereGates({ ...cut, fmLevel: 0 }).fmKeyGate).toBe(1)
+  const keys = { ...DEFAULT_CONTROLS, pcmLevel: 0.8, pcmKeyGate: 1 }
+  expect(cohereGates(keys).pcmKeyGate).toBe(0)
+  expect(cohereGates({ ...keys, pcmStruck: 9 }).pcmKeyGate).toBe(1)
 })

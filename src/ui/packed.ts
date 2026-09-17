@@ -456,6 +456,23 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   // The kit's sample ROM.
   'drumRom',
   'drumRomHz',
+
+  // The home keyboard.
+  'pcmLevel',
+  'pcmVoice',
+  'pcmEnv',
+  'pcmRelease',
+  'pcmTone',
+  'pcmVibrato',
+  'pcmChord',
+  'pcmClockX',
+  'pcmStruck',
+  'pcmKeyGate',
+  'pcmAddrLine',
+  'pcmAddrFault',
+  'pcmDataLine',
+  'pcmDataFault',
+  'pcmBusCut',
 ]
 
 // Retired controls that old links still carry, each read into the control that

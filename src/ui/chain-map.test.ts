@@ -154,6 +154,7 @@ test('each source is a box of its own, and a door of its own', () => {
   for (const name of [
     'Toy keyboard',
     'FM chip',
+    'Home keyboard',
     'Chaos osc',
     'Sampler',
     'Talking pet',
@@ -165,9 +166,9 @@ test('each source is a box of its own, and a door of its own', () => {
   expect(svg).toContain('Noise &amp; crackle')
 })
 
-// The four boxes on the toy board share one supply, and two share a key line;
-// the map says so with a frame round them and a wire between two of them.
-test('the toy board frames its four boxes, and wires the key line', () => {
+// The five boxes on the toy board share one supply, and three share a key line;
+// the map says so with a frame round them and a run along the row.
+test('the toy board frames its boxes, and wires the key line', () => {
   const map = buildMap(DEFAULT_CONTROLS)
   const frame = box(map, 'toy_board')!
   expect(frame.kind).toBe('frame')
@@ -176,13 +177,20 @@ test('the toy board frames its four boxes, and wires the key line', () => {
   // them, the way every other door on the drawing is named for what it opens.
   expect(frame.door).toBe('Board parts')
   expect(frame.label).toBe('board parts')
-  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums', 'Talking_pet']) {
+  const framed = [
+    'Toy_keyboard',
+    'FM_chip',
+    'Home_keyboard',
+    'Toy_drums',
+    'Talking_pet',
+  ]
+  for (const id of framed) {
     const chip = box(map, id)!
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)
     expect(chip.x + chip.w).toBeLessThanOrEqual(frame.x + frame.w)
   }
   // The bar drops onto every box in the frame, which is what one supply means.
-  for (const id of ['Toy_keyboard', 'FM_chip', 'Toy_drums', 'Talking_pet'])
+  for (const id of framed)
     expect(hop(map, 'toy_board', id)?.color).toBe(PANEL.dim)
   // Soldered, so it is on the map whatever the board is set to — and it is the
   // warm colour, because a patched cable is the cool one.
@@ -190,6 +198,8 @@ test('the toy board frames its four boxes, and wires the key line', () => {
   expect(key.color).toBe(PANEL.accent2)
   expect(key.dash).toBeUndefined()
   expect(key.label?.text).toBe('key')
+  // And on along the row to the third chip clipped onto the same gate.
+  expect(hop(map, 'FM_chip', 'Home_keyboard')?.color).toBe(PANEL.accent2)
 })
 
 // One row, and which one the chip stands next to is the whole of what
@@ -203,8 +213,11 @@ test('the toy board makes one row, the FM chip against the keyboard', () => {
   const fm = box(map, 'FM_chip')!
   expect(fm.y).toBe(keys.y)
   expect(drums.y).toBe(keys.y)
+  const pcm = box(map, 'Home_keyboard')!
+  expect(pcm.y).toBe(keys.y)
   expect(keys.x + keys.w).toBeLessThanOrEqual(fm.x)
-  expect(fm.x + fm.w).toBeLessThanOrEqual(drums.x)
+  expect(fm.x + fm.w).toBeLessThanOrEqual(pcm.x)
+  expect(pcm.x + pcm.w).toBeLessThanOrEqual(drums.x)
   const pet = box(map, 'Talking_pet')!
   expect(pet.y).toBe(keys.y)
   expect(drums.x + drums.w).toBeLessThanOrEqual(pet.x)

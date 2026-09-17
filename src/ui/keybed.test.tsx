@@ -6,9 +6,10 @@ import { engine } from '../engine/engine'
 import { App } from './App'
 import { FmKeys } from './FmKeys'
 import { Keys } from './Keys'
+import { PcmKeys } from './PcmKeys'
 import { measure, touch } from './testDom'
 
-// Two keybeds on one panel, and one computer keyboard in front of them. What
+// Three keybeds on one panel, and one computer keyboard in front of them. What
 // makes that work at all is that a note says which bed it came off: the FM
 // chip's key input used to be soldered to the toy's gate and nothing else, so
 // every note on the board was the toy's note by construction.
@@ -40,6 +41,11 @@ const both = () => {
   render(<FmKeys />)
 }
 
+const all = () => {
+  both()
+  render(<PcmKeys />)
+}
+
 test('a key on the FM bed plays the FM chip and not the toy', () => {
   both()
   fireEvent.pointerDown(middleC('fm keyboard'))
@@ -54,6 +60,33 @@ test('a key on the toy bed still plays the toy', () => {
   fireEvent.pointerDown(middleC('toy keyboard'))
   expect(engine.keysDown.get().size).toBe(1)
   expect(engine.fmKeysDown.get().size).toBe(0)
+})
+
+// And the third bed, which is the one that made the rule worth having: a note
+// off it reaches the home keyboard and neither of the chips next door.
+test('a key on the home bed plays the home keyboard alone', () => {
+  all()
+  fireEvent.pointerDown(middleC('home keyboard'))
+  expect(engine.pcmKeysDown.get().size).toBe(1)
+  expect(engine.keysDown.get().size).toBe(0)
+  expect(engine.fmKeysDown.get().size).toBe(0)
+  fireEvent.pointerUp(middleC('home keyboard'))
+  expect(engine.pcmKeysDown.get().size).toBe(0)
+})
+
+// The letters go to one bed at a time, so wiring them onto the home keyboard
+// takes them off whichever had them, and the toy's own switch takes them back.
+test('the letters reach the home bed, and the toy can take them back', () => {
+  all()
+  wireLetters('home keyboard')
+  fireEvent.keyDown(window, { key: 'a' })
+  expect(engine.pcmKeysDown.get().size).toBe(1)
+  expect(engine.keysDown.get().size).toBe(0)
+  fireEvent.keyUp(window, { key: 'a' })
+  wireLetters('toy keyboard')
+  fireEvent.keyDown(window, { key: 'a' })
+  expect(engine.keysDown.get().size).toBe(1)
+  expect(engine.pcmKeysDown.get().size).toBe(0)
 })
 
 // One keyboard, two beds: the letters are a wire that goes to one of them, and

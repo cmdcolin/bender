@@ -84,6 +84,13 @@ export class Sampler implements Stage {
     this.micTrig = new Transient(sr)
   }
 
+  /** The tape itself, for the one thing on the board that reads it rather
+      than plays it: the home keyboard, whose sampled voice walks this buffer
+      with its own counter at its own rate. Null with nothing threaded. */
+  get mono(): Float32Array | null {
+    return this.buf
+  }
+
   /** Frames on the tape, 0 when there is none threaded. */
   get frames(): number {
     return this.buf?.length ?? 0

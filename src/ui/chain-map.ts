@@ -85,6 +85,11 @@ const WIRE_BOX: Record<keyof typeof DEST, string> = {
   petDataLine: 'Talking pet',
   petDataFault: 'Talking pet',
   deckSpeed: 'Output',
+  pcmLevel: 'Home keyboard',
+  pcmAddrLine: 'Home keyboard',
+  pcmAddrFault: 'Home keyboard',
+  pcmDataLine: 'Home keyboard',
+  pcmDataFault: 'Home keyboard',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -140,6 +145,7 @@ const MIC_TARGET = [
 const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Toy keyboard': ['chipLevel'],
   'FM chip': ['fmLevel'],
+  'Home keyboard': ['pcmLevel'],
   'Toy drums': ['drumLevel'],
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
@@ -163,6 +169,12 @@ const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
 // one supply, which is what the frame and its rail are there to say; the starve
 // knob on the keyboard's panel bends every one of them.
 const FM_CHIP = 'FM chip'
+
+// The third die hanging off that same gate line, and drawn the far side of the
+// FM chip for the same reason the FM chip is drawn beside the keyboard: the
+// wire runs along the row, and a box on the end of it belongs next to the box
+// it is soldered to.
+const PCM_KEYS = 'Home keyboard'
 
 // On the same batteries as the other three, so inside the frame and under the
 // rail, at the far end of the row from the keyboard.
@@ -397,6 +409,7 @@ function triggerBridges(c: Controls): Bridge[] {
     ['trigToKeys', 'Toy drums', 'Toy keyboard'],
     ['trigToDrum', 'Toy keyboard', 'Toy drums'],
     ['fmStruck', 'Toy drums', FM_CHIP],
+    ['pcmStruck', 'Toy drums', PCM_KEYS],
   ] as const) {
     const choice = Math.round(c[key])
     if (choice <= 0) continue
@@ -468,8 +481,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
   const toys = TOY_ROW.map(instrument)
   const fm = instrument(FM_CHIP)
+  const pcm = instrument(PCM_KEYS)
   const pet = instrument(PET)
-  const chips = [...toys, fm, pet]
+  const chips = [...toys, fm, pcm, pet]
   const lines = LINE_ROW.map(instrument)
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
@@ -710,10 +724,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // By their labels rather than evenly: the chip is the one you do not play and
   // it should not come out the size of the two you do.
   spread(
-    [toys[0]!, fm, toys[1]!, pet],
+    [toys[0]!, fm, pcm, toys[1]!, pet],
     FRAME_PAD,
     content - FRAME_PAD * 2,
-    [INST_GAP, INST_GAP, INST_GAP],
+    [INST_GAP, INST_GAP, INST_GAP, INST_GAP],
     natural,
   )
   spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
@@ -888,6 +902,20 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         anchor: 'middle',
       },
     },
+  )
+
+  // And on past it to the keyboard next along, which is the same wire: one
+  // gate line, two chips clipped onto it, drawn as the run it is rather than as
+  // two wires leaving the toy in parallel.
+  wire(
+    'key-line-pcm',
+    fm,
+    pcm,
+    [
+      [fm.x + fm.w, chipY + INST_H / 2],
+      [pcm.x, chipY + INST_H / 2],
+    ],
+    { color: k.accent2, door: 'Toy keyboard' },
   )
 
   // Notes the drawing writes on itself: a part that is on the board with
@@ -1453,6 +1481,22 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     }),
     el('circle', { cx: x + 4.3, cy: y + 3.3, r: 0.7, fill: c }),
   ],
+  'Home keyboard': (x, y, c) => {
+    const h = [9, 5, 2, 3, 7, 10]
+    const steps = h.map((v, i) => `M ${x + i * 2} ${y + v} h 2`)
+    const risers = h
+      .slice(1)
+      .map((v, i) => `M ${x + (i + 1) * 2} ${y + h[i]!} V ${y + v}`)
+    return [
+      el('path', {
+        d: [...steps, ...risers].join(' '),
+        fill: 'none',
+        stroke: c,
+        strokeWidth: 0.9,
+        strokeLinejoin: 'miter',
+      }),
+    ]
+  },
   'Toy drums': (x, y, c) => [
     el('circle', {
       cx: x + 5,
