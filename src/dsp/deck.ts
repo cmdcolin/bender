@@ -63,8 +63,11 @@ export class Deck {
   // speed is what you heard rather than the raw machine at its own pitch.
   // Written only while the stem tape is running, like the chain's own copy.
   private readonly ringStems = new Float32Array(MAX_SOURCES * RING)
-  private readonly aaL = new Lowpass(2)
-  private readonly aaR = new Lowpass(2)
+  // Four poles rather than one: the lid has to come down inside the half-octave
+  // between the corner and the fold, and six decibels an octave over that
+  // distance is a lean rather than a lid.
+  private readonly aaL = new Lowpass(4)
+  private readonly aaR = new Lowpass(4)
   private readonly chainIo: StereoBlock = {
     l: new Float32Array(BLOCK),
     r: new Float32Array(BLOCK),
