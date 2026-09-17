@@ -307,6 +307,9 @@ export const PARAM_DEFS = [
   ['filtRes', 'ramp'],
   ['filtMode', 'step'],
   ['filtDriveDb', 'ramp'],
+  ['filtPop', 'slew'],
+  ['filtArc', 'slew'],
+  ['filtWiper', 'slew'],
   ['filtMix', 'slew'],
 
   ['combHz', 'slew'],

@@ -322,6 +322,9 @@ export const DEFAULT_CONTROLS = {
   filtRes: 0.7,
   filtMode: 0,
   filtDriveDb: 0,
+  filtPop: 0,
+  filtArc: 0,
+  filtWiper: 0,
   filtMix: 0,
 
   combHz: 110,

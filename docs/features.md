@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 262 knobs and switches in 30 groups, seven bends competing for six slots,
-18 ROM tunes, 69 presets, 14 stage settings and 26 named cuts — and everything
+ruin. 265 knobs and switches in 30 groups, seven bends competing for six slots,
+18 ROM tunes, 69 presets, 16 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 24 of them, mostly the ones that cover the
+preset that names it still gets it. 25 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -525,16 +525,27 @@ A tuned delay with feedback past unity — a pitch you can drive into oscillatio
 Resonant filter with drive, taken past self-oscillation so it screams on its
 own.
 
-<details>
-<summary>5 controls</summary>
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
 
-| control   | range                 | what it does                                                                  |
-| --------- | --------------------- | ----------------------------------------------------------------------------- |
-| Cutoff    | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1  |
-| Resonance | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
-| Mode      | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
-| Drive     | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance             |
-| Mix       | off to full           | Dry/wet                                                                       |
+- **dropped in the post**: A dark low-pass that crackles along with whatever
+  goes through it
+- **sputter**: Self-oscillating into a cap that keeps shorting
+
+<details>
+<summary>8 controls</summary>
+
+| control    | range                 | what it does                                                                  |
+| ---------- | --------------------- | ----------------------------------------------------------------------------- |
+| Cutoff     | 30 Hz to 12 kHz       | Where the filter bites — and the pitch it screams at when resonance passes 1  |
+| Resonance  | 0 to 2, normal 0 to 1 | Past 1.0 the filter self-oscillates at the cutoff, held by its own saturation |
+| Mode       | LP, BP, HP            | Low-pass growls, band-pass hones the scream, high-pass thins to a whistle     |
+| Drive      | 0 to 36 dB            | Gain into the filter — overdriving the input fights the resonance             |
+| Popcorn †  | off to full           | A bad junction inside the filter                                              |
+| Arcing cap | off to full           | The cap shorts when its swing gets too big                                    |
+| Dirty pot  | off to full           | The cutoff pot loses contact while it moves                                   |
+| Mix        | off to full           | Dry/wet                                                                       |
 
 </details>
 

@@ -670,6 +670,11 @@ Starve and Latch-up drag it down too.
 Every feedback path in the instrument — the delay, the comb filter, the screech
 filter, the global feedback bus — is designed to run past unity on purpose.
 
+The screech filter's **dropped** fold is a filter that fell off the rack.
+**Popcorn** is a bad junction whose crackle rides the input and rings at the
+cutoff. **Arcing cap** shorts the resonance when it swings too far. **Dirty
+pot** jumps the cutoff while it sweeps.
+
 ## The parts rack
 
 Every number below was compiled into the model from one real board: how hard a
