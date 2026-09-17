@@ -83,7 +83,7 @@ export class BridgedT {
       to hold a voice open after it has stopped, and no ripple at twice the
       pitch. The follower inside is for the tuning, which wants the lag. */
   get level() {
-    return Math.sqrt(this.bp * this.bp + this.lp * this.lp)
+    return this.env
   }
 
   reset() {

@@ -152,6 +152,21 @@ const SRC = {
   heat: 11,
 }
 
+// Sources pick() answers with a lane of their own. Every other source reads the
+// LFO.
+const OWN_LANE = new Set<number>([
+  SRC.supply,
+  SRC.env,
+  SRC.mic,
+  SRC.fb,
+  SRC.rom,
+  SRC.drum,
+  SRC.key,
+  SRC.heat,
+  SRC.bodyX,
+  SRC.bodyY,
+])
+
 const WIRES = [
   [IDX.mod0Src, IDX.mod0Dest, IDX.mod0Depth],
   [IDX.mod1Src, IDX.mod1Dest, IDX.mod1Depth],
@@ -234,16 +249,21 @@ export class ModBus {
     const attack = coef(0.005, this.sr)
     const release = coef(0.12, this.sr)
     const fall = Math.exp(-1 / (0.12 * this.sr))
+    // The phase, the held value and the chaos and drunk walks carry state and
+    // advance every sample. The other shapes are functions of the phase, so
+    // their lane is only written when a wire reads it.
+    let wired = false
+    for (let w = 0; w < WIRES.length; w++) {
+      const from = Math.round(p[WIRES[w]![0]]!)
+      if (from !== SRC.off && !OWN_LANE.has(from)) wired = true
+    }
     for (let i = 0; i < n; i++) {
       const prev = this.lfoPhase
       this.lfoPhase = wrap1(this.lfoPhase + hz / this.sr)
       if (this.lfoPhase < prev) this.shValue = this.rng() * 2 - 1
-      this.lfo[i] =
-        shape === 4
-          ? this.chaos.step(hz, this.sr)
-          : shape === 5
-            ? this.drunk.step(hz, this.sr, this.rng)
-            : lfoShape(this.lfoPhase, shape, this.shValue)
+      if (shape === 4) this.lfo[i] = this.chaos.step(hz, this.sr)
+      else if (shape === 5) this.lfo[i] = this.drunk.step(hz, this.sr, this.rng)
+      else if (wired) this.lfo[i] = lfoShape(this.lfoPhase, shape, this.shValue)
       this.micEnv[i] = Math.min(
         this.mic.process(src.mic[i]!, attack, release) * 2,
         1,
