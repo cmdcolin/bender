@@ -2,6 +2,15 @@
 
 All notable changes to bender are documented here.
 
+## [1.1.1](https://github.com/cmdcolin/bender/compare/v1.1.0...v1.1.1) - 2026-09-17
+
+### Features
+- *(ui)* [`ec5ff2a`](https://github.com/cmdcolin/bender/commit/ec5ff2a21356c828b57d780be2ecc7728fee9d4a) keep the last eight sessions and offer them on the home page
+
+### Refactor
+- *(ui)* [`93ba238`](https://github.com/cmdcolin/bender/commit/93ba23820abd52cdb150d1da0e20119b0b6fd637) share the midi card shell with videoskillet
+- *(ui)* [`c569013`](https://github.com/cmdcolin/bender/commit/c569013e58c3fef6c700bf65c98215e89fa22dbd) drop the bound count from the midi button
+
 ## [1.1.0](https://github.com/cmdcolin/bender/compare/v1.0.4...v1.1.0) - 2026-09-17
 
 ### Features
