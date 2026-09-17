@@ -170,6 +170,7 @@ export const PARAM_DEFS = [
   ['drumOverflow', 'step'],
   ['drumRetrigHz', 'slew'],
   ['drumTrigFloor', 'slew'],
+  ['drumScan', 'slew'],
   ['drumAccentAmt', 'slew'],
   ['drumAccentSag', 'slew'],
   ['drumChoke', 'step'],

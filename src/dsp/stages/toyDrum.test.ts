@@ -1237,3 +1237,25 @@ test('a hit on an echo step goes into the tape with the bus send shut', () => {
     1e-4,
   )
 })
+
+test('a slow scan strikes a crowded step one voice at a time', () => {
+  const step: Partial<Controls> = {
+    drumKick: stepMask(1),
+    drumHat: stepMask(1),
+    drumBpm: 60,
+    drumDecay: 0.3,
+  }
+  // The hat is the second voice in scan order, and the only one up here.
+  const hatAt = (x: Float32Array) => {
+    const hi = envelope(
+      Float32Array.from(x, (v, i) => v - (x[i - 1] ?? 0)),
+      0.002,
+    )
+    const peak = Math.max(...hi)
+    return hi.findIndex(v => v > peak * 0.3) * 0.002
+  }
+  const tight = hatAt(soloVoice(step, 0.5))
+  const flam = hatAt(soloVoice({ ...step, drumScan: 30 }, 0.5))
+  expect(flam - tight).toBeGreaterThan(0.02)
+  expect(flam - tight).toBeLessThan(0.04)
+})

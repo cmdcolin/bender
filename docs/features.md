@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 271 knobs and switches in 30 groups, seven bends competing for six slots,
+ruin. 272 knobs and switches in 30 groups, seven bends competing for six slots,
 18 ROM tunes, 69 presets, 16 stage settings and 26 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -183,7 +183,7 @@ too — the knife goes on and the rows under it say which controls that was:
   comes back to where it started
 
 <details>
-<summary>32 controls</summary>
+<summary>33 controls</summary>
 
 | control        | range                                                                                       | what it does                                                                                                              |
 | -------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -208,6 +208,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Overflow       | off or wrap                                                                                 | What the converter does with a sum too wide for its word                                                                  |
 | Retrigger      | 0 Hz to 4 kHz                                                                               | Retriggers the current step at this rate                                                                                  |
 | Trigger floor  | off to full                                                                                 | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                      |
+| Scan           | 0 to 40 ms                                                                                  | The chip strikes one voice per scan                                                                                       |
 | Accent         | 1× to 4×                                                                                    | How far the accent bus swings when it is rested                                                                           |
 | Accent sag     | off to full                                                                                 | The accent is one cap feeding every voice, and this is how much each accented step takes off it                           |
 | Choke          | off, hat cuts cymbal, kick cuts tom, snare cuts clap, each cuts the next, kick cuts the kit | Where the board’s one choke resistor is soldered                                                                          |

@@ -485,6 +485,12 @@ export class ToyDrum implements Stage {
   private thrown = 0
   private throwing = false
   private throwLen = STEPS
+  // Voices a slow scan has not reached yet on a crowded step.
+  private scanBits = 0
+  private scanLeft = new Int32Array(N_VOICES)
+  private scanGain = new Float32Array(N_VOICES)
+  private scanThrow = 0
+  private scanSamples = 0
 
   constructor(
     private readonly sr: number,
@@ -672,6 +678,26 @@ export class ToyDrum implements Stage {
     return struck
   }
 
+  /** Holds back every voice after the first, one scan apart; returns the first. */
+  private scan(bits: number, gain: number): number {
+    let first = 0
+    let k = 0
+    for (let v = 0; v < N_VOICES; v++) {
+      const bit = 1 << v
+      if (!(bits & bit)) continue
+      if (k === 0) first = bit
+      else {
+        this.scanBits |= bit
+        this.scanLeft[v] = k * this.scanSamples
+        this.scanGain[v] = gain
+        if (this.throwing) this.scanThrow |= bit
+        else this.scanThrow &= ~bit
+      }
+      k++
+    }
+    return first
+  }
+
   // The accent row says how hard whatever plays on this step lands, and a maybe
   // step that came up plays at the weight it asked for. Nothing rolls for the
   // weight — an accent nobody can predict on a hit nobody can predict is two
@@ -689,9 +715,10 @@ export class ToyDrum implements Stage {
     const at = STEPS - 1 - (this.tick % this.throwLen)
     this.throwing = ((Math.round(p[IDX.drumThrow]!) >> at) & 1) === 1
     const named = word & VOICE_BITS
-    const bits = fallback ? named || 1 : named
+    let bits = fallback ? named || 1 : named
     const accent = (word & ACCENT_BIT) !== 0
     const gain = accent ? 1 + (this.accentAmt - 1) * this.accentV : 1
+    if (this.scanSamples > 0 && bits & (bits - 1)) bits = this.scan(bits, gain)
     const struck = this.hit(bits, gain, ctx, i)
     this.throwing = false
     if (!accent || !struck || this.accentSag <= 0) return
@@ -812,6 +839,9 @@ export class ToyDrum implements Stage {
       this.lens[r] = asLen(p[LEN_PARAM[r]!]!)
     }
     this.throwLen = asLen(p[IDX.drumThrowLen]!)
+    this.scanSamples = Math.round(
+      (Math.max(p[IDX.drumScan]!, 0) / 1000 / clock) * this.sr,
+    )
 
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
@@ -896,6 +926,7 @@ export class ToyDrum implements Stage {
       }
       if (modChance)
         this.chance = Math.min(Math.max(baseChance + modChance[i]!, 0), 1)
+      if (this.scanBits) this.scanStep(ctx, i)
       if (this.transport.drums) {
         // Swing holds the offbeat back and takes it off the step after, so a
         // pair still spans two steps and the tempo is what the knob says.
@@ -1233,6 +1264,17 @@ export class ToyDrum implements Stage {
     rail.reported = loadSum / io.n
   }
 
+  private scanStep(ctx: Ctx, i: number) {
+    for (let v = 0; v < N_VOICES; v++) {
+      const bit = 1 << v
+      if (!(this.scanBits & bit) || --this.scanLeft[v]! > 0) continue
+      this.scanBits &= ~bit
+      this.throwing = (this.scanThrow & bit) !== 0
+      this.hit(bit, this.scanGain[v]!, ctx, i)
+      this.throwing = false
+    }
+  }
+
   /** Voices that have fired since the last read, as the bit order of a step.
       Reading takes them: the panel is drawing one report per frame and a hit it
       has already lit is a hit that has been seen. */
@@ -1247,6 +1289,7 @@ export class ToyDrum implements Stage {
     this.struckGain = 0
     this.firedSince = 0
     this.thrown = 0
+    this.scanBits = 0
     this.open = 0
     this.rolledAt = -1
     this.env.fill(0)

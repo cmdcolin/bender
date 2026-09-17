@@ -175,6 +175,7 @@ export const DEFAULT_CONTROLS = {
   drumOverflow: 0,
   drumRetrigHz: 0,
   drumTrigFloor: 0,
+  drumScan: 0,
   drumAccentAmt: 1.7,
   drumAccentSag: 0,
   drumChoke: 0,

@@ -681,6 +681,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How far a voice has to have drained before the one-shot behind it will answer the trigger line again. At nothing every pulse strikes; wound up, a line hammered faster than a voice can empty comes out divided — a rattle at the rate Decay sets rather than Retrigger.',
       },
       {
+        key: 'drumScan',
+        part: 'triggers and cross-patch',
+        label: 'Scan',
+        min: 0,
+        max: 40,
+        step: 0.1,
+        unit: 'ms',
+        help: 'The chip strikes one voice per scan. Slow it down and a crowded step smears into a flam while a lone hit stays on time.',
+      },
+      {
         key: 'drumAccentAmt',
         part: 'triggers and cross-patch',
         label: 'Accent',

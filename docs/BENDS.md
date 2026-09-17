@@ -513,6 +513,9 @@ the edges the counter produced, so a slipping kit and a locked toy come apart.
 All the way up nothing gets over the threshold at all and the machine stands on
 one step, at the step rate, with the tempo untouched.
 
+**Scan** is how long the chip takes to get from one voice to the next. Slow it
+and a step that strikes several voices comes out as a flam, in row order.
+
 ## The trigger patch's other faults
 
 See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for how to wire it;
