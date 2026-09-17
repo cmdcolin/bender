@@ -5,6 +5,7 @@ import { Clipper } from './stages/clipper'
 import { Comb } from './stages/comb'
 import { Crusher } from './stages/crusher'
 import { Echo } from './stages/echo'
+import { Ensemble } from './stages/ensemble'
 import { FmChip } from './stages/fmChip'
 import { GlitchBuf } from './stages/glitchBuf'
 import { Noise } from './stages/noise'
@@ -91,6 +92,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new TapeDelay(sr, next()),
     new Echo(sr),
     new SpringVerb(sr),
+    new Ensemble(sr),
   ]
   chain.post = [new Brownout(sr, next()), new Tape(sr, next())]
   // Last off the seed, so every stream drawn above stays the one it was before

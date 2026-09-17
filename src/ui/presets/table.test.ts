@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
 import { GRID_ROWS } from '../../drums'
-import { render, renderBender, rms } from '../../dsp/testRender'
+import { deviation, render, renderBender, rms } from '../../dsp/testRender'
 import { HOLD_KEYS } from '../controls'
 import { applyPreset, presetPath } from './apply'
 import { PRESETS } from './table'
@@ -139,6 +139,20 @@ test('every preset that names the delay pedal is one you can hear it on', () => 
     const wet = rms(render(preset.patch, 3))
     const dry = rms(render({ ...preset.patch, echoLevel: 0 }, 3))
     expect(wet, preset.name).toBeGreaterThan(1.02 * dry)
+  }
+})
+
+// And the same for the ensemble, measured as how far the take moved rather than
+// as how much louder it got: its mix is a dry/wet, so a chorus doing its job
+// can leave the board a shade quieter than it found it. What it cannot do is
+// leave it the same.
+test('every preset that names the ensemble is one you can hear it on', () => {
+  const named = PRESETS.filter(p => p.patch.ensMix)
+  expect(named.length).toBeGreaterThan(2)
+  for (const preset of named) {
+    const wet = render(preset.patch, 3)
+    const dry = render({ ...preset.patch, ensMix: 0 }, 3)
+    expect(deviation(wet, dry), preset.name).toBeGreaterThan(0.1)
   }
 })
 

@@ -364,6 +364,15 @@ export const PARAM_DEFS = [
   ['revMix', 'slew'],
   ['revDry', 'slew'],
 
+  ['ensMode', 'step'],
+  ['ensRate', 'slew'],
+  ['ensDepth', 'slew'],
+  ['ensClock', 'slew'],
+  ['ensFeedback', 'slew'],
+  ['ensTone', 'slew'],
+  ['ensMix', 'slew'],
+  ['ensWidth', 'slew'],
+
   ['modLfoHz', 'slew'],
   ['modLfoShape', 'step'],
   ['mod0Src', 'step'],

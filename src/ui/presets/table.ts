@@ -1,6 +1,7 @@
 import { DATA_LINES, DRUM_ROMS } from '../../drums'
 import { FAULT } from '../../dsp/bus'
 import { DEST } from '../../dsp/modbus'
+import { ENS_MODE } from '../../dsp/stages/ensemble'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
 import { ARP_MODES } from '../../dsp/stages/toyChip'
@@ -1053,6 +1054,65 @@ export const PRESETS: PresetDef[] = [
       fmModDecay: 8,
       revDecayS: 2,
       revMix: 0.2,
+    },
+  },
+  {
+    name: 'string machine',
+    blurb:
+      'The toy on its organ tone, arpeggiated, through three bucket brigades 120° apart',
+    patch: {
+      chipLevel: 0.7,
+      chipTone: 0,
+      chipArp: arp('up-down'),
+      chipArpHz: 6,
+      chipArpOct: 2,
+      ensMode: ENS_MODE.ensemble,
+      ensMix: 0.6,
+      ensWidth: 1,
+      ensRate: 0.6,
+      ensDepth: 0.55,
+      ensClock: 9,
+      revMix: 0.3,
+      revDecayS: 3,
+    },
+  },
+  {
+    name: 'dimension',
+    blurb:
+      'Two lines swung against each other — width in stereo, and nothing at all in mono',
+    patch: {
+      chipLevel: 0,
+      fmLevel: 0.7,
+      fmKeyGate: 1,
+      fmVoice: voice('e.piano'),
+      fmBright: 0.4,
+      fmLength: 1.6,
+      ensMode: ENS_MODE.dimension,
+      ensMix: 0.7,
+      ensWidth: 1,
+      ensRate: 0.4,
+      ensDepth: 0.35,
+      ensClock: 12,
+      tapeMix: 0.5,
+      tapeWow: 0.4,
+    },
+  },
+  {
+    name: 'jet',
+    blurb:
+      'The kit through a bucket brigade a millisecond long, fed back on itself',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 112,
+      ...romMasks('breaks'),
+      ensMode: ENS_MODE.flange,
+      ensMix: 0.8,
+      ensFeedback: 0.8,
+      ensClock: 1.2,
+      ensRate: 0.25,
+      ensDepth: 0.8,
+      ensWidth: 0.6,
     },
   },
   {

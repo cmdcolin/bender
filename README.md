@@ -23,6 +23,8 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 
 - Circuit bend a toy keyboard, drum machine, and basic FM synth
 - Tape delay, reverb, and distortion 'guitar pedals'
+- Ensemble pedal: bucket-brigade chorus, string-machine ensemble, dimension
+  and flange
 - Allows custom piano roll and drum sequences
 - Patch bay with LFO and other modulations, wired from the bay or from a
   control's own `+ mod` button

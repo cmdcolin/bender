@@ -43,6 +43,7 @@ const WIRE_BOX: Record<keyof typeof DEST, string> = {
   wDepth2: 'Patch bay',
   wDepth3: 'Patch bay',
   echoMs: 'Delay pedal',
+  ensRate: 'Ensemble',
   sampleSpeed: 'Sampler',
   loopSlide: 'Sampler',
   loopSpan: 'Sampler',
@@ -524,13 +525,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // Where the bends end and the pedals begin — no head on the second run, since
   // nothing here is a door any more: both runs are Signal order's, off the foot
-  // of the drawing, and the four pedal boxes need no header to say they are the
+  // of the drawing, and the five pedal boxes need no header to say they are the
   // board's rather than the rack's.
   const active: Record<string, boolean> = {
     Stompbox: c.stompMix > 0,
     'Tape delay': c.dlyMix > 0,
     'Delay pedal': c.echoLevel > 0,
     'Spring verb': c.revMix > 0 || c.revDry < 1,
+    Ensemble: c.ensMix > 0,
   }
   for (const i of pedalOrderAt(c.pedalOrder)) {
     const name = PEDALS[i]!.group
@@ -1497,9 +1499,9 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       fill: c,
     }),
   ],
-  // The four pedals, drawn as the boxes they would be on a floor: the stompbox
-  // as an enclosure with a footswitch under its knob, and the other three as
-  // what each one does to the signal rather than as three more enclosures — at
+  // The five pedals, drawn as the boxes they would be on a floor: the stompbox
+  // as an enclosure with a footswitch under its knob, and the other four as
+  // what each one does to the signal rather than as four more enclosures — at
   // 12px a row of alike outlines says only "pedal", which is what their place
   // on the path already says.
   Stompbox: (x, y, c) => [
@@ -1561,6 +1563,16 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       strokeWidth: 0.9,
     }),
   ],
+  // One wave and the same wave a beat late, which is the whole of a chorus.
+  Ensemble: (x, y, c) =>
+    [0, 2.6].map(dy =>
+      el('path', {
+        d: `M ${x + 1} ${y + 4 + dy} q 2.5 -3 5 0 q 2.5 3 5 0`,
+        fill: 'none',
+        stroke: c,
+        strokeWidth: 0.9,
+      }),
+    ),
   'Talking pet': (x, y, c) => [
     el('path', {
       d: `M ${x + 2.2} ${y + 4.6} L ${x + 1.2} ${y + 0.8} L ${x + 4.6} ${y + 2.6} M ${x + 9.8} ${y + 4.6} L ${x + 10.8} ${y + 0.8} L ${x + 7.4} ${y + 2.6}`,

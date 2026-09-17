@@ -379,6 +379,15 @@ export const DEFAULT_CONTROLS = {
   revMix: 0,
   revDry: 1,
 
+  ensMode: 0,
+  ensRate: 0.6,
+  ensDepth: 0.5,
+  ensClock: 5,
+  ensFeedback: 0,
+  ensTone: 8000,
+  ensMix: 0,
+  ensWidth: 1,
+
   modLfoHz: 1,
   modLfoShape: 0,
   mod0Src: 0,

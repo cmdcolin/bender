@@ -102,7 +102,7 @@ test('the pedal order is audible: dirt before the tank is not dirt after it', ()
   }
   const stompFirst = render({ ...look, pedalOrder: 0 }, 1)
   const verbFirst = render({ ...look, pedalOrder: 18 }, 1)
-  expect([...PEDAL_ORDERS[18]!]).toEqual([3, 0, 1, 2])
+  expect([...PEDAL_ORDERS[18]!]).toEqual([3, 0, 1, 2, 4])
   expect(rms(stompFirst)).toBeGreaterThan(0.01)
   expect(stompFirst).not.toEqual(verbFirst)
 })

@@ -99,8 +99,11 @@ export const DEST = {
   // wire here drags the machine playing everything above it back rather than
   // any one stage on it.
   deckSpeed: 62,
+  // The ensemble's sweep, which is the one thing on that pedal a hand alone
+  // cannot move in time with anything else.
+  ensRate: 63,
 } as const
-export const N_DEST = 63
+export const N_DEST = 64
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

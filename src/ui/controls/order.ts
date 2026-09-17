@@ -4,7 +4,7 @@ import { BENDS, BEND_SLOT_KEYS } from './bends'
 import type { Group } from './types'
 
 // One door for both runs that are yours to order: the six positions the bends
-// compete for, on their way from the mix bus to the pedals, and the four
+// compete for, on their way from the mix bus to the pedals, and the five
 // pedals waiting downstream of them. They sit off the path rather than on it,
 // the way Wear does — ordering is a thing about the board rather than about
 // any one stage, and it stays a single button whether you came to move a
@@ -31,7 +31,7 @@ export const ORDER_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['—', ...BENDS.map(b => b.label)],
-        help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one. The pedals downstream order themselves too, but they are not this: four boxes that are always all on the board, where these are six sockets seven bends compete for.',
+        help: 'Which bend runs in this position. The signal walks the positions top to bottom on its way from the mix bus to the pedals, and a bend named twice runs only at the first one. The pedals downstream order themselves too, but they are not this: five boxes that are always all on the board, where these are six sockets seven bends compete for.',
       })),
       {
         key: 'pedalOrder',
@@ -41,7 +41,7 @@ export const ORDER_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: PEDAL_ORDER_NAMES,
-        help: 'What order the signal meets the four pedals in. It matters most where one of them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb into fuzz is the room itself distorting. Unlike the bends upstream, all four are always on the board — a pedal comes out of the path on its own mix, not by leaving the order.',
+        help: 'What order the signal meets the five pedals in. It matters most where one of them is loud: fuzz into a reverb is a wall with a room behind it, and a reverb into fuzz is the room itself distorting. Unlike the bends upstream, all five are always on the board — a pedal comes out of the path on its own mix, not by leaving the order.',
       },
     ],
   },

@@ -57,12 +57,13 @@ test('a speed off the end of the travel lands on the end', () => {
 // nothing to tap.
 test('only rows in a unit a press can be worth carry one', () => {
   const tapped = ALL_SLIDERS.filter(s => s.tap)
-  // The beat, the two delay times, and the bay's own oscillator: the speeds a
-  // hand keeps rather than reads.
+  // The beat, the two delay times, the ensemble's sweep and the bay's own
+  // oscillator: the speeds a hand keeps rather than reads.
   expect(tapped.map(s => s.key).toSorted()).toEqual([
     'delayMs',
     'drumBpm',
     'echoMs',
+    'ensRate',
     'modLfoHz',
   ])
   for (const s of tapped) expect(['bpm', 'Hz', 'ms']).toContain(s.unit)

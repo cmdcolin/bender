@@ -56,6 +56,29 @@ export function renderBender(
   return out
 }
 
+// Both sides of the take, for the one stage whose whole point is what it does
+// to the stereo field: everything else here reads the left channel, because
+// everything else puts the same thing on both.
+export function renderStereo(
+  overrides: Partial<Controls>,
+  seconds: number,
+  setup?: (built: BuiltChain) => void,
+): { l: Float32Array; r: Float32Array } {
+  const built = buildBender(SR)
+  setup?.(built)
+  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const io = makeIo()
+  const blocks = Math.ceil((seconds * SR) / BLOCK)
+  const l = new Float32Array(blocks * BLOCK)
+  const r = new Float32Array(blocks * BLOCK)
+  for (let b = 0; b < blocks; b++) {
+    built.chain.process(io, p)
+    l.set(io.l.subarray(0, BLOCK), b * BLOCK)
+    r.set(io.r.subarray(0, BLOCK), b * BLOCK)
+  }
+  return { l, r }
+}
+
 // A take with the stem tape running: what came out of the board, and what each
 // source put on the bus on its own — mono and dry, the way the recorder takes
 // them. Laid out in SOURCE_TAPS order, so `stems[0]` is the toy keyboard.

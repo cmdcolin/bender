@@ -442,6 +442,16 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   // The deck the whole board comes off, which is not a stage on it.
   'deckSpeed',
   'deckInertia',
+
+  // The ensemble, the fifth pedal on the board.
+  'ensMode',
+  'ensRate',
+  'ensDepth',
+  'ensClock',
+  'ensFeedback',
+  'ensTone',
+  'ensMix',
+  'ensWidth',
 ]
 
 // Retired controls that old links still carry, each read into the control that

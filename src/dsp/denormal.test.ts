@@ -4,6 +4,7 @@ import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { packParams } from '../engine/params'
 import { buildBender } from './build'
 import { BLOCK, type StereoBlock } from './stage'
+import { ENS_MODE } from './stages/ensemble'
 
 // The smallest double the hardware still handles in one piece. Under it,
 // arithmetic falls to microcode and runs about twenty times slower.
@@ -82,11 +83,21 @@ const RINGING: Partial<Controls> = {
   tapeMix: 0.4,
   petLevel: 0.5,
   petKBits: 0.3,
+  ensMix: 0.4,
 }
 
-test('a board left ringing itself out never settles into denormal range', () => {
-  expect(ring(RINGING, {})).toEqual([])
-}, 60_000)
+// Minutes of simulated board per run, and every stage added to the path adds to
+// it: the allowance is what a loaded machine needs rather than what one of these
+// costs on its own.
+const SLOW = 150_000
+
+test(
+  'a board left ringing itself out never settles into denormal range',
+  () => {
+    expect(ring(RINGING, {})).toEqual([])
+  },
+  SLOW,
+)
 
 // The knobs that feed a value with nothing else driving it: at rest the state
 // they wind up is multiplied down by itself for ever, and a decay that starts
@@ -111,11 +122,18 @@ const WOUND_UP: Partial<Controls> = {
   shiftMix: 0.5,
   shiftFb: 0.4,
   couple: 0.5,
+  ensMode: ENS_MODE.flange,
+  ensFeedback: 0.9,
+  ensDepth: 0.6,
 }
 
-test('nor does one whose knobs were turned back down', () => {
-  const cold = Object.fromEntries(
-    Object.keys(WOUND_UP).map(k => [k, DEFAULT_CONTROLS[k as ControlKey]]),
-  )
-  expect(ring({ ...RINGING, ...WOUND_UP, bendSlot5: 7 }, cold)).toEqual([])
-}, 60_000)
+test(
+  'nor does one whose knobs were turned back down',
+  () => {
+    const cold = Object.fromEntries(
+      Object.keys(WOUND_UP).map(k => [k, DEFAULT_CONTROLS[k as ControlKey]]),
+    )
+    expect(ring({ ...RINGING, ...WOUND_UP, bendSlot5: 7 }, cold)).toEqual([])
+  },
+  SLOW,
+)

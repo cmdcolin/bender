@@ -43,7 +43,7 @@ test('never-NaN torture: random param slams for 10 s', () => {
               ? def.max
               : def.min + rng() * (def.max - def.min)
       }
-      for (const key of ['fbAmt', 'dlyFb', 'combFb'] as const)
+      for (const key of ['fbAmt', 'dlyFb', 'combFb', 'ensFeedback'] as const)
         if (rng() < 0.5) target[IDX[key]] = sliderFor(key).max
       target[IDX.outGain] = rng() < 0.3 ? 12 : target[IDX.outGain]!
     }

@@ -10,7 +10,7 @@ import styles from './SlotRack.module.css'
 // pedal in the order the signal meets them, dragged or arrow-keyed to move one.
 //
 // No shelf under it and no empty rows, because there is nothing to put on a
-// shelf — all four pedals are always on the board, and the one that is not in
+// shelf — all five pedals are always on the board, and the one that is not in
 // the path is the one whose own mix is down. That is the whole of what makes
 // this rack a shorter thing than the one upstream.
 const indexOf = (order: readonly number[]) =>
