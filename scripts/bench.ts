@@ -80,6 +80,8 @@ function bench(overrides: Partial<Controls>, seconds: number) {
     blocks,
     rows: best,
     collections: statistics.length / REPS,
+    // GCProfiler reports each collection's cost in microseconds.
+    pauses: statistics.map(s => s.cost / 1000).sort((a, b) => a - b),
   }
 }
 
@@ -88,7 +90,7 @@ const seconds = Number(process.argv[3] ?? 20)
 const board = BOARDS[which]
 if (!board) throw new Error(`no board '${which}' — try ${Object.keys(BOARDS)}`)
 
-const { total, blocks, rows, collections } = bench(board, seconds)
+const { total, blocks, rows, collections, pauses } = bench(board, seconds)
 const audioMs = (blocks * BLOCK * 1000) / SR
 const pct = (ms: number) => `${((ms / audioMs) * 100).toFixed(2)}%`
 
@@ -109,8 +111,20 @@ for (const r of rows) {
 console.log(
   `  ${'chain'.padEnd(12)} ${(total - stageMs).toFixed(0).padStart(6)}ms  ${pct(total - stageMs)}`,
 )
-// A collection on the audio thread is a gap in the sound. GCProfiler counts
-// them synchronously; a PerformanceObserver delivers its entries after the
+// A collection on the audio thread is only a gap in the sound if it outlasts
+// the block, so the count on its own says nothing — a heavy board scavenges
+// several times a second and every one of them fits. What to read is the tail
+// against the budget. GCProfiler counts collections synchronously and costs
+// them in microseconds; a PerformanceObserver delivers its entries after the
 // render loop returns, which is after this line prints. Per pass, and with the
 // stages wrapped for timing, so inlining differs from the worklet's.
+const budgetMs = (BLOCK / SR) * 1000
+const at = (q: number) => pauses[Math.floor(pauses.length * q)] ?? 0
+const over = pauses.filter(d => d > budgetMs).length
 console.log(`\ncollections per pass: ${collections.toFixed(0)}`)
+console.log(
+  `gc pause: median ${at(0.5).toFixed(2)}ms  p99 ${at(0.99).toFixed(2)}ms  worst ${(pauses.at(-1) ?? 0).toFixed(2)}ms`,
+)
+console.log(
+  `block budget ${budgetMs.toFixed(2)}ms — ${over} of ${pauses.length} pauses over it`,
+)
