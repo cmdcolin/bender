@@ -48,7 +48,9 @@ const VOICES = [
 ] as const
 
 const DOC = {
-  current: { query: boardFor('wrong song'), at: NOW - 40 * 60_000 },
+  recent: [
+    { id: 'shot', query: boardFor('wrong song'), at: NOW - 40 * 60_000 },
+  ],
   voices: VOICES.map(([name, preset, ago]) => ({
     name,
     query: boardFor(preset),
