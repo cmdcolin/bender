@@ -16,9 +16,7 @@ import { useEffect } from 'react'
 
 import { N_DRUM_VOICES, voiceBit } from '../drums'
 import { engine } from '../engine/engine'
-
-// Where a keypress belongs to the control rather than to the kit.
-const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
+import { isTyping } from './isTyping'
 
 /** The number printed on a voice's pad, which is its place in the kit. */
 export const padKeyFor = (voice: number) => String(voice + 1)
@@ -39,13 +37,15 @@ export function useDrumKeys() {
     const down = (e: KeyboardEvent) => {
       // A held pad is one hit. The kit has a bend for hammering a step at audio
       // rate and it is not the operating system's key repeat.
-      if (!e.repeat && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const typing =
-          e.target instanceof HTMLElement && TYPING.has(e.target.tagName)
-        if (!typing) {
-          const voice = padVoice(e.code)
-          if (voice >= 0) engine.drumHit(voiceBit(voice))
-        }
+      if (
+        !e.repeat &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        !isTyping(e.target)
+      ) {
+        const voice = padVoice(e.code)
+        if (voice >= 0) engine.drumHit(voiceBit(voice))
       }
     }
     window.addEventListener('keydown', down)

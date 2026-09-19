@@ -3,6 +3,7 @@ import { useEffect, useState, type PointerEvent, type ReactNode } from 'react'
 import { engine } from '../engine/engine'
 import { semitoneName } from '../notes'
 import { useControlValue, useStoreValue } from './ControlsContext'
+import { isTyping } from './isTyping'
 import styles from './Keybed.module.css'
 import {
   blackAbove,
@@ -250,11 +251,13 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (!owns || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
-      const target = e.target
       if (
-        target instanceof HTMLElement &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')
+        !owns ||
+        e.repeat ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        isTyping(e.target)
       )
         return
       const pressed = e.key.toLowerCase()

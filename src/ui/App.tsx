@@ -25,6 +25,7 @@ import { padKeyFor, useDrumKeys } from './drumKeys'
 import { DrumKit } from './DrumKit'
 import { FmKeys } from './FmKeys'
 import { HuntDialog } from './HuntDialog'
+import { isTyping } from './isTyping'
 import { Keys } from './Keys'
 import { useCoarse } from './measure'
 import { Menu } from './Menu'
@@ -54,9 +55,6 @@ import { useCurrentSession } from './useCurrentSession'
 import { useSavedVoices } from './useSavedVoices'
 import { suggestVoiceName, type SavedVoice } from './voiceModel'
 import { WhySignInDialog } from './WhySignInDialog'
-
-// Where a keypress belongs to the control rather than to the board.
-const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 
 function clock(seconds: number): string {
   const s = Math.floor(seconds)
@@ -253,8 +251,7 @@ export function App(props: { openedFromLink?: boolean }) {
       // panel picks a morph duration, a row length and half its choices that
       // way. A focused button is not — space over one is still the run line,
       // which is the point of running it over the whole window.
-      if (e.target instanceof HTMLElement && TYPING.has(e.target.tagName))
-        return
+      if (isTyping(e.target)) return
       e.preventDefault()
       engine.toggleRun()
     }

@@ -477,7 +477,10 @@ export function ControlSlider({
         hand.current = true
         engine.armStep()
       }}
-      onPointerUp={() => (hand.current = false)}
+      onPointerUp={e => {
+        hand.current = false
+        e.currentTarget.blur()
+      }}
       onPointerCancel={() => (hand.current = false)}
       onKeyDown={e => {
         hand.current = false

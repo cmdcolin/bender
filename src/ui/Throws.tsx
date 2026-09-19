@@ -2,11 +2,10 @@ import { useEffect } from 'react'
 
 import { engine } from '../engine/engine'
 import { useStoreValue } from './ControlsContext'
+import { isTyping } from './isTyping'
 import { THROWS, throwForKey, type ThrowDef } from './throws'
 import styles from './Throws.module.css'
 import { Tip } from './Tip'
-
-const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 
 const press = (t: ThrowDef) =>
   engine.holdThrow(t.name, t.push(engine.controls.get()))
@@ -21,8 +20,7 @@ export function Throws() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
-      if (e.target instanceof HTMLElement && TYPING.has(e.target.tagName))
-        return
+      if (isTyping(e.target)) return
       const t = throwForKey(e.key)
       if (t) press(t)
     }
