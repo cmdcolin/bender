@@ -223,6 +223,12 @@ export function mergeNotes(
 // animation frame.
 export class Engine {
   readonly controls = createStore<Controls>({ ...DEFAULT_CONTROLS })
+
+  /** The rate the audio thread is running at, or the usual one before it is up. */
+  sampleRate() {
+    return this.ctx?.sampleRate ?? 48000
+  }
+
   readonly meter: Store<Meter> & { set: (m: Meter) => void } =
     createStore<Meter>({
       peak: 0,
@@ -937,7 +943,7 @@ export class Engine {
       if (msg.stems) this.keepStems(msg.stems, msg.n)
     }
     const frames = this.take.reduce((n, c) => n + c.l.length, 0)
-    const sr = this.ctx?.sampleRate ?? 48000
+    const sr = this.sampleRate()
     this.recSeconds.set(frames / sr)
     const cap = this.stemTake.length ? REC_MAX_STEM_S : REC_MAX_S
     if (frames >= sr * cap && this.recording.get()) this.stopRecording()
@@ -1006,7 +1012,7 @@ export class Engine {
   private retroWant: 'wav' | 'reel' | null = null
 
   private onRetro(msg: RetroMsg) {
-    const sr = this.ctx?.sampleRate ?? 48000
+    const sr = this.sampleRate()
     if (msg.n) {
       this.retro.push({ l: msg.l.slice(0, msg.n), r: msg.r.slice(0, msg.n) })
       let frames = this.retro.reduce((n, c) => n + c.l.length, 0)

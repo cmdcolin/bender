@@ -71,3 +71,10 @@ export interface Stage {
 }
 
 export const BLOCK = 128
+
+// Blocks between meter posts. Everything downstream draws off a frame callback,
+// so posting faster than a frame buys nothing and costs the audio thread a 2 kB
+// buffer, a copy and a hand across the wire. It lives here rather than in the
+// worklet because the main thread counts the posts against it: they leave from
+// inside the render, so their rate is what says the audio thread is keeping up.
+export const METER_EVERY = 6 // ~16 ms at 48 k
