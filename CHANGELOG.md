@@ -2,6 +2,18 @@
 
 All notable changes to bender are documented here.
 
+## [1.1.2](https://github.com/cmdcolin/bender/compare/v1.1.1...v1.1.2) - 2026-09-19
+
+### Features
+- *(engine)* [`2cff983`](https://github.com/cmdcolin/bender/commit/2cff98360e46a16468e0180a59269ec814e0044b) report the worklet's meter rate from listen
+
+### Fixes
+- *(ui)* [`65522bc`](https://github.com/cmdcolin/bender/commit/65522bc3806dd15b882605ae96f095d96d64e559) keyboard shortcuts after touching a sidebar slider
+- *(dsp)* [`4ce346f`](https://github.com/cmdcolin/bender/commit/4ce346fb1422d4888304bbf3e17da72b988acdc6) report gc pauses against the block budget in bench
+
+### Chores
+- *(ui)* [`3455725`](https://github.com/cmdcolin/bender/commit/34557251a6ba4f827bac62fa6bf3bdedb9d29f52) regenerate screenshots, fix dash.ts for the new HomeDoc shape
+
 ## [1.1.1](https://github.com/cmdcolin/bender/compare/v1.1.0...v1.1.1) - 2026-09-17
 
 ### Features
