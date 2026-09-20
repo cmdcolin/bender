@@ -73,7 +73,7 @@ const acctName = need('acctName')
 const avatar = need('avatar')
 const signOutBtn = needOf('signOut', HTMLButtonElement)
 const whyCard = needOf('whyCard', HTMLDialogElement)
-const whyBtns = [need('why'), need('whyBelow')]
+const whyBtns = [need('why')]
 const whySignInBtn = needOf('whySignIn', HTMLButtonElement)
 const whyTrouble = need('whyTrouble')
 

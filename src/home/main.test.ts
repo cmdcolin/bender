@@ -26,7 +26,7 @@ test('a sign-in after the subscription failed to load paints the home', async ()
       <div id="acctMenu" hidden><span id="acctName"></span><button id="signOut"></button></div>
       <span id="avatar"></span>
     </div>
-    <button id="why"></button><button id="whyBelow"></button>
+    <button id="why"></button>
     <dialog id="whyCard">
       <button id="whyClose"></button><button id="whySignIn"></button>
       <p id="whyTrouble" hidden></p>

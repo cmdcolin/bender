@@ -38,7 +38,7 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
   tempo and pitch together, with a motor that winds down
 - Shareable URLs
 
-Uses AudioWorklet API...surpringly powerful and fast
+Uses the AudioWorklet API...surprisingly powerful and fast
 https://developer.mozilla.org/en-US/docs/Web/API/AudioWorklet
 
 See full feature list - [docs/features.md](docs/features.md)
@@ -49,9 +49,9 @@ You can see from the above screenshot it's all kind of compact and wrapped into
 that signal diagram. It is a little tricky but it is better than just having 100
 sliders all visible at once.
 
-For maximum control to get e.g. super tactile control I'd recommend getting a
-MIDI controller. I got one just because i made this! This one though of course
-any will do "Akai Professional MPK Mini" (has drum pad, 8 dials, keys)
+For super tactile control, get a MIDI controller — I got one just because I made
+this! Any will do; mine's an Akai Professional MPK Mini (drum pad, 8 dials,
+keys).
 
 ## Run
 

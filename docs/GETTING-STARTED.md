@@ -6,7 +6,7 @@ starving the rail, cutting a bus wire, or dragging a paperclip across a pad, and
 the reboots, pitch dives and screams fall out of the same mechanisms that make a
 real cheap toy do that.
 
-It runs in the browser, on one AudioWorklet. There's nothing to install.
+bender runs in the browser on one AudioWorklet, with nothing to install.
 
 **[Open the app →](https://cmdcolin.github.io/bender/app/)**
 
