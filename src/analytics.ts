@@ -1,4 +1,4 @@
-import { privacyUrl } from './home/paths'
+import { privacyUrl } from './site/paths'
 
 // Google Analytics, on every page the site serves, once the visitor has said
 // yes. It counts visits, and /privacy/ says what it collects.

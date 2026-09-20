@@ -1,4 +1,4 @@
-import { guideUrl, privacyUrl } from '../home/paths'
+import { guideUrl, privacyUrl } from '../site/paths'
 import { gitSha, versionLabel } from '../version'
 import styles from './AboutDialog.module.css'
 

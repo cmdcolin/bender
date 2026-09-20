@@ -4,9 +4,9 @@ import { beforeAll, expect, test } from 'vitest'
 
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
+import { privacyUrl } from '../site/paths'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
 import { showcase, slug } from './demos'
-import { privacyUrl } from './paths'
 
 // The landing page answers "why sign in?" out of the same strings the app's own
 // card renders, and it answers in the HTML rather than from script: a reader

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { siteRoot, privacyUrl } from '../home/paths'
+import { siteRoot, privacyUrl } from '../site/paths'
 import {
   FREE_WITHOUT,
   HOW,

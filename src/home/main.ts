@@ -1,3 +1,4 @@
+import { guideUrl, siteRoot } from '../site/paths'
 // The page at `/`: a landing page for a stranger, and the same URL rendered as
 // a home once Firebase says who is signed in. This file owns the choice between
 // those two and the sign-in that decides it; the pieces each state is built
@@ -31,7 +32,6 @@ import {
   whySignInBtn,
   whyTrouble,
 } from './els'
-import { guideUrl, siteRoot } from './paths'
 import {
   earlierSection,
   failedSection,
