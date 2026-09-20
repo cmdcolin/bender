@@ -17,6 +17,16 @@
   // Rules only bender needs. Everything shared is in oxlint.shared.json.
   "overrides": [
     {
+      "files": ["src/home/cards.ts"],
+      "rules": {
+        // `act` sits inside the `home-card-actions` region, which has to match
+        // videoskillet character for character, so it cannot be hoisted out of
+        // `cardActions`. The rule stayed quiet while `el` was a const in the
+        // same file and started firing when it became an import.
+        "unicorn/consistent-function-scoping": "off"
+      }
+    },
+    {
       "files": ["src/dsp/worklet.ts"],
       "rules": {
         // The worklet posts on its MessagePort, whose postMessage takes no
