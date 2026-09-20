@@ -1,6 +1,7 @@
+// @vitest-environment node
+
 import { expect, test } from 'vitest'
 
-// @vitest-environment node
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 

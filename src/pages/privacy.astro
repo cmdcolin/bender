@@ -15,30 +15,11 @@ const NAME = 'bender'
     <!-- CROSS_REPO_SYNC(privacy-analytics) -->
     <h1>Privacy</h1>
     <p class="privacyLead">
-      {NAME} runs in your browser. Two outside services are involved, and this
-      page is the whole list.
-    </p>
-
-    <h2>Google Analytics</h2>
-    <p>
-      Counts visits: which pages get opened, roughly where from, and on what
-      sort of device. It loads only after you press OK on the notice in the
-      corner of the page, and it sets cookies once it does. Everything here
-      works the same without it.{' '}
-      <button class="why" id="analyticsAgain" type="button">
-        Change your answer
-      </button>
+      We use Firebase for logins, and storing some of the settings you make
+      there, and Google Analytics to see if anyone is actually using this. That
+      is all. Please contact colin.diesh@gmail.com for concerns.
     </p>
     <!-- CROSS_REPO_SYNC_END(privacy-analytics) -->
-
-    <h2>Firebase</h2>
-    <p>
-      Only if you sign in. Google handles the sign-in, and one Firestore
-      document holds your saved voices: a name, and the board it stands for,
-      spelled the same way a shared link spells it. The same document holds the
-      last eight boards you had open, so the home page can offer them back. Stay
-      signed out and there is no document at all.
-    </p>
   </main>
   <script>
     import { forgetAnalyticsAnswer } from '../analytics'
