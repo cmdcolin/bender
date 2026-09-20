@@ -2,6 +2,7 @@
 import { getEntry, render } from 'astro:content'
 import { guideUrl } from '../../site/paths'
 import Page from '../../layouts/Page.astro'
+import { ORIGIN } from '../../site/site'
 import './guide.css'
 
 const entry = await getEntry('docs', 'user-guide')
@@ -12,6 +13,7 @@ const { Content } = await render(entry)
 <Page
   title="User guide — bender"
   description="How to play bender: the keyboard, the drum machine, the FM chip, presets and bends."
+  canonical={`${ORIGIN}guide/`}
   account={false}
   current={guideUrl}
 >

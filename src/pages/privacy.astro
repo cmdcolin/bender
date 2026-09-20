@@ -1,5 +1,6 @@
 ---
 import Page from '../layouts/Page.astro'
+import { ORIGIN } from '../site/site'
 
 const NAME = 'bender'
 ---
@@ -7,6 +8,7 @@ const NAME = 'bender'
 <Page
   title="Privacy — bender"
   description="bender uses Google Analytics to count visits and Firebase to store your saved voices. Nothing else."
+  canonical={`${ORIGIN}privacy/`}
   account={false}
 >
   <main class="wrap privacy">

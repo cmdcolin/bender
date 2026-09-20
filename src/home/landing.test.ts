@@ -71,3 +71,37 @@ test('the demos come after the panel figure, at the foot of the page', () => {
     landing.indexOf('panel-callout.jpg'),
   )
 })
+
+// A shared link is how most people meet this page, so the tags it unfurls with
+// are worth a test. They carry absolute URLs: a card is rendered by somebody
+// else's server, where a path relative to this site means nothing.
+test('the landing page unfurls with a title, a blurb and a picture', () => {
+  for (const tag of [
+    '<meta property="og:type" content="website">',
+    '<meta property="og:site_name" content="bender">',
+    '<meta name="twitter:card" content="summary_large_image">',
+  ])
+    expect(landing).toContain(tag)
+
+  for (const property of ['og:url', 'og:image', 'twitter:image'])
+    expect(landing).toMatch(
+      new RegExp(`(property|name)="${property}" content="https://`),
+    )
+})
+
+test('every page names itself canonically, and only once', () => {
+  for (const page of [landing, privacy]) {
+    expect(page.match(/rel="canonical"/g)?.length).toBe(1)
+    expect(page).toMatch(/<link rel="canonical" href="https:\/\/[^"]+\/">/)
+  }
+})
+
+// The browser reserves space for the figure from these before it has the file,
+// so a ratio that disagrees with the image moves the page as it loads.
+test('the panel figure declares the shape the file actually is', () => {
+  const figure = /panel-callout\.jpg" width="(\d+)" height="(\d+)"/.exec(
+    landing,
+  )
+  expect(figure).not.toBeNull()
+  expect([figure![1], figure![2]]).toEqual(['1911', '1294'])
+})

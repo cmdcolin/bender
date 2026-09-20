@@ -1,5 +1,11 @@
 import { appUrl, guideUrl, privacyUrl, siteRoot } from './paths'
 
+// Where the site is served from, for the canonical link every page carries and
+// for the absolute URLs a shared link unfurls with. The host is GitHub Pages
+// and the path is the repo, which is `base` in astro.config.ts — so the path
+// half comes from `siteRoot` rather than being written out a second time.
+export const ORIGIN = `https://cmdcolin.github.io${siteRoot}`
+
 // What the shared site components say about this product: its name, where its
 // pages are, and the links the bar and the footer carry.
 const REPO = 'https://github.com/cmdcolin/bender'

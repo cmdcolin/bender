@@ -4,15 +4,36 @@ import Hero from '../components/Hero.astro'
 import HomeSkeleton from '../components/HomeSkeleton.astro'
 import Showcase from '../components/Showcase.astro'
 import SignedInHint from '../components/SignedInHint.astro'
+import SocialMeta from '../components/SocialMeta.astro'
 import WhySignInCard from '../components/WhySignInCard.astro'
 import Page from '../layouts/Page.astro'
+import { ORIGIN } from '../site/site'
 import '../home/home.css'
+
+const TITLE = 'bender — a circuit bender in the browser'
+const DESCRIPTION =
+  'A toy keyboard, a drum machine and an FM chip, bent in the browser. Every board is a link.'
+
+// The panel picture the page leads with, which is also the one thing worth
+// looking at small in a chat window.
+const SHARE_IMAGE = `${ORIGIN}panel-callout.jpg`
+const SHARE_IMAGE_W = 1911
+const SHARE_IMAGE_H = 1294
 ---
 
-<Page
-  title="bender — a circuit bender in the browser"
-  description="A toy keyboard, a drum machine and an FM chip, bent in the browser. Every board is a link."
->
+<Page title={TITLE} description={DESCRIPTION} canonical={ORIGIN}>
+  <Fragment slot="meta">
+    <SocialMeta
+      siteName="bender"
+      url={ORIGIN}
+      title={TITLE}
+      description={DESCRIPTION}
+      image={SHARE_IMAGE}
+      imageWidth={SHARE_IMAGE_W}
+      imageHeight={SHARE_IMAGE_H}
+    />
+  </Fragment>
+
   <Fragment slot="head">
     <BoardRedirect />
     <SignedInHint />

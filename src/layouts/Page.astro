@@ -21,21 +21,43 @@ import '../site/footer.css'
 interface Props {
   title: string
   description: string
+  /** Absolute URL of this page, for `<link rel="canonical">`. */
+  canonical: string
+  /** Set on a page that should stay out of search. */
+  robots?: string
   /** Passed to the bar: `false` on a page that does not load the home script. */
   account?: boolean
   /** Passed to the bar, to mark the nav link for the page it is on. */
   current?: string
 }
-const { title, description, account = true, current } = Astro.props
+const {
+  title,
+  description,
+  canonical,
+  robots,
+  account = true,
+  current,
+} = Astro.props
 ---
 
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {/* `viewport-fit=cover` is what makes the `env(safe-area-inset-*)` padding
+        in site.css and footer.css mean anything on a notched phone. */}
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <link rel="icon" type="image/svg+xml" href={`${siteRoot}favicon.svg`} />
     <title>{title}</title>
+    {robots !== undefined && <meta name="robots" content={robots} />}
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#0e0e11" />
+    <meta name="color-scheme" content="dark" />
+    {/* How the link unfurls when shared, on a page anybody shares. */}
+    <slot name="meta" />
     {/* Anything the page needs before analytics: its scripts, its own meta. */}
     <slot name="head" />
     <Analytics />
