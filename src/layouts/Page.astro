@@ -1,0 +1,48 @@
+---
+// The shell every site page shares: the head, the bar across the top, the
+// footer, and the three stylesheets all of them want. A page supplies its own
+// `<main>`, because each one wraps its content differently, and imports its own
+// stylesheet on top of these.
+//
+// `/app/` does not use this. The instrument carries no bar and no footer, and
+// its head says things no other page says.
+import Analytics from '../components/Analytics.astro'
+import Footer from '../components/Footer.astro'
+import SiteBar from '../components/SiteBar.astro'
+import { siteRoot } from '../home/paths'
+// The three every site page wants. A page adds its own on top, and must not
+// depend on landing after these: Astro orders a layout's stylesheets after the
+// importing page's, so anything a page means to override it overrides by
+// specificity.
+import '../theme.css'
+import '../home/site.css'
+import '../home/footer.css'
+
+interface Props {
+  title: string
+  description: string
+  /** Passed to the bar: `false` on a page that does not load the home script. */
+  account?: boolean
+  /** Passed to the bar, to mark the nav link for the page it is on. */
+  current?: string
+}
+const { title, description, account = true, current } = Astro.props
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href={`${siteRoot}favicon.svg`} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {/* Anything the page needs before analytics: its scripts, its own meta. */}
+    <slot name="head" />
+    <Analytics />
+  </head>
+  <body id="top">
+    <SiteBar account={account} current={current} />
+    <slot />
+    <Footer />
+  </body>
+</html>

@@ -1,69 +1,46 @@
 ---
-import Analytics from '../components/Analytics.astro'
-import Footer from '../components/Footer.astro'
-import SiteBar from '../components/SiteBar.astro'
-import { siteRoot } from '../home/paths'
-import '../theme.css'
-import '../home/site.css'
-import '../home/footer.css'
-
-// Two services and what each one is for. Short on purpose.
-const REPO = 'https://github.com/cmdcolin/bender'
+import Page from '../layouts/Page.astro'
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href={`${siteRoot}favicon.svg`} />
-    <title>Privacy — bender</title>
-    <meta
-      name="description"
-      content="bender uses Google Analytics to count visits and Firebase to store your saved voices. Nothing else."
-    />
-    <Analytics />
-  </head>
-  <body id="top">
-    <SiteBar account={false} />
+<Page
+  title="Privacy — bender"
+  description="bender uses Google Analytics to count visits and Firebase to store your saved voices. Nothing else."
+  account={false}
+>
+  <main class="wrap privacy">
+    <h1>Privacy</h1>
+    <p class="privacyLead">
+      bender runs in your browser. Two outside services are involved, and this
+      page is the whole list.
+    </p>
 
-    <main class="wrap privacy">
-      <h1>Privacy</h1>
-      <p class="privacyLead">
-        bender runs in your browser. Two outside services are involved, and this
-        page is the whole list.
-      </p>
+    <h2>Google Analytics</h2>
+    <p>
+      Counts visits: which pages get opened, roughly where from, and on what
+      sort of device. It loads only after you press OK on the notice in the
+      corner of the page, and it sets cookies once it does. Everything here
+      works the same without it.{' '}
+      <button class="why" id="analyticsAgain" type="button">
+        Change your answer
+      </button>
+    </p>
 
-      <h2>Google Analytics</h2>
-      <p>
-        Counts visits: which pages get opened, roughly where from, and on what
-        sort of device. It loads only after you press OK on the notice in the
-        corner of the page, and it sets cookies once it does. Everything here
-        works the same without it.{' '}
-        <button class="why" id="analyticsAgain" type="button">
-          Change your answer
-        </button>
-      </p>
+    <h2>Firebase</h2>
+    <p>
+      Only if you sign in. Google handles the sign-in, and one Firestore
+      document holds your saved voices: a name, and the board it stands for,
+      spelled the same way a shared link spells it. The same document holds the
+      last eight boards you had open, so the home page can offer them back. Stay
+      signed out and there is no document at all.
+    </p>
+  </main>
+  <script>
+    import { forgetAnalyticsAnswer } from '../analytics'
 
-      <h2>Firebase</h2>
-      <p>
-        Only if you sign in. Google handles the sign-in, and one Firestore
-        document holds your saved voices: a name, and the board it stands for,
-        spelled the same way a shared link spells it. The same document holds
-        the last eight boards you had open, so the home page can offer them
-        back. Stay signed out and there is no document at all.
-      </p>
-    </main>
-    <Footer />
-    <script>
-      import { forgetAnalyticsAnswer } from '../analytics'
-
-      // A reload, so the notice asks again on a page that has not loaded the tag.
-      document
-        .getElementById('analyticsAgain')
-        ?.addEventListener('click', () => {
-          forgetAnalyticsAnswer()
-          location.reload()
-        })
-    </script>
-  </body>
-</html>
+    // A reload, so the notice asks again on a page that has not loaded the tag.
+    document.getElementById('analyticsAgain')?.addEventListener('click', () => {
+      forgetAnalyticsAnswer()
+      location.reload()
+    })
+  </script>
+</Page>

@@ -186,25 +186,28 @@
   line-height: 1.45;
 }
 
-/* The resume card shows the board's mark where videoskillet shows a still. */
-.resumeCard {
+/* The resume card shows the board's mark where videoskillet shows a still, so
+   these replace the grid site.css lays that card out on. Written under `.home`
+   — where main.ts draws the card, and the only place it appears — so they win
+   on specificity rather than on site.css being linked first. */
+.home .resumeCard {
   display: flex;
   align-items: center;
   gap: 1.35rem;
   padding-left: 1.35rem;
 }
-.resumeCard .mark {
+.home .resumeCard .mark {
   flex: none;
   width: 5.5rem;
   height: 2rem;
 }
 @media (max-width: 44rem) {
-  .resumeCard {
+  .home .resumeCard {
     flex-direction: column;
     align-items: flex-start;
     padding-top: 1.35rem;
   }
-  .resumeBody {
+  .home .resumeBody {
     padding: 0 1.35rem 1.35rem 0;
   }
 }

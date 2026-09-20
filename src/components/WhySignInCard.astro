@@ -1,0 +1,53 @@
+---
+// The long answer to "why sign in?", from the same strings the app's own card
+// renders, so the two say the same thing. Built at build time, so it is in the
+// page for a reader with no JavaScript; main.ts opens it, shuts it, and wires
+// its button to the same sign-in the bar's button uses.
+import { appUrl, privacyUrl, siteRoot } from '../home/paths'
+import {
+  FREE_WITHOUT,
+  HOW,
+  PITCH,
+  SHOT,
+  SHOT_ALT,
+  SHOT_CAPTION,
+  SHOT_H,
+  SHOT_W,
+} from '../ui/whySignIn'
+---
+
+<dialog class="whyCard" id="whyCard" aria-labelledby="whyHead">
+  <div class="whyTop">
+    <h2 class="whyHead" id="whyHead">
+      Why sign in?
+    </h2>
+    <button class="btn" id="whyClose" type="button">
+      Close
+    </button>
+  </div>
+  <p class="whyTrouble" id="whyTrouble" role="alert" hidden></p>
+  <p class="whyPitch">{PITCH}</p>
+  <figure class="whyFigure">
+    <img
+      class="whyShot"
+      src={`${siteRoot}${SHOT}`}
+      alt={SHOT_ALT}
+      width={SHOT_W}
+      height={SHOT_H}
+      loading="lazy"
+    />
+    <figcaption class="whyCaption">{SHOT_CAPTION}</figcaption>
+  </figure>
+  <p class="whyLine">
+    {FREE_WITHOUT} {HOW}
+    <a href={privacyUrl}>What an account stores →</a>
+  </p>
+  <p class="whyCta">
+    <button class="btn primary" id="whySignIn" type="button">
+      Sign in with Google
+    </button>
+    <a class="btn" href={appUrl}>
+      Open the app instead →
+    </a>
+  </p>
+</dialog>

@@ -1,0 +1,12 @@
+---
+// Every board bender has ever shared is a link to the homepage carrying a hash,
+// and for a while some carried `?set=` instead. The app moved to /app/, so this
+// runs before anything else on the page loads and hands the board straight on
+// rather than opening a homepage over it.
+import { appUrl } from '../home/paths'
+---
+
+<script is:inline define:vars={{ appUrl }}>
+  if (location.hash !== '' || new URLSearchParams(location.search).has('set'))
+    location.replace(appUrl + location.search + location.hash)
+</script>

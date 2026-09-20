@@ -1,12 +1,7 @@
 ---
 import { getEntry, render } from 'astro:content'
-import Analytics from '../../components/Analytics.astro'
-import Footer from '../../components/Footer.astro'
-import SiteBar from '../../components/SiteBar.astro'
-import { guideUrl, siteRoot } from '../../home/paths'
-import '../../theme.css'
-import '../../home/site.css'
-import '../../home/footer.css'
+import { guideUrl } from '../../home/paths'
+import Page from '../../layouts/Page.astro'
 import '../../home/guide.css'
 
 const entry = await getEntry('docs', 'user-guide')
@@ -14,24 +9,13 @@ if (entry === undefined) throw new Error('docs/USER-GUIDE.md missing')
 const { Content } = await render(entry)
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href={`${siteRoot}favicon.svg`} />
-    <title>User guide — bender</title>
-    <meta
-      name="description"
-      content="How to play bender: the keyboard, the drum machine, the FM chip, presets and bends."
-    />
-    <Analytics />
-  </head>
-  <body id="top">
-    <SiteBar account={false} current={guideUrl} />
-
-    <main class="wrap doc">
-      <Content />
-    </main>
-    <Footer />
-  </body>
-</html>
+<Page
+  title="User guide — bender"
+  description="How to play bender: the keyboard, the drum machine, the FM chip, presets and bends."
+  account={false}
+  current={guideUrl}
+>
+  <main class="wrap doc">
+    <Content />
+  </main>
+</Page>
