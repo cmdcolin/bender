@@ -40,14 +40,3 @@ test('a sign-in after the subscription failed to load paints the home', async ()
   expect(document.getElementById('home')!.hidden).toBe(false)
   expect(document.getElementById('landing')!.hidden).toBe(true)
 })
-
-test('the demos open with the board of the day', async () => {
-  await vi.waitFor(() => {
-    expect(document.querySelector('#demos .tracks > li.today')).not.toBe(null)
-  })
-  const today = document.querySelector('.today')!
-  expect(today.textContent).toContain('Board of the day')
-  expect(today.querySelector<HTMLAnchorElement>('a.open')!.href).toContain(
-    '#p=',
-  )
-})

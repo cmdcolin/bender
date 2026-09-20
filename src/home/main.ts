@@ -18,7 +18,6 @@ import {
   type HomeDoc,
 } from '../ui/cloud'
 import { closeMenu, paintAvatar } from './account'
-import { addDailyCard } from './dailyCard'
 import { el } from './dom'
 import {
   acct,
@@ -41,10 +40,6 @@ import {
 } from './sections'
 
 import type { CardEdits } from './cards'
-
-addDailyCard().catch((e: unknown) => {
-  console.error('the board of the day did not load', e)
-})
 
 // --- the two states ---------------------------------------------------------
 

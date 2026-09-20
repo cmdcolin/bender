@@ -99,23 +99,6 @@
   transform: scaleX(0);
   transform-origin: left;
 }
-/* The board of the day, which has no clip: its mark stands where the play
-   button stands on the rest, at the same width. */
-.todayMark {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-}
-.todayMark .mark {
-  width: 2.5rem;
-  height: 1.4rem;
-  fill: var(--accent);
-}
-.track.today {
-  border-color: var(--accent);
-}
 .track .open {
   text-decoration: none;
 }

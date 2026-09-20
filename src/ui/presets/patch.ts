@@ -450,8 +450,8 @@ export function coherePatch(
 // The two chips that are played rather than run: each hears the toy's gate line
 // through a jumper, its own keybed, and whichever kit line is clipped onto it,
 // and the FM chip has an effect ROM besides. A roll that cuts the jumper on a
-// chip nothing else strikes leaves the chip up in the mix and silent for ever
-// — the daily board did exactly that, on a preset that was only the FM chip.
+// chip nothing else strikes leaves the chip up in the mix and silent for ever,
+// which a roll from a preset that is only the FM chip does every time.
 // The jumper goes back on. Nothing here turns a stage up: the chip was already
 // up, and a jumper is how it is wired rather than how loud it is.
 const PLAYED = [
