@@ -10,6 +10,12 @@
 //
 // This file is the storage-agnostic half — the list algebra and the name rules.
 // cloud.ts reads and writes it.
+
+// How many sessions one account keeps. The rules refuse a longer list. Kept
+// out of the region below: videoskillet caps its own account's history
+// separately, at 1000.
+export const RECENT_MAX = 8
+
 // CROSS_REPO_SYNC(saved-list-model)
 export interface SavedVoice {
   name: string
@@ -30,9 +36,6 @@ export interface CurrentSession {
 export interface RecentSession extends CurrentSession {
   id: string
 }
-
-// How many sessions one account keeps. The rules refuse a longer list.
-export const RECENT_MAX = 8
 
 // How many voices one account has. The rules refuse a longer list.
 export const VOICE_MAX = 200
@@ -127,6 +130,11 @@ export function pushRecent(
     dropped: recent.flatMap(s => (kept.has(s.id) ? [] : [s.id])),
   }
 }
+
+export const removeRecent = (
+  recent: readonly RecentSession[],
+  id: string,
+): RecentSession[] => recent.filter(item => item.id !== id)
 
 // Save under a name, overwriting any voice already using it **in place**. The
 // list is read by eye during a set, so a re-save must not reshuffle everything

@@ -40,7 +40,11 @@ const need = (id: string): HTMLElement => {
   if (node === null) throw new Error(`no #${id}`)
   return node
 }
+// CROSS_REPO_SYNC_END(home-dom-helpers)
 
+// videoskillet moved this into a shared module its home page and its "all
+// sessions" page both import (site/scripts/sessionCards.ts); bender has no
+// second page needing it yet, so it stays here, just outside the region.
 const el = <K extends keyof HTMLElementTagNameMap>(
   tag: K,
   className?: string,
@@ -51,7 +55,6 @@ const el = <K extends keyof HTMLElementTagNameMap>(
   if (text !== undefined) node.textContent = text
   return node
 }
-// CROSS_REPO_SYNC_END(home-dom-helpers)
 
 const needOf = <T extends HTMLElement>(id: string, kind: new () => T): T => {
   const node = need(id)
