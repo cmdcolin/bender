@@ -2,6 +2,11 @@
 
 All notable changes to bender are documented here.
 
+## [1.1.4](https://github.com/cmdcolin/bender/compare/v1.1.3...v1.1.4) - 2026-09-20
+
+### Documentation
+- [`fefc0f6`](https://github.com/cmdcolin/bender/commit/fefc0f6dfe0b903143f62dca6def6b053a900561) cut AI-writing tropes and wordiness in README and getting-started
+
 ## [1.1.3](https://github.com/cmdcolin/bender/compare/v1.1.2...v1.1.3) - 2026-09-20
 
 ### Features
