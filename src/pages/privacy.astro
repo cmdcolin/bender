@@ -1,5 +1,7 @@
 ---
 import Page from '../layouts/Page.astro'
+
+const NAME = 'bender'
 ---
 
 <Page
@@ -8,9 +10,10 @@ import Page from '../layouts/Page.astro'
   account={false}
 >
   <main class="wrap privacy">
+    <!-- CROSS_REPO_SYNC(privacy-analytics) -->
     <h1>Privacy</h1>
     <p class="privacyLead">
-      bender runs in your browser. Two outside services are involved, and this
+      {NAME} runs in your browser. Two outside services are involved, and this
       page is the whole list.
     </p>
 
@@ -24,6 +27,7 @@ import Page from '../layouts/Page.astro'
         Change your answer
       </button>
     </p>
+    <!-- CROSS_REPO_SYNC_END(privacy-analytics) -->
 
     <h2>Firebase</h2>
     <p>
@@ -37,10 +41,12 @@ import Page from '../layouts/Page.astro'
   <script>
     import { forgetAnalyticsAnswer } from '../analytics'
 
+    // CROSS_REPO_SYNC(privacy-analytics-reset)
     // A reload, so the notice asks again on a page that has not loaded the tag.
     document.getElementById('analyticsAgain')?.addEventListener('click', () => {
       forgetAnalyticsAnswer()
       location.reload()
     })
+    // CROSS_REPO_SYNC_END(privacy-analytics-reset)
   </script>
 </Page>

@@ -14,9 +14,12 @@ import {
   SHOT_H,
   SHOT_W,
 } from '../ui/whySignIn'
+
+const shotSrc = `${siteRoot}${SHOT}`
 ---
 
 <dialog class="whyCard" id="whyCard" aria-labelledby="whyHead">
+  <!-- CROSS_REPO_SYNC(why-card-top) -->
   <div class="whyTop">
     <h2 class="whyHead" id="whyHead">
       Why sign in?
@@ -27,10 +30,11 @@ import {
   </div>
   <p class="whyTrouble" id="whyTrouble" role="alert" hidden></p>
   <p class="whyPitch">{PITCH}</p>
+  <!-- CROSS_REPO_SYNC_END(why-card-top) -->
   <figure class="whyFigure">
     <img
       class="whyShot"
-      src={`${siteRoot}${SHOT}`}
+      src={shotSrc}
       alt={SHOT_ALT}
       width={SHOT_W}
       height={SHOT_H}
@@ -42,6 +46,7 @@ import {
     {FREE_WITHOUT} {HOW}
     <a href={privacyUrl}>What an account stores →</a>
   </p>
+  <!-- CROSS_REPO_SYNC(why-card-cta) -->
   <p class="whyCta">
     <button class="btn primary" id="whySignIn" type="button">
       Sign in with Google
@@ -50,4 +55,5 @@ import {
       Open the app instead →
     </a>
   </p>
+  <!-- CROSS_REPO_SYNC_END(why-card-cta) -->
 </dialog>
