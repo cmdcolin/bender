@@ -2,6 +2,11 @@
 
 All notable changes to bender are documented here.
 
+## [1.1.3](https://github.com/cmdcolin/bender/compare/v1.1.2...v1.1.3) - 2026-09-20
+
+### Features
+- *(ui)* [`d27a7f5`](https://github.com/cmdcolin/bender/commit/d27a7f55c25f789392176962d95d99f5523563d5) add dropSession and removeRecent, ported from videoskillet
+
 ## [1.1.2](https://github.com/cmdcolin/bender/compare/v1.1.1...v1.1.2) - 2026-09-19
 
 ### Features
