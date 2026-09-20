@@ -1,8 +1,8 @@
 // The prose behind both of the app's "why sign in?" cards, the panel's and the
 // home page's. WhySignInDialog.tsx renders these strings in the browser, and
-// index.astro renders them into the landing page at build time, so a reader
-// with no JavaScript still gets the answer. Keep the file free of React and of
-// the DOM so both callers can use it.
+// WhySignInCard.astro renders them into the landing page at build time, so a
+// reader with no JavaScript still gets the answer. Keep the file free of React
+// and of the DOM so both callers can use it.
 //
 // Somebody who presses save wants to know what they are being asked for and
 // whether they can skip it. Both cards answer in that order and stop.

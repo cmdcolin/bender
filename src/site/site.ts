@@ -6,6 +6,16 @@ import { appUrl, guideUrl, privacyUrl, siteRoot } from './paths'
 // half comes from `siteRoot` rather than being written out a second time.
 export const ORIGIN = `https://cmdcolin.github.io${siteRoot}`
 
+// The panel picture: the landing page leads with it and a shared link unfurls
+// with it. The browser reserves space for the figure from these numbers before
+// it has the file, so they have to be the shape the file actually is —
+// landing.test.ts reads the JPEG and checks.
+export const PANEL_SHOT = {
+  file: 'panel-callout.jpg',
+  width: 1911,
+  height: 1294,
+} as const
+
 // What the shared site components say about this product: its name, where its
 // pages are, and the links the bar and the footer carry.
 const REPO = 'https://github.com/cmdcolin/bender'

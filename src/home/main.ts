@@ -1,4 +1,3 @@
-import { guideUrl, siteRoot } from '../site/paths'
 // The page at `/`: a landing page for a stranger, and the same URL rendered as
 // a home once Firebase says who is signed in. This file owns the choice between
 // those two and the sign-in that decides it; the pieces each state is built
@@ -8,6 +7,8 @@ import { guideUrl, siteRoot } from '../site/paths'
 // it with no JavaScript run at all. cloud.ts fetches the SDK on the first call
 // that needs it, so the only loads that reach Google are the ones that already
 // know this browser signed in and the ones where somebody pressed the button.
+
+import { guideUrl, siteRoot } from '../site/paths'
 import {
   fetchHome,
   signIn,

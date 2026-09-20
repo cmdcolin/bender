@@ -10,13 +10,22 @@ import Analytics from '../components/Analytics.astro'
 import Footer from '../components/Footer.astro'
 import SiteBar from '../components/SiteBar.astro'
 import { siteRoot } from '../site/paths'
-// The three every site page wants. A page adds its own on top, and must not
-// depend on landing after these: Astro orders a layout's stylesheets after the
-// importing page's, so anything a page means to override it overrides by
-// specificity.
+// Every stylesheet the site has, here and in this order, because the order is
+// the cascade and a page cannot be trusted to land after the shared sheets:
+// Astro emits a layout's stylesheets *after* the importing page's, so a sheet
+// imported by the page itself arrives first and loses. `.landing` and `.doc`
+// both set `padding-block`, and `.wrap` in site.css sets `padding` — the
+// shorthand, so it zeroes the block edges of anything it reaches later.
+//
+// The cost is that every page carries the other pages' rules, which is about a
+// kilobyte gzipped. The alternative was each page overriding the shared sheets
+// on specificity, which is a rule nobody can check by eye and which had already
+// silently cost the landing page and the guide all their vertical padding.
 import '../theme.css'
 import '../site/site.css'
 import '../site/footer.css'
+import '../site/home.css'
+import '../site/guide.css'
 
 interface Props {
   title: string

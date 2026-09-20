@@ -1,6 +1,7 @@
-import { appUrl, boardUrl } from '../site/paths'
 // The sections down the signed-in home, in the order they are stacked: the
 // board you had open last, the ones before it, and everything you have saved.
+
+import { appUrl, boardUrl } from '../site/paths'
 import { sinceWords } from '../ui/relativeTime'
 import { handOffSession } from '../ui/resumeHandoff'
 import { card, cardActions, type CardEdits } from './cards'

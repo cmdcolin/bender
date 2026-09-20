@@ -1,6 +1,7 @@
-import { boardUrl } from '../site/paths'
 // A board on the home, as a card: the mark, the name, and — for a saved voice —
 // the row of verbs under it.
+
+import { boardUrl } from '../site/paths'
 import { editVoices, type CloudUser } from '../ui/cloud'
 import {
   VOICE_NAME_MAX,

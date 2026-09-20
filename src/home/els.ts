@@ -1,6 +1,6 @@
-// Every element the home works from, found once. index.astro renders all of
-// them, so a missing one is a mistake in the page rather than a state to
-// handle, and `need` throws.
+// Every element the home works from, found once. The landing page renders all
+// of them — some from SiteBar.astro and WhySignInCard.astro — so a missing one
+// is a mistake in the page rather than a state to handle, and `need` throws.
 import { need, needOf } from './dom'
 
 export const landing = need('landing')

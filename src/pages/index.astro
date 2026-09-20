@@ -7,8 +7,7 @@ import SignedInHint from '../components/SignedInHint.astro'
 import SocialMeta from '../components/SocialMeta.astro'
 import WhySignInCard from '../components/WhySignInCard.astro'
 import Page from '../layouts/Page.astro'
-import { ORIGIN } from '../site/site'
-import '../home/home.css'
+import { ORIGIN, PANEL_SHOT } from '../site/site'
 
 const TITLE = 'bender — a circuit bender in the browser'
 const DESCRIPTION =
@@ -16,9 +15,7 @@ const DESCRIPTION =
 
 // The panel picture the page leads with, which is also the one thing worth
 // looking at small in a chat window.
-const SHARE_IMAGE = `${ORIGIN}panel-callout.jpg`
-const SHARE_IMAGE_W = 1911
-const SHARE_IMAGE_H = 1294
+const SHARE_IMAGE = `${ORIGIN}${PANEL_SHOT.file}`
 ---
 
 <Page title={TITLE} description={DESCRIPTION} canonical={ORIGIN}>
@@ -29,8 +26,8 @@ const SHARE_IMAGE_H = 1294
       title={TITLE}
       description={DESCRIPTION}
       image={SHARE_IMAGE}
-      imageWidth={SHARE_IMAGE_W}
-      imageHeight={SHARE_IMAGE_H}
+      imageWidth={PANEL_SHOT.width}
+      imageHeight={PANEL_SHOT.height}
     />
   </Fragment>
 

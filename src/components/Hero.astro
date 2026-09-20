@@ -2,6 +2,7 @@
 // The top of the landing page: what this is, a picture of the panel, and the
 // two ways in.
 import { appUrl, siteRoot } from '../site/paths'
+import { PANEL_SHOT } from '../site/site'
 
 const GETTING_STARTED =
   'https://github.com/cmdcolin/bender/blob/main/docs/GETTING-STARTED.md'
@@ -17,9 +18,9 @@ const GETTING_STARTED =
 </p>
 <figure class="figure">
   <img
-    src={`${siteRoot}panel-callout.jpg`}
-    width="1911"
-    height="1294"
+    src={`${siteRoot}${PANEL_SHOT.file}`}
+    width={PANEL_SHOT.width}
+    height={PANEL_SHOT.height}
     alt="The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise and sampler feeding the mix bus, the bend slots beside the pedals and the tape machine, and the feedback bus running back under the whole run"
   />
 </figure>

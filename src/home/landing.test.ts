@@ -5,8 +5,11 @@ import { beforeAll, expect, test } from 'vitest'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
 import { privacyUrl } from '../site/paths'
+import { PANEL_SHOT } from '../site/site'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
 import { showcase, slug } from './demos'
+
+import { readFileSync } from 'node:fs'
 
 // The landing page answers "why sign in?" out of the same strings the app's own
 // card renders, and it answers in the HTML rather than from script: a reader
@@ -89,7 +92,9 @@ test('the landing page unfurls with a title, a blurb and a picture', () => {
     )
 })
 
-test('every page names itself canonically, and only once', () => {
+// Not the guide: it reads the user guide out of a content collection, which the
+// container has no loader for.
+test('the pages it can render name themselves canonically, once each', () => {
   for (const page of [landing, privacy]) {
     expect(page.match(/rel="canonical"/g)?.length).toBe(1)
     expect(page).toMatch(/<link rel="canonical" href="https:\/\/[^"]+\/">/)
@@ -97,11 +102,34 @@ test('every page names itself canonically, and only once', () => {
 })
 
 // The browser reserves space for the figure from these before it has the file,
-// so a ratio that disagrees with the image moves the page as it loads.
+// so a ratio that disagrees with the image moves the page as it loads. Read out
+// of the JPEG rather than compared against the same constant that wrote them,
+// which would only have agreed with itself.
 test('the panel figure declares the shape the file actually is', () => {
-  const figure = /panel-callout\.jpg" width="(\d+)" height="(\d+)"/.exec(
-    landing,
+  const jpeg = readFileSync(`public/${PANEL_SHOT.file}`)
+  let at = 2
+  let shape: { width: number; height: number } | undefined
+  while (at < jpeg.length && shape === undefined) {
+    if (jpeg[at] !== 0xff) {
+      at++
+      continue
+    }
+    const marker = jpeg[at + 1]!
+    // A start-of-frame carries the size; the other 0xFFCn markers do not.
+    if (
+      marker >= 0xc0 &&
+      marker <= 0xcf &&
+      ![0xc4, 0xc8, 0xcc].includes(marker)
+    )
+      shape = {
+        height: jpeg.readUInt16BE(at + 5),
+        width: jpeg.readUInt16BE(at + 7),
+      }
+    else at += 2 + jpeg.readUInt16BE(at + 2)
+  }
+
+  expect(shape).toEqual({ width: PANEL_SHOT.width, height: PANEL_SHOT.height })
+  expect(landing).toContain(
+    `${PANEL_SHOT.file}" width="${PANEL_SHOT.width}" height="${PANEL_SHOT.height}"`,
   )
-  expect(figure).not.toBeNull()
-  expect([figure![1], figure![2]]).toEqual(['1911', '1294'])
 })
