@@ -2,6 +2,28 @@
 
 All notable changes to bender are documented here.
 
+## [1.2.0](https://github.com/cmdcolin/bender/compare/v1.1.4...v1.2.0) - 2026-09-30
+
+### Features
+- *(home)* [`6d9637e`](https://github.com/cmdcolin/bender/commit/6d9637e51d070c6c12e32d1bedaa011261bdcda8) drop the board of the day
+- *(ui)* [`d99faab`](https://github.com/cmdcolin/bender/commit/d99faab5d1aef068b32cf06895e57a73797e8564) unfurl a shared link, and name every page canonically
+
+### Fixes
+- *(ui)* [`22dc196`](https://github.com/cmdcolin/bender/commit/22dc196442d0d855568170f01dddda6065f541bb) put the page stylesheets back in front of the shared ones
+
+### Refactor
+- *(home)* [`ddd3114`](https://github.com/cmdcolin/bender/commit/ddd31142d68343ad0400467840cf6b84d9535dfc) give the site pages a shared layout
+- *(home)* [`668262e`](https://github.com/cmdcolin/bender/commit/668262e63004a6ac71567a1514fffadb3f7d114d) split the home into a module per thing on screen
+- [`b3ca88a`](https://github.com/cmdcolin/bender/commit/b3ca88a7172b2fac6293215d8ec3bed0c56ae50a) move the site-wide modules out of home/
+- [`c21812e`](https://github.com/cmdcolin/bender/commit/c21812e08ea4713b8d7959907120285f4a1db2bd) drop the privacy link from the consent notice
+- *(ui)* [`fa62365`](https://github.com/cmdcolin/bender/commit/fa62365b22072b6591041ab85ebc614fb0e2c46b) share the home skeleton, privacy notice and why-card markup
+
+### Documentation
+- [`850108a`](https://github.com/cmdcolin/bender/commit/850108a410db368ba92e623adf23a61723119af1) refresh what the sync doc says is not shared yet
+
+### Style
+- [`13395a3`](https://github.com/cmdcolin/bender/commit/13395a33b9f30667dc6f9af92c940a6b9552e36c) keep the vitest environment pragma at the top of cascade.test.ts
+
 ## [1.1.4](https://github.com/cmdcolin/bender/compare/v1.1.3...v1.1.4) - 2026-09-20
 
 ### Documentation
