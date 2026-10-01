@@ -3,6 +3,7 @@ import Page from '../layouts/Page.astro'
 import { ORIGIN } from '../site/site'
 
 const NAME = 'bender'
+const ANALYTICS_EXTRA = ''
 ---
 
 <Page
@@ -16,8 +17,9 @@ const NAME = 'bender'
     <h1>Privacy</h1>
     <p class="privacyLead">
       We use Firebase for logins, and storing some of the settings you make
-      there, and Google Analytics to see if anyone is actually using this. That
-      is all. Please contact colin.diesh@gmail.com for concerns.
+      there, and Google Analytics to see if anyone is actually using this.
+      {ANALYTICS_EXTRA} That is all. Please contact colin.diesh@gmail.com for
+      concerns.
     </p>
     <!-- CROSS_REPO_SYNC_END(privacy-analytics) -->
   </main>
