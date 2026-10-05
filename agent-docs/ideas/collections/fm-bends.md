@@ -1,3 +1,8 @@
+---
+name: fm-bends
+description: Ranked further bends for the FM chip with hook points: instrument ROM bus, the two clocks, rhythm at full width, DAC slot counter, log domain last.
+---
+
 # Further bends for the FM chip
 
 Candidates, ranked, with where each one hooks. Written after the dead-bit pass

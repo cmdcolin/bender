@@ -116,4 +116,4 @@ The first eval run passed 1 of 4 tasks. The extension blocked the original
 3104-character `bender.help`, so every agent read it in slices, one agent raised
 the wrong control, and the grader read the wrong tab in two tasks. After those
 fixes the second run passed 4 of 4, with 44 JavaScript calls against 71, in 315
-s against 533 s. `agent-docs/agent-interface.md` has the details.
+s against 533 s. `agent-docs/reference/agent-interface.md` has the details.

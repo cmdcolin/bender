@@ -1,3 +1,8 @@
+---
+name: agent-interface
+description: How an agent drives the board: window.bender, the eval results, and why not WebMCP or MIDI. Steps 2, 4 and 5 of the plan remain open.
+---
+
 # Driving the board from a program
 
 Notes toward letting an agent play bender. The conclusion is that the transport

@@ -1,6 +1,11 @@
+---
+name: drum-bends
+description: Ranked further bends for the drum machine: slipping step clock, a supply for the metal bank, the pattern as a circulating shift register.
+---
+
 # Further bends for the drum machine
 
-Candidates, ranked, with where each one hooks. The companion to `fm-bends.md`,
+Candidates, ranked, with where each one hooks. The companion to `agent-docs/ideas/collections/fm-bends.md`,
 written the same way and for the same reason: nothing here is a decision, and
 the ones that are cheap and the ones that change how the kit sounds with no
 knife on it are called out as such.
@@ -84,7 +89,7 @@ number the kit was asked for and never the edges the counter produced. MIDI
 clock out is the other way round: `midi.ts` counts it off the steps the kit
 actually clocks, so a slipping counter drags every follower on the wire and
 leaves the toy on the same board playing straight. That asymmetry is already
-documented in `HANDOFF-tempo-lock.md` as "the lock follows a tempo and never a
+documented in `agent-docs/handoffs/HANDOFF-tempo-lock.md` as "the lock follows a tempo and never a
 downbeat"; a slip bend is the first thing that makes it audible.
 
 Hook: `ToyDrum.process`, the `if (this.stepClock >= span)` block. A rate knob, a

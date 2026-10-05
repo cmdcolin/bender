@@ -1,3 +1,8 @@
+---
+name: ring-mod
+description: Ranked further ring mod ideas for the bend slot, with measurements: setups the board already allows and other places for the multiplier.
+---
+
 # Further ring mod for the bend slot
 
 Candidates, ranked, with where each one hooks. Written after measuring the stage
