@@ -2,6 +2,23 @@
 
 All notable changes to bender are documented here.
 
+## [1.3.0](https://github.com/cmdcolin/bender/compare/v1.2.0...v1.3.0) - 2026-10-05
+
+### Features
+- *(dsp)* [`1a548a8`](https://github.com/cmdcolin/bender/commit/1a548a8f05476aabce27635f998d7a1dd0ef412e) a three-oscillator ladder monosynth voice, not yet on the board
+- *(dsp)* [`e646b53`](https://github.com/cmdcolin/bender/commit/e646b53a216c4372ce98053c7af7e8aca86a8bc0) put the mono synth on the board as a fourth chip on the rail
+- *(ui)* [`eaa9e43`](https://github.com/cmdcolin/bender/commit/eaa9e43ecff92c937175391f513128b9bbf6e702) seven mono synth presets, and halve what the voice costs
+- *(midi)* [`92ca210`](https://github.com/cmdcolin/bender/commit/92ca210ab688a6b14143d078b01d494f7cb6ba2c) bind a pad to a throw, held while the pad is down
+- [`364d415`](https://github.com/cmdcolin/bender/commit/364d415dbf3d622e5d0c5ff1e3de9d88600a64d3) remove the talking pet
+- *(midi)* [`914a7d7`](https://github.com/cmdcolin/bender/commit/914a7d7c8717a3c98565d07cacae38a9bdca0eb3) put any control on a pad, pushed to a set value while the pad is down
+
+### Fixes
+- *(dsp)* [`608c94b`](https://github.com/cmdcolin/bender/commit/608c94bc40decd36c2237b46351af76f0d39b875) build the mono voice without structuredClone, which the worklet lacks
+
+### Documentation
+- [`68cf8cd`](https://github.com/cmdcolin/bender/commit/68cf8cd2559d1017746e31768bc2c16d93da3ada) leave room on the privacy page for a product's own analytics
+- [`5a838f4`](https://github.com/cmdcolin/bender/commit/5a838f465d1dae6b59efdd5d1fbe8fc41eff2cc8) the mono synth in the user guide, its voice card in bends
+
 ## [1.2.0](https://github.com/cmdcolin/bender/compare/v1.1.4...v1.2.0) - 2026-09-30
 
 ### Features
