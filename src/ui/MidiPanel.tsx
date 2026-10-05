@@ -15,6 +15,7 @@ import {
 } from './midi'
 import styles from './MidiPanel.module.css'
 import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
+import { THROWS } from './throws'
 import { Tip } from './Tip'
 
 function label(key: Parameters<typeof sliderFor>[0]): string {
@@ -171,6 +172,72 @@ function Pads() {
   )
 }
 
+// The hold row's throws on pads. A pad holds its throw while it is down, so a
+// bound pad plays an effect the way another plays a drum.
+function ThrowPads() {
+  const bound = useStoreValue(midi.throwBindings)
+  const armed = useStoreValue(midi.armedThrow)
+  const count = Object.keys(bound).length
+  return (
+    <>
+      <div className={styles.row}>
+        <span className={styles.quiet}>
+          throws: hold a pad to hold the effect
+        </span>
+      </div>
+      <div className={styles.list}>
+        {THROWS.map(t => {
+          const p = bound[t.name]
+          const mine = armed === t.name
+          return (
+            <div key={t.name} className={styles.bound}>
+              <span className={mine ? styles.strandedName : styles.boundName}>
+                {t.name}
+              </span>
+              <Tip
+                text={
+                  mine
+                    ? `hit the pad you want to hold ${t.name} — esc to cancel`
+                    : `${t.blurb}, while the pad is down`
+                }
+              >
+                <button
+                  className={mine ? styles.modeOn : styles.mode}
+                  onClick={() => midi.armThrow(mine ? null : t.name)}
+                  aria-label={`bind ${t.name} to a pad`}
+                >
+                  ⚟
+                </button>
+              </Tip>
+              <span className={p === undefined ? styles.quiet : styles.cc}>
+                {p === undefined
+                  ? 'no pad'
+                  : `${noteName(p.note)}${p.channel === 0 ? '' : ` ch${p.channel + 1}`}`}
+              </span>
+              {p === undefined ? null : (
+                <Tip text={`Take ${t.name} off its pad.`}>
+                  <button
+                    className={styles.drop}
+                    onClick={() => midi.clearThrow(t.name)}
+                    aria-label={`unbind the ${t.name} pad`}
+                  >
+                    ×
+                  </button>
+                </Tip>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {count === 0 ? null : (
+        <button className={styles.danger} onClick={() => midi.clearThrows()}>
+          clear {count} throw pad{count === 1 ? '' : 's'}
+        </button>
+      )}
+    </>
+  )
+}
+
 // What the wire is actually carrying. A controller that does nothing is either
 // silent or misread, and only the raw bytes tell those apart.
 function Wire() {
@@ -245,6 +312,7 @@ function Wired() {
   const pads = useStoreValue(midi.pads)
   const padLearn = useStoreValue(midi.padLearn)
   const armedPad = useStoreValue(midi.armedPad)
+  const armedThrow = useStoreValue(midi.armedThrow)
   const clockLock = useStoreValue(midi.clockLock)
   const lights = useStoreValue(midi.lights)
   const clockOut = useStoreValue(midi.clockOut)
@@ -269,20 +337,22 @@ function Wired() {
   }, [])
 
   const hint =
-    armedPad !== null
-      ? `hit a pad to take ${voiceLabel(armedPad)} — esc to cancel`
-      : padLearn !== null
-        ? `hit the pad for ${padLearn.next === null ? 'the kit' : voiceLabel(padLearn.next)} — ${padLearn.done}/${padLearn.total} bound, esc to stop`
-        : learn !== null
-          ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
-          : armed !== null
-            ? `move a knob to take ${label(armed)} — esc to cancel`
-            : // A preset or a roll strands every bound knob at once, and only
-              // the open stage shows its own amber marks — so the count belongs
-              // here, where every binding is listed whatever stage it lives on.
-              stranded > 0
-              ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
-              : 'press ⚟ on any control, then move a knob to bind it'
+    armedThrow !== null
+      ? `hit a pad to hold ${armedThrow} — esc to cancel`
+      : armedPad !== null
+        ? `hit a pad to take ${voiceLabel(armedPad)} — esc to cancel`
+        : padLearn !== null
+          ? `hit the pad for ${padLearn.next === null ? 'the kit' : voiceLabel(padLearn.next)} — ${padLearn.done}/${padLearn.total} bound, esc to stop`
+          : learn !== null
+            ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
+            : armed !== null
+              ? `move a knob to take ${label(armed)} — esc to cancel`
+              : // A preset or a roll strands every bound knob at once, and only
+                // the open stage shows its own amber marks — so the count belongs
+                // here, where every binding is listed whatever stage it lives on.
+                stranded > 0
+                ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
+                : 'press ⚟ on any control, then move a knob to bind it'
 
   return (
     <>
@@ -400,6 +470,7 @@ function Wired() {
       </div>
 
       <Pads />
+      <ThrowPads />
       <Wire />
       <Bindings />
     </>

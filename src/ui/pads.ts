@@ -73,7 +73,7 @@ const PAD_FLOOR = 0.3
 export const padGain = (v: number) =>
   PAD_FLOOR + (ACCENT_GAIN - PAD_FLOOR) * (v / 127)
 
-const padId = (p: PadBinding) => `${p.channel}:${p.note}`
+export const padId = (p: PadBinding) => `${p.channel}:${p.note}`
 
 /** A stored pad map read back, dropping anything that no longer names a voice. */
 export const parsePads = (raw: string | null): PadMap =>

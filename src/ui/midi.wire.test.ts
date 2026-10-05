@@ -56,6 +56,7 @@ beforeEach(async () => {
   midi.setLights(false)
   midi.clearAll()
   midi.clearPads()
+  midi.clearThrows()
   midi.setPads(true)
   midi.arm(null)
   midi.allNotesOff()
@@ -793,4 +794,48 @@ test('the chips stay off the wire until the notes are switched on', () => {
   engine.fmNotes.set(new Set([5]))
   engine.chipNotes.set(new Set())
   expect(sent).toEqual([])
+})
+
+test('a pad bound to a throw holds it down and springs back on release', () => {
+  midi.armThrow('crush')
+  send(0x90, 60, 100)
+  expect(midi.throwBindings.get().crush).toEqual({ channel: 0, note: 60 })
+  expect(midi.armedThrow.get()).toBeNull()
+  expect(engine.held.get().has('crush')).toBe(false)
+
+  send(0x90, 60, 100)
+  expect(engine.held.get().has('crush')).toBe(true)
+  send(0x80, 60, 0)
+  expect(engine.held.get().has('crush')).toBe(false)
+})
+
+test('a throw pad wins over General MIDI and keeps the note off the chip', () => {
+  const hit = vi.spyOn(engine, 'drumHit')
+  const note = vi.spyOn(engine, 'noteOn')
+  midi.setNotes(true)
+  midi.armThrow('dive')
+  send(0x99, 36, 100)
+  send(0x99, 36, 100)
+  expect(engine.held.get().has('dive')).toBe(true)
+  expect(hit).not.toHaveBeenCalled()
+  expect(note).not.toHaveBeenCalled()
+  send(0x89, 36, 0)
+  hit.mockRestore()
+  note.mockRestore()
+})
+
+test('a pad holds one throw at a time', () => {
+  midi.armThrow('spin')
+  send(0x90, 60, 100)
+  midi.armThrow('brake')
+  send(0x90, 60, 100)
+  expect(midi.throwBindings.get()).toEqual({ brake: { channel: 0, note: 60 } })
+})
+
+test('all notes off lets go of a held throw pad', () => {
+  midi.armThrow('crush')
+  send(0x90, 60, 100)
+  send(0x90, 60, 100)
+  midi.allNotesOff()
+  expect(engine.held.get().has('crush')).toBe(false)
 })

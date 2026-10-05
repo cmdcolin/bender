@@ -18,6 +18,7 @@ import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
 import { PadKit } from './pads'
 import { forget, omit, parseMap, read, write } from './persist'
 import { fromPos, toPos } from './slider-scale'
+import { ThrowPads } from './throwPads'
 
 import type { NoteDest } from '../engine/messages'
 import type { SliderDef } from './controls'
@@ -352,6 +353,7 @@ class Midi {
   // being hit rather than by arming a control, and nothing over there has a
   // position to catch up with. Declared first because the stores below are it.
   private readonly kit = new PadKit()
+  private readonly throwPads = new ThrowPads()
 
   readonly status = createStore<MidiStatus>('idle')
   readonly bindings = createStore<BindingMap>(parseBindings(read(BINDINGS_KEY)))
@@ -374,6 +376,8 @@ class Midi {
   readonly padLearn = this.kit.learn
   /** The kit's own ⚟: one voice waiting for a pad. */
   readonly armedPad = this.kit.armed
+  readonly throwBindings = this.throwPads.bindings
+  readonly armedThrow = this.throwPads.armed
   /** Clock ticks set the drum machine's tempo. */
   readonly clockLock = createStore(read(CLOCK_KEY) === '1')
   /** Send each bound control's value back out, so a device with lit rings shows
@@ -498,6 +502,7 @@ class Midi {
   arm(key: ControlKey | null) {
     this.stopLearn()
     this.kit.cancel()
+    this.throwPads.arm(null)
     this.armed.set(key)
   }
 
@@ -537,6 +542,7 @@ class Midi {
   learnPads() {
     this.armed.set(null)
     this.stopLearn()
+    this.throwPads.arm(null)
     this.kit.learnAll()
   }
 
@@ -547,12 +553,30 @@ class Midi {
   armPad(key: DrumVoiceKey | null) {
     this.armed.set(null)
     this.stopLearn()
+    this.throwPads.arm(null)
     this.kit.arm(key)
+  }
+
+  /** Wait for a pad to hold one throw: the hold row's own ⚟. */
+  armThrow(name: string | null) {
+    this.armed.set(null)
+    this.stopLearn()
+    this.kit.cancel()
+    this.throwPads.arm(name)
+  }
+
+  clearThrow(name: string) {
+    this.throwPads.clear(name)
+  }
+
+  clearThrows() {
+    this.throwPads.clearAll()
   }
 
   /** Stop waiting on the kit, whichever way it was being waited on. */
   stopPadLearn() {
     this.kit.cancel()
+    this.throwPads.arm(null)
   }
 
   clearPad(key: DrumVoiceKey) {
@@ -1036,6 +1060,7 @@ class Midi {
     for (const [semitone, dests] of this.notesOn)
       for (const dest of dests) engine.noteOff(semitone, dest)
     this.notesOn.clear()
+    this.throwPads.releaseAll()
   }
 
   private onMessage(e: MIDIMessageEvent, port = '') {
@@ -1074,7 +1099,9 @@ class Midi {
       const on = status === 0x90 && second > 0
       // Binding a pad, striking a voice, or swallowing the finger coming back
       // up — whichever it was, the kit has had it and the chip must not.
-      if (this.kit.play(head & 0x0f, first, on, second)) return
+      const channel = head & 0x0f
+      if (!this.kit.binding && this.throwPads.play(channel, first, on)) return
+      if (this.kit.play(channel, first, on, second)) return
       if (!this.notes.get()) return
       // A key pressed to say where the keybed is cut is a key that does not
       // sound: the gesture is aimed at the panel, not at the chip.
