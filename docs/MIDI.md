@@ -69,9 +69,15 @@ the note-off a pad sends on the way up is ignored.
 **Pads play effects.** Under the kit's pads, the **throws** list has a **⚟** for
 each of the six throws (spin, dive, brake, crash, drop, crush). Press it and hit
 a pad: the throw holds while the pad is down and the board springs back when you
-let go, the same as the **hold** row. A throw pad takes priority over the kit and
-the keybed, one pad holds one throw, and all notes off releases whatever a pad is
-holding.
+let go, the same as the **hold** row. A throw pad takes priority over the kit
+and the keybed, one pad holds one throw, and all notes off releases whatever a
+pad is holding.
+
+**Any control can be an effect pad.** Pick a control in the **effects** row, set
+the value the pad should push it to, press **⚟** and hit a pad. While the pad is
+down the control sits at that value; on release it returns to where the board
+has it. A pad holds one target, so binding it to an effect frees it from a
+throw.
 
 **Clock** lets the drum machine follow an incoming MIDI clock. It does this by
 writing the tempo control directly, so the slider tracks the room rather than

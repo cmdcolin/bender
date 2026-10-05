@@ -839,3 +839,36 @@ test('all notes off lets go of a held throw pad', () => {
   midi.allNotesOff()
   expect(engine.held.get().has('crush')).toBe(false)
 })
+
+test('a pad bound to an effect pushes the control while it is down', () => {
+  midi.armEffect({ control: 'dlySend', value: 1 })
+  send(0x90, 62, 100)
+  expect(midi.effectBindings.get().dlySend).toEqual({
+    channel: 0,
+    note: 62,
+    value: 1,
+  })
+  expect(midi.armedEffect.get()).toBeNull()
+
+  send(0x90, 62, 100)
+  expect(engine.held.get().get('effect:dlySend')).toEqual({ dlySend: 1 })
+  send(0x80, 62, 0)
+  expect(engine.held.get().size).toBe(0)
+})
+
+test('binding a pad to an effect takes it off the throw it held', () => {
+  midi.armThrow('crush')
+  send(0x90, 62, 100)
+  midi.armEffect({ control: 'dlySend', value: 1 })
+  send(0x90, 62, 100)
+  expect(midi.throwBindings.get().crush).toBeUndefined()
+  expect(midi.effectBindings.get().dlySend?.note).toBe(62)
+})
+
+test('all notes off lets go of a held effect pad', () => {
+  midi.armEffect({ control: 'dlySend', value: 1 })
+  send(0x90, 62, 100)
+  send(0x90, 62, 100)
+  midi.allNotesOff()
+  expect(engine.held.get().size).toBe(0)
+})

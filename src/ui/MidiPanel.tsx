@@ -15,6 +15,7 @@ import {
 } from './midi'
 import styles from './MidiPanel.module.css'
 import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
+import { formatValue, fromPos, toPos } from './slider-scale'
 import { THROWS } from './throws'
 import { Tip } from './Tip'
 
@@ -238,6 +239,89 @@ function ThrowPads() {
   )
 }
 
+// Any control on a pad: the pad pushes it to the value set here while it is
+// down, and the control goes back to where the board has it on release.
+function EffectPads() {
+  const bound = useStoreValue(midi.effectBindings)
+  const armed = useStoreValue(midi.armedEffect)
+  const [control, setControl] = useState(ALL_SLIDERS[0]?.key)
+  const [pos, setPos] = useState(1)
+  const def = ALL_SLIDERS.find(s => s.key === control)
+  const rows = ALL_SLIDERS.flatMap(s => {
+    const p = bound[s.key]
+    return p === undefined ? [] : [{ slider: s, pad: p }]
+  })
+  if (def === undefined) return null
+  const value = fromPos(def, pos)
+  return (
+    <>
+      <div className={styles.row}>
+        <span className={styles.quiet}>effects: any control on a pad</span>
+        <select
+          className={styles.select}
+          value={def.key}
+          onChange={e => {
+            const next = ALL_SLIDERS.find(s => s.key === e.target.value)
+            if (next === undefined) return
+            setControl(next.key)
+            setPos(toPos(next, engine.controls.get()[next.key]))
+          }}
+          aria-label="control for the effect pad"
+        >
+          {ALL_SLIDERS.map(s => (
+            <option key={s.key} value={s.key}>
+              {label(s.key)}
+            </option>
+          ))}
+        </select>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={pos}
+          onChange={e => setPos(Number(e.target.value))}
+          aria-label="value while the pad is down"
+        />
+        <span className={styles.cc}>{formatValue(def, value)}</span>
+        <Tip text="Hit a pad: it pushes this control to this value while it is down, and the control returns to where the board has it when you let go.">
+          <button
+            className={armed?.control === def.key ? styles.modeOn : styles.mode}
+            onClick={() =>
+              midi.armEffect(
+                armed?.control === def.key ? null : { control: def.key, value },
+              )
+            }
+            aria-label={`bind ${def.label} to a pad`}
+          >
+            ⚟
+          </button>
+        </Tip>
+      </div>
+      <div className={styles.list}>
+        {rows.map(({ slider: s, pad: p }) => (
+          <div key={s.key} className={styles.bound}>
+            <span className={styles.boundName}>{label(s.key)}</span>
+            <span className={styles.cc}>
+              {formatValue(s, p.value)} on {noteName(p.note)}
+              {p.channel === 0 ? '' : ` ch${p.channel + 1}`}
+            </span>
+            <Tip text={`Take ${s.label} off its pad.`}>
+              <button
+                className={styles.drop}
+                onClick={() => midi.clearEffect(s.key)}
+                aria-label={`unbind the ${s.label} pad`}
+              >
+                ×
+              </button>
+            </Tip>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
 // What the wire is actually carrying. A controller that does nothing is either
 // silent or misread, and only the raw bytes tell those apart.
 function Wire() {
@@ -313,6 +397,7 @@ function Wired() {
   const padLearn = useStoreValue(midi.padLearn)
   const armedPad = useStoreValue(midi.armedPad)
   const armedThrow = useStoreValue(midi.armedThrow)
+  const armedEffect = useStoreValue(midi.armedEffect)
   const clockLock = useStoreValue(midi.clockLock)
   const lights = useStoreValue(midi.lights)
   const clockOut = useStoreValue(midi.clockOut)
@@ -337,22 +422,24 @@ function Wired() {
   }, [])
 
   const hint =
-    armedThrow !== null
-      ? `hit a pad to hold ${armedThrow} — esc to cancel`
-      : armedPad !== null
-        ? `hit a pad to take ${voiceLabel(armedPad)} — esc to cancel`
-        : padLearn !== null
-          ? `hit the pad for ${padLearn.next === null ? 'the kit' : voiceLabel(padLearn.next)} — ${padLearn.done}/${padLearn.total} bound, esc to stop`
-          : learn !== null
-            ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
-            : armed !== null
-              ? `move a knob to take ${label(armed)} — esc to cancel`
-              : // A preset or a roll strands every bound knob at once, and only
-                // the open stage shows its own amber marks — so the count belongs
-                // here, where every binding is listed whatever stage it lives on.
-                stranded > 0
-                ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
-                : 'press ⚟ on any control, then move a knob to bind it'
+    armedEffect !== null
+      ? `hit a pad to push ${sliderFor(armedEffect.control).label} — esc to cancel`
+      : armedThrow !== null
+        ? `hit a pad to hold ${armedThrow} — esc to cancel`
+        : armedPad !== null
+          ? `hit a pad to take ${voiceLabel(armedPad)} — esc to cancel`
+          : padLearn !== null
+            ? `hit the pad for ${padLearn.next === null ? 'the kit' : voiceLabel(padLearn.next)} — ${padLearn.done}/${padLearn.total} bound, esc to stop`
+            : learn !== null
+              ? `turn a knob${learn.next === null ? '' : ` for ${label(learn.next)}`} — ${learn.done}/${learn.total} bound, esc to stop`
+              : armed !== null
+                ? `move a knob to take ${label(armed)} — esc to cancel`
+                : // A preset or a roll strands every bound knob at once, and only
+                  // the open stage shows its own amber marks — so the count belongs
+                  // here, where every binding is listed whatever stage it lives on.
+                  stranded > 0
+                  ? `${stranded} knob${stranded === 1 ? '' : 's'} out of step with the board — sweep each through its value to pick it up`
+                  : 'press ⚟ on any control, then move a knob to bind it'
 
   return (
     <>
@@ -471,6 +558,7 @@ function Wired() {
 
       <Pads />
       <ThrowPads />
+      <EffectPads />
       <Wire />
       <Bindings />
     </>

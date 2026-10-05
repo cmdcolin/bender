@@ -18,7 +18,7 @@ import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
 import { PadKit } from './pads'
 import { forget, omit, parseMap, read, write } from './persist'
 import { fromPos, toPos } from './slider-scale'
-import { ThrowPads } from './throwPads'
+import { ThrowPads, type EffectArm } from './throwPads'
 
 import type { NoteDest } from '../engine/messages'
 import type { SliderDef } from './controls'
@@ -378,6 +378,8 @@ class Midi {
   readonly armedPad = this.kit.armed
   readonly throwBindings = this.throwPads.bindings
   readonly armedThrow = this.throwPads.armed
+  readonly effectBindings = this.throwPads.effects
+  readonly armedEffect = this.throwPads.armedEffect
   /** Clock ticks set the drum machine's tempo. */
   readonly clockLock = createStore(read(CLOCK_KEY) === '1')
   /** Send each bound control's value back out, so a device with lit rings shows
@@ -563,6 +565,18 @@ class Midi {
     this.stopLearn()
     this.kit.cancel()
     this.throwPads.arm(name)
+  }
+
+  /** Wait for a pad to push one control to a value while it is down. */
+  armEffect(effect: EffectArm | null) {
+    this.armed.set(null)
+    this.stopLearn()
+    this.kit.cancel()
+    this.throwPads.armEffect(effect)
+  }
+
+  clearEffect(control: ControlKey) {
+    this.throwPads.clearEffect(control)
   }
 
   clearThrow(name: string) {
