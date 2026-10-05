@@ -312,7 +312,13 @@ class Ladder {
 // A three-oscillator monosynth after the Model D: oscillators and ladder run at
 // twice the board's rate and come down through a half-band.
 export class MonoVoice {
-  patch: MonoPatch = structuredClone(MONO_DEFAULT)
+  patch: MonoPatch = {
+    ...MONO_DEFAULT,
+    wave: [...MONO_DEFAULT.wave],
+    range: [...MONO_DEFAULT.range],
+    fine: [...MONO_DEFAULT.fine],
+    level: [...MONO_DEFAULT.level],
+  }
 
   private readonly osr: number
   private readonly osc0 = new Osc()
