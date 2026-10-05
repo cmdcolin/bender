@@ -1,0 +1,99 @@
+/* The mono synth's case: walnut end cheeks either side of a black panel, a
+   brushed-aluminium strip along the front, and full-size keys. The bed itself
+   is Keybed.module.css, shared with the other machines. */
+
+.case {
+  --case: #141414;
+  --case-edge: #050505;
+  --stamp: #c9c4b8;
+  --bed: #0a0a0a;
+  --case-round: 3px;
+  --fixing: #3a2416;
+  --fixing-size: 6px;
+  --bed-h: 76px;
+  --key-w: #f1ede4;
+  --key-w-edge: #9c978c;
+  --key-b: #111;
+  --key-b-edge: #000;
+  --key-round: 0 0 3px 3px;
+  --switch: #2a2a2a;
+  --switch-hover: #353535;
+  --wood: #5b3720;
+  --wood-dark: #3a2416;
+
+  flex: 1 1 380px;
+  max-width: 640px;
+  border-left: 14px solid var(--wood);
+  border-right: 14px solid var(--wood);
+  border-image: repeating-linear-gradient(
+      180deg,
+      var(--wood) 0 7px,
+      var(--wood-dark) 7px 9px,
+      var(--wood) 9px 15px
+    )
+    1;
+  background-image: linear-gradient(
+    var(--case) 0 66%,
+    #8d8d8a 66% 67%,
+    #b7b7b2 67% 68%,
+    var(--case) 68%
+  );
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.model {
+  font-family: var(--mono);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #e9e4d8;
+  text-transform: lowercase;
+}
+
+/* Three knob caps, one per oscillator. */
+.knobs {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.knobs span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #4a4a4a, #0c0c0c 70%);
+  box-shadow:
+    0 0 0 1px #000,
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* The orange rocker every panel of this kind had somewhere. */
+.rocker {
+  flex: none;
+  width: 14px;
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(#f08a2c 0 45%, #b5601a 45% 55%, #f08a2c 55%);
+  box-shadow: inset 0 0 0 1px #4a2608;
+}
+
+.soldered {
+  composes: cap from './button.module.css';
+  font-family: var(--mono);
+}
+
+.cut {
+  composes: capIdle from './button.module.css';
+  font-family: var(--mono);
+  --cap-lit: var(--accent2);
+}
+
+@container (max-width: 620px) {
+  .knobs {
+    display: none;
+  }
+}

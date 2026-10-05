@@ -8,6 +8,7 @@ import { Echo } from './stages/echo'
 import { Ensemble } from './stages/ensemble'
 import { FmChip } from './stages/fmChip'
 import { GlitchBuf } from './stages/glitchBuf'
+import { MonoSynth } from './stages/monoSynth'
 import { Noise } from './stages/noise'
 import { PcmKeys } from './stages/pcmKeys'
 import { Pet } from './stages/pet'
@@ -31,6 +32,7 @@ export interface BuiltChain {
   toyDrum: ToyDrum
   fmChip: FmChip
   pcmKeys: PcmKeys
+  monoSynth: MonoSynth
   sampler: Sampler
   pet: Pet
   transport: Transport
@@ -38,7 +40,7 @@ export interface BuiltChain {
       from outside the audio thread: the panel draws it, and a test asks it
       whether the watchdog tripped. */
   rail: ToyRail
-  /** A key let go of, which reaches all three chips. The strike travels the gate line
+  /** A key let go of, which reaches all four chips. The strike travels the gate line
       on its own, so nobody has to hand it anywhere; a finger coming up is the
       half of a note no wire between them carries, and both ends need it — the
       toy to drop the voice it is holding, the FM chip to write the key back up
@@ -71,6 +73,9 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   // supply: its last voice is not a ROM at all, it is whatever is threaded next
   // door.
   const pcmKeys = new PcmKeys(sr, rail, sampler)
+  // The fourth, a monosynth voice card. It draws no seed, so every stream
+  // after it stays the one it was.
+  const monoSynth = new MonoSynth(sr, rail)
   // In SOURCE_TAPS order, which is the order their meter taps come home in — a
   // test holds the two lists together, because the panel reads a channel off
   // its slot number and a source in the wrong one would meter as its neighbour.
@@ -79,6 +84,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     toyDrum,
     fmChip,
     pcmKeys,
+    monoSynth,
     new ChaosOsc(sr),
     new Noise(sr, next()),
     sampler,
@@ -113,6 +119,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     toyDrum,
     fmChip,
     pcmKeys,
+    monoSynth,
     sampler,
     pet,
     transport,
@@ -121,6 +128,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
       toyChip.noteOff(semitone)
       fmChip.noteOff(semitone)
       pcmKeys.noteOff(semitone)
+      monoSynth.noteOff(semitone)
     },
   }
 }

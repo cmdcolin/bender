@@ -13,6 +13,7 @@ const HUSH: Partial<Controls> = {
   drumLevel: 0,
   fmLevel: 0,
   pcmLevel: 0,
+  monoLevel: 0,
   oscLevel: 0,
   noiseLevel: 0,
   sampleLevel: 0,
@@ -61,6 +62,8 @@ test('each channel meters its own source and nobody else', () => {
     { fmLevel: 1 },
     // Nor does the home keyboard, for the same reason and off the same wire.
     { pcmLevel: 1 },
+    // And the mono synth, on the same gate line.
+    { monoLevel: 1 },
     { oscLevel: 1 },
     { noiseLevel: 1 },
   ]
@@ -84,7 +87,7 @@ test('the desk names the sources the chain is built with, in order', () => {
   expect(buildBender(SR).chain.sources.map(s => s.label)).toEqual([
     ...SOURCE_TAPS,
   ])
-  expect(CHANNELS.map(c => c.tap)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, TAP_MIC])
+  expect(CHANNELS.map(c => c.tap)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, TAP_MIC])
 })
 
 test('the mic meters where it is soldered, on the bus or off it', () => {

@@ -7,6 +7,7 @@ import { useControlValue, useStoreValue } from './ControlsContext'
 import {
   AUTOMAP_KEYS,
   DEVICE_PROFILES,
+  isSplit,
   midi,
   parseRoute,
   type DeviceProfile,
@@ -416,7 +417,7 @@ function KeyRouting() {
 
   return (
     <>
-      <Tip text="Which keybed the controller plays: the toy, the FM chip, the home keyboard, all three at once, or the keybed cut in half with the toy below the split and the FM chip from it up. All is three synthesisers on one key — each has to be up in the mix to be heard.">
+      <Tip text="Which keybed the controller plays: the toy, the FM chip, the home keyboard, the mono synth, all of them at once, or the keybed cut in half. Split puts the toy below the split and the FM chip from it up; bass split puts the mono synth below and the toy from it up. Each chip has to be up in the mix to be heard.">
         <select
           className={styles.select}
           value={route}
@@ -425,16 +426,20 @@ function KeyRouting() {
           <option value="toy">→ toy keys</option>
           <option value="fm">→ fm keys</option>
           <option value="pcm">→ home keys</option>
+          <option value="mono">→ mono synth</option>
           <option value="layer">→ all</option>
           <option value="split">→ split</option>
+          <option value="bassSplit">→ bass split</option>
         </select>
       </Tip>
-      {route === 'split' && (
+      {isSplit(route) && (
         <Tip
           text={
             learning
               ? 'press the key to cut the board at — it sets the split rather than sounding'
-              : 'set the split by playing the key to cut the board at. From that key up plays the FM chip; everything under it is the toy'
+              : route === 'bassSplit'
+                ? 'set the split by playing the key to cut the board at. Everything under it plays the mono synth; from that key up is the toy'
+                : 'set the split by playing the key to cut the board at. From that key up plays the FM chip; everything under it is the toy'
           }
         >
           <button

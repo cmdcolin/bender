@@ -34,6 +34,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   private fmNotes = new Int16Array(4)
   // And the home keyboard's, which is the third bed on the panel.
   private pcmNotes = new Int16Array(PcmKeys.MAX_SOUNDING)
+  private monoNotes = new Int16Array(1)
   private peak = 0
   private duck = 0
   private recording = false
@@ -89,11 +90,15 @@ class BenderProcessor extends AudioWorkletProcessor {
             this.built.fmChip.noteOn(msg.semitone, msg.gain)
           else if (msg.dest === 'pcm')
             this.built.pcmKeys.noteOn(msg.semitone, msg.gain)
+          else if (msg.dest === 'mono')
+            this.built.monoSynth.noteOn(msg.semitone, msg.gain)
           else this.built.toyChip.noteOn(msg.semitone, msg.gain)
           break
         case 'noteOff':
           if (msg.dest === 'fm') this.built.fmChip.noteOff(msg.semitone)
           else if (msg.dest === 'pcm') this.built.pcmKeys.noteOff(msg.semitone)
+          else if (msg.dest === 'mono')
+            this.built.monoSynth.noteOff(msg.semitone)
           else this.built.noteOff(msg.semitone)
           break
         case 'drumHit':
@@ -290,6 +295,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       const sounding = this.built.toyChip.soundingNotes(this.chipNotes)
       const fmSounding = this.built.fmChip.soundingNotes(this.fmNotes)
       const pcmSounding = this.built.pcmKeys.soundingNotes(this.pcmNotes)
+      const monoSounding = this.built.monoSynth.soundingNotes(this.monoNotes)
       this.port.postMessage({
         kind: 'meter',
         peak,
@@ -307,6 +313,8 @@ class BenderProcessor extends AudioWorkletProcessor {
         fmNoteCount: fmSounding,
         pcmNotes: this.pcmNotes,
         pcmNoteCount: pcmSounding,
+        monoNotes: this.monoNotes,
+        monoNoteCount: monoSounding,
         // The chain's own buffer, posted untransferred like the scope and the
         // note report, and cleared here — the peaks are held between reads, so
         // whoever reads them is the only thing that may clear them.

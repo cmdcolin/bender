@@ -31,6 +31,7 @@ import { useCoarse } from './measure'
 import { Menu } from './Menu'
 import { menuItem } from './menuItems'
 import { MidiPanel } from './MidiPanel'
+import { MonoKeys } from './MonoKeys'
 import {
   loadMorph,
   MORPH_LABELS,
@@ -180,6 +181,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const archiveSource = useStoreValue(engine.archiveSource)
   const fmUp = useBoardValue(c => c.fmLevel > 0)
   const pcmUp = useBoardValue(c => c.pcmLevel > 0)
+  const monoUp = useBoardValue(c => c.monoLevel > 0)
   const petUp = useBoardValue(c => c.petLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [pool, setPool] = useState(0)
@@ -347,10 +349,11 @@ export function App(props: { openedFromLink?: boolean }) {
         </div>
         {/* The FM board and the pet show only while their levels are above
             zero. */}
-        {(fmUp || pcmUp || petUp) && (
+        {(fmUp || pcmUp || monoUp || petUp) && (
           <div className={styles.shelf}>
             {fmUp && <FmKeys />}
             {pcmUp && <PcmKeys />}
+            {monoUp && <MonoKeys />}
             {petUp && <TalkingPet />}
           </div>
         )}

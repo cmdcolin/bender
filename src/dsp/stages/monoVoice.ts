@@ -15,6 +15,10 @@ export const WAVE = {
 
 const PULSE_WIDTH = [0.5, 0.5, 0.5, 0.3, 0.12]
 
+export const MONO_WAVE_NAMES = ['triangle', 'saw', 'square', 'wide', 'narrow']
+export const MONO_RANGE_NAMES = ['32′', '16′', '8′', '4′', '2′']
+export const MONO_OSC3_NAMES = ['keyed', 'free', 'lo']
+
 export interface MonoPatch {
   wave: [number, number, number]
   /** octaves from 8' */
@@ -325,6 +329,11 @@ export class MonoVoice {
   private readonly rng: Rng
   private readonly noise: Rng
   private readonly held: number[] = []
+  private velocity = 1
+  /** semitones on every oscillator keyed off the keyboard, a block at a time */
+  bend = 0
+  /** octaves on the cutoff, a block at a time */
+  open = 0
   private pinkish = 0
   private cv = 48
   private target = 48
@@ -345,7 +354,8 @@ export class MonoVoice {
     ]
   }
 
-  noteOn(note: number) {
+  noteOn(note: number, velocity = 1) {
+    this.velocity = velocity
     const i = this.held.indexOf(note)
     if (i >= 0) this.held.splice(i, 1)
     const legato = this.held.length > 0
@@ -405,7 +415,28 @@ export class MonoVoice {
     }
   }
 
-  render(out: Float32Array, ext?: Float32Array) {
+  /** Every key up at once, the gate closing the way it does on a key-off. */
+  allOff() {
+    this.held.length = 0
+    this.fEnv.gate(false)
+    this.aEnv.gate(false)
+  }
+
+  /** The key the voice is playing, or -1 with no key down. */
+  get sounding(): number {
+    return this.held.at(-1) ?? -1
+  }
+
+  /**
+   * `pitchLane` in octaves and `cutoffLane` in octaves, a sample each, on top
+   * of the block-rate `bend` (semitones) and `open` (octaves).
+   */
+  render(
+    out: Float32Array,
+    ext?: Float32Array,
+    pitchLane?: Float32Array | null,
+    cutoffLane?: Float32Array | null,
+  ) {
     const p = this.patch
     const osr = this.osr
     const { osc0, osc1, osc2, ratio } = this
@@ -421,6 +452,7 @@ export class MonoVoice {
     const free = p.osc3Free
     const inGain = p.drive * comp * 0.5
     const piOverSr = Math.PI / osr
+    const contour = p.contour * (0.7 + 0.3 * this.velocity)
 
     for (let n = 0; n < out.length; n++) {
       let pair0 = 0
@@ -444,7 +476,10 @@ export class MonoVoice {
         const sagged = this.sagEnv * p.sag
         const keyHz =
           (440 / osr) *
-          octaves((this.cv - 69 + p.modPitch * mod - sagged * 3) / 12)
+          octaves(
+            (this.cv - 69 + this.bend + p.modPitch * mod - sagged * 3) / 12 +
+              (pitchLane ? pitchLane[n]! : 0),
+          )
         osc0.advance(Math.min(keyHz * ratio[0]!, 0.45))
         const bend = p.envOsc2 === 0 ? 1 : octaves((p.envOsc2 * fe) / 12)
         osc1.advance(Math.min(keyHz * ratio[1]! * bend, 0.45))
@@ -463,9 +498,11 @@ export class MonoVoice {
         const cutoff = Math.min(
           p.cutoff *
             octaves(
-              p.contour * fe +
+              contour * fe +
                 (p.track * (this.cv - 48)) / 12 +
-                p.modFilter * mod -
+                p.modFilter * mod +
+                this.open +
+                (cutoffLane ? cutoffLane[n]! : 0) -
                 sagged * 0.5,
             ),
           fTop,
@@ -485,9 +522,9 @@ export class MonoVoice {
   }
 
   panic() {
-    this.held.length = 0
-    this.fEnv.gate(false)
-    this.aEnv.gate(false)
+    this.allOff()
+    this.fEnv.level = 0
+    this.aEnv.level = 0
     this.ladder.reset()
     this.down.reset()
     this.dc.reset()

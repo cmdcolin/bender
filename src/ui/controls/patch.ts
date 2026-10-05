@@ -60,7 +60,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 74,
+          max: 78,
           step: 1,
           unit: '',
           choices: [
@@ -139,6 +139,10 @@ export const PATCH_GROUPS: Group[] = [
             'keys addr fault',
             'keys data line',
             'keys data fault',
+            'mono level',
+            'mono cutoff',
+            'mono emphasis',
+            'mono pitch',
           ],
           groups: [
             {
@@ -196,6 +200,15 @@ export const PATCH_GROUPS: Group[] = [
                 'keys addr fault',
                 'keys data line',
                 'keys data fault',
+              ],
+            },
+            {
+              name: 'Mono synth',
+              choices: [
+                'mono level',
+                'mono cutoff',
+                'mono emphasis',
+                'mono pitch',
               ],
             },
             {

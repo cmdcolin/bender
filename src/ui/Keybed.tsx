@@ -24,29 +24,28 @@ import { Tip } from './Tip'
 import type { ControlKey } from '../controls'
 import type { NoteDest } from '../engine/messages'
 
-// The three machines with keys on them, and the two stores each one reports
-// through: what a hand is holding down on that bed, and what the chip behind it
-// is sounding on its own. Three beds drawn from one component means the wiring
-// is a table rather than a chain of conditionals that has to grow a branch
-// every time somebody solders another keyboard on.
+// The machines with keys on them, and the two stores each one reports through:
+// what a hand is holding down on that bed, and what the chip behind it is
+// sounding on its own. One component draws every bed, so the wiring is a table.
 const DECK = {
   toy: { down: engine.keysDown, notes: engine.chipNotes },
   fm: { down: engine.fmKeysDown, notes: engine.fmNotes },
   pcm: { down: engine.pcmKeysDown, notes: engine.pcmNotes },
+  mono: { down: engine.monoKeysDown, notes: engine.monoNotes },
 } satisfies Record<NoteDest, unknown>
 
-// There is one computer keyboard in front of the panel and three beds on it, so
-// switching the letters off here is switching them on somewhere. The toy is the
-// only bed that is always drawn — the other two appear when their fader comes
-// up — so it is where the letters go back to, and handing them on from the toy
-// is the one move that has anywhere else to go.
+// There is one computer keyboard in front of the panel and several beds on it,
+// so switching the letters off here switches them on somewhere. The toy is the
+// only bed always drawn — the others appear when their fader comes up — so the
+// letters go back to it, and from the toy they go on to the FM chip.
 const NEXT_BED: Record<NoteDest, NoteDest> = {
   toy: 'fm',
   fm: 'toy',
   pcm: 'toy',
+  mono: 'toy',
 }
 
-/** The jumper off the toy's gate line, which two of the three beds carry. Same
+/** The jumper off the toy's gate line, which every bed but the toy's carries. Same
     switch, same two states, and the words are the caller's because the machine
     on the other end of the wire is what they are about. */
 export function GateJumper({
@@ -329,7 +328,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   )
 
   const settings = coarse ? null : (
-    <Tip text="What this keyboard has that is not one of its own switches — starting with which of the two beds the computer keyboard plays.">
+    <Tip text="What this keyboard has that is not one of its own switches — starting with which bed the computer keyboard plays.">
       <button
         ref={setDrawer}
         className={styles.drawer}
@@ -436,7 +435,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
                 text={
                   owns
                     ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave. Turning it off hands the letters back to the toy, because there is one keyboard and it has to play one of them'
-                    : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and three beds on it, so it plays whichever is switched on'
+                    : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and several beds on it, so it plays whichever is switched on'
                 }
               >
                 <label className={menuCheck}>

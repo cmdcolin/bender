@@ -115,8 +115,12 @@ export const DEST = {
   pcmAddrFault: 72,
   pcmDataLine: 73,
   pcmDataFault: 74,
+  monoLevel: 75,
+  monoCutoff: 76,
+  monoEmph: 77,
+  monoPitch: 78,
 } as const
-export const N_DEST = 75
+export const N_DEST = 79
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
@@ -139,6 +143,7 @@ export const SOURCE_LEVEL_DEST = [
   DEST.drumLevel,
   DEST.fmLevel,
   DEST.pcmLevel,
+  DEST.monoLevel,
   DEST.oscLevel,
   DEST.noiseLevel,
   DEST.sampleLevel,

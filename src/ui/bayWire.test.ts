@@ -137,10 +137,12 @@ test('every lane a control claims is a lane the bay has, and claimed once', () =
       expect(claimed.get(s.lane)).toBeUndefined()
       claimed.set(s.lane, s.key)
     }
-  // The two the bay can land on that no one knob is: both move the window the
-  // sampler's in and out markers set rather than either marker itself.
+  // The lanes no one knob is. The first two move the window the sampler's in
+  // and out markers set; the mono synth's pitch lane moves the keyed pitch,
+  // which no knob holds.
   expect(dests.filter(d => !claimed.has(d))).toEqual([
     'loop slide',
     'loop span',
+    'mono pitch',
   ])
 })

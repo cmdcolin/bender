@@ -156,15 +156,33 @@ export const AUTOMAP_KEYS: ControlKey[] = [
 // would just make the chip permanently quieter than the on-screen keys with
 // nothing to show for it.
 const VELOCITY_FLOOR = 0.3
-// Which keybed the wire plays. There are three on the panel and one controller
-// in front of them, which is the same problem every workstation with more than
-// one sound in it has had: play one, play another, play the lot, or cut the
-// keybed in half.
-export type KeyRoute = 'toy' | 'fm' | 'pcm' | 'layer' | 'split'
+// Which keybed the wire plays. There are several on the panel and one
+// controller in front of them, the same problem every workstation with more
+// than one sound in it has: play one, play the lot, or cut the keybed in half.
+// A bass split puts the mono synth under the split and the toy above it.
+export type KeyRoute =
+  | 'toy'
+  | 'fm'
+  | 'pcm'
+  | 'mono'
+  | 'layer'
+  | 'split'
+  | 'bassSplit'
 
-const ROUTES: KeyRoute[] = ['toy', 'fm', 'pcm', 'layer', 'split']
+const ROUTES: KeyRoute[] = [
+  'toy',
+  'fm',
+  'pcm',
+  'mono',
+  'layer',
+  'split',
+  'bassSplit',
+]
 
-const ALL_BEDS: NoteDest[] = ['toy', 'fm', 'pcm']
+const ALL_BEDS: NoteDest[] = ['toy', 'fm', 'pcm', 'mono']
+
+export const isSplit = (route: KeyRoute) =>
+  route === 'split' || route === 'bassSplit'
 
 export const parseRoute = (raw: string | null): KeyRoute =>
   ROUTES.find(r => r === raw) ?? 'toy'
@@ -187,7 +205,9 @@ export const routeDests = (
     ? ALL_BEDS
     : route === 'split'
       ? [midiNote < split ? 'toy' : 'fm']
-      : [route]
+      : route === 'bassSplit'
+        ? [midiNote < split ? 'mono' : 'toy']
+        : [route]
 
 export const velocity = (v: number) =>
   VELOCITY_FLOOR + (1 - VELOCITY_FLOOR) * (v / 127)
@@ -310,12 +330,13 @@ const PULSES_PER_STEP = 6
 // past this the clock resyncs silently rather than paying the debt off.
 const MAX_CATCHUP_STEPS = 8
 
-// The three chips get a channel each — the toy on 1, the FM chip on 2, the home
-// keyboard on 3. Fixed rather than settable: whatever is on the far end wants a
-// stable set, and a setting for this is one nobody would ever have moved.
+// Each chip gets a channel — the toy on 1, the FM chip on 2, the home keyboard
+// on 3, the mono synth on 4. Fixed: whatever is on the far end wants a stable
+// set.
 const TOY_OUT_CHANNEL = 0
 const FM_OUT_CHANNEL = 1
 const PCM_OUT_CHANNEL = 2
+const MONO_OUT_CHANNEL = 3
 
 // The chips report what they are sounding, never how hard it was struck, so
 // everything leaves at one velocity.
@@ -492,7 +513,7 @@ class Midi {
     this.allNotesOff()
     this.keyRoute.set(route)
     write(ROUTE_KEY, route)
-    if (route !== 'split') this.splitLearn.set(false)
+    if (!isSplit(route)) this.splitLearn.set(false)
   }
 
   setSplit(midiNote: number) {
@@ -814,6 +835,9 @@ class Midi {
     )
     engine.pcmNotes.subscribe(() =>
       this.mirror(PCM_OUT_CHANNEL, engine.pcmNotes.get()),
+    )
+    engine.monoNotes.subscribe(() =>
+      this.mirror(MONO_OUT_CHANNEL, engine.monoNotes.get()),
     )
   }
 

@@ -336,6 +336,8 @@ export class Engine {
   // can fill on its own once the chord button is down.
   readonly pcmKeysDown = createStore<ReadonlySet<number>>(new Set())
   readonly pcmNotes = createStore<ReadonlySet<number>>(new Set())
+  readonly monoKeysDown = createStore<ReadonlySet<number>>(new Set())
+  readonly monoNotes = createStore<ReadonlySet<number>>(new Set())
   // Which sources are actually putting something on the bus, as a bit per
   // SOURCE_TAPS slot. A run switch says a sequencer is walking; this says the
   // fader in front of it is up and the machine behind it is making a sound,
@@ -436,6 +438,12 @@ export class Engine {
           msg.pcmNoteCount,
         )
         if (pcm !== this.pcmNotes.get()) this.pcmNotes.set(pcm)
+        const mono = mergeNotes(
+          this.monoNotes.get(),
+          msg.monoNotes,
+          msg.monoNoteCount,
+        )
+        if (mono !== this.monoNotes.get()) this.monoNotes.set(mono)
         this.meter.set({
           peak: msg.peak,
           scope: msg.scope,
@@ -1330,7 +1338,9 @@ export class Engine {
         ? this.fmKeysDown
         : dest === 'pcm'
           ? this.pcmKeysDown
-          : this.keysDown
+          : dest === 'mono'
+            ? this.monoKeysDown
+            : this.keysDown
     const notes = store.get()
     if (notes.has(semitone) === down) return
     const next = new Set(notes)
@@ -1346,6 +1356,7 @@ export class Engine {
     if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
     if (this.fmKeysDown.get().size > 0) this.fmKeysDown.set(new Set())
     if (this.pcmKeysDown.get().size > 0) this.pcmKeysDown.set(new Set())
+    if (this.monoKeysDown.get().size > 0) this.monoKeysDown.set(new Set())
   }
 }
 

@@ -21,10 +21,10 @@ export interface SeekMsg {
 }
 
 /** Which keybed a note came off. The toy's gate is the default and reaches the
-    FM chip and the home keyboard too wherever those jumpers are still soldered
-    on; the other two are the beds drawn under it, each soldered to nothing but
-    the chip it belongs to. */
-export type NoteDest = 'toy' | 'fm' | 'pcm'
+    FM chip, the home keyboard and the mono synth too wherever those jumpers are
+    still soldered on; the other three are the beds drawn under it, each wired
+    only to its own chip. */
+export type NoteDest = 'toy' | 'fm' | 'pcm' | 'mono'
 
 export interface NoteMsg {
   kind: 'noteOn' | 'noteOff'
@@ -129,6 +129,9 @@ export interface MeterMsg {
       fill from one key. */
   pcmNotes: Int16Array
   pcmNoteCount: number
+  /** The mono synth's one key, if it is playing one. */
+  monoNotes: Int16Array
+  monoNoteCount: number
   /** What each source, the mic and the mix bus itself have peaked at since the
       last meter — the chain's taps, in `SOURCE_TAPS` order with the mic and the
       bus above them. The worklet's own buffer, cleared the moment it is posted

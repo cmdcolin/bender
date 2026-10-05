@@ -96,6 +96,10 @@ const WIRE_BOX: Record<keyof typeof DEST, string> = {
   pcmAddrFault: 'Home keyboard',
   pcmDataLine: 'Home keyboard',
   pcmDataFault: 'Home keyboard',
+  monoLevel: 'Mono synth',
+  monoCutoff: 'Mono synth',
+  monoEmph: 'Mono synth',
+  monoPitch: 'Mono synth',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -152,6 +156,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Toy keyboard': ['chipLevel'],
   'FM chip': ['fmLevel'],
   'Home keyboard': ['pcmLevel'],
+  'Mono synth': ['monoLevel'],
   'Toy drums': ['drumLevel'],
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
@@ -181,6 +186,9 @@ const FM_CHIP = 'FM chip'
 // wire runs along the row, and a box on the end of it belongs next to the box
 // it is soldered to.
 const PCM_KEYS = 'Home keyboard'
+
+// The fourth on the gate line and the rail, next along from the home keyboard.
+const MONO = 'Mono synth'
 
 // On the same batteries as the other three, so inside the frame and under the
 // rail, at the far end of the row from the keyboard.
@@ -416,6 +424,7 @@ function triggerBridges(c: Controls): Bridge[] {
     ['trigToDrum', 'Toy keyboard', 'Toy drums'],
     ['fmStruck', 'Toy drums', FM_CHIP],
     ['pcmStruck', 'Toy drums', PCM_KEYS],
+    ['monoStruck', 'Toy drums', MONO],
   ] as const) {
     const choice = Math.round(c[key])
     if (choice <= 0) continue
@@ -488,8 +497,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const toys = TOY_ROW.map(instrument)
   const fm = instrument(FM_CHIP)
   const pcm = instrument(PCM_KEYS)
+  const mono = instrument(MONO)
   const pet = instrument(PET)
-  const chips = [...toys, fm, pcm, pet]
+  const chips = [...toys, fm, pcm, mono, pet]
   const lines = LINE_ROW.map(instrument)
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
@@ -730,10 +740,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // By their labels rather than evenly: the chip is the one you do not play and
   // it should not come out the size of the two you do.
   spread(
-    [toys[0]!, fm, pcm, toys[1]!, pet],
+    [toys[0]!, fm, pcm, mono, toys[1]!, pet],
     FRAME_PAD,
     content - FRAME_PAD * 2,
-    [INST_GAP, INST_GAP, INST_GAP, INST_GAP],
+    [INST_GAP, INST_GAP, INST_GAP, INST_GAP, INST_GAP],
     natural,
   )
   spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
@@ -920,6 +930,16 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     [
       [fm.x + fm.w, chipY + INST_H / 2],
       [pcm.x, chipY + INST_H / 2],
+    ],
+    { color: k.accent2, door: 'Toy keyboard' },
+  )
+  wire(
+    'key-line-mono',
+    pcm,
+    mono,
+    [
+      [pcm.x + pcm.w, chipY + INST_H / 2],
+      [mono.x, chipY + INST_H / 2],
     ],
     { color: k.accent2, door: 'Toy keyboard' },
   )
@@ -1503,6 +1523,15 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       }),
     ]
   },
+  'Mono synth': (x, y, c) => [
+    el('path', {
+      d: `M ${x} ${y + 10} L ${x + 4} ${y + 2} V ${y + 10} L ${x + 8} ${y + 2} V ${y + 10} L ${x + 12} ${y + 2}`,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+      strokeLinejoin: 'miter',
+    }),
+  ],
   'Toy drums': (x, y, c) => [
     el('circle', {
       cx: x + 5,

@@ -43,6 +43,7 @@ export const CHANNELS: readonly Channel[] = [
   { key: 'drumLevel', name: 'Toy drums', tap: sourceTap('toyDrum') },
   { key: 'fmLevel', name: 'FM chip', tap: sourceTap('fmChip') },
   { key: 'pcmLevel', name: 'Home keyboard', tap: sourceTap('pcmKeys') },
+  { key: 'monoLevel', name: 'Mono synth', tap: sourceTap('monoSynth') },
   { key: 'oscLevel', name: 'Chaos osc', tap: sourceTap('chaosOsc') },
   { key: 'noiseLevel', name: 'Noise & crackle', tap: sourceTap('noise') },
   {
