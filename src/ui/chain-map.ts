@@ -19,7 +19,7 @@ const FB_TARGET = ['mix', 'Chaos osc', 'Toy keyboard', 'Tape delay'] as const
 // Which group owns each patch-bay destination, in mod*Dest order.
 // The box a patch wire onto each destination draws to. Keyed by name, so a
 // destination added to DEST without a box here fails the type check.
-const WIRE_BOX: Record<keyof typeof DEST, string> = {
+const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   filtHz: 'Screech filter',
   ringHz: 'Ring mod',
   combHz: 'Comb',
@@ -77,13 +77,6 @@ const WIRE_BOX: Record<keyof typeof DEST, string> = {
   fmBusCut: 'FM chip',
   fmNoiseBlob: 'FM chip',
   ringMix: 'Ring mod',
-  petLevel: 'Talking pet',
-  petPitch: 'Talking pet',
-  petRate: 'Talking pet',
-  petAddrLine: 'Talking pet',
-  petAddrFault: 'Talking pet',
-  petDataLine: 'Talking pet',
-  petDataFault: 'Talking pet',
   drumBpm: 'Toy drums',
   drumSwing: 'Toy drums',
   drumChance: 'Toy drums',
@@ -161,7 +154,6 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
   Sampler: ['sampleLevel'],
-  'Talking pet': ['petLevel'],
 }
 
 // The two you play, side by side across the head of the toy board. They are the
@@ -189,10 +181,6 @@ const PCM_KEYS = 'Home keyboard'
 
 // The fourth on the gate line and the rail, next along from the home keyboard.
 const MONO = 'Mono synth'
-
-// On the same batteries as the other three, so inside the frame and under the
-// rail, at the far end of the row from the keyboard.
-const PET = 'Talking pet'
 
 // The three that take no supply and no trigger from anything: they start where
 // they stand, and they are the only sources on the board that do.
@@ -498,8 +486,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const fm = instrument(FM_CHIP)
   const pcm = instrument(PCM_KEYS)
   const mono = instrument(MONO)
-  const pet = instrument(PET)
-  const chips = [...toys, fm, pcm, mono, pet]
+  const chips = [...toys, fm, pcm, mono]
   const lines = LINE_ROW.map(instrument)
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
@@ -740,7 +727,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // By their labels rather than evenly: the chip is the one you do not play and
   // it should not come out the size of the two you do.
   spread(
-    [toys[0]!, fm, pcm, mono, toys[1]!, pet],
+    [toys[0]!, fm, pcm, mono, toys[1]!],
     FRAME_PAD,
     content - FRAME_PAD * 2,
     [INST_GAP, INST_GAP, INST_GAP, INST_GAP, INST_GAP],
@@ -1652,25 +1639,6 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
         strokeWidth: 0.9,
       }),
     ),
-  'Talking pet': (x, y, c) => [
-    el('path', {
-      d: `M ${x + 2.2} ${y + 4.6} L ${x + 1.2} ${y + 0.8} L ${x + 4.6} ${y + 2.6} M ${x + 9.8} ${y + 4.6} L ${x + 10.8} ${y + 0.8} L ${x + 7.4} ${y + 2.6}`,
-      fill: 'none',
-      stroke: c,
-      strokeWidth: 0.9,
-      strokeLinejoin: 'round',
-    }),
-    el('circle', {
-      cx: x + 6,
-      cy: y + 7,
-      r: 4.6,
-      fill: 'none',
-      stroke: c,
-      strokeWidth: 0.9,
-    }),
-    el('circle', { cx: x + 4.3, cy: y + 6.4, r: 0.9, fill: c }),
-    el('circle', { cx: x + 7.7, cy: y + 6.4, r: 0.9, fill: c }),
-  ],
   Sampler: (x, y, c) => [
     el('path', {
       d: [3.4, 8, 5, 10.4, 6, 2.8]

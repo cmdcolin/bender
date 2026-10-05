@@ -329,18 +329,6 @@ export const PARAM_DEFS = [
   ['loopIn', 'slew'],
   ['loopOut', 'slew'],
 
-  ['petLevel', 'slew'],
-  ['petMotor', 'slew'],
-  ['petPitch', 'slew'],
-  ['petRate', 'slew'],
-  ['petChatter', 'slew'],
-  ['petAddrLine', 'step'],
-  ['petAddrFault', 'step'],
-  ['petDataLine', 'step'],
-  ['petDataFault', 'step'],
-  ['petHold', 'slew'],
-  ['petKBits', 'slew'],
-
   ['mixDrive', 'ramp'],
 
   ['bendSlot0', 'step'],
@@ -558,7 +546,6 @@ export const SOURCE_TAPS = [
   'chaosOsc',
   'noise',
   'sampler',
-  'pet',
 ] as const
 
 export type SourceTap = (typeof SOURCE_TAPS)[number]
@@ -576,7 +563,6 @@ export const STEM_FILES = [
   'chaos',
   'noise',
   'sampler',
-  'pet',
 ] as const
 
 export const MAX_SOURCES = SOURCE_TAPS.length

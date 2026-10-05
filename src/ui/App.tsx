@@ -48,7 +48,6 @@ import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { StartOverlay } from './StartOverlay'
-import { TalkingPet } from './TalkingPet'
 import { Throws } from './Throws'
 import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
@@ -182,7 +181,6 @@ export function App(props: { openedFromLink?: boolean }) {
   const fmUp = useBoardValue(c => c.fmLevel > 0)
   const pcmUp = useBoardValue(c => c.pcmLevel > 0)
   const monoUp = useBoardValue(c => c.monoLevel > 0)
-  const petUp = useBoardValue(c => c.petLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [pool, setPool] = useState(0)
   // Which stage's controls the panel is showing. The map is the way in — every
@@ -347,14 +345,13 @@ export function App(props: { openedFromLink?: boolean }) {
           <Keys />
           <DrumKit />
         </div>
-        {/* The FM board and the pet show only while their levels are above
-            zero. */}
-        {(fmUp || pcmUp || monoUp || petUp) && (
+        {/* The FM, home and mono keyboards show only while their levels
+            are above zero. */}
+        {(fmUp || pcmUp || monoUp) && (
           <div className={styles.shelf}>
             {fmUp && <FmKeys />}
             {pcmUp && <PcmKeys />}
             {monoUp && <MonoKeys />}
-            {petUp && <TalkingPet />}
           </div>
         )}
         <BodyPad onOpen={setOpen} />

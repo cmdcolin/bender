@@ -41,7 +41,8 @@ test('a grouped list puts every choice under exactly one heading', () => {
   for (const s of ALL_SLIDERS) {
     if (!s.groups) continue
     const grouped = s.groups.flatMap(g => g.choices)
-    expect(grouped.toSorted(), s.key).toEqual(s.choices!.toSorted())
+    const live = s.choices!.filter(c => !c.startsWith('retired'))
+    expect(grouped.toSorted(), s.key).toEqual(live.toSorted())
   }
 })
 

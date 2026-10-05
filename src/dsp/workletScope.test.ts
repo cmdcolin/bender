@@ -38,7 +38,6 @@ test('the board builds and renders with only what an audio worklet has', () => {
       monoLevel: 1,
       fmLevel: 1,
       pcmLevel: 1,
-      petLevel: 1,
     })
     const io = {
       l: new Float32Array(BLOCK),

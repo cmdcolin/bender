@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 344 knobs and switches in 33 groups, seven bends competing for six slots,
+ruin. 333 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 97 presets, 16 stage settings and 32 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 27 of them, mostly the ones that cover the
+preset that names it still gets it. 25 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -509,36 +509,6 @@ while the head plays on.
 
 </details>
 
-### Talking pet
-
-A furry talking toy on the same batteries as the keyboard: an LPC speech chip
-with a 10-stage lattice filter, a phrase ROM of made-up pet words, and a cam
-motor for the eyes and ears. A mood machine picks what it says: sound wakes it,
-a loud sound scares it, kit hits tickle it, quiet and a low supply send it to
-sleep. The motor loads the shared rail, so a talking pet sags the toys beside
-it. The knife reaches the ROM’s address and data lines, _Frame hold_ stutters
-the frames, and _K bits_ flips coefficient bits until the lattice screeches
-against its clamp.
-
-<details>
-<summary>11 controls</summary>
-
-| control        | range                               | what it does                                                                                                                 |
-| -------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Level          | 0 to 4, normal 0 to 1               | How loud the talking pet is in the source mix                                                                                |
-| Motor          | off to full                         | How much of the cam motor you hear: a brush buzz and a gear click that run while the pet talks or blinks                     |
-| Pitch          | 0.25× to 4×                         | Scales the pitch period the frames ask for, so the voice goes up or down while the formants stay put                         |
-| Clock          | 0.25× to 4×                         | The speech chip’s 8 kHz clock                                                                                                |
-| Chatter        | off to full                         | How often the pet talks with nobody prompting it                                                                             |
-| Frame hold     | off to full                         | The chance at each 25 ms frame that the decoder keeps the frame it has and reads nothing new                                 |
-| K bits         | off to full                         | Flips bits in the latch that holds the ten reflection coefficients of the lattice filter, a chance per coefficient per frame |
-| Address line † | 13 of them, off through A11         | Which of the twelve wires addressing the phrase ROM the knife found                                                          |
-| Address fault  | cut, to ground, to +V, bridged      | What happened to the wire                                                                                                    |
-| Data line †    | off, D0, D1, D2, D3, D4, D5, D6, D7 | Which of the eight wires the ROM answers on the knife found                                                                  |
-| Data fault     | cut, to ground, to +V, bridged      | The same four things on the data side                                                                                        |
-
-</details>
-
 ### Mic
 
 A live microphone, and the one source that does not have to reach the mix. _Mic
@@ -568,7 +538,7 @@ the reason: it boots at zero, and turned up with nothing striking it — no hand
 on its keys, no tune next door — it is three quarters and silence. _Bus drive_
 is the summing amp: a wire at unity, and the one saturation ahead of the bends.
 
-The desk is a widget rather than a row of sliders, and its ten faders are
+The desk is a widget rather than a row of sliders, and its nine faders are
 counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.
 

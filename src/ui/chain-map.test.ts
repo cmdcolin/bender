@@ -157,7 +157,6 @@ test('each source is a box of its own, and a door of its own', () => {
     'Home keyboard',
     'Chaos osc',
     'Sampler',
-    'Talking pet',
   ])
     expect(box(map, name.replace(/\W+/g, '_'))?.kind).toBe('inst')
   expect(hop(map, 'Chaos_osc', 'mix')).toBeTruthy()
@@ -177,13 +176,7 @@ test('the toy board frames its boxes, and wires the key line', () => {
   // them, the way every other door on the drawing is named for what it opens.
   expect(frame.door).toBe('Board parts')
   expect(frame.label).toBe('board parts')
-  const framed = [
-    'Toy_keyboard',
-    'FM_chip',
-    'Home_keyboard',
-    'Toy_drums',
-    'Talking_pet',
-  ]
+  const framed = ['Toy_keyboard', 'FM_chip', 'Home_keyboard', 'Toy_drums']
   for (const id of framed) {
     const chip = box(map, id)!
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)
@@ -218,9 +211,6 @@ test('the toy board makes one row, the FM chip against the keyboard', () => {
   expect(keys.x + keys.w).toBeLessThanOrEqual(fm.x)
   expect(fm.x + fm.w).toBeLessThanOrEqual(pcm.x)
   expect(pcm.x + pcm.w).toBeLessThanOrEqual(drums.x)
-  const pet = box(map, 'Talking_pet')!
-  expect(pet.y).toBe(keys.y)
-  expect(drums.x + drums.w).toBeLessThanOrEqual(pet.x)
   // By its label and not the row's: the one you do not play should not come out
   // the size of the two you do.
   expect(fm.w).toBeLessThan(keys.w)
@@ -253,10 +243,6 @@ test('a source box carries how far up its fader is, on its own travel', () => {
     level({ ...DEFAULT_CONTROLS, sampleLevel: 0.5 }, 'Sampler'),
   ).toBeCloseTo(0.5)
   expect(level({ ...DEFAULT_CONTROLS, fmLevel: 3 }, 'FM_chip')).toBeCloseTo(3)
-  expect(box(buildMap(DEFAULT_CONTROLS), 'Talking_pet')!.active).toBe(false)
-  expect(
-    level({ ...DEFAULT_CONTROLS, petLevel: 0.4 }, 'Talking_pet'),
-  ).toBeCloseTo(0.4)
 })
 
 // Every source draws its own glyph, and the one that is running draws it in the
@@ -615,7 +601,6 @@ test('a patch wire onto any destination draws onto that destination’s box', ()
   const board: Controls = {
     ...DEFAULT_CONTROLS,
     ...HEAVY,
-    petLevel: 0.5,
     oscLevel: 0.5,
     noiseLevel: 0.5,
     sampleLevel: 0.5,
@@ -626,6 +611,7 @@ test('a patch wire onto any destination draws onto that destination’s box', ()
   expect(WIRE_TARGET.length).toBe(N_DEST)
   const undrawn: string[] = []
   for (let dest = 0; dest < N_DEST; dest++) {
+    if (!WIRE_TARGET[dest]) continue
     const map = buildMap({
       ...board,
       ...(dest === DEST.glitch ? glitchIn : {}),

@@ -73,10 +73,10 @@ const LANDINGS: Landing[] = [
   at('glitch', ['glitchMix'], { bend: 'glitch' }),
   at('shift Hz', ['shiftMix'], { bend: 'shift' }),
   at('chip clock', ['chipLevel']),
-  // The rail the whole toy runs off, so any of the four machines on it being
+  // The rail the whole toy runs off, so any of the machines on it being
   // up is a wire there you can hear.
   at('starve', [], {
-    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'monoLevel', 'petLevel'],
+    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'monoLevel'],
   }),
   at('drum tune', ['drumLevel']),
   at('kit tempo', ['drumLevel']),
@@ -125,13 +125,6 @@ const LANDINGS: Landing[] = [
   at('FM data fault', ['fmLevel', 'fmDataLine']),
   at('FM addr fault', ['fmLevel', 'fmAddrLine']),
   at('FM wave fault', ['fmLevel', 'fmWaveLine']),
-  at('pet level', ['petLevel']),
-  at('pet pitch', ['petLevel']),
-  at('pet rate', ['petLevel']),
-  at('pet addr line', ['petLevel']),
-  at('pet data line', ['petLevel']),
-  at('pet addr fault', ['petLevel', 'petAddrLine']),
-  at('pet data fault', ['petLevel', 'petDataLine']),
   at('mono level', ['monoLevel']),
   at('mono cutoff', ['monoLevel']),
   at('mono emphasis', ['monoLevel']),

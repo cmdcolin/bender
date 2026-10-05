@@ -66,10 +66,6 @@ export interface PanicMsg {
   kind: 'panic'
 }
 
-export interface PetPokeMsg {
-  kind: 'petPoke'
-}
-
 /** Post whatever the rolling tape holds right now, however short the slab. */
 export interface RetroFlushMsg {
   kind: 'retroFlush'
@@ -84,7 +80,6 @@ export type ToWorklet =
   | TransportMsg
   | RecordMsg
   | PanicMsg
-  | PetPokeMsg
   | RetroFlushMsg
 
 export interface MeterMsg {
@@ -158,12 +153,6 @@ export interface MeterMsg {
       window per sample, and the reel draws the tape rather than the controls. */
   sampleIn: number
   sampleOut: number
-  /** The talking pet's mood as a `MOOD` index, the phrase it is saying or -1,
-      and its cam motor speed and speech level, each 0 to 1. */
-  petMood: number
-  petPhrase: number
-  petMotor: number
-  petMouth: number
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

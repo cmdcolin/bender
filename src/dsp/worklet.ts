@@ -124,9 +124,6 @@ class BenderProcessor extends AudioWorkletProcessor {
           this.built.chain.panic()
           this.deck.panic()
           break
-        case 'petPoke':
-          this.built.pet.poke()
-          break
         case 'retroFlush':
           this.postRetro(true)
           break
@@ -327,10 +324,6 @@ class BenderProcessor extends AudioWorkletProcessor {
         samplePeaks: sampler.peaks,
         sampleIn: sampler.windowIn,
         sampleOut: sampler.windowOut,
-        petMood: this.built.pet.mood,
-        petPhrase: this.built.pet.phrase,
-        petMotor: this.built.pet.motor,
-        petMouth: this.built.pet.mouth,
       })
       this.peak = 0
       this.duck = 0

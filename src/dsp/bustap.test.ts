@@ -17,7 +17,6 @@ const HUSH: Partial<Controls> = {
   oscLevel: 0,
   noiseLevel: 0,
   sampleLevel: 0,
-  petLevel: 0,
   crackleAmp: 0,
   micLevel: 0,
 }
@@ -68,7 +67,6 @@ test('each channel meters its own source and nobody else', () => {
     { noiseLevel: 1 },
   ]
   const byTap = new Map(wired.map((only, i) => [i, only]))
-  byTap.set(SOURCE_TAPS.indexOf('pet'), { petLevel: 1 })
   for (const [i, only] of byTap) {
     const t = taps(only)
     expect(t[i], `${CHANNELS[i]!.name} reads its own tap`).toBeGreaterThan(0)
@@ -87,7 +85,7 @@ test('the desk names the sources the chain is built with, in order', () => {
   expect(buildBender(SR).chain.sources.map(s => s.label)).toEqual([
     ...SOURCE_TAPS,
   ])
-  expect(CHANNELS.map(c => c.tap)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, TAP_MIC])
+  expect(CHANNELS.map(c => c.tap)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, TAP_MIC])
 })
 
 test('the mic meters where it is soldered, on the bus or off it', () => {

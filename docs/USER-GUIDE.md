@@ -306,32 +306,6 @@ For a drone, latch a key with **hold** on the bed and raise the loudness
 sustain, or turn up **Leaky VCA** under _voice card faults_, which sounds the
 synth with no key down at all. The _leaky drone_ preset starts there.
 
-## The talking pet
-
-The talking pet is a furry toy wired onto the keyboard's batteries. Raise
-**Level** and it says hello. What it says depends on its mood:
-
-- **asleep** — snores now and then; any sound or kit hit wakes it.
-- **awake** — greets you and chats; twenty seconds of quiet makes it sleepy, a
-  long stretch awake makes it hungry.
-- **chatty** — after a kit hit; laughs and sings.
-- **hungry** — asks for food until the next kit hit.
-- **scared** — after a loud sound or a burst of hits.
-- **sleepy** — yawns, then sleeps; a low supply keeps it here.
-
-It hears the mic and the board's own output, ignoring the output while it talks.
-**Chatter** sets how often it talks unprompted and how long it stays awake in
-quiet. **Pitch** moves the voice alone; **Clock** moves pitch, formants and
-speed together. **Motor** is the eye-and-ear motor, which loads the shared
-supply when it turns. The knife, **Frame hold** and **K bits** are in
-[Bends](BENDS.md).
-
-While **Level** is above zero the pet appears under the toy keyboard and drum
-machine. Its ears swing and eyelids close while the motor turns, its beak opens
-with speech, a bubble shows the phrase, and a caption names its mood. Clicking
-it tickles it: a sleeping pet wakes, an awake one gets chatty, a quick run of
-clicks scares it.
-
 ## The trigger patch
 
 The keyboard and drum machine share a power rail by accident; the trigger patch
@@ -456,9 +430,9 @@ stems both, is what the deck played.
 
 The selector beside it sets what a take comes back as. **Master only** is one
 file. **Master + stems** adds one wav per source that had anything on it — toy
-keyboard, drums, FM chip, chaos oscillator, noise, sampler, pet — named
-`bender-<stamp>-toy.wav`, `-drums`, `-fm`, `-chaos`, `-noise`, `-sampler`,
-`-pet`, beside `bender-<stamp>-master.wav`.
+keyboard, drums, FM chip, chaos oscillator, noise, sampler — named
+`bender-<stamp>-toy.wav`, `-drums`, `-fm`, `-chaos`, `-noise`, and `-sampler`,
+beside `bender-<stamp>-master.wav`.
 
 A stem is the dry source, taken where it sums into the mix bus — before the bus
 drive, bends, pedals, brownout, tape and limiter, all of which apply only to the

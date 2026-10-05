@@ -88,13 +88,16 @@ export const DEST = {
   // every kick and fades back to the clean note, and the output envelope means
   // only the loud passages ring at all.
   ringMix: 54,
-  petLevel: 55,
-  petPitch: 56,
-  petRate: 57,
-  petAddrLine: 58,
-  petAddrFault: 59,
-  petDataLine: 60,
-  petDataFault: 61,
+  // Seven ids a retired source once held. Nothing reads them, so a wire left
+  // pointing here lands on nothing; the ids stay so that every later one keeps
+  // its number.
+  gone55: 55,
+  gone56: 56,
+  gone57: 57,
+  gone58: 58,
+  gone59: 59,
+  gone60: 60,
+  gone61: 61,
   drumBpm: 62,
   drumSwing: 63,
   drumChance: 64,
@@ -147,7 +150,6 @@ export const SOURCE_LEVEL_DEST = [
   DEST.oscLevel,
   DEST.noiseLevel,
   DEST.sampleLevel,
-  DEST.petLevel,
 ] as const satisfies { length: typeof SOURCE_TAPS.length }
 
 // The lanes a wire can land on that aren't a stage: another wire's own depth,

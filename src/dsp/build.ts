@@ -11,7 +11,6 @@ import { GlitchBuf } from './stages/glitchBuf'
 import { MonoSynth } from './stages/monoSynth'
 import { Noise } from './stages/noise'
 import { PcmKeys } from './stages/pcmKeys'
-import { Pet } from './stages/pet'
 import { RingMod } from './stages/ringmod'
 import { Sampler } from './stages/sampler'
 import { Screech } from './stages/screech'
@@ -34,7 +33,6 @@ export interface BuiltChain {
   pcmKeys: PcmKeys
   monoSynth: MonoSynth
   sampler: Sampler
-  pet: Pet
   transport: Transport
   /** The shared toy supply, out here because it is the one state worth watching
       from outside the audio thread: the panel draws it, and a test asks it
@@ -109,10 +107,6 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Ensemble(sr),
   ]
   chain.post = [new Brownout(sr, next()), new Tape(sr, next())]
-  // Last off the seed, so every stream drawn above stays the one it was before
-  // the pet joined the board.
-  const pet = new Pet(sr, rail, next())
-  chain.sources.push(pet)
   return {
     chain,
     toyChip,
@@ -121,7 +115,6 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     pcmKeys,
     monoSynth,
     sampler,
-    pet,
     transport,
     rail,
     noteOff(semitone: number) {
