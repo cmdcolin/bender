@@ -179,6 +179,11 @@ const BASS = [
   'retrigger bass',
   'bass on a sagging rail',
   'basement organ',
+  'mono bass',
+  'kick bass',
+  'leaky drone',
+  'sinking bass',
+  'filter kick',
 ]
 
 const subShare = (patch: Partial<typeof DEFAULT_CONTROLS>) =>

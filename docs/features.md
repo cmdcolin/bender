@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 344 knobs and switches in 33 groups, seven bends competing for six slots,
-18 ROM tunes, 90 presets, 16 stage settings and 32 named cuts — and everything
+18 ROM tunes, 97 presets, 16 stage settings and 32 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 90 presets, and dice on every heading as
+- **Boards, rather than settings.** 97 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -1202,7 +1202,7 @@ became:
 
 ### Presets
 
-90 boards worth keeping. Every name is a link that opens the app with that board
+97 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1416,6 +1416,30 @@ on it — a link never presses play, so it is loaded and waiting.
 - [**basement organ**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.5,pcmLevel:1,pcmVoice:2,pcmEnv:1,pcmChord:6,pcmClockX:0.12)
   — The home keyboard’s pipe organ with the ROM clock at 0.12×, three octaves
   down, playing the toy’s song in power chords
+- [**mono bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.7,monoGlide:0.03)
+  — The mono synth on the toy’s gate line: two saws and a square two octaves
+  under the tune, with a short filter contour and a little glide
+- [**acid line**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoLevel:1,monoGate:0.5,monoGlide:0.06,monoRange1:-1,monoMix1:1,monoMix2:0,monoMix3:0,monoCutoff:260,monoEmph:0.88,monoContour:3.2,monoTrack:0.5,monoDrive:2.2,monoFD:0.15,monoFS:0,monoFR:0.08,monoAD:0.3,monoAS:0.7,monoAR:0.03,modLfoHz:0.08,mod0Src:1,mod0Dest:76,mod0Depth:0.3)
+  — One saw an octave up into the ladder with the emphasis near oscillation and
+  no sustain on the filter contour, and the bay’s LFO sweeping the cutoff every
+  twelve seconds
+- [**kick bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,monoLevel:1,monoKeyGate:1,monoGate:0.45,monoStruck:1,monoContour:2.5,monoFD:0.12,monoFS:0.05,monoAD:0.3,monoAS:0.5)
+  — The mono synth’s gate jumper cut and the kick’s trigger line clipped on, so
+  every kick restarts the bass on the last key you played
+- [**leaky drone**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,monoLevel:2,monoKeyGate:1,monoWave3:0,monoRange1:-1,monoRange2:-1,monoTune2:0.11,monoTune3:0,monoOsc3:2,monoDrift:6,monoMix3:0,monoNoise:0.1,monoLoop:0.4,monoCutoff:280,monoEmph:0.85,monoContour:0,monoTrack:0,monoDrive:2.4,monoModFilter:2,monoLeak:1,revDecayS:5,revMix:0.35)
+  — A VCA that never shuts on two saws a tenth of a semitone apart, run back
+  into the mixer, with osc 3 at a quarter of a hertz opening the ladder and
+  closing it again. No key needed
+- [**sinking bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.9,monoGlide:0.04,monoEmph:0.5,monoHeat:0.7,monoMismatch:0.5,monoDroop:0.3,monoSag:0.5)
+  — The mono bass on a bad voice card: the pitch hold leaks so each note sinks,
+  the converter runs hot, a ladder pair is mismatched and loud notes sag the
+  regulator
+- [**filter kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:2.5,monoKeyGate:1,monoStruck:1,monoMix1:0,monoMix2:0,monoMix3:0,monoCutoff:33,monoEmph:1.08,monoContour:2.2,monoTrack:1,monoFD:0.07,monoFS:0,monoFR:0.05,monoAD:0.5,monoAS:0.6,monoAR:0.12)
+  — Every oscillator down and the ladder past self-oscillation, struck by the
+  kick, so the filter contour drops a sine two octaves on each hit
+- [**tearing sync**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.8,monoGlide:0.05,monoRange1:-1,monoRange2:-1,monoTune2:0,monoSync:1,monoSweep:24,monoMix1:0,monoMix2:1,monoMix3:0.4,monoCutoff:700,monoContour:2,monoFD:0.4,monoFS:0.3)
+  — Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so
+  each note of the tune tears down through the harmonics
 
 ### Kit voices
 

@@ -9,7 +9,7 @@ function play(patch: Partial<MonoPatch>, note: number, secs: number) {
   Object.assign(v.patch, patch)
   v.noteOn(note)
   const out = new Float32Array(Math.round(secs * SR))
-  v.render(out)
+  v.render(out, 0, out.length)
   return out
 }
 
@@ -62,10 +62,10 @@ describe('MonoVoice', () => {
       glide: 0.05,
     })
     v.noteOn(45)
-    v.render(new Float32Array(SR / 2))
+    v.render(new Float32Array(SR / 2), 0, SR / 2)
     v.noteOn(57)
     const x = new Float32Array(SR)
-    v.render(x)
+    v.render(x, 0, x.length)
     expect(pitch(x)).toBeCloseTo(220, 0)
   })
 
@@ -74,10 +74,10 @@ describe('MonoVoice', () => {
       const v = new MonoVoice(SR)
       Object.assign(v.patch, { vcaLeak: leak })
       v.noteOn(36)
-      v.render(new Float32Array(SR / 4))
+      v.render(new Float32Array(SR / 4), 0, SR / 4)
       v.noteOff(36)
       const x = new Float32Array(SR)
-      v.render(x)
+      v.render(x, 0, x.length)
       return Math.max(...x.subarray(SR / 2).map(Math.abs))
     }
     expect(tail(0)).toBeLessThan(1e-3)

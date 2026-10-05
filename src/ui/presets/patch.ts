@@ -76,7 +76,7 @@ const LANDINGS: Landing[] = [
   // The rail the whole toy runs off, so any of the four machines on it being
   // up is a wire there you can hear.
   at('starve', [], {
-    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'petLevel'],
+    oneOf: ['chipLevel', 'drumLevel', 'fmLevel', 'monoLevel', 'petLevel'],
   }),
   at('drum tune', ['drumLevel']),
   at('kit tempo', ['drumLevel']),
@@ -132,6 +132,10 @@ const LANDINGS: Landing[] = [
   at('pet data line', ['petLevel']),
   at('pet addr fault', ['petLevel', 'petAddrLine']),
   at('pet data fault', ['petLevel', 'petDataLine']),
+  at('mono level', ['monoLevel']),
+  at('mono cutoff', ['monoLevel']),
+  at('mono emphasis', ['monoLevel']),
+  at('mono pitch', ['monoLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))
@@ -447,9 +451,10 @@ export function coherePatch(
   return inTime(cohereGates(next), key => woke.has(key))
 }
 
-// The two chips that are played rather than run: each hears the toy's gate line
-// through a jumper, its own keybed, and whichever kit line is clipped onto it,
-// and the FM chip has an effect ROM besides. A roll that cuts the jumper on a
+// The chips that are played rather than run: each hears the toy's gate line
+// through a jumper, its own keybed, and whichever kit line is clipped onto it.
+// The FM chip has an effect ROM besides, and a leaky VCA sounds the mono synth
+// with no key down. A roll that cuts the jumper on a
 // chip nothing else strikes leaves the chip up in the mix and silent for ever,
 // which a roll from a preset that is only the FM chip does every time.
 // The jumper goes back on. Nothing here turns a stage up: the chip was already
@@ -457,10 +462,17 @@ export function coherePatch(
 const PLAYED = [
   { level: 'fmLevel', gate: 'fmKeyGate', struck: 'fmStruck', rom: 'fmEffect' },
   { level: 'pcmLevel', gate: 'pcmKeyGate', struck: 'pcmStruck' },
+  {
+    level: 'monoLevel',
+    gate: 'monoKeyGate',
+    struck: 'monoStruck',
+    rom: 'monoLeak',
+  },
 ] as const satisfies readonly {
   level: ControlKey
   gate: ControlKey
   struck: ControlKey
+  /** what else sounds the chip with nothing striking it */
   rom?: ControlKey
 }[]
 

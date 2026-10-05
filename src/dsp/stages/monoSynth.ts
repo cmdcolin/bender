@@ -26,13 +26,16 @@ export class MonoSynth implements Stage {
   private readonly cutoffLane = new Float32Array(BLOCK)
   private readonly queued: { note: number; on: boolean; gain: number }[] = []
   private lastReboot = 0
-  private lastNote = A3_MIDI - 12
+  private lastNote = A3_MIDI
   private gateNote = -1
   private gateLeft = 0
   private lastPhase = 0
   private sinceWrap = 0
   private stepSamples: number
   private gateLength = 0
+  private from = 0
+  private pitchLane: Float32Array | null = null
+  private cutLane: Float32Array | null = null
 
   constructor(
     private readonly sr: number,
@@ -125,6 +128,19 @@ export class MonoSynth implements Stage {
     this.gateLeft = this.gateLength
   }
 
+  private run(to: number) {
+    if (to <= this.from) return
+    this.voice.render(
+      this.buf,
+      this.from,
+      to,
+      null,
+      this.pitchLane,
+      this.cutLane,
+    )
+    this.from = to
+  }
+
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const rail = this.rail
     const voice = this.voice
@@ -158,17 +174,9 @@ export class MonoSynth implements Stage {
     const gate = p[IDX.monoGate]!
     this.gateLength = Math.max(gate * this.stepSamples, 1)
 
-    let from = 0
-    const run = (to: number) => {
-      if (to <= from) return
-      voice.render(
-        this.buf.subarray(from, to),
-        undefined,
-        pitchLane?.subarray(from, to),
-        cutLane ? this.cutoffLane.subarray(from, to) : null,
-      )
-      from = to
-    }
+    this.from = 0
+    this.pitchLane = pitchLane
+    this.cutLane = cutLane ? this.cutoffLane : null
 
     for (let i = 0; i < io.n; i++) {
       const phase = ctx.step[i]!
@@ -185,7 +193,7 @@ export class MonoSynth implements Stage {
       const closing = this.gateNote >= 0 && --this.gateLeft <= 0
       if (key === 0 && bits === 0 && !closing) continue
 
-      run(i)
+      this.run(i)
       if (key !== 0) {
         this.strike(key - KEY_BIAS + A3_MIDI, ctx.trig.keyHeld[i]! > 0)
       } else if (bits !== 0) {
@@ -196,7 +204,7 @@ export class MonoSynth implements Stage {
         this.gateNote = -1
       }
     }
-    run(io.n)
+    this.run(io.n)
 
     const amp = rail.ampFactor * p[IDX.monoLevel]! * OUT_TRIM
     let load = 0

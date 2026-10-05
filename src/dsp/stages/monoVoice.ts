@@ -128,7 +128,7 @@ export const MONO_DEFAULT: MonoPatch = {
 const OS = 2
 const LO_HZ = 0.25
 const DRIFT_HZ = 0.15
-const CONTROL = 32
+const CONTROL = 16
 // Hiss at the ladder input, enough to start it oscillating from silence.
 const FLOOR = 1e-4
 // The nonlinear gains in the ladder detune its resonance flat by about this much.
@@ -391,18 +391,19 @@ export class MonoVoice {
     const p = this.patch
     const osr = this.osr
     const cap = p.envCap
-    this.fEnv.set(p.fA * cap, p.fD * cap, p.fS, p.fR * cap, osr)
-    this.aEnv.set(p.aA * cap, p.aD * cap, p.aS, p.aR * cap, osr)
+    const sr = osr / OS
+    this.fEnv.set(p.fA * cap, p.fD * cap, p.fS, p.fR * cap, sr)
+    this.aEnv.set(p.aA * cap, p.aD * cap, p.aS, p.aR * cap, sr)
     const driftSemis = (p.drift + 12 * p.heat) / 100
     for (let j = 0; j < 3; j++) {
       const wander =
-        driftSemis * this.drunk[j]!.step(DRIFT_HZ * CONTROL, osr, this.rng)
+        driftSemis * this.drunk[j]!.step(DRIFT_HZ * CONTROL, sr, this.rng)
       const hot =
         p.heat > 0
           ? 0.4 *
             p.heat *
             this.heatScale[j]! *
-            this.heatWalk[j]!.step(0.03 * CONTROL, osr, this.rng)
+            this.heatWalk[j]!.step(0.03 * CONTROL, sr, this.rng)
           : 0
       const stretch = p.heat * 0.04 * this.heatScale[j]! * (this.cv - 36)
       const tune = 12 * p.range[j]! + p.fine[j]! + wander + hot
@@ -428,96 +429,130 @@ export class MonoVoice {
   }
 
   /**
-   * `pitchLane` in octaves and `cutoffLane` in octaves, a sample each, on top
-   * of the block-rate `bend` (semitones) and `open` (octaves).
+   * Fills `out` from `from` to `to`. `pitchLane` and `cutoffLane` are in
+   * octaves, a sample each and indexed like `out`, on top of the block-rate
+   * `bend` (semitones) and `open` (octaves). Pitch, cutoff and the contours
+   * move at the board's rate; the oscillators and the ladder run at twice it.
    */
   render(
     out: Float32Array,
-    ext?: Float32Array,
+    from: number,
+    to: number,
+    ext?: Float32Array | null,
     pitchLane?: Float32Array | null,
     cutoffLane?: Float32Array | null,
   ) {
     const p = this.patch
     const osr = this.osr
-    const { osc0, osc1, osc2, ratio } = this
-    const glideK = p.glide > 0 ? 1 - Math.exp(-1 / (p.glide * osr)) : 1
-    const droopK = p.droop > 0 ? 1 - Math.exp(-p.droop / osr) : 0
+    const sr = osr / OS
+    const { osc0, osc1, osc2, ratio, fEnv, aEnv, ladder } = this
+    const glideK = p.glide > 0 ? 1 - Math.exp(-1 / (p.glide * sr)) : 1
+    const droopK = p.droop > 0 ? 1 - Math.exp(-p.droop / sr) : 0
     const r = 4.2 * p.emphasis
     const comp = 1 + p.bassComp * r * 0.75
     const skew = 1 + 2 * p.mismatch
     const leak = p.vcaLeak * 0.35
     const sagK = 1 - Math.exp(-1 / (0.06 * osr))
     const fTop = 0.45 * osr
-    const pinkK = 1 - Math.exp((-2 * Math.PI * 1200) / osr)
+    const pinkK = 1 - Math.exp((-2 * Math.PI * 1200) / sr)
     const free = p.osc3Free
     const inGain = p.drive * comp * 0.5
-    const piOverSr = Math.PI / osr
+    const piOverSr = (Math.PI * TUNE) / osr
     const contour = p.contour * (0.7 + 0.3 * this.velocity)
+    const lvl0 = p.level[0]
+    const lvl1 = p.level[1]
+    const lvl2 = p.level[2]
+    const wave0 = p.wave[0]
+    const wave1 = p.wave[1]
+    const wave2 = p.wave[2]
+    const sync = p.sync
+    const hiss = p.noise * 0.3 + FLOOR
+    const loop = p.loop * 2
+    const extGain = p.ext
+    const modAmt = p.modAmt
+    const modMix = p.modMix
+    const modPitch = p.modPitch
+    const modFilter = p.modFilter
+    const sweep = p.envOsc2
+    const track = p.track / 12
+    const sag = p.sag
+    const gain = p.volume * 1.4
+    const keyBase = 440 / osr
+    const lo = free ? ratio[2]! / osr : 0
 
-    for (let n = 0; n < out.length; n++) {
-      let pair0 = 0
-      const e = ext ? ext[n]! * p.ext : 0
-      for (let k = 0; k < OS; k++) {
-        if (--this.tick <= 0) {
-          this.tick = CONTROL
-          this.control()
-        }
-        this.cv += (this.target - this.cv) * glideK
-        if (droopK > 0) {
-          this.cv -= this.cv * droopK
-          this.target -= this.target * droopK
-        }
-        const fe = this.fEnv.step()
-        const ae = this.aEnv.step()
-
-        this.pinkish += pinkK * (this.noise() - this.pinkish)
-        const mod =
-          p.modAmt * ((1 - p.modMix) * this.v2 + p.modMix * this.pinkish * 2)
-        const sagged = this.sagEnv * p.sag
-        const keyHz =
-          (440 / osr) *
-          octaves(
-            (this.cv - 69 + this.bend + p.modPitch * mod - sagged * 3) / 12 +
-              (pitchLane ? pitchLane[n]! : 0),
-          )
-        osc0.advance(Math.min(keyHz * ratio[0]!, 0.45))
-        const bend = p.envOsc2 === 0 ? 1 : octaves((p.envOsc2 * fe) / 12)
-        osc1.advance(Math.min(keyHz * ratio[1]! * bend, 0.45))
-        osc2.advance(Math.min(free ? ratio[2]! / osr : keyHz * ratio[2]!, 0.45))
-
-        const v1 = p.sync ? osc1.synced(p.wave[1], osc0) : osc1.value(p.wave[1])
-        this.v2 = osc2.value(p.wave[2])
-        const mix =
-          p.level[0] * osc0.value(p.wave[0]) +
-          p.level[1] * v1 +
-          p.level[2] * this.v2 +
-          (p.noise * 0.3 + FLOOR) * this.noise() +
-          p.loop * this.last * 2 +
-          e
-
-        const cutoff = Math.min(
-          p.cutoff *
-            octaves(
-              contour * fe +
-                (p.track * (this.cv - 48)) / 12 +
-                p.modFilter * mod +
-                this.open +
-                (cutoffLane ? cutoffLane[n]! : 0) -
-                sagged * 0.5,
-            ),
-          fTop,
-        )
-        const f = tan(piOverSr * Math.max(cutoff, 15) * TUNE)
-        const y = this.ladder.process(mix * inGain, f, r, skew)
-        const v = y * (leak + (1 - leak) * ae)
-        this.last = v
-        this.sagEnv += sagK * (Math.abs(v) - this.sagEnv)
-        if (k === 0) pair0 = v
-        else {
-          const y1 = this.dc.process(this.down.process(pair0, v), 0.9995)
-          out[n] = softclip(y1 * p.volume * 1.4) * 0.9
-        }
+    for (let n = from; n < to; n++) {
+      if (--this.tick <= 0) {
+        this.tick = CONTROL
+        this.control()
       }
+      this.cv += (this.target - this.cv) * glideK
+      if (droopK > 0) {
+        this.cv -= this.cv * droopK
+        this.target -= this.target * droopK
+      }
+      const fe = fEnv.step()
+      const ae = aEnv.step()
+      const amp = leak + (1 - leak) * ae
+      const mod =
+        modMix > 0
+          ? modAmt *
+            ((1 - modMix) * this.v2 +
+              modMix *
+                2 *
+                (this.pinkish += pinkK * (this.noise() - this.pinkish)))
+          : modAmt * this.v2
+      const sagged = this.sagEnv * sag
+      const keyHz =
+        keyBase *
+        octaves(
+          (this.cv - 69 + this.bend + modPitch * mod - sagged * 3) / 12 +
+            (pitchLane ? pitchLane[n]! : 0),
+        )
+      const dt0 = Math.min(keyHz * ratio[0]!, 0.45)
+      const dt1 = Math.min(
+        keyHz * ratio[1]! * (sweep === 0 ? 1 : octaves((sweep * fe) / 12)),
+        0.45,
+      )
+      const dt2 = Math.min(free ? lo : keyHz * ratio[2]!, 0.45)
+      const cutoff = Math.min(
+        p.cutoff *
+          octaves(
+            contour * fe +
+              track * (this.cv - 48) +
+              modFilter * mod +
+              this.open +
+              (cutoffLane ? cutoffLane[n]! : 0) -
+              sagged * 0.5,
+          ),
+        fTop,
+      )
+      const f = tan(piOverSr * Math.max(cutoff, 15))
+      const e = ext ? ext[n]! * extGain : 0
+
+      let pair0 = 0
+      for (let k = 0; k < OS; k++) {
+        osc0.advance(dt0)
+        osc1.advance(dt1)
+        osc2.advance(dt2)
+        const v1 = sync ? osc1.synced(wave1, osc0) : osc1.value(wave1)
+        const v2 = osc2.value(wave2)
+        const mix =
+          lvl0 * osc0.value(wave0) +
+          lvl1 * v1 +
+          lvl2 * v2 +
+          hiss * this.noise() +
+          loop * this.last +
+          e
+        const v = ladder.process(mix * inGain, f, r, skew) * amp
+        this.last = v
+        this.sagEnv = flushDenormal(
+          this.sagEnv + sagK * (Math.abs(v) - this.sagEnv),
+        )
+        if (k === 0) pair0 = v
+        else this.v2 = v2
+      }
+      const y = this.dc.process(this.down.process(pair0, this.last), 0.9995)
+      out[n] = softclip(y * gain) * 0.9
     }
   }
 
