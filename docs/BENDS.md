@@ -461,6 +461,42 @@ cents sharp at the top, which is why one of these never quite sounded in tune
 with anything. _ROM clock_ drags that counter directly, and pitch and aliasing
 move together because on this part they are the same thing.
 
+## The mono synth's voice card
+
+The mono synth is a clean instrument with seven parts on its voice card that
+fail the way analog synth parts do.
+
+**Hot converter** is the exponential converter's transistor pair with no heater.
+The pair turns a control voltage into a frequency, and its scale depends on
+temperature, so the three oscillators drift in different directions and the
+octave widths stretch apart. Low notes stay close to in tune and high notes
+disagree. The board's own heat adds to it.
+
+**Leaky VCA** leaves the amplifier slightly open, so some of the filter output
+passes with no key down. The oscillators drone under every note and between
+them.
+
+**Contour caps** swaps the timing capacitors in both contour generators for
+bigger ones. Every attack, decay and release stretches by the same factor, so a
+pluck turns into a swell and a short riff into one long smeared note.
+
+**Mismatched pair** puts one transistor pair in the ladder up to three times off
+the cutoff of the other three stages. The resonant peak moves and widens, and
+the pitch the filter self-oscillates at shifts away from the cutoff.
+
+**Pitch droop** is the sample-and-hold capacitor that keeps the pitch voltage
+between key presses, leaking toward 0 V. A held note sinks, faster the higher it
+started, and each new key resets it.
+
+**Key DAC bit** holds one bit of the key-to-voltage converter high. A key whose
+number already has the bit set plays as written; every other key jumps up by the
+bit's weight in semitones, so a riff comes out with half its notes moved.
+
+**Sag** is a weak regulator on the card. Loud notes pull the supply down, the
+pitch dips and the filter closes on each hit, and both recover as the note
+fades. The card also sits on the toy's own rail, so **Starve** and a brownout
+drag its pitch with the other chips.
+
 ## The talking pet's speech chip
 
 The talking pet speaks through an LPC decoder in the style of the late-70s

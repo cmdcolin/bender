@@ -292,6 +292,18 @@ test('split cuts the keybed at the note you set it to', () => {
   expect(engine.keysDown.get().has(3)).toBe(false)
 })
 
+test('a bass split puts the mono synth under the split and the toy over it', () => {
+  midi.setNotes(true)
+  midi.setKeyRoute('bassSplit')
+  midi.setSplit(60)
+  send(0x90, 59, 100)
+  send(0x90, 60, 100)
+  expect(engine.monoKeysDown.get().has(2)).toBe(true)
+  expect(engine.keysDown.get().has(3)).toBe(true)
+  expect(engine.monoKeysDown.get().has(3)).toBe(false)
+  expect(engine.keysDown.get().has(2)).toBe(false)
+})
+
 // The place to cut a keybed is a key, so the panel asks for one — and the key
 // that sets it is aimed at the panel rather than at the chip.
 test('the split point can be taken off a key, which does not sound', () => {

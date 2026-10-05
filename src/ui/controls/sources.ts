@@ -1755,7 +1755,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['soldered', 'cut'],
-        help: 'The jumper from the toy’s gate line to the synth’s key input. Soldered, the toy’s tune and arpeggio play the synth. Cut, only its own bed, the kit’s trigger lines and a controller play it.',
+        help: 'The jumper from the toy’s gate line to the synth’s key input. Soldered, the toy’s tune and arpeggio play the synth. Cut, notes reach it from its bed, the kit’s trigger lines and a controller.',
       },
       {
         key: 'monoHeat',
@@ -1765,7 +1765,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'The exponential converter’s transistor pair with its heater gone. Each oscillator drifts in its own direction and octaves stretch apart, so the further a note is from the bottom the more the three disagree. The board’s own heat adds to it.',
+        help: 'The exponential converter’s transistor pair with its heater gone. The three oscillators drift in different directions and octaves stretch apart, so the further a note is from the bottom the more the three disagree. The board’s own heat adds to it.',
       },
       {
         key: 'monoLeak',

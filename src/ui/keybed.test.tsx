@@ -6,6 +6,7 @@ import { engine } from '../engine/engine'
 import { App } from './App'
 import { FmKeys } from './FmKeys'
 import { Keys } from './Keys'
+import { MonoKeys } from './MonoKeys'
 import { PcmKeys } from './PcmKeys'
 import { measure, touch } from './testDom'
 
@@ -72,6 +73,17 @@ test('a key on the home bed plays the home keyboard alone', () => {
   expect(engine.fmKeysDown.get().size).toBe(0)
   fireEvent.pointerUp(middleC('home keyboard'))
   expect(engine.pcmKeysDown.get().size).toBe(0)
+})
+
+test('a key on the mono bed plays the mono synth alone', () => {
+  all()
+  render(<MonoKeys />)
+  fireEvent.pointerDown(middleC('mono synth'))
+  expect(engine.monoKeysDown.get().size).toBe(1)
+  expect(engine.keysDown.get().size).toBe(0)
+  expect(engine.pcmKeysDown.get().size).toBe(0)
+  fireEvent.pointerUp(middleC('mono synth'))
+  expect(engine.monoKeysDown.get().size).toBe(0)
 })
 
 // The letters go to one bed at a time, so wiring them onto the home keyboard

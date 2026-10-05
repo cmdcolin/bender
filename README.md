@@ -22,6 +22,8 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 ## Features
 
 - Circuit bend a toy keyboard, drum machine, and basic FM synth
+- A three-oscillator ladder-filter mono synth on the same gate line, for bass
+  lines and drones, with seven faults on its voice card
 - The kit can sample itself: a 12-bit ROM mode with pitch and truncation, the
   lofi drum machine
 - Tape delay, reverb, and distortion 'guitar pedals'
@@ -64,7 +66,7 @@ pnpm dev
 
 - [Getting started](docs/GETTING-STARTED.md)
 - [User guide](docs/USER-GUIDE.md) — playing the keyboard, the drum machine, the
-  FM chip, the home keyboard, presets and rolls
+  FM chip, the home keyboard, the mono synth, presets and rolls
 - [Bends](docs/BENDS.md) — what each fault does to the circuit, and why
 - [How it works](docs/HOW-IT-WORKS.md) — the signal path map and the app's own
   architecture
