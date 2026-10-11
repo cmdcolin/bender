@@ -4,6 +4,8 @@
 
 /* Italic, because nothing in 1985 was upright. */
 .brand {
+  display: inline-block;
+  transform: rotate(-3deg);
   font-size: var(--fs-md);
   font-weight: 800;
   font-style: italic;

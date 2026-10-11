@@ -46,6 +46,7 @@
 .chip {
   display: inline-flex;
   padding: 3px 0;
+  transform: rotate(2deg);
   background: repeating-linear-gradient(
       90deg,
       #b8bcc0 0 3px,

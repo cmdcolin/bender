@@ -20,7 +20,7 @@
   --key-b-edge: #000;
   --key-b-w: 36%;
   --key-b-h: 56%;
-  --key-round: 0 0 2px 2px;
+  --key-round: 0 0 4px 4px;
   --switch: #4a4b52;
   --switch-hover: #565862;
 
@@ -40,6 +40,7 @@
   display: inline-flex;
   flex-direction: column;
   gap: 2px;
+  transform: rotate(-1.5deg);
 }
 
 .model {

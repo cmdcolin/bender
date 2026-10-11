@@ -15,7 +15,7 @@
   --key-w-edge: #9c978c;
   --key-b: #111;
   --key-b-edge: #000;
-  --key-round: 0 0 3px 3px;
+  --key-round: 0 0 5px 5px;
   --switch: #2a2a2a;
   --switch-hover: #353535;
   --wood: #5b3720;
@@ -64,11 +64,17 @@
 .knobs span {
   width: 9px;
   height: 9px;
+  align-self: center;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #4a4a4a, #0c0c0c 70%);
   box-shadow:
     0 0 0 1px #000,
     inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.knobs span:nth-child(2) {
+  width: 12px;
+  height: 12px;
 }
 
 /* The orange rocker every panel of this kind had somewhere. */
