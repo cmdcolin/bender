@@ -44,7 +44,7 @@
 .topRight {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-md);
 }
 .round {
   display: grid;
@@ -66,7 +66,7 @@
   color: #000;
 }
 .full {
-  padding: 5px 12px;
+  padding: var(--space-xs) var(--space-lg);
   border: 1px solid #ffffff50;
   border-radius: var(--pill-radius);
   color: #fff;
@@ -120,7 +120,7 @@
   right: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-md);
 }
 .switchesLeft {
   right: auto;
@@ -146,7 +146,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: var(--space-xs);
   padding: 0;
   border: 0;
   background: none;
@@ -246,8 +246,8 @@
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 12px 0 18px;
+  gap: var(--space-lg);
+  padding: var(--space-lg) 0 var(--space-xl);
 }
 
 .tabs {
@@ -308,7 +308,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 8px 14px;
+  padding: var(--space-md) var(--space-lg);
   border: 1px solid #ffffff38;
   border-radius: var(--pill-radius);
   background: transparent;
@@ -373,7 +373,7 @@
   justify-content: center;
   min-width: 0;
   height: 50px;
-  padding: 3px 4px;
+  padding: var(--space-xs);
   overflow: hidden;
   border: 1px solid #ffffff30;
   border-radius: 8px;
@@ -425,7 +425,7 @@
 }
 .dealRow .chip,
 .dealRow .chipOn {
-  padding: 5px 10px;
+  padding: var(--space-xs) var(--space-md);
   font-size: var(--fs-sm);
 }
 .dealGap {
@@ -472,7 +472,7 @@
   align-items: center;
   gap: var(--space-sm);
   height: 40px;
-  padding: 0 14px;
+  padding: 0 var(--space-lg);
   border: 1px solid #ffffff38;
   border-radius: var(--pill-radius);
   background: transparent;
@@ -553,7 +553,7 @@
   gap: var(--space-lg);
   max-height: min(64vh, 480px);
   overflow-y: auto;
-  padding: 0 20px calc(18px + env(safe-area-inset-bottom));
+  padding: 0 var(--space-xl) calc(var(--space-xl) + env(safe-area-inset-bottom));
   border-radius: 18px 18px 0 0;
   background: #111;
   box-shadow: 0 -8px 30px #000c;
@@ -563,8 +563,8 @@
   top: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 0 4px;
+  gap: var(--space-md);
+  padding: var(--space-lg) 0 var(--space-xs);
   background: #111;
 }
 .sheetTitle {
@@ -587,13 +587,13 @@
 .faders {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-md);
 }
 .fader {
   display: grid;
   grid-template-columns: 7.5rem 1fr 2.5rem;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-md);
   font-size: var(--fs-sm);
 }
 .fader input {
@@ -615,7 +615,7 @@
   gap: var(--space-md);
 }
 .pool {
-  padding: 8px 10px;
+  padding: var(--space-md);
   border: 1px solid #ffffff38;
   border-radius: var(--pill-radius);
   background: #000;
