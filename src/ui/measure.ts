@@ -2,9 +2,9 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 
 // How wide a thing actually came out, for the layouts CSS can decide and the
 // component has to. A media query answers a question about the window, and the
-// keybed's question is about its case: the panel beside it is 470 fixed pixels
-// of that window, and the FM board never grows past 380 of what is left, so two
-// beds in the same window have very different room for keys.
+// keybed's question is about its case: the panel beside it takes 470 to 600
+// pixels of that window, and the FM board never grows past 380 of what is
+// left, so two beds in the same window have very different room for keys.
 //
 // Undefined until it has been measured, which is one frame. What to draw in the
 // meantime is the caller's business — the keybed draws the whole board, because

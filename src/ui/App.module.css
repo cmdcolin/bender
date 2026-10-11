@@ -30,7 +30,7 @@
 }
 
 .panel {
-  width: 470px;
+  width: clamp(470px, 30vw, 600px);
   flex: none;
   overflow-y: auto;
   padding: 0 var(--space-lg) var(--space-md);
