@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { engine } from '../engine/engine'
@@ -39,4 +39,28 @@ test('run starts both machines and a second press stops them', () => {
   fireEvent.click(screen.getByRole('button', { name: 'stop' }))
   expect(engine.songPlaying.get()).toBe(false)
   expect(engine.drumsPlaying.get()).toBe(false)
+})
+
+test('a finished take lands on a chip beside rec instead of downloading', () => {
+  render(<PocketPage />)
+  expect(engine.takeTo).not.toBeNull()
+  engine.recSeconds.set(12)
+  act(() => engine.takeTo!(new File(['x'], 'bender-take.wav')))
+  expect(
+    screen.getByRole('button', { name: 'save or share the 0:12 take' }),
+  ).toBeTruthy()
+})
+
+test('the app keeps its downloads once the page goes', () => {
+  const { unmount } = render(<PocketPage />)
+  unmount()
+  expect(engine.takeTo).toBeNull()
+})
+
+test('the bend switch steps through the modes and remembers the one it is on', () => {
+  render(<PocketPage />)
+  fireEvent.click(screen.getByRole('button', { name: /dub/ }))
+  expect(screen.getByRole('button', { name: /starve/ })).toBeTruthy()
+  expect(localStorage.getItem('bender.pocket.touch')).toBe('starve')
+  localStorage.removeItem('bender.pocket.touch')
 })

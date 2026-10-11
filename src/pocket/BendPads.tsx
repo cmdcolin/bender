@@ -14,6 +14,8 @@ import {
 } from '../ui/bendKeys'
 import { useStoreValue } from '../ui/ControlsContext'
 import { THROWS } from '../ui/throws'
+import { buzz } from './haptics'
+import { padLines } from './padLines'
 import styles from './pocket.module.css'
 
 // The sixteen dealt bends as switches: a tap pins one on and a second tap lets
@@ -38,11 +40,18 @@ export function BendPads() {
               className={on ? styles.padOn : styles.pad}
               aria-pressed={on}
               title={k.says}
-              onClick={() =>
-                on ? letGoBend(name, seconds) : holdBend(name, k, seconds)
-              }
+              aria-label={k.name}
+              onClick={() => {
+                buzz()
+                if (on) letGoBend(name, seconds)
+                else holdBend(name, k, seconds)
+              }}
             >
-              {k.name}
+              {padLines(k.name).map(line => (
+                <span key={line} className={styles.move}>
+                  {line}
+                </span>
+              ))}
             </button>
           )
         })}

@@ -11,18 +11,23 @@ import { randomLook } from '../ui/presets/roll'
 import { Scope } from '../ui/Scope'
 import { useBoardUrl } from '../ui/useBoardUrl'
 import { BendPads } from './BendPads'
+import { shareLink } from './deliver'
+import { buzz } from './haptics'
 import styles from './pocket.module.css'
 import { MixSheet, TuneSheet } from './Sheets'
 import { SHELVES } from './shelves'
 import { BENDS_TAB, Strip, Tabs } from './Strip'
-import { TOUCH, touchPush } from './touch'
+import { TILT, TOUCH, nextMode, touchMode, touchPush } from './touch'
 import { Transport } from './Transport'
 import { useGestures } from './useGestures'
+import { useTilt } from './useTilt'
+import { useWakeLock } from './useWakeLock'
 
 import type { Controls } from '../controls'
 import type { Glide } from '../engine/glide'
 
 const HINT_STORE = 'bender.pocket.hint'
+const MODE_STORE = 'bender.pocket.touch'
 const MORPH_S = 1
 
 type Panel = 'tune' | 'mix'
@@ -34,20 +39,6 @@ interface Up {
   from: Controls
   path: Glide
   t: number
-}
-
-const share = async (): Promise<string> => {
-  const url = location.href
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: 'bender', url })
-      return ''
-    }
-    await navigator.clipboard.writeText(url)
-    return 'link copied'
-  } catch {
-    return ''
-  }
 }
 
 // Run stops whatever is running. From silence it starts both machines, with
@@ -78,6 +69,9 @@ function useFlash() {
 
 export function PocketPage() {
   const running = useStoreValue(engine.running)
+  const song = useStoreValue(engine.songPlaying)
+  const drums = useStoreValue(engine.drumsPlaying)
+  const [mode, setMode] = useState(() => touchMode(read(MODE_STORE)))
   const [tab, setTab] = useState(SHELVES[0]!.name)
   const [shelfName, setShelfName] = useState(SHELVES[0]!.name)
   const [up, setUp] = useState<Up | null>(null)
@@ -92,6 +86,28 @@ export function PocketPage() {
 
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
+  useWakeLock(song || drums)
+
+  const tilt = useTilt(p => {
+    if (p === null) engine.letGoThrow(TILT)
+    else
+      engine.holdThrow(TILT, touchPush(mode, p.x, p.y, engine.controls.get()))
+  })
+
+  const flipTilt = () =>
+    void tilt.toggle().then(ok => {
+      if (!ok) announce('motion access was turned down')
+    })
+
+  const cycleMode = () => {
+    const next = nextMode(mode)
+    setMode(next)
+    write(MODE_STORE, next.name)
+    announce(next.name)
+    buzz()
+  }
+
+  const label = up?.name ?? (rolled ? 'random' : normal ? 'normal' : null)
 
   const toggle = (p: Panel) => setPanel(panel === p ? null : p)
 
@@ -140,6 +156,7 @@ export function PocketPage() {
     const name = order[(at + dir + order.length) % order.length] ?? null
     land(name)
     announce(name ?? 'normal')
+    buzz()
     document
       .querySelector(`[data-preset="${name ?? 'normal'}"]`)
       ?.scrollIntoView({
@@ -157,7 +174,10 @@ export function PocketPage() {
         write(HINT_STORE, '1')
       }
       setBending(at)
-      engine.holdThrow(TOUCH, touchPush(at.x, at.y, engine.controls.get()))
+      engine.holdThrow(
+        TOUCH,
+        touchPush(mode, at.x, at.y, engine.controls.get()),
+      )
     },
     onLift: () => {
       setBending(null)
@@ -183,7 +203,9 @@ export function PocketPage() {
           <button
             className={styles.round}
             aria-label="share a link to this board"
-            onClick={() => void share().then(w => w && announce(w))}
+            onClick={() =>
+              void shareLink(location.href).then(w => w && announce(w))
+            }
           >
             ↗
           </button>
@@ -218,6 +240,9 @@ export function PocketPage() {
           onContextMenu={e => e.preventDefault()}
         >
           <Scope className={styles.scope} />
+          {label === null ? null : (
+            <span className={styles.label}>{label}</span>
+          )}
           {bending === null ? null : (
             <span
               className={styles.touch}
@@ -227,6 +252,27 @@ export function PocketPage() {
               }}
             />
           )}
+        </div>
+        <div className={styles.switchesLeft}>
+          <button
+            className={styles.switch}
+            title={`hold and drag: ${mode.says}`}
+            onClick={cycleMode}
+          >
+            <span className={styles.switchIcon}>{mode.icon}</span>
+            {mode.name}
+          </button>
+          {tilt.supported ? (
+            <button
+              className={tilt.on ? styles.switchOn : styles.switch}
+              aria-pressed={tilt.on}
+              title="tilt the phone to bend"
+              onClick={flipTilt}
+            >
+              <span className={styles.switchIcon}>⇄</span>
+              tilt
+            </button>
+          ) : null}
         </div>
         <div className={styles.switches}>
           <button
@@ -263,9 +309,14 @@ export function PocketPage() {
               <li>▶ runs the toy&apos;s tune and the drum machine</li>
               <li>swipe the scope sideways for the next preset</li>
               <li>
-                hold the scope and drag: across sweeps a filter, up feeds the
-                delay back on itself
+                hold the scope and drag to bend. The switch at the top left
+                picks what bends. On <b>{mode.name}</b>, {mode.says}
               </li>
+              {tilt.supported ? (
+                <li>
+                  <b>tilt</b> bends the same way from how the phone leans
+                </li>
+              ) : null}
               <li>
                 tap a preset twice to set how far toward it the board goes
               </li>
@@ -277,7 +328,10 @@ export function PocketPage() {
                 <b>mix</b> sets each machine&apos;s level and brings in the mic
                 or a sample
               </li>
-              <li>● rec saves a wav of what you hear</li>
+              <li>
+                ● rec records what you hear, and the chip beside it saves or
+                shares the take
+              </li>
             </ul>
           </div>
         ) : null}
