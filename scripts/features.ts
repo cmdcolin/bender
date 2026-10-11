@@ -120,6 +120,8 @@ const SCRIPTS: Record<string, string> = {
     'opens a link in headless Chrome and checks that the board arrives, the overlay says where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url',
   'agent:eval':
     'runs claude -p --chrome sessions against the app, one per task, and grades the board each one leaves',
+  controls:
+    'lists every button and select on the panel by rendered height, with `--touch` for a finger',
   ink: 'walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read',
   demos: "writes demos.json into the README's Demos block",
   reel: "renders the showcase demos to mp3 for the landing page's Demos section",
