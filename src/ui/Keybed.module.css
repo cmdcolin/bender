@@ -27,9 +27,6 @@
   --case-round: 10px 10px 5px 5px;
   --fixing: var(--case-edge);
   --fixing-size: 5px;
-  /* Two machines, and a keybed is where you can see which is which: the toy's
-     is a moulded three octaves of cream plastic, and the FM chip's is the short
-     grey one somebody screwed to a bare board. */
   --bed-h: 78px;
   --key-w: #e4dfd1;
   --key-w-edge: #a9a49a;

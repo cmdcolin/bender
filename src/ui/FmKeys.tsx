@@ -2,7 +2,7 @@ import styles from './FmKeys.module.css'
 import { GateJumper, Keybed } from './Keybed'
 
 // FmKeys draws the FM chip's keyboard as a green circuit board with the chip on
-// it and push-button switches for keys. The switch on the deck cuts or solders
+// it and a row of piano keys. The switch on the deck cuts or solders
 // the jumper from the toy's gate.
 export function FmKeys() {
   return (

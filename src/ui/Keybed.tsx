@@ -347,8 +347,6 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
     return (
       <button
         className={KEY_CLASS[black ? 'black' : 'white'][lit]}
-        data-key={black ? 'black' : 'white'}
-        data-lit={lit}
         aria-label={`key ${semitoneName(at(note))}`}
         aria-pressed={lit !== 'dark'}
         onPointerDown={e => {
@@ -452,7 +450,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
           {tail}
         </div>
       </div>
-      <div className={styles.keys} data-bed ref={setBed}>
+      <div className={styles.keys} ref={setBed}>
         {below && <span className={styles.offLow}>◂</span>}
         {above && <span className={styles.offHigh}>▸</span>}
         {whiteKeys(drawn).map(note => {

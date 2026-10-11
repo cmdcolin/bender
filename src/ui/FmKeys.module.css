@@ -1,14 +1,12 @@
-/* These rules draw the FM chip's keybed as a green circuit board with copper
-   traces, a DIP chip on the deck, gold mounting holes, a pin header and two
-   staggered rows of push-button switches for keys. Keybed.tsx marks the bed
-   with `data-bed` and each key with `data-key` and `data-lit`, and the rules
-   below restyle those parts. */
+/* These rules draw the FM chip's case as a green circuit board with copper
+   traces, a DIP chip on the deck, gold mounting holes and a pin header. The
+   keys are Keybed.module.css's piano keys, sunk into a dark green bed. */
 
 .board {
   --case: #1c4a31;
   --case-edge: #0c2517;
   --stamp: #b9d6c2;
-  --bed: transparent;
+  --bed: #0c2517;
   --case-round: 4px;
   --fixing: #0c2517;
   --fixing-size: 7px;
@@ -118,83 +116,6 @@
   composes: capIdle from './button.module.css';
   font-family: var(--mono);
   --cap-lit: var(--accent2);
-}
-
-/* Each white key is a switch on the bottom row, and each black key is a switch
-   on the top row between the two white keys next to it. A switch is a square
-   steel body with a round cap. The cap turns the accent colour while a hand
-   holds the key and amber while the chip plays the note. */
-.board [data-bed] {
-  --sw: min(82%, 26px);
-  height: 68px;
-  overflow: visible;
-  border-radius: 0;
-  border-top: 1px dashed rgba(227, 239, 230, 0.22);
-}
-
-.board [data-key] {
-  --cap: #1a1b1d;
-  position: absolute;
-  left: 50%;
-  width: var(--sw);
-  height: auto;
-  aspect-ratio: 1;
-  align-items: center;
-  padding: 0;
-  transform: translateX(-50%);
-  border: 1px solid #3a3e42;
-  border-radius: 2px;
-  background:
-    radial-gradient(circle, var(--cap) 0 52%, #0a0a0a 55% 60%, transparent 62%),
-    linear-gradient(145deg, #c3c8cc, #7f858a);
-  box-shadow: 0 1px 0 #0c2517;
-}
-
-.board [data-key='white'] {
-  bottom: 5px;
-}
-
-.board [data-key='black'] {
-  top: 6px;
-  right: auto;
-  left: 100%;
-  z-index: 2;
-}
-
-.board [data-lit='hand'] {
-  --cap: var(--accent);
-  box-shadow: 0 0 8px rgba(255, 93, 59, 0.6);
-  transform: translate(-50%, 1px);
-}
-
-.board [data-lit='chip'] {
-  --cap: var(--accent2);
-  box-shadow: 0 0 8px rgba(255, 176, 59, 0.5);
-  transform: translate(-50%, 1px);
-}
-
-.board [data-key] > span {
-  color: #cfd6d1;
-  font-family: var(--mono);
-}
-
-.board [data-lit='hand'] > span,
-.board [data-lit='chip'] > span {
-  color: rgba(40, 10, 0, 0.75);
-}
-
-@media (hover: hover) {
-  .board [data-key][data-lit='dark']:hover {
-    --cap: #2c2e31;
-    filter: none;
-  }
-}
-
-@media (pointer: coarse) {
-  .board [data-bed] {
-    --sw: min(84%, 34px);
-    height: 86px;
-  }
 }
 
 @container (max-width: 620px) {
