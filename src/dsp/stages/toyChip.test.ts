@@ -460,3 +460,112 @@ test('a loop wire on reset loops the song on the stretch before the bit rises', 
   expect(steps.filter(s => s === 0).length).toBeGreaterThan(3)
   expect(Math.max(...walk({}))).toBeGreaterThan(20)
 })
+
+const FAULT_TO_V = 2
+
+test('a held key under a reversed envelope cap swells in', () => {
+  const x = renderBender({ ...CHIP_ONLY, chipEnvCap: 1 }, 1, b =>
+    b.toyChip.noteOn(0),
+  )
+  const early = rms(x.subarray(0, SR * 0.05))
+  const later = rms(x.subarray(SR * 0.3, SR * 0.4))
+  expect(later).toBeGreaterThan(early * 3)
+})
+
+test('a released key keeps droning on a leaky envelope cap', () => {
+  const take = (chipEnvCap: number) =>
+    rms(
+      tail(
+        renderBender(
+          { ...CHIP_ONLY, chipEnvCap },
+          4,
+          b => b.toyChip.noteOn(0),
+          undefined,
+          (b, secs) => {
+            if (secs > 0.2) b.toyChip.noteOff(0)
+          },
+        ),
+        0.5,
+      ),
+    )
+  expect(take(0)).toBeLessThan(0.001)
+  expect(take(2)).toBeGreaterThan(0.01)
+})
+
+test('volume PWM in earshot chops a fading tune', () => {
+  const tune = (chipPwm: number) =>
+    renderBender({ ...CHIP_ONLY, chipPwm }, 3, b => (b.transport.tune = true))
+  const clean = tune(0)
+  expect(deviation(tune(0.6), clean)).toBeGreaterThan(0.3)
+  expect(spectrum(tune(0.6), SR).flatness).toBeGreaterThan(
+    spectrum(clean, SR).flatness,
+  )
+})
+
+test('a voice short leaves a lone note near where it was and mangles a chord', () => {
+  const take = (chipShort: number, notes: number[]) =>
+    tail(
+      renderBender({ ...CHIP_ONLY, chipShort }, 1, b =>
+        notes.forEach(n => b.toyChip.noteOn(n)),
+      ),
+      0.5,
+    )
+  expect(pitchHz(take(1, [0]))).toBeCloseTo(pitchHz(take(0, [0])), -1)
+  const triad = [0, 4, 7]
+  expect(deviation(take(1, triad), take(0, triad))).toBeGreaterThan(0.5)
+})
+
+test('ghost keys sound the far corners of two held keys', () => {
+  const sounding = (chipGhost: number) => {
+    const out = new Int16Array(ToyChip.MAX_SOUNDING)
+    let notes: number[] = []
+    renderBender(
+      { ...CHIP_ONLY, chipGhost },
+      0.3,
+      b => {
+        b.toyChip.noteOn(0)
+        b.toyChip.noteOn(9)
+      },
+      undefined,
+      b => {
+        notes = [...out.subarray(0, b.toyChip.soundingNotes(out))]
+      },
+    )
+    return notes.toSorted((a, b) => a - b)
+  }
+  expect(sounding(0)).toEqual([0, 9])
+  // Four wide: 0 is row 0 column 0 and 9 is row 2 column 1.
+  expect(sounding(1)).toEqual([0, 1, 8, 9])
+})
+
+test('a song wire held high plays the neighbouring song’s notes', () => {
+  const heard = (overrides: Partial<Controls>) => new Set(melody(overrides))
+  const march = heard({ chipTune: 1 })
+  const bent = heard({
+    chipTune: 0,
+    chipBankLine: 1,
+    chipBankFault: FAULT_TO_V,
+  })
+  bent.delete(-999)
+  march.delete(-999)
+  expect(bent.size).toBeGreaterThan(2)
+  for (const n of bent) expect(march.has(n), `${n}`).toBe(true)
+})
+
+test('a divider wire held high moves a held note off the keys', () => {
+  const held = (overrides: Partial<Controls>) =>
+    pitchHz(
+      tail(
+        renderBender({ ...CHIP_ONLY, ...overrides }, 1, b =>
+          b.toyChip.noteOn(0),
+        ),
+        0.5,
+      ),
+    )
+  expect(held({})).toBeCloseTo(220, -1)
+  // A3 loads 512; N8 high makes it 768, two thirds of the pitch.
+  expect(held({ chipDivLine: 9, chipDivFault: FAULT_TO_V })).toBeCloseTo(
+    (220 * 512) / 768,
+    -1,
+  )
+})

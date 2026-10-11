@@ -31,6 +31,14 @@ export const DEFAULT_CONTROLS = {
   chipScan: 0,
   chipLoopFrom: 0,
   chipLoopTo: 0,
+  chipPwm: 0,
+  chipEnvCap: 0,
+  chipShort: 0,
+  chipGhost: 0,
+  chipBankLine: 0,
+  chipBankFault: 0,
+  chipDivLine: 0,
+  chipDivFault: 0,
 
   // The parts on the toy board, as opposed to what you are doing to it. Every
   // default here is the number that used to be compiled in, so a board nobody

@@ -156,7 +156,7 @@ test('a shy control on a list of choices can still reach the whole list', () => 
   const keys = ['fmEffect', 'fmDataLine', 'fmAddrLine', 'chipDataLine'] as const
   for (const k of keys) seen[k] = new Set()
   let on = 0
-  for (let seed = 1; seed <= 600; seed++) {
+  for (let seed = 1; seed <= 1200; seed++) {
     const after = randomLook(before, mulberry32(seed))
     for (const k of keys) {
       seen[k]!.add(after[k])
@@ -169,7 +169,7 @@ test('a shy control on a list of choices can still reach the whole list', () => 
     expect(seen[k]!.size, k).toBe(def.choices!.length)
   }
   // and still shy: on is the exception across all four, not the rule
-  expect(on / (600 * keys.length)).toBeLessThan(0.15)
+  expect(on / (1200 * keys.length)).toBeLessThan(0.15)
 })
 
 test('random rarely pulls the reverb dry down, and never far', () => {

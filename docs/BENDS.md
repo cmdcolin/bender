@@ -144,6 +144,48 @@ feeds each note into the address of the next.
   before the bit first rises: on _für elise_ D1 loops seven steps and D4
   sixteen.
 
+**Song line** is a knife on the five wires that pick which song the ROM serves,
+the memory you played in included. Each step reads the same address from
+whichever song the faulted wires name, so the tune keeps its tempo and length
+and plays another song's notes. A wire that already matches the fault changes
+nothing: _für elise_ is song 4, so S2 held high leaves it alone, and S0 held
+high plays _ode to joy_.
+
+**Divider line** is a knife on the twelve-bit word each note loads into its
+pitch divider. The pitch is a master clock divided by that word, and A3
+loads 512.
+
+- A low wire nudges the top of the keyboard, where the word is small.
+- A high wire moves notes by octaves: N8 held high turns A3's 512 into 768, two
+  thirds of the pitch.
+- A note loads its word when it strikes, so a held note keeps its pitch until
+  the next one.
+
+**Volume PWM** is how the chip sets each voice's level: the output switches on
+for a share of each carrier cycle, and the envelope sets the share. The knob
+taps the carrier from 20 kHz down ten octaves of the clock divider, where it
+whines under every note and a fade becomes a change of tone. A note at full
+level is on for the whole cycle, so held keys sound clean until they fade.
+
+**Envelope cap** swaps the capacitor every note's envelope runs on.
+
+- **Reversed** turns each note upside down: silent at the strike, swelling to
+  full, then cut off. Held keys swell and cut too, because the hold switch sits
+  across the same cap.
+- **Leaky** stops the cap draining below 0.3, so every note drones until a rest,
+  a new note or a voice steal replaces it. Four held-and-released keys pile up
+  into a four-voice drone.
+
+**Voice short** solders every voice output onto one node, where the lowest
+driver wins. A lone note passes through. A chord intermodulates into a buzz,
+because the node follows whichever voice is lowest at each instant. The knob
+crossfades the normal mix into the short.
+
+**Ghost keys** lifts the diodes off the key matrix. Two held keys in different
+rows and columns close the other two corners of their rectangle, and those
+corners sound as held keys. The row width sets the intervals: four wide, A3 and
+F#4 add A#3 and F4. The arpeggiator walks the ghosts along with the real keys.
+
 ## The FM chip's register bus
 
 The FM chip isn't played — it's configured, one byte at a time, by a processor

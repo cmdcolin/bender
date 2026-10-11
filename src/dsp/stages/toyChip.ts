@@ -51,6 +51,8 @@ const ENV_FLOOR = 0.003
 // what it did. The one stage that is always on doubled in cost the longer the
 // toy was left switched on, and stayed doubled.
 const fade = (env: number, decay: number) => (env > ENV_FLOOR ? env * decay : 0)
+const leak = (env: number, decay: number) =>
+  env > LEAK_FLOOR ? LEAK_FLOOR + (env - LEAK_FLOOR) * decay : env
 
 // Every note the divider can strike, as a ratio. The ROM steps, the keys and the
 // triads are all whole semitones, so the chip's own pitches are a table — eight
@@ -109,6 +111,9 @@ interface Voice {
   env: number
   held: boolean
   started: number
+  // The divider word this voice loaded, and the note it loaded it for.
+  ratio: number
+  loaded: number
 }
 
 // Auto-bass-chord: the accompaniment section the toys ran under the demo song.
@@ -173,6 +178,35 @@ export const LOOP_TARGETS = [
 ]
 const LOOP_RESET = ROM_ADDR_LINES
 
+// The chip sets each voice's volume by pulse-width: a carrier off the clock
+// divider, compared against the envelope. Stock it sits far above hearing; the
+// knob taps it further down the divider chain.
+const PWM_TOP_HZ = 20000
+const PWM_OCTAVES = 10
+const pwmRate = (pwm: number) =>
+  pwm > 0 ? PWM_TOP_HZ * octaves(-PWM_OCTAVES * pwm) : 0
+
+// The wires that pick which song the ROM serves: enough for every bank,
+// including the memory you played in.
+export const BANK_LINES = 5
+
+// Each note loads a whole-number divider off a master clock, and the pitch is
+// master / N. A3 loads 512, so the keyboard's span sits inside twelve bits.
+export const DIV_LINES = 12
+const DIV_A3 = 512
+const DIV_MAX = (1 << DIV_LINES) - 1
+
+// How many keys share a row of the key matrix. With the diodes lifted, holding
+// two keys in different rows and columns also closes the other two corners.
+export const GHOST_MODES = ['off', '4 wide', '6 wide', '8 wide']
+const GHOST_COLS = [0, 4, 6, 8]
+
+export const ENV_CAPS = ['stock', 'reversed', 'leaky']
+const ENV_REVERSED = 1
+const ENV_LEAKY = 2
+// Where a leaky cap settles instead of draining.
+const LEAK_FLOOR = 0.3
+
 // A counter can't strike a pulse narrower than one clock tick, so the narrow
 // tones widen back toward a square as the note climbs past the divider's
 // resolution — the same place a real chip runs out of counts. The output cap
@@ -215,6 +249,8 @@ export class ToyChip implements Stage {
     env: 0,
     held: false,
     started: 0,
+    ratio: 1,
+    loaded: NaN,
   }))
   private voiceClock = 0
   private triads = MAJOR_TRIADS
@@ -296,6 +332,27 @@ export class ToyChip implements Stage {
   private crossHp = 0
   private crossLpA: number
   private crossHpA: number
+  private pwmPhase = 0
+  private envCap = 0
+  private shortAmt = 0
+  private romPick = 0
+  private bankBus: Bus
+  private bankLine = -1
+  private bankFault = 0
+  private divBus: Bus
+  private divLine = -1
+  private divFault = 0
+  // Bumped when the knife on the divider moves, so every voice reloads.
+  private divStamp = 0
+  private melodyRatio = 1
+  private melodyLoaded = NaN
+  private bassRatio = 1
+  private bassLoaded = NaN
+  private chordRatio = [1, 1, 1]
+  private chordLoaded: number[] | undefined
+  private loadedStamp = 0
+  private ghostCols = 0
+  private ghosts: number[] = []
 
   constructor(
     private readonly sr: number,
@@ -309,6 +366,53 @@ export class ToyChip implements Stage {
     this.addrBus = new Bus(ROM_ADDR_LINES, seed ^ 0xadd4)
     this.crossLpA = Math.exp((-2 * Math.PI * CROSS_LP_HZ) / sr)
     this.crossHpA = Math.exp((-2 * Math.PI * CROSS_HP_HZ) / sr)
+    this.bankBus = new Bus(BANK_LINES, seed ^ 0xba4c)
+    this.divBus = new Bus(DIV_LINES, seed ^ 0xd1f)
+  }
+
+  // The pitch ratio a note loads into its divider. With no knife on the
+  // divider word it is the exact ratio, so the stock board's pitches stay put.
+  private divRatio(note: number): number {
+    if (this.divLine < 0) return ratio(note)
+    const n = Math.min(Math.max(Math.round(DIV_A3 / ratio(note)), 1), DIV_MAX)
+    const word = this.divBus.read(n, this.divLine, this.divFault, this.busCut)
+    return DIV_A3 / Math.max(word, 1)
+  }
+
+  // Every pair of held keys in different rows and columns closes the other two
+  // corners of their rectangle.
+  private ghostKeys(): number[] {
+    const cols = this.ghostCols
+    if (!cols) return []
+    const keys = this.heldKeys
+    const out: number[] = []
+    for (let i = 0; i < keys.length; i++) {
+      for (let j = i + 1; j < keys.length; j++) {
+        const a = keys[i]!
+        const b = keys[j]!
+        const ra = Math.floor(a / cols)
+        const rb = Math.floor(b / cols)
+        const ca = a - ra * cols
+        const cb = b - rb * cols
+        if (ra === rb || ca === cb) continue
+        for (const g of [ra * cols + cb, rb * cols + ca])
+          if (!keys.includes(g) && !out.includes(g)) out.push(g)
+      }
+    }
+    return out
+  }
+
+  // Strikes the corners that just closed and lets go of the ones that opened.
+  private regroundGhosts() {
+    const next = this.ghostKeys()
+    for (const g of this.ghosts)
+      if (!next.includes(g) && !this.heldKeys.includes(g))
+        for (const v of this.voices) if (v.note === g) v.held = false
+    const fresh = next.filter(g => !this.ghosts.includes(g))
+    this.ghosts = next
+    this.arpUp = [...this.heldKeys, ...next].toSorted((a, b) => a - b)
+    if (this.arping) return
+    for (const g of fresh) this.strike(g, 1).held = true
   }
 
   // The toy's own keys are switches: they pass no gain and strike at full. A
@@ -322,6 +426,8 @@ export class ToyChip implements Stage {
       // and then, rather than a beat later: the count starts under your hand.
       if (this.heldKeys.length === 1) this.arpClock = 1
     }
+    // The corners strike before the key itself, so the gate reports the key.
+    if (this.ghostCols || this.ghosts.length) this.regroundGhosts()
     // With the switch on, a key held is a key waiting its turn — the count is
     // what strikes it, and holding it down would be a drone under the arpeggio.
     if (this.arping) return
@@ -353,6 +459,7 @@ export class ToyChip implements Stage {
       if (this.heldKeys.length === 0) this.arpStep = 0
     }
     for (const v of this.voices) if (v.note === semitone) v.held = false
+    if (this.ghostCols || this.ghosts.length) this.regroundGhosts()
   }
 
   // Which note the count is on. Every mode is one walk over the held keys,
@@ -483,9 +590,24 @@ export class ToyChip implements Stage {
   }
 
   private readAt(tune: number[], addr: number): number {
+    let yours = this.yours
+    // A knife on the song wires sends this read to another bank, at the same
+    // address folded into that song's length.
+    if (this.bankLine >= 0) {
+      const bank = this.bankBus.read(
+        this.romPick,
+        this.bankLine,
+        this.bankFault,
+        this.busCut,
+      )
+      yours = bank === YOURS
+      if (yours) tune = this.mine
+      else tune = ROMS[bank % ROMS.length]!.steps
+      addr %= yours ? this.len : tune.length
+    }
     const step = tune[addr]!
     let word = this.dataBus.read(
-      this.yours ? encodeTune(step) : encodeStep(step),
+      yours ? encodeTune(step) : encodeStep(step),
       this.dataLine,
       this.dataFault,
       this.busCut,
@@ -502,7 +624,7 @@ export class ToyChip implements Stage {
     // has to know which of the two it is reading. The ROM's own spelling — -1
     // for a rest, -2 for a hold — only works because its steps never go below
     // the chip's bottom A, and yours do.
-    if (this.yours) return decodeTune(word)
+    if (yours) return decodeTune(word)
     const rom = decodeStep(word)
     return rom === -1 ? REST : rom === -2 ? HOLD : rom
   }
@@ -603,6 +725,7 @@ export class ToyChip implements Stage {
     // stage knows which of the two it is playing.
     const pick = Math.round(p[IDX.chipTune]!)
     this.yours = pick === YOURS
+    this.romPick = pick
     const rom = ROMS[pick] ?? ROMS[0]!
     const tune = this.yours ? this.mine : rom.steps
     // What the part itself counts at: the ROM's own nominal rate, or the knob
@@ -673,6 +796,23 @@ export class ToyChip implements Stage {
     this.loopTo = Math.round(p[IDX.chipLoopTo]!)
     const cross = p[IDX.chipCrosstalk]! * CROSS_OCTAVES
     const scanHz = scanRate(p[IDX.chipScan]!)
+    const pwmHz = pwmRate(p[IDX.chipPwm]!)
+    this.envCap = Math.round(p[IDX.chipEnvCap]!)
+    this.shortAmt = p[IDX.chipShort]!
+    this.bankLine = Math.round(p[IDX.chipBankLine]!) - 1
+    this.bankFault = Math.round(p[IDX.chipBankFault]!)
+    const divLine = Math.round(p[IDX.chipDivLine]!) - 1
+    const divFault = Math.round(p[IDX.chipDivFault]!)
+    if (divLine !== this.divLine || divFault !== this.divFault) {
+      this.divLine = divLine
+      this.divFault = divFault
+      this.divStamp++
+    }
+    const ghostCols = GHOST_COLS[Math.round(p[IDX.chipGhost]!)] ?? 0
+    if (ghostCols !== this.ghostCols) {
+      this.ghostCols = ghostCols
+      this.regroundGhosts()
+    }
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
@@ -882,31 +1022,59 @@ export class ToyChip implements Stage {
         this.envDecay = Math.exp(-(0.8 * envRate) / this.sr)
       }
       const envDecay = latched ? 1 : this.envDecay
-      this.env = fade(this.env, envDecay)
-      this.bassEnv = fade(this.bassEnv, envDecay)
-      this.chordEnv = fade(this.chordEnv, envDecay)
-      for (const v of this.voices) if (!v.held) v.env = fade(v.env, envDecay)
+      const cap = this.envCap
+      if (cap === ENV_LEAKY) {
+        this.env = leak(this.env, envDecay)
+        this.bassEnv = leak(this.bassEnv, envDecay)
+        this.chordEnv = leak(this.chordEnv, envDecay)
+        for (const v of this.voices) if (!v.held) v.env = leak(v.env, envDecay)
+      } else {
+        this.env = fade(this.env, envDecay)
+        this.bassEnv = fade(this.bassEnv, envDecay)
+        this.chordEnv = fade(this.chordEnv, envDecay)
+        // A reversed cap drains a held key too, since the hold switch sits
+        // across the same cap.
+        for (const v of this.voices)
+          if (!v.held || cap === ENV_REVERSED) v.env = fade(v.env, envDecay)
+      }
 
       // A latched output stage is jammed on rather than fading with the supply,
       // so the note doesn't get quieter as the rail goes — it holds its level
       // and dives in pitch until there is no rail left to hold it.
       const amp = latched ? LATCH_AMP : rail.ampFactor
 
+      if (pwmHz > 0)
+        this.pwmPhase = wrap1(this.pwmPhase + (pwmHz * timing) / this.sr)
+      const shaped = cap === ENV_REVERSED || pwmHz > 0
+      const pinned = scanHz > 0 || this.shortAmt > 0
+      if (this.loadedStamp !== this.divStamp) {
+        this.loadedStamp = this.divStamp
+        this.melodyLoaded = NaN
+        this.bassLoaded = NaN
+        this.chordLoaded = undefined
+        for (const v of this.voices) v.loaded = NaN
+      }
+
       let out = 0
       if (!rail.booting && !rail.dead) {
         const live = this.slotLive
         const val = this.slotVal
-        if (scanHz > 0) live.fill(0)
+        if (pinned) live.fill(0)
         const note = this.transport.tune ? this.note : REST
         if (isNote(note) && this.env > ENV_FLOOR) {
+          if (note !== this.melodyLoaded) {
+            this.melodyLoaded = note
+            this.melodyRatio = this.divRatio(note)
+          }
           const hz = Math.min(
-            A3_HZ * ratio(note) * clock * rail.pitchFactor,
+            A3_HZ * this.melodyRatio * clock * rail.pitchFactor,
             maxHz,
           )
           const inc = hz / this.sr
           this.phase = wrap1(this.phase + inc)
-          const v = pulse(this.phase, duty, inc) * this.env * amp
-          if (scanHz > 0) {
+          const env = shaped ? this.level(this.env, pwmHz) : this.env
+          const v = pulse(this.phase, duty, inc) * env * amp
+          if (pinned) {
             val[0] = v
             live[0] = 1
           } else out += v
@@ -914,44 +1082,51 @@ export class ToyChip implements Stage {
         let keys = 0
         if (accomp > 0) {
           if (this.bassEnv > ENV_FLOOR) {
+            if (this.bassNote !== this.bassLoaded) {
+              this.bassLoaded = this.bassNote
+              this.bassRatio = this.divRatio(this.bassNote)
+            }
             const hz = Math.min(
-              A3_HZ *
-                ratio(this.bassNote) *
-                clock *
-                rail.pitchFactorAt(BASS_TRIM),
+              A3_HZ * this.bassRatio * clock * rail.pitchFactorAt(BASS_TRIM),
               maxHz,
             )
             const inc = hz / this.sr
             this.bassPhase = wrap1(this.bassPhase + inc)
+            const env = shaped ? this.level(this.bassEnv, pwmHz) : this.bassEnv
             const v =
               pulse(this.bassPhase, duty, inc) *
-              this.bassEnv *
+              env *
               rail.ampFactorAt(BASS_TRIM) *
               accomp
-            if (scanHz > 0) {
+            if (pinned) {
               val[1] = v
               live[1] = 1
             } else keys += v
           }
           if (this.chordEnv > ENV_FLOOR) {
+            if (this.chord !== this.chordLoaded) {
+              this.chordLoaded = this.chord
+              for (let c = 0; c < 3; c++)
+                this.chordRatio[c] = this.divRatio(this.chord[c]!)
+            }
+            const env = shaped
+              ? this.level(this.chordEnv, pwmHz)
+              : this.chordEnv
             for (let c = 0; c < 3; c++) {
               const trim = CHORD_TRIM[c]!
               const hz = Math.min(
-                A3_HZ *
-                  ratio(this.chord[c]!) *
-                  clock *
-                  rail.pitchFactorAt(trim),
+                A3_HZ * this.chordRatio[c]! * clock * rail.pitchFactorAt(trim),
                 maxHz,
               )
               const inc = hz / this.sr
               this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
               const v =
                 pulse(this.chordPhase[c]!, duty, inc) *
-                this.chordEnv *
+                env *
                 rail.ampFactorAt(trim) *
                 CHORD_GAIN *
                 accomp
-              if (scanHz > 0) {
+              if (pinned) {
                 val[2 + c] = v
                 live[2 + c] = 1
               } else keys += v
@@ -961,20 +1136,26 @@ export class ToyChip implements Stage {
         for (let k = 0; k < this.voices.length; k++) {
           const v = this.voices[k]!
           if (v.env <= ENV_FLOOR) continue
+          if (v.note !== v.loaded) {
+            v.loaded = v.note
+            v.ratio = this.divRatio(v.note)
+          }
           const trim = trimAt(k, spread)
           const hz = Math.min(
-            A3_HZ * ratio(v.note) * clock * rail.pitchFactorAt(trim),
+            A3_HZ * v.ratio * clock * rail.pitchFactorAt(trim),
             maxHz,
           )
           const inc = hz / this.sr
           v.phase = wrap1(v.phase + inc)
-          const x = pulse(v.phase, duty, inc) * v.env * rail.ampFactorAt(trim)
-          if (scanHz > 0) {
+          const env = shaped ? this.level(v.env, pwmHz) : v.env
+          const x = pulse(v.phase, duty, inc) * env * rail.ampFactorAt(trim)
+          if (pinned) {
             val[5 + k] = x
             live[5 + k] = 1
           } else keys += x
         }
         if (scanHz > 0) out = this.scan((scanHz * timing) / this.sr)
+        else if (pinned) out = this.short(mixDrive)
         out = (out + mixVoices(keys, mixDrive)) * this.gateState
         if (spot === 3) out += pot * 0.4
       }
@@ -1019,9 +1200,37 @@ export class ToyChip implements Stage {
     return live[this.slot] ? this.slotVal[this.slot]! : 0
   }
 
+  // The volume the output stage sees: the envelope, upside down on a reversed
+  // cap, and compared against the PWM carrier when that is in earshot.
+  private level(env: number, pwmHz: number): number {
+    const x = this.envCap === ENV_REVERSED ? 1 - env : env
+    return pwmHz > 0 ? (this.pwmPhase < x ? 1 : 0) : x
+  }
+
+  // Every voice output shorted onto one node, where the lowest driver wins.
+  // Shorted harder, more of the node is the lowest voice and less the mix.
+  private short(drive: number): number {
+    const live = this.slotLive
+    const val = this.slotVal
+    let keys = 0
+    let lo = Infinity
+    for (let k = 1; k < SLOTS; k++) {
+      if (!live[k]) continue
+      keys += val[k]!
+      lo = Math.min(lo, val[k]!)
+    }
+    if (live[0]) lo = Math.min(lo, val[0]!)
+    if (lo === Infinity) return 0
+    const mix = (live[0] ? val[0]! : 0) + mixVoices(keys, drive)
+    return mix + (lo - mix) * this.shortAmt
+  }
+
   panic() {
     this.dataBus.reset()
     this.addrBus.reset()
+    this.bankBus.reset()
+    this.divBus.reset()
+    this.ghosts.length = 0
     this.note = REST
     this.phase = 0
     this.env = 0

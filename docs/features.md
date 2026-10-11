@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 339 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 347 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 97 presets, 16 stage settings and 33 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 27 of them, mostly the ones that cover the
+preset that names it still gets it. 29 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -108,7 +108,7 @@ too — the knife goes on and the rows under it say which controls that was:
   itself
 
 <details>
-<summary>32 controls</summary>
+<summary>40 controls</summary>
 
 | control         | range                                                                            | what it does                                                                                                                           |
 | --------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -130,6 +130,10 @@ too — the knife goes on and the rows under it say which controls that was:
 | Crystal drift   | off to full                                                                      | How far the chip’s clock wanders off the ratio you set it to                                                                           |
 | Crosstalk       | off to full                                                                      | How much of the output trace leaks onto the timing pin beside it                                                                       |
 | Scan            | off to full                                                                      | All the voices share one output pin, and a scan counter connects it to each sounding voice in turn                                     |
+| Volume PWM      | off to full                                                                      | The chip sets each voice’s volume by switching it on and off faster than you can hear, for a share of each cycle set by the envelope   |
+| Envelope cap    | stock, reversed, leaky                                                           | The capacitor that shapes every note                                                                                                   |
+| Voice short     | off to full                                                                      | Shorts every voice output onto one node, where the lowest driver wins                                                                  |
+| Ghost keys      | off, 4 wide, 6 wide, 8 wide                                                      | Lifts the diodes off the key matrix                                                                                                    |
 | Starve †        | off to full                                                                      | Sags the shared toy supply rail                                                                                                        |
 | Batteries †     | off to full                                                                      | How flat the cells are                                                                                                                 |
 | Lead resistance | off to full                                                                      | A resistor in series with the cells                                                                                                    |
@@ -144,6 +148,10 @@ too — the knife goes on and the rows under it say which controls that was:
 | Cut depth       | off to full                                                                      | How far through the trace the knife went — only the cut fault reads it                                                                 |
 | Loop wire †     | off, D0, D1, D2, D3, D4, D5                                                      | A jumper from one pin of the note latch back to the address side of the ROM                                                            |
 | Loop onto       | A0, A1, A2, A3, A4, reset                                                        | Where the jumper lands                                                                                                                 |
+| Song line †     | off, S0, S1, S2, S3, S4                                                          | Which of the wires that pick the song the knife found                                                                                  |
+| Song fault      | cut, to ground, to +V, bridged                                                   | What happened to the song wire                                                                                                         |
+| Divider line †  | 13 of them, off through N11                                                      | Which wire of the pitch divider the knife found                                                                                        |
+| Divider fault   | cut, to ground, to +V, bridged                                                   | What happened to the divider wire                                                                                                      |
 
 </details>
 
