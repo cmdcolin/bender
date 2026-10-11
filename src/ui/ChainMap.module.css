@@ -7,14 +7,10 @@
    it with everything else — a scroll box of its own only ever clipped the chain
    and trapped the wheel.
 
-   max-width and not width: the drawing draws at its own size, and only ever
-   scales down. It used to be capped on height alone and the two never fought
-   over the same axis — 385 wide in a 396 column against 529 tall under a 450
-   ceiling — so the ceiling always won and took the whole drawing to 0.85 on the
-   way past, which is where the 8.5px labels came from. A wider panel is the
-   whole fix: at 406 in a 446 column the drawing fits, and fitting is all it has
-   to do. Scaling it up to fill the column was 35px of height charged to the
-   settings for a tenth of a point of label.
+   max-width and not width: the svg keeps its own size and only ever scales
+   down. The labels draw at 11px only while the drawing fits the column (433 in
+   445). Each box added across the source rows has pushed it past before, so
+   the panel snakes them onto two lines.
 
    The ceiling is a ration, and what it rations for is the stage under it. The
    panel holds a header, this, and whatever a door on it opens, and the last of

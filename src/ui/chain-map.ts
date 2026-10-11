@@ -499,6 +499,16 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const pcm = instrument(PCM_KEYS)
   const mono = instrument(MONO)
   const chips = [...toys, fm, pcm, mono]
+  // Five across is wider than the panel's column, so the panel snakes the row:
+  // the gate line runs along the top and drops onto the mono synth under its
+  // end, and the drums sit under the keyboard they trade triggers with.
+  const chipRows = o.wrap
+    ? [
+        [toys[0]!, fm, pcm],
+        [toys[1]!, mono],
+      ]
+    : [[toys[0]!, fm, pcm, mono, toys[1]!]]
+  const lower = new Set(chipRows[1] ?? [])
   const lines = LINE_ROW.map(instrument)
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
@@ -642,7 +652,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // it. The band is the usual winner: seven boxes across beats two columns.
   const content = Math.ceil(
     Math.max(
-      sum(chips) + INST_GAP * (chips.length - 1) + FRAME_PAD * 2,
+      ...chipRows.map(
+        row => sum(row) + INST_GAP * (row.length - 1) + FRAME_PAD * 2,
+      ),
       sum(lines) + INST_GAP * (lines.length - 1),
       sum(foot) + INST_GAP * (foot.length - 1),
       cols *
@@ -708,13 +720,17 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   board.y = MARGIN
   const railY = board.y + CAP_H + 6
   const chipY = railY + RAIL_H
-  for (const n of chips) n.y = chipY
+  for (const n of chipRows[0]!) n.y = chipY
   // The lane under the row, which carries everything written about the row
   // rather than about one box in it: what the key line is, the bridges you have
   // patched across it, and — when you have patched none — that there are none.
   const laneY = chipY + INST_H
   const trigY = laneY + TRIG_H
-  board.h = laneY + Math.max(CHIP_H, trigs.length * TRIG_H) - board.y + 4
+  const laneEnd = laneY + Math.max(CHIP_H, trigs.length * TRIG_H) + 4
+  const lowY = laneEnd + 4
+  const rail2Y = lowY + INST_H + RAIL_H / 2
+  for (const n of lower) n.y = lowY
+  board.h = (lower.size ? rail2Y + RAIL_H / 2 : laneEnd) - board.y
 
   const lineY = board.y + board.h + BAND_GAP
   for (const n of lines) n.y = lineY
@@ -738,13 +754,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // By their labels rather than evenly: the chip is the one you do not play and
   // it should not come out the size of the two you do.
-  spread(
-    [toys[0]!, fm, pcm, mono, toys[1]!],
-    FRAME_PAD,
-    content - FRAME_PAD * 2,
-    [INST_GAP, INST_GAP, INST_GAP, INST_GAP, INST_GAP],
-    natural,
-  )
+  for (const row of chipRows)
+    spread(
+      row,
+      FRAME_PAD,
+      content - FRAME_PAD * 2,
+      row.map(() => INST_GAP),
+      natural,
+    )
   spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
   board.x = 0
   mix.x = 0
@@ -852,17 +869,28 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // --- inside the toy board -------------------------------------------------
 
-  // The supply: one bar over all four, because it is one rail. The starve knob
-  // that drags it sits on the keyboard's panel, and this is the only thing on
-  // the map that says the other three go with it.
+  // The supply: one bar over all of them, because it is one rail. The starve
+  // knob that drags it sits on the keyboard's panel, and this is the only thing
+  // on the map that says the others go with it. In a snaked row the bar runs
+  // down the frame's left edge and back under the lower boxes, clear of the
+  // trigger lane.
+  const railLeft = board.x + (lower.size ? FRAME_PAD / 2 : FRAME_PAD)
+  const railRight = board.x + board.w - FRAME_PAD
   bar(
     'rail',
     board,
     board,
-    [
-      [board.x + FRAME_PAD, railY],
-      [board.x + board.w - FRAME_PAD, railY],
-    ],
+    lower.size
+      ? [
+          [railRight, railY],
+          [railLeft, railY],
+          [railLeft, rail2Y],
+          [railRight, rail2Y],
+        ]
+      : [
+          [railLeft, railY],
+          [railRight, railY],
+        ],
     {
       color: k.dim,
       dash: '1 2',
@@ -874,18 +902,20 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       },
     },
   )
-  // Droppers onto the two boxes the bar is over. The FM chip takes the same
-  // supply and has no dropper of its own: it is under the keyboard, inside the
-  // frame, and a dotted line reaching it would have to cross the row to do it.
   for (const toy of chips)
     bar(
       `rail-${toy.id}`,
       board,
       toy,
-      [
-        [midX(toy), railY],
-        [midX(toy), chipY],
-      ],
+      lower.has(toy)
+        ? [
+            [midX(toy), rail2Y],
+            [midX(toy), toy.y + toy.h],
+          ]
+        : [
+            [midX(toy), railY],
+            [midX(toy), chipY],
+          ],
       { color: k.dim, dash: '1 2' },
     )
 
@@ -932,14 +962,22 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     ],
     { color: k.accent2, door: 'Toy keyboard' },
   )
+  // Snaked, the line drops off the end of the row onto the box under it, near
+  // the right edge so it stays clear of a trigger landing on the middle.
+  const dropX = pcm.x + pcm.w - COUNT_COL - ICON
   wire(
     'key-line-mono',
     pcm,
     mono,
-    [
-      [pcm.x + pcm.w, chipY + INST_H / 2],
-      [mono.x, chipY + INST_H / 2],
-    ],
+    lower.has(mono)
+      ? [
+          [dropX, chipY + INST_H],
+          [dropX, mono.y],
+        ]
+      : [
+          [pcm.x + pcm.w, chipY + INST_H / 2],
+          [mono.x, chipY + INST_H / 2],
+        ],
     { color: k.accent2, door: 'Toy keyboard' },
   )
 
@@ -959,7 +997,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         door: 'Trigger patch',
         active: false,
         open: o.open === 'Trigger patch',
-        x: midX(toys[1]!) - w / 2,
+        // Under the keyboard, the note would sit on the key line's label if it
+        // were centred on the drums.
+        x: lower.has(toys[1]!) ? toys[1]!.x + PAD_X : midX(toys[1]!) - w / 2,
         // Clear of the box above it: a line of text could start at the lane's
         // own top, and an outline starting there would run along the foot of
         // the drums as if it were part of them.
@@ -970,31 +1010,57 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     )
   }
 
-  // The bridges you patch yourself, under the row and in the patch colour, so
-  // nothing here reads like the soldered line above it.
+  // The bridges you patch yourself, in the lane under the row and in the patch
+  // colour, so nothing here reads like the soldered line above it.
+  const port = (n: MapNode) => (lower.has(n) ? n.y : n.y + n.h)
+  // A bridge between a box and the one under it drops straight down the overlap
+  // the two share, each at its own x so two bridges on one pair stay apart, and
+  // writes its label clear of every drop.
+  const drops = trigs.map((t, i) => {
+    const [from, to] = [byId.get(nodeId(t.from))!, byId.get(nodeId(t.to))!]
+    if (lower.has(from) === lower.has(to)) return undefined
+    const [lo, hi] = [
+      Math.max(from.x, to.x),
+      Math.min(from.x + from.w, to.x + to.w),
+    ]
+    if (hi - lo < TRIG_H * 2) return undefined
+    const upper = lower.has(from) ? to : from
+    const x = midX(upper) + (i - (trigs.length - 1) / 2) * TRIG_H
+    return Math.min(hi - TRIG_H, Math.max(lo + TRIG_H, x))
+  })
+  const dropLabelX = Math.max(0, ...drops.map(x => x ?? 0)) + 5
   for (const [i, t] of trigs.entries()) {
     const [from, to] = [byId.get(nodeId(t.from))!, byId.get(nodeId(t.to))!]
     const y = trigY + i * TRIG_H
+    const x = drops[i]
     wire(
       t.id,
       from,
       to,
-      [
-        [midX(from), from.y + from.h],
-        [midX(from), y],
-        [midX(to), y],
-        [midX(to), to.y + to.h],
-      ],
+      x === undefined
+        ? [
+            [midX(from), port(from)],
+            [midX(from), y],
+            [midX(to), y],
+            [midX(to), port(to)],
+          ]
+        : [
+            [x, port(from)],
+            [x, port(to)],
+          ],
       {
         color: k.mod,
         dash: '4 3',
         door: 'Trigger patch',
-        label: {
-          text: t.label,
-          x: (midX(from) + midX(to)) / 2,
-          y: y - 3,
-          anchor: 'middle',
-        },
+        label:
+          x === undefined
+            ? {
+                text: t.label,
+                x: (midX(from) + midX(to)) / 2,
+                y: y - 3,
+                anchor: 'middle',
+              }
+            : { text: t.label, x: dropLabelX, y: y - 3, anchor: 'start' },
       },
     )
   }

@@ -583,15 +583,13 @@ test('a wire onto the feedback amount draws onto the bus', () => {
   expect(hop(map, 'wire0', 'Feedback_bus')).toBeTruthy()
 })
 
-// The fold is the whole reason the panel gets a map it can read: two columns
-// that come out roughly as tall as each other, rather than one 500px ribbon.
+// Folding lets the panel's column hold the map: two columns of about
+// equal height, and the source row snaked onto two lines.
 test('the fold halves the drawing and hands the path across', () => {
   const straight = buildMap(DEFAULT_CONTROLS, { wrap: false })
   const folded = buildMap(DEFAULT_CONTROLS, { wrap: true })
-  // The source band is the same height either way, so the fold can only halve
-  // what is under it — which is still most of the drawing.
-  expect(folded.height).toBeLessThan(straight.height * 0.75)
-  expect(folded.width).toBeGreaterThanOrEqual(straight.width)
+  expect(folded.height).toBeLessThan(straight.height * 0.8)
+  expect(folded.width).toBeLessThan(straight.width * 0.7)
   const fold = folded.wires.find(w => w.id === 'fold')!
   expect(fold.color).toBe(PANEL.accent)
   expect(box(folded, fold.to)!.x).toBeGreaterThan(box(folded, fold.from)!.x)
