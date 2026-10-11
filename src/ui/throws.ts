@@ -27,7 +27,11 @@ export const THROWS: ThrowDef[] = [
     name: 'brake',
     key: 'b',
     blurb: 'Tape delay braked, toy clock dragged down',
-    push: () => ({ tapeBrake: 1, chipClipClock: 0.8 }),
+    push: c => ({
+      tapeBrake: 1,
+      dlyMix: atLeast(c.dlyMix, 0.6),
+      chipClipClock: 0.8,
+    }),
   },
   {
     name: 'crash',
