@@ -38,9 +38,9 @@ export function parseChangelog(markdown: string) {
   let release: Release | undefined
   let group: Change[] | undefined
   for (const line of markdown.split('\n')) {
-    const head = RELEASE.exec(line)
-    if (head) {
-      release = { version: head[1]!, date: head[2]!, groups: new Map() }
+    const [, version, date] = RELEASE.exec(line) ?? []
+    if (version && date) {
+      release = { version, date, groups: new Map() }
       releases.push(release)
       group = undefined
       continue
@@ -49,21 +49,14 @@ export function parseChangelog(markdown: string) {
       release = undefined
       continue
     }
-    const title = GROUP.exec(line)
+    const [, title] = GROUP.exec(line) ?? []
     if (title && release) {
-      group = release.groups.get(title[1]!) ?? []
-      release.groups.set(title[1]!, group)
+      group = release.groups.get(title) ?? []
+      release.groups.set(title, group)
       continue
     }
-    const change = CHANGE.exec(line)
-    if (change && group) {
-      group.push({
-        scope: change[1],
-        sha: change[2]!,
-        url: change[3]!,
-        text: change[4]!,
-      })
-    }
+    const [, scope, sha, url, text] = CHANGE.exec(line) ?? []
+    if (sha && url && text && group) group.push({ scope, sha, url, text })
   }
   return releases
 }

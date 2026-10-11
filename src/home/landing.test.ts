@@ -152,6 +152,6 @@ test('the blog opens on the newest day in the changelog', async () => {
   const blog = await container.renderToString(Blog)
   const newest = /^## \[[\d.]+\]\(.*\) - ([\d-]+)$/m.exec(
     readFileSync('CHANGELOG.md', 'utf8'),
-  )![1]!
+  )?.[1]
   expect(/<article class="post" id="([\d-]+)"/.exec(blog)?.[1]).toBe(newest)
 })

@@ -34,22 +34,33 @@ const SAMPLE = `# Changelog
 test('reads each release with its groups and skips Unreleased', () => {
   const releases = parseChangelog(SAMPLE)
   expect(releases.map(r => r.version)).toEqual(['1.1.0', '1.0.1', '1.0.0'])
-  expect(releases[0]!.groups.get('Features')).toEqual([
+  expect(releases.map(r => Object.fromEntries(r.groups))).toMatchObject([
     {
-      scope: 'ui',
-      sha: 'bbbbbbb',
-      url: 'https://example.com/b',
-      text: 'a new page',
+      Features: [
+        {
+          scope: 'ui',
+          sha: 'bbbbbbb',
+          url: 'https://example.com/b',
+          text: 'a new page',
+        },
+      ],
     },
+    { Fixes: [{ scope: 'dsp', text: 'a quieter click' }] },
+    { Chores: [{ text: 'bump a dependency' }] },
   ])
-  expect(releases[1]!.groups.get('Fixes')![0]!.text).toBe('a quieter click')
 })
 
 test('one post per day, holding only the groups a reader cares about', () => {
-  const posts = postsByDay(parseChangelog(SAMPLE))
-  expect(posts).toHaveLength(1)
-  expect(posts[0]!.versions).toEqual(['1.1.0', '1.0.1'])
-  expect(posts[0]!.groups.map(([name]) => name)).toEqual(['Features', 'Fixes'])
+  expect(postsByDay(parseChangelog(SAMPLE))).toMatchObject([
+    {
+      date: '2026-10-11',
+      versions: ['1.1.0', '1.0.1'],
+      groups: [
+        ['Features', [{ text: 'a new page' }]],
+        ['Fixes', [{ text: 'a quieter click' }]],
+      ],
+    },
+  ])
 })
 
 test('names a day by its version span and its date', () => {
@@ -61,8 +72,8 @@ test('names a day by its version span and its date', () => {
 test('every release in the real changelog parses', () => {
   const markdown = readFileSync('CHANGELOG.md', 'utf8')
   const releases = parseChangelog(markdown)
-  expect(releases).toHaveLength(markdown.match(/^## \[\d/gm)!.length)
-  const changes = markdown.match(/^- .*\[`\w+`\]/gm)!.length
+  expect(releases).toHaveLength((markdown.match(/^## \[\d/gm) ?? []).length)
+  const changes = (markdown.match(/^- .*\[`\w+`\]/gm) ?? []).length
   const parsed = releases.flatMap(r => [...r.groups.values()].flat()).length
   expect(parsed).toBe(changes)
 })
