@@ -2,6 +2,14 @@
 
 All notable changes to bender are documented here.
 
+## [1.4.2](https://github.com/cmdcolin/bender/compare/v1.4.1...v1.4.2) - 2026-10-11
+
+### Features
+- *(ui)* [`f0f3ff6`](https://github.com/cmdcolin/bender/commit/f0f3ff6a547c4127b025bdf52321d3aa34e74ad9) a pocket page for phones
+
+### Reverts
+- [`93dbcb7`](https://github.com/cmdcolin/bender/commit/93dbcb7bde91d0f3ca0266abdd4ac2423ea29738) the gallery row, whose close-ups read as live controls
+
 ## [1.4.1](https://github.com/cmdcolin/bender/compare/v1.4.0...v1.4.1) - 2026-10-11
 
 ### Features
