@@ -217,6 +217,14 @@ export function mergeNotes(
 // Owns the AudioContext, the worklet node and the control values. The UI
 // writes controls here; the engine coalesces them into one packed post per
 // animation frame.
+// An iPhone with its ring switch on silent mutes Web Audio as an ambient sound.
+// Safari 16.4 and later let a page say it plays media, which keeps it audible.
+function playThroughSilentSwitch() {
+  const session: unknown = Reflect.get(navigator, 'audioSession')
+  if (typeof session === 'object' && session !== null)
+    Reflect.set(session, 'type', 'playback')
+}
+
 export class Engine {
   readonly controls = createStore<Controls>({ ...DEFAULT_CONTROLS })
 
@@ -409,6 +417,7 @@ export class Engine {
   }
 
   private async boot() {
+    playThroughSilentSwitch()
     const ctx = new AudioContext()
     await ctx.audioWorklet.addModule(workletUrl)
     const node = new AudioWorkletNode(ctx, 'bender', {
@@ -995,7 +1004,15 @@ export class Engine {
     }
   }
 
+  /** Where a finished file goes in place of the downloads folder, when a page
+      wants to hand it on itself. */
+  takeTo: ((file: File) => void) | null = null
+
   private download(blob: Blob, name: string) {
+    if (this.takeTo) {
+      this.takeTo(new File([blob], `${name}.wav`, { type: 'audio/wav' }))
+      return
+    }
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
