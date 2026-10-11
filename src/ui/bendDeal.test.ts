@@ -141,3 +141,20 @@ test('no key brings up a silent stage that comes up loud', () => {
       }
     }
 })
+
+test('no key turns a level or mix up past what a bend is', () => {
+  for (const heat of HEATS)
+    for (const seed of [1, 2, 3]) {
+      for (const k of dealBendKeys(DEFAULT_CONTROLS, seeded(seed), heat)) {
+        const patch = k.push(DEFAULT_CONTROLS)
+        for (const key of k.keys) {
+          if (sliderFor(key).role === undefined) continue
+          const high = toPos(sliderFor(key), patch[key]!) >= 0.5
+          expect(
+            BEND_ENDS[key]?.[high ? 1 : 0] ?? 0,
+            k.says,
+          ).toBeLessThanOrEqual(6)
+        }
+      }
+    }
+})

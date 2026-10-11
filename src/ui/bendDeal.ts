@@ -12,7 +12,7 @@ import {
   inChain,
 } from './presets/scenarios'
 import { YOURS } from './presets/yours'
-import { fromPos } from './slider-scale'
+import { fromPos, toPos } from './slider-scale'
 
 // A bend key is a throw dealt by the dice: one letter of the keyboard that
 // pushes a few controls to an end of their travel while it is down and springs
@@ -43,8 +43,9 @@ export const LOW_POS = 0.03
 export const HIGH_POS = 0.97
 
 // A silent stage that comes up louder than this over the board — the
-// feedback bus, the chaos oscillator — is one a key leaves down. Its own
-// controls are dealt once the hand has brought it up.
+// feedback bus, the chaos oscillator — is one a key leaves down, and a level
+// or mix that turns the board up by more than this is a volume knob rather
+// than a bend. Feedback slammed loud stays in the deal.
 const LOUDEST_DB = 6
 
 type Move = { def: SliderDef; pos: number }
@@ -52,18 +53,26 @@ type Move = { def: SliderDef; pos: number }
 const nearEnd = (rand: () => number, top: boolean) =>
   top ? 1 - rand() * 0.06 : rand() * 0.06
 
-// The ends that measured as a change you can hear. A control the table has
-// not measured gets both.
-const liveEnds = (key: ControlKey): boolean[] => {
-  const ends = BEND_ENDS[key]
-  return ends ? ends.map(db => db !== null) : [true, true]
+// The ends that measured as a change you can hear, less any the control
+// already sits at on this board. A control the table has not measured gets
+// both.
+const liveEnds = (c: Controls, key: ControlKey): boolean[] => {
+  const def = sliderFor(key)
+  const at = toPos(def, c[key])
+  const ends = BEND_ENDS[key] ?? [0, 0]
+  return ends.map(
+    (db, end) =>
+      db !== null &&
+      !(def.role !== undefined && db > LOUDEST_DB) &&
+      Math.abs(at - end) > 0.1,
+  )
 }
 
 const endDb = (key: ControlKey, pos: number) =>
   BEND_ENDS[key]?.[pos >= 0.5 ? 1 : 0] ?? 0
 
-const pickEnd = (key: ControlKey, rand: () => number) => {
-  const [low, high] = liveEnds(key)
+const pickEnd = (c: Controls, key: ControlKey, rand: () => number) => {
+  const [low, high] = liveEnds(c, key)
   return low && high ? rand() < 0.5 : !!high
 }
 
@@ -76,6 +85,7 @@ const silentGate = (c: Controls, key: ControlKey) => {
 }
 
 function slamMove(
+  c: Controls,
   pool: SliderDef[],
   rand: () => number,
   open: (def: SliderDef) => boolean,
@@ -83,7 +93,7 @@ function slamMove(
   const candidates = pool.filter(open)
   if (candidates.length === 0) return null
   const def = candidates[Math.floor(rand() * candidates.length)]!
-  return { def, pos: nearEnd(rand, pickEnd(def.key, rand)) }
+  return { def, pos: nearEnd(rand, pickEnd(c, def.key, rand)) }
 }
 
 function edgeMoves(
@@ -99,8 +109,8 @@ function edgeMoves(
       !taken.has(b) &&
       open(sliderFor(a)) &&
       open(sliderFor(b)) &&
-      liveEnds(a)[1] &&
-      liveEnds(b).some(Boolean),
+      liveEnds(c, a)[1] &&
+      liveEnds(c, b).some(Boolean),
   )
   const pair = pairs[Math.floor(rand() * pairs.length)]
   if (!pair) return []
@@ -109,7 +119,7 @@ function edgeMoves(
     { def: sliderFor(a), pos: 0.82 + rand() * 0.18 },
     {
       def: sliderFor(b),
-      pos: pickEnd(b, rand) ? 0.82 + rand() * 0.18 : rand() * 0.18,
+      pos: pickEnd(c, b, rand) ? 0.82 + rand() * 0.18 : rand() * 0.18,
     },
   ]
 }
@@ -159,7 +169,10 @@ function solderWire(c: Controls, nth: number, rand: () => number): Solder {
 
 function solderBend(c: Controls, nth: number, rand: () => number): Solder {
   const slot = emptyOr(BEND_SLOT_KEYS, k => c[k] === 0, nth)
-  const which = 1 + Math.floor(rand() * BENDS.length)
+  const quiet = BENDS.flatMap((b, i) =>
+    (STAGE_DB[b.mix] ?? 0) <= LOUDEST_DB ? [i + 1] : [],
+  )
+  const which = quiet[Math.floor(rand() * quiet.length)]!
   const bend = bendAt(which)!
   return {
     name: `+ ${bend.label}`,
@@ -241,7 +254,7 @@ export function dealBendKeys(
     const group = groupFor(d.key)
     const gate = gateOf(group)
     return (
-      liveEnds(d.key).some(Boolean) &&
+      liveEnds(c, d.key).some(Boolean) &&
       inChain(c, group) &&
       (heard(c, d.key) || !gate || !YOURS.has(gate))
     )
@@ -275,7 +288,7 @@ export function dealBendKeys(
     const want =
       heat === 'tame' ? 1 : heat === 'wild' ? 1 + Math.floor(rand() * 3) : 3
     while (moves.length < want) {
-      const move = slamMove(pool, rand, open)
+      const move = slamMove(c, pool, rand, open)
       if (!move) break
       moves = [...moves, ...add([move])]
     }

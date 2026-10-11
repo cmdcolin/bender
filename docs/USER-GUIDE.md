@@ -422,9 +422,12 @@ again. Every key also takes a click or a finger.
 
 The dealer skips any end of a control that measured silent (`pnpm bend-ends`
 writes the table). No two keys share a control or bring up the same silent
-stage, so a chord of them is a chord. A key leaves a silent stage down when
-bringing it up would make the board more than 6 dB louder, as the feedback bus
-does.
+stage, so a chord of them is a chord. The dealer also leaves out:
+
+- a silent stage that would come up more than 6 dB over the board, such as the
+  feedback bus
+- a level or mix that would turn the board up by more than 6 dB
+- the end of a control's travel that it already sits at
 
 **⚡ go wild**, beside the run switches, runs both machines, brings the kit up
 if it is down, sends the letters to the bend keys and deals a hand, all in one
