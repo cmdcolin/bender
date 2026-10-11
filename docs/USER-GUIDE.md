@@ -492,17 +492,31 @@ phone held upright. The app's ☰ menu opens it on the same board, and its **ful
 app ↗** goes back the other way.
 
 - **▶** runs the toy's tune and the drum machine, with the kit brought up if the
-  board has it down. **● rec** saves a wav, and **↶** is undo.
+  board has it down. The screen stays awake while either runs.
+- **● rec** records what you hear. The chip that appears beside it opens the
+  share sheet, which is how a phone saves the wav. **↶** is undo.
 - Swipe the scope sideways for the next preset. The tabs under it sort the
-  presets by the machine each turns up loudest.
-- Hold the scope and drag to bend. Across sweeps the screech filter, and up
-  feeds the tape delay back on itself, past 1 at the top. Lifting the finger
-  puts the board back.
+  presets by the machine each turns up loudest, and the scope's foot names the
+  board that is up.
+- Hold the scope and drag to bend. Lifting the finger puts the board back. The
+  switch at the scope's top left picks what bends:
+
+  | mode   | across               | up                          |
+  | ------ | -------------------- | --------------------------- |
+  | dub    | screech filter sweep | tape delay feedback, past 1 |
+  | starve | toy clock speed      | the toy's supply sags       |
+  | crush  | sample rate          | fewer bits                  |
+  | glitch | slice length         | more stutter, more repeats  |
+
+- **tilt** bends the same way from how the phone leans, measured from where it
+  sat when tilt came on. An iPhone asks for motion access the first time.
 - Tap a preset twice to set how far toward it the board goes.
 - **bends** lays out the sixteen dealt bend keys as switches. A tap pins one on,
   and a second tap lets it go. The six throws under them hold only while
   pressed.
 - **mix** sets each machine's level and brings in the mic or a sample.
+- The page plays with an iPhone's ring switch on silent, and adding it to the
+  home screen installs it as an app.
 
 ## The link is the board
 

@@ -321,8 +321,8 @@ export function PocketPage() {
                 tap a preset twice to set how far toward it the board goes
               </li>
               <li>
-                <b>bends</b> holds sixteen dealt bends: tap one on, tap again to
-                let go
+                <b>bends</b> holds sixteen dealt bends. Tap one on, and tap it
+                again to let go
               </li>
               <li>
                 <b>mix</b> sets each machine&apos;s level and brings in the mic
