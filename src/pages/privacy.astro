@@ -8,7 +8,7 @@ const ANALYTICS_EXTRA = ''
 
 <Page
   title="Privacy — bender"
-  description="bender uses Google Analytics to count visits and Firebase to store your saved voices. Nothing else."
+  description="bender uses GoatCounter to count visits and Firebase to store your saved voices. Nothing else."
   canonical={`${ORIGIN}privacy/`}
   account={false}
 >
@@ -17,21 +17,10 @@ const ANALYTICS_EXTRA = ''
     <h1>Privacy</h1>
     <p class="privacyLead">
       We use Firebase for logins, and storing some of the settings you make
-      there, and Google Analytics to see if anyone is actually using this.
-      {ANALYTICS_EXTRA} That is all. Please contact colin.diesh@gmail.com for
-      concerns.
+      there, and GoatCounter to count page views, without cookies, to see if
+      anyone is actually using this. {ANALYTICS_EXTRA} That is all. Please
+      contact colin.diesh@gmail.com for concerns.
     </p>
     <!-- CROSS_REPO_SYNC_END(privacy-analytics) -->
   </main>
-  <script>
-    import { forgetAnalyticsAnswer } from '../analytics'
-
-    // CROSS_REPO_SYNC(privacy-analytics-reset)
-    // A reload, so the notice asks again on a page that has not loaded the tag.
-    document.getElementById('analyticsAgain')?.addEventListener('click', () => {
-      forgetAnalyticsAnswer()
-      location.reload()
-    })
-    // CROSS_REPO_SYNC_END(privacy-analytics-reset)
-  </script>
 </Page>
