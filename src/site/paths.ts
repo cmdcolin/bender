@@ -8,6 +8,10 @@ export const pocketUrl = `${siteRoot}pocket/`
 
 export const privacyUrl = `${siteRoot}privacy/`
 
+export const aboutUrl = `${siteRoot}about/`
+
+export const blogUrl = `${siteRoot}blog/`
+
 export const guideUrl = `${siteRoot}guide/`
 
 export const boardUrl = (query: string) => `${appUrl}#${query}`

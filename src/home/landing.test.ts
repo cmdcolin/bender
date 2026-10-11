@@ -2,9 +2,11 @@
 import { experimental_AstroContainer } from 'astro/container'
 import { beforeAll, expect, test } from 'vitest'
 
+import About from '../pages/about.astro'
+import Blog from '../pages/blog.astro'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
-import { privacyUrl } from '../site/paths'
+import { aboutUrl, blogUrl, privacyUrl } from '../site/paths'
 import { PANEL_SHOT } from '../site/site'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
 import { showcase, slug } from './demos'
@@ -132,4 +134,24 @@ test('the panel figure declares the shape the file actually is', () => {
   expect(landing).toContain(
     `${PANEL_SHOT.file}" width="${PANEL_SHOT.width}" height="${PANEL_SHOT.height}"`,
   )
+})
+
+test('the bar links the about page and the blog, and the about page links privacy', async () => {
+  const container = await experimental_AstroContainer.create()
+  const about = await container.renderToString(About)
+  const bar = landing.slice(landing.indexOf('class="barNav"'))
+  const nav = bar.slice(0, bar.indexOf('</nav>'))
+  expect(nav).toContain(`href="${aboutUrl}"`)
+  expect(nav).toContain(`href="${blogUrl}"`)
+  expect(nav).not.toContain(privacyHref)
+  expect(about).toContain(privacyHref)
+})
+
+test('the blog opens on the newest day in the changelog', async () => {
+  const container = await experimental_AstroContainer.create()
+  const blog = await container.renderToString(Blog)
+  const newest = /^## \[[\d.]+\]\(.*\) - ([\d-]+)$/m.exec(
+    readFileSync('CHANGELOG.md', 'utf8'),
+  )![1]!
+  expect(/<article class="post" id="([\d-]+)"/.exec(blog)?.[1]).toBe(newest)
 })

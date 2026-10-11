@@ -1,0 +1,41 @@
+---
+import Page from '../layouts/Page.astro'
+import { aboutUrl, blogUrl, guideUrl, privacyUrl } from '../site/paths'
+import { ORIGIN } from '../site/site'
+
+const NAME = 'bender'
+const LEAD =
+  'bender is a circuit bender in the browser. It simulates a toy keyboard, a drum machine, an FM chip and a mono synth, each with bends to wire in, and runs them through tape, reverb and distortion pedals. The audio runs on Web Audio, on your own machine.'
+const MAKER =
+  'Colin Diesh builds bender, alongside its sibling videoskillet, which emulates analog video signals.'
+const LINKS = [
+  [guideUrl, 'User guide: how to play it'],
+  [blogUrl, 'Blog: what changed, day by day'],
+  ['https://github.com/cmdcolin/bender', 'Source on GitHub ↗'],
+  ['https://videoskillet.com/', 'videoskillet ↗'],
+  [privacyUrl, 'Privacy: what an account stores'],
+]
+---
+
+<Page
+  title="About — bender"
+  description="bender is a circuit bender in the browser, built on Web Audio."
+  canonical={`${ORIGIN}about/`}
+  account={false}
+  current={aboutUrl}
+>
+  <main class="wrap about">
+    <!-- CROSS_REPO_SYNC(about-page) -->
+    <h1>About {NAME}</h1>
+    <p class="aboutLead">{LEAD}</p>
+    <p>{MAKER}</p>
+    <ul class="aboutLinks">
+      {LINKS.map(([href, label]) => (
+        <li>
+          <a href={href}>{label}</a>
+        </li>
+      ))}
+    </ul>
+    <!-- CROSS_REPO_SYNC_END(about-page) -->
+  </main>
+</Page>

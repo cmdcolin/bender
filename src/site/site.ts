@@ -1,4 +1,11 @@
-import { appUrl, guideUrl, privacyUrl, siteRoot } from './paths'
+import {
+  aboutUrl,
+  appUrl,
+  blogUrl,
+  guideUrl,
+  privacyUrl,
+  siteRoot,
+} from './paths'
 
 // Where the site is served from, for the canonical link every page carries and
 // for the absolute URLs a shared link unfurls with. The host is GitHub Pages
@@ -27,12 +34,15 @@ export const SITE = {
   app: appUrl,
   nav: [
     [guideUrl, 'User guide'],
+    [blogUrl, 'Blog'],
+    [aboutUrl, 'About'],
     [REPO, 'GitHub'],
-    [privacyUrl, 'Privacy'],
   ],
   footer: [
     [appUrl, 'Open the app ↗'],
     [guideUrl, 'User guide'],
+    [blogUrl, 'Blog'],
+    [aboutUrl, 'About'],
     [REPO, 'GitHub ↗'],
     [privacyUrl, 'Privacy'],
     ['https://videoskillet.com/', "bender's sibling: videoskillet ↗"],
