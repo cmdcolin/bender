@@ -21,6 +21,7 @@ export interface CutDef {
 }
 
 const KNIFE = 'knife on the bus'
+const SAMPLE_ROM = 'Sample ROM'
 
 const pick = choiceValue
 
@@ -185,6 +186,37 @@ export const CUTS: CutDef[] = [
     blurb:
       'The snare’s trigger line on the counter’s clear pin. The first snare sends the counter back to step one, so the rock beat comes round every five steps',
     patch: { drumReset: pick('drumReset', 'on the snare') },
+  },
+  {
+    group: 'Toy drums',
+    part: SAMPLE_ROM,
+    name: 'the kick plays the kit',
+    blurb:
+      'The end stop on the slab counter cut, so the counter carries on through every slab after the voice’s own and one kick hit holds four seconds of the kit',
+    patch: {
+      drumRom: 1,
+      drumRomCount: pick('drumRomCount', 'runs on through the ROM'),
+    },
+  },
+  {
+    group: 'Toy drums',
+    part: SAMPLE_ROM,
+    name: 'every hit backwards',
+    blurb:
+      'The up/down pin on the slab counter wired, so each slab plays from its tail to its attack',
+    patch: { drumRom: 1, drumRomCount: pick('drumRomCount', 'counts down') },
+  },
+  {
+    group: 'Toy drums',
+    part: SAMPLE_ROM,
+    name: 'folded blat',
+    blurb:
+      'The top data wire on the sample ROM held high, so every word lands in the top half and each hit folds into a square-edged blat',
+    patch: {
+      drumRom: 1,
+      drumRomDataLine: pick('drumRomDataLine', 'D11'),
+      drumRomDataFault: pick('drumRomDataFault', 'to +V'),
+    },
   },
   {
     group: 'FM chip',

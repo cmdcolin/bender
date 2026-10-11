@@ -1,6 +1,6 @@
 ---
 name: drum-bends
-description: Ranked further bends for the drum machine: a knife on the sample ROM, a supply for the metal bank, the metal bank into the tanks, the pattern as a circulating shift register.
+description: Ranked further bends for the drum machine: a supply for the metal bank, the metal bank into the tanks, a sweep trimmer, the pattern as a circulating shift register.
 ---
 
 # Further bends for the drum machine
@@ -11,8 +11,8 @@ the ones that are cheap and the ones that change how the kit sounds with no
 knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 3 (the accent on the data bus) and 8
-(`DEST.drumBpm`), plus the counter's reset wire (`drumReset`) and a comparator
-on a tank's ring (`drumRingTrig`). Every other numbered item is still a
+(`DEST.drumBpm`) and 10 (the sample ROM knife), plus the counter's reset wire
+(`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other numbered item is still a
 candidate.
 
 ## How to judge one of these before building it
@@ -329,8 +329,10 @@ best-known drum-machine bend (SK-1, RZ-1, HR-16).
 - A direction wire on the counter plays the slabs backwards.
 - Data faults on the 12-bit words: a stuck top bit is a square-ish fuzz.
 
-Hook: `slab[pos | 0]` in the `sampled` branch of `process`. `pcmKeys.read()`
-and `Bus` are the template. Cost: medium.
+**Built** as `drumRomCount` and the `drumRom{Addr,Data}{Line,Fault}` pairs,
+sharing `drumBusCut` with the pattern bus. No patch-bay lanes yet: the pcm
+keyboard's `DEST.pcmAddrLine` lanes are the template if a sweep across the
+address wires turns out to be worth having.
 
 ## 11. The metal bank into the tanks
 

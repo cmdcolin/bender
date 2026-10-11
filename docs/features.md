@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 347 knobs and switches in 32 groups, seven bends competing for six slots,
-18 ROM tunes, 97 presets, 16 stage settings and 33 named cuts — and everything
+ruin. 352 knobs and switches in 32 groups, seven bends competing for six slots,
+18 ROM tunes, 97 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 29 of them, mostly the ones that cover the
+preset that names it still gets it. 34 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -196,9 +196,16 @@ too — the knife goes on and the rows under it say which controls that was:
 - **five-step bar**: The snare’s trigger line on the counter’s clear pin. The
   first snare sends the counter back to step one, so the rock beat comes round
   every five steps
+- **the kick plays the kit**: The end stop on the slab counter cut, so the
+  counter carries on through every slab after the voice’s own and one kick hit
+  holds four seconds of the kit
+- **every hit backwards**: The up/down pin on the slab counter wired, so each
+  slab plays from its tail to its attack
+- **folded blat**: The top data wire on the sample ROM held high, so every word
+  lands in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>37 controls</summary>
+<summary>42 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -223,6 +230,11 @@ too — the knife goes on and the rows under it say which controls that was:
 | Overflow        | off or wrap                                                                                                        | What the converter does with a sum too wide for its word                                                                  |
 | Kit             | analog or sampled                                                                                                  | Which kit is on the output                                                                                                |
 | ROM clock       | 8 to 44.1 kHz                                                                                                      | How fast the slabs are read back                                                                                          |
+| Slab counter †  | stops at its slab’s end, runs on through the ROM, counts down, counts down and runs on                             | The two pins on the counter that walks a slab                                                                             |
+| ROM address †   | 18 of them, off through A16                                                                                        | Which of the wires carrying an address to the sample ROM the knife found                                                  |
+| Address fault † | cut, to ground, to +V, bridged                                                                                     | What the knife did to that address wire                                                                                   |
+| ROM data †      | 13 of them, off through D11                                                                                        | Which of the twelve wires carrying each word out of the sample ROM the knife found                                        |
+| Data fault †    | cut, to ground, to +V, bridged                                                                                     | What the knife did to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                  |
 | Retrigger       | 0 Hz to 4 kHz                                                                                                      | Retriggers the current step at this rate                                                                                  |
 | Trigger floor   | off to full                                                                                                        | How far a voice has to have drained before the one-shot behind it will answer the trigger line again                      |
 | Scan            | 0 to 40 ms                                                                                                         | The chip strikes one voice per scan                                                                                       |
@@ -235,9 +247,9 @@ too — the knife goes on and the rows under it say which controls that was:
 | Clock slip †    | off to full                                                                                                        | The wire clocking the step counter, and how often an edge comes out too slow to get over the threshold                    |
 | Counter reset † | off, on the kick, on the snare, on the hat, on the clap, on the tom, on the bell, on the open hat, on the cymbal   | Which voice’s trigger line is soldered to the step counter’s clear pin                                                    |
 | Address line †  | off, A0, A1, A2, A3                                                                                                | Which of the four wires carrying a step number to the pattern memory the knife found                                      |
-| Address fault   | cut, to ground, to +V, bridged                                                                                     | The same four things a knife does to any trace, on the side that chooses the step                                         |
+| Address fault † | cut, to ground, to +V, bridged                                                                                     | What the knife did to that address wire                                                                                   |
 | Data line †     | off, D0, D1, D2, D3, D4, D5, D6, D7, D8                                                                            | Which of the wires carrying the word back the knife found — one wire a row, in the order of the grid, so D8 is the accent |
-| Data fault      | cut, to ground, to +V, bridged                                                                                     | The same four, on the side carrying the word                                                                              |
+| Data fault †    | cut, to ground, to +V, bridged                                                                                     | What the knife did to that data wire: cut, shorted to ground, shorted to +V, or bridged to its neighbour                  |
 | Cut depth       | off to full                                                                                                        | How far through the trace the knife went — only the cut fault reads it                                                    |
 
 </details>

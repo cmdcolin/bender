@@ -646,6 +646,33 @@ one:
 **Scan** is how long the chip takes to get from one voice to the next. Slow it
 and a step that strikes several voices comes out as a flam, in row order.
 
+## The drum machine's sample ROM
+
+The sampled kit keeps its eight slabs end to end in one part, kick first and
+cymbal last, and every voice reads that part over the same wires. Those wires
+appear under **Sample ROM** once the kit is switched to sampled.
+
+**Slab counter** is two pins on the counter that walks a slab:
+
+- With the end stop cut, the counter runs on through every slab after the
+  voice's own, so one kick hit carries about four seconds of the whole kit.
+- With the up/down pin wired, a slab plays backwards: the tail swells into the
+  attack.
+- With both, the counter runs backwards to the start of the ROM, and one cymbal
+  hit carries the whole kit in reverse.
+
+**ROM address** works like every other address bus on the board, with one
+difference: the memory holds every voice, so a wrong address is often another
+voice's slab. A0 held low reads each word twice. A16 held high lands the kick's
+counter in the open hat's tail and then the cymbal's attack. With a bridge, the
+counter reads the slabs in clumps.
+
+**ROM data** is the twelve-bit word coming back. D11 is the top of the word, and
+a fault there folds each hit into a square-edged blat at about 1.7 times the
+level. The low wires sit under the quiet tails and are barely audible.
+
+Both knives share **Cut depth** with the pattern bus.
+
 ## The trigger patch's other faults
 
 See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for how to wire it;

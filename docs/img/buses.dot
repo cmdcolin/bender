@@ -20,7 +20,8 @@
 // help text in src/ui/controls/sources.ts and in the named cuts.
 //
 // Widths track constants: ROM_DATA_LINES / ROM_ADDR_LINES in
-// src/dsp/stages/roms.ts, N_DRUM_VOICES and ADDR_LINES in src/drums.ts,
+// src/dsp/stages/roms.ts, DATA_LINES and ADDR_LINES in src/drums.ts,
+// KIT_ROM_ADDR_LINES / KIT_ROM_DATA_LINES in src/dsp/stages/toyDrum.ts,
 // PCM_ADDR_LINES / PCM_DATA_LINES in src/dsp/stages/pcmKeys' own ROM. Palette
 // follows docs/img/dataflow.dot so the family reads alike: blue chooses, orange
 // carries, green is the bus the processor never touches.
@@ -76,8 +77,17 @@ digraph buses {
     drum_bus [label=<trigger bus<br/><font color="#57606a" point-size="8">kick snare hat clap<br/>tom bell open hat cymbal</font>> style="filled,rounded"]
 
     drum_ctr -> drum_mem [label="A0–A3" color="#0969da" fontcolor="#0969da"]
-    drum_mem -> drum_bus [label=<<font color="#bc4c00">D0–D7</font><br/><font color="#57606a" point-size="8">one wire a voice</font>>
+    drum_mem -> drum_bus [label=<<font color="#bc4c00">D0–D8</font><br/><font color="#57606a" point-size="8">one wire a voice, D8 the accent</font>>
                           color="#bc4c00"]
+
+    // The sampled kit's own memory: eight slabs end to end, read by one
+    // counter per voice over one shared bus.
+    drum_slab [label="slab\ncounter" style="filled,rounded"]
+    drum_rom [label=<sample ROM<br/><font color="#57606a" point-size="8">eight slabs end to end</font>> style=filled]
+    drum_dac [label="kit sum" style="filled,rounded"]
+
+    drum_slab -> drum_rom [label="A0–A16" color="#0969da" fontcolor="#0969da"]
+    drum_rom -> drum_dac [label="D0–D11" color="#bc4c00" fontcolor="#bc4c00"]
   }
 
   subgraph cluster_keys {

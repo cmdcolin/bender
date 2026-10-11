@@ -142,7 +142,9 @@ bias**, **Cymbal tone** and **Ring** reach nothing, and the cross-patch bridges
 pins a recording does not have. In their place, **ROM clock** is how fast the
 slabs are read: cut at 26,040 Hz, read at half that they land an octave down and
 half as bright, which is the trick every record made on one of those boxes is
-built from. **Decay** becomes truncation under 1×.
+built from. **Decay** becomes truncation under 1×. The ROM's own wires can be
+knifed too: a kick can run on through the whole kit, play backwards, or read
+another voice's slab; see [BENDS.md](BENDS.md#the-drum-machines-sample-rom).
 
 Four voices are one part: the cowbell, both hats and the cymbal come off a
 single bank of six square oscillators. **Bank spread** widens the bank, detuning

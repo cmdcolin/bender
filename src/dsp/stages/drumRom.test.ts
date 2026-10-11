@@ -6,6 +6,7 @@ import { buildBender } from '../build'
 import { BLOCK } from '../stage'
 import {
   envelope,
+  highEnergy,
   makeIo,
   pitchHz,
   render,
@@ -189,4 +190,81 @@ test('nothing the two new knobs can be set to leaves anything non-finite', () =>
       }
     }
   }
+})
+
+// The knife on the ROM's own wires. Every voice reads one part over one bus, so
+// these faults move a voice between slabs as well as bending what it reads.
+const window = (x: Float32Array, from: number, to: number) =>
+  x.subarray(Math.round(from * SR), Math.round(to * SR))
+
+test('a ROM bus nobody has knifed is the sampled kit it always was', () => {
+  const kit: Partial<Controls> = { ...SAMPLED, chipLevel: 0, drumLevel: 0.9 }
+  expect(
+    render(
+      { ...kit, drumRomAddrFault: 2, drumRomDataFault: 2, drumBusCut: 0.4 },
+      1,
+    ),
+  ).toEqual(render(kit, 1))
+})
+
+test('a cut end stop runs the kick on through every slab after it', () => {
+  const stops = ends(struck(KICK, {}, 5)) * 5
+  const runs = ends(struck(KICK, { drumRomCount: 1 }, 5)) * 5
+  expect(stops).toBeLessThan(0.7)
+  expect(runs).toBeGreaterThan(3)
+})
+
+test('the up/down pin plays a slab from its tail to its attack', () => {
+  const forward = struck(KICK, {}, 0.7)
+  const back = struck(KICK, { drumRomCount: 2 }, 0.7)
+  expect(rms(window(forward, 0, 0.15))).toBeGreaterThan(
+    rms(window(forward, 0.4, 0.55)) * 3,
+  )
+  expect(rms(window(back, 0.4, 0.55))).toBeGreaterThan(
+    rms(window(back, 0, 0.15)) * 3,
+  )
+})
+
+test('a top address line held high lands the kick in the cymbal’s slab', () => {
+  const kick = window(struck(KICK, {}, 0.6), 0, 0.6)
+  const moved = window(
+    struck(KICK, { drumRomAddrLine: 17, drumRomAddrFault: 2 }, 0.6),
+    0,
+    0.6,
+  )
+  expect(rms(moved)).toBeLessThan(rms(kick) * 0.2)
+  expect(highEnergy(moved, 4000)).toBeGreaterThan(highEnergy(kick, 4000) * 2)
+})
+
+test('the sign wire on the ROM’s data bus folds every hit', () => {
+  const kick = window(struck(KICK, {}, 0.6), 0, 0.6)
+  const folded = window(
+    struck(KICK, { drumRomDataLine: 12, drumRomDataFault: 2 }, 0.6),
+    0,
+    0.6,
+  )
+  expect(rms(folded)).toBeGreaterThan(rms(kick) * 1.4)
+  expect(highEnergy(folded, 4000)).toBeGreaterThan(highEnergy(kick, 4000) * 5)
+})
+
+test('no setting of the ROM knife leaves anything non-finite', () => {
+  for (const count of [0, 1, 2, 3])
+    for (const line of [1, 9, 17])
+      for (const fault of [0, 1, 2, 3]) {
+        const x = solo(
+          {
+            ...SAMPLED,
+            drumRomCount: count,
+            drumRomAddrLine: line,
+            drumRomAddrFault: fault,
+            drumRomDataLine: Math.min(line, 12),
+            drumRomDataFault: fault,
+            drumKick: stepMask(2),
+            drumCym: stepMask(2),
+            drumRomHz: 44100,
+          },
+          0.3,
+        )
+        expect(x.every(Number.isFinite), `${count}/${line}/${fault}`).toBe(true)
+      }
 })

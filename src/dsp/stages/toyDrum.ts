@@ -439,6 +439,27 @@ const ROM_SEED = 0x50f7
     step, at `ROM_RATE` and on a twelve-bit grid. */
 export type DrumSlabs = readonly Float32Array[]
 
+// The slabs sit end to end in one part, in the order of the rows, and every
+// voice reads them over the same wires. So a knifed address line lands one
+// voice's counter in another voice's slab, and a counter whose end stop has
+// been cut carries on through every slab after its own.
+const SLAB_LEN = ROM_SECS.map(s => Math.round(s * ROM_RATE))
+const SLAB_BASE = SLAB_LEN.map((_, v) =>
+  SLAB_LEN.slice(0, v).reduce((a, n) => a + n, 0),
+)
+const ROM_WORDS = SLAB_LEN.reduce((a, n) => a + n, 0)
+export const KIT_ROM_ADDR_LINES = Math.ceil(Math.log2(ROM_WORDS))
+export const KIT_ROM_DATA_LINES = ROM_BITS
+const ROM_ZERO = 1 << (ROM_BITS - 1)
+
+/** What the end stop and the up/down pin on the slab counter are wired to. */
+export const ROM_COUNT_NAMES = [
+  'stops at its slab’s end',
+  'runs on through the ROM',
+  'counts down',
+  'counts down and runs on',
+]
+
 // Cut once and shared by every kit ever built. The slabs are read-only and the
 // cut is deterministic, so the second board costs nothing — and, because the
 // cut runs at the ROM's own rate rather than the context's, every machine gets
@@ -586,8 +607,19 @@ export class ToyDrum implements Stage {
   // is a voice that has finished. The gate is there because a recording has no
   // envelope to drain: everything else on this board chokes by running an
   // envelope down in a hurry, and a slab has none to run.
-  private readonly rom: DrumSlabs | null
-  private romPos = new Float64Array(N_VOICES)
+  private romPos = new Float64Array(N_VOICES).fill(Infinity)
+  // Where each voice's counter starts and how far it runs this block, which the
+  // counter wire decides.
+  private romFrom = new Int32Array(N_VOICES)
+  private romSpan = new Int32Array(N_VOICES)
+  private romDown = false
+  private romAddrBus: Bus
+  private romDataBus: Bus
+  private romAddrLine = -1
+  private romAddrFault = 0
+  private romDataLine = -1
+  private romDataFault = 0
+  private readonly image: RomImage | null
   private romGate = new Float32Array(N_VOICES).fill(1)
   private romLp = new Lowpass(ROM_LP_POLES)
   private playingRom = false
@@ -617,7 +649,9 @@ export class ToyDrum implements Stage {
     // Before anything else draws on the board: the scratch kit inside cutRom
     // runs this same constructor, and it has to find the flag rather than a
     // half-built instance.
-    this.rom = cutting ? null : kitRom()
+    this.image = cutting ? null : romImage()
+    this.romAddrBus = new Bus(KIT_ROM_ADDR_LINES, seed ^ 0x50ad)
+    this.romDataBus = new Bus(KIT_ROM_DATA_LINES, seed ^ 0x50da)
     this.rng = mulberry32(seed)
     this.metal = new MetalBank(sr)
     this.micTrig = new Transient(sr)
@@ -972,11 +1006,9 @@ export class ToyDrum implements Stage {
     // nothing is ever locked out.
     this.trigFloor = 1 - (1 - AUDIBLE) * p[IDX.drumTrigFloor]!
     const wrap = Math.round(p[IDX.drumOverflow]!) === 1
-    // Which kit is on the output this block. Null is the analog one, whether
-    // because the switch says so or because this instance is the scratch kit
-    // that cut the ROM in the first place.
-    const slabs = Math.round(p[IDX.drumRom]!) === 1 ? this.rom : null
-    const sampled = slabs !== null
+    // Which kit is on the output this block. The scratch kit that cut the ROM
+    // has no image to read, so it always plays the circuits.
+    const sampled = Math.round(p[IDX.drumRom]!) === 1 && this.image !== null
     if (sampled !== this.playingRom) {
       this.playingRom = sampled
       this.swapKit()
@@ -992,6 +1024,7 @@ export class ToyDrum implements Stage {
     // the gate shuts part way in, and over it the slab plays whole.
     const romCut = Math.min(decay, 1)
     const romFade = Math.max(ROM_FADE * romHz, 1)
+    if (sampled) this.wireRom(p)
     this.accentAmt = p[IDX.drumAccentAmt]!
     this.accentSag = p[IDX.drumAccentSag]!
     this.accentPull = coef(ACCENT_RECHARGE / clock, this.sr)
@@ -1275,21 +1308,23 @@ export class ToyDrum implements Stage {
           // recording of a drum machine.
           const step = romRate * pf
           for (let v = 0; v < N_VOICES; v++) {
-            const slab = slabs[v]!
             const pos = this.romPos[v]!
-            const len = slab.length
+            const len = this.romSpan[v]!
             if (pos >= len) continue
             // Where the truncation gate stands. Counted off the slab's own
             // length rather than off a clock, so winding Decay down shortens
             // every voice by the same fraction of itself.
             const left = romCut * len - pos
             if (left <= 0) {
-              this.romPos[v] = len
+              this.romPos[v] = Infinity
               continue
             }
             const gate = this.romGate[v]!
+            const at = this.romDown
+              ? this.romFrom[v]! - (pos | 0)
+              : this.romFrom[v]! + (pos | 0)
             const y =
-              slab[pos | 0]! *
+              this.romWord(at) *
               this.gain[v]! *
               gate *
               (left < romFade ? left / romFade : 1)
@@ -1492,8 +1527,53 @@ export class ToyDrum implements Stage {
     for (const tank of this.tanks) tank.reset()
     this.romLp.reset()
     this.romGate.fill(1)
-    const rom = this.rom
-    for (let v = 0; v < N_VOICES; v++) this.romPos[v] = rom ? rom[v]!.length : 0
+    this.romPos.fill(Infinity)
+  }
+
+  // The counter wire and the knives on the ROM's own bus, read once a block.
+  private wireRom(p: Float32Array) {
+    const count = Math.round(p[IDX.drumRomCount]!)
+    const runOn = count === 1 || count === 3
+    this.romDown = count >= 2
+    for (let v = 0; v < N_VOICES; v++) {
+      const base = SLAB_BASE[v]!
+      const len = SLAB_LEN[v]!
+      this.romFrom[v] = this.romDown ? base + len - 1 : base
+      this.romSpan[v] = !runOn
+        ? len
+        : this.romDown
+          ? base + len
+          : ROM_WORDS - base
+    }
+    this.romAddrLine = Math.round(p[IDX.drumRomAddrLine]!) - 1
+    this.romAddrFault = Math.round(p[IDX.drumRomAddrFault]!)
+    this.romDataLine = Math.round(p[IDX.drumRomDataLine]!) - 1
+    this.romDataFault = Math.round(p[IDX.drumRomDataFault]!)
+  }
+
+  // The word at one address of the ROM, as a sample. An address held past the
+  // top of the part folds back onto it, because the counter is wider than the
+  // memory it walks.
+  private romWord(at: number): number {
+    const image = this.image!
+    let a = at
+    if (this.romAddrLine >= 0) {
+      a =
+        this.romAddrBus.read(
+          a,
+          this.romAddrLine,
+          this.romAddrFault,
+          this.busCut,
+        ) % ROM_WORDS
+    }
+    if (this.romDataLine < 0) return image.flat[a]!
+    const d = this.romDataBus.read(
+      image.codes[a]!,
+      this.romDataLine,
+      this.romDataFault,
+      this.busCut,
+    )
+    return ((d & ((1 << ROM_BITS) - 1)) - ROM_ZERO) / ROM_ZERO
   }
 
   private scanStep(ctx: Ctx, i: number) {
@@ -1631,7 +1711,7 @@ function cutRom(): DrumSlabs {
   const q = 1 << (ROM_BITS - 1)
   const slabs: Float32Array[] = []
   for (let v = 0; v < N_VOICES; v++) {
-    const slab = new Float32Array(Math.round(ROM_SECS[v]! * ROM_RATE))
+    const slab = new Float32Array(SLAB_LEN[v]!)
     drum.panic()
     lp.reset()
     drum.strike(1 << v, 1)
@@ -1653,4 +1733,30 @@ function cutRom(): DrumSlabs {
 export function kitRom(): DrumSlabs {
   ROM ??= cutRom()
   return ROM
+}
+
+interface RomImage {
+  /** Every slab end to end, as samples. */
+  flat: Float32Array
+  /** The same words as the part stores them: offset binary, twelve bits. */
+  codes: Uint16Array
+}
+
+let IMAGE: RomImage | null = null
+
+function romImage(): RomImage {
+  if (IMAGE) return IMAGE
+  const flat = new Float32Array(ROM_WORDS)
+  const codes = new Uint16Array(ROM_WORDS)
+  const top = (1 << ROM_BITS) - 1
+  for (const [v, slab] of kitRom().entries()) {
+    const base = SLAB_BASE[v]!
+    flat.set(slab, base)
+    for (let k = 0; k < slab.length; k++) {
+      const code = Math.round(slab[k]! * ROM_ZERO) + ROM_ZERO
+      codes[base + k] = Math.min(Math.max(code, 0), top)
+    }
+  }
+  IMAGE = { flat, codes }
+  return IMAGE
 }

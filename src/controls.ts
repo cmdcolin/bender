@@ -189,6 +189,11 @@ export const DEFAULT_CONTROLS = {
   // Hz is where the machine sampled itself; the switch rests on the circuits.
   drumRom: 0,
   drumRomHz: 26040,
+  drumRomCount: 0,
+  drumRomAddrLine: 0,
+  drumRomAddrFault: 0,
+  drumRomDataLine: 0,
+  drumRomDataFault: 0,
   drumRetrigHz: 0,
   drumTrigFloor: 0,
   drumScan: 0,
