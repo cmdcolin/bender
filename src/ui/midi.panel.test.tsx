@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
+import { useState } from 'react'
 import { afterEach, expect, test } from 'vitest'
 
 import { midi } from './midi'
-import { MidiPanel } from './MidiPanel'
+import { MidiMenuItem, MidiPanel } from './MidiPanel'
 import './testDom'
 
 // The wire lives behind a button in the nameplate row now rather than in a
@@ -13,6 +14,17 @@ import './testDom'
 
 const tab = () => screen.getByRole('button', { name: /^midi/ })
 
+function Panel() {
+  const [open, setOpen] = useState(false)
+  return (
+    <MidiPanel
+      open={open}
+      onToggle={() => setOpen(o => !o)}
+      onClose={() => setOpen(false)}
+    />
+  )
+}
+
 afterEach(() => {
   midi.status.set('idle')
   midi.bindings.set({})
@@ -20,7 +32,7 @@ afterEach(() => {
 })
 
 test('the wire costs the panel nothing until it is asked for', () => {
-  render(<MidiPanel />)
+  render(<Panel />)
   expect(screen.queryByRole('dialog')).toBeNull()
   fireEvent.click(tab())
   expect(screen.getByRole('dialog')).toBeTruthy()
@@ -30,7 +42,7 @@ test('the wire costs the panel nothing until it is asked for', () => {
 // row in whatever stage is open behind this. A dialog that took the panel away
 // would be one you have to close to use the thing it is about.
 test('the dialog leaves the panel behind it reachable', () => {
-  render(<MidiPanel />)
+  render(<Panel />)
   fireEvent.click(tab())
   const dialog = screen.getByRole('dialog') as HTMLDialogElement
   expect(dialog.open).toBe(true)
@@ -40,7 +52,7 @@ test('the dialog leaves the panel behind it reachable', () => {
 })
 
 test('escape and the close button both shut it', () => {
-  render(<MidiPanel />)
+  render(<Panel />)
   fireEvent.click(tab())
   fireEvent.keyDown(window, { key: 'Escape' })
   expect(screen.queryByRole('dialog')).toBeNull()
@@ -54,23 +66,40 @@ test('escape and the close button both shut it', () => {
 // board has moved out from under — it does nothing until you sweep it back
 // through its value — and the count is the only thing on screen that says so.
 test('the button carries only what has gone inert', () => {
-  const { rerender } = render(<MidiPanel />)
+  const { rerender } = render(<Panel />)
   expect(tab().textContent).toBe('midi')
 
   midi.status.set('ready')
   midi.bindings.set({ combMix: { controller: 1, channel: 0 } })
-  rerender(<MidiPanel />)
+  rerender(<Panel />)
   expect(tab().textContent).toBe('midi')
 
   midi.pickups.set({ combMix: 0.5 })
-  rerender(<MidiPanel />)
+  rerender(<Panel />)
   expect(tab().textContent).toContain('1 waiting')
 })
 
 test('a browser with no web midi says so rather than offering the wire', () => {
   midi.status.set('unsupported')
-  render(<MidiPanel />)
+  render(<Panel />)
   expect(tab().textContent).toContain('n/a')
   fireEvent.click(tab())
   expect(screen.getByRole('dialog').textContent).toMatch(/no Web MIDI/)
+})
+
+// The menu's way in stands for the button a touch screen leaves out, which is
+// only left out while the wire is off.
+test('the menu offers the wire only while it is off and could be on', () => {
+  const { rerender } = render(
+    <MidiMenuItem className="item" onPick={() => {}} />,
+  )
+  expect(screen.getByRole('menuitem', { name: 'midi' })).toBeTruthy()
+
+  midi.status.set('ready')
+  rerender(<MidiMenuItem className="item" onPick={() => {}} />)
+  expect(screen.queryByRole('menuitem')).toBeNull()
+
+  midi.status.set('unsupported')
+  rerender(<MidiMenuItem className="item" onPick={() => {}} />)
+  expect(screen.queryByRole('menuitem')).toBeNull()
 })

@@ -34,7 +34,7 @@ import { letterKeys } from './letters'
 import { useCoarse } from './measure'
 import { Menu } from './Menu'
 import { menuItem } from './menuItems'
-import { MidiPanel } from './MidiPanel'
+import { MidiMenuItem, MidiPanel } from './MidiPanel'
 import { MonoKeys } from './MonoKeys'
 import {
   loadMorph,
@@ -212,6 +212,7 @@ export function App(props: { openedFromLink?: boolean }) {
   // behind it.
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
   const [showMenu, setShowMenu] = useState(false)
+  const [showMidi, setShowMidi] = useState(false)
   const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
 
   const lib = useSavedVoices()
@@ -593,7 +594,11 @@ export function App(props: { openedFromLink?: boolean }) {
               as a whole rather than about any one stage of it. It was a section
               of the panel, which is where the board's own stages live and where
               the wire into them does not belong. */}
-            <MidiPanel />
+            <MidiPanel
+              open={showMidi}
+              onToggle={() => setShowMidi(o => !o)}
+              onClose={() => setShowMidi(false)}
+            />
             {/* Beside the MIDI drawer for the same reason it is: a fact about
               the session rather than a verb over the board. */}
             <SavedVoices
@@ -672,6 +677,13 @@ export function App(props: { openedFromLink?: boolean }) {
                 >
                   phone version
                 </button>
+                <MidiMenuItem
+                  className={menuItem(false)}
+                  onPick={() => {
+                    setShowMenu(false)
+                    setShowMidi(true)
+                  }}
+                />
               </Menu>
             )}
           </div>

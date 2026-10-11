@@ -631,10 +631,13 @@ function KeyRouting() {
 //
 // The button carries the status, because a stranded knob is a knob gone inert,
 // and a board whose knobs have gone quiet has to say why with the card shut.
-export function MidiPanel() {
+export function MidiPanel(props: {
+  open: boolean
+  onToggle: () => void
+  onClose: () => void
+}) {
   const status = useStoreValue(midi.status)
   const stranded = Object.keys(useStoreValue(midi.pickups)).length
-  const [open, setOpen] = useState(false)
   const note = midiTabNote(status, stranded)
 
   return (
@@ -654,10 +657,12 @@ export function MidiPanel() {
               ? styles.tabWaiting
               : status === 'ready'
                 ? styles.tabOn
-                : styles.tab
+                : status === 'idle' || status === 'unsupported'
+                  ? styles.tabIdle
+                  : styles.tab
           }
-          aria-expanded={open}
-          onClick={() => setOpen(o => !o)}
+          aria-expanded={props.open}
+          onClick={props.onToggle}
         >
           midi
           {note === null ? null : (
@@ -665,16 +670,35 @@ export function MidiPanel() {
           )}
         </button>
       </Tip>
-      {open && (
+      {props.open && (
         <MidiDialog
           status={status}
           onEnable={() => midi.enable()}
-          onClose={() => setOpen(false)}
+          onClose={props.onClose}
         >
           <Wired />
         </MidiDialog>
       )}
     </>
+  )
+}
+
+// The way in from the menu on a touch screen, which leaves the button out
+// while the wire is off. A browser with no Web MIDI gets neither.
+export function MidiMenuItem(props: {
+  className: string | undefined
+  onPick: () => void
+}) {
+  const status = useStoreValue(midi.status)
+  if (status !== 'idle') return null
+  return (
+    <button
+      role="menuitem"
+      className={`${props.className ?? ''} ${styles.menuTouch}`}
+      onClick={props.onPick}
+    >
+      midi
+    </button>
   )
 }
 
