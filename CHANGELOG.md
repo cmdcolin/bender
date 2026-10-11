@@ -2,6 +2,47 @@
 
 All notable changes to bender are documented here.
 
+## [1.5.0](https://github.com/cmdcolin/bender/compare/v1.4.2...v1.5.0) - 2026-10-11
+
+### Features
+- *(ui)* [`1bc4070`](https://github.com/cmdcolin/bender/commit/1bc4070745cc76f5cd4547d9a4f0fde48451a4c8) two control heights for every button and dropdown
+- [`0c87d6b`](https://github.com/cmdcolin/bender/commit/0c87d6b3e818585f4920a7bcb068f14bbaa70789) count visits with GoatCounter and drop the cookie notice
+- *(engine)* [`6f8622c`](https://github.com/cmdcolin/bender/commit/6f8622c506ab1c8dacb6ec4281652c5c68a42f17) play through an iPhone's silent switch, and let a page take the finished wav
+- *(ui)* [`ae61d5a`](https://github.com/cmdcolin/bender/commit/ae61d5a8cf00e16e85344f905879e01add0e09bf) bend modes, tilt and a take chip on the pocket page
+- *(ui)* [`f0bd18f`](https://github.com/cmdcolin/bender/commit/f0bd18f01b24de42ee2b73cabd3728703f7ab1de) install the pocket page from a phone's home screen
+- *(ui)* [`a83ebd4`](https://github.com/cmdcolin/bender/commit/a83ebd4129d9b61d61ec796fada8825cb944b56c) move every button override into button.module.css
+- *(ui)* [`c612a56`](https://github.com/cmdcolin/bender/commit/c612a56b116cda9e4e31e4a99f9316ea748a9420) two gap tokens for rows of controls
+- *(home)* [`7fc0f5b`](https://github.com/cmdcolin/bender/commit/7fc0f5bd6a59b3ffb2c839403ad20c7da493bf3f) an about page and a blog built from the changelog
+- *(ui)* [`280b9f4`](https://github.com/cmdcolin/bender/commit/280b9f441e17d9cc2d9bca624a79fab269cedfa9) share a spacing scale and corner tokens with videoskillet
+- *(midi)* [`3e00a5c`](https://github.com/cmdcolin/bender/commit/3e00a5cba5c7d63782bf40cde37ec68278f20f88) move the midi button into the menu on a touch screen
+- *(ui)* [`de0f7ef`](https://github.com/cmdcolin/bender/commit/de0f7efea17d00606bafb14ce59f1faa69c2f288) a bend board laid out like the keyboard, dealt from measured ends
+- *(ui)* [`4393751`](https://github.com/cmdcolin/bender/commit/439375138eaf0e8c38f9ec7ec818fc7ed9b5b747) snake the source row so the signal path fits the panel
+- *(ui)* [`a93d476`](https://github.com/cmdcolin/bender/commit/a93d476dee189f61cb1bc131150cacaf66ea2043) widen the panel on wide screens
+- *(ui)* [`7ab1c8b`](https://github.com/cmdcolin/bender/commit/7ab1c8b8eea9c00d0427a4167ff6211ac3920874) put a wire label's reading on its own line
+- *(ui)* [`169fce4`](https://github.com/cmdcolin/bender/commit/169fce44924a84d41883f5db1176f5d048945739) tighten the signal path's vertical gaps
+
+### Fixes
+- *(ui)* [`33933ea`](https://github.com/cmdcolin/bender/commit/33933eabfbf6caa46844cde4a5f7439214409f94) bring the tape delay up with brake so it is heard on the stock board
+- *(ui)* [`8c5191c`](https://github.com/cmdcolin/bender/commit/8c5191cd9fa233c212c57f8828cf6366063dbe85) deal no volume knobs, no end a control already sits at, no loud solder
+
+### Refactor
+- *(engine)* [`1f9ff37`](https://github.com/cmdcolin/bender/commit/1f9ff37067ef9bfcf855581459308a0067ef3aac) keep the Engine's comment on the class
+- *(home)* [`1da616a`](https://github.com/cmdcolin/bender/commit/1da616a0d7cf14fcd265fc47982a3c5e18934ccf) parse the changelog without non-null assertions
+- *(ui)* [`682f614`](https://github.com/cmdcolin/bender/commit/682f6141ed45a36a56582e64829deb55839b3f6f) put the pocket page on the shared spacing scale
+- *(ui)* [`3dbca9a`](https://github.com/cmdcolin/bender/commit/3dbca9a74803b6102f864e70156d89937faf05db) snap the pocket page's off-scale spacing to the scale
+- *(ui)* [`43d58cb`](https://github.com/cmdcolin/bender/commit/43d58cb7b5e6de7a0b638623d669f8b1c8df08a0) snap the panel's off-scale spacing to the scale
+
+### Documentation
+- [`541dfa0`](https://github.com/cmdcolin/bender/commit/541dfa001494260ea870dc3dc10ffeb2fbd42db8) a design-system page for tokens, button kinds and their rules
+- [`730de30`](https://github.com/cmdcolin/bender/commit/730de307d742c4b4b111eeed027cb82012c7d58d) describe pnpm controls in the features page
+- [`69b4d56`](https://github.com/cmdcolin/bender/commit/69b4d56396f71a0a44ae3b968b7182556718cba2) describe the five sources on the toy rail
+
+### Tests
+- *(ui)* [`5dcad80`](https://github.com/cmdcolin/bender/commit/5dcad806cde266c8441184767f962894e9a18727) fail when a module overrides a button kind it composes
+
+### Chores
+- [`214c3cb`](https://github.com/cmdcolin/bender/commit/214c3cb1afd046007373fa27f026f9c5c8ee2342) turn on noFallthroughCasesInSwitch, as videoskillet has
+
 ## [1.4.2](https://github.com/cmdcolin/bender/compare/v1.4.1...v1.4.2) - 2026-10-11
 
 ### Features
