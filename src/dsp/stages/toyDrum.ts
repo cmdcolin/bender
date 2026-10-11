@@ -7,6 +7,7 @@ import {
   DRUM_VOICES,
   GRID_ROWS,
   STEPS,
+  VOICE_LABELS,
 } from '../../drums'
 import { IDX, packParams } from '../../engine/params'
 import { Bus, FAULT_NAMES } from '../bus'
@@ -144,6 +145,43 @@ const CHOKE_WIRING: readonly Int8Array[] = [
     ),
   ),
 ]
+
+// The step counter's clear pin, and the trigger line soldered to it. The clear
+// is synchronous: a strike arms it, and the next clock edge loads step one. So
+// the bar ends on whatever step the voice strikes, a maybe on that voice rolls
+// the bar's length, and a reset voice on step one holds the machine there.
+export const RESET_NAMES = ['off', ...VOICE_LABELS.map(l => `on the ${l}`)]
+
+// A comparator on one tank's ring, soldered onto other voices' trigger lines.
+// It strikes once a cycle while the ring is louder than its threshold, so what
+// it strikes rattles at the tank's pitch and follows the tank's swoop down.
+export const RING_TRIG_NAMES = [
+  'off',
+  'kick fires hat',
+  'kick fires snare',
+  'kick fires itself',
+  'tom fires bell',
+  'snare fires open hat',
+  'kick fires the kit',
+]
+
+// Each entry is the voice the comparator listens to and the trigger lines it
+// strikes.
+const RING_TRIG_WIRING: readonly (readonly [number, number])[] = [
+  [-1, 0],
+  [KICK, 1 << HAT],
+  [KICK, 1 << SNARE],
+  [KICK, 1 << KICK],
+  [TOM, 1 << BELL],
+  [SNARE, 1 << OHAT],
+  [KICK, VOICE_BITS & ~(1 << KICK)],
+]
+
+// The comparator's two trip points, in the units a voice adds to the kit's sum.
+// The gap between them is the hysteresis that keeps one zero crossing from
+// striking twice.
+const RING_TRIG_HIGH = 0.05
+const RING_TRIG_LOW = -0.05
 
 // The bridged-T networks, and which trigger line shocks each one. Three voices
 // have them: the kick and the tom are one tank apiece, and the snare is the two
@@ -491,6 +529,14 @@ export class ToyDrum implements Stage {
   // between a pedal and a mute.
   private chokedBits = 0
   private chokeFrom = CHOKE_WIRING[0]!
+  // The voice whose strike arms the counter's clear, and whether it is armed.
+  private resetBit = 0
+  private clearing = false
+  // The voice the ring comparator listens to, what it strikes, and whether the
+  // ring has dipped under the low trip point since it last fired.
+  private ringSrc = -1
+  private ringBits = 0
+  private ringArmed = true
   private clickCap = new Highpass(CLICK_POLES)
   private clickSlew = new OnePoleLP()
   private clapFast = 0
@@ -751,10 +797,21 @@ export class ToyDrum implements Stage {
       struck |= 1 << v
     }
     if (!struck) return 0
+    if (struck & this.resetBit) this.clearing = true
     this.firedSince |= struck
     this.thrown = this.throwing ? this.thrown | struck : this.thrown & ~struck
     ctx.trig.drumFired(i, struck, gain)
     return struck
+  }
+
+  private ringCompare(heard: number, ctx: Ctx, i: number) {
+    if (!this.ringArmed) {
+      if (heard < RING_TRIG_LOW) this.ringArmed = true
+      return
+    }
+    if (heard <= RING_TRIG_HIGH) return
+    this.ringArmed = false
+    this.hit(this.ringBits, this.gain[this.ringSrc]!, ctx, i)
   }
 
   /** Holds back every voice after the first, one scan apart; returns the first. */
@@ -894,6 +951,13 @@ export class ToyDrum implements Stage {
       ctx.mod.read(DEST.drumDataFault),
     )
     this.busCut = p[IDX.drumBusCut]!
+    const reset = Math.round(p[IDX.drumReset]!)
+    this.resetBit = reset > 0 && reset <= N_VOICES ? 1 << (reset - 1) : 0
+    if (!this.resetBit) this.clearing = false
+    const [ringSrc, ringBits] =
+      RING_TRIG_WIRING[Math.round(p[IDX.drumRingTrig]!)] ?? RING_TRIG_WIRING[0]!
+    this.ringSrc = ringSrc
+    this.ringBits = ringBits
     this.chokeFrom =
       CHOKE_WIRING[Math.round(p[IDX.drumChoke]!)] ?? CHOKE_WIRING[0]!
     // How long the chip spends on one voice, counted off its own oscillator
@@ -947,6 +1011,7 @@ export class ToyDrum implements Stage {
       this.tick = 0
       this.stepClock = 0
       this.rolledAt = -1
+      this.clearing = false
     }
 
     // There is one oscillator in the chip and the envelopes are counted off it,
@@ -1051,7 +1116,13 @@ export class ToyDrum implements Stage {
           // counter is right and the cell is wrong. All the way up nothing
           // gets over the threshold at all and the machine stands on one step.
           const missed = slip > 0 && this.slipRng() < slip
-          if (!missed) this.tick = (this.tick + 1) % CYCLE
+          if (!missed) {
+            this.tick = this.clearing ? 0 : (this.tick + 1) % CYCLE
+            if (this.clearing) {
+              this.clearing = false
+              this.rolledAt = -1
+            }
+          }
           this.fire(p, ctx, i)
         }
       }
@@ -1110,6 +1181,7 @@ export class ToyDrum implements Stage {
 
       let out = 0
       let send = 0
+      let heard = 0
       const th = this.thrown
       if (!rail.booting) {
         // One trimmer for the whole kit, so a wire on it moves every struck
@@ -1160,6 +1232,7 @@ export class ToyDrum implements Stage {
                 TANKS[t]!.sweep,
               ) * this.tankGain[t]!
             out += y
+            if (v === this.ringSrc) heard += y
             if (th & (1 << v)) send += y
           }
           // What gets past the coupling cap on the way to the output rather than
@@ -1221,6 +1294,7 @@ export class ToyDrum implements Stage {
               gate *
               (left < romFade ? left / romFade : 1)
             out += y
+            if (v === this.ringSrc) heard += y
             if (th & (1 << v)) send += y
             this.romPos[v] = pos + step
             if (this.chokedBits & (1 << v)) this.romGate[v] = gate * chokeFall
@@ -1362,6 +1436,7 @@ export class ToyDrum implements Stage {
         // What the next pass has to get through. One, at the least: a chip with
         // nothing to do still goes round.
         this.live = live > 0 ? live : 1
+        if (this.ringSrc >= 0) this.ringCompare(heard, ctx, i)
         // There is one converter and there are eight voices, and the chip in
         // front of it is not fast enough to pretend otherwise. It works through
         // whatever is sounding a voice at a time and writes the ladder when it
@@ -1449,6 +1524,8 @@ export class ToyDrum implements Stage {
     this.scanBits = 0
     this.open = 0
     this.rolledAt = -1
+    this.clearing = false
+    this.ringArmed = true
     this.env.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)

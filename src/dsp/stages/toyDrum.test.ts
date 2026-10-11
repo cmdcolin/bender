@@ -1146,6 +1146,53 @@ test('the choke wire moves, and the hats keep their pedal wherever it goes', () 
   expect(pedal).toBeLessThan(open * 0.3)
 })
 
+const RESET_ON_KICK = 1
+
+test('a reset wire ends the bar on the step its voice strikes', () => {
+  const bar: Partial<Controls> = { ...SLIP_BAR, drumKick: stepMask(3) }
+  expect(onsets(soloVoice(bar, 8.05))).toHaveLength(2)
+  const looped = onsets(soloVoice({ ...bar, drumReset: RESET_ON_KICK }, 8.05))
+  expect(looped).toHaveLength(8)
+  expect(gaps(looped).every(g => Math.abs(g - 1) < 0.01)).toBe(true)
+})
+
+test('a reset voice on step one holds the machine there', () => {
+  const held = onsets(
+    soloVoice({ ...SLIP_BAR, drumReset: RESET_ON_KICK }, 8.05),
+  )
+  expect(held).toHaveLength(17)
+  expect(gaps(held).every(g => Math.abs(g - 0.25) < 0.01)).toBe(true)
+})
+
+test('a reset wire on a voice with no steps is the kit it always was', () => {
+  const look: Partial<Controls> = { chipLevel: 0, drumLevel: 0.9 }
+  expect(render({ ...look, drumReset: 4 }, 2)).toEqual(render(look, 2))
+})
+
+const KICK_FIRES_HAT = 1
+const KICK_FIRES_ITSELF = 3
+
+test('a hat on the kick’s ring rattles while the kick rings', () => {
+  const kick: Partial<Controls> = { drumBpm: 60, drumKick: stepMask(1) }
+  const hiss = (x: Float32Array, from: number, to: number) =>
+    highEnergy(x.subarray(Math.round(from * SR), Math.round(to * SR)), 4000)
+  const bare = soloVoice(kick, 1)
+  const rattled = soloVoice({ ...kick, drumRingTrig: KICK_FIRES_HAT }, 1)
+  expect(hiss(rattled, 0.35, 0.6)).toBeGreaterThan(hiss(bare, 0.35, 0.6) * 5)
+  expect(hiss(rattled, 0.8, 0.95)).toBeCloseTo(hiss(bare, 0.8, 0.95), 6)
+})
+
+test('a kick that fires itself drones until the floor divides it out', () => {
+  const kick: Partial<Controls> = {
+    drumBpm: 60,
+    drumKick: stepMask(1),
+    drumRingTrig: KICK_FIRES_ITSELF,
+  }
+  const late = (x: Float32Array) => rms(x.subarray(2 * SR))
+  expect(late(soloVoice(kick, 3))).toBeGreaterThan(0.1)
+  expect(late(soloVoice({ ...kick, drumTrigFloor: 1 }, 3))).toBe(0)
+})
+
 // A wire held flat out by the contact pad, so a lane reads as a turned knob.
 const held = (dest: number, depth = 1): Partial<Controls> => ({
   mod0Src: 5,

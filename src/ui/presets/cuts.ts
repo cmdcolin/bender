@@ -179,6 +179,14 @@ export const CUTS: CutDef[] = [
     patch: { drumSlip: 0.16 },
   },
   {
+    group: 'Toy drums',
+    part: KNIFE,
+    name: 'five-step bar',
+    blurb:
+      'The snare’s trigger line on the counter’s clear pin. The first snare sends the counter back to step one, so the rock beat comes round every five steps',
+    patch: { drumReset: pick('drumReset', 'on the snare') },
+  },
+  {
     group: 'FM chip',
     part: KNIFE,
     name: 'the note never ends',

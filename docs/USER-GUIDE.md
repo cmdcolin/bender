@@ -150,7 +150,10 @@ the cowbell and roughening the hats together. **Metal** blends between that bank
 and the noise transistor the hat used to be made of; **Cymbal tone** slides the
 cymbal between a crash and a splash. The two hats share a cap — writing a hat
 step under a ringing open hat cuts it short, the way a foot does — and **Choke**
-moves that resistor to any pair of voices.
+moves that resistor to any pair of voices. **Ring trigger** lets a ringing kick,
+tom or snare strike other voices once a cycle, and **Counter reset** sends the
+bar back to step one whenever a chosen voice strikes; see
+[BENDS.md](BENDS.md#the-counters-own-clock).
 
 Press a step and drag across the grid to draw a run. Each row has its own
 length: shift-click a step to loop the row back from there, with a badge showing

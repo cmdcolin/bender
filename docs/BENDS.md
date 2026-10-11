@@ -589,6 +589,18 @@ the edges the counter produced, so a slipping kit and a locked toy come apart.
 All the way up nothing gets over the threshold at all and the machine stands on
 one step, at the step rate, with the tempo untouched.
 
+**Counter reset** solders a voice's trigger line to the counter's clear pin. The
+clear is synchronous, so when that voice strikes, the next clock edge loads step
+one:
+
+- The bar ends on the step the voice strikes. On the rock beat, the snare on
+  step five makes a five-step bar.
+- Every row restarts together, so rows of different lengths line back up at each
+  reset.
+- A maybe step on the reset voice rolls the bar's length each lap.
+- A pad, the mic or the keyboard striking that voice restarts the bar by hand.
+- A reset voice on step one holds the machine on step one, at the step rate.
+
 **Scan** is how long the chip takes to get from one voice to the next. Slow it
 and a step that strikes several voices comes out as a flam, in row order.
 
@@ -603,6 +615,18 @@ floor** sets how far a voice has to have decayed before its one-shot will answer
 the trigger line again — at zero, every pulse strikes; at maximum, a voice won't
 restrike until it's fully finished. It sits on the trigger line itself, so the
 sequencer, pads, mic and keyboard all queue behind it too.
+
+**Ring trigger** puts a comparator on one tank's ring and solders its output
+onto other voices' trigger lines. The comparator strikes once a cycle while the
+ring is loud:
+
+- _Kick fires hat_ rattles the hat at the kick's pitch, falling with the kick's
+  swoop, for as long as the kick rings.
+- _Kick fires itself_ pumps the kick's network every cycle, and the kick drones
+  around 100 Hz and never stops. **Trigger floor** lowers the drone and, at
+  maximum, divides it out.
+- _Kick fires the kit_ strikes all seven other voices on every cycle.
+- In the sampled kit the comparator reads the slab's output.
 
 **Cross-patch** bridges two drum voices' envelope pins, so one voice's amplifier
 ends up hearing another voice's envelope — a hit you can hear opens a channel

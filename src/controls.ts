@@ -187,6 +187,8 @@ export const DEFAULT_CONTROLS = {
   drumAccentAmt: 1.7,
   drumAccentSag: 0,
   drumChoke: 0,
+  drumReset: 0,
+  drumRingTrig: 0,
   drumCross: 0,
   drumCrossAmt: 0.5,
   drumAddrLine: 0,

@@ -36,7 +36,11 @@ import {
   YOURS,
 } from '../../dsp/stages/roms'
 import { ARP_MODES, LOOP_TARGETS, SYNC_MODES } from '../../dsp/stages/toyChip'
-import { CHOKE_NAMES } from '../../dsp/stages/toyDrum'
+import {
+  CHOKE_NAMES,
+  RESET_NAMES,
+  RING_TRIG_NAMES,
+} from '../../dsp/stages/toyDrum'
 import { NOTE_NAMES } from '../../notes'
 import { SCALE_NAMES } from '../../scale'
 import { TUNE_ALL_STEP_KEYS } from '../../tune'
@@ -818,6 +822,17 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Where the board’s one choke resistor is soldered. It sits across the hats’ shared cap to begin with, which is what a hi-hat pedal is: a closed step does not silence a ringing open hat, it drains what is left of it in a hurry. Move the wire and any voice can do that to any other — the hats keep their pedal either way, because that pair is wired in the metal rather than on the panel. It is the trigger line it listens to, so a pad, the mic and a bridged wire all choke as well as the sequencer does.',
       },
       {
+        key: 'drumRingTrig',
+        part: 'triggers and cross-patch',
+        label: 'Ring trigger',
+        min: 0,
+        max: RING_TRIG_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: RING_TRIG_NAMES,
+        help: 'A comparator on one tank’s ring, soldered onto other voices’ trigger lines. It strikes once a cycle while the ring is loud, so a hat fired by the kick rattles at the kick’s pitch and swoops down with it, and Trigger floor divides that rattle. A kick that fires itself pumps its own network every cycle and drones. In the sampled kit the comparator reads the slab’s output.',
+      },
+      {
         key: 'drumCross',
         part: 'triggers and cross-patch',
         label: 'Cross-patch',
@@ -857,6 +872,18 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         shy: true,
         help: 'The wire clocking the step counter, and how often an edge comes out too slow to get over the threshold. Nothing is fetched wrong: the strobe lands, the memory answers and the step fires — the counter simply has not moved, so that step plays twice and the bar comes out a step longer than the one before it. The phase never comes back, so the kit walks against the accent row, against every row whose length is not sixteen, and against anything following its clock. All the way up nothing gets over the threshold at all and the machine stands on one step.',
+      },
+      {
+        key: 'drumReset',
+        part: 'knife on the bus',
+        label: 'Counter reset',
+        min: 0,
+        max: RESET_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: RESET_NAMES,
+        shy: true,
+        help: 'Which voice’s trigger line is soldered to the step counter’s clear pin. When that voice strikes, the next clock edge loads step one, so the bar ends on the voice’s step. A maybe on that voice rolls the bar’s length, a pad or the mic restarts the bar by hand, and a reset voice on step one holds the machine there. Every row restarts together, so rows of different lengths line back up.',
       },
       {
         key: 'drumAddrLine',

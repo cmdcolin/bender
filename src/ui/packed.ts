@@ -534,6 +534,8 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'chipScan',
   'chipLoopFrom',
   'chipLoopTo',
+  'drumReset',
+  'drumRingTrig',
 ]
 
 // Retired controls that old links still carry, each read into the control that

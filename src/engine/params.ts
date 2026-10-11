@@ -180,6 +180,8 @@ export const PARAM_DEFS = [
   ['drumAccentAmt', 'slew'],
   ['drumAccentSag', 'slew'],
   ['drumChoke', 'step'],
+  ['drumReset', 'step'],
+  ['drumRingTrig', 'step'],
   ['drumCross', 'step'],
   ['drumCrossAmt', 'slew'],
   ['drumAddrLine', 'step'],
