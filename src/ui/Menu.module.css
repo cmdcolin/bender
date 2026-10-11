@@ -7,7 +7,7 @@
   flex-direction: column;
   gap: 1px;
   margin: 0;
-  padding: 3px;
+  padding: var(--space-xs);
   background: var(--surface);
   border: 1px solid var(--border-hover);
   border-radius: 4px;
@@ -19,11 +19,11 @@
   font-size: var(--fs-sm);
   line-height: 1.2;
   text-align: left;
-  padding: 0 8px;
+  padding: 0 var(--space-md);
   background: none;
   color: var(--fg2);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -49,13 +49,13 @@
 .check {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
   min-height: var(--ctl-h);
   font-size: var(--fs-sm);
   line-height: 1.2;
-  padding: 0 8px;
+  padding: 0 var(--space-md);
   color: var(--fg2);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
   white-space: nowrap;
 }

@@ -1,14 +1,14 @@
 .wrap {
-  padding: 2px 0 6px;
+  padding: var(--space-2xs) 0 var(--space-sm);
   border-bottom: 1px solid var(--border-quiet);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-xs);
 }
 
 .roms {
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap-ctl-sm);
-  margin-bottom: 5px;
+  margin-bottom: var(--space-xs);
 }
 
 .rom {
@@ -30,7 +30,7 @@
 .slots {
   display: flex;
   gap: var(--gap-ctl-sm);
-  margin-bottom: 5px;
+  margin-bottom: var(--space-xs);
 }
 
 .slot {
@@ -51,7 +51,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap-ctl-sm);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-sm);
 }
 
 .move {
@@ -61,14 +61,14 @@
 .grid {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-2xs);
 }
 
 .row {
   display: grid;
   grid-template-columns: 4.4rem 1fr 1.3rem;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
 }
 
 /* The name is the voice: it is a button on every row but the accent, and
@@ -137,7 +137,7 @@
 .cells {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
-  gap: 2px;
+  gap: var(--space-2xs);
 }
 
 /* A step is a lamp over a contact: dark until you close it, and every fourth
@@ -270,7 +270,7 @@
    pitched below the thing it is about. */
 .silent {
   display: block;
-  margin-top: 8px;
+  margin-top: var(--space-md);
   padding: 0;
   background: none;
   border: none;
@@ -290,7 +290,7 @@
 @media (max-width: 760px) {
   .row {
     grid-template-columns: 2.2rem 1fr 1.6rem;
-    gap: 4px;
+    gap: var(--space-xs);
   }
   .cell,
   .cellOn,

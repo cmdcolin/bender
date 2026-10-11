@@ -6,7 +6,7 @@
   align-items: center;
   gap: 14px;
   width: min(360px, calc(100vw - 24px));
-  padding: 28px 24px;
+  padding: 28px var(--space-2xl);
   background: var(--surface);
   color: var(--fg2);
   border: 1px solid var(--accent);

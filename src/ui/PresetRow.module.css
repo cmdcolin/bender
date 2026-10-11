@@ -2,14 +2,14 @@
    the panel is: a title, and the section's own verbs at the far end of it. */
 .section {
   border-top: 1px solid var(--border-quiet);
-  padding-top: 4px;
+  padding-top: var(--space-xs);
 }
 
 .head {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  padding: 3px 2px;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-2xs);
   color: var(--fg);
   font-size: var(--fs-md);
 }
@@ -31,7 +31,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap-ctl-sm);
-  padding-bottom: 5px;
+  padding-bottom: var(--space-xs);
 }
 
 /* A pick and not a chip: a set where exactly one is on is what this row is, and

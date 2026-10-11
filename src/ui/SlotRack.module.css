@@ -2,13 +2,13 @@
    position in the order the signal walks them, dragged to reorder, with
    whatever didn't make the cut on a shelf underneath. */
 .rack {
-  margin: 2px 0 8px;
+  margin: var(--space-2xs) 0 var(--space-md);
 }
 
 .caption {
   color: var(--fg3);
   font-size: var(--fs-xs);
-  padding: 2px 2px 3px;
+  padding: var(--space-2xs) var(--space-2xs) var(--space-xs);
 }
 
 .slots {
@@ -17,7 +17,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-2xs);
 }
 
 /* A row is a box on a wire: the gap between two of them is the wire, drawn by
@@ -26,10 +26,10 @@
 .slot {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 6px;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
   border: 1px solid var(--border-quiet);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   background: var(--surface);
   cursor: grab;
   font-size: var(--fs-sm);
@@ -81,10 +81,10 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--gap-ctl-sm);
-  margin-top: 6px;
-  padding: 4px 6px;
+  margin-top: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
   border: 1px dashed var(--border-quiet);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
 }
 
 .shelfLabel,
@@ -100,10 +100,10 @@
 .loose {
   min-height: var(--ctl-h);
   line-height: 1.2;
-  padding: 0 6px;
+  padding: 0 var(--space-sm);
   background: var(--surface-raised);
   border: 1px dashed var(--border-quiet);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   color: var(--fg3);
   font-size: var(--fs-sm);
   cursor: grab;

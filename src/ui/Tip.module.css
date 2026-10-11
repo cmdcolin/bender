@@ -9,7 +9,7 @@
   /* Wide enough for a sentence to read as a sentence, narrow enough that a tip
      on a step cell doesn't cover the row it explains. */
   max-width: 320px;
-  padding: 7px 10px;
+  padding: var(--space-sm) var(--space-md);
   background: var(--surface-raised);
   /* The panel runs a step under a document's scale because everything on it has
      to be on screen at once. A tip is the opposite case: it is up on its own,

@@ -4,5 +4,5 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  padding: 6px 2px 2px;
+  padding: var(--space-sm) var(--space-2xs) var(--space-2xs);
 }

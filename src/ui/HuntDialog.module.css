@@ -4,7 +4,7 @@
    white page of its own. Centring is the UA's `margin: auto`, kept. */
 .card {
   width: min(420px, calc(100vw - 24px));
-  padding: 10px 12px;
+  padding: var(--space-lg);
   background: var(--surface);
   color: var(--fg2);
   border: 1px solid var(--accent);
@@ -24,8 +24,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 6px;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
 }
 
 .title {
@@ -44,8 +44,8 @@
    part a number makes you work out. */
 .pips {
   display: flex;
-  gap: 4px;
-  padding-bottom: 8px;
+  gap: var(--space-xs);
+  padding-bottom: var(--space-md);
 }
 
 .pip,
@@ -61,7 +61,7 @@
 }
 
 .line {
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-sm);
   color: var(--fg3);
   line-height: 1.45;
 }
@@ -78,7 +78,7 @@
 .tray {
   display: flex;
   gap: var(--gap-ctl);
-  padding-bottom: 8px;
+  padding-bottom: var(--space-md);
 }
 
 .pick {

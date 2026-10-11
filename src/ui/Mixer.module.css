@@ -38,9 +38,9 @@
       auto
     );
   align-items: center;
-  gap: 6px;
-  margin: 6px 0 3px;
-  padding-top: 5px;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0 var(--space-xs);
+  padding-top: var(--space-xs);
   border-top: 1px solid var(--border-quiet);
 }
 

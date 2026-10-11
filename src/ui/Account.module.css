@@ -61,7 +61,7 @@
   white-space: nowrap;
   max-width: 180px;
   font-size: var(--fs-xs);
-  padding: 3px 8px;
+  padding: var(--space-xs) var(--space-md);
   color: var(--fg3);
 }
 

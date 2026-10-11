@@ -28,7 +28,7 @@
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
 }
 
@@ -164,7 +164,7 @@
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: var(--radius-pill);
+  border-radius: var(--pill-radius);
   cursor: pointer;
 }
 
@@ -211,7 +211,7 @@
 /* Squares a chip's corners. A stage heading's verbs, roll and reset, use it to
    stand apart from the pill-shaped cuts beside them, which each name a board. */
 .square {
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
 }
 
 /* One of a set where exactly one is on: a kit ROM, a part. Square, because a
@@ -226,7 +226,7 @@
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
 }
 
@@ -301,7 +301,7 @@
   background: var(--switch);
   color: var(--fg2);
   border: 1px solid var(--case-edge);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
 }
 
@@ -352,7 +352,7 @@
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   cursor: pointer;
 }
 

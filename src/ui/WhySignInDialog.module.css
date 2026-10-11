@@ -4,7 +4,7 @@
    both. */
 .card {
   width: min(460px, calc(100vw - 24px));
-  padding: 10px 12px;
+  padding: var(--space-lg);
   background: var(--surface);
   color: var(--fg2);
   border: 1px solid var(--border-hover);
@@ -21,8 +21,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 6px;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
 }
 
 .title {
@@ -38,14 +38,14 @@
 /* The save waiting on the button below, called out because it is the only
    thing here that is about this press rather than about accounts. */
 .pending {
-  margin: 0 0 10px;
-  padding: 6px 8px;
+  margin: 0 0 var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   font-size: var(--fs-xs);
   line-height: 1.45;
   color: var(--fg2);
   background: var(--surface-raised);
   border-left: 2px solid var(--accent);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
 }
 
 .pendingName {
@@ -55,14 +55,14 @@
 
 /* The answer, at the size of the thing being answered. */
 .pitch {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-md);
   color: var(--fg);
   line-height: 1.45;
 }
 
 /* What the saving is for, shown rather than described. */
 .figure {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-md);
 }
 
 .shot {
@@ -70,17 +70,17 @@
   width: 100%;
   height: auto;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
 }
 
 .caption {
-  padding-top: 4px;
+  padding-top: var(--space-xs);
   font-size: var(--fs-xs);
   color: var(--fg4);
 }
 
 .line {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-md);
   font-size: var(--fs-xs);
   line-height: 1.45;
   color: var(--fg3);
@@ -92,7 +92,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap-ctl);
-  padding: 2px 0;
+  padding: var(--space-2xs) 0;
 }
 
 .go {

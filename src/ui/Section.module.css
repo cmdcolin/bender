@@ -1,14 +1,14 @@
 .section {
   border-top: 1px solid var(--border-quiet);
-  padding-top: 4px;
+  padding-top: var(--space-xs);
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
   width: 100%;
-  padding: 3px 2px;
+  padding: var(--space-xs) var(--space-2xs);
   color: var(--fg);
   font-size: var(--fs-md);
 }
@@ -41,7 +41,7 @@
   color: var(--fg3);
   font-size: var(--fs-md);
   line-height: 1;
-  padding: 0 2px;
+  padding: 0 var(--space-2xs);
   cursor: pointer;
 }
 
@@ -50,7 +50,7 @@
 }
 
 .body {
-  padding: 1px 2px 4px;
+  padding: 1px var(--space-2xs) var(--space-xs);
 }
 
 /* The parts no wire reaches, under the drawing rather than in it. The label
@@ -61,7 +61,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--gap-ctl-sm);
-  padding: 4px 0 5px;
+  padding: var(--space-xs) 0 var(--space-xs);
 }
 
 .shelfLabel {
@@ -82,7 +82,7 @@
   background: var(--surface-raised);
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
 }
 
 .part:hover {
@@ -109,7 +109,7 @@
    pill that opens on one end and resets on the other has to say where the line
    between the two is. */
 .partReset {
-  padding: 0 6px;
+  padding: 0 var(--space-sm);
   background: none;
   border: none;
   border-left: 1px solid var(--border);
@@ -131,7 +131,7 @@
    sits in the stack. */
 .hint {
   margin: 0;
-  padding: 4px 2px;
+  padding: var(--space-xs) var(--space-2xs);
   border-top: 1px solid var(--border-quiet);
   font-size: var(--fs-sm);
   color: var(--fg3);
@@ -154,11 +154,11 @@
    small enough to sit on a part. */
 .fold {
   border-top: 1px solid var(--border-quiet);
-  margin-top: 4px;
+  margin-top: var(--space-xs);
 }
 
 .foldHead {
-  padding: 4px 2px;
+  padding: var(--space-xs) var(--space-2xs);
   color: var(--fg3);
   font-size: var(--fs-sm);
   cursor: pointer;
@@ -194,7 +194,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap-ctl-sm);
-  padding: 2px 0 6px;
+  padding: var(--space-2xs) 0 var(--space-sm);
 }
 
 .cut {
@@ -215,7 +215,7 @@
 
 .partVerbReset {
   composes: chipDanger square from './button.module.css';
-  margin-right: 5px;
+  margin-right: var(--space-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -224,7 +224,7 @@
    reset that glows with no work to do is one you press to find out. */
 .partOff {
   composes: chipOff square from './button.module.css';
-  margin-right: 5px;
+  margin-right: var(--space-xs);
 }
 
 /* Lit while the board is standing on this one, so the row says which knife is
@@ -249,7 +249,7 @@
 .rigsLabel {
   color: var(--fg4);
   font-size: var(--fs-xs);
-  margin-right: 2px;
+  margin-right: var(--space-2xs);
 }
 
 /* The second line, under the first without a rule between them: they are one

@@ -235,7 +235,7 @@
   font-size: var(--fs-xs);
   color: var(--fg4);
   border: 1px dashed var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   padding: 3px 8px;
 }
 
@@ -279,7 +279,7 @@
   font-family: var(--mono);
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   padding: 0 4px;
 }
 

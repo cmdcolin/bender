@@ -1,7 +1,7 @@
 /* bender's own tokens: the accent, its amber partner, the cold colour for a
    travel that runs backwards, and the loud red of the panic and record buttons.
-   The neutrals, borders and type scale come from tokens.css, which videoskillet
-   shares. */
+   The neutrals, borders, type, spacing and corners come from tokens.css, which
+   videoskillet shares. */
 @import './tokens.css';
 
 :root {
@@ -25,22 +25,19 @@
      pick takes --ctl-h-sm. The kinds in button.module.css use them. */
   --ctl-h: 22px;
   --ctl-h-sm: 18px;
-  /* The space between neighbouring controls in a row, by the same two tiers. */
-  --gap-ctl: 6px;
-  --gap-ctl-sm: 3px;
-  /* A control's or panel's corner, and a pill's at any height. */
-  --radius: 3px;
-  --radius-pill: 999px;
+  /* Between neighbouring controls in a row, by the same two tiers. */
+  --gap-ctl: var(--space-sm);
+  --gap-ctl-sm: var(--space-xs);
 }
 
 /* A fingertip covers a third of an inch, so both heights grow to 32px, and the
-   gaps widen so a press lands on one control and not its neighbour. */
+   gaps widen so a press lands on the control it aimed at. */
 @media (pointer: coarse) {
   :root {
     --ctl-h: 32px;
     --ctl-h-sm: 32px;
-    --gap-ctl: 8px;
-    --gap-ctl-sm: 6px;
+    --gap-ctl: var(--space-md);
+    --gap-ctl-sm: var(--space-sm);
   }
 }
 

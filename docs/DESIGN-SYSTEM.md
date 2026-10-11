@@ -1,7 +1,8 @@
 # Design system
 
-- **Tokens:** `src/tokens.css` (neutrals, borders, type, shared with
-  videoskillet) and `src/theme.css` (bender's accent, control sizes, focus ring)
+- **Tokens:** `src/tokens.css`, shared with videoskillet (neutrals, borders,
+  type, spacing, corners), and `src/theme.css` (bender's accent, control
+  heights, row gaps, focus ring)
 - **Buttons and dropdowns:** `src/ui/button.module.css`, where every look and
   state a control can take is a class
 - **Check:** `pnpm controls` lists every button and select on the panel by
@@ -10,14 +11,26 @@
 
 ## Sizes
 
-| Token           | Mouse | Touch | Used by                         |
-| --------------- | ----- | ----- | ------------------------------- |
-| `--ctl-h`       | 22px  | 32px  | action, cap, select, menu items |
-| `--ctl-h-sm`    | 18px  | 32px  | chip, pick, selectSm            |
-| `--gap-ctl`     | 6px   | 8px   | a row of action-height controls |
-| `--gap-ctl-sm`  | 3px   | 6px   | a row of chips or picks         |
-| `--radius`      | 3px   | 3px   | controls and panels             |
-| `--radius-pill` | 999px | 999px | chips                           |
+| Token           | Mouse | Touch | Used by                         | Defined in |
+| --------------- | ----- | ----- | ------------------------------- | ---------- |
+| `--ctl-h`       | 22px  | 32px  | action, cap, select, menu items | theme.css  |
+| `--ctl-h-sm`    | 18px  | 32px  | chip, pick, selectSm            | theme.css  |
+| `--gap-ctl`     | 6px   | 8px   | a row of action-height controls | theme.css  |
+| `--gap-ctl-sm`  | 4px   | 6px   | a row of chips or picks         | theme.css  |
+| `--ctl-radius`  | 3px   | 3px   | controls and panels             | tokens.css |
+| `--pill-radius` | 999px | 999px | chips                           | tokens.css |
+
+## Spacing
+
+`tokens.css` holds one scale for gaps, padding and margins, in px:
+
+| `--space-2xs` | `--space-xs` | `--space-sm` | `--space-md` | `--space-lg` | `--space-xl` | `--space-2xl` |
+| ------------- | ------------ | ------------ | ------------ | ------------ | ------------ | ------------- |
+| 2px           | 4px          | 6px          | 8px          | 12px         | 16px         | 24px          |
+
+- Pick the nearest step. A 1px hairline, a negative bleed that cancels a
+  parent's padding, and an instrument case's drawn geometry stay literal.
+- A dialog pads its content by `--space-lg`.
 
 The kinds set `line-height: 1.2` and no vertical padding, so the token alone
 decides a control's height whatever font the system supplies.

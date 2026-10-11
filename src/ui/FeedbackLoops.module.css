@@ -4,7 +4,7 @@
   display: block;
   width: 100%;
   height: auto;
-  margin: 2px 0 8px;
+  margin: var(--space-2xs) 0 var(--space-md);
 }
 
 .label {

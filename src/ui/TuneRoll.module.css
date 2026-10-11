@@ -2,16 +2,16 @@
    two are the same thing about different machines: a column is a step, a row is
    a thing that can happen on it, and what you wrote is the lit cells. */
 .wrap {
-  padding: 2px 0 6px;
+  padding: var(--space-2xs) 0 var(--space-sm);
   border-bottom: 1px solid var(--border-quiet);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-xs);
 }
 
 .head {
   display: flex;
   align-items: center;
   gap: var(--gap-ctl-sm);
-  margin-bottom: 5px;
+  margin-bottom: var(--space-xs);
 }
 
 .spacer {
@@ -75,7 +75,7 @@
   display: grid;
   grid-template-columns: 2.2rem 1fr;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
 }
 
 /* Only the Cs carry a name. Twenty-four of them would be a wall of text down

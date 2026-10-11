@@ -1,7 +1,7 @@
 .wrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-xs);
 }
 
 .pad,
@@ -79,7 +79,7 @@
 .readout {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-md);
   font-size: var(--fs-xs);
 }
 

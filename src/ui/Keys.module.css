@@ -38,7 +38,7 @@
   flex: none;
   width: 52px;
   height: 21px;
-  border-radius: var(--radius);
+  border-radius: var(--ctl-radius);
   background-color: #23232b;
   background-image: radial-gradient(circle, #0c0c10 1.1px, transparent 1.4px);
   background-size: 5px 5px;
