@@ -140,7 +140,7 @@ const GATE_OF: Partial<Record<string, ControlKey>> = {
   Stompbox: 'stompMix',
 }
 
-const gateOf = (group: string): ControlKey | undefined => {
+export const gateOf = (group: string): ControlKey | undefined => {
   if (GATE_OF[group]) return GATE_OF[group]
   const sliders = GROUPS.find(g => g.name === group)?.sliders ?? []
   return (
@@ -148,29 +148,31 @@ const gateOf = (group: string): ControlKey | undefined => {
   )?.key
 }
 
-const inChain = (c: Controls, group: string) =>
+export const inChain = (c: Controls, group: string) =>
   !BENDS.some(b => b.group === group) ||
   BEND_SLOT_KEYS.some(k => bendAt(c[k])?.group === group)
 
 /** Whether moving this control can be heard on the board as it stands. */
-const heard = (c: Controls, key: ControlKey) => {
+export const heard = (c: Controls, key: ControlKey) => {
   const group = groupFor(key)
   const gate = gateOf(group)
   return inChain(c, group) && (!gate || c[gate] > sliderFor(gate).min)
 }
 
-// Controls worth driving to an end of their travel: everything with a travel to
-// drive, minus what is yours and the clock, on a stage you can hear.
-const slammable = (c: Controls) =>
+/** Controls with a travel worth driving to an end: everything but what is
+    yours, the clock and the parts. */
+export const drivable = (c: Controls) =>
   ALL_SLIDERS.filter(
     d =>
       !d.choices &&
       !YOURS.has(d.key) &&
       !CLOCK_KEYS.has(d.key) &&
       !PART_KEYS.has(d.key) &&
-      (!d.needs || d.needs(c)) &&
-      heard(c, d.key),
+      (!d.needs || d.needs(c)),
   )
+
+// The drivable controls on a stage you can hear.
+const slammable = (c: Controls) => drivable(c).filter(d => heard(c, d.key))
 
 // One, two or three controls all the way to an end, and nothing else touched.
 // It is how a hand actually finds a sound — all the way up, listen, all the way
@@ -196,7 +198,7 @@ function slam(current: Controls, rand: () => number): Controls {
 // boundary between those — which is where a circuit stops being predictable.
 // Rolled independently, the same two controls land in the middle of both
 // travels, which is where it sounds like a setting rather than an event.
-const ANTAGONISTS: [ControlKey, ControlKey][] = [
+export const ANTAGONISTS: [ControlKey, ControlKey][] = [
   ['fbAmt', 'fbDelayMs'],
   ['fbAmt', 'fbTone'],
   ['filtRes', 'filtDriveDb'],

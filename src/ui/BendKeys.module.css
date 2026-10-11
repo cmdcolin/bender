@@ -1,0 +1,22 @@
+.switch {
+  composes: action from './button.module.css';
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+}
+
+.switchOn {
+  composes: actionOn from './button.module.css';
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+}
+
+/* Pinned by shift: lit like a held pad, with a ring saying it will stay that
+   way once the hand is gone. */
+.pinned {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.deal {
+  composes: action from './button.module.css';
+  font-size: var(--fs-xs);
+}

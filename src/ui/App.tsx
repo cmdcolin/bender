@@ -16,6 +16,7 @@ import { versionLabel } from '../version'
 import { AboutDialog } from './AboutDialog'
 import { Account } from './Account'
 import styles from './App.module.css'
+import { BendKeys } from './BendKeys'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { GROUPS } from './controls'
@@ -388,6 +389,7 @@ export function App(props: { openedFromLink?: boolean }) {
           </Tip>
         </div>
         <Throws />
+        <BendKeys />
         <div className={styles.ioRow}>
           {/* Named for what it records, because the kit has a record button of
               its own now and one of them writes a file while the other writes
@@ -518,6 +520,8 @@ export function App(props: { openedFromLink?: boolean }) {
               <span className={styles.kbd}>
                 1 … {padKeyFor(N_DRUM_VOICES - 1)}
               </span>
+              , or press <b>bend</b> and the letters throw the board around
+              instead
             </>
           )}{' '}
           — turn up <b>Starve</b> until the toy reboots, solder the{' '}

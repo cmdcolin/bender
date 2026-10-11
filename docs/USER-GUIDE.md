@@ -399,6 +399,15 @@ it and springs back when you let go: **spin** (`c`), **dive** (`v`), **brake**
 (`b`), **crash** (`n`), **drop** (`m`) and **crush** (`,`). A throw never lands
 in the link or the undo walk.
 
+The **bend** row under it is sixteen more throws the dice dealt, one per letter
+key, each pushing a control or three to an end of its travel, or a pair that
+fight to opposite corners. A stage whose level is down comes up with the push,
+so every key does something. Press **bend** and the letters go here instead of
+to a keybed: `a s d f …` hold a bend key, shift pins one down until you press it
+again, `z` lets go of everything and `x` deals sixteen new ones. **Redeal** does
+the same with the mouse, and every pad takes a finger. No two keys share a
+control, so a chord of them is a chord.
+
 ## Playback and recording
 
 **play demo song** and **play drums** are independent run switches. `space`

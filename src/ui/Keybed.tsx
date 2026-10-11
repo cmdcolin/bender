@@ -7,6 +7,7 @@ import { isTyping } from './isTyping'
 import styles from './Keybed.module.css'
 import {
   blackAbove,
+  LETTERS,
   MIN_KEY,
   OCTAVES,
   OCTAVES_DRAWN,
@@ -78,24 +79,9 @@ export function GateJumper({
   )
 }
 
-const KEY_MAP: Record<string, number> = {
-  a: 0,
-  w: 1,
-  s: 2,
-  e: 3,
-  d: 4,
-  f: 5,
-  t: 6,
-  g: 7,
-  y: 8,
-  h: 9,
-  u: 10,
-  j: 11,
-  k: 12,
-  o: 13,
-  l: 14,
-  p: 15,
-}
+const KEY_MAP: Record<string, number> = Object.fromEntries(
+  LETTERS.map((letter, note) => [letter, note]),
+)
 
 // The letter each key answers to, drawn on the key itself. Cheap keyboards
 // printed the note names on theirs, and it beats hunting for a hint under the

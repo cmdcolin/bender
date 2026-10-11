@@ -23,6 +23,27 @@ const BOTTOM = toSemitone(48)
 
 export const OCTAVES = [-2, -1, 0, 1, 2]
 
+/** The sixteen letter keys under a typing hand, in semitone order from the
+    bottom C: the home row is the white keys and the row above it the black. */
+export const LETTERS = [
+  'a',
+  'w',
+  's',
+  'e',
+  'd',
+  'f',
+  't',
+  'g',
+  'y',
+  'h',
+  'u',
+  'j',
+  'k',
+  'o',
+  'l',
+  'p',
+]
+
 /** What a key plays, in the chip's semitones, with the octave switch at `shift`. */
 export const pitch = (key: number, shift: number) => key + BOTTOM + shift
 

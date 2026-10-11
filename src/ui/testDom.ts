@@ -156,6 +156,9 @@ function stubLayout() {
   HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
     this.style.display = ''
   }
+  // A pad grabs the pointer on the way down, which jsdom has no pointers for.
+  HTMLElement.prototype.setPointerCapture = () => {}
+  HTMLElement.prototype.releasePointerCapture = () => {}
   // And <dialog>, of which jsdom has the element and none of the three calls
   // that open or shut one. The panel opens two: the hunt takes the board for
   // the eight seconds it runs and is modal for it, and the midi card is shown
@@ -189,6 +192,7 @@ function resetBoard() {
   engine.drumRecord.set(false)
   engine.tuneRecord.set(false)
   letterKeys.set('toy')
+  engine.held.set(new Map())
   // A test that left a key down is a test that hands the next one a note it
   // never played, and the beds light off these.
   engine.keysDown.set(new Set())
