@@ -151,6 +151,28 @@ const dragDivisor = (depth: number) => Math.pow(2, depth) - 1
 // rather than coming out four times louder.
 const mixVoices = (sum: number, drive: number) => softclip(sum * drive) / drive
 
+// One output pin and a scan counter handing it to each sounding voice in turn:
+// the melody, the bass, the three chord notes and the four keys. The counter
+// runs off the chip's clock, so Scan sets how many clock ticks it waits per slot
+// and a clock bend drags the scan with it.
+const SLOTS = 9
+const SCAN_TOP_HZ = 6000
+const SCAN_OCTAVES = 10
+const scanRate = (scan: number) =>
+  scan > 0 ? SCAN_TOP_HZ * octaves(-SCAN_OCTAVES * scan) : 0
+
+// The output trace runs past the timing pin. Its coupling is a highpass through
+// a few picofarads, and the RC on the pin smooths what gets through.
+const CROSS_LP_HZ = 2500
+const CROSS_HP_HZ = 30
+const CROSS_OCTAVES = 4.5
+
+export const LOOP_TARGETS = [
+  ...Array.from({ length: ROM_ADDR_LINES }, (_, i) => `A${i}`),
+  'reset',
+]
+const LOOP_RESET = ROM_ADDR_LINES
+
 // A counter can't strike a pulse narrower than one clock tick, so the narrow
 // tones widen back toward a square as the note climbs past the divider's
 // resolution — the same place a real chip runs out of counts. The output cap
@@ -258,6 +280,22 @@ export class ToyChip implements Stage {
   // rather than at a steady rate.
   private drift = new Drunk()
   private counterFault: Burst
+  // A wire from one pin of the note latch onto the address bus or the counter's
+  // reset. `latch` is the word the latch last took, before the wire pulls on it.
+  private loopFrom = -1
+  private loopTo = 0
+  private latch = 0
+  private counterHigh = true
+  private resetEdge = false
+  private slotVal = new Float64Array(SLOTS)
+  private slotLive = new Uint8Array(SLOTS)
+  private slot = 0
+  private scanClock = 0
+  private lastOut = 0
+  private crossLp = 0
+  private crossHp = 0
+  private crossLpA: number
+  private crossHpA: number
 
   constructor(
     private readonly sr: number,
@@ -269,6 +307,8 @@ export class ToyChip implements Stage {
     this.counterFault = new Burst(sr, 1.1)
     this.dataBus = new Bus(ROM_DATA_LINES, seed ^ 0xda7a)
     this.addrBus = new Bus(ROM_ADDR_LINES, seed ^ 0xadd4)
+    this.crossLpA = Math.exp((-2 * Math.PI * CROSS_LP_HZ) / sr)
+    this.crossHpA = Math.exp((-2 * Math.PI * CROSS_HP_HZ) / sr)
   }
 
   // The toy's own keys are switches: they pass no gain and strike at full. A
@@ -411,11 +451,31 @@ export class ToyChip implements Stage {
   // all three chips: a step reads the melody and the two stacked lanes off the
   // same faulted address, rather than rolling the address fault once a lane and
   // playing a chord off three different steps.
+  //
+  // A wire from the note latch onto an address pin makes a bridged pair, and
+  // the lower driver wins: the address bit survives only where the last note
+  // had that bit set, and the note's bit survives only where the counter does.
   private romAddr(pos: number): number {
+    let addr = pos
+    if (this.loopFrom >= 0 && this.loopTo !== LOOP_RESET) {
+      this.counterHigh = ((pos >> this.loopTo) & 1) === 1
+      if (!((this.latch >> this.loopFrom) & 1)) addr &= ~(1 << this.loopTo)
+    }
     return (
-      this.addrBus.read(pos, this.addrLine, this.addrFault, this.busCut) %
+      this.addrBus.read(addr, this.addrLine, this.addrFault, this.busCut) %
       this.len
     )
+  }
+
+  // Where the counter goes after `pos`. The jumper reaches the reset pin through
+  // a capacitor, so a note that raises the latched bit sends the counter back to
+  // zero once, and a run of notes holding it high lets the count go on.
+  private nextPos(pos: number): number {
+    if (this.resetEdge) {
+      this.resetEdge = false
+      return 0
+    }
+    return (pos + 1) % this.len
   }
 
   private readRom(tune: number[], pos: number): number {
@@ -424,12 +484,20 @@ export class ToyChip implements Stage {
 
   private readAt(tune: number[], addr: number): number {
     const step = tune[addr]!
-    const word = this.dataBus.read(
+    let word = this.dataBus.read(
       this.yours ? encodeTune(step) : encodeStep(step),
       this.dataLine,
       this.dataFault,
       this.busCut,
     )
+    if (this.loopFrom >= 0) {
+      const bit = 1 << this.loopFrom
+      this.resetEdge =
+        this.loopTo === LOOP_RESET && !(this.latch & bit) && !!(word & bit)
+      this.latch = word
+      if (this.loopTo !== LOOP_RESET && !this.counterHigh)
+        word &= ~(1 << this.loopFrom)
+    }
     // Both banks come back in the memory's vocabulary, so nothing downstream
     // has to know which of the two it is reading. The ROM's own spelling — -1
     // for a rest, -2 for a hold — only works because its steps never go below
@@ -502,7 +570,7 @@ export class ToyChip implements Stage {
       // The kit clocks the tune: one hit, one step of the ROM, so a sixteen-step
       // pattern plays the melody and the kick decides where the beat is.
       case 1: {
-        this.pos = (this.pos + 1) % this.len
+        this.pos = this.nextPos(this.pos)
         const step = this.readRom(tune, this.pos)
         if (isNote(step)) {
           this.note = step
@@ -601,6 +669,10 @@ export class ToyChip implements Stage {
       bay.read(DEST.chipAddrFault),
     )
     this.busCut = p[IDX.chipBusCut]!
+    this.loopFrom = Math.round(p[IDX.chipLoopFrom]!) - 1
+    this.loopTo = Math.round(p[IDX.chipLoopTo]!)
+    const cross = p[IDX.chipCrosstalk]! * CROSS_OCTAVES
+    const scanHz = scanRate(p[IDX.chipScan]!)
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
@@ -722,6 +794,13 @@ export class ToyChip implements Stage {
         clock *= 1 + this.drift.step(0.08, this.sr, this.rng) * 0.3 * drift
       }
       if (modClock) clock *= octaves(modClock[i]! * 3)
+      if (cross > 0) {
+        this.crossLp =
+          this.lastOut + this.crossLpA * (this.crossLp - this.lastOut)
+        this.crossHp =
+          this.crossLp + this.crossHpA * (this.crossHp - this.crossLp)
+        clock *= octaves(cross * softclip(this.crossLp - this.crossHp))
+      }
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
 
@@ -732,7 +811,7 @@ export class ToyChip implements Stage {
       }
       if (this.stepClock >= 1) {
         this.stepClock -= 1
-        let next = this.pos + 1
+        let next = this.nextPos(this.pos)
         // counter bend: program counter corruption
         if (
           spot === 2 &&
@@ -740,7 +819,7 @@ export class ToyChip implements Stage {
         ) {
           next = this.rng() < 0.5 ? this.pos : Math.floor(this.rng() * this.len)
         }
-        this.pos = next % this.len
+        this.pos = next
         const addr = this.romAddr(this.pos)
         // A hold keeps whatever is ringing; a rest drops the voice; a note strikes
         const step = this.readAt(tune, addr)
@@ -815,6 +894,9 @@ export class ToyChip implements Stage {
 
       let out = 0
       if (!rail.booting && !rail.dead) {
+        const live = this.slotLive
+        const val = this.slotVal
+        if (scanHz > 0) live.fill(0)
         const note = this.transport.tune ? this.note : REST
         if (isNote(note) && this.env > ENV_FLOOR) {
           const hz = Math.min(
@@ -823,7 +905,11 @@ export class ToyChip implements Stage {
           )
           const inc = hz / this.sr
           this.phase = wrap1(this.phase + inc)
-          out += pulse(this.phase, duty, inc) * this.env * amp
+          const v = pulse(this.phase, duty, inc) * this.env * amp
+          if (scanHz > 0) {
+            val[0] = v
+            live[0] = 1
+          } else out += v
         }
         let keys = 0
         if (accomp > 0) {
@@ -837,11 +923,15 @@ export class ToyChip implements Stage {
             )
             const inc = hz / this.sr
             this.bassPhase = wrap1(this.bassPhase + inc)
-            keys +=
+            const v =
               pulse(this.bassPhase, duty, inc) *
               this.bassEnv *
               rail.ampFactorAt(BASS_TRIM) *
               accomp
+            if (scanHz > 0) {
+              val[1] = v
+              live[1] = 1
+            } else keys += v
           }
           if (this.chordEnv > ENV_FLOOR) {
             for (let c = 0; c < 3; c++) {
@@ -855,12 +945,16 @@ export class ToyChip implements Stage {
               )
               const inc = hz / this.sr
               this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
-              keys +=
+              const v =
                 pulse(this.chordPhase[c]!, duty, inc) *
                 this.chordEnv *
                 rail.ampFactorAt(trim) *
                 CHORD_GAIN *
                 accomp
+              if (scanHz > 0) {
+                val[2 + c] = v
+                live[2 + c] = 1
+              } else keys += v
             }
           }
         }
@@ -874,12 +968,18 @@ export class ToyChip implements Stage {
           )
           const inc = hz / this.sr
           v.phase = wrap1(v.phase + inc)
-          keys += pulse(v.phase, duty, inc) * v.env * rail.ampFactorAt(trim)
+          const x = pulse(v.phase, duty, inc) * v.env * rail.ampFactorAt(trim)
+          if (scanHz > 0) {
+            val[5 + k] = x
+            live[5 + k] = 1
+          } else keys += x
         }
+        if (scanHz > 0) out = this.scan((scanHz * timing) / this.sr)
         out = (out + mixVoices(keys, mixDrive)) * this.gateState
         if (spot === 3) out += pot * 0.4
       }
 
+      this.lastOut = out
       out *= level * 0.4
       // A loop screaming in the top end draws on the same cells the toy runs
       // off, so a squeal that got away browns out the chip that started it.
@@ -903,6 +1003,20 @@ export class ToyChip implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
+  }
+
+  // The pin belongs to one slot at a time. The counter skips slots with nothing
+  // sounding, so a lone note holds the pin and a chord takes turns on it.
+  private scan(inc: number): number {
+    const live = this.slotLive
+    this.scanClock += inc
+    let move = this.scanClock >= 1 || !live[this.slot]
+    if (this.scanClock >= 1) this.scanClock -= Math.floor(this.scanClock)
+    for (let tries = 0; move && tries < SLOTS; tries++) {
+      this.slot = (this.slot + 1) % SLOTS
+      move = !live[this.slot]
+    }
+    return live[this.slot] ? this.slotVal[this.slot]! : 0
   }
 
   panic() {

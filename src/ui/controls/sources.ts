@@ -35,7 +35,7 @@ import {
   TUNE_NAMES,
   YOURS,
 } from '../../dsp/stages/roms'
-import { ARP_MODES, SYNC_MODES } from '../../dsp/stages/toyChip'
+import { ARP_MODES, LOOP_TARGETS, SYNC_MODES } from '../../dsp/stages/toyChip'
 import { CHOKE_NAMES } from '../../dsp/stages/toyDrum'
 import { NOTE_NAMES } from '../../notes'
 import { SCALE_NAMES } from '../../scale'
@@ -316,6 +316,24 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How far the chip’s clock wanders off the ratio you set it to. The toy runs on its own crystal, so it drifts against the drum machine and never quite locks — two rates a hair apart, phasing in and out for as long as you leave it.',
       },
       {
+        key: 'chipCrosstalk',
+        label: 'Crosstalk',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much of the output trace leaks onto the timing pin beside it. The sound frequency-modulates the chip clock at audio rate: a single note brightens and climbs, a chord cross-modulates into noise, and the tempo and envelopes shake with it.',
+      },
+      {
+        key: 'chipScan',
+        label: 'Scan',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'All the voices share one output pin, and a scan counter connects it to each sounding voice in turn. Turning the knob up slows the counter: a held chord buzzes, then chops, then plays as an arpeggio. The counter runs off the chip clock, so a clock dive slows the scan too. At zero every voice sounds at once.',
+      },
+      {
         key: 'chipStarve',
         lane: 'starve',
         part: 'the supply underneath',
@@ -452,6 +470,30 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'How far through the trace the knife went — only the cut fault reads it. All the way and the pin floats for good, and the song settles into one consistent mangling. Back it off and the trace still carries some of the time, so the melody flickers between two versions of itself.',
+      },
+      {
+        key: 'chipLoopFrom',
+        part: 'knife on the bus',
+        label: 'Loop wire',
+        min: 0,
+        max: ROM_DATA_LINES,
+        step: 1,
+        unit: '',
+        choices: lineNames('D', ROM_DATA_LINES),
+        shy: true,
+        help: 'A jumper from one pin of the note latch back to the address side of the ROM. Each note then sets part of the address of the next one, so the song takes a new path through the ROM and repeats that path every lap.',
+      },
+      {
+        key: 'chipLoopTo',
+        needs: c => c.chipLoopFrom > 0,
+        part: 'knife on the bus',
+        label: 'Loop onto',
+        min: 0,
+        max: LOOP_TARGETS.length - 1,
+        step: 1,
+        unit: '',
+        choices: LOOP_TARGETS,
+        help: 'Where the jumper lands. On an address pin the lower driver wins, so the address bit and the note bit stay high only when both are high. On reset the counter jumps back to step zero each time that bit rises, and the song loops on the stretch before it.',
       },
     ],
   },

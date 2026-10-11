@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 333 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 337 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 97 presets, 16 stage settings and 32 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 25 of them, mostly the ones that cover the
+preset that names it still gets it. 26 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -108,7 +108,7 @@ too — the knife goes on and the rows under it say which controls that was:
   itself
 
 <details>
-<summary>28 controls</summary>
+<summary>32 controls</summary>
 
 | control         | range                                                                            | what it does                                                                                                                           |
 | --------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -128,6 +128,8 @@ too — the knife goes on and the rows under it say which controls that was:
 | Bend spot       | off, clock, counter, bias, gate                                                  | Where the virtual pot is soldered onto the die: clock feedback, program counter, DAC bias, or the gate line                            |
 | Bend pot        | off to full                                                                      | Turns the pot on the chosen bend spot                                                                                                  |
 | Crystal drift   | off to full                                                                      | How far the chip’s clock wanders off the ratio you set it to                                                                           |
+| Crosstalk       | off to full                                                                      | How much of the output trace leaks onto the timing pin beside it                                                                       |
+| Scan            | off to full                                                                      | All the voices share one output pin, and a scan counter connects it to each sounding voice in turn                                     |
 | Starve †        | off to full                                                                      | Sags the shared toy supply rail                                                                                                        |
 | Batteries †     | off to full                                                                      | How flat the cells are                                                                                                                 |
 | Lead resistance | off to full                                                                      | A resistor in series with the cells                                                                                                    |
@@ -140,6 +142,8 @@ too — the knife goes on and the rows under it say which controls that was:
 | Address line †  | off, A0, A1, A2, A3, A4                                                          | Which wire between the program counter and the ROM the knife found                                                                     |
 | Address fault   | cut, to ground, to +V, bridged                                                   | The same four things, on the address side                                                                                              |
 | Cut depth       | off to full                                                                      | How far through the trace the knife went — only the cut fault reads it                                                                 |
+| Loop wire †     | off, D0, D1, D2, D3, D4, D5                                                      | A jumper from one pin of the note latch back to the address side of the ROM                                                            |
+| Loop onto       | A0, A1, A2, A3, A4, reset                                                        | Where the jumper lands                                                                                                                 |
 
 </details>
 

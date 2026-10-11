@@ -35,6 +35,10 @@ export const PARAM_DEFS = [
   ['chipBendPot', 'slew'],
   ['chipDrift', 'slew'],
   ['chipLatch', 'slew'],
+  ['chipCrosstalk', 'slew'],
+  ['chipScan', 'slew'],
+  ['chipLoopFrom', 'step'],
+  ['chipLoopTo', 'step'],
 
   ['chipLeadR', 'slew'],
   ['chipDecouple', 'slew'],

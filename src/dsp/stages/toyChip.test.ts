@@ -4,6 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune'
 import { buildBender, buildChain, type BuiltChain } from '../build'
+import { spectrum } from '../spectrum'
 import { BLOCK } from '../stage'
 import {
   bin,
@@ -12,6 +13,7 @@ import {
   pitchHz,
   playKeys,
   render,
+  renderBender,
   rms,
   SR,
   tail,
@@ -363,4 +365,98 @@ test('a chord holds together under an address fault', () => {
   const bent = render({ ...board, chipAddrLine: 1, chipAddrFault: 1 }, 1)
   expect(rms(bent)).toBeGreaterThan(0)
   expect(bent.every(Number.isFinite)).toBe(true)
+})
+
+const TOP_NOTE_HZ = [0, 4, 7, 11].map(n => 220 * 2 ** (n / 12))
+
+// Which of the held chord's four notes is loudest in each 40 ms of the take.
+const loudestNotes = (x: Float32Array) => {
+  const win = 1920
+  const picks: number[] = []
+  for (let i = 0; i + win <= x.length; i += win) {
+    const w = x.subarray(i, i + win)
+    const m = TOP_NOTE_HZ.map(hz => bin(w, hz))
+    picks.push(m.indexOf(Math.max(...m)))
+  }
+  return picks
+}
+
+const holdChord = (b: BuiltChain) =>
+  [0, 4, 7, 11].forEach(n => b.toyChip.noteOn(n))
+
+test('crosstalk turns a held chord toward noise', () => {
+  const take = (chipCrosstalk: number) =>
+    spectrum(
+      tail(renderBender({ ...CHIP_ONLY, chipCrosstalk }, 1.5, holdChord), 1),
+      SR,
+    ).flatness
+  expect(take(0.5)).toBeGreaterThan(take(0) * 3)
+})
+
+test('crosstalk moves a lone note off its pitch and keeps it periodic', () => {
+  const note = (chipCrosstalk: number) =>
+    tail(
+      renderBender({ ...CHIP_ONLY, chipCrosstalk }, 1.5, b =>
+        b.toyChip.noteOn(0),
+      ),
+      1,
+    )
+  const clean = spectrum(note(0), SR).centroid
+  expect(spectrum(note(0.6), SR).centroid).toBeGreaterThan(clean * 1.5)
+})
+
+test('scan at full travel plays a held chord one note at a time, in turn', () => {
+  const picks = loudestNotes(
+    tail(renderBender({ ...CHIP_ONLY, chipScan: 1 }, 3, holdChord), 2),
+  )
+  expect(new Set(picks).size).toBe(4)
+  let runs = 1
+  for (let i = 1; i < picks.length; i++) if (picks[i] !== picks[i - 1]) runs++
+  // Four notes at about six slots a second is a dozen turns in two seconds.
+  expect(runs).toBeGreaterThan(8)
+  expect(runs).toBeLessThan(16)
+})
+
+// The steps the counter stands on, in the order it stands on them.
+const walk = (overrides: Partial<Controls>, seconds = 10) => {
+  const at: number[] = []
+  renderBender(
+    { ...CHIP_ONLY, chipTune: 4, ...overrides },
+    seconds,
+    b => (b.transport.tune = true),
+    undefined,
+    b => {
+      if (b.toyChip.tunePos !== at.at(-1)) at.push(b.toyChip.tunePos)
+    },
+  )
+  return at
+}
+
+// The melody notes, one per block, while the tune runs.
+const melody = (overrides: Partial<Controls>) => {
+  const notes: number[] = []
+  const out = new Int16Array(ToyChip.MAX_SOUNDING)
+  renderBender(
+    { ...CHIP_ONLY, chipTune: 4, ...overrides },
+    6,
+    b => (b.transport.tune = true),
+    undefined,
+    b => {
+      notes.push(b.toyChip.soundingNotes(out) > 0 ? out[0]! : -999)
+    },
+  )
+  return notes
+}
+
+test('a loop wire on an address pin plays a different melody, the same way each time', () => {
+  const wired = { chipLoopFrom: 2, chipLoopTo: 2 }
+  expect(melody(wired)).not.toEqual(melody({}))
+  expect(melody(wired)).toEqual(melody(wired))
+})
+
+test('a loop wire on reset loops the song on the stretch before the bit rises', () => {
+  const steps = walk({ chipLoopFrom: 2, chipLoopTo: 5 })
+  expect(Math.max(...steps)).toBe(6)
+  expect(steps.filter(s => s === 0).length).toBeGreaterThan(3)
+  expect(Math.max(...walk({}))).toBeGreaterThan(20)
 })

@@ -530,6 +530,10 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'monoDroop',
   'monoDacBit',
   'monoSag',
+  'chipCrosstalk',
+  'chipScan',
+  'chipLoopFrom',
+  'chipLoopTo',
 ]
 
 // Retired controls that old links still carry, each read into the control that

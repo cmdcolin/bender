@@ -109,6 +109,41 @@ Each of the keyboard's four voices also has its own independent output stage on
 this same rail, which is why a starved chord collapses raggedly rather than all
 at once — see **Part spread** under [the parts rack](#the-parts-rack) below.
 
+## The toy chip's pins
+
+**Crosstalk** is the output trace running beside the timing pin. The chip's own
+sound frequency-modulates its clock at audio rate, and the clock also drives the
+tempo and envelopes, so all three shake together.
+
+- A lone note stays periodic, brightens and climbs in pitch.
+- A chord cross-modulates: each voice bends every other voice's pitch, and past
+  halfway the chord measures as noise.
+- A decaying note sweeps its timbre, because the modulation depth falls with the
+  envelope.
+
+**Scan** is the one output pin all nine voices share: the melody, the bass,
+three chord notes and four keys. A scan counter connects the pin to each
+sounding voice in turn and skips silent ones, so a lone note holds the pin.
+
+- Low on the knob, a chord buzzes at the scan rate.
+- Around three quarters, a chord flutters.
+- At the top, a held chord plays as an arpeggio, about six notes a second.
+
+The counter runs off the chip clock, so Clip on clock or a flat battery slows
+the scan along with the tune.
+
+**Loop wire** is a jumper from one pin of the note latch back to the ROM, which
+feeds each note into the address of the next.
+
+- **Onto an address pin**, the two pins form a bridged pair and the low one
+  wins. The address bit stays high only where the last note had that bit, and
+  the note's bit stays high only where the counter has the address bit. The song
+  takes a new path through the ROM, the same path every lap.
+- **Onto reset**, the jumper goes through a capacitor, so each rising edge of
+  that bit sends the counter back to step zero. The song loops on the stretch
+  before the bit first rises: on _für elise_ D1 loops seven steps and D4
+  sixteen.
+
 ## The FM chip's register bus
 
 The FM chip isn't played — it's configured, one byte at a time, by a processor
