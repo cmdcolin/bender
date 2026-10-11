@@ -270,7 +270,8 @@ test('the mic draws as a wire onto wherever it is patched', () => {
   expect(hop(off, 'mic', 'mix')?.color).toBe(PANEL.dim)
   expect(off.doors).toContain('Mic')
   const toMix = buildMap({ ...DEFAULT_CONTROLS, micLevel: 1 })
-  expect(box(toMix, 'mic')?.label).toBe('mic 1.00')
+  expect(box(toMix, 'mic')?.label).toBe('mic')
+  expect(box(toMix, 'mic')?.value).toBe('1.00')
   expect(hop(toMix, 'mic', 'mix')?.color).toBe(PANEL.mod)
   const toRail = buildMap({ ...DEFAULT_CONTROLS, micLevel: 1, micPatch: 1 })
   expect(hop(toRail, 'mic', 'Toy_keyboard')).toBeTruthy()
@@ -342,7 +343,8 @@ test('a patch wire draws onto the group it is soldered to', () => {
     mod0Dest: 6,
     mod0Depth: 0.8,
   })
-  expect(box(map, 'wire0')?.label).toBe('body X 0.80')
+  expect(box(map, 'wire0')?.label).toBe('body X')
+  expect(box(map, 'wire0')?.value).toBe('0.80')
   expect(hop(map, 'wire0', 'Tape_delay')).toBeTruthy()
   checkLayout(map)
 })

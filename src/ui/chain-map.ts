@@ -304,6 +304,9 @@ export interface MapNode {
   h: number
   /** 'label' only: which end of the text x is */
   anchor?: 'start' | 'end'
+  /** 'label' only: a live reading on a second line, which halves the gutter a
+      wire's label takes */
+  value?: string
   /** 'inst' only: how far its fader is up, along that fader's own travel */
   level?: number
   /** 'inst' only: something is coming out of it right now */
@@ -815,7 +818,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // How much gutter a tap needs: its label, its run onto the box, and back off
   // whatever the box already sits in from that edge.
   const reach = (t: Tap, side: Side) =>
-    textWidth(t.label, SMALL) +
+    tapWidth(t) +
     STUB -
     (side === 'left' ? t.edge.x : content - (t.edge.x + t.edge.w))
   const gutter = (side: Side) =>
@@ -1228,17 +1231,18 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // neighbours, and the run the feedback wire comes home on.
   const taken: Record<Side, [number, number][]> = { left: [], right: [] }
   taken[fbSide].push([fbY - LABEL_H / 2, fbY + LABEL_H / 2])
-  const clear = (side: Side, want: number) => {
+  const clear = (side: Side, want: number, h: number) => {
     let y = want
     for (const [top, bottom] of taken[side].toSorted((a, b) => a[0] - b[0]))
-      if (y < bottom && y + LABEL_H > top) y = bottom + 3
-    taken[side].push([y, y + LABEL_H])
+      if (y < bottom && y + h > top) y = bottom + 3
+    taken[side].push([y, y + h])
     return y
   }
 
   for (const tap of taps.toSorted((a, b) => tapY(a) - tapY(b))) {
     const side = tapSide.get(tap)!
-    const y = clear(side, tapY(tap) - LABEL_H / 2)
+    const h = tap.value ? LABEL_H * 2 : LABEL_H
+    const y = clear(side, tapY(tap) - LABEL_H / 2, h)
     const edge = side === 'left' ? tap.edge.x : tap.edge.x + tap.edge.w
     const land = side === 'left' ? tap.target.x : tap.target.x + tap.target.w
     const anchorX = edge + (side === 'left' ? -STUB : STUB)
@@ -1247,9 +1251,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       active: tap.active,
       x: anchorX,
       y,
-      w: textWidth(tap.label, SMALL),
-      h: LABEL_H,
+      w: tapWidth(tap),
+      h,
       anchor: side === 'left' ? 'end' : 'start',
+      value: tap.value,
     })
     labels.push(label)
     wire(
@@ -1301,6 +1306,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 interface Tap {
   id: string
   label: string
+  value?: string
   /** what the label opens: whatever this end is clipped onto */
   door: string
   /** what the wire opens: the bay it is patched at */
@@ -1318,6 +1324,9 @@ interface Tap {
 }
 
 const tapY = (t: Tap) => midY(t.target)
+
+const tapWidth = (t: Tap) =>
+  Math.max(textWidth(t.label, SMALL), textWidth(t.value ?? '', SMALL))
 
 function collectTaps(
   c: Controls,
@@ -1363,7 +1372,8 @@ function collectTaps(
     ctx.doors.add('Mic')
     taps.push({
       id: 'mic',
-      label: ctx.live && mic.active ? `mic ${c.micLevel.toFixed(2)}` : 'mic',
+      label: 'mic',
+      value: ctx.live && mic.active ? c.micLevel.toFixed(2) : undefined,
       door: 'Mic',
       wireDoor: 'Mic',
       dash: '1 3',
@@ -1408,9 +1418,8 @@ function collectTaps(
     ctx.doors.add(pickup)
     taps.push({
       id: `wire${i}`,
-      label: ctx.live
-        ? `${SRC_LABEL[src]} ${depth.toFixed(2)}`
-        : `${SRC_LABEL[src]}`,
+      label: `${SRC_LABEL[src]}`,
+      value: ctx.live ? depth.toFixed(2) : undefined,
       door: pickup,
       wireDoor: 'Patch bay',
       target,
@@ -1743,17 +1752,15 @@ function glyph(n: MapNode, k: Palette, y: number): El[] {
 
 export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   if (n.kind === 'label') {
+    const fill = n.active ? k.mod : k.dim
+    const top = baseline(n.y, LABEL_H, SMALL)
     return el('g', { className: 'tap' }, [
       ...door(
         [
-          words(
-            n.label,
-            n.x,
-            baseline(n.y, n.h, SMALL),
-            SMALL,
-            n.active ? k.mod : k.dim,
-            n.anchor,
-          ),
+          words(n.label, n.x, top, SMALL, fill, n.anchor),
+          ...(n.value
+            ? [words(n.value, n.x, top + LABEL_H, SMALL, fill, n.anchor)]
+            : []),
         ],
         n.door,
         links,
