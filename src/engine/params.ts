@@ -293,6 +293,7 @@ export const PARAM_DEFS = [
   ['monoTune3', 'slew'],
   ['monoOsc3', 'step'],
   ['monoSync', 'step'],
+  ['monoFm', 'slew'],
   ['monoSweep', 'slew'],
   ['monoDrift', 'slew'],
   ['monoMix1', 'slew'],

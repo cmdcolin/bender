@@ -82,7 +82,8 @@ export class MonoSynth implements Stage {
     const osc3 = Math.round(p[IDX.monoOsc3]!)
     v.osc3Free = osc3 >= 1
     v.osc3Lo = osc3 === 2
-    v.sync = p[IDX.monoSync]! > 0.5
+    v.sync = Math.round(p[IDX.monoSync]!)
+    v.linFm = p[IDX.monoFm]!
     v.envOsc2 = p[IDX.monoSweep]!
     v.drift = p[IDX.monoDrift]!
     v.cutoff = p[IDX.monoCutoff]!

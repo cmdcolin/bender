@@ -300,12 +300,14 @@ reach the synth from its bed, the kit's lines and a controller. The MIDI panel's
 _bass split_ route puts the synth under the split point and the toy above it.
 
 The folded headings hold the rest of a Model D. _oscillators_ has the three
-waveforms and footages, osc 2 and osc 3 tuning, hard sync and **Osc 2 sweep**,
-which bends osc 2 with the filter contour for the tearing sync sound. **Osc 3
-control** on _lo_ turns osc 3 into a slow LFO for _modulation_ to send to pitch
-or cutoff. _mixer_ has the oscillator levels, noise and **Feedback**: the output
-patched back into the mixer, as players did with a cable from the headphone jack
-to the external input.
+waveforms and footages, osc 2 and osc 3 tuning, hard or soft sync and **Osc 2
+sweep**, which bends osc 2 with the filter contour for the tearing sync sound.
+**Lin FM** feeds osc 2 into osc 1's frequency, as the Alesis Andromeda does, for
+bell and clang tones that stay in tune. **Osc 3 control** on _lo_ turns osc 3
+into a slow LFO for _modulation_ to send to pitch or cutoff. _mixer_ has the
+oscillator levels, noise and **Feedback**: the output patched back into the
+mixer, as players did with a cable from the headphone jack to the external
+input.
 
 For a drone, latch a key with **hold** on the bed and raise the loudness
 sustain, or turn up **Leaky VCA** under _voice card faults_, which sounds the

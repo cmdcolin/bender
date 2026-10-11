@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 352 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 353 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 97 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -425,7 +425,7 @@ contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck bit on
 the key DAC and a weak regulator.
 
 <details>
-<summary>45 controls</summary>
+<summary>46 controls</summary>
 
 | control         | range                                                             | what it does                                                                                                               |
 | --------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -440,7 +440,8 @@ the key DAC and a weak regulator.
 | Osc 2 wave      | triangle, saw, square, wide, narrow                               | Oscillator 2’s waveform                                                                                                    |
 | Osc 2 range     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 2’s footage                                                                                                     |
 | Osc 2 tune      | −12 to +12 st                                                     | Oscillator 2 against oscillator 1, in semitones                                                                            |
-| Sync            | off or osc 2 to 1                                                 | Hard sync: osc 1 restarts osc 2 every cycle, so osc 2’s tune changes the timbre and the pitch stays on osc 1               |
+| Sync            | off, hard, soft                                                   | Osc 1 restarts osc 2, so osc 2’s tune sets the timbre and osc 1 sets the pitch                                             |
+| Lin FM          | 0× to 4×                                                          | Osc 2 into osc 1’s linear FM input, as a multiple of osc 1’s frequency                                                     |
 | Osc 2 sweep     | 0 to 36 st                                                        | How far the filter contour raises osc 2, in semitones                                                                      |
 | Osc 3 wave      | triangle, saw, square, wide, narrow                               | Oscillator 3’s waveform, which is also the modulation shape when osc 3 drives the modulation bus                           |
 | Osc 3 range     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 3’s footage                                                                                                     |

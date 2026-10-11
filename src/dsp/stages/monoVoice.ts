@@ -19,6 +19,8 @@ export const MONO_WAVE_NAMES = ['triangle', 'saw', 'square', 'wide', 'narrow']
 export const MONO_RANGE_NAMES = ['32′', '16′', '8′', '4′', '2′']
 export const MONO_OSC3_NAMES = ['keyed', 'free', 'lo']
 
+export const SYNC = { off: 0, hard: 1, soft: 2 } as const
+
 export interface MonoPatch {
   wave: [number, number, number]
   /** octaves from 8' */
@@ -30,7 +32,10 @@ export interface MonoPatch {
   /** the output patched back into the mixer, the way a Model D's headphone jack went into its external input */
   loop: number
   ext: number
-  sync: boolean
+  /** `soft` resets osc 2 on osc 1's wrap only when osc 2 is in the last `SOFT_WINDOW` of its own cycle */
+  sync: number
+  /** osc 2 into osc 1's linear FM input, in multiples of osc 1's frequency; past 1 osc 1 runs backwards through zero */
+  linFm: number
   /** osc 3 off the keyboard: it runs at its own pitch, `lo` drops it to sub-audio */
   osc3Free: boolean
   osc3Lo: boolean
@@ -91,7 +96,8 @@ export const MONO_DEFAULT: MonoPatch = {
   noise: 0,
   loop: 0,
   ext: 0,
-  sync: false,
+  sync: SYNC.off,
+  linFm: 0,
   osc3Free: false,
   osc3Lo: false,
   cutoff: 400,
@@ -126,6 +132,9 @@ export const MONO_DEFAULT: MonoPatch = {
 }
 
 const OS = 2
+// The share of osc 2's cycle, counted back from its wrap, in which a pulse from
+// osc 1 pushes it over the threshold.
+const SOFT_WINDOW = 0.25
 const LO_HZ = 0.25
 const DRIFT_HZ = 0.15
 const CONTROL = 16
@@ -169,16 +178,19 @@ class Osc {
   advance(dt: number) {
     this.dt = dt
     this.phase += dt
-    this.wrapped = this.phase >= 1
-    if (this.wrapped) {
+    this.wrapped = this.phase >= 1 || this.phase < 0
+    if (this.phase >= 1) {
       this.phase -= 1
       this.since = this.phase / dt
+    } else if (this.phase < 0) {
+      this.phase += 1
+      this.since = (this.phase - 1) / dt
     }
   }
 
   value(wave: number): number {
     const p = this.phase
-    const dt = this.dt
+    const dt = Math.abs(this.dt)
     if (wave === WAVE.tri) return p < 0.5 ? 4 * p - 1 : 3 - 4 * p
     if (wave === WAVE.saw) return 2 * p - 1 - blep(p, dt)
     const pw = PULSE_WIDTH[wave]!
@@ -186,13 +198,17 @@ class Osc {
   }
 
   /**
-   * Reset by the master `since` samples ago, with the step spread across this
+   * Reset by the master `since` samples ago if this oscillator was within
+   * `window` of the end of its cycle then, with the step spread across this
    * sample and the one before it. Output runs a sample late so the one before
    * is still there to correct.
    */
-  synced(wave: number, master: Osc): number {
+  synced(wave: number, master: Osc, window: number): number {
     let now: number
-    if (master.wrapped) {
+    if (
+      master.wrapped &&
+      (window >= 1 || this.phase - master.since * this.dt >= 1 - window)
+    ) {
       const old = naive(wave, this.phase)
       this.phase = master.since * this.dt
       const d = master.since
@@ -345,6 +361,7 @@ export class MonoVoice {
   private target = 48
   private last = 0
   private sagEnv = 0
+  private v1 = 0
   private v2 = 0
   private tick = 0
   private readonly ratio = new Float64Array(3)
@@ -472,6 +489,8 @@ export class MonoVoice {
     const wave1 = p.wave[1]
     const wave2 = p.wave[2]
     const sync = p.sync
+    const window = sync === SYNC.soft ? SOFT_WINDOW : 1
+    const linFm = p.linFm
     const hiss = p.noise * 0.3 + FLOOR
     const loop = p.loop * 2
     const extGain = p.ext
@@ -514,7 +533,7 @@ export class MonoVoice {
           (this.cv - 69 + this.bend + modPitch * mod - sagged * 3) / 12 +
             (pitchLane ? pitchLane[n]! : 0),
         )
-      const dt0 = Math.min(keyHz * ratio[0]!, 0.45)
+      const dt0 = keyHz * ratio[0]!
       const dt1 = Math.min(
         keyHz * ratio[1]! * (sweep === 0 ? 1 : octaves((sweep * fe) / 12)),
         0.45,
@@ -537,10 +556,15 @@ export class MonoVoice {
 
       let pair0 = 0
       for (let k = 0; k < OS; k++) {
-        osc0.advance(dt0)
+        const fm0 = linFm === 0 ? dt0 : dt0 * (1 + linFm * this.v1)
+        osc0.advance(Math.min(Math.max(fm0, -0.45), 0.45))
         osc1.advance(dt1)
         osc2.advance(dt2)
-        const v1 = sync ? osc1.synced(wave1, osc0) : osc1.value(wave1)
+        const v1 =
+          sync === SYNC.off
+            ? osc1.value(wave1)
+            : osc1.synced(wave1, osc0, window)
+        this.v1 = v1
         const v2 = osc2.value(wave2)
         const mix =
           lvl0 * osc0.value(wave0) +

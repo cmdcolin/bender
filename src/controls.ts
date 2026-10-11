@@ -314,6 +314,7 @@ export const DEFAULT_CONTROLS = {
   monoTune3: -0.05,
   monoOsc3: 0,
   monoSync: 0,
+  monoFm: 0,
   monoSweep: 0,
   monoDrift: 2,
   monoMix1: 0.9,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { MonoVoice, WAVE, type MonoPatch } from './monoVoice'
+import { MonoVoice, SYNC, WAVE, type MonoPatch } from './monoVoice'
 
 const SR = 48000
 
@@ -53,6 +53,64 @@ describe('MonoVoice', () => {
     },
   )
 
+  // Osc 2 alone at 1.4 times osc 1: free it runs at 154 Hz, hard sync resets
+  // it at 1.4 each cycle so one zero crossing is left, and soft sync passes it
+  // at 0.4 and resets it at 0.8, so it runs 2.8 cycles every two of osc 1.
+  it.each([
+    [SYNC.off, 154],
+    [SYNC.hard, 110],
+    [SYNC.soft, 165],
+  ])('sync mode %d puts osc 2 at %d Hz', (sync, hz) => {
+    const x = play(
+      {
+        ...OPEN,
+        level: [0, 1, 0],
+        range: [0, 0, 0],
+        fine: [0, 12 * Math.log2(1.4), 0],
+        sync,
+      },
+      45,
+      1,
+    )
+    expect(pitch(x)).toBeCloseTo(hz, 0)
+  })
+
+  it('soft sync pulls a slave just under an octave up onto it', () => {
+    const x = play(
+      {
+        ...OPEN,
+        level: [0, 1, 0],
+        range: [0, 0, 0],
+        fine: [0, 11, 0],
+        sync: SYNC.soft,
+      },
+      45,
+      1,
+    )
+    expect(pitch(x)).toBeCloseTo(220, 0)
+  })
+
+  it('keeps osc 1 at the key pitch under linear FM and changes its shape', () => {
+    const patch = (linFm: number) => ({
+      ...OPEN,
+      wave: [WAVE.saw, WAVE.tri, WAVE.tri] as MonoPatch['wave'],
+      level: [1, 0, 0] as MonoPatch['level'],
+      range: [0, 0, 0] as MonoPatch['range'],
+      fine: [0, 0, 0] as MonoPatch['fine'],
+      linFm,
+    })
+    const plain = play(patch(0), 45, 1)
+    const fm = play(patch(0.6), 45, 1)
+    expect(pitch(fm)).toBeCloseTo(110, 0)
+    let diff = 0
+    let level = 0
+    for (let i = SR / 2; i < SR; i++) {
+      diff += (fm[i]! - plain[i]!) ** 2
+      level += plain[i]! ** 2
+    }
+    expect(Math.sqrt(diff / level)).toBeGreaterThan(0.1)
+  })
+
   it('glides to a legato note', () => {
     const v = new MonoVoice(SR)
     Object.assign(v.patch, {
@@ -100,7 +158,8 @@ describe('MonoVoice', () => {
           modFilter: 4 * r(),
           modPitch: 12 * r(),
           mismatch: r(),
-          sync: r() < 0.5,
+          sync: Math.floor(3 * r()),
+          linFm: 4 * r(),
           heat: r(),
           noise: r(),
           sag: r(),
