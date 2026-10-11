@@ -9,6 +9,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
     "noEmit": true,
     "skipLibCheck": true,
     "isolatedModules": true,
