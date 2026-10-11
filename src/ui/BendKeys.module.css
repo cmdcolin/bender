@@ -1,13 +1,11 @@
 .switch {
   composes: action from './button.module.css';
   font-family: var(--mono);
-  font-size: var(--fs-xs);
 }
 
 .switchOn {
   composes: actionOn from './button.module.css';
   font-family: var(--mono);
-  font-size: var(--fs-xs);
 }
 
 /* Pinned by shift: lit like a held pad, with a ring saying it will stay that
@@ -18,7 +16,6 @@
 
 .deal {
   composes: action from './button.module.css';
-  font-size: var(--fs-xs);
 }
 
 /* How the next deal comes out, kept apart from the pads by a gap so the chips

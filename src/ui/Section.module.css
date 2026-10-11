@@ -82,7 +82,7 @@
   background: var(--surface-raised);
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .part:hover {
@@ -206,18 +206,15 @@
    whatever board is there. A row where both look alike is a row where 'roll'
    reads as one more named glitch. */
 .partVerb {
-  composes: chipQuiet from './button.module.css';
-  border-radius: 3px;
+  composes: chipQuiet square from './button.module.css';
 }
 
 .partVerbOff {
-  composes: chipOff from './button.module.css';
-  border-radius: 3px;
+  composes: chipOff square from './button.module.css';
 }
 
 .partVerbReset {
-  composes: chipDanger from './button.module.css';
-  border-radius: 3px;
+  composes: chipDanger square from './button.module.css';
   margin-right: 5px;
   font-variant-numeric: tabular-nums;
 }
@@ -226,8 +223,7 @@
    like the rest of the row's dead buttons rather than like a reset, because a
    reset that glows with no work to do is one you press to find out. */
 .partOff {
-  composes: chipOff from './button.module.css';
-  border-radius: 3px;
+  composes: chipOff square from './button.module.css';
   margin-right: 5px;
 }
 

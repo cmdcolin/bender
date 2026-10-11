@@ -102,11 +102,9 @@
 /* Pinned to the row's right edge whatever width the middle controls take, so
    it stays where a masthead menu is expected rather than drifting with them. */
 .menuBtn {
-  composes: action from './button.module.css';
+  composes: actionQuiet from './button.module.css';
   align-self: center;
   margin-left: auto;
-  padding: 3px 7px;
-  color: var(--fg3);
 }
 
 /* The panel's row of verbs: buttons at their own width, wrapping when they run
@@ -209,15 +207,11 @@
    composed rather than restated, so a finger gets them at the same height as
    everything else it can press. */
 .playBtn {
-  composes: action from './button.module.css';
-  color: var(--fg);
-  font-weight: 600;
+  composes: actionLoud from './button.module.css';
 }
 
 .playBtnOn {
-  composes: actionOn from './button.module.css';
-  color: var(--accent);
-  font-weight: 600;
+  composes: actionLoudOn from './button.module.css';
 }
 
 .ioBtn {
@@ -231,8 +225,7 @@
 }
 
 .recBtnOn {
-  composes: actionDanger from './button.module.css';
-  border-color: var(--alarm);
+  composes: actionLive from './button.module.css';
   font-variant-numeric: tabular-nums;
 }
 
@@ -241,7 +234,7 @@
   font-size: var(--fs-xs);
   color: var(--fg4);
   border: 1px dashed var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
   padding: 3px 8px;
 }
 
@@ -285,7 +278,7 @@
   font-family: var(--mono);
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
   padding: 0 4px;
 }
 

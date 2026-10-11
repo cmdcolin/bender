@@ -23,7 +23,7 @@
   background: none;
   color: var(--fg2);
   border: none;
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -55,7 +55,7 @@
   line-height: 1.2;
   padding: 0 8px;
   color: var(--fg2);
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
   white-space: nowrap;
 }

@@ -28,7 +28,7 @@
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 
@@ -70,13 +70,87 @@
 .actionDanger {
   composes: action;
   color: var(--alarm);
-  border-color: #55232c;
+  border-color: var(--alarm-edge);
 }
 
 .actionDanger:hover:not(:disabled) {
-  background: #2a1216;
+  background: var(--alarm-wash);
   color: var(--alarm);
-  border-color: #55232c;
+  border-color: var(--alarm-edge);
+}
+
+/* A take being written right now, ringed in the full alarm red. */
+.actionLive {
+  composes: actionDanger;
+  border-color: var(--alarm);
+}
+
+.actionLive:hover:not(:disabled) {
+  border-color: var(--alarm);
+}
+
+/* Chrome beside the verbs, such as the menu button, in the same shape with
+   quieter ink. */
+.actionQuiet {
+  composes: action;
+  color: var(--fg3);
+}
+
+/* What plays, set in bold so the eye finds it first. */
+.actionLoud {
+  composes: action;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.actionLoudOn {
+  composes: actionOn;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Waiting on a knob or a key, in the amber a waiting control wears everywhere
+   else on the board. */
+.actionWaiting {
+  composes: action;
+  color: var(--accent2);
+  border-color: var(--accent2);
+}
+
+/* The chosen one of a short row of candidates at an action's size, filled with
+   the accent. */
+.actionPicked {
+  composes: action;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.actionPicked:hover:not(:disabled) {
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+/* A split button. The verb and its caret share a border, and the caret opens
+   the verb's options. Its padding keeps it narrower than any label. */
+.splitMain {
+  composes: action;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.splitCaret {
+  composes: actionQuiet;
+  border-left: none;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  padding: 0 5px;
+}
+
+.splitCaretOn {
+  composes: splitCaret;
+  color: var(--fg);
+  background: var(--bg);
 }
 
 /* One quiet thing among many of its kind: a preset, a MIDI switch, a stage's
@@ -90,7 +164,7 @@
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
 }
 
@@ -134,6 +208,12 @@
   border-color: var(--alarm);
 }
 
+/* Squares a chip's corners. A stage heading's verbs, roll and reset, use it to
+   stand apart from the pill-shaped cuts beside them, which each name a board. */
+.square {
+  border-radius: var(--radius);
+}
+
 /* One of a set where exactly one is on: a kit ROM, a part. Square, because a
    pill reads as a tag you filter by rather than a switch you throw — and the
    chosen one fills in rather than lighting up, since what it marks is where you
@@ -146,7 +226,7 @@
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 
@@ -160,6 +240,47 @@
   color: var(--fg);
   background: var(--surface-raised);
   border-color: var(--fg4);
+}
+
+/* A pick a step up the type scale, for the presets, the one row of picks that
+   loads a whole board. */
+.pickLg {
+  composes: pick;
+  font-size: var(--fs-sm);
+}
+
+.pickLgOn {
+  composes: pickOn;
+  font-size: var(--fs-sm);
+}
+
+/* Nothing saved here yet. Dashed, because a click on an empty slot does
+   something different from a click on a full one. */
+.pickEmpty {
+  composes: pick;
+  color: var(--fg4);
+  border-style: dashed;
+}
+
+/* A pattern's record switch, on the kit and the tune alike. It fills amber while
+   writing, and shows dashed amber while armed and waiting for the transport. */
+.pickRecOn {
+  composes: pick;
+  color: var(--bg);
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+
+.pickRecOn:hover:not(:disabled) {
+  color: var(--bg);
+  border-color: var(--accent2);
+}
+
+.pickRecIdle {
+  composes: pick;
+  color: var(--accent2);
+  border-style: dashed;
+  border-color: var(--accent2);
 }
 
 /* The machine's own switches rather than the app's verbs: the stamped caps on a
@@ -180,7 +301,7 @@
   background: var(--switch);
   color: var(--fg2);
   border: 1px solid var(--case-edge);
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 
@@ -209,7 +330,7 @@
   composes: cap;
   background: var(--cap-lit, var(--accent));
   border-color: var(--cap-lit, var(--accent));
-  color: #2a0d04;
+  color: var(--accent-ink);
 }
 
 /* Thrown, and waiting on something else before it does anything: record armed
@@ -231,7 +352,7 @@
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 

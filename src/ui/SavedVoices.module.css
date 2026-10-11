@@ -32,7 +32,7 @@
   background: var(--bg);
   color: var(--fg);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .nameInput:focus {
@@ -74,7 +74,7 @@
   background: none;
   color: var(--fg2);
   border: none;
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 
@@ -91,7 +91,7 @@
   background: none;
   color: var(--fg3);
   border: none;
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 

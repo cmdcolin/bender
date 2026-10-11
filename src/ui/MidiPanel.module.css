@@ -27,8 +27,7 @@
 /* Amber, the colour a waiting knob is drawn in everywhere else on the board. */
 .tabWaiting {
   composes: tab;
-  color: var(--accent2);
-  border-color: var(--accent2);
+  composes: actionWaiting from './button.module.css';
 }
 
 .tabNote {
@@ -199,7 +198,7 @@
 .mode {
   background: none;
   border: 1px solid var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--radius);
   color: var(--fg4);
   min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
@@ -234,12 +233,6 @@
 }
 
 .danger {
-  composes: btn;
+  composes: chipDanger from './button.module.css';
   margin: 3px 2px 0;
-  color: var(--fg4);
-}
-
-.danger:hover {
-  color: var(--alarm);
-  border-color: var(--alarm);
 }

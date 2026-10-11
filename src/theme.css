@@ -15,6 +15,9 @@
   --cool: #49b6ff;
   /* A fill, where tokens.css's --danger is text: panic, a live recording. */
   --alarm: #ff3355;
+  /* The alarm's border and its hover wash, for a button that removes. */
+  --alarm-edge: #55232c;
+  --alarm-wash: #2a1216;
   /* A slider's fill, from stock out to the thumb. range.module.css shares the
      name with videoskillet. */
   --ctl-on-bg: color-mix(in srgb, var(--accent) 62%, var(--surface-raised));
@@ -22,6 +25,9 @@
      pick takes --ctl-h-sm. The kinds in button.module.css use them. */
   --ctl-h: 22px;
   --ctl-h-sm: 18px;
+  /* A control's or panel's corner, and a pill's at any height. */
+  --radius: 3px;
+  --radius-pill: 999px;
 }
 
 /* A fingertip covers a third of an inch, so both heights grow to 32px. */
@@ -54,4 +60,11 @@ button,
 select,
 input {
   font-family: inherit;
+}
+
+/* One focus ring for every control, in place of each browser's own. Where a
+   module styles focus another way, its rule sets the outline to none. */
+:focus-visible {
+  outline: 2px solid var(--fg2);
+  outline-offset: 1px;
 }

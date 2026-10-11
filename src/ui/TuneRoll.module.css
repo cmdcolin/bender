@@ -38,19 +38,13 @@
 }
 
 .recOn {
-  composes: pick from './button.module.css';
-  color: var(--bg);
-  background: var(--accent2);
-  border-color: var(--accent2);
+  composes: pickRecOn from './button.module.css';
 }
 
 /* Armed with the tune stopped: the keys still sound and nothing is written, so
    the button is the promise rather than the filled lamp. */
 .recIdle {
-  composes: pick from './button.module.css';
-  color: var(--accent2);
-  border-style: dashed;
-  border-color: var(--accent2);
+  composes: pickRecIdle from './button.module.css';
 }
 
 .octave {
@@ -64,8 +58,7 @@
    pressing it. */
 .octaveMore {
   composes: octave;
-  color: var(--accent);
-  border-color: var(--accent);
+  composes: chipOn from './button.module.css';
 }
 
 .grid {

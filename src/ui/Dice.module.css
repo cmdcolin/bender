@@ -7,24 +7,13 @@
 }
 
 .face {
-  composes: action from './button.module.css';
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  composes: splitMain from './button.module.css';
 }
 
-/* Narrower than a label, and it never carries one: what it opens says what it
-   is, and a caret this size beside a word reads as belonging to the word. */
 .caret {
-  composes: action from './button.module.css';
-  border-left: none;
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  padding: 3px 5px;
-  color: var(--fg3);
+  composes: splitCaret from './button.module.css';
 }
 
 .caretOn {
-  composes: caret;
-  color: var(--fg);
-  background: var(--bg);
+  composes: splitCaretOn from './button.module.css';
 }

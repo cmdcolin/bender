@@ -45,7 +45,7 @@
   color: var(--fg2);
   background: var(--surface-raised);
   border-left: 2px solid var(--accent);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .pendingName {
@@ -70,7 +70,7 @@
   width: 100%;
   height: auto;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .caption {
@@ -96,9 +96,7 @@
 }
 
 .go {
-  composes: action from './button.module.css';
-  border-color: var(--accent);
-  color: var(--fg);
+  composes: actionOn from './button.module.css';
 }
 
 .alt {

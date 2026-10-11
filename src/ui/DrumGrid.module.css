@@ -41,9 +41,7 @@
    record button makes, since a click does something different to an empty
    slot than to a full one and the button has to say which before it's pressed. */
 .slotEmpty {
-  composes: pick from './button.module.css';
-  border-style: dashed;
-  color: var(--fg4);
+  composes: pickEmpty from './button.module.css';
 }
 
 /* The verbs that rewrite whatever the ROM row loaded. Chips rather than picks:
@@ -124,22 +122,16 @@
 }
 
 .recOn {
-  composes: rom;
+  composes: pickRecOn from './button.module.css';
   margin-left: auto;
-  color: var(--bg);
-  background: var(--accent2);
-  border-color: var(--accent2);
 }
 
 /* Armed with the kit stopped: nothing is being written, so the button is drawn
    as the promise it is rather than as the filled lamp of one that is recording.
    Amber outlined is the same amber, waiting. */
 .recIdle {
-  composes: rom;
+  composes: pickRecIdle from './button.module.css';
   margin-left: auto;
-  color: var(--accent2);
-  border-style: dashed;
-  border-color: var(--accent2);
 }
 
 .cells {

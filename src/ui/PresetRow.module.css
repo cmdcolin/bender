@@ -44,8 +44,7 @@
    pan-y so a vertical scroll over the row still scrolls the panel: the chip
    only claims the sideways drag. */
 .preset {
-  composes: pick from './button.module.css';
-  font-size: var(--fs-sm);
+  composes: pickLg from './button.module.css';
   position: relative;
   overflow: hidden;
   touch-action: pan-y;
@@ -60,7 +59,7 @@
    else moves the board. */
 .presetOn {
   composes: preset;
-  composes: pickOn from './button.module.css';
+  composes: pickLgOn from './button.module.css';
 }
 
 /* How far along this preset the board is standing. A transform on a full-width

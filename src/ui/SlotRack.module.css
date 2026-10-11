@@ -29,7 +29,7 @@
   gap: 6px;
   padding: 3px 6px;
   border: 1px solid var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--radius);
   background: var(--surface);
   cursor: grab;
   font-size: var(--fs-sm);
@@ -84,7 +84,7 @@
   margin-top: 6px;
   padding: 4px 6px;
   border: 1px dashed var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .shelfLabel,
@@ -103,7 +103,7 @@
   padding: 0 6px;
   background: var(--surface-raised);
   border: 1px dashed var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--radius);
   color: var(--fg3);
   font-size: var(--fs-sm);
   cursor: grab;

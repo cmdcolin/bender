@@ -114,7 +114,7 @@
   background: var(--surface-raised);
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 

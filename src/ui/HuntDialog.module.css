@@ -81,15 +81,13 @@
   padding-bottom: 8px;
 }
 
-.pick,
-.pickOn {
+.pick {
   composes: action from './button.module.css';
   min-width: 2em;
   font-variant-numeric: tabular-nums;
 }
 
 .pickOn {
-  color: var(--accent-ink);
-  background: var(--accent);
-  border-color: var(--accent);
+  composes: pick;
+  composes: actionPicked from './button.module.css';
 }

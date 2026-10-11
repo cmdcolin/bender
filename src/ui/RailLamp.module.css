@@ -5,7 +5,7 @@
   padding: 3px 7px;
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
   cursor: help;
 }
 
