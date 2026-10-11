@@ -28,31 +28,6 @@
   gap: 0.6rem;
   margin: 0 0 1rem;
 }
-/* Close-ups of the panel: two columns, with the long thin ones across both. */
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem;
-  margin: 0 0 1.5rem;
-  padding: 0;
-  list-style: none;
-}
-.shot {
-  display: grid;
-  border: 1px solid var(--border-faint);
-  border-radius: 0.6rem;
-  overflow: hidden;
-}
-.shot.wide {
-  grid-column: 1 / -1;
-}
-.shot a,
-.shot img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 /* The demos: a play button, the demo's name and blurb over a progress bar, and
    a link into the app. */
 .tracks {
