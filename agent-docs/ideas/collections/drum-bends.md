@@ -1,6 +1,6 @@
 ---
 name: drum-bends
-description: Ranked further bends for the drum machine: slipping step clock, a supply for the metal bank, the pattern as a circulating shift register.
+description: Ranked further bends for the drum machine: a knife on the sample ROM, a supply for the metal bank, the metal bank into the tanks, the pattern as a circulating shift register.
 ---
 
 # Further bends for the drum machine
@@ -10,9 +10,10 @@ written the same way and for the same reason: nothing here is a decision, and
 the ones that are cheap and the ones that change how the kit sounds with no
 knife on it are called out as such.
 
-**Items 1 and 3 are built** — `drumSlip` and the accent on the data bus. Their
-sections are kept as written, with a note at the end of each saying what landed
-and what was decided differently. Everything from 2 down is still a candidate.
+**Built:** items 1 (`drumSlip`), 3 (the accent on the data bus) and 8
+(`DEST.drumBpm`), plus the counter's reset wire (`drumReset`) and a comparator
+on a tank's ring (`drumRingTrig`). Every other numbered item is still a
+candidate.
 
 ## How to judge one of these before building it
 
@@ -50,8 +51,8 @@ which is white. Nothing on the kit is structured in time.
 **The step counter has no fault surface at all.** The knife reaches the wires
 _out_ of the counter and the wires _into_ the pattern memory. It does not reach
 the counter, its clock, its reset, or the accent line — which is a wire the
-panel names, draws a row for, and cannot cut. (The clock and the accent line now
-do; the reset still does not.)
+panel names, draws a row for, and cannot cut. (The clock, the accent line and the
+reset now do.)
 
 **Every voice on the kit sees one supply.** `toyChip.ts` gives its bass and
 melody voices separate rail trims through `pitchFactorAt`/`ampFactorAt`;
@@ -316,6 +317,48 @@ knife on this board, all of which you can take back out.
 
 Worth writing down. Not worth starting without deciding the writeback question
 first.
+
+## 10. A knife on the sample ROM
+
+No bend reaches the sampled kit's memory, and bending a sample ROM is the
+best-known drum-machine bend (SK-1, RZ-1, HR-16).
+
+- Lay the eight slabs end to end as one address space, so an address fault
+  reads the kick from the cymbal's slab.
+- An end-stop cut lets a voice run past its slab into the next one.
+- A direction wire on the counter plays the slabs backwards.
+- Data faults on the 12-bit words: a stuck top bit is a square-ish fuzz.
+
+Hook: `slab[pos | 0]` in the `sampled` branch of `process`. `pcmKeys.read()`
+and `Bus` are the template. Cost: medium.
+
+## 11. The metal bank into the tanks
+
+- FM: `metal.clash` into the `f` argument of `tank.process` turns the kick into
+  a gong.
+- Sync: reset the bank's phases at each tank zero crossing, so the hats pitch to
+  the kick and swoop with it. A sync once a cycle is a different sound from the
+  sync once a trigger that "Not proposed" below turns down.
+
+Cost: small; sync needs a `MetalBank.sync()`.
+
+## 12. A sweep trimmer
+
+`TANKS[t].sweep` is a constant. A knob from about −1 to 4 gives Syndrum zaps at
+the top and kicks that rise at the bottom. `BridgedT.process` computes
+`w = f * (1 + sweep * env)`, which goes negative and blows the filter up, so the
+negative end needs a floor. Cost: very small.
+
+## 13. Tank-to-tank coupling
+
+Kick tank output into the tom tank's `drive`. With both rings past the latch,
+two coupled self-oscillators beat, lock and go chaotic. Cost: small.
+
+## 14. Audio on the DAC's reference
+
+A multiplying DAC at `out = this.muxHeld * rail.ampFactor`: kit × toy chip is
+ring mod ahead of the mux, kit × kit is squaring distortion an octave up. Cost
+depends on whether the chip's output is in `ctx` by then.
 
 ## Not proposed, and why
 
