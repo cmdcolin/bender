@@ -1,6 +1,8 @@
 ---
 name: relative-step-for-log-knobs
-description: The 17 remaining log knobs park many values on one position; fixing it needs a relative step in SliderDef and rescales packed links.
+description:
+  The 17 remaining log knobs park many values on one position; fixing it needs a
+  relative step in SliderDef and rescales packed links.
 ---
 
 # Relative step for the other 17 log knobs

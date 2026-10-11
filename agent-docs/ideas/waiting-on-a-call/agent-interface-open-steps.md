@@ -1,6 +1,8 @@
 ---
 name: agent-interface-open-steps
-description: Steps 2 (queue), 4 (runtime find/describe for shell agents) and 5 of the agent interface plan are open; held off while nothing drives them.
+description:
+  Steps 2 (queue), 4 (runtime find/describe for shell agents) and 5 of the agent
+  interface plan are open; held off while nothing drives them.
 ---
 
 # Agent interface, open steps

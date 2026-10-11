@@ -1,6 +1,9 @@
 ---
 name: knob-automation
-description: Record knob sweeps with an arm affordance, a control-rate recorder and transport-locked playback; waits on whether a recorded sweep rides in presets, URL and undo.
+description:
+  Record knob sweeps with an arm affordance, a control-rate recorder and
+  transport-locked playback; waits on whether a recorded sweep rides in presets,
+  URL and undo.
 ---
 
 # Knob automation

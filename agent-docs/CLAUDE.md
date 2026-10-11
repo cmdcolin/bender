@@ -12,8 +12,9 @@ Top level is exactly `TODO.md` and this file. Everything else is filed:
   Moving a file between folders is how its status changes.
 - `handoffs/` — live unfinished state from a session. Pointers, not content;
   delete once the work lands.
-- `todo/` — committed work, one file per item with `metadata.category`,
-  `area`, `first_move` and `order`; `TODO.md` indexes them (absent while nothing is committed). `todo/` vs `ideas/`
+- `todo/` — committed work, one file per item with `metadata.category`, `area`,
+  `first_move` and `order`; `TODO.md` indexes them (absent while nothing is
+  committed). `todo/` vs `ideas/`
 - Tried and declined → a sentence at the code that would re-try it, with the
   number. There is no rejected-ideas shelf.
 - What a session did and which commits → git already holds it.

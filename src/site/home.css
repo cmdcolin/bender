@@ -6,16 +6,10 @@
   padding-block: 2.5rem 1rem;
 }
 .heroHead {
-  margin: 0 0 0.9rem;
+  margin: 0 0 1.5rem;
   font-size: clamp(1.75rem, 5vw, 2.5rem);
   line-height: 1.15;
   letter-spacing: -0.01em;
-}
-.pitch {
-  max-width: var(--measure);
-  margin: 0 0 1.5rem;
-  font-size: 1.05rem;
-  color: var(--fg2);
 }
 .figure {
   margin: 0 0 1.5rem;

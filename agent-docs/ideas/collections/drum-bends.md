@@ -5,16 +5,16 @@ description: Ranked further bends for the drum machine: a supply for the metal b
 
 # Further bends for the drum machine
 
-Candidates, ranked, with where each one hooks. The companion to `agent-docs/ideas/collections/fm-bends.md`,
-written the same way and for the same reason: nothing here is a decision, and
-the ones that are cheap and the ones that change how the kit sounds with no
-knife on it are called out as such.
+Candidates, ranked, with where each one hooks. The companion to
+`agent-docs/ideas/collections/fm-bends.md`, written the same way and for the
+same reason: nothing here is a decision, and the ones that are cheap and the
+ones that change how the kit sounds with no knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 3 (the accent on the data bus) and 8
-(`DEST.drumBpm`), 10 (the sample ROM knife), 11 (`drumBankFm`,
-`drumBankSync`) and 12 (`drumSweep`), plus the counter's reset wire
-(`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other numbered item is still a
-candidate.
+(`DEST.drumBpm`), 10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`)
+and 12 (`drumSweep`), plus the counter's reset wire (`drumReset`) and a
+comparator on a tank's ring (`drumRingTrig`). Every other numbered item is still
+a candidate.
 
 ## How to judge one of these before building it
 
@@ -52,8 +52,8 @@ which is white. Nothing on the kit is structured in time.
 **The step counter has no fault surface at all.** The knife reaches the wires
 _out_ of the counter and the wires _into_ the pattern memory. It does not reach
 the counter, its clock, its reset, or the accent line — which is a wire the
-panel names, draws a row for, and cannot cut. (The clock, the accent line and the
-reset now do.)
+panel names, draws a row for, and cannot cut. (The clock, the accent line and
+the reset now do.)
 
 **Every voice on the kit sees one supply.** `toyChip.ts` gives its bass and
 melody voices separate rail trims through `pitchFactorAt`/`ampFactorAt`;
@@ -91,8 +91,9 @@ number the kit was asked for and never the edges the counter produced. MIDI
 clock out is the other way round: `midi.ts` counts it off the steps the kit
 actually clocks, so a slipping counter drags every follower on the wire and
 leaves the toy on the same board playing straight. That asymmetry is already
-documented in `agent-docs/handoffs/HANDOFF-tempo-lock.md` as "the lock follows a tempo and never a
-downbeat"; a slip bend is the first thing that makes it audible.
+documented in `agent-docs/handoffs/HANDOFF-tempo-lock.md` as "the lock follows a
+tempo and never a downbeat"; a slip bend is the first thing that makes it
+audible.
 
 Hook: `ToyDrum.process`, the `if (this.stepClock >= span)` block. A rate knob, a
 draw per step boundary, and `this.tick` advances by 0, 1 or 2. Counted off the
@@ -324,8 +325,8 @@ first.
 No bend reaches the sampled kit's memory, and bending a sample ROM is the
 best-known drum-machine bend (SK-1, RZ-1, HR-16).
 
-- Lay the eight slabs end to end as one address space, so an address fault
-  reads the kick from the cymbal's slab.
+- Lay the eight slabs end to end as one address space, so an address fault reads
+  the kick from the cymbal's slab.
 - An end-stop cut lets a voice run past its slab into the next one.
 - A direction wire on the counter plays the slabs backwards.
 - Data faults on the 12-bit words: a stuck top bit is a square-ish fuzz.
