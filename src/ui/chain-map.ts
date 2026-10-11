@@ -251,7 +251,7 @@ const SMALL = 10
 const BOX_H = 22
 const MIN_W = 100
 const PAD_X = 9
-const ROW_GAP = 9
+const ROW_GAP = 7
 /** the channel the folded path's cable runs up, between the two columns */
 const COL_GAP = 28
 /** an instrument's own box: a name and a count over a fader */
@@ -284,7 +284,7 @@ const LABEL_H = 12
 const STUB = 14
 /** the outermost lane, which the feedback wire runs home in */
 const LANE = 11
-const BUS_GAP = 30
+const BUS_GAP = 20
 const MARGIN = 2
 
 type Side = 'left' | 'right'
@@ -716,7 +716,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     }
   }
   const lastChip = rackChips[rackChips.length - 1]
-  rack.h = BOX_H + (lastChip ? lastChip.row + 1 : 0) * CHIP_H
+  rack.h = Math.max(CHIP_H, (lastChip ? lastChip.row + 1 : 0) * CHIP_H) + 2
 
   // --- down the drawing -----------------------------------------------------
 
@@ -791,7 +791,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         active: false,
         open: o.open === ch.group,
         x: rack.x + ch.x,
-        y: rack.y + BOX_H + ch.row * CHIP_H + 1,
+        y: rack.y + ch.row * CHIP_H + 2,
         w: ch.w,
         h: CHIP_H - 2,
       }),
