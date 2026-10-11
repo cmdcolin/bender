@@ -41,6 +41,17 @@
   border-color: var(--accent);
 }
 
+/* A verb under a hand: a throw pad held by a finger or a key is filled for as
+   long as the hand is there. The state sits here beside the others because a
+   module that wrote the fill itself lost to this file's rest rule whenever the
+   bundler emitted it later, and the pad never lit. */
+.actionHeld {
+  composes: action;
+  color: var(--accent-ink);
+  background: var(--cool);
+  border-color: var(--cool);
+}
+
 /* Greyed rather than hidden: an empty walk is the honest answer to "can I take
    that back", and a button that came and went would move the whole row. */
 .actionOff {

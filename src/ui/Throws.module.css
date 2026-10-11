@@ -18,10 +18,9 @@
 }
 
 .padOn {
-  composes: pad;
-  color: var(--accent-ink);
-  background: var(--cool);
-  border-color: var(--cool);
+  composes: actionHeld from './button.module.css';
+  touch-action: none;
+  user-select: none;
 }
 
 .key {
