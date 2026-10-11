@@ -1,6 +1,7 @@
 import { isControlKey, type ControlKey } from '../controls'
 import { engine } from '../engine/engine'
 import { createStore } from '../listeners'
+import { bendDeal, bendName, isBendName } from './bendKeys'
 import { padId, type PadBinding } from './pads'
 import { omit, parseMap, read, write } from './persist'
 import { THROWS } from './throws'
@@ -23,7 +24,14 @@ export interface EffectArm {
 const THROW_PADS_KEY = 'bender.midi.throwpads'
 const EFFECT_PADS_KEY = 'bender.midi.effectpads'
 
-const throwNamed = (name: string) => THROWS.find(t => t.name === name) ?? null
+// A bend key is a throw whose push is whatever the deal says today, so a pad
+// bound to one keeps the pad through a redeal.
+const throwNamed = (name: string) =>
+  THROWS.find(t => t.name === name) ??
+  bendDeal.get().find(k => bendName(k.letter) === name) ??
+  null
+const throwName = (name: string) =>
+  isBendName(name) ? name : (throwNamed(name)?.name ?? null)
 const effectName = (control: string) => `effect:${control}`
 
 const readPad = (stored: object) => {
@@ -34,7 +42,7 @@ const readPad = (stored: object) => {
 }
 
 export const parseThrowPads = (raw: string | null): ThrowPadMap =>
-  parseMap(raw, name => throwNamed(name)?.name ?? null, readPad)
+  parseMap(raw, throwName, readPad)
 
 export const parseEffectPads = (raw: string | null): EffectPadMap =>
   parseMap(
@@ -130,8 +138,8 @@ export class ThrowPads {
     if ('throw' in target) {
       const def = throwNamed(target.throw)
       if (def === null) return false
-      if (on) engine.holdThrow(def.name, def.push(engine.controls.get()))
-      else engine.letGoThrow(def.name)
+      if (on) engine.holdThrow(target.throw, def.push(engine.controls.get()))
+      else engine.letGoThrow(target.throw)
       return true
     }
     const effect = this.effects.get()[target.effect]

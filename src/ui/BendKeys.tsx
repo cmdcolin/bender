@@ -1,7 +1,28 @@
 import { useEffect, useState } from 'react'
 
 import { engine } from '../engine/engine'
-import { bendDeal, bendName, redealBendKeys, type BendKey } from './bendKeys'
+import {
+  bendDeal,
+  bendHeat,
+  bendName,
+  bendStepName,
+  bendSwell,
+  HEATS,
+  holdBend,
+  letGoAllBends,
+  letGoBend,
+  lettersWantBends,
+  REDEAL_BARS,
+  redealAll,
+  redealBendKeys,
+  redealEvery,
+  rememberLetters,
+  runBendClock,
+  setBendHeat,
+  setBendSwell,
+  setRedealEvery,
+  type BendKey,
+} from './bendKeys'
 import styles from './BendKeys.module.css'
 import { useStoreValue } from './ControlsContext'
 import { isTyping } from './isTyping'
@@ -10,28 +31,48 @@ import { useCoarse } from './measure'
 import throwStyles from './Throws.module.css'
 import { Tip } from './Tip'
 
+import type { MorphSeconds } from './morph'
+
 const omitFrom = (set: Set<string>, value: string) => {
   const next = new Set(set)
   next.delete(value)
   return next
 }
 
+const setLetters = (bends: boolean) => {
+  letterKeys.set(bends ? 'bends' : 'toy')
+  rememberLetters(bends)
+}
+
+const HEAT_TIP = {
+  tame: 'one control a key',
+  wild: 'one to three controls a key, now and then a pair that fight',
+  wreck:
+    'three controls a key, and a third of the keys solder a bay wire or a bend into the chain on top',
+}
+
 // Sixteen throws the dice dealt, one per letter key. Held while the key or the
 // pad is down; shift latches one so both hands are free. Letters reach the row
 // only once the switch at its head sends them here instead of to a keybed.
-export function BendKeys() {
+export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   const deal = useStoreValue(bendDeal)
   const held = useStoreValue(engine.held)
   const on = useStoreValue(letterKeys) === 'bends'
+  const heat = useStoreValue(bendHeat)
+  const swell = useStoreValue(bendSwell)
+  const every = useStoreValue(redealEvery)
   const coarse = useCoarse()
   const [latched, setLatched] = useState<Set<string>>(new Set())
+  // A swell with the morph set to instant still swells: the switch is the ask.
+  const seconds = swell ? Math.max(morphSeconds, 1) : 0
 
   useEffect(() => {
     if (bendDeal.get().length === 0) redealBendKeys(engine.controls.get())
+    if (lettersWantBends(window.location.search)) letterKeys.set('bends')
   }, [])
 
   const letGo = (k: BendKey) => {
-    engine.letGoThrow(bendName(k.letter))
+    letGoBend(bendName(k.letter), seconds)
     if (latched.has(k.letter)) setLatched(l => omitFrom(l, k.letter))
   }
 
@@ -42,23 +83,25 @@ export function BendKeys() {
       letGo(k)
       return
     }
-    engine.holdThrow(bendName(k.letter), k.push(engine.controls.get()))
+    holdBend(bendName(k.letter), k, seconds)
     if (latch) setLatched(l => new Set(l).add(k.letter))
   }
 
   const release = (k: BendKey) => {
-    if (!latched.has(k.letter)) engine.letGoThrow(bendName(k.letter))
+    if (!latched.has(k.letter)) letGoBend(bendName(k.letter), seconds)
   }
 
   const letGoAll = () => {
-    for (const k of deal) engine.letGoThrow(bendName(k.letter))
+    letGoAllBends()
     setLatched(new Set())
   }
 
-  const redeal = () => {
-    letGoAll()
-    redealBendKeys(engine.controls.get())
-  }
+  // The kit's bar clock, which fires the bend row and the redeal counter. Once
+  // for the row's life: a hold it has out must not let go because a pad lit.
+  useEffect(runBendClock, [])
+
+  // A new hand, from the clock or from x, has nothing pinned in it.
+  useEffect(() => bendDeal.subscribe(() => setLatched(new Set())), [])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -66,7 +109,7 @@ export function BendKeys() {
       if (isTyping(e.target)) return
       const pressed = e.key.toLowerCase()
       if (pressed === 'z') letGoAll()
-      else if (pressed === 'x') redeal()
+      else if (pressed === 'x') redealAll()
       else {
         const k = deal.find(d => d.letter === pressed)
         if (k) press(k, e.shiftKey)
@@ -101,20 +144,21 @@ export function BendKeys() {
           text={
             on
               ? 'the letter keys are throwing the board around: a s d f … hold a bend key, shift pins one down, z lets go of everything, x deals sixteen new ones. Press to hand the letters back to the toy keyboard.'
-              : 'send the letter keys here instead of the toy keyboard: a s d f … hold a bend key, shift pins one down, z lets go of everything, x deals sixteen new ones.'
+              : 'send the letter keys to this row: a s d f … hold a bend key, shift pins one down, z lets go of everything, x deals sixteen new ones.'
           }
         >
           <button
             className={on ? styles.switchOn : styles.switch}
             aria-pressed={on}
-            onClick={() => letterKeys.set(on ? 'toy' : 'bends')}
+            onClick={() => setLetters(!on)}
           >
             {on ? 'letters bend' : 'bend'}
           </button>
         </Tip>
       )}
       {deal.map(k => {
-        const lit = held.has(bendName(k.letter))
+        const lit =
+          held.has(bendName(k.letter)) || held.has(bendStepName(k.letter))
         return (
           <Tip
             key={k.letter}
@@ -138,10 +182,54 @@ export function BendKeys() {
         )
       })}
       <Tip text="Deal sixteen new bend keys off the dice for the board as it stands. Everything held lets go first.">
-        <button className={styles.deal} onClick={redeal}>
+        <button className={styles.deal} onClick={redealAll}>
           redeal
         </button>
       </Tip>
+      <span className={styles.settings}>
+        {HEATS.map(h => (
+          <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
+            <button
+              className={heat === h ? styles.chipOn : styles.chip}
+              aria-pressed={heat === h}
+              onClick={() => setBendHeat(h)}
+            >
+              {h}
+            </button>
+          </Tip>
+        ))}
+        <Tip
+          text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
+        >
+          <button
+            className={swell ? styles.chipOn : styles.chip}
+            aria-pressed={swell}
+            onClick={() => setBendSwell(!swell)}
+          >
+            swell
+          </button>
+        </Tip>
+        <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
+          <select
+            className={every === 0 ? styles.every : styles.everyOn}
+            value={every}
+            aria-label="redeal every"
+            onChange={e =>
+              setRedealEvery(
+                REDEAL_BARS.find(b => b === Number(e.currentTarget.value)) ?? 0,
+              )
+            }
+          >
+            {REDEAL_BARS.map(b => (
+              <option key={b} value={b}>
+                {b === 0
+                  ? 'keep the deal'
+                  : `redeal every ${b === 1 ? 'bar' : `${b} bars`}`}
+              </option>
+            ))}
+          </select>
+        </Tip>
+      </span>
     </div>
   )
 }

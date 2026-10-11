@@ -156,7 +156,9 @@
 .accent,
 .accentOn,
 .echo,
-.echoOn {
+.echoOn,
+.bend,
+.bendOn {
   position: relative;
   height: 15px;
   min-width: 0;
@@ -175,7 +177,8 @@
 
 .cell:hover,
 .accent:hover,
-.echo:hover {
+.echo:hover,
+.bend:hover {
   border-color: var(--border-hover);
 }
 
@@ -209,13 +212,21 @@
 .accent,
 .accentOn,
 .echo,
-.echoOn {
+.echoOn,
+.bend,
+.bendOn {
   height: 12px;
 }
 
 .echoOn {
   background: var(--cool);
   border-color: var(--cool);
+}
+
+/* The bend row's lit step, in the colour of the key it fires. */
+.bendOn {
+  background: var(--accent2);
+  border-color: var(--accent2);
 }
 
 .accentOn {

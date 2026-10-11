@@ -198,6 +198,12 @@
   white-space: nowrap;
 }
 
+/* The loud one, in the throw pads' colour, because it is a throw of the whole
+   board rather than a switch. */
+.wildBtn {
+  composes: actionHeld from './button.module.css';
+}
+
 /* The switches under the board: what plays, what listens, what is being
    written to disk. The panel's loud verbs, since that is what they are — and
    composed rather than restated, so a finger gets them at the same height as

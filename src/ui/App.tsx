@@ -17,6 +17,7 @@ import { AboutDialog } from './AboutDialog'
 import { Account } from './Account'
 import styles from './App.module.css'
 import { BendKeys } from './BendKeys'
+import { bendDeal, redealBendKeys, rememberLetters } from './bendKeys'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { GROUPS } from './controls'
@@ -28,6 +29,7 @@ import { FmKeys } from './FmKeys'
 import { HuntDialog } from './HuntDialog'
 import { isTyping } from './isTyping'
 import { Keys } from './Keys'
+import { letterKeys } from './letters'
 import { useCoarse } from './measure'
 import { Menu } from './Menu'
 import { menuItem } from './menuItems'
@@ -387,9 +389,31 @@ export function App(props: { openedFromLink?: boolean }) {
               {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
             </button>
           </Tip>
+          {/* The one press that gets to the noise: both machines running, the
+              kit audible, the letters on the bend keys and a hand dealt. */}
+          <Tip text="Run both machines, bring the kit up if it is down, send the letter keys to the bend row and deal a hand — one press from silence to glitch.">
+            <button
+              className={styles.wildBtn}
+              onClick={() => {
+                void engine.start()
+                if (engine.controls.get().drumLevel === 0) {
+                  engine.armStep()
+                  engine.set('drumLevel', 0.8)
+                }
+                engine.setSongPlaying(true)
+                engine.setDrumsPlaying(true)
+                if (bendDeal.get().length === 0)
+                  redealBendKeys(engine.controls.get())
+                letterKeys.set('bends')
+                rememberLetters(true)
+              }}
+            >
+              ⚡ go wild
+            </button>
+          </Tip>
         </div>
         <Throws />
-        <BendKeys />
+        <BendKeys morphSeconds={morphSeconds} />
         <div className={styles.ioRow}>
           {/* Named for what it records, because the kit has a record button of
               its own now and one of them writes a file while the other writes

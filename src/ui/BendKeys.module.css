@@ -20,3 +20,38 @@
   composes: action from './button.module.css';
   font-size: var(--fs-xs);
 }
+
+/* How the next deal comes out, kept apart from the pads by a gap so the chips
+   do not read as four more of them. */
+.settings {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+}
+
+.chip {
+  composes: chip from './button.module.css';
+}
+
+.chipOn {
+  composes: chipOn from './button.module.css';
+}
+
+.every,
+.everyOn {
+  font-size: var(--fs-xs);
+  font-family: var(--mono);
+  padding: 2px 4px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--fg3);
+  cursor: pointer;
+}
+
+.everyOn {
+  color: var(--fg);
+  border-color: var(--accent);
+}

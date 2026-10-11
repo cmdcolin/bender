@@ -4,6 +4,7 @@ import { afterEach, beforeAll } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls'
 import { engine } from '../engine/engine'
 import { EMPTY_HISTORY } from '../history'
+import { bendRow, bendSwell, redealEvery } from './bendKeys'
 import { letterKeys } from './letters'
 
 // What the panel needs under it that jsdom does not have, and a board back
@@ -193,6 +194,9 @@ function resetBoard() {
   engine.tuneRecord.set(false)
   letterKeys.set('toy')
   engine.held.set(new Map())
+  bendRow.set(0)
+  redealEvery.set(0)
+  bendSwell.set(false)
   // A test that left a key down is a test that hands the next one a note it
   // never played, and the beds light off these.
   engine.keysDown.set(new Set())

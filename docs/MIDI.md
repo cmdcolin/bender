@@ -67,11 +67,12 @@ note — something the grid itself has no way to write. Drums have no release, s
 the note-off a pad sends on the way up is ignored.
 
 **Pads play effects.** Under the kit's pads, the **throws** list has a **⚟** for
-each of the six throws (spin, dive, brake, crash, drop, crush). Press it and hit
-a pad: the throw holds while the pad is down and the board springs back when you
-let go, the same as the **hold** row. A throw pad takes priority over the kit
-and the keybed, one pad holds one throw, and all notes off releases whatever a
-pad is holding.
+each of the six throws (spin, dive, brake, crash, drop, crush) and each of the
+sixteen bend keys, by letter. Press it and hit a pad: the throw holds while the
+pad is down and the board springs back when you let go, the same as the **hold**
+row. A pad on a bend key keeps the letter through a redeal, so it plays whatever
+that letter holds now. A throw pad takes priority over the kit and the keybed,
+one pad holds one throw, and all notes off releases whatever a pad is holding.
 
 **Any control can be an effect pad.** Pick a control in the **effects** row, set
 the value the pad should push it to, press **⚟** and hit a pad. While the pad is

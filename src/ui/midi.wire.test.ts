@@ -10,6 +10,7 @@ import { YOURS } from '../dsp/stages/roms'
 import { bursts, render } from '../dsp/testRender'
 import { engine } from '../engine/engine'
 import { REST, TUNE_STEP_KEYS } from '../tune'
+import { bendName, redealBendKeys } from './bendKeys'
 import { sliderFor } from './controls'
 import { ccToValue, midi, velocity } from './midi'
 import { padGain } from './pads'
@@ -807,6 +808,26 @@ test('a pad bound to a throw holds it down and springs back on release', () => {
   expect(engine.held.get().has('crush')).toBe(true)
   send(0x80, 60, 0)
   expect(engine.held.get().has('crush')).toBe(false)
+})
+
+test('a pad bound to a bend key holds whatever the letter deals', () => {
+  redealBendKeys(DEFAULT_CONTROLS, () => 0.5)
+  midi.armThrow(bendName('a'))
+  send(0x90, 61, 100)
+  expect(midi.throwBindings.get()[bendName('a')]).toEqual({
+    channel: 0,
+    note: 61,
+  })
+  send(0x90, 61, 100)
+  const first = engine.held.get().get(bendName('a'))
+  expect(first).toBeDefined()
+  send(0x80, 61, 0)
+  expect(engine.held.get().has(bendName('a'))).toBe(false)
+
+  redealBendKeys(DEFAULT_CONTROLS, () => 0.1)
+  send(0x90, 61, 100)
+  expect(engine.held.get().get(bendName('a'))).not.toEqual(first)
+  send(0x80, 61, 0)
 })
 
 test('a throw pad wins over General MIDI and keeps the note off the chip', () => {

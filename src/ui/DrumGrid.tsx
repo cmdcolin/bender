@@ -23,6 +23,7 @@ import {
   type StepState,
 } from '../drums'
 import { engine } from '../engine/engine'
+import { bendDeal, bendRow, toggleBendStep } from './bendKeys'
 import {
   useBoardValue,
   useControlValue,
@@ -250,6 +251,7 @@ export function DrumGrid() {
             paint={paint}
           />
         ))}
+        <BendRow tick={live ? tick : null} />
       </div>
 
       {/* The one place that may start the kit, because it is a button that says
@@ -473,6 +475,48 @@ const Cell = memo(function Cell(props: {
   )
 })
 
+// The bend keys on the clock: step n fires bend key n for the length of the
+// step. Not a control, since the deal it points at is this session's, so the
+// row writes its own store and rides in no link.
+function BendRow({ tick }: { tick: number | null }) {
+  const mask = useStoreValue(bendRow)
+  const deal = useStoreValue(bendDeal)
+  const under = tick === null ? -1 : tick % STEPS
+  return (
+    <Tip text="Steps that fire a bend key: the first step the first key, the second the second, each held for its step. Redeal the keys and the same steps fire the new ones.">
+      <div className={styles.row}>
+        <span className={mask ? styles.nameOn : styles.name}>bend</span>
+        <div className={styles.cells}>
+          {Array.from({ length: STEPS }, (_, s) => {
+            const on = (mask & stepBit(s)) !== 0
+            const k = deal[s]
+            return (
+              <Tip
+                key={s}
+                text={k ? `${k.name} on step ${s + 1}` : `step ${s + 1}`}
+              >
+                <button
+                  className={cellClass({
+                    kind: 'bend',
+                    state: on ? 'on' : 'off',
+                    beat: s % 4 === 0,
+                    under: s === under,
+                    past: false,
+                  })}
+                  aria-label={`bend step ${s + 1}`}
+                  aria-pressed={on}
+                  onClick={() => toggleBendStep(s)}
+                />
+              </Tip>
+            )
+          })}
+        </div>
+        <span />
+      </div>
+    </Tip>
+  )
+}
+
 // A throw onto a tape delay that is switched off would do nothing, so the first
 // one brings the echo up with only the throws going in.
 function wakeEcho(board: Controls) {
@@ -483,7 +527,7 @@ function wakeEcho(board: Controls) {
 }
 
 function cellClass(s: {
-  kind: 'voice' | 'accent' | 'echo'
+  kind: 'voice' | 'accent' | 'echo' | 'bend'
   state: StepState
   beat: boolean
   under: boolean
@@ -498,11 +542,15 @@ function cellClass(s: {
         ? s.state === 'on'
           ? styles.echoOn
           : styles.echo
-        : s.state === 'maybe'
-          ? styles.cellMaybe
-          : s.state === 'on'
-            ? styles.cellOn
-            : styles.cell
+        : s.kind === 'bend'
+          ? s.state === 'on'
+            ? styles.bendOn
+            : styles.bend
+          : s.state === 'maybe'
+            ? styles.cellMaybe
+            : s.state === 'on'
+              ? styles.cellOn
+              : styles.cell
   return [
     base,
     s.beat && styles.beat,

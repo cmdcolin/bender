@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine'
 import { noteName } from '../notes'
+import { bendDeal, bendName } from './bendKeys'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
 import { useControlValue, useStoreValue } from './ControlsContext'
 import {
@@ -178,34 +179,45 @@ function Pads() {
 function ThrowPads() {
   const bound = useStoreValue(midi.throwBindings)
   const armed = useStoreValue(midi.armedThrow)
+  const deal = useStoreValue(bendDeal)
   const count = Object.keys(bound).length
+  // The six throws, then the sixteen bend keys by letter: a pad bound to a
+  // letter plays whatever that letter holds after the next redeal too.
+  const throws = [
+    ...THROWS.map(t => ({ name: t.name, label: t.name, blurb: t.blurb })),
+    ...deal.map(k => ({
+      name: bendName(k.letter),
+      label: `bend ${k.letter}`,
+      blurb: k.says,
+    })),
+  ]
   return (
     <>
       <div className={styles.row}>
         <span className={styles.quiet}>
-          throws: hold a pad to hold the effect
+          throws and bend keys: hold a pad to hold the effect
         </span>
       </div>
       <div className={styles.list}>
-        {THROWS.map(t => {
+        {throws.map(t => {
           const p = bound[t.name]
           const mine = armed === t.name
           return (
             <div key={t.name} className={styles.bound}>
               <span className={mine ? styles.strandedName : styles.boundName}>
-                {t.name}
+                {t.label}
               </span>
               <Tip
                 text={
                   mine
-                    ? `hit the pad you want to hold ${t.name} — esc to cancel`
+                    ? `hit the pad you want to hold ${t.label} — esc to cancel`
                     : `${t.blurb}, while the pad is down`
                 }
               >
                 <button
                   className={mine ? styles.modeOn : styles.mode}
                   onClick={() => midi.armThrow(mine ? null : t.name)}
-                  aria-label={`bind ${t.name} to a pad`}
+                  aria-label={`bind ${t.label} to a pad`}
                 >
                   ⚟
                 </button>
@@ -216,11 +228,11 @@ function ThrowPads() {
                   : `${noteName(p.note)}${p.channel === 0 ? '' : ` ch${p.channel + 1}`}`}
               </span>
               {p === undefined ? null : (
-                <Tip text={`Take ${t.name} off its pad.`}>
+                <Tip text={`Take ${t.label} off its pad.`}>
                   <button
                     className={styles.drop}
                     onClick={() => midi.clearThrow(t.name)}
-                    aria-label={`unbind the ${t.name} pad`}
+                    aria-label={`unbind the ${t.label} pad`}
                   >
                     ×
                   </button>

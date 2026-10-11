@@ -68,3 +68,23 @@ test('no two keys share a control', () => {
     }
   }
 })
+
+test('tame moves one control a key', () => {
+  for (const k of dealBendKeys(DEFAULT_CONTROLS, seeded(5), 'tame'))
+    expect(k.keys).toHaveLength(1)
+})
+
+test('wreck moves three a key, and solders on a third of them', () => {
+  const deal = dealBendKeys(DEFAULT_CONTROLS, seeded(5), 'wreck')
+  for (const k of deal) expect(k.keys).toHaveLength(3)
+  const soldered = deal.filter(k => k.name.includes(' + '))
+  expect(soldered.length).toBeGreaterThan(0)
+  for (const k of soldered) {
+    const patch = k.push(DEFAULT_CONTROLS)
+    const extra = keysOf(patch).filter(key => !k.keys.includes(key))
+    expect(
+      extra.some(key => /^mod\dSrc$/.test(key) || /^bendSlot\d$/.test(key)),
+      k.name,
+    ).toBe(true)
+  }
+})
