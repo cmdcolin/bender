@@ -25,12 +25,12 @@
   align-items: center;
   justify-content: space-between;
   height: 44px;
-  padding: 0 16px;
+  padding: 0 var(--space-xl);
 }
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-md);
   color: #fff;
   font-size: var(--fs-md);
   font-weight: 700;
@@ -68,7 +68,7 @@
 .full {
   padding: 5px 12px;
   border: 1px solid #ffffff50;
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   color: #fff;
   font-size: var(--fs-sm);
   font-weight: 700;
@@ -81,7 +81,7 @@
   flex: 1;
   min-height: 0;
   display: flex;
-  padding: 0 8px;
+  padding: 0 var(--space-md);
 }
 .glass {
   position: relative;
@@ -179,7 +179,7 @@
   position: absolute;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 8px 16px;
+  padding: var(--space-md) var(--space-xl);
   border-radius: 10px;
   background: #000000b0;
   color: #fff;
@@ -193,7 +193,7 @@
 }
 .hint {
   top: 38%;
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   font-size: var(--fs-sm);
   white-space: nowrap;
   animation: hintOut 8s ease-in forwards;
@@ -222,7 +222,7 @@
   display: grid;
   place-items: safe center;
   overflow-y: auto;
-  padding: 16px;
+  padding: var(--space-xl);
   border-radius: 14px;
   background: #000000f2;
 }
@@ -235,7 +235,7 @@
   line-height: var(--prose-lh);
 }
 .help li + li {
-  margin-top: 6px;
+  margin-top: var(--space-sm);
 }
 .help b {
   color: #fff;
@@ -252,9 +252,9 @@
 
 .tabs {
   display: flex;
-  gap: 2px;
+  gap: var(--space-2xs);
   margin-bottom: -4px;
-  padding: 0 12px;
+  padding: 0 var(--space-lg);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -270,7 +270,7 @@
 .tab,
 .tabOn {
   flex: none;
-  padding: 4px 8px;
+  padding: var(--space-xs) var(--space-md);
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
@@ -291,10 +291,10 @@
    the row's start. */
 .strip {
   display: flex;
-  gap: 8px;
+  gap: var(--space-md);
   overflow-x: auto;
-  padding: 0 16px 0 0;
-  scroll-padding: 0 16px 0 8rem;
+  padding: 0 var(--space-xl) 0 0;
+  scroll-padding: 0 var(--space-xl) 0 8rem;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   overscroll-behavior-x: contain;
@@ -307,10 +307,10 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
   padding: 8px 14px;
   border: 1px solid #ffffff38;
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   background: transparent;
   color: var(--fg2);
   font: inherit;
@@ -339,7 +339,7 @@
   z-index: 1;
   flex: none;
   display: flex;
-  padding-left: 16px;
+  padding-left: var(--space-xl);
   background: #000;
 }
 .roll::after {
@@ -358,13 +358,13 @@
 .bends {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 12px;
+  gap: var(--space-md);
+  padding: 0 var(--space-lg);
 }
 .bendGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: var(--space-sm);
 }
 .pad,
 .padOn {
@@ -398,14 +398,14 @@
 .throwRow {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
+  gap: var(--space-sm);
 }
 .throw,
 .throwOn {
   height: 36px;
   padding: 0;
   border: 1px solid #ffffff30;
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   background: transparent;
   color: var(--fg2);
   font: inherit;
@@ -421,7 +421,7 @@
 .dealRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-sm);
 }
 .dealRow .chip,
 .dealRow .chipOn {
@@ -444,14 +444,14 @@
   justify-self: start;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
 }
 .take {
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 40px;
-  padding: 0 8px;
+  padding: 0 var(--space-md);
   border: 1px solid #ffffff50;
   border-radius: 10px;
   background: #ffffff14;
@@ -470,11 +470,11 @@
 .recOn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-sm);
   height: 40px;
   padding: 0 14px;
   border: 1px solid #ffffff38;
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   background: transparent;
   color: #fff;
   font: inherit;
@@ -550,7 +550,7 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-lg);
   max-height: min(64vh, 480px);
   overflow-y: auto;
   padding: 0 20px calc(18px + env(safe-area-inset-bottom));
@@ -612,12 +612,12 @@
 .verbs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-md);
 }
 .pool {
   padding: 8px 10px;
   border: 1px solid #ffffff38;
-  border-radius: 999px;
+  border-radius: var(--pill-radius);
   background: #000;
   color: var(--fg2);
   font: inherit;
