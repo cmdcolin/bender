@@ -4,12 +4,19 @@ import { attach, chromePath, sleep, type Page } from './chrome'
 import { serveDev } from './serve'
 
 import { execFileSync, spawn } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // The six pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
-// docs/img/guide-*.jpg from the app as it is now, the same way figure.ts
+// docs/img/guide-*.jpg, and copies the four in GALLERY to public/gallery/ for
+// the landing page from the app as it is now, the same way figure.ts
 // rewrites the README's. Each shot is a board, a thing to click once the page
 // is up, and the element (or elements) to crop to — read off the page rather
 // than hand-picked pixels, so a layout change breaks the shot instead of
@@ -24,6 +31,12 @@ const DEBUG_PORT = 9334
 const VIEW = { width: 1300, height: 2000 }
 const DPR = 2
 const PAD = 14
+const GALLERY = [
+  'guide-keyboard.jpg',
+  'guide-drums.jpg',
+  'guide-trigger.jpg',
+  'guide-fm.jpg',
+]
 
 interface Shot {
   file: string
@@ -250,6 +263,10 @@ async function main() {
         out,
       ])
       console.log(out)
+      if (GALLERY.includes(shot.file)) {
+        mkdirSync('public/gallery', { recursive: true })
+        copyFileSync(out, join('public/gallery', shot.file))
+      }
     }
   } finally {
     await stop()
