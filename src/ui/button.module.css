@@ -12,14 +12,19 @@
    that stretched its buttons to fill the line would hand whichever two happened
    to wrap the look of a different, more important kind of button.
 
+   Each kind takes one of the two heights in theme.css, and so does every
+   dropdown, so a select sits level with the buttons beside it.
+
    Every hover skips a disabled button: greyed-out undo lighting up under the
    pointer would promise a step back that isn't there. */
 
 /* The panel's loud verbs — random, drift, panic. Filled and square, and the
    only kind at fs-sm, because these are what you came here to press. */
 .action {
+  min-height: var(--ctl-h);
   font-size: var(--fs-sm);
-  padding: 3px 8px;
+  line-height: 1.2;
+  padding: 0 8px;
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
@@ -78,8 +83,10 @@
    own verbs. Outlined rather than filled, so a row of forty reads as a list,
    and the accent on hover is what says it is pressable at all. */
 .chip {
+  min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
-  padding: 2px 7px;
+  line-height: 1.2;
+  padding: 0 7px;
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
@@ -132,8 +139,10 @@
    chosen one fills in rather than lighting up, since what it marks is where you
    are, not something running. */
 .pick {
+  min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
-  padding: 2px 7px;
+  line-height: 1.2;
+  padding: 0 7px;
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
@@ -162,11 +171,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 21px;
+  min-height: var(--ctl-h);
   font-size: var(--fs-xs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 3px 9px;
+  line-height: 1.2;
+  padding: 0 9px;
   background: var(--switch);
   color: var(--fg2);
   border: 1px solid var(--case-edge);
@@ -212,18 +222,55 @@
   border-style: dashed;
 }
 
-/* A finger on the glass rather than a pointer on a desk. Nothing here is about
-   how wide the window is — a tablet is as wide as a laptop — and everything is
-   about the thing doing the pressing: a fingertip covers a third of an inch, so
-   every kind grows to one height and one padding. One height, because the kinds
-   sit in rows together and a row of caps at three heights reads as a mistake
-   before it reads as a hierarchy. */
+/* A dropdown among the verbs, filled and square like an action and at its
+   height. */
+.select {
+  height: var(--ctl-h);
+  font-size: var(--fs-sm);
+  padding: 0 4px;
+  background: var(--surface-raised);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.select:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+.select:disabled {
+  color: var(--fg4);
+  cursor: default;
+}
+
+/* A dropdown in a row of chips or picks, outlined like a pick and at its
+   height. */
+.selectSm {
+  composes: select;
+  height: var(--ctl-h-sm);
+  font-size: var(--fs-xs);
+  background: none;
+  color: var(--fg3);
+  border-color: var(--border-quiet);
+}
+
+/* Set to something other than its resting choice, lit the way a chip is. */
+.selectSmOn {
+  composes: selectSm;
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
+/* Under a finger, theme.css raises both heights to 32px and the padding grows
+   to match. A tablet is as wide as a laptop, so the query asks about the
+   pointer and leaves the window width alone. */
 @media (pointer: coarse) {
   .action,
   .chip,
   .pick,
   .cap {
-    min-height: 32px;
-    padding: 4px 10px;
+    padding: 0 10px;
   }
 }

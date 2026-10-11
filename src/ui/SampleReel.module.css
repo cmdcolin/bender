@@ -44,16 +44,6 @@
 }
 
 .whole {
+  composes: action from './button.module.css';
   margin-left: auto;
-  font-size: var(--fs-xs);
-  padding: 2px 6px;
-  background: var(--surface-raised);
-  color: var(--fg2);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.whole:hover {
-  border-color: var(--border-hover);
 }

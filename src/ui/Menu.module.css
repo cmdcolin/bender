@@ -15,9 +15,11 @@
 }
 
 .item {
+  min-height: var(--ctl-h);
   font-size: var(--fs-sm);
+  line-height: 1.2;
   text-align: left;
-  padding: 3px 8px;
+  padding: 0 8px;
   background: none;
   color: var(--fg2);
   border: none;
@@ -48,8 +50,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  min-height: var(--ctl-h);
   font-size: var(--fs-sm);
-  padding: 3px 8px;
+  line-height: 1.2;
+  padding: 0 8px;
   color: var(--fg2);
   border-radius: 3px;
   cursor: pointer;

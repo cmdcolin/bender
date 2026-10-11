@@ -18,6 +18,18 @@
   /* A slider's fill, from stock out to the thumb. range.module.css shares the
      name with videoskillet. */
   --ctl-on-bg: color-mix(in srgb, var(--accent) 62%, var(--surface-raised));
+  /* Button and dropdown heights. A verb or a cap takes --ctl-h, and a chip or a
+     pick takes --ctl-h-sm. The kinds in button.module.css use them. */
+  --ctl-h: 22px;
+  --ctl-h-sm: 18px;
+}
+
+/* A fingertip covers a third of an inch, so both heights grow to 32px. */
+@media (pointer: coarse) {
+  :root {
+    --ctl-h: 32px;
+    --ctl-h-sm: 32px;
+  }
 }
 
 * {
@@ -36,4 +48,10 @@ body {
   color: var(--fg);
   font-family: var(--font);
   font-size: var(--fs);
+}
+
+button,
+select,
+input {
+  font-family: inherit;
 }

@@ -207,7 +207,7 @@ function PartVerbs({
         }
       >
         <button
-          className={moved > 0 ? styles.partReset : styles.partOff}
+          className={moved > 0 ? styles.partVerbReset : styles.partOff}
           disabled={moved === 0}
           onClick={() =>
             engine.morphTo(

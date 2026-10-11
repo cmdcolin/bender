@@ -39,19 +39,10 @@
   composes: chipOn from './button.module.css';
 }
 
-.every,
-.everyOn {
-  font-size: var(--fs-xs);
-  font-family: var(--mono);
-  padding: 2px 4px;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  color: var(--fg3);
-  cursor: pointer;
+.every {
+  composes: selectSm from './button.module.css';
 }
 
 .everyOn {
-  color: var(--fg);
-  border-color: var(--accent);
+  composes: selectSmOn from './button.module.css';
 }

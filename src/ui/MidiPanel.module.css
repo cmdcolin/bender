@@ -151,12 +151,7 @@
 }
 
 .select {
-  font-size: var(--fs-xs);
-  padding: 2px 4px;
-  background: var(--surface-raised);
-  color: var(--fg2);
-  border: 1px solid var(--border-quiet);
-  border-radius: 3px;
+  composes: selectSm from './button.module.css';
 }
 
 .clock {
@@ -206,9 +201,10 @@
   border: 1px solid var(--border-quiet);
   border-radius: 3px;
   color: var(--fg4);
+  min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
-  line-height: 1;
-  padding: 1px 4px;
+  line-height: 1.2;
+  padding: 0 5px;
   cursor: pointer;
 }
 

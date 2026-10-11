@@ -67,7 +67,7 @@
 
 @media (pointer: coarse) {
   .acctBtn {
-    min-height: 32px;
-    min-width: 32px;
+    min-height: var(--ctl-h);
+    min-width: var(--ctl-h);
   }
 }
