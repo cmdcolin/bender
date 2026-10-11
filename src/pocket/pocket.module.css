@@ -1,0 +1,582 @@
+/* The pocket page holds the scope, a strip of presets and the run button. The
+   chrome is black like videoskillet's camera page, so the trace and the accent
+   are the only colours on screen. */
+
+.page {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  color: var(--fg);
+  font-family: var(--font);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  /* a long press on the scope is a bend, not a text selection */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 16px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+}
+.mark {
+  width: 20px;
+  height: 20px;
+}
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.round {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #ffffff50;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  cursor: pointer;
+}
+.round[aria-pressed='true'] {
+  background: #fff;
+  color: #000;
+}
+.full {
+  padding: 5px 12px;
+  border: 1px solid #ffffff50;
+  border-radius: 999px;
+  color: #fff;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  padding: 0 8px;
+}
+.glass {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0a0a0c;
+  touch-action: none;
+  cursor: crosshair;
+}
+.scope {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Where the finger is bending, as a ring under it. */
+.touch {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 24px var(--accent);
+  pointer-events: none;
+}
+
+/* The switches sit on the scope's right edge, where a phone camera keeps its
+   flash and timer switches. */
+.switches {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.switch,
+.switchOn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 3px #000;
+  cursor: pointer;
+}
+.switchIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff1c;
+  font-size: 18px;
+  text-shadow: none;
+}
+.switchOn .switchIcon {
+  background: #fff;
+  color: #000;
+}
+
+.flash,
+.hint,
+.notice {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: #000000b0;
+  color: #fff;
+  pointer-events: none;
+}
+.flash {
+  top: 50%;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hint {
+  top: 38%;
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  animation: hintOut 8s ease-in forwards;
+}
+@keyframes hintOut {
+  0%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.notice {
+  top: 50%;
+  width: min(80%, 320px);
+  font-size: var(--fs-md);
+  text-align: center;
+  line-height: var(--prose-lh);
+}
+
+.help {
+  position: absolute;
+  inset: 0 8px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: 14px;
+  background: #000000d8;
+}
+.help ul {
+  margin: 0;
+  padding: 0 0 0 1.1em;
+  max-width: 340px;
+  color: var(--fg2);
+  font-size: var(--fs-md);
+  line-height: var(--prose-lh);
+}
+.help li + li {
+  margin-top: 6px;
+}
+.help b {
+  color: #fff;
+}
+
+.controls {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 0 18px;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: -4px;
+  padding: 0 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tabs > :first-child {
+  margin-left: auto;
+}
+.tabs > :last-child {
+  margin-right: auto;
+}
+.tab,
+.tabOn {
+  flex: none;
+  padding: 4px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--fg3);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.tabOn {
+  border-bottom-color: var(--accent);
+  color: #fff;
+}
+
+/* The presets sit in one row that scrolls sideways, under random pinned at
+   the row's start. */
+.strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 16px 0 0;
+  scroll-padding: 0 16px 0 8rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.strip::-webkit-scrollbar {
+  display: none;
+}
+.chip,
+.chipOn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid #ffffff38;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg2);
+  font: inherit;
+  font-size: var(--fs-md);
+  white-space: nowrap;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+.chip:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.chipOn {
+  border-color: #fff;
+  background: #fff;
+  color: #000;
+}
+.chipStrength {
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  opacity: 0.6;
+}
+.roll {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  padding-left: 16px;
+  background: #000;
+}
+.roll::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 14px;
+  background: linear-gradient(to right, #000, transparent);
+  pointer-events: none;
+}
+
+/* The dealt bends, four by four, then the held throws and the deal's own
+   settings. */
+.bends {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+.bendGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.pad,
+.padOn {
+  min-width: 0;
+  height: 46px;
+  padding: 4px;
+  overflow: hidden;
+  border: 1px solid #ffffff30;
+  border-radius: 8px;
+  background: #ffffff0c;
+  color: var(--fg2);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.padOn {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+.throwRow {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.throw,
+.throwOn {
+  height: 36px;
+  padding: 0;
+  border: 1px solid #ffffff30;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  touch-action: none;
+  cursor: pointer;
+}
+.throwOn {
+  border-color: var(--accent2);
+  background: var(--accent2);
+  color: #000;
+}
+.dealRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dealRow .chip,
+.dealRow .chipOn {
+  padding: 5px 10px;
+  font-size: var(--fs-sm);
+}
+.dealGap {
+  flex: 1;
+}
+
+/* Record, run and undo share a row, with run centred however wide the sides
+   are. */
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 32px;
+}
+.rec,
+.recOn {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #ffffff38;
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.recOn {
+  border-color: var(--alarm);
+}
+.recDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--alarm);
+}
+.recOn .recDot {
+  animation: blink 1s steps(2) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+.play,
+.playOn {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 4px #000;
+  color: var(--accent-ink);
+  font-size: 28px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.play:active,
+.playOn:active {
+  transform: scale(0.94);
+}
+.playOn {
+  background: #fff;
+  color: #000;
+}
+.side {
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff24;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+.side:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.sheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: min(64vh, 480px);
+  overflow-y: auto;
+  padding: 0 20px calc(18px + env(safe-area-inset-bottom));
+  border-radius: 18px 18px 0 0;
+  background: #111;
+  box-shadow: 0 -8px 30px #000c;
+}
+.sheetHead {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 4px;
+  background: #111;
+}
+.sheetTitle {
+  flex: 1;
+  color: #fff;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.close {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff1c;
+  color: #fff;
+  font-size: var(--fs-md);
+  cursor: pointer;
+}
+.faders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fader {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 2.5rem;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-sm);
+}
+.fader input {
+  --thumb-size: 22px;
+  width: 100%;
+  height: 28px;
+}
+.faderLabel {
+  color: var(--fg2);
+}
+.faderValue {
+  color: var(--fg3);
+  font-family: var(--mono);
+  text-align: right;
+}
+.verbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pool {
+  padding: 8px 10px;
+  border: 1px solid #ffffff38;
+  border-radius: 999px;
+  background: #000;
+  color: var(--fg2);
+  font: inherit;
+  font-size: var(--fs-md);
+}
+.note {
+  margin: 0;
+  color: var(--fg3);
+  font-size: var(--fs-sm);
+}
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--fs-sm);
+}

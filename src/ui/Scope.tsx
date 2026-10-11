@@ -9,7 +9,7 @@ import styles from './Scope.module.css'
 // zero carries an all-zero trace, since the trace is the tail of the samples
 // the peak was taken over, so once a flat line is on the canvas a silent board
 // requests no frames and hands the compositor nothing to redraw.
-export function Scope() {
+export function Scope(props: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export function Scope() {
   return (
     <canvas
       ref={canvasRef}
-      className={styles.canvas}
+      className={props.className ?? styles.canvas}
       width={800}
       height={260}
     />

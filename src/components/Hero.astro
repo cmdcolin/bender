@@ -1,7 +1,7 @@
 ---
-// The top of the landing page: a headline, a picture of the panel, and the two
+// The top of the landing page: a headline, a picture of the panel, and the
 // ways in.
-import { appUrl, siteRoot } from '../site/paths'
+import { appUrl, pocketUrl, siteRoot } from '../site/paths'
 import { PANEL_SHOT } from '../site/site'
 
 const GETTING_STARTED =
@@ -20,6 +20,9 @@ const GETTING_STARTED =
 <p class="cta">
   <a class="btn primary big" href={appUrl}>
     Open the app →
+  </a>
+  <a class="btn big" href={pocketUrl}>
+    On a phone
   </a>
   <a class="btn big" href={GETTING_STARTED}>
     Getting started

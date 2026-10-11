@@ -485,6 +485,25 @@ and noise takes the middle of its two streams. A stem take stops at two minutes
 second held in the tab. There's no zip, so stopping a stem take fires up to
 seven downloads at once; your browser may ask permission for multiple files.
 
+## On a phone
+
+[`/pocket/`](https://cmdcolin.github.io/bender/pocket/) is bender laid out for a
+phone held upright. The app's ☰ menu opens it on the same board, and its **full
+app ↗** goes back the other way.
+
+- **▶** runs the toy's tune and the drum machine, with the kit brought up if the
+  board has it down. **● rec** saves a wav, and **↶** is undo.
+- Swipe the scope sideways for the next preset. The tabs under it sort the
+  presets by the machine each turns up loudest.
+- Hold the scope and drag to bend. Across sweeps the screech filter, and up
+  feeds the tape delay back on itself, past 1 at the top. Lifting the finger
+  puts the board back.
+- Tap a preset twice to set how far toward it the board goes.
+- **bends** lays out the sixteen dealt bend keys as switches. A tap pins one on,
+  and a second tap lets it go. The six throws under them hold only while
+  pressed.
+- **mix** sets each machine's level and brings in the mic or a sample.
+
 ## The link is the board
 
 The address bar carries the whole board — every control off stock, the drum

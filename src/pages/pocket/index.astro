@@ -1,0 +1,35 @@
+---
+import Analytics from '../../components/Analytics.astro'
+import Pocket from '../../Pocket'
+import { siteRoot } from '../../site/paths'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="bender" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta
+      name="description"
+      content="A circuit-bent toy keyboard and drum machine for your phone: swipe through presets, hold the scope to bend the sound, record a wav."
+    />
+    <link rel="icon" type="image/svg+xml" href={`${siteRoot}favicon.svg`} />
+    <title>bender pocket</title>
+    <Analytics />
+  </head>
+  <body>
+    <div id="root">
+      <Pocket client:only="react" />
+    </div>
+  </body>
+</html>

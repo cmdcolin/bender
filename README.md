@@ -3,6 +3,7 @@
 virtual web based circuit bender
 
 - App: https://cmdcolin.github.io/bender/app/
+- On a phone: https://cmdcolin.github.io/bender/pocket/
 - Home page, and your saved voices once you sign in:
   https://cmdcolin.github.io/bender/
 

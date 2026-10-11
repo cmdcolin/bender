@@ -12,6 +12,7 @@ import { N_DRUM_VOICES } from '../drums'
 import { YOURS } from '../dsp/stages/roms'
 import { POOLS, detailsUrl } from '../engine/archive'
 import { engine } from '../engine/engine'
+import { pocketUrl } from '../site/paths'
 import { versionLabel } from '../version'
 import { AboutDialog } from './AboutDialog'
 import { Account } from './Account'
@@ -661,6 +662,15 @@ export function App(props: { openedFromLink?: boolean }) {
                   }}
                 >
                   about
+                </button>
+                <button
+                  role="menuitem"
+                  className={menuItem(false)}
+                  onClick={() => {
+                    window.location.href = `${pocketUrl}${window.location.hash}`
+                  }}
+                >
+                  phone version
                 </button>
               </Menu>
             )}

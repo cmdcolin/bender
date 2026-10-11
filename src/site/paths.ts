@@ -4,6 +4,8 @@ export const siteRoot = import.meta.env.BASE_URL.replace(/\/?$/, '/')
 
 export const appUrl = `${siteRoot}app/`
 
+export const pocketUrl = `${siteRoot}pocket/`
+
 export const privacyUrl = `${siteRoot}privacy/`
 
 export const guideUrl = `${siteRoot}guide/`

@@ -5,11 +5,16 @@ pnpm install
 pnpm dev
 ```
 
-The site is an [Astro](https://astro.build) project with two pages:
-`src/pages/index.astro`, the homepage, and `src/pages/app/index.astro`, which
-mounts the React app as a client-only island. Both sit under `/bender/`, the
-path GitHub Pages serves the repo at, so the dev server has the app at
-`http://localhost:4321/bender/app/`.
+The site is an [Astro](https://astro.build) project with three pages:
+
+- `src/pages/index.astro`: the homepage
+- `src/pages/app/index.astro`: the React app, mounted as a client-only island
+- `src/pages/pocket/index.astro`: the phone page in `src/pocket/`, which runs
+  the same engine with a scope, a preset strip and a run button in place of the
+  panel
+
+All three sit under `/bender/`, the path GitHub Pages serves the repo at, so the
+dev server has the app at `http://localhost:4321/bender/app/`.
 
 ## Testing
 
