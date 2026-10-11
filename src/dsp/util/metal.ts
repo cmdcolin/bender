@@ -136,6 +136,11 @@ export class MetalBank {
     this.bell = bell
   }
 
+  /** All six back to where they come up, at once: a hard sync. */
+  sync() {
+    this.phase.set(START)
+  }
+
   reset() {
     this.phase.set(START)
     this.clash = 0

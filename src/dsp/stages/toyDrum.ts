@@ -183,6 +183,15 @@ const RING_TRIG_WIRING: readonly (readonly [number, number])[] = [
 const RING_TRIG_HIGH = 0.05
 const RING_TRIG_LOW = -0.05
 
+// How far the metal bank's clash can push the tanks' tuning either way, in
+// multiples of it, with Bank FM all the way up. Past one the tuning goes
+// through zero and the network runs backwards for half of each swing.
+const BANK_FM = 12
+
+/** Which tank's rising zero crossings reset the metal bank's phases. */
+export const BANK_SYNC_NAMES = ['off', 'to the kick', 'to the tom']
+const BANK_SYNC_TANK = [-1, 0, 1]
+
 // The bridged-T networks, and which trigger line shocks each one. Three voices
 // have them: the kick and the tom are one tank apiece, and the snare is the two
 // the 808 puts under its noise — 185 and 330 Hz, close enough to beat.
@@ -558,6 +567,8 @@ export class ToyDrum implements Stage {
   private ringSrc = -1
   private ringBits = 0
   private ringArmed = true
+  // The sync tank's last sample, for finding its rising zero crossings.
+  private syncPrev = 0
   private clickCap = new Highpass(CLICK_POLES)
   private clickSlew = new OnePoleLP()
   private clapFast = 0
@@ -1103,6 +1114,9 @@ export class ToyDrum implements Stage {
     // leaves of that: past the crossing the loss goes negative and the tank
     // stops being something that runs down at all.
     const ringScale = 1 - ring / RING_LATCH
+    const sweep = p[IDX.drumSweep]!
+    const fmDepth = BANK_FM * Math.min(Math.max(p[IDX.drumBankFm]!, 0), 1)
+    const syncTank = BANK_SYNC_TANK[Math.round(p[IDX.drumBankSync]!)] ?? -1
     for (let t = 0; t < N_TANKS; t++) {
       const spec = TANKS[t]!
       this.tankF[t] = (TAU * spec.hz) / this.sr
@@ -1252,6 +1266,8 @@ export class ToyDrum implements Stage {
           // the panel calls Ring is how much of that the transistor hands back,
           // so past the crossing these three stop running down and the pattern
           // starts retuning a note instead of restriking a drum.
+          const bankFm = fmDepth > 0 ? 1 + fmDepth * this.metal.clash : 1
+          let synced = 0
           for (let t = 0; t < N_TANKS; t++) {
             const v = TANKS[t]!.voice
             const drive = shock[v]!
@@ -1260,13 +1276,18 @@ export class ToyDrum implements Stage {
             const y =
               tank.process(
                 drive,
-                this.tankF[t]! * pf,
+                this.tankF[t]! * pf * bankFm,
                 this.tankRate[t]!,
-                TANKS[t]!.sweep,
+                TANKS[t]!.sweep * sweep,
               ) * this.tankGain[t]!
+            if (t === syncTank) synced = y
             out += y
             if (v === this.ringSrc) heard += y
             if (th & (1 << v)) send += y
+          }
+          if (syncTank >= 0) {
+            if (this.syncPrev <= 0 && synced > 0) this.metal.sync()
+            this.syncPrev = synced
           }
           // What gets past the coupling cap on the way to the output rather than
           // into a network: the click at the front of a kick, and the only part
@@ -1606,6 +1627,7 @@ export class ToyDrum implements Stage {
     this.rolledAt = -1
     this.clearing = false
     this.ringArmed = true
+    this.syncPrev = 0
     this.env.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)

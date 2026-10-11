@@ -1193,6 +1193,60 @@ test('a kick that fires itself drones until the floor divides it out', () => {
   expect(late(soloVoice({ ...kick, drumTrigFloor: 1 }, 3))).toBe(0)
 })
 
+const KICK_ALONE: Partial<Controls> = { drumBpm: 60, drumKick: stepMask(1) }
+const slice = (x: Float32Array, from: number, to: number) =>
+  x.subarray(Math.round(from * SR), Math.round(to * SR))
+
+test('the sweep trimmer sends a kick up as a zap or under itself as a rise', () => {
+  const start = (x: Float32Array) => pitchHz(slice(x, 0.25, 0.29))
+  const tail = (x: Float32Array) => pitchHz(slice(x, 0.5, 0.7))
+  const stock = soloVoice(KICK_ALONE, 1)
+  const zap = soloVoice({ ...KICK_ALONE, drumSweep: 8 }, 1)
+  const rise = soloVoice({ ...KICK_ALONE, drumSweep: -1 }, 1)
+  expect(start(stock)).toBeGreaterThan(tail(stock) * 1.5)
+  expect(start(zap)).toBeGreaterThan(start(stock) * 1.5)
+  expect(start(rise)).toBeLessThan(tail(rise) * 0.7)
+})
+
+test('the metal bank on the tanks’ bias turns the kick into a clang', () => {
+  const centroid = (fm: number) =>
+    spectrum(
+      slice(soloVoice({ ...KICK_ALONE, drumBankFm: fm }, 1.2), 0.25, 1),
+      SR,
+      2048,
+    ).centroid
+  expect(centroid(1)).toBeGreaterThan(centroid(0) * 4)
+})
+
+// Two hats in a row are two different hats because nothing stops the bank. A
+// bank reset by the kick's swing starts every hat struck with a kick on the
+// same edge.
+test('a bank synced to the kick makes every hat on a kick the same hat', () => {
+  const hat = (step: number, sync: number) => {
+    const at: Partial<Controls> = {
+      drumBpm: 60,
+      drumKick: stepMask(step),
+      drumMetal: 1,
+      drumBankSync: sync,
+    }
+    const t = step * 0.25
+    const both = slice(
+      soloVoice({ ...at, drumOpen: stepMask(step) }, 1.2),
+      t,
+      t + 0.3,
+    )
+    const kick = slice(soloVoice(at, 1.2), t, t + 0.3)
+    return both.map((v, i) => v - kick[i]!)
+  }
+  const apart = (sync: number) => {
+    const a = hat(1, sync)
+    const b = hat(2, sync)
+    return rms(a.map((v, i) => v - b[i]!)) / rms(a)
+  }
+  expect(apart(0)).toBeGreaterThan(0.8)
+  expect(apart(1)).toBeLessThan(0.3)
+})
+
 // A wire held flat out by the contact pad, so a lane reads as a turned knob.
 const held = (dest: number, depth = 1): Partial<Controls> => ({
   mod0Src: 5,

@@ -1,6 +1,6 @@
 ---
 name: drum-bends
-description: Ranked further bends for the drum machine: a supply for the metal bank, the metal bank into the tanks, a sweep trimmer, the pattern as a circulating shift register.
+description: Ranked further bends for the drum machine: a supply for the metal bank, tank-to-tank coupling, audio on the DAC reference, the pattern as a circulating shift register.
 ---
 
 # Further bends for the drum machine
@@ -11,7 +11,8 @@ the ones that are cheap and the ones that change how the kit sounds with no
 knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 3 (the accent on the data bus) and 8
-(`DEST.drumBpm`) and 10 (the sample ROM knife), plus the counter's reset wire
+(`DEST.drumBpm`), 10 (the sample ROM knife), 11 (`drumBankFm`,
+`drumBankSync`) and 12 (`drumSweep`), plus the counter's reset wire
 (`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other numbered item is still a
 candidate.
 
@@ -342,14 +343,17 @@ address wires turns out to be worth having.
   the kick and swoop with it. A sync once a cycle is a different sound from the
   sync once a trigger that "Not proposed" below turns down.
 
-Cost: small; sync needs a `MetalBank.sync()`.
+**Built.** FM goes through zero: `BANK_FM` is 12× the resting tuning, because
+under 1× the bank runs too fast against a 48 Hz kick for the index to reach
+anything audible. The level drops about 4× at the top of the travel.
 
 ## 12. A sweep trimmer
 
 `TANKS[t].sweep` is a constant. A knob from about −1 to 4 gives Syndrum zaps at
 the top and kicks that rise at the bottom. `BridgedT.process` computes
 `w = f * (1 + sweep * env)`, which goes negative and blows the filter up, so the
-negative end needs a floor. Cost: very small.
+negative end needs a floor. **Built** as `drumSweep`, −1 to 8, with
+`SWEEP_FLOOR` at three octaves down.
 
 ## 13. Tank-to-tank coupling
 

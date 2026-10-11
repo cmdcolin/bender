@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 353 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 356 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 97 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -205,7 +205,7 @@ too — the knife goes on and the rows under it say which controls that was:
   lands in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>42 controls</summary>
+<summary>45 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -216,6 +216,9 @@ too — the knife goes on and the rows under it say which controls that was:
 | Tune            | 0.125× to 8×                                                                                                       | The pitch trimmer inside the kit: every struck voice moves together                                                       |
 | Decay           | 0.25× to 16×                                                                                                       | Stretches or chokes every envelope at once                                                                                |
 | Ring            | off to full                                                                                                        | How much of each swing the transistor around the kick, tom and snare hands back                                           |
+| Sweep           | −1× to +8×                                                                                                         | The bias trimmer behind the swoop: how far above their resting pitch the kick, tom and snare networks start on a hard hit |
+| Bank FM         | off to full                                                                                                        | A wire from the metal bank’s squarer into the bias of the kick, tom and snare networks                                    |
+| Bank sync       | off, to the kick, to the tom                                                                                       | Resets all six metal oscillators each time the kick or tom network swings up through zero                                 |
 | Trigger pulse   | 0.05 to 8 ms                                                                                                       | How long the one-shot holds the trigger line down                                                                         |
 | Snappy          | off to full                                                                                                        | What the snare is made of                                                                                                 |
 | Noise bias      | off to full                                                                                                        | How hard the kit’s one noise transistor is biased                                                                         |

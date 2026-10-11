@@ -407,6 +407,27 @@ so a big swing is a high tuning that comes down as the swing does. Hit it harder
 and the swoop starts higher and lasts longer — an accent is a pitch as well as a
 weight, which no envelope shape can say.
 
+**Sweep** is the bias trimmer behind that swoop, as a multiple of where the kit
+shipped:
+
+- At 1 the kit swoops as it shipped.
+- At 8 a kick starts several octaves up and falls like a Syndrum zap.
+- Below 0 a hard swing pulls the tuning down instead, so a kick starts low and
+  rises as it rings out. Three octaves under the resting pitch is the floor.
+
+**Bank FM** solders the metal bank's squarer onto the bias of the kick, tom and
+snare networks, so the bank's clatter shakes their tuning. A little turns a kick
+metallic. Past about a third of the travel the tuning swings through zero, the
+network runs backwards for part of each swing, and the kick becomes a quieter,
+brighter clang: at the top its spectral centroid sits near 500 Hz against 67 Hz
+stock.
+
+**Bank sync** resets all six metal oscillators each time the kick or tom swings
+up through zero. While that drum rings, the hats, cowbell and cymbal repeat at
+its pitch and fall with its swoop, and every hat struck with a kick comes out
+the same hat. Once the drum stops, the bank runs free again. With Bank FM up as
+well, the bank shakes the network that resets the bank.
+
 **Trigger pulse** is how long the one-shot holds that line down. The charge is
 the same either way, so this is where it goes rather than how much of it there
 is: narrow is a tall spike that gets through the coupling cap as a click and

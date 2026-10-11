@@ -152,7 +152,10 @@ the cowbell and roughening the hats together. **Metal** blends between that bank
 and the noise transistor the hat used to be made of; **Cymbal tone** slides the
 cymbal between a crash and a splash. The two hats share a cap — writing a hat
 step under a ringing open hat cuts it short, the way a foot does — and **Choke**
-moves that resistor to any pair of voices. **Ring trigger** lets a ringing kick,
+moves that resistor to any pair of voices. **Sweep** turns the kick's swoop into
+a zap or runs it backwards into a rise, **Bank FM** shakes the drums' tuning
+with the metal bank until the kick clangs, and **Bank sync** locks the metal
+voices to the kick's pitch while it rings. **Ring trigger** lets a ringing kick,
 tom or snare strike other voices once a cycle, and **Counter reset** sends the
 bar back to step one whenever a chosen voice strikes; see
 [BENDS.md](BENDS.md#the-counters-own-clock).

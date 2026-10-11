@@ -15,6 +15,10 @@ const KNEE = 1.4
 const CEILING = 2.2
 const OVER = CEILING - KNEE
 
+// The lowest a negative sweep can pull the tuning, as a fraction of where it
+// rests: three octaves down.
+const SWEEP_FLOOR = 0.125
+
 export const rail = (x: number): number => {
   const a = Math.abs(x)
   if (a <= KNEE) return x
@@ -60,7 +64,8 @@ export class BridgedT {
    * sample; `rate` the fraction of itself the swing loses each sample, which at
    * zero is a tank that never stops and under zero one that grows into its own
    * clipping; `sweep` how far a full swing carries the tuning above where it
-   * rests.
+   * rests. With a negative sweep the tuning drops below that instead, as far as
+   * a floor where the network still rings.
    *
    * A loss per sample rather than a damping fraction, because a damping
    * fraction is a number of cycles and a tank asked for a fixed number of
@@ -70,7 +75,10 @@ export class BridgedT {
    * goes on meaning the time it has always meant.
    */
   process(drive: number, f: number, rate: number, sweep: number): number {
-    const w = Math.min(f * (1 + sweep * this.env), 1)
+    const w = Math.min(
+      Math.max(f * Math.max(1 + sweep * this.env, SWEEP_FLOOR), -1),
+      1,
+    )
     this.lp = flushDenormal(this.lp + w * this.bp)
     this.bp = rail(this.bp + drive - w * this.lp - 2 * rate * this.bp)
     this.env = Math.sqrt(this.bp * this.bp + this.lp * this.lp)
