@@ -2,6 +2,31 @@
 
 All notable changes to bender are documented here.
 
+## [1.4.0](https://github.com/cmdcolin/bender/compare/v1.3.0...v1.4.0) - 2026-10-11
+
+### Features
+- *(ui)* [`4213596`](https://github.com/cmdcolin/bender/commit/42135965d6d69e431a35d314766130b19a313c09) draw the fm board's keys as piano keys
+- *(ui)* [`3498e1c`](https://github.com/cmdcolin/bender/commit/3498e1c77f82c696cc377839364e74afaac0df5e) give every keybed chunkier, mismatched toy keys and crooked badges
+- *(dsp)* [`1b50b6f`](https://github.com/cmdcolin/bender/commit/1b50b6fb349cc2f18e54cd71f4fef270c71a4607) crosstalk, scan and a loop wire on the toy chip
+- *(ui)* [`d5563c9`](https://github.com/cmdcolin/bender/commit/d5563c935eba3467f1e54234e7e23967b059e514) bend keys, sixteen throws off the dice on the letter keys
+- *(dsp)* [`2acee09`](https://github.com/cmdcolin/bender/commit/2acee09cd575d1009f5d15fb85f803ac8ae1977a) a reset wire on the kit's counter, and a ring that strikes other voices
+- *(dsp)* [`5a336b8`](https://github.com/cmdcolin/bender/commit/5a336b888d80f0b9afdb26670357782c64555692) six more toy chip bends
+- *(dsp)* [`ad0dc29`](https://github.com/cmdcolin/bender/commit/ad0dc2975bcfacf54d73da75a6ac553e11b9a3dd) a knife on the sampled kit's ROM
+- *(dsp)* [`947ae58`](https://github.com/cmdcolin/bender/commit/947ae58d2c9ea1a0e89d8bb135b5a923553a07da) soft sync and linear FM on the mono synth
+- *(dsp)* [`f25bc0e`](https://github.com/cmdcolin/bender/commit/f25bc0e8c63fd7ce1a5c507785e6e15782b9bbe4) patch bay lanes for the new toy chip bends
+- *(dsp)* [`a989b54`](https://github.com/cmdcolin/bender/commit/a989b54bbfab0076a4c9213efa77fa3d350c4b14) a sweep trimmer on the drum networks, and the metal bank wired into them
+- *(ui)* [`dff6f6e`](https://github.com/cmdcolin/bender/commit/dff6f6e7429f3f70d1bc426271361e91cd04dece) go wild, heat, swell, a bend row on the kit, bend keys on pads
+- *(home)* [`8f16644`](https://github.com/cmdcolin/bender/commit/8f16644711ca55531863f3e69474d633694400fc) drop the pitch and demos blurb, leave the headline and picture
+
+### Fixes
+- *(ui)* [`3df0d50`](https://github.com/cmdcolin/bender/commit/3df0d50617daed4c7e29dec30107150fc86cf380) light a held throw pad
+
+### Documentation
+- [`580787d`](https://github.com/cmdcolin/bender/commit/580787dcaa0d06d74fb6709436347dbc9c7845e5) file the next drum bends and mark reset and ring trigger built
+
+### Other Changes
+- [`e2ab4f2`](https://github.com/cmdcolin/bender/commit/e2ab4f2bb65b96848e6ffcce55d62381d463b733) Triage agent-docs into reference, ideas and handoffs
+
 ## [1.3.0](https://github.com/cmdcolin/bender/compare/v1.2.0...v1.3.0) - 2026-10-05
 
 ### Features
