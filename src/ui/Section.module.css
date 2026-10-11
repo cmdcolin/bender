@@ -199,12 +199,17 @@
   composes: chip from './button.module.css';
 }
 
-/* The two verbs at the head of the row, square where the cuts beside them are
-   pills: a cut is a board with a name, and these two are things you do to
+/* The verbs at the head of the row, square where the cuts beside them are
+   pills: a cut is a board with a name, and these are things you do to
    whatever board is there. A row where both look alike is a row where 'roll'
    reads as one more named glitch. */
 .partVerb {
   composes: chipQuiet from './button.module.css';
+  border-radius: 3px;
+}
+
+.partVerbOff {
+  composes: chipOff from './button.module.css';
   border-radius: 3px;
 }
 

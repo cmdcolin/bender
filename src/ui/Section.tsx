@@ -34,6 +34,7 @@ import {
   rollKeys,
 } from './presets'
 import { scrollIntoPanel } from './reveal'
+import { rollIn, undoRoll, useCanUndoRoll } from './rollBack'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider'
 import { Tip } from './Tip'
@@ -112,6 +113,39 @@ function parts(group: Group): Part[] {
 const movedIn = (sliders: SliderDef[], c: Controls) =>
   sliders.filter(d => c[d.key] !== DEFAULT_CONTROLS[d.key]).length
 
+function UndoRoll({
+  scope,
+  what,
+  seconds,
+  fold = false,
+}: {
+  scope: string
+  what: string
+  seconds: number
+  fold?: boolean
+}) {
+  const on = fold ? styles.partVerb : styles.verb
+  const off = fold ? styles.partVerbOff : styles.verbOff
+  const can = useCanUndoRoll(scope)
+  return (
+    <Tip
+      text={
+        can
+          ? `put ${what} back where it stood before its last roll, and leave every other control where it is now`
+          : `no roll of ${what} to take back`
+      }
+    >
+      <button
+        className={can ? on : off}
+        disabled={!can}
+        onClick={() => undoRoll(scope, seconds)}
+      >
+        undo
+      </button>
+    </Tip>
+  )
+}
+
 // The verbs and the cuts for one heading, in a row above the rows they move.
 // Nothing here is a control: pressing one moves the controls underneath, which
 // is the whole of what it is for — the settings are hard to read cold, and this
@@ -145,6 +179,7 @@ function PartVerbs({
 }) {
   const wired = useBoardValue(c => cutWired(group.name, part, c))
   const keys = rows.map(d => d.key)
+  const scope = `${group.name} › ${part}`
   return (
     <div className={styles.cuts}>
       <Tip
@@ -153,7 +188,8 @@ function PartVerbs({
         <button
           className={styles.partVerb}
           onClick={() =>
-            engine.morphTo(
+            rollIn(
+              scope,
               rollKeys(engine.controls.get(), keys, Math.random, true),
               seconds,
             )
@@ -162,6 +198,7 @@ function PartVerbs({
           roll
         </button>
       </Tip>
+      <UndoRoll scope={scope} what={part} seconds={seconds} fold />
       <Tip
         text={
           moved > 0
@@ -445,10 +482,9 @@ export function OpenGroup({
     return () => cancelAnimationFrame(raf)
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- scrolls again each time a different stage opens
   }, [group.name])
-  // Through the morph, so a stage travels the way a whole board does and lands
-  // in the walk — a roll you don't like is one ctrl+z away.
   const roll = () =>
-    engine.morphTo(
+    rollIn(
+      group.name,
       rollGroup(group, engine.controls.get(), Math.random),
       seconds,
     )
@@ -470,6 +506,7 @@ export function OpenGroup({
             roll
           </button>
         </Tip>
+        <UndoRoll scope={group.name} what={group.name} seconds={seconds} />
         <Tip text={putBackTitle(group, touched)}>
           <button
             className={touched > 0 ? styles.reset : styles.verbOff}

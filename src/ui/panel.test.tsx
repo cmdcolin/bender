@@ -417,6 +417,49 @@ test('a fold puts back only what is under it', () => {
   expect(engine.controls.get().fmBright).toBe(0.9)
 })
 
+test('undo on a fold takes back its roll and keeps a knob turned since', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  openFmChip()
+  fireEvent.click(knife())
+  const was = { ...engine.controls.get() }
+  act(() => {
+    fireEvent.click(inFold(knife(), /^roll$/))
+  })
+  act(() => engine.set('fmBright', 0.9))
+  act(() => {
+    fireEvent.click(inFold(knife(), /^undo$/))
+  })
+  expect({ ...engine.controls.get(), fmBright: was.fmBright }).toEqual(was)
+  expect(engine.controls.get().fmBright).toBe(0.9)
+  expect((inFold(knife(), /^undo$/) as HTMLButtonElement).disabled).toBe(true)
+})
+
+test('undo on a stage walks back its rolls one at a time', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  openFmChip()
+  const undo = () =>
+    screen.getAllByRole('button', { name: /^undo$/ })[0] as HTMLButtonElement
+  expect(undo().disabled).toBe(true)
+  const roll = () => screen.getAllByRole('button', { name: /^roll$/ })[0]!
+  const boot = { ...engine.controls.get() }
+  act(() => {
+    fireEvent.click(roll())
+  })
+  const first = { ...engine.controls.get() }
+  act(() => {
+    fireEvent.click(roll())
+  })
+  act(() => {
+    fireEvent.click(undo())
+  })
+  expect(engine.controls.get()).toEqual(first)
+  act(() => {
+    fireEvent.click(undo())
+  })
+  expect(engine.controls.get()).toEqual(boot)
+  expect(undo().disabled).toBe(true)
+})
+
 test('a fold with nothing moved under it offers no way back', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   openFmChip()
