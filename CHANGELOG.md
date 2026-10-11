@@ -2,6 +2,13 @@
 
 All notable changes to bender are documented here.
 
+## [1.4.1](https://github.com/cmdcolin/bender/compare/v1.4.0...v1.4.1) - 2026-10-11
+
+### Features
+- *(home)* [`81bc731`](https://github.com/cmdcolin/bender/commit/81bc731f3c7ca3bb6152d2ce4c803c5f6b442a16) keep one demo on the landing page
+- *(home)* [`2c8330d`](https://github.com/cmdcolin/bender/commit/2c8330d2904193d10bd31a222a3448acf6911482) a gallery row of panel close-ups under the hero
+- *(ui)* [`2f17a91`](https://github.com/cmdcolin/bender/commit/2f17a917b22271b596979cba6e878c3db692af87) an undo beside each stage and fold roll
+
 ## [1.4.0](https://github.com/cmdcolin/bender/compare/v1.3.0...v1.4.0) - 2026-10-11
 
 ### Features
