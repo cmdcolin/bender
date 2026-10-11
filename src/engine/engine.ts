@@ -214,9 +214,6 @@ export function mergeNotes(
   return next
 }
 
-// Owns the AudioContext, the worklet node and the control values. The UI
-// writes controls here; the engine coalesces them into one packed post per
-// animation frame.
 // An iPhone with its ring switch on silent mutes Web Audio as an ambient sound.
 // Safari 16.4 and later let a page say it plays media, which keeps it audible.
 function playThroughSilentSwitch() {
@@ -225,6 +222,9 @@ function playThroughSilentSwitch() {
     Reflect.set(session, 'type', 'playback')
 }
 
+// Owns the AudioContext, the worklet node and the control values. The UI
+// writes controls here; the engine coalesces them into one packed post per
+// animation frame.
 export class Engine {
   readonly controls = createStore<Controls>({ ...DEFAULT_CONTROLS })
 
