@@ -24,7 +24,7 @@
   min-height: var(--ctl-h);
   font-size: var(--fs-sm);
   line-height: 1.2;
-  padding: 0 8px;
+  padding: 0 var(--space-md);
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
@@ -144,7 +144,7 @@
   border-left: none;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
-  padding: 0 5px;
+  padding: 0 var(--space-xs);
 }
 
 .splitCaretOn {
@@ -160,7 +160,7 @@
   min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
   line-height: 1.2;
-  padding: 0 7px;
+  padding: 0 var(--space-sm);
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
@@ -222,7 +222,7 @@
   min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
   line-height: 1.2;
-  padding: 0 7px;
+  padding: 0 var(--space-sm);
   background: none;
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
@@ -297,7 +297,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.2;
-  padding: 0 9px;
+  padding: 0 var(--space-md);
   background: var(--switch);
   color: var(--fg2);
   border: 1px solid var(--case-edge);
@@ -348,7 +348,7 @@
 .select {
   height: var(--ctl-h);
   font-size: var(--fs-sm);
-  padding: 0 4px;
+  padding: 0 var(--space-xs);
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
@@ -392,6 +392,6 @@
   .chip,
   .pick,
   .cap {
-    padding: 0 10px;
+    padding: 0 var(--space-md);
   }
 }

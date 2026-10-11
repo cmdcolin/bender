@@ -11,8 +11,8 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
+  gap: var(--space-md);
+  padding: var(--space-md);
   overflow-y: auto;
 }
 
@@ -26,14 +26,14 @@
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 8px;
+  gap: var(--space-md);
 }
 
 .panel {
   width: 470px;
   flex: none;
   overflow-y: auto;
-  padding: 0 12px 8px;
+  padding: 0 var(--space-lg) var(--space-md);
   border-left: 1px solid var(--border);
   background: var(--surface);
 }
@@ -51,7 +51,7 @@
   top: 0;
   z-index: 2;
   margin: 0 -12px;
-  padding: 8px 12px 0;
+  padding: var(--space-md) var(--space-lg) 0;
   background: var(--surface);
   border-bottom: 1px solid var(--border-quiet);
 }
@@ -65,7 +65,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--gap-ctl);
-  padding-bottom: 6px;
+  padding-bottom: var(--space-sm);
 }
 
 /* Brand and build as one press. Bare of everything a button is drawn with —
@@ -74,7 +74,7 @@
 .nameplate {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--space-sm);
   padding: 0;
   background: none;
   border: none;
@@ -122,7 +122,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gap-ctl);
-  padding-bottom: 6px;
+  padding-bottom: var(--space-sm);
 }
 
 /* Aliases, so the row's markup reads in its own words: the shapes and every
@@ -236,7 +236,7 @@
   color: var(--fg4);
   border: 1px dashed var(--border);
   border-radius: var(--ctl-radius);
-  padding: 3px 8px;
+  padding: var(--space-xs) var(--space-md);
 }
 
 .dropHot {
@@ -280,7 +280,7 @@
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: var(--ctl-radius);
-  padding: 0 4px;
+  padding: 0 var(--space-xs);
 }
 
 .warn {
@@ -337,8 +337,8 @@
     position: sticky;
     top: 0;
     z-index: 2;
-    margin: 0 -10px;
-    padding: 8px 10px;
+    margin: 0 -8px;
+    padding: var(--space-md);
     background: var(--bg);
     border-bottom: 1px solid var(--border-quiet);
   }

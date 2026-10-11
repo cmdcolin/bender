@@ -20,7 +20,7 @@
 }
 
 .doc h1 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-md);
   font-size: 2rem;
   line-height: 1.2;
 }
@@ -28,12 +28,12 @@
 .doc h2 {
   margin: 2.5rem 0 0.75rem;
   font-size: 1.25rem;
-  padding-top: 8px;
+  padding-top: var(--space-md);
   border-top: 1px solid var(--border-faint);
 }
 
 .doc h2:first-of-type {
-  margin-top: 24px;
+  margin-top: var(--space-2xl);
   padding-top: 0;
   border-top: none;
 }
@@ -48,13 +48,13 @@
   font-size: 0.9em;
   background: var(--surface-raised);
   border: 1px solid var(--border-quiet);
-  border-radius: 3px;
+  border-radius: var(--ctl-radius);
   padding: 0.1em 0.35em;
 }
 
 .doc pre {
-  margin: 0 0 14px;
-  padding: 12px 14px;
+  margin: 0 0 var(--space-lg);
+  padding: var(--space-lg);
   overflow-x: auto;
   background: var(--surface);
   border: 1px solid var(--border-quiet);
@@ -68,7 +68,7 @@
 }
 
 .doc hr {
-  margin: 28px 0;
+  margin: var(--space-2xl) 0;
   border: none;
   border-top: 1px solid var(--border-faint);
 }

@@ -1,8 +1,8 @@
 .lamp {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 7px;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: var(--ctl-radius);

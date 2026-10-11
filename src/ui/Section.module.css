@@ -96,7 +96,7 @@
 }
 
 .partName {
-  padding: 0 7px;
+  padding: 0 var(--space-sm);
   background: none;
   border: none;
   color: inherit;
@@ -271,6 +271,6 @@
   }
   .partName,
   .partReset {
-    padding: 0 10px;
+    padding: 0 var(--space-md);
   }
 }

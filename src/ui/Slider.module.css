@@ -6,7 +6,7 @@
     );
   align-items: center;
   gap: var(--space-sm);
-  margin: 3px 0;
+  margin: var(--space-2xs) 0;
 }
 
 /* The name is also the door to the row's help: a click pins the bubble open,
@@ -110,7 +110,7 @@
   min-height: var(--ctl-h-sm);
   font-size: var(--fs-xs);
   line-height: 1.2;
-  padding: 0 5px;
+  padding: 0 var(--space-xs);
   background: var(--surface-raised);
   color: var(--fg3);
   border: 1px solid var(--border-quiet);
@@ -167,14 +167,14 @@
    word never moves, and the number beside it is the answer to "did that press
    land". */
 .tapCount {
-  margin-left: 3px;
+  margin-left: var(--space-xs);
   color: var(--accent);
 }
 
 /* The caret on the chip, saying the wire folds out under the row rather than
    the press being the whole of what it does. */
 .modCaret {
-  padding-left: 3px;
+  padding-left: var(--space-xs);
   font-size: 8px;
   opacity: 0.8;
 }
