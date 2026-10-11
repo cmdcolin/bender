@@ -212,6 +212,8 @@ const LEAK_FLOOR = 0.3
 // resolution — the same place a real chip runs out of counts. The output cap
 // centres the result, so a narrow tap swings the same peak-to-peak as a square
 // but comes out as a spike carrying less of the energy.
+const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
+
 const pulse = (phase: number, duty: number, inc: number) => {
   const d = Math.max(duty, inc)
   return phase < d ? 2 * (1 - d) : -2 * d
@@ -792,23 +794,53 @@ export class ToyChip implements Stage {
       bay.read(DEST.chipAddrFault),
     )
     this.busCut = p[IDX.chipBusCut]!
-    this.loopFrom = Math.round(p[IDX.chipLoopFrom]!) - 1
-    this.loopTo = Math.round(p[IDX.chipLoopTo]!)
-    const cross = p[IDX.chipCrosstalk]! * CROSS_OCTAVES
-    const scanHz = scanRate(p[IDX.chipScan]!)
-    const pwmHz = pwmRate(p[IDX.chipPwm]!)
-    this.envCap = Math.round(p[IDX.chipEnvCap]!)
-    this.shortAmt = p[IDX.chipShort]!
-    this.bankLine = Math.round(p[IDX.chipBankLine]!) - 1
-    this.bankFault = Math.round(p[IDX.chipBankFault]!)
-    const divLine = Math.round(p[IDX.chipDivLine]!) - 1
-    const divFault = Math.round(p[IDX.chipDivFault]!)
+    this.loopFrom =
+      hop(
+        p[IDX.chipLoopFrom]!,
+        ROM_DATA_LINES + 1,
+        bay.read(DEST.chipLoopFrom),
+      ) - 1
+    this.loopTo = hop(
+      p[IDX.chipLoopTo]!,
+      LOOP_TARGETS.length,
+      bay.read(DEST.chipLoopTo),
+    )
+    const crossBase = p[IDX.chipCrosstalk]!
+    const scanBase = p[IDX.chipScan]!
+    const pwmBase = p[IDX.chipPwm]!
+    const shortBase = p[IDX.chipShort]!
+    const modCross = bay.read(DEST.chipCrosstalk)
+    const modScan = bay.read(DEST.chipScan)
+    const modPwm = bay.read(DEST.chipPwm)
+    const modShort = bay.read(DEST.chipShort)
+    this.envCap = hop(
+      p[IDX.chipEnvCap]!,
+      ENV_CAPS.length,
+      bay.read(DEST.chipEnvCap),
+    )
+    this.bankLine =
+      hop(p[IDX.chipBankLine]!, BANK_LINES + 1, bay.read(DEST.chipBankLine)) - 1
+    this.bankFault = hop(
+      p[IDX.chipBankFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.chipBankFault),
+    )
+    const divLine =
+      hop(p[IDX.chipDivLine]!, DIV_LINES + 1, bay.read(DEST.chipDivLine)) - 1
+    const divFault = hop(
+      p[IDX.chipDivFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.chipDivFault),
+    )
     if (divLine !== this.divLine || divFault !== this.divFault) {
       this.divLine = divLine
       this.divFault = divFault
       this.divStamp++
     }
-    const ghostCols = GHOST_COLS[Math.round(p[IDX.chipGhost]!)] ?? 0
+    const ghostCols =
+      GHOST_COLS[
+        hop(p[IDX.chipGhost]!, GHOST_COLS.length, bay.read(DEST.chipGhost))
+      ] ?? 0
     if (ghostCols !== this.ghostCols) {
       this.ghostCols = ghostCols
       this.regroundGhosts()
@@ -907,6 +939,14 @@ export class ToyChip implements Stage {
     for (let i = 0; i < io.n; i++) {
       this.counterFault.step()
       const latched = rail.latched
+      const cross =
+        (modCross ? clamp01(crossBase + modCross[i]!) : crossBase) *
+        CROSS_OCTAVES
+      const scanHz = scanRate(
+        modScan ? clamp01(scanBase + modScan[i]!) : scanBase,
+      )
+      const pwmHz = pwmRate(modPwm ? clamp01(pwmBase + modPwm[i]!) : pwmBase)
+      this.shortAmt = modShort ? clamp01(shortBase + modShort[i]!) : shortBase
       // clock bend: the pot shorts the RC — wildly fast and unstable
       let clock = clockX
       if (spot === 1 && pot > 0) {

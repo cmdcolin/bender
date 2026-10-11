@@ -93,6 +93,18 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   monoCutoff: 'Mono synth',
   monoEmph: 'Mono synth',
   monoPitch: 'Mono synth',
+  chipCrosstalk: 'Toy keyboard',
+  chipScan: 'Toy keyboard',
+  chipPwm: 'Toy keyboard',
+  chipShort: 'Toy keyboard',
+  chipEnvCap: 'Toy keyboard',
+  chipGhost: 'Toy keyboard',
+  chipLoopFrom: 'Toy keyboard',
+  chipLoopTo: 'Toy keyboard',
+  chipBankLine: 'Toy keyboard',
+  chipBankFault: 'Toy keyboard',
+  chipDivLine: 'Toy keyboard',
+  chipDivFault: 'Toy keyboard',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

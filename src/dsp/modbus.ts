@@ -122,8 +122,22 @@ export const DEST = {
   monoCutoff: 76,
   monoEmph: 77,
   monoPitch: 78,
+  // The toy chip's pins, its envelope cap, its key matrix and the knives on its
+  // song and divider wires.
+  chipCrosstalk: 79,
+  chipScan: 80,
+  chipPwm: 81,
+  chipShort: 82,
+  chipEnvCap: 83,
+  chipGhost: 84,
+  chipLoopFrom: 85,
+  chipLoopTo: 86,
+  chipBankLine: 87,
+  chipBankFault: 88,
+  chipDivLine: 89,
+  chipDivFault: 90,
 } as const
-export const N_DEST = 79
+export const N_DEST = 91
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

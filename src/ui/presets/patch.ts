@@ -129,6 +129,18 @@ const LANDINGS: Landing[] = [
   at('mono cutoff', ['monoLevel']),
   at('mono emphasis', ['monoLevel']),
   at('mono pitch', ['monoLevel']),
+  at('toy crosstalk', ['chipLevel']),
+  at('toy scan', ['chipLevel']),
+  at('toy PWM', ['chipLevel']),
+  at('toy short', ['chipLevel']),
+  at('toy env cap', ['chipLevel']),
+  at('toy ghosts', ['chipLevel']),
+  at('toy loop wire', ['chipLevel']),
+  at('toy loop onto', ['chipLevel', 'chipLoopFrom']),
+  at('toy song line', ['chipLevel']),
+  at('toy song fault', ['chipLevel', 'chipBankLine']),
+  at('toy divider line', ['chipLevel']),
+  at('toy divider fault', ['chipLevel', 'chipDivLine']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

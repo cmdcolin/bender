@@ -4,6 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune'
 import { buildBender, buildChain, type BuiltChain } from '../build'
+import { DEST } from '../modbus'
 import { spectrum } from '../spectrum'
 import { BLOCK } from '../stage'
 import {
@@ -565,6 +566,55 @@ test('a divider wire held high moves a held note off the keys', () => {
   expect(held({})).toBeCloseTo(220, -1)
   // A3 loads 512; N8 high makes it 768, two thirds of the pitch.
   expect(held({ chipDivLine: 9, chipDivFault: FAULT_TO_V })).toBeCloseTo(
+    (220 * 512) / 768,
+    -1,
+  )
+})
+
+// A finger held on the body pad, wired onto one of the chip's lanes.
+const padWire = (dest: number, depth = 1): Partial<Controls> => ({
+  bodyX: 1,
+  mod0Src: 5,
+  mod0Dest: dest,
+  mod0Depth: depth,
+})
+
+test('a wire on the scan lane arpeggiates a held chord with the knob at zero', () => {
+  const picks = loudestNotes(
+    tail(
+      renderBender({ ...CHIP_ONLY, ...padWire(DEST.chipScan) }, 3, holdChord),
+      2,
+    ),
+  )
+  expect(new Set(picks).size).toBe(4)
+})
+
+test('a wire on the envelope cap lane swells a held key in', () => {
+  const x = renderBender(
+    { ...CHIP_ONLY, ...padWire(DEST.chipEnvCap, 0.34) },
+    1,
+    b => b.toyChip.noteOn(0),
+  )
+  expect(rms(x.subarray(SR * 0.3, SR * 0.4))).toBeGreaterThan(
+    rms(x.subarray(0, SR * 0.05)) * 3,
+  )
+})
+
+test('a wire on the divider line lane retunes a held note', () => {
+  const held = (overrides: Partial<Controls>) =>
+    pitchHz(
+      tail(
+        renderBender(
+          { ...CHIP_ONLY, chipDivFault: FAULT_TO_V, ...overrides },
+          1,
+          b => b.toyChip.noteOn(0),
+        ),
+        0.5,
+      ),
+    )
+  expect(held({})).toBeCloseTo(220, -1)
+  // Nine wires up the thirteen-choice list is N8, the same as the knob test.
+  expect(held(padWire(DEST.chipDivLine, 9 / 13))).toBeCloseTo(
     (220 * 512) / 768,
     -1,
   )

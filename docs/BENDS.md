@@ -729,6 +729,15 @@ destination, **starve**, isn't a stage at all — it's the shared rail, so a wir
 landed there reaches everything powered from it at once, whether that's a drum
 hit browning the chip out on every kick or an LFO that ages the rail in time.
 
+Twelve lanes reach [the toy chip's pins](#the-toy-chips-pins): **crosstalk**,
+**scan**, **PWM** and **short** move every sample, and the envelope cap, ghost
+keys, loop wire and the song and divider knives step through their choices once
+a block, the way the other knife lanes do.
+
+- Drum hit onto scan chops a held chord into an arpeggio on every kick.
+- An LFO onto the envelope cap turns notes backwards and leaky in turn.
+- The ROM step onto the divider line retunes the melody in time with itself.
+
 Five lanes reach the kit: **tempo**, **swing**, **chance**, **decay** and
 **ring**. Drum hit onto chance makes every hit raise the odds of the next maybe
 step, so fills feed themselves.

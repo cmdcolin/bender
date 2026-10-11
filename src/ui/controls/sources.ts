@@ -336,6 +336,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipCrosstalk',
+        lane: 'toy crosstalk',
         label: 'Crosstalk',
         min: 0,
         max: 1,
@@ -345,6 +346,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipScan',
+        lane: 'toy scan',
         label: 'Scan',
         min: 0,
         max: 1,
@@ -354,6 +356,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipPwm',
+        lane: 'toy PWM',
         label: 'Volume PWM',
         min: 0,
         max: 1,
@@ -363,6 +366,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipEnvCap',
+        lane: 'toy env cap',
         label: 'Envelope cap',
         min: 0,
         max: ENV_CAPS.length - 1,
@@ -373,6 +377,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipShort',
+        lane: 'toy short',
         label: 'Voice short',
         min: 0,
         max: 1,
@@ -382,6 +387,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipGhost',
+        lane: 'toy ghosts',
         label: 'Ghost keys',
         min: 0,
         max: GHOST_MODES.length - 1,
@@ -530,6 +536,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipLoopFrom',
+        lane: 'toy loop wire',
         part: 'knife on the bus',
         label: 'Loop wire',
         min: 0,
@@ -542,6 +549,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipLoopTo',
+        lane: 'toy loop onto',
         needs: c => c.chipLoopFrom > 0,
         part: 'knife on the bus',
         label: 'Loop onto',
@@ -554,6 +562,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipBankLine',
+        lane: 'toy song line',
         part: 'knife on the bus',
         label: 'Song line',
         min: 0,
@@ -566,6 +575,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipBankFault',
+        lane: 'toy song fault',
         needs: c => c.chipBankLine > 0,
         part: 'knife on the bus',
         label: 'Song fault',
@@ -578,6 +588,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipDivLine',
+        lane: 'toy divider line',
         part: 'knife on the bus',
         label: 'Divider line',
         min: 0,
@@ -590,6 +601,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'chipDivFault',
+        lane: 'toy divider fault',
         needs: c => c.chipDivLine > 0,
         part: 'knife on the bus',
         label: 'Divider fault',
