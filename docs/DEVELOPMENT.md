@@ -16,6 +16,11 @@ The site is an [Astro](https://astro.build) project with three pages:
 All three sit under `/bender/`, the path GitHub Pages serves the repo at, so the
 dev server has the app at `http://localhost:4321/bender/app/`.
 
+## Styling
+
+[DESIGN-SYSTEM.md](DESIGN-SYSTEM.md) lists the tokens, the button kinds and the
+rules for composing them.
+
 ## Testing
 
 `pnpm test` runs the DSP test suite, including a torture test that pins every
