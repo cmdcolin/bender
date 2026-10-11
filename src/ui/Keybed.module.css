@@ -253,7 +253,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--gap-ctl);
   margin-left: auto;
 }
 
@@ -267,7 +267,7 @@
 .octaves {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--gap-ctl-sm);
 }
 
 /* Where a stepped board is standing: the note its bottom key plays, in the
@@ -336,10 +336,6 @@
     --bed-h: 88px;
     gap: 5px;
     padding: 6px 8px 9px;
-  }
-
-  .switches {
-    gap: 8px;
   }
 }
 

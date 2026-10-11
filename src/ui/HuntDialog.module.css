@@ -77,7 +77,7 @@
 
 .tray {
   display: flex;
-  gap: 4px;
+  gap: var(--gap-ctl);
   padding-bottom: 8px;
 }
 

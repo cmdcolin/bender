@@ -91,7 +91,7 @@
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--gap-ctl);
   padding: 2px 0;
 }
 

@@ -87,7 +87,7 @@
 .switches {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--gap-ctl);
   margin-left: auto;
 }
 

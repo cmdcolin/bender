@@ -10,7 +10,7 @@
 .head {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--gap-ctl-sm);
   margin-bottom: 5px;
 }
 
@@ -172,7 +172,7 @@
 .loop {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--gap-ctl-sm);
 }
 
 .loopLabel {

@@ -62,8 +62,9 @@
    right is where a plate's panic button belongs anyway. */
 .head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--gap-ctl);
   padding-bottom: 6px;
 }
 
@@ -120,7 +121,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: var(--gap-ctl);
   padding-bottom: 6px;
 }
 
@@ -188,7 +189,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: var(--gap-ctl);
 }
 
 .ioRow > *,

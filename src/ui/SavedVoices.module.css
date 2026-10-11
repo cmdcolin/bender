@@ -20,7 +20,7 @@
 
 .saveRow {
   display: flex;
-  gap: 4px;
+  gap: var(--gap-ctl);
 }
 
 .nameInput {
@@ -136,7 +136,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: var(--gap-ctl);
 }
 
 /* A question rather than a verb, so it is drawn as one: text beside the button

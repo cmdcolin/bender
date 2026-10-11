@@ -30,7 +30,7 @@
 .presets {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: var(--gap-ctl-sm);
   padding-bottom: 5px;
 }
 
