@@ -174,7 +174,7 @@ function Pads() {
   )
 }
 
-// The hold row's throws on pads. A pad holds its throw while it is down, so a
+// The bend board's throws on pads. A pad holds its throw while it is down, so a
 // bound pad plays an effect the way another plays a drum.
 function ThrowPads() {
   const bound = useStoreValue(midi.throwBindings)

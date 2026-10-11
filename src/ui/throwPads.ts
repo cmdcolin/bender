@@ -31,7 +31,7 @@ const throwNamed = (name: string) =>
   bendDeal.get().find(k => bendName(k.letter) === name) ??
   null
 const throwName = (name: string) =>
-  isBendName(name) ? name : (throwNamed(name)?.name ?? null)
+  isBendName(name) ? name : (THROWS.find(t => t.name === name)?.name ?? null)
 const effectName = (control: string) => `effect:${control}`
 
 const readPad = (stored: object) => {
@@ -60,7 +60,7 @@ export const parseEffectPads = (raw: string | null): EffectPadMap =>
 type Target = { throw: string } | { effect: ControlKey }
 
 // A pad held down holds its throw or pushes its control, and lifting it springs
-// the board back, the way the hold row's buttons and keys do. A pad binds to one
+// the board back, the way the bend board's keys do. A pad binds to one
 // target at a time.
 export class ThrowPads {
   readonly bindings = createStore<ThrowPadMap>(

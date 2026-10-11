@@ -12,6 +12,7 @@
     "arrive": "tsx scripts/arrive.ts",
     "audible": "tsx scripts/audible.ts",
     "bench": "tsx scripts/bench.ts",
+    "bend-ends": "tsx scripts/bend-ends.ts",
     "blocks": "tsx scripts/blocks.ts",
     "cold": "tsx scripts/cold.ts",
     "controls": "tsx scripts/controls.ts",

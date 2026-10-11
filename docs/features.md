@@ -1469,7 +1469,7 @@ same circuits and is playing the recording back.
 ## Scripts
 
 <details>
-<summary>37 commands</summary>
+<summary>38 commands</summary>
 
 | command             | what it does                                                                                                                                                                            |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1481,6 +1481,7 @@ same circuits and is playing the recording back.
 | `pnpm arrive`       | opens a link in headless Chrome and checks that the board arrives, the overlay says where to press, and pressing it plays — as sent, and with a full stop or a bracket stuck to the url |
 | `pnpm audible`      | takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible                                        |
 | `pnpm bench`        | what the chain costs per block, stage by stage                                                                                                                                          |
+| `pnpm bend-ends`    | renders each control at both ends of its travel and writes down the ends a bend key can be heard at                                                                                     |
 | `pnpm blocks`       | the distribution — p50 to p99.9, and how many blocks went over budget                                                                                                                   |
 | `pnpm cold`         | the first seconds, before anything has tiered up                                                                                                                                        |
 | `pnpm controls`     | lists every button and select on the panel by rendered height, with `--touch` for a finger                                                                                              |

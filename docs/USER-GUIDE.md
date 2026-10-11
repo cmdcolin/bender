@@ -404,31 +404,43 @@ memory, it's the 19th entry on the same selector.
 
 ## Throws
 
-The **hold** row under the run buttons pushes the board somewhere while you hold
-it and springs back when you let go: **spin** (`c`), **dive** (`v`), **brake**
-(`b`), **crash** (`n`), **drop** (`m`) and **crush** (`,`). A throw never lands
-in the link or the undo walk.
+The bend board under the run buttons draws the letter keys where they sit on a
+keyboard. A key pushes the board somewhere while you hold it and springs back
+when you let go. A throw never lands in the link or the undo walk.
 
-The **bend** row under it is sixteen more throws the dice dealt, one per letter
-key, each pushing a control or three to an end of its travel, or a pair that
-fight to opposite corners. A stage whose level is down comes up with the push,
-so every key does something. Press **bend** and the letters go to this row:
-`a s d f …` hold a bend key, shift pins one down until you press it again, `z`
-lets go of everything and `x` deals sixteen new ones. **Redeal** does the same
-with the mouse, and every pad takes a finger. No two keys share a control, so a
-chord of them is a chord.
+- **Top two rows:** sixteen bend keys the dice dealt. Each slams a control or
+  three to an end of its travel, and the key shows the stages you'll hear. A
+  stage whose level is down comes up with the push.
+- **Bottom row:** six throws chosen by hand: **spin** (`c`), **dive** (`v`),
+  **brake** (`b`), **crash** (`n`), **drop** (`m`) and **crush** (`,`). These
+  always answer the keyboard.
+- **`z` and `x`:** let go of every bend key, and deal sixteen new ones.
+
+The bend keys answer the letters once **letters → bends** is lit; otherwise the
+letters play the toy keyboard. Shift pins a bend key down until you press it
+again. Every key also takes a click or a finger.
+
+The dealer skips any end of a control that measured silent (`pnpm bend-ends`
+writes the table). No two keys share a control or bring up the same silent
+stage, so a chord of them is a chord. A key leaves a silent stage down when
+bringing it up would make the board more than 6 dB louder, as the feedback bus
+does.
 
 **⚡ go wild**, beside the run switches, runs both machines, brings the kit up
-if it is down, sends the letters to the bend row and deals a hand, all in one
+if it is down, sends the letters to the bend keys and deals a hand, all in one
 press. The switch is remembered across a reload, and a link with `?bend` on it
 opens the same way.
 
-The chips after **redeal** set how the next deal comes out. **tame** moves one
-control a key. **wild** moves one to three, with a fighting pair now and then.
-**wreck** always moves three, and a third of the keys solder a bay wire or a
-bend into the chain on top. **swell** ramps a key in over the morph time and
-lets it fall back over the same time, for a drone. **Redeal every** deals a new
-hand every bar, four or eight, counted while the kit runs.
+The chips beside the switch set how the next deal comes out:
+
+- **tame** moves one control a key
+- **wild** moves one to three, with a fighting pair now and then
+- **wreck** always moves three, and a third of the keys solder a bay wire or a
+  bend into the chain on top
+- **swell** ramps a key in over the morph time and lets it fall back over the
+  same time, for a drone
+- **redeal every** deals a new hand every bar, four or eight, counted while the
+  kit runs
 
 The kit's grid has a **bend** row under **echo**. A lit step fires the bend key
 with that step's number, held for the step, so the keys play as a sequence

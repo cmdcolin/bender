@@ -57,6 +57,41 @@
   border-color: var(--cool);
 }
 
+/* A key on the bend board's map of the letter keys: an action two rows tall,
+   with the letter over what the key does. */
+.actionKey {
+  composes: action;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: calc(2 * var(--ctl-h) + var(--space-sm));
+  padding: var(--space-xs) var(--space-sm);
+  text-align: left;
+}
+
+.actionKeyHeld {
+  composes: actionKey;
+  color: var(--accent-ink);
+  background: var(--cool);
+  border-color: var(--cool);
+}
+
+/* One of the six throws somebody chose, set apart from the dealt keys by ink
+   alone so the map keeps one shape. */
+.actionKeyFixed {
+  composes: actionKey;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* A key that does something to the other keys — let go, redeal. */
+.actionKeyQuiet {
+  composes: actionKey;
+  color: var(--fg3);
+  background: none;
+}
+
 /* Greyed rather than hidden: an empty walk is the honest answer to "can I take
    that back", and a button that came and went would move the whole row. */
 .actionOff {

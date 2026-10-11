@@ -42,14 +42,14 @@ const open = () => {
 test('the row deals itself a hand on first draw', () => {
   render(<BendKeys morphSeconds={0} />)
   expect(bendDeal.get()).toHaveLength(16)
-  expect(screen.getByRole('button', { name: 'bend' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'letters → toy' })).toBeTruthy()
 })
 
 test('the switch sends the letters here and back to the toy', () => {
   render(<BendKeys morphSeconds={0} />)
-  fireEvent.click(screen.getByRole('button', { name: 'bend' }))
+  fireEvent.click(screen.getByRole('button', { name: 'letters → toy' }))
   expect(letterKeys.get()).toBe('bends')
-  fireEvent.click(screen.getByRole('button', { name: 'letters bend' }))
+  fireEvent.click(screen.getByRole('button', { name: 'letters → bends' }))
   expect(letterKeys.get()).toBe('toy')
 })
 
@@ -107,6 +107,39 @@ test('a pad takes a pointer the same way', () => {
     fireEvent.pointerUp(pad, { pointerId: 1 })
   })
   expect(heldNames()).toEqual([])
+})
+
+test('the bottom row holds the chosen throws, with the letters on a keybed', () => {
+  render(<BendKeys morphSeconds={0} />)
+  const spin = screen.getByText('spin').closest('button')!
+  act(() => {
+    fireEvent.pointerDown(spin, { pointerId: 1 })
+  })
+  expect(heldNames()).toEqual(['spin'])
+  act(() => {
+    fireEvent.pointerUp(spin, { pointerId: 1 })
+  })
+  stroke('keydown', 'c')
+  expect(heldNames()).toEqual(['spin'])
+  stroke('keyup', 'c')
+  expect(heldNames()).toEqual([])
+})
+
+test('the redeal and let-go keys take a click', () => {
+  open()
+  const before = bendDeal.get()
+  stroke('keydown', 'A', true)
+  stroke('keyup', 'A', true)
+  fireEvent.click(screen.getByText('let go').closest('button')!)
+  expect(heldNames()).toEqual([])
+  fireEvent.click(screen.getByText('redeal').closest('button')!)
+  expect(bendDeal.get()).not.toBe(before)
+})
+
+test('the letters with nothing on them hold their place on the keyboard', () => {
+  open()
+  for (const letter of ['q', 'r', 'i'])
+    expect(screen.getByText(letter).closest('button')).toBeNull()
 })
 
 test('a lit step of the bend row holds that step’s key for the step', () => {

@@ -493,7 +493,7 @@ function BendRow({ tick }: { tick: number | null }) {
             return (
               <Tip
                 key={s}
-                text={k ? `${k.name} on step ${s + 1}` : `step ${s + 1}`}
+                text={k ? `${k.says} on step ${s + 1}` : `step ${s + 1}`}
               >
                 <button
                   className={cellClass({

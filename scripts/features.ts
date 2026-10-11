@@ -110,6 +110,8 @@ const SCRIPTS: Record<string, string> = {
   cold: 'the first seconds, before anything has tiered up',
   cpu: 'CPU time on every Chrome thread, and the underruns Chrome counted',
   ab: 'this tree against a git ref, as a paired comparison',
+  'bend-ends':
+    'renders each control at both ends of its travel and writes down the ends a bend key can be heard at',
   audible:
     'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',
   soak: 'whether any stage gets slower the longer it runs',

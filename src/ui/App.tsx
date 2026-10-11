@@ -52,7 +52,6 @@ import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { StartOverlay } from './StartOverlay'
-import { Throws } from './Throws'
 import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
 import { useCurrentSession } from './useCurrentSession'
@@ -393,7 +392,7 @@ export function App(props: { openedFromLink?: boolean }) {
           </Tip>
           {/* The one press that gets to the noise: both machines running, the
               kit audible, the letters on the bend keys and a hand dealt. */}
-          <Tip text="Run both machines, bring the kit up if it is down, send the letter keys to the bend row and deal a hand — one press from silence to glitch.">
+          <Tip text="Run both machines, bring the kit up if it is down, send the letter keys to the bend keys and deal a hand — one press from silence to glitch.">
             <button
               className={styles.wildBtn}
               onClick={() => {
@@ -414,7 +413,6 @@ export function App(props: { openedFromLink?: boolean }) {
             </button>
           </Tip>
         </div>
-        <Throws />
         <BendKeys morphSeconds={morphSeconds} />
         <div className={styles.ioRow}>
           {/* Named for what it records, because the kit has a record button of
@@ -546,8 +544,8 @@ export function App(props: { openedFromLink?: boolean }) {
               <span className={styles.kbd}>
                 1 … {padKeyFor(N_DRUM_VOICES - 1)}
               </span>
-              , or press <b>bend</b> and the letters throw the board around
-              instead
+              , or send the letters to the bend keys and they throw the board
+              around instead
             </>
           )}{' '}
           — turn up <b>Starve</b> until the toy reboots, solder the{' '}

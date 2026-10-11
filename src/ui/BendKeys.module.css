@@ -1,3 +1,17 @@
+.board {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-ctl);
+}
+
 .switch {
   composes: action from './button.module.css';
   font-family: var(--mono);
@@ -8,24 +22,11 @@
   font-family: var(--mono);
 }
 
-/* Pinned by shift: lit like a held pad, with a ring saying it will stay that
-   way once the hand is gone. */
-.pinned {
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.deal {
-  composes: action from './button.module.css';
-}
-
-/* How the next deal comes out, kept apart from the pads by a gap so the chips
-   do not read as four more of them. */
 .settings {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gap-ctl-sm);
-  margin-left: var(--space-sm);
 }
 
 .chip {
@@ -42,4 +43,110 @@
 
 .everyOn {
   composes: selectSmOn from './button.module.css';
+}
+
+/* Forty columns, four to a key, so a row can sit a quarter of a key over from
+   the one above it the way a keyboard's rows do. */
+.keys {
+  display: grid;
+  grid-template-columns: repeat(40, minmax(0, 1fr));
+  gap: var(--space-xs);
+}
+
+.key,
+.keyHeld,
+.throwKey,
+.verbKey,
+.blank {
+  grid-row: var(--row);
+  grid-column: var(--col) / span 4;
+  min-width: 0;
+  touch-action: none;
+  user-select: none;
+}
+
+.key {
+  composes: actionKey from './button.module.css';
+}
+
+.keyHeld {
+  composes: actionKeyHeld from './button.module.css';
+}
+
+.throwKey {
+  composes: actionKeyFixed from './button.module.css';
+}
+
+.verbKey {
+  composes: actionKeyQuiet from './button.module.css';
+}
+
+/* Pinned by shift: lit like a held key, with a ring saying it will stay that
+   way once the hand is gone. */
+.pinned {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+/* A letter with nothing on it, there so the rest sit where a hand expects. */
+.blank {
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  border: 1px dashed var(--border-quiet);
+  border-radius: var(--ctl-radius);
+  opacity: 0.5;
+}
+
+.letter,
+.letterOff {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+/* The letters are playing a keybed, so a bend key's letter is not one you can
+   press right now. */
+.letterOff {
+  opacity: 0.4;
+}
+
+.what {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  max-width: 100%;
+  font-size: var(--fs-xs);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+/* Too narrow for a keyboard's shape: the keys in a grid of four, in keyboard
+   order, without the letters that have nothing on them. */
+@container (max-width: 560px) {
+  .keys {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .key,
+  .keyHeld,
+  .throwKey,
+  .verbKey {
+    grid-row: auto;
+    grid-column: auto;
+  }
+
+  .blank {
+    display: none;
+  }
+}
+
+/* A finger has no letter keys to send anywhere. */
+@media (pointer: coarse) {
+  .switch,
+  .switchOn,
+  .letter,
+  .letterOff {
+    display: none;
+  }
 }

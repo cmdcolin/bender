@@ -24,7 +24,9 @@ test('a bend pad stays on after the tap, and a second tap lets it go', () => {
   render(<PocketPage />)
   fireEvent.click(tab('bends'))
   const k = bendDeal.get()[0]!
-  const pad = screen.getByRole('button', { name: k.name })
+  const pad = screen.getByRole('button', {
+    name: `${k.letter}: ${k.stages.join(', ')}`,
+  })
   fireEvent.click(pad)
   expect(engine.held.get().has(bendName(k.letter))).toBe(true)
   fireEvent.click(pad)

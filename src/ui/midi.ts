@@ -559,7 +559,7 @@ class Midi {
     this.kit.arm(key)
   }
 
-  /** Wait for a pad to hold one throw: the hold row's own ⚟. */
+  /** Wait for a pad to hold one throw: one of the bend board's keys. */
   armThrow(name: string | null) {
     this.armed.set(null)
     this.stopLearn()

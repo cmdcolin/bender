@@ -1,10 +1,10 @@
 import { engine } from '../engine/engine'
+import { HEATS } from '../ui/bendDeal'
 import {
   bendDeal,
   bendHeat,
   bendName,
   bendSwell,
-  HEATS,
   holdBend,
   letGoAllBends,
   letGoBend,
@@ -15,7 +15,6 @@ import {
 import { useStoreValue } from '../ui/ControlsContext'
 import { THROWS } from '../ui/throws'
 import { buzz } from './haptics'
-import { padLines } from './padLines'
 import styles from './pocket.module.css'
 
 // The sixteen dealt bends as switches: a tap pins one on and a second tap lets
@@ -40,14 +39,14 @@ export function BendPads() {
               className={on ? styles.padOn : styles.pad}
               aria-pressed={on}
               title={k.says}
-              aria-label={k.name}
+              aria-label={`${k.letter}: ${k.stages.join(', ')}`}
               onClick={() => {
                 buzz()
                 if (on) letGoBend(name, seconds)
                 else holdBend(name, k, seconds)
               }}
             >
-              {padLines(k.name).map(line => (
+              {k.stages.slice(0, 3).map(line => (
                 <span key={line} className={styles.move}>
                   {line}
                 </span>
