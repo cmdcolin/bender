@@ -1469,11 +1469,12 @@ same circuits and is playing the recording back.
 ## Scripts
 
 <details>
-<summary>38 commands</summary>
+<summary>39 commands</summary>
 
 | command             | what it does                                                                                                                                                                            |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm dev`          | the app                                                                                                                                                                                 |
+| `pnpm blog:draft`   | drafts a blog post from the feat commits since the last one                                                                                                                             |
 | `pnpm build`        | typecheck and bundle                                                                                                                                                                    |
 | `pnpm ab`           | this tree against a git ref, as a paired comparison                                                                                                                                     |
 | `pnpm agent`        | drives window.bender in headless Chrome and checks what bender.listen reports                                                                                                           |

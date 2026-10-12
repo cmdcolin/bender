@@ -3,7 +3,6 @@ import { experimental_AstroContainer } from 'astro/container'
 import { beforeAll, expect, test } from 'vitest'
 
 import About from '../pages/about.astro'
-import Blog from '../pages/blog.astro'
 import Landing from '../pages/index.astro'
 import Privacy from '../pages/privacy.astro'
 import { aboutUrl, blogUrl, privacyUrl } from '../site/paths'
@@ -11,7 +10,7 @@ import { PANEL_SHOT } from '../site/site'
 import { FREE_WITHOUT, PITCH } from '../ui/whySignIn'
 import { showcase, slug } from './demos'
 
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 
 // The landing page answers "why sign in?" out of the same strings the app's own
 // card renders, and it answers in the HTML rather than from script: a reader
@@ -147,11 +146,12 @@ test('the bar links the about page and the blog, and the about page links privac
   expect(about).toContain(privacyHref)
 })
 
-test('the blog opens on the newest day in the changelog', async () => {
-  const container = await experimental_AstroContainer.create()
-  const blog = await container.renderToString(Blog)
-  const newest = /^## \[[\d.]+\]\(.*\) - ([\d-]+)$/m.exec(
-    readFileSync('CHANGELOG.md', 'utf8'),
-  )?.[1]
-  expect(/<article class="post" id="([\d-]+)"/.exec(blog)?.[1]).toBe(newest)
+test('every published post points at an image that exists', () => {
+  for (const file of readdirSync('src/posts').filter(f => f.endsWith('.md'))) {
+    const text = readFileSync(`src/posts/${file}`, 'utf8')
+    if (/^draft: true$/m.test(text)) continue
+    const image = /^image: (.+)$/m.exec(text)?.[1]
+    expect(image, file).toMatch(/^\//)
+    expect(existsSync(`public${image}`), `${file}: ${image}`).toBe(true)
+  }
 })

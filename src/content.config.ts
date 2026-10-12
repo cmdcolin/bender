@@ -1,4 +1,7 @@
+import { glob } from 'astro/loaders'
 import { defineCollection } from 'astro:content'
+
+import { postSchema } from './site/posts'
 
 import { readFileSync } from 'node:fs'
 
@@ -34,4 +37,9 @@ const docs = defineCollection({
   },
 })
 
-export const collections = { docs }
+const posts = defineCollection({
+  loader: glob({ base: 'src/posts', pattern: '*.md' }),
+  schema: postSchema,
+})
+
+export const collections = { docs, posts }

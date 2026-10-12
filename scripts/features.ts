@@ -98,6 +98,7 @@ const SCRIPTS: Record<string, string> = {
   build: 'typecheck and bundle',
   test: 'the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom',
   typecheck: 'types only',
+  'blog:draft': 'drafts a blog post from the feat commits since the last one',
   'sync:check': 'compare the regions shared with videoskillet',
   lint: 'oxlint, type-aware',
   'lint:fix': 'oxlint, fixing what it can',

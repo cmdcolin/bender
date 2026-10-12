@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "blog:draft": "node scripts/blogdraft.mjs",
     "build": "astro sync && tsc -b && node scripts/demogen.mjs --check && tsx scripts/demoreel.ts && astro build",
     "ab": "tsx scripts/ab.ts",
     "agent": "tsx scripts/agent.ts",
