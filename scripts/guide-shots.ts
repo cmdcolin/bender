@@ -114,11 +114,12 @@ const clickText = (page: Page, text: string) =>
   )
 
 // A board carrying anything off stock reads to the app as a link somebody
-// sent, which puts the 'click to start' dialog up over the whole page. It has
-// nothing to do with what any of these six shots are about, so it comes down
-// before anything else does, whether or not it is actually there.
+// sent, which puts the 'click to start' dialog up over the whole page, and a
+// stock board in a fresh tab puts up the doors. Neither has anything to do
+// with these shots, so both come down first, whether or not they are there.
 async function dismissStart(page: Page) {
   await clickText(page, 'look at it in silence')
+  await clickText(page, 'look around in silence')
 }
 
 interface Rect {

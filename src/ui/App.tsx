@@ -24,6 +24,7 @@ import { ChainMap } from './ChainMap'
 import { GROUPS } from './controls'
 import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Dice } from './Dice'
+import { DoorsDialog } from './DoorsDialog'
 import { padKeyFor, useDrumKeys } from './drumKeys'
 import { DrumKit } from './DrumKit'
 import { FmKeys } from './FmKeys'
@@ -162,7 +163,7 @@ const copyLink = (query: string) => {
     .catch(() => false)
 }
 
-export function App(props: { openedFromLink?: boolean }) {
+export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
   const songPlaying = useStoreValue(engine.songPlaying)
@@ -205,6 +206,7 @@ export function App(props: { openedFromLink?: boolean }) {
   // door, is the last anyone hears of it — pressing play from the row below
   // afterwards is a second gesture and gets no overlay to answer to.
   const [showStart, setShowStart] = useState(!!props.openedFromLink)
+  const [showDoors, setShowDoors] = useState(!!props.openedBare)
   const [showAbout, setShowAbout] = useState(false)
   // Why an account, and the name of the save waiting on the answer. `null` is
   // shut, and `{ pending: null }` is the card opened from the menu with no save
@@ -815,6 +817,8 @@ export function App(props: { openedFromLink?: boolean }) {
             press and starts both machines together, eased up rather than
             landing at whatever level the board was left. */}
         {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
+
+        {showDoors && <DoorsDialog onClose={() => setShowDoors(false)} />}
 
         {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
 

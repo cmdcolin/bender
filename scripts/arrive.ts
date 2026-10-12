@@ -67,6 +67,8 @@ const open = async (url: string) => {
 }
 const overlay = () =>
   ev(page, `!!document.querySelector('dialog[aria-label="start the board"]')`)
+const doors = () =>
+  ev(page, `!!document.querySelector('dialog[aria-label="pick a way in"]')`)
 const board = async () =>
   JSON.parse(await ev(page, 'JSON.stringify(window.bender.board())'))
 const state = async () =>
@@ -143,6 +145,30 @@ try {
     (await board()).song === 'yours',
     await board(),
   )
+
+  console.log('\n--- a bare tab ---')
+  await ev(page, 'sessionStorage.clear()')
+  await open(served.url)
+  check('a bare tab gets the doors', (await doors()) === 'true', null)
+  check('and no start overlay', (await overlay()) === 'false', null)
+  await ev(
+    page,
+    `document.querySelector('dialog[aria-label="pick a way in"] button').click()`,
+    true,
+  )
+  await sleep(700)
+  const entered = await state()
+  check(
+    'the first door plays the drone',
+    entered.preset === 'under the floor' &&
+      entered.song.includes('playing') &&
+      entered.drums.includes('playing'),
+    entered,
+  )
+  await page.send('Page.reload')
+  await ready(page)
+  await sleep(700)
+  check('a reload gets no doors', (await doors()) === 'false', null)
 
   console.log('\n--- your own reload ---')
   await ev(page, 'sessionStorage.clear()')

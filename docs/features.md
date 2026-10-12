@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 356 knobs and switches in 32 groups, seven bends competing for six slots,
-18 ROM tunes, 97 presets, 16 stage settings and 36 named cuts — and everything
+18 ROM tunes, 98 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 97 presets, and dice on every heading as
+- **Boards, rather than settings.** 98 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -1205,7 +1205,7 @@ became:
 
 ### Presets
 
-97 boards worth keeping. Every name is a link that opens the app with that board
+98 boards worth keeping. Every name is a link that opens the app with that board
 on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1433,6 +1433,10 @@ on it — a link never presses play, so it is loaded and waiting.
   — A VCA that never shuts on two saws a tenth of a semitone apart, run back
   into the mixer, with osc 3 at a quarter of a hertz opening the ladder and
   closing it again. No key needed
+- [**under the floor**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,monoLevel:2,monoKeyGate:1,monoWave3:0,monoTune2:0.07,monoTune3:0,monoOsc3:2,monoDrift:6,monoMix3:0,monoNoise:0.1,monoLoop:0.4,monoEmph:0.85,monoContour:0,monoTrack:0,monoDrive:2.4,monoModFilter:2,monoLeak:1,delayMs:700,dlyFb:0.7,wowDepthMs:4,wowHz:0.2,flutter:0.2,dlyToneHz:1500,dlyMix:0.4,revDecayS:14,revMix:0.5,ensMode:1,ensRate:0.2,ensMix:0.5,modLfoHz:0.03,mod0Src:1,mod0Dest:76,mod0Depth:0.4)
+  — The leaky drone two octaves down, through a slow ensemble, a dark wobbling
+  tape echo and a fourteen-second room, with an LFO that takes half a minute to
+  open the ladder
 - [**sinking bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.9,monoGlide:0.04,monoEmph:0.5,monoHeat:0.7,monoMismatch:0.5,monoDroop:0.3,monoSag:0.5)
   — The mono bass on a bad voice card: the pitch hold leaks so each note sinks,
   the converter runs hot, a ladder pair is mismatched and loud notes sag the
