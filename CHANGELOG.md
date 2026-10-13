@@ -2,6 +2,15 @@
 
 All notable changes to bender are documented here.
 
+## [1.5.1](https://github.com/cmdcolin/bender/compare/v1.5.0...v1.5.1) - 2026-10-13
+
+### Features
+- *(ui)* [`31fb5ce`](https://github.com/cmdcolin/bender/commit/31fb5ce9462f72e3d5215e815ef9e3ff2a301354) a blog of written posts in place of the raw changelog
+- *(ui)* [`d2edaad`](https://github.com/cmdcolin/bender/commit/d2edaade173d8cc912347556f4527ec3b15799e7) a fresh tab opens on a choice of boards in place of the lullaby
+
+### Documentation
+- *(ui)* [`866ee2f`](https://github.com/cmdcolin/bender/commit/866ee2fa76165d20c248438084482db6c7831ed8) backfill blog posts on the power rail, bus knives and tape squeal
+
 ## [1.5.0](https://github.com/cmdcolin/bender/compare/v1.4.2...v1.5.0) - 2026-10-11
 
 ### Features
