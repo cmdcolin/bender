@@ -2,6 +2,53 @@
 
 All notable changes to bender are documented here.
 
+## [1.6.0](https://github.com/cmdcolin/bender/compare/v1.5.1...v1.6.0) - 2026-10-14
+
+### Features
+- *(dsp)* [`b3bc451`](https://github.com/cmdcolin/bender/commit/b3bc4514a9a3c42a386e0fae7ef8917c1f8444ae) a knife on the FM chip's patch table
+- *(dsp)* [`71f19a5`](https://github.com/cmdcolin/bender/commit/71f19a5f3f2266ba92024d281f7440b4eec8c613) the FM chip's two crystals, on the panel and in the bay
+- *(dsp)* [`647dfec`](https://github.com/cmdcolin/bender/commit/647dfecd0e4a28b3f337373f0dce7cf6aadf3425) the metal bank on its own supply, starved or gated
+- *(dsp)* [`0c6330c`](https://github.com/cmdcolin/bender/commit/0c6330ce22d9cf5b04bf0524a3470492eea1ae55) the clap's burst oscillator gets a rate and a count
+- *(dsp)* [`1f8fe25`](https://github.com/cmdcolin/bender/commit/1f8fe254992bf1a3e692e372e4f04c062a4866cc) couple the kick's network into the tom's drive
+- *(dsp)* [`a7d0bd4`](https://github.com/cmdcolin/bender/commit/a7d0bd4f0a3cb9c728e9deaf76a01ad8e69ac23d) the kit's dice as a comparator on the noise junction
+- *(dsp)* [`44f3cd0`](https://github.com/cmdcolin/bender/commit/44f3cd048272a1a369ab56e6a3d1c942e990a5f8) Arp sync counts the arpeggio off the kit's beat
+- *(dsp)* [`042fd25`](https://github.com/cmdcolin/bender/commit/042fd253c0b092ae3fb8de5c1f6aa2991937b0e7) the ring mod's carrier off the toy a step or a beat late
+- *(dsp)* [`9022ea3`](https://github.com/cmdcolin/bender/commit/9022ea391d2229999ef315ba192a80e3fba28194) Warble swings the spring tank's combs until the tail goes seasick
+- *(dsp)* [`5bc6489`](https://github.com/cmdcolin/bender/commit/5bc64899dcb96d3fb8425dead84138db269e6e08) the delay pedal's shift mode moves every repeat again each lap
+- *(ui)* [`d1cef88`](https://github.com/cmdcolin/bender/commit/d1cef88aff7e173d195fb88effe48db6c1d93da9) four presets at the far end of the new bends
+- *(dsp)* [`e31cfcb`](https://github.com/cmdcolin/bender/commit/e31cfcb7e810df300b58201e19484516ebe307e2) audio on the kit converter's reference pin
+- *(dsp)* [`6cfa6a4`](https://github.com/cmdcolin/bender/commit/6cfa6a4235184c588e3b234c8c7b7a3d28ede511) the kit's bar as a circulating shift register
+- *(dsp)* [`f16c471`](https://github.com/cmdcolin/bender/commit/f16c471749b04a6b715cfb267fa9dc7c6d343818) the kit's one-shots share a timing rail
+- *(dsp)* [`941915d`](https://github.com/cmdcolin/bender/commit/941915d62038b371dedcc1a53bfa7a0fbb8578a9) the kit's trigger current on the supply
+- *(ui)* [`8bedfaa`](https://github.com/cmdcolin/bender/commit/8bedfaab72b94923729f6877cd1fafc3a3f194fb) a named board for each new kit bend
+- *(dsp)* [`9fe9172`](https://github.com/cmdcolin/bender/commit/9fe917262b8fbd5af7c1f93fdb94bb0b65e8326d) the FM chip's four channels through one converter
+- *(dsp)* [`a549ae6`](https://github.com/cmdcolin/bender/commit/a549ae63b2b947c310b0dbf4ef47b7bdf276d3cb) the FM driver's allocator, stuck on one channel
+- *(dsp)* [`6432f36`](https://github.com/cmdcolin/bender/commit/6432f36ad2306317d876fb685f83bd52ce100496) cold boot the FM chip into a garbage register file
+- *(dsp)* [`04a9a05`](https://github.com/cmdcolin/bender/commit/04a9a05966d0662ff4dace2d16d51c1cd9276787) the FM chip's log arithmetic, on an adder that wraps
+- *(dsp)* [`766b936`](https://github.com/cmdcolin/bender/commit/766b936f6f22b95e2aa28294cd05bddc83947794) five more scripts in the FM chip's effect ROM
+- *(ui)* [`67b3c66`](https://github.com/cmdcolin/bender/commit/67b3c66a001b8ab8966e4211974dbf81f74c3ff6) name the FM chip's new bends at their craziest
+
+### Fixes
+- *(dsp)* [`870fcc8`](https://github.com/cmdcolin/bender/commit/870fcc8d03a77163f7eb91848558cb9605ac24be) Carrier from reaches the machine its label names
+- *(ui)* [`3d10e60`](https://github.com/cmdcolin/bender/commit/3d10e6042301ce2b0cc8803cd88d43d1b6c6d8d5) count the bay's wire choices off N_DEST
+- *(dsp)* [`2ca43d9`](https://github.com/cmdcolin/bender/commit/2ca43d96abe4ba1bd59b21f52e95a2b1bc0039d6) a starving rail stretches the FM envelopes
+- *(dsp)* [`69faaa4`](https://github.com/cmdcolin/bender/commit/69faaa43e4a3561c7353a16714c0639e20b40e28) a starving rail stretches the home keyboard's envelopes
+
+### Documentation
+- [`38fdcb8`](https://github.com/cmdcolin/bender/commit/38fdcb810b7a9fb9c8e457da0b06de230aa3ba55) retire the stems and kit-sync handoffs
+- [`00d8740`](https://github.com/cmdcolin/bender/commit/00d874004b94c0629ea63ec95566c76140b174e9) stop counting six sources in comments
+- [`91f7957`](https://github.com/cmdcolin/bender/commit/91f7957917b03f0d10092ea4ded23c0ee09b884a) bring the parked ideas up to date with the code
+- [`a828eb9`](https://github.com/cmdcolin/bender/commit/a828eb96023807b9a45b79842d6fb4c0bf257b02) hand off the next round of bends
+
+### Tests
+- *(engine)* [`f652045`](https://github.com/cmdcolin/bender/commit/f6520452345631ef23c19b0983af36fdcd57cffd) pin which files a stem take saves
+
+### Chores
+- *(ui)* [`212992f`](https://github.com/cmdcolin/bender/commit/212992fa283316a9093332485d02fc672a343a16) measure the new kit and FM bends' ends for the dealer
+- *(ui)* [`e68f898`](https://github.com/cmdcolin/bender/commit/e68f89884b731403cfa2d6626d9ee3758a0c7346) measure Warble's ends for the dealer
+- *(ui)* [`e1576f0`](https://github.com/cmdcolin/bender/commit/e1576f0cc9def661375c18240f4127fae6369f3c) measure pulse sharing and trigger load's ends for the dealer
+- *(ui)* [`cf677a6`](https://github.com/cmdcolin/bender/commit/cf677a643e737bc2c63374d9a8c5a2377e69667c) measure the FM slot slip's ends for the dealer
+
 ## [1.5.1](https://github.com/cmdcolin/bender/compare/v1.5.0...v1.5.1) - 2026-10-13
 
 ### Features
