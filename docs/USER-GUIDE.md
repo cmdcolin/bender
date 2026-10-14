@@ -264,6 +264,10 @@ every patch from, the processor's and the die's own fifteen. The chip fetches
 the patch afresh every few milliseconds, so it comes back the moment the knife
 comes off.
 
+**DAC slot** sticks the converter's slot counter on one channel, which plays
+four times as loud while the others drop out. **Slot slip** lets the counter
+drift, from a flutter through a buzz to a fold into high images.
+
 ## Playing the home keyboard
 
 The third machine on the rail is the eight-bit sampling keyboard, and it is the

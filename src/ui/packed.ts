@@ -573,6 +573,8 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'drumLoop',
   'drumPulseShare',
   'drumTrigLoad',
+  'fmDacSlot',
+  'fmDacSlip',
 ]
 
 // Retired controls that old links still carry, each read into the control that

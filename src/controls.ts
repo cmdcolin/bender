@@ -297,6 +297,8 @@ export const DEFAULT_CONTROLS = {
   fmPatchDataFault: 0,
   fmClockX: 1,
   fmCpuClockX: 1,
+  fmDacSlot: 0,
+  fmDacSlip: 0,
 
   // The home keyboard. Its fader boots at the floor for the reason the FM
   // chip's does: it is soldered onto the toy's gate line, so a board that came

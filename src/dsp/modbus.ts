@@ -144,8 +144,10 @@ export const DEST = {
   fmCpuClock: 96,
   revWarble: 97,
   drumRefDepth: 98,
+  fmDacSlot: 99,
+  fmDacSlip: 100,
 } as const
-export const N_DEST = 99
+export const N_DEST = 101
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

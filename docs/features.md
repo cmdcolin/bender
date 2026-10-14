@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 376 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 378 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 110 presets, 16 stage settings and 38 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 99 destinations — among
+- **A patch bay that modulates itself.** Four wires, 101 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 39 of them, mostly the ones that cover the
+preset that names it still gets it. 41 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -334,7 +334,7 @@ too — the knife goes on and the rows under it say which controls that was:
   the register the write before it named
 
 <details>
-<summary>31 controls</summary>
+<summary>33 controls</summary>
 
 | control            | range                                                             | what it does                                                                                                         |
 | ------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -369,6 +369,8 @@ too — the knife goes on and the rows under it say which controls that was:
 | Patch data fault † | cut, to ground, to +V, bridged                                    | The same four things, on the table’s way out                                                                         |
 | Cut depth          | off to full                                                       | How far through the trace the knife went — the cut fault is the only one that reads it                               |
 | Strobe slip †      | off to full                                                       | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
+| DAC slot †         | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4          | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot           |
+| Slot slip †        | off to full                                                       | The slot counter running slow against the converter, so now and then it reads one channel twice and skips the next   |
 
 </details>
 
@@ -914,7 +916,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 99 of them, filt cut through kit DAC ref                                                   | Where the other end is soldered                                                |
+| Wire 1–4 to    | 101 of them, filt cut through FM slot slip                                                 | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

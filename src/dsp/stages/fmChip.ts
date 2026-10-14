@@ -221,6 +221,12 @@ const NOISE_HZ = FNUM_BASE * Math.pow(2, 5) * HAT_MULT
 
 const ENV_FLOOR = 0.0005
 
+// One converter, four slots a sample. A slipping slot counter runs slow by
+// SLIP_MAX × slip² slots per slot, so it reads one channel twice and skips the
+// next at 3·slip²·sr Hz: a flutter low on the knob, a buzz in the middle, and
+// at the top one channel a whole sample, interleaved at a quarter of the rate.
+const SLIP_MAX = 0.75
+
 /** Octaves a full push of a clock lane moves its crystal, as on the toy. */
 const CLOCK_LANE_OCTAVES = 3
 
@@ -420,6 +426,9 @@ export class FmChip implements Stage {
   private blobClock = 0
   /** what the output latch is holding, for the test bit that stops it taking */
   private held = 0
+  private slotOut = new Float64Array(N_CH)
+  private dacSlot = -1
+  private slotPos = 0.5
   // Notes struck on the chip's own keys, waiting for the block to start. A key
   // pressed between two blocks is a message on a queue rather than a wire, so
   // it lands with the patch the block is about to run rather than the one the
@@ -1191,6 +1200,10 @@ export class FmChip implements Stage {
     const modBlob = bay.read(DEST.fmNoiseBlob)
     if (modCut) this.busCut = clamp01(this.busCut + modCut[0]!)
     const baseBlob = p[IDX.fmNoiseBlob]!
+    this.dacSlot =
+      hop(p[IDX.fmDacSlot]!, N_CH + 1, bay.read(DEST.fmDacSlot)) - 1
+    const baseSlip = p[IDX.fmDacSlip]!
+    const modSlip = bay.read(DEST.fmDacSlip)
     this.blob = baseBlob
     const rail = this.rail
     const lengthSamples = Math.round(p[IDX.fmLength]! * this.sr)
@@ -1364,13 +1377,18 @@ export class FmChip implements Stage {
 
       let sum = 0
       const pitch = rail.pitchFactor * xtal
+      const slip = modSlip ? clamp01(baseSlip + modSlip[i]!) : baseSlip
+      const slotted = this.dacSlot >= 0 || slip > 0
+      if (slotted) this.slotOut.fill(0)
       for (let n = 0; n < N_CH; n++) {
         const c = this.ch[n]!
         // The CPU coming back to write the key up. Whether that write does
         // anything is between it and the wires.
         if (c.offIn > 0 && (c.offIn -= cpu) <= 0) this.keyOff(n)
         if (kit && n >= RHYTHM_CH) {
-          sum += this.percussion(n, c, raced, wideOpen, pitch)
+          const v = this.percussion(n, c, raced, wideOpen, pitch)
+          sum += v
+          if (slotted) this.slotOut[n] = v
           continue
         }
         if (c.car.stage === IDLE) continue
@@ -1417,11 +1435,14 @@ export class FmChip implements Stage {
           (c.car.phase + inc * car.mult * (car.vib ? this.vibFactor : 1)) % 1
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
-        sum +=
+        const v =
           this.wave(c.car.phase + m * 2 * indexBoost, car.half) *
           carEnv *
           this.volume(n)
+        sum += v
+        if (slotted) this.slotOut[n] = v
       }
+      if (slotted) sum = this.dac(slip)
 
       // One small output stage for four voices, as ever on a board like this,
       // and the latch in front of it — the last place on the chip a test bit
@@ -1440,6 +1461,21 @@ export class FmChip implements Stage {
     // The kit owns the reported load and writes it first, so this adds to it:
     // two chips on one supply are two chips' worth of current.
     rail.reported += load / io.n
+  }
+
+  // The four slots through the one converter. A stuck counter sends one
+  // channel's sample in every slot; a slipping one reads a slot twice and skips
+  // the next.
+  private dac(slip: number) {
+    const out = this.slotOut
+    if (this.dacSlot >= 0) return N_CH * out[this.dacSlot]!
+    const rate = 1 - SLIP_MAX * slip * slip
+    let sum = 0
+    for (let s = 0; s < N_CH; s++) {
+      sum += out[Math.floor(this.slotPos)]!
+      this.slotPos = (this.slotPos + rate) % N_CH
+    }
+    return sum
   }
 
   private volume(n: number) {
@@ -1500,6 +1536,7 @@ export class FmChip implements Stage {
     this.patchDataBus.reset()
     this.queued.length = 0
     this.held = 0
+    this.slotPos = 0.5
     this.addrLatch.reset()
     this.sentVoice = -1
     this.sent.bright = -1

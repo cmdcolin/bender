@@ -149,6 +149,8 @@ const LANDINGS: Landing[] = [
   at('FM CPU clock', ['fmLevel']),
   at('verb warble', ['revMix']),
   at('kit DAC ref', ['drumLevel', 'drumRef']),
+  at('FM DAC slot', ['fmLevel']),
+  at('FM slot slip', ['fmLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

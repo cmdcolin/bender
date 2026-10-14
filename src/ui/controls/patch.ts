@@ -164,6 +164,8 @@ export const PATCH_GROUPS: Group[] = [
             'FM CPU clock',
             'verb warble',
             'kit DAC ref',
+            'FM DAC slot',
+            'FM slot slip',
           ],
           groups: [
             {
@@ -230,6 +232,8 @@ export const PATCH_GROUPS: Group[] = [
                 'FM patch fault',
                 'FM patch data line',
                 'FM patch data fault',
+                'FM DAC slot',
+                'FM slot slip',
               ],
             },
             {

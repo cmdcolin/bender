@@ -282,6 +282,8 @@ export const PARAM_DEFS = [
   ['fmPatchDataFault', 'step'],
   ['fmClockX', 'slew'],
   ['fmCpuClockX', 'slew'],
+  ['fmDacSlot', 'step'],
+  ['fmDacSlip', 'slew'],
 
   ['pcmLevel', 'slew'],
   ['pcmVoice', 'step'],

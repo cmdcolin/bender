@@ -279,17 +279,36 @@ the kind of constraint the rest of this board is made of.
 It also lights `DRUM_KEYS`, which currently folds eight trigger lines onto three
 drums because there are only three places to put them.
 
-## 8. One DAC, four channels, a slot counter
+## 8. One DAC, four channels, a slot counter — landed
 
-`TEST.dacSkew` skews the output latch in time. It does not model the thing
+`TEST.dacSkew` skews the output latch in time. Item 8 models the thing
 underneath: four channels time-multiplexed through a single converter, one slot
 each.
 
-A stuck slot counter is one channel's sample going out in every slot — one voice
-four times as loud and the other three gone. A slipped one is channels getting
-each other's samples. Neither corrupts anything, which is what makes it worth
-building: it is `Strobe`'s failure mode moved from the address side to the
-output side, and this chip has nothing like it.
+Built as two controls under a new **die and driver** fold, each with a bay lane:
+
+- `fmDacSlot` (`counting`, `stuck on 1`–`4`, default `counting`) is a stuck
+  counter: one channel's sample in all four slots, so that voice goes into the
+  output stage four times as loud and the other three are gone. Chosen over a
+  mode-plus-slot pair because one selector with a hop lane is a channel
+  sequencer: an LFO on `FM DAC slot` walks the slots through a chord.
+- `fmDacSlip` (0–1, default 0) is a counter running slow by 0.75·slip² slots per
+  slot, so it reads one channel twice and skips the next 3·slip²·sr times a
+  second. A sum of the four in another order is the same sum, so a fixed offset
+  would be inaudible; a rate error is what makes a slip heard. The square spends
+  the bottom of the knob on flutter and buzz and the top on folding.
+
+With both at default the loop takes the old `sum` path untouched.
+
+Measured on the `pnpm spectrum` board, FM stem:
+
+- Stuck: level 1.59×, 1.77×, 1.50× and 1.15× for slots 1–4. On the slower
+  `scale` tune slot 4 is silent: the song never needs a fourth voice. A held
+  note's own slot plays it over 2.5× louder and any other slot is silent.
+- Slip: centroid 1.66 kHz clean, 2.6 kHz at 0.3, 5.5 kHz at 0.6, 10.2 kHz at
+  0.82 (a counter at half rate, which mirrors the song about 12 kHz) and 6.9 kHz
+  at 1, where the air band holds 0.50 of the power. Deviation from the clean
+  take is 0.10 at slip 0.1 and 0.92 at 1.
 
 ## Smaller
 

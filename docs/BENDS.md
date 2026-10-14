@@ -422,6 +422,18 @@ bus:
 Both have bay lanes, **FM clock** and **FM CPU clock**, which move three octaves
 to a full push, as the toy's clock lane does.
 
+**DAC slot** and **Slot slip**, under **die and driver**, are the converter. The
+four channels share one, a slot each per sample, and a counter selects the slot:
+
+- **Stuck** on a slot, the counter sends that channel's sample in all four: one
+  voice four times as loud into the output stage and the other three gone. The
+  driver hands each note the first free channel, so only the notes that landed
+  in that slot sound. A wire on **FM DAC slot** walks the slots through a chord.
+- **Slipping**, the counter runs slow and now and then reads a channel twice and
+  skips the next. A touch is a flutter, the middle a buzz pitched by how often
+  it slips, and the top gives each channel a whole sample in turn, which folds
+  every note into images a quarter of the sample rate apart.
+
 ## Inside the drum voices
 
 The kit's pitched voices — kick, tom, and the body under the snare — aren't

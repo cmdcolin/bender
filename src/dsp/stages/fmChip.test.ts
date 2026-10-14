@@ -922,3 +922,35 @@ test('wires on the two clock lanes move the two crystals', () => {
     2 * afterTheKeyUp(tuneAt({})),
   )
 })
+
+// One converter, four channels, a slot each per sample. A held note sits on the
+// first channel, so the slot counter decides whether it is heard at all.
+const sine = (o: Partial<Controls>) =>
+  fmNote({ fmVoice: voice('organ'), fmBright: 0, ...o }, 0).subarray(
+    Math.round(0.1 * SR),
+  )
+
+test('a stuck slot counter sends one channel in every slot', () => {
+  const clean = sine({})
+  expect(rms(sine({ fmDacSlot: 1 }))).toBeGreaterThan(2.5 * rms(clean))
+  expect(rms(sine({ fmDacSlot: 2 }))).toBe(0)
+})
+
+test('a slipping slot counter folds the note a quarter of the rate away', () => {
+  const image = SR / 4 - 220
+  const clean = sine({})
+  const slipped = sine({ fmDacSlip: 1 })
+  expect(bin(slipped, image)).toBeGreaterThan(0.2 * bin(slipped, 220))
+  expect(bin(slipped, image)).toBeGreaterThan(50 * bin(clean, image))
+})
+
+test('wires on the slot lanes move the counter', () => {
+  const wire = (dest: number, depth: number) => ({
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: dest,
+    mod0Depth: depth,
+  })
+  expect(sine(wire(DEST.fmDacSlot, 2 / 5))).toEqual(sine({ fmDacSlot: 2 }))
+  expect(sine(wire(DEST.fmDacSlip, 1))).toEqual(sine({ fmDacSlip: 1 }))
+})
