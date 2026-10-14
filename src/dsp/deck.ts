@@ -59,7 +59,7 @@ function hermite(ring: Float32Array, base: number, pos: number): number {
 export class Deck {
   private readonly ringL = new Float32Array(RING)
   private readonly ringR = new Float32Array(RING)
-  // The six source tapes on the same terms as the mix, so a stem take at half
+  // The source tapes on the same terms as the mix, so a stem take at half
   // speed is what you heard rather than the raw machine at its own pitch.
   // Written only while the stem tape is running, like the chain's own copy.
   private readonly ringStems = new Float32Array(MAX_SOURCES * RING)

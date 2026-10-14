@@ -938,7 +938,7 @@ export class Engine {
   private take: { l: Float32Array; r: Float32Array }[] = []
   // The stem tape: one growing list of slabs per source, and a bit per source
   // that has ever risen above the floor. A take only writes files for the
-  // sources that had something on them, which on a stock board is two of six.
+  // sources that had something on them.
   private stemTake: Float32Array[][] = []
   private stemLive = 0
 
@@ -975,7 +975,7 @@ export class Engine {
     }
   }
 
-  // Six clicks in a row where there was one. There is no zip here and there is
+  // A click per stem where there was one. There is no zip here and there is
   // not going to be — the dependency list is four packages — so a stem take is
   // however many downloads it is, named so the folder sorts itself: one stamp,
   // one file per source, and the master under the same stamp. A browser may ask

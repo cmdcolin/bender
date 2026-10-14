@@ -45,9 +45,9 @@ class BenderProcessor extends AudioWorkletProcessor {
   private retroR = new Float32Array(REC_CHUNK)
   private retroFill = 0
   private recStems = false
-  // The six source tapes, one mono slab each, standing whether anybody ever
-  // records stems or not. 768 kB of the worklet's heap sitting idle is the
-  // price of never allocating them: the alternative is 768 kB drawn on the
+  // The source tapes, one mono slab each, standing whether anybody ever
+  // records stems or not. 1 MB of the worklet's heap sitting idle is the
+  // price of never allocating them: the alternative is 1 MB drawn on the
   // audio thread the first time a stem take is armed, and a collector run on
   // this thread is a hole in the sound wherever it lands.
   private stemSlabs = Array.from(
@@ -153,9 +153,9 @@ class BenderProcessor extends AudioWorkletProcessor {
       r: this.recR,
       n,
       done,
-      // Six more slabs on the same terms, and only when the take asked for
-      // them: the serializer's copy goes from 128 kB every 0.7 s to 900 kB,
-      // which is 80 µs in a block that has 2700.
+      // A slab per source on the same terms, and only when the take asked for
+      // them: 1 MB more for the serializer every 0.7 s, which measured 80 µs
+      // in a block that has 2700 back when there were six sources.
       stems: this.recStems ? this.stemSlabs : undefined,
     })
   }

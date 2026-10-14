@@ -74,8 +74,8 @@ test('a stem is the dry source, whatever the board does to the sum', () => {
   expect(driven.stems[TOY]).toEqual(flat.stems[TOY])
 })
 
-// One track per source rather than two: five of the six put the same sample on
-// both channels, so the stem is the mid of the pair — which for those five is
+// One track per source rather than two: all but the noise put the same sample
+// on both channels, so the stem is the mid of the pair — which for those is
 // the source exactly, and for the noise is the middle of its two streams.
 test('a stem is the mid of the pair its source put on the bus', () => {
   const chain = new Chain(SR)

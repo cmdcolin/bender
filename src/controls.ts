@@ -373,7 +373,7 @@ export const DEFAULT_CONTROLS = {
   loopIn: 0,
   loopOut: 1,
 
-  // The bus the six of them sum onto, and the one thing about it that is not
+  // The bus the sources sum onto, and the one thing about it that is not
   // one of their faders.
   mixDrive: 0,
 
