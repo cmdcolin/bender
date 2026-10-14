@@ -73,7 +73,7 @@ export const BEND_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: RING_FROM,
-        help: 'Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it. The kit is a gate — the programme only sounds through the hits, and Mix hands the dry back underneath; the chaos oscillator never comes round again, so nothing about the next second is in the last; the FM chip and the toy are pitched, so what comes out is intermodulation on a grid rather than a clang. Whichever you pick has to be up in the mix to make a carrier at all, so it is in the programme it is multiplying too.',
+        help: 'Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it. The kit is a gate — the programme only sounds through the hits, and Mix hands the dry back underneath; the chaos oscillator never comes round again, so nothing about the next second is in the last; the FM chip and the toy are pitched, so what comes out is intermodulation on a grid rather than a clang. Whichever you pick has to be up in the mix to make a carrier at all, so it is in the programme it is multiplying too. The two late ones are the toy against itself a step or a beat ago: two notes multiplied, so their difference tone comes out as a bass line under the tune.',
       },
       {
         key: 'ringMix',

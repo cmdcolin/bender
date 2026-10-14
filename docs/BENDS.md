@@ -912,6 +912,14 @@ intermodulation on a grid rather than a clang, and the noise source reads white.
 Whichever machine you pick has to be up in the mix to make a carrier at all, so
 it is also in the programme it is multiplying.
 
+**toy step late** and **toy beat late** multiply the toy by itself one of its
+steps or one of the kit's beats ago. Two different notes meet in the multiply,
+so their difference tone lands as a bass line under the tune that nobody wrote,
+and the sum tones fizz above it; where the old note and the new one are
+the same, the product is that note's octaves. The step follows the toy's clock,
+so a hand on Clock or a pot on the timing pin drags the delay and bends the old
+note's pitch on its way out.
+
 **Mix** on a ring modulator is the depth of the modulation rather than a balance
 beside it: the travel runs from clean, through amplitude modulation with the
 note still audible under its own sidebands, to the suppressed-carrier ring at

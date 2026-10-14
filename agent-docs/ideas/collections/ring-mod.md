@@ -242,8 +242,7 @@ read with `src/dsp/spectrum.ts`; `vs ring` is how far a take sits from a plain
 300 Hz sine ring. The products below were computed off the dry stems, which at
 unity drive is the same sum the slot rack sees.
 
-**Items 1 to 4 are built**, in the order they are ranked; item 5 is a sub-case
-of 1 and is not.
+**Items 1 to 5 are built**, in the order they are ranked.
 
 ## 1. A carrier from another machine
 
@@ -316,6 +315,28 @@ Multiplying the toy by itself one step or one beat late reads 0.29 to 0.37 flat
 and, alone on this page, puts 14% of the power under 480 Hz where the dry has
 none: the difference tones between successive notes land as bass. It is item 1
 with the delay tap as a carrier source, and waits on that.
+
+**Built** as two `ringFrom` choices on the end of `CARRIERS`, `toy step late`
+and `toy beat late`: the toy's stem through a 2 s delay line inside the stage,
+then the same ×5 lift and clip as every machine carrier. The step is read off
+how far `ctx.step` moves a sample, so it tracks Clock, the clock pot and a flat
+rail, and the tap sweeps with them; the beat is `drumBpm` off the panel, as Kit
+sync reads it.
+
+| `sakura` at Clock 6, kit muted | rms   | flat  | centroid | under 480 Hz |
+| ------------------------------ | ----- | ----- | -------- | ------------ |
+| dry                            | 0.211 | 0.037 | 4553     | 0.000        |
+| knob 300 Hz                    | 0.151 | 0.056 | 4528     | 0.001        |
+| toy (now)                      | 0.082 | 0.005 | 58       | 0.943        |
+| toy step late                  | 0.151 | 0.249 | 5956     | 0.278        |
+| toy beat late                  | 0.146 | 0.349 | 6941     | 0.133        |
+
+The toy against itself _now_ is a square-law detector: a thump at a third of the
+level. A step late it is at the knob carrier's level with the study's predicted
+flatness and bass. A3 and E4 in turn at four steps a second put the 110 Hz
+difference at 0.125 of the take's rms a step late, against 0.000 a beat late
+at 120 bpm (where a beat is two steps and the notes match) and 0.125 again at
+240 bpm.
 
 ## Reachable today
 

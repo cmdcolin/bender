@@ -1,6 +1,7 @@
 import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params'
 import { DEST } from '../modbus'
 import { KEY_BIAS } from '../trigbus'
+import { DelayLine } from '../util/delayline'
 import { QuadOsc } from '../util/lfo'
 import { A3_HZ, octaves } from '../util/pitch'
 
@@ -8,19 +9,28 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 
 export const RING_SHAPES = ['sine', 'square', 'diode']
 
+// How far behind itself a machine's carrier runs: not at all, one of the toy's
+// steps, or one of the kit's beats.
+const NOW = 0
+const STEP_LATE = 1
+const BEAT_LATE = 2
+const MAX_LATE_S = 2
+
 // Which machine makes the carrier, past the knob. A saved board stores the
 // index, so a new machine goes on the end rather than where the chain sums it.
 const CARRIERS = [
-  ['knob', null],
-  ['toy', 'toyChip'],
-  ['kit', 'toyDrum'],
-  ['FM chip', 'fmChip'],
-  ['chaos osc', 'chaosOsc'],
-  ['noise', 'noise'],
-  ['sampler', 'sampler'],
-  ['keys', 'pcmKeys'],
-  ['mono synth', 'monoSynth'],
-] as const satisfies readonly (readonly [string, SourceTap | null])[]
+  ['knob', null, NOW],
+  ['toy', 'toyChip', NOW],
+  ['kit', 'toyDrum', NOW],
+  ['FM chip', 'fmChip', NOW],
+  ['chaos osc', 'chaosOsc', NOW],
+  ['noise', 'noise', NOW],
+  ['sampler', 'sampler', NOW],
+  ['keys', 'pcmKeys', NOW],
+  ['mono synth', 'monoSynth', NOW],
+  ['toy step late', 'toyChip', STEP_LATE],
+  ['toy beat late', 'toyChip', BEAT_LATE],
+] as const satisfies readonly (readonly [string, SourceTap | null, number])[]
 
 export const RING_FROM = CARRIERS.map(([label]) => label)
 
@@ -28,6 +38,10 @@ export const RING_FROM = CARRIERS.map(([label]) => label)
 export const RING_FROM_TAP = CARRIERS.map(([, tap]) =>
   tap ? SOURCE_TAPS.indexOf(tap) : -1,
 )
+
+/** Whether each choice delays its machine before multiplying by it. */
+export const RING_FROM_LATE = CARRIERS.map(([, , late]) => late !== NOW)
+const LATE = CARRIERS.map(([, , late]) => late)
 
 // Where the carrier sits relative to the note the board is sounding, and what
 // each one does to the note's own harmonics.
@@ -108,8 +122,17 @@ export class RingMod implements Stage {
       changes on a note, which is rare, so the two trig calls a rate costs are
       worth a compare to skip. */
   private loaded = -1
+  private readonly late: DelayLine
+  private readonly maxLate: number
+  private lastStep = 0
+  /** The toy's step in samples, read off how far the step bus moves a sample;
+      zero until the sequencer has moved. */
+  private stepLen = 0
 
-  constructor(private readonly sr: number) {}
+  constructor(private readonly sr: number) {
+    this.maxLate = MAX_LATE_S * sr
+    this.late = new DelayLine(this.maxLate + 4)
+  }
 
   private tune(hz: number) {
     if (hz === this.loaded) return
@@ -135,7 +158,10 @@ export class RingMod implements Stage {
     const micCarrier = Math.round(p[IDX.micPatch]!) === 4
     // The mic keeps precedence: a shout patched onto the carrier is a wire
     // somebody put there by hand, and this is a choice off a list.
-    const busCarrier = !micCarrier && Math.round(p[IDX.ringFrom]!) > 0
+    const from = Math.round(p[IDX.ringFrom]!)
+    const busCarrier = !micCarrier && from > 0
+    const late = busCarrier ? (LATE[from] ?? NOW) : NOW
+    const beatLen = (60 / Math.max(p[IDX.drumBpm]!, 1)) * this.sr
     const carrier = this.carrier
     // Untracked, the knob is the whole story. Tracked, it is where the carrier
     // waits until the first note arrives — which is also where it stays on a
@@ -167,6 +193,23 @@ export class RingMod implements Stage {
       let carR: number
       if (micCarrier) {
         carL = carR = Math.min(Math.max(ctx.mic[i]! * 2, -1), 1)
+      } else if (late !== NOW) {
+        // The toy against itself a step or a beat ago: two successive notes
+        // multiplied, so their difference tone lands under both as bass. A
+        // dragged clock drags the step and the tap with it, which bends the
+        // old note's pitch on its way out.
+        this.late.write(ctx.carrier[i]!)
+        let len = beatLen
+        if (late === STEP_LATE) {
+          const s = ctx.step[i]!
+          let moved = s - this.lastStep
+          if (moved < 0) moved += 1
+          this.lastStep = s
+          if (moved > 0 && moved < 0.25) this.stepLen = 1 / moved
+          if (this.stepLen > 0) len = this.stepLen
+        }
+        const old = this.late.read(Math.min(len, this.maxLate))
+        carL = carR = Math.min(Math.max(old * CARRIER_GAIN, -1), 1)
       } else if (busCarrier) {
         carL = carR = Math.min(Math.max(ctx.carrier[i]! * CARRIER_GAIN, -1), 1)
       } else {
@@ -220,5 +263,8 @@ export class RingMod implements Stage {
     this.carrier.reset()
     this.hz = 0
     this.loaded = -1
+    this.late.reset()
+    this.lastStep = 0
+    this.stepLen = 0
   }
 }

@@ -2,12 +2,14 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { IDX, packParams, SOURCE_TAPS } from '../../engine/params'
+import { REST, TUNE_STEP_KEYS } from '../../tune'
 import { buildBender, type BuiltChain } from '../build'
 import { DEST } from '../modbus'
 import { spectrum } from '../spectrum'
 import { BLOCK, type StereoBlock } from '../stage'
 import { bin, deviation, envelope, quiet, render, rms, SR } from '../testRender'
-import { RING_FROM, RING_FROM_TAP, RING_TRACK } from './ringmod'
+import { RING_FROM, RING_FROM_LATE, RING_FROM_TAP, RING_TRACK } from './ringmod'
+import { YOURS } from './roms'
 
 // A3, the chip's semitone zero, and the note every tracking case here is
 // judged against.
@@ -278,10 +280,58 @@ test('a stopped sequencer leaves the step carrier on its knob', () => {
 const from = (name: (typeof RING_FROM)[number]) => RING_FROM.indexOf(name)
 
 test('every machine on the board is a carrier choice, once', () => {
-  expect(RING_FROM_TAP.toSorted((a, b) => a - b)).toEqual([
-    -1,
-    ...SOURCE_TAPS.keys(),
-  ])
+  const now = RING_FROM_TAP.filter((_, k) => !RING_FROM_LATE[k])
+  expect(now.toSorted((a, b) => a - b)).toEqual([-1, ...SOURCE_TAPS.keys()])
+  const late = RING_FROM_TAP.filter((_, k) => RING_FROM_LATE[k])
+  expect(new Set(late)).toEqual(new Set([SOURCE_TAPS.indexOf('toyChip')]))
+})
+
+// A3 and E4 in turn, four steps a second against a kit at 120, so a step is
+// half a beat. A carrier a step late is the other note, and the product holds
+// their difference, 110 Hz, under both; a beat late it is the same note, and
+// the product holds octaves of A3 and E4 and nothing between.
+test('the toy a step late puts the difference of two notes under them', () => {
+  const board: Partial<Controls> = {
+    ...RING,
+    ...(Object.fromEntries(
+      TUNE_STEP_KEYS.map((key, i) => [key, i % 2 === 0 ? 0 : 7]),
+    ) as Partial<Controls>),
+    chipTune: YOURS,
+    tunePoly: 0,
+    tuneRate: 4,
+    drumBpm: 120,
+  }
+  const diff = 220 * (2 ** (7 / 12) - 1)
+  const bass = (o: Partial<Controls>) => {
+    const x = render({ ...board, ...o }, 3).subarray(SR)
+    return bin(x, diff) / rms(x)
+  }
+  const step = bass({ ringFrom: from('toy step late') })
+  expect(step).toBeGreaterThan(0.1)
+  expect(step).toBeGreaterThan(5 * bass({ ringFrom: from('toy beat late') }))
+  expect(step).toBeGreaterThan(5 * bass({ ringFrom: from('toy') }))
+  expect(step).toBeGreaterThan(5 * bass({ ringMix: 0 }))
+})
+
+test('the toy a step late follows the step the toy is on', () => {
+  const at = (tuneRate: number) =>
+    render(
+      {
+        ...RING,
+        ...(Object.fromEntries(
+          TUNE_STEP_KEYS.map((key, i) => [key, i % 2 === 0 ? 0 : REST]),
+        ) as Partial<Controls>),
+        chipTune: YOURS,
+        tunePoly: 0,
+        tuneRate,
+        ringFrom: from('toy step late'),
+      },
+      3,
+    ).subarray(SR)
+  // Note and rest in turn: a step late a note meets the rest before it, so
+  // the product is silent whatever the rate.
+  expect(rms(at(4))).toBeLessThan(0.002)
+  expect(rms(at(7))).toBeLessThan(0.002)
 })
 
 // A machine's own output as the carrier, lifted by five — the number that puts
