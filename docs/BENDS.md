@@ -871,6 +871,12 @@ constant term and the tone filter is a low-pass rather than a block.
 repeats ring, the dub delay move. **Lamp** is a bulb in the same loop. It dims
 as it heats, so Feedback past 1 swells and backs off instead of pinning.
 
+**Warble** swings the length of each of the spring tank's four combs on its own
+slow sine. A long decay stops ringing on the same few resonances and smears
+across the notes around them; at the top the combs swing a third of their
+length, every lap bends the pitch again, and the tail goes seasick. The bay's
+**verb warble** lane rides on the knob.
+
 **Freq shifter** moves every partial by the same number of hertz rather than the
 same ratio, so harmonic input comes out inharmonic. Its own feedback shifts
 every lap again — the barber-pole effect — which keeps the squeal inside the

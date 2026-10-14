@@ -458,6 +458,7 @@ export const PARAM_DEFS = [
   ['echoLevel', 'slew'],
 
   ['revDecayS', 'slew'],
+  ['revWarble', 'slew'],
   ['revToneHz', 'slew'],
   ['revBoing', 'slew'],
   ['revKick', 'slew'],

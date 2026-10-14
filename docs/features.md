@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 369 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 370 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 98 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 97 destinations — among
+- **A patch bay that modulates itself.** Four wires, 98 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -841,16 +841,17 @@ and _Kick_ is how easily they are thrown against it: a slam at the input or a
 hit from the kit crashes the tank, the sound of kicking the amp.
 
 <details>
-<summary>6 controls</summary>
+<summary>7 controls</summary>
 
-| control      | range            | what it does                                                                                       |
-| ------------ | ---------------- | -------------------------------------------------------------------------------------------------- |
-| Decay        | 0.1 to 30 s      | How long the springs ring                                                                          |
-| Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                            |
-| Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                               |
-| Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp |
-| Reverb level | off to full      | Level of the spring tank, added on top of the dry signal                                           |
-| Dry level †  | off to full      | Level of the dry signal, set separately from Reverb level                                          |
+| control      | range            | what it does                                                                                              |
+| ------------ | ---------------- | --------------------------------------------------------------------------------------------------------- |
+| Decay        | 0.1 to 30 s      | How long the springs ring                                                                                 |
+| Warble       | off to full      | Swings the length of each spring on its own slow sine, so a long tail stops ringing on the same few notes |
+| Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                                   |
+| Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                                      |
+| Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp        |
+| Reverb level | off to full      | Level of the spring tank, added on top of the dry signal                                                  |
+| Dry level †  | off to full      | Level of the dry signal, set separately from Reverb level                                                 |
 
 </details>
 
@@ -901,7 +902,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 97 of them, filt cut through FM CPU clock                                                  | Where the other end is soldered                                                |
+| Wire 1–4 to    | 98 of them, filt cut through verb warble                                                   | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

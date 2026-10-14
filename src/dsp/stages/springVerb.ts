@@ -3,6 +3,7 @@ import { DEST } from '../modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage'
 import { rail } from '../util/bridged'
 import { Transient } from '../util/follower'
+import { SineOsc } from '../util/lfo'
 import { lpCoef } from '../util/onepole'
 import { mulberry32, type Rng } from '../util/rng'
 
@@ -14,6 +15,15 @@ const N_AP = AP_MS.length
 const N_COMB = COMB_MS.length
 
 const ringSize = (n: number) => 1 << Math.ceil(Math.log2(Math.max(n, 2)))
+
+// Warble swings each comb's length on its own sine, at rates that never line
+// up, so the tail's resonances stop standing still. The bottom of the travel is
+// a slow drift that breaks up the ring; the top swings the combs a third of
+// their length at up to 2.2 Hz, ±17% in pitch, and every lap round the tank
+// bends it again, which is seasick.
+const WARBLE_MS = 12
+const WARBLE_HZ = [0.2, 1.3]
+const WARBLE_SPREAD = [1, 1.37, 0.71, 1.19]
 
 // A crash: the springs thrown against the housing. What comes off them is a
 // clatter that lasts about this long and falls about this fast, and it goes in
@@ -37,14 +47,21 @@ class Tank {
   private readonly frac = new Float64Array(N_AP + N_COMB)
   private readonly pos = new Int32Array(N_AP + N_COMB)
   private readonly damp = new Float64Array(N_COMB)
+  private readonly swing = Array.from({ length: N_COMB }, () => new SineOsc())
+  private readonly swingK = new Float64Array(N_COMB)
   /** each comb's delay in seconds, which is what sets its feedback from decay */
   readonly delaySec: Float64Array
 
-  constructor(delays: number[], sr: number) {
+  constructor(
+    delays: number[],
+    sr: number,
+    private readonly rateX: number,
+  ) {
     let acc = 0
+    const warble = (WARBLE_MS / 1000) * sr
     for (let k = 0; k < delays.length; k++) {
       const d = Math.max(delays[k]!, 1)
-      const size = ringSize(Math.ceil(d + 4))
+      const size = ringSize(Math.ceil(d + 4 + (k >= N_AP ? warble : 0)))
       this.off[k] = acc
       this.mask[k] = size - 1
       this.whole[k] = Math.floor(d)
@@ -64,6 +81,8 @@ class Tank {
     boing: number,
     fb: Float64Array,
     dampCoef: number,
+    swingDepth: number,
+    swingK: number,
   ) {
     const buf = this.buf
     const off = this.off
@@ -72,6 +91,10 @@ class Tank {
     const whole = this.whole
     const frac = this.frac
     const damp = this.damp
+    const swing = this.swing
+    const ks = this.swingK
+    for (let j = 0; j < N_COMB; j++)
+      ks[j] = swingK * WARBLE_SPREAD[j]! * this.rateX
 
     for (let i = 0; i < n; i++) {
       let x = input[i]!
@@ -92,9 +115,18 @@ class Tank {
         const k = N_AP + j
         const o = off[k]!
         const m = mask[k]!
-        const p = pos[k]! - 1 - whole[k]!
-        const a = buf[o + (p & m)]!
-        const d = a + frac[k]! * (buf[o + ((p - 1) & m)]! - a)
+        let d: number
+        if (swingDepth > 0) {
+          const at = whole[k]! + frac[k]! + swingDepth * swing[j]!.step(ks[j]!)
+          const w = at | 0
+          const p = pos[k]! - 1 - w
+          const a = buf[o + (p & m)]!
+          d = a + (at - w) * (buf[o + ((p - 1) & m)]! - a)
+        } else {
+          const p = pos[k]! - 1 - whole[k]!
+          const a = buf[o + (p & m)]!
+          d = a + frac[k]! * (buf[o + ((p - 1) & m)]! - a)
+        }
         // the damping filter's state is a double that decays toward zero, so
         // this is one of the places the denormal guard actually earns its compare
         const y = damp[j]! + dampCoef * (d - damp[j]!)
@@ -114,6 +146,7 @@ class Tank {
     this.buf.fill(0)
     this.pos.fill(0)
     this.damp.fill(0)
+    for (const s of this.swing) s.reset()
   }
 }
 
@@ -139,10 +172,11 @@ export class SpringVerb implements Stage {
     this.noise = mulberry32(0x5c4a)
     this.crashFall = Math.exp(-1 / (CRASH_S * sr))
     const ms = (x: number) => (x / 1000) * sr
-    this.tankL = new Tank([...AP_MS.map(ms), ...COMB_MS.map(ms)], sr)
+    this.tankL = new Tank([...AP_MS.map(ms), ...COMB_MS.map(ms)], sr, 1)
     this.tankR = new Tank(
       [...AP_MS.map(x => ms(x) * 1.05), ...COMB_MS.map(x => ms(x + 1.7))],
       sr,
+      1.09,
     )
   }
 
@@ -160,6 +194,13 @@ export class SpringVerb implements Stage {
       30,
     )
     const mix = p[IDX.revMix]!
+    const warbleMod = ctx.mod.read(DEST.revWarble)
+    const warble = Math.min(
+      Math.max(p[IDX.revWarble]! + (warbleMod ? warbleMod[0]! : 0), 0),
+      1,
+    )
+    const swingDepth = warble * (WARBLE_MS / 1000) * this.sr
+    const swingK = SineOsc.rate(WARBLE_HZ[0]! + WARBLE_HZ[1]! * warble, this.sr)
     const boing = 0.35 + 0.5 * p[IDX.revBoing]!
     const dampCoef = lpCoef(p[IDX.revToneHz]!, this.sr)
     // A tank's feedback follows the decay knob, and the knob holds still for the
@@ -204,8 +245,8 @@ export class SpringVerb implements Stage {
       inR[i] = xr
     }
     // The two tanks share nothing, so each runs its whole block in one call.
-    this.tankL.run(inL, this.wetL, n, boing, fbL, dampCoef)
-    this.tankR.run(inR, this.wetR, n, boing, fbR, dampCoef)
+    this.tankL.run(inL, this.wetL, n, boing, fbL, dampCoef, swingDepth, swingK)
+    this.tankR.run(inR, this.wetR, n, boing, fbR, dampCoef, swingDepth, swingK)
     for (let i = 0; i < n; i++) {
       l[i] = l[i]! * dry + this.wetL[i]! * wetGain
       r[i] = r[i]! * dry + this.wetR[i]! * wetGain

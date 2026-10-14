@@ -481,6 +481,7 @@ export const DEFAULT_CONTROLS = {
   echoLevel: 0,
 
   revDecayS: 2,
+  revWarble: 0,
   revToneHz: 4000,
   revBoing: 0.5,
   revKick: 0,

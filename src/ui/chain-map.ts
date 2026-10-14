@@ -111,6 +111,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmPatchDataFault: 'FM chip',
   fmClock: 'FM chip',
   fmCpuClock: 'FM chip',
+  revWarble: 'Spring verb',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

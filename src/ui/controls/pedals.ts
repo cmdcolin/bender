@@ -368,6 +368,16 @@ export const PEDAL_GROUPS: Group[] = [
         help: 'How long the springs ring. The top of the travel is longer than a tank of this size has any business ringing for — a half-minute tail is the room the springs are in, not the springs.',
       },
       {
+        key: 'revWarble',
+        lane: 'verb warble',
+        label: 'Warble',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'Swings the length of each spring on its own slow sine, so a long tail stops ringing on the same few notes. Low down it drifts; at the top every lap round the tank bends the pitch again and the tail goes seasick.',
+      },
+      {
         key: 'revToneHz',
         label: 'Tone',
         min: 500,

@@ -18,7 +18,11 @@
 // tonal at all.
 
 /** Magnitudes of the first half of a Hann-windowed transform, radix-2. */
-function magnitudes(x: Float32Array, at: number, n: number): Float64Array {
+export function magnitudes(
+  x: Float32Array,
+  at: number,
+  n: number,
+): Float64Array {
   const re = new Float64Array(n)
   const im = new Float64Array(n)
   for (let i = 0; i < n; i++)
