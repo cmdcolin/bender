@@ -329,9 +329,24 @@ Measured on the `pnpm spectrum` board, FM stem:
 
 ## Smaller
 
-- **More effect scripts.** Telephone, doorbell, steam, applause. Pure content,
-  and since the effect ROM is the busiest thing the bus ever carries, each one
-  is also a new context for every bend that already exists.
+- **More effect scripts — landed.** Five, appended to `EFFECTS` so old links
+  keep their indices: `phone`, `doorbell`, `steam`, `applause` and `laser`, the
+  last added as the wildest gesture a frequency register can make. Each writes
+  over 150 times a second, the floor the traffic test holds for all but the
+  crickets. Rendered alone for 8 s on the effect's own board:
+
+  | script   | rms   | centroid | flat  | note                                |
+  | -------- | ----- | -------- | ----- | ----------------------------------- |
+  | phone    | 0.059 | 7.1 kHz  | 0.03  | 20 Hz hammer, double ring every 3 s |
+  | doorbell | 0.022 | 955 Hz   | 0.000 | 659 Hz then 523 Hz                  |
+  | steam    | 0.031 | 3.1 kHz  | 0.03  | 2.75 chuffs/s early, 4.3 late       |
+  | applause | 0.027 | 9.9 kHz  | 0.81  | the flattest effect                 |
+  | laser    | 0.087 | 1.6 kHz  | 0.20  | 6 kHz to 94 Hz in 175 ms            |
+
+  New contexts for old bends: the key wire to +V turns phone and laser into one
+  held tone each (quiet fraction 0.46 → 0); a 9-bit **Log adder** takes applause
+  to 0.95 flat and steam to 0.88.
+
 - **Mono.** `io.l[i] += out; io.r[i] += out`. True to the part, and a bodge wire
   putting one channel hard left is one more byte on the bus.
 - **Cold boot — landed.** `panic()` zeroed the register file. Built as

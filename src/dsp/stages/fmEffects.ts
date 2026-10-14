@@ -76,6 +76,18 @@ const setFreq = (cpu: Cpu, fnum: number, block: number, on: boolean) => {
 
 const keyUp = (cpu: Cpu, block: number) => cpu.write(KEY, block << 1)
 
+// A pitch in hertz, spelled as the tightest block and count that reach it.
+const blockOf = (hz: number) => clamp(Math.floor(Math.log2(hz / FNUM_HZ)), 0, 7)
+const setHz = (cpu: Cpu, hz: number, on: boolean) => {
+  const block = blockOf(hz)
+  setFreq(cpu, (hz / FNUM_HZ / Math.pow(2, block)) * 256, block, on)
+}
+
+const strikeHz = (cpu: Cpu, hz: number) => {
+  keyUp(cpu, blockOf(hz))
+  setHz(cpu, hz, true)
+}
+
 // Key up then down, because the chip has no other way to be told this is a new
 // note — the same pair the driver sends for a note off the keyboard.
 const strike = (cpu: Cpu, fnum: number, block: number) => {
@@ -98,10 +110,14 @@ const patch = (v: Omit<Voice, 'name'>) => pack(v)
 // chips' own drum sounds came from, and it is where all the weather is.
 const NOISE_FB = 7
 
+/** What a count of 256 is worth at block 0. */
+const FNUM_HZ = 32.7
+
 const BIRD_BLOCK = 6
 const WEATHER_BLOCK = 4
 const SIREN_BLOCK = 3
 const CRICKET_BLOCK = 7
+const BELL_BLOCK = 4
 
 export const EFFECTS: Effect[] = [
   {
@@ -257,6 +273,169 @@ export const EFFECTS: Effect[] = [
       if (p === 0) strike(cpu, cpu.s[0]!, CRICKET_BLOCK)
       else if (p === 1) setFreq(cpu, cpu.s[0]! + 40, CRICKET_BLOCK, true)
       else if (p === 2) keyUp(cpu, CRICKET_BLOCK)
+    },
+  },
+  {
+    // A hammer between two bells, twenty strikes a second, in the old double
+    // ring: two bursts and a long gap, the modulator a little off each pass.
+    name: 'phone',
+    hz: 200,
+    patch: patch({
+      modMult: 7,
+      carMult: 1,
+      hold: false,
+      level: 22,
+      feedback: 2,
+      half: 0,
+      modAd: [15, 6],
+      carAd: [15, 5],
+      modSr: [2, 6],
+      carSr: [1, 6],
+    }),
+    run(cpu, tick, t) {
+      const at = t % 3
+      const ringing = at < 0.4 || (at >= 0.6 && at < 1)
+      modLevel(cpu, 18 + cpu.rng() * 8)
+      if (!ringing) {
+        if (tick % 5 === 0) keyUp(cpu, 5)
+        return
+      }
+      if (tick % 5 === 0) strike(cpu, (tick / 5) % 2 ? 230 : 262, 5)
+    },
+  },
+  {
+    // Ding, dong: a chime a major third down, every four seconds, with the
+    // driver writing a slow tremolo into the volume between strikes.
+    name: 'doorbell',
+    hz: 160,
+    patch: patch({
+      modMult: 5,
+      carMult: 1,
+      hold: false,
+      level: 26,
+      feedback: 0,
+      half: 0,
+      carKsl: 1,
+      modAd: [15, 3],
+      carAd: [15, 2],
+      modSr: [4, 3],
+      carSr: [2, 2],
+    }),
+    run(cpu, tick, t) {
+      const at = t % 4
+      if (tick % 640 === 0) strike(cpu, 323, BELL_BLOCK)
+      else if (tick % 640 === 96) strike(cpu, 256, BELL_BLOCK)
+      vol(cpu, 1 + Math.sin(2 * Math.PI * 5 * at))
+    },
+  },
+  {
+    // A locomotive pulling away: chuffs of the feedback noise shaped in the
+    // volume register, closer together each one, then the whistle. The
+    // whistle is the same channel with its feedback written back down, so the
+    // script reaches the patch bytes as well as the frequency.
+    name: 'steam',
+    hz: 200,
+    patch: patch({
+      modMult: 1,
+      carMult: 1,
+      hold: true,
+      level: 14,
+      feedback: NOISE_FB,
+      half: 0,
+      modAd: [15, 0],
+      carAd: [15, 0],
+      modSr: [0, 8],
+      carSr: [0, 8],
+    }),
+    run(cpu, tick, t) {
+      const CYCLE = 10
+      const WHISTLE = 7.5
+      const at = t % CYCLE
+      if (tick % (CYCLE * 200) === 0) {
+        cpu.write(REG.feedback, NOISE_FB)
+        modLevel(cpu, 14)
+        strike(cpu, 200, WEATHER_BLOCK)
+        cpu.s[0] = 0
+        cpu.s[1] = 0
+      }
+      if (at < WHISTLE) {
+        // the gap between chuffs falls from half a second to a sixth
+        const gap = 0.5 - (at / WHISTLE) * 0.33
+        cpu.s[0] = cpu.s[0]! + 1 / 200
+        if (cpu.s[0] >= gap) cpu.s[0] = 0
+        vol(cpu, (cpu.s[0] / gap) * 15)
+        return
+      }
+      if (cpu.s[1] !== 1) {
+        cpu.s[1] = 1
+        cpu.write(REG.feedback, 0)
+        modLevel(cpu, 36)
+        strike(cpu, 180, 5)
+      }
+      const wobble = Math.sin(2 * Math.PI * 6 * at) * 3
+      setFreq(cpu, 180 + Math.min((at - WHISTLE) * 40, 20) + wobble, 5, true)
+      vol(cpu, at > CYCLE - 0.3 ? 15 : 0)
+    },
+  },
+  {
+    // A room of hands on one channel: the feedback noise struck at random,
+    // each clap a fresh pitch and a fast fall in the volume, the rate swelling
+    // and dying away over six seconds.
+    name: 'applause',
+    hz: 300,
+    patch: patch({
+      modMult: 1,
+      carMult: 1,
+      hold: true,
+      level: 10,
+      feedback: NOISE_FB,
+      half: 0,
+      modAd: [15, 0],
+      carAd: [15, 0],
+      modSr: [0, 8],
+      carSr: [0, 8],
+    }),
+    run(cpu, _tick, t) {
+      const swell = Math.sin((Math.PI * (t % 6)) / 6)
+      if (cpu.rng() < swell * 0.25) {
+        strikeHz(cpu, 900 + cpu.rng() * 2500)
+        cpu.s[0] = cpu.rng() * 4
+      } else cpu.s[0] = Math.min(cpu.s[0]! + 2.5, 15)
+      vol(cpu, cpu.s[0])
+    },
+  },
+  {
+    // Pew: a bright note dropped six octaves in a sixth of a second, three to
+    // a burst, the bursts a random distance apart.
+    name: 'laser',
+    hz: 400,
+    patch: patch({
+      modMult: 2,
+      carMult: 1,
+      hold: true,
+      level: 12,
+      feedback: 4,
+      half: 0,
+      modAd: [15, 0],
+      carAd: [15, 0],
+      modSr: [0, 10],
+      carSr: [0, 10],
+    }),
+    run(cpu, tick) {
+      const SHOT = 70
+      const into = tick - cpu.s[1]!
+      if (into === SHOT * 3) {
+        keyUp(cpu, 7)
+        cpu.s[2] = 40 + Math.floor(cpu.rng() * 200)
+      }
+      if (into >= SHOT * 3) {
+        if (into >= SHOT * 3 + cpu.s[2]!) cpu.s[1] = tick + 1
+        return
+      }
+      const along = (into % SHOT) / SHOT
+      if (into % SHOT === 0) strikeHz(cpu, 6000)
+      else setHz(cpu, 6000 * Math.pow(2, -6 * Math.sqrt(along)), true)
+      modLevel(cpu, 8 + along * 30)
     },
   },
 ]

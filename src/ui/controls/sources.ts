@@ -1441,7 +1441,7 @@ export const SOURCE_GROUPS: Group[] = [
         unit: '',
         choices: FM_EFFECT_NAMES,
         shy: true,
-        help: 'The effect ROM — a bird, surf, wind, a siren, crickets. None is a sample: each is a little program firing hundreds of register writes a second, far and away the busiest thing the bus ever carries. It borrows the fourth channel, so Voice, Bright and Feedback sit still while one runs.',
+        help: 'The effect ROM — a bird, surf, wind, a siren, crickets, a phone, a doorbell, a steam train, applause and a laser. None is a sample: each is a little program firing hundreds of register writes a second, far and away the busiest thing the bus ever carries. It borrows the fourth channel, so Voice, Bright and Feedback sit still while one runs.',
       },
       {
         key: 'fmNoiseBlob',

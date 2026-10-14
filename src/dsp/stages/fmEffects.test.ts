@@ -4,8 +4,10 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { buildBender, buildChain } from '../build'
 import { FAULT } from '../bus'
+import { spectrum } from '../spectrum'
 import { BLOCK } from '../stage'
 import {
+  bin,
   bursts,
   deviation,
   makeIo,
@@ -119,13 +121,16 @@ function afterTheEffect(
 // song comes out in the effect's voice, not the one under the button. Letting
 // the button go is the driver re-selecting its instrument, which is eight more
 // bytes over the same wires.
-test('an effect takes the patch registers, and gives them back', () => {
-  const never = afterTheEffect({}, {}, 6)
-  for (let e = 1; e < FM_EFFECT_NAMES.length; e++) {
+let untouched: Float32Array | undefined
+const unbent = () => (untouched ??= afterTheEffect({}, {}, 6))
+
+test.each(FM_EFFECT_NAMES.slice(1).map((name, i) => [name, i + 1] as const))(
+  '%s takes the patch registers, and gives them back',
+  (_name, e) => {
     const held = afterTheEffect({ fmEffect: e }, { fmEffect: e }, 6)
     const released = afterTheEffect({ fmEffect: e }, {}, 6)
-    const gone = deviation(held, never)
-    const back = deviation(released, never)
+    const gone = deviation(held, unbent())
+    const back = deviation(released, unbent())
     expect(gone, FM_EFFECT_NAMES[e]).toBeGreaterThan(1)
     // Letting the button go does not land back on the untouched board exactly,
     // and the residue is not the patch — those eight bytes come back
@@ -135,8 +140,8 @@ test('an effect takes the patch registers, and gives them back', () => {
     // channels than they would have been. What matters is the ratio.
     expect(back, FM_EFFECT_NAMES[e]).toBeLessThan(0.7)
     expect(back, FM_EFFECT_NAMES[e]).toBeLessThan(gone * 0.5)
-  }
-})
+  },
+)
 
 // The precise half of the claim above, read off the register file rather than
 // out of the audio: the driver re-selects its instrument on the way out, so
@@ -165,4 +170,44 @@ test('the eight patch bytes come back byte-for-byte', () => {
   const never = patchRegs(0, 0)
   for (let e = 1; e < FM_EFFECT_NAMES.length; e++)
     expect(patchRegs(e, 0), FM_EFFECT_NAMES[e]).toEqual(never)
+})
+
+// The scripts added after the weather, each one a gesture a chip with no
+// sample memory has to spell out in writes.
+const take = (name: string, seconds: number) =>
+  renderBender({ ...NOTHING_PLAYING, fmEffect: effect(name) }, seconds)
+const span = (x: Float32Array, from: number, to: number) =>
+  x.subarray(Math.round(from * SR), Math.round(to * SR))
+
+test('the phone rings for a second and waits two', () => {
+  const x = take('phone', 3)
+  expect(rms(span(x, 0, 1))).toBeGreaterThan(10 * rms(span(x, 1.6, 2.9)))
+})
+
+test('the doorbell is two chimes a major third apart', () => {
+  const x = take('doorbell', 1.2)
+  const ding = span(x, 0.05, 0.5)
+  const dong = span(x, 0.65, 1.1)
+  expect(bin(ding, 659)).toBeGreaterThan(3 * bin(ding, 523))
+  expect(bin(dong, 523)).toBeGreaterThan(3 * bin(dong, 659))
+})
+
+test('the steam chuffs come closer together as it pulls away', () => {
+  const x = take('steam', 7.5)
+  const early = bursts(span(x, 0, 4)) / 4
+  const late = bursts(span(x, 4, 7.5)) / 3.5
+  expect(late).toBeGreaterThan(1.3 * early)
+})
+
+test('applause is the broadband one', () => {
+  const x = take('applause', 4)
+  expect(rms(x)).toBeGreaterThan(0.01)
+  expect(spectrum(x, SR).flatness).toBeGreaterThan(0.5)
+})
+
+test('a laser shot falls in pitch', () => {
+  const x = take('laser', 0.2)
+  const centroid = (from: number, to: number) =>
+    spectrum(span(x, from, to), SR, 2048).centroid
+  expect(centroid(0, 0.045)).toBeGreaterThan(3 * centroid(0.12, 0.165))
 })

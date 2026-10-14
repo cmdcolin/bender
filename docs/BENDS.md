@@ -392,19 +392,35 @@ the nibble is per channel, one voice can be somewhere else entirely while its
 neighbours play what you asked for.
 
 **The effect ROM** is the source of the chip's canned effects — a bird call,
-surf, wind, a siren, crickets — and none of them are samples. Each is a short
-program in the processor firing register writes at the chip hundreds of times a
-second: sweeps and key-ons for the bird, the modulator's feedback pushed into
-noise for surf, that same noise under a random walk for wind, and so on. Because
-an effect is the busiest traffic the bus ever carries, the dataline bend scales
-with it — every one of those writes lands wrong, and under **Cut** the drifting
-bit is chasing that traffic, so the corruption tracks the effect's own motion
-rather than sitting at a fixed offset. Running an effect also borrows the whole
-patch and a fourth voice, so the keyboard drops to three voices while it plays.
-Starving the rail underneath decouples the two: the processor's clock is a
-resonator that doesn't care what the supply is doing, so the effect keeps
-arriving at its usual rate while the chip it's addressed to dives and slurs
-underneath it.
+surf, wind, a siren, crickets, a phone, a doorbell, a steam train, applause and
+a laser — and none of them are samples. Each is a short program in the processor
+firing register writes at the chip hundreds of times a second: sweeps and
+key-ons for the bird, the modulator's feedback pushed into noise for surf, that
+same noise under a random walk for wind, and so on. Because an effect is the
+busiest traffic the bus ever carries, the dataline bend scales with it — every
+one of those writes lands wrong, and under **Cut** the drifting bit is chasing
+that traffic, so the corruption tracks the effect's own motion rather than
+sitting at a fixed offset. Running an effect also borrows the whole patch and a
+fourth voice, so the keyboard drops to three voices while it plays. Starving the
+rail underneath decouples the two: the processor's clock is a resonator that
+doesn't care what the supply is doing, so the effect keeps arriving at its usual
+rate while the chip it's addressed to dives and slurs underneath it.
+
+The five later scripts each give the bends a new kind of traffic:
+
+- **phone** strikes a bell patch twenty times a second in a double ring and
+  rewrites the modulator's level every pass. With the key wire held high the
+  ring becomes one held tone.
+- **doorbell** strikes a chime a major third down every four seconds and writes
+  a tremolo into the volume between strikes.
+- **steam** chuffs the feedback noise through the volume register, closer
+  together each one, then writes the feedback down to zero for a whistle: the
+  one script that rewrites a patch byte as it runs.
+- **applause** strikes the noise at random pitches, up to seventy times a
+  second, swelling and dying away. Through a 9-bit **Log adder** it is a wall of
+  white noise.
+- **laser** drops a bright note six octaves in a sixth of a second, three shots
+  a burst, rewriting the frequency four hundred times a second.
 
 **Clock** and **CPU clock** are the board's two crystals, one each side of the
 bus:
