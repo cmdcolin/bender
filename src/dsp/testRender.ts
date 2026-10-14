@@ -232,7 +232,11 @@ export function quiet(x: Float32Array): number {
   return env.reduce((a, v) => a + (v < peak * 0.1 ? 1 : 0), 0) / env.length
 }
 
-/** Onsets, counted with hysteresis so one call is one burst. */
+/**
+ * Onsets, counted with hysteresis so one call is one burst. Counts the toy's
+ * step rate exactly when its memory alternates note and rest; counting level
+ * jumps instead under-counts above ~4 Hz, where the decay tracks the step rate.
+ */
 export function bursts(x: Float32Array): number {
   const env = envelope(x)
   const peak = env.reduce((a, v) => Math.max(a, v), 0)
