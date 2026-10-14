@@ -489,6 +489,19 @@ its swoop starts at 75 Hz against 100; a lone kick is untouched. On the
 measuring board the kit's centroid rises from 440 Hz to 900, where Accent sag on
 every step pulls it down.
 
+**Trigger load** is what those one-shots cost the supply. Each one dumps its
+charge at the front of its hit, before the sound it starts:
+
+- The metal bank sits across the kit's local supply and feels it at once. At the
+  top of the travel a kick drags a ringing cowbell or cymbal down an octave and
+  lets it back over about 60 ms; a kick, snare and hat together drag it nearly
+  two.
+- The same spike reaches the board's shared rail a block later. On the measuring
+  board the rail dips to 0.35, so the toy keyboard goes flat under every busy
+  step, and the kit's own tuning sags with it.
+- The tempo reads the rail through its own decoupling, so it only drifts with
+  the average.
+
 **Snappy** is what the snare is made of. All the way up is the noise transistor
 alone, which is the snare the kit used to have; down, the two tuned networks
 under it come through instead, beating against each other. Tune reaches those

@@ -805,6 +805,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'The one-shots all charge off one timing rail, and this is how much a one-shot fired alongside others loses to them. Each runs short at the same height, so a crowded step hands every voice on it less charge: the kick under a hat and a clap loses most of its body and its swoop starts a fourth lower, while a lone kick keeps all of it. Accent sag darkens a busy pattern; this thins it.',
       },
       {
+        key: 'drumTrigLoad',
+        part: 'inside the voices',
+        label: 'Trigger load',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'How much the one-shots’ charge costs the supply. Every hit takes its spike off the metal bank’s local cap at once, so a ringing cowbell or cymbal dives up to an octave on each kick and swings back over the next few tens of milliseconds; a crowded step dives nearly two. The same spike reaches the board’s shared rail a moment later, so the toy keyboard goes flat under every busy step. The tempo sits behind its own decoupling and only drifts with the average.',
+      },
+      {
         key: 'drumSnappy',
         needs: analogKit,
         part: 'inside the voices',

@@ -1479,6 +1479,60 @@ test('one-shots fired together run short, so a crowded kick is thinner and flatt
   expect(start(shared)).toBeLessThan(0.9 * start(stiff))
 })
 
+// The cowbell's loudest partial between 250 Hz and 1.2 kHz, with the kick
+// under it taken out.
+function bellPeak(x: Float32Array): number {
+  const y = Float32Array.from(x)
+  const k = 1 - Math.exp((-2 * Math.PI * 250) / SR)
+  for (let pole = 0; pole < 3; pole++) {
+    let z = 0
+    for (let i = 0; i < y.length; i++) y[i] = y[i]! - (z += k * (y[i]! - z))
+  }
+  let best = 0
+  let at = 0
+  for (let f = 250; f < 1200; f += 5) {
+    const m = bin(y, f)
+    if (m > best) [best, at] = [m, f]
+  }
+  return at
+}
+
+test('a kick’s trigger current drags the ringing metal bank down', () => {
+  const bell = (load: number) =>
+    soloVoice(
+      {
+        drumBpm: 60,
+        drumBell: stepMask(2),
+        drumKick: stepMask(3),
+        drumDecay: 16,
+        drumBits: 16,
+        drumTrigLoad: load,
+      },
+      1,
+    )
+  const [still, pulled] = [bell(0), bell(1)]
+  const dipped = (x: Float32Array) => bellPeak(slice(x, 0.752, 0.782))
+  const later = (x: Float32Array) => bellPeak(slice(x, 0.85, 0.95))
+  expect(dipped(pulled)).toBeLessThan(0.75 * dipped(still))
+  expect(later(pulled)).toBe(later(still))
+})
+
+test('a crowded step’s trigger current pulls the toy flat', () => {
+  const toy = (load: number) =>
+    renderStems(
+      {
+        drumBpm: 60,
+        drumKick: stepMask(3),
+        drumSnare: stepMask(3),
+        drumHat: stepMask(3),
+        drumTrigLoad: load,
+      },
+      1,
+    ).stems[0]!
+  const under = (x: Float32Array) => pitchHz(slice(x, 0.755, 0.775))
+  expect(under(toy(1))).toBeLessThan(0.9 * under(toy(0)))
+})
+
 const REF_TOY = 1
 const REF_SELF = 2
 

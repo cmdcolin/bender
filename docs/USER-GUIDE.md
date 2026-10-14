@@ -137,8 +137,10 @@ serves eight voices, so a step that stacks the kit comes out coarser than the
 same voice alone. **Clap gap** and **Clap bursts** retune the clap's burst
 oscillator, from a buzz at the fast end to separate claps at the slow end.
 **Pulse sharing** thins every voice on a crowded step and leaves lone hits
-alone. **DAC reference** multiplies the kit by another signal: the toy chip (a
-ring mod), the kit itself (squared, an octave up), the mic or the whole bus.
+alone. **Trigger load** makes every hit dip the supply: the metal voices dive on
+each kick and the toy goes flat under busy steps. **DAC reference** multiplies
+the kit by another signal: the toy chip (a ring mod), the kit itself (squared,
+an octave up), the mic or the whole bus.
 
 **Kit** switches the box between two of them. Nothing here is a sample, so the
 sampled kit is this kit sampled by itself: on its way up the machine strikes all

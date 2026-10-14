@@ -7,6 +7,10 @@ import { flushDenormal } from './util/softclip'
 // they come to rest is a part value now — see PARTS.latchHold.
 const LATCH_PULL = 12
 
+// How far a one-shot's charge, reported as `spike`, pulls the rail: one hit's
+// worth takes a quarter of it, and the rail's own charging pays it back.
+const TRIG_DRAIN = 0.25
+
 // The voltage the chip stops running at.
 //
 // The watchdog has to sit at or above the point the chip gives up, and it used to
@@ -163,6 +167,9 @@ export class ToyRail {
   rebootCount = 0
   // block-average load reported by circuits that don't own the tick (toyDrum)
   reported = 0
+  // The kit's one-shots' charge, per sample over its last block: a spike at
+  // the front of each hit rather than the sound that follows.
+  spike = 0
   // Open-circuit voltage: what the rail comes back to between notes.
   private open = 1
   private battery = 0
@@ -322,6 +329,7 @@ export class ToyRail {
       charge * (this.open - this.v) -
       drain * (load + this.reported + extra) -
       shunt
+    if (this.spike > 0) this.v -= (TRIG_DRAIN * this.spike) / slow
     this.v = flushDenormal(Math.min(Math.max(this.v, 0), 1))
 
     if (this.bootRemaining > 0) {
@@ -431,6 +439,7 @@ export class ToyRail {
     this.drag = 0
     this.clockV = 1
     this.reported = 0
+    this.spike = 0
     this.stress = 0
     this.thresholdWalk.reset()
     this.clipFault.reset()

@@ -318,6 +318,13 @@ const PULSE_EDGE = 2.5
 // seventh.
 const PULSE_SHARE = 2
 
+// What a one-shot's charge does to the metal bank's supply on its way past,
+// with the trigger load all the way up: how far a hit's worth drags the six,
+// and how long the local cap takes to pay it back. A hit is half the octaves;
+// a crowded step is most of them.
+const TRIG_FLICK_OCT = 2
+const TRIG_RECOVER = 0.02
+
 // Where the ring knob crosses over. Below it the transistor hands back less
 // than it took and the drum is a drum; at it the network never runs down; past
 // it the loop makes up the difference and the tank grows into its own clipping.
@@ -637,6 +644,9 @@ export class ToyDrum implements Stage {
   private ringArmed = true
   // The sync tank's last sample, for finding its rising zero crossings.
   private syncPrev = 0
+  // The charge the one-shots have taken off the bank's local supply and not
+  // yet had back.
+  private trigSag = 0
   private clickCap = new Highpass(CLICK_POLES)
   private clickSlew = new OnePoleLP()
   private clapFast = 0
@@ -815,7 +825,10 @@ export class ToyDrum implements Stage {
 
   when(p: Float32Array) {
     const on = p[IDX.drumLevel]! > 0
-    if (!on) this.rail.reported = 0
+    if (!on) {
+      this.rail.reported = 0
+      this.rail.spike = 0
+    }
     return on
   }
 
@@ -1303,7 +1316,10 @@ export class ToyDrum implements Stage {
       this.tankGain[t] = spec.voice === SNARE ? spec.gain * tone : spec.gain
     }
 
+    const trigLoad = Math.min(Math.max(p[IDX.drumTrigLoad]!, 0), 1)
+    const trigRecover = Math.exp(-1 / (TRIG_RECOVER * this.sr))
     let loadSum = 0
+    let spikeSum = 0
     for (let i = 0; i < io.n; i++) {
       // Hands first, and whether or not the pattern is running: a pad is a
       // finger on the trigger line, and the kit answers a finger with the
@@ -1423,7 +1439,14 @@ export class ToyDrum implements Stage {
           // Solder a trigger line onto that supply and the six hold their
           // phases while the voice on it is silent.
           const powered = bankGate < 0 || env[bankGate]! > AUDIBLE
-          this.metal.step(powered ? pf * bankPf : 0)
+          const flick =
+            trigLoad > 0
+              ? octaves(
+                  (-TRIG_FLICK_OCT * trigLoad * this.trigSag) /
+                    (1 + this.trigSag),
+                )
+              : 1
+          this.metal.step(powered ? pf * bankPf * flick : 0)
           // And the noise transistor, for the same reason and in the same place:
           // nothing on the board gates a junction either. Biased past the knee it
           // avalanches steadily and there is hiss; near the knee it latches in and
@@ -1677,6 +1700,15 @@ export class ToyDrum implements Stage {
           pulseOut[v] = lp > 1e-7 ? lp : 0
           if (env[v]! > AUDIBLE) live++
         }
+        // The one-shots draw their charge off the supply, ahead of the sound
+        // they start: the bank's local cap dips at once, and the shared rail
+        // hears it a block later.
+        if (trigLoad > 0) {
+          let charge = 0
+          for (let v = 0; v < N_VOICES; v++) charge += pulseOut[v]!
+          this.trigSag = this.trigSag * trigRecover + charge
+          spikeSum += charge
+        }
         // What the next pass has to get through. One, at the least: a chip with
         // nothing to do still goes round.
         this.live = live > 0 ? live : 1
@@ -1747,6 +1779,7 @@ export class ToyDrum implements Stage {
       io.r[i]! += out
     }
     rail.reported = loadSum / io.n
+    rail.spike = (trigLoad * spikeSum) / io.n
   }
 
   // Crossing between the two kits, and whatever the other one was holding stops
@@ -1839,6 +1872,7 @@ export class ToyDrum implements Stage {
     this.clearing = false
     this.ringArmed = true
     this.syncPrev = 0
+    this.trigSag = 0
     this.env.fill(0)
     this.amp.fill(0)
     this.gain.fill(1)

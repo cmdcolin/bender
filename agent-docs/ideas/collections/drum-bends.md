@@ -11,9 +11,9 @@ same reason: nothing here is a decision, and the ones that are cheap and the
 ones that change how the kit sounds with no knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
-accent on the data bus), 4 (`drumDice`), 6 (`drumClapGap`, `drumClapCount`), 7
-(`drumPulseShare`), 8 (`DEST.drumBpm`), 9 (`drumLoop`), 10 (the sample ROM
-knife), 11 (`drumBankFm`, `drumBankSync`), 12 (`drumSweep`), 13
+accent on the data bus), 4 (`drumDice`), 5 (`drumTrigLoad`), 6 (`drumClapGap`,
+`drumClapCount`), 7 (`drumPulseShare`), 8 (`DEST.drumBpm`), 9 (`drumLoop`), 10
+(the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`), 12 (`drumSweep`), 13
 (`drumTankCouple`) and 14 (`drumRef`), plus the counter's reset wire
 (`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other
 numbered item is still a candidate.
@@ -278,6 +278,33 @@ should still be allowed to flick a hat).
 Cost: small in the kit, but it touches `ToyRail`, which everything else on the
 board hangs off — and it changes how the kit sounds with no knife on it, which
 is the cost that matters. Measure `pnpm ab` before and after.
+
+**Built** as `drumTrigLoad`, 0 to 1, off by default so neither the kit nor the
+rail moves. Calls made:
+
+- Two consequences of one fault, on one knob. The kit sums `pulseOut` each
+  sample into a local sag on the bank's supply, paid back over 20 ms, and the
+  bank's tuning drops `2 · load · s / (1 + s)` octaves for sag `s`, so a hit is
+  an octave at the top and a crowded step approaches two. The tanks are not on
+  that supply.
+- The same charge goes to `ToyRail.spike` once a block, and the rail drains a
+  quarter of its voltage per hit's worth, on a fresh board too: a rail with no
+  lead resistance ignores `reported`, so the spike gets a drain of its own. The
+  found cap slows it like every other drain.
+- `decouple` stays as it is: the timebase reads the rail behind it, so the tempo
+  drifts with the average and the pitch takes the spike.
+
+Measured:
+
+- The bank's own tuning, traced at the top of the travel: one kick −1.01 octave
+  7.6 ms in, −0.47 at 30 ms, −0.12 at 60 ms; at half the travel −0.50; kick,
+  snare and hat together −1.84. A ringing cowbell's loudest partial goes 800 →
+  510 Hz over the 30 ms after a kick.
+- One kick takes a fresh rail to 0.81 (0.91 at half). On the `pnpm spectrum`
+  board the rail bottoms at 0.35 (0.67 at half); the toy's pitch sits 10% flat
+  at the median, and the kit stem's centroid falls 442 → 361 Hz as its own
+  tuning sags. Under a kick, snare and hat the toy reads 250 Hz against 300 for
+  20 ms.
 
 ## 6. The clap's burst oscillator
 
