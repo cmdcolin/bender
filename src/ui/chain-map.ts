@@ -115,6 +115,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   drumRefDepth: 'Toy drums',
   fmDacSlot: 'FM chip',
   fmDacSlip: 'FM chip',
+  fmAlloc: 'FM chip',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

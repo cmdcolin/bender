@@ -284,6 +284,7 @@ export const PARAM_DEFS = [
   ['fmCpuClockX', 'slew'],
   ['fmDacSlot', 'step'],
   ['fmDacSlip', 'slew'],
+  ['fmAlloc', 'step'],
 
   ['pcmLevel', 'slew'],
   ['pcmVoice', 'step'],

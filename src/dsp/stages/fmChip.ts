@@ -427,6 +427,8 @@ export class FmChip implements Stage {
   /** what the output latch is holding, for the test bit that stops it taking */
   private held = 0
   private slotOut = new Float64Array(N_CH)
+  /** the channel a stuck allocator hands every note, or -1 */
+  private stuckCh = -1
   private dacSlot = -1
   private slotPos = 0.5
   // Notes struck on the chip's own keys, waiting for the block to start. A key
@@ -647,6 +649,7 @@ export class FmChip implements Stage {
   // keyboard the rest, which is what four channels and one effect button always
   // meant: the sound the button makes is a voice you no longer have.
   private pick(note: number): Channel {
+    if (this.stuckCh >= 0) return this.ch[this.stuckCh]!
     const free = this.kitOn ? RHYTHM_CH : this.effect >= 0 ? EFFECT_CH : N_CH
     for (let i = 0; i < free; i++) {
       const c = this.ch[i]!
@@ -718,7 +721,7 @@ export class FmChip implements Stage {
   }
 
   noteOff(note: number) {
-    const n = this.melodyChannels()
+    const n = Math.max(this.melodyChannels(), this.stuckCh + 1)
     for (let i = 0; i < n; i++) if (this.ch[i]!.note === note) this.keyOff(i)
   }
 
@@ -1203,6 +1206,7 @@ export class FmChip implements Stage {
     this.dacSlot =
       hop(p[IDX.fmDacSlot]!, N_CH + 1, bay.read(DEST.fmDacSlot)) - 1
     const baseSlip = p[IDX.fmDacSlip]!
+    this.stuckCh = hop(p[IDX.fmAlloc]!, N_CH + 1, bay.read(DEST.fmAlloc)) - 1
     const modSlip = bay.read(DEST.fmDacSlip)
     this.blob = baseBlob
     const rail = this.rail

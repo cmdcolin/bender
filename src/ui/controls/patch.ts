@@ -166,6 +166,7 @@ export const PATCH_GROUPS: Group[] = [
             'kit DAC ref',
             'FM DAC slot',
             'FM slot slip',
+            'FM allocator',
           ],
           groups: [
             {
@@ -234,6 +235,7 @@ export const PATCH_GROUPS: Group[] = [
                 'FM patch data fault',
                 'FM DAC slot',
                 'FM slot slip',
+                'FM allocator',
               ],
             },
             {

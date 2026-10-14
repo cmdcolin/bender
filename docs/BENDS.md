@@ -434,6 +434,20 @@ four channels share one, a slot each per sample, and a counter selects the slot:
   it slips, and the top gives each channel a whole sample in turn, which folds
   every note into images a quarter of the sample rate apart.
 
+**Allocator** is the driver's, on the processor's side of the bus. Stuck, it
+hands every note to one channel, so a four-voice chip plays one note at a time
+while the driver goes on believing it has four: each note cuts the last one's
+tail off, and a chord comes out as its last note. In melody the four channels
+are interchangeable, so which one it sticks on matters only where a channel
+belongs to something else:
+
+- **stuck on 3** with **Rhythm** on puts every note into the bass drum's
+  registers, so the tune retunes the drum and strikes it.
+- **stuck on 4** with **Rhythm** on lands the notes on the snare and hi-hat's
+  channel, where the frequency sets how fast the shift register's gate runs.
+- **stuck on 4** with an effect running has the tune and the script writing the
+  same channel, so the song fights a bird call for its frequency.
+
 ## Inside the drum voices
 
 The kit's pitched voices — kick, tom, and the body under the snare — aren't

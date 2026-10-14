@@ -321,9 +321,21 @@ Measured on the `pnpm spectrum` board, FM stem:
   whatever the die felt like, and the driver's first writes are what clear it —
   so a garbage boot plus a cut on the bus is a chip that never finishes booting.
   Overlaps `scripts/cold.ts` in name only.
-- **The driver's allocator.** `pick()` is CPU-side, like `Strobe` and the note
-  timers. A round-robin stuck on one channel is a four-voice chip playing
-  monophonically while still being told about four notes.
+- **The driver's allocator — landed.** `pick()` is CPU-side, like `Strobe` and
+  the note timers. Built as `fmAlloc` (`free`, `stuck on 1`–`4`, default `free`)
+  with a hop lane, `FM allocator`. Every note goes to one channel, and `noteOff`
+  also searches that channel, so a held key still lifts when it is an effect's
+  or the kit's. On the `pnpm spectrum` board's FM stem:
+  - In melody the four stuck settings render identically, since the channels are
+    interchangeable: level 0.67× (the tails are cut), deviation 0.78.
+  - With the rhythm bank on, stuck on 3 is the tune playing the bass drum:
+    flatness 0.04 → 0.31, sub band 0.10 → 0.01. Stuck on 4 retunes the noise
+    pair's gate: low energy 0.29 → 0.67 of rms.
+  - Under the bird, stuck on 4 has the song and the script writing one channel:
+    flatness 0.06 → 0.23, centroid 2.9 → 6.2 kHz, 2 → 7 bursts.
+  - Kept all four slots, toward the wilder option: the choice is inaudible in
+    melody but picks which of the kit's or the effect's channels the tune lands
+    in.
 
 ## What is left, ranked against each other
 

@@ -954,3 +954,29 @@ test('wires on the slot lanes move the counter', () => {
   expect(sine(wire(DEST.fmDacSlot, 2 / 5))).toEqual(sine({ fmDacSlot: 2 }))
   expect(sine(wire(DEST.fmDacSlip, 1))).toEqual(sine({ fmDacSlip: 1 }))
 })
+
+// The driver's allocator, stuck on one channel: every note lands there.
+test('a stuck allocator plays a chord as its last note', () => {
+  const chord = (o: Partial<Controls>) =>
+    renderStems(
+      { ...FM_ONLY, fmKeyGate: 1, fmVoice: voice('organ'), fmBright: 0, ...o },
+      0.6,
+      built => {
+        built.fmChip.noteOn(0)
+        built.fmChip.noteOn(7)
+      },
+    ).stems[FM_TAP]!.subarray(Math.round(0.1 * SR))
+  const free = chord({})
+  const stuck = chord({ fmAlloc: 1 })
+  const fifth = 220 * Math.pow(2, 7 / 12)
+  expect(bin(free, 220)).toBeGreaterThan(0.5 * bin(free, fifth))
+  expect(bin(stuck, fifth)).toBeGreaterThan(0.5 * bin(free, fifth))
+  expect(bin(stuck, 220)).toBeLessThan(0.05 * bin(free, 220))
+})
+
+test('stuck on the bass drum’s channel, the tune retunes the drum', () => {
+  const sub = (o: Partial<Controls>) =>
+    spectrum(fmStem({ fmKeyGate: 0, drumSnare: 0, drumHat: 0, ...o }), SR)
+      .bands[0]!
+  expect(sub({ fmAlloc: 3 })).toBeLessThan(0.3 * sub({}))
+})
