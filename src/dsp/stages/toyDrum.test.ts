@@ -1247,6 +1247,37 @@ test('a bank synced to the kick makes every hat on a kick the same hat', () => {
   expect(apart(1)).toBeLessThan(0.3)
 })
 
+test('a starved bank drops the metal voices and leaves the drums alone', () => {
+  const bell: Partial<Controls> = { drumBell: stepMask(2), drumBpm: 60 }
+  const stock = soloVoice(bell, 1)
+  const octaveDown = soloVoice({ ...bell, drumBankStarve: 1 / 3 }, 1)
+  expect(bin(stock, 540)).toBeGreaterThan(4 * bin(octaveDown, 540))
+  expect(bin(octaveDown, 270)).toBeGreaterThan(4 * bin(stock, 270))
+  const drums: Partial<Controls> = {
+    drumKick: stepMask(0),
+    drumTom: stepMask(2),
+    drumSnare: stepMask(4),
+    drumSnappy: 0,
+  }
+  expect(soloVoice({ ...drums, drumBankStarve: 1 }, 1.5)).toEqual(
+    soloVoice(drums, 1.5),
+  )
+})
+
+const BANK_ON_KICK = 1
+
+test('a bank gated on the kick only speaks under a ringing kick', () => {
+  const hiss = (c: Partial<Controls>) =>
+    highEnergy(
+      soloVoice({ drumBpm: 60, drumOpen: stepMask(2), drumMetal: 1, ...c }, 1),
+      4000,
+    )
+  const gated = { drumBankGate: BANK_ON_KICK }
+  expect(hiss(gated)).toBeLessThan(0.1 * hiss({}))
+  const kick = { drumKick: stepMask(2) }
+  expect(hiss({ ...gated, ...kick })).toBeGreaterThan(0.5 * hiss(kick))
+})
+
 // A wire held flat out by the contact pad, so a lane reads as a turned knob.
 const held = (dest: number, depth = 1): Partial<Controls> => ({
   mod0Src: 5,

@@ -534,6 +534,18 @@ the chain move and the middle stays, so the bank widens rather than transposing
 six parts: wind it up and the cowbell detunes, the cymbal turns to glass and the
 hats get grittier.
 
+**Bank starve** puts a resistor into the bank's own supply. All six slow down
+together, up to three octaves, so the cowbell drops and its beat stretches out,
+and the hats and cymbal thin from a clatter to a crackle. The kick, tom and
+snare aren't across that supply, so this moves the metal half of the kit and
+leaves the drums where Tune put them.
+
+**Bank gate** solders a trigger line onto that supply. The six run only while
+the chosen voice sounds and hold their phases in between, so gated on the kick
+the hats, cowbell and cymbal speak only under a ringing kick. Gated on a metal
+voice, each hit starts where the last one stopped, so two hats in a row still
+differ; Bank sync is the bend that makes them the same hat.
+
 **Cymbal tone** is a wiper between two taps on the cymbal's own filter rather
 than a corner being swept, which is why it's a tone control and not a second
 volume. Down it keeps the body the hats throw away; up it's most of the way to

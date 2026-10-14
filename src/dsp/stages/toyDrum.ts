@@ -192,6 +192,15 @@ const BANK_FM = 12
 export const BANK_SYNC_NAMES = ['off', 'to the kick', 'to the tom']
 const BANK_SYNC_TANK = [-1, 0, 1]
 
+// How far a resistor into the metal bank's supply drags its six oscillators,
+// in octaves, with the starve trim all the way up. The tanks are not across
+// that supply, so the kick and the tom stay where they are.
+const BANK_STARVE_OCT = 3
+
+/** Which voice's trigger line holds up the metal bank's supply. Off, the bank
+    free-runs; wired, the six stand still whenever that voice is silent. */
+export const BANK_GATE_NAMES = ['off', ...VOICE_LABELS.map(l => `on the ${l}`)]
+
 // The bridged-T networks, and which trigger line shocks each one. Three voices
 // have them: the kick and the tom are one tank apiece, and the snare is the two
 // the 808 puts under its noise — 185 and 330 Hz, close enough to beat.
@@ -1117,6 +1126,10 @@ export class ToyDrum implements Stage {
     const sweep = p[IDX.drumSweep]!
     const fmDepth = BANK_FM * Math.min(Math.max(p[IDX.drumBankFm]!, 0), 1)
     const syncTank = BANK_SYNC_TANK[Math.round(p[IDX.drumBankSync]!)] ?? -1
+    const bankPf = octaves(
+      -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
+    )
+    const bankGate = Math.round(p[IDX.drumBankGate]!) - 1
     for (let t = 0; t < N_TANKS; t++) {
       const spec = TANKS[t]!
       this.tankF[t] = (TAU * spec.hz) / this.sr
@@ -1241,7 +1254,10 @@ export class ToyDrum implements Stage {
           // oscillators across the supply, and the only thing that ever silenced
           // one was the supply going away. Which is why it is here, under the
           // boot check, and why two hats in a row are two different hats.
-          this.metal.step(pf)
+          // Solder a trigger line onto that supply and the six hold their
+          // phases while the voice on it is silent.
+          const powered = bankGate < 0 || env[bankGate]! > AUDIBLE
+          this.metal.step(powered ? pf * bankPf : 0)
           // And the noise transistor, for the same reason and in the same place:
           // nothing on the board gates a junction either. Biased past the knee it
           // avalanches steadily and there is hiss; near the knee it latches in and

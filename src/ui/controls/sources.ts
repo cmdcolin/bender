@@ -47,6 +47,7 @@ import {
   SYNC_MODES,
 } from '../../dsp/stages/toyChip'
 import {
+  BANK_GATE_NAMES,
   BANK_SYNC_NAMES,
   CHOKE_NAMES,
   KIT_ROM_ADDR_LINES,
@@ -832,6 +833,29 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'The one resistor that makes the bank a clatter. It wraps a gate from output back to input and parks it at its trip point, where the gain is in the thousands, so the six arrive at the far side as a rail and what comes out is which way they are leaning rather than how far. Back the bias off and the gate stops deciding and starts amplifying: the sum comes through as a sum, and the hat, the open hat and the cymbal turn from a clatter into the six tones they were made of — a metal chord that beats against itself. The cowbell is soldered in ahead of the stage, so it is the one metal voice this never reaches.',
+      },
+      {
+        key: 'drumBankStarve',
+        needs: analogKit,
+        part: 'inside the voices',
+        label: 'Bank starve',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'A resistor into the metal bank’s own supply. The six slow down together, up to three octaves, so the cowbell drops, its beat stretches out, and the hats and cymbal thin from a clatter to a crackle. The kick, tom and snare are not across this supply and stay where Tune left them.',
+      },
+      {
+        key: 'drumBankGate',
+        needs: analogKit,
+        part: 'inside the voices',
+        label: 'Bank gate',
+        min: 0,
+        max: BANK_GATE_NAMES.length - 1,
+        step: 1,
+        unit: '',
+        choices: BANK_GATE_NAMES,
+        help: 'Solders a trigger line onto the metal bank’s supply, so the six run only while that voice sounds and hold their phases between its hits. On the kick, the hats, cowbell and cymbal speak only under a ringing kick. On a metal voice of its own, the bank stops between that voice’s hits and starts each one where the last left off.',
       },
       {
         key: 'drumBits',

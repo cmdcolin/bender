@@ -10,11 +10,11 @@ Candidates, ranked, with where each one hooks. The companion to
 same reason: nothing here is a decision, and the ones that are cheap and the
 ones that change how the kit sounds with no knife on it are called out as such.
 
-**Built:** items 1 (`drumSlip`), 3 (the accent on the data bus) and 8
-(`DEST.drumBpm`), 10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`)
-and 12 (`drumSweep`), plus the counter's reset wire (`drumReset`) and a
-comparator on a tank's ring (`drumRingTrig`). Every other numbered item is still
-a candidate.
+**Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
+accent on the data bus), 8 (`DEST.drumBpm`), 10 (the sample ROM knife), 11
+(`drumBankFm`, `drumBankSync`) and 12 (`drumSweep`), plus the counter's reset
+wire (`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every
+other numbered item is still a candidate.
 
 ## How to judge one of these before building it
 
@@ -153,6 +153,23 @@ comes from (the choke wiring's list of voices is the obvious source of the
 choice — it is already the "which trigger is soldered where" control).
 
 Cost: small. The bank is 40 lines and both changes live inside it.
+
+**Built** as `drumBankStarve` (0 to 1, three octaves at the top) and
+`drumBankGate` (off, or a voice's trigger line), both in `ToyDrum.process`: the
+trim multiplies the pitch factor `MetalBank.step` takes, and a shut gate hands
+it zero. Measured on the metal voices alone (`pnpm spectrum` columns):
+
+- Starve takes flatness from 0.49 to 0.96 and the level to 0.41×; the cowbell
+  falls to 0.32× as its pair drops under its 500 Hz corner. Tune at 0.5 reads
+  0.64 flat on the same voices, but on the whole board it moves the kick too
+  (centroid 367 → 197 Hz) where starve leaves it (367 → 241 Hz, kick and tom
+  bit-identical).
+- Hats on a bank gated by a silent line keep 6% of their level.
+- Self-gated hats still differ, because each hit starts where the last one
+  stopped: consecutive hats differ by 1.4× their level against 1.1×
+  free-running, and `drumBankSync` takes the same pair to 0.00. Gated on another
+  voice, the metal speaks only under that voice, which no other bend on the kit
+  does.
 
 ## 3. The accent line has no knife
 
@@ -373,7 +390,7 @@ depends on whether the chip's output is in `ctx` by then.
   tank table. Knobs, not bends.
 - **Voice stealing.** The kit's eight voices are eight sets of parts, not a
   pool. The mux already models the one thing they genuinely share.
-- **Resetting the metal bank on a trigger.** Covered by item 2's gate, which is
-  the same sound arrived at through a mechanism the board has.
+- **Resetting the metal bank on a trigger.** Covered by `drumBankSync`, which
+  makes every hat on a kick the same hat through a mechanism the board has.
 - **A second noise source.** The FM chip needed one. This kit has an avalanche
   junction, six oscillators and a converter that lurches at zero crossings.

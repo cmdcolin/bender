@@ -148,17 +148,18 @@ another voice's slab; see [BENDS.md](BENDS.md#the-drum-machines-sample-rom).
 
 Four voices are one part: the cowbell, both hats and the cymbal come off a
 single bank of six square oscillators. **Bank spread** widens the bank, detuning
-the cowbell and roughening the hats together. **Metal** blends between that bank
-and the noise transistor the hat used to be made of; **Cymbal tone** slides the
-cymbal between a crash and a splash. The two hats share a cap — writing a hat
-step under a ringing open hat cuts it short, the way a foot does — and **Choke**
-moves that resistor to any pair of voices. **Sweep** turns the kick's swoop into
-a zap or runs it backwards into a rise, **Bank FM** shakes the drums' tuning
-with the metal bank until the kick clangs, and **Bank sync** locks the metal
-voices to the kick's pitch while it rings. **Ring trigger** lets a ringing kick,
-tom or snare strike other voices once a cycle, and **Counter reset** sends the
-bar back to step one whenever a chosen voice strikes; see
-[BENDS.md](BENDS.md#the-counters-own-clock).
+the cowbell and roughening the hats together. **Bank starve** drops that bank
+without the drums, and **Bank gate** runs it only while a chosen voice sounds.
+**Metal** blends between that bank and the noise transistor the hat used to be
+made of; **Cymbal tone** slides the cymbal between a crash and a splash. The two
+hats share a cap — writing a hat step under a ringing open hat cuts it short,
+the way a foot does — and **Choke** moves that resistor to any pair of voices.
+**Sweep** turns the kick's swoop into a zap or runs it backwards into a rise,
+**Bank FM** shakes the drums' tuning with the metal bank until the kick clangs,
+and **Bank sync** locks the metal voices to the kick's pitch while it rings.
+**Ring trigger** lets a ringing kick, tom or snare strike other voices once a
+cycle, and **Counter reset** sends the bar back to step one whenever a chosen
+voice strikes; see [BENDS.md](BENDS.md#the-counters-own-clock).
 
 Press a step and drag across the grid to draw a run. Each row has its own
 length: shift-click a step to loop the row back from there, with a badge showing

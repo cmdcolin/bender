@@ -203,6 +203,8 @@ export const DEFAULT_CONTROLS = {
   drumSweep: 1,
   drumBankFm: 0,
   drumBankSync: 0,
+  drumBankStarve: 0,
+  drumBankGate: 0,
   drumReset: 0,
   drumRingTrig: 0,
   drumCross: 0,
