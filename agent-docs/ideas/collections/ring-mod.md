@@ -334,9 +334,9 @@ sync reads it.
 The toy against itself _now_ is a square-law detector: a thump at a third of the
 level. A step late it is at the knob carrier's level with the study's predicted
 flatness and bass. A3 and E4 in turn at four steps a second put the 110 Hz
-difference at 0.125 of the take's rms a step late, against 0.000 a beat late
-at 120 bpm (where a beat is two steps and the notes match) and 0.125 again at
-240 bpm.
+difference at 0.125 of the take's rms a step late, against 0.000 a beat late at
+120 bpm (where a beat is two steps and the notes match) and 0.125 again at 240
+bpm.
 
 ## Reachable today
 

@@ -984,10 +984,10 @@ length, every lap bends the pitch again, and the tail goes seasick. The bay's
 **verb warble** lane rides on the knob.
 
 The delay pedal's **shift** mode moves every repeat by the interval **Shift**
-names, and since the repeat is what goes back round, every lap moves again. Up
-a fifth, one note comes back as a staircase of fifths, ten times its pitch by
-the sixth lap; up an octave it is past the top of the band by then and folds
-back down as grit. Down an octave it spirals into the floor and rumbles there. A
+names, and since the repeat is what goes back round, every lap moves again. Up a
+fifth, one note comes back as a staircase of fifths, ten times its pitch by the
+sixth lap; up an octave it is past the top of the band by then and folds back
+down as grit. Down an octave it spirals into the floor and rumbles there. A
 third of a semitone either way is a smear that drifts further out of tune each
 lap.
 
@@ -1035,9 +1035,9 @@ it is also in the programme it is multiplying.
 **toy step late** and **toy beat late** multiply the toy by itself one of its
 steps or one of the kit's beats ago. Two different notes meet in the multiply,
 so their difference tone lands as a bass line under the tune that nobody wrote,
-and the sum tones fizz above it; where the old note and the new one are
-the same, the product is that note's octaves. The step follows the toy's clock,
-so a hand on Clock or a pot on the timing pin drags the delay and bends the old
+and the sum tones fizz above it; where the old note and the new one are the
+same, the product is that note's octaves. The step follows the toy's clock, so a
+hand on Clock or a pot on the timing pin drags the delay and bends the old
 note's pitch on its way out.
 
 **Mix** on a ring modulator is the depth of the modulation rather than a balance
