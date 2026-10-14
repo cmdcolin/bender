@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import { envelope, render, renderBender, rms, SR } from '../testRender'
 import { YOURS } from './roms'
-import { ARP_MODES, ToyChip } from './toyChip'
+import { ARP_MODES, ARP_SYNC_MODES, ToyChip } from './toyChip'
 
 import type { Controls } from '../../controls'
 
@@ -134,6 +134,66 @@ test('letting go of the keys ends the figure', () => {
   )
   expect(rms(x.subarray(0, SR))).toBeGreaterThan(0.01)
   expect(rms(x.subarray(1.5 * SR))).toBeLessThan(0.002)
+})
+
+// Strikes a second off the counter itself: past a few a second the notes ring
+// into each other and the level stops telling them apart.
+function arpRate(overrides: Partial<Controls>, seconds = 3) {
+  let struck = 0
+  let at = -1
+  renderBender(
+    { ...BASE, chipArp: mode('up'), ...overrides },
+    seconds,
+    built => {
+      const chip = built.toyChip as unknown as {
+        arpNote: (mode: number, range: number) => number
+      }
+      const own = chip.arpNote.bind(chip)
+      chip.arpNote = (m, r) => {
+        struck++
+        return own(m, r)
+      }
+    },
+    undefined,
+    (built, secs) => {
+      if (at >= 0 || secs < 0.02) return
+      at = secs
+      for (const note of CHORD) built.toyChip.noteOn(note)
+    },
+  )
+  return (struck - 1) / (seconds - at)
+}
+
+const sync = (name: string) => ARP_SYNC_MODES.indexOf(name)
+
+test('synced, the figure counts off the kit’s beat', () => {
+  const at = (name: string, drumBpm = 120) =>
+    arpRate({ chipArpSync: sync(name), drumBpm })
+  expect(at('quarters')).toBeCloseTo(2, 0)
+  expect(at('eighth triplets')).toBeCloseTo(6, 0)
+  expect(at('sixteenths')).toBeCloseTo(8, 0)
+  expect(at('thirty-second triplets')).toBeCloseTo(24, 0)
+  expect(at('sixty-fourths')).toBeCloseTo(32, 0)
+  expect(at('sixteenths', 90)).toBeCloseTo(6, 0)
+})
+
+test('synced, Arp rate says nothing', () => {
+  const locked = { chipArpSync: sync('eighths'), drumBpm: 120 }
+  expect(arpRate({ ...locked, chipArpHz: 3 })).toBeCloseTo(4, 0)
+  expect(arpRate({ ...locked, chipArpHz: 20 })).toBeCloseTo(4, 0)
+  expect(arpRate({ chipArpHz: 3 })).toBeCloseTo(3, 0)
+})
+
+// The lock replaces the knob and nothing under it, as Kit sync does for the
+// tune: see sync.test.ts.
+test('synced, the clock and the rail still drag the figure', () => {
+  const locked = { chipArpSync: sync('sixteenths'), drumBpm: 120 }
+  expect(arpRate({ ...locked, chipClockX: 2 })).toBeCloseTo(16, 0)
+  expect(arpRate({ ...locked, chipClockX: 0.5 })).toBeCloseTo(4, 0)
+  expect(arpRate({ ...locked, chipBattery: 0.8 })).toBeLessThan(8 * 0.9)
+  expect(
+    arpRate({ ...locked, chipBendSpot: 1, chipBendPot: 0.05 }),
+  ).toBeGreaterThan(8 * 1.5)
 })
 
 // The gate line carries whatever strikes a note, so the chip next door plays

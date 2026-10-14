@@ -17,6 +17,7 @@ export const PARAM_DEFS = [
   ['chipArp', 'step'],
   ['chipArpHz', 'slew'],
   ['chipArpOct', 'step'],
+  ['chipArpSync', 'step'],
   ['keyScale', 'step'],
   ['keyRoot', 'step'],
   ['chipClockX', 'slew'],

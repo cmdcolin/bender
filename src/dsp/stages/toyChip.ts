@@ -91,8 +91,24 @@ const SYNC_PER_BEAT = [0, 4, 2, 1]
 // both sides on its own. Reading the kit's running rate into this number would
 // charge the toy for it twice and the tune would fall behind the pattern exactly
 // as fast as the batteries went flat.
+const kitBeatHz = (bpm: number) => Math.max(bpm, 0.6) / 60
 const kitStepHz = (bpm: number, mode: number) =>
-  (Math.max(bpm, 0.6) / 60) * (SYNC_PER_BEAT[mode] ?? 4)
+  kitBeatHz(bpm) * (SYNC_PER_BEAT[mode] ?? 4)
+
+// The same wire onto the arpeggiator's count, with divisions past the tune's:
+// an arpeggio lives in the triplets and thirty-seconds a melody never reaches.
+export const ARP_SYNC_MODES = [
+  'off',
+  'quarters',
+  'eighths',
+  'eighth triplets',
+  'sixteenths',
+  'sixteenth triplets',
+  'thirty-seconds',
+  'thirty-second triplets',
+  'sixty-fourths',
+]
+const ARP_SYNC_PER_BEAT = [0, 1, 2, 3, 4, 6, 8, 12, 16]
 
 // Four notes, as the toys of the era had, and how far apart the four output
 // stages came out of the bin. Written as a deviation from nominal rather than
@@ -865,7 +881,10 @@ export class ToyChip implements Stage {
     this.keyRoot = Math.round(p[IDX.keyRoot]!)
     const drift = p[IDX.chipDrift]!
     const arpMode = Math.round(p[IDX.chipArp]!)
-    const arpHz = p[IDX.chipArpHz]!
+    const arpPerBeat = ARP_SYNC_PER_BEAT[Math.round(p[IDX.chipArpSync]!)] ?? 0
+    const arpHz = arpPerBeat
+      ? kitBeatHz(p[IDX.drumBpm]!) * arpPerBeat
+      : p[IDX.chipArpHz]!
     const arpRange = Math.max(Math.round(p[IDX.chipArpOct]!), 1)
     // Whether a key going down between blocks sounds on its own or waits for
     // the count. The switch moving with a hand already on the keys hands the
@@ -1023,9 +1042,8 @@ export class ToyChip implements Stage {
       // envelopes; put a pot on the timing pin and it dives with them. A cheap
       // keyboard's arpeggio was never a musical decision, it was whatever the
       // counter was doing. Its rate is its own knob rather than the ROM's
-      // number, though, so a lock does not land it on the kit the way it lands
-      // the tune: what the figure gets from the kit is what the divider gets,
-      // which is every bend and no tempo.
+      // number, so it has its own lock, which replaces the knob and leaves
+      // every bend in `timing`.
       if (arpMode > 0 && this.heldKeys.length > 0) {
         this.arpClock += (arpHz * timing) / this.sr
         while (this.arpClock >= 1) {

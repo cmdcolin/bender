@@ -75,7 +75,12 @@ arpeggiate the same as held ones.
 **Arp rate** is notes a second; **Arp range** is how many octaves the figure
 climbs before repeating. Neither is its own clock — the arpeggiator runs off the
 chip's divider, so **Clock**, a pot on the timing pin and a flat rail all drag
-the figure with the tune. **Kit sync** does not reach it.
+the figure with the tune.
+
+**Arp sync** is Kit sync for the figure: it counts off the kit's beat instead of
+Arp rate, from **quarters** through the triplets to **sixty-fourths**. The bends
+above still drag it off the beat, and on a fast kit the top divisions blur into
+a buzz.
 
 The figure goes out on the gate line like any other note, so it plays the FM
 chip too wherever that jumper is soldered on, and **Keys fire kit** turns it
@@ -87,7 +92,7 @@ into a drum pattern.
 the tune counts off the kit's tempo instead of its own crystal. Pick how much of
 a beat one step of the tune is worth: **sixteenths**, **eighths**, or
 **quarters**. It reaches the melody, both memory lanes, and the auto bass-chord
-— not the arpeggiator, which keeps its own rate knob.
+— not the arpeggiator, which has its own, **Arp sync**.
 
 It replaces the rate the song was written at, nothing else: **Clock**, a pot on
 the timing pin, **Crystal drift** and a flat rail still move a locked toy the

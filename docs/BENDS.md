@@ -84,6 +84,11 @@ the drum machine. Nothing pulls it back, so the two never lock: they drift out
 of alignment, swing back close to it, and drift apart again, for as long as you
 leave it running.
 
+**Kit sync** and **Arp sync** hand the tune and the arpeggio a rate off the
+kit's beat, and every bend in this section still drags them. Arp sync on
+sixty-fourths is a trill at 120 bpm; a clock pot turned up on it climbs into a
+buzz pitched at the strike rate, as high as 800 Hz.
+
 **Junk in the counter** is what happens on the way back from a brownout.
 Pressing play always starts the tune at step zero; a reboot doesn't, because the
 program counter comes back holding whatever was in its latch when the rail

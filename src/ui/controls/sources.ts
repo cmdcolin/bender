@@ -39,6 +39,7 @@ import {
 } from '../../dsp/stages/roms'
 import {
   ARP_MODES,
+  ARP_SYNC_MODES,
   BANK_LINES,
   DIV_LINES,
   ENV_CAPS,
@@ -251,8 +252,8 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.1,
         unit: 'Hz',
         curve: 'log',
-        needs: c => c.chipArp > 0,
-        help: 'Notes a second, before the divider gets to it. A nudge lands it on a division of the kit’s tempo, which is the only way the two machines ever line up — the toy runs on its own crystal and nothing pulls it back.',
+        needs: c => c.chipArp > 0 && c.chipArpSync === 0,
+        help: 'Notes a second, before the divider gets to it. A nudge lands it on a division of the kit’s tempo; Arp sync holds it there.',
       },
       {
         key: 'chipArpOct',
@@ -263,6 +264,17 @@ export const SOURCE_GROUPS: Group[] = [
         unit: 'oct',
         needs: c => c.chipArp > 0,
         help: 'How many octaves the figure climbs before it starts again. The chip has four voices and the keys reach two octaves under its bottom A, so a wide range on a big chord is a chip stealing from itself — which is what it sounded like.',
+      },
+      {
+        key: 'chipArpSync',
+        label: 'Arp sync',
+        min: 0,
+        max: ARP_SYNC_MODES.length - 1,
+        step: 1,
+        unit: '',
+        choices: ARP_SYNC_MODES,
+        needs: c => c.chipArp > 0,
+        help: 'Kit sync for the arpeggio: the figure counts off the kit’s beat instead of Arp rate, down to sixty-fourths and the triplets between. Like Kit sync it replaces the rate and nothing else, so Clock, a pot on the timing pin and a flat rail still drag the figure off the beat. At a fast tempo the top divisions run into a buzz.',
       },
       {
         key: 'keyScale',
