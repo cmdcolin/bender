@@ -374,9 +374,9 @@ export class PcmKeys implements Stage {
     // starving rail stretches the envelopes along with the notes.
     const scale = Math.max(rail.clockFactor, 0.05)
     const shape = ENV_SHAPE[Math.round(p[IDX.pcmEnv]!)] ?? ENV_SHAPE[0]!
-    this.attackCoef = 1 - Math.exp(-1 / (shape.attack * scale * this.sr))
-    this.decayCoef = Math.exp(-1 / (shape.decay * scale * this.sr))
-    this.releaseCoef = Math.exp(-1 / (p[IDX.pcmRelease]! * scale * this.sr))
+    this.attackCoef = 1 - Math.exp(-1 / ((shape.attack / scale) * this.sr))
+    this.decayCoef = Math.exp(-1 / ((shape.decay / scale) * this.sr))
+    this.releaseCoef = Math.exp(-1 / ((p[IDX.pcmRelease]! / scale) * this.sr))
     this.sustainAt = shape.sustain
     const toneCoef = lpCoef(p[IDX.pcmTone]!, this.sr)
     const vibDelay = VIB_DELAY * this.sr

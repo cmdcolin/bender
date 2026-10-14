@@ -438,10 +438,6 @@ Design calls:
    counter's slips audible as movement, not just as level.
 4. **The test register's 0xf0 and the key register's sustain bit**, as above.
 
-Outside this chip: `pcmKeys.ts` multiplies its envelope times by the rail's
-`clockFactor` the way `rates()` did, so a starving rail shortens the home
-keyboard's envelopes too.
-
 ## Compositions to try
 
 All four are possible now and none is surfaced.

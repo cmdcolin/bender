@@ -155,6 +155,17 @@ test('a starving rail drags the keyboard down with the toy', () => {
   expect(peakIn(starved, want * 0.5, want * 1.1, 1)).toBeLessThan(want * 0.8)
 })
 
+test('a starving rail stretches the envelopes with the pitch', () => {
+  const ring = (o: Partial<Controls>) => {
+    const x = held({ pcmEnv: 0, chipLevel: 0.6, ...o }, 12, 1.2)
+    return (
+      rms(x.subarray(Math.round(0.9 * SR))) /
+      rms(x.subarray(Math.round(0.05 * SR), Math.round(0.2 * SR)))
+    )
+  }
+  expect(ring({ chipStarve: 0.5 })).toBeGreaterThan(1.3 * ring({}))
+})
+
 test('a data line on the rail changes every word, and a trace that still conducts changes none', () => {
   const plain = held({}, 12, 0.3)
   const knifed = held({ pcmDataLine: 7, pcmDataFault: FAULT.supply }, 12, 0.3)
