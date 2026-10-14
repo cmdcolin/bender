@@ -165,6 +165,7 @@ export const BEND_ENDS: Partial<
   echoToneHz: [null, null],
   echoLevel: [null, 2.5],
   revDecayS: [-1.5, 3],
+  revWarble: [-0.5, 0],
   revToneHz: [-1, null],
   revBoing: [null, -2],
   revKick: [null, 0.5],
