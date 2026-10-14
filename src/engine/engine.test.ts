@@ -12,7 +12,9 @@ import {
   soundingMask,
   tailScore,
 } from './engine'
-import { IDX } from './params'
+import { IDX, MAX_SOURCES, STEM_FILES } from './params'
+
+import type { RecMsg } from './messages'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
 // out to nothing, so a morph asked for in seconds stays in flight for the whole
@@ -633,4 +635,57 @@ test('a hunt keeps every candidate it heard, to pick another from', async () => 
   engine.pickHunted(1)
   expect(engine.controls.get()).toEqual(engine.hunted.get()[1])
   expect(engine.history.get().past).toHaveLength(1)
+})
+
+const N = 64
+
+const recorder = (stems: boolean) => {
+  const engine = new Engine()
+  const files: File[] = []
+  Object.assign(engine, { node: { port: { postMessage: () => {} } } })
+  engine.takeTo = file => files.push(file)
+  engine.recStems.set(stems)
+  engine.startRecording()
+  const chunk = (msg: Omit<RecMsg, 'kind'>) =>
+    (engine as unknown as { onRecChunk(m: RecMsg): void }).onRecChunk({
+      kind: 'rec',
+      ...msg,
+    })
+  return { files, chunk }
+}
+
+const STAMP = /^bender-\d{8}-\d{6}/
+const suffixes = (files: File[]) => files.map(f => f.name.replace(STAMP, ''))
+
+test('a stem take saves the master and a file for each source that made a sound', async () => {
+  const { files, chunk } = recorder(true)
+  const l = new Float32Array(N)
+  const slabs = Array.from({ length: MAX_SOURCES }, () => new Float32Array(N))
+  const at = (name: (typeof STEM_FILES)[number]) =>
+    slabs[STEM_FILES.indexOf(name)]!
+
+  at('drums').fill(0.5)
+  at('noise').fill(1e-5)
+  chunk({ l, r: l, n: N, done: false, stems: slabs })
+
+  // The worklet writes the next slab over the same buffers.
+  at('drums').fill(0)
+  at('fm')[N - 1] = 0.25
+  chunk({ l, r: l, n: N, done: true, stems: slabs })
+
+  expect(suffixes(files)).toEqual(['-master.wav', '-drums.wav', '-fm.wav'])
+  expect(new Set(files.map(f => f.name.match(STAMP)![0])).size).toBe(1)
+  const [master, drums, fm] = files
+  expect(master!.size).toBe(44 + 2 * N * 4)
+  expect(fm!.size).toBe(44 + 2 * N * 2)
+  const pcm = new DataView(await drums!.arrayBuffer())
+  expect(pcm.getInt16(44, true)).toBeGreaterThan(16000)
+  expect(pcm.getInt16(44 + N * 2, true)).toBe(0)
+})
+
+test('a master-only take saves one file under the bare stamp', () => {
+  const { files, chunk } = recorder(false)
+  const l = new Float32Array(N).fill(0.5)
+  chunk({ l, r: l, n: N, done: true })
+  expect(suffixes(files)).toEqual(['.wav'])
 })
