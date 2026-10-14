@@ -462,6 +462,12 @@ its pitch and fall with its swoop, and every hat struck with a kick comes out
 the same hat. Once the drum stops, the bank runs free again. With Bank FM up as
 well, the bank shakes the network that resets the bank.
 
+**Tank coupling** wires the kick's network into the tom's drive, so every kick
+rings the tom as well, about an octave up. Past a quarter of the travel the tom
+answers louder than the kick that drove it. With Ring past the latch the two
+networks are two oscillators, one forcing the other: low on the travel they lock
+to one pitch, and around halfway the pair smears across the low end.
+
 **Trigger pulse** is how long the one-shot holds that line down. The charge is
 the same either way, so this is where it goes rather than how much of it there
 is: narrow is a tall spike that gets through the coupling cap as a click and

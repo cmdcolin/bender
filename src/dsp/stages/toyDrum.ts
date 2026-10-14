@@ -188,6 +188,11 @@ const RING_TRIG_LOW = -0.05
 // through zero and the network runs backwards for half of each swing.
 const BANK_FM = 12
 
+// How much of the kick tank's swing reaches the tom tank's drive per sample,
+// with the coupling all the way up. Enough that a kick at rest pumps the tom
+// into its rail.
+const TANK_COUPLE = 0.05
+
 /** Which tank's rising zero crossings reset the metal bank's phases. */
 export const BANK_SYNC_NAMES = ['off', 'to the kick', 'to the tom']
 const BANK_SYNC_TANK = [-1, 0, 1]
@@ -1136,6 +1141,8 @@ export class ToyDrum implements Stage {
     const sweep = p[IDX.drumSweep]!
     const fmDepth = BANK_FM * Math.min(Math.max(p[IDX.drumBankFm]!, 0), 1)
     const syncTank = BANK_SYNC_TANK[Math.round(p[IDX.drumBankSync]!)] ?? -1
+    const couple =
+      TANK_COUPLE * Math.min(Math.max(p[IDX.drumTankCouple]!, 0), 1)
     const bankPf = octaves(
       -BANK_STARVE_OCT * Math.min(Math.max(p[IDX.drumBankStarve]!, 0), 1),
     )
@@ -1294,18 +1301,24 @@ export class ToyDrum implements Stage {
           // starts retuning a note instead of restriking a drum.
           const bankFm = fmDepth > 0 ? 1 + fmDepth * this.metal.clash : 1
           let synced = 0
+          let kickRing = 0
           for (let t = 0; t < N_TANKS; t++) {
             const v = TANKS[t]!.voice
-            const drive = shock[v]!
+            // The kick's ring wired into the tom's drive.
+            const drive =
+              couple > 0 && v === TOM
+                ? shock[v]! + couple * kickRing
+                : shock[v]!
             const tank = this.tanks[t]!
             if (drive === 0 && tank.level <= AUDIBLE) continue
-            const y =
-              tank.process(
-                drive,
-                this.tankF[t]! * pf * bankFm,
-                this.tankRate[t]!,
-                TANKS[t]!.sweep * sweep,
-              ) * this.tankGain[t]!
+            const ringing = tank.process(
+              drive,
+              this.tankF[t]! * pf * bankFm,
+              this.tankRate[t]!,
+              TANKS[t]!.sweep * sweep,
+            )
+            if (v === KICK) kickRing = ringing
+            const y = ringing * this.tankGain[t]!
             if (t === syncTank) synced = y
             out += y
             if (v === this.ringSrc) heard += y

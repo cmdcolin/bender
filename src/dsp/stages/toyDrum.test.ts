@@ -1300,6 +1300,49 @@ test('a bank gated on the kick only speaks under a ringing kick', () => {
   expect(hiss({ ...gated, ...kick })).toBeGreaterThan(0.5 * hiss(kick))
 })
 
+test('a kick wired into the tom’s drive rings a tom nobody struck', () => {
+  const kick = slice(soloVoice(KICK_ALONE, 1), 0.3, 0.6)
+  const both = slice(
+    soloVoice({ ...KICK_ALONE, drumTankCouple: 1 }, 1),
+    0.3,
+    0.6,
+  )
+  const tomRing = both.map((v, i) => v - kick[i]!)
+  expect(rms(tomRing)).toBeGreaterThan(2 * rms(kick))
+  expect(pitchHz(tomRing)).toBeGreaterThan(1.5 * pitchHz(kick))
+  const tom: Partial<Controls> = { drumBpm: 60, drumTom: stepMask(1) }
+  expect(soloVoice({ ...tom, drumTankCouple: 1 }, 1)).toEqual(soloVoice(tom, 1))
+})
+
+// Both networks latched and struck once, then left. Uncoupled, each holds a
+// pitch; coupled, the tom is a second oscillator forced by the first.
+test('two latched networks wired together stop holding one pitch', () => {
+  const smear = (couple: number) => {
+    const x = slice(
+      soloVoice(
+        {
+          drumBpm: 30,
+          drumKick: stepMask(1),
+          drumTom: stepMask(1),
+          drumRing: 0.95,
+          drumTankCouple: couple,
+        },
+        4,
+      ),
+      2,
+      4,
+    )
+    const power = Array.from({ length: 381 }, (_, k) => bin(x, 20 + k) ** 2)
+    const total = power.reduce((a, v) => a + v, 0)
+    power.sort((a, b) => b - a)
+    let held = 0
+    let bins = 0
+    while (held < 0.9 * total) held += power[bins++]!
+    return bins
+  }
+  expect(smear(0.5)).toBeGreaterThan(3 * smear(0))
+})
+
 // A wire held flat out by the contact pad, so a lane reads as a turned knob.
 const held = (dest: number, depth = 1): Partial<Controls> => ({
   mod0Src: 5,

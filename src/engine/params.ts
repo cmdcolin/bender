@@ -200,6 +200,7 @@ export const PARAM_DEFS = [
   ['drumBankGate', 'step'],
   ['drumClapGap', 'slew'],
   ['drumClapCount', 'step'],
+  ['drumTankCouple', 'slew'],
   ['drumReset', 'step'],
   ['drumRingTrig', 'step'],
   ['drumCross', 'step'],

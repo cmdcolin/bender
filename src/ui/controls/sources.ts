@@ -758,6 +758,17 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'Resets all six metal oscillators each time the kick or tom network swings up through zero. While that drum rings, the hats, the cowbell and the cymbal repeat at its pitch and fall with its swoop; once it stops, the bank runs free again. With Bank FM up as well, the two wires form a loop.',
       },
       {
+        key: 'drumTankCouple',
+        needs: analogKit,
+        part: 'inside the voices',
+        label: 'Tank coupling',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'A wire from the kick’s network into the tom’s drive. Every kick rings the tom as well, about an octave above it, and up the travel the tom answers louder than the kick. With Ring past the latch the two networks are oscillators, one forcing the other: low on the travel they lock to one pitch, and around halfway they smear across the low end.',
+      },
+      {
         key: 'drumPulse',
         part: 'inside the voices',
         label: 'Trigger pulse',

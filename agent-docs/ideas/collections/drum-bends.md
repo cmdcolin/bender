@@ -12,9 +12,10 @@ ones that change how the kit sounds with no knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
 accent on the data bus), 6 (`drumClapGap`, `drumClapCount`), 8 (`DEST.drumBpm`),
-10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`) and 12
-(`drumSweep`), plus the counter's reset wire (`drumReset`) and a comparator on a
-tank's ring (`drumRingTrig`). Every other numbered item is still a candidate.
+10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`), 12 (`drumSweep`)
+and 13 (`drumTankCouple`), plus the counter's reset wire (`drumReset`) and a
+comparator on a tank's ring (`drumRingTrig`). Every other numbered item is still
+a candidate.
 
 ## How to judge one of these before building it
 
@@ -388,6 +389,19 @@ negative end needs a floor. **Built** as `drumSweep`, −1 to 8, with
 
 Kick tank output into the tom tank's `drive`. With both rings past the latch,
 two coupled self-oscillators beat, lock and go chaotic. Cost: small.
+
+**Built** as `drumTankCouple`, 0 to 1, with `TANK_COUPLE` at 0.05 of the kick's
+swing into the tom's drive per sample at the top; with no kick ringing the tom
+renders bit-identical.
+
+- A kick alone grows a tom ring under it: the added signal is 0.8× the kick's
+  level at a quarter of the travel and 3–4× at the top, at 100–270 Hz against
+  the kick's 33–75 Hz.
+- On the `pnpm spectrum` board (kick and tom only) the top of the travel takes
+  the centroid from 81 to 154 Hz and the low band from 0.11 to 0.66; Bank FM,
+  the nearest bend, puts the same voices at 662 Hz with half the power in mid.
+- Both latched (Ring 0.95), 90% of the power between 20 and 400 Hz sits in 3
+  one-hertz bins uncoupled, 5–6 at 0.05–0.25, 16 at 0.5 and 7 at 1.
 
 ## 14. Audio on the DAC's reference
 

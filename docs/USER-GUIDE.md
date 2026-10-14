@@ -157,10 +157,11 @@ hats share a cap — writing a hat step under a ringing open hat cuts it short,
 the way a foot does — and **Choke** moves that resistor to any pair of voices.
 **Sweep** turns the kick's swoop into a zap or runs it backwards into a rise,
 **Bank FM** shakes the drums' tuning with the metal bank until the kick clangs,
-and **Bank sync** locks the metal voices to the kick's pitch while it rings.
-**Ring trigger** lets a ringing kick, tom or snare strike other voices once a
-cycle, and **Counter reset** sends the bar back to step one whenever a chosen
-voice strikes; see [BENDS.md](BENDS.md#the-counters-own-clock).
+**Bank sync** locks the metal voices to the kick's pitch while it rings, and
+**Tank coupling** rings the tom off every kick. **Ring trigger** lets a ringing
+kick, tom or snare strike other voices once a cycle, and **Counter reset** sends
+the bar back to step one whenever a chosen voice strikes; see
+[BENDS.md](BENDS.md#the-counters-own-clock).
 
 Press a step and drag across the grid to draw a run. Each row has its own
 length: shift-click a step to loop the row back from there, with a badge showing
