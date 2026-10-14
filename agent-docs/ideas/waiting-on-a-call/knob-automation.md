@@ -11,4 +11,4 @@ description:
 The assistant-suggested one you'd blessed. Needs an arm affordance, a
 control-rate recorder, transport-locked playback, and a real decision about
 whether a recorded sweep rides in presets/URL/undo. The patch bay can't host it:
-its 50 destinations are DSP lanes, not the 331 control keys.
+its 91 destinations (`N_DEST`) are DSP lanes, not the ~480 control keys.

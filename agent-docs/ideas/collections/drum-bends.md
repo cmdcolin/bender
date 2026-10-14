@@ -42,7 +42,7 @@ So "put a number in the broadband column" is not the test here. Three sharper
 ones fall out of reading the stage:
 
 **The kit has no bend that accumulates.** `stepAt` is a pure function of the
-tick, and so is `bitsAt` up to the dice. Address and data faults are the same
+tick, and so is `wordAt` up to the dice. Address and data faults are the same
 wrong cell every lap, deliberately — that is the sentence at the top of `bus.ts`
 and it is the right sentence. But it means every knife on this machine is a
 different sixteen steps, and none of them is a machine that walks away from you.
@@ -90,10 +90,9 @@ sync_ is a tempo lock rather than a clock wire — `toyChip.ts` computes
 number the kit was asked for and never the edges the counter produced. MIDI
 clock out is the other way round: `midi.ts` counts it off the steps the kit
 actually clocks, so a slipping counter drags every follower on the wire and
-leaves the toy on the same board playing straight. That asymmetry is already
-documented in `agent-docs/handoffs/HANDOFF-tempo-lock.md` as "the lock follows a
-tempo and never a downbeat"; a slip bend is the first thing that makes it
-audible.
+leaves the toy on the same board playing straight. `docs/MIDI.md` already
+documents that asymmetry ("What arrives is a tempo, not a downbeat"); a slip
+bend is the first thing that makes it audible.
 
 Hook: `ToyDrum.process`, the `if (this.stepClock >= span)` block. A rate knob, a
 draw per step boundary, and `this.tick` advances by 0, 1 or 2. Counted off the
@@ -190,7 +189,7 @@ free: both read the slider's max.
 
 There is no random number generator on a board like this. What decides a "maybe"
 step is a comparator on the hiss, and `chance` is where its threshold sits. The
-model half knows this already: `bitsAt` and the noise voices draw from the same
+model half knows this already: `wordAt` and the noise voices draw from the same
 `this.rng` stream, and the separate `burstRng` exists precisely so that _hold
 times_ do not perturb the hiss. What is missing is the other direction — the
 dice reads the raw stream and never the junction's state, so `noiseBias` does
@@ -211,7 +210,7 @@ pattern that sits still for bars. Making it sit still for bars means longer hold
 times, and that is a claim about the transistor rather than a knob — it would
 move the popcorn bend as well, which is a real sound somebody has already tuned.
 
-Hook: `bitsAt`, one line — compare against the junction rather than the stream.
+Hook: `wordAt`, one line — compare against the junction rather than the stream.
 `this.noiseGate` is already computed per sample and already in scope.
 
 Cost: the cheapest thing on this list. Its interest is that it is a correction
