@@ -301,6 +301,7 @@ export const DEFAULT_CONTROLS = {
   fmDacSlip: 0,
   fmAlloc: 0,
   fmColdBoot: 0,
+  fmAdder: 0,
 
   // The home keyboard. Its fader boots at the floor for the reason the FM
   // chip's does: it is soldered onto the toy's gate line, so a board that came

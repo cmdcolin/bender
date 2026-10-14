@@ -117,6 +117,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmDacSlip: 'FM chip',
   fmAlloc: 'FM chip',
   fmColdBoot: 'FM chip',
+  fmAdder: 'FM chip',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

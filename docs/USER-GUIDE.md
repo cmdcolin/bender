@@ -271,7 +271,9 @@ stuck sends every note to one channel, so the chip plays one note at a time;
 stuck on a channel the rhythm bank or an effect owns, the tune plays the drums
 or fights the effect. **Cold boot** on **garbage** power-cycles the chip into
 random registers, so it drones at random pitches until notes land on its
-channels.
+channels. **Log adder** swaps the multiply for the part's log arithmetic with a
+narrow adder that wraps, so fades explode back to full and sines fold into a
+digital buzz.
 
 ## Playing the home keyboard
 

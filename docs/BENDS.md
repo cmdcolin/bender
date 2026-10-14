@@ -461,6 +461,19 @@ them, and so does every panic, with fresh garbage each time:
 - A wire on **FM cold boot** power-cycles the chip each time it crosses halfway,
   so a square LFO on it is a stutter of random chords.
 
+**Log adder** puts the chip on the part's own arithmetic. The board as built
+multiplies; the real die has no multiplier. Its sine table holds −log₂|sin|,
+every envelope and level is added to that as attenuation, and an exp table turns
+the sum back into a level. Any width on the control switches every operator to
+that path, with an adder of that many bits that wraps instead of saturating:
+
+- A sound fading past the adder's top comes back at full scale, so a decay
+  explodes back every 48 dB at 11 bits and every 3 dB at 7.
+- The quiet middle of every sine sits deep in attenuation, so a narrow adder
+  folds it up into a harsh digital buzz at the note's own pitch.
+- The kit and the effect scripts go through the same adder; wind at 9 bits is
+  close to white.
+
 ## Inside the drum voices
 
 The kit's pitched voices — kick, tom, and the body under the snare — aren't

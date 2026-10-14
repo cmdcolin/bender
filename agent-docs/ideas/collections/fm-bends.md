@@ -105,33 +105,50 @@ register. What is left, and whether it is real on the part:
   file can say. A fifth and sixth would be in keeping. No proposal for what they
   should be — that is the interesting part of the work.
 
-## 1. Log domain, and an adder that wraps
+## 1. Log domain, and an adder that wraps — landed
 
-The chip does none of what it is modelling. `fmChip.ts` multiplies: the operator
-output is `wave(...) * env * level`. The real part has no multiplier anywhere.
-The sine ROM stores −log₂|sin|, the envelope and the level are _added_ to it as
-attenuation, and an exp ROM converts back at the end.
+`fmChip.ts` multiplies: the operator output is `wave(...) * env * level`. The
+real part has no multiplier. Its sine ROM stores −log₂|sin|, the envelope and
+the level are _added_ to it as attenuation, and an exp ROM converts back. The
+attenuation adder has a fixed width, so one that wraps instead of saturating
+turns a note fading toward silence into one that comes back at full volume.
 
-Two things fall out that no bend here can currently make.
+Built as `fmAdder`, **Log adder** (`linear`, then 11, 10, 9, 8 and 7 bits;
+default `linear`) with a hop lane. Design calls:
 
-The exp ROM is a second table with its own address lines — a fourth bus, and the
-only one that carries an amplitude rather than a phase or a byte. And the
-attenuation adder has a fixed width, so a knife that makes it wrap instead of
-saturate means a note fading toward silence crosses the top of the adder and
-comes back at full volume. A fade that periodically explodes is not a sound
-anything else on this board makes.
+- The log path is a switch, not a rewrite. `linear` runs the old expressions
+  untouched, so the shipped sound and `pnpm spectrum cuts` are bit-identical by
+  construction and the success condition above is met trivially.
+- Any width puts every operator on the part's arithmetic: `logMul()` rounds
+  −log₂ of the sample and of the gain (envelope × key scaling × tremolo × level
+  or volume) to 256ths of an octave, adds them, masks the sum to the adder's
+  width and reads a 256-entry exp table shifted by the octave.
+- The log is taken of the word `wave()` returns, so the wave-bus faults still
+  bite before it; the logarithm sees the faulted sample.
+- The adder width is the knob, because width decides how often a fade explodes:
+  every 48 dB at 11 bits, every 3 dB at 7. 12 bits was built and dropped: it
+  measured 0.01 deviation from linear on the spectrum board, since nothing wraps
+  that wide. 7 bits took its place.
+- The bass drum's two operators and the two noise slots go through it too, so
+  the kit wraps with the rest of the chip.
+- The exp ROM's own address bus is not built; the adder carries the sound.
 
-Hook points are narrow, which is the good news: `rates()` builds a linear level
-through `atten()`, `readOperators()` passes it, `stepEnv()` walks a linear
-envelope, and `wave()` returns a linear sample. Those four.
+Measured on the `pnpm spectrum` board, FM stem, centroid and flatness against
+1.66 kHz and 0.001 clean:
 
-The cost is the honest problem. Every existing wave-bus bend changes character,
-because a bent address would then perturb a logarithm — and the wave bus is the
-eight-broadband column that currently carries the chip. So this is the one
-proposal on the list whose _success_ condition includes not moving things:
-`pnpm spectrum cuts` prints the whole named-cuts row, and a run of it before and
-after is what says whether this chip's ten named cuts still sound like their
-names. There is no golden-render mechanism in the repo to lean on instead.
+| adder   | level | deviation | centroid | flat |
+| ------- | ----- | --------- | -------- | ---- |
+| 11 bits | 1.01× | 0.17      | 1.96 kHz | 0.05 |
+| 10 bits | 1.09× | 0.58      | 4.29 kHz | 0.15 |
+| 9 bits  | 1.20× | 1.34      | 6.14 kHz | 0.27 |
+| 8 bits  | 1.33× | 1.73      | 6.05 kHz | 0.27 |
+| 7 bits  | 1.41× | 1.85      | 6.93 kHz | 0.39 |
+
+- The bell at 7 bits: flatness 0.006 → 0.59, centroid 4.8 → 10.1 kHz.
+- The kit at 9 bits: flatness 0.04 → 0.61. Wind at 9 bits: 0.002 → 0.82,
+  centroid 0.7 → 8.9 kHz, the flattest thing this chip has measured.
+- An e.piano note's tail (1 s on) over its head: 2.5× the linear ratio at 10
+  bits.
 
 ## 2. The wave ROM's data pins — landed
 

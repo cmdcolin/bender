@@ -168,6 +168,7 @@ export const PATCH_GROUPS: Group[] = [
             'FM slot slip',
             'FM allocator',
             'FM cold boot',
+            'FM log adder',
           ],
           groups: [
             {
@@ -238,6 +239,7 @@ export const PATCH_GROUPS: Group[] = [
                 'FM slot slip',
                 'FM allocator',
                 'FM cold boot',
+                'FM log adder',
               ],
             },
             {

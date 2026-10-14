@@ -1028,3 +1028,36 @@ test('a wire on the cold boot lane power-cycles the chip', () => {
   const wire = { bodyX: 1, mod0Src: 5, mod0Dest: DEST.fmColdBoot, mod0Depth: 1 }
   expect(booted({ fmColdBoot: 0, ...wire }).x).toEqual(booted({}).x)
 })
+
+// The log domain: a narrow adder wraps a quiet sum back round to full scale.
+const ADDER = { '11': 1, '10': 2, '8': 4, '7': 5 }
+
+test('a wrapping adder brings a fading note back at full scale', () => {
+  const ring = (o: Partial<Controls>) => {
+    const x = fmNote({ fmVoice: voice('e.piano'), ...o }, 12, 1.5)
+    return (
+      rms(x.subarray(Math.round(1 * SR))) /
+      rms(x.subarray(0, Math.round(0.1 * SR)))
+    )
+  }
+  expect(ring({ fmAdder: ADDER['10'] })).toBeGreaterThan(2 * ring({}))
+})
+
+test('a wrapping adder folds the quiet middle of the sine into a buzz', () => {
+  const clean = sine({})
+  const folded = sine({ fmAdder: ADDER['7'] })
+  expect(bin(folded, 220)).toBeGreaterThan(0.3 * bin(clean, 220))
+  expect(highEnergy(folded, 4000) / rms(folded)).toBeGreaterThan(
+    5 * (highEnergy(clean, 4000) / rms(clean)),
+  )
+})
+
+test('a wire on the adder lane narrows the adder', () => {
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmAdder,
+    mod0Depth: 4 / 6,
+  }
+  expect(sine(wire)).toEqual(sine({ fmAdder: ADDER['8'] }))
+})

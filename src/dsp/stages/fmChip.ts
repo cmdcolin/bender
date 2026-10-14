@@ -173,6 +173,19 @@ const sineAt = (addr: number) => {
   return addr & SIGN ? -s : s
 }
 
+// The part's own arithmetic, which the linear path above stands in for: the
+// table holds −log₂|sin|, every gain is added to it as attenuation in 256ths
+// of an octave, and an exp table turns the sum back into a level. The adder
+// that forms the sum is what the Log adder control narrows, and a sum past
+// its top wraps round to full scale instead of saturating.
+const ATT_STEPS = 256
+const EXP_TABLE = Float64Array.from({ length: ATT_STEPS }, (_, i) =>
+  Math.pow(2, -i / ATT_STEPS),
+)
+const attOf = (x: number) => Math.max(Math.round(-ATT_STEPS * Math.log2(x)), 0)
+/** The adder widths the control offers after linear, in bits. */
+const ADDER_BITS = [0, 11, 10, 9, 8, 7]
+
 /** The table's word, and the count a full-scale magnitude comes out as. */
 const WAVE_DATA_BITS = 8
 const WAVE_DATA_FULL = (1 << WAVE_DATA_BITS) - 1
@@ -433,6 +446,8 @@ export class FmChip implements Stage {
   /** the channel a stuck allocator hands every note, or -1 */
   private stuckCh = -1
   private cold = false
+  /** the attenuation adder's mask, or 0 for the linear path */
+  private adderMask = 0
   private bootRng = mulberry32(BOOT_SEED)
   private dacSlot = -1
   private slotPos = 0.5
@@ -1023,16 +1038,17 @@ export class FmChip implements Stage {
       this.stepEnv(c.car, raced ? this.raceRates : car)
       c.mod.phase = (c.mod.phase + inc * mod.mult) % 1
       const self = (c.mod.fb1 + c.mod.fb2) * mod.fb
-      const m =
-        this.wave(c.mod.phase + self, 0) *
-        (wideOpen ? 1 : c.mod.env) *
-        mod.level
+      const ms = this.wave(c.mod.phase + self, 0)
+      const modEnv = wideOpen ? 1 : c.mod.env
+      const m = this.adderMask
+        ? this.logMul(ms, modEnv * mod.level)
+        : ms * modEnv * mod.level
       c.mod.fb2 = c.mod.fb1
       c.mod.fb1 = m
       c.car.phase = (c.car.phase + inc * car.mult) % 1
-      return (
-        this.wave(c.car.phase + m * 2, 0) * (wideOpen ? 1 : c.car.env) * vol
-      )
+      const cs = this.wave(c.car.phase + m * 2, 0)
+      const carEnv = wideOpen ? 1 : c.car.env
+      return this.adderMask ? this.logMul(cs, carEnv * vol) : cs * carEnv * vol
     }
 
     // The shift register is clocked off this channel's own phase generator
@@ -1058,27 +1074,29 @@ export class FmChip implements Stage {
     }
 
     let out = 0
+    let logged = 0
     if (c.car.stage !== IDLE) {
       // The snare. The die switches the table out rather than disconnecting it,
       // so a little of the operator's own phase is still in there — which is
       // why a real one is pitched rather than pure sand.
       this.stepEnv(c.car, raced ? this.raceRates : this.snareRates)
       c.car.phase = (c.car.phase + inc) % 1
-      out +=
-        (this.snareHiss * 0.75 + this.wave(c.car.phase, 0) * 0.25) *
-        (wideOpen ? 1 : c.car.env)
+      const src = this.snareHiss * 0.75 + this.wave(c.car.phase, 0) * 0.25
+      const env = wideOpen ? 1 : c.car.env
+      if (this.adderMask) logged += this.logMul(src, env * vol)
+      else out += src * env
     }
     if (c.mod.stage !== IDLE) {
       // And the hi-hat, which is the same register gated off a phase eight
       // times up: what makes it metal rather than more sand.
       this.stepEnv(c.mod, raced ? this.raceRates : this.hatRates)
       c.mod.phase = (c.mod.phase + inc * HAT_MULT) % 1
-      out +=
-        (this.wave(c.mod.phase, 0) > 0 ? this.hiss : -this.hiss) *
-        (wideOpen ? 1 : c.mod.env) *
-        0.7
+      const src = this.wave(c.mod.phase, 0) > 0 ? this.hiss : -this.hiss
+      const env = wideOpen ? 1 : c.mod.env
+      if (this.adderMask) logged += this.logMul(src, env * 0.7 * vol)
+      else out += src * env * 0.7
     }
-    return out * vol
+    return this.adderMask ? logged : out * vol
   }
 
   // The LFO, one step on. Both counters run whether or not any operator is
@@ -1212,6 +1230,12 @@ export class FmChip implements Stage {
       hop(p[IDX.fmDacSlot]!, N_CH + 1, bay.read(DEST.fmDacSlot)) - 1
     const baseSlip = p[IDX.fmDacSlip]!
     this.stuckCh = hop(p[IDX.fmAlloc]!, N_CH + 1, bay.read(DEST.fmAlloc)) - 1
+    const adder = hop(
+      p[IDX.fmAdder]!,
+      ADDER_BITS.length,
+      bay.read(DEST.fmAdder),
+    )
+    this.adderMask = adder > 0 ? (1 << ADDER_BITS[adder]!) - 1 : 0
     const modSlip = bay.read(DEST.fmDacSlip)
     this.blob = baseBlob
     const rail = this.rail
@@ -1444,7 +1468,10 @@ export class FmChip implements Stage {
         c.mod.phase =
           (c.mod.phase + inc * mod.mult * (mod.vib ? this.vibFactor : 1)) % 1
         const self = (c.mod.fb1 + c.mod.fb2) * mod.fb * fbBoost
-        const m = this.wave(c.mod.phase + self, mod.half) * modEnv * mod.level
+        const ms = this.wave(c.mod.phase + self, mod.half)
+        const m = this.adderMask
+          ? this.logMul(ms, modEnv * mod.level)
+          : ms * modEnv * mod.level
         c.mod.fb2 = c.mod.fb1
         c.mod.fb1 = m
 
@@ -1452,10 +1479,10 @@ export class FmChip implements Stage {
           (c.car.phase + inc * car.mult * (car.vib ? this.vibFactor : 1)) % 1
         // The modulator's swing in carrier cycles: what makes it an FM chip and
         // not two oscillators.
-        const v =
-          this.wave(c.car.phase + m * 2 * indexBoost, car.half) *
-          carEnv *
-          this.volume(n)
+        const cs = this.wave(c.car.phase + m * 2 * indexBoost, car.half)
+        const v = this.adderMask
+          ? this.logMul(cs, carEnv * this.volume(n))
+          : cs * carEnv * this.volume(n)
         sum += v
         if (slotted) this.slotOut[n] = v
       }
@@ -1493,6 +1520,15 @@ export class FmChip implements Stage {
       this.slotPos = (this.slotPos + rate) % N_CH
     }
     return sum
+  }
+
+  // One operator's output through the log domain: two attenuations added on
+  // an adder this.adderMask wide, then back through the exp table.
+  private logMul(s: number, gain: number) {
+    if (s === 0 || gain <= 0) return 0
+    const att = (attOf(Math.abs(s)) + attOf(gain)) & this.adderMask
+    const out = EXP_TABLE[att & (ATT_STEPS - 1)]! / (1 << (att >> 8))
+    return s < 0 ? -out : out
   }
 
   private volume(n: number) {
