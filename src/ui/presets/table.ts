@@ -264,6 +264,74 @@ export const PRESETS: PresetDef[] = [
     },
   },
   {
+    name: 'never finishes booting',
+    blurb:
+      'The FM chip cold-boots into garbage and the write that clears its test register lands next door, so it plays the song wide open, skewed and rectified',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmColdBoot: 1,
+      fmAddrLine: 1,
+      fmAddrFault: FAULT.ground,
+    },
+  },
+  {
+    name: 'reboot loop',
+    blurb:
+      'A square wave on the FM chip’s cold boot: it power-cycles six times a second, each time into a different chord of garbage',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmKeyGate: 1,
+      modLfoShape: 2,
+      modLfoHz: 6,
+      mod0Src: 1,
+      mod0Dest: DEST.fmColdBoot,
+      mod0Depth: 1,
+    },
+  },
+  {
+    name: 'tune on the bass drum',
+    blurb:
+      'The FM driver’s allocator stuck on the channel the rhythm bank took, so every note of the song retunes and strikes the die’s bass drum',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.35,
+      drumBpm: 132,
+      ...romMasks('disco'),
+      fmLevel: 0.85,
+      fmRhythm: 1,
+      fmStruck: ANY_CHOICE,
+      fmAlloc: 3,
+    },
+  },
+  {
+    name: 'bird fight',
+    blurb:
+      'The allocator stuck on the effect’s channel: the song and a bird call write the same registers and tear each other apart',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmEffect: effect('bird'),
+      fmAlloc: 4,
+    },
+  },
+  {
+    name: 'standing ovation',
+    blurb:
+      'Applause off the effect ROM through a 9-bit log adder that wraps, until the room is a wall of white noise',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0,
+      fmLevel: 0.8,
+      fmEffect: effect('applause'),
+      fmAdder: 3,
+    },
+  },
+  {
     name: 'gravel dac',
     blurb: 'The kit’s converter built from resistors nobody measured',
     patch: {

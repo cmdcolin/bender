@@ -93,7 +93,9 @@ test('a named cut wires itself, and the next one replaces it', () => {
   // it moved: which cut is on the bus is the thing worth reading from outside.
   expect(knife().textContent).toContain('no fundamental')
 
-  fireEvent.click(screen.getByRole('button', { name: 'none' }))
+  fireEvent.click(
+    within(knife().parentElement!).getByRole('button', { name: 'none' }),
+  )
   expect(engine.controls.get().fmWaveLine).toBe(DEFAULT_CONTROLS.fmWaveLine)
   expect(engine.controls.get().fmLevel).toBeGreaterThan(0)
 })

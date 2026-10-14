@@ -21,6 +21,7 @@ export interface CutDef {
 }
 
 const KNIFE = 'knife on the bus'
+const DIE = 'die and driver'
 const SAMPLE_ROM = 'Sample ROM'
 
 const pick = choiceValue
@@ -358,6 +359,29 @@ export const CUTS: CutDef[] = [
     },
   },
   {
+    group: 'FM chip',
+    part: KNIFE,
+    name: 'a patch that will not hold still',
+    blurb:
+      'The patch table’s P2 parted most of the way. It picks a patch’s tone bytes or its envelope bytes, and it only carries some of the time, so every few milliseconds the operators read a different mix of the two and the note smears into static',
+    patch: {
+      fmPatchLine: pick('fmPatchLine', 'P2'),
+      fmPatchFault: pick('fmPatchFault', 'cut'),
+      fmBusCut: 0.85,
+    },
+  },
+  {
+    group: 'FM chip',
+    part: KNIFE,
+    name: 'nine times the note',
+    blurb:
+      'B3 out of the patch table held high: the top bit of both multipliers, so both operators run at nine times the note and the song comes out three octaves up as a whistle, on half a sine, every decay cut short off the same wire',
+    patch: {
+      fmPatchDataLine: pick('fmPatchDataLine', 'B3'),
+      fmPatchDataFault: pick('fmPatchDataFault', 'to +V'),
+    },
+  },
+  {
     group: 'Home keyboard',
     part: KNIFE,
     name: 'the top bit sticks',
@@ -431,6 +455,54 @@ export const CUTS: CutDef[] = [
     blurb:
       'The latch misses often enough that every byte commits to the register the write before it named',
     patch: { fmStrobe: 0.5 },
+  },
+  {
+    group: 'FM chip',
+    part: DIE,
+    name: 'one voice, four times over',
+    blurb:
+      'The converter’s slot counter stuck on the first channel — that voice goes out in all four slots, four times as loud into the output stage, and every note that landed elsewhere is gone',
+    patch: { fmDacSlot: pick('fmDacSlot', 'stuck on 1') },
+  },
+  {
+    group: 'FM chip',
+    part: DIE,
+    name: 'the song upside down',
+    blurb:
+      'The slot counter running at half speed, so every other sample carries two channels twice and two not at all — the song comes back mirrored about 12 kHz, low notes high and high notes low',
+    patch: { fmDacSlip: 0.82 },
+  },
+  {
+    group: 'FM chip',
+    part: DIE,
+    name: 'one finger',
+    blurb:
+      'The driver’s allocator stuck on the first channel: a four-voice chip plays one note at a time, every note chopping the last one’s tail off',
+    patch: { fmAlloc: pick('fmAlloc', 'stuck on 1') },
+  },
+  {
+    group: 'FM chip',
+    part: DIE,
+    name: 'garbage at power-on',
+    blurb:
+      'The chip power-cycles into a register file of random bytes — channels that came up keyed drone at random pitches on instruments nobody chose, until a note lands on them',
+    patch: { fmColdBoot: pick('fmColdBoot', 'garbage') },
+  },
+  {
+    group: 'FM chip',
+    part: DIE,
+    name: 'fades that explode',
+    blurb:
+      'The part’s log arithmetic on a 10-bit adder that wraps — every note that decays 24 dB comes back at full scale and decays again',
+    patch: { fmAdder: pick('fmAdder', '10 bits') },
+  },
+  {
+    group: 'FM chip',
+    part: DIE,
+    name: 'sines folded to grit',
+    blurb:
+      'The same adder cut to 7 bits, so anything 3 dB down wraps back to the top — the quiet middle of every wave folds up into a harsh digital buzz at the pitch it always had',
+    patch: { fmAdder: pick('fmAdder', '7 bits') },
   },
 ]
 

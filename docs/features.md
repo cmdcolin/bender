@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 381 knobs and switches in 32 groups, seven bends competing for six slots,
-18 ROM tunes, 110 presets, 16 stage settings and 38 named cuts — and everything
+18 ROM tunes, 115 presets, 18 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 110 presets, and dice on every heading as
+- **Boards, rather than settings.** 115 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -294,6 +294,17 @@ leaves nothing behind. _Effect_ is the ROM’s other job: a bird, surf, wind, a
 siren or crickets, each a program spraying register writes rather than a sample,
 and the busiest thing the bus ever carries.
 
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
+
+- **below the keybed**: The chip’s crystal at a twentieth of its speed — the
+  song drops four octaves into a sub-bass rumble, every envelope twenty times as
+  long, with Drive fuzzing it
+- **bird on fast-forward**: The processor’s crystal at sixteen times: the bird
+  script writes faster than the envelopes can follow, and the call turns to
+  static over a chip still in tune
+
 Named cuts, one press each under _knife on the bus_, where the panel keeps them
 too — the knife goes on and the rows under it say which controls that was:
 
@@ -330,8 +341,33 @@ too — the knife goes on and the rows under it say which controls that was:
   sample take turns on this one datapath, so the pin is left holding whichever
   of them went last — the amplitude arrives from a different operator every turn
   and the chip turns to gravel
+- **a patch that will not hold still**: The patch table’s P2 parted most of the
+  way. It picks a patch’s tone bytes or its envelope bytes, and it only carries
+  some of the time, so every few milliseconds the operators read a different mix
+  of the two and the note smears into static
+- **nine times the note**: B3 out of the patch table held high: the top bit of
+  both multipliers, so both operators run at nine times the note and the song
+  comes out three octaves up as a whistle, on half a sine, every decay cut short
+  off the same wire
 - **one write late**: The latch misses often enough that every byte commits to
   the register the write before it named
+- **one voice, four times over**: The converter’s slot counter stuck on the
+  first channel — that voice goes out in all four slots, four times as loud into
+  the output stage, and every note that landed elsewhere is gone
+- **the song upside down**: The slot counter running at half speed, so every
+  other sample carries two channels twice and two not at all — the song comes
+  back mirrored about 12 kHz, low notes high and high notes low
+- **one finger**: The driver’s allocator stuck on the first channel: a
+  four-voice chip plays one note at a time, every note chopping the last one’s
+  tail off
+- **garbage at power-on**: The chip power-cycles into a register file of random
+  bytes — channels that came up keyed drone at random pitches on instruments
+  nobody chose, until a note lands on them
+- **fades that explode**: The part’s log arithmetic on a 10-bit adder that wraps
+  — every note that decays 24 dB comes back at full scale and decays again
+- **sines folded to grit**: The same adder cut to 7 bits, so anything 3 dB down
+  wraps back to the top — the quiet middle of every wave folds up into a harsh
+  digital buzz at the pitch it always had
 
 <details>
 <summary>36 controls</summary>
@@ -1236,7 +1272,7 @@ became:
 
 ### Presets
 
-110 boards worth keeping. Every name is a link that opens the app with that
+115 boards worth keeping. Every name is a link that opens the app with that
 board on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1273,6 +1309,21 @@ board on it — a link never presses play, so it is loaded and waiting.
   — A siren filed under the wrong registers as it climbs
 - [**stuck cricket**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:5,fmStrobe:0.4)
   — The key-up lands next door, so the chirps never stop being one note
+- [**never finishes booting**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmAddrLine:1,fmAddrFault:1,fmColdBoot:1)
+  — The FM chip cold-boots into garbage and the write that clears its test
+  register lands next door, so it plays the song wide open, skewed and rectified
+- [**reboot loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmKeyGate:1,modLfoHz:6,modLfoShape:2,mod0Src:1,mod0Dest:102,mod0Depth:1)
+  — A square wave on the FM chip’s cold boot: it power-cycles six times a
+  second, each time into a different chord of garbage
+- [**tune on the bass drum**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.35,drumBpm:132,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmRhythm:1,fmAlloc:3)
+  — The FM driver’s allocator stuck on the channel the rhythm bank took, so
+  every note of the song retunes and strikes the die’s bass drum
+- [**bird fight**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmAlloc:4)
+  — The allocator stuck on the effect’s channel: the song and a bird call write
+  the same registers and tear each other apart
+- [**standing ovation**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:9,fmAdder:3)
+  — Applause off the effect ROM through a 9-bit log adder that wraps, until the
+  room is a wall of white noise
 - [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9)
   — The kit’s converter built from resistors nobody measured
 - [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)

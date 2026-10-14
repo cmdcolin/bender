@@ -50,6 +50,9 @@ const GLITCH = {
   glitchMix: 1,
 }
 
+/** An effect script by name, off the effect button's own list. */
+const fmEffect = (name: string) => choiceValue('fmEffect', name)
+
 export const RIGS: RigDef[] = [
   {
     group: 'Feedback bus',
@@ -294,6 +297,20 @@ export const RIGS: RigDef[] = [
       filtArc: 0.55,
       filtMix: 1,
     },
+  },
+  {
+    group: 'FM chip',
+    name: 'below the keybed',
+    blurb:
+      'The chip’s crystal at a twentieth of its speed — the song drops four octaves into a sub-bass rumble, every envelope twenty times as long, with Drive fuzzing it',
+    patch: { fmLevel: 0.8, fmClockX: 0.05, fmDrive: 18 },
+  },
+  {
+    group: 'FM chip',
+    name: 'bird on fast-forward',
+    blurb:
+      'The processor’s crystal at sixteen times: the bird script writes faster than the envelopes can follow, and the call turns to static over a chip still in tune',
+    patch: { fmLevel: 0.8, fmEffect: fmEffect('bird'), fmCpuClockX: 16 },
   },
 ]
 

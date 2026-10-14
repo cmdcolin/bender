@@ -1,6 +1,9 @@
 ---
 name: fm-bends
-description: Ranked further bends for the FM chip with hook points: rhythm at full width, DAC slot counter, log domain last; the instrument ROM bus and the two clocks have landed.
+description:
+  Further bends for the FM chip with hook points and measurements. Items 1–6, 8,
+  the allocator, cold boot and five effect scripts have landed with named cuts;
+  rhythm at full width leads what is left.
 ---
 
 # Further bends for the FM chip
@@ -9,16 +12,15 @@ Candidates, ranked, with where each one hooks. Written after the dead-bit pass
 landed, so the first section is what that pass left behind rather than what it
 did.
 
-Nothing here is a decision. Several of these are cheap and a couple are large
-enough to change how the chip sounds with no knife on it at all, which is a
-different kind of cost and is called out where it applies.
+The open candidates are proposals. Each landed section records the design calls
+made building it, and every new control defaults to the shipped sound.
 
-**Five have landed since.** The table's output pins (2), the shift register
-soldered onto them (3), the instrument ROM's bus (4), the two clocks (5) and the
-bay's reach onto the chip (6) are all built, and their sections say what came
-out. The remaining candidates are 1, 7, 8 and the small ones, and they are
-ranked against each other below rather than renumbered — the numbers are how
-this document has been referred to elsewhere.
+**Ten have landed since.** Items 1 to 6 and 8, the driver's allocator, cold boot
+and five more effect scripts are all built, and their sections say what came
+out. Every bend from the last two rounds has a named cut, rig or preset; see
+_Named and measured_ below. What remains is 7 and the small ones, ranked at the
+end. The numbers are how this document has been referred to elsewhere, so
+nothing is renumbered.
 
 ## How to judge one of these before building it
 
@@ -386,11 +388,59 @@ Measured on the `pnpm spectrum` board, FM stem:
     melody but picks which of the kit's or the effect's channels the tune lands
     in.
 
+## Named and measured
+
+Every bend from the last two rounds has a name on the panel. Numbers are
+`pnpm spectrum cuts` on its board, the whole mix against the same board with the
+knife off; the rigs are the FM stem on the `pnpm spectrum` board.
+
+| name                             | where             | level | centroid | flat |
+| -------------------------------- | ----------------- | ----- | -------- | ---- |
+| a patch that will not hold still | cut, P2 cut 0.85  | 1.03× | 2.99 kHz | 0.41 |
+| nine times the note              | cut, B3 to +V     | 0.84× | 5.48 kHz | 0.08 |
+| one voice, four times over       | cut, die & driver | 1.27× | 1.84 kHz | 0.02 |
+| the song upside down             | cut, slip 0.82    | 1.10× | 8.12 kHz | 0.05 |
+| one finger                       | cut, allocator    | 0.88× | 1.74 kHz | 0.07 |
+| garbage at power-on              | cut, cold boot    | 1.01× | 1.70 kHz | 0.05 |
+| fades that explode               | cut, 10 bits      | 1.04× | 3.55 kHz | 0.17 |
+| sines folded to grit             | cut, 7 bits       | 1.19× | 5.74 kHz | 0.38 |
+| below the keybed                 | rig, Clock 0.05×  | 1.11× | 80 Hz    | 0.00 |
+| bird on fast-forward             | rig, CPU clock 16 | 0.67× | 8.98 kHz | 0.69 |
+| never finishes booting           | preset            |       | 4.99 kHz | 0.23 |
+| reboot loop                      | preset            |       | 250 Hz   | 0.00 |
+| tune on the bass drum            | preset            |       | 1.63 kHz | 0.23 |
+| bird fight                       | preset            |       | 9.62 kHz | 0.29 |
+| standing ovation                 | preset            |       | 9.84 kHz | 0.83 |
+
+Design calls:
+
+- The new die-level controls sit under their own fold, **die and driver**, so
+  each gets cuts the way the knife does.
+- The clocks have no fold, so they get rigs on the FM chip's own row. Clock is
+  shown at its floor, a sub rumble with 0.87 of the stem under the sub band; CPU
+  clock at its ceiling under the bird, which is flatter than any other rig.
+- The patch-table cuts are the flattest address fault and the brightest data
+  fault in `pnpm spectrum fm`: P2 parted at 0.85 reads 0.53 flat on the FM stem,
+  and B3 to +V puts 0.83 of it in the air band.
+- Three combinations needed a whole board: cold boot with the address knife,
+  cold boot on an LFO, and the allocator on a channel the kit or an effect owns.
+  They are presets.
+
 ## What is left, ranked against each other
 
-7 and 8 are structural and worth doing together, since both are about what four
-voices and one output stage can actually carry. 1 stays last and stays the one
-to be suspicious of.
+1. **7, rhythm at full width.** Still structural, and it now compounds with the
+   allocator and the slot counter: a kit on three channels leaves one for the
+   tune, which a stuck allocator or slot can then take away.
+2. **The exp ROM's address bus.** The log path made it cheap: `logMul()` reads
+   `EXP_TABLE` by an address the adder just formed, so a `Bus(8)` there is a
+   knife on an amplitude rather than a phase or a byte.
+3. **Mono.** A bodge wire putting one channel hard left would also make the slot
+   counter's slips audible as movement, not just as level.
+4. **The test register's 0xf0 and the key register's sustain bit**, as above.
+
+Outside this chip: `pcmKeys.ts` multiplies its envelope times by the rail's
+`clockFactor` the way `rates()` did, so a starving rail shortens the home
+keyboard's envelopes too.
 
 ## Compositions to try
 
