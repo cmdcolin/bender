@@ -1,4 +1,5 @@
 import { VOICE_LABELS } from '../../drums'
+import { N_DEST } from '../../dsp/modbus'
 
 import type { Group } from './types'
 
@@ -60,7 +61,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 97,
+          max: N_DEST - 1,
           step: 1,
           unit: '',
           choices: [
