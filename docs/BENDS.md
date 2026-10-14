@@ -401,6 +401,22 @@ resonator that doesn't care what the supply is doing, so the effect keeps
 arriving at its usual rate while the chip it's addressed to dives and slurs
 underneath it.
 
+**Clock** and **CPU clock** are the board's two crystals, one each side of the
+bus:
+
+- **Clock** is the chip's. Pitch, the envelope rates, the LFO and the shift
+  register count off it together, so turning it down transposes the chip without
+  changing its timbre, down to octaves under the bottom of its keybed. **lock**
+  sets it to the toy's crystal, so a dragged toy and this chip play the key line
+  in tune.
+- **CPU clock** is the processor's. Note length and the effect scripts count off
+  it, so a slow one holds every note longer and a bird calls at half speed over
+  a chip still in tune. At 16× the crickets script writes faster than the
+  envelopes can follow and comes out close to noise.
+
+Both have bay lanes, **FM clock** and **FM CPU clock**, which move three octaves
+to a full push, as the toy's clock lane does.
+
 ## Inside the drum voices
 
 The kit's pitched voices — kick, tom, and the body under the snare — aren't

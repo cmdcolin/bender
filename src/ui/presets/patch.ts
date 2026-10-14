@@ -145,6 +145,8 @@ const LANDINGS: Landing[] = [
   at('FM patch fault', ['fmLevel', 'fmPatchLine']),
   at('FM patch data line', ['fmLevel']),
   at('FM patch data fault', ['fmLevel', 'fmPatchDataLine']),
+  at('FM clock', ['fmLevel']),
+  at('FM CPU clock', ['fmLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 360 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 362 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 98 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 95 destinations — among
+- **A patch bay that modulates itself.** Four wires, 97 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -316,7 +316,7 @@ too — the knife goes on and the rows under it say which controls that was:
   the register the write before it named
 
 <details>
-<summary>29 controls</summary>
+<summary>31 controls</summary>
 
 | control            | range                                                             | what it does                                                                                                         |
 | ------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -327,6 +327,8 @@ too — the knife goes on and the rows under it say which controls that was:
 | Drive              | 0 to 36 dB                                                        | How hard the four voices drive the one output stage on the chip                                                      |
 | Vibrato            | off, vibrato, tremolo, both                                       | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
 | Note length        | 0.02 to 4 s                                                       | How long the processor waits before writing the key back up, for a note nothing is holding                           |
+| Clock              | 0.05× to 16×                                                      | Drags the chip’s own crystal                                                                                         |
+| CPU clock          | 0.05× to 16×                                                      | Drags the processor’s crystal, which the chip does not share                                                         |
 | Struck by          | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
 | Toy gate           | soldered or cut                                                   | The jumper from the toy’s gate line onto this chip’s key input                                                       |
 | Effect †           | off, bird, surf, wind, siren, crickets                            | The effect ROM — a bird, surf, wind, a siren, crickets                                                               |
@@ -892,7 +894,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 95 of them, filt cut through FM patch data fault                                           | Where the other end is soldered                                                |
+| Wire 1–4 to    | 97 of them, filt cut through FM CPU clock                                                  | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

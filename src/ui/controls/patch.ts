@@ -60,7 +60,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 94,
+          max: 96,
           step: 1,
           unit: '',
           choices: [
@@ -159,6 +159,8 @@ export const PATCH_GROUPS: Group[] = [
             'FM patch fault',
             'FM patch data line',
             'FM patch data fault',
+            'FM clock',
+            'FM CPU clock',
           ],
           groups: [
             {
@@ -207,6 +209,8 @@ export const PATCH_GROUPS: Group[] = [
               name: 'FM chip',
               choices: [
                 'FM level',
+                'FM clock',
+                'FM CPU clock',
                 'FM bright',
                 'FM data line',
                 'FM data fault',

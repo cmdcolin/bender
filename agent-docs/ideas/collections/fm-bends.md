@@ -1,6 +1,6 @@
 ---
 name: fm-bends
-description: Ranked further bends for the FM chip with hook points: instrument ROM bus, the two clocks, rhythm at full width, DAC slot counter, log domain last.
+description: Ranked further bends for the FM chip with hook points: rhythm at full width, DAC slot counter, log domain last; the instrument ROM bus and the two clocks have landed.
 ---
 
 # Further bends for the FM chip
@@ -13,12 +13,12 @@ Nothing here is a decision. Several of these are cheap and a couple are large
 enough to change how the chip sounds with no knife on it at all, which is a
 different kind of cost and is called out where it applies.
 
-**Four have landed since.** The table's output pins (2), the shift register
-soldered onto them (3), the instrument ROM's bus (4) and the bay's reach onto
-the chip (6) are all built, and their sections say what came out. The remaining
-candidates are 1, 5, 7, 8 and the small ones, and they are ranked against each
-other below rather than renumbered — the numbers are how this document has been
-referred to elsewhere.
+**Five have landed since.** The table's output pins (2), the shift register
+soldered onto them (3), the instrument ROM's bus (4), the two clocks (5) and the
+bay's reach onto the chip (6) are all built, and their sections say what came
+out. The remaining candidates are 1, 7, 8 and the small ones, and they are
+ranked against each other below rather than renumbered — the numbers are how
+this document has been referred to elsewhere.
 
 ## How to judge one of these before building it
 
@@ -206,22 +206,37 @@ Measured:
   The multiplier table's bottom entry is 0.5, and B0 to ground halves both
   operators' ratios, dropping the note an octave.
 
-## 5. Two clocks, and nothing reaches either
+## 5. Two clocks — landed
 
 `fmEffects.ts` makes a point of the CPU keeping its own time while the chip
-starves underneath it. Neither clock is a knob, and they are independent by
-construction, so they are two controls rather than one:
+starves underneath it. The two crystals are independent by construction, so they
+are two controls:
 
-- **the chip's crystal** — scales pitch, the envelope rates, the LFO and the
-  LFSR's clock together. This is where the FM chip's missing bottom octave
-  lives. The melody driver always picks the tightest block for the note it is
-  given, so the register file cannot go down; the crystal can.
-- **the CPU's crystal** — scales `script.hz` and the `offIn` note timers. A bird
-  call at half speed over a chip running normally, which is the effect ROM's
-  independence made into a control instead of a fact.
+- `fmClockX`, the chip's crystal, scales pitch, the envelope rates, the LFO and
+  the shift register's clock together. **lock** sets it to the toy's
+  `chipClockX`, so the two chips play the key line in tune.
+- `fmCpuClockX`, the CPU's crystal, scales `script.hz` and the `offIn` note
+  timers.
 
-Both are classic clock-injection bends and both belong in the patch bay as well
-as on the panel.
+Both copy `chipClockX`: 0.05× to 16× on a log curve, default 1, and a bay lane
+(`fmClock`, `fmCpuClock`) worth three octaves a full push. At 1× every product
+is a multiply by one, so the shipped sound is unchanged.
+
+Measured on the FM stem, on the board `pnpm spectrum` uses:
+
+- The chip's crystal is a transposition. The melody stem's centroid runs from 80
+  Hz at 0.05× to 15.4 kHz at 16× (1.66 kHz at 1×), with flatness at or under
+  0.016 throughout, and the sub band holds 0.89 of the power at the bottom. With
+  the rhythm bank on it runs 279 Hz to 15.2 kHz.
+- The CPU's crystal leaves the spectrum alone in melody (centroid 1.1–1.7 kHz)
+  and moves the take by note length: 0.50 of its rms when slowed, 0.94 at 16×.
+  With the bank on, slowing it changes 0.06, because the kit's hits keep no note
+  timer. Its one new sound is the effect ROM run fast: crickets at 16× go from
+  0.03 flat to 0.29, with the centroid up from 1.9 kHz to 4.6 kHz.
+
+The envelope rates already count off the rail in `rates()`, but the existing
+term multiplies a time by `clockFactor`, so a starving rail shortens them. The
+crystal divides, the way the pitch moves; the rail term is left as it was.
 
 ## 6. The patch bay cannot reach this chip — landed
 
@@ -243,7 +258,7 @@ the bay — an LFO on the cut depth is a fault that comes and goes in time. Ever
 line and fault selector on the chip has a lane too, hopping the way the toy's
 and the kit's do.
 
-Still to do here: the two clocks from 5.
+The two clocks from 5 have lanes as well.
 
 ## 7. Rhythm at full width
 
@@ -289,11 +304,9 @@ output side, and this chip has nothing like it.
 
 ## What is left, ranked against each other
 
-5 is the one that buys the most, because both clocks reach things no control on
-the chip can: the missing bottom octave is down the chip's crystal, and they are
-two more lanes for the bay now that the bay can get here. 7 and 8 are structural
-and worth doing together, since both are about what four voices and one output
-stage can actually carry. 1 stays last and stays the one to be suspicious of.
+7 and 8 are structural and worth doing together, since both are about what four
+voices and one output stage can actually carry. 1 stays last and stays the one
+to be suspicious of.
 
 ## Compositions to try
 

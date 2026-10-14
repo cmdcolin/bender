@@ -268,6 +268,8 @@ export const PARAM_DEFS = [
   ['fmPatchFault', 'step'],
   ['fmPatchDataLine', 'step'],
   ['fmPatchDataFault', 'step'],
+  ['fmClockX', 'slew'],
+  ['fmCpuClockX', 'slew'],
 
   ['pcmLevel', 'slew'],
   ['pcmVoice', 'step'],

@@ -4,6 +4,7 @@ import { snap } from '../../scale'
 import { Bus, FAULT_NAMES, Strobe } from '../bus'
 import { DEST, hop } from '../modbus'
 import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus'
+import { octaves } from '../util/pitch'
 import { mulberry32 } from '../util/rng'
 import { softclip } from '../util/softclip'
 import {
@@ -224,6 +225,9 @@ const NOISE_HZ = FNUM_BASE * Math.pow(2, 5) * HAT_MULT
 
 const ENV_FLOOR = 0.0005
 
+/** Octaves a full push of a clock lane moves its crystal, as on the toy. */
+const CLOCK_LANE_OCTAVES = 3
+
 /** Where a wire off the bay lands on a control that only has 0 to 1 to give. */
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 
@@ -351,6 +355,8 @@ export class FmChip implements Stage {
     offIn: 0,
   }))
   private clock = 0
+  /** the chip's own crystal this block, which the envelope rates count off */
+  private crystal = 1
   // One rate set per operator per channel, rather than one for the chip. Four
   // channels can be running four different patches now: the instrument nibble
   // is a per-channel register, so a wire under it leaves one voice reading the
@@ -772,7 +778,7 @@ export class FmChip implements Stage {
     ksl: number,
     fb: number,
   ) {
-    const scale = Math.max(clockFactor, 0.05)
+    const scale = Math.max(clockFactor, 0.05) / this.crystal
     // Every rate goes past the octave on the way out of the nibble. With the
     // scaling bit clear that is the nibble itself; with it set the counter
     // takes the note's own octave into the step it walks, which is what stops a
@@ -893,7 +899,8 @@ export class FmChip implements Stage {
     // still reads the rail, because the counter is still counting the same
     // divider — a raced envelope on a starving board is a longer click.
     const fast = Math.exp(
-      -1 / (fallSecs(15) * Math.max(clockFactor, 0.05) * this.sr),
+      -1 /
+        ((fallSecs(15) * Math.max(clockFactor, 0.05) * this.sr) / this.crystal),
     )
     this.raceRates.attack = 1
     this.raceRates.decay = fast
@@ -1263,6 +1270,15 @@ export class FmChip implements Stage {
       boosted && fbKnob > FB_REGISTER_MAX ? 2 ** (fbKnob - FB_REGISTER_MAX) : 1
     const indexBoost = boosted && bright > 1 ? INDEX_BOOST ** (bright - 1) : 1
 
+    // Two crystals: the chip's, which everything on the die counts off, and the
+    // processor's, which every timer the driver keeps counts off.
+    const chipX = p[IDX.fmClockX]!
+    const cpuX = p[IDX.fmCpuClockX]!
+    const modChipX = bay.read(DEST.fmClock)
+    const modCpuX = bay.read(DEST.fmCpuClock)
+    this.crystal = modChipX
+      ? chipX * octaves(modChipX[0]! * CLOCK_LANE_OCTAVES)
+      : chipX
     this.readPatch(rail.clockFactor)
     if (kit) this.readKit(rail.clockFactor)
     // The keys, before the block: held, because a hand is holding them.
@@ -1272,17 +1288,22 @@ export class FmChip implements Stage {
     let load = 0
 
     for (let i = 0; i < io.n; i++) {
-      this.stepLfo(rail.clockFactor)
+      const xtal = modChipX
+        ? chipX * octaves(modChipX[i]! * CLOCK_LANE_OCTAVES)
+        : chipX
+      const cpu = modCpuX
+        ? cpuX * octaves(modCpuX[i]! * CLOCK_LANE_OCTAVES)
+        : cpuX
+      this.stepLfo(rail.clockFactor * xtal)
       if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
-      if (this.blob > 0 && !kit) this.stepNoise(rail.clockFactor)
+      if (this.blob > 0 && !kit) this.stepNoise(rail.clockFactor * xtal)
 
-      // The effect ROM, running. Its rate is the CPU's crystal and nothing on
-      // this board reaches that, so the gesture keeps its own time however far
-      // the rail has dragged the chip it is writing to — which is the whole
-      // sound of it: a bird call in tempo, driving a synthesiser that has been
-      // told nonsense.
+      // The effect ROM, running. Its rate is the CPU's crystal, which the rail
+      // does not reach, so the gesture keeps its own time however far the rail
+      // has dragged the chip it is writing to — which is the whole sound of it:
+      // a bird call in tempo, driving a synthesiser that has been told nonsense.
       if (script) {
-        this.effectClock += script.hz / this.sr
+        this.effectClock += (script.hz * cpu) / this.sr
         while (this.effectClock >= 1) {
           this.effectClock -= 1
           const tick = this.effectTick++
@@ -1347,12 +1368,12 @@ export class FmChip implements Stage {
       const raced = (test & TEST.envRace) !== 0
 
       let sum = 0
-      const pitch = rail.pitchFactor
+      const pitch = rail.pitchFactor * xtal
       for (let n = 0; n < N_CH; n++) {
         const c = this.ch[n]!
         // The CPU coming back to write the key up. Whether that write does
         // anything is between it and the wires.
-        if (c.offIn > 0 && --c.offIn === 0) this.keyOff(n)
+        if (c.offIn > 0 && (c.offIn -= cpu) <= 0) this.keyOff(n)
         if (kit && n >= RHYTHM_CH) {
           sum += this.percussion(n, c, raced, wideOpen, pitch)
           continue

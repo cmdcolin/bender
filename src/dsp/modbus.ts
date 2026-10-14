@@ -140,8 +140,10 @@ export const DEST = {
   fmPatchFault: 92,
   fmPatchDataLine: 93,
   fmPatchDataFault: 94,
+  fmClock: 95,
+  fmCpuClock: 96,
 } as const
-export const N_DEST = 95
+export const N_DEST = 97
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

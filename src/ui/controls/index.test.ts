@@ -99,6 +99,14 @@ test('the clock lock lands the toy on a division of the kit', () => {
   expect((kitHz / (3.2 * at(1))) % 1).toBeCloseTo(0, 6)
 })
 
+test('the FM chip’s clock lock lands it on the toy’s crystal', () => {
+  const def = sliderFor('fmClockX')
+  const at = (chipClockX: number) =>
+    def.action!.value({ ...DEFAULT_CONTROLS, chipClockX }, def)
+  expect(at(1.5)).toBe(1.5)
+  expect(at(0.01)).toBe(def.min)
+})
+
 // The voices themselves come off VOICE_LABELS either side, so they cannot drift.
 // What each list adds past them is written out by hand and read back by a
 // hard-coded offset, and the two lists add different things — so an entry

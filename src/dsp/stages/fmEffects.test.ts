@@ -83,6 +83,15 @@ test('the rail drags the chip and leaves the CPU’s timing alone', () => {
   expect(rms(flat)).toBeLessThan(rms(fresh))
 })
 
+// And the other way round: the processor's crystal drags the script.
+test('the CPU’s crystal drags the calls', () => {
+  const at = (o: Partial<Controls>) =>
+    renderBender({ ...NOTHING_PLAYING, fmEffect: effect('crickets'), ...o }, 6)
+  const fresh = at({})
+  const slow = at({ fmCpuClockX: 0.5 })
+  expect(bursts(slow)).toBeLessThan(bursts(fresh) * 0.7)
+})
+
 // Two param sets swapped halfway, so the second half is the board after the
 // effect button came back up.
 function afterTheEffect(

@@ -219,6 +219,10 @@ on Brightness and past 7 on Feedback a booster takes over from the register,
 multiplying modulation and feedback further. **Drive** pushes the four voices
 into the output stage, up to 36 dB, squaring notes into fuzz.
 
+**Clock** drags the chip's own crystal, so pitch, envelopes and the LFO move
+together; **lock** sets it to the toy's crystal so the two play in tune. **CPU
+clock** drags the processor's, which times Note length and the effect scripts.
+
 **Vibrato** switches on the die's one LFO — no rate or depth register, just two
 bits wiring the operators to a wobble that's been running since the board came
 up. **tremolo** takes about a decibel off the level, **vibrato** moves pitch

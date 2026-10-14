@@ -557,6 +557,8 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'fmPatchFault',
   'fmPatchDataLine',
   'fmPatchDataFault',
+  'fmClockX',
+  'fmCpuClockX',
 ]
 
 // Retired controls that old links still carry, each read into the control that

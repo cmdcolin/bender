@@ -3,6 +3,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { SOURCE_TAPS } from '../../engine/params'
+import { OCTAVES, pitch } from '../../ui/keyboard'
 import { buildChain } from '../build'
 import { FAULT } from '../bus'
 import { DEST } from '../modbus'
@@ -840,4 +841,71 @@ test('the die holds fifteen patches and the case has buttons for eight', () => {
     expect(bytes[REG.carAttack]! >> 4, v.name).toBeGreaterThan(0)
     expect(bytes[REG.carSustain]! & 0x0f, v.name).toBeGreaterThan(0)
   }
+})
+
+// Two crystals. The chip's is what everything on the die counts off; the
+// processor's is what every timer the driver keeps counts off.
+const BOTTOM_KEY = pitch(0, Math.min(...OCTAVES) * 12)
+const BOTTOM_HZ = 220 * Math.pow(2, BOTTOM_KEY / 12)
+
+const organAt = (o: Partial<Controls>, note: number) =>
+  fmNote({ fmVoice: voice('organ'), ...o }, note, 1.2).subarray(
+    Math.round(0.2 * SR),
+  )
+
+test('the chip’s crystal plays under the bottom of its keybed', () => {
+  const clean = organAt({}, BOTTOM_KEY)
+  const under = organAt({ fmClockX: 0.5 }, BOTTOM_KEY)
+  expect(bin(under, BOTTOM_HZ / 2)).toBeGreaterThan(
+    3 * bin(clean, BOTTOM_HZ / 2),
+  )
+  expect(bin(under, BOTTOM_HZ / 2)).toBeGreaterThan(bin(under, BOTTOM_HZ))
+})
+
+test('the chip’s crystal drags the envelopes and the LFO with the pitch', () => {
+  expect(wobble(tremolo({ fmClockX: 0.5 })).hz).toBeCloseTo(3.7 / 2, 0)
+  const ring = (fmClockX: number) => {
+    const x = fmNote({ fmVoice: voice('e.piano'), fmClockX }, 12, 1)
+    return (
+      rms(x.subarray(Math.round(0.6 * SR))) /
+      rms(x.subarray(0, Math.round(0.1 * SR)))
+    )
+  }
+  expect(ring(2)).toBeLessThan(0.5 * ring(1))
+})
+
+// The demo song's first note, struck 0.3 s in, which gets Note length because
+// nothing holds it.
+const FIRST_NOTE = 0.3
+const tuneAt = (o: Partial<Controls>) =>
+  render({ ...FM_ONLY, fmVoice: voice('organ'), fmLength: 0.05, ...o }, 0.6)
+const afterTheKeyUp = (x: Float32Array) =>
+  rms(
+    x.subarray(
+      Math.round((FIRST_NOTE + 0.2) * SR),
+      Math.round((FIRST_NOTE + 0.26) * SR),
+    ),
+  )
+
+test('the CPU’s crystal stretches Note length and leaves the chip alone', () => {
+  const fast = tuneAt({})
+  const slow = tuneAt({ fmCpuClockX: 0.25 })
+  const head = Math.round((FIRST_NOTE + 0.045) * SR)
+  expect(slow.subarray(0, head)).toEqual(fast.subarray(0, head))
+  expect(afterTheKeyUp(slow)).toBeGreaterThan(2 * afterTheKeyUp(fast))
+})
+
+test('wires on the two clock lanes move the two crystals', () => {
+  const wire = (dest: number, depth: number) => ({
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: dest,
+    mod0Depth: depth,
+  })
+  // A third of a push is an octave, as on the toy's clock.
+  const down = organAt(wire(DEST.fmClock, -1 / 3), 0)
+  expect(bin(down, 110)).toBeGreaterThan(3 * bin(organAt({}, 0), 110))
+  expect(afterTheKeyUp(tuneAt(wire(DEST.fmCpuClock, -2 / 3)))).toBeGreaterThan(
+    2 * afterTheKeyUp(tuneAt({})),
+  )
 })
