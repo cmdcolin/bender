@@ -775,6 +775,54 @@ test('a maybe step lands on the same laps every time the board is rendered', () 
   expect(deviation(soloVoice(kit, 2), soloVoice(kit, 2))).toBe(0)
 })
 
+// A kick maybe on a one-step row, so every arrival rolls, and the share of
+// arrivals that came out the way the last one did.
+function diceRepeats(c: Partial<Controls>, seconds = 20): number {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0,
+    drumLevel: 1,
+    drumKick: 0,
+    drumSnare: 0,
+    drumHat: 0,
+    drumKickMaybe: stepMask(0),
+    drumKickLen: 1,
+    drumBpm: 120,
+    ...c,
+  })
+  const io = makeIo()
+  const laps: number[] = []
+  let tick = built.toyDrum.tick
+  let fired = 0
+  for (let b = 0; b < (seconds * SR) / io.n; b++) {
+    built.chain.process(io, p)
+    if (built.toyDrum.tick !== tick) {
+      laps.push(fired)
+      fired = 0
+      tick = built.toyDrum.tick
+    }
+    fired |= built.toyDrum.takeFired() & 1
+  }
+  return laps.filter((v, i) => i > 0 && v === laps[i - 1]).length / laps.length
+}
+
+test('a dice on the junction holds its answer while the junction is off', () => {
+  const nearKnee = { drumNoiseBias: 0.3 }
+  expect(diceRepeats(nearKnee)).toBeLessThan(0.65)
+  expect(diceRepeats({ ...nearKnee, drumDice: 1 })).toBeGreaterThan(0.85)
+})
+
+test('a junction biased all the way is the dice it always was', () => {
+  const kit: Partial<Controls> = {
+    drumHatMaybe: stepMask(1, 5, 9, 13),
+    drumKickMaybe: stepMask(3, 11),
+    drumChance: 0.5,
+  }
+  expect(soloVoice({ ...kit, drumDice: 1 }, 2)).toEqual(soloVoice(kit, 2))
+})
+
 // The accent is a weight rather than a hit, and it stays on its own line: a
 // maybe step that comes up lands at whatever the accent row asked for.
 test('an accent still weighs a step the dice decided', () => {

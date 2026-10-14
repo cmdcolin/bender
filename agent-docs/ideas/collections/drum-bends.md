@@ -11,11 +11,11 @@ same reason: nothing here is a decision, and the ones that are cheap and the
 ones that change how the kit sounds with no knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
-accent on the data bus), 6 (`drumClapGap`, `drumClapCount`), 8 (`DEST.drumBpm`),
-10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`), 12 (`drumSweep`)
-and 13 (`drumTankCouple`), plus the counter's reset wire (`drumReset`) and a
-comparator on a tank's ring (`drumRingTrig`). Every other numbered item is still
-a candidate.
+accent on the data bus), 4 (`drumDice`), 6 (`drumClapGap`, `drumClapCount`), 8
+(`DEST.drumBpm`), 10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`),
+12 (`drumSweep`) and 13 (`drumTankCouple`), plus the counter's reset wire
+(`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other
+numbered item is still a candidate.
 
 ## How to judge one of these before building it
 
@@ -233,6 +233,25 @@ Hook: `wordAt`, one line — compare against the junction rather than the stream
 
 Cost: the cheapest thing on this list. Its interest is that it is a correction
 rather than an invention.
+
+**Built** as `drumDice`, free or on the junction. On the junction a maybe rolls
+when `noiseGate > 0.5` at the arrival and otherwise repeats the voice's last
+answer; free is the old line. Both draw one `rng()` per maybe per arrival, and
+`burstRng` is untouched, so the hiss and the popcorn timing are the stream they
+were; at full bias the two settings render bit-identical. Measured on a kick
+maybe rolling every step at 120 bpm, Chance 0.5, share of arrivals that repeat
+the last answer, free against on the junction:
+
+| Noise bias | 1   | 0.9 | 0.7 | 0.5 | 0.3 | 0.1 | 0    |
+| ---------- | --- | --- | --- | --- | --- | --- | ---- |
+| free       | 51% | 51% | 51% | 51% | 51% | 51% | 51%  |
+| junction   | 51% | 51% | 55% | 74% | 97% | 98% | 100% |
+
+Holds shorter than a step did not keep the stickiness under a step or two, as
+the estimate above expected. The share of time the junction conducts sets it,
+and near the knee that share collapses, so at 0.3 a maybe holds for 37 steps on
+average. At 0 the junction almost never conducts at an arrival, so a maybe keeps
+its last answer, which on a fresh board is silence.
 
 ## 5. Trigger current, per hit, on the rail
 

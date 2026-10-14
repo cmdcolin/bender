@@ -201,6 +201,7 @@ export const PARAM_DEFS = [
   ['drumClapGap', 'slew'],
   ['drumClapCount', 'step'],
   ['drumTankCouple', 'slew'],
+  ['drumDice', 'step'],
   ['drumReset', 'step'],
   ['drumRingTrig', 'step'],
   ['drumCross', 'step'],

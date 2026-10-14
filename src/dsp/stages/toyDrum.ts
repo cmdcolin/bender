@@ -193,6 +193,11 @@ const BANK_FM = 12
 // into its rail.
 const TANK_COUPLE = 0.05
 
+/** What the kit's dice is a comparator on. Free, it rolls on every arrival;
+    on the junction, it rolls only while the noise transistor conducts and
+    holds its last answer while the junction is off. */
+export const DICE_NAMES = ['free', 'on the junction']
+
 /** Which tank's rising zero crossings reset the metal bank's phases. */
 export const BANK_SYNC_NAMES = ['off', 'to the kick', 'to the tom']
 const BANK_SYNC_TANK = [-1, 0, 1]
@@ -616,6 +621,8 @@ export class ToyDrum implements Stage {
   private chance = 0.5
   private open = 0
   private rolledAt = -1
+  private diceOnJunction = false
+  private diceHeld = 0
   // How far a voice has to have drained before its one-shot will answer again.
   // At 1 nothing is ever locked out, because an envelope leaves at 1 and only
   // falls: the board that touches this knob is the only one that divides.
@@ -806,7 +813,13 @@ export class ToyDrum implements Stage {
       const at = STEPS - 1 - step
       const bit = 1 << v
       if ((Math.round(p[MAYBE_PARAM[v]!]!) >> at) & 1) {
-        if (roll && this.rng() < this.chance) this.open |= bit
+        if (roll) {
+          const closed = this.rng() < this.chance
+          if (!this.diceOnJunction || this.noiseGate > 0.5) {
+            if (closed) this.open |= bit
+            this.diceHeld = closed ? this.diceHeld | bit : this.diceHeld & ~bit
+          } else this.open |= this.diceHeld & bit
+        }
         if (this.open & bit) bits |= bit
       } else if ((Math.round(p[VOICE_PARAM[v]!]!) >> at) & 1) bits |= bit
     }
@@ -1030,6 +1043,7 @@ export class ToyDrum implements Stage {
     const baseChance = p[IDX.drumChance]!
     const modChance = ctx.mod.read(DEST.drumChance)
     this.chance = Math.min(Math.max(baseChance, 0), 1)
+    this.diceOnJunction = Math.round(p[IDX.drumDice]!) === 1
     // All the way up is a voice that will not answer again until it has stopped
     // sounding; at nothing the floor sits above where an envelope starts, so
     // nothing is ever locked out.
@@ -1663,6 +1677,7 @@ export class ToyDrum implements Stage {
     this.thrown = 0
     this.scanBits = 0
     this.open = 0
+    this.diceHeld = 0
     this.rolledAt = -1
     this.clearing = false
     this.ringArmed = true

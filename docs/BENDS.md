@@ -501,6 +501,14 @@ kit still has to say. It's also the only duration on this board not counted off
 the chip's oscillator: nothing clocks an avalanche, so a rail dragging the tempo
 doesn't drag this.
 
+**Dice** wires the kit's dice to that junction. Free, a maybe step rolls fresh
+every time the counter arrives. On the junction, the dice is a comparator on the
+transistor: it rolls while the junction conducts and holds its last answer while
+it doesn't. Down the Noise bias travel the maybe steps stick just as the snare
+and hats start to spit. At a bias of 0.5 a maybe repeats its last answer 74% of
+the time against 51% free; at 0.3 it repeats 97% of the time, two bars or more
+at a stretch. With the bias all the way up the two settings are the same.
+
 **Clap gap** sets the period of the clap's burst oscillator, 9 ms stock, and
 **Clap bursts** sets how many bursts it fires before the clap rings out, three
 stock.

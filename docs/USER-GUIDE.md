@@ -171,9 +171,10 @@ eighty steps.
 
 Click a step past lit and it wires through the kit's dice instead: drawn as a
 ring with a dot, it fires as often as **Chance** says. A third click turns it
-off. Chance at zero silences those steps; Chance at max makes them ordinary. An
-accent is a weight on whatever step already fires, so the accent row carries no
-dice.
+off. Chance at zero silences those steps; Chance at max makes them ordinary.
+**Dice** ties those rolls to the noise transistor, so they freeze as **Noise
+bias** nears its knee. An accent is a weight on whatever step already fires, so
+the accent row carries no dice.
 
 **Roll**, **Vary**, **Turnaround**, **Shift**, and **Half**/**Double** rewrite
 the grid without touching tempo or tone: a new pattern, a couple of small

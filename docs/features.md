@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 367 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 368 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 98 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -205,7 +205,7 @@ too — the knife goes on and the rows under it say which controls that was:
   lands in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>50 controls</summary>
+<summary>51 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -225,6 +225,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Clap gap        | 0.5 to 250 ms                                                                                                      | The period of the small oscillator that fires the clap’s bursts                                                                         |
 | Clap bursts     | 1 to 64                                                                                                            | How many bursts the oscillator fires before the clap rings out                                                                          |
 | Noise bias      | off to full                                                                                                        | How hard the kit’s one noise transistor is biased                                                                                       |
+| Dice            | free or on the junction                                                                                            | What the kit’s dice is a comparator on                                                                                                  |
 | Metal           | off to full                                                                                                        | What the hat and the open hat are fed from                                                                                              |
 | Cymbal tone     | off to full                                                                                                        | Where the bottom of the cymbal’s band sits                                                                                              |
 | Bank spread     | off to full                                                                                                        | One resistor chain sets all six oscillators, and this leans on it                                                                       |
