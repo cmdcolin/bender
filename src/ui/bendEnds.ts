@@ -58,6 +58,7 @@ export const BEND_ENDS: Partial<
   fmCpuClockX: [1.5, -2],
   fmNoiseBlob: [null, -0.5],
   fmStrobe: [null, -2.5],
+  fmDacSlip: [null, 1],
   pcmLevel: [null, 5],
   pcmRelease: [null, null],
   pcmTone: [null, null],
