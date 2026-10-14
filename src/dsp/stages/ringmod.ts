@@ -1,4 +1,4 @@
-import { IDX } from '../../engine/params'
+import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params'
 import { DEST } from '../modbus'
 import { KEY_BIAS } from '../trigbus'
 import { QuadOsc } from '../util/lfo'
@@ -8,18 +8,26 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 
 export const RING_SHAPES = ['sine', 'square', 'diode']
 
-// Which machine makes the carrier, past the first entry: the six sources in the
-// order the chain sums them, so choice n is source n−1 and the bus can be
-// filled from the difference the meters already take.
-export const RING_FROM = [
-  'knob',
-  'toy',
-  'kit',
-  'FM chip',
-  'chaos osc',
-  'noise',
-  'sampler',
-]
+// Which machine makes the carrier, past the knob. A saved board stores the
+// index, so a new machine goes on the end rather than where the chain sums it.
+const CARRIERS = [
+  ['knob', null],
+  ['toy', 'toyChip'],
+  ['kit', 'toyDrum'],
+  ['FM chip', 'fmChip'],
+  ['chaos osc', 'chaosOsc'],
+  ['noise', 'noise'],
+  ['sampler', 'sampler'],
+  ['keys', 'pcmKeys'],
+  ['mono synth', 'monoSynth'],
+] as const satisfies readonly (readonly [string, SourceTap | null])[]
+
+export const RING_FROM = CARRIERS.map(([label]) => label)
+
+/** The `SOURCE_TAPS` index each choice takes its carrier from, −1 for the knob. */
+export const RING_FROM_TAP = CARRIERS.map(([, tap]) =>
+  tap ? SOURCE_TAPS.indexOf(tap) : -1,
+)
 
 // Where the carrier sits relative to the note the board is sounding, and what
 // each one does to the note's own harmonics.

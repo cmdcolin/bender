@@ -2,6 +2,7 @@ import { IDX, MAX_SOURCES, N_TAPS, TAP_BUS, TAP_MIC } from '../engine/params'
 import { pedalOrderAt } from '../pedals'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
+import { RING_FROM_TAP } from './stages/ringmod'
 import { Thermal } from './thermal'
 import { TriggerBus } from './trigbus'
 import { Burst } from './util/burst'
@@ -261,10 +262,10 @@ export class Chain {
    * source k put on the bus at sample i, mono, dry.
    *
    * Taken the same way the meters are — as the difference a source made to the
-   * sum — because that is the only place the six of them are still separate.
+   * sum — because that is the only place the sources are still separate.
    * Everything from the summing amp down (drive, bends, pedals, brownout, tape,
    * the limiter) is applied to the sum, so a stem taken after the bus would mean
-   * running the whole chain six times over. A stem here is the dry machine; the
+   * running the whole chain once per source. A stem here is the dry machine; the
    * master is the take with the board on it.
    *
    * Written only while `capturing` is set, and nothing in the audio path reads
@@ -426,22 +427,21 @@ export class Chain {
     // rather than from inside the stage: every one of them adds into the bus,
     // so the difference is what that machine put there, and no stage has to be
     // taught to meter itself. A source its own `when` skipped added nothing, so
-    // it costs nothing to leave out — which on a stock board is four of the six.
+    // it costs nothing to leave out — which on a stock board is most of them.
     //
-    // The left channel alone, because a meter is a glance: five of the six write
-    // the same sample to both, and the noise is the one that does not, so it
-    // reads a hair under what it is really putting on the bus.
+    // The left channel alone, because a meter is a glance: every source but the
+    // noise writes the same sample to both, so the noise reads a hair under
+    // what it is really putting on the bus.
     //
     // Copied by hand rather than through subarray: a view is an object, and an
     // object per block is 375 of them a second on the thread that cannot afford
     // a collection.
     //
     // While a stem take is running the same difference is written out sample by
-    // sample as well, mono. Five of the six sources put the identical sample on
-    // both channels — the noise is the one that does not — so a stereo stem
-    // would be the same file twice for all but one of them, at twice the
-    // memory. The stem is the mid of the pair; the noise keeps its width in the
-    // master, which is the take that has the width in it anyway.
+    // sample as well, mono. Every source but the noise puts the identical sample
+    // on both channels, so a stereo stem would be the same file twice for all
+    // but one of them, at twice the memory. The stem is the mid of the pair;
+    // the noise keeps its width in the master.
     //
     // A second walk over the block and a second history buffer, and both of
     // them only when the tape is on: the stem loop is written out beside the
@@ -451,7 +451,7 @@ export class Chain {
     // The carrier bus comes off the same difference: the ring mod can multiply
     // by a machine rather than by its own oscillator, and one source on its own
     // is a thing only this loop has.
-    const carFrom = Math.round(p[IDX.ringFrom]!) - 1
+    const carFrom = RING_FROM_TAP[Math.round(p[IDX.ringFrom]!)] ?? -1
     let carRan = false
     const prev = this.tapPrev
     const cap = this.capturing
@@ -460,7 +460,7 @@ export class Chain {
     for (let i = 0; i < n; i++) prev[i] = io.l[i]!
     if (cap) {
       // Every slice cleared first, so a source that did not run this block —
-      // its `when` said no, or the board has fewer than six — lands on the tape
+      // its `when` said no, or the board has fewer than `MAX_SOURCES` — lands on the tape
       // as silence rather than as last block's copy of itself.
       stems.fill(0)
       for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
@@ -510,9 +510,8 @@ export class Chain {
           for (let i = 0; i < n; i++)
             ctx.carrier[i] = prev[i]! - ctx.carrier[i]!
         }
-        // There are six slots and the instrument is built with six sources; a
-        // seventh would still sound, and a test holds the two numbers together
-        // rather than letting a stray channel land on the mic's meter.
+        // A source past `MAX_SOURCES` would still sound, but its meter would
+        // land on the mic's; a test holds the two numbers together.
         if (k < MAX_SOURCES && peak > this.taps[k]!) this.taps[k] = peak
       }
     }
@@ -520,7 +519,7 @@ export class Chain {
     // is silence rather than last block's copy of it.
     if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
 
-    // The summing amp the six of them meet in. Every desk has one and it is
+    // The summing amp the sources meet in. Every desk has one and it is
     // never a wire: at unity it is skipped outright, because a soft clipper
     // asked to pass a bus that already peaks at 0.6 is a decibel of squash
     // nobody dialled in. Wound up it is the one saturation upstream of the

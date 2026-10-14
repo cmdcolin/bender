@@ -1,13 +1,13 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { IDX, packParams } from '../../engine/params'
+import { IDX, packParams, SOURCE_TAPS } from '../../engine/params'
 import { buildBender, type BuiltChain } from '../build'
 import { DEST } from '../modbus'
 import { spectrum } from '../spectrum'
 import { BLOCK, type StereoBlock } from '../stage'
 import { bin, deviation, envelope, quiet, render, rms, SR } from '../testRender'
-import { RING_FROM, RING_TRACK } from './ringmod'
+import { RING_FROM, RING_FROM_TAP, RING_TRACK } from './ringmod'
 
 // A3, the chip's semitone zero, and the note every tracking case here is
 // judged against.
@@ -275,7 +275,14 @@ test('a stopped sequencer leaves the step carrier on its knob', () => {
   expect(stepped.l).toEqual(play({ ringHz: 430 }).l)
 })
 
-const from = (name: string) => RING_FROM.indexOf(name)
+const from = (name: (typeof RING_FROM)[number]) => RING_FROM.indexOf(name)
+
+test('every machine on the board is a carrier choice, once', () => {
+  expect(RING_FROM_TAP.toSorted((a, b) => a - b)).toEqual([
+    -1,
+    ...SOURCE_TAPS.keys(),
+  ])
+})
 
 // A machine's own output as the carrier, lifted by five — the number that puts
 // the chaos oscillator's product 2 dB under the knob carrier's rms on the study
@@ -288,6 +295,7 @@ test('a carrier off the chaos oscillator is broader than the knob’s', () => {
   const knob = render(board, 4)
   const chaos = render({ ...board, ringFrom: from('chaos osc') }, 4)
   expect(deviation(chaos, knob)).toBeGreaterThan(0.5)
+  expect(rms(chaos)).toBeGreaterThan(0.6 * rms(knob))
   expect(spectrum(chaos, SR).flatness).toBeGreaterThan(
     4 * spectrum(knob, SR).flatness,
   )
