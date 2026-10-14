@@ -240,6 +240,11 @@ patch bay reaches every knob that matters, knife included: **FM cut depth**,
 since the processor only re-sends a patch when a knob moves, so a wire there
 writes the register every block instead of four times a note.
 
+**Patch line** and **Patch data line** put the knife on the table the chip reads
+every patch from, the processor's and the die's own fifteen. The chip fetches
+the patch afresh every few milliseconds, so it comes back the moment the knife
+comes off.
+
 ## Playing the home keyboard
 
 The third machine on the rail is the eight-bit sampling keyboard, and it is the

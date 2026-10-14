@@ -141,6 +141,10 @@ const LANDINGS: Landing[] = [
   at('toy song fault', ['chipLevel', 'chipBankLine']),
   at('toy divider line', ['chipLevel']),
   at('toy divider fault', ['chipLevel', 'chipDivLine']),
+  at('FM patch line', ['fmLevel']),
+  at('FM patch fault', ['fmLevel', 'fmPatchLine']),
+  at('FM patch data line', ['fmLevel']),
+  at('FM patch data fault', ['fmLevel', 'fmPatchDataLine']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

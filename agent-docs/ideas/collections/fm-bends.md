@@ -13,11 +13,12 @@ Nothing here is a decision. Several of these are cheap and a couple are large
 enough to change how the chip sounds with no knife on it at all, which is a
 different kind of cost and is called out where it applies.
 
-**Three have landed since.** The table's output pins (2), the shift register
-soldered onto them (3) and the bay's reach onto the chip (6) are all built, and
-their sections say what came out. The remaining candidates are 1, 4, 5, 7, 8 and
-the small ones, and they are ranked against each other below rather than
-renumbered — the numbers are how this document has been referred to elsewhere.
+**Four have landed since.** The table's output pins (2), the shift register
+soldered onto them (3), the instrument ROM's bus (4) and the bay's reach onto
+the chip (6) are all built, and their sections say what came out. The remaining
+candidates are 1, 5, 7, 8 and the small ones, and they are ranked against each
+other below rather than renumbered — the numbers are how this document has been
+referred to elsewhere.
 
 ## How to judge one of these before building it
 
@@ -44,12 +45,19 @@ Where those numbers stand, per bus and per mode:
 | wave data (8)  | melody | 40/40   | 0.81     | 0             | 4         |
 |                | rhythm | 40/40   | 0.81     | 0             | 5         |
 |                | wind   | 40/40   | 0.43     | 0             | 2         |
+| patch (7)      | melody | 35/35   | 0.53     | 0             | 2         |
+|                | rhythm | 35/35   | 0.54     | 5             | 3         |
+|                | wind   | 35/35   | 0.34     | 0             | 1         |
+| patch data (8) | melody | 40/40   | 0.42     | 0             | 1         |
+|                | rhythm | 40/40   | 0.40     | 9             | 1         |
+|                | wind   | 40/40   | 0.32     | 0             | 3         |
 
-The last row is item 2, measured. It is the only bus on the chip that reads the
-same in melody as in rhythm, which is the point of it: it sits after the mode
-bit has decided anything, on the one datapath all eight operators take their
-turn on. `pnpm knife fm` is stricter than this report and calls 36 of its 40
-audible; the four it does not are the bottom bit of an eight-bit magnitude.
+The wave data rows are item 2, measured. Of the buses that came before it, it is
+the only one that reads the same in melody as in rhythm, which is the point of
+it: it sits after the mode bit has decided anything, on the one datapath all
+eight operators take their turn on. `pnpm knife fm` is stricter than this report
+and calls 36 of its 40 audible; the four it does not are the bottom bit of an
+eight-bit magnitude. The patch rows are item 4; see its section.
 
 The mode rows are new, and they corrected the premise this document was first
 written on. Measured in melody alone, the data bus reads 0.21 flat with nothing
@@ -172,23 +180,31 @@ the mode bit is clear, and pressing Rhythm hands the register's clock back to
 the hi-hat — the blob goes on working and changes grain. Both clocks count off
 the rail, so a starving board turns the sand into a rumble either way.
 
-## 4. The instrument ROM's own bus
+## 4. The instrument ROM's own bus — landed
 
-New, and only possible because the instrument nibble landed. There are fifteen
-patches on the die now and the nibble addresses them, which means there is a
-table with an address bus and a data bus that nothing has put a knife on —
-exactly the shape `roms.ts` already has for the toy's tune ROM, down to the
-`ROM_ADDR_LINES` / `ROM_DATA_LINES` pair.
+The instrument nibble addresses fifteen patches on the die: a table with an
+address bus and a data bus, the shape `roms.ts` has for the toy's tune ROM.
 
-What it buys is the thing a corrupted _selection_ cannot: fractions of patches.
-The nibble picks a whole instrument; a fault on the table's address lines picks
-byte 3 from the violin and byte 5 from the trumpet, the same wrong pairing every
-time that byte is fetched. Four bits of address and eight of data, and the patch
-that comes out is a chimera that is nonetheless perfectly stable — which is the
-register file's whole personality, arrived at from a direction the register file
-cannot reach.
+Built as `fmPatchLine` / `fmPatchFault` and `fmPatchDataLine` /
+`fmPatchDataFault`, a `Bus(7)` and a `Bus(8)` in `fetchPatch()`:
 
-Cheap: `ROM_PATCH_BYTES` is read in one place, in `readPatch()`.
+- Three address wires pick the byte and four the row. Row zero is the register
+  file, so the processor's patch crosses the same wires as the die's.
+- Row zero on the bus is what makes it audible alone. The driver only writes
+  zero to the nibble, so a knife on the ROM rows by themselves would wait for a
+  data-bus fault to pick a row.
+- Every fetch reads the same wrong byte, and the patch comes back when the knife
+  comes off. Neither side is in the path until a line is chosen.
+
+Measured:
+
+- `pnpm knife fm` calls 19 of the address side's 35 audible and 37 of the data
+  side's 40. The 16 silent ones are cut, ground and bridge on the four row
+  lines, which cannot move a row of zero.
+- The patch buses are where this chip goes down: 11 address faults and 15 data
+  faults land on knife's went-down list, against none for the wave data pins.
+  The multiplier table's bottom entry is 0.5, and B0 to ground halves both
+  operators' ratios, dropping the note an octave.
 
 ## 5. Two clocks, and nothing reaches either
 
@@ -273,13 +289,11 @@ output side, and this chip has nothing like it.
 
 ## What is left, ranked against each other
 
-4 is the cheapest — `ROM_PATCH_BYTES` is read in one place and fifteen patches
-already sit behind a nibble nothing has a knife on. 5 is the one that buys the
-most, because both clocks reach things no control on the chip can: the missing
-bottom octave is down the chip's crystal, and they are two more lanes for the
-bay now that the bay can get here. 7 and 8 are structural and worth doing
-together, since both are about what four voices and one output stage can
-actually carry. 1 stays last and stays the one to be suspicious of.
+5 is the one that buys the most, because both clocks reach things no control on
+the chip can: the missing bottom octave is down the chip's crystal, and they are
+two more lanes for the bay now that the bay can get here. 7 and 8 are structural
+and worth doing together, since both are about what four voices and one output
+stage can actually carry. 1 stays last and stays the one to be suspicious of.
 
 ## Compositions to try
 

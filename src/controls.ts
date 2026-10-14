@@ -279,6 +279,10 @@ export const DEFAULT_CONTROLS = {
   fmWaveDataFault: 0,
   fmNoiseBlob: 0,
   fmDrive: 0,
+  fmPatchLine: 0,
+  fmPatchFault: 0,
+  fmPatchDataLine: 0,
+  fmPatchDataFault: 0,
 
   // The home keyboard. Its fader boots at the floor for the reason the FM
   // chip's does: it is soldered onto the toy's gate line, so a board that came

@@ -105,6 +105,10 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   chipBankFault: 'Toy keyboard',
   chipDivLine: 'Toy keyboard',
   chipDivFault: 'Toy keyboard',
+  fmPatchLine: 'FM chip',
+  fmPatchFault: 'FM chip',
+  fmPatchDataLine: 'FM chip',
+  fmPatchDataFault: 'FM chip',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

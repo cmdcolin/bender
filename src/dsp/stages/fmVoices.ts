@@ -459,6 +459,12 @@ export const ROM_VOICES: Voice[] = [...FM_VOICES, ...ROM_ONLY]
 export const ROM_PATCH_BYTES = ROM_VOICES.map(pack)
 export const ROM_VOICE_NAMES = ROM_VOICES.map(v => v.name)
 
+// The table's own bus. Three wires pick the byte and four the row, and row zero
+// is the register file, so the CPU's patch crosses the same wires as the die's.
+export const PATCH_BYTE_BITS = 3
+export const PATCH_ADDR_LINES = PATCH_BYTE_BITS + 4
+export const PATCH_DATA_LINES = 8
+
 // The kit the die keeps in ROM. The bass drum is the only one of the three
 // still running off the sine table, so it is the only one that needs a patch —
 // and because it lives in ROM rather than in the register file, nothing the

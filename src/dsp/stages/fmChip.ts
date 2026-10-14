@@ -26,7 +26,10 @@ import {
   KSL_SHIFT,
   MOD_HALF,
   MULT,
+  PATCH_ADDR_LINES,
+  PATCH_BYTE_BITS,
   PATCH_BYTES,
+  PATCH_DATA_LINES,
   REG,
   RHY,
   ROM_PATCH_BYTES,
@@ -207,6 +210,9 @@ const AM_GAIN = Float64Array.from({ length: 64 }, (_, i) =>
 const WAVE_SEED = 0x1d
 /** And on a cut line out of the table, which is a different pin. */
 const WAVE_DATA_SEED = 0x6b
+/** And on the patch table's two sides. */
+const PATCH_ADDR_SEED = 0x2e
+const PATCH_DATA_SEED = 0x91
 /** Which reads the blob's last pin is holding down, for a bridge part-made. */
 const BLOB_SEED = 0xc4
 
@@ -394,6 +400,14 @@ export class FmChip implements Stage {
   private waveDataBus = new Bus(WAVE_DATA_BITS, WAVE_DATA_SEED)
   private waveDataLine = -1
   private waveDataFault = 0
+  // The patch table's address and data wires, read once a block per channel.
+  private patchBus = new Bus(PATCH_ADDR_LINES, PATCH_ADDR_SEED)
+  private patchLine = -1
+  private patchFault = 0
+  private patchDataBus = new Bus(PATCH_DATA_LINES, PATCH_DATA_SEED)
+  private patchDataLine = -1
+  private patchDataFault = 0
+  private fetched = new Uint8Array(1 << PATCH_BYTE_BITS)
   // The blob of solder from the shift register's output onto those same pins,
   // and how far across them it ran. A hardware mod rather than a register
   // write, so nothing the CPU does touches it: it survives every patch, every
@@ -864,7 +878,11 @@ export class FmChip implements Stage {
       const inst = this.regs[REG.instVol + n]! >> 4
       this.readOperators(
         this.chRates[n]!,
-        inst === 0 ? this.regs : ROM_PATCH_BYTES[inst - 1]!,
+        this.patchLine >= 0 || this.patchDataLine >= 0
+          ? this.fetchPatch(inst)
+          : inst === 0
+            ? this.regs
+            : ROM_PATCH_BYTES[inst - 1]!,
         this.regs[REG.keyBlock + n]!,
         clockFactor,
       )
@@ -882,6 +900,29 @@ export class FmChip implements Stage {
     this.raceRates.release = fast
     this.raceRates.sustain = ENV_FLOOR
     this.raceRates.sustained = false
+  }
+
+  // The eight bytes across the table's own wires, which only happens once a
+  // knife is on them. A stuck wire reads the same wrong byte every fetch.
+  private fetchPatch(inst: number) {
+    const out = this.fetched
+    for (let b = 0; b < out.length; b++) {
+      const addr = this.patchBus.read(
+        (inst << PATCH_BYTE_BITS) | b,
+        this.patchLine,
+        this.patchFault,
+        this.busCut,
+      )
+      const row = addr >> PATCH_BYTE_BITS
+      const at = addr & (out.length - 1)
+      out[b] = this.patchDataBus.read(
+        row === 0 ? this.regs[at]! : ROM_PATCH_BYTES[row - 1]![at]!,
+        this.patchDataLine,
+        this.patchDataFault,
+        this.busCut,
+      )
+    }
+    return out
   }
 
   // One operator's turn on the wave ROM. The phase's top bits are the address;
@@ -1117,6 +1158,28 @@ export class FmChip implements Stage {
       p[IDX.fmWaveDataFault]!,
       FAULT_NAMES.length,
       bay.read(DEST.fmWaveDataFault),
+    )
+    this.patchLine =
+      hop(
+        p[IDX.fmPatchLine]!,
+        PATCH_ADDR_LINES + 1,
+        bay.read(DEST.fmPatchLine),
+      ) - 1
+    this.patchFault = hop(
+      p[IDX.fmPatchFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmPatchFault),
+    )
+    this.patchDataLine =
+      hop(
+        p[IDX.fmPatchDataLine]!,
+        PATCH_DATA_LINES + 1,
+        bay.read(DEST.fmPatchDataLine),
+      ) - 1
+    this.patchDataFault = hop(
+      p[IDX.fmPatchDataFault]!,
+      FAULT_NAMES.length,
+      bay.read(DEST.fmPatchDataFault),
     )
     // And the knife's own two: how far through the trace it went, and how far
     // across the pins the solder ran. Read per block like everything else here,
@@ -1417,6 +1480,8 @@ export class FmChip implements Stage {
     this.addrBus.reset()
     this.waveBus.reset()
     this.waveDataBus.reset()
+    this.patchBus.reset()
+    this.patchDataBus.reset()
     this.queued.length = 0
     this.held = 0
     this.addrLatch.reset()

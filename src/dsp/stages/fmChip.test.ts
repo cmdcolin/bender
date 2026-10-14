@@ -421,6 +421,62 @@ test('the table’s output pins leave nothing behind either', () => {
   expect(Math.sqrt(sum / clean.length) / rms(clean)).toBeLessThan(0.05)
 })
 
+// The patch table's own wires. Row zero is the register file and rows one to
+// fifteen are the die's bank, so P3 is the row's bottom bit.
+const ROW_LINE = 4
+const FLAGS_HOLD_LINE = 6
+
+const organNote = (o: Partial<Controls>) =>
+  playKeys(
+    { ...FM_ONLY, fmVoice: voice('organ'), fmLength: 2, ...o },
+    chip => chip.noteOn(0),
+    0.6,
+  )
+
+test('a row line held high reads the die’s organ past the knob that wrote this one', () => {
+  // The bank's first row is the organ the case ships, before Brightness
+  // rewrote its level on the way into the register file.
+  const bent = organNote({ fmPatchLine: ROW_LINE, fmPatchFault: FAULT.supply })
+  expect(bent).toEqual(organNote({ fmBright: 0 }))
+  expect(deviation(bent, organNote({}))).toBeGreaterThan(0.05)
+})
+
+test('a data line on the table corrupts every fetch and scars no register', () => {
+  let regs: Uint8Array | undefined
+  const piano = (o: Partial<Controls>) =>
+    renderBender(
+      { ...FM_ONLY, fmKeyGate: 1, fmVoice: voice('e.piano'), ...o },
+      3,
+      built => built.fmChip.noteOn(0),
+      undefined,
+      built => {
+        regs = built.fmChip.patchRegs()
+      },
+    )
+  const clean = piano({})
+  const cleanRegs = regs
+  // B5 is the hold bit in both flags bytes, so a voice that decays on its own
+  // holds for as long as the key is down.
+  const holding = piano({
+    fmPatchDataLine: FLAGS_HOLD_LINE,
+    fmPatchDataFault: FAULT.supply,
+  })
+  expect(rms(tail(holding, 0.3))).toBeGreaterThan(5 * rms(tail(clean, 0.3)))
+  expect(regs).toEqual(cleanRegs)
+})
+
+test('a wire on the patch line lane moves the knife', () => {
+  const wire = {
+    bodyX: 1,
+    mod0Src: 5,
+    mod0Dest: DEST.fmPatchLine,
+    mod0Depth: ROW_LINE / 8,
+  }
+  const knob = organNote({ fmPatchLine: ROW_LINE, fmPatchFault: FAULT.supply })
+  expect(organNote({ fmPatchFault: FAULT.supply, ...wire })).toEqual(knob)
+  expect(deviation(knob, organNote({}))).toBeGreaterThan(0.05)
+})
+
 // The blob of solder from the shift register onto those same pins. The register
 // is the one broadband thing on the die and the percussion bank was the only
 // way to reach it; this is a bodge wire, so it needs no mode bit.

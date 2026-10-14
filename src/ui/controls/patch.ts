@@ -60,7 +60,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
           min: 0,
-          max: 90,
+          max: 94,
           step: 1,
           unit: '',
           choices: [
@@ -155,6 +155,10 @@ export const PATCH_GROUPS: Group[] = [
             'toy song fault',
             'toy divider line',
             'toy divider fault',
+            'FM patch line',
+            'FM patch fault',
+            'FM patch data line',
+            'FM patch data fault',
           ],
           groups: [
             {
@@ -214,6 +218,10 @@ export const PATCH_GROUPS: Group[] = [
                 'FM wave data fault',
                 'FM cut depth',
                 'FM noise blob',
+                'FM patch line',
+                'FM patch fault',
+                'FM patch data line',
+                'FM patch data fault',
               ],
             },
             {

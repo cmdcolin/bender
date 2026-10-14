@@ -136,8 +136,12 @@ export const DEST = {
   chipBankFault: 88,
   chipDivLine: 89,
   chipDivFault: 90,
+  fmPatchLine: 91,
+  fmPatchFault: 92,
+  fmPatchDataLine: 93,
+  fmPatchDataFault: 94,
 } as const
-export const N_DEST = 91
+export const N_DEST = 95
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep

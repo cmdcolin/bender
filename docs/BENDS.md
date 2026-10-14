@@ -266,6 +266,24 @@ the carrier's own square gated by the register, since the sign is not one of
 these pins. Nothing the processor does touches it. It is there on every patch,
 under an effect, and through a panic, which no other bend on this chip is.
 
+**Patch line** and **Patch data line** cut the table the operators read their
+patch from. It is sixteen rows of eight bytes: row zero is the register file the
+processor writes, and the other fifteen are the die's own bank, which the
+instrument nibble selects. The chip fetches every channel's patch over these
+wires every few milliseconds, so a fault here lasts exactly as long as the
+knife: every fetch reads the same wrong byte, and the patch comes back the
+moment the knife comes off.
+
+- A byte line (P0–P2) pairs a patch's bytes wrongly: P0 to ground reads each
+  even byte twice, handing the carrier the modulator's settings.
+- A row line (P3–P6) held at +V swaps every channel onto one of the die's
+  patches, past every knob that rewrote the register file's copy. The processor
+  only asks for row zero, so the other faults on a row line wait for a data-line
+  knife to pick another row.
+- A data line moves the same bit in all eight bytes at once. B0 is the bottom of
+  both multipliers and drops the note an octave; B5 is the hold bit, so a struck
+  voice rings for as long as the key is down.
+
 **The hidden test register** is undocumented — the factory used it to test the
 die, and the only write a driver ever makes to it is the one that clears it at
 power-on, since a chip that booted with a stray test bit set would never sound

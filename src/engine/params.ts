@@ -264,6 +264,10 @@ export const PARAM_DEFS = [
   ['fmWaveDataFault', 'step'],
   ['fmNoiseBlob', 'slew'],
   ['fmDrive', 'slew'],
+  ['fmPatchLine', 'step'],
+  ['fmPatchFault', 'step'],
+  ['fmPatchDataLine', 'step'],
+  ['fmPatchDataFault', 'step'],
 
   ['pcmLevel', 'slew'],
   ['pcmVoice', 'step'],
