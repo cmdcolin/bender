@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 371 knobs and switches in 32 groups, seven bends competing for six slots,
-18 ROM tunes, 98 presets, 16 stage settings and 36 named cuts — and everything
+18 ROM tunes, 102 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 98 presets, and dice on every heading as
+- **Boards, rather than settings.** 102 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -1220,8 +1220,8 @@ became:
 
 ### Presets
 
-98 boards worth keeping. Every name is a link that opens the app with that board
-on it — a link never presses play, so it is loaded and waiting.
+102 boards worth keeping. Every name is a link that opens the app with that
+board on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
   — The home keyboard on strings with the toy’s gate still soldered on, so the
@@ -1388,6 +1388,19 @@ on it — a link never presses play, so it is loaded and waiting.
   — A wire off the bay onto the pedal’s time — the repeats never settle
 - [**clockwork**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipArp:3,chipArpOct:2,delayMs:240,dlyMix:0.25,revMix:0.2)
   — The counter walking your hand — hold a chord, or latch it with hold
+- [**hailstorm**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipArp:4,chipArpOct:4,chipArpSync:8,drumLevel:0.6,drumBpm:140,revMix:0.25)
+  — Hold a chord: the arpeggio counts sixty-fourths off the kit, four octaves in
+  no order, a hail of notes at the drums’ tempo
+- [**ghost bassline**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipDrift:0.6,ringFrom:9,ringMix:0.85)
+  — The ring mod’s carrier is the toy a step ago, so every pair of notes writes
+  its difference underneath — a bass line nobody wrote, wobbling with a drifting
+  crystal
+- [**tank at sea**](https://cmdcolin.github.io/bender/app/#set=revDecayS:20,revWarble:1,revBoing:0.7,revMix:0.8,revDry:0.6)
+  — Twenty seconds of spring with every comb swinging, so the tail rolls in
+  pitch like a boat
+- [**escalator**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,echoMode:5,echoMs:260,echoFb:0.92,echoToneHz:16000,echoShift:12,echoLevel:0.75)
+  — Every repeat an octave over the last, round and round until it climbs off
+  the top of the band and folds back down as grit
 - [**two hands**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,fmLevel:0.7,fmVoice:5,fmBright:0.45,fmModDecay:8,fmKeyGate:1,revMix:0.2)
   — Gate jumper cut — the toy on one keybed, the FM chip on the other
 - [**string machine**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipArp:3,chipArpHz:6,chipArpOct:2,revDecayS:3,revMix:0.3,ensMode:1,ensDepth:0.55,ensClock:9,ensMix:0.6)

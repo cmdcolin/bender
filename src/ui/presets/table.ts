@@ -1,11 +1,13 @@
 import { DATA_LINES, DRUM_ROMS } from '../../drums'
 import { FAULT } from '../../dsp/bus'
 import { DEST } from '../../dsp/modbus'
+import { ECHO_MODE } from '../../dsp/stages/echo'
 import { ENS_MODE } from '../../dsp/stages/ensemble'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
 import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
 import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom'
-import { ARP_MODES } from '../../dsp/stages/toyChip'
+import { RING_FROM } from '../../dsp/stages/ringmod'
+import { ARP_MODES, ARP_SYNC_MODES } from '../../dsp/stages/toyChip'
 import { ANY_CHOICE } from '../../dsp/trigbus'
 
 import type { Controls } from '../../controls'
@@ -25,6 +27,7 @@ const effect = (name: string) => FM_EFFECT_NAMES.indexOf(name)
 const voice = (name: string) => FM_VOICE_NAMES.indexOf(name)
 
 const arp = (name: string) => ARP_MODES.indexOf(name)
+const arpSync = (name: string) => ARP_SYNC_MODES.indexOf(name)
 
 /** And the recordings in the home keyboard's ROM. */
 const keys = (name: string) => PCM_VOICE_NAMES.indexOf(name)
@@ -1164,6 +1167,59 @@ export const PRESETS: PresetDef[] = [
       dlyMix: 0.25,
       revDecayS: 2,
       revMix: 0.2,
+    },
+  },
+  {
+    name: 'hailstorm',
+    blurb:
+      'Hold a chord: the arpeggio counts sixty-fourths off the kit, four octaves in no order, a hail of notes at the drums’ tempo',
+    patch: {
+      chipLevel: 0.75,
+      chipArp: arp('random'),
+      chipArpSync: arpSync('sixty-fourths'),
+      chipArpOct: 4,
+      drumLevel: 0.6,
+      drumBpm: 140,
+      revDecayS: 2,
+      revMix: 0.25,
+    },
+  },
+  {
+    name: 'ghost bassline',
+    blurb:
+      'The ring mod’s carrier is the toy a step ago, so every pair of notes writes its difference underneath — a bass line nobody wrote, wobbling with a drifting crystal',
+    patch: {
+      chipLevel: 0.8,
+      chipDrift: 0.6,
+      ringFrom: RING_FROM.indexOf('toy step late'),
+      ringMix: 0.85,
+    },
+  },
+  {
+    name: 'tank at sea',
+    blurb:
+      'Twenty seconds of spring with every comb swinging, so the tail rolls in pitch like a boat',
+    patch: {
+      chipLevel: 0.6,
+      revDecayS: 20,
+      revWarble: 1,
+      revBoing: 0.7,
+      revMix: 0.8,
+      revDry: 0.6,
+    },
+  },
+  {
+    name: 'escalator',
+    blurb:
+      'Every repeat an octave over the last, round and round until it climbs off the top of the band and folds back down as grit',
+    patch: {
+      chipLevel: 0.7,
+      echoMode: ECHO_MODE.shift,
+      echoShift: 12,
+      echoMs: 260,
+      echoFb: 0.92,
+      echoToneHz: 16000,
+      echoLevel: 0.75,
     },
   },
   {
