@@ -189,6 +189,22 @@ export const CUTS: CutDef[] = [
   },
   {
     group: 'Toy drums',
+    part: KNIFE,
+    name: 'writes its own pattern',
+    blurb:
+      'An XOR in the loop the bar circulates through — every lap mixes each step with the next, so the beat grows into patterns nobody drew and comes back within 255 bars',
+    patch: { drumLoop: pick('drumLoop', 'return through an XOR') },
+  },
+  {
+    group: 'Toy drums',
+    part: KNIFE,
+    name: 'inside out every other bar',
+    blurb:
+      'The circulating bar’s return inverted — each lap plays the last one’s gaps, so a sparse bar and a bar of every voice on nearly every step take turns',
+    patch: { drumLoop: pick('drumLoop', 'return inverted') },
+  },
+  {
+    group: 'Toy drums',
     part: SAMPLE_ROM,
     name: 'the kick plays the kit',
     blurb:

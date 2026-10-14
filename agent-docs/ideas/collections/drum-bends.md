@@ -305,6 +305,8 @@ Measured:
   at the median, and the kit stem's centroid falls 442 → 361 Hz as its own
   tuning sags. Under a kick, snare and hat the toy reads 250 Hz against 300 for
   20 ms.
+- `pnpm ab main` with this round's four bends at rest: the branch won 5 of 12
+  pairs at a median ratio of 1.008, not separated from a box at load 57.
 
 ## 6. The clap's burst oscillator
 

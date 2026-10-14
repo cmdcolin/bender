@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 376 knobs and switches in 32 groups, seven bends competing for six slots,
-18 ROM tunes, 102 presets, 16 stage settings and 36 named cuts — and everything
+18 ROM tunes, 110 presets, 16 stage settings and 38 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 102 presets, and dice on every heading as
+- **Boards, rather than settings.** 110 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -197,6 +197,12 @@ too — the knife goes on and the rows under it say which controls that was:
 - **five-step bar**: The snare’s trigger line on the counter’s clear pin. The
   first snare sends the counter back to step one, so the rock beat comes round
   every five steps
+- **writes its own pattern**: An XOR in the loop the bar circulates through —
+  every lap mixes each step with the next, so the beat grows into patterns
+  nobody drew and comes back within 255 bars
+- **inside out every other bar**: The circulating bar’s return inverted — each
+  lap plays the last one’s gaps, so a sparse bar and a bar of every voice on
+  nearly every step take turns
 - **the kick plays the kit**: The end stop on the slab counter cut, so the
   counter carries on through every slab after the voice’s own and one kick hit
   holds four seconds of the kit
@@ -1225,7 +1231,7 @@ became:
 
 ### Presets
 
-102 boards worth keeping. Every name is a link that opens the app with that
+110 boards worth keeping. Every name is a link that opens the app with that
 board on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1358,6 +1364,35 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**two clocks**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipSync:1,drumLevel:0.9,drumBpm:124,drumSlip:0.2,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,delayMs:288,dlyMix:0.22)
   — The toy locked to the kit’s tempo and the kit’s counter slipping out from
   under it — a lock follows a tempo, never a downbeat
+- [**rusted bell**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumDecay:2.5,drumMetal:1,drumBankStarve:1,drumKick:37412,drumSnare:0,drumHat:9362,drumBell:37416,drumCym:32768,drumAccent:32768,revMix:0.3)
+  — The metal bank on a starved supply of its own, three octaves down — the
+  cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays
+  where it was
+- [**metal under the kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:120,drumDecay:0.4,drumMetal:1,drumBankGate:1,drumKick:32928,drumHat:65535,drumCym:32768)
+  — The metal bank’s supply soldered to the kick’s trigger line — sixteenth hats
+  and a cymbal that only speak while a kick rings, and freeze in the gaps
+  between
+- [**buzzing hands**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:108,drumClapGap:2,drumClapCount:60,drumKick:37008,drumSnare:0,drumClap:2088,drumBell:2,drumAccent:32896,revMix:0.2)
+  — The clap’s burst oscillator run up to 500 Hz for sixty bursts — every clap a
+  buzzing tone made of noise, which the metal bank cannot make
+- [**two drums arguing**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:96,drumRing:0.95,drumSweep:3,drumTankCouple:0.5,drumKick:32768,drumSnare:30464,drumHat:0,drumTom:255,drumAccent:32896)
+  — The kick’s network wired into the tom’s, both latched past the ring — two
+  oscillators forcing each other into a low smear the pattern keeps retuning
+- [**sticky dice**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumNoiseBias:0.3,drumMetal:0.4,drumDice:1,drumKick:43690,drumHat:0,drumAccent:32896,drumKickMaybe:5137,drumSnareMaybe:8484,drumHatMaybe:65535,drumOpenMaybe:514)
+  — Maybe steps on every row and a dice wired to a noise transistor at its knee
+  — the hats spit, and the pattern locks for bars at a time before it lurches
+- [**drums made of the tune**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.5,drumLevel:1.2,drumBpm:120,drumRef:1,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,revMix:0.25)
+  — The kit’s converter running off the toy’s output instead of a fixed
+  reference — every hit is the melody ring-modulated into a burst, and the kit
+  goes quiet when the toy does
+- [**lone kicks zap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumMetal:0.8,drumSweep:6,drumPulseShare:1,drumKick:37514,drumSnare:0,drumHat:4618,drumClap:4104)
+  — The one-shots on one timing rail with the sweep trimmer wound up — a kick
+  alone zaps down from the top, and a kick under hats and a clap lands short,
+  thin and flat
+- [**every hit dives**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.9,drumBpm:100,drumDecay:3,drumMetal:1,drumTrigLoad:1,drumKick:34952,drumHat:34952,drumBell:8738,drumOpen:8738,drumCym:32896,drumAccent:32896)
+  — The one-shots’ charge pulled straight off the supply — a ringing cymbal and
+  cowbell dive an octave on every kick, and the toy’s tune sags flat under the
+  busy steps
 - [**found tape**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,revDecayS:1.6,revMix:0.18,tapeMix:1,tapeDrive:4,tapeHiss:0.55,tapeWow:0.3)
   — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
 - [**shed oxide**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35,tapeSqueal:0.45)

@@ -8,6 +8,11 @@ import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
 import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom'
 import { RING_FROM } from '../../dsp/stages/ringmod'
 import { ARP_MODES, ARP_SYNC_MODES } from '../../dsp/stages/toyChip'
+import {
+  BANK_GATE_NAMES,
+  DAC_REF_NAMES,
+  DICE_NAMES,
+} from '../../dsp/stages/toyDrum'
 import { ANY_CHOICE } from '../../dsp/trigbus'
 
 import type { Controls } from '../../controls'
@@ -908,6 +913,138 @@ export const PRESETS: PresetDef[] = [
       drumSlip: 0.2,
       delayMs: 288,
       dlyMix: 0.22,
+    },
+  },
+  {
+    name: 'rusted bell',
+    blurb:
+      'The metal bank on a starved supply of its own, three octaves down — the cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays where it was',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 104,
+      ...romMasks('bossa'),
+      drumCym: 0b1000_0000_0000_0000,
+      drumMetal: 1,
+      drumBankStarve: 1,
+      drumDecay: 2.5,
+      revMix: 0.3,
+    },
+  },
+  {
+    name: 'metal under the kick',
+    blurb:
+      'The metal bank’s supply soldered to the kick’s trigger line — sixteenth hats and a cymbal that only speak while a kick rings, and freeze in the gaps between',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 120,
+      ...romMasks('rock'),
+      drumKick: 0b1000_0000_1010_0000,
+      drumHat: 0b1111_1111_1111_1111,
+      drumCym: 0b1000_0000_0000_0000,
+      drumMetal: 1,
+      drumBankGate: BANK_GATE_NAMES.indexOf('on the kick'),
+      drumDecay: 0.4,
+    },
+  },
+  {
+    name: 'buzzing hands',
+    blurb:
+      'The clap’s burst oscillator run up to 500 Hz for sixty bursts — every clap a buzzing tone made of noise, which the metal bank cannot make',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 108,
+      ...romMasks('electro'),
+      drumClap: 0b0000_1000_0010_1000,
+      drumClapGap: 2,
+      drumClapCount: 60,
+      revMix: 0.2,
+    },
+  },
+  {
+    name: 'two drums arguing',
+    blurb:
+      'The kick’s network wired into the tom’s, both latched past the ring — two oscillators forcing each other into a low smear the pattern keeps retuning',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.8,
+      drumBpm: 96,
+      ...romMasks('fill'),
+      drumRing: 0.95,
+      drumTankCouple: 0.5,
+      drumSweep: 3,
+    },
+  },
+  {
+    name: 'sticky dice',
+    blurb:
+      'Maybe steps on every row and a dice wired to a noise transistor at its knee — the hats spit, and the pattern locks for bars at a time before it lurches',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 128,
+      ...romMasks('motorik'),
+      drumHat: 0,
+      drumHatMaybe: 0xffff,
+      drumSnareMaybe: 0b0010_0001_0010_0100,
+      drumKickMaybe: 0b0001_0100_0001_0001,
+      drumOpenMaybe: 0b0000_0010_0000_0010,
+      drumChance: 0.5,
+      drumDice: DICE_NAMES.indexOf('on the junction'),
+      drumNoiseBias: 0.3,
+      drumMetal: 0.4,
+    },
+  },
+  {
+    name: 'drums made of the tune',
+    blurb:
+      'The kit’s converter running off the toy’s output instead of a fixed reference — every hit is the melody ring-modulated into a burst, and the kit goes quiet when the toy does',
+    patch: {
+      chipLevel: 0.5,
+      drumLevel: 1.2,
+      drumBpm: 120,
+      ...romMasks('breaks'),
+      drumRef: DAC_REF_NAMES.indexOf('the toy chip'),
+      revMix: 0.25,
+    },
+  },
+  {
+    name: 'lone kicks zap',
+    blurb:
+      'The one-shots on one timing rail with the sweep trimmer wound up — a kick alone zaps down from the top, and a kick under hats and a clap lands short, thin and flat',
+    patch: {
+      chipLevel: 0,
+      drumLevel: 0.9,
+      drumBpm: 112,
+      drumKick: 0b1001_0010_1000_1010,
+      drumSnare: 0,
+      drumHat: 0b0001_0010_0000_1010,
+      drumClap: 0b0001_0000_0000_1000,
+      drumTom: 0,
+      drumBell: 0,
+      drumOpen: 0,
+      drumCym: 0,
+      drumPulseShare: 1,
+      drumSweep: 6,
+      drumMetal: 0.8,
+    },
+  },
+  {
+    name: 'every hit dives',
+    blurb:
+      'The one-shots’ charge pulled straight off the supply — a ringing cymbal and cowbell dive an octave on every kick, and the toy’s tune sags flat under the busy steps',
+    patch: {
+      chipLevel: 0.6,
+      drumLevel: 0.9,
+      drumBpm: 100,
+      ...romMasks('disco'),
+      drumCym: 0b1000_0000_1000_0000,
+      drumBell: 0b0010_0010_0010_0010,
+      drumMetal: 1,
+      drumDecay: 3,
+      drumTrigLoad: 1,
     },
   },
   {
