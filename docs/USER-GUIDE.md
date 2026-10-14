@@ -166,8 +166,9 @@ the way a foot does — and **Choke** moves that resistor to any pair of voices.
 **Bank FM** shakes the drums' tuning with the metal bank until the kick clangs,
 **Bank sync** locks the metal voices to the kick's pitch while it rings, and
 **Tank coupling** rings the tom off every kick. **Ring trigger** lets a ringing
-kick, tom or snare strike other voices once a cycle, and **Counter reset** sends
-the bar back to step one whenever a chosen voice strikes; see
+kick, tom or snare strike other voices once a cycle, **Counter reset** sends the
+bar back to step one whenever a chosen voice strikes, and **Pattern loop** lets
+the bar rewrite itself a lap at a time; see
 [BENDS.md](BENDS.md#the-counters-own-clock).
 
 Press a step and drag across the grid to draw a run. Each row has its own

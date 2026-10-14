@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { STEPS } from '../../drums'
-import { packParams } from '../../engine/params'
+import { IDX, packParams } from '../../engine/params'
 import { buildBender } from '../build'
 import { DEST } from '../modbus'
 import { spectrum } from '../spectrum'
@@ -1390,6 +1390,69 @@ test('two latched networks wired together stop holding one pitch', () => {
     return bins
   }
   expect(smear(0.5)).toBeGreaterThan(3 * smear(0))
+})
+
+// What struck on each step of the first few bars, one sixteen-bit mask a voice
+// a bar in the grid's bit order, read off the lights rather than the audio. The
+// counter leaves step one on its first edge, so that cell runs a lap behind.
+function bars(
+  c: Partial<Controls>,
+  n: number,
+  each?: (bar: number, p: Float32Array) => void,
+): number[][] {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0,
+    drumBpm: 240,
+    ...c,
+  })
+  const io = makeIo()
+  const out = Array.from({ length: n }, () =>
+    Array.from({ length: 8 }, () => 0),
+  )
+  while (built.toyDrum.tick < n * STEPS) {
+    each?.(Math.floor(built.toyDrum.tick / STEPS), p)
+    built.chain.process(io, p)
+    const tick = built.toyDrum.tick
+    const fired = built.toyDrum.takeFired()
+    const bar = out[Math.floor(tick / STEPS)]
+    if (!bar) continue
+    for (let v = 0; v < 8; v++)
+      if ((fired >> v) & 1) bar[v]! |= 1 << (STEPS - 1 - (tick % STEPS))
+  }
+  return out
+}
+
+const LOOP_INVERT = 1
+const LOOP_NEXT = 3
+const LOOP_XOR = 4
+
+test('a knife inverting the return swaps every row for its gaps', () => {
+  const [, second, third] = bars({ drumLoop: LOOP_INVERT }, 3)
+  const [, stock] = bars({}, 2)
+  const past = 0x7fff
+  for (const v of [0, 1, 2]) {
+    expect(second![v]! & past).toBe(~stock![v]! & past)
+    expect(third![v]! & past).toBe(stock![v]! & past)
+  }
+})
+
+test('each row into the next hands the kick’s part to the snare', () => {
+  const [, second, third] = bars({ drumLoop: LOOP_NEXT }, 3)
+  expect(third![1]).toBe(second![0])
+  expect(third![2]).toBe(second![1])
+  expect(second![0]).not.toBe(third![0])
+})
+
+test('a pattern through an XOR walks away from the grid and the grid takes it back', () => {
+  const stock = bars({}, 6)
+  const walked = bars({ drumLoop: LOOP_XOR }, 6, (bar, p) => {
+    p[IDX.drumLoop] = bar < 4 ? LOOP_XOR : 0
+  })
+  expect(walked[3]).not.toEqual(stock[3])
+  expect(walked[5]).toEqual(stock[5])
 })
 
 const REF_TOY = 1

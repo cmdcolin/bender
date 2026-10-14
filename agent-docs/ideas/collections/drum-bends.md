@@ -12,10 +12,10 @@ ones that change how the kit sounds with no knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
 accent on the data bus), 4 (`drumDice`), 6 (`drumClapGap`, `drumClapCount`), 8
-(`DEST.drumBpm`), 10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`),
-12 (`drumSweep`), 13 (`drumTankCouple`) and 14 (`drumRef`), plus the counter's
-reset wire (`drumReset`) and a comparator on a tank's ring (`drumRingTrig`).
-Every other numbered item is still a candidate.
+(`DEST.drumBpm`), 9 (`drumLoop`), 10 (the sample ROM knife), 11 (`drumBankFm`,
+`drumBankSync`), 12 (`drumSweep`), 13 (`drumTankCouple`) and 14 (`drumRef`),
+plus the counter's reset wire (`drumReset`) and a comparator on a tank's ring
+(`drumRingTrig`). Every other numbered item is still a candidate.
 
 ## How to judge one of these before building it
 
@@ -367,6 +367,37 @@ knife on this board, all of which you can take back out.
 
 Worth writing down. Not worth starting without deciding the writeback question
 first.
+
+**Built** as `drumLoop`, a shadow register in the DSP: off, return inverted,
+return a step late, each row into the next, return through an XOR. The writeback
+question went the shadow's way. Calls made:
+
+- Nothing writes the controls, so undo, the URL and presets never see it. The
+  grid lights off `MeterMsg.hits`, so they show what struck.
+- The register loads from the panel when the knife goes in, and a row loads
+  again whenever the panel writes it, which is the panel writing into the loop.
+  Off hands back the grid; a reboot reloads it.
+- What re-enters is what played, dice included, so a maybe that came up is a hit
+  in the loop from then on. The voices latch at each counter arrival, so a
+  retriggered step plays what the register handed out.
+- The accent stays on the panel and voices walk under it.
+- The XOR taps the next stage. A sixteen-step row then comes back within 255
+  bars (checked on the stock, four-on-the-floor, offbeat-hat and rock rows);
+  taps of 3, 5 and 7 did not repeat in 4096 bars, which is noise, not a pattern.
+
+Measured on the `pnpm spectrum` board, kit stem:
+
+| knife                  | level | centroid | flat  | sub  | low  | high |
+| ---------------------- | ----- | -------- | ----- | ---- | ---- | ---- |
+| off                    | 1.00× | 442 Hz   | 0.057 | 0.85 | 0.09 | 0.03 |
+| return inverted        | 1.72× | 1859 Hz  | 0.274 | 0.51 | 0.22 | 0.14 |
+| return a step late     | 0.93× | 463 Hz   | 0.064 | 0.86 | 0.08 | 0.03 |
+| each row into the next | 0.91× | 1931 Hz  | 0.301 | 0.37 | 0.31 | 0.17 |
+| return through an XOR  | 1.18× | 514 Hz   | 0.068 | 0.71 | 0.20 | 0.04 |
+
+Inverted fills the empty rows, so on odd bars all eight voices strike most
+steps. A step late changes the spectrum least and the groove most: every row
+moves a step a bar.
 
 ## 10. A knife on the sample ROM
 

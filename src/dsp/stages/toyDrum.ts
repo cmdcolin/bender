@@ -217,6 +217,21 @@ const TANK_COUPLE = 0.05
     holds its last answer while the junction is off. */
 export const DICE_NAMES = ['free', 'on the junction']
 
+/** Where a knife sits in the loop that circulates the bar. Off, the cells are
+    the panel's grid; anything else plays a shadow of it that rewrites itself
+    every lap, and turning it off loads the grid back. */
+export const LOOP_NAMES = [
+  'off',
+  'return inverted',
+  'return a step late',
+  'each row into the next',
+  'return through an XOR',
+]
+const LOOP_INVERT = 1
+const LOOP_LATE = 2
+const LOOP_NEXT = 3
+const LOOP_XOR = 4
+
 /** Which tank's rising zero crossings reset the metal bank's phases. */
 export const BANK_SYNC_NAMES = ['off', 'to the kick', 'to the tom']
 const BANK_SYNC_TANK = [-1, 0, 1]
@@ -642,6 +657,15 @@ export class ToyDrum implements Stage {
   private rolledAt = -1
   private diceOnJunction = false
   private diceHeld = 0
+  // The bar as a circulating register: one row of cells a voice, what the panel
+  // last wrote into each, the extra stage a late return passes through, and
+  // the voices the register handed out at the counter's last arrival.
+  private loop = 0
+  private loopCells = new Uint16Array(N_VOICES)
+  private loopSeen = new Int32Array(N_VOICES).fill(-1)
+  private loopLate = 0
+  private loopHeld = 0
+  private loopAt = new Uint8Array(N_VOICES)
   // How far a voice has to have drained before its one-shot will answer again.
   // At 1 nothing is ever locked out, because an envelope leaves at 1 and only
   // falls: the board that touches this knob is the only one that divides.
@@ -827,25 +851,80 @@ export class ToyDrum implements Stage {
       this.open = 0
     }
     let bits = 0
-    for (let v = 0; v < N_VOICES; v++) {
-      const step = this.stepAt(tick, v)
-      const at = STEPS - 1 - step
-      const bit = 1 << v
-      if ((Math.round(p[MAYBE_PARAM[v]!]!) >> at) & 1) {
-        if (roll) {
-          const closed = this.rng() < this.chance
-          if (!this.diceOnJunction || this.noiseGate > 0.5) {
-            if (closed) this.open |= bit
-            this.diceHeld = closed ? this.diceHeld | bit : this.diceHeld & ~bit
-          } else this.open |= this.diceHeld & bit
-        }
-        if (this.open & bit) bits |= bit
-      } else if ((Math.round(p[VOICE_PARAM[v]!]!) >> at) & 1) bits |= bit
+    if (this.loop > 0 && !roll) bits = this.loopHeld
+    else {
+      for (let v = 0; v < N_VOICES; v++) {
+        const step = this.stepAt(tick, v)
+        const at = STEPS - 1 - step
+        const bit = 1 << v
+        const cells =
+          this.loop > 0 ? this.loopCells[v]! : Math.round(p[VOICE_PARAM[v]!]!)
+        if ((Math.round(p[MAYBE_PARAM[v]!]!) >> at) & 1) {
+          if (roll) {
+            const closed = this.rng() < this.chance
+            if (!this.diceOnJunction || this.noiseGate > 0.5) {
+              if (closed) this.open |= bit
+              this.diceHeld = closed
+                ? this.diceHeld | bit
+                : this.diceHeld & ~bit
+            } else this.open |= this.diceHeld & bit
+          }
+          if (this.open & bit) bits |= bit
+          else if (this.loop > 0 && (cells >> at) & 1) bits |= bit
+        } else if ((cells >> at) & 1) bits |= bit
+        this.loopAt[v] = at
+      }
+      if (this.loop > 0) this.circulate(bits)
     }
     const accentStep = this.stepAt(tick, ACCENT_ROW)
     if ((Math.round(p[IDX.drumAccent]!) >> (STEPS - 1 - accentStep)) & 1)
       bits |= ACCENT_BIT
     return this.dataBus.read(bits, this.dataLine, this.dataFault, this.busCut)
+  }
+
+  // What comes back round into the cells the counter just read. The register
+  // hands out a column, and each bit re-enters the loop through the knife: so a
+  // pattern rewrites itself a lap at a time and nothing ever writes the panel.
+  private circulate(played: number) {
+    this.loopHeld = played
+    const late = this.loopLate
+    for (let v = 0; v < N_VOICES; v++) {
+      const at = this.loopAt[v]!
+      const cells = this.loopCells[v]!
+      const out = (played >> v) & 1
+      let back = out
+      if (this.loop === LOOP_INVERT) back = out ^ 1
+      else if (this.loop === LOOP_LATE) {
+        back = (late >> v) & 1
+        this.loopLate = (this.loopLate & ~(1 << v)) | (out << v)
+      } else if (this.loop === LOOP_NEXT)
+        back = (played >> ((v + N_VOICES - 1) % N_VOICES)) & 1
+      else if (this.loop === LOOP_XOR) {
+        const len = this.lens[v]!
+        const next = STEPS - 1 - ((STEPS - 1 - at + 1) % len)
+        back = out ^ ((cells >> next) & 1)
+      }
+      this.loopCells[v] = (cells & ~(1 << at)) | (back << at)
+    }
+  }
+
+  // Loads the register from the panel the first time it is wired, and again
+  // for any row the panel writes while it circulates.
+  private wireLoop(p: Float32Array) {
+    const knife = Math.round(p[IDX.drumLoop]!)
+    const was = this.loop
+    this.loop = knife > 0 && knife < LOOP_NAMES.length ? knife : 0
+    if (this.loop === 0) return
+    if (was === 0) {
+      this.loopSeen.fill(-1)
+      this.loopLate = 0
+    }
+    for (let v = 0; v < N_VOICES; v++) {
+      const row = Math.round(p[VOICE_PARAM[v]!]!)
+      if (row === this.loopSeen[v]) continue
+      this.loopSeen[v] = row
+      this.loopCells[v] = row
+    }
   }
 
   // The trigger line: every voice the step names fires at once, at the step's
@@ -1102,6 +1181,7 @@ export class ToyDrum implements Stage {
       this.lens[r] = asLen(p[LEN_PARAM[r]!]!)
     }
     this.throwLen = asLen(p[IDX.drumThrowLen]!)
+    this.wireLoop(p)
     this.scanSamples = Math.round(
       (Math.max(p[IDX.drumScan]!, 0) / 1000 / clock) * this.sr,
     )
@@ -1112,6 +1192,7 @@ export class ToyDrum implements Stage {
       this.stepClock = 0
       this.rolledAt = -1
       this.clearing = false
+      this.loop = 0
     }
 
     // There is one oscillator in the chip and the envelopes are counted off it,
@@ -1723,6 +1804,7 @@ export class ToyDrum implements Stage {
     this.scanBits = 0
     this.open = 0
     this.diceHeld = 0
+    this.loop = 0
     this.rolledAt = -1
     this.clearing = false
     this.ringArmed = true

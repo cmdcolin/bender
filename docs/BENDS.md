@@ -740,6 +740,23 @@ one:
 - A pad, the mic or the keyboard striking that voice restarts the bar by hand.
 - A reset voice on step one holds the machine on step one, at the step rate.
 
+**Pattern loop** treats the pattern memory as what a cheap machine of this kind
+really has: a shift register clocked by the counter, its output tied back to its
+input. A knife in that loop changes each step as it goes back in, so the pattern
+rewrites itself a lap at a time:
+
+- _Return inverted_ plays every row's gaps every other bar. Empty rows fill, so
+  on the stock beat the odd bars strike all eight voices on most steps.
+- _Return a step late_ slides every row one step later each bar, under an accent
+  row that stays put.
+- _Each row into the next_ hands each part down the grid a bar at a time: the
+  kick's part on the snare, then the hat, round to the kick after eight bars.
+- _Return through an XOR_ mixes each step with its neighbour, growing a row into
+  patterns it never had. A sixteen-step row comes back within 255 bars.
+
+Nothing writes the panel. Writing a step loads that row into the loop again, and
+switching the knife off hands back the grid. The lights show what struck.
+
 **Scan** is how long the chip takes to get from one voice to the next. Slow it
 and a step that strikes several voices comes out as a flam, in row order.
 
