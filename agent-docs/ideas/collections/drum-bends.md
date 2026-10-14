@@ -13,9 +13,9 @@ ones that change how the kit sounds with no knife on it are called out as such.
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
 accent on the data bus), 4 (`drumDice`), 6 (`drumClapGap`, `drumClapCount`), 8
 (`DEST.drumBpm`), 10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`),
-12 (`drumSweep`) and 13 (`drumTankCouple`), plus the counter's reset wire
-(`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other
-numbered item is still a candidate.
+12 (`drumSweep`), 13 (`drumTankCouple`) and 14 (`drumRef`), plus the counter's
+reset wire (`drumReset`) and a comparator on a tank's ring (`drumRingTrig`).
+Every other numbered item is still a candidate.
 
 ## How to judge one of these before building it
 
@@ -427,6 +427,29 @@ renders bit-identical.
 A multiplying DAC at `out = this.muxHeld * rail.ampFactor`: kit × toy chip is
 ring mod ahead of the mux, kit × kit is squaring distortion an octave up. Cost
 depends on whether the chip's output is in `ctx` by then.
+
+**Built** as `drumRef` (fixed, the toy chip, the kit itself, the mic, the bus)
+and `drumRefDepth` (1, with the `kit DAC ref` bay lane). The toy runs ahead of
+the kit, so the chain writes its tap difference to `ctx.toy`, and only while the
+kit asks for it. An op-amp at 4× feeds the pin and clips at ±1.5. The product is
+taken every sample after the hold, so a coarse kit still carries the toy at full
+resolution. Calls made:
+
+- Full depth by default once a reference is picked, so a silent pin is a silent
+  kit. Depth backs off from there.
+- The bus is `io.l` as the kit finds it: the toy, the mic and the feedback
+  return. On a stock board that equals the toy; with feedback up it is a loop.
+- Self-squaring keeps the offset, so every hit has a thump under its octave.
+
+Measured on the `pnpm spectrum` board, kit stem:
+
+| reference         | level | centroid | flat  | sub  | low  | high |
+| ----------------- | ----- | -------- | ----- | ---- | ---- | ---- |
+| fixed             | 1.00× | 442 Hz   | 0.057 | 0.85 | 0.09 | 0.03 |
+| toy chip          | 0.51× | 5146 Hz  | 0.409 | 0.00 | 0.01 | 0.72 |
+| toy chip, ½ depth | 0.56× | 1184 Hz  | 0.135 | 0.71 | 0.08 | 0.14 |
+| the kit itself    | 1.46× | 440 Hz   | 0.065 | 0.17 | 0.67 | 0.07 |
+| bus, feedback 0.6 | 1.28× | 10323 Hz | 0.355 | 0.00 | 0.00 | 0.41 |
 
 ## Not proposed, and why
 

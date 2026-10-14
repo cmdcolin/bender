@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 371 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 373 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 102 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 98 destinations — among
+- **A patch bay that modulates itself.** Four wires, 99 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -206,7 +206,7 @@ too — the knife goes on and the rows under it say which controls that was:
   lands in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>51 controls</summary>
+<summary>53 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -238,6 +238,8 @@ too — the knife goes on and the rows under it say which controls that was:
 | Ladder          | off to full                                                                                                        | How much of that converter’s error you are hearing                                                                                      |
 | Part grade      | 0 to 0.6                                                                                                           | What the reel those resistors came off was sold as — 15% is the bin this kit was built out of                                           |
 | Overflow        | off or wrap                                                                                                        | What the converter does with a sum too wide for its word                                                                                |
+| DAC reference   | fixed, the toy chip, the kit itself, the mic, the bus                                                              | What the converter’s reference pin is wired to                                                                                          |
+| Reference depth | off to full                                                                                                        | How much of the reference pin is that signal and how much is the fixed voltage it shipped with                                          |
 | Kit             | analog or sampled                                                                                                  | Which kit is on the output                                                                                                              |
 | ROM clock       | 8 to 44.1 kHz                                                                                                      | How fast the slabs are read back                                                                                                        |
 | Slab counter †  | stops at its slab’s end, runs on through the ROM, counts down, counts down and runs on                             | The two pins on the counter that walks a slab                                                                                           |
@@ -903,7 +905,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 98 of them, filt cut through verb warble                                                   | Where the other end is soldered                                                |
+| Wire 1–4 to    | 99 of them, filt cut through kit DAC ref                                                   | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

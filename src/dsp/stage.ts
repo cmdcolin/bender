@@ -33,6 +33,11 @@ export interface Ctx {
    * bus of zeros.
    */
   carrier: Float32Array
+  /**
+   * The toy chip on its own, taken the same way as the carrier, for the kit's
+   * converter to use as its reference. Zeros unless the kit asks for it.
+   */
+  toy: Float32Array
   /** Kit hits thrown to the tape delay this block, mono and dry. */
   send: Float32Array
   /**

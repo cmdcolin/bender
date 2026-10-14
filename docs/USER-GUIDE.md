@@ -135,7 +135,9 @@ sag**, **Bit depth**, **Ladder**, **Voice slot** and **Overflow** do to the
 kit's cheap-DAC quirks. **Voice slot** ties the kit together: one converter
 serves eight voices, so a step that stacks the kit comes out coarser than the
 same voice alone. **Clap gap** and **Clap bursts** retune the clap's burst
-oscillator, from a buzz at the fast end to separate claps at the slow end.
+oscillator, from a buzz at the fast end to separate claps at the slow end. **DAC
+reference** multiplies the kit by another signal: the toy chip (a ring mod), the
+kit itself (squared, an octave up), the mic or the whole bus.
 
 **Kit** switches the box between two of them. Nothing here is a sample, so the
 sampled kit is this kit sampled by itself: on its way up the machine strikes all

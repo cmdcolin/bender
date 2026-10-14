@@ -58,6 +58,25 @@ const LADDER_TOL = 0.15
 // the setting the kit ships at.
 const LADDER_FLOOR = 0.4
 
+/** What the converter's reference pin is wired to. Fixed is the kit as it
+    shipped; anything else multiplies every code by that signal. */
+export const DAC_REF_NAMES = [
+  'fixed',
+  'the toy chip',
+  'the kit itself',
+  'the mic',
+  'the bus',
+]
+export const DAC_REF_TOY = 1
+const DAC_REF_SELF = 2
+const DAC_REF_MIC = 3
+const DAC_REF_BUS = 4
+
+// The op-amp in front of the reference pin: its gain, and the rails it clips
+// at.
+const DAC_REF_GAIN = 4
+const DAC_REF_RAIL = 1.5
+
 // Voice order is the bit order of a step, and the order of the rows in the
 // panel's grid — both come off the one table in drums.ts. The pattern lives in
 // one sixteen-bit mask per voice, step 1 in the high bit.
@@ -1004,6 +1023,11 @@ export class ToyDrum implements Stage {
     const q = Math.pow(2, bits - 1)
     const ladder = p[IDX.drumLadder]!
     const ladderTol = p[IDX.drumLadderTol]!
+    const ref = Math.round(p[IDX.drumRef]!)
+    const refBus =
+      ref === DAC_REF_TOY ? ctx.toy : ref === DAC_REF_MIC ? ctx.mic : null
+    const baseRefDepth = p[IDX.drumRefDepth]!
+    const modRefDepth = ref > 0 ? ctx.mod.read(DEST.drumRefDepth) : null
     this.addrLine =
       hop(
         p[IDX.drumAddrLine]!,
@@ -1582,6 +1606,27 @@ export class ToyDrum implements Stage {
         }
         out = this.muxHeld * rail.ampFactor
         send *= rail.ampFactor
+        // A multiplying converter: the reference pin scales every code, and
+        // with audio on the pin the kit comes out as a product. Read ahead of
+        // this sample's own write, so the bus is everything upstream of the kit.
+        if (ref > 0) {
+          const pin =
+            ref === DAC_REF_SELF
+              ? this.muxHeld
+              : ref === DAC_REF_BUS
+                ? io.l[i]!
+                : refBus![i]!
+          const r = Math.min(
+            Math.max(DAC_REF_GAIN * pin, -DAC_REF_RAIL),
+            DAC_REF_RAIL,
+          )
+          const depth = modRefDepth
+            ? Math.min(Math.max(baseRefDepth + modRefDepth[i]!, 0), 1)
+            : baseRefDepth
+          const g = 1 + depth * (r - 1)
+          out *= g
+          send *= g
+        }
       }
 
       out *= level * KIT_GAIN
@@ -1759,6 +1804,7 @@ function cutRom(): DrumSlabs {
     out: new Float32Array(BLOCK),
     step: new Float32Array(BLOCK),
     carrier: new Float32Array(BLOCK),
+    toy: new Float32Array(BLOCK),
     bright: new Float32Array(BLOCK),
     send: new Float32Array(BLOCK),
     heat: 0,

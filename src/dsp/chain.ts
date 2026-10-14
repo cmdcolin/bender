@@ -1,8 +1,16 @@
-import { IDX, MAX_SOURCES, N_TAPS, TAP_BUS, TAP_MIC } from '../engine/params'
+import {
+  IDX,
+  MAX_SOURCES,
+  N_TAPS,
+  SOURCE_TAPS,
+  TAP_BUS,
+  TAP_MIC,
+} from '../engine/params'
 import { pedalOrderAt } from '../pedals'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
 import { RING_FROM_TAP } from './stages/ringmod'
+import { DAC_REF_TOY } from './stages/toyDrum'
 import { Thermal } from './thermal'
 import { TriggerBus } from './trigbus'
 import { Burst } from './util/burst'
@@ -19,6 +27,8 @@ const LIMIT_CEIL = 0.891 // −1 dBFS
 /** where the summing amp is lined up: the level a busy bus already peaks at,
     and so the level the drive knob is being asked to do something to. */
 const BUS_REF = 0.6
+
+const TOY_TAP = SOURCE_TAPS.indexOf('toyChip')
 
 const SLOT_IDX = [
   IDX.bendSlot0,
@@ -297,6 +307,7 @@ export class Chain {
       out: new Float32Array(BLOCK),
       step: new Float32Array(BLOCK),
       carrier: new Float32Array(BLOCK),
+      toy: new Float32Array(BLOCK),
       send: new Float32Array(BLOCK),
       bright: new Float32Array(BLOCK),
       heat: 0,
@@ -352,6 +363,7 @@ export class Chain {
     this.ctx.out.fill(0)
     this.ctx.step.fill(0)
     this.ctx.carrier.fill(0)
+    this.ctx.toy.fill(0)
     this.ctx.send.fill(0)
     this.ctx.bright.fill(0)
     this.ctx.heat = 0
@@ -453,6 +465,8 @@ export class Chain {
     // is a thing only this loop has.
     const carFrom = RING_FROM_TAP[Math.round(p[IDX.ringFrom]!)] ?? -1
     let carRan = false
+    const toyRef = Math.round(p[IDX.drumRef]!) === DAC_REF_TOY
+    if (toyRef) ctx.toy.fill(0, 0, n)
     const prev = this.tapPrev
     const cap = this.capturing
     const prevR = this.tapPrevR
@@ -484,6 +498,8 @@ export class Chain {
             io.r[i] = prevR[i]! + (io.r[i]! - prevR[i]!) * g
           }
         }
+        if (toyRef && k === TOY_TAP)
+          for (let i = 0; i < n; i++) ctx.toy[i] = io.l[i]! - prev[i]!
         let peak = 0
         if (cap && k < MAX_SOURCES) {
           const base = k * BLOCK

@@ -16,6 +16,7 @@ import {
   pitchHz,
   render,
   renderBender,
+  renderStems,
   rms,
   SR,
   stepMask,
@@ -1391,6 +1392,32 @@ test('two latched networks wired together stop holding one pitch', () => {
   expect(smear(0.5)).toBeGreaterThan(3 * smear(0))
 })
 
+const REF_TOY = 1
+const REF_SELF = 2
+
+test('a kit on the toy’s reference is the toy’s and nothing without it', () => {
+  const beat: Partial<Controls> = {
+    drumKick: stepMask(0, 4, 8, 12),
+    drumHat: stepMask(2, 6, 10, 14),
+  }
+  const silent = soloVoice({ ...beat, drumRef: REF_TOY }, 2)
+  expect(rms(silent)).toBeLessThan(1e-4 * rms(soloVoice(beat, 2)))
+  const kit = (c: Partial<Controls>) =>
+    renderStems({ ...beat, drumBpm: 240, ...c }, 3).stems[1]!
+  const centroid = (x: Float32Array) => spectrum(x, SR).centroid
+  expect(centroid(kit({ drumRef: REF_TOY }))).toBeGreaterThan(
+    3 * centroid(kit({})),
+  )
+})
+
+test('a kit on its own reference squares every hit an octave up', () => {
+  const tail = (x: Float32Array) => pitchHz(slice(x, 0.5, 0.8))
+  const stock = tail(soloVoice(KICK_ALONE, 1))
+  const squared = tail(soloVoice({ ...KICK_ALONE, drumRef: REF_SELF }, 1))
+  expect(squared).toBeGreaterThan(1.7 * stock)
+  expect(squared).toBeLessThan(2.3 * stock)
+})
+
 // A wire held flat out by the contact pad, so a lane reads as a turned knob.
 const held = (dest: number, depth = 1): Partial<Controls> => ({
   mod0Src: 5,
@@ -1460,6 +1487,14 @@ test('a wire on the decay stretches every tail', () => {
 test('a wire on the ring carries the kick across the latch', () => {
   const note = struck(held(DEST.drumRing), 2)
   expect(rms(after(note, 1.5))).toBeGreaterThan(rms(after(note, 0.2)) * 0.9)
+})
+
+test('a wire on the reference depth hands the kit to the toy', () => {
+  const kick = { ...KICK_ALONE, drumRef: REF_TOY, drumRefDepth: 0 }
+  const plain = rms(soloVoice(kick, 1))
+  const wired = rms(soloVoice({ ...kick, ...held(DEST.drumRefDepth) }, 1))
+  expect(plain).toBeCloseTo(rms(soloVoice(KICK_ALONE, 1)), 6)
+  expect(wired).toBeLessThan(1e-4 * plain)
 })
 
 test('a hit on an echo step goes into the tape with the bus send shut', () => {

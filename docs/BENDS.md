@@ -1048,6 +1048,21 @@ oscillator like the tempo and the envelopes, so a board going down with its
 batteries goes coarse as well as slow. At nothing the chip keeps up and the kit
 is the kit it shipped as.
 
+**DAC reference** is the pin that converter multiplies every code by, and a
+multiplying DAC will take audio there as happily as a fixed voltage:
+
+- On the toy chip the kit ring-modulates the melody. Each hit becomes a burst of
+  the tune's sidebands, and with the toy silent the kit is silent too. On the
+  measuring board the kit's centroid moves from 440 Hz to 5.1 kHz.
+- On the kit itself every hit is squared: an octave up, with a thump under it
+  from the square's own offset.
+- On the mic the kit only speaks while you do.
+- On the bus it takes everything ahead of the kit, so with the feedback bus up
+  the kit multiplies its own return and screams.
+
+**Reference depth** crossfades the pin between that signal and the fixed
+voltage, and the patch bay can wire it.
+
 The dice skip this whole rack. A roll here asks for a different way of playing
 this board, not a different board — randomizing the watchdog or the timing pin
 would just produce boards nobody could tell apart from a bug.
