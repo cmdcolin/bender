@@ -11,10 +11,10 @@ same reason: nothing here is a decision, and the ones that are cheap and the
 ones that change how the kit sounds with no knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
-accent on the data bus), 8 (`DEST.drumBpm`), 10 (the sample ROM knife), 11
-(`drumBankFm`, `drumBankSync`) and 12 (`drumSweep`), plus the counter's reset
-wire (`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every
-other numbered item is still a candidate.
+accent on the data bus), 6 (`drumClapGap`, `drumClapCount`), 8 (`DEST.drumBpm`),
+10 (the sample ROM knife), 11 (`drumBankFm`, `drumBankSync`) and 12
+(`drumSweep`), plus the counter's reset wire (`drumReset`) and a comparator on a
+tank's ring (`drumRingTrig`). Every other numbered item is still a candidate.
 
 ## How to judge one of these before building it
 
@@ -272,6 +272,18 @@ clap at 4 Hz is four handclaps arriving separately.
 
 Cost: very small. One voice, ~10 lines, and the count wants to come with it or
 the fast end runs out of bursts before it is audible.
+
+**Built** as `drumClapGap` (0.5 to 250 ms, 9 stock) and `drumClapCount` (1 to
+64, 3 stock), both still counted off the rail. A burst also runs down within its
+gap (`CLAP_GAP_MS / gap` on its fall, never slower than stock), because with the
+stock 14 ms fall a 300 Hz train dipped 21% a cycle and did not buzz. Measured as
+the clap's power at the burst rate against rates either side:
+
+- 3.3 ms × 30 reads 4.0× (2.1× with the stock fall), 2 ms × 40 reads 4.8×
+  (1.2×); the stock clap reads 1.1× at its own 111 Hz.
+- 200 ms × 4 is four onsets 0.20 s apart.
+- The spectrum stays put (centroid 4.1–4.2 kHz, flatness 0.57–0.66), so the bend
+  changes the clap's rhythm and leaves its timbre.
 
 ## 7. The one-shots share a timing rail
 

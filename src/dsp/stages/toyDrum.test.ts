@@ -416,6 +416,28 @@ test('a sagging rail spreads the clap\u2019s bursts', () => {
   expect(flat).toBeGreaterThan(fresh * 1.08)
 })
 
+const CLAP_AT_ONE: Partial<Controls> = { drumClap: stepMask(1), drumBpm: 60 }
+
+test('a fast burst oscillator turns the clap into a buzz at its own rate', () => {
+  // How strongly the clap's power swings at one rate, against rates either side.
+  const throb = (x: Float32Array, hz: number) => {
+    const power = slice(x, 0.26, 0.34).map(v => v * v)
+    return bin(power, hz) / ((bin(power, hz * 0.75) + bin(power, hz * 1.3)) / 2)
+  }
+  const buzz = soloVoice({ ...CLAP_AT_ONE, drumClapGap: 2, drumClapCount: 40 })
+  expect(throb(buzz, 500)).toBeGreaterThan(3)
+  expect(throb(soloVoice(CLAP_AT_ONE), 500)).toBeLessThan(1.5)
+})
+
+test('a slow burst oscillator claps separately, as many times as it is told', () => {
+  const claps = onsets(
+    soloVoice({ ...CLAP_AT_ONE, drumClapGap: 200, drumClapCount: 4 }, 1.2),
+  )
+  expect(claps).toHaveLength(4)
+  for (const gap of gaps(claps)) expect(gap).toBeCloseTo(0.2, 2)
+  expect(onsets(soloVoice(CLAP_AT_ONE, 1.2))).toHaveLength(1)
+})
+
 // One noise transistor on the board, not three. Two voices hung off it hear the
 // same hiss, so a snare and a hat on the same step sum coherently into one crack
 // — where three independent sources would sum to their energies and nothing

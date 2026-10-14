@@ -495,6 +495,17 @@ kit still has to say. It's also the only duration on this board not counted off
 the chip's oscillator: nothing clocks an avalanche, so a rail dragging the tempo
 doesn't drag this.
 
+**Clap gap** sets the period of the clap's burst oscillator, 9 ms stock, and
+**Clap bursts** sets how many bursts it fires before the clap rings out, three
+stock.
+
+- Each burst runs down within its gap, so under about 3 ms the train becomes a
+  buzz with a noise timbre, which the metal bank can't make. It wants dozens of
+  bursts to last long enough to hear.
+- At a few hundred milliseconds each burst is a separate clap.
+- The gap is counted off the chip's oscillator, so a sagging rail spreads the
+  bursts into a flam.
+
 ## The metal bank
 
 The other four voices are one part. The cowbell, the two hats and the cymbal all

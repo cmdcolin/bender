@@ -205,6 +205,8 @@ export const DEFAULT_CONTROLS = {
   drumBankSync: 0,
   drumBankStarve: 0,
   drumBankGate: 0,
+  drumClapGap: 9,
+  drumClapCount: 3,
   drumReset: 0,
   drumRingTrig: 0,
   drumCross: 0,

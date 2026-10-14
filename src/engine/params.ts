@@ -198,6 +198,8 @@ export const PARAM_DEFS = [
   ['drumBankSync', 'step'],
   ['drumBankStarve', 'slew'],
   ['drumBankGate', 'step'],
+  ['drumClapGap', 'slew'],
+  ['drumClapCount', 'step'],
   ['drumReset', 'step'],
   ['drumRingTrig', 'step'],
   ['drumCross', 'step'],

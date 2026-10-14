@@ -129,7 +129,8 @@ See [Bends](BENDS.md) for what **Ring**, **Trigger pulse**, **Snappy**, **Accent
 sag**, **Bit depth**, **Ladder**, **Voice slot** and **Overflow** do to the
 kit's cheap-DAC quirks. **Voice slot** ties the kit together: one converter
 serves eight voices, so a step that stacks the kit comes out coarser than the
-same voice alone.
+same voice alone. **Clap gap** and **Clap bursts** retune the clap's burst
+oscillator, from a buzz at the fast end to separate claps at the slow end.
 
 **Kit** switches the box between two of them. Nothing here is a sample, so the
 sampled kit is this kit sampled by itself: on its way up the machine strikes all

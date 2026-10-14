@@ -276,6 +276,9 @@ const PULSE_EDGE = 2.5
 // far side you cannot get to is not a far side.
 const RING_LATCH = 0.9
 
+// The gap between the clap's bursts as the board shipped.
+const CLAP_GAP_MS = 9
+
 // How long the accent cap takes to come back after a step has drawn on it,
 // counted off the kit's own oscillator like everything else here.
 const ACCENT_RECHARGE = 0.25
@@ -584,6 +587,7 @@ export class ToyDrum implements Stage {
   private clapSlow = 0
   private clapsLeft = 0
   private clapTimer = 0
+  private clapCount = 3
   private lastReboot = 0
   private rng: Rng
   private slipRng: Rng
@@ -827,7 +831,7 @@ export class ToyDrum implements Stage {
       if (v === CLAP) {
         if (this.clapsLeft > 0 || this.env[CLAP]! > this.trigFloor) continue
         this.gain[v] = gain
-        this.clapsLeft = 3
+        this.clapsLeft = this.clapCount
         this.clapTimer = 0
       } else {
         if (this.env[v]! > this.trigFloor) continue
@@ -1073,10 +1077,16 @@ export class ToyDrum implements Stage {
     // low, late and long rather than only low and late. Decay is a divisor on
     // that count, not a time: the knob keeps saying what it always said.
     const perSample = -clock / (this.sr * decay)
-    const clapBurstFall = Math.exp(70 * perSample)
-    // The clap's nine milliseconds are counted off the same oscillator, so on a
-    // sagging rail the three bursts spread into a flam.
-    const clapGap = 0.009 / clock
+    // The clap's burst oscillator is counted off the same oscillator, so on a
+    // sagging rail its bursts spread into a flam. A burst runs down at its own
+    // rate or within its gap, whichever is sooner, so a fast oscillator still
+    // cuts each burst short and buzzes.
+    const clapGapMs = Math.max(p[IDX.drumClapGap]!, 0.1)
+    const clapGap = clapGapMs / 1000 / clock
+    const clapBurstFall = Math.exp(
+      70 * Math.max(CLAP_GAP_MS / clapGapMs, 1) * perSample,
+    )
+    this.clapCount = Math.max(Math.round(p[IDX.drumClapCount]!), 1)
     const falls = this.falls
     falls[KICK] = Math.exp(9 * perSample)
     falls[SNARE] = Math.exp(22 * perSample)
@@ -1107,7 +1117,7 @@ export class ToyDrum implements Stage {
     const crashMix = Math.sqrt(1 - cymTone) * CYM_CRASH_GAIN
     const splashMix = Math.sqrt(cymTone) * CYM_SPLASH_GAIN
     // The one-shot on the trigger line is a resistor and a cap, and like the
-    // clap's nine milliseconds it is counted off the chip's own oscillator: a
+    // clap's bursts it is counted off the chip's own oscillator: a
     // sagging rail widens the pulse along with everything else.
     const pulseS = (Math.max(p[IDX.drumPulse]!, 0.01) / 1000) * clock
     this.pulseFall = Math.exp(-1 / (pulseS * this.sr))
@@ -1324,10 +1334,10 @@ export class ToyDrum implements Stage {
           out += clicked
           if (clickThrown !== 0) send += (clicked * clickThrown) / click
         }
-        // The clap is three bursts nine milliseconds apart and then the room:
+        // The clap is a run of bursts off a small oscillator and then the room:
         // one noise source, retriggered, with the last hit left to ring on.
         // Outside the branch, because it is the clap's one-shot rather than its
-        // sound: it is what lets the trigger line answer a fourth time, and the
+        // sound: it is what lets the trigger line answer again, and the
         // sampled kit needs that as much as the circuits do.
         if (this.clapsLeft > 0) {
           this.clapTimer -= 1 / this.sr
