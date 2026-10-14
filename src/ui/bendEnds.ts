@@ -29,6 +29,8 @@ export const BEND_ENDS: Partial<
   drumBankFm: [null, -0.5],
   drumTankCouple: [null, 4],
   drumPulse: [-1.5, -1.5],
+  drumPulseShare: [null, -2],
+  drumTrigLoad: [0, 0],
   drumSnappy: [0, null],
   drumClapGap: [null, 0],
   drumClapCount: [null, 0.5],
