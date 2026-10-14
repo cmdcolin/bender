@@ -15,6 +15,7 @@ export const ECHO_MODE = {
   reverse: 2,
   modulate: 3,
   hold: 4,
+  shift: 5,
 } as const
 
 // The switch's own legend, so the panel reads the modes off the box rather than
@@ -51,6 +52,12 @@ const MOD_MS = 6
 const HOLD_SLAM = 0.3
 const HOLD_REARM = 0.5 * HOLD_SLAM
 const HOLD_EDGE_MS = 1
+// Shift: two heads half a window apart, each sliding through the window so it
+// reads at the pitch the knob names and crossing to the other where it jumps
+// back. The shifted tap is what goes back round, so every lap climbs or falls
+// by the interval again. The window centres on the time knob, so the repeats
+// keep their spacing.
+const SHIFT_WINDOW_MS = 60
 
 // The normal pedal on a board of abused ones: a digital delay with a mode
 // switch. Standard crosses between two read heads when the time moves, so the
@@ -78,6 +85,8 @@ export class Echo implements Stage {
   private glide = 0
   private revPhase = 0
   private revLen = 0
+  private shiftPhase = 0
+  private readonly shiftWindow: number
   private readonly maxDelay: number
   private readonly maxRead: number
   private readonly fadeStep: number
@@ -92,6 +101,7 @@ export class Echo implements Stage {
     this.lineR = new DelayLine(this.maxRead + 8)
     this.bbd = new Bbd(sr, 2, BBD)
     this.fadeStep = 1 / (0.025 * sr)
+    this.shiftWindow = (SHIFT_WINDOW_MS / 1000) * sr
   }
 
   when(p: Float32Array) {
@@ -123,8 +133,10 @@ export class Echo implements Stage {
     const reverse = mode === ECHO_MODE.reverse
     const bbd = mode === ECHO_MODE.analog
     const hold = mode === ECHO_MODE.hold
+    const shift = mode === ECHO_MODE.shift
+    const shiftBy = shift ? octaves(p[IDX.echoShift]! / 12) - 1 : 0
     // The two digital modes cross heads; the brigade has a clock to walk.
-    const crosses = !reverse && !bbd && !hold
+    const crosses = !reverse && !bbd && !hold && !shift
     const edgeN = (HOLD_EDGE_MS / 1000) * this.sr
     const slamA = timeCoef(0.002, this.sr)
     const slamR = timeCoef(0.02, this.sr)
@@ -209,6 +221,23 @@ export class Echo implements Stage {
         const db = this.tap(1 + 2 * back, bend)
         tapL = ga * this.lineL.readHermite(da) + gb * this.lineL.readHermite(db)
         tapR = ga * this.lineR.readHermite(da) + gb * this.lineR.readHermite(db)
+      } else if (shift) {
+        this.glide += glideCoef * (target - this.glide)
+        const win = Math.min(this.shiftWindow, this.glide)
+        this.shiftPhase += shiftBy / win
+        this.shiftPhase -= Math.floor(this.shiftPhase)
+        const a = this.shiftPhase
+        const b = a < 0.5 ? a + 0.5 : a - 0.5
+        const ga = 1 - Math.abs(2 * a - 1)
+        const near = this.glide + 0.5 * win
+        const da = this.tap(near - win * a, bend)
+        const db = this.tap(near - win * b, bend)
+        tapL =
+          ga * this.lineL.readHermite(da) +
+          (1 - ga) * this.lineL.readHermite(db)
+        tapR =
+          ga * this.lineR.readHermite(da) +
+          (1 - ga) * this.lineR.readHermite(db)
       } else {
         this.glide += glideCoef * (target - this.glide)
         if (this.fade < 1) {
@@ -289,5 +318,6 @@ export class Echo implements Stage {
     this.glide = 0
     this.revPhase = 0
     this.revLen = 0
+    this.shiftPhase = 0
   }
 }

@@ -296,7 +296,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ECHO_MODE_NAMES,
-        help: 'Which delay the box is being. Standard is flat repeats that keep their pitch as you move the time; hold lifts the record head on every hit — a drum, a key or an attack at the input — and goes round the window the time names, each lap the feedback quieter, until the next hit takes another; analog is a bucket brigade, so every step longer is a step muddier, and past a second a step grittier, as the clock folds what it cannot carry back into the band and whistles through; reverse plays each window backwards; modulate puts the head on an LFO.',
+        help: 'Which delay the box is being. Standard is flat repeats that keep their pitch as you move the time; hold lifts the record head on every hit — a drum, a key or an attack at the input — and goes round the window the time names, each lap the feedback quieter, until the next hit takes another; analog is a bucket brigade, so every step longer is a step muddier, and past a second a step grittier, as the clock folds what it cannot carry back into the band and whistles through; reverse plays each window backwards; modulate puts the head on an LFO; shift moves every repeat by the interval Shift names, so the echoes climb or fall a step each lap.',
       },
       {
         key: 'echoMs',
@@ -339,6 +339,16 @@ export const PEDAL_GROUPS: Group[] = [
         unit: '',
         needs: c => Math.round(c.echoMode) === ECHO_MODE.modulate,
         help: 'How far the read head swings, up to six milliseconds at 0.7 Hz. The two channels swing opposite ways, so the repeats widen as well as detune.',
+      },
+      {
+        key: 'echoShift',
+        label: 'Shift',
+        min: -24,
+        max: 24,
+        step: 0.1,
+        unit: 'st',
+        needs: c => Math.round(c.echoMode) === ECHO_MODE.shift,
+        help: 'How far each repeat moves in pitch, and since the repeat is what goes back round, each lap moves again: up the travel the echoes climb a staircase out of hearing, down it they spiral into the floor. A fraction of a semitone is a smear that drifts a little further every lap.',
       },
       {
         key: 'echoLevel',

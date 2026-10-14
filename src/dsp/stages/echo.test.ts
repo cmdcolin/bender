@@ -229,3 +229,38 @@ test('the analog mode renders what it rendered before the chip was shared', () =
     '90d2987e',
   ])
 })
+
+// A tenth of a second of 400 Hz, then each lap read in the middle of where it
+// lands: the shifted repeat is what goes back round, so the interval stacks.
+test('shift moves every lap by the interval again', () => {
+  const burst = (b: BuiltChain) => {
+    const buf = new Float32Array(SR)
+    buf.set(sine(400, 0.1), 0)
+    b.sampler.setBuffer(buf)
+  }
+  const laps = (echoShift: number) => {
+    const out = renderBender(
+      {
+        ...look,
+        echoMode: ECHO_MODE.shift,
+        echoMs: 300,
+        echoFb: 0.8,
+        echoToneHz: 16000,
+        echoShift,
+      },
+      1,
+      burst,
+    )
+    return [1, 2].map(lap => {
+      const at = (0.3 * lap + 0.03) * SR
+      return pitchHz(out.subarray(at, at + 0.05 * SR))
+    })
+  }
+  const fifth = 2 ** (7 / 12)
+  const [up1, up2] = laps(7)
+  expect(up1! / 400).toBeCloseTo(fifth, 1)
+  expect(up2! / 400).toBeCloseTo(fifth * fifth, 1)
+  const [down1, down2] = laps(-12)
+  expect(down1! / 400).toBeCloseTo(0.5, 1)
+  expect(down2! / 400).toBeCloseTo(0.25, 1)
+})

@@ -877,6 +877,14 @@ across the notes around them; at the top the combs swing a third of their
 length, every lap bends the pitch again, and the tail goes seasick. The bay's
 **verb warble** lane rides on the knob.
 
+The delay pedal's **shift** mode moves every repeat by the interval **Shift**
+names, and since the repeat is what goes back round, every lap moves again. Up
+a fifth, one note comes back as a staircase of fifths, ten times its pitch by
+the sixth lap; up an octave it is past the top of the band by then and folds
+back down as grit. Down an octave it spirals into the floor and rumbles there. A
+third of a semitone either way is a smear that drifts further out of tune each
+lap.
+
 **Freq shifter** moves every partial by the same number of hertz rather than the
 same ratio, so harmonic input comes out inharmonic. Its own feedback shifts
 every lap again — the barber-pole effect — which keeps the squeal inside the

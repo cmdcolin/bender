@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 370 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 371 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 98 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -820,16 +820,17 @@ relocking at the seam. _Hold_ lifts the record head on every hit and goes round
 the window it just took, which with the kit running is a beat repeat.
 
 <details>
-<summary>6 controls</summary>
+<summary>7 controls</summary>
 
-| control   | range                                     | what it does                                                                                               |
-| --------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Mode      | standard, analog, reverse, modulate, hold | Which delay the box is being                                                                               |
-| Time      | 20 ms to 2 s                              | Delay time                                                                                                 |
-| Feedback  | 0 to 2, normal 0 to 1                     | How much of the repeat goes back in                                                                        |
-| Tone      | 800 Hz to 16 kHz                          | High cut in the loop, so each lap comes back darker than the last                                          |
-| Mod depth | off to full                               | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
-| E. level  | off to full                               | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
+| control   | range                                            | what it does                                                                                               |
+| --------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Mode      | standard, analog, reverse, modulate, hold, shift | Which delay the box is being                                                                               |
+| Time      | 20 ms to 2 s                                     | Delay time                                                                                                 |
+| Feedback  | 0 to 2, normal 0 to 1                            | How much of the repeat goes back in                                                                        |
+| Tone      | 800 Hz to 16 kHz                                 | High cut in the loop, so each lap comes back darker than the last                                          |
+| Mod depth | off to full                                      | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
+| Shift     | −24 to +24 st                                    | How far each repeat moves in pitch, and since the repeat is what goes back round, each lap moves again     |
+| E. level  | off to full                                      | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
 
 </details>
 

@@ -478,6 +478,7 @@ export const DEFAULT_CONTROLS = {
   echoFb: 0.35,
   echoToneHz: 8000,
   echoMod: 0.3,
+  echoShift: 7,
   echoLevel: 0,
 
   revDecayS: 2,
