@@ -448,6 +448,19 @@ belongs to something else:
 - **stuck on 4** with an effect running has the tune and the script writing the
   same channel, so the song fights a bird call for its frequency.
 
+**Cold boot** is what the register file holds at power-on. On **garbage** the
+chip comes up holding random bytes. Switching it on power-cycles the chip into
+them, and so does every panic, with fresh garbage each time:
+
+- A channel whose key bit came up set is already sounding, at a random pitch on
+  a random instrument, and drones until a note lands on it.
+- The driver's first patch write clears the test and rhythm registers. With a
+  knife on the bus that write can miss, and the chip never finishes booting: on
+  the first boot, A0 to ground leaves the test register wide open, skewed and
+  rectified.
+- A wire on **FM cold boot** power-cycles the chip each time it crosses halfway,
+  so a square LFO on it is a stutter of random chords.
+
 ## Inside the drum voices
 
 The kit's pitched voices — kick, tom, and the body under the snare — aren't

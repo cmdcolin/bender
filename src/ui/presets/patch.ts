@@ -152,6 +152,7 @@ const LANDINGS: Landing[] = [
   at('FM DAC slot', ['fmLevel']),
   at('FM slot slip', ['fmLevel']),
   at('FM allocator', ['fmLevel']),
+  at('FM cold boot', ['fmLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

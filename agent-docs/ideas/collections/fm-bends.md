@@ -317,10 +317,27 @@ Measured on the `pnpm spectrum` board, FM stem:
   is also a new context for every bend that already exists.
 - **Mono.** `io.l[i] += out; io.r[i] += out`. True to the part, and a bodge wire
   putting one channel hard left is one more byte on the bus.
-- **Cold boot.** `panic()` zeroes the register file. A real one comes up with
-  whatever the die felt like, and the driver's first writes are what clear it —
-  so a garbage boot plus a cut on the bus is a chip that never finishes booting.
-  Overlaps `scripts/cold.ts` in name only.
+- **Cold boot — landed.** `panic()` zeroed the register file. Built as
+  `fmColdBoot` (`clean`, `garbage`, default `clean`) with a lane,
+  `FM cold boot`. Design calls:
+  - Switching it on is itself a power cycle, so the bend is heard without
+    pressing panic; every panic while it is on boots again.
+  - Each boot draws fresh garbage off one seeded generator, so the first boot is
+    the same every time and the next ones differ.
+  - A channel whose garbage key bit is set starts in attack, so the boot drones.
+  - The driver sends no register sweep. Its patch write clears the patch, test
+    and rhythm registers, and per-channel registers stay garbage until a note
+    lands there.
+  - The lane power-cycles on each upward crossing of half.
+
+  Measured on the FM stem:
+  - Gate cut, nothing playing: rms 0 → 0.040, a drone centred at 233 Hz on ROM
+    instruments 3, 11, 2 and 7.
+  - On the `pnpm spectrum` board: deviation 0.46, low energy 0.13 → 0.19 of rms.
+  - With A0 to ground the test register keeps 0x2d (wide open, skewed,
+    rectified): flatness 0.19 against 0.012 for A0 alone, and the air band 0.32.
+  - A 12 Hz square on the lane: 1 → 8 bursts, level 0.46×, low energy 0.41.
+
 - **The driver's allocator — landed.** `pick()` is CPU-side, like `Strobe` and
   the note timers. Built as `fmAlloc` (`free`, `stuck on 1`–`4`, default `free`)
   with a hop lane, `FM allocator`. Every note goes to one channel, and `noteOff`

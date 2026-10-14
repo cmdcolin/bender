@@ -259,6 +259,9 @@ const DRUM_KEYS = [
 /** The noise byte the effect ROM reads, which is a table on the real part. */
 const EFFECT_SEED = 0x5e
 
+/** What the die comes up holding on a cold boot, one draw per boot. */
+const BOOT_SEED = 0x3b
+
 /** Which strobe pulses come out too narrow, which is a race and not a pattern. */
 const STROBE_SEED = 0xa3
 
@@ -429,6 +432,8 @@ export class FmChip implements Stage {
   private slotOut = new Float64Array(N_CH)
   /** the channel a stuck allocator hands every note, or -1 */
   private stuckCh = -1
+  private cold = false
+  private bootRng = mulberry32(BOOT_SEED)
   private dacSlot = -1
   private slotPos = 0.5
   // Notes struck on the chip's own keys, waiting for the block to start. A key
@@ -1223,6 +1228,14 @@ export class FmChip implements Stage {
     // all still soldered where they were.
     const gateOn = p[IDX.fmKeyGate]! < 0.5
 
+    const modCold = bay.read(DEST.fmColdBoot)
+    const cold = p[IDX.fmColdBoot]! + (modCold ? modCold[0]! : 0) > 0.5
+    if (cold && !this.cold) {
+      this.cold = true
+      this.powerUp()
+    }
+    this.cold = cold
+
     const effect = Math.round(p[IDX.fmEffect]!) - 1
     if (effect !== this.effect) this.setEffect(effect)
     const script = EFFECTS[this.effect]
@@ -1508,7 +1521,21 @@ export class FmChip implements Stage {
     )
   }
 
+  /** The test register, which only a test can read. */
+  testReg() {
+    return this.regs[REG.test]!
+  }
+
   panic() {
+    this.queued.length = 0
+    this.powerUp()
+  }
+
+  // A power cycle. Cold, the register file comes up as whatever the die felt
+  // like and a channel whose key bit came up set is already sounding. The
+  // driver's patch write clears the patch, test and rhythm registers, and a
+  // channel's own registers stay garbage until a note lands on it.
+  private powerUp() {
     this.regs.fill(0)
     this.effect = -1
     this.effectTick = 0
@@ -1538,12 +1565,16 @@ export class FmChip implements Stage {
     this.waveDataBus.reset()
     this.patchBus.reset()
     this.patchDataBus.reset()
-    this.queued.length = 0
     this.held = 0
     this.slotPos = 0.5
     this.addrLatch.reset()
     this.sentVoice = -1
     this.sent.bright = -1
     this.laneBright = -1
+    if (!this.cold) return
+    for (let r = 0; r < N_REGS; r++)
+      this.regs[r] = Math.floor(this.bootRng() * 256)
+    for (let n = 0; n < N_CH; n++)
+      if (this.regs[REG.keyBlock + n]! & KEY_ON) this.attack(n)
   }
 }

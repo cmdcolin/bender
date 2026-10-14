@@ -269,7 +269,9 @@ four times as loud while the others drop out. **Slot slip** lets the counter
 drift, from a flutter through a buzz to a fold into high images. **Allocator**
 stuck sends every note to one channel, so the chip plays one note at a time;
 stuck on a channel the rhythm bank or an effect owns, the tune plays the drums
-or fights the effect.
+or fights the effect. **Cold boot** on **garbage** power-cycles the chip into
+random registers, so it drones at random pitches until notes land on its
+channels.
 
 ## Playing the home keyboard
 

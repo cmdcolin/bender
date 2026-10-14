@@ -4,7 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../../controls'
 import { packParams } from '../../engine/params'
 import { SOURCE_TAPS } from '../../engine/params'
 import { OCTAVES, pitch } from '../../ui/keyboard'
-import { buildChain } from '../build'
+import { buildBender, buildChain } from '../build'
 import { FAULT } from '../bus'
 import { DEST } from '../modbus'
 import { spectrum } from '../spectrum'
@@ -979,4 +979,52 @@ test('stuck on the bass drum’s channel, the tune retunes the drum', () => {
     spectrum(fmStem({ fmKeyGate: 0, drumSnare: 0, drumHat: 0, ...o }), SR)
       .bands[0]!
   expect(sub({ fmAlloc: 3 })).toBeLessThan(0.3 * sub({}))
+})
+
+// Cold boot: the register file comes up as whatever the die felt like, and only
+// the driver's own writes clear it.
+const booted = (
+  o: Partial<Controls>,
+  then?: (chip: BuiltChain['fmChip']) => void,
+) => {
+  let chip: BuiltChain['fmChip'] | undefined
+  const x = renderStems(
+    { ...FM_ONLY, fmKeyGate: 1, fmColdBoot: 1, ...o },
+    1,
+    built => (chip = built.fmChip),
+  ).stems[FM_TAP]!
+  then?.(chip!)
+  return { x, chip: chip! }
+}
+
+test('a cold boot comes up sounding with nothing played', () => {
+  expect(rms(booted({ fmColdBoot: 0 }).x)).toBe(0)
+  expect(rms(booted({}).x)).toBeGreaterThan(0.01)
+})
+
+test('the driver clears the test register and leaves the channels in garbage', () => {
+  const { chip } = booted({})
+  expect(chip.testReg()).toBe(0)
+  expect(chip.instRegs().some(n => n > 0)).toBe(true)
+})
+
+test('with a knife on the address the chip never finishes booting', () => {
+  const { chip } = booted({ fmAddrLine: 1, fmAddrFault: FAULT.ground })
+  expect(chip.testReg()).not.toBe(0)
+})
+
+test('a panic on a cold board boots into fresh garbage', () => {
+  const built = buildBender(SR)
+  const p = packParams({ ...DEFAULT_CONTROLS, ...FM_ONLY, fmColdBoot: 1 })
+  const io = makeIo()
+  built.chain.process(io, p)
+  const first = built.fmChip.instRegs()
+  built.fmChip.panic()
+  built.chain.process(io, p)
+  expect(built.fmChip.instRegs()).not.toEqual(first)
+})
+
+test('a wire on the cold boot lane power-cycles the chip', () => {
+  const wire = { bodyX: 1, mod0Src: 5, mod0Dest: DEST.fmColdBoot, mod0Depth: 1 }
+  expect(booted({ fmColdBoot: 0, ...wire }).x).toEqual(booted({}).x)
 })
