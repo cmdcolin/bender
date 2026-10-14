@@ -135,10 +135,6 @@ function dacGains(driveDb: number) {
   return { drive, makeup }
 }
 
-// Envelope rates come off the same divider as everything else on this board, so
-// a starving rail drags the envelopes out along with the pitch and the tempo —
-// one oscillator, as ever. The table itself lives with the register map.
-
 // The sine, as the part stores it rather than as mathematics has it: nothing on
 // this chip computes a sine, it looks one up. A quarter of a wave, 256 entries,
 // and two more bits of phase to build the other three quarters — one mirrors the
@@ -760,12 +756,9 @@ export class FmChip implements Stage {
     else this.sentVoice = -1
   }
 
-  // The patch registers turned into something a sample loop can use. Done once a
-  // block, off whatever the register file holds right now — so a byte that
-  // arrived wrong is read wrong here, every block, until it is written again.
-  // One operator's rate set, off the four bytes that describe it. The scale is
-  // the rail: every rate on this chip is counted off the same divider as the
-  // pitch and the tempo, so a starving board stretches all of them together.
+  // One operator's rate set, off the four bytes that describe it, read once a
+  // block. Every rate counts off the same divider as the pitch, so a starving
+  // rail or a slow crystal stretches all of them together.
   private rates(
     out: Rates,
     clockFactor: number,
@@ -778,7 +771,7 @@ export class FmChip implements Stage {
     ksl: number,
     fb: number,
   ) {
-    const scale = Math.max(clockFactor, 0.05) / this.crystal
+    const scale = this.envStretch(clockFactor)
     // Every rate goes past the octave on the way out of the nibble. With the
     // scaling bit clear that is the nibble itself; with it set the counter
     // takes the note's own octave into the step it walks, which is what stops a
@@ -799,6 +792,10 @@ export class FmChip implements Stage {
     out.half = half
     out.ksl = ksl
     out.fb = fb
+  }
+
+  private envStretch(clockFactor: number) {
+    return 1 / (Math.max(clockFactor, 0.05) * this.crystal)
   }
 
   // Both operators of one channel, off eight bytes and the key register. The
@@ -894,13 +891,11 @@ export class FmChip implements Stage {
       )
     }
 
-    // What the envelope counter does with its carry forced: the fastest step it
-    // has, on every operator at once, whatever the rate registers hold. It
-    // still reads the rail, because the counter is still counting the same
-    // divider — a raced envelope on a starving board is a longer click.
+    // The envelope counter with its carry forced: its fastest step on every
+    // operator, still counted off the divider, so a starving rail lengthens the
+    // click.
     const fast = Math.exp(
-      -1 /
-        ((fallSecs(15) * Math.max(clockFactor, 0.05) * this.sr) / this.crystal),
+      -1 / (fallSecs(15) * this.envStretch(clockFactor) * this.sr),
     )
     this.raceRates.attack = 1
     this.raceRates.decay = fast

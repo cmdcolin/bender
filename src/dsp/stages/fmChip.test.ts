@@ -874,6 +874,19 @@ test('the chip’s crystal drags the envelopes and the LFO with the pitch', () =
   expect(ring(2)).toBeLessThan(0.5 * ring(1))
 })
 
+// The rail is the same divider one step further back, so a starving board
+// stretches the envelopes the way a slow crystal does.
+test('a starving rail stretches the envelopes with the pitch', () => {
+  const ring = (o: Partial<Controls>) => {
+    const x = fmNote({ fmVoice: voice('e.piano'), ...o }, 12, 1)
+    return (
+      rms(x.subarray(Math.round(0.6 * SR))) /
+      rms(x.subarray(0, Math.round(0.1 * SR)))
+    )
+  }
+  expect(ring({ chipStarve: 0.45 })).toBeGreaterThan(1.3 * ring({}))
+})
+
 // The demo song's first note, struck 0.3 s in, which gets Note length because
 // nothing holds it.
 const FIRST_NOTE = 0.3

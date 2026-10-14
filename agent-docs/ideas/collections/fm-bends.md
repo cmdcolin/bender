@@ -234,9 +234,13 @@ Measured on the FM stem, on the board `pnpm spectrum` uses:
   timer. Its one new sound is the effect ROM run fast: crickets at 16× go from
   0.03 flat to 0.29, with the centroid up from 1.9 kHz to 4.6 kHz.
 
-The envelope rates already count off the rail in `rates()`, but the existing
-term multiplies a time by `clockFactor`, so a starving rail shortens them. The
-crystal divides, the way the pitch moves; the rail term is left as it was.
+`rates()` used to multiply each envelope time by the rail's `clockFactor`, so a
+starving rail shortened the envelopes while the comment said it stretched them.
+It now divides by the rail and the crystal together, the way the pitch moves:
+
+- On the stock board `clockFactor` is exactly 1, so nothing unstarved changed.
+- With `chipStarve` at 0.45, an e.piano note's tail-over-head ratio goes from
+  0.36 (the old direction, against 0.34 unstarved) to 0.51.
 
 ## 6. The patch bay cannot reach this chip — landed
 
