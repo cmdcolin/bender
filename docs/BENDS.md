@@ -481,6 +481,14 @@ cycle, which the cap blocks and the network partly cancels — no click, less
 body, and least of both on the voices pitched high enough that the pulse
 outlasts them.
 
+**Pulse sharing** puts all eight one-shots on one timing rail, so voices fired
+together steal charge from each other. Each runs short at the same height, which
+hands the network less charge and starts the swoop lower. A kick struck with a
+hat and a clap keeps 27% of its body under 120 Hz at the top of the travel, and
+its swoop starts at 75 Hz against 100; a lone kick is untouched. On the
+measuring board the kit's centroid rises from 440 Hz to 900, where Accent sag on
+every step pulls it down.
+
 **Snappy** is what the snare is made of. All the way up is the noise transistor
 alone, which is the snare the kit used to have; down, the two tuned networks
 under it come through instead, beating against each other. Tune reaches those

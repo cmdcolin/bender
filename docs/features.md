@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 374 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 375 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 102 presets, 16 stage settings and 36 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -206,7 +206,7 @@ too — the knife goes on and the rows under it say which controls that was:
   lands in the top half and each hit folds into a square-edged blat
 
 <details>
-<summary>54 controls</summary>
+<summary>55 controls</summary>
 
 | control         | range                                                                                                              | what it does                                                                                                                                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -222,6 +222,7 @@ too — the knife goes on and the rows under it say which controls that was:
 | Bank sync       | off, to the kick, to the tom                                                                                       | Resets all six metal oscillators each time the kick or tom network swings up through zero                                                               |
 | Tank coupling   | off to full                                                                                                        | A wire from the kick’s network into the tom’s drive                                                                                                     |
 | Trigger pulse   | 0.05 to 8 ms                                                                                                       | How long the one-shot holds the trigger line down                                                                                                       |
+| Pulse sharing   | off to full                                                                                                        | The one-shots all charge off one timing rail, and this is how much a one-shot fired alongside others loses to them                                      |
 | Snappy          | off to full                                                                                                        | What the snare is made of                                                                                                                               |
 | Clap gap        | 0.5 to 250 ms                                                                                                      | The period of the small oscillator that fires the clap’s bursts                                                                                         |
 | Clap bursts     | 1 to 64                                                                                                            | How many bursts the oscillator fires before the clap rings out                                                                                          |

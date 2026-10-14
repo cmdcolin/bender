@@ -1455,6 +1455,30 @@ test('a pattern through an XOR walks away from the grid and the grid takes it ba
   expect(walked[5]).toEqual(stock[5])
 })
 
+// Four poles at 300 Hz, enough to hear a kick's swoop through hats over it.
+function lowpass(x: Float32Array): Float32Array {
+  const y = Float32Array.from(x)
+  const k = 1 - Math.exp((-2 * Math.PI * 300) / SR)
+  for (let pole = 0; pole < 4; pole++) {
+    let z = 0
+    for (let i = 0; i < y.length; i++) y[i] = z += k * (y[i]! - z)
+  }
+  return y
+}
+
+test('one-shots fired together run short, so a crowded kick is thinner and flatter', () => {
+  const kick = (c: Partial<Controls>) => soloVoice({ ...KICK_ALONE, ...c }, 1)
+  const crowd = { drumHat: stepMask(1), drumClap: stepMask(1) }
+  const body = (x: Float32Array) => lowEnergy(slice(x, 0.25, 0.6), 120)
+  const start = (x: Float32Array) => pitchHz(lowpass(slice(x, 0.25, 0.29)))
+  const alone = kick({ drumPulseShare: 1 })
+  const shared = kick({ ...crowd, drumPulseShare: 1 })
+  const stiff = kick(crowd)
+  expect(alone).toEqual(kick({}))
+  expect(body(shared)).toBeLessThan(0.5 * body(stiff))
+  expect(start(shared)).toBeLessThan(0.9 * start(stiff))
+})
+
 const REF_TOY = 1
 const REF_SELF = 2
 

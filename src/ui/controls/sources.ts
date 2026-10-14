@@ -795,6 +795,16 @@ export const SOURCE_GROUPS: Group[] = [
         help: 'How long the one-shot holds the trigger line down. The charge is the same either way, so this is where it goes rather than how much: short is a tall spike that gets through the coupling cap as a click and shocks the network cleanly, long is a shove spread across most of a cycle, which the cap blocks and the network partly cancels — no click, less body, and least of both on the voices pitched high enough that the pulse outlasts them.',
       },
       {
+        key: 'drumPulseShare',
+        part: 'inside the voices',
+        label: 'Pulse sharing',
+        min: 0,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        help: 'The one-shots all charge off one timing rail, and this is how much a one-shot fired alongside others loses to them. Each runs short at the same height, so a crowded step hands every voice on it less charge: the kick under a hat and a clap loses most of its body and its swoop starts a fourth lower, while a lone kick keeps all of it. Accent sag darkens a busy pattern; this thins it.',
+      },
+      {
         key: 'drumSnappy',
         needs: analogKit,
         part: 'inside the voices',

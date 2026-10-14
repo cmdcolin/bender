@@ -313,6 +313,11 @@ const CLICK_GAIN = 3.1
 // — a kick that measured brighter at 6 kHz than the hat sitting on top of it.
 const PULSE_EDGE = 2.5
 
+// How much charge each one-shot loses to every other one fired with it, with
+// the sharing all the way up: two together run a third as long, four a
+// seventh.
+const PULSE_SHARE = 2
+
 // Where the ring knob crosses over. Below it the transistor hands back less
 // than it took and the drum is a drum; at it the network never runs down; past
 // it the loop makes up the difference and the tank grows into its own clipping.
@@ -568,6 +573,13 @@ export class ToyDrum implements Stage {
   private pulseX = new Float32Array(N_VOICES)
   private pulseFall = 0
   private pulseRise = 0
+  // Each one-shot's width as a share of the knob's, and the fall and edge that
+  // width comes to. A one-shot fired alone is the whole width.
+  private pulseShare = 0
+  private pulseS = 0
+  private pulseW = new Float64Array(N_VOICES).fill(1)
+  private pulseFallV = new Float64Array(N_VOICES)
+  private pulseRiseV = new Float64Array(N_VOICES)
   private tanks = Array.from({ length: N_TANKS }, () => new BridgedT())
   private tankF = new Float32Array(N_TANKS)
   private tankRate = new Float32Array(N_TANKS)
@@ -971,11 +983,24 @@ export class ToyDrum implements Stage {
       struck |= 1 << v
     }
     if (!struck) return 0
+    let n = 0
+    for (let v = 0; v < N_VOICES; v++) if (struck & (1 << v)) n++
+    const w = 1 / (1 + PULSE_SHARE * this.pulseShare * (n - 1))
+    for (let v = 0; v < N_VOICES; v++) if (struck & (1 << v)) this.narrow(v, w)
     if (struck & this.resetBit) this.clearing = true
     this.firedSince |= struck
     this.thrown = this.throwing ? this.thrown | struck : this.thrown & ~struck
     ctx.trig.drumFired(i, struck, gain)
     return struck
+  }
+
+  private narrow(v: number, w: number) {
+    this.pulseW[v] = w
+    this.pulseFallV[v] = w === 1 ? this.pulseFall : this.pulseFall ** (1 / w)
+    this.pulseRiseV[v] =
+      w === 1
+        ? this.pulseRise
+        : lpCoef(PULSE_EDGE / (TAU * this.pulseS * w), this.sr)
   }
 
   private ringCompare(heard: number, ctx: Ctx, i: number) {
@@ -1250,6 +1275,11 @@ export class ToyDrum implements Stage {
     // tanks integrate it and do not care; the cap onto the output does not, so
     // it reads the same line back at the height the one-shot reaches.
     const clickHeight = 1 / (1 - this.pulseFall)
+    // One-shots fired together share one timing rail, so each runs short at
+    // the same height: less charge into the network and less edge for the cap.
+    this.pulseShare = Math.min(Math.max(p[IDX.drumPulseShare]!, 0), 1)
+    this.pulseS = pulseS
+    for (let v = 0; v < N_VOICES; v++) this.narrow(v, this.pulseW[v]!)
 
     // What each tank loses per sample, off the same count and the same divisor
     // the noise voices' envelopes come off — so a network runs down alongside
@@ -1620,8 +1650,8 @@ export class ToyDrum implements Stage {
         let live = 0
         const pulse = this.pulse
         const pulseOut = this.pulseOut
-        const pulseFall = this.pulseFall
-        const pulseRise = this.pulseRise
+        const pulseFall = this.pulseFallV
+        const pulseRise = this.pulseRiseV
         const choked = this.chokedBits
         const clapping = this.clapsLeft > 0
         for (let v = 0; v < N_VOICES; v++) {
@@ -1642,8 +1672,8 @@ export class ToyDrum implements Stage {
           // is that shape with its own edge on it rather than the step the
           // counter made.
           const was = pulse[v]!
-          pulse[v] = was > 1e-7 ? was * pulseFall : 0
-          const lp = pulseOut[v]! + pulseRise * (pulse[v]! - pulseOut[v]!)
+          pulse[v] = was > 1e-7 ? was * pulseFall[v]! : 0
+          const lp = pulseOut[v]! + pulseRise[v]! * (pulse[v]! - pulseOut[v]!)
           pulseOut[v] = lp > 1e-7 ? lp : 0
           if (env[v]! > AUDIBLE) live++
         }
@@ -1816,6 +1846,7 @@ export class ToyDrum implements Stage {
     this.pulse.fill(0)
     this.pulseOut.fill(0)
     this.pulseX.fill(0)
+    this.pulseW.fill(1)
     this.accentV = 1
     this.bellHp.reset()
     this.noiseLp = 0

@@ -11,11 +11,12 @@ same reason: nothing here is a decision, and the ones that are cheap and the
 ones that change how the kit sounds with no knife on it are called out as such.
 
 **Built:** items 1 (`drumSlip`), 2 (`drumBankStarve`, `drumBankGate`), 3 (the
-accent on the data bus), 4 (`drumDice`), 6 (`drumClapGap`, `drumClapCount`), 8
-(`DEST.drumBpm`), 9 (`drumLoop`), 10 (the sample ROM knife), 11 (`drumBankFm`,
-`drumBankSync`), 12 (`drumSweep`), 13 (`drumTankCouple`) and 14 (`drumRef`),
-plus the counter's reset wire (`drumReset`) and a comparator on a tank's ring
-(`drumRingTrig`). Every other numbered item is still a candidate.
+accent on the data bus), 4 (`drumDice`), 6 (`drumClapGap`, `drumClapCount`), 7
+(`drumPulseShare`), 8 (`DEST.drumBpm`), 9 (`drumLoop`), 10 (the sample ROM
+knife), 11 (`drumBankFm`, `drumBankSync`), 12 (`drumSweep`), 13
+(`drumTankCouple`) and 14 (`drumRef`), plus the counter's reset wire
+(`drumReset`) and a comparator on a tank's ring (`drumRingTrig`). Every other
+numbered item is still a candidate.
 
 ## How to judge one of these before building it
 
@@ -325,6 +326,22 @@ somebody with both knobs up may not be able to tell which is doing what. Worth
 building only if it measures as a different thing on `pnpm spectrum`.
 
 Cost: small.
+
+**Built** as `drumPulseShare`, 0 to 1. Voices struck in one call to `hit` share
+the rail: each runs at `1 / (1 + 2·share·(n − 1))` of the knob's width at the
+same height, so two together run a third as long and four a seventh. Narrower at
+the same height is less charge, which is what gives less body and a flatter
+swoop; the click edge shortens with it. The scan bend separates the strikes, so
+a slow scan undoes the steal. Measured:
+
+- A kick under a hat and a clap, at the top of the travel: power under 120 Hz
+  0.044 against 0.161 unshared (27%), swoop start 75 Hz against 100. At half the
+  travel the body is 44%. A lone kick renders bit-identical.
+- On the `pnpm spectrum` board the kit stem goes 1.00× → 0.66× and its centroid
+  442 → 899 Hz (flatness 0.057 → 0.130). Accent sag moves the other way: with
+  every step accented at 2×, sag takes the centroid 660 → 592 Hz and sharing
+  takes it 660 → 1167. Sag darkens a busy pattern; sharing thins it, so it
+  ships.
 
 ## 8. Tempo as a modulation destination
 
