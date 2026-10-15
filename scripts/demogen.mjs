@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path'
 const APP = 'https://cmdcolin.github.io/bender/app/'
 const README = 'README.md'
 
-/** @type {{ name: string, says: string, query: string }[]} */
+/** @type {{ name: string, query: string }[]} */
 const demos = JSON.parse(readFileSync('demos.json', 'utf8'))
 
 for (const demo of demos) {

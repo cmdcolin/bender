@@ -5,7 +5,6 @@ import listed from '../../demos.json'
 
 export interface Demo {
   name: string
-  says: string
   query: string
   showcase: boolean
 }
