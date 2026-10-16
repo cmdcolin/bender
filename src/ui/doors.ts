@@ -18,12 +18,12 @@ function fromPreset(name: string, presetName: string): Door {
   return { name, says: found.blurb, board: () => found.patch }
 }
 
-function fromDemo(name: string, demoName: string): Door {
+function fromDemo(name: string, demoName: string, says: string): Door {
   const found = demos.find(d => d.name === demoName)
   if (!found) throw new Error(`no demo named ${demoName}`)
   return {
     name,
-    says: found.says,
+    says,
     board: () => boardFromUrl('', `#${found.query}`) ?? {},
   }
 }
@@ -40,8 +40,16 @@ const pick = <T>(from: T[]) => from[Math.floor(Math.random() * from.length)]!
 
 const STARTS = [
   fromPreset('a drone', 'under the floor'),
-  fromDemo('dub drums', 'More dubby drum with wandering synth'),
-  fromDemo('a glitching voice', 'Glitch voice'),
+  fromDemo(
+    'dub drums',
+    'More dubby drum with wandering synth',
+    'The kit swung at 162 bpm with its trigger lines crossed, an FM voice on a faulted address line, and three feedback loops.',
+  ),
+  fromDemo(
+    'a glitching voice',
+    'Glitch voice',
+    'The FM chip struck by the kit through the trigger patch, into a sampler loop that keeps recording over itself.',
+  ),
 ]
 
 export const DOORS: Door[] = [
