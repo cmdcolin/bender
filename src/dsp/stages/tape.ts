@@ -1,9 +1,10 @@
 import { IDX } from '../../engine/params'
 import { DelayLine } from '../util/delayline'
 import { SineOsc } from '../util/lfo'
-import { lpCoef } from '../util/onepole'
+import { Highpass, lpCoef } from '../util/onepole'
 import { gaussian, mulberry32, type Rng } from '../util/rng'
 import { flushDenormal, softclip } from '../util/softclip'
+import { Dbx, DolbyB, NR_DBX, NR_DOLBY_B, type Compander } from './tapeNr'
 
 import type { Ctx, Stage, StereoBlock } from '../stage'
 
@@ -498,10 +499,14 @@ export class Tape implements Stage {
   private flut2 = new SineOsc()
   private sqLow = 0
   private sqBand = 0
-  private lowL1 = 0
-  private lowL2 = 0
-  private lowR1 = 0
-  private lowR2 = 0
+  private lowL = new Highpass(2)
+  private lowR = new Highpass(2)
+  private readonly nr: {
+    rec: [Compander, Compander][]
+    play: [Compander, Compander][]
+  }
+  private nrRec = 0
+  private nrPlay = 0
   private nominal: number
   private gauss: Rng
   private readonly s: Settings = {
@@ -554,6 +559,27 @@ export class Tape implements Stage {
     this.dryL = new DelayLine(this.nominal + 4)
     this.dryR = new DelayLine(this.nominal + 4)
     this.gauss = gaussian(mulberry32(next()))
+    const pair = (decode: boolean): [Compander, Compander][] => [
+      [new DolbyB(sr, decode), new DolbyB(sr, decode)],
+      [new Dbx(sr, decode), new Dbx(sr, decode)],
+    ]
+    this.nr = { rec: pair(false), play: pair(true) }
+  }
+
+  // The compander a switch names, for both channels, reset when the switch
+  // has just moved onto it so it starts from silence rather than from wherever
+  // it was left.
+  private compander(
+    side: 'rec' | 'play',
+    kind: number,
+  ): [Compander, Compander] | null {
+    const was = side === 'rec' ? this.nrRec : this.nrPlay
+    if (side === 'rec') this.nrRec = kind
+    else this.nrPlay = kind
+    if (kind !== NR_DOLBY_B && kind !== NR_DBX) return null
+    const pair = this.nr[side][kind === NR_DOLBY_B ? 0 : 1]!
+    if (was !== kind) for (const c of pair) c.reset()
+    return pair
   }
 
   when(p: Float32Array) {
@@ -656,6 +682,8 @@ export class Tape implements Stage {
     // Two poles that cross -3 dB at the format's corner, the way the gap does.
     const lowOn = fm.lowHz > 0
     const lowC = lowOn ? lpCoef(fm.lowHz / GAP_POLE, this.sr) : 0
+    const enc = this.compander('rec', Math.round(p[IDX.tapeNrRec]!))
+    const dec = this.compander('play', Math.round(p[IDX.tapeNrPlay]!))
 
     for (let i = 0; i < io.n; i++) {
       this.driftY = flushDenormal(
@@ -704,17 +732,17 @@ export class Tape implements Stage {
       const inR = io.r[i]!
       this.dryL.write(inL)
       this.dryR.write(inR)
-      let wetL = this.headL.process(inL, d, gapL, s)
-      let wetR = this.headR.process(inR, d + azimuth, gapR, s)
+      const recL = enc ? enc[0].process(inL) : inL
+      const recR = enc ? enc[1].process(inR) : inR
+      let wetL = this.headL.process(recL, d, gapL, s)
+      let wetR = this.headR.process(recR, d + azimuth, gapR, s)
       if (lowOn) {
-        this.lowL1 = flushDenormal(this.lowL1 + lowC * (wetL - this.lowL1))
-        wetL -= this.lowL1
-        this.lowL2 = flushDenormal(this.lowL2 + lowC * (wetL - this.lowL2))
-        wetL -= this.lowL2
-        this.lowR1 = flushDenormal(this.lowR1 + lowC * (wetR - this.lowR1))
-        wetR -= this.lowR1
-        this.lowR2 = flushDenormal(this.lowR2 + lowC * (wetR - this.lowR2))
-        wetR -= this.lowR2
+        wetL = this.lowL.process(wetL, lowC)
+        wetR = this.lowR.process(wetR, lowC)
+      }
+      if (dec) {
+        wetL = dec[0].process(wetL)
+        wetR = dec[1].process(wetR)
       }
 
       // The dry side runs down the same nominal delay, so the blend only combs
@@ -743,9 +771,9 @@ export class Tape implements Stage {
     this.flut2.reset()
     this.sqLow = 0
     this.sqBand = 0
-    this.lowL1 = 0
-    this.lowL2 = 0
-    this.lowR1 = 0
-    this.lowR2 = 0
+    this.lowL.reset()
+    this.lowR.reset()
+    for (const side of [this.nr.rec, this.nr.play])
+      for (const pair of side) for (const c of pair) c.reset()
   }
 }

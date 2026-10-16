@@ -532,6 +532,8 @@ export const PARAM_DEFS = [
   ['tapeMix', 'slew'],
   ['tapeSpeed', 'step'],
   ['tapeFormat', 'step'],
+  ['tapeNrRec', 'step'],
+  ['tapeNrPlay', 'step'],
   ['tapeDrive', 'ramp'],
   ['tapeBias', 'slew'],
   ['tapeHiss', 'slew'],

@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 382 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 384 knobs and switches in 32 groups, seven bends competing for six slots,
 18 ROM tunes, 115 presets, 18 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -1059,13 +1059,15 @@ loss, head bump, hiss, wow rate and print-through together, because on a real
 machine they are one thing.
 
 <details>
-<summary>14 controls</summary>
+<summary>16 controls</summary>
 
 | control       | range                                     | what it does                                                                                          |
 | ------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | To tape       | off to full                               | How much of the board you hear through the machine rather than straight off the bus                   |
 | Speed         | 15⁄16 ips, 1⅞ ips, 3¾ ips, 7½ ips, 15 ips | Moves the whole machine at once                                                                       |
 | Format        | open reel, cassette, microcassette        | Picks the tape and heads; Speed sets how fast they run                                                |
+| NR record     | off, Dolby B, dbx                         | The noise reduction that encodes the board on its way to the record head                              |
+| NR play       | off, Dolby B, dbx                         | The decoder after the replay head                                                                     |
 | Level         | −12 to +15 dB                             | Record level                                                                                          |
 | Bias          | 1.00 under to 1.00 over                   | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
 | Hysteresis    | off to full                               | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
