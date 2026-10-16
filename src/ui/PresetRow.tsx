@@ -187,15 +187,19 @@ export function Presets(props: {
 
   if (!shelf && held === null)
     return (
-      <section className={styles.section} aria-label="presets">
+      <section className={styles.shelfShut} aria-label="presets">
+        <span className={styles.rowLabel}>presets</span>
         <button className={styles.more} onClick={() => setShelf(true)}>
-          presets ▸
+          show
         </button>
       </section>
     )
 
   return (
-    <section className={styles.section} aria-label="presets">
+    <section
+      className={props.folded ? styles.shelf : styles.section}
+      aria-label="presets"
+    >
       {/* A heading, because the row had none and needed one more than anything
           else on the panel did. Fifty-one named boards is one of the two ways
           the board arrives, and unlabelled — in the same chip the MIDI switches
@@ -206,7 +210,9 @@ export function Presets(props: {
           thing the row does and it lived in a tooltip, so nobody found it, and
           fifty-one chips is the wrong place to say a thing once. */}
       <div className={styles.head}>
-        <span className={styles.title}>presets</span>
+        <span className={props.folded ? styles.rowLabel : styles.title}>
+          presets
+        </span>
         <span className={styles.hint}>drag one sideways to stop part way</span>
         {props.folded && (
           <button className={styles.more} onClick={() => setShelf(false)}>

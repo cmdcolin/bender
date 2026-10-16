@@ -203,7 +203,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   // shut, and `{ pending: null }` is the card opened from the menu with no save
   // behind it.
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
-  const [showMore, setShowMore] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showMidi, setShowMidi] = useState(false)
   const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
@@ -353,13 +352,10 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
           </div>
         )}
         <BodyPad onOpen={setOpen} />
-        {/* The two run switches on a row of their own: on a phone it is the
-            first thing on the page and stays pinned while the rest of the
-            machines scroll under it, which a row that also held the recorder
-            and the sampler's inputs was too tall to do. */}
         <div className={styles.studio}>
           <div className={styles.deck}>
             <div className={styles.ioRow}>
+              <span className={styles.label}>tape</span>
               <span
                 className={recording ? styles.counterOn : styles.counter}
                 role="timer"
@@ -398,83 +394,69 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                   ⟲ last 30s
                 </button>
               </Tip>
-              <button
-                className={showMore ? styles.ioBtnOn : styles.ioBtn}
-                aria-expanded={showMore}
-                onClick={() => setShowMore(m => !m)}
-              >
-                more
-              </button>
-            </div>
-            {showMore && (
-              <div className={styles.ioRow}>
-                {/* What comes back off a take. Locked while one is running: the tape
-              is threaded for six tracks or for one at the moment you press
-              record, and a switch that moved half way through would hand back
-              six files that start in different places. */}
-                <Tip text="Master is the take with the whole board on it. Stems hands back each machine on its own as well — dry, straight off the bus, one wav each — which is what you drag into a DAW.">
-                  <select
-                    className={styles.pool}
-                    value={recStems ? 'stems' : 'master'}
-                    disabled={recording}
-                    onChange={e =>
-                      engine.recStems.set(e.target.value === 'stems')
-                    }
-                  >
-                    <option value="master">master only</option>
-                    <option value="stems">master + stems</option>
-                  </select>
-                </Tip>
-                <Tip text="Puts the last 30 seconds on the sampler reel, to play back through the board.">
-                  <button
-                    className={styles.ioBtn}
-                    onClick={() => engine.keepLast('reel')}
-                  >
-                    ⟲ → reel
-                  </button>
-                </Tip>
+              <Tip text="Stems hands back each machine on its own as well as the master — dry, straight off the bus, one wav each — which is what you drag into a DAW. Locked while a take runs.">
                 <button
-                  className={micOn ? styles.ioBtnOn : styles.ioBtn}
-                  onClick={() => engine.enableMic()}
+                  className={recStems ? styles.ioBtnToggled : styles.ioBtn}
+                  aria-pressed={recStems}
+                  disabled={recording}
+                  onClick={() => engine.recStems.set(!recStems)}
                 >
-                  {micOn ? '● mic live' : 'enable mic'}
+                  + stems
                 </button>
-                <span className={dragging ? styles.dropHot : styles.drop}>
-                  {sampleName
-                    ? `sample: ${sampleName}`
-                    : 'drop an audio file anywhere'}
-                </span>
-                {/* Finding a file is the slowest part of putting something on the
+              </Tip>
+            </div>
+            <div className={styles.ioRow}>
+              <span className={styles.label}>sample</span>
+              <Tip text="Puts the last 30 seconds on the sampler reel, to play back through the board.">
+                <button
+                  className={styles.ioBtn}
+                  onClick={() => engine.keepLast('reel')}
+                >
+                  ⟲ → reel
+                </button>
+              </Tip>
+              <button
+                className={micOn ? styles.ioBtnOn : styles.ioBtn}
+                onClick={() => engine.enableMic()}
+              >
+                {micOn ? '● mic live' : 'enable mic'}
+              </button>
+              <span className={dragging ? styles.dropHot : styles.drop}>
+                {sampleName
+                  ? `sample: ${sampleName}`
+                  : 'drop an audio file anywhere'}
+              </span>
+              {/* Finding a file is the slowest part of putting something on the
               tape, so the board will go and find one. A pool is a search, and
               the die picks out of it. */}
-                <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
-                  <button
-                    className={styles.ioBtn}
-                    onClick={() =>
-                      archiveStep
-                        ? engine.cancelRoll()
-                        : engine.rollSample(POOLS[pool]!)
-                    }
-                  >
-                    {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
-                  </button>
-                </Tip>
-                <Tip text={POOLS[pool]!.blurb}>
-                  <select
-                    className={styles.pool}
-                    value={pool}
-                    onChange={e => setPool(Number(e.target.value))}
-                  >
-                    {POOLS.map((p, i) => (
-                      <option key={p.label} value={i}>
-                        {p.label}
-                      </option>
-                    ))}
-                  </select>
-                </Tip>
-              </div>
-            )}
+              <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
+                <button
+                  className={styles.ioBtn}
+                  onClick={() =>
+                    archiveStep
+                      ? engine.cancelRoll()
+                      : engine.rollSample(POOLS[pool]!)
+                  }
+                >
+                  {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
+                </button>
+              </Tip>
+              <Tip text={POOLS[pool]!.blurb}>
+                <select
+                  className={styles.pool}
+                  value={pool}
+                  onChange={e => setPool(Number(e.target.value))}
+                >
+                  {POOLS.map((p, i) => (
+                    <option key={p.label} value={i}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </Tip>
+            </div>
             <BendKeys morphSeconds={morphSeconds} />
+            <Presets morphSeconds={morphSeconds} folded />
           </div>
         </div>
         <SampleReel />
@@ -499,12 +481,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
             </b>
           </p>
         )}
-        {/* Under the machines rather than in the panel, because the half of
-            the window below the keys had nothing on it and the panel was paying
-            a hundred pixels of the stage you opened for a row of boards — and
-            unfolding the other fifty pushed the whole map off the screen. A
-            preset is a sound to play, which is what this column is for. */}
-        <Presets morphSeconds={morphSeconds} folded />
       </main>
 
       <aside className={styles.panel} aria-label="the board">

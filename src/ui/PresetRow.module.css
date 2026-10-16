@@ -5,6 +5,27 @@
   padding-top: var(--space-xs);
 }
 
+.shelf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.shelfShut {
+  flex-direction: row;
+  align-items: center;
+}
+
+/* Engraved like the rows of the studio plate it sits on. */
+.rowLabel {
+  flex: none;
+  width: 4.5em;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg4);
+}
+
 .head {
   display: flex;
   align-items: baseline;

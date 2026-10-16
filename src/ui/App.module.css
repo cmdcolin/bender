@@ -225,17 +225,13 @@
   right: 5px;
 }
 
-.deck > .ioRow::before {
+.label {
   flex: none;
   width: 4.5em;
   font-size: var(--fs-xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg4);
-}
-
-.deck > .ioRow::before {
-  content: 'tape';
 }
 
 .deck {
@@ -288,6 +284,10 @@
 
 /* Running, and the way out of it: stopping the mic or the recorder is the
    thing this button is for once it has started. */
+.ioBtnToggled {
+  composes: actionOn from './button.module.css';
+}
+
 .ioBtnOn {
   composes: actionDanger from './button.module.css';
 }
@@ -406,7 +406,7 @@
     padding-top: 0;
     border-top: 0;
   }
-  .deck > .ioRow::before {
+  .label {
     display: none;
   }
   .scope {
