@@ -649,7 +649,7 @@ became:
 | Wear       | off to full               | How fast the loops shed oxide                                                                                              |
 | Batteries  | off to full               | How flat the cells are                                                                                                     |
 | Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
-| Trim       | off to +40 dB             | The preamp                                                                                                                 |
+| Trim       | off to +40.0 dB           | The preamp                                                                                                                 |
 | Low        | −15 to +15 dB             | A shelf at 100 Hz                                                                                                          |
 | Mid freq   | 250 Hz to 5 kHz           | Where the sweepable mid sits, 250 Hz to 5 kHz                                                                              |
 | Mid        | −15 to +15 dB             | Boost or cut at Mid freq                                                                                                   |
