@@ -189,8 +189,10 @@ test('the row says what it is and what it does', () => {
 // arrive when you ask for them.
 const COLLAPSED = 12 // how many the row shows shut, from PresetRow.tsx
 const toggle = () => screen.getByRole('button', { name: /show|hide/ })
-const chips = () =>
-  screen.getAllByRole('button').filter(b => b !== toggle()).length
+const chips = () => {
+  const folding = toggle()
+  return screen.getAllByRole('button').filter(b => b !== folding).length
+}
 
 test('the row starts folded and opens on ask', () => {
   render(<Presets morphSeconds={0} />)
