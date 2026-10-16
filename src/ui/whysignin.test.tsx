@@ -55,18 +55,10 @@ test('the card shows the home page it is asking for an account to fill', () => {
   expect(shot.getAttribute('src')?.endsWith(SHOT)).toBe(true)
 })
 
-test('the library popover answers it, and gets out of the way', () => {
+// Signed out there is no list to open, so `sign in` is the only box about the
+// account.
+test('with nobody signed in the library button gives way to the sign-in', () => {
   render(<App />)
-  fireEvent.click(screen.getByRole('button', { name: 'saved' }))
-  fireEvent.click(screen.getByRole('button', { name: 'why sign in?' }))
-  expect(dialog()).not.toBe(null)
-  expect(screen.queryByRole('group', { name: 'saved voices' })).toBe(null)
-})
-
-// `saved` opens the list and `sign in` asks Google. They were one button, which
-// read `sign in` until you answered it and `saved` afterwards.
-test('the library button never offers itself as the sign-in', () => {
-  render(<App />)
-  expect(screen.getByRole('button', { name: 'saved' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'saved' })).toBe(null)
   expect(screen.getByRole('button', { name: 'sign in' })).toBeTruthy()
 })

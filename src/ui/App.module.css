@@ -134,6 +134,10 @@
   composes: actionDanger from './button.module.css';
 }
 
+.btnQuiet {
+  composes: actionQuiet from './button.module.css';
+}
+
 .btnOn {
   composes: actionOn from './button.module.css';
 }

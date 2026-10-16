@@ -20,10 +20,8 @@ import type { SavedVoice } from './voiceModel'
 // presets row stays what it is — the app's own catalog, browsed by eye. This
 // list is yours and starts empty.
 //
-// The button always says `saved`. It used to read `sign in` with nobody signed
-// in, so one button stood for two things, and answering Google handed back a
-// save form nobody had opened. `Account` holds the account now, and this button
-// only opens the list.
+// Signed out there is no list, so the button is absent and `Account`'s `sign in`
+// is the only box about the account. Signed in, this button opens the list.
 export function SavedVoices(props: {
   voices: readonly SavedVoice[]
   /** What the name box offers when you type nothing. A function rather than a
@@ -44,10 +42,6 @@ export function SavedVoices(props: {
   flash: VoiceFlash | null
   status: CloudStatus
   error: string | null
-  onSignIn: () => void
-  /** Opens the why-sign-in card, which the panel's menu and the save button
-      open too. The pane here gives the one-sentence version. */
-  onWhy: () => void
 }) {
   const signedIn = props.status === 'ready'
   const [open, setOpen] = useState(false)
@@ -71,15 +65,11 @@ export function SavedVoices(props: {
     })
   }
 
+  if (!signedIn) return null
+
   return (
     <>
-      <Tip
-        text={
-          signedIn
-            ? 'Save this board under a name and bring it back later, the way a synth keeps its voices (ctrl+S saves without opening this). The list lives on your account.'
-            : 'The boards you keep under a name. The list lives on an account, so with nobody signed in this opens onto what an account is for.'
-        }
-      >
+      <Tip text="Save this board under a name and bring it back later, the way a synth keeps its voices (ctrl+S saves without opening this). The list lives on your account.">
         <button
           ref={setAnchor}
           className={
@@ -91,9 +81,7 @@ export function SavedVoices(props: {
             setOpen(o => !o)
           }}
         >
-          {`saved${
-            signedIn && props.voices.length > 0 ? ` ${props.voices.length}` : ''
-          }${
+          {`saved${props.voices.length > 0 ? ` ${props.voices.length}` : ''}${
             props.flash?.kind === 'saved'
               ? ' ✓'
               : props.flash?.kind === 'failed'
@@ -111,138 +99,88 @@ export function SavedVoices(props: {
           onClose={() => setOpen(false)}
         >
           <div className={styles.body}>
-            {signedIn ? (
-              <>
-                {/* Deliberately not a <form>: a form in a popover submits, and
+            {/* Deliberately not a <form>: a form in a popover submits, and
                     in every engine that means a navigation unless it is
                     cancelled — one keystroke from throwing the board away.
                     Enter is wired straight to the same call. */}
-                <div className={styles.saveRow}>
-                  <input
-                    className={styles.nameInput}
-                    type="text"
-                    value={name}
-                    maxLength={VOICE_NAME_MAX}
-                    placeholder={suggested}
-                    aria-label="name for this voice"
-                    onChange={e => setName(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') save()
-                    }}
-                  />
-                  <button className={styles.save} onClick={() => save()}>
-                    save
-                  </button>
-                </div>
-                {props.voices.length === 0 ? (
-                  <p className={styles.hint}>
-                    Nothing saved yet — press save to keep this board under the
-                    name in the box. It is stored on your account, so it is
-                    there on your next machine as well as your next session.
-                  </p>
-                ) : (
-                  <>
-                    <div className={styles.list}>
-                      {props.voices.map(voice => (
-                        <div className={styles.row} key={voice.name}>
-                          <button
-                            className={styles.recall}
-                            title={`recall “${voice.name}” — shift+click overwrites it with the board on screen`}
-                            onClick={e => {
-                              if (e.shiftKey) save(voice.name)
-                              else props.onRecall(voice)
-                            }}
-                          >
-                            {voice.name}
-                          </button>
-                          <button
-                            className={styles.rowBtn}
-                            aria-label={`open ${voice.name}`}
-                            title={`open “${voice.name}” — the whole board at once, as a link would`}
-                            onClick={() => props.onOpen(voice)}
-                          >
-                            ↗
-                          </button>
-                          <button
-                            className={styles.rowBtn}
-                            aria-label={`copy a link to ${voice.name}`}
-                            title={`copy a link to “${voice.name}”`}
-                            onClick={() => copy(voice)}
-                          >
-                            {copied === voice.name ? '✓' : '⧉'}
-                          </button>
-                          <button
-                            className={styles.rowDel}
-                            aria-label={`delete ${voice.name}`}
-                            title={`delete “${voice.name}”`}
-                            onClick={() => props.onDelete(voice.name)}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    <p className={styles.hint}>
-                      A recall morphs the board across on the panel's own
-                      duration, ↗ lands it whole the way a link does, and ⧉
-                      copies a link that does what ↗ does.
-                    </p>
-                  </>
-                )}
-              </>
-            ) : (
-              <SignInPane
-                status={props.status}
-                onSignIn={props.onSignIn}
-                onWhy={() => {
-                  setOpen(false)
-                  props.onWhy()
+            <div className={styles.saveRow}>
+              <input
+                className={styles.nameInput}
+                type="text"
+                value={name}
+                maxLength={VOICE_NAME_MAX}
+                placeholder={suggested}
+                aria-label="name for this voice"
+                onChange={e => setName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') save()
                 }}
-                error={props.error}
               />
+              <button className={styles.save} onClick={() => save()}>
+                save
+              </button>
+            </div>
+            {props.voices.length === 0 ? (
+              <p className={styles.hint}>
+                Nothing saved yet — press save to keep this board under the name
+                in the box. It is stored on your account, so it is there on your
+                next machine as well as your next session.
+              </p>
+            ) : (
+              <>
+                <div className={styles.list}>
+                  {props.voices.map(voice => (
+                    <div className={styles.row} key={voice.name}>
+                      <button
+                        className={styles.recall}
+                        title={`recall “${voice.name}” — shift+click overwrites it with the board on screen`}
+                        onClick={e => {
+                          if (e.shiftKey) save(voice.name)
+                          else props.onRecall(voice)
+                        }}
+                      >
+                        {voice.name}
+                      </button>
+                      <button
+                        className={styles.rowBtn}
+                        aria-label={`open ${voice.name}`}
+                        title={`open “${voice.name}” — the whole board at once, as a link would`}
+                        onClick={() => props.onOpen(voice)}
+                      >
+                        ↗
+                      </button>
+                      <button
+                        className={styles.rowBtn}
+                        aria-label={`copy a link to ${voice.name}`}
+                        title={`copy a link to “${voice.name}”`}
+                        onClick={() => copy(voice)}
+                      >
+                        {copied === voice.name ? '✓' : '⧉'}
+                      </button>
+                      <button
+                        className={styles.rowDel}
+                        aria-label={`delete ${voice.name}`}
+                        title={`delete “${voice.name}”`}
+                        onClick={() => props.onDelete(voice.name)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p className={styles.hint}>
+                  A recall morphs the board across on the panel's own duration,
+                  ↗ lands it whole the way a link does, and ⧉ copies a link that
+                  does what ↗ does.
+                </p>
+              </>
             )}
-            {props.error === null || !signedIn ? null : (
+            {props.error === null ? null : (
               <p className={styles.err}>{props.error}</p>
             )}
           </div>
         </Menu>
       )}
     </>
-  )
-}
-
-// What an account is for here, and the button. One sentence, because the
-// library is the only thing in the app that needs one. `why sign in?` opens the
-// long answer for anyone who wants it.
-function SignInPane(props: {
-  status: CloudStatus
-  error: string | null
-  onSignIn: () => void
-  onWhy: () => void
-}) {
-  // Picking a session back up is not being asked to start one: a returning user
-  // would otherwise read the pitch for something they already have.
-  if (props.status === 'loading') {
-    return <p className={styles.hint}>checking your account…</p>
-  }
-  return (
-    <div className={styles.signIn}>
-      <p className={styles.hint}>
-        Sign in to keep voices under a name — they live on your Google account,
-        so they follow you to another machine. Everything else here works signed
-        out.
-      </p>
-      <div className={styles.signInRow}>
-        <button className={styles.save} onClick={props.onSignIn}>
-          sign in with Google
-        </button>
-        <button className={styles.why} onClick={props.onWhy}>
-          why sign in?
-        </button>
-      </div>
-      {props.error === null ? null : (
-        <p className={styles.err}>{props.error}</p>
-      )}
-    </div>
   )
 }

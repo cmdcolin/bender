@@ -530,8 +530,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
               flash={lib.flash}
               status={lib.status}
               error={lib.error}
-              onSignIn={lib.signIn}
-              onWhy={() => setWhy({ pending: null })}
             />
             {/* The account, beside the library. The two shared one button,
                 whose label alternated between `saved` and `sign in`. */}
@@ -663,7 +661,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
             )}
             <Tip text="Back to the board the toy ships with. It lands in the walk, so undo brings back whatever you were on.">
               <button
-                className={styles.btn}
+                className={styles.btnQuiet}
                 onClick={() =>
                   engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
                 }

@@ -124,36 +124,3 @@
   font-size: var(--fs-xs);
   color: var(--alarm);
 }
-
-.signIn {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  align-items: flex-start;
-}
-
-.signInRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--gap-ctl);
-}
-
-/* A question rather than a verb, so it is drawn as one: text beside the button
-   it is about, not a second button competing with it. */
-.why {
-  font-size: var(--fs-xs);
-  padding: var(--space-xs) var(--space-2xs);
-  background: none;
-  color: var(--fg3);
-  border: none;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-
-.why:hover,
-.why:focus-visible {
-  color: var(--accent);
-  outline: none;
-}
