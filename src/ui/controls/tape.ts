@@ -4,6 +4,7 @@ export const TAPE_GROUPS: Group[] = [
   {
     name: 'Tape machine',
     place: 'Tape',
+    editor: { kind: 'tapePath' },
     folded: ['the medium', 'record and replay'],
     sliders: [
       {

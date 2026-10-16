@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { PEAK_BINS } from '../dsp/stages/sampler'
 import { engine } from '../engine/engine'
@@ -10,7 +10,7 @@ import { Tip } from './Tip'
 
 import type { ControlKey, Controls } from '../controls'
 
-const HEIGHT = 30
+const HEIGHT = 22
 const MID = HEIGHT / 2
 
 // The tape lit while that loop is somewhere you can hear it, grey while it is
@@ -22,6 +22,7 @@ const HEAD = '#e8e8ea'
 const HEAD_REC = '#ff3355'
 const BG = '#0a0a0c'
 const EMPTY = '#55555c'
+const READOUT = '#a0a0a8'
 
 const cue = (n: Track) => `four${n}Cue` as const
 const fader = (n: Track) => `four${n}Fader` as const
@@ -39,13 +40,7 @@ function write(key: ControlKey, value: number) {
 // One loop, drawn: what is on it, where its head stands and where its oxide has
 // come away. A canvas written off the meter, as the sampler's reel is, so the
 // head can move every frame without a React render.
-function Reel({
-  track,
-  length,
-}: {
-  track: Track
-  length: RefObject<HTMLSpanElement | null>
-}) {
+function Reel({ track }: { track: Track }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const k = track - 1
 
@@ -55,7 +50,6 @@ function Reel({
     const g = el.getContext('2d')
     if (!g) return undefined
     let raf = 0
-    let said = ''
     const draw = () => {
       raf = 0
       const dpr = window.devicePixelRatio || 1
@@ -72,14 +66,9 @@ function Reel({
       g.font = `${10 * dpr}px ui-monospace, monospace`
       g.textBaseline = 'middle'
       const seconds = m.fourLaps[k]!
-      const says = seconds > 0 ? `${seconds.toFixed(2)} s` : 'no tape'
-      if (length.current && says !== said) {
-        said = says
-        length.current.textContent = says
-      }
       if (seconds <= 0) {
         g.fillStyle = EMPTY
-        g.fillText('empty · press rec to thread a loop', 8 * dpr, h / 2)
+        g.fillText('empty · press rec to thread a loop', 6 * dpr, h / 2)
         return
       }
       const row = MID * dpr
@@ -103,6 +92,16 @@ function Reel({
       g.globalAlpha = 1
       g.fillStyle = c[rec(track)] > 0 ? HEAD_REC : HEAD
       g.fillRect(m.fourHeads[k]! * w - dpr, 0, 2 * dpr, h)
+      const says = `${seconds.toFixed(2)} s`
+      const box = g.measureText(says).width + 8 * dpr
+      g.fillStyle = BG
+      g.globalAlpha = 0.75
+      g.fillRect(w - box, 0, box, h)
+      g.globalAlpha = 1
+      g.fillStyle = READOUT
+      g.textAlign = 'right'
+      g.fillText(says, w - 4 * dpr, h / 2)
+      g.textAlign = 'left'
     }
     const schedule = () => {
       if (raf === 0) raf = requestAnimationFrame(draw)
@@ -118,7 +117,7 @@ function Reel({
       observer.disconnect()
       cancelAnimationFrame(raf)
     }
-  }, [k, track, length])
+  }, [k, track])
 
   return (
     <Tip text="The loop: what is on it, where its head stands, and in rust where the oxide has come away. Lit while you can hear it, through its fader or its cue.">
@@ -134,27 +133,23 @@ function Lane({ track }: { track: Track }) {
   const source = sliderFor(input(track))
   const armed = useControlValue(rec(track)) > 0
   const listens = Math.round(useControlValue(input(track)))
-  const length = useRef<HTMLSpanElement>(null)
   return (
     <div className={styles.lane}>
       <div className={styles.head}>
         <span className={styles.number}>{track}</span>
         <Tip text={source.help}>
-          <label className={styles.source}>
-            <span>in</span>
-            <select
-              className={styles.select}
-              aria-label={`track ${track} input`}
-              value={listens}
-              onChange={e => write(input(track), Number(e.currentTarget.value))}
-            >
-              {source.choices!.map((name, i) => (
-                <option key={name} value={i}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            className={styles.select}
+            aria-label={`track ${track} input`}
+            value={listens}
+            onChange={e => write(input(track), Number(e.currentTarget.value))}
+          >
+            {source.choices!.map((name, i) => (
+              <option key={name} value={i}>
+                {`in: ${name}`}
+              </option>
+            ))}
+          </select>
         </Tip>
         <Tip
           text={`Lay the channel onto loop ${track}. The first press threads a blank loop as long as its Length. What goes under the head stays there, so a loop is recorded over by every pass it takes.`}
@@ -168,9 +163,8 @@ function Lane({ track }: { track: Track }) {
             ● rec
           </button>
         </Tip>
-        <span ref={length} className={styles.length} />
+        <Reel track={track} />
       </div>
-      <Reel track={track} length={length} />
       <ControlSlider def={sliderFor(fader(track))} label="Fader" />
     </div>
   )

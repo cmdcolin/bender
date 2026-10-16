@@ -40,6 +40,8 @@ import { rollIn, undoRoll, useCanUndoRoll } from './rollBack'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider'
 import { StripDiagram } from './StripDiagram'
+import { TapeLoopDiagram } from './TapeLoopDiagram'
+import { TapePathDiagram } from './TapePathDiagram'
 import { Tip } from './Tip'
 import { TriggerPatch } from './TriggerPatch'
 import { TuneRoll } from './TuneRoll'
@@ -560,6 +562,8 @@ export function OpenGroup({
           {group.editor?.kind === 'trigger' && <TriggerPatch />}
           {group.editor?.kind === 'mic' && <MicPatch />}
           {group.editor?.kind === 'loops' && <FourTrack />}
+          {group.editor?.kind === 'tapeLoop' && <TapeLoopDiagram />}
+          {group.editor?.kind === 'tapePath' && <TapePathDiagram />}
           {!rigsFirst && rigs}
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>

@@ -2,7 +2,7 @@
   display: block;
   width: 100%;
   height: auto;
-  margin: var(--space-xs) 0 var(--space-md);
+  margin: var(--space-xs) 0 var(--space-sm);
 }
 
 .box {
@@ -16,8 +16,8 @@
 }
 
 .name,
-.send,
-.sendOn {
+.note,
+.noteOn {
   font-size: 9px;
   fill: var(--fg3);
 }
@@ -30,13 +30,14 @@
 }
 
 .valueOn,
-.sendOn {
+.noteOn {
   fill: var(--accent);
 }
 
 .wire,
 .wireOn,
-.wireDash {
+.wireDash,
+.wireAlarm {
   fill: none;
   stroke: var(--fg4);
   stroke-width: 1;
@@ -47,10 +48,29 @@
   stroke-width: 1.5;
 }
 
+.wireAlarm {
+  stroke: var(--alarm);
+  stroke-width: 1.5;
+}
+
 .wireDash {
   stroke-dasharray: 3 3;
 }
 
 .head {
   fill: var(--fg4);
+}
+
+.tape {
+  fill: var(--surface-raised);
+  stroke: var(--border);
+}
+
+.gap,
+.gapOn {
+  fill: var(--fg4);
+}
+
+.gapOn {
+  fill: var(--accent);
 }

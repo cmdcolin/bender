@@ -82,6 +82,7 @@ export const PEDAL_GROUPS: Group[] = [
   {
     name: 'Tape delay',
     place: 'Pedals',
+    editor: { kind: 'tapeLoop' },
     folded: ['the transport', 'in the loop'],
     sliders: [
       {
