@@ -193,57 +193,53 @@
   white-space: nowrap;
 }
 
-/* The studio: one faceplate holding the transport on top and the deck under
-   it, each strip engraved with its own name. On a phone the plate dissolves so
-   the transport can still pin itself to the top of the page. */
+/* The studio: a recorder and a sampler side by side, each its own faceplate
+   with a name engraved on it, and a thinner strip of keyboard routing and
+   presets under them. On a phone the boxes stack. */
 .studio {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  align-items: start;
+}
+
+.box,
+.strip {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
   padding: var(--space-md) var(--space-lg);
-  background: linear-gradient(180deg, #24242c, #1a1a20);
+  background: var(--surface-raised);
   border: 1px solid var(--case-edge);
   border-radius: var(--ctl-radius);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.06),
-    0 2px 6px rgb(0 0 0 / 0.4);
 }
 
-.studio::before,
-.studio::after {
+.box::before,
+.box::after {
   content: '';
   position: absolute;
   top: 5px;
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #5a5a66, #15151a);
+  background: var(--border);
 }
 
-.studio::before {
+.box::before {
   left: 5px;
 }
 
-.studio::after {
+.box::after {
   right: 5px;
 }
 
 .label {
   flex: none;
-  width: 4.5em;
   font-size: var(--fs-xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg4);
-}
-
-.deck {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--border-quiet);
 }
 
 /* The take counter: a red seven-segment-ish readout that lights while a take
@@ -261,7 +257,6 @@
   background: #0b0b0e;
   border: 1px solid #000;
   border-radius: var(--ctl-radius);
-  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.8);
   color: #4a2a22;
 }
 
@@ -404,14 +399,7 @@
     padding-top: 0;
   }
   .studio {
-    display: contents;
-  }
-  .deck {
-    padding-top: 0;
-    border-top: 0;
-  }
-  .label {
-    display: none;
+    grid-template-columns: minmax(0, 1fr);
   }
   .scope {
     order: 1;

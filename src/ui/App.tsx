@@ -203,6 +203,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   // shut, and `{ pending: null }` is the card opened from the menu with no save
   // behind it.
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
+  const [showOptions, setShowOptions] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showMidi, setShowMidi] = useState(false)
   const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
@@ -353,9 +354,9 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
         )}
         <BodyPad onOpen={setOpen} />
         <div className={styles.studio}>
-          <div className={styles.deck}>
+          <section className={styles.box} aria-label="recorder">
+            <span className={styles.label}>recorder</span>
             <div className={styles.ioRow}>
-              <span className={styles.label}>tape</span>
               <span
                 className={recording ? styles.counterOn : styles.counter}
                 role="timer"
@@ -363,9 +364,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
               >
                 {clock(recSeconds)}
               </span>
-              {/* Named for what it records, because the kit has a record button of
-              its own now and one of them writes a file while the other writes
-              the pattern. */}
               <Tip
                 text={
                   recStems
@@ -386,49 +384,53 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                       : '● record wav'}
                 </button>
               </Tip>
-              <Tip text="Saves the last 30 seconds you heard, recording or not.">
-                <button
-                  className={styles.ioBtn}
-                  onClick={() => engine.keepLast('wav')}
-                >
-                  ⟲ last 30s
-                </button>
-              </Tip>
-              <Tip text="Stems hands back each machine on its own as well as the master — dry, straight off the bus, one wav each — which is what you drag into a DAW. Locked while a take runs.">
-                <button
-                  className={recStems ? styles.ioBtnToggled : styles.ioBtn}
-                  aria-pressed={recStems}
-                  disabled={recording}
-                  onClick={() => engine.recStems.set(!recStems)}
-                >
-                  + stems
-                </button>
-              </Tip>
-            </div>
-            <div className={styles.ioRow}>
-              <span className={styles.label}>sample</span>
-              <Tip text="Puts the last 30 seconds on the sampler reel, to play back through the board.">
-                <button
-                  className={styles.ioBtn}
-                  onClick={() => engine.keepLast('reel')}
-                >
-                  ⟲ → reel
-                </button>
-              </Tip>
               <button
-                className={micOn ? styles.ioBtnOn : styles.ioBtn}
-                onClick={() => engine.enableMic()}
+                className={showOptions ? styles.ioBtnToggled : styles.ioBtn}
+                aria-expanded={showOptions}
+                onClick={() => setShowOptions(o => !o)}
               >
-                {micOn ? '● mic live' : 'enable mic'}
+                options
               </button>
+            </div>
+            {showOptions && (
+              <div className={styles.ioRow}>
+                <Tip text="Saves the last 30 seconds you heard as a wav, even if you were not recording.">
+                  <button
+                    className={styles.ioBtn}
+                    onClick={() => engine.keepLast('wav')}
+                  >
+                    save the last 30 s
+                  </button>
+                </Tip>
+                <Tip text="Puts the last 30 seconds you heard on the sampler's tape, to play back through the board.">
+                  <button
+                    className={styles.ioBtn}
+                    onClick={() => engine.keepLast('reel')}
+                  >
+                    last 30 s → sampler
+                  </button>
+                </Tip>
+                <Tip text="Also saves each machine on its own, dry, one wav each — what you drag into a DAW. Locked while a take runs.">
+                  <button
+                    className={recStems ? styles.ioBtnToggled : styles.ioBtn}
+                    aria-pressed={recStems}
+                    disabled={recording}
+                    onClick={() => engine.recStems.set(!recStems)}
+                  >
+                    one wav per machine
+                  </button>
+                </Tip>
+              </div>
+            )}
+          </section>
+          <section className={styles.box} aria-label="sampler">
+            <span className={styles.label}>sampler</span>
+            <div className={styles.ioRow}>
               <span className={dragging ? styles.dropHot : styles.drop}>
                 {sampleName
                   ? `sample: ${sampleName}`
                   : 'drop an audio file anywhere'}
               </span>
-              {/* Finding a file is the slowest part of putting something on the
-              tape, so the board will go and find one. A pool is a search, and
-              the die picks out of it. */}
               <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
                 <button
                   className={styles.ioBtn}
@@ -454,25 +456,33 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                   ))}
                 </select>
               </Tip>
+              <button
+                className={micOn ? styles.ioBtnOn : styles.ioBtn}
+                onClick={() => engine.enableMic()}
+              >
+                {micOn ? '● mic live' : 'enable mic'}
+              </button>
             </div>
-            <BendKeys morphSeconds={morphSeconds} />
-            <Presets morphSeconds={morphSeconds} folded />
-          </div>
+            <SampleReel />
+            {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
+            {!archiveStep && archiveSource && (
+              <p className={styles.credit}>
+                from{' '}
+                <a
+                  href={detailsUrl(archiveSource.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  archive.org/{archiveSource.id}
+                </a>
+              </p>
+            )}
+          </section>
         </div>
-        <SampleReel />
-        {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
-        {!archiveStep && archiveSource && (
-          <p className={styles.credit}>
-            from{' '}
-            <a
-              href={detailsUrl(archiveSource.id)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              archive.org/{archiveSource.id}
-            </a>
-          </p>
-        )}
+        <div className={styles.strip}>
+          <BendKeys morphSeconds={morphSeconds} />
+          <Presets morphSeconds={morphSeconds} folded />
+        </div>
         {!running && (
           <p className={styles.hint}>
             <b className={styles.warn}>
