@@ -7,6 +7,7 @@ import { Crusher } from './stages/crusher'
 import { Echo } from './stages/echo'
 import { Ensemble } from './stages/ensemble'
 import { FmChip } from './stages/fmChip'
+import { FourTrack } from './stages/fourTrack'
 import { GlitchBuf } from './stages/glitchBuf'
 import { MonoSynth } from './stages/monoSynth'
 import { Noise } from './stages/noise'
@@ -33,6 +34,7 @@ export interface BuiltChain {
   pcmKeys: PcmKeys
   monoSynth: MonoSynth
   sampler: Sampler
+  fourTrack: FourTrack
   transport: Transport
   /** The shared toy supply, out here because it is the one state worth watching
       from outside the audio thread: the panel draws it, and a test asks it
@@ -109,6 +111,10 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   const tape = new Tape(sr, next())
   chain.post = [new Brownout(sr, next()), tape]
   chain.tape = tape
+  // Last of the sources and last to draw a seed, so every stream before it is
+  // the one it was before the four-track was on the board.
+  const fourTrack = new FourTrack(sr, next())
+  chain.sources.push(fourTrack)
   return {
     chain,
     toyChip,
@@ -117,6 +123,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     pcmKeys,
     monoSynth,
     sampler,
+    fourTrack,
     transport,
     rail,
     noteOff(semitone: number) {

@@ -25,7 +25,27 @@ import type { ControlKey, Controls } from '../../controls'
 // The deck goes with them. Varispeed is a hand on the machine playing the board
 // back rather than a setting of the circuit, and the dice reaching it would
 // hand back boards that are silent for a reason no control on screen explains.
+// So do the four-track's routing and its record heads: what goes onto the
+// loops is your recording, and a desk patched into itself at random howls.
+// Its tone, transport and wear are the dice's like any other machine's.
+const FOUR_YOURS = ([1, 2, 3, 4] as const).flatMap(
+  k =>
+    [
+      `four${k}In`,
+      `four${k}Rec`,
+      `four${k}Erase`,
+      `four${k}Len`,
+      `four${k}Fader`,
+      `four${k}Send`,
+      `four${k}Cue`,
+    ] as const,
+)
+
 export const YOURS = new Set<ControlKey>([
+  'fourLevel',
+  'fourAux',
+  'fourSide',
+  ...FOUR_YOURS,
   ...HOLD_KEYS,
   'deckSpeed',
   'deckInertia',

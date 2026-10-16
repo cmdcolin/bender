@@ -119,6 +119,10 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmAlloc: 'FM chip',
   fmColdBoot: 'FM chip',
   fmAdder: 'FM chip',
+  fourLevel: 'Four-track',
+  fourPitch: 'Four-track',
+  fourAux: 'Four-track',
+  four1MidHz: 'Four-track',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -180,6 +184,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
   Sampler: ['sampleLevel'],
+  'Four-track': ['fourLevel'],
 }
 
 // The two you play, side by side across the head of the toy board. They are the
@@ -208,9 +213,14 @@ const PCM_KEYS = 'Home keyboard'
 // The fourth on the gate line and the rail, next along from the home keyboard.
 const MONO = 'Mono synth'
 
-// The three that take no supply and no trigger from anything: they start where
+// The four that take no supply and no trigger from anything: they start where
 // they stand, and they are the only sources on the board that do.
-const LINE_ROW = ['Chaos osc', 'Noise & crackle', 'Sampler'] as const
+const LINE_ROW = [
+  'Chaos osc',
+  'Noise & crackle',
+  'Sampler',
+  'Four-track',
+] as const
 
 const fullLevel = (key: ControlKey) => {
   const def = sliderFor(key)
@@ -527,6 +537,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     : [[toys[0]!, fm, pcm, mono, toys[1]!]]
   const lower = new Set(chipRows[1] ?? [])
   const lines = LINE_ROW.map(instrument)
+  // Four across is wider than the panel's column too, so the panel stacks them
+  // two and two. The upper pair's leads run down the outside of the lower pair,
+  // which sits in from the edges to leave them the room.
+  const lineRows = o.wrap ? [lines.slice(0, 2), lines.slice(2)] : [lines]
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
   // So the lip says what it opens rather than what the outline is: four named
@@ -674,7 +688,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       ...chipRows.map(
         row => sum(row) + INST_GAP * (row.length - 1) + FRAME_PAD * 2,
       ),
-      sum(lines) + INST_GAP * (lines.length - 1),
+      ...lineRows.map(
+        (row, r) =>
+          sum(row) + INST_GAP * (row.length - 1) + (r > 0 ? 2 * INST_GAP : 0),
+      ),
       sum(foot) + INST_GAP * (foot.length - 1),
       cols *
         Math.max(
@@ -752,8 +769,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   board.h = (lower.size ? rail2Y + RAIL_H / 2 : laneEnd) - board.y
 
   const lineY = board.y + board.h + BAND_GAP
-  for (const n of lines) n.y = lineY
-  const collectY = lineY + INST_H + COLLECT_H
+  for (const [r, row] of lineRows.entries())
+    for (const n of row) n.y = lineY + r * (INST_H + BAND_GAP)
+  const collectY =
+    lineY + (lineRows.length - 1) * (INST_H + BAND_GAP) + INST_H + COLLECT_H
   mix.y = collectY + BAND_GAP
 
   const pathTop = mix.y + mix.h + ROW_GAP
@@ -781,7 +800,16 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       row.map(() => INST_GAP),
       natural,
     )
-  spread(lines, 0, content, [INST_GAP, INST_GAP], natural)
+  for (const [r, row] of lineRows.entries()) {
+    const inset = r > 0 ? INST_GAP : 0
+    spread(
+      row,
+      inset,
+      content - 2 * inset,
+      row.map(() => INST_GAP),
+      natural,
+    )
+  }
   board.x = 0
   mix.x = 0
   for (const n of down) n.x = 0
@@ -1089,38 +1117,48 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // Everything meets on one bar and the bar feeds the mix. The board's own
   // output comes down the channel between two of the boxes under it rather than
   // through one of them, which is the whole reason the band is a grid.
-  const drop =
-    lines.length > 1
-      ? (lines[0]!.x + lines[0]!.w + lines[1]!.x) / 2
-      : mix.x + mix.w / 2
-  bar(
-    'board-out',
-    board,
-    mix,
-    [
-      [drop, board.y + board.h],
-      [drop, collectY],
-    ],
-    { color: k.border },
-  )
-  for (const src of lines)
-    bar(
-      `${src.id}-out`,
-      src,
-      mix,
-      [
-        [midX(src), src.y + src.h],
-        [midX(src), collectY],
-      ],
-      { color: k.border },
-    )
+  // In a stacked band it comes down the first gap, steps across between the
+  // rows and down the second.
+  const gapX = (row: MapNode[]) =>
+    row.length > 1 ? (row[0]!.x + row[0]!.w + row[1]!.x) / 2 : mix.x + mix.w / 2
+  const channels = lineRows.map(gapX)
+  const between = (r: number) => lineRows[r]![0]!.y - BAND_GAP / 2
+  const boardOut: Point[] = [[channels[0]!, board.y + board.h]]
+  for (let r = 1; r < channels.length; r++)
+    boardOut.push([channels[r - 1]!, between(r)], [channels[r]!, between(r)])
+  boardOut.push([channels[channels.length - 1]!, collectY])
+  bar('board-out', board, mix, boardOut, { color: k.border })
+  // The upper pair of a stacked band leads down its outer edges, clear of the
+  // pair under it.
+  const leadX = (src: MapNode, r: number, i: number) =>
+    r < lineRows.length - 1
+      ? i === 0
+        ? src.x + INST_GAP / 2
+        : src.x + src.w - INST_GAP / 2
+      : midX(src)
+  const leads: number[] = []
+  for (const [r, row] of lineRows.entries())
+    for (const [i, src] of row.entries()) {
+      const x = leadX(src, r, i)
+      leads.push(x)
+      bar(
+        `${src.id}-out`,
+        src,
+        mix,
+        [
+          [x, src.y + src.h],
+          [x, collectY],
+        ],
+        { color: k.border },
+      )
+    }
   bar(
     'collect',
     mix,
     mix,
     [
-      [Math.min(drop, midX(lines[0]!)), collectY],
-      [Math.max(drop, midX(lines[lines.length - 1]!)), collectY],
+      [Math.min(...channels, ...leads), collectY],
+      [Math.max(...channels, ...leads), collectY],
     ],
     { color: k.border },
   )
@@ -1666,6 +1704,26 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
         .map(([dx, dy]) => `M ${x + dx} ${y + dy} a 0.8 0.8 0 1 0 0.01 0`)
         .join(' '),
       fill: c,
+    }),
+  ],
+  // A cassette: the shell, its two hubs and the window between them.
+  'Four-track': (x, y, c) => [
+    el('rect', {
+      x,
+      y: y + 2,
+      width: ICON,
+      height: 8,
+      rx: 1,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('circle', { cx: x + 3.6, cy: y + 5.6, r: 1.4, fill: c }),
+    el('circle', { cx: x + 8.4, cy: y + 5.6, r: 1.4, fill: c }),
+    el('path', {
+      d: `M ${x + 2.5} ${y + 8.6} h 7`,
+      stroke: c,
+      strokeWidth: 0.9,
     }),
   ],
   // The five pedals, drawn as the boxes they would be on a floor: the stompbox

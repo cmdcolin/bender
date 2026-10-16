@@ -169,6 +169,10 @@ export const PATCH_GROUPS: Group[] = [
             'FM allocator',
             'FM cold boot',
             'FM log adder',
+            'four-track level',
+            'four-track pitch',
+            'four-track aux',
+            'track 1 mid',
           ],
           groups: [
             {
@@ -273,6 +277,15 @@ export const PATCH_GROUPS: Group[] = [
                 'tape speed (sampler)',
                 'loop slide',
                 'loop span',
+              ],
+            },
+            {
+              name: 'Four-track',
+              choices: [
+                'four-track level',
+                'four-track pitch',
+                'four-track aux',
+                'track 1 mid',
               ],
             },
             {

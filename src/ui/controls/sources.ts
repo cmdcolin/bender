@@ -68,6 +68,8 @@ import type { Controls } from '../../controls'
 
 /** True while the chip is playing the memory rather than one of its own songs. */
 const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS
+import { FOUR_TRACK_GROUP } from './fourTrack'
+
 import type { Group, SliderDef } from './types'
 
 // The toy has no sync input, so locking it to the kit means picking the crystal
@@ -2690,6 +2692,7 @@ export const SOURCE_GROUPS: Group[] = [
   // Not a channel. On one of its seven settings the mic reaches the mix, and on
   // the other six it is soldered into the middle of the board — so it gets a
   // group of its own, and the map draws it as the patch wire it actually is.
+  FOUR_TRACK_GROUP,
   {
     name: 'Mic',
     place: 'Sources',

@@ -30,6 +30,7 @@ const CARRIERS = [
   ['mono synth', 'monoSynth', NOW],
   ['toy step late', 'toyChip', STEP_LATE],
   ['toy beat late', 'toyChip', BEAT_LATE],
+  ['four-track', 'fourTrack', NOW],
 ] as const satisfies readonly (readonly [string, SourceTap | null, number])[]
 
 export const RING_FROM = CARRIERS.map(([label]) => label)

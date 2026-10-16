@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 385 knobs and switches in 32 groups, seven bends competing for six slots,
+ruin. 449 knobs and switches in 33 groups, seven bends competing for six slots,
 18 ROM tunes, 115 presets, 18 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 104 destinations — among
+- **A patch bay that modulates itself.** Four wires, 108 destinations — among
   them the supply rail, the sampler's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
@@ -607,6 +607,63 @@ while the head plays on.
 
 </details>
 
+### Four-track
+
+A cassette four-track: a desk of four channel strips in front of four tape
+loops, each cut to its own length and all on one capstan. A channel hears its
+own loop, the board, the mic or the desk’s aux return, through a trim preamp and
+three bands of EQ into a fader and an aux send, and records onto its loop over
+whatever the erase head left. Input on the board with a loop recording is a loop
+round the whole board, so each lap comes back through every bend again. Input on
+the aux with its send up is a mixer with nothing plugged in: the sweepable mid
+tunes the squeal and the op-amp rails clip it. _Wear_ sheds oxide at the same
+places every lap, and _Batteries_ drags the motor and the rails down together.
+
+<details>
+<summary>64 controls</summary>
+
+| control    | range                     | what it does                                                                                                               |
+| ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Level      | 0× to 2×, normal 0× to 1× | The stereo bus of the four-track’s desk, onto the board’s mix bus                                                          |
+| Speed      | 1⅞ ips or 3¾ ips          | Normal cassette speed, or the double speed a four-track runs for more top end and less hiss                                |
+| Pitch      | -12.0% to +12.0%          | The varispeed on the capstan, ±12%                                                                                         |
+| Side       | A or B                    | Turn the cassette over                                                                                                     |
+| NR         | off or dbx                | dbx type II on every track, as on a Portastudio                                                                            |
+| Tape level | −12 to +15 dB             | How hard the record heads hit the oxide                                                                                    |
+| Aux master | 0 to 2, normal 0 to 1     | The aux bus’s return level                                                                                                 |
+| Hiss       | off to full               | Noise on the medium, read off every track with whatever is on it                                                           |
+| Wow        | off to full               | The hub’s once-round and the slow drift of an old belt                                                                     |
+| Flutter    | off to full               | The capstan and the pinch roller, at the rates they turn at                                                                |
+| Wear       | off to full               | How fast the loops shed oxide                                                                                              |
+| Batteries  | off to full               | How flat the cells are                                                                                                     |
+| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Trim       | off to +40 dB             | The preamp                                                                                                                 |
+| Low        | −15 to +15 dB             | A shelf at 100 Hz                                                                                                          |
+| Mid freq   | 250 Hz to 5 kHz           | Where the sweepable mid sits, 250 Hz to 5 kHz                                                                              |
+| Mid        | −15 to +15 dB             | Boost or cut at Mid freq                                                                                                   |
+| High       | −15 to +15 dB             | A shelf at 10 kHz                                                                                                          |
+| Aux send   | off to full               | How much of the channel, after its fader, goes to the aux bus                                                              |
+| Pan        | −1 to +1                  | Where the channel and the loop’s cue sit across the stereo bus                                                             |
+| Fader      | off to full               | The channel to the stereo bus and the aux send                                                                             |
+| Record     | off to full               | How much of the channel, after its EQ, the record head lays onto loop 1                                                    |
+| Erase      | off to full               | How much of what is already on the loop the erase head takes off while recording                                           |
+| Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
+| Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
+| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Record     | off to full               | How much of the channel, after its EQ, the record head lays onto loop 1                                                    |
+| Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
+| Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
+| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Record     | off to full               | How much of the channel, after its EQ, the record head lays onto loop 1                                                    |
+| Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
+| Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
+| Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
+| Record     | off to full               | How much of the channel, after its EQ, the record head lays onto loop 1                                                    |
+| Cue        | off to full               | Loop 1’s playback straight to the stereo bus, as the tape cue on a four-track does, whatever the channel’s input is set to |
+| Length     | 0.5 to 60 s               | How long loop 1 is, at 1⅞: at 3¾ it comes round twice as fast                                                              |
+
+</details>
+
 ### Mic
 
 A live microphone, and the one source that does not have to reach the mix. _Mic
@@ -636,7 +693,7 @@ the reason: it boots at zero, and turned up with nothing striking it — no hand
 on its keys, no tune next door — it is three quarters and silence. _Bus drive_
 is the summing amp: a wire at unity, and the one saturation ahead of the bends.
 
-The desk is a widget rather than a row of sliders, and its nine faders are
+The desk is a widget rather than a row of sliders, and its ten faders are
 counted under the machines they belong to: each is the first knob on that
 machine's panel and one strip of this one.
 
@@ -662,13 +719,13 @@ Amplitude modulation by a carrier, sine or square.
 <details>
 <summary>5 controls</summary>
 
-| control       | range                                                                                              | what it does                                                                                                                               |
-| ------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Carrier       | 0.1 Hz to 8 kHz                                                                                    | Carrier frequency                                                                                                                          |
-| Carrier shape | sine, square, diode                                                                                | Square carrier chops instead of gliding — harsh AM-radio ghosts                                                                            |
-| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64      | Solders the carrier to the note the toy is sounding                                                                                        |
-| Carrier from  | knob, toy, kit, FM chip, chaos osc, noise, sampler, keys, mono synth, toy step late, toy beat late | Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it |
-| Mix           | off to full                                                                                        | Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it                                          |
+| control       | range                                                                                                          | what it does                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Carrier       | 0.1 Hz to 8 kHz                                                                                                | Carrier frequency                                                                                                                          |
+| Carrier shape | sine, square, diode                                                                                            | Square carrier chops instead of gliding — harsh AM-radio ghosts                                                                            |
+| Track         | off, sub, unison, fifth, octave, oct+5th, two oct, tritone, step, step ×4, step ×16, step ×64                  | Solders the carrier to the note the toy is sounding                                                                                        |
+| Carrier from  | knob, toy, kit, FM chip, chaos osc, noise, sampler, keys, mono synth, toy step late, toy beat late, four-track | Takes the carrier off another machine on the board instead of the stage’s own oscillator, which retires the Carrier knob and Track with it |
+| Mix           | off to full                                                                                                    | Dry/wet, which on a ring modulator is the depth of the modulation rather than a balance beside it                                          |
 
 </details>
 
@@ -955,7 +1012,7 @@ wire’s depth — which is how the bay modulates itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 104 of them, filt cut through FM log adder                                                 | Where the other end is soldered                                                |
+| Wire 1–4 to    | 108 of them, filt cut through track 1 mid                                                  | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

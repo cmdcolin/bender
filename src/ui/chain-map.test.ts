@@ -606,10 +606,12 @@ test('a wire onto the feedback amount draws onto the bus', () => {
 
 // Folding lets the panel's column hold the map: two columns of about
 // equal height, and the source row snaked onto two lines.
+// Folded, the four sources off the rail stack two and two, so the band is a
+// row deeper than it is straight and the height saves less than the width.
 test('the fold halves the drawing and hands the path across', () => {
   const straight = buildMap(DEFAULT_CONTROLS, { wrap: false })
   const folded = buildMap(DEFAULT_CONTROLS, { wrap: true })
-  expect(folded.height).toBeLessThan(straight.height * 0.8)
+  expect(folded.height).toBeLessThan(straight.height * 0.86)
   expect(folded.width).toBeLessThan(straight.width * 0.7)
   const fold = folded.wires.find(w => w.id === 'fold')!
   expect(fold.color).toBe(PANEL.accent)

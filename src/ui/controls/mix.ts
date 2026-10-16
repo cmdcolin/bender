@@ -52,6 +52,12 @@ export const CHANNELS: readonly Channel[] = [
     tap: sourceTap('sampler'),
     yours: true,
   },
+  {
+    key: 'fourLevel',
+    name: 'Four-track',
+    tap: sourceTap('fourTrack'),
+    yours: true,
+  },
   { key: 'micLevel', name: 'Mic', tap: TAP_MIC, yours: true },
 ]
 
