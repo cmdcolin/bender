@@ -153,6 +153,7 @@ function track(k: 1 | 2 | 3 | 4): SliderDef[] {
 export const FOUR_TRACK_GROUP: Group = {
   name: 'Four-track',
   place: 'Sources',
+  editor: { kind: 'loops' },
   caution: {
     part: 'track 1',
     text: 'record and erase write onto the loops themselves — what goes under the head stays there, worn or not',

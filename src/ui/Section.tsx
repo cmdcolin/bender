@@ -13,6 +13,7 @@ import {
 import { useBoardValue } from './ControlsContext'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
+import { FourReels } from './FourReels'
 import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
 import { OrderRack } from './OrderRack'
@@ -537,6 +538,7 @@ export function OpenGroup({
           {group.editor?.kind === 'patch' && <PatchBay />}
           {group.editor?.kind === 'trigger' && <TriggerPatch />}
           {group.editor?.kind === 'mic' && <MicPatch />}
+          {group.editor?.kind === 'loops' && <FourReels />}
           <Rigs group={group} seconds={seconds} />
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>

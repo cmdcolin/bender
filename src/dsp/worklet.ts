@@ -85,6 +85,9 @@ class BenderProcessor extends AudioWorkletProcessor {
         case 'seek':
           this.built.sampler.seek(msg.frac)
           break
+        case 'fourBlank':
+          this.built.fourTrack.blank()
+          break
         case 'noteOn':
           if (msg.dest === 'fm')
             this.built.fmChip.noteOn(msg.semitone, msg.gain)
@@ -289,6 +292,8 @@ class BenderProcessor extends AudioWorkletProcessor {
         scope[i] = ring[(head + i) & SCOPE_MASK]!
       const rail = this.built.rail
       const sampler = this.built.sampler
+      const four = this.built.fourTrack
+      four.watch()
       const sounding = this.built.toyChip.soundingNotes(this.chipNotes)
       const fmSounding = this.built.fmChip.soundingNotes(this.fmNotes)
       const pcmSounding = this.built.pcmKeys.soundingNotes(this.pcmNotes)
@@ -324,6 +329,10 @@ class BenderProcessor extends AudioWorkletProcessor {
         samplePeaks: sampler.peaks,
         sampleIn: sampler.windowIn,
         sampleOut: sampler.windowOut,
+        fourHeads: four.heads,
+        fourLaps: four.laps,
+        fourPeaks: four.peaks,
+        fourShed: four.shed,
       })
       this.peak = 0
       this.duck = 0

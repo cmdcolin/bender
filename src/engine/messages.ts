@@ -12,6 +12,12 @@ export interface SampleMsg {
   peaks: Float32Array
 }
 
+/** A blank cassette in the four-track: every loop wiped and its wear gone.
+    What is on the tape is not a control, so this travels as a gesture. */
+export interface FourBlankMsg {
+  kind: 'fourBlank'
+}
+
 /** Drop the play head somewhere on the reel, 0..1 over the whole of it. Where
     the head stands is not a control — it is where the tape has got to — so it
     travels as a gesture rather than in the param pack. */
@@ -75,6 +81,7 @@ export type ToWorklet =
   | ParamsMsg
   | SampleMsg
   | SeekMsg
+  | FourBlankMsg
   | NoteMsg
   | DrumHitMsg
   | TransportMsg
@@ -153,6 +160,14 @@ export interface MeterMsg {
       window per sample, and the reel draws the tape rather than the controls. */
   sampleIn: number
   sampleOut: number
+  /** The four-track's loops, in loop order: where each head stands over its
+      loop, how long a lap takes at the speed the deck is running (0 with no
+      tape threaded), and each loop's envelope and wear, `PEAK_BINS` a loop.
+      The stage's own buffers, posted untransferred like the reel's. */
+  fourHeads: Float32Array
+  fourLaps: Float32Array
+  fourPeaks: Float32Array
+  fourShed: Float32Array
 }
 
 // One slab of recorded output; the last one of a take arrives with done set.

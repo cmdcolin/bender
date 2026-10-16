@@ -8,6 +8,7 @@ import { lpCoef } from '../util/onepole'
 import { octaves } from '../util/pitch'
 import { gaussian, mulberry32, type Rng } from '../util/rng'
 import { flushDenormal, softclip } from '../util/softclip'
+import { PEAK_BINS } from './sampler'
 import { Dbx } from './tapeNr'
 
 // A cassette four-track: a desk of four channel strips in front of a deck of
@@ -272,6 +273,7 @@ class Loop {
   thread(frames: number) {
     const have = this.tape?.length ?? 0
     if (frames <= have) return
+    this.wearDirty = true
     const tape = new Float32Array(frames)
     const wear = new Float32Array(Math.ceil(frames / CELL))
     if (this.tape) tape.set(this.tape)
@@ -413,6 +415,7 @@ class Loop {
     const cells = Math.ceil(this.len / CELL)
     const d = wear[cell]!
     if (d > 0) {
+      this.wearDirty = true
       const grown = Math.min(d + amount * 0.05 * (0.5 + this.rng()), 1)
       wear[cell] = grown
       if (grown > 0.3) {
@@ -422,7 +425,70 @@ class Loop {
       }
     } else if (this.rng() < amount * 0.01) {
       wear[cell] = 0.05 + 0.2 * this.rng()
+      this.wearDirty = true
     }
+  }
+
+  // What the panel draws of this loop: how loud the tape is under each stretch
+  // of it, committed as the head leaves the stretch, the way the sampler's
+  // reel is drawn.
+  readonly peaks = new Float32Array(PEAK_BINS)
+  /** How much oxide each stretch has lost, the worst cell in it. */
+  readonly shed = new Float32Array(PEAK_BINS)
+  private wearDirty = false
+  private binAt = -1
+  private binMax = 0
+  private drawnLen = 0
+
+  watch() {
+    const tape = this.tape
+    const n = this.len
+    if (!tape || n === 0) return
+    if (n !== this.drawnLen) {
+      this.drawnLen = n
+      this.peaks.fill(0)
+      this.binAt = -1
+      this.wearDirty = true
+    }
+    const i = this.pos | 0
+    const v = tape[i]! < 0 ? -tape[i]! : tape[i]!
+    const bin = ((i * PEAK_BINS) / n) | 0
+    if (bin !== this.binAt) {
+      if (this.binAt >= 0) this.peaks[this.binAt] = this.binMax
+      this.binAt = bin
+      this.binMax = v
+    } else if (v > this.binMax) this.binMax = v
+  }
+
+  /** Brings the wear drawing up to date, if anything has worn since. */
+  drawWear() {
+    const wear = this.wear
+    if (!wear || !this.wearDirty || this.len === 0) return
+    this.wearDirty = false
+    this.shed.fill(0)
+    const cells = Math.ceil(this.len / CELL)
+    for (let c = 0; c < cells; c++) {
+      const d = wear[c]!
+      if (d === 0) continue
+      const bin = Math.min(
+        ((c * CELL * PEAK_BINS) / this.len) | 0,
+        PEAK_BINS - 1,
+      )
+      if (d > this.shed[bin]!) this.shed[bin] = d
+    }
+  }
+
+  /** A blank cassette: the take, the wear and the drawing all gone, the tape
+      threaded as long as it was. */
+  blank() {
+    this.tape?.fill(0)
+    this.wear?.fill(0)
+    this.peaks.fill(0)
+    this.shed.fill(0)
+    this.pos = 0
+    this.binAt = -1
+    this.wearDirty = false
+    this.reset()
   }
 
   reset() {
@@ -570,6 +636,34 @@ export class FourTrack implements Stage {
     this.smooth = lpCoef(120, sr)
   }
 
+  /** Where each loop's head stands, 0 to 1 over the loop, in loop order. */
+  readonly heads = new Float32Array(TRACKS)
+  /** How long each loop takes to come round at the speed it is running, in
+      seconds, or 0 for a loop with no tape threaded. */
+  readonly laps = new Float32Array(TRACKS)
+  private lastSpeed = 1
+
+  /** Every loop's envelope and wear, one after another, for the meter post. */
+  readonly peaks = new Float32Array(TRACKS * PEAK_BINS)
+  readonly shed = new Float32Array(TRACKS * PEAK_BINS)
+
+  /** The panel's view of the deck, brought up to date for a meter post. */
+  watch() {
+    for (let k = 0; k < TRACKS; k++) {
+      const loop = this.loops[k]!
+      loop.drawWear()
+      this.peaks.set(loop.peaks, k * PEAK_BINS)
+      this.shed.set(loop.shed, k * PEAK_BINS)
+      this.heads[k] = loop.len > 0 ? loop.pos / loop.len : 0
+      this.laps[k] = loop.tape ? loop.len / this.sr / this.lastSpeed : 0
+    }
+  }
+
+  /** Every loop back to blank tape, as a fresh cassette would be. */
+  blank() {
+    for (const loop of this.loops) loop.blank()
+  }
+
   // Running whenever the desk is up or a track is armed: a loop being laid
   // down with the master fader shut is still a loop being laid down.
   when(p: Float32Array) {
@@ -613,6 +707,7 @@ export class FourTrack implements Stage {
       (1 + p[IDX.fourPitch]!) *
       this.motor
     const dir = flip ? -1 : 1
+    this.lastSpeed = nominal
 
     // Wavelength sets both heads' corners and the bump, so they follow the
     // speed: a dying motor goes dull as it goes flat. Read once a block at the
@@ -770,6 +865,7 @@ export class FourTrack implements Stage {
         const to = from + vel
         loop.pos = to >= n ? to - n : to < 0 ? to + n : to
         loop.scuff(wearAmt)
+        loop.watch()
       }
 
       const l = this.amps.l.process(busL / HEADROOM, rail, v) * HEADROOM

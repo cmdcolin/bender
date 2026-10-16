@@ -14,6 +14,7 @@ import {
   type DrumMaybeKey,
   type DrumStepKey,
 } from '../drums'
+import { TRACKS } from '../dsp/stages/fourTrack'
 import { YOURS } from '../dsp/stages/roms'
 import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
 import workletUrl from '../dsp/worklet.ts?worker&url'
@@ -104,6 +105,12 @@ export interface Meter {
       off the bay lands on the markers, and the wire's answer after that. */
   sampleIn: number
   sampleOut: number
+  /** The four-track's loops: heads, lap times, envelopes and wear. See the
+      worklet's meter post. */
+  fourHeads: Float32Array
+  fourLaps: Float32Array
+  fourPeaks: Float32Array
+  fourShed: Float32Array
 }
 
 // Which sources are putting something on the bus, as a bit per tap, from the
@@ -253,6 +260,10 @@ export class Engine {
       samplePeaks: new Float32Array(PEAK_BINS),
       sampleIn: 0,
       sampleOut: 1,
+      fourHeads: new Float32Array(TRACKS),
+      fourLaps: new Float32Array(TRACKS),
+      fourPeaks: new Float32Array(TRACKS * PEAK_BINS),
+      fourShed: new Float32Array(TRACKS * PEAK_BINS),
     })
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
@@ -464,6 +475,10 @@ export class Engine {
           samplePeaks: msg.samplePeaks,
           sampleIn: msg.sampleIn,
           sampleOut: msg.sampleOut,
+          fourHeads: msg.fourHeads,
+          fourLaps: msg.fourLaps,
+          fourPeaks: msg.fourPeaks,
+          fourShed: msg.fourShed,
         })
         const lit = soundingMask(msg.taps, this.soundHold)
         if (lit !== this.sounding.get()) this.sounding.set(lit)
@@ -892,6 +907,11 @@ export class Engine {
   /** Drop the play head on the reel, 0..1 over the whole of it. */
   seekSample(frac: number) {
     this.post({ kind: 'seek', frac })
+  }
+
+  /** A blank cassette in the four-track: every loop wiped, its wear gone. */
+  blankFourTrack() {
+    this.post({ kind: 'fourBlank' })
   }
 
   /**
