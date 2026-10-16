@@ -1,5 +1,5 @@
-import { boxHeight, useReadings, type BoxSpec } from './diagram'
-import { BoxView, Diagram, Label, Wire } from './DiagramParts'
+import { boxHeight, useReadings, useSelectedBox, type BoxSpec } from './diagram'
+import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts'
 
 const KEYS = [
   'tapeMix',
@@ -32,6 +32,7 @@ const SITS = ['at the end', 'ahead of the pedals', 'ahead of the bends']
 // drawing.
 export function TapePathDiagram() {
   const r = useReadings(KEYS)
+  const pick = useSelectedBox()
   const off = r.value('tapeMix') <= 0
   const box = (
     x: number,
@@ -50,6 +51,8 @@ export function TapePathDiagram() {
     off: off || quiet,
     touched: r.touched(...touchedBy),
     help,
+    id: name,
+    keys: touchedBy.filter(k => k !== 'tapeDrive'),
   })
   const boxes = [
     box(
@@ -113,35 +116,44 @@ export function TapePathDiagram() {
     ),
   ]
   const wires = [36, 94, 162, 254, 322].map(x => `M${x} ${MID} H${x + 8}`)
+  const open = boxes.find(b => b.id === pick.selected)
   return (
-    <Diagram width={420} height={82} label="tape machine signal path">
-      {arrow => (
-        <>
-          {wires.map(d => (
-            <Wire key={d} arrow={arrow} d={d} />
-          ))}
-          <Wire arrow={arrow} d={`M380 ${MID} H416`} />
-          <Wire
-            arrow={arrow}
-            d={`M18 ${MID + 14} V${BYPASS_Y} H398 V${MID}`}
-            look={off ? 'on' : 'dash'}
-          />
-          <Label x={208} y={BYPASS_Y - 4} anchor="middle" on={off}>
-            {`dry · to tape ${r.read('tapeMix')}`}
-          </Label>
-          <Label
-            x={208}
-            y={BYPASS_Y + 12}
-            anchor="middle"
-            on={r.touched('tapeAt')}
-          >
-            {`sits ${SITS[Math.round(r.value('tapeAt'))] ?? SITS[0]!}`}
-          </Label>
-          {boxes.map(b => (
-            <BoxView key={b.name} box={b} />
-          ))}
-        </>
-      )}
-    </Diagram>
+    <>
+      <Diagram width={420} height={82} label="tape machine signal path">
+        {arrow => (
+          <>
+            {wires.map(d => (
+              <Wire key={d} arrow={arrow} d={d} />
+            ))}
+            <Wire arrow={arrow} d={`M380 ${MID} H416`} />
+            <Wire
+              arrow={arrow}
+              d={`M18 ${MID + 14} V${BYPASS_Y} H398 V${MID}`}
+              look={off ? 'on' : 'dash'}
+            />
+            <Label x={208} y={BYPASS_Y - 4} anchor="middle" on={off}>
+              {`dry · to tape ${r.read('tapeMix')}`}
+            </Label>
+            <Label
+              x={208}
+              y={BYPASS_Y + 12}
+              anchor="middle"
+              on={r.touched('tapeAt')}
+            >
+              {`sits ${SITS[Math.round(r.value('tapeAt'))] ?? SITS[0]!}`}
+            </Label>
+            {boxes.map(b => (
+              <BoxView
+                key={b.name}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+          </>
+        )}
+      </Diagram>
+      <BoxRows keys={open?.keys} />
+    </>
   )
 }

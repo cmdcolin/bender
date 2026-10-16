@@ -5,17 +5,31 @@ import type { Group, SliderDef } from './types'
 export type Track = 1 | 2 | 3 | 4
 export const TRACK_NUMBERS: readonly Track[] = [1, 2, 3, 4]
 
+const CHANNEL = [
+  'In',
+  'Fader',
+  'Trim',
+  'Low',
+  'MidHz',
+  'Mid',
+  'High',
+  'Send',
+  'Pan',
+  'Rec',
+  'Erase',
+  'Cue',
+  'Len',
+] as const
+
 const pct = (v: number) => `${v > 0 ? '+' : ''}${(v * 100).toFixed(1)}%`
 
 // One channel strip and the loop it records onto. The four are the same circuit,
 // so they are written once and numbered.
 function track(k: Track): SliderDef[] {
-  const part = `track ${k}`
   return [
     {
       key: `four${k}In` as const,
       label: 'Input',
-      part,
       min: 0,
       max: 3,
       step: 1,
@@ -26,7 +40,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Trim` as const,
       label: 'Trim',
-      part,
       min: -20,
       max: 40,
       step: 0.5,
@@ -37,7 +50,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Low` as const,
       label: 'Low',
-      part,
       min: -15,
       max: 15,
       step: 0.5,
@@ -48,7 +60,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}MidHz` as const,
       label: 'Mid freq',
-      part,
       ...(k === 1 ? { lane: 'track 1 mid' } : {}),
       min: 250,
       max: 5000,
@@ -60,7 +71,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Mid` as const,
       label: 'Mid',
-      part,
       min: -15,
       max: 15,
       step: 0.5,
@@ -71,7 +81,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}High` as const,
       label: 'High',
-      part,
       min: -15,
       max: 15,
       step: 0.5,
@@ -82,7 +91,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Send` as const,
       label: 'Aux send',
-      part,
       min: 0,
       max: 1,
       step: 0.01,
@@ -92,7 +100,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Pan` as const,
       label: 'Pan',
-      part,
       min: -1,
       max: 1,
       step: 0.01,
@@ -103,7 +110,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Fader` as const,
       label: 'Fader',
-      part,
       min: 0,
       max: 1,
       step: 0.01,
@@ -113,7 +119,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Rec` as const,
       label: 'Record',
-      part,
       min: 0,
       max: 1,
       step: 0.01,
@@ -123,7 +128,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Erase` as const,
       label: 'Erase',
-      part,
       min: 0,
       max: 1,
       step: 0.01,
@@ -133,7 +137,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Cue` as const,
       label: 'Cue',
-      part,
       min: 0,
       max: 1,
       step: 0.01,
@@ -143,7 +146,6 @@ function track(k: Track): SliderDef[] {
     {
       key: `four${k}Len` as const,
       label: 'Length',
-      part,
       min: 0.5,
       max: MAX_LOOP_S,
       step: 0.05,
@@ -157,22 +159,14 @@ export const FOUR_TRACK_GROUP: Group = {
   name: 'Four-track',
   place: 'Sources',
   editor: { kind: 'loops' },
-  lead: ['fourLevel', 'fourAux'],
+  lead: ['fourLevel', 'fourAux', 'fourPitch'],
   handled: [
-    'four1In',
-    'four1Fader',
-    'four2In',
-    'four2Fader',
-    'four3In',
-    'four3Fader',
-    'four4In',
-    'four4Fader',
+    'fourSpeed',
+    'fourSide',
+    'fourDbx',
+    ...TRACK_NUMBERS.flatMap(k => CHANNEL.map(n => `four${k}${n}` as const)),
   ],
-  folded: ['the transport', 'track 1', 'track 2', 'track 3', 'track 4'],
-  caution: {
-    part: 'track 1',
-    text: 'record and erase write onto the loops themselves — what goes under the head stays there, worn or not',
-  },
+  folded: ['the transport'],
   sliders: [
     {
       key: 'fourLevel',

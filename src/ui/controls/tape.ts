@@ -5,7 +5,23 @@ export const TAPE_GROUPS: Group[] = [
     name: 'Tape machine',
     place: 'Tape',
     editor: { kind: 'tapePath' },
-    folded: ['the medium', 'record and replay'],
+    lead: ['tapeMix', 'tapeAt', 'tapeDrive'],
+    handled: [
+      'tapeSpeed',
+      'tapeFormat',
+      'tapeNrRec',
+      'tapeNrPlay',
+      'tapeBias',
+      'tapeHyst',
+      'tapeBump',
+      'tapeAzimuth',
+      'tapeSqueal',
+      'tapeHiss',
+      'tapeWow',
+      'tapeFlutter',
+      'tapeDrop',
+      'tapePrint',
+    ],
     sliders: [
       {
         key: 'tapeMix',
@@ -59,7 +75,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeHiss',
         label: 'Hiss',
-        part: 'the medium',
         min: 0,
         max: 1,
         step: 0.01,
@@ -69,7 +84,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeWow',
         label: 'Wow',
-        part: 'the medium',
         min: 0,
         max: 1,
         step: 0.01,
@@ -79,7 +93,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeFlutter',
         label: 'Flutter',
-        part: 'the medium',
         min: 0,
         max: 1,
         step: 0.01,
@@ -89,7 +102,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeDrop',
         label: 'Dropouts',
-        part: 'the medium',
         min: 0,
         max: 1,
         step: 0.01,
@@ -99,7 +111,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapePrint',
         label: 'Print-through',
-        part: 'the medium',
         min: 0,
         max: 1,
         step: 0.01,
@@ -109,7 +120,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeSqueal',
         label: 'Squeal',
-        part: 'the medium',
         min: 0,
         max: 1,
         step: 0.01,
@@ -119,7 +129,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeBias',
         label: 'Bias',
-        part: 'record and replay',
         min: -1,
         max: 1,
         step: 0.01,
@@ -134,7 +143,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeHyst',
         label: 'Hysteresis',
-        part: 'record and replay',
         min: 0,
         max: 1,
         step: 0.01,
@@ -144,7 +152,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeBump',
         label: 'Head bump',
-        part: 'record and replay',
         min: 0,
         max: 1.5,
         normal: [0, 1],
@@ -155,7 +162,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeAzimuth',
         label: 'Azimuth',
-        part: 'record and replay',
         min: 0,
         max: 1,
         step: 0.01,
@@ -165,7 +171,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeNrRec',
         label: 'NR record',
-        part: 'record and replay',
         min: 0,
         max: 2,
         step: 1,
@@ -176,7 +181,6 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeNrPlay',
         label: 'NR play',
-        part: 'record and replay',
         min: 0,
         max: 2,
         step: 1,

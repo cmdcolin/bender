@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { engine } from '../engine/engine'
@@ -13,17 +13,22 @@ const open = (name: string) => {
   return render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
 }
 
-const fold = (name: string) =>
-  [...document.querySelectorAll('details')].find(d =>
-    d.querySelector('summary')?.textContent?.startsWith(name),
-  )
+const press = (name: string) =>
+  fireEvent.click(screen.getByRole('button', { name }))
 
-test('the tape delay opens on its everyday knobs, with the rest folded', () => {
+test('the tape delay keeps Time, Feedback and the echo level as rows, and the rest behind its drawing', () => {
   open('Tape delay')
-  for (const label of ['Time', 'Heads', 'Feedback', 'Tone', 'Echo level'])
+  for (const label of ['Time', 'Feedback', 'Echo level'])
     expect(screen.getAllByText(label), label).toHaveLength(1)
-  expect(fold('the transport')?.open).toBe(false)
-  expect(fold('in the loop')?.open).toBe(false)
+  expect(screen.queryByText('Heads')).toBeNull()
+  expect(screen.queryByText('Splice')).toBeNull()
+  press('heads controls')
+  expect(screen.getAllByText('Heads')).toHaveLength(1)
+  press('transport controls')
+  expect(screen.queryByText('Heads')).toBeNull()
+  expect(screen.getAllByText('Splice')).toHaveLength(1)
+  press('loop controls')
+  expect(screen.getAllByText('Loop filter')).toHaveLength(1)
 })
 
 test('the delay drawing puts a head at each multiple of the time', () => {
@@ -37,12 +42,17 @@ test('the delay drawing puts a head at each multiple of the time', () => {
   expect(drawing.textContent).toContain('1.20 s')
 })
 
-test('the tape machine opens on its everyday knobs, with the rest folded', () => {
+test('the tape machine keeps To tape, Tape at and Level as rows, and the heads and the tape behind its drawing', () => {
   open('Tape machine')
-  for (const label of ['To tape', 'Speed', 'Tape at', 'Format', 'Level'])
+  for (const label of ['To tape', 'Tape at', 'Level'])
     expect(screen.getAllByText(label), label).toHaveLength(1)
-  expect(fold('the medium')?.open).toBe(false)
-  expect(fold('record and replay')?.open).toBe(false)
+  expect(screen.queryByText('Bias')).toBeNull()
+  press('rec head controls')
+  expect(screen.getAllByText('Bias')).toHaveLength(1)
+  press('tape controls')
+  expect(screen.queryByText('Bias')).toBeNull()
+  for (const label of ['Format', 'Speed', 'Hiss'])
+    expect(screen.getAllByText(label), label).toHaveLength(1)
 })
 
 test('the machine drawing says where it sits and what noise reduction it runs', () => {

@@ -83,7 +83,26 @@ export const PEDAL_GROUPS: Group[] = [
     name: 'Tape delay',
     place: 'Pedals',
     editor: { kind: 'tapeLoop' },
-    folded: ['the transport', 'in the loop'],
+    lead: ['delayMs', 'dlyFb', 'dlyMix'],
+    handled: [
+      'dlyHeads',
+      'dlyToneHz',
+      'dlySend',
+      'wowDepthMs',
+      'wowHz',
+      'flutter',
+      'tapeBrake',
+      'tapeMotorRail',
+      'dlySplice',
+      'dlyErase',
+      'dlyLoopMode',
+      'dlyLoopHz',
+      'dlyLoopRes',
+      'dlyLamp',
+      'dlyLampS',
+      'dlyRingHz',
+      'dlyRing',
+    ],
     sliders: [
       {
         key: 'delayMs',
@@ -149,7 +168,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'wowDepthMs',
         label: 'Wow',
-        part: 'the transport',
         min: 0,
         max: 50,
         step: 0.1,
@@ -159,7 +177,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'wowHz',
         label: 'Wow rate',
-        part: 'the transport',
         min: 0.1,
         max: 8,
         step: 0.1,
@@ -169,7 +186,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'flutter',
         label: 'Flutter',
-        part: 'the transport',
         min: 0,
         max: 1,
         step: 0.01,
@@ -180,7 +196,6 @@ export const PEDAL_GROUPS: Group[] = [
         key: 'tapeBrake',
         lane: 'tape speed',
         label: 'Brake',
-        part: 'the transport',
         min: 0,
         max: 1,
         step: 0.01,
@@ -190,7 +205,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'tapeMotorRail',
         label: 'Supply drag',
-        part: 'the transport',
         min: 0,
         max: 1,
         step: 0.01,
@@ -200,7 +214,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlySplice',
         label: 'Splice',
-        part: 'the transport',
         min: 0,
         max: 1,
         step: 0.01,
@@ -210,7 +223,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyErase',
         label: 'Erase',
-        part: 'the transport',
         min: 0,
         max: 1,
         step: 0.01,
@@ -220,7 +232,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyLoopMode',
         label: 'Loop filter',
-        part: 'in the loop',
         min: 0,
         max: 3,
         step: 1,
@@ -232,7 +243,6 @@ export const PEDAL_GROUPS: Group[] = [
         key: 'dlyLoopHz',
         lane: 'delay filt',
         label: 'Loop cutoff',
-        part: 'in the loop',
         min: 60,
         max: 8000,
         step: 1,
@@ -243,7 +253,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyLoopRes',
         label: 'Loop resonance',
-        part: 'in the loop',
         min: 0,
         max: 1.3,
         normal: [0, 1],
@@ -254,7 +263,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyLamp',
         label: 'Lamp',
-        part: 'in the loop',
         min: 0,
         max: 1,
         step: 0.01,
@@ -264,7 +272,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyLampS',
         label: 'Filament',
-        part: 'in the loop',
         min: 0.02,
         max: 3,
         step: 0.01,
@@ -275,7 +282,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyRingHz',
         label: 'Ring',
-        part: 'in the loop',
         min: 0.1,
         max: 8000,
         step: 0.1,
@@ -286,7 +292,6 @@ export const PEDAL_GROUPS: Group[] = [
       {
         key: 'dlyRing',
         label: 'Ring depth',
-        part: 'in the loop',
         min: 0,
         max: 1,
         step: 0.01,

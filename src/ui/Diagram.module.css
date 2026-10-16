@@ -74,3 +74,42 @@
 .gapOn {
   fill: var(--accent);
 }
+
+/* A box you can press: the pointer says so, a hair of fill says which one is
+   open, and the focus ring is the browser's own on the group. */
+.pick {
+  cursor: pointer;
+  outline: none;
+}
+
+.pick:hover rect,
+.pick:focus-visible rect {
+  stroke: var(--fg2);
+}
+
+.selected {
+  fill: var(--surface-raised);
+  stroke-width: 1.5;
+}
+
+.rows {
+  margin: 0 0 var(--space-xs);
+  padding-top: var(--space-2xs);
+  border-top: 1px solid var(--border-quiet);
+}
+
+.noteLine {
+  margin: var(--space-2xs) 0;
+  font-size: var(--fs-xs);
+  color: var(--alarm);
+}
+
+.pick text {
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+
+.pick:hover text,
+.pickedLabel text {
+  text-decoration: underline solid;
+}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { engine } from '../engine/engine'
@@ -7,13 +7,13 @@ import {
   groupKeys,
   touchedCount,
   SLIDER_BY_KEY,
-  TRACK_NUMBERS,
   type Group,
   type SliderDef,
 } from './controls'
 import { useBoardValue } from './ControlsContext'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
+import { Fold } from './Fold'
 import { FourTrack } from './FourTrack'
 import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
@@ -39,7 +39,6 @@ import { scrollIntoPanel } from './reveal'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider'
-import { StripDiagram } from './StripDiagram'
 import { TapeLoopDiagram } from './TapeLoopDiagram'
 import { TapePathDiagram } from './TapePathDiagram'
 import { Tip } from './Tip'
@@ -300,15 +299,6 @@ function Rigs({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
-// The picture a fold opens on, for the parts whose knobs are boxes on a circuit:
-// a four-track channel's strip is easier to turn once you can see where each
-// knob sits on the way from the input to the bus.
-function partArt(group: Group, part: string): ReactNode {
-  if (group.editor?.kind !== 'loops') return null
-  const track = TRACK_NUMBERS.find(n => part === `track ${n}`)
-  return track ? <StripDiagram track={track} /> : null
-}
-
 // A heading and what sits under it, with its own count and its own fold. The
 // count is the group header's promise made smaller: how many of these you have
 // moved, so a folded part still says whether anything is going on inside it.
@@ -318,25 +308,18 @@ function partArt(group: Group, part: string): ReactNode {
 // not down there yet, and a heading promising eight controls that opens on four
 // is a heading nobody trusts twice. Every control you have moved is shown, so
 // the moved count is the same either way.
-//
-// A <details>, which is what this is: the browser draws the caret, works the
-// keyboard, and owns which way the fold is sitting once it has been handed a way
-// to start. Nothing here tracks that — a fold is the one piece of the panel that
-// is about the panel rather than about the board.
 function PartFold({
   name,
   rows,
   group,
   seconds,
   startOpen,
-  art,
 }: {
   name: string
   rows: SliderDef[]
   group: Group
   seconds: number
   startOpen: boolean
-  art?: ReactNode
 }) {
   const moved = useBoardValue(c => movedIn(rows, c))
   const cuts = cutsFor(group.name, name)
@@ -354,19 +337,13 @@ function PartFold({
       : standing
   const caution = group.caution?.part === name ? group.caution.text : null
   return (
-    <details className={styles.fold} open={startOpen}>
-      <summary className={styles.foldHead}>
-        {name}
-        <span
-          className={
-            standing !== '' || moved > 0 ? styles.foldMoved : styles.foldCount
-          }
-        >
-          {says}
-        </span>
-      </summary>
+    <Fold
+      name={name}
+      badge={says}
+      moved={standing !== '' || moved > 0}
+      startOpen={startOpen}
+    >
       {caution && <p className={styles.caution}>{caution}</p>}
-      {art}
       <PartVerbs
         cuts={cuts}
         group={group}
@@ -379,7 +356,7 @@ function PartFold({
       {rows.map(def => (
         <ControlSlider key={def.key} def={def} />
       ))}
-    </details>
+    </Fold>
   )
 }
 
@@ -461,7 +438,6 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
             group={group}
             seconds={seconds}
             startOpen={startOpen.has(name)}
-            art={partArt(group, name)}
           />
         )
       })}

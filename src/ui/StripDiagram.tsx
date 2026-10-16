@@ -1,6 +1,6 @@
 import { type Track } from './controls'
-import { useReadings, type BoxSpec } from './diagram'
-import { BoxView, Diagram, Label, Wire } from './DiagramParts'
+import { useReadings, useSelectedBox, type BoxSpec } from './diagram'
+import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts'
 
 const BOX_H = 28
 const TOP = 26
@@ -26,15 +26,19 @@ type Suffix = (typeof SUFFIXES)[number]
 
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n))
 
+const CAUTION =
+  'record and erase write onto the loops themselves — what goes under the head stays there, worn or not'
+
 // One channel strip drawn as the circuit it is, with every box reading what its
 // knob says: the path along the top is the channel, the path along the bottom is
-// the tape, and the knobs that sit in the fold under it are the boxes. A box
-// goes accent when its knob is off stock and grey when nothing passes through
-// it, so the picture answers "why can't I hear this" before the rows do.
+// the tape. A box goes accent when its knob is off stock and grey when nothing
+// passes through it, and pressing one puts its knobs under the drawing — the
+// drawing is the index to the strip's rows.
 export function StripDiagram({ track }: { track: Track }) {
   const key = (name: Suffix) => `four${track}${name}` as const
   const keys = SUFFIXES.map(key)
   const r = useReadings(keys)
+  const pick = useSelectedBox()
   const val = (n: Suffix) => r.value(key(n))
   const read = (n: Suffix) => r.read(key(n))
   const touched = (...ns: Suffix[]) => r.touched(...ns.map(key))
@@ -48,9 +52,11 @@ export function StripDiagram({ track }: { track: Track }) {
       name: 'in',
       value: read('In'),
       touched: touched('In'),
-      help: 'What this channel hears: its own loop, the board, the mic or the desk’s aux return.',
+      help: 'What this channel hears. Pick it in the lane.',
     },
     {
+      id: 'trim',
+      keys: [key('Trim')],
       x: 68,
       y: TOP,
       w: 54,
@@ -61,6 +67,8 @@ export function StripDiagram({ track }: { track: Track }) {
       help: 'The preamp.',
     },
     {
+      id: 'eq',
+      keys: [key('Low'), key('MidHz'), key('Mid'), key('High')],
       x: 136,
       y: TOP,
       w: 72,
@@ -77,9 +85,11 @@ export function StripDiagram({ track }: { track: Track }) {
       value: read('Fader'),
       off: val('Fader') <= 0,
       touched: touched('Fader'),
-      help: 'The channel to the stereo bus and the aux send.',
+      help: 'The channel to the stereo bus and the aux send. It is in the lane.',
     },
     {
+      id: 'pan',
+      keys: [key('Pan')],
       x: 290,
       y: TOP,
       w: 54,
@@ -98,6 +108,9 @@ export function StripDiagram({ track }: { track: Track }) {
       help: 'The four-track’s stereo bus, onto the board’s mix bus.',
     },
     {
+      id: 'rec',
+      keys: [key('Rec')],
+      note: CAUTION,
       x: 144,
       y: BOTTOM,
       w: 56,
@@ -108,6 +121,9 @@ export function StripDiagram({ track }: { track: Track }) {
       help: 'How much of the channel, after its EQ, the record head lays onto the loop.',
     },
     {
+      id: 'loop',
+      keys: [key('Erase'), key('Len')],
+      note: CAUTION,
       x: 214,
       y: BOTTOM,
       w: 86,
@@ -117,6 +133,8 @@ export function StripDiagram({ track }: { track: Track }) {
       help: 'How much of what is on the loop the erase head takes off while recording, and how long the loop is.',
     },
     {
+      id: 'cue',
+      keys: [key('Cue')],
       x: 314,
       y: BOTTOM,
       w: 54,
@@ -127,42 +145,71 @@ export function StripDiagram({ track }: { track: Track }) {
       help: 'The loop’s playback straight to the stereo bus.',
     },
   ]
+  const sendBox: BoxSpec = {
+    id: 'send',
+    keys: [key('Send')],
+    x: 0,
+    y: 0,
+    w: 0,
+    name: 'aux send',
+    value: read('Send'),
+    touched: touched('Send'),
+    help: 'How much of the channel, after its fader, goes to the aux bus.',
+  }
+  const open = [...boxes, sendBox].find(b => b.id === pick.selected)
 
   return (
-    <Diagram width={420} height={126} label={`track ${track} signal path`}>
-      {arrow => (
-        <>
-          <Wire arrow={arrow} d={`M54 ${MID} H68`} />
-          <Wire arrow={arrow} d={`M122 ${MID} H136`} />
-          <Wire arrow={arrow} d={`M208 ${MID} H222`} />
-          <Wire arrow={arrow} d={`M276 ${MID} H290`} />
-          <Wire arrow={arrow} d={`M344 ${MID} H358`} />
-          <Wire
-            arrow={arrow}
-            d={`M172 ${TOP + BOX_H} V${BOTTOM}`}
-            look={val('Rec') > 0 ? 'on' : 'plain'}
-          />
-          <Wire
-            arrow={arrow}
-            d={`M200 ${BOTTOM + 14} H214`}
-            look={val('Rec') > 0 ? 'on' : 'plain'}
-          />
-          <Wire arrow={arrow} d={`M300 ${BOTTOM + 14} H314`} />
-          <Wire arrow={arrow} d={`M341 ${BOTTOM} V69 H317 V${TOP + BOX_H}`} />
-          <Wire
-            arrow={arrow}
-            d={`M257 ${BOTTOM + BOX_H} V121 H27 V${TOP + BOX_H}`}
-            look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
-          />
-          <Wire arrow={arrow} d={`M249 ${TOP} V10`} />
-          <Label x={255} y={13} on={val('Send') > 0}>
-            {`send ${read('Send')} → aux bus`}
-          </Label>
-          {boxes.map(b => (
-            <BoxView key={b.name} box={b} />
-          ))}
-        </>
-      )}
-    </Diagram>
+    <>
+      <Diagram width={420} height={126} label={`track ${track} signal path`}>
+        {arrow => (
+          <>
+            <Wire arrow={arrow} d={`M54 ${MID} H68`} />
+            <Wire arrow={arrow} d={`M122 ${MID} H136`} />
+            <Wire arrow={arrow} d={`M208 ${MID} H222`} />
+            <Wire arrow={arrow} d={`M276 ${MID} H290`} />
+            <Wire arrow={arrow} d={`M344 ${MID} H358`} />
+            <Wire
+              arrow={arrow}
+              d={`M172 ${TOP + BOX_H} V${BOTTOM}`}
+              look={val('Rec') > 0 ? 'on' : 'plain'}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M200 ${BOTTOM + 14} H214`}
+              look={val('Rec') > 0 ? 'on' : 'plain'}
+            />
+            <Wire arrow={arrow} d={`M300 ${BOTTOM + 14} H314`} />
+            <Wire arrow={arrow} d={`M341 ${BOTTOM} V69 H317 V${TOP + BOX_H}`} />
+            <Wire
+              arrow={arrow}
+              d={`M257 ${BOTTOM + BOX_H} V121 H27 V${TOP + BOX_H}`}
+              look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
+            />
+            <Wire arrow={arrow} d={`M249 ${TOP} V10`} />
+            <Label
+              x={255}
+              y={13}
+              on={val('Send') > 0}
+              pick={{
+                id: 'send',
+                selected: pick.selected === 'send',
+                onSelect: pick.toggle,
+              }}
+            >
+              {`send ${read('Send')} → aux bus`}
+            </Label>
+            {boxes.map(b => (
+              <BoxView
+                key={b.name}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+          </>
+        )}
+      </Diagram>
+      <BoxRows keys={open?.keys} note={open?.note} />
+    </>
   )
 }

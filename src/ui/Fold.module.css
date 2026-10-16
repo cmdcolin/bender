@@ -1,0 +1,39 @@
+/* A heading inside one stage's controls, for a stage with more of them than a
+   flat list can carry. The everyday knobs stay loose at the top; everything
+   under a heading folds, and the heading says how many controls are down there
+   — or how many of them you have moved, which is the group header's count made
+   small enough to sit on a part. */
+.fold {
+  border-top: 1px solid var(--border-quiet);
+  margin-top: var(--space-xs);
+}
+
+.head {
+  padding: var(--space-xs) var(--space-2xs);
+  color: var(--fg3);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.head:hover {
+  color: var(--fg);
+}
+
+.head::marker {
+  color: var(--fg4);
+}
+
+/* Over on the right, where the readout of every row it opens onto sits. It
+   rides a summary, so it is part of a press and reads at the panel's quiet
+   tier rather than under it. */
+.count,
+.moved {
+  float: right;
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg3);
+}
+
+.moved {
+  color: var(--accent);
+}

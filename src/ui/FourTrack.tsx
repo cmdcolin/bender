@@ -1,11 +1,15 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { DEFAULT_CONTROLS } from '../controls'
 import { PEAK_BINS } from '../dsp/stages/sampler'
 import { engine } from '../engine/engine'
 import { sliderFor, TRACK_NUMBERS, type Track } from './controls'
-import { useControlValue } from './ControlsContext'
+import { useBoardValue, useControlValue } from './ControlsContext'
+import { STRIP_KEYS } from './diagram'
+import { Fold } from './Fold'
 import styles from './FourTrack.module.css'
 import { ControlSlider } from './Slider'
+import { StripDiagram } from './StripDiagram'
 import { Tip } from './Tip'
 
 import type { ControlKey, Controls } from '../controls'
@@ -68,7 +72,9 @@ function Reel({ track }: { track: Track }) {
       const seconds = m.fourLaps[k]!
       if (seconds <= 0) {
         g.fillStyle = EMPTY
-        g.fillText('empty · press rec to thread a loop', 6 * dpr, h / 2)
+        const hint = 'empty · press rec to thread a loop'
+        const fits = g.measureText(hint).width < w - 12 * dpr
+        g.fillText(fits ? hint : 'empty', 6 * dpr, h / 2)
         return
       }
       const row = MID * dpr
@@ -129,14 +135,32 @@ function Reel({ track }: { track: Track }) {
 // A channel's lane: where it listens, whether it records, the loop it records
 // onto and the fader that brings it to the bus. Everything else on the channel
 // is behind its fold under the lanes, with a diagram of where it sits.
-function Lane({ track }: { track: Track }) {
+function Lane({
+  track,
+  shown,
+  onPick,
+}: {
+  track: Track
+  shown: boolean
+  onPick: (track: Track) => void
+}) {
   const source = sliderFor(input(track))
   const armed = useControlValue(rec(track)) > 0
   const listens = Math.round(useControlValue(input(track)))
   return (
     <div className={styles.lane}>
       <div className={styles.head}>
-        <span className={styles.number}>{track}</span>
+        <Tip
+          text={`Open track ${track}’s channel strip: trim, EQ, aux send, pan, record, erase, cue and length.`}
+        >
+          <button
+            className={shown ? styles.numberOn : styles.number}
+            aria-label={`track ${track} strip`}
+            onClick={() => onPick(track)}
+          >
+            {track}
+          </button>
+        </Tip>
         <Tip text={source.help}>
           <select
             className={styles.select}
@@ -170,16 +194,67 @@ function Lane({ track }: { track: Track }) {
   )
 }
 
-// The four loops, each in a lane of its own. A four-track is four of the same
-// strip, so the lanes are the part you reach for and the strip's knobs are the
-// part you open.
+// A choice that is two or three words wide, on the one row of the deck rather
+// than a row of its own.
+function Choice({ name }: { name: 'fourSpeed' | 'fourSide' | 'fourDbx' }) {
+  const def = sliderFor(name)
+  const value = Math.round(useControlValue(name))
+  return (
+    <span className={styles.choice}>
+      <Tip text={def.help}>
+        <span className={styles.choiceName}>{def.label}</span>
+      </Tip>
+      {def.choices!.map((c, i) => (
+        <button
+          key={c}
+          className={value === i ? styles.pickOn : styles.pick}
+          aria-pressed={value === i}
+          onClick={() => write(name, i)}
+        >
+          {c}
+        </button>
+      ))}
+    </span>
+  )
+}
+
+// The four loops, each in a lane of its own, the deck's switches on one row and
+// the channel strip under them. A four-track is four of the same strip, so the
+// lanes are the part you reach for and the strip's knobs are the part you open.
 export function FourTrack() {
+  const [track, setTrack] = useState<Track>(
+    () =>
+      TRACK_NUMBERS.find(n =>
+        STRIP_KEYS.some(
+          k =>
+            k.startsWith(`four${n}`) &&
+            engine.controls.get()[k] !== DEFAULT_CONTROLS[k],
+        ),
+      ) ?? 1,
+  )
+  const [open, setOpen] = useState(() =>
+    STRIP_KEYS.some(k => engine.controls.get()[k] !== DEFAULT_CONTROLS[k]),
+  )
+  const moved = useBoardValue(
+    c => STRIP_KEYS.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
+  )
   return (
     <div className={styles.wrap}>
       {TRACK_NUMBERS.map(n => (
-        <Lane key={n} track={n} />
+        <Lane
+          key={n}
+          track={n}
+          shown={n === track && open}
+          onPick={t => {
+            setTrack(t)
+            setOpen(true)
+          }}
+        />
       ))}
-      <div className={styles.foot}>
+      <div className={styles.deck}>
+        <Choice name="fourSpeed" />
+        <Choice name="fourSide" />
+        <Choice name="fourDbx" />
         <Tip text="Wipe all four loops and their wear, as a fresh cassette would be: the loops stay cut to the lengths they were.">
           <button
             className={styles.blank}
@@ -189,6 +264,28 @@ export function FourTrack() {
           </button>
         </Tip>
       </div>
+      <Fold
+        name="channel strip"
+        badge={moved > 0 ? `${moved} moved` : `${STRIP_KEYS.length}`}
+        moved={moved > 0}
+        startOpen={false}
+        open={open}
+        onToggle={setOpen}
+      >
+        <div className={styles.tabs}>
+          {TRACK_NUMBERS.map(n => (
+            <button
+              key={n}
+              className={n === track ? styles.pickOn : styles.pick}
+              aria-pressed={n === track}
+              onClick={() => setTrack(n)}
+            >
+              track {n}
+            </button>
+          ))}
+        </div>
+        <StripDiagram key={track} track={track} />
+      </Fold>
     </div>
   )
 }

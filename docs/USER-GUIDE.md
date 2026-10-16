@@ -397,7 +397,7 @@ Each track has a lane:
 To loop the board: set **in** to **board**, press **rec**, bring **Level** up.
 The loop plays back through **Cue** and goes round the board again each lap.
 
-For feedback, press a setting under the lanes:
+For feedback, press a setting above the lanes:
 
 - **no-input mixer** puts track 1 on the desk's own aux return, so the desk
   feeds itself and squeals where track 1's mid is boosted. **Aux master** is how
@@ -406,15 +406,17 @@ For feedback, press a setting under the lanes:
   goes round through the delay pedal and onto the bus again. Any pedal or bend
   on the board sits in that loop.
 
-Everything else is folded:
+The rest is behind two things:
 
-- **track 1** to **track 4** hold the strip: trim, EQ, aux send, pan, record and
-  erase amounts, cue and length. Each opens on a diagram of the channel, with
-  every box reading its knob.
+- **channel strip** is a diagram of one channel. Press a lane's number, or a
+  track tab, to pick the channel. Press a box in the diagram (trim, EQ, send,
+  pan, rec, erase and loop, cue) to open its knobs under it. Every box reads its
+  knob and goes accent when you have moved it.
 - **the transport** holds tape level, hiss, wow, flutter, wear and batteries.
-- **Speed**, **Pitch**, **Side** and **NR** stay out: 1⅞ or 3¾ ips, varispeed,
-  turning the cassette over, and dbx.
-- **blank cassette** wipes the loops and their wear.
+
+**Speed**, **Side** and **NR** share one row under the lanes: 1⅞ or 3¾ ips,
+turning the cassette over, and dbx. **Pitch** is the varispeed, and **blank
+cassette** wipes the loops and their wear.
 
 ## Presets and rolls
 
