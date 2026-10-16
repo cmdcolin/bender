@@ -5,6 +5,7 @@ import { renderDiagrams } from '../../scripts/chain-svg'
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { DEST, N_DEST } from '../dsp/modbus'
 import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus'
+import { PEDALS, pedalOrderAt } from '../pedals'
 import {
   buildMap,
   drawMap,
@@ -76,6 +77,24 @@ test('the path is drawn, wired and inside its own box', () => {
     checkLayout(map)
     expect(serialize(drawMap(map))).toContain('<svg')
   }
+})
+
+test('the tape machine draws where Tape at puts it', () => {
+  const at = (tapeAt: number) =>
+    buildMap({ ...DEFAULT_CONTROLS, tapeMix: 1, tapeAt })
+  expect(hop(at(0), 'Brownout', 'Tape_machine')).toBeTruthy()
+  const bends = at(2)
+  checkLayout(bends)
+  expect(hop(bends, 'mix', 'Tape_machine')).toBeTruthy()
+  expect(hop(bends, 'Tape_machine', 'rack')).toBeTruthy()
+  expect(hop(bends, 'Brownout', 'Output')).toBeTruthy()
+  const pedals = at(1)
+  checkLayout(pedals)
+  const first = PEDALS[pedalOrderAt(DEFAULT_CONTROLS.pedalOrder)[0]!]!
+  expect(
+    hop(pedals, 'Tape_machine', first.group.replaceAll(' ', '_')),
+  ).toBeTruthy()
+  expect(hop(pedals, 'Brownout', 'Output')).toBeTruthy()
 })
 
 test('bend slots draw in their live order, under the rack they sit in', () => {

@@ -25,6 +25,16 @@ export const TAPE_GROUPS: Group[] = [
         help: 'Moves the whole machine at once: head-gap loss, the replay bump, hiss level, wow rate and how long a spool wrap takes to come back round. Slow is dark, noisy and unsteady.',
       },
       {
+        key: 'tapeAt',
+        label: 'Tape at',
+        min: 0,
+        max: 2,
+        step: 1,
+        unit: '',
+        choices: ['the end', 'the pedals', 'the bends'],
+        help: 'Where the machine sits in the signal path. At the end it prints the finished board. Ahead of the pedals or the bends, the board plays off tape into them: a microcassette ahead of the bends hands them a dictation machine’s 250 Hz to 4 kHz, hiss and all, to distort, delay and reverberate.',
+      },
+      {
         key: 'tapeFormat',
         label: 'Format',
         min: 0,

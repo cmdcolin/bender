@@ -185,6 +185,34 @@ test('a microcassette plays 250 Hz to 4 kHz', () => {
   expect(response(10000, micro)).toBeLessThan(-10)
 })
 
+// A crusher holding samples at 8 kHz puts images of a 440 Hz tone at 7.56 kHz.
+// After the tape, the crusher makes them out of the microcassette's band;
+// before it, the microcassette takes them off again.
+test('Tape at puts the machine ahead of the bends', () => {
+  const image = (tapeAt: number) => {
+    const x = renderBender(
+      {
+        chipLevel: 0,
+        drumLevel: 0,
+        sampleLevel: 1,
+        tapeMix: 1,
+        tapeHiss: 0,
+        tapeFormat: 2,
+        tapeSpeed: -2,
+        bendSlot0: 2,
+        srHz: 8000,
+        crushMix: 1,
+        tapeAt,
+      },
+      1.5,
+      (b: BuiltChain) => b.sampler.setBuffer(sine(440, 1, 0.1)),
+    ).subarray(SR / 2)
+    return bin(x, 7560) / bin(x, 440)
+  }
+  expect(db(image(2) / image(0))).toBeGreaterThan(10)
+  expect(Math.abs(db(image(1) / image(0)))).toBeLessThan(1)
+})
+
 // Gap loss is flat and then a cliff — a wavelength either fits across the gap
 // or it cancels in it. A single pole is a tone control instead: it starts
 // taking the top off the midrange an octave early and still passes 20 kHz at

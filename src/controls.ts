@@ -557,6 +557,7 @@ export const DEFAULT_CONTROLS = {
   tapeFormat: 0,
   tapeNrRec: 0,
   tapeNrPlay: 0,
+  tapeAt: 0,
   tapeDrive: 6,
   tapeBias: 0,
   tapeHiss: 0.35,

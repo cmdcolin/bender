@@ -1,4 +1,5 @@
 import { DEST } from '../dsp/modbus'
+import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from '../dsp/stages/tape'
 import { PEDALS, pedalOrderAt } from '../pedals'
 import { bendAt, BENDS, sliderFor, touchedCount } from './controls'
 import { arrowhead, el, route, textWidth, type El, type Point } from './svg'
@@ -572,11 +573,15 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     'rack',
     bends.length ? 'signal chain' : 'no bends patched',
   )
+  const tapeAt = Math.round(c.tapeAt)
+  const tape = () => stage('Tape machine', c.tapeMix > 0)
+  if (tapeAt === TAPE_AT_BENDS) path.push(tape())
   path.push(rack)
   for (const name of bends) {
     const mixKey = BEND_MIX[name]
     path.push(stage(name, mixKey ? c[mixKey] > 0 : true))
   }
+  if (tapeAt === TAPE_AT_PEDALS) path.push(tape())
 
   // Where the bends end and the pedals begin — no head on the second run, since
   // nothing here is a door any more: both runs are Signal order's, off the foot
@@ -594,13 +599,11 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     path.push(stage(name, active[name]!))
   }
 
-  for (const [name, on] of [
-    ['Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0],
-    ['Tape machine', c.tapeMix > 0],
-    ['Output', true],
-  ] as const) {
-    path.push(stage(name, on))
-  }
+  path.push(
+    stage('Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0),
+  )
+  if (tapeAt === TAPE_AT_END) path.push(tape())
+  path.push(stage('Output', true))
 
   // The bus is soldered to the board whether or not it is turned up, so it
   // stays on the map — greyed at zero, like any other stage sitting at no mix.

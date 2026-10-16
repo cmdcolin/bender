@@ -67,6 +67,13 @@ const SPEED = [
   },
 ]
 
+// Where Tape at puts the machine: after everything, ahead of the pedals, or
+// straight off the mix bus ahead of the bends, so the board plays off tape into
+// every effect on it.
+export const TAPE_AT_END = 0
+export const TAPE_AT_PEDALS = 1
+export const TAPE_AT_BENDS = 2
+
 // Each format scales the row of SPEED it runs at. A cassette head's gap is
 // about a quarter of the open-reel head's, so at the same speed its gap corner
 // sits four times higher and its hiss extends that high too. Its pole pieces

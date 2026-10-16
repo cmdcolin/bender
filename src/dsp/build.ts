@@ -106,7 +106,9 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new SpringVerb(sr),
     new Ensemble(sr),
   ]
-  chain.post = [new Brownout(sr, next()), new Tape(sr, next())]
+  const tape = new Tape(sr, next())
+  chain.post = [new Brownout(sr, next()), tape]
+  chain.tape = tape
   return {
     chain,
     toyChip,

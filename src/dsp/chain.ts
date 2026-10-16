@@ -10,6 +10,7 @@ import { pedalOrderAt } from '../pedals'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
 import { RING_FROM_TAP } from './stages/ringmod'
+import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape'
 import { DAC_REF_TOY } from './stages/toyDrum'
 import { Thermal } from './thermal'
 import { TriggerBus } from './trigbus'
@@ -291,6 +292,9 @@ export class Chain {
   bendById: (Stage | undefined)[] = []
   pedals: Stage[] = []
   post: Stage[] = []
+  /** The tape machine, which is one of `post` and which Tape at can lift out
+      of it to the head of the bends or the pedals. */
+  tape: Stage | null = null
 
   constructor(
     readonly sr: number,
@@ -577,7 +581,10 @@ export class Chain {
     }
     if (busPeak > this.taps[TAP_BUS]!) this.taps[TAP_BUS] = busPeak
 
+    const tapeAt = Math.round(p[IDX.tapeAt]!)
+    if (tapeAt === TAPE_AT_BENDS) this.runTape(io, p)
     this.runBends(io, p, n, cluster)
+    if (tapeAt === TAPE_AT_PEDALS) this.runTape(io, p)
 
     for (const i of pedalOrderAt(p[IDX.pedalOrder]!)) {
       const s = this.pedals[i]
@@ -585,6 +592,7 @@ export class Chain {
       if (!s.when || s.when(p, ctx)) s.process(io, p, ctx)
     }
     for (const s of this.post) {
+      if (s === this.tape && tapeAt !== TAPE_AT_END) continue
       if (!s.when || s.when(p, ctx)) s.process(io, p, ctx)
     }
 
@@ -602,6 +610,11 @@ export class Chain {
       io.l.fill(0, 0, n)
       io.r.fill(0, 0, n)
     }
+  }
+
+  private runTape(io: StereoBlock, p: Float32Array) {
+    const t = this.tape
+    if (t && (!t.when || t.when(p, this.ctx))) t.process(io, p, this.ctx)
   }
 
   // The safety tail, in a method of its own so V8 compiles the loop apart from
