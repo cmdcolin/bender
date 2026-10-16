@@ -162,8 +162,12 @@ function PresetChip(props: {
 // answer changes once a gesture. Taking the whole board instead put every chip
 // and its tip back through React on every frame of a thirty-second morph, to
 // arrive at the same row.
-export function Presets(props: { morphSeconds: MorphSeconds }) {
+export function Presets(props: {
+  morphSeconds: MorphSeconds
+  folded?: boolean
+}) {
   const [scrub, setScrub] = useState<Scrub | null>(null)
+  const [shelf, setShelf] = useState(!props.folded)
   const [open, setOpen] = useState(false)
   const collapsed = useCoarse() ? COLLAPSED_COARSE : COLLAPSED
   const standing = useBoardValue(c =>
@@ -181,6 +185,15 @@ export function Presets(props: { morphSeconds: MorphSeconds }) {
       : undefined
   const rest = PRESETS.length - shown.length - (stray ? 1 : 0)
 
+  if (!shelf && held === null)
+    return (
+      <section className={styles.section} aria-label="presets">
+        <button className={styles.more} onClick={() => setShelf(true)}>
+          presets ▸
+        </button>
+      </section>
+    )
+
   return (
     <section className={styles.section} aria-label="presets">
       {/* A heading, because the row had none and needed one more than anything
@@ -195,6 +208,11 @@ export function Presets(props: { morphSeconds: MorphSeconds }) {
       <div className={styles.head}>
         <span className={styles.title}>presets</span>
         <span className={styles.hint}>drag one sideways to stop part way</span>
+        {props.folded && (
+          <button className={styles.more} onClick={() => setShelf(false)}>
+            ✕
+          </button>
+        )}
         <button
           className={styles.more}
           aria-expanded={open}

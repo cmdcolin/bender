@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import { DEFAULT_CONTROLS } from '../controls'
-import { N_DRUM_VOICES } from '../drums'
 import { YOURS } from '../dsp/stages/roms'
 import { POOLS, detailsUrl } from '../engine/archive'
 import { engine } from '../engine/engine'
@@ -25,14 +24,13 @@ import { GROUPS } from './controls'
 import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Dice } from './Dice'
 import { DoorsDialog } from './DoorsDialog'
-import { padKeyFor, useDrumKeys } from './drumKeys'
+import { useDrumKeys } from './drumKeys'
 import { DrumKit } from './DrumKit'
 import { FmKeys } from './FmKeys'
 import { HuntDialog } from './HuntDialog'
 import { isTyping } from './isTyping'
 import { Keys } from './Keys'
 import { letterKeys } from './letters'
-import { useCoarse } from './measure'
 import { Menu } from './Menu'
 import { menuItem } from './menuItems'
 import { MidiMenuItem, MidiPanel } from './MidiPanel'
@@ -176,7 +174,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   // A phone has no space bar and no number row, so the way in is the buttons
   // and the keys themselves. Naming shortcuts nobody can press is a paragraph
   // of the first thing anyone reads spent on somebody else's machine.
-  const coarse = useCoarse()
   const recSeconds = useStoreValue(engine.recSeconds)
   const recStems = useStoreValue(engine.recStems)
   const sampleName = useStoreValue(engine.sampleName)
@@ -550,34 +547,20 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
             </a>
           </p>
         )}
-        <p className={styles.hint}>
-          {!running && (
+        {!running && (
+          <p className={styles.hint}>
             <b className={styles.warn}>
               click anywhere to power on — loud, harsh noise ahead, start with
-              your volume low.{' '}
+              your volume low.
             </b>
-          )}
-          press <b>play demo song</b>
-          {coarse ? (
-            ', play the keyboard and tap a drum row to strike it'
-          ) : (
-            <>
-              , or play keys with <span className={styles.kbd}>
-                a s d f …
-              </span>{' '}
-              and the kit with{' '}
-              <span className={styles.kbd}>
-                1 … {padKeyFor(N_DRUM_VOICES - 1)}
-              </span>
-            </>
-          )}
-        </p>
+          </p>
+        )}
         {/* Under the machines rather than in the panel, because the half of
             the window below the keys had nothing on it and the panel was paying
             a hundred pixels of the stage you opened for a row of boards — and
             unfolding the other fifty pushed the whole map off the screen. A
             preset is a sound to play, which is what this column is for. */}
-        <Presets morphSeconds={morphSeconds} />
+        <Presets morphSeconds={morphSeconds} folded />
       </main>
 
       <aside className={styles.panel} aria-label="the board">
