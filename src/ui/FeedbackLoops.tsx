@@ -1,165 +1,166 @@
 import { sliderFor } from './controls'
-import { useBoardValue } from './ControlsContext'
+import { boxHeight, useReadings, useSelectedBox, type BoxSpec } from './diagram'
+import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts'
 import styles from './FeedbackLoops.module.css'
 
 const DEST = sliderFor('fbDest').choices!
 
+const STRIPS = [
+  { amt: 'fbAmt', ms: 'fbDelayMs', tone: 'fbTone' },
+  { amt: 'fb2Amt', ms: 'fb2Ms', tone: 'fb2Tone' },
+  { amt: 'fb3Amt', ms: 'fb3Ms', tone: 'fb3Tone' },
+] as const
+
+const AMPS = ['fbRails', 'fbAsym', 'fbSlew', 'fbSag', 'fbBlock'] as const
+
+const KEYS = [
+  ...STRIPS.flatMap(s => [s.amt, s.ms, s.tone]),
+  ...AMPS,
+  'fbDest',
+  'fbCross',
+] as const
+
 const BOX_X = 8
 const BOX_W = 56
-const BOX_H = 30
-const ROW_Y = [6, 46, 86]
-const BUS_X = 176
-const DEST_X = 194
-const DEST_W = 98
+const ROW_Y = [6, 52, 98]
+const BUS_X = 150
+const AMPS_X = 166
+const AMPS_W = 62
+const DEST_X = 248
+const DEST_W = 92
+const HEIGHT = 150
 
-const cy = (y: number) => y + BOX_H / 2
-const destCy = cy(ROW_Y[1]!)
+const rowMid = (i: number) => ROW_Y[i]! + boxHeight(['', '']) / 2
+const MID = rowMid(1)
 
-// The picture 'strips 2 and 3' is short for: three sends off one tap, each
-// through its own delay, meeting on the one return. Amber for a strip that is
-// actually contributing, cool blue for Cross, which is drawn as what it is —
-// the wire between neighbours — dim until two strips are up to run through it.
+// Three sends off one tap, each through its own delay, meeting on one bus that
+// runs through the return amps into wherever the return is patched. Each box
+// reads its knobs and opens them under the drawing; strip 1 starts open since
+// it carries the loop. Cross is drawn once a second strip is up, as the dashed
+// leads between neighbours.
 export function FeedbackLoops() {
-  const rows = [
-    {
-      label: '1',
-      amt: useBoardValue(c => c.fbAmt),
-      ms: useBoardValue(c => c.fbDelayMs),
-    },
-    {
-      label: '2',
-      amt: useBoardValue(c => c.fb2Amt),
-      ms: useBoardValue(c => c.fb2Ms),
-    },
-    {
-      label: '3',
-      amt: useBoardValue(c => c.fb3Amt),
-      ms: useBoardValue(c => c.fb3Ms),
-    },
-  ]
-  const cross = useBoardValue(c => c.fbCross)
-  const dest = useBoardValue(c => c.fbDest)
-  const crossed = rows[1]!.amt > 0 || rows[2]!.amt > 0
+  const r = useReadings(KEYS)
+  const pick = useSelectedBox('strip 1')
+  const crossed = r.value('fb2Amt') > 0 || r.value('fb3Amt') > 0
+
+  const strips: BoxSpec[] = STRIPS.map((s, i) => ({
+    id: `strip ${i + 1}`,
+    keys: [s.amt, s.ms, s.tone],
+    x: BOX_X,
+    y: ROW_Y[i]!,
+    w: BOX_W,
+    name: `strip ${i + 1}`,
+    value: [r.read(s.amt), r.read(s.ms)],
+    off: r.value(s.amt) <= 0,
+    touched: r.touched(s.amt, s.ms, s.tone),
+    help: 'One send off the tap, through its own delay, onto the bus.',
+  }))
+  const moved = AMPS.filter(k => r.touched(k)).length
+  const amps: BoxSpec = {
+    id: 'return amps',
+    keys: AMPS,
+    x: AMPS_X,
+    y: MID - boxHeight('') / 2,
+    w: AMPS_W,
+    name: 'return amps',
+    value: moved ? `${moved} moved` : 'stock',
+    touched: moved > 0,
+    help: 'The amps the bus runs through: how they clip, slow down, sag and block.',
+  }
+  const dest: BoxSpec = {
+    id: 'patched into',
+    keys: ['fbDest'],
+    x: DEST_X,
+    y: MID - boxHeight('') / 2,
+    w: DEST_W,
+    name: 'patched into',
+    value: DEST[Math.round(r.value('fbDest'))]!,
+    touched: r.touched('fbDest'),
+    help: 'Where the return wire is soldered.',
+  }
+  const boxes = [...strips, amps, dest]
+  const open =
+    pick.selected === 'cross'
+      ? crossed
+        ? (['fbCross'] as const)
+        : undefined
+      : boxes.find(b => b.id === pick.selected)?.keys
+  const bend = (from: number, to: number, reach: number) =>
+    `M${BOX_X} ${rowMid(from)} Q${BOX_X - reach} ${(rowMid(from) + rowMid(to)) / 2} ${BOX_X} ${rowMid(to)}`
+  const arcStyle = { opacity: 0.25 + r.value('fbCross') * 0.6 }
 
   return (
-    <svg
-      className={styles.diagram}
-      viewBox="-34 0 334 122"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      {rows.map((row, i) => {
-        const y = ROW_Y[i]!
-        const y0 = cy(y)
-        const live = row.amt > 0
-        const wire = live ? 'var(--accent2)' : 'var(--fg4)'
-        return (
-          <g key={row.label}>
-            <title>{`strip ${row.label} — ${row.amt.toFixed(2)} into ${row.ms.toFixed(2)} ms`}</title>
-            <line
-              x1={-16}
-              y1={y0}
-              x2={BOX_X}
-              y2={y0}
-              stroke={wire}
-              strokeWidth={1.5}
-            />
-            <rect
-              x={BOX_X}
-              y={y}
-              width={BOX_W}
-              height={BOX_H}
-              rx={4}
-              fill="none"
-              stroke={wire}
-            />
-            <text
-              x={BOX_X + BOX_W / 2}
-              y={y + 14}
-              textAnchor="middle"
-              className={styles.label}
-              fill={live ? 'var(--fg)' : 'var(--fg4)'}
-            >
-              {row.label}
-            </text>
-            <text
-              x={BOX_X + BOX_W / 2}
-              y={y + 25}
-              textAnchor="middle"
-              className={styles.sub}
-              fill="var(--fg4)"
-            >
-              {row.ms.toFixed(row.ms < 10 ? 1 : 0)} ms
-            </text>
-            <line
-              x1={BOX_X + BOX_W}
-              y1={y0}
-              x2={BUS_X}
-              y2={y0}
-              stroke={wire}
-              strokeWidth={1.5}
-            />
-          </g>
-        )
-      })}
-
-      <line
-        x1={BUS_X}
-        y1={cy(ROW_Y[0]!)}
-        x2={BUS_X}
-        y2={cy(ROW_Y[2]!)}
-        stroke="var(--accent2)"
-        strokeWidth={1.5}
-      />
-      <line
-        x1={BUS_X}
-        y1={destCy}
-        x2={DEST_X}
-        y2={destCy}
-        stroke="var(--accent2)"
-        strokeWidth={1.5}
-      />
-      <path
-        d={`M ${DEST_X} ${destCy} L ${DEST_X - 6} ${destCy - 3} L ${DEST_X - 6} ${destCy + 3} Z`}
-        fill="var(--accent2)"
-      />
-      <rect
-        x={DEST_X}
-        y={ROW_Y[1]}
-        width={DEST_W}
-        height={BOX_H}
-        rx={4}
-        fill="none"
-        stroke="var(--fg4)"
-      />
-      <text
-        x={DEST_X + DEST_W / 2}
-        y={destCy + 4}
-        textAnchor="middle"
-        className={styles.label}
-        fill="var(--fg)"
+    <>
+      <Diagram
+        left={52}
+        width={392}
+        height={HEIGHT}
+        label="feedback bus signal path"
       >
-        {DEST[Math.round(dest)]}
-      </text>
-
-      {crossed && (
-        <>
-          <path
-            d={`M ${BOX_X} ${cy(ROW_Y[0]!)} Q ${BOX_X - 20} ${(cy(ROW_Y[0]!) + cy(ROW_Y[1]!)) / 2} ${BOX_X} ${cy(ROW_Y[1]!)}`}
-            className={styles.cross}
-            style={{ opacity: 0.25 + cross * 0.6 }}
-          />
-          <path
-            d={`M ${BOX_X} ${cy(ROW_Y[1]!)} Q ${BOX_X - 20} ${(cy(ROW_Y[1]!) + cy(ROW_Y[2]!)) / 2} ${BOX_X} ${cy(ROW_Y[2]!)}`}
-            className={styles.cross}
-            style={{ opacity: 0.25 + cross * 0.6 }}
-          />
-          <path
-            d={`M ${BOX_X} ${cy(ROW_Y[2]!)} Q ${BOX_X - 34} ${cy(ROW_Y[1]!)} ${BOX_X} ${cy(ROW_Y[0]!)}`}
-            className={styles.cross}
-            style={{ opacity: 0.25 + cross * 0.6 }}
-          />
-        </>
-      )}
-    </svg>
+        {arrow => (
+          <>
+            {STRIPS.map((s, i) => {
+              const look = r.value(s.amt) > 0 ? 'on' : 'plain'
+              return (
+                <g key={s.amt}>
+                  <Wire d={`M-16 ${rowMid(i)} H${BOX_X}`} arrow={arrow} />
+                  <Wire
+                    d={`M${BOX_X + BOX_W} ${rowMid(i)} H${BUS_X}`}
+                    look={look}
+                  />
+                </g>
+              )
+            })}
+            <Wire d={`M${BUS_X} ${rowMid(0)} V${rowMid(2)}`} />
+            <Wire d={`M${BUS_X} ${MID} H${AMPS_X}`} arrow={arrow} look="on" />
+            <Wire
+              d={`M${AMPS_X + AMPS_W} ${MID} H${DEST_X}`}
+              arrow={arrow}
+              look="on"
+            />
+            {boxes.map(b => (
+              <BoxView
+                key={b.id}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+            {crossed && (
+              <>
+                <path
+                  d={bend(0, 1, 20)}
+                  className={styles.cross}
+                  style={arcStyle}
+                />
+                <path
+                  d={bend(1, 2, 20)}
+                  className={styles.cross}
+                  style={arcStyle}
+                />
+                <path
+                  d={bend(2, 0, 34)}
+                  className={styles.cross}
+                  style={arcStyle}
+                />
+                <Label
+                  x={-50}
+                  y={MID + 3}
+                  on={r.touched('fbCross')}
+                  pick={{
+                    id: 'cross',
+                    selected: pick.selected === 'cross',
+                    onSelect: pick.toggle,
+                  }}
+                >
+                  cross
+                </Label>
+              </>
+            )}
+          </>
+        )}
+      </Diagram>
+      <BoxRows keys={open} />
+    </>
   )
 }

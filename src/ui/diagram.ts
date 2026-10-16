@@ -27,8 +27,8 @@ export interface BoxSpec {
 }
 
 // Which box the drawing has open. A second press on it puts the rows away.
-export function useSelectedBox() {
-  const [selected, setSelected] = useState<string | null>(null)
+export function useSelectedBox(initial: string | null = null) {
+  const [selected, setSelected] = useState<string | null>(initial)
   return {
     selected,
     toggle: (id: string) => setSelected(now => (now === id ? null : id)),

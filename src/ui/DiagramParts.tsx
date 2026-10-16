@@ -128,11 +128,15 @@ export function Wire({
   look = 'plain',
 }: {
   d: string
-  arrow: string
+  arrow?: string
   look?: WireLook
 }) {
   return (
-    <path d={d} className={WIRE_CLASS[look]} markerEnd={`url(#${arrow})`} />
+    <path
+      d={d}
+      className={WIRE_CLASS[look]}
+      markerEnd={arrow && `url(#${arrow})`}
+    />
   )
 }
 
@@ -186,11 +190,14 @@ export function Label({
 // The drawing's frame: the arrowhead every wire in it points with, and the
 // width it scales from.
 export function Diagram({
+  left = 0,
   width,
   height,
   label,
   children,
 }: {
+  /** How far the drawing runs left of x = 0. */
+  left?: number
   width: number
   height: number
   label: string
@@ -200,7 +207,7 @@ export function Diagram({
   return (
     <svg
       className={styles.diagram}
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={`${-left} 0 ${width} ${height}`}
       role="img"
       aria-label={label}
     >
