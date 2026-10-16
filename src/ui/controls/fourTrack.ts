@@ -2,11 +2,14 @@ import { MAX_LOOP_S } from '../../dsp/stages/fourTrack'
 
 import type { Group, SliderDef } from './types'
 
+export type Track = 1 | 2 | 3 | 4
+export const TRACK_NUMBERS: readonly Track[] = [1, 2, 3, 4]
+
 const pct = (v: number) => `${v > 0 ? '+' : ''}${(v * 100).toFixed(1)}%`
 
 // One channel strip and the loop it records onto. The four are the same circuit,
 // so they are written once and numbered.
-function track(k: 1 | 2 | 3 | 4): SliderDef[] {
+function track(k: Track): SliderDef[] {
   const part = `track ${k}`
   return [
     {
@@ -154,6 +157,25 @@ export const FOUR_TRACK_GROUP: Group = {
   name: 'Four-track',
   place: 'Sources',
   editor: { kind: 'loops' },
+  lead: ['fourLevel'],
+  handled: [
+    'four1In',
+    'four1Fader',
+    'four2In',
+    'four2Fader',
+    'four3In',
+    'four3Fader',
+    'four4In',
+    'four4Fader',
+  ],
+  folded: [
+    'the transport',
+    'aux bus',
+    'track 1',
+    'track 2',
+    'track 3',
+    'track 4',
+  ],
   caution: {
     part: 'track 1',
     text: 'record and erase write onto the loops themselves — what goes under the head stays there, worn or not',
@@ -216,22 +238,12 @@ export const FOUR_TRACK_GROUP: Group = {
     {
       key: 'fourDrive',
       label: 'Tape level',
+      part: 'the transport',
       min: -12,
       max: 15,
       step: 0.5,
       unit: 'dB',
       help: 'How hard the record heads hit the oxide. A tone at the line-up level comes back the level it went in at wherever this sits; what the knob changes is how much the tape squashes and blooms on the way.',
-    },
-    {
-      key: 'fourAux',
-      lane: 'four-track aux',
-      label: 'Aux master',
-      min: 0,
-      max: 2,
-      normal: [0, 1],
-      step: 0.01,
-      unit: '',
-      help: 'The aux bus’s return level. With a channel’s Input on aux and its send up, this closes the loop: the desk feeds itself a sample late, and wherever the EQ boosts the loop above unity it squeals, clipping on its own op-amp rails.',
     },
     {
       key: 'fourHiss',
@@ -283,6 +295,18 @@ export const FOUR_TRACK_GROUP: Group = {
       unit: '',
       help: 'How flat the cells are. The motor slows and its servo hunts, more so the harder the desk is working, and the op-amps lose their rails: they clip lower, slew slower and, near the end, block and motorboat.',
     },
-    ...([1, 2, 3, 4] as const).flatMap(track),
+    {
+      key: 'fourAux',
+      lane: 'four-track aux',
+      label: 'Aux master',
+      part: 'aux bus',
+      min: 0,
+      max: 2,
+      normal: [0, 1],
+      step: 0.01,
+      unit: '',
+      help: 'The aux bus’s return level. With a channel’s Input on aux and its send up, this closes the loop: the desk feeds itself a sample late, and wherever the EQ boosts the loop above unity it squeals, clipping on its own op-amp rails.',
+    },
+    ...TRACK_NUMBERS.flatMap(track),
   ],
 }

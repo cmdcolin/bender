@@ -378,6 +378,37 @@ the same input, one voice per pentatonic step, turning a drum pattern into a
 riff. Every wire here, and the shared rail, can also be bent — see
 [Bends](BENDS.md).
 
+## The four-track
+
+A cassette four-track with four tape loops, each cut to its own length. It is
+silent until **Level** comes up.
+
+Each track has a lane:
+
+- **in** picks what the channel hears: its own loop (**tape**), the whole
+  **board**, the **mic**, or the desk's **aux** return.
+- **rec** lays the channel onto the loop. The first press threads a blank loop
+  as long as the track's **Length**. The loop under the head stays there, so
+  every pass records over the last.
+- The drawing shows the loop, the head and, in rust, where the oxide has worn
+  away. It lights the loop while a **Fader** or **Cue** lets you hear it.
+- **Fader** brings the channel to the stereo bus.
+
+To loop the board: set **in** to **board**, press **rec**, bring **Level** up.
+The loop plays back through **Cue** and goes round the board again each lap.
+
+Everything else is folded:
+
+- **track 1** to **track 4** hold the strip: trim, EQ, aux send, pan, record and
+  erase amounts, cue and length. Each opens on a diagram of the channel, with
+  every box reading its knob.
+- **the transport** holds tape level, hiss, wow, flutter, wear and batteries.
+- **aux bus** holds the aux master. With a channel's **in** on **aux** and its
+  send up, the desk feeds itself and squeals where the EQ boosts.
+- **Speed**, **Pitch**, **Side** and **NR** stay out: 1⅞ or 3¾ ips, varispeed,
+  turning the cassette over, and dbx.
+- **blank cassette** wipes the loops and their wear.
+
 ## Presets and rolls
 
 Click a preset to load the whole board. Drag it sideways and it morphs only part

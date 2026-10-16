@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { engine } from '../engine/engine'
@@ -7,13 +7,14 @@ import {
   groupKeys,
   touchedCount,
   SLIDER_BY_KEY,
+  TRACK_NUMBERS,
   type Group,
   type SliderDef,
 } from './controls'
 import { useBoardValue } from './ControlsContext'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
-import { FourReels } from './FourReels'
+import { FourTrack } from './FourTrack'
 import { MicPatch } from './MicPatch'
 import { Mixer } from './Mixer'
 import { OrderRack } from './OrderRack'
@@ -38,6 +39,7 @@ import { scrollIntoPanel } from './reveal'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider'
+import { StripDiagram } from './StripDiagram'
 import { Tip } from './Tip'
 import { TriggerPatch } from './TriggerPatch'
 import { TuneRoll } from './TuneRoll'
@@ -296,6 +298,15 @@ function Rigs({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
+// The picture a fold opens on, for the parts whose knobs are boxes on a circuit:
+// a four-track channel's strip is easier to turn once you can see where each
+// knob sits on the way from the input to the bus.
+function partArt(group: Group, part: string): ReactNode {
+  if (group.editor?.kind !== 'loops') return null
+  const track = TRACK_NUMBERS.find(n => part === `track ${n}`)
+  return track ? <StripDiagram track={track} /> : null
+}
+
 // A heading and what sits under it, with its own count and its own fold. The
 // count is the group header's promise made smaller: how many of these you have
 // moved, so a folded part still says whether anything is going on inside it.
@@ -316,12 +327,14 @@ function PartFold({
   group,
   seconds,
   startOpen,
+  art,
 }: {
   name: string
   rows: SliderDef[]
   group: Group
   seconds: number
   startOpen: boolean
+  art?: ReactNode
 }) {
   const moved = useBoardValue(c => movedIn(rows, c))
   const cuts = cutsFor(group.name, name)
@@ -351,6 +364,7 @@ function PartFold({
         </span>
       </summary>
       {caution && <p className={styles.caution}>{caution}</p>}
+      {art}
       <PartVerbs
         cuts={cuts}
         group={group}
@@ -445,6 +459,7 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
             group={group}
             seconds={seconds}
             startOpen={startOpen.has(name)}
+            art={partArt(group, name)}
           />
         )
       })}
@@ -538,7 +553,7 @@ export function OpenGroup({
           {group.editor?.kind === 'patch' && <PatchBay />}
           {group.editor?.kind === 'trigger' && <TriggerPatch />}
           {group.editor?.kind === 'mic' && <MicPatch />}
-          {group.editor?.kind === 'loops' && <FourReels />}
+          {group.editor?.kind === 'loops' && <FourTrack />}
           <Rigs group={group} seconds={seconds} />
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>

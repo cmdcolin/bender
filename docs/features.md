@@ -630,12 +630,12 @@ places every lap, and _Batteries_ drags the motor and the rails down together.
 | Side       | A or B                    | Turn the cassette over                                                                                                     |
 | NR         | off or dbx                | dbx type II on every track, as on a Portastudio                                                                            |
 | Tape level | −12 to +15 dB             | How hard the record heads hit the oxide                                                                                    |
-| Aux master | 0 to 2, normal 0 to 1     | The aux bus’s return level                                                                                                 |
 | Hiss       | off to full               | Noise on the medium, read off every track with whatever is on it                                                           |
 | Wow        | off to full               | The hub’s once-round and the slow drift of an old belt                                                                     |
 | Flutter    | off to full               | The capstan and the pinch roller, at the rates they turn at                                                                |
 | Wear       | off to full               | How fast the loops shed oxide                                                                                              |
 | Batteries  | off to full               | How flat the cells are                                                                                                     |
+| Aux master | 0 to 2, normal 0 to 1     | The aux bus’s return level                                                                                                 |
 | Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
 | Trim       | off to +40 dB             | The preamp                                                                                                                 |
 | Low        | −15 to +15 dB             | A shelf at 100 Hz                                                                                                          |

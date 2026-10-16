@@ -1,0 +1,56 @@
+.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: var(--space-xs) 0 var(--space-md);
+}
+
+.box {
+  fill: none;
+  stroke: var(--border);
+}
+
+.boxOn {
+  fill: none;
+  stroke: var(--accent);
+}
+
+.name,
+.send,
+.sendOn {
+  font-size: 9px;
+  fill: var(--fg3);
+}
+
+.value,
+.valueOn {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--fg2);
+}
+
+.valueOn,
+.sendOn {
+  fill: var(--accent);
+}
+
+.wire,
+.wireOn,
+.wireDash {
+  fill: none;
+  stroke: var(--fg4);
+  stroke-width: 1;
+}
+
+.wireOn {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.wireDash {
+  stroke-dasharray: 3 3;
+}
+
+.head {
+  fill: var(--fg4);
+}

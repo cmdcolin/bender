@@ -17,6 +17,7 @@ import type { Group, SliderDef } from './types'
 
 export { BENDS, BEND_SLOT_KEYS, bendAt } from './bends'
 export { CHANNELS, type Channel } from './mix'
+export { TRACK_NUMBERS, type Track } from './fourTrack'
 export {
   STAGE_ORDER,
   type Group,

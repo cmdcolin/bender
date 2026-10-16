@@ -1,0 +1,70 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.lane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-ctl-sm);
+}
+
+.number {
+  width: 1.2em;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  color: var(--fg3);
+}
+
+.source {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.select {
+  composes: selectSm from './button.module.css';
+}
+
+.rec {
+  composes: pickRecIdle from './button.module.css';
+}
+
+.recOn {
+  composes: pickRecOn from './button.module.css';
+}
+
+.length {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}
+
+.reel {
+  width: 100%;
+  border-radius: 2px;
+  background: #0a0a0c;
+}
+
+.foot {
+  display: flex;
+}
+
+.blank {
+  composes: action from './button.module.css';
+  margin-left: auto;
+}
