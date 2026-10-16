@@ -28,7 +28,7 @@ function track(k: 1 | 2 | 3 | 4): SliderDef[] {
       max: 40,
       step: 0.5,
       unit: 'dB',
-      reads: v => (v <= -20 ? 'off' : `${v > 0 ? '+' : ''}${v} dB`),
+      reads: v => (v <= -20 ? 'off' : `${v > 0 ? '+' : ''}${v.toFixed(1)} dB`),
       help: 'The preamp. An op-amp with rails at twice the board’s full scale, so past about +20 dB a loud input squares off before the EQ sees it.',
     },
     {

@@ -167,10 +167,11 @@ export function formatValue(def: SliderDef, value: number): string {
   if (def.choices)
     return def.choices[Math.round(value) - def.min] ?? String(value)
   const abs = Math.abs(value)
+  const decibelSteps = def.unit === 'dB' && def.step >= 0.1
   const text =
     abs >= 1000
       ? value.toFixed(0)
-      : abs >= 10
+      : abs >= 10 || decibelSteps
         ? value.toFixed(1)
         : value.toFixed(def.step < 0.01 ? 3 : 2)
   return def.unit ? `${text} ${def.unit}` : text
