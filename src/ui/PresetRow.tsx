@@ -23,8 +23,8 @@ const DRAG_FULL = 140
 // under the machines, where a desktop has a column's width and half its height
 // to spare, so two lines of them cost nothing there; a phone stacks the board
 // under this and gets one line, so the panel is not a screen further away.
-const COLLAPSED = 22
-const COLLAPSED_COARSE = 11
+const COLLAPSED = 12
+const COLLAPSED_COARSE = 8
 
 const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 

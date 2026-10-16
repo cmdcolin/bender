@@ -212,6 +212,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   // shut, and `{ pending: null }` is the card opened from the menu with no save
   // behind it.
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
+  const [showMore, setShowMore] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showMidi, setShowMidi] = useState(false)
   const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
@@ -365,151 +366,175 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
             first thing on the page and stays pinned while the rest of the
             machines scroll under it, which a row that also held the recorder
             and the sampler's inputs was too tall to do. */}
-        <div className={styles.transport}>
-          {/* Two machines, two switches. The kit used to run off the demo
+        <div className={styles.studio}>
+          <div className={styles.transport}>
+            {/* Two machines, two switches. The kit used to run off the demo
               song's line, so writing a pattern and hearing it meant putting the
               toy's ROM tune on underneath it. */}
-          <Tip
-            text={
-              yourTune
-                ? 'Runs the toy chip on your own melody, the one in the piano roll. Nothing else starts it — space runs both machines.'
-                : "Runs the toy chip's ROM tune. Nothing else starts it — space runs both machines."
-            }
-          >
-            <button
-              className={songPlaying ? styles.playBtnOn : styles.playBtn}
-              onClick={() => engine.setSongPlaying(!songPlaying)}
-            >
-              {songPlaying ? '❚❚ pause ' : '▶ play '}
-              {yourTune ? 'your tune' : 'demo song'}
-            </button>
-          </Tip>
-          <Tip text="Runs the drum machine's pattern, with or without the chip's tune. Bring the kit's Level up if you hear nothing.">
-            <button
-              className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
-              onClick={() => engine.setDrumsPlaying(!drumsPlaying)}
-            >
-              {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
-            </button>
-          </Tip>
-          {/* The one press that gets to the noise: both machines running, the
-              kit audible, the letters on the bend keys and a hand dealt. */}
-          <Tip text="Run both machines, bring the kit up if it is down, send the letter keys to the bend keys and deal a hand — one press from silence to glitch.">
-            <button
-              className={styles.wildBtn}
-              onClick={() => {
-                void engine.start()
-                if (engine.controls.get().drumLevel === 0) {
-                  engine.armStep()
-                  engine.set('drumLevel', 0.8)
-                }
-                engine.setSongPlaying(true)
-                engine.setDrumsPlaying(true)
-                if (bendDeal.get().length === 0)
-                  redealBendKeys(engine.controls.get())
-                letterKeys.set('bends')
-                rememberLetters(true)
-              }}
-            >
-              ⚡ go wild
-            </button>
-          </Tip>
-        </div>
-        <BendKeys morphSeconds={morphSeconds} />
-        <div className={styles.ioRow}>
-          {/* Named for what it records, because the kit has a record button of
-              its own now and one of them writes a file while the other writes
-              the pattern. */}
-          <Tip
-            text={
-              recStems
-                ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                : 'Records the output to a wav file — stopping saves it.'
-            }
-          >
-            <button
-              className={recording ? styles.recBtnOn : styles.ioBtn}
-              onClick={() =>
-                recording ? engine.stopRecording() : engine.startRecording()
+            <Tip
+              text={
+                yourTune
+                  ? 'Runs the toy chip on your own melody, the one in the piano roll. Nothing else starts it — space runs both machines.'
+                  : "Runs the toy chip's ROM tune. Nothing else starts it — space runs both machines."
               }
             >
-              {recording
-                ? `■ stop & save ${clock(recSeconds)}`
-                : recStems
-                  ? '● record stems'
-                  : '● record wav'}
-            </button>
-          </Tip>
-          {/* What comes back off a take. Locked while one is running: the tape
+              <button
+                className={songPlaying ? styles.playBtnOn : styles.playBtn}
+                onClick={() => engine.setSongPlaying(!songPlaying)}
+              >
+                {songPlaying ? '❚❚ pause ' : '▶ play '}
+                {yourTune ? 'your tune' : 'demo song'}
+              </button>
+            </Tip>
+            <Tip text="Runs the drum machine's pattern, with or without the chip's tune. Bring the kit's Level up if you hear nothing.">
+              <button
+                className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
+                onClick={() => engine.setDrumsPlaying(!drumsPlaying)}
+              >
+                {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
+              </button>
+            </Tip>
+            {/* The one press that gets to the noise: both machines running, the
+              kit audible, the letters on the bend keys and a hand dealt. */}
+            <Tip text="Run both machines, bring the kit up if it is down, send the letter keys to the bend keys and deal a hand — one press from silence to glitch.">
+              <button
+                className={styles.wildBtn}
+                onClick={() => {
+                  void engine.start()
+                  if (engine.controls.get().drumLevel === 0) {
+                    engine.armStep()
+                    engine.set('drumLevel', 0.8)
+                  }
+                  engine.setSongPlaying(true)
+                  engine.setDrumsPlaying(true)
+                  if (bendDeal.get().length === 0)
+                    redealBendKeys(engine.controls.get())
+                  letterKeys.set('bends')
+                  rememberLetters(true)
+                }}
+              >
+                ⚡ go wild
+              </button>
+            </Tip>
+          </div>
+          <div className={styles.deck}>
+            <div className={styles.ioRow}>
+              <span
+                className={recording ? styles.counterOn : styles.counter}
+                role="timer"
+                aria-label="take time"
+              >
+                {clock(recSeconds)}
+              </span>
+              {/* Named for what it records, because the kit has a record button of
+              its own now and one of them writes a file while the other writes
+              the pattern. */}
+              <Tip
+                text={
+                  recStems
+                    ? 'Records the output and every source that had something on it — stopping saves the lot.'
+                    : 'Records the output to a wav file — stopping saves it.'
+                }
+              >
+                <button
+                  className={recording ? styles.recBtnOn : styles.ioBtn}
+                  onClick={() =>
+                    recording ? engine.stopRecording() : engine.startRecording()
+                  }
+                >
+                  {recording
+                    ? `■ stop & save ${clock(recSeconds)}`
+                    : recStems
+                      ? '● record stems'
+                      : '● record wav'}
+                </button>
+              </Tip>
+              <Tip text="Saves the last 30 seconds you heard, recording or not.">
+                <button
+                  className={styles.ioBtn}
+                  onClick={() => engine.keepLast('wav')}
+                >
+                  ⟲ last 30s
+                </button>
+              </Tip>
+              <button
+                className={showMore ? styles.ioBtnOn : styles.ioBtn}
+                aria-expanded={showMore}
+                onClick={() => setShowMore(m => !m)}
+              >
+                more
+              </button>
+            </div>
+            {showMore && (
+              <div className={styles.ioRow}>
+                {/* What comes back off a take. Locked while one is running: the tape
               is threaded for six tracks or for one at the moment you press
               record, and a switch that moved half way through would hand back
               six files that start in different places. */}
-          <Tip text="Master is the take with the whole board on it. Stems hands back each machine on its own as well — dry, straight off the bus, one wav each — which is what you drag into a DAW.">
-            <select
-              className={styles.pool}
-              value={recStems ? 'stems' : 'master'}
-              disabled={recording}
-              onChange={e => engine.recStems.set(e.target.value === 'stems')}
-            >
-              <option value="master">master only</option>
-              <option value="stems">master + stems</option>
-            </select>
-          </Tip>
-          <Tip text="Saves the last 30 seconds you heard, recording or not.">
-            <button
-              className={styles.ioBtn}
-              onClick={() => engine.keepLast('wav')}
-            >
-              ⟲ last 30s
-            </button>
-          </Tip>
-          <Tip text="Puts the last 30 seconds on the sampler reel, to play back through the board.">
-            <button
-              className={styles.ioBtn}
-              onClick={() => engine.keepLast('reel')}
-            >
-              ⟲ → reel
-            </button>
-          </Tip>
-          <button
-            className={micOn ? styles.ioBtnOn : styles.ioBtn}
-            onClick={() => engine.enableMic()}
-          >
-            {micOn ? '● mic live' : 'enable mic'}
-          </button>
-          <span className={dragging ? styles.dropHot : styles.drop}>
-            {sampleName
-              ? `sample: ${sampleName}`
-              : 'drop an audio file anywhere'}
-          </span>
-          {/* Finding a file is the slowest part of putting something on the
+                <Tip text="Master is the take with the whole board on it. Stems hands back each machine on its own as well — dry, straight off the bus, one wav each — which is what you drag into a DAW.">
+                  <select
+                    className={styles.pool}
+                    value={recStems ? 'stems' : 'master'}
+                    disabled={recording}
+                    onChange={e =>
+                      engine.recStems.set(e.target.value === 'stems')
+                    }
+                  >
+                    <option value="master">master only</option>
+                    <option value="stems">master + stems</option>
+                  </select>
+                </Tip>
+                <Tip text="Puts the last 30 seconds on the sampler reel, to play back through the board.">
+                  <button
+                    className={styles.ioBtn}
+                    onClick={() => engine.keepLast('reel')}
+                  >
+                    ⟲ → reel
+                  </button>
+                </Tip>
+                <button
+                  className={micOn ? styles.ioBtnOn : styles.ioBtn}
+                  onClick={() => engine.enableMic()}
+                >
+                  {micOn ? '● mic live' : 'enable mic'}
+                </button>
+                <span className={dragging ? styles.dropHot : styles.drop}>
+                  {sampleName
+                    ? `sample: ${sampleName}`
+                    : 'drop an audio file anywhere'}
+                </span>
+                {/* Finding a file is the slowest part of putting something on the
               tape, so the board will go and find one. A pool is a search, and
               the die picks out of it. */}
-          <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
-            <button
-              className={styles.ioBtn}
-              onClick={() =>
-                archiveStep
-                  ? engine.cancelRoll()
-                  : engine.rollSample(POOLS[pool]!)
-              }
-            >
-              {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
-            </button>
-          </Tip>
-          <Tip text={POOLS[pool]!.blurb}>
-            <select
-              className={styles.pool}
-              value={pool}
-              onChange={e => setPool(Number(e.target.value))}
-            >
-              {POOLS.map((p, i) => (
-                <option key={p.label} value={i}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </Tip>
+                <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
+                  <button
+                    className={styles.ioBtn}
+                    onClick={() =>
+                      archiveStep
+                        ? engine.cancelRoll()
+                        : engine.rollSample(POOLS[pool]!)
+                    }
+                  >
+                    {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
+                  </button>
+                </Tip>
+                <Tip text={POOLS[pool]!.blurb}>
+                  <select
+                    className={styles.pool}
+                    value={pool}
+                    onChange={e => setPool(Number(e.target.value))}
+                  >
+                    {POOLS.map((p, i) => (
+                      <option key={p.label} value={i}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </Tip>
+              </div>
+            )}
+            <BendKeys morphSeconds={morphSeconds} />
+          </div>
         </div>
         <SampleReel />
         {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
@@ -532,27 +557,20 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
               your volume low.{' '}
             </b>
           )}
-          press <b>play demo song</b> or <b>play drums</b>
+          press <b>play demo song</b>
           {coarse ? (
-            ', or play the keyboard and tap a drum row to strike it'
+            ', play the keyboard and tap a drum row to strike it'
           ) : (
             <>
-              {' ('}
-              <span className={styles.kbd}>space</span> runs both), or play keys
-              with <span className={styles.kbd}>a s d f …</span> (
-              <span className={styles.kbd}>z</span>{' '}
-              <span className={styles.kbd}>x</span> for octaves) and the kit
-              with{' '}
+              , or play keys with <span className={styles.kbd}>
+                a s d f …
+              </span>{' '}
+              and the kit with{' '}
               <span className={styles.kbd}>
                 1 … {padKeyFor(N_DRUM_VOICES - 1)}
               </span>
-              , or send the letters to the bend keys and they throw the board
-              around instead
             </>
-          )}{' '}
-          — turn up <b>Starve</b> until the toy reboots, solder the{' '}
-          <b>Bend spot</b> pot, bridge the two boxes in <b>Trigger patch</b>,
-          push any <b>Feedback</b> past 1
+          )}
         </p>
         {/* Under the machines rather than in the panel, because the half of
             the window below the keys had nothing on it and the panel was paying

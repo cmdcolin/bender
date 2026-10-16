@@ -197,6 +197,92 @@
   white-space: nowrap;
 }
 
+/* The studio: one faceplate holding the transport on top and the deck under
+   it, each strip engraved with its own name. On a phone the plate dissolves so
+   the transport can still pin itself to the top of the page. */
+.studio {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: linear-gradient(180deg, #24242c, #1a1a20);
+  border: 1px solid var(--case-edge);
+  border-radius: var(--ctl-radius);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 2px 6px rgb(0 0 0 / 0.4);
+}
+
+.studio::before,
+.studio::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #5a5a66, #15151a);
+}
+
+.studio::before {
+  left: 5px;
+}
+
+.studio::after {
+  right: 5px;
+}
+
+.transport::before,
+.deck > .ioRow::before {
+  flex: none;
+  width: 4.5em;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg4);
+}
+
+.transport::before {
+  content: 'play';
+}
+
+.deck > .ioRow::before {
+  content: 'tape';
+}
+
+.deck {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-quiet);
+}
+
+/* The take counter: a red seven-segment-ish readout that lights while a take
+   is running, like the one on the front of every cassette deck. */
+.counter,
+.counterOn {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-md);
+  letter-spacing: 0.08em;
+  padding: 0 var(--space-md);
+  min-height: var(--ctl-h);
+  display: inline-flex;
+  align-items: center;
+  background: #0b0b0e;
+  border: 1px solid #000;
+  border-radius: var(--ctl-radius);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.8);
+  color: #4a2a22;
+}
+
+.counterOn {
+  color: #ff5a3c;
+  text-shadow: 0 0 6px rgb(255 90 60 / 0.6);
+}
+
 /* The loud one, in the throw pads' colour, because it is a throw of the whole
    board rather than a switch. */
 .wildBtn {
@@ -331,6 +417,17 @@
   .left {
     overflow: visible;
     padding-top: 0;
+  }
+  .studio {
+    display: contents;
+  }
+  .deck {
+    padding-top: 0;
+    border-top: 0;
+  }
+  .transport::before,
+  .deck > .ioRow::before {
+    display: none;
   }
   .transport {
     order: -1;
