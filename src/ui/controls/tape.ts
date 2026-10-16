@@ -22,7 +22,17 @@ export const TAPE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['15⁄16 ips', '1⅞ ips', '3¾ ips', '7½ ips', '15 ips'],
-        help: 'Moves the whole machine at once: head-gap loss, the replay bump, hiss level, wow rate and how long a spool wrap takes to come back round. Slow is dark, noisy and unsteady. 1⅞ is cassette speed, and 15⁄16 the microcassette in an answering machine.',
+        help: 'Moves the whole machine at once: head-gap loss, the replay bump, hiss level, wow rate and how long a spool wrap takes to come back round. Slow is dark, noisy and unsteady.',
+      },
+      {
+        key: 'tapeFormat',
+        label: 'Format',
+        min: 0,
+        max: 2,
+        step: 1,
+        unit: '',
+        choices: ['open reel', 'cassette', 'microcassette'],
+        help: 'Picks the tape and heads; Speed sets how fast they run. A cassette head’s gap is a quarter of the reel head’s, so at the same speed a cassette keeps far more top end and its hiss is brighter, but driven hard it loses that top end sooner. 1⅞ is a cassette in a portable, and 3¾ a four-track at double speed. A microcassette is a dictation machine, about 250 Hz to 4 kHz at 15⁄16, with more wow and flutter than either.',
       },
       {
         key: 'tapeDrive',

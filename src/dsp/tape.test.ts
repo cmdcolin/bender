@@ -158,6 +158,33 @@ test('the record and replay curves cancel below the head gap', () => {
     )
 })
 
+// A cassette head's gap is a quarter of the reel head's, so at the same speed
+// it keeps the top end the reel loses. Played quietly, a cassette at 1⅞ and a
+// reel at 7½ share a corner; played loud, the cassette goes dull first, because
+// at the corner its wavelengths are a quarter as long and short wavelengths
+// demagnetise themselves.
+test('a cassette keeps the top a reel at its speed loses, until driven', () => {
+  const reel = { tapeFormat: 0, tapeSpeed: -1 }
+  const cassette = { tapeFormat: 1, tapeSpeed: -1 }
+  expect(response(8000, cassette) - response(8000, reel)).toBeGreaterThan(12)
+  const sameCorner = { tapeFormat: 0, tapeSpeed: 1 }
+  expect(
+    Math.abs(response(10000, cassette) - response(10000, sameCorner)),
+  ).toBeLessThan(1)
+  const loud = (m: Partial<Controls>) =>
+    response(10000, { ...m, tapeDrive: 6 }, 0.5)
+  expect(loud(sameCorner) - loud(cassette)).toBeGreaterThan(4)
+})
+
+test('a microcassette plays 250 Hz to 4 kHz', () => {
+  const micro = { tapeFormat: 2, tapeSpeed: -2 }
+  for (const hz of [250, 4000])
+    expect(Math.abs(response(hz, micro) + 3), `${hz} Hz`).toBeLessThan(1)
+  expect(Math.abs(response(1000, micro))).toBeLessThan(1)
+  expect(response(63, micro)).toBeLessThan(-15)
+  expect(response(10000, micro)).toBeLessThan(-10)
+})
+
 // Gap loss is flat and then a cliff — a wavelength either fits across the gap
 // or it cancels in it. A single pole is a tone control instead: it starts
 // taking the top off the midrange an octave early and still passes 20 kHz at

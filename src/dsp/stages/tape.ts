@@ -11,9 +11,8 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 // wavelength, so a slower tape loses them lower; the replay bump sits at a
 // wavelength too, so it drops with speed; less tape past the head per second
 // means more hiss and slower wow; and a spool wrap takes longer to come round.
-// 1⅞ is cassette speed and 15⁄16 the microcassette in an answering machine,
-// each a halving below 3¾ on the same scaling. The microcassette hisses past
-// that scaling, or a gap this narrow would leave it quieter than the cassette.
+// 1⅞ and 15⁄16 continue the halvings below 3¾. The slowest hisses past the
+// scaling, or a gap that narrow would leave it quieter than 1⅞.
 const SPEED = [
   {
     gapHz: 1250,
@@ -64,6 +63,53 @@ const SPEED = [
     wobble: 0.6,
     printMs: 225,
     squealHz: 3400,
+  },
+]
+
+// Each format scales the row of SPEED it runs at. A cassette head's gap is
+// about a quarter of the open-reel head's, so at the same speed its gap corner
+// sits four times higher and its hiss extends that high too. Its pole pieces
+// are smaller, which lifts the bump; its tape is thinner, so it prints through
+// more; its capstan is thinner, so flutter runs faster. At the corner its head
+// reads wavelengths a quarter as long, and driven oxide demagnetises short
+// wavelengths far harder, so `demag` squares the self-erase term. The
+// microcassette is a dictation transport, with playback electronics cut below
+// about 250 Hz.
+//
+// At -24 dBFS a cassette at 3¾ measures -1.7 dB at 16 kHz, against the 40 Hz
+// to 16 kHz a Portastudio quotes at that speed, and at 1⅞ crosses -3 dB near
+// 12.5 kHz. A microcassette at 15⁄16 measures -3.3 dB at 250 Hz and at 4 kHz,
+// the range Sony quotes for its dictation machines.
+const FORMAT = [
+  {
+    gap: 1,
+    bump: 1,
+    hiss: 1,
+    lowHz: 0,
+    flut: 1,
+    wobble: 1,
+    print: 1,
+    demag: false,
+  },
+  {
+    gap: 4,
+    bump: 2.8,
+    hiss: 1,
+    lowHz: 35,
+    flut: 2,
+    wobble: 0.7,
+    print: 2,
+    demag: true,
+  },
+  {
+    gap: 3.2,
+    bump: 3,
+    hiss: 1.6,
+    lowHz: 250,
+    flut: 1.9,
+    wobble: 0.8,
+    print: 2,
+    demag: true,
   },
 ]
 
@@ -162,6 +208,7 @@ interface Settings {
   magAtk: number
   magRel: number
   erase: number
+  demag: boolean
   dropAmt: number
   dropProb: number
   dropCoef: number
@@ -382,7 +429,8 @@ class TapeHead {
     // for 12.4, darker at 10 kHz than a 3¾ machine sitting at rest, and left
     // the three speeds within 7 dB of each other where the wavelength wants
     // them 11 apart. The switch is supposed to be three machines.
-    const k = (1 - 0.75 * drop) * (1 - s.erase * this.magEnv)
+    const held = 1 - s.erase * this.magEnv
+    const k = (1 - 0.75 * drop) * (s.demag ? held * held : held)
     const gc = 1 - Math.exp(k * gapLog)
     this.gap = flushDenormal(this.gap + gc * (y - this.gap))
     this.gap2 = flushDenormal(this.gap2 + gc * (this.gap - this.gap2))
@@ -450,6 +498,10 @@ export class Tape implements Stage {
   private flut2 = new SineOsc()
   private sqLow = 0
   private sqBand = 0
+  private lowL1 = 0
+  private lowL2 = 0
+  private lowR1 = 0
+  private lowR2 = 0
   private nominal: number
   private gauss: Rng
   private readonly s: Settings = {
@@ -469,6 +521,7 @@ export class Tape implements Stage {
     magAtk: 0,
     magRel: 0,
     erase: ERASE,
+    demag: false,
     dropAmt: 0,
     dropProb: 0,
     dropCoef: 0,
@@ -516,6 +569,10 @@ export class Tape implements Stage {
           SPEED.length - 1,
         )
       ]!
+    const fm =
+      FORMAT[
+        Math.min(Math.max(Math.round(p[IDX.tapeFormat]!), 0), FORMAT.length - 1)
+      ]!
     const bias = p[IDX.tapeBias]!
     // Under-bias records hotter highs and distorts sooner; over-bias is duller
     // and squashes. One knob, the two moving against each other.
@@ -527,7 +584,7 @@ export class Tape implements Stage {
     // 20 kHz through at 3¾ ips, where a real machine has nothing up there at
     // all. Two is what makes the speed switch a different machine.
     const gapHz = Math.min(
-      sp.gapHz * Math.pow(2, -bias * 0.5) * GAP_POLE,
+      sp.gapHz * fm.gap * Math.pow(2, -bias * 0.5) * GAP_POLE,
       this.sr * 0.47,
     )
     const s = this.s
@@ -551,7 +608,8 @@ export class Tape implements Stage {
     s.bump = p[IDX.tapeBump]!
     s.tilt = -bias * 0.85
     s.tiltCoef = lpCoef(3000, this.sr)
-    s.hiss = p[IDX.tapeHiss]! * sp.hiss * 0.006
+    s.hiss = p[IDX.tapeHiss]! * sp.hiss * fm.hiss * 0.006
+    s.demag = fm.demag
     s.hissCoef = lpCoef(1500, this.sr)
     s.envCoef = lpCoef(12, this.sr)
     s.magAtk = lpCoef(60, this.sr)
@@ -561,24 +619,25 @@ export class Tape implements Stage {
     s.dropCoef = lpCoef(120, this.sr)
     s.dropSr = this.sr
     s.headDc = 1 - (2 * Math.PI * HEAD_DC_HZ) / this.sr
-    s.bumpF = 2 * Math.sin((Math.PI * sp.bumpHz) / this.sr)
+    const bumpHz = sp.bumpHz * fm.bump
+    s.bumpF = 2 * Math.sin((Math.PI * bumpHz) / this.sr)
     s.ripple = s.bump * RIPPLE_DEPTH
-    s.ripF = 2 * Math.sin((Math.PI * sp.bumpHz * RIPPLE_RATIO) / this.sr)
-    s.printGain = p[IDX.tapePrint]! * 0.05
+    s.ripF = 2 * Math.sin((Math.PI * bumpHz * RIPPLE_RATIO) / this.sr)
+    s.printGain = p[IDX.tapePrint]! * 0.05 * fm.print
     s.printDelay = (sp.printMs / 1000) * this.sr
     s.printCoef = lpCoef(2500, this.sr)
 
     const azimuth = p[IDX.tapeAzimuth]! * AZIMUTH_MAX
     const gapL = Math.log(1 - lpCoef(gapHz, this.sr))
     const gapR = gapL * (1 - (0.45 * azimuth) / AZIMUTH_MAX)
-    const wowAmt = p[IDX.tapeWow]! * sp.wobble
-    const flutAmt = p[IDX.tapeFlutter]! * sp.wobble
+    const wowAmt = p[IDX.tapeWow]! * sp.wobble * fm.wobble
+    const flutAmt = p[IDX.tapeFlutter]! * sp.wobble * fm.wobble
     const driftCoef = lpCoef(0.12, this.sr)
     const msToSamples = this.sr / 1000
     const wowK = SineOsc.rate(sp.wowHz, this.sr)
     const wow2K = SineOsc.rate(sp.wowHz * 0.37, this.sr)
-    const flutK = SineOsc.rate(sp.flutHz, this.sr)
-    const flut2K = SineOsc.rate(sp.flutHz * 1.54, this.sr)
+    const flutK = SineOsc.rate(sp.flutHz * fm.flut, this.sr)
+    const flut2K = SineOsc.rate(sp.flutHz * fm.flut * 1.54, this.sr)
     const sqAmt = p[IDX.tapeSqueal]!
     const sqOn = sqAmt > 0
     const spanOn = sqOn || flutAmt > 0
@@ -594,6 +653,9 @@ export class Tape implements Stage {
     // and the hiss down silent, which flutter has no business changing.
     const sqBleed = sqOn ? SQ_BLEED : 0
     const sqFm = SQ_FM_MS * msToSamples
+    // Two poles that cross -3 dB at the format's corner, the way the gap does.
+    const lowOn = fm.lowHz > 0
+    const lowC = lowOn ? lpCoef(fm.lowHz / GAP_POLE, this.sr) : 0
 
     for (let i = 0; i < io.n; i++) {
       this.driftY = flushDenormal(
@@ -642,8 +704,18 @@ export class Tape implements Stage {
       const inR = io.r[i]!
       this.dryL.write(inL)
       this.dryR.write(inR)
-      const wetL = this.headL.process(inL, d, gapL, s)
-      const wetR = this.headR.process(inR, d + azimuth, gapR, s)
+      let wetL = this.headL.process(inL, d, gapL, s)
+      let wetR = this.headR.process(inR, d + azimuth, gapR, s)
+      if (lowOn) {
+        this.lowL1 = flushDenormal(this.lowL1 + lowC * (wetL - this.lowL1))
+        wetL -= this.lowL1
+        this.lowL2 = flushDenormal(this.lowL2 + lowC * (wetL - this.lowL2))
+        wetL -= this.lowL2
+        this.lowR1 = flushDenormal(this.lowR1 + lowC * (wetR - this.lowR1))
+        wetR -= this.lowR1
+        this.lowR2 = flushDenormal(this.lowR2 + lowC * (wetR - this.lowR2))
+        wetR -= this.lowR2
+      }
 
       // The dry side runs down the same nominal delay, so the blend only combs
       // when the transport actually wobbles.
@@ -671,5 +743,9 @@ export class Tape implements Stage {
     this.flut2.reset()
     this.sqLow = 0
     this.sqBand = 0
+    this.lowL1 = 0
+    this.lowL2 = 0
+    this.lowR1 = 0
+    this.lowR2 = 0
   }
 }
