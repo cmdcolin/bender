@@ -192,8 +192,8 @@
   gap: var(--gap-ctl);
 }
 
-.ioRow > *,
-.transport > * {
+.ioRow > :not([role='tooltip']),
+.transport > :not([role='tooltip']) {
   white-space: nowrap;
 }
 
