@@ -48,7 +48,7 @@ import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { StartOverlay } from './StartOverlay'
-import { Cartridge, Cassette } from './StudioArt'
+import { Cassette, ReelDeck } from './StudioArt'
 import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
 import { useCurrentSession } from './useCurrentSession'
@@ -443,7 +443,11 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
           <section className={styles.box} aria-label="sampler">
             <span className={styles.label}>sampler</span>
             <div className={styles.artRow}>
-              <Cartridge name={sampleName || null} hot={dragging} />
+              <ReelDeck
+                name={sampleName || null}
+                running={tapeRunning && !!sampleName}
+                hot={dragging}
+              />
               <div className={styles.controls}>
                 <div className={styles.ioRow}>
                   {(!sampleName || dragging) && (
