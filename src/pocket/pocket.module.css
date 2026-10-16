@@ -446,6 +446,19 @@
   align-items: center;
   gap: var(--space-sm);
 }
+.takeNote,
+.takeError {
+  margin: 0;
+  padding: 0 32px;
+  text-align: center;
+  font-size: var(--fs-sm);
+}
+.takeNote {
+  color: var(--fg3);
+}
+.takeError {
+  color: var(--danger);
+}
 .take {
   display: flex;
   flex-direction: column;

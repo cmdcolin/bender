@@ -2,6 +2,8 @@
 //
 // - **A file** in the origin-private file system, written a slab at a time.
 //   The tab holds one slab, and the quota the browser grants caps the take.
+//   The quota is asked again every few seconds, so a disk that fills mid-take
+//   stops the take before a write fails and loses it.
 // - **Blobs** in memory, where the browser has no `createWritable` or the
 //   origin has no private file system. `MEMORY_MAX` caps the take.
 //
@@ -21,6 +23,8 @@ export interface Take {
   wav: (name: string, channels: 1 | 2) => WavSink
   /** Bytes the take may still write before it must stop. */
   room: () => number
+  /** What runs out first: the browser's storage, memory or the wav format. */
+  limit: () => 'storage' | 'memory' | 'size'
   /** Why a write failed, or '' while none has. */
   failure: () => string
   /** Lets the sweep reclaim the take's folder once its files are old. */
@@ -33,6 +37,7 @@ const MEMORY_MAX = 128 * 1024 * 1024
 const STREAM_UNKNOWN = 2 * 1024 * 1024 * 1024
 const STREAM_RESERVE = 256 * 1024 * 1024
 const WAV_MAX = 0xffffffff - 36
+const RECHECK_MS = 5000
 
 const lockName = (id: string) => `bender-take-${id}`
 
@@ -96,7 +101,10 @@ export function openTake(sr: number): Take {
   const lock = holdLock(id)
   const dir = lock.held.then(() => openDir(id)).catch(() => null)
   let free = MEMORY_MAX
+  let streamed = false
+  let checkedAt = Date.now()
   let written = 0
+  let landed = 0
   let largest = 0
   let failure = ''
 
@@ -104,8 +112,23 @@ export function openTake(sr: number): Take {
     if (failure === '') failure = e instanceof Error ? e.message : String(e)
   }
 
+  const recheck = () => {
+    if (!streamed || Date.now() - checkedAt < RECHECK_MS) return
+    checkedAt = Date.now()
+    const at = landed
+    void granted().then(room => {
+      free = at + room
+    })
+  }
+
   return {
     room: () => Math.min(free - written, WAV_MAX - largest),
+    limit: () =>
+      WAV_MAX - largest < free - written
+        ? 'size'
+        : streamed
+          ? 'storage'
+          : 'memory',
     failure: () => failure,
     end: lock.release,
     wav: (name, channels) => {
@@ -121,6 +144,7 @@ export function openTake(sr: number): Take {
           stream = await handle.createWritable()
           await stream.write(wavHeader(0, channels, sr))
           free = await granted()
+          streamed = true
         } catch {
           handle = null
           stream = null
@@ -136,11 +160,12 @@ export function openTake(sr: number): Take {
           bytes += pcm.byteLength
           written += pcm.byteLength
           largest = Math.max(largest, bytes)
-          queue(() =>
-            stream === null
-              ? void pieces.push(new Blob([pcm]))
-              : stream.write(pcm),
-          )
+          recheck()
+          queue(async () => {
+            if (stream === null) pieces.push(new Blob([pcm]))
+            else await stream.write(pcm)
+            landed += pcm.byteLength
+          })
         },
         close: async () => {
           await chain

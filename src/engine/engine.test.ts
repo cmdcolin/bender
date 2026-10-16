@@ -651,7 +651,7 @@ const recorder = (stems: boolean) => {
       kind: 'rec',
       ...msg,
     })
-  return { files, chunk }
+  return { files, chunk, engine }
 }
 
 const STAMP = /^bender-\d{8}-\d{6}/
@@ -690,4 +690,46 @@ test('a master-only take saves one file under the bare stamp', async () => {
   chunk({ l, r: l, n: N, done: true })
   await vi.waitFor(() => expect(files).toHaveLength(1))
   expect(suffixes(files)).toEqual(['.wav'])
+})
+
+const roomy = (room: number) => {
+  const { files, chunk, engine } = recorder(false)
+  const rec = (engine as unknown as { rec: Record<string, unknown> }).rec
+  Object.assign(rec, {
+    take: {
+      room: () => room,
+      limit: () => 'storage',
+      failure: () => '',
+      end: () => {},
+    },
+  })
+  return { files, chunk, engine }
+}
+
+const MINUTE = 4 * 48000 * 60
+
+test('a take warns when ten minutes of room are left, and keeps going', () => {
+  const { chunk, engine } = roomy(3 * MINUTE)
+  const l = new Float32Array(N)
+  chunk({ l, r: l, n: N, done: false })
+  expect(engine.recNote.get()).toBe('about 3 min of browser storage left')
+  expect(engine.recording.get()).toBe(true)
+})
+
+test('a take with room to spare says nothing', () => {
+  const { chunk, engine } = roomy(60 * MINUTE)
+  const l = new Float32Array(N)
+  chunk({ l, r: l, n: N, done: false })
+  expect(engine.recNote.get()).toBe('')
+})
+
+test('a take that runs out of room stops, saves what it has and says why', async () => {
+  const { files, chunk, engine } = roomy(0)
+  const l = new Float32Array(N).fill(0.5)
+  chunk({ l, r: l, n: N, done: false })
+  expect(engine.recording.get()).toBe(false)
+  chunk({ l, r: l, n: 0, done: true })
+  await vi.waitFor(() => expect(files).toHaveLength(1))
+  expect(engine.recNote.get()).toBe('stopped early: out of browser storage')
+  expect(engine.recError.get()).toBe('')
 })

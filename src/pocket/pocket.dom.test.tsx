@@ -53,6 +53,24 @@ test('a finished take lands on a chip beside rec instead of downloading', () => 
   ).toBeTruthy()
 })
 
+test('the pocket page shows how much room a take has left and why one failed', () => {
+  render(<PocketPage />)
+  act(() => engine.recNote.set('about 3 min of browser storage left'))
+  expect(screen.getByRole('status').textContent).toBe(
+    'about 3 min of browser storage left',
+  )
+  act(() => engine.recError.set('disk full'))
+  expect(screen.getByRole('alert').textContent).toBe(
+    'the take was not saved: disk full',
+  )
+  act(() => {
+    engine.recNote.set('')
+    engine.recError.set('')
+  })
+  expect(screen.queryByRole('status')).toBeNull()
+  expect(screen.queryByRole('alert')).toBeNull()
+})
+
 test('the app keeps its downloads once the page goes', () => {
   const { unmount } = render(<PocketPage />)
   unmount()

@@ -172,6 +172,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   const recSeconds = useStoreValue(engine.recSeconds)
   const recStems = useStoreValue(engine.recStems)
   const recError = useStoreValue(engine.recError)
+  const recNote = useStoreValue(engine.recNote)
   const sampleName = useStoreValue(engine.sampleName)
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
@@ -403,6 +404,11 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                 {recError && (
                   <p className={styles.recError} role="alert">
                     the take was not saved: {recError}
+                  </p>
+                )}
+                {recNote && (
+                  <p className={styles.rolling} role="status">
+                    {recNote}
                   </p>
                 )}
                 {showOptions && (

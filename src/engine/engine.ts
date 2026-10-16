@@ -65,6 +65,25 @@ interface Rec {
   stems: WavSink[]
   frames: number
   live: number
+  full: ReturnType<Take['limit']> | ''
+}
+
+const LIMIT_NOUN = {
+  storage: 'browser storage',
+  memory: 'memory',
+  size: 'wav file size',
+}
+
+// How long before a take runs out of room that the page starts saying so.
+const LOW_ROOM_S = 10 * 60
+
+/** What to tell the player while a take has `left` seconds of room, or '' while
+    it has plenty. */
+export function roomNote(left: number, limit: keyof typeof LIMIT_NOUN): string {
+  if (left >= LOW_ROOM_S) return ''
+  const noun = LIMIT_NOUN[limit]
+  if (left < 60) return `under a minute of ${noun} left`
+  return `about ${Math.round(left / 60)} min of ${noun} left`
 }
 
 // Where a source stops counting as sounding, and how fast its needle falls to
@@ -296,6 +315,9 @@ export class Engine {
   readonly recSeconds = createStore(0)
   /** Why the last take could not be saved, or '' when it could. */
   readonly recError = createStore('')
+  /** How much room the take has left once that is running short, or why the
+      last take stopped early; '' otherwise. */
+  readonly recNote = createStore('')
   /** Whether a take comes back as one file or as one per source plus the
       master. UI state rather than a control on the board: it changes nothing
       about what the instrument does, and a board control rides in the link, in
@@ -973,14 +995,23 @@ export class Engine {
       rec.master.write(pcmStereo(msg.l, msg.r, msg.n))
       if (msg.stems) this.keepStems(rec, msg.stems, msg.n)
       rec.frames += msg.n
-      this.recSeconds.set(rec.frames / this.sampleRate())
+      const sr = this.sampleRate()
+      this.recSeconds.set(rec.frames / sr)
+      if (this.recording.get()) {
+        const bytesPerSecond = (4 + 2 * rec.stems.length) * sr
+        this.recNote.set(
+          roomNote(rec.take.room() / bytesPerSecond, rec.take.limit()),
+        )
+      }
     }
-    if (
-      rec &&
-      this.recording.get() &&
-      (rec.take.room() <= 0 || rec.take.failure())
-    )
-      this.stopRecording()
+    if (rec && this.recording.get()) {
+      if (rec.take.room() <= 0) {
+        rec.full = rec.take.limit()
+        this.stopRecording()
+      } else if (rec.take.failure()) {
+        this.stopRecording()
+      }
+    }
     if (msg.done) void this.saveTake()
   }
 
@@ -1025,6 +1056,9 @@ export class Engine {
         else stem.discard()
       }
       for (const file of files) this.deliver(file)
+      this.recNote.set(
+        rec.full ? `stopped early: out of ${LIMIT_NOUN[rec.full]}` : '',
+      )
     } catch (e) {
       this.recError.set(e instanceof Error ? e.message : String(e))
     } finally {
@@ -1110,8 +1144,10 @@ export class Engine {
         : [],
       frames: 0,
       live: 0,
+      full: '',
     }
     this.recError.set('')
+    this.recNote.set('')
     this.recSeconds.set(0)
     this.recording.set(true)
     this.post({ kind: 'record', on: true, stems })

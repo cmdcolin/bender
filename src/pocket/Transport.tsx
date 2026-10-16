@@ -18,6 +18,8 @@ export function Transport(props: { onPlay: () => void }) {
   const drums = useStoreValue(engine.drumsPlaying)
   const recording = useStoreValue(engine.recording)
   const recSeconds = useStoreValue(engine.recSeconds)
+  const recError = useStoreValue(engine.recError)
+  const recNote = useStoreValue(engine.recNote)
   const walk = useStoreValue(engine.history)
   const playing = song || drums
   const [take, setTake] = useState<{ file: File; seconds: number } | null>(null)
@@ -30,44 +32,56 @@ export function Transport(props: { onPlay: () => void }) {
   }, [])
 
   return (
-    <div className={styles.row}>
-      <span className={styles.left}>
-        <button
-          className={recording ? styles.recOn : styles.rec}
-          aria-label={recording ? 'stop and save the take' : 'record a wav'}
-          onClick={() =>
-            recording ? engine.stopRecording() : engine.startRecording()
-          }
-        >
-          <span className={styles.recDot} />
-          {recording ? clock(recSeconds) : 'rec'}
-        </button>
-        {take === null || recording ? null : (
+    <>
+      {recError ? (
+        <p className={styles.takeError} role="alert">
+          the take was not saved: {recError}
+        </p>
+      ) : null}
+      {recNote ? (
+        <p className={styles.takeNote} role="status">
+          {recNote}
+        </p>
+      ) : null}
+      <div className={styles.row}>
+        <span className={styles.left}>
           <button
-            className={styles.take}
-            aria-label={`save or share the ${clock(take.seconds)} take`}
-            onClick={() => void deliver(take.file)}
+            className={recording ? styles.recOn : styles.rec}
+            aria-label={recording ? 'stop and save the take' : 'record a wav'}
+            onClick={() =>
+              recording ? engine.stopRecording() : engine.startRecording()
+            }
           >
-            <span className={styles.takeIcon}>⤴</span>
-            {clock(take.seconds)}
+            <span className={styles.recDot} />
+            {recording ? clock(recSeconds) : 'rec'}
           </button>
-        )}
-      </span>
-      <button
-        className={playing ? styles.playOn : styles.play}
-        aria-label={playing ? 'stop' : 'play'}
-        onClick={props.onPlay}
-      >
-        {playing ? '■' : '▶'}
-      </button>
-      <button
-        className={styles.side}
-        aria-label="undo"
-        disabled={walk.past.length === 0}
-        onClick={() => engine.undo(1)}
-      >
-        ↶
-      </button>
-    </div>
+          {take === null || recording ? null : (
+            <button
+              className={styles.take}
+              aria-label={`save or share the ${clock(take.seconds)} take`}
+              onClick={() => void deliver(take.file)}
+            >
+              <span className={styles.takeIcon}>⤴</span>
+              {clock(take.seconds)}
+            </button>
+          )}
+        </span>
+        <button
+          className={playing ? styles.playOn : styles.play}
+          aria-label={playing ? 'stop' : 'play'}
+          onClick={props.onPlay}
+        >
+          {playing ? '■' : '▶'}
+        </button>
+        <button
+          className={styles.side}
+          aria-label="undo"
+          disabled={walk.past.length === 0}
+          onClick={() => engine.undo(1)}
+        >
+          ↶
+        </button>
+      </div>
+    </>
   )
 }

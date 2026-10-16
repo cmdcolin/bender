@@ -91,6 +91,7 @@ const SR = 48000
 const stubBrowser = (opts: { opfs: boolean; quota?: number }) => {
   const root = entry('directory')
   const held = new Set<string>()
+  const space = { quota: opts.quota ?? 1e12, usage: 0 }
   vi.stubGlobal('FileSystemFileHandle', {
     prototype: opts.opfs ? { createWritable: () => ({}) } : {},
   })
@@ -98,7 +99,7 @@ const stubBrowser = (opts: { opfs: boolean; quota?: number }) => {
     storage: opts.opfs
       ? {
           getDirectory: async () => handle('', root),
-          estimate: async () => ({ quota: opts.quota ?? 1e12, usage: 0 }),
+          estimate: async () => ({ ...space }),
         }
       : undefined,
     locks: {
@@ -109,7 +110,7 @@ const stubBrowser = (opts: { opfs: boolean; quota?: number }) => {
       query: async () => ({ held: [...held].map(name => ({ name })) }),
     },
   })
-  return { root, held }
+  return { root, held, space }
 }
 
 afterEach(() => {
@@ -202,4 +203,38 @@ test('the sweep clears an old take, and leaves a recording one and a fresh one',
   const later = Date.now() + 11 * 60 * 1000
   expect(await sweepTakes(later)).toBe(1)
   expect(root.children.get('takes')!.children.size).toBe(1)
+})
+
+test('a take that streams to a file reports storage as what runs out first', async () => {
+  stubBrowser({ opfs: true, quota: 1e9 })
+  const take = openTake(SR)
+  take.wav('bender-1.wav', 2)
+  await vi.waitFor(() => expect(take.limit()).toBe('storage'))
+})
+
+test('a memory take reports memory as what runs out first', () => {
+  stubBrowser({ opfs: false })
+  expect(openTake(SR).limit()).toBe('memory')
+})
+
+test('a take asks the browser again, and stops short when the disk has filled meanwhile', async () => {
+  const reserve = 256 * 1024 * 1024
+  const { space } = stubBrowser({ opfs: true, quota: reserve + 1000 })
+  vi.useFakeTimers({ toFake: ['Date'] })
+  try {
+    const take = openTake(SR)
+    const sink = take.wav('bender-1.wav', 2)
+    await vi.waitFor(() => expect(take.limit()).toBe('storage'))
+    sink.write(slab(10, 1))
+    expect(take.room()).toBe(1000 - 40)
+    await new Promise(r => setTimeout(r))
+
+    space.quota = reserve + 100
+    space.usage = 40
+    vi.setSystemTime(Date.now() + 6000)
+    sink.write(slab(10, 1))
+    await vi.waitFor(() => expect(take.room()).toBe(100 - 80))
+  } finally {
+    vi.useRealTimers()
+  }
 })
