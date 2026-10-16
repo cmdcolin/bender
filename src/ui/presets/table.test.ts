@@ -109,6 +109,23 @@ test('a preset that names the sampler brings its fader up', () => {
   }
 })
 
+test('no two presets share a name', () => {
+  const names = PRESETS.map(p => p.name)
+  expect(new Set(names).size).toBe(names.length)
+})
+
+// The four-track's fader is yours, so a preset that sets up the machine and
+// leaves the fader where it was is a preset that sounds like the board without
+// it.
+test('a preset that names the four-track brings its fader up', () => {
+  for (const p of PRESETS) {
+    const names = Object.keys(p.patch).some(
+      k => k.startsWith('four') && k !== 'fourLevel',
+    )
+    if (names) expect(p.patch.fourLevel, p.name).toBeGreaterThan(0)
+  }
+})
+
 test('every preset patches keys that exist', () => {
   for (const preset of PRESETS) {
     for (const key of Object.keys(preset.patch)) {

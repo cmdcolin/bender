@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 449 knobs and switches in 33 groups, seven bends competing for six slots,
-18 ROM tunes, 115 presets, 18 stage settings and 46 named cuts — and everything
+18 ROM tunes, 121 presets, 18 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 115 presets, and dice on every heading as
+- **Boards, rather than settings.** 121 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -1333,7 +1333,7 @@ became:
 
 ### Presets
 
-115 boards worth keeping. Every name is a link that opens the app with that
+121 boards worth keeping. Every name is a link that opens the app with that
 board on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1413,6 +1413,24 @@ board on it — a link never presses play, so it is loaded and waiting.
 - [**the loop eats itself**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,sampleLevel:1,loopRec:1,loopErase:0.12,tapeMix:1,tapeSpeed:0,tapeDrive:5,tapeHiss:0.5,tapeWow:0.35,tapeDrop:0.45)
   — Blank tape under the toy, coming round worse every lap — press play and
   watch the reel
+- [**four loops, no common length**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.5,keyScale:2,chipClockX:0.8,fourLevel:0.9,fourDbx:1,fourHiss:0.35,fourWow:0.4,fourFlutter:0.3,four1In:1,four1Rec:0.3,four1Erase:0.35,four2In:1,four2Rec:0.3,four2Erase:0.35,four3In:1,four3Rec:0.3,four3Erase:0.35,four4In:1,four4Rec:0.3,four4Erase:0.35,revDecayS:4,revMix:0.35)
+  — The board onto four tape loops between 4 and 11 seconds long, each a little
+  quieter and darker every lap, drifting against each other
+- [**the loops wear through**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.45,fourLevel:0.8,fourWow:0.5,fourWear:0.6,four1In:1,four1Rec:0.25,four1Erase:0,four2In:1,four2Rec:0.25,four2Erase:0,four3In:1,four3Rec:0.25,four3Erase:0,four4In:1,four4Rec:0.25,four4Erase:0,bits:9,srHz:11000,crushMix:0.35,combHz:220,combFb:0.8,combMix:0.25)
+  — Four loops that never erase, piling the bent board onto oxide that is coming
+  away in patches, the same patches every lap
+- [**nothing plugged in**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fourLevel:0.25,fourAux:1.1,four1In:3,four1MidHz:900,four1Mid:12,four1Send:0.9,four1Pan:-0.5,four1Fader:0.8,four2In:3,four2Low:-10,four2MidHz:2600,four2Mid:10,four2Send:0.7,four2Pan:0.5,four2Fader:0.6)
+  — Two channels of the four-track on their own aux return, each boosted at a
+  different mid: a no-input desk squealing on its op-amp rails
+- [**a four-track on its last cells**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.55,fourLevel:0.9,fourDbx:1,fourBattery:0.75,four1In:1,four1Rec:0.5,four1Erase:0.4,four1Len:3.2)
+  — A loop of the board on a four-track whose cells are going: it drags flat
+  whenever the desk works, the servo hunts, and the op-amps clip and choke
+- [**a dictaphone into the bends**](https://cmdcolin.github.io/bender/app/#set=bits:7,crushMix:0.4,revDecayS:3,revMix:0.4,tapeMix:1,tapeSpeed:-2,tapeFormat:2,tapeAt:2,tapeHiss:0.6,tapeWow:0.5,tapeFlutter:0.4)
+  — The board played off a microcassette into everything after it: 250 Hz to 4
+  kHz, hiss and wobble, crushed and then reverberated
+- [**dbx on the wrong deck**](https://cmdcolin.github.io/bender/app/#set=tapeMix:1,tapeSpeed:-1,tapeFormat:1,tapeNrRec:2,tapeHiss:0.5)
+  — A cassette recorded through dbx and played back on a deck without it:
+  squeezed 2:1, the top end shouting and the hiss riding every note
 - [**the desk lets go**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,crackleAmp:0.2,mixDrive:8,fbAmt:1.2,fbTone:0.3,fb2Amt:1.1,fb2Tone:-0.4,fb3Amt:1,fb3Tone:0.1,fbCross:0.55,fbRails:1,fbAsym:0.4,fbSlew:0.35,fbBlock:0.9,fbSag:0.5)
   — Three cross-fed loops through amps that block — erupts and dies on its own
 - [**divider fuzz**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,driveDb:18,distMode:2,distToneHz:4000,subLevel:0.9,distMix:0.8)
