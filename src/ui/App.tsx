@@ -8,7 +8,6 @@ import {
 } from 'react'
 
 import { DEFAULT_CONTROLS } from '../controls'
-import { YOURS } from '../dsp/stages/roms'
 import { POOLS, detailsUrl } from '../engine/archive'
 import { engine } from '../engine/engine'
 import { pocketUrl } from '../site/paths'
@@ -164,12 +163,9 @@ const copyLink = (query: string) => {
 export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   const running = useStoreValue(engine.running)
   const micOn = useStoreValue(engine.micOn)
-  const songPlaying = useStoreValue(engine.songPlaying)
   // The switch runs whichever tune the chip is on, and the melody memory is one
   // of them — writing the roll puts the chip on yours, so a button that says
   // demo song from then on is naming something it is not playing.
-  const yourTune = useBoardValue(c => Math.round(c.chipTune) === YOURS)
-  const drumsPlaying = useStoreValue(engine.drumsPlaying)
   const recording = useStoreValue(engine.recording)
   // A phone has no space bar and no number row, so the way in is the buttons
   // and the keys themselves. Naming shortcuts nobody can press is a paragraph
@@ -364,56 +360,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
             machines scroll under it, which a row that also held the recorder
             and the sampler's inputs was too tall to do. */}
         <div className={styles.studio}>
-          <div className={styles.transport}>
-            {/* Two machines, two switches. The kit used to run off the demo
-              song's line, so writing a pattern and hearing it meant putting the
-              toy's ROM tune on underneath it. */}
-            <Tip
-              text={
-                yourTune
-                  ? 'Runs the toy chip on your own melody, the one in the piano roll. Nothing else starts it — space runs both machines.'
-                  : "Runs the toy chip's ROM tune. Nothing else starts it — space runs both machines."
-              }
-            >
-              <button
-                className={songPlaying ? styles.playBtnOn : styles.playBtn}
-                onClick={() => engine.setSongPlaying(!songPlaying)}
-              >
-                {songPlaying ? '❚❚ pause ' : '▶ play '}
-                {yourTune ? 'your tune' : 'demo song'}
-              </button>
-            </Tip>
-            <Tip text="Runs the drum machine's pattern, with or without the chip's tune. Bring the kit's Level up if you hear nothing.">
-              <button
-                className={drumsPlaying ? styles.playBtnOn : styles.playBtn}
-                onClick={() => engine.setDrumsPlaying(!drumsPlaying)}
-              >
-                {drumsPlaying ? '❚❚ pause drums' : '▶ play drums'}
-              </button>
-            </Tip>
-            {/* The one press that gets to the noise: both machines running, the
-              kit audible, the letters on the bend keys and a hand dealt. */}
-            <Tip text="Run both machines, bring the kit up if it is down, send the letter keys to the bend keys and deal a hand — one press from silence to glitch.">
-              <button
-                className={styles.wildBtn}
-                onClick={() => {
-                  void engine.start()
-                  if (engine.controls.get().drumLevel === 0) {
-                    engine.armStep()
-                    engine.set('drumLevel', 0.8)
-                  }
-                  engine.setSongPlaying(true)
-                  engine.setDrumsPlaying(true)
-                  if (bendDeal.get().length === 0)
-                    redealBendKeys(engine.controls.get())
-                  letterKeys.set('bends')
-                  rememberLetters(true)
-                }}
-              >
-                ⚡ go wild
-              </button>
-            </Tip>
-          </div>
           <div className={styles.deck}>
             <div className={styles.ioRow}>
               <span
@@ -461,6 +407,28 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
               >
                 more
               </button>
+              {/* The one press that gets to the noise: both machines running, the
+              kit audible, the letters on the bend keys and a hand dealt. */}
+              <Tip text="Run both machines, bring the kit up if it is down, send the letter keys to the bend keys and deal a hand — one press from silence to glitch.">
+                <button
+                  className={styles.wildBtn}
+                  onClick={() => {
+                    void engine.start()
+                    if (engine.controls.get().drumLevel === 0) {
+                      engine.armStep()
+                      engine.set('drumLevel', 0.8)
+                    }
+                    engine.setSongPlaying(true)
+                    engine.setDrumsPlaying(true)
+                    if (bendDeal.get().length === 0)
+                      redealBendKeys(engine.controls.get())
+                    letterKeys.set('bends')
+                    rememberLetters(true)
+                  }}
+                >
+                  ⚡ go wild
+                </button>
+              </Tip>
             </div>
             {showMore && (
               <div className={styles.ioRow}>

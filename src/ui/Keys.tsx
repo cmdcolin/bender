@@ -1,5 +1,6 @@
+import { YOURS } from '../dsp/stages/roms'
 import { engine } from '../engine/engine'
-import { useStoreValue } from './ControlsContext'
+import { useBoardValue, useStoreValue } from './ControlsContext'
 import { Keybed } from './Keybed'
 import styles from './Keys.module.css'
 import { RailLamp } from './RailLamp'
@@ -13,6 +14,7 @@ export function Keys() {
   // one panel away behind whatever stage is open.
   const recording = useStoreValue(engine.tuneRecord)
   const tunePlaying = useStoreValue(engine.songPlaying)
+  const yourTune = useBoardValue(c => Math.round(c.chipTune) === YOURS)
 
   return (
     <Keybed
@@ -30,6 +32,22 @@ export function Keys() {
               battery light: a note that comes out flat, quiet or not at all is
               that number falling. */}
           <RailLamp />
+          <Tip
+            text={
+              yourTune
+                ? 'Runs the toy chip on your own melody, the one in the piano roll. Space runs this and the drums together.'
+                : "Runs the toy chip's ROM tune. Space runs this and the drums together."
+            }
+          >
+            <button
+              className={tunePlaying ? styles.playOn : styles.play}
+              aria-label={tunePlaying ? 'stop tune' : 'start tune'}
+              aria-pressed={tunePlaying}
+              onClick={() => engine.setSongPlaying(!tunePlaying)}
+            >
+              {tunePlaying ? '❚❚' : '▶'}
+            </button>
+          </Tip>
           <Tip
             text={
               !recording

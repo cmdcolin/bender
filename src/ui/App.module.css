@@ -184,16 +184,14 @@
    two lines, and a button whose label wraps reads as a button that is being
    crowded rather than one that is where it wants to be. There is height under
    this row and there was never width in it. */
-.ioRow,
-.transport {
+.ioRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gap-ctl);
 }
 
-.ioRow > :not([role='tooltip']),
-.transport > :not([role='tooltip']) {
+.ioRow > :not([role='tooltip']) {
   white-space: nowrap;
 }
 
@@ -233,7 +231,6 @@
   right: 5px;
 }
 
-.transport::before,
 .deck > .ioRow::before {
   flex: none;
   width: 4.5em;
@@ -241,10 +238,6 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg4);
-}
-
-.transport::before {
-  content: 'play';
 }
 
 .deck > .ioRow::before {
@@ -286,6 +279,7 @@
 /* The loud one, in the throw pads' colour, because it is a throw of the whole
    board rather than a switch. */
 .wildBtn {
+  margin-left: auto;
   composes: actionHeld from './button.module.css';
 }
 
@@ -425,19 +419,8 @@
     padding-top: 0;
     border-top: 0;
   }
-  .transport::before,
   .deck > .ioRow::before {
     display: none;
-  }
-  .transport {
-    order: -1;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    margin: 0 -8px;
-    padding: var(--space-md);
-    background: var(--bg);
-    border-bottom: 1px solid var(--border-quiet);
   }
   .scope {
     order: 1;
