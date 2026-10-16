@@ -77,6 +77,8 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   const heat = useStoreValue(bendHeat)
   const swell = useStoreValue(bendSwell)
   const every = useStoreValue(redealEvery)
+  const [shown, setShown] = useState(false)
+  const open = on || shown
   const [latched, setLatched] = useState<Set<string>>(new Set())
   // A swell with the morph set to instant still swells: the switch is the ask.
   const seconds = swell ? Math.max(morphSeconds, 1) : 0
@@ -250,59 +252,75 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
             {on ? 'letters → bends' : 'letters → toy'}
           </button>
         </Tip>
-        <span className={styles.settings}>
-          {HEATS.map(h => (
-            <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
-              <button
-                className={heat === h ? styles.chipOn : styles.chip}
-                aria-pressed={heat === h}
-                onClick={() => setBendHeat(h)}
-              >
-                {h}
-              </button>
-            </Tip>
-          ))}
-          <Tip
-            text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
-          >
+        {!on && (
+          <Tip text="Show the sixteen bend keys the dice dealt, to press with the mouse.">
             <button
-              className={swell ? styles.chipOn : styles.chip}
-              aria-pressed={swell}
-              onClick={() => setBendSwell(!swell)}
+              className={shown ? styles.chipOn : styles.chip}
+              aria-pressed={shown}
+              onClick={() => setShown(!shown)}
             >
-              swell
+              bend keys
             </button>
           </Tip>
-          <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
-            <select
-              className={every === 0 ? styles.every : styles.everyOn}
-              value={every}
-              aria-label="redeal every"
-              onChange={e =>
-                setRedealEvery(
-                  REDEAL_BARS.find(b => b === Number(e.currentTarget.value)) ??
-                    0,
-                )
-              }
+        )}
+        {open && (
+          <span className={styles.settings}>
+            {HEATS.map(h => (
+              <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
+                <button
+                  className={heat === h ? styles.chipOn : styles.chip}
+                  aria-pressed={heat === h}
+                  onClick={() => setBendHeat(h)}
+                >
+                  {h}
+                </button>
+              </Tip>
+            ))}
+            <Tip
+              text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
             >
-              {REDEAL_BARS.map(b => (
-                <option key={b} value={b}>
-                  {b === 0
-                    ? 'keep the deal'
-                    : `redeal every ${b === 1 ? 'bar' : `${b} bars`}`}
-                </option>
-              ))}
-            </select>
-          </Tip>
-        </span>
-      </div>
-      <div className={styles.keys}>
-        {ROWS.map(({ letters, indent }, row) =>
-          letters
-            .split('')
-            .map((letter, i) => keyFor(letter, place(row, indent, i))),
+              <button
+                className={swell ? styles.chipOn : styles.chip}
+                aria-pressed={swell}
+                onClick={() => setBendSwell(!swell)}
+              >
+                swell
+              </button>
+            </Tip>
+            <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
+              <select
+                className={every === 0 ? styles.every : styles.everyOn}
+                value={every}
+                aria-label="redeal every"
+                onChange={e =>
+                  setRedealEvery(
+                    REDEAL_BARS.find(
+                      b => b === Number(e.currentTarget.value),
+                    ) ?? 0,
+                  )
+                }
+              >
+                {REDEAL_BARS.map(b => (
+                  <option key={b} value={b}>
+                    {b === 0
+                      ? 'keep the deal'
+                      : `redeal every ${b === 1 ? 'bar' : `${b} bars`}`}
+                  </option>
+                ))}
+              </select>
+            </Tip>
+          </span>
         )}
       </div>
+      {open && (
+        <div className={styles.keys}>
+          {ROWS.map(({ letters, indent }, row) =>
+            letters
+              .split('')
+              .map((letter, i) => keyFor(letter, place(row, indent, i))),
+          )}
+        </div>
+      )}
     </div>
   )
 }

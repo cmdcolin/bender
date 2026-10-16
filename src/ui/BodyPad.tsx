@@ -20,8 +20,8 @@ function resistance(x: number, y: number): string {
 }
 
 // The bare contacts every bent toy grows sooner or later: touch both and your
-// body becomes the resistor. Wire an axis to something in the patch bay first,
-// or the pad does nothing — which is also true of the real thing.
+// body becomes the resistor. The pad shows only once an axis is wired in the
+// patch bay; before that it would do nothing.
 export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
   // Three figures rather than the board. The pad sits beside the keys through
   // every morph, and taking the whole board would redraw it — and the tip on
@@ -56,6 +56,8 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
     setHeld(false)
     engine.patch({ bodyX: 0, bodyY: 0 })
   }
+
+  if (!soldered && !held) return null
 
   return (
     <div className={styles.wrap}>
