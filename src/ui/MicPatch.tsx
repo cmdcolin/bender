@@ -1,8 +1,19 @@
+import { engine } from '../engine/engine'
 import { sliderFor } from './controls'
 import { useControlValue } from './ControlsContext'
 import styles from './MicPatch.module.css'
 
 const DEST = sliderFor('micPatch').choices!
+
+const SAYS = [
+  'the mix bus',
+  'the toy supply rail — yell to brown it out',
+  'oscillator A’s FM input',
+  'the delay feedback path',
+  'the ring mod carrier',
+  'the drum machine’s trigger line — clap and the kit fires',
+  'the glitch buffer’s trigger line — clap and it fires',
+]
 
 const MIC_X = 4
 const MIC_W = 46
@@ -19,9 +30,7 @@ const MIC_Y = TOP + LIST_H / 2 - MIC_H / 2
 const rowY = (i: number) => TOP + i * STEP
 const cy = (y: number, h: number) => y + h / 2
 
-// One wire, one of seven jacks — drawn as the mic against all seven rather
-// than as a single dropdown, so the six it isn't soldered to are as visible
-// as the one it is.
+// One wire, seven jacks to solder it to. Pressing a jack moves the wire there.
 export function MicPatch() {
   const patch = Math.round(useControlValue('micPatch'))
 
@@ -54,8 +63,23 @@ export function MicPatch() {
         const on = i === patch
         const wire = on ? 'var(--accent)' : 'var(--fg4)'
         return (
-          <g key={d} opacity={on ? 1 : 0.6}>
-            <title>{`${d}${on ? ' — the mic is soldered here now.' : ''}`}</title>
+          <g
+            key={d}
+            className={styles.jack}
+            role="button"
+            tabIndex={0}
+            aria-pressed={on}
+            aria-label={`solder the mic to ${d}`}
+            opacity={on ? 1 : 0.6}
+            onClick={() => engine.set('micPatch', i)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                engine.set('micPatch', i)
+              }
+            }}
+          >
+            <title>{`${d} — ${SAYS[i]}${on ? ' (soldered here now)' : ''}`}</title>
             {on && (
               <line
                 x1={MIC_X + MIC_W}
@@ -72,9 +96,8 @@ export function MicPatch() {
               width={DEST_W}
               height={ROW_H}
               rx={3}
-              fill="none"
+              className={on ? styles.jackOn : styles.jackOff}
               stroke={wire}
-              strokeDasharray={on ? undefined : '2 2'}
             />
             <text
               x={DEST_X + DEST_W / 2}
