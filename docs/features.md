@@ -3,8 +3,8 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 461 knobs and switches in 34 groups, seven bends competing for six slots,
-18 ROM tunes, 125 presets, 20 stage settings and 46 named cuts — and everything
+ruin. 464 knobs and switches in 34 groups, seven bends competing for six slots,
+18 ROM tunes, 125 presets, 23 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -76,7 +76,7 @@ what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your own hand still puts it where you want it, and a
-preset that names it still gets it. 43 of them, mostly the ones that cover the
+preset that names it still gets it. 46 of them, mostly the ones that cover the
 board rather than joining it.
 
 ## Sources
@@ -1019,25 +1019,43 @@ other, solved from its netlist, so each knob also changes what the other two do.
 _Fender_ is one gain stage into the stack and a recovery stage; _marshall_
 cascades two ahead of it, with small cathode caps that thin the bass. A cold
 _Bias_ leaves the output pair crossing over on quiet notes, and _Sag_ pulls the
-rail down under load and shares it with the board’s own dying supply.
+rail down under load and shares it with the board’s own dying supply. Three
+faults sit on the stages: a _Dry cathode cap_ that thins the bass and costs
+gain, a _Weak tube_ that loses its even-harmonic cancellation and then arcs, and
+a _Microphonic_ first tube that hears the cabinet and howls at its own
+resonance. The panel draws the path, with the tone stack’s response underneath.
+
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
+
+- **dried-out cap**: The cathode caps have lost their value: thin, bright and a
+  third of the gain, with the knobs turned up to make it back
+- **dying output tube**: One output tube gone weak and arcing: lopsided, full of
+  even harmonics, and frying between notes
+- **microphonic**: The first tube hears the cabinet through its own mechanical
+  resonance, so every loud note leaves a howl behind it
 
 <details>
-<summary>12 controls</summary>
+<summary>15 controls</summary>
 
-| control  | range                          | what it does                                           |
-| -------- | ------------------------------ | ------------------------------------------------------ |
-| Amp      | fender or marshall             | Which amp the circuit is                               |
-| Gain     | off to full                    | How hard the first stage is driven                     |
-| Bass     | off to full                    | The bass pot of the tone stack                         |
-| Mid      | off to full                    | The mid pot                                            |
-| Treble   | off to full                    | The treble pot, whose wiper is the output of the stack |
-| Master   | off to full                    | How hard the power stage is driven                     |
-| Mix      | off to full                    | Dry/wet — at zero the pedal is off the board           |
-| Presence | off to full                    | Boosts the highs going into the power stage            |
-| Sag      | off to full                    | How far the supply falls under load                    |
-| Bias     | off to full                    | Where the output tubes idle                            |
-| Speaker  | direct, open 1×12, closed 4×12 | What the output transformer drives                     |
-| Level    | −24 to +12 dB                  | Makeup gain out of the amp                             |
+| control           | range                          | what it does                                                                             |
+| ----------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
+| Amp               | fender or marshall             | Which amp the circuit is                                                                 |
+| Gain              | off to full                    | How hard the first stage is driven                                                       |
+| Bass              | off to full                    | The bass pot of the tone stack                                                           |
+| Mid               | off to full                    | The mid pot                                                                              |
+| Treble            | off to full                    | The treble pot, whose wiper is the output of the stack                                   |
+| Master            | off to full                    | How hard the power stage is driven                                                       |
+| Mix               | off to full                    | Dry/wet — at zero the pedal is off the board                                             |
+| Presence          | off to full                    | Boosts the highs going into the power stage                                              |
+| Sag               | off to full                    | How far the supply falls under load                                                      |
+| Bias              | off to full                    | Where the output tubes idle                                                              |
+| Speaker           | direct, open 1×12, closed 4×12 | What the output transformer drives                                                       |
+| Level             | −24 to +12 dB                  | Makeup gain out of the amp                                                               |
+| Dry cathode cap † | off to full                    | The cathode caps lose their value                                                        |
+| Weak tube †       | off to full                    | One of the two output tubes goes weak                                                    |
+| Microphonic †     | off to full                    | The first tube hears the cabinet’s air through its own mechanical resonance, near 900 Hz |
 
 </details>
 

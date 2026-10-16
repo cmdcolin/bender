@@ -1,15 +1,19 @@
 import { IDX } from '../../engine/params'
 import {
   BiquadState,
+  bandpass,
   highpass,
   lowpass,
   peak,
+  response,
   type Biquad,
 } from '../util/biquad'
+import { Burst } from '../util/burst'
 import { DelayLine } from '../util/delayline'
 import { Follower, coef } from '../util/follower'
 import { Halfband, LATENCY, Upsampler } from '../util/halfband'
 import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
+import { mulberry32, type Rng } from '../util/rng'
 import { flushDenormal, softclip } from '../util/softclip'
 
 import type { Ctx, Stage, StereoBlock } from '../stage'
@@ -175,6 +179,20 @@ const BLOCK_DEPTH = 0.45
 const COUPLING_HZ = 12
 const DC_COEF = 0.9992
 const OUT_TRIM = 0.5
+
+/** The microphonic tube's mechanical resonance and how sharp it is, and what a
+    full turn of the fault lets back into the first grid. */
+const RING_HZ = 900
+const RING_Q = 30
+const MICRO_GAIN = 0.8
+
+/** How much a fully dried cathode cap cuts the gain below its new corner. */
+const CAP_DEGEN = 0.4
+
+/** Dropouts a second of a fully failed output tube, and how long each lasts. */
+const ARC_RATE = 6
+const CRACKLE = 1
+const ARC_SECONDS = [0.004, 0.03] as const
 const RAIL_SECONDS = 0.05
 
 /** The preamp sits behind a dropper and a cap, so it feels half the sag. */
@@ -204,6 +222,8 @@ interface Voicing {
   /** the transformer's top corner */
   leakHz: number
   presenceHz: number
+  /** how far a fully dried cathode cap raises the cap's corner, as a multiple */
+  capCorner: number
 }
 
 const VOICINGS: readonly Voicing[] = [
@@ -224,6 +244,7 @@ const VOICINGS: readonly Voicing[] = [
     coreSat: 1.1,
     leakHz: 12000,
     presenceHz: 3200,
+    capCorner: 300,
   },
   {
     stack: MARSHALL_STACK,
@@ -242,6 +263,7 @@ const VOICINGS: readonly Voicing[] = [
     coreSat: 1.4,
     leakHz: 9000,
     presenceHz: 2600,
+    capCorner: 4,
   },
 ]
 
@@ -253,9 +275,10 @@ const audioTaper = (x: number) => (Math.pow(10, 2 * x) - 1) / 99
 /** What the knobs decided this block, for both channels. */
 interface Knobs {
   voicing: Voicing
-  g1: number
-  gCascade: number
-  g2: number
+  /** drive, degeneration and cathode-cap corner of each preamp stage */
+  drive: Float64Array
+  degen: Float64Array
+  bypass: Float64Array
   gPower: number
   bias: number
   presence: number
@@ -266,12 +289,17 @@ interface Knobs {
   couplingCoef: number
   wire: Wiring
   stack: Float64Array
+  /** how much of the power stage's own output the first tube hears */
+  micro: number
+  /** the weaker output tube's strength, with its dropouts already in */
+  weakGm: number
+  /** the arc's hash, as a share of the power stage's drive */
+  crackle: number
 }
 
 /** A voicing's corner frequencies as coefficients, settled once. */
 interface Wiring {
   missCoefs: readonly [number, number, number]
-  bypassCoefs: readonly [number, number, number]
   presenceCoef: number
   coreCoef: number
   leak: Biquad
@@ -287,11 +315,6 @@ function wire(v: Voicing, sr: number): Wiring {
       lpCoef(v.first.missHz * 0.8, osr),
       lpCoef(v.second.missHz, osr),
     ],
-    bypassCoefs: [
-      lpCoef(v.first.bypassHz, osr),
-      lpCoef(v.first.bypassHz, osr),
-      lpCoef(v.second.bypassHz, osr),
-    ],
     presenceCoef: lpCoef(v.presenceHz, osr),
     coreCoef: lpCoef(v.coreHz, osr),
     leak: lowpass(v.leakHz, Math.SQRT1_2, osr),
@@ -305,29 +328,22 @@ class Triode {
   private readonly bypass = new OnePoleLP()
   private readonly miss = new OnePoleLP()
 
-  process(
-    x: number,
-    drive: number,
-    spec: Spec,
-    bypassCoef: number,
-    missCoef: number,
-    rail: number,
-    atk: number,
-    rel: number,
-  ): number {
-    const hi = x - this.bypass.process(x, bypassCoef)
-    const u = drive * (spec.degen * x + (1 - spec.degen) * hi)
+  process(x: number, k: Knobs, stage: number, spec: Spec): number {
+    const hi = x - this.bypass.process(x, k.bypass[stage]!)
+    const degen = k.degen[stage]!
+    const u = k.drive[stage]! * (degen * x + (1 - degen) * hi)
     const over = u - spec.knee
     const grid = over > 0 ? spec.knee + 0.3 * softclip(over / 0.3) : u
     const charge = over > 0 ? Math.min(over, 3) : 0
     this.block = flushDenormal(
-      this.block + (charge > this.block ? atk : rel) * (charge - this.block),
+      this.block +
+        (charge > this.block ? k.blockAtk : k.blockRel) * (charge - this.block),
     )
     const v = grid - BLOCK_DEPTH * this.block
-    const sink = spec.sink * rail
-    const cut = spec.cutoff * rail
+    const sink = spec.sink * k.railPre
+    const cut = spec.cutoff * k.railPre
     const plate = v >= 0 ? sink * softclip(v / sink) : cut * softclip(v / cut)
-    return this.miss.process(-plate, missCoef)
+    return this.miss.process(-plate, k.wire.missCoefs[stage]!)
   }
 
   reset() {
@@ -346,9 +362,13 @@ function conduct(v: number): number {
 
 /** Two tubes back to back, each conducting its own half of the wave with a 3/2
     power law above cutoff. A cold bias leaves both nearly off around zero and
-    the crossover shows. The gain at zero is one whatever the bias. */
-function pushPull(x: number, bias: number): number {
-  return (conduct(bias + x) - conduct(bias - x)) / (3 * Math.sqrt(bias))
+    the crossover shows. With both tubes healthy the gain at zero is one
+    whatever the bias; `weak` is the second tube's strength against the first. */
+function pushPull(x: number, bias: number, weak: number): number {
+  return (
+    (conduct(bias + x) - weak * conduct(bias * (0.6 + 0.4 * weak) - x)) /
+    (3 * Math.sqrt(bias))
+  )
 }
 
 /** One channel through the amp. Everything between the upsampler and the
@@ -365,50 +385,34 @@ class Channel {
   private readonly core = new OnePoleLP()
   private readonly leak = new BiquadState()
   private readonly dc = new DcBlocker()
+  private readonly ring = new BiquadState()
+  /** what the first tube feels of the cabinet's air, one sample late */
+  private fed = 0
   /** the power pair's last output, which the supply sags under */
   drawn = 0
 
+  private readonly hash: Rng
+  private readonly tuned: Biquad
+
+  constructor(detune: number, seed: number, osr: number) {
+    this.hash = mulberry32(seed)
+    this.tuned = bandpass(RING_HZ * detune, RING_Q, osr)
+  }
+
   run(x: number, k: Knobs): number {
     const v = k.voicing
-    let s = this.one.process(
-      x,
-      k.g1,
-      v.first,
-      k.wire.bypassCoefs[0],
-      k.wire.missCoefs[0],
-      k.railPre,
-      k.blockAtk,
-      k.blockRel,
-    )
-    if (v.cascade)
-      s = this.cascaded.process(
-        s,
-        k.gCascade,
-        v.first,
-        k.wire.bypassCoefs[1],
-        k.wire.missCoefs[1],
-        k.railPre,
-        k.blockAtk,
-        k.blockRel,
-      )
+    let s = this.one.process(x + k.micro * this.fed, k, 0, v.first)
+    if (v.cascade) s = this.cascaded.process(s, k, 1, v.first)
     s = this.stack.process(s, k.stack) * v.makeup
-    s = this.two.process(
-      s,
-      k.g2,
-      v.second,
-      k.wire.bypassCoefs[2],
-      k.wire.missCoefs[2],
-      k.railPre,
-      k.blockAtk,
-      k.blockRel,
-    )
+    s = this.two.process(s, k, 2, v.second)
     s -= this.coupling.process(s, k.couplingCoef)
     const lifted =
       s + k.presence * (s - this.presenceLp.process(s, k.wire.presenceCoef))
-    const drive = lifted * k.gPower
+    const drive = lifted * k.gPower + k.crackle * (2 * this.hash() - 1)
     const swing = v.swing * k.railPow
-    const pair = swing * softclip(pushPull(drive, k.bias) / swing)
+    const pair = swing * softclip(pushPull(drive, k.bias, k.weakGm) / swing)
     this.drawn = Math.abs(pair)
+    this.fed = k.micro === 0 ? 0 : this.ring.process(pair, this.tuned)
     const low = this.core.process(pair, k.wire.coreCoef)
     const saturated = softclip(low * v.coreSat) / v.coreSat
     return this.leak.process(pair - low + saturated, k.wire.leak)
@@ -433,6 +437,8 @@ class Channel {
     this.core.reset()
     this.leak.reset()
     this.dc.reset()
+    this.ring.reset()
+    this.fed = 0
     this.drawn = 0
   }
 }
@@ -462,6 +468,38 @@ function cabinet(kind: number, sr: number): Biquad[] {
 
 const CABS = [AMP_CAB.direct, AMP_CAB.open, AMP_CAB.closed]
 
+const dbOf = (ratio: number) => 20 * Math.log10(Math.max(ratio, 1e-6))
+
+/** The tone stack's gain in dB at a frequency, for the panel's drawing. */
+export function stackDb(
+  voice: number,
+  treble: number,
+  mid: number,
+  bass: number,
+  hz: number,
+): number {
+  const parts = (VOICINGS[voice] ?? VOICINGS[0]!).stack
+  const { b, a } = stackAnalog(parts, treble, mid, audioTaper(bass))
+  const w = 2 * Math.PI * hz
+  const poly = (q: readonly number[]) => {
+    let re = 0
+    let im = 0
+    q.forEach((v, k) => {
+      re += v * w ** k * Math.cos((k * Math.PI) / 2)
+      im += v * w ** k * Math.sin((k * Math.PI) / 2)
+    })
+    return Math.hypot(re, im)
+  }
+  return dbOf(poly(b) / poly(a))
+}
+
+/** A cabinet's gain in dB at a frequency, for the panel's drawing. */
+export function cabDb(cab: number, hz: number, sr = 48000): number {
+  return dbOf(
+    cabinet(cab, sr).reduce((gain, c) => gain * response(c, hz, sr), 1),
+  )
+}
+
 // A tube amp: the gain stages that turn a note into a chord of its own
 // harmonics, a passive tone stack between them, a push-pull power stage on a
 // supply that sags under it, an output transformer that runs out of core, and a
@@ -470,8 +508,8 @@ const CABS = [AMP_CAB.direct, AMP_CAB.open, AMP_CAB.closed]
 // aliasing source on the board.
 export class Amp implements Stage {
   label = 'amp'
-  private readonly left = new Channel()
-  private readonly right = new Channel()
+  private readonly left: Channel
+  private readonly right: Channel
   private readonly dryL = new DelayLine(LATENCY + 2)
   private readonly dryR = new DelayLine(LATENCY + 2)
   private readonly cabCoefs: Biquad[][]
@@ -480,21 +518,30 @@ export class Amp implements Stage {
   private readonly cabR = Array.from({ length: 6 }, () => new BiquadState())
   private readonly draw = new Follower()
   private readonly stackK = new Float64Array(7)
+  private readonly rng: Rng = mulberry32(0x7ab3)
+  private readonly arc: Burst
+  private readonly flickCoef: number
+  private arcLeft = 0
+  private flick = 1
   private rail = 1
   private readonly railCoef: number
   private readonly osr: number
   private readonly k: Knobs
 
-  constructor(sr: number) {
+  constructor(private readonly sr: number) {
     this.osr = sr * OS
+    this.left = new Channel(1, 0x5a1, this.osr)
+    this.right = new Channel(1.07, 0x5a2, this.osr)
+    this.arc = new Burst(sr, 1)
+    this.flickCoef = coef(0.001, sr)
     this.railCoef = coef(RAIL_SECONDS, sr)
     this.cabCoefs = CABS.map(c => cabinet(c, sr))
     this.wiring = VOICINGS.map(v => wire(v, sr))
     this.k = {
       voicing: VOICINGS[0]!,
-      g1: 1,
-      gCascade: 1,
-      g2: 1,
+      drive: new Float64Array(3),
+      degen: new Float64Array(3),
+      bypass: new Float64Array(3),
       gPower: 1,
       bias: 0.3,
       presence: 0,
@@ -505,6 +552,9 @@ export class Amp implements Stage {
       couplingCoef: lpCoef(COUPLING_HZ, this.osr),
       wire: this.wiring[0]!,
       stack: this.stackK,
+      micro: 0,
+      weakGm: 1,
+      crackle: 0,
     }
   }
 
@@ -519,9 +569,20 @@ export class Amp implements Stage {
     k.voicing = v
     k.wire = this.wiring[VOICINGS.indexOf(v)]!
     const gain = p[IDX.ampGain]!
-    k.g1 = dbGain(v.drive[0] + (v.drive[1] - v.drive[0]) * gain)
-    k.gCascade = dbGain(4 + 8 * gain)
-    k.g2 = dbGain(v.recovery)
+    k.drive[0] = dbGain(v.drive[0] + (v.drive[1] - v.drive[0]) * gain)
+    k.drive[1] = dbGain(4 + 8 * gain)
+    k.drive[2] = dbGain(v.recovery)
+    const cap = p[IDX.ampCap]!
+    const specs = [v.first, v.first, v.second]
+    for (let i = 0; i < 3; i++) {
+      const spec = specs[i]!
+      k.degen[i] = spec.degen * (1 - CAP_DEGEN * cap)
+      k.bypass[i] = lpCoef(
+        Math.min(spec.bypassHz * (1 + v.capCorner * cap), osr * 0.2),
+        osr,
+      )
+    }
+    k.micro = (v.cascade ? -1 : 1) * MICRO_GAIN * p[IDX.ampMicro]! ** 2
     k.gPower = dbGain(-18 + 36 * p[IDX.ampMaster]!)
     k.bias = v.bias * Math.pow(30, p[IDX.ampBias]! - 0.5)
     k.presence = 1.6 * p[IDX.ampPresence]!
@@ -535,6 +596,28 @@ export class Amp implements Stage {
     )
   }
 
+  /** The failing tube arcing: it drops out for a few milliseconds, more often
+      for having just done it. */
+  private sputter(weak: number, cluster: number): number {
+    if (weak <= 0) {
+      this.flick = 1
+      this.arcLeft = 0
+      return 1
+    }
+    this.arc.step()
+    if (
+      this.arcLeft <= 0 &&
+      this.arc.roll((weak * weak * ARC_RATE) / this.sr, cluster, this.rng)
+    )
+      this.arcLeft = Math.floor(
+        (ARC_SECONDS[0] + (ARC_SECONDS[1] - ARC_SECONDS[0]) * this.rng()) *
+          this.sr,
+      )
+    if (this.arcLeft > 0) this.arcLeft--
+    this.flick += this.flickCoef * ((this.arcLeft > 0 ? 0 : 1) - this.flick)
+    return this.flick
+  }
+
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     this.voice(p)
     const k = this.k
@@ -544,9 +627,15 @@ export class Amp implements Stage {
     const sag = p[IDX.ampSag]!
     const cab = this.cabCoefs[Math.round(p[IDX.ampCab]!)] ?? this.cabCoefs[0]!
 
+    const weak = p[IDX.ampTube]!
+    const cluster = p[IDX.faultCluster]!
+
     for (let i = 0; i < io.n; i++) {
       const dl = io.l[i]!
       const dr = io.r[i]!
+      const flick = this.sputter(weak, cluster)
+      k.weakGm = (1 - 0.8 * weak) * flick
+      k.crackle = CRACKLE * weak * (1 - flick)
       const load = this.draw.process(
         0.5 * (this.left.drawn + this.right.drawn),
         k.wire.sagAtk,
@@ -578,6 +667,9 @@ export class Amp implements Stage {
     this.left.reset()
     this.right.reset()
     this.draw.reset()
+    this.arc.reset()
+    this.arcLeft = 0
+    this.flick = 1
     for (const s of this.cabL) s.reset()
     for (const s of this.cabR) s.reset()
     this.rail = 1

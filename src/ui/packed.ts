@@ -660,6 +660,9 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'ampBias',
   'ampCab',
   'ampLevel',
+  'ampCap',
+  'ampTube',
+  'ampMicro',
 ]
 
 // Retired controls that old links still carry, each read into the control that

@@ -104,3 +104,34 @@ export class BiquadState {
     this.y2 = 0
   }
 }
+
+/** A resonator with unity gain at its centre, however sharp. */
+export function bandpass(hz: number, q: number, sr: number): Biquad {
+  const w = (2 * Math.PI * Math.min(hz, sr * 0.45)) / sr
+  const cos = Math.cos(w)
+  const alpha = Math.sin(w) / (2 * q)
+  const a0 = 1 + alpha
+  return {
+    b0: alpha / a0,
+    b1: 0,
+    b2: -alpha / a0,
+    a1: (-2 * cos) / a0,
+    a2: (1 - alpha) / a0,
+  }
+}
+
+/** The gain of a biquad at a frequency, as a ratio. */
+export function response(c: Biquad, hz: number, sr: number): number {
+  const w = (2 * Math.PI * hz) / sr
+  const [cos1, sin1, cos2, sin2] = [
+    Math.cos(w),
+    Math.sin(w),
+    Math.cos(2 * w),
+    Math.sin(2 * w),
+  ]
+  const nr = c.b0 + c.b1 * cos1 + c.b2 * cos2
+  const ni = -(c.b1 * sin1 + c.b2 * sin2)
+  const dr = 1 + c.a1 * cos1 + c.a2 * cos2
+  const di = -(c.a1 * sin1 + c.a2 * sin2)
+  return Math.hypot(nr, ni) / Math.hypot(dr, di)
+}

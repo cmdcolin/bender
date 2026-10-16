@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls'
 import { engine } from '../engine/engine'
+import { AmpPathDiagram } from './AmpPathDiagram'
 import { groupAnchor } from './chain-map'
 import {
   groupKeys,
@@ -584,6 +585,7 @@ export function OpenGroup({
               )}
             />
           )}
+          {group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
           {!rigsFirst && rigs}
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>

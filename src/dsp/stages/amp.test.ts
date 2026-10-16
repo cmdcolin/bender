@@ -368,3 +368,69 @@ test('the dry signal is delayed to line up with the oversampled wet path', () =>
   for (let i = 2000; i < 4000; i++)
     expect(Math.abs(nearlyDry[i]! - dry[i - LATENCY]!)).toBeLessThan(1e-3)
 })
+
+// An unbypassed cathode leaves the stage a fraction of its gain below the
+// cap's corner. The Fender's cap is big enough that drying it out thins the
+// bass; the Marshall's is already small, so drying it out takes the gain.
+test('a dried-out cathode cap thins the bass and costs gain', () => {
+  const level = (hz: number, over: Partial<Controls>) =>
+    rms(tone(hz, 0.02, { ampGain: 0.4, ampMaster: 0.6, ...over }))
+  const bassOverTop = (ampCap: number) =>
+    db(level(100, { ampCap }), level(1600, { ampCap }))
+  expect(bassOverTop(1)).toBeLessThan(bassOverTop(0) - 5)
+  expect(
+    db(
+      level(400, { ampVoice: AMP_VOICE.marshall, ampCap: 1 }),
+      level(400, { ampVoice: AMP_VOICE.marshall }),
+    ),
+  ).toBeLessThan(-10)
+})
+
+// A push-pull pair cancels its even harmonics, and a tube that has gone weak
+// stops cancelling them.
+test('a weak output tube brings up the even harmonics and loses level', () => {
+  const at = (ampTube: number) =>
+    tone(400, 0.05, { ampGain: 0.2, ampMaster: 0.7, ampTube })
+  const [sound, dying] = [at(0), at(1)]
+  expect(
+    db(bin(dying, 800) / bin(dying, 400), bin(sound, 800) / bin(sound, 400)),
+  ).toBeGreaterThan(20)
+  expect(rms(dying)).toBeLessThan(0.7 * rms(sound))
+})
+
+test('a failing output tube arcs on its own, and a sound one is quiet', () => {
+  const hash = (ampTube: number) => {
+    const { l } = renderStereo(
+      { ...look, sampleLevel: 0, ampGain: 0.5, ampMaster: 0.6, ampTube },
+      6,
+    )
+    const win = SR / 100
+    let loud = 0
+    for (let i = SR; i + win < l.length; i += win)
+      if (rms(l.subarray(i, i + win)) > 0.005) loud++
+    return loud
+  }
+  expect(hash(0)).toBe(0)
+  expect(hash(1)).toBeGreaterThan(20)
+})
+
+// The first tube hears the cabinet's air through its own mechanical resonance.
+// Below the threshold a brief note leaves nothing behind it; past it the loop
+// holds a howl at the tube's resonance after the note is gone.
+test('a microphonic tube howls after the note that set it off, at its own pitch', () => {
+  const burst = new Float32Array(4 * SR)
+  burst.set(sine(300, 1, 0.3).subarray(0, SR / 10))
+  for (const ampVoice of [AMP_VOICE.fender, AMP_VOICE.marshall]) {
+    const after = (ampMicro: number) =>
+      take(
+        burst,
+        { ampVoice, ampGain: 0.5, ampMaster: 0.5, ampMicro },
+        2.5,
+      ).subarray(2 * SR)
+    expect(rms(after(0))).toBeLessThan(1e-3)
+    const howl = after(0.8)
+    expect(rms(howl)).toBeGreaterThan(0.05)
+    const pitch = Math.max(...[600, 900, 1200].map(hz => bin(howl, hz)))
+    expect(bin(howl, 900)).toBeGreaterThan(0.5 * pitch)
+  }
+})

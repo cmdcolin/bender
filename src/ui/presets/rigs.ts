@@ -4,6 +4,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../../controls'
+import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp'
 import { choiceValue, GROUPS, groupKeys, sliderFor } from '../controls'
 
 // A whole stage set up, where a cut is three controls under one heading. Some
@@ -343,6 +344,52 @@ export const RIGS: RigDef[] = [
       four2In: choiceValue('four2In', 'board'),
       four2Fader: 0.6,
       echoLevel: 0.7,
+    },
+  },
+  {
+    group: 'Tube amp',
+    name: 'dried-out cap',
+    blurb:
+      'The cathode caps have lost their value: thin, bright and a third of the gain, with the knobs turned up to make it back',
+    patch: {
+      ampVoice: AMP_VOICE.fender,
+      ampGain: 0.85,
+      ampMaster: 0.6,
+      ampCap: 0.85,
+      ampCab: AMP_CAB.open,
+      ampLevel: 3,
+      ampMix: 1,
+    },
+  },
+  {
+    group: 'Tube amp',
+    name: 'dying output tube',
+    blurb:
+      'One output tube gone weak and arcing: lopsided, full of even harmonics, and frying between notes',
+    patch: {
+      ampVoice: AMP_VOICE.fender,
+      ampGain: 0.35,
+      ampMaster: 0.7,
+      ampBias: 0.35,
+      ampSag: 0.6,
+      ampTube: 0.8,
+      ampCab: AMP_CAB.closed,
+      ampMix: 1,
+    },
+  },
+  {
+    group: 'Tube amp',
+    name: 'microphonic',
+    blurb:
+      'The first tube hears the cabinet through its own mechanical resonance, so every loud note leaves a howl behind it',
+    patch: {
+      ampVoice: AMP_VOICE.marshall,
+      ampGain: 0.5,
+      ampMaster: 0.45,
+      ampMicro: 0.6,
+      ampCab: AMP_CAB.closed,
+      ampLevel: -6,
+      ampMix: 1,
     },
   },
 ]

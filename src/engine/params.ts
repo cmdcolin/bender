@@ -562,6 +562,9 @@ export const PARAM_DEFS = [
   ['ampBias', 'slew'],
   ['ampCab', 'step'],
   ['ampLevel', 'slew'],
+  ['ampCap', 'slew'],
+  ['ampTube', 'slew'],
+  ['ampMicro', 'slew'],
 
   ['modLfoHz', 'slew'],
   ['modLfoShape', 'step'],

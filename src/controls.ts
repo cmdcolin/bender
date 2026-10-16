@@ -587,6 +587,9 @@ export const DEFAULT_CONTROLS = {
   ampBias: 0.5,
   ampCab: 1,
   ampLevel: 0,
+  ampCap: 0,
+  ampTube: 0,
+  ampMicro: 0,
 
   modLfoHz: 1,
   modLfoShape: 0,
