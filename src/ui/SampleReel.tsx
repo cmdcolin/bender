@@ -3,11 +3,12 @@ import {
   useRef,
   useSyncExternalStore,
   type PointerEvent,
+  type ReactNode,
 } from 'react'
 
 import { PEAK_BINS } from '../dsp/stages/sampler'
 import { engine } from '../engine/engine'
-import { useBoardValue, useStoreValue } from './ControlsContext'
+import { useBoardValue } from './ControlsContext'
 import styles from './SampleReel.module.css'
 import { Tip } from './Tip'
 
@@ -28,10 +29,12 @@ const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
 // ordinary one and only the other needs saying.
 const COLD = '#49b6ff'
 
-function clock(secs: number): string {
-  const s = Math.max(secs, 0)
-  const m = Math.floor(s / 60)
-  return `${m}:${(s - m * 60).toFixed(1).padStart(4, '0')}`
+const WHEELS = 4
+
+function wheels(secs: number): string {
+  return String(
+    Math.min(Math.floor(Math.max(secs, 0)), 10 ** WHEELS - 1),
+  ).padStart(WHEELS, '0')
 }
 
 type Grab = 'in' | 'out' | 'head'
@@ -63,14 +66,14 @@ const useReelSeconds = () =>
 // the file that was dropped, because the record head rewrites the tape under
 // the play head every lap. A drawing made once at load would still be showing
 // the recording twenty laps after the board had replaced it.
-export function SampleReel() {
+export function SampleReel({ children }: { children?: ReactNode }) {
   const canvas = useRef<HTMLCanvasElement>(null)
-  const readout = useRef<HTMLSpanElement>(null)
+  const digits = useRef<(HTMLSpanElement | null)[]>([])
   const heading = useRef<HTMLSpanElement>(null)
   const secs = useReelSeconds()
-  const name = useStoreValue(engine.sampleName)
   const level = useBoardValue(c => c.sampleLevel)
   const rec = useBoardValue(c => c.loopRec)
+  const trimmed = useBoardValue(c => c.loopIn > 0 || c.loopOut < 1)
   const grab = useRef<Grab | null>(null)
   const threaded = secs > 0
 
@@ -203,21 +206,26 @@ export function SampleReel() {
       }
       g.fillRect(hx - dpr, 0, 2 * dpr, h)
 
-      // The direction is its own span in the two colours the Speed knob uses,
-      // because it is the one part of this line you read at a glance rather
-      // than off the numbers.
-      const way =
-        speed === 0
-          ? 'frozen'
-          : `${Math.abs(speed).toFixed(2)}× ${speed < 0 ? 'reverse' : 'forward'}`
-      const says = `${clock(m.samplePos * m.sampleSecs)} / ${clock(m.sampleSecs)} · loop ${clock((to - from) * m.sampleSecs)} · `
-      if (readout.current && painted !== says + way) {
+      // The counter reads whole seconds into the reel, the way a deck's
+      // wheels count turns; the direction under it uses the Speed knob's two
+      // colours, because it is the part read at a glance.
+      const silent = level <= 0 && rec <= 0
+      const way = silent
+        ? 'Level ↓'
+        : speed === 0
+          ? '■'
+          : `${speed < 0 ? '◀' : '▶'}${Math.abs(speed) === 1 ? '' : ` ${Math.abs(speed).toFixed(2)}×`}`
+      const says = wheels(m.samplePos * m.sampleSecs)
+      if (painted !== says + way) {
         painted = says + way
-        readout.current.textContent = says
+        for (const [i, wheel] of digits.current.entries()) {
+          if (wheel) wheel.textContent = says[i] ?? '0'
+        }
         if (heading.current) {
           heading.current.textContent = way
-          heading.current.style.color =
-            speed === 0
+          heading.current.style.color = silent
+            ? 'var(--accent2)'
+            : speed === 0
               ? 'var(--fg4)'
               : speed < 0
                 ? 'var(--cool)'
@@ -268,46 +276,66 @@ export function SampleReel() {
 
   if (!threaded) return null
 
+  const foot =
+    children || trimmed ? (
+      <div className={styles.foot}>
+        {children}
+        {trimmed && (
+          <Tip text="Put both markers back at the ends of the reel, so the whole of what you dropped goes round again.">
+            <button
+              className={styles.whole}
+              onClick={() => engine.patch({ loopIn: 0, loopOut: 1 })}
+            >
+              whole reel
+            </button>
+          </Tip>
+        )}
+      </div>
+    ) : null
+
   return (
     <div className={styles.wrap}>
-      <Tip text="The reel: what is on the tape, where the play head stands, and the two markers saying which stretch goes round. Drag a marker to trim the loop — cross them and they swap — or drag the tape to move the head.">
-        <canvas
-          ref={canvas}
-          className={styles.reel}
-          onPointerDown={e => {
-            const c = engine.controls.get()
-            const where = at(e)
-            grab.current = grabbed(
-              where,
-              Math.min(c.loopIn, c.loopOut),
-              Math.max(c.loopIn, c.loopOut),
-            )
-            e.currentTarget.setPointerCapture(e.pointerId)
-            track(where)
-          }}
-          onPointerMove={e => grab.current && track(at(e))}
-          onPointerUp={() => (grab.current = null)}
-          onPointerCancel={() => (grab.current = null)}
-        />
-      </Tip>
-      <div className={styles.foot}>
-        <span className={styles.name}>{name ?? 'blank tape'}</span>
-        <span className={styles.time}>
-          <span ref={readout} />
-          <span ref={heading} />
-        </span>
-        {level <= 0 && rec <= 0 && (
-          <span className={styles.down}>bring the sampler’s Level up</span>
-        )}
-        <Tip text="Put both markers back at the ends of the reel, so the whole of what you dropped goes round again.">
-          <button
-            className={styles.whole}
-            onClick={() => engine.patch({ loopIn: 0, loopOut: 1 })}
-          >
-            whole reel
-          </button>
+      <div className={styles.row}>
+        <Tip text="The reel: what is on the tape, where the play head stands, and the two markers saying which stretch goes round. Drag a marker to trim the loop — cross them and they swap — or drag the tape to move the head.">
+          <canvas
+            ref={canvas}
+            className={styles.reel}
+            onPointerDown={e => {
+              const c = engine.controls.get()
+              const where = at(e)
+              grab.current = grabbed(
+                where,
+                Math.min(c.loopIn, c.loopOut),
+                Math.max(c.loopIn, c.loopOut),
+              )
+              e.currentTarget.setPointerCapture(e.pointerId)
+              track(where)
+            }}
+            onPointerMove={e => grab.current && track(at(e))}
+            onPointerUp={() => (grab.current = null)}
+            onPointerCancel={() => (grab.current = null)}
+          />
+        </Tip>
+        <Tip text="Tape counter: whole seconds into the reel. Below it, the direction and speed, or Level ↓ when the sampler’s Level fader is down and nothing plays.">
+          <div className={styles.counter}>
+            <div className={styles.wheels}>
+              {Array.from({ length: WHEELS }, (_, i) => (
+                <span
+                  key={i}
+                  className={styles.wheel}
+                  ref={el => {
+                    digits.current[i] = el
+                  }}
+                >
+                  0
+                </span>
+              ))}
+            </div>
+            <span ref={heading} className={styles.way} />
+          </div>
         </Tip>
       </div>
+      {foot}
     </div>
   )
 }

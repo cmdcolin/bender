@@ -337,10 +337,6 @@
 
 .credit {
   font-size: var(--fs-xs);
-  color: var(--fg4);
-}
-
-.credit a {
   color: var(--fg3);
 }
 

@@ -439,11 +439,11 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
               <Cartridge name={sampleName || null} hot={dragging} />
               <div className={styles.controls}>
                 <div className={styles.ioRow}>
-                  <span className={dragging ? styles.dropHot : styles.drop}>
-                    {sampleName
-                      ? `sample: ${sampleName}`
-                      : 'drop an audio file anywhere'}
-                  </span>
+                  {(!sampleName || dragging) && (
+                    <span className={dragging ? styles.dropHot : styles.drop}>
+                      drop an audio file anywhere
+                    </span>
+                  )}
                   <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
                     <button
                       className={styles.ioBtn}
@@ -473,25 +473,24 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                     className={micOn ? styles.ioBtnOn : styles.ioBtn}
                     onClick={() => engine.enableMic()}
                   >
-                    {micOn ? '● mic live' : 'enable mic'}
+                    {micOn ? '● mic' : 'mic'}
                   </button>
                 </div>
               </div>
             </div>
-            <SampleReel />
-            {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
-            {!archiveStep && archiveSource && (
-              <p className={styles.credit}>
-                from{' '}
+            <SampleReel>
+              {!archiveStep && archiveSource && (
                 <a
+                  className={styles.credit}
                   href={detailsUrl(archiveSource.id)}
                   target="_blank"
                   rel="noreferrer"
                 >
                   archive.org/{archiveSource.id}
                 </a>
-              </p>
-            )}
+              )}
+            </SampleReel>
+            {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
           </section>
         </div>
         <BendKeys morphSeconds={morphSeconds} />
