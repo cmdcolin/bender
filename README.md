@@ -39,6 +39,12 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 - "Tape loop" sampler that has tape head re-recording-over-the-loop effect
 - Varispeed deck under the whole board — slow the entire instrument for real,
   tempo and pitch together, with a motor that winds down
+- A tape machine that runs open reel, cassette or microcassette, with Dolby B or
+  dbx on record and play, and sits at the end of the board, ahead of the pedals
+  or ahead of the bends
+- A cassette four-track with four tape loops cut to their own lengths behind a
+  desk with EQ and an aux send. It can loop the board through itself, wear its
+  tape through, or squeal with nothing plugged in
 - Shareable URLs
 
 Uses the AudioWorklet API...surprisingly powerful and fast
