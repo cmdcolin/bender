@@ -174,6 +174,19 @@ test('every preset that names the ensemble is one you can hear it on', () => {
   }
 })
 
+// The amp's mix is a dry/wet and its speaker takes most of the top off, so the
+// measure is how far the take moved, the same as the ensemble's.
+test('every preset that names the amp is one you can hear it on', () => {
+  const named = PRESETS.filter(p => p.patch.ampMix)
+  expect(named.length).toBeGreaterThan(2)
+  for (const preset of named) {
+    const wet = render(preset.patch, 3)
+    const dry = render({ ...preset.patch, ampMix: 0 }, 3)
+    expect(rms(wet), preset.name).toBeGreaterThan(0.02)
+    expect(deviation(wet, dry), preset.name).toBeGreaterThan(0.1)
+  }
+})
+
 // A preset naming the record head is a preset whose point is the tape. Render
 // it with the sampler in and with its fader down: a board that measures the
 // same either way is a line of the catalog advertising a reel nobody hears.

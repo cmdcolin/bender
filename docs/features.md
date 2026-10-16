@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 461 knobs and switches in 34 groups, seven bends competing for six slots,
-18 ROM tunes, 121 presets, 20 stage settings and 46 named cuts — and everything
+18 ROM tunes, 125 presets, 20 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -61,7 +61,7 @@ renders it with the same layout the app uses.
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
   contact pad is the same idea with your finger as the resistor.
-- **Boards, rather than settings.** 121 presets, and dice on every heading as
+- **Boards, rather than settings.** 125 presets, and dice on every heading as
   well as on the whole board; **morph** travels between two boards over up to
   thirty seconds instead of cutting; **hunt** auditions six candidates and keeps
   the one closest to the edge; **drift** nudges the board along on a timer. All
@@ -1378,7 +1378,7 @@ became:
 
 ### Presets
 
-121 boards worth keeping. Every name is a link that opens the app with that
+125 boards worth keeping. Every name is a link that opens the app with that
 board on it — a link never presses play, so it is loaded and waiting.
 
 - [**mall strings**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.25,pcmLevel:0.9,pcmEnv:2,pcmRelease:1.4,pcmTone:3200,pcmVibrato:2,revDecayS:6,revMix:0.55,tapeMix:0.6,tapeHiss:0.3,tapeWow:0.55)
@@ -1490,6 +1490,18 @@ board on it — a link never presses play, so it is loaded and waiting.
   — Starved to the edge of cutoff: it gates, sputters and howls between notes
 - [**squeezed screamer**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,stompDrive:16,stompTone:0.55,stompMix:1,delayMs:320,dlyMix:0.3,mod0Src:3,mod0Dest:9,mod0Depth:0.7)
   — The bay envelope wired onto the drive, so it digs in as it gets loud
+- [**plexi**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,ampVoice:1,ampGain:0.6,ampBass:0.55,ampMid:0.4,ampTreble:0.6,ampMix:1,ampPresence:0.55,ampSag:0.6,ampCab:2,ampLevel:-3)
+  — The toy through two cascaded gain stages and a closed 4×12, with the supply
+  sagging under it
+- [**blackface**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,fmLevel:0.7,fmVoice:2,fmBright:0.45,fmKeyGate:1,revDecayS:2.2,revBoing:0.6,revMix:0.35,ampGain:0.3,ampBass:0.45,ampMid:0.35,ampTreble:0.6,ampMaster:0.45,ampMix:1)
+  — The FM electric piano through a clean Fender, with the spring tank in front
+  of the power stage
+- [**fuzz into the stack**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,stompCircuit:3,stompDrive:22,stompLevel:-4,stompMix:1,ampVoice:1,ampGain:0.3,ampMix:1,ampSag:0.8,ampCab:2)
+  — A germanium fuzz into a marshall that is just short of breaking up, so the
+  pedal does the breaking
+- [**crossover**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,fmLevel:0.8,fmVoice:5,fmKeyGate:1,ampGain:0.2,ampMaster:0.8,ampMix:1,ampBias:0,ampCab:0,ampLevel:-6)
+  — The FM bass through a Fender with the output tubes biased cold, so every
+  quiet note is gritty
 - [**cold room**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipClockX:0.7,chipBendSpot:3,chipBendPot:0.25,ringHz:6,ringMix:0.3,combHz:180,combFb:0.8,combMix:0.4,delayMs:300,flutter:0.3,dlyMix:0.3,revDecayS:4,revMix:0.5)
   — A soldered DAC bias into a ringing comb, slowed right down
 - [**dying walkman**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipClockX:0.8,bits:7,srHz:9000,crushMix:0.5,delayMs:260,dlyFb:0.45,wowDepthMs:5,flutter:0.45,dlyToneHz:3500,dlyMix:0.5,revMix:0.35)

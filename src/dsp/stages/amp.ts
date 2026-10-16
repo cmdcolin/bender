@@ -247,6 +247,9 @@ const VOICINGS: readonly Voicing[] = [
 
 const dbGain = (db: number) => Math.pow(10, db / 20)
 
+/** A 10% audio-taper pot: a tenth of its track at half rotation. */
+const audioTaper = (x: number) => (Math.pow(10, 2 * x) - 1) / 99
+
 /** What the knobs decided this block, for both channels. */
 interface Knobs {
   voicing: Voicing
@@ -522,12 +525,11 @@ export class Amp implements Stage {
     k.gPower = dbGain(-18 + 36 * p[IDX.ampMaster]!)
     k.bias = v.bias * Math.pow(30, p[IDX.ampBias]! - 0.5)
     k.presence = 1.6 * p[IDX.ampPresence]!
-    const bass = p[IDX.ampBass]!
     stackDigital(
       v.stack,
       p[IDX.ampTreble]!,
       p[IDX.ampMid]!,
-      bass * bass,
+      audioTaper(p[IDX.ampBass]!),
       osr,
       k.stack,
     )

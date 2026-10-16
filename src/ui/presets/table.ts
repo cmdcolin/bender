@@ -1,6 +1,7 @@
 import { DATA_LINES, DRUM_ROMS } from '../../drums'
 import { FAULT } from '../../dsp/bus'
 import { DEST } from '../../dsp/modbus'
+import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp'
 import { ECHO_MODE } from '../../dsp/stages/echo'
 import { ENS_MODE } from '../../dsp/stages/ensemble'
 import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
@@ -765,6 +766,85 @@ export const PRESETS: PresetDef[] = [
       mod0Depth: 0.7,
       dlyMix: 0.3,
       delayMs: 320,
+    },
+  },
+  {
+    name: 'plexi',
+    blurb:
+      'The toy through two cascaded gain stages and a closed 4×12, with the supply sagging under it',
+    patch: {
+      chipLevel: 0.7,
+      ampVoice: AMP_VOICE.marshall,
+      ampGain: 0.6,
+      ampMaster: 0.5,
+      ampBass: 0.55,
+      ampMid: 0.4,
+      ampTreble: 0.6,
+      ampPresence: 0.55,
+      ampSag: 0.6,
+      ampCab: AMP_CAB.closed,
+      ampLevel: -3,
+      ampMix: 1,
+    },
+  },
+  {
+    name: 'blackface',
+    blurb:
+      'The FM electric piano through a clean Fender, with the spring tank in front of the power stage',
+    patch: {
+      chipLevel: 0,
+      fmLevel: 0.7,
+      fmKeyGate: 1,
+      fmVoice: voice('e.piano'),
+      fmBright: 0.45,
+      ampVoice: AMP_VOICE.fender,
+      ampGain: 0.3,
+      ampMaster: 0.45,
+      ampBass: 0.45,
+      ampMid: 0.35,
+      ampTreble: 0.6,
+      ampCab: AMP_CAB.open,
+      ampMix: 1,
+      revMix: 0.35,
+      revDecayS: 2.2,
+      revBoing: 0.6,
+    },
+  },
+  {
+    name: 'fuzz into the stack',
+    blurb:
+      'A germanium fuzz into a marshall that is just short of breaking up, so the pedal does the breaking',
+    patch: {
+      chipLevel: 0.75,
+      stompCircuit: 3,
+      stompDrive: 22,
+      stompTone: 0.5,
+      stompLevel: -4,
+      stompMix: 1,
+      ampVoice: AMP_VOICE.marshall,
+      ampGain: 0.3,
+      ampMaster: 0.5,
+      ampSag: 0.8,
+      ampCab: AMP_CAB.closed,
+      ampMix: 1,
+    },
+  },
+  {
+    name: 'crossover',
+    blurb:
+      'The FM bass through a Fender with the output tubes biased cold, so every quiet note is gritty',
+    patch: {
+      chipLevel: 0,
+      fmLevel: 0.8,
+      fmKeyGate: 1,
+      fmVoice: voice('bass'),
+      ampVoice: AMP_VOICE.fender,
+      ampGain: 0.2,
+      ampMaster: 0.8,
+      ampBias: 0,
+      ampCab: AMP_CAB.direct,
+      ampLevel: -6,
+      ampMix: 1,
     },
   },
   {

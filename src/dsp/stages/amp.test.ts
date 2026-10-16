@@ -1,17 +1,19 @@
 import { expect, test } from 'vitest'
 
-import { SR, bin, renderStereo, rms, sine } from '../testRender'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls'
+import { packParams } from '../../engine/params'
+import { BLOCK, type Ctx } from '../stage'
+import { SR, bin, makeIo, renderStereo, rms, sine } from '../testRender'
 import { LATENCY } from '../util/halfband'
 import { mulberry32 } from '../util/rng'
 import {
   AMP_CAB,
   AMP_VOICE,
+  Amp,
   stackAnalog,
   stackDigital,
   type StackParts,
 } from './amp'
-
-import type { Controls } from '../../controls'
 
 const FENDER: StackParts = {
   r1: 250e3,
@@ -312,6 +314,34 @@ test('the supply sags under a loud held note', () => {
   }
   expect(at(0)).toBeGreaterThan(-0.2)
   expect(at(1)).toBeLessThan(at(0) - 0.5)
+})
+
+// The board's supply droop is the second thing pulling the rail down, whether
+// the amp is loaded or not.
+test('the board’s dying supply drags the amp’s rail with it', () => {
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    ...look,
+    ampGain: 0.6,
+    ampMaster: 0.9,
+    ampSag: 0.5,
+  })
+  const level = (droop: number) => {
+    const amp = new Amp(SR)
+    const io = makeIo()
+    const ctx = { droop: new Float32Array(BLOCK).fill(droop) } as unknown as Ctx
+    const out: number[] = []
+    for (let b = 0; b < 100; b++) {
+      for (let i = 0; i < BLOCK; i++) {
+        io.l[i] = io.r[i] =
+          0.5 * Math.sin((2 * Math.PI * 200 * (b * BLOCK + i)) / SR)
+      }
+      amp.process(io, p, ctx)
+      if (b >= 50) out.push(...io.l)
+    }
+    return rms(Float32Array.from(out))
+  }
+  expect(level(0.8)).toBeLessThan(0.95 * level(0))
 })
 
 // The speaker is the difference between a cab and no cab at a level where

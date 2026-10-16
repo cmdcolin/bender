@@ -85,6 +85,8 @@ const RINGING: Partial<Controls> = {
   stompMix: 0.4,
   tapeMix: 0.4,
   ensMix: 0.4,
+  ampMix: 0.4,
+  ampGain: 0.7,
   pcmLevel: 0.5,
   pcmEnv: 2,
   pcmVibrato: 1,
