@@ -39,7 +39,8 @@ import {
 import { LOAD_SECONDS, roll, type Pool } from './archive'
 import { Glide } from './glide'
 import { MAX_SOURCES, N_PARAMS, N_TAPS, STEM_FILES, packParams } from './params'
-import { encodeMonoWav, encodeWav } from './wav'
+import { openTake, sweepTakes } from './takeSink'
+import { encodeWav, pcmMono, pcmStereo } from './wav'
 
 import type {
   FromWorklet,
@@ -48,21 +49,23 @@ import type {
   RetroMsg,
   ToWorklet,
 } from './messages'
+import type { Take, WavSink } from './takeSink'
 
-const REC_MAX_S = 600 // a take stops itself at ten minutes
 export const RETRO_S = 30
 const DRIFT_TAP_S = 2.5
 const DRIFT_TRAIL = 12
-// And sooner with the stems running, because the tape is seven tracks instead
-// of one. A second of master costs 384 kB of float in this tab; a second of
-// stems costs 1.15 MB on top, so ten minutes of stems would be 900 MB held in
-// memory before a single file is encoded. Two minutes is 184 MB, which is a
-// take you can actually finish.
-const REC_MAX_STEM_S = 120
 // Below this a stem is silence, and silence gets no file: a fader left down is
 // six seconds of nothing to drag into a session and wonder about. Not exactly
 // zero, because a source can leave dc dust behind a fader on its way to zero.
 const STEM_FLOOR = 1e-4
+
+interface Rec {
+  take: Take
+  master: WavSink
+  stems: WavSink[]
+  frames: number
+  live: number
+}
 
 // Where a source stops counting as sounding, and how fast its needle falls to
 // get there. The floor is about 60 dB down — quieter than anything anybody is
@@ -291,6 +294,8 @@ export class Engine {
   ])
   readonly recording = createStore(false)
   readonly recSeconds = createStore(0)
+  /** Why the last take could not be saved, or '' when it could. */
+  readonly recError = createStore('')
   /** Whether a take comes back as one file or as one per source plus the
       master. UI state rather than a control on the board: it changes nothing
       about what the instrument does, and a board control rides in the link, in
@@ -429,6 +434,7 @@ export class Engine {
 
   private async boot() {
     playThroughSilentSwitch()
+    void sweepTakes()
     const ctx = new AudioContext()
     await ctx.audioWorklet.addModule(workletUrl)
     const node = new AudioWorkletNode(ctx, 'bender', {
@@ -956,40 +962,40 @@ export class Engine {
     this.archiveStep.set(null)
   }
 
-  private take: { l: Float32Array; r: Float32Array }[] = []
-  // The stem tape: one growing list of slabs per source, and a bit per source
-  // that has ever risen above the floor. A take only writes files for the
-  // sources that had something on them.
-  private stemTake: Float32Array[][] = []
-  private stemLive = 0
+  // The take in progress: its sinks, one per file it will save, and a bit per
+  // source that has ever risen above the floor. A take only saves files for
+  // the sources that had something on them.
+  private rec: Rec | null = null
 
   private onRecChunk(msg: RecMsg) {
-    if (msg.n) {
-      this.take.push({ l: msg.l.slice(0, msg.n), r: msg.r.slice(0, msg.n) })
-      if (msg.stems) this.keepStems(msg.stems, msg.n)
+    const rec = this.rec
+    if (rec && msg.n) {
+      rec.master.write(pcmStereo(msg.l, msg.r, msg.n))
+      if (msg.stems) this.keepStems(rec, msg.stems, msg.n)
+      rec.frames += msg.n
+      this.recSeconds.set(rec.frames / this.sampleRate())
     }
-    const frames = this.take.reduce((n, c) => n + c.l.length, 0)
-    const sr = this.sampleRate()
-    this.recSeconds.set(frames / sr)
-    const cap = this.stemTake.length ? REC_MAX_STEM_S : REC_MAX_S
-    if (frames >= sr * cap && this.recording.get()) this.stopRecording()
-    if (msg.done) this.saveTake(sr)
+    if (
+      rec &&
+      this.recording.get() &&
+      (rec.take.room() <= 0 || rec.take.failure())
+    )
+      this.stopRecording()
+    if (msg.done) void this.saveTake()
   }
 
-  // The slabs copied out of the worklet's buffers, which it goes on writing
-  // over the moment this returns. Whether a source is worth a file is settled
-  // here, on the way past, rather than by walking two minutes of tape again at
-  // the end of the take.
-  private keepStems(slabs: Float32Array[], n: number) {
+  // The slabs converted on the way past, because the worklet goes on writing
+  // over its buffers the moment this returns. Whether a source is worth a file
+  // is settled here too, rather than by walking the whole take again at the end.
+  private keepStems(rec: Rec, slabs: Float32Array[], n: number) {
     for (let k = 0; k < MAX_SOURCES; k++) {
       const slab = slabs[k]
       if (!slab) continue
-      const chunk = slab.slice(0, n)
-      this.stemTake[k]!.push(chunk)
-      if (this.stemLive & (1 << k)) continue
-      for (const v of chunk) {
-        if (v > STEM_FLOOR || v < -STEM_FLOOR) {
-          this.stemLive |= 1 << k
+      rec.stems[k]!.write(pcmMono(slab, n))
+      if (rec.live & (1 << k)) continue
+      for (let i = 0; i < n; i++) {
+        if (slab[i]! > STEM_FLOOR || slab[i]! < -STEM_FLOOR) {
+          rec.live |= 1 << k
           break
         }
       }
@@ -1002,26 +1008,27 @@ export class Engine {
   // one file per source, and the master under the same stamp. A browser may ask
   // whether this site can download several files at once; that prompt is the
   // cost of not shipping an archiver.
-  private saveTake(sr: number) {
-    const take = this.take
-    const stems = this.stemTake
-    const live = this.stemLive
-    this.take = []
-    this.stemTake = []
-    this.stemLive = 0
-    if (!take.length) return
-    const at = stamp()
-    if (!stems.length) {
-      this.download(encodeWav(take, sr), `bender-${at}`)
-      return
-    }
-    this.download(encodeWav(take, sr), `bender-${at}-master`)
-    for (let k = 0; k < MAX_SOURCES; k++) {
-      if (!(live & (1 << k))) continue
-      this.download(
-        encodeMonoWav(stems[k]!, sr),
-        `bender-${at}-${STEM_FILES[k]}`,
-      )
+  private async saveTake() {
+    const rec = this.rec
+    this.rec = null
+    if (!rec) return
+    const { take, master, stems, frames, live } = rec
+    try {
+      if (!frames) {
+        master.discard()
+        for (const stem of stems) stem.discard()
+        return
+      }
+      const files = [await master.close()]
+      for (const [k, stem] of stems.entries()) {
+        if (live & (1 << k)) files.push(await stem.close())
+        else stem.discard()
+      }
+      for (const file of files) this.deliver(file)
+    } catch (e) {
+      this.recError.set(e instanceof Error ? e.message : String(e))
+    } finally {
+      take.end()
     }
   }
 
@@ -1029,15 +1036,15 @@ export class Engine {
       wants to hand it on itself. */
   takeTo: ((file: File) => void) | null = null
 
-  private download(blob: Blob, name: string) {
+  private deliver(file: File) {
     if (this.takeTo) {
-      this.takeTo(new File([blob], `${name}.wav`, { type: 'audio/wav' }))
+      this.takeTo(file)
       return
     }
-    const url = URL.createObjectURL(blob)
+    const url = URL.createObjectURL(file)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${name}.wav`
+    a.download = file.name
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
@@ -1058,9 +1065,12 @@ export class Engine {
     const want = this.retroWant
     this.retroWant = null
     if (want === 'wav') {
-      this.download(
-        encodeWav(this.retro, sr),
-        `bender-${stamp()}-last${RETRO_S}s`,
+      this.deliver(
+        new File(
+          [encodeWav(this.retro, sr)],
+          `bender-${stamp()}-last${RETRO_S}s.wav`,
+          { type: 'audio/wav' },
+        ),
       )
       return
     }
@@ -1087,9 +1097,21 @@ export class Engine {
   startRecording() {
     if (!this.node || this.recording.get()) return
     const stems = this.recStems.get()
-    this.take = []
-    this.stemTake = stems ? Array.from({ length: MAX_SOURCES }, () => []) : []
-    this.stemLive = 0
+    const take = openTake(this.sampleRate())
+    const at = stamp()
+    this.rec = {
+      take,
+      master: take.wav(
+        stems ? `bender-${at}-master.wav` : `bender-${at}.wav`,
+        2,
+      ),
+      stems: stems
+        ? STEM_FILES.map(name => take.wav(`bender-${at}-${name}.wav`, 1))
+        : [],
+      frames: 0,
+      live: 0,
+    }
+    this.recError.set('')
     this.recSeconds.set(0)
     this.recording.set(true)
     this.post({ kind: 'record', on: true, stems })

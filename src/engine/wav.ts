@@ -1,41 +1,36 @@
 // 16-bit PCM in a canonical 44-byte-header RIFF file. Two channels for the
 // master, one for a stem — see the recorder for why a stem is mono.
 
+export const WAV_HEADER = 44
+
 /** The master: the stereo pair, interleaved. */
 export function encodeWav(
   chunks: { l: Float32Array; r: Float32Array }[],
   sr: number,
 ): Blob {
   const frames = chunks.reduce((n, c) => n + c.l.length, 0)
-  const { buf, view } = riff(frames, 2, sr)
-  let at = 44
-  for (const c of chunks) {
-    for (let i = 0; i < c.l.length; i++) {
-      view.setInt16(at, pcm16(c.l[i]!), true)
-      view.setInt16(at + 2, pcm16(c.r[i]!), true)
-      at += 4
-    }
-  }
-  return new Blob([buf], { type: 'audio/wav' })
+  const pcm = chunks.map(c => pcmStereo(c.l, c.r, c.l.length))
+  return new Blob([wavHeader(frames * 4, 2, sr), ...pcm], {
+    type: 'audio/wav',
+  })
 }
 
 /** One source's stem, which arrives as a run of slabs the way the master does. */
 export function encodeMonoWav(chunks: Float32Array[], sr: number): Blob {
   const frames = chunks.reduce((n, c) => n + c.length, 0)
-  const { buf, view } = riff(frames, 1, sr)
-  let at = 44
-  for (const c of chunks) {
-    for (let i = 0; i < c.length; i++) {
-      view.setInt16(at, pcm16(c[i]!), true)
-      at += 2
-    }
-  }
-  return new Blob([buf], { type: 'audio/wav' })
+  const pcm = chunks.map(c => pcmMono(c, c.length))
+  return new Blob([wavHeader(frames * 2, 1, sr), ...pcm], {
+    type: 'audio/wav',
+  })
 }
 
-function riff(frames: number, channels: number, sr: number) {
-  const bytes = frames * channels * 2
-  const buf = new ArrayBuffer(44 + bytes)
+/** The header for `bytes` of sample data. */
+export function wavHeader(
+  bytes: number,
+  channels: number,
+  sr: number,
+): Uint8Array<ArrayBuffer> {
+  const buf = new ArrayBuffer(WAV_HEADER)
   const view = new DataView(buf)
   const ascii = (at: number, text: string) => {
     for (let i = 0; i < text.length; i++)
@@ -55,7 +50,28 @@ function riff(frames: number, channels: number, sr: number) {
   view.setUint16(34, 16, true)
   ascii(36, 'data')
   view.setUint32(40, bytes, true)
-  return { buf, view }
+  return new Uint8Array(buf)
+}
+
+/** The first `n` frames of a stereo pair, interleaved. */
+export function pcmStereo(
+  l: Float32Array,
+  r: Float32Array,
+  n: number,
+): Int16Array<ArrayBuffer> {
+  const out = new Int16Array(n * 2)
+  for (let i = 0; i < n; i++) {
+    out[2 * i] = pcm16(l[i]!)
+    out[2 * i + 1] = pcm16(r[i]!)
+  }
+  return out
+}
+
+/** The first `n` samples of one channel. */
+export function pcmMono(x: Float32Array, n: number): Int16Array<ArrayBuffer> {
+  const out = new Int16Array(n)
+  for (let i = 0; i < n; i++) out[i] = pcm16(x[i]!)
+  return out
 }
 
 function pcm16(x: number): number {

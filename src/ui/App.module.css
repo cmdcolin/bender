@@ -335,6 +335,12 @@
   color: var(--accent);
 }
 
+.recError {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--alarm);
+}
+
 .credit {
   font-size: var(--fs-xs);
   color: var(--fg3);

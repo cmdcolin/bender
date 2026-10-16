@@ -673,6 +673,7 @@ test('a stem take saves the master and a file for each source that made a sound'
   at('fm')[N - 1] = 0.25
   chunk({ l, r: l, n: N, done: true, stems: slabs })
 
+  await vi.waitFor(() => expect(files).toHaveLength(3))
   expect(suffixes(files)).toEqual(['-master.wav', '-drums.wav', '-fm.wav'])
   expect(new Set(files.map(f => f.name.match(STAMP)![0])).size).toBe(1)
   const [master, drums, fm] = files
@@ -683,9 +684,10 @@ test('a stem take saves the master and a file for each source that made a sound'
   expect(pcm.getInt16(44 + N * 2, true)).toBe(0)
 })
 
-test('a master-only take saves one file under the bare stamp', () => {
+test('a master-only take saves one file under the bare stamp', async () => {
   const { files, chunk } = recorder(false)
   const l = new Float32Array(N).fill(0.5)
   chunk({ l, r: l, n: N, done: true })
+  await vi.waitFor(() => expect(files).toHaveLength(1))
   expect(suffixes(files)).toEqual(['.wav'])
 })

@@ -569,10 +569,13 @@ the mic lands on the bus, the return feeds the desk back into itself — both ar
 in the master only.
 
 Stems are mono: five of the six sources put the same sample on both channels,
-and noise takes the middle of its two streams. A stem take stops at two minutes
-(a master take gets ten) — seven tracks of 48 kHz float run about 1.5 MB per
-second held in the tab. There's no zip, so stopping a stem take fires up to
-seven downloads at once; your browser may ask permission for multiple files.
+and noise takes the middle of its two streams. A take streams to disk as it
+records, and the storage your browser grants the site sets its length. A master
+takes about 11 MB a minute and a stem 5.5 MB. A browser with no streaming file
+API (older Safari) holds the take in memory and stops it at about 11 minutes of
+master, or 2½ minutes with stems. There's no zip, so stopping a stem take fires
+up to nine downloads at once; your browser may ask permission for multiple
+files.
 
 ## On a phone
 

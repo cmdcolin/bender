@@ -21,7 +21,7 @@ description:
 - **More bay lanes**: each loop's erase and record, and the other channels'
   mids.
 - **Longer loops.** Loops are float at 48 kHz, so four 60 s loops are 46 MB.
-  Int16 storage halves that, as `stem-extras.md` proposes for stems.
+  Int16 storage halves that, as `engine/takeSink.ts` does for takes.
 - **Field recordings.** Record the mic straight onto a loop or the sampler's
   reel without the board in the path, and add a field-recordings pool to the
   archive roll in `src/engine/archive.ts` (check the collection ids).

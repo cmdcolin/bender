@@ -82,7 +82,9 @@ also the reason the copy is _not_ free for the audio thread — see
 where the same fact corrects a comment that used to claim otherwise.
 
 Recording takes the same route. The worklet fills a slab of about 0.7 s and
-posts it; the main thread owns the growing take and encodes the wav.
+posts it; the main thread converts the slab to 16-bit and appends it to a wav
+file in the origin-private file system (`engine/takeSink.ts`), so a take costs
+the tab one slab at a time.
 
 ## What runs per sample
 
