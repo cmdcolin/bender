@@ -504,10 +504,9 @@ stage, so a chord of them is a chord. The dealer also leaves out:
 - a level or mix that would turn the board up by more than 6 dB
 - the end of a control's travel that it already sits at
 
-**⚡ go wild**, beside the run switches, runs both machines, brings the kit up
-if it is down, sends the letters to the bend keys and deals a hand, all in one
-press. The switch is remembered across a reload, and a link with `?bend` on it
-opens the same way.
+The **letters** switch under the keyboards sends the computer's letter keys to
+the bend keys instead of the toy keyboard. The switch is remembered across a
+reload, and a link with `?bend` on it opens the same way.
 
 The chips beside the switch set how the next deal comes out:
 

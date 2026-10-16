@@ -12,14 +12,27 @@
   gap: var(--gap-ctl);
 }
 
-.switch {
-  composes: action from './button.module.css';
-  font-family: var(--mono);
+/* Engraved like the TAPE label above it, so the two rows read as one plate. */
+.label {
+  flex: none;
+  width: 4.5em;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg4);
 }
 
-.switchOn {
+.segment {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.seg {
+  composes: action from './button.module.css';
+}
+
+.segOn {
   composes: actionOn from './button.module.css';
-  font-family: var(--mono);
 }
 
 .settings {
@@ -143,8 +156,8 @@
 
 /* A finger has no letter keys to send anywhere. */
 @media (pointer: coarse) {
-  .switch,
-  .switchOn,
+  .label,
+  .segment,
   .letter,
   .letterOff {
     display: none;

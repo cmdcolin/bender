@@ -42,21 +42,21 @@ const open = () => {
 test('the row deals itself a hand on first draw', () => {
   render(<BendKeys morphSeconds={0} />)
   expect(bendDeal.get()).toHaveLength(16)
-  expect(screen.getByRole('button', { name: 'letters → toy' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'notes' })).toBeTruthy()
 })
 
 test('the keys stay folded until asked for or until the letters come here', () => {
   render(<BendKeys morphSeconds={0} />)
   expect(screen.queryByText('spin')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'bend keys' }))
+  fireEvent.click(screen.getByRole('button', { name: 'show keys' }))
   expect(screen.getByText('spin')).toBeTruthy()
 })
 
 test('the switch sends the letters here and back to the toy', () => {
   render(<BendKeys morphSeconds={0} />)
-  fireEvent.click(screen.getByRole('button', { name: 'letters → toy' }))
+  fireEvent.click(screen.getByRole('button', { name: 'bends' }))
   expect(letterKeys.get()).toBe('bends')
-  fireEvent.click(screen.getByRole('button', { name: 'letters → bends' }))
+  fireEvent.click(screen.getByRole('button', { name: 'notes' }))
   expect(letterKeys.get()).toBe('toy')
 })
 
@@ -118,7 +118,7 @@ test('a pad takes a pointer the same way', () => {
 
 test('the bottom row holds the chosen throws, with the letters on a keybed', () => {
   render(<BendKeys morphSeconds={0} />)
-  fireEvent.click(screen.getByRole('button', { name: 'bend keys' }))
+  fireEvent.click(screen.getByRole('button', { name: 'show keys' }))
   const spin = screen.getByText('spin').closest('button')!
   act(() => {
     fireEvent.pointerDown(spin, { pointerId: 1 })

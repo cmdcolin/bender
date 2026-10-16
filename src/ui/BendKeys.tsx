@@ -237,21 +237,27 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   return (
     <div className={styles.board}>
       <div className={styles.bar}>
-        <Tip
-          text={
-            on
-              ? 'The letter keys play the bend keys: hold one, shift pins it, z lets go of everything, x redeals. Press to hand the letters back to the toy keyboard.'
-              : 'Send the letter keys to the bend keys: hold one, shift pins it, z lets go of everything, x redeals.'
-          }
-        >
-          <button
-            className={on ? styles.switchOn : styles.switch}
-            aria-pressed={on}
-            onClick={() => setLetters(!on)}
-          >
-            {on ? 'letters → bends' : 'letters → toy'}
-          </button>
-        </Tip>
+        <span className={styles.label}>letters</span>
+        <span className={styles.segment} role="group" aria-label="letter keys">
+          <Tip text="The letter keys play the toy keyboard.">
+            <button
+              className={on ? styles.seg : styles.segOn}
+              aria-pressed={!on}
+              onClick={() => setLetters(false)}
+            >
+              notes
+            </button>
+          </Tip>
+          <Tip text="The letter keys play the bend keys: hold one, shift pins it, z lets go of everything, x redeals.">
+            <button
+              className={on ? styles.segOn : styles.seg}
+              aria-pressed={on}
+              onClick={() => setLetters(true)}
+            >
+              bends
+            </button>
+          </Tip>
+        </span>
         {!on && (
           <Tip text="Show the sixteen bend keys the dice dealt, to press with the mouse.">
             <button
@@ -259,7 +265,7 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
               aria-pressed={shown}
               onClick={() => setShown(!shown)}
             >
-              bend keys
+              show keys
             </button>
           </Tip>
         )}
