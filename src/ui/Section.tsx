@@ -504,6 +504,11 @@ export function OpenGroup({
       rollGroup(group, engine.controls.get(), Math.random),
       seconds,
     )
+  // The four-track's settings go above its lanes: they are the way in for a hand
+  // that cannot see where to start, and four lanes of empty tape would push them
+  // off the screen.
+  const rigsFirst = group.editor?.kind === 'loops'
+  const rigs = <Rigs group={group} seconds={seconds} />
   return (
     // The id every door on the map points at. The map draws its boxes as
     // links so a keyboard reaches them at all, and a link wants somewhere to
@@ -545,6 +550,7 @@ export function OpenGroup({
       <div className={styles.body}>
         <ReserveReadout defs={panelRows(group)}>
           <Lead group={group} />
+          {rigsFirst && rigs}
           {group.editor?.kind === 'drums' && <DrumGrid />}
           {group.editor?.kind === 'roll' && <TuneRoll />}
           {group.editor?.kind === 'mixer' && <Mixer />}
@@ -554,7 +560,7 @@ export function OpenGroup({
           {group.editor?.kind === 'trigger' && <TriggerPatch />}
           {group.editor?.kind === 'mic' && <MicPatch />}
           {group.editor?.kind === 'loops' && <FourTrack />}
-          <Rigs group={group} seconds={seconds} />
+          {!rigsFirst && rigs}
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>
       </div>

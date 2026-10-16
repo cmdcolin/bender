@@ -397,14 +397,21 @@ Each track has a lane:
 To loop the board: set **in** to **board**, press **rec**, bring **Level** up.
 The loop plays back through **Cue** and goes round the board again each lap.
 
+For feedback, press a setting under the lanes:
+
+- **no-input mixer** puts track 1 on the desk's own aux return, so the desk
+  feeds itself and squeals where track 1's mid is boosted. **Aux master** is how
+  much of it comes back; track 1's **Mid freq** tunes the pitch.
+- **squeal through the echo** adds track 2 listening to the board, so the squeal
+  goes round through the delay pedal and onto the bus again. Any pedal or bend
+  on the board sits in that loop.
+
 Everything else is folded:
 
 - **track 1** to **track 4** hold the strip: trim, EQ, aux send, pan, record and
   erase amounts, cue and length. Each opens on a diagram of the channel, with
   every box reading its knob.
 - **the transport** holds tape level, hiss, wow, flutter, wear and batteries.
-- **aux bus** holds the aux master. With a channel's **in** on **aux** and its
-  send up, the desk feeds itself and squeals where the EQ boosts.
 - **Speed**, **Pitch**, **Side** and **NR** stay out: 1⅞ or 3¾ ips, varispeed,
   turning the cassette over, and dbx.
 - **blank cassette** wipes the loops and their wear.

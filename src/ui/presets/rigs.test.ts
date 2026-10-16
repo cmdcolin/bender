@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
-import { render, rms } from '../../dsp/testRender'
+import { pitchHz, render, rms, SR } from '../../dsp/testRender'
 import { groupKeys, sliderFor, snapToStep } from '../controls'
 import { applyRig, RIGS, rigStands, rigsFor } from './rigs'
 import { mine } from './testBoard'
@@ -106,4 +106,36 @@ test('an ordering pair is two different sounds', () => {
     const two = render(second.patch, 2)
     expect(rms(diff(one, two)), `${a} vs ${b}`).toBeGreaterThan(0.2 * rms(one))
   }
+})
+
+// The desk feeding itself: the squeal is where the mid is boosted, not wherever
+// the loop happens to ring.
+test('the no-input mixer squeals at the pitch its mid is tuned to', () => {
+  const rig = rigsFor('Four-track').find(r => r.name === 'no-input mixer')!
+  const hz = pitchHz(render(rig.patch, 3).subarray(SR))
+  expect(hz / rig.patch.four1MidHz!).toBeGreaterThan(0.7)
+  expect(hz / rig.patch.four1MidHz!).toBeLessThan(1.4)
+})
+
+// The echo has to be in the loop, not just on the output: the same squeal with
+// track 2 listening to the board is a different sound from the squeal alone.
+test('the echo in the loop changes the squeal it is fed', () => {
+  const [alone, echoed] = ['no-input mixer', 'squeal through the echo'].map(
+    name => render(rigsFor('Four-track').find(r => r.name === name)!.patch, 3),
+  )
+  expect(rms(diff(alone!, echoed!))).toBeGreaterThan(0.1 * rms(alone!))
+})
+
+test('the four-track rigs reach outside the stage only to bring a level or a mix up', () => {
+  const desk = new Set<ControlKey>(groupKeys('Four-track'))
+  for (const rig of rigsFor('Four-track'))
+    for (const key of Object.keys(rig.patch) as ControlKey[]) {
+      if (desk.has(key)) continue
+      expect(['level', 'mix'], `${rig.name}/${key}`).toContain(
+        sliderFor(key).role,
+      )
+      expect(rig.patch[key], `${rig.name}/${key}`).toBeGreaterThan(
+        DEFAULT_CONTROLS[key],
+      )
+    }
 })

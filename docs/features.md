@@ -4,7 +4,7 @@
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
 ruin. 449 knobs and switches in 33 groups, seven bends competing for six slots,
-18 ROM tunes, 121 presets, 18 stage settings and 46 named cuts — and everything
+18 ROM tunes, 121 presets, 20 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
 
@@ -619,12 +619,25 @@ the aux with its send up is a mixer with nothing plugged in: the sweepable mid
 tunes the squeal and the op-amp rails clip it. _Wear_ sheds oxide at the same
 places every lap, and _Batteries_ drags the motor and the rails down together.
 
+Named settings, one press each at the head of the panel — the stage goes back to
+stock and the setting is written over it, so the rows underneath say what it
+became:
+
+- **no-input mixer**: Track 1 hears the desk’s own aux return and sends to it,
+  with its mid boosted at 700 Hz: the loop squeals there. Sweep track 1’s Mid
+  freq to retune it, and Aux master to bring it in
+- **squeal through the echo**: The same squeal, with track 2 listening to the
+  board: what the desk sends comes back through the delay pedal and onto the bus
+  again, so the squeal leaves echoes and the echoes feed it. Brings the delay
+  pedal up
+
 <details>
 <summary>64 controls</summary>
 
 | control    | range                     | what it does                                                                                                               |
 | ---------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | Level      | 0× to 2×, normal 0× to 1× | The stereo bus of the four-track’s desk, onto the board’s mix bus                                                          |
+| Aux master | 0 to 2, normal 0 to 1     | The aux bus’s return level                                                                                                 |
 | Speed      | 1⅞ ips or 3¾ ips          | Normal cassette speed, or the double speed a four-track runs for more top end and less hiss                                |
 | Pitch      | -12.0% to +12.0%          | The varispeed on the capstan, ±12%                                                                                         |
 | Side       | A or B                    | Turn the cassette over                                                                                                     |
@@ -635,7 +648,6 @@ places every lap, and _Batteries_ drags the motor and the rails down together.
 | Flutter    | off to full               | The capstan and the pinch roller, at the rates they turn at                                                                |
 | Wear       | off to full               | How fast the loops shed oxide                                                                                              |
 | Batteries  | off to full               | How flat the cells are                                                                                                     |
-| Aux master | 0 to 2, normal 0 to 1     | The aux bus’s return level                                                                                                 |
 | Input      | tape, board, mic, aux     | What channel 1 hears                                                                                                       |
 | Trim       | off to +40 dB             | The preamp                                                                                                                 |
 | Low        | −15 to +15 dB             | A shelf at 100 Hz                                                                                                          |

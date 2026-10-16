@@ -312,6 +312,39 @@ export const RIGS: RigDef[] = [
       'The processor’s crystal at sixteen times: the bird script writes faster than the envelopes can follow, and the call turns to static over a chip still in tune',
     patch: { fmLevel: 0.8, fmEffect: fmEffect('bird'), fmCpuClockX: 16 },
   },
+  {
+    group: 'Four-track',
+    name: 'no-input mixer',
+    blurb:
+      'Track 1 hears the desk’s own aux return and sends to it, with its mid boosted at 700 Hz: the loop squeals there. Sweep track 1’s Mid freq to retune it, and Aux master to bring it in',
+    patch: {
+      fourLevel: 0.5,
+      fourAux: 1,
+      four1In: choiceValue('four1In', 'aux'),
+      four1Fader: 0.8,
+      four1Send: 1,
+      four1MidHz: 700,
+      four1Mid: 12,
+    },
+  },
+  {
+    group: 'Four-track',
+    name: 'squeal through the echo',
+    blurb:
+      'The same squeal, with track 2 listening to the board: what the desk sends comes back through the delay pedal and onto the bus again, so the squeal leaves echoes and the echoes feed it. Brings the delay pedal up',
+    patch: {
+      fourLevel: 0.5,
+      fourAux: 1,
+      four1In: choiceValue('four1In', 'aux'),
+      four1Fader: 0.8,
+      four1Send: 1,
+      four1MidHz: 700,
+      four1Mid: 12,
+      four2In: choiceValue('four2In', 'board'),
+      four2Fader: 0.6,
+      echoLevel: 0.7,
+    },
+  },
 ]
 
 export const rigsFor = (group: string): RigDef[] =>

@@ -53,7 +53,7 @@ test('the lane picks what the channel hears', () => {
 
 test('the channel strips and the transport start folded', () => {
   openFourTrack()
-  for (const name of ['the transport', 'aux bus', 'track 1', 'track 4'])
+  for (const name of ['the transport', 'track 1', 'track 4'])
     expect(fold(name)?.open, name).toBe(false)
 })
 
