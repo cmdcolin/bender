@@ -179,6 +179,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   const monoUp = useBoardValue(c => c.monoLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [pool, setPool] = useState(0)
+  const tapeRunning = useBoardValue(c => c.sampleLevel > 0)
   // Which stage's controls the panel is showing. The map is the way in — every
   // group has a door on it, the stages along the path and the rest of the board
   // drawn where it sits — so one stage is open at a time and the rest of the
@@ -444,7 +445,28 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                       drop an audio file anywhere
                     </span>
                   )}
-                  <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
+                  <Tip text="Starts or stops the tape. A one-shot starts again from the front.">
+                    <button
+                      className={
+                        tapeRunning ? styles.ioBtnToggled : styles.ioBtn
+                      }
+                      aria-pressed={tapeRunning}
+                      disabled={!sampleName}
+                      onClick={() => {
+                        const c = engine.controls.get()
+                        if (tapeRunning) {
+                          engine.set('sampleLevel', 0)
+                          return
+                        }
+                        engine.set('sampleLevel', 0.7)
+                        if (c.sampleMode === 1)
+                          engine.seekSample(Math.min(c.loopIn, c.loopOut))
+                      }}
+                    >
+                      {tapeRunning ? '■ stop' : '▶ play'}
+                    </button>
+                  </Tip>
+                  <Tip text="Pulls a random tape off archive.org and puts it on the sampler. The shelf beside it picks what kind.">
                     <button
                       className={styles.ioBtn}
                       onClick={() =>
@@ -453,12 +475,13 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                           : engine.rollSample(POOLS[pool]!)
                       }
                     >
-                      {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
+                      {archiveStep ? '✕ cancel' : '⚄ load a tape'}
                     </button>
                   </Tip>
                   <Tip text={POOLS[pool]!.blurb}>
                     <select
                       className={styles.pool}
+                      aria-label="the shelf the tape comes from"
                       value={pool}
                       onChange={e => setPool(Number(e.target.value))}
                     >

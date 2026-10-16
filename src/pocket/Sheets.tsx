@@ -158,10 +158,7 @@ export function MixSheet(props: { onClose: () => void }) {
       engine.cancelRoll()
       return
     }
-    void engine.rollSample(POOLS[pool]!).then(() => {
-      if (engine.controls.get().sampleLevel === 0)
-        engine.set('sampleLevel', 0.7)
-    })
+    void engine.rollSample(POOLS[pool]!)
   }
 
   return (
@@ -184,7 +181,7 @@ export function MixSheet(props: { onClose: () => void }) {
           {micOn ? '● mic live' : 'mic'}
         </button>
         <button className={styles.chip} onClick={roll}>
-          {step ? '✕ cancel' : '⚄ roll a sample'}
+          {step ? '✕ cancel' : '⚄ load a tape'}
         </button>
         <select
           className={styles.pool}

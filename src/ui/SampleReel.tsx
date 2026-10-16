@@ -209,12 +209,10 @@ export function SampleReel({ children }: { children?: ReactNode }) {
       // The counter reads whole seconds into the reel, the way a deck's
       // wheels count turns; the direction under it uses the Speed knob's two
       // colours, because it is the part read at a glance.
-      const silent = level <= 0 && rec <= 0
-      const way = silent
-        ? 'Level ↓'
-        : speed === 0
-          ? '■'
-          : `${speed < 0 ? '◀' : '▶'}${Math.abs(speed) === 1 ? '' : ` ${Math.abs(speed).toFixed(2)}×`}`
+      const stopped = (level <= 0 && rec <= 0) || speed === 0
+      const way = stopped
+        ? '■'
+        : `${speed < 0 ? '◀' : '▶'}${Math.abs(speed) === 1 ? '' : ` ${Math.abs(speed).toFixed(2)}×`}`
       const says = wheels(m.samplePos * m.sampleSecs)
       if (painted !== says + way) {
         painted = says + way
@@ -223,13 +221,11 @@ export function SampleReel({ children }: { children?: ReactNode }) {
         }
         if (heading.current) {
           heading.current.textContent = way
-          heading.current.style.color = silent
-            ? 'var(--accent2)'
-            : speed === 0
-              ? 'var(--fg4)'
-              : speed < 0
-                ? 'var(--cool)'
-                : 'var(--accent)'
+          heading.current.style.color = stopped
+            ? 'var(--fg4)'
+            : speed < 0
+              ? 'var(--cool)'
+              : 'var(--accent)'
         }
       }
     }
@@ -316,7 +312,7 @@ export function SampleReel({ children }: { children?: ReactNode }) {
             onPointerCancel={() => (grab.current = null)}
           />
         </Tip>
-        <Tip text="Tape counter: whole seconds into the reel. Below it, the direction and speed, or Level ↓ when the sampler’s Level fader is down and nothing plays.">
+        <Tip text="Tape counter: whole seconds into the reel. Below it, the direction and speed.">
           <div className={styles.counter}>
             <div className={styles.wheels}>
               {Array.from({ length: WHEELS }, (_, i) => (

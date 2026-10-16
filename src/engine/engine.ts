@@ -902,6 +902,7 @@ export class Engine {
     const peaks = peaksOf(mono)
     this.post({ kind: 'sample', mono, peaks }, [mono.buffer, peaks.buffer])
     this.sampleName.set(name)
+    if (this.controls.get().sampleLevel === 0) this.set('sampleLevel', 0.7)
   }
 
   /** Drop the play head on the reel, 0..1 over the whole of it. */
