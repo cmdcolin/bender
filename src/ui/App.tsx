@@ -554,15 +554,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                 <span className={styles.version}>{versionLabel}</span>
               </button>
             </Tip>
-            <MorphControl
-              seconds={morphSeconds}
-              drifting={drifting}
-              onSet={setMorphSeconds}
-            />
-            {/* Beside them because it is the same kind of thing: about the board
-              as a whole rather than about any one stage of it. It was a section
-              of the panel, which is where the board's own stages live and where
-              the wire into them does not belong. */}
+            {/* About the board as a whole rather than any one stage of it. */}
             <MidiPanel
               open={showMidi}
               onToggle={() => setShowMidi(o => !o)}
@@ -592,9 +584,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
               onSignIn={lib.signIn}
               onSignOut={lib.signOut}
             />
-            {/* Everything about the board rather than a stage of it, and rare
-                enough to earn no room of its own — pinned to the row's far end,
-                clear of the verbs that matter more often. */}
             <Tip text="About this build, and where the docs and source are.">
               <button
                 ref={setMenuBtn}
@@ -773,6 +762,11 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                 </button>
               </Tip>
             )}
+            <MorphControl
+              seconds={morphSeconds}
+              drifting={drifting}
+              onSet={setMorphSeconds}
+            />
           </div>
         </div>
 
