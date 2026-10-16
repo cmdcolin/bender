@@ -4,7 +4,7 @@ import { openTake, sweepTakes } from './takeSink'
 
 interface Entry {
   kind: 'file' | 'directory'
-  data: Uint8Array
+  data: Uint8Array<ArrayBuffer>
   modified: number
   children: Map<string, Entry>
 }
@@ -17,7 +17,7 @@ const entry = (kind: Entry['kind']): Entry => ({
 })
 
 class Writable {
-  private swap: Uint8Array
+  private swap: Uint8Array<ArrayBuffer>
   constructor(private target: Entry) {
     this.swap = new Uint8Array()
   }
