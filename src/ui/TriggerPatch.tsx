@@ -1,20 +1,29 @@
 import { sliderFor } from './controls'
 import { useControlValue } from './ControlsContext'
-import { ControlSlider } from './Slider'
+import { useSelectedBox } from './diagram'
+import diagramStyles from './Diagram.module.css'
+import { BoxRows } from './DiagramParts'
 import styles from './TriggerPatch.module.css'
+
+import type { ReactNode } from 'react'
 
 const TO_KEYS = sliderFor('trigToKeys').choices!
 const TO_DRUM = sliderFor('trigToDrum').choices!
 const NOTE = sliderFor('trigKeysNote').choices!
 const STRUCK = sliderFor('fmStruck').choices!
 
-const ROWS = (
-  ['trigToKeys', 'trigKeysNote', 'trigToDrum', 'fmStruck', 'fmKeyGate'] as const
-).map(key => sliderFor(key))
+const OPENS = {
+  'kit → keys': ['trigToKeys', 'trigKeysNote'],
+  'keys → kit': ['trigToDrum'],
+  gate: ['fmKeyGate'],
+  'kit → FM': ['fmStruck'],
+} as const
 
-const BOX_W = 116
+type Wire = keyof typeof OPENS
+
+const BOX_W = 80
 const BOX_H = 26
-const GAP = 56
+const GAP = 112
 const LEFT_X = 4
 const RIGHT_X = LEFT_X + BOX_W + GAP
 const TOP = 14
@@ -31,13 +40,9 @@ const HEIGHT = FM_Y + BOX_H + 6
 
 // The three boxes on the board and the wires that make one strike another:
 // the two the bay can bridge between the toys, and the two that reach the chip
-// with no keyboard of its own — the jumper off the keyboard's gate, which was
-// soldered at the factory, and the kit's trigger lines, which were not.
-//
-// Drawn as a loop rather than as five dropdowns spread over two panels. 'Kit
-// fires keys' and 'Struck by' are the same gesture aimed at two different
-// boxes, and nothing on the panel said so.
+// with no keyboard of its own. Pressing a wire opens its rows underneath.
 export function TriggerPatch() {
+  const pick = useSelectedBox()
   const toKeys = Math.round(useControlValue('trigToKeys'))
   const toDrum = Math.round(useControlValue('trigToDrum'))
   const note = Math.round(useControlValue('trigKeysNote'))
@@ -83,6 +88,35 @@ export function TriggerPatch() {
     </>
   )
 
+  const press = (id: Wire, hit: string, drawn: ReactNode) => {
+    const selected = pick.selected === id
+    return (
+      <g
+        key={id}
+        className={`${diagramStyles.pick} ${selected ? diagramStyles.pickedLabel : ''}`}
+        role="button"
+        tabIndex={0}
+        aria-pressed={selected}
+        aria-label={`${id} controls`}
+        onClick={() => pick.toggle(id)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            pick.toggle(id)
+          }
+        }}
+      >
+        <path
+          d={hit}
+          fill="none"
+          strokeWidth={9}
+          className={selected ? styles.hitOn : styles.hit}
+        />
+        {drawn}
+      </g>
+    )
+  }
+
   return (
     <>
       <svg
@@ -94,121 +128,135 @@ export function TriggerPatch() {
         {box(RIGHT_X, TOP, 'Toy keyboard')}
         {box(RIGHT_X, FM_Y, 'FM chip')}
 
-        <g opacity={upOn ? 1 : 0.45}>
-          <title>{upTitle}</title>
-          <line
-            x1={LEFT_X + BOX_W}
-            y1={UP_Y}
-            x2={RIGHT_X - 6}
-            y2={UP_Y}
-            stroke={upOn ? 'var(--accent)' : 'var(--fg4)'}
-            strokeWidth={upOn ? 1.5 : 1}
-            strokeDasharray={upOn ? undefined : '2 2'}
-          />
-          <path
-            d={`M ${RIGHT_X - 6} ${UP_Y - 3} L ${RIGHT_X} ${UP_Y} L ${RIGHT_X - 6} ${UP_Y + 3}`}
-            fill="none"
-            stroke={upOn ? 'var(--accent)' : 'var(--fg4)'}
-            strokeWidth={1.5}
-          />
-          <text
-            x={(LEFT_X + BOX_W + RIGHT_X) / 2}
-            y={UP_Y - 4}
-            textAnchor="middle"
-            className={styles.tag}
-            fill={upOn ? 'var(--fg3)' : 'var(--fg4)'}
-          >
-            {upOn
-              ? `${TO_KEYS[toKeys]} trig → ${NOTE[note]}`
-              : 'kit → keys off'}
-          </text>
-        </g>
+        {press(
+          'kit → keys',
+          `M ${LEFT_X + BOX_W} ${UP_Y} H ${RIGHT_X}`,
+          <g opacity={upOn ? 1 : 0.45}>
+            <title>{upTitle}</title>
+            <line
+              x1={LEFT_X + BOX_W}
+              y1={UP_Y}
+              x2={RIGHT_X - 6}
+              y2={UP_Y}
+              stroke={upOn ? 'var(--accent)' : 'var(--fg4)'}
+              strokeWidth={upOn ? 1.5 : 1}
+              strokeDasharray={upOn ? undefined : '2 2'}
+            />
+            <path
+              d={`M ${RIGHT_X - 6} ${UP_Y - 3} L ${RIGHT_X} ${UP_Y} L ${RIGHT_X - 6} ${UP_Y + 3}`}
+              fill="none"
+              stroke={upOn ? 'var(--accent)' : 'var(--fg4)'}
+              strokeWidth={1.5}
+            />
+            <text
+              x={(LEFT_X + BOX_W + RIGHT_X) / 2}
+              y={UP_Y - 4}
+              textAnchor="middle"
+              className={styles.tag}
+              fill={upOn ? 'var(--fg3)' : 'var(--fg4)'}
+            >
+              {upOn
+                ? `${TO_KEYS[toKeys]} trig → ${NOTE[note]}`
+                : 'kit → keys off'}
+            </text>
+          </g>,
+        )}
 
-        <g opacity={downOn ? 1 : 0.45}>
-          <title>{downTitle}</title>
-          <line
-            x1={RIGHT_X}
-            y1={DOWN_Y}
-            x2={LEFT_X + BOX_W + 6}
-            y2={DOWN_Y}
-            stroke={downOn ? 'var(--cool)' : 'var(--fg4)'}
-            strokeWidth={downOn ? 1.5 : 1}
-            strokeDasharray={downOn ? undefined : '2 2'}
-          />
-          <path
-            d={`M ${LEFT_X + BOX_W + 6} ${DOWN_Y - 3} L ${LEFT_X + BOX_W} ${DOWN_Y} L ${LEFT_X + BOX_W + 6} ${DOWN_Y + 3}`}
-            fill="none"
-            stroke={downOn ? 'var(--cool)' : 'var(--fg4)'}
-            strokeWidth={1.5}
-          />
-          <text
-            x={(LEFT_X + BOX_W + RIGHT_X) / 2}
-            y={DOWN_Y + 12}
-            textAnchor="middle"
-            className={styles.tag}
-            fill={downOn ? 'var(--fg3)' : 'var(--fg4)'}
-          >
-            {downOn ? `keys → ${TO_DRUM[toDrum]} trig` : 'keys → kit off'}
-          </text>
-        </g>
+        {press(
+          'keys → kit',
+          `M ${RIGHT_X} ${DOWN_Y} H ${LEFT_X + BOX_W}`,
+          <g opacity={downOn ? 1 : 0.45}>
+            <title>{downTitle}</title>
+            <line
+              x1={RIGHT_X}
+              y1={DOWN_Y}
+              x2={LEFT_X + BOX_W + 6}
+              y2={DOWN_Y}
+              stroke={downOn ? 'var(--cool)' : 'var(--fg4)'}
+              strokeWidth={downOn ? 1.5 : 1}
+              strokeDasharray={downOn ? undefined : '2 2'}
+            />
+            <path
+              d={`M ${LEFT_X + BOX_W + 6} ${DOWN_Y - 3} L ${LEFT_X + BOX_W} ${DOWN_Y} L ${LEFT_X + BOX_W + 6} ${DOWN_Y + 3}`}
+              fill="none"
+              stroke={downOn ? 'var(--cool)' : 'var(--fg4)'}
+              strokeWidth={1.5}
+            />
+            <text
+              x={(LEFT_X + BOX_W + RIGHT_X) / 2}
+              y={DOWN_Y + 12}
+              textAnchor="middle"
+              className={styles.tag}
+              fill={downOn ? 'var(--fg3)' : 'var(--fg4)'}
+            >
+              {downOn ? `keys → ${TO_DRUM[toDrum]} trig` : 'keys → kit off'}
+            </text>
+          </g>,
+        )}
 
-        {/* The jumper, which is the one wire here nobody patched: it came
-            soldered, and the control on it only cuts it. */}
-        <g opacity={gateCut ? 0.45 : 1}>
-          <title>{gateTitle}</title>
-          <line
-            x1={KEYS_MID}
-            y1={TOP + BOX_H}
-            x2={KEYS_MID}
-            y2={FM_Y - 6}
-            stroke={gateCut ? 'var(--fg4)' : 'var(--accent2)'}
-            strokeWidth={gateCut ? 1 : 1.5}
-            strokeDasharray={gateCut ? '2 2' : undefined}
-          />
-          <path
-            d={`M ${KEYS_MID - 3} ${FM_Y - 6} L ${KEYS_MID} ${FM_Y} L ${KEYS_MID + 3} ${FM_Y - 6}`}
-            fill="none"
-            stroke={gateCut ? 'var(--fg4)' : 'var(--accent2)'}
-            strokeWidth={1.5}
-          />
-          <text
-            x={KEYS_MID + 5}
-            y={(TOP + BOX_H + FM_Y) / 2 + 3}
-            className={styles.tag}
-            fill={gateCut ? 'var(--fg4)' : 'var(--fg3)'}
-          >
-            {gateCut ? 'gate cut' : 'gate'}
-          </text>
-        </g>
+        {press(
+          'gate',
+          `M ${KEYS_MID} ${TOP + BOX_H} V ${FM_Y}`,
+          <g opacity={gateCut ? 0.45 : 1}>
+            <title>{gateTitle}</title>
+            <line
+              x1={KEYS_MID}
+              y1={TOP + BOX_H}
+              x2={KEYS_MID}
+              y2={FM_Y - 6}
+              stroke={gateCut ? 'var(--fg4)' : 'var(--accent2)'}
+              strokeWidth={gateCut ? 1 : 1.5}
+              strokeDasharray={gateCut ? '2 2' : undefined}
+            />
+            <path
+              d={`M ${KEYS_MID - 3} ${FM_Y - 6} L ${KEYS_MID} ${FM_Y} L ${KEYS_MID + 3} ${FM_Y - 6}`}
+              fill="none"
+              stroke={gateCut ? 'var(--fg4)' : 'var(--accent2)'}
+              strokeWidth={1.5}
+            />
+            <text
+              x={KEYS_MID + 5}
+              y={(TOP + BOX_H + FM_Y) / 2 + 3}
+              className={styles.tag}
+              fill={gateCut ? 'var(--fg4)' : 'var(--fg3)'}
+            >
+              {gateCut ? 'gate cut' : 'gate'}
+            </text>
+          </g>,
+        )}
 
-        <g opacity={struckOn ? 1 : 0.45}>
-          <title>{struckTitle}</title>
-          <path
-            d={`M ${DRUM_MID} ${TOP + BOX_H} V ${FM_MID} H ${RIGHT_X - 6}`}
-            fill="none"
-            stroke={struckOn ? 'var(--cool)' : 'var(--fg4)'}
-            strokeWidth={struckOn ? 1.5 : 1}
-            strokeDasharray={struckOn ? undefined : '2 2'}
-          />
-          <path
-            d={`M ${RIGHT_X - 6} ${FM_MID - 3} L ${RIGHT_X} ${FM_MID} L ${RIGHT_X - 6} ${FM_MID + 3}`}
-            fill="none"
-            stroke={struckOn ? 'var(--cool)' : 'var(--fg4)'}
-            strokeWidth={1.5}
-          />
-          <text
-            x={DRUM_MID + 5}
-            y={FM_MID - 5}
-            className={styles.tag}
-            fill={struckOn ? 'var(--fg3)' : 'var(--fg4)'}
-          >
-            {struckOn ? `${STRUCK[struck]} trig` : 'kit → FM off'}
-          </text>
-        </g>
+        {press(
+          'kit → FM',
+          `M ${DRUM_MID} ${TOP + BOX_H} V ${FM_MID} H ${RIGHT_X}`,
+          <g opacity={struckOn ? 1 : 0.45}>
+            <title>{struckTitle}</title>
+            <path
+              d={`M ${DRUM_MID} ${TOP + BOX_H} V ${FM_MID} H ${RIGHT_X - 6}`}
+              fill="none"
+              stroke={struckOn ? 'var(--cool)' : 'var(--fg4)'}
+              strokeWidth={struckOn ? 1.5 : 1}
+              strokeDasharray={struckOn ? undefined : '2 2'}
+            />
+            <path
+              d={`M ${RIGHT_X - 6} ${FM_MID - 3} L ${RIGHT_X} ${FM_MID} L ${RIGHT_X - 6} ${FM_MID + 3}`}
+              fill="none"
+              stroke={struckOn ? 'var(--cool)' : 'var(--fg4)'}
+              strokeWidth={1.5}
+            />
+            <text
+              x={DRUM_MID + 5}
+              y={FM_MID - 5}
+              className={styles.tag}
+              fill={struckOn ? 'var(--fg3)' : 'var(--fg4)'}
+            >
+              {struckOn ? `${STRUCK[struck]} trig` : 'kit → FM off'}
+            </text>
+          </g>,
+        )}
       </svg>
-      {ROWS.map(def => (
-        <ControlSlider key={def.key} def={def} />
-      ))}
+      <BoxRows
+        keys={Object.entries(OPENS).find(([id]) => id === pick.selected)?.[1]}
+      />
     </>
   )
 }

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls'
@@ -21,16 +21,21 @@ const patch = () => {
 const openPatch = () =>
   render(<OpenGroup group={patch()} onClose={() => {}} seconds={0} />)
 
-test('all four trigger wires are rows on the one panel, drawn once each', () => {
+test('each of the four trigger wires opens its own rows, drawn once', () => {
   openPatch()
-  for (const name of [
-    'Kit fires keys',
-    'and plays',
-    'Keys fire kit',
-    'Struck by',
-    'Toy gate',
-  ])
-    expect(screen.getAllByText(name), name).toHaveLength(1)
+  const wires: [string, string[]][] = [
+    ['kit → keys', ['Kit fires keys', 'and plays']],
+    ['keys → kit', ['Keys fire kit']],
+    ['kit → FM', ['Struck by']],
+    ['gate', ['Toy gate']],
+  ]
+  expect(screen.queryByText('Struck by')).toBeNull()
+  for (const [wire, rows] of wires) {
+    fireEvent.click(screen.getByRole('button', { name: `${wire} controls` }))
+    for (const name of rows)
+      expect(screen.getAllByText(name), name).toHaveLength(1)
+  }
+  expect(screen.queryByText('Struck by')).toBeNull()
 })
 
 test('the picture names the third box and both wires onto it', () => {
