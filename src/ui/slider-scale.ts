@@ -162,18 +162,23 @@ export function fromPos(def: SliderDef, pos: number): number {
 // you can turn while the number sits still, so a control stepping in
 // thousandths gets the third place to show it. The tiers above it are all
 // coarser than their own step by a wide margin and mean to be.
+function stepDecimals(step: number): number {
+  let places = 0
+  while (
+    places < 3 &&
+    Math.abs(step * 10 ** places - Math.round(step * 10 ** places)) > 1e-9
+  )
+    places++
+  return places
+}
+
 export function formatValue(def: SliderDef, value: number): string {
   if (def.reads) return def.reads(value)
   if (def.choices)
     return def.choices[Math.round(value) - def.min] ?? String(value)
   const abs = Math.abs(value)
-  const decibelSteps = def.unit === 'dB' && def.step >= 0.1
-  const text =
-    abs >= 1000
-      ? value.toFixed(0)
-      : abs >= 10 || decibelSteps
-        ? value.toFixed(1)
-        : value.toFixed(def.step < 0.01 ? 3 : 2)
+  const tierCap = abs >= 1000 ? 0 : abs >= 10 ? 1 : def.step < 0.01 ? 3 : 2
+  const text = value.toFixed(Math.min(tierCap, stepDecimals(def.step)))
   return def.unit ? `${text} ${def.unit}` : text
 }
 

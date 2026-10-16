@@ -196,6 +196,12 @@ test('the readout keeps significant figures, not decimal places', () => {
   expect(formatValue(def(), 0.5)).toBe('0.50')
 })
 
+test('the readout stops at the places its step can reach', () => {
+  const half = def({ min: -15, max: 15, step: 0.5, unit: 'dB' })
+  expect(formatValue(half, 3.1667)).toBe('3.2 dB')
+  expect(formatValue(def({ step: 1, unit: 'Hz' }), 50)).toBe('50 Hz')
+})
+
 // A step the readout cannot print is a knob you turn while the number sits
 // still. Latch hold and the watchdog step in thousandths of a volt.
 test('a step finer than two places gets a third', () => {
