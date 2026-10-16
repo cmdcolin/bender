@@ -13,6 +13,7 @@ import {
 import { useBoardValue } from './ControlsContext'
 import { DrumGrid } from './DrumGrid'
 import { FeedbackLoops } from './FeedbackLoops'
+import { FmChipDiagram } from './FmChipDiagram'
 import { Fold } from './Fold'
 import { FourTrack } from './FourTrack'
 import { MicPatch } from './MicPatch'
@@ -360,6 +361,42 @@ function PartFold({
   )
 }
 
+// A fold's verbs for a drawing that has taken the fold's place: the same dice,
+// reset and named cuts, over the rows the fold would have shown.
+function BoxVerbs({
+  group,
+  part,
+  seconds,
+}: {
+  group: Group
+  part: string
+  seconds: number
+}) {
+  const shownKeys = useBoardValue(c =>
+    group.sliders
+      .filter(d => d.part === part && shown(d, c))
+      .map(d => d.key)
+      .join(','),
+  ).split(',')
+  const rows = group.sliders.filter(d => shownKeys.includes(d.key))
+  const cuts = cutsFor(group.name, part)
+  const moved = useBoardValue(c => movedIn(rows, c))
+  const standing = useBoardValue(
+    c => cuts.find(cut => cutStands(cut, c))?.name ?? '',
+  )
+  return (
+    <PartVerbs
+      cuts={cuts}
+      group={group}
+      part={part}
+      rows={rows}
+      moved={moved}
+      standing={standing}
+      seconds={seconds}
+    />
+  )
+}
+
 // The rows that sit over the widget rather than under it. Nothing decides
 // which ones except the group saying so — a piano roll is tall enough to push
 // the row naming the song being played off the bottom of the screen, and that
@@ -540,6 +577,13 @@ export function OpenGroup({
           {group.editor?.kind === 'loops' && <FourTrack />}
           {group.editor?.kind === 'tapeLoop' && <TapeLoopDiagram />}
           {group.editor?.kind === 'tapePath' && <TapePathDiagram />}
+          {group.editor?.kind === 'fm' && (
+            <FmChipDiagram
+              verbs={part => (
+                <BoxVerbs group={group} part={part} seconds={seconds} />
+              )}
+            />
+          )}
           {!rigsFirst && rigs}
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>

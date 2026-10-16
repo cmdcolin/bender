@@ -1,7 +1,8 @@
 import { useId, type ReactNode } from 'react'
 
 import { sliderFor } from './controls'
-import { boxHeight, LINE_H, type BoxSpec } from './diagram'
+import { useBoardValue } from './ControlsContext'
+import { boxHeight, LINE_H, rowShown, type BoxSpec } from './diagram'
 import styles from './Diagram.module.css'
 import { ControlSlider } from './Slider'
 
@@ -230,21 +231,31 @@ export function Diagram({
 }
 
 // The rows of the box that is open: the same rows the panel draws anywhere
-// else, so a drag, a reset and a mod wire all work from here.
+// else, so a drag, a reset and a mod wire all work from here. A row still
+// waiting on something stays off, as it does on the panel.
 export function BoxRows({
   keys,
   note,
+  verbs,
 }: {
   keys: readonly ControlKey[] | undefined
   note?: string
+  /** Controls drawn above the rows, for a box whose knobs have dice or cuts. */
+  verbs?: ReactNode
 }) {
+  const shown = useBoardValue(c =>
+    (keys ?? []).filter(k => rowShown(k, c)).join(','),
+  ).split(',')
   if (!keys) return null
   return (
     <div className={styles.rows}>
       {note && <p className={styles.noteLine}>{note}</p>}
-      {keys.map(key => (
-        <ControlSlider key={key} def={sliderFor(key)} />
-      ))}
+      {verbs}
+      {keys
+        .filter(key => shown.includes(key))
+        .map(key => (
+          <ControlSlider key={key} def={sliderFor(key)} />
+        ))}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { DEFAULT_CONTROLS, type ControlKey } from '../controls'
+import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
 import { sliderFor, TRACK_NUMBERS } from './controls'
 import { useBoardValue } from './ControlsContext'
 import { formatValue } from './slider-scale'
@@ -33,6 +33,13 @@ export function useSelectedBox(initial: string | null = null) {
     selected,
     toggle: (id: string) => setSelected(now => (now === id ? null : id)),
   }
+}
+
+// Whether a row has anything to act on yet: a fault waits for a wire to be cut,
+// and a row you have already moved stays whatever the switch beside it says.
+export const rowShown = (key: ControlKey, c: Controls) => {
+  const needs = sliderFor(key).needs
+  return !needs || needs(c) || c[key] !== DEFAULT_CONTROLS[key]
 }
 
 export const boxHeight = (value: string | string[]) =>

@@ -46,11 +46,16 @@ const said = (head: HTMLElement) => Number(head.textContent.replace(/\D/g, ''))
 const openFmChip = () =>
   render(<OpenGroup group={group('FM chip')} onClose={() => {}} seconds={0} />)
 
+const openKeys = () =>
+  render(
+    <OpenGroup group={group('Home keyboard')} onClose={() => {}} seconds={0} />,
+  )
+
 // The number on a fold is what it opens to. A fault picks what happened to a
 // wire nobody has cut, so the row waits for a wire — and a heading that counted
 // the ones still waiting promised controls that were not down there.
 test('a fold heading counts the rows it opens to', () => {
-  openFmChip()
+  openKeys()
   const before = said(knife())
   fireEvent.click(knife())
   expect(before).toBeGreaterThan(0)
@@ -62,11 +67,11 @@ test('a fold heading counts the rows it opens to', () => {
 // instead of a count — a fold that hid what you set would be lying about the
 // board.
 test('a row arrives once it has something to act on', () => {
-  openFmChip()
+  openKeys()
   fireEvent.click(knife())
   const before = countRows(knife())
 
-  act(() => engine.set('fmDataLine', 1))
+  act(() => engine.set('pcmDataLine', 1))
   expect(countRows(knife())).toBe(before + 1)
   expect(knife().textContent).toContain('1 moved')
 })
@@ -77,7 +82,7 @@ test('a row arrives once it has something to act on', () => {
 // that was, and pressing another is that cut rather than the two of them at once.
 test('a named cut wires itself, and the next one replaces it', () => {
   openFmChip()
-  fireEvent.click(knife())
+  fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
 
   fireEvent.click(screen.getByRole('button', { name: 'the note never ends' }))
   expect(engine.controls.get().fmDataLine).toBeGreaterThan(0)
@@ -89,13 +94,7 @@ test('a named cut wires itself, and the next one replaces it', () => {
   expect(engine.controls.get().fmDataLine).toBe(DEFAULT_CONTROLS.fmDataLine)
   expect(engine.controls.get().fmWaveLine).toBeGreaterThan(0)
 
-  // Shut again, the heading names the knife rather than counting the controls
-  // it moved: which cut is on the bus is the thing worth reading from outside.
-  expect(knife().textContent).toContain('no fundamental')
-
-  fireEvent.click(
-    within(knife().parentElement!).getByRole('button', { name: 'none' }),
-  )
+  fireEvent.click(screen.getByRole('button', { name: 'none' }))
   expect(engine.controls.get().fmWaveLine).toBe(DEFAULT_CONTROLS.fmWaveLine)
   expect(engine.controls.get().fmLevel).toBeGreaterThan(0)
 })
@@ -389,12 +388,12 @@ const inFold = (head: HTMLElement, name: RegExp) =>
 
 test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
-  openFmChip()
+  openKeys()
   fireEvent.click(knife())
-  const rows = group('FM chip')
+  const rows = group('Home keyboard')
     .sliders.filter(s => s.part === 'knife on the bus')
     .map(s => s.key)
-  const outside = group('FM chip')
+  const outside = group('Home keyboard')
     .sliders.filter(s => !rows.includes(s.key))
     .map(s => s.key)
   const was = { ...engine.controls.get() }
@@ -409,30 +408,32 @@ test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
 
 // And its own way back, which is the count it is carrying.
 test('a fold puts back only what is under it', () => {
-  act(() => engine.patch({ ...DEFAULT_CONTROLS, fmDataLine: 3, fmBright: 0.9 }))
-  openFmChip()
+  act(() =>
+    engine.patch({ ...DEFAULT_CONTROLS, pcmDataLine: 3, pcmLevel: 0.9 }),
+  )
+  openKeys()
   fireEvent.click(knife())
   act(() => {
     fireEvent.click(inFold(knife(), /^reset 1$/))
   })
-  expect(engine.controls.get().fmDataLine).toBe(DEFAULT_CONTROLS.fmDataLine)
-  expect(engine.controls.get().fmBright).toBe(0.9)
+  expect(engine.controls.get().pcmDataLine).toBe(DEFAULT_CONTROLS.pcmDataLine)
+  expect(engine.controls.get().pcmLevel).toBe(0.9)
 })
 
 test('undo on a fold takes back its roll and keeps a knob turned since', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
-  openFmChip()
+  openKeys()
   fireEvent.click(knife())
   const was = { ...engine.controls.get() }
   act(() => {
     fireEvent.click(inFold(knife(), /^roll$/))
   })
-  act(() => engine.set('fmBright', 0.9))
+  act(() => engine.set('pcmLevel', 0.9))
   act(() => {
     fireEvent.click(inFold(knife(), /^undo$/))
   })
-  expect({ ...engine.controls.get(), fmBright: was.fmBright }).toEqual(was)
-  expect(engine.controls.get().fmBright).toBe(0.9)
+  expect({ ...engine.controls.get(), pcmLevel: was.pcmLevel }).toEqual(was)
+  expect(engine.controls.get().pcmLevel).toBe(0.9)
   expect((inFold(knife(), /^undo$/) as HTMLButtonElement).disabled).toBe(true)
 })
 
@@ -464,7 +465,7 @@ test('undo on a stage walks back its rolls one at a time', () => {
 
 test('a fold with nothing moved under it offers no way back', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
-  openFmChip()
+  openKeys()
   fireEvent.click(knife())
   expect((inFold(knife(), /^reset$/) as HTMLButtonElement).disabled).toBe(true)
 })
