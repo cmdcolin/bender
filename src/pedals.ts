@@ -2,10 +2,10 @@
 // the memory are.
 //
 // The bends are six sockets you put stages into, and a socket can be empty or
-// hold the same stage twice. The pedals are not that: there are five of them,
-// all five are always on the board, and the only question is what order the
+// hold the same stage twice. The pedals are not that: there are six of them,
+// all six are always on the board, and the only question is what order the
 // signal meets them in. So the whole of it is one control naming one of the
-// hundred and twenty orders, rather than five sockets that could disagree — a
+// seven hundred and twenty orders, rather than six sockets that could disagree — a
 // roll, a link and a preset all reach it, and none of them can leave it saying
 // something that is not an order.
 //
@@ -18,6 +18,7 @@ export const PEDALS = [
   { group: 'Delay pedal', label: 'echo' },
   { group: 'Spring verb', label: 'verb' },
   { group: 'Ensemble', label: 'ens' },
+  { group: 'Tube amp', label: 'amp' },
 ] as const
 
 // Lexicographic, and pinned by pedals.test.ts. A packed link says "order 9", so
@@ -34,18 +35,23 @@ function permutations(items: number[]): number[][] {
   )
 }
 
-// Which is what the fifth pedal had to be built around. There used to be
-// twenty-four orders and every link in the world numbered against them, so the
-// hundred and twenty are dealt in two halves: the orders that end in the
-// ensemble first, which are the old twenty-four with the new box bolted on the
-// end of each and in exactly the order they were in, and then the ninety-six
-// that put it anywhere else. Order 9 is still order 9, and everything it named
-// still runs where it ran, with the ensemble added downstream of the lot.
-const ALL = permutations([0, 1, 2, 3, 4])
+// The orders a link made before the amp numbered against: the hundred and
+// twenty of five pedals, dealt with the ones that end in the ensemble first.
+const FIVE = permutations([0, 1, 2, 3, 4])
+const FIVE_ORDERS = [
+  ...FIVE.filter(o => o.at(-1) === 4),
+  ...FIVE.filter(o => o.at(-1) !== 4),
+]
+
+// Every one of those, in the order it was in, with the amp bolted on the end,
+// and then the six hundred that put it anywhere else. Order 9 is still order 9,
+// and everything it named still runs where it ran, with the amp downstream of
+// the lot.
+const ALL = permutations([0, 1, 2, 3, 4, 5])
 const LAST = PEDALS.length - 1
 
 export const PEDAL_ORDERS: readonly (readonly number[])[] = [
-  ...ALL.filter(o => o.at(-1) === LAST),
+  ...FIVE_ORDERS.map(o => [...o, LAST]),
   ...ALL.filter(o => o.at(-1) !== LAST),
 ]
 
@@ -55,7 +61,7 @@ export const PEDAL_ORDERS: readonly (readonly number[])[] = [
 export const pedalOrderAt = (v: number): readonly number[] =>
   PEDAL_ORDERS[Math.round(v)] ?? PEDAL_ORDERS[0]!
 
-/** What the choice list reads: the five pedals in the order they run. */
+/** What the choice list reads: the six pedals in the order they run. */
 export const PEDAL_ORDER_NAMES = PEDAL_ORDERS.map(o =>
   o.map(i => PEDALS[i]!.label).join(' → '),
 )

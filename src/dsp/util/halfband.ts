@@ -56,3 +56,43 @@ export class Halfband {
     this.at = 0
   }
 }
+
+const FUTURE = SIDE.length
+const RING = 64
+
+/** One sample at the board's rate in, two at the doubled rate out, through the
+    same half-band filter that brings them back down. Zero-stuffing and then
+    filtering collapses to this: the even output is the centre tap alone and the
+    odd one is the side taps over the samples either side. The pair that comes
+    out belongs to the input `FUTURE` samples ago, so the lap through both
+    filters costs `LATENCY` samples at the board's rate. */
+export class Upsampler {
+  private readonly buf = new Float64Array(RING)
+  private at = 0
+  readonly pair = new Float64Array(2)
+
+  process(x: number) {
+    const buf = this.buf
+    this.at = (this.at + 1) & (RING - 1)
+    buf[this.at] = x
+    const centre = this.at - FUTURE
+    let odd = 0
+    for (let j = 0; j < SIDE.length; j++) {
+      odd +=
+        SIDE[j]! *
+        (buf[(centre - j) & (RING - 1)]! + buf[(centre + 1 + j) & (RING - 1)]!)
+    }
+    this.pair[0] = 2 * CENTRE_TAP * buf[centre & (RING - 1)]!
+    this.pair[1] = 2 * odd
+  }
+
+  reset() {
+    this.buf.fill(0)
+    this.at = 0
+    this.pair.fill(0)
+  }
+}
+
+/** Board-rate samples between a signal going into an `Upsampler` and coming out
+    of the `Halfband` that takes it back: the filters' two group delays. */
+export const LATENCY = FUTURE + (CENTRE - 1) / 2

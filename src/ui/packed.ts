@@ -646,6 +646,20 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'four4Erase',
   'four4Cue',
   'four4Len',
+
+  // The tube amp, the sixth pedal on the board.
+  'ampVoice',
+  'ampGain',
+  'ampBass',
+  'ampMid',
+  'ampTreble',
+  'ampMaster',
+  'ampMix',
+  'ampPresence',
+  'ampSag',
+  'ampBias',
+  'ampCab',
+  'ampLevel',
 ]
 
 // Retired controls that old links still carry, each read into the control that

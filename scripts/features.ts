@@ -68,7 +68,7 @@ const BLURBS: Record<string, string> = {
   'Freq shifter':
     'Bode-style: every partial moves by the same number of Hz rather than the same ratio, so harmonic input comes out inharmonic. With feedback each lap shifts again and partials climb forever.',
   'Signal order':
-    'One door for both runs that are yours to order — the six positions the bends compete for, on their way from the mix bus to the pedals, and the five pedals waiting downstream of them. Two sections, drawn as two racks: *onboard effects* first, then *pedals*. Drag a box to move it, or take it with the arrow keys; drag or press a bend riding off the board, in the first section, to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds, and fuzz into a reverb is a wall with a room behind it where a reverb into fuzz is the room itself distorting. Seven bends for six positions, so one always sits out; the five pedals never do — a pedal leaves the path on its own mix instead.',
+    'One door for both runs that are yours to order — the six positions the bends compete for, on their way from the mix bus to the pedals, and the six pedals waiting downstream of them. Two sections, drawn as two racks: *onboard effects* first, then *pedals*. Drag a box to move it, or take it with the arrow keys; drag or press a bend riding off the board, in the first section, to bring it in. Order is most of what a chain of effects sounds like: a crusher into a filter and a filter into a crusher are the same two stages and two different sounds, and fuzz into a reverb is a wall with a room behind it where a reverb into fuzz is the room itself distorting. Seven bends for six positions, so one always sits out; the six pedals never do — a pedal leaves the path on its own mix instead.',
   Stompbox:
     'Each circuit is its own model rather than one circuit with a knob on it. *Screamer* clips inside the feedback loop so the dry note walks under it; *rat* clips to ground behind a slew-limited op-amp; *muff* is two clipping stages and a scooped tone stack; *germanium* is the lopsided one, riding its bias down on the signal; *octave* rectifies into a ringing transformer; *gate* is misbiased to the edge of cutoff.',
   'Tape delay':
@@ -79,6 +79,8 @@ const BLURBS: Record<string, string> = {
     'Dispersive allpass cascade into short parallel combs — metallic, boingy, deliberately cheap. The springs can only swing so far before they meet the box, and *Kick* is how easily they are thrown against it: a slam at the input or a hit from the kit crashes the tank, the sound of kicking the amp.',
   Ensemble:
     'One circuit at five clock rates. The lines are bucket brigades, so the delay knob and the bandwidth knob are the same knob: short is clean and long is dark, and at the top of the travel the clock itself is in the take with the compander breathing behind it. *Chorus* is one line swept slowly, wired as the first of these pedals wired its two jacks — the wet on one side, dry and wet on the other. *Ensemble* is three lines 120° apart on a slow sway with a fast shimmer over it, which is the circuit that turned a divider organ into a string section and the one thing this board had no way of doing. *Dimension* is two lines swept against each other, one to each side with the dry up the middle, so the wobble cancels the moment you sum to mono and only the width is left. *Vibrato* takes the dry away. *Flange* is the same line an order of magnitude shorter with feedback round it.',
+  'Tube amp':
+    'Gain stages, a passive tone stack, a push-pull power stage on a supply that sags, an output transformer and a speaker, run at twice the board’s rate so the clipping does not alias. Each triode clips its two halves differently, and a conducting grid charges its coupling cap, so a hard chord squashes the next note for a moment. The tone stack is the real network of three pots that load each other, solved from its netlist, so each knob also changes what the other two do. *Fender* is one gain stage into the stack and a recovery stage; *marshall* cascades two ahead of it, with small cathode caps that thin the bass. A cold *Bias* leaves the output pair crossing over on quiet notes, and *Sag* pulls the rail down under load and shares it with the board’s own dying supply.',
   'Patch bay':
     'Wires, each from a source to a destination at a signed depth. A wire can land on the toy’s supply rail, on the sampler’s capstan and loop markers, or on another wire’s depth — which is how the bay modulates itself.',
   'Trigger patch':
@@ -202,8 +204,8 @@ const SPELLED: Record<string, string> = {
 // between them: '0–1' says nothing that 'off to full' doesn't, and '-1–1' has
 // to be read twice.
 // A list long enough that nobody reads it is a cell that has stopped saying
-// anything: the pedal order is every permutation of five boxes, and printing
-// all hundred and twenty of them in one table cell buries the rows either side.
+// anything: the pedal order is every permutation of six boxes, and printing
+// all seven hundred and twenty of them in one table cell buries the rows either side.
 // The ends and the count are what a reader is actually after.
 const MANY = 12
 
@@ -303,7 +305,7 @@ rows also read back what *Solder* is doing to the path while you play — a
 position the relay has moved says where the board is running it, and one whose
 joint has opened says it is out of the path altogether. Neither of those is a
 control, so this is the only place either of them can be seen. The pedal rows
-have no equivalent to read back: all five are always on the board.\n`
+have no equivalent to read back: all six are always on the board.\n`
   if (g.editor?.kind !== 'drums') return ''
   const n = g.editor.keys.length
   return `\nThe pattern grid is a widget rather than a row of sliders, so the table

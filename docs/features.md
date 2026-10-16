@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 449 knobs and switches in 33 groups, seven bends competing for six slots,
+ruin. 461 knobs and switches in 34 groups, seven bends competing for six slots,
 18 ROM tunes, 121 presets, 20 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -861,8 +861,8 @@ again and partials climb forever.
 
 ## Pedals
 
-Five boxes after the bends, in an order of their own. Not the same kind of order
-as the rack upstream: there are no sockets and nothing sits out — all five are
+Six boxes after the bends, in an order of their own. Not the same kind of order
+as the rack upstream: there are no sockets and nothing sits out — all six are
 always on the board, and a pedal comes out of the path on its own mix rather
 than by leaving the run.
 
@@ -1005,6 +1005,39 @@ feedback round it.
 | Feedback | 0 to 0.95                                    | How much of the line goes back into it, which is what turns a short delay into a flanger           |
 | Tone     | 800 Hz to 16 kHz                             | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken    |
 | Width    | off to full                                  | How far the lines spread across the stereo field                                                   |
+
+</details>
+
+### Tube amp
+
+Gain stages, a passive tone stack, a push-pull power stage on a supply that
+sags, an output transformer and a speaker, run at twice the board’s rate so the
+clipping does not alias. Each triode clips its two halves differently, and a
+conducting grid charges its coupling cap, so a hard chord squashes the next note
+for a moment. The tone stack is the real network of three pots that load each
+other, solved from its netlist, so each knob also changes what the other two do.
+_Fender_ is one gain stage into the stack and a recovery stage; _marshall_
+cascades two ahead of it, with small cathode caps that thin the bass. A cold
+_Bias_ leaves the output pair crossing over on quiet notes, and _Sag_ pulls the
+rail down under load and shares it with the board’s own dying supply.
+
+<details>
+<summary>12 controls</summary>
+
+| control  | range                          | what it does                                           |
+| -------- | ------------------------------ | ------------------------------------------------------ |
+| Amp      | fender or marshall             | Which amp the circuit is                               |
+| Gain     | off to full                    | How hard the first stage is driven                     |
+| Bass     | off to full                    | The bass pot of the tone stack                         |
+| Mid      | off to full                    | The mid pot                                            |
+| Treble   | off to full                    | The treble pot, whose wiper is the output of the stack |
+| Master   | off to full                    | How hard the power stage is driven                     |
+| Mix      | off to full                    | Dry/wet — at zero the pedal is off the board           |
+| Presence | off to full                    | Boosts the highs going into the power stage            |
+| Sag      | off to full                    | How far the supply falls under load                    |
+| Bias     | off to full                    | Where the output tubes idle                            |
+| Speaker  | direct, open 1×12, closed 4×12 | What the output transformer drives                     |
+| Level    | −24 to +12 dB                  | Makeup gain out of the amp                             |
 
 </details>
 
@@ -1247,7 +1280,7 @@ underneath — so the rack on the Signal order panel is where you watch it happe
 ### Signal order
 
 One door for both runs that are yours to order — the six positions the bends
-compete for, on their way from the mix bus to the pedals, and the five pedals
+compete for, on their way from the mix bus to the pedals, and the six pedals
 waiting downstream of them. Two sections, drawn as two racks: _onboard effects_
 first, then _pedals_. Drag a box to move it, or take it with the arrow keys;
 drag or press a bend riding off the board, in the first section, to bring it in.
@@ -1255,10 +1288,10 @@ Order is most of what a chain of effects sounds like: a crusher into a filter
 and a filter into a crusher are the same two stages and two different sounds,
 and fuzz into a reverb is a wall with a room behind it where a reverb into fuzz
 is the room itself distorting. Seven bends for six positions, so one always sits
-out; the five pedals never do — a pedal leaves the path on its own mix instead.
+out; the six pedals never do — a pedal leaves the path on its own mix instead.
 
 Two racks, not a row of sliders: the six bend-slot controls under _onboard
-effects_, and the one order control under _pedals_ — 120 orders rather than a
+effects_, and the one order control under _pedals_ — 720 orders rather than a
 socket per pedal, so a roll, a link and a preset all reach it and none of them
 can leave it saying something that is not an order. Both racks draw their own
 controls, so the panel does not draw either a second time as dropdowns. Order is
@@ -1269,7 +1302,7 @@ what _Solder_ is doing to the path while you play — a position the relay has
 moved says where the board is running it, and one whose joint has opened says it
 is out of the path altogether. Neither of those is a control, so this is the
 only place either of them can be seen. The pedal rows have no equivalent to read
-back: all five are always on the board.
+back: all six are always on the board.
 
 Named settings, one press each at the head of the panel — the stage goes back to
 stock and the setting is written over it, so the rows underneath say what it
@@ -1297,10 +1330,10 @@ became:
 <details>
 <summary>7 controls</summary>
 
-| control      | range                                                                                  | what it does                                   |
-| ------------ | -------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift                                        | Which bend runs in this position               |
-| Order        | 120 of them, stomp → tape → echo → verb → ens through ens → verb → echo → tape → stomp | What order the signal meets the five pedals in |
+| control      | range                                                                                              | what it does                                  |
+| ------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Position 1–6 | —, ring, crush, dist, comb, glitch, filt, shift                                                    | Which bend runs in this position              |
+| Order        | 720 of them, stomp → tape → echo → verb → ens → amp through amp → ens → verb → echo → tape → stomp | What order the signal meets the six pedals in |
 
 </details>
 

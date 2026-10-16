@@ -30,6 +30,8 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 - Tape delay, reverb, and distortion 'guitar pedals'
 - Ensemble pedal: bucket-brigade chorus, string-machine ensemble, dimension and
   flange
+- A tube amp pedal with Fender and Marshall tone stacks solved from their
+  circuits, a push-pull power stage that sags, and a speaker
 - Allows custom piano roll and drum sequences
 - Patch bay with LFO and other modulations, wired from the bay or from a
   control's own `+ mod` button

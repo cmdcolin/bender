@@ -1,4 +1,5 @@
 import { Chain } from './chain'
+import { Amp } from './stages/amp'
 import { Brownout } from './stages/brownout'
 import { ChaosOsc } from './stages/chaosOsc'
 import { Clipper } from './stages/clipper'
@@ -107,6 +108,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     new Echo(sr),
     new SpringVerb(sr),
     new Ensemble(sr),
+    new Amp(sr),
   ]
   const tape = new Tape(sr, next())
   chain.post = [new Brownout(sr, next()), tape]

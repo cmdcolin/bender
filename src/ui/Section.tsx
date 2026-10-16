@@ -636,9 +636,9 @@ export function PathHint() {
       </p>
       <p className={styles.hintPath}>
         the drawing is the path the sound takes: the sources sum onto the mix
-        bus, walk the six sockets seven bends compete for, then the five pedals
-        — both yours to order from <em>Signal order</em>, and the order is most
-        of what either sounds like — then the tape and out
+        bus, walk the six sockets seven bends compete for, then the six pedals —
+        both yours to order from <em>Signal order</em>, and the order is most of
+        what either sounds like — then the tape and out
       </p>
     </>
   )
