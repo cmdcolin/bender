@@ -53,6 +53,19 @@ test('a bay with nothing wrong with it says nothing', () => {
   expect(solder()).toBeNull()
 })
 
+test('a wire opens its from, to and depth rows when pressed, and shuts them on a second press', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<PatchBay />)
+  const wire = screen.getByRole('button', { name: 'wire 2 controls' })
+  expect(screen.queryByText('Wire 2 from')).toBeNull()
+  fireEvent.click(wire)
+  for (const row of ['from', 'to', 'depth'])
+    expect(screen.getByText(`Wire 2 ${row}`)).not.toBeNull()
+  expect(screen.queryByText('Wire 1 from')).toBeNull()
+  fireEvent.click(wire)
+  expect(screen.queryByText('Wire 2 from')).toBeNull()
+})
+
 // A stopped sequencer is not a setting, so the bay cannot see it — the picture
 // says it where the picture is.
 test('a wire off the kit says so while the kit is stopped', () => {

@@ -11,7 +11,11 @@ export const PATCH_GROUPS: Group[] = [
     // wire, so the four rows of source/destination pairs read as a bay
     // rather than as forty-nine choices to cross-reference by hand.
     editor: { kind: 'patch' },
-    folded: ['wire 2', 'wire 3', 'wire 4'],
+    handled: ([0, 1, 2, 3] as const).flatMap(i => [
+      `mod${i}Src` as const,
+      `mod${i}Dest` as const,
+      `mod${i}Depth` as const,
+    ]),
     sliders: [
       {
         key: 'modLfoHz',

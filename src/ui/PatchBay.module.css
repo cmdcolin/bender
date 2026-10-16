@@ -50,3 +50,27 @@
   font-size: var(--fs-xs);
   color: var(--fg4);
 }
+
+/* A wire is one pressable row: the hit rectangle spans the source box, the lead
+   and the destination, and fills when that wire's knobs are open. */
+.wire {
+  cursor: pointer;
+  outline: none;
+}
+
+.hit,
+.hitOn {
+  fill: transparent;
+  stroke: transparent;
+}
+
+.hitOn {
+  fill: var(--surface-raised);
+}
+
+.wire:hover .hit,
+.wire:focus-visible .hit,
+.wire:hover .hitOn,
+.wire:focus-visible .hitOn {
+  stroke: var(--fg3);
+}

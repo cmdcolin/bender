@@ -1,6 +1,8 @@
 import { engine } from '../engine/engine'
 import { sliderFor } from './controls'
 import { useBoardValue, useStoreValue } from './ControlsContext'
+import { useSelectedBox } from './diagram'
+import { BoxRows } from './DiagramParts'
 import styles from './PatchBay.module.css'
 import { coherePatch, wireFault } from './presets/patch'
 import { Tip } from './Tip'
@@ -37,13 +39,12 @@ const LOOP_X = DEST_X + DEST_W + 12
 const rowY = (i: number) => TOP + i * STEP
 const cy = (y: number) => y + ROW_H / 2
 
-// Four wires, twelve rows of choices to read to find out what is plugged
-// into what — drawn instead as four short leads: a source box, a line whose
-// colour is the sign and whose dash is 'nothing patched yet', and a
-// destination box. Where the destination is another wire's own depth, a
-// curved lead runs out to that wire's row, since that is the one connection
-// this bay draws that a straight line across the panel can't show at all.
+// Four wires as four short leads: a source box, a line coloured by sign and
+// dashed when nothing is patched, and a destination box. A destination that is
+// another wire's depth gets a curved lead out to that wire's row. Pressing a
+// wire opens its from, to and depth rows underneath.
 export function PatchBay() {
+  const pick = useSelectedBox()
   const raw = useBoardValue(c =>
     MOD_KEYS.flatMap(k => [c[k.src], c[k.dest], c[k.depth]]).join(','),
   )
@@ -72,6 +73,8 @@ export function PatchBay() {
       ? 'All four wires are soldered. Each says so on the row it is on.'
       : `${free === 4 ? 'All four' : `${free} of the four`} wires ${free === 1 ? 'is' : 'are'} free — press + mod on any control row the bay can reach to solder one there.`
 
+  const open =
+    pick.selected === null ? undefined : MOD_KEYS[Number(pick.selected)]
   const height = rowY(3) + ROW_H + 8
 
   return (
@@ -112,68 +115,94 @@ export function PatchBay() {
                   : `${Math.abs(w.depth).toFixed(2)} ${w.depth < 0 ? 'flipped' : 'straight'}`
               }.${faults[i] ? ` This wire ${faults[i]}.` : ''}${waiting}`
           return (
-            <g key={i} opacity={live ? 1 : 0.55}>
+            <g
+              key={i}
+              className={styles.wire}
+              role="button"
+              tabIndex={0}
+              aria-pressed={pick.selected === String(i)}
+              aria-label={`wire ${i + 1} controls`}
+              onClick={() => pick.toggle(String(i))}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  pick.toggle(String(i))
+                }
+              }}
+            >
               <title>{title}</title>
-              <text x={NUM_X} y={y0 + 4} className={styles.num}>
-                {i + 1}
-              </text>
               <rect
-                x={SRC_X}
-                y={y}
-                width={SRC_W}
-                height={ROW_H}
-                rx={4}
-                fill="none"
-                stroke={patched ? wire : 'var(--fg4)'}
-                strokeDasharray={patched ? undefined : '3 2'}
+                x={NUM_X - 2}
+                y={y - 3}
+                width={LOOP_X - NUM_X}
+                height={ROW_H + 6}
+                rx={5}
+                className={
+                  pick.selected === String(i) ? styles.hitOn : styles.hit
+                }
               />
-              <text
-                x={SRC_X + SRC_W / 2}
-                y={y0 + 4}
-                textAnchor="middle"
-                className={styles.label}
-                fill={patched ? 'var(--fg)' : 'var(--fg4)'}
-              >
-                {patched ? SRC[w.src] : 'unwired'}
-              </text>
-              {patched && (
-                <>
-                  <line
-                    x1={SRC_X + SRC_W}
-                    y1={y0}
-                    x2={DEST_X - 5}
-                    y2={y0}
-                    stroke={wire}
-                    strokeWidth={live ? 1.5 : 1}
-                    strokeDasharray={live ? undefined : '2 2'}
-                  />
-                  <path
-                    d={`M ${DEST_X - 5} ${y0 - 3} L ${DEST_X} ${y0} L ${DEST_X - 5} ${y0 + 3}`}
-                    fill="none"
-                    stroke={wire}
-                    strokeWidth={1.5}
-                  />
-                  <rect
-                    x={DEST_X}
-                    y={y}
-                    width={DEST_W}
-                    height={ROW_H}
-                    rx={4}
-                    fill="none"
-                    stroke={wire}
-                    strokeDasharray={toWire ? '3 2' : undefined}
-                  />
-                  <text
-                    x={DEST_X + DEST_W / 2}
-                    y={y0 + 4}
-                    textAnchor="middle"
-                    className={styles.label}
-                    fill={live ? 'var(--fg)' : 'var(--fg3)'}
-                  >
-                    {DEST[w.dest]}
-                  </text>
-                </>
-              )}
+              <g opacity={live ? 1 : 0.55}>
+                <text x={NUM_X} y={y0 + 4} className={styles.num}>
+                  {i + 1}
+                </text>
+                <rect
+                  x={SRC_X}
+                  y={y}
+                  width={SRC_W}
+                  height={ROW_H}
+                  rx={4}
+                  fill="none"
+                  stroke={patched ? wire : 'var(--fg4)'}
+                  strokeDasharray={patched ? undefined : '3 2'}
+                />
+                <text
+                  x={SRC_X + SRC_W / 2}
+                  y={y0 + 4}
+                  textAnchor="middle"
+                  className={styles.label}
+                  fill={patched ? 'var(--fg)' : 'var(--fg4)'}
+                >
+                  {patched ? SRC[w.src] : 'unwired'}
+                </text>
+                {patched && (
+                  <>
+                    <line
+                      x1={SRC_X + SRC_W}
+                      y1={y0}
+                      x2={DEST_X - 5}
+                      y2={y0}
+                      stroke={wire}
+                      strokeWidth={live ? 1.5 : 1}
+                      strokeDasharray={live ? undefined : '2 2'}
+                    />
+                    <path
+                      d={`M ${DEST_X - 5} ${y0 - 3} L ${DEST_X} ${y0} L ${DEST_X - 5} ${y0 + 3}`}
+                      fill="none"
+                      stroke={wire}
+                      strokeWidth={1.5}
+                    />
+                    <rect
+                      x={DEST_X}
+                      y={y}
+                      width={DEST_W}
+                      height={ROW_H}
+                      rx={4}
+                      fill="none"
+                      stroke={wire}
+                      strokeDasharray={toWire ? '3 2' : undefined}
+                    />
+                    <text
+                      x={DEST_X + DEST_W / 2}
+                      y={y0 + 4}
+                      textAnchor="middle"
+                      className={styles.label}
+                      fill={live ? 'var(--fg)' : 'var(--fg3)'}
+                    >
+                      {DEST[w.dest]}
+                    </text>
+                  </>
+                )}
+              </g>
             </g>
           )
         })}
@@ -197,6 +226,12 @@ export function PatchBay() {
           )
         })}
       </svg>
+      <BoxRows keys={open && [open.src, open.dest, open.depth]} />
+      {!open && (
+        <span className={styles.spare}>
+          Press a wire to open its from, to and depth.
+        </span>
+      )}
       <span className={styles.spare}>{spare}</span>
       {dead > 0 && (
         <Tip
