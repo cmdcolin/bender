@@ -1000,10 +1000,10 @@ feedback round it.
 | Mode     | chorus, ensemble, dimension, vibrato, flange | How many heads are on the line and where they sit                                                  |
 | Rate     | 0.05 to 12 Hz                                | How fast the clock sweeps                                                                          |
 | Depth    | off to full                                  | How far the sweep pushes the clock either side of where Delay leaves it                            |
+| Mix      | off to full                                  | Dry/wet — at zero the pedal is off the board                                                       |
 | Delay    | 0.3 to 25 ms                                 | How long the line runs, which on a bucket brigade is the same knob as how much top end survives it |
 | Feedback | 0 to 0.95                                    | How much of the line goes back into it, which is what turns a short delay into a flanger           |
 | Tone     | 800 Hz to 16 kHz                             | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken    |
-| Mix      | off to full                                  | Dry/wet — at zero the pedal is off the board                                                       |
 | Width    | off to full                                  | How far the lines spread across the stereo field                                                   |
 
 </details>
@@ -1205,13 +1205,13 @@ or all at once.
 
 | control      | range                | what it does                                                                                                                      |
 | ------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Timing pin   | 0.2 ms to 2 s        | The decoupling cap on the oscillator, as the time it averages the rail over                                                       |
 | Watchdog     | 0.2 to 0.6 V         | Where the reset chip decides the supply has failed                                                                                |
 | Latch hold   | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                                 |
 | Clip bite †  | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
 | Clip dwell   | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                                         |
 | Clip charge  | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down                |
 | Clip release | 2 to 2000 per second | How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate |
+| Timing pin   | 0.2 ms to 2 s        | The decoupling cap on the oscillator, as the time it averages the rail over                                                       |
 | Clock drag   | 0 to 8 octaves       | How far the cap on the timing pin can divide the clock                                                                            |
 | Part spread  | 0× to 4×             | How far apart the four output stages came out of the bin                                                                          |
 | Mixer drive  | 0.02 to 3            | The headroom in the one small output stage every key voice runs through                                                           |

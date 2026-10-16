@@ -1792,7 +1792,7 @@ export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Home keyboard',
     place: 'Sources',
-    folded: ['knife on the bus'],
+    folded: ['clock and wires', 'knife on the bus'],
     sliders: [
       {
         key: 'pcmLevel',
@@ -1869,6 +1869,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'pcmClockX',
         label: 'ROM clock',
+        part: 'clock and wires',
         min: 0.05,
         max: 16,
         step: 0.01,
@@ -1879,6 +1880,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'pcmStruck',
         label: 'Struck by',
+        part: 'clock and wires',
         min: 0,
         max: N_DRUM_VOICES + 1,
         step: 1,
@@ -1889,6 +1891,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'pcmKeyGate',
         label: 'Toy gate',
+        part: 'clock and wires',
         min: 0,
         max: 1,
         step: 1,
@@ -2595,6 +2598,7 @@ export const SOURCE_GROUPS: Group[] = [
       part: 'the record head',
       text: 'record and erase write onto the tape itself, not just what you hear — turn record up and whatever is loaded starts going under the head for good, with nothing here to bring it back',
     },
+    folded: ['the record head'],
     sliders: [
       {
         key: 'sampleLevel',

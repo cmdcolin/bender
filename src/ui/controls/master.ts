@@ -114,20 +114,17 @@ export const MASTER_GROUPS: Group[] = [
   {
     name: 'Board parts',
     place: 'Master',
+    folded: [
+      'the reset chip',
+      'the clip',
+      'the timing pin',
+      'the output stage',
+    ],
     sliders: [
-      {
-        key: 'chipDecouple',
-        label: 'Timing pin',
-        min: 0.2,
-        max: 2000,
-        step: 0.1,
-        unit: 'ms',
-        curve: 'log',
-        help: 'The decoupling cap on the oscillator, as the time it averages the rail over. It decides which sags the timebase notices: at the stock 120 ms a chord sags without the beat stumbling. Scrape it off and every note trips the tune.',
-      },
       {
         key: 'chipWatchdog',
         label: 'Watchdog',
+        part: 'the reset chip',
         min: 0.2,
         max: 0.6,
         step: 0.005,
@@ -137,6 +134,7 @@ export const MASTER_GROUPS: Group[] = [
       {
         key: 'chipLatchHold',
         label: 'Latch hold',
+        part: 'the reset chip',
         min: 0.01,
         max: 0.19,
         step: 0.005,
@@ -146,6 +144,7 @@ export const MASTER_GROUPS: Group[] = [
       {
         key: 'chipClipBite',
         label: 'Clip bite',
+        part: 'the clip',
         min: 0,
         max: 4,
         step: 0.05,
@@ -156,6 +155,7 @@ export const MASTER_GROUPS: Group[] = [
       {
         key: 'chipClipHold',
         label: 'Clip dwell',
+        part: 'the clip',
         min: 3,
         max: 800,
         step: 1,
@@ -166,6 +166,7 @@ export const MASTER_GROUPS: Group[] = [
       {
         key: 'chipClipCharge',
         label: 'Clip charge',
+        part: 'the clip',
         min: 2,
         max: 400,
         step: 1,
@@ -176,6 +177,7 @@ export const MASTER_GROUPS: Group[] = [
       {
         key: 'chipClipRelease',
         label: 'Clip release',
+        part: 'the clip',
         min: 2,
         max: 2000,
         step: 1,
@@ -184,8 +186,20 @@ export const MASTER_GROUPS: Group[] = [
         help: 'How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate. That asymmetry is why the bend reads as a dive; even it up and dives turn into a warble.',
       },
       {
+        key: 'chipDecouple',
+        label: 'Timing pin',
+        part: 'the timing pin',
+        min: 0.2,
+        max: 2000,
+        step: 0.1,
+        unit: 'ms',
+        curve: 'log',
+        help: 'The decoupling cap on the oscillator, as the time it averages the rail over. It decides which sags the timebase notices: at the stock 120 ms a chord sags without the beat stumbling. Scrape it off and every note trips the tune.',
+      },
+      {
         key: 'chipDragOct',
         label: 'Clock drag',
+        part: 'the timing pin',
         min: 0,
         max: 8,
         step: 0.05,
@@ -195,6 +209,7 @@ export const MASTER_GROUPS: Group[] = [
       {
         key: 'chipSpread',
         label: 'Part spread',
+        part: 'the output stage',
         min: 0,
         max: 4,
         step: 0.01,
@@ -204,6 +219,7 @@ export const MASTER_GROUPS: Group[] = [
       {
         key: 'chipMixDrive',
         label: 'Mixer drive',
+        part: 'the output stage',
         min: 0.02,
         max: 3,
         step: 0.01,
