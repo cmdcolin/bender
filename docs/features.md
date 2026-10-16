@@ -907,23 +907,23 @@ much of the last lap the erase head lets through under the new one.
 | Time           | 20 ms to 4 s            | Delay time                                                                                                                                          |
 | Heads          | 1, 1+2, 1+3, 2+3, 1+2+3 | Which play heads are up                                                                                                                             |
 | Feedback       | 0 to 2, normal 0 to 1   | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
+| Tone           | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
+| Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                                      |
+| Echo level     | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
 | Wow            | 0 to 50 ms              | Slow speed wobble of the transport                                                                                                                  |
 | Wow rate       | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                                          |
 | Flutter        | off to full             | Fast random speed jitter — worn pinch roller                                                                                                        |
-| Tone           | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
-| Ring           | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy |
-| Ring depth     | off to full             | How much of the tap goes through the carrier                                                                                                        |
 | Brake          | off to full             | Drags the capstan                                                                                                                                   |
 | Supply drag    | off to full             | Wires the motor to the same dying supply as the toy                                                                                                 |
 | Splice         | off to full             | How bad the join in the loop is                                                                                                                     |
 | Erase          | off to full             | How much the erase head misses                                                                                                                      |
-| Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                                      |
-| Echo level     | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
 | Loop filter    | off, LP, BP, HP         | A resonant filter inside the feedback, so every lap goes through it again                                                                           |
 | Loop cutoff    | 60 Hz to 8 kHz          | Sweep it while the repeats ring                                                                                                                     |
 | Loop resonance | 0 to 1.3, normal 0 to 1 | Past 1 the loop whistles at the cutoff on its own                                                                                                   |
 | Lamp           | off to full             | A bulb that dims the loop as it heats                                                                                                               |
 | Filament       | 0.02 to 3 s             | How slowly the bulb heats and cools                                                                                                                 |
+| Ring           | 0.1 Hz to 8 kHz         | A carrier multiplied into the tape before the repeats go back round, so every lap is shifted again and the tail builds a lattice rather than a copy |
+| Ring depth     | off to full             | How much of the tap goes through the carrier                                                                                                        |
 
 </details>
 
@@ -1136,19 +1136,19 @@ machine they are one thing.
 | Speed         | 15⁄16 ips, 1⅞ ips, 3¾ ips, 7½ ips, 15 ips | Moves the whole machine at once                                                                       |
 | Tape at       | the end, the pedals, the bends            | Where the machine sits in the signal path                                                             |
 | Format        | open reel, cassette, microcassette        | Picks the tape and heads; Speed sets how fast they run                                                |
-| NR record     | off, Dolby B, dbx                         | The noise reduction that encodes the board on its way to the record head                              |
-| NR play       | off, Dolby B, dbx                         | The decoder after the replay head                                                                     |
 | Level         | −12 to +15 dB                             | Record level                                                                                          |
-| Bias          | 1.00 under to 1.00 over                   | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
-| Hysteresis    | off to full                               | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
-| Head bump     | 0 to 1.5, normal 0 to 1                   | The lift where the wavelength past the replay head is the size of the head                            |
-| Squeal        | off to full                               | Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal      |
 | Hiss          | off to full                               | Noise laid on the medium, not on the mix                                                              |
 | Wow           | off to full                               | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
 | Flutter       | off to full                               | The fast wobble, plus the scrape grain of tape dragging past the head                                 |
 | Dropouts      | off to full                               | Shed oxide                                                                                            |
 | Print-through | off to full                               | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
+| Squeal        | off to full                               | Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal      |
+| Bias          | 1.00 under to 1.00 over                   | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
+| Hysteresis    | off to full                               | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
+| Head bump     | 0 to 1.5, normal 0 to 1                   | The lift where the wavelength past the replay head is the size of the head                            |
 | Azimuth       | off to full                               | Head misalignment: the right channel lags and loses top end                                           |
+| NR record     | off, Dolby B, dbx                         | The noise reduction that encodes the board on its way to the record head                              |
+| NR play       | off, Dolby B, dbx                         | The decoder after the replay head                                                                     |
 
 </details>
 
