@@ -1061,21 +1061,21 @@ machine they are one thing.
 <details>
 <summary>13 controls</summary>
 
-| control       | range                   | what it does                                                                                          |
-| ------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| To tape       | off to full             | How much of the board you hear through the machine rather than straight off the bus                   |
-| Speed         | 3¾ ips, 7½ ips, 15 ips  | Moves the whole machine at once                                                                       |
-| Level         | −12 to +15 dB           | Record level                                                                                          |
-| Bias          | 1.00 under to 1.00 over | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
-| Hysteresis    | off to full             | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
-| Head bump     | 0 to 1.5, normal 0 to 1 | The lift where the wavelength past the replay head is the size of the head                            |
-| Squeal        | off to full             | Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal      |
-| Hiss          | off to full             | Noise laid on the medium, not on the mix                                                              |
-| Wow           | off to full             | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
-| Flutter       | off to full             | The fast wobble, plus the scrape grain of tape dragging past the head                                 |
-| Dropouts      | off to full             | Shed oxide                                                                                            |
-| Print-through | off to full             | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
-| Azimuth       | off to full             | Head misalignment: the right channel lags and loses top end                                           |
+| control       | range                                     | what it does                                                                                          |
+| ------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| To tape       | off to full                               | How much of the board you hear through the machine rather than straight off the bus                   |
+| Speed         | 15⁄16 ips, 1⅞ ips, 3¾ ips, 7½ ips, 15 ips | Moves the whole machine at once                                                                       |
+| Level         | −12 to +15 dB                             | Record level                                                                                          |
+| Bias          | 1.00 under to 1.00 over                   | Underbiased is bright and crunchy; overbiased is dull and squashed                                    |
+| Hysteresis    | off to full                               | Tape reaches the gap already magnetised, so a wave’s two halves saturate differently                  |
+| Head bump     | 0 to 1.5, normal 0 to 1                   | The lift where the wavelength past the replay head is the size of the head                            |
+| Squeal        | off to full                               | Sticky shed: the tape grabs the head, slips and grabs again, taking off on its own into a squeal      |
+| Hiss          | off to full                               | Noise laid on the medium, not on the mix                                                              |
+| Wow           | off to full                               | Capstan eccentricity plus slow drift, so the pitch never sits quite still                             |
+| Flutter       | off to full                               | The fast wobble, plus the scrape grain of tape dragging past the head                                 |
+| Dropouts      | off to full                               | Shed oxide                                                                                            |
+| Print-through | off to full                               | The layer wound underneath bleeding into this one — a dull ghost of the signal, one spool wrap behind |
+| Azimuth       | off to full                               | Head misalignment: the right channel lags and loses top end                                           |
 
 </details>
 

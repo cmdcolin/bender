@@ -17,12 +17,12 @@ export const TAPE_GROUPS: Group[] = [
       {
         key: 'tapeSpeed',
         label: 'Speed',
-        min: 0,
+        min: -2,
         max: 2,
         step: 1,
         unit: '',
-        choices: ['3¾ ips', '7½ ips', '15 ips'],
-        help: 'Moves the whole machine at once: head-gap loss, the replay bump, hiss level, wow rate and how long a spool wrap takes to come back round. Slow is dark, noisy and unsteady.',
+        choices: ['15⁄16 ips', '1⅞ ips', '3¾ ips', '7½ ips', '15 ips'],
+        help: 'Moves the whole machine at once: head-gap loss, the replay bump, hiss level, wow rate and how long a spool wrap takes to come back round. Slow is dark, noisy and unsteady. 1⅞ is cassette speed, and 15⁄16 the microcassette in an answering machine.',
       },
       {
         key: 'tapeDrive',

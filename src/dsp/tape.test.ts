@@ -121,11 +121,11 @@ test('a slower tape hisses louder and darker', () => {
       { ...SILENT, tapeMix: 1, tapeHiss: 1, tapeSpeed: speed },
       1,
     ).l.subarray(SR / 2)
-  const [slow, mid, fast] = [at(0), at(1), at(2)]
-  expect(rms(slow)).toBeGreaterThan(rms(mid))
-  expect(rms(mid)).toBeGreaterThan(rms(fast))
-  expect(bright(slow)).toBeLessThan(bright(mid))
-  expect(bright(mid)).toBeLessThan(bright(fast))
+  const takes = [-2, -1, 0, 1, 2].map(at)
+  for (let i = 1; i < takes.length; i++) {
+    expect(rms(takes[i - 1]!), `step ${i}`).toBeGreaterThan(rms(takes[i]!))
+    expect(bright(takes[i - 1]!), `step ${i}`).toBeLessThan(bright(takes[i]!))
+  }
 })
 
 test('speed sets how much top end survives the head gap', () => {
@@ -136,6 +136,8 @@ test('speed sets how much top end survives the head gap', () => {
         1,
       ).l.subarray(SR / 2),
     )
+  expect(at(-2)).toBeLessThan(at(-1))
+  expect(at(-1)).toBeLessThan(at(0))
   expect(at(0)).toBeLessThan(at(1))
   expect(at(1)).toBeLessThan(at(2))
   expect(at(2)).toBeLessThan(
@@ -223,7 +225,7 @@ test('the top of the band has less headroom than the bottom', () => {
 // knob went flat to within half a percent at 15 ips once, and a test that only
 // asked for a decrease called that passing.
 test('bias runs bright to dull at every speed', () => {
-  for (const speed of [0, 1, 2]) {
+  for (const speed of [-2, -1, 0, 1, 2]) {
     const steps = [-1, -0.5, 0, 0.5, 1].map(bias =>
       bright(
         render(

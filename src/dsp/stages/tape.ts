@@ -11,7 +11,30 @@ import type { Ctx, Stage, StereoBlock } from '../stage'
 // wavelength, so a slower tape loses them lower; the replay bump sits at a
 // wavelength too, so it drops with speed; less tape past the head per second
 // means more hiss and slower wow; and a spool wrap takes longer to come round.
+// 1⅞ is cassette speed and 15⁄16 the microcassette in an answering machine,
+// each a halving below 3¾ on the same scaling. The microcassette hisses past
+// that scaling, or a gap this narrow would leave it quieter than the cassette.
 const SPEED = [
+  {
+    gapHz: 1250,
+    bumpHz: 12,
+    hiss: 6,
+    wowHz: 0.26,
+    flutHz: 2.7,
+    wobble: 4.9,
+    printMs: 3600,
+    squealHz: 600,
+  },
+  {
+    gapHz: 2500,
+    bumpHz: 18,
+    hiss: 2.9,
+    wowHz: 0.38,
+    flutHz: 3.7,
+    wobble: 2.9,
+    printMs: 1800,
+    squealHz: 950,
+  },
   {
     gapHz: 5000,
     bumpHz: 26,
@@ -64,7 +87,8 @@ const HEAD_DC_HZ = 10
     share of the level the medium is carrying. Past about this the second
     harmonic stops being a bloom and starts being the note. */
 const HYST_MAX = 1.5
-const LINE_MS = NOMINAL_MS + 900 + 20
+const SLOWEST = -2
+const LINE_MS = NOMINAL_MS + 3600 + 20
 const EMPH_HZ = 1200
 const AZIMUTH_MAX = 48
 /** how far above the -3 dB knee a pair of poles has to sit to still cross it
@@ -487,7 +511,10 @@ export class Tape implements Stage {
     const mix = p[IDX.tapeMix]!
     const sp =
       SPEED[
-        Math.min(Math.max(Math.round(p[IDX.tapeSpeed]!), 0), SPEED.length - 1)
+        Math.min(
+          Math.max(Math.round(p[IDX.tapeSpeed]!) - SLOWEST, 0),
+          SPEED.length - 1,
+        )
       ]!
     const bias = p[IDX.tapeBias]!
     // Under-bias records hotter highs and distorts sooner; over-bias is duller
