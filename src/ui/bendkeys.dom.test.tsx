@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { engine } from '../engine/engine'
-import { BendKeys } from './BendKeys'
+import { BendKeys, LettersSwitch } from './BendKeys'
 import {
   bendDeal,
   bendName,
@@ -42,21 +42,23 @@ const open = () => {
 test('the row deals itself a hand on first draw', () => {
   render(<BendKeys morphSeconds={0} />)
   expect(bendDeal.get()).toHaveLength(16)
-  expect(screen.getByRole('button', { name: 'notes' })).toBeTruthy()
+  expect(screen.queryByText('spin')).toBeNull()
 })
 
-test('the keys stay folded until asked for or until the letters come here', () => {
+test('the grid draws only while the letters go to the bends', () => {
   render(<BendKeys morphSeconds={0} />)
   expect(screen.queryByText('spin')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'show keys' }))
+  act(() => {
+    letterKeys.set('bends')
+  })
   expect(screen.getByText('spin')).toBeTruthy()
 })
 
 test('the switch sends the letters here and back to the toy', () => {
-  render(<BendKeys morphSeconds={0} />)
+  render(<LettersSwitch />)
   fireEvent.click(screen.getByRole('button', { name: 'bends' }))
   expect(letterKeys.get()).toBe('bends')
-  fireEvent.click(screen.getByRole('button', { name: 'notes' }))
+  fireEvent.click(screen.getByRole('button', { name: 'bends' }))
   expect(letterKeys.get()).toBe('toy')
 })
 
@@ -117,8 +119,7 @@ test('a pad takes a pointer the same way', () => {
 })
 
 test('the bottom row holds the chosen throws, with the letters on a keybed', () => {
-  render(<BendKeys morphSeconds={0} />)
-  fireEvent.click(screen.getByRole('button', { name: 'show keys' }))
+  open()
   const spin = screen.getByText('spin').closest('button')!
   act(() => {
     fireEvent.pointerDown(spin, { pointerId: 1 })

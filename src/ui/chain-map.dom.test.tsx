@@ -10,7 +10,10 @@ import './testDom'
 // without a pointer: the boxes are links and always were. The touched dot
 // beside a box is signage, not a control — it takes no click and traps no key.
 
-const map = () => document.querySelector('svg')!
+const map = () =>
+  [...document.querySelectorAll('svg')].find(s =>
+    s.querySelector('a[data-door]'),
+  )!
 const touched = () => [...map().querySelectorAll('[data-touched]')]
 
 test('every door on the map is a tab stop', () => {

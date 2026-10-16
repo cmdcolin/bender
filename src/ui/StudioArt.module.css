@@ -1,0 +1,89 @@
+.cassette {
+  flex: none;
+  width: 120px;
+  height: auto;
+}
+
+.cartridge {
+  flex: none;
+  width: 96px;
+  height: auto;
+}
+
+.shell {
+  fill: var(--surface);
+  stroke: var(--fg4);
+  stroke-width: 1.5;
+}
+
+.label {
+  fill: var(--bg);
+  stroke: var(--border);
+}
+
+.ruling {
+  stroke: var(--fg4);
+  stroke-width: 1;
+}
+
+.window {
+  fill: var(--bg);
+  stroke: var(--fg4);
+}
+
+.hub {
+  fill: none;
+  stroke: var(--fg3);
+  stroke-width: 1.5;
+}
+
+.spoke {
+  stroke: var(--fg3);
+  stroke-width: 1.5;
+}
+
+.screw {
+  fill: var(--fg4);
+}
+
+.still {
+  transform-box: view-box;
+}
+
+.spin {
+  transform-box: view-box;
+  animation: turn 1.6s linear infinite;
+}
+
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
+
+.cartText {
+  fill: var(--fg3);
+  font-size: 9px;
+  text-anchor: middle;
+}
+
+.slot {
+  fill: #000;
+  stroke: var(--fg4);
+}
+
+.parked {
+  transform: translateY(0);
+  transition: transform 0.15s;
+}
+
+.inserted {
+  transform: translateY(8px);
+  transition: transform 0.15s;
+}

@@ -12,26 +12,18 @@
   gap: var(--gap-ctl);
 }
 
-/* Engraved like the TAPE label above it, so the two rows read as one plate. */
-.label {
-  flex: none;
-  width: 4.5em;
-  font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--fg4);
+/* The deck's own cap, which lights in the deck's amber while the letters are
+   sent to the bend keys. */
+.letterSwitch,
+.letterSwitchOn {
+  --cap-lit: var(--accent2);
 }
 
-.segment {
-  display: inline-flex;
-  gap: 1px;
-}
-
-.seg {
+.letterSwitch {
   composes: action from './button.module.css';
 }
 
-.segOn {
+.letterSwitchOn {
   composes: actionOn from './button.module.css';
 }
 
@@ -156,8 +148,8 @@
 
 /* A finger has no letter keys to send anywhere. */
 @media (pointer: coarse) {
-  .label,
-  .segment,
+  .letterSwitch,
+  .letterSwitchOn,
   .letter,
   .letterOff {
     display: none;

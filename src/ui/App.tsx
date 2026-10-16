@@ -15,7 +15,7 @@ import { versionLabel } from '../version'
 import { AboutDialog } from './AboutDialog'
 import { Account } from './Account'
 import styles from './App.module.css'
-import { BendKeys } from './BendKeys'
+import { BendKeys, LettersSwitch } from './BendKeys'
 import { BodyPad } from './BodyPad'
 import { ChainMap } from './ChainMap'
 import { GROUPS } from './controls'
@@ -48,6 +48,7 @@ import { Scope } from './Scope'
 import { OpenGroup, PathHint } from './Section'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { StartOverlay } from './StartOverlay'
+import { Cartridge, Cassette } from './StudioArt'
 import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
 import { useCurrentSession } from './useCurrentSession'
@@ -356,112 +357,126 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
         <div className={styles.studio}>
           <section className={styles.box} aria-label="recorder">
             <span className={styles.label}>recorder</span>
-            <div className={styles.ioRow}>
-              <span
-                className={recording ? styles.counterOn : styles.counter}
-                role="timer"
-                aria-label="take time"
-              >
-                {clock(recSeconds)}
-              </span>
-              <Tip
-                text={
-                  recStems
-                    ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                    : 'Records the output to a wav file — stopping saves it.'
-                }
-              >
-                <button
-                  className={recording ? styles.recBtnOn : styles.ioBtn}
-                  onClick={() =>
-                    recording ? engine.stopRecording() : engine.startRecording()
-                  }
-                >
-                  {recording
-                    ? `■ stop & save ${clock(recSeconds)}`
-                    : recStems
-                      ? '● record stems'
-                      : '● record wav'}
-                </button>
-              </Tip>
-              <button
-                className={showOptions ? styles.ioBtnToggled : styles.ioBtn}
-                aria-expanded={showOptions}
-                onClick={() => setShowOptions(o => !o)}
-              >
-                options
-              </button>
-            </div>
-            {showOptions && (
-              <div className={styles.ioRow}>
-                <Tip text="Saves the last 30 seconds you heard as a wav, even if you were not recording.">
-                  <button
-                    className={styles.ioBtn}
-                    onClick={() => engine.keepLast('wav')}
+            <div className={styles.artRow}>
+              <Cassette running={recording} />
+              <div className={styles.controls}>
+                <div className={styles.ioRow}>
+                  <span
+                    className={recording ? styles.counterOn : styles.counter}
+                    role="timer"
+                    aria-label="take time"
                   >
-                    save the last 30 s
-                  </button>
-                </Tip>
-                <Tip text="Puts the last 30 seconds you heard on the sampler's tape, to play back through the board.">
-                  <button
-                    className={styles.ioBtn}
-                    onClick={() => engine.keepLast('reel')}
+                    {clock(recSeconds)}
+                  </span>
+                  <Tip
+                    text={
+                      recStems
+                        ? 'Records the output and every source that had something on it — stopping saves the lot.'
+                        : 'Records the output to a wav file — stopping saves it.'
+                    }
                   >
-                    last 30 s → sampler
-                  </button>
-                </Tip>
-                <Tip text="Also saves each machine on its own, dry, one wav each — what you drag into a DAW. Locked while a take runs.">
+                    <button
+                      className={recording ? styles.recBtnOn : styles.ioBtn}
+                      onClick={() =>
+                        recording
+                          ? engine.stopRecording()
+                          : engine.startRecording()
+                      }
+                    >
+                      {recording
+                        ? `■ stop & save ${clock(recSeconds)}`
+                        : recStems
+                          ? '● record stems'
+                          : '● record wav'}
+                    </button>
+                  </Tip>
                   <button
-                    className={recStems ? styles.ioBtnToggled : styles.ioBtn}
-                    aria-pressed={recStems}
-                    disabled={recording}
-                    onClick={() => engine.recStems.set(!recStems)}
+                    className={showOptions ? styles.ioBtnToggled : styles.ioBtn}
+                    aria-expanded={showOptions}
+                    onClick={() => setShowOptions(o => !o)}
                   >
-                    one wav per machine
+                    options
                   </button>
-                </Tip>
+                </div>
+                {showOptions && (
+                  <div className={styles.ioRow}>
+                    <Tip text="Saves the last 30 seconds you heard as a wav, even if you were not recording.">
+                      <button
+                        className={styles.ioBtn}
+                        onClick={() => engine.keepLast('wav')}
+                      >
+                        save the last 30 s
+                      </button>
+                    </Tip>
+                    <Tip text="Puts the last 30 seconds you heard on the sampler's tape, to play back through the board.">
+                      <button
+                        className={styles.ioBtn}
+                        onClick={() => engine.keepLast('reel')}
+                      >
+                        last 30 s → sampler
+                      </button>
+                    </Tip>
+                    <Tip text="Also saves each machine on its own, dry, one wav each — what you drag into a DAW. Locked while a take runs.">
+                      <button
+                        className={
+                          recStems ? styles.ioBtnToggled : styles.ioBtn
+                        }
+                        aria-pressed={recStems}
+                        disabled={recording}
+                        onClick={() => engine.recStems.set(!recStems)}
+                      >
+                        one wav per machine
+                      </button>
+                    </Tip>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </section>
           <section className={styles.box} aria-label="sampler">
             <span className={styles.label}>sampler</span>
-            <div className={styles.ioRow}>
-              <span className={dragging ? styles.dropHot : styles.drop}>
-                {sampleName
-                  ? `sample: ${sampleName}`
-                  : 'drop an audio file anywhere'}
-              </span>
-              <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
-                <button
-                  className={styles.ioBtn}
-                  onClick={() =>
-                    archiveStep
-                      ? engine.cancelRoll()
-                      : engine.rollSample(POOLS[pool]!)
-                  }
-                >
-                  {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
-                </button>
-              </Tip>
-              <Tip text={POOLS[pool]!.blurb}>
-                <select
-                  className={styles.pool}
-                  value={pool}
-                  onChange={e => setPool(Number(e.target.value))}
-                >
-                  {POOLS.map((p, i) => (
-                    <option key={p.label} value={i}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </Tip>
-              <button
-                className={micOn ? styles.ioBtnOn : styles.ioBtn}
-                onClick={() => engine.enableMic()}
-              >
-                {micOn ? '● mic live' : 'enable mic'}
-              </button>
+            <div className={styles.artRow}>
+              <Cartridge name={sampleName || null} hot={dragging} />
+              <div className={styles.controls}>
+                <div className={styles.ioRow}>
+                  <span className={dragging ? styles.dropHot : styles.drop}>
+                    {sampleName
+                      ? `sample: ${sampleName}`
+                      : 'drop an audio file anywhere'}
+                  </span>
+                  <Tip text="Pulls a random recording off archive.org onto the sampler — then bring the sampler's Level up.">
+                    <button
+                      className={styles.ioBtn}
+                      onClick={() =>
+                        archiveStep
+                          ? engine.cancelRoll()
+                          : engine.rollSample(POOLS[pool]!)
+                      }
+                    >
+                      {archiveStep ? '✕ cancel' : '⚄ roll a sample'}
+                    </button>
+                  </Tip>
+                  <Tip text={POOLS[pool]!.blurb}>
+                    <select
+                      className={styles.pool}
+                      value={pool}
+                      onChange={e => setPool(Number(e.target.value))}
+                    >
+                      {POOLS.map((p, i) => (
+                        <option key={p.label} value={i}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Tip>
+                  <button
+                    className={micOn ? styles.ioBtnOn : styles.ioBtn}
+                    onClick={() => engine.enableMic()}
+                  >
+                    {micOn ? '● mic live' : 'enable mic'}
+                  </button>
+                </div>
+              </div>
             </div>
             <SampleReel />
             {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
@@ -479,10 +494,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
             )}
           </section>
         </div>
-        <div className={styles.strip}>
-          <BendKeys morphSeconds={morphSeconds} />
-          <Presets morphSeconds={morphSeconds} folded />
-        </div>
+        <BendKeys morphSeconds={morphSeconds} />
         {!running && (
           <p className={styles.hint}>
             <b className={styles.warn}>
@@ -762,6 +774,11 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
           />
         )}
 
+        <div className={styles.lettersRow}>
+          <span className={styles.rowLabel}>letters</span>
+          <LettersSwitch />
+        </div>
+        <Presets morphSeconds={morphSeconds} folded />
         <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
         {openGroup ? (
           <OpenGroup
