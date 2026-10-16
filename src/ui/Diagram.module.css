@@ -113,3 +113,9 @@
 .pickedLabel text {
   text-decoration: underline solid;
 }
+
+/* A box with no knobs behind it is drawn, and does nothing when pressed — the
+   dashed outline is the panel's word for that. */
+.inert {
+  stroke-dasharray: 2 2;
+}

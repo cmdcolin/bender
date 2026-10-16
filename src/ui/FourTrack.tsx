@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_CONTROLS } from '../controls'
 import { PEAK_BINS } from '../dsp/stages/sampler'
 import { engine } from '../engine/engine'
-import { sliderFor, TRACK_NUMBERS, type Track } from './controls'
+import { choiceValue, sliderFor, TRACK_NUMBERS, type Track } from './controls'
 import { useBoardValue, useControlValue } from './ControlsContext'
 import { STRIP_KEYS } from './diagram'
 import { Fold } from './Fold'
@@ -35,6 +35,20 @@ const input = (n: Track) => `four${n}In` as const
 
 const heard = (c: Controls, n: Track) =>
   c.fourLevel > 0 && (c[cue(n)] > 0 || c[fader(n)] > 0)
+
+// A loop with nothing on it that hears only itself has nothing to record, so the
+// first arm on one also points the channel at the board: one press does
+// something, where the input would otherwise have to be known about first.
+function arm(track: Track, armed: boolean, listens: number) {
+  engine.armStep()
+  if (
+    !armed &&
+    listens === choiceValue(input(track), 'tape') &&
+    engine.meter.get().fourLaps[track - 1]! <= 0
+  )
+    engine.set(input(track), choiceValue(input(track), 'board'))
+  engine.set(rec(track), armed ? 0 : 1)
+}
 
 function write(key: ControlKey, value: number) {
   engine.armStep()
@@ -176,13 +190,13 @@ function Lane({
           </select>
         </Tip>
         <Tip
-          text={`Lay the channel onto loop ${track}. The first press threads a blank loop as long as its Length. What goes under the head stays there, so a loop is recorded over by every pass it takes.`}
+          text={`Lay the channel onto loop ${track}. The first press threads a blank loop as long as its Length, and on an empty loop that hears only itself it points the channel at the board. What goes under the head stays there, so a loop is recorded over by every pass it takes.`}
         >
           <button
             className={armed ? styles.recOn : styles.rec}
             aria-pressed={armed}
             aria-label={`record track ${track}`}
-            onClick={() => write(rec(track), armed ? 0 : 1)}
+            onClick={() => arm(track, armed, listens)}
           >
             ● rec
           </button>
@@ -218,26 +232,43 @@ function Choice({ name }: { name: 'fourSpeed' | 'fourSide' | 'fourDbx' }) {
   )
 }
 
+const STRIP_OPENERS = STRIP_KEYS.filter(k => !k.endsWith('Rec'))
+
+const firstMoved = (c: Controls): Track | undefined =>
+  TRACK_NUMBERS.find(n =>
+    STRIP_OPENERS.some(
+      k => k.startsWith(`four${n}`) && c[k] !== DEFAULT_CONTROLS[k],
+    ),
+  )
+
 // The four loops, each in a lane of its own, the deck's switches on one row and
 // the channel strip under them. A four-track is four of the same strip, so the
 // lanes are the part you reach for and the strip's knobs are the part you open.
 export function FourTrack() {
   const [track, setTrack] = useState<Track>(
-    () =>
-      TRACK_NUMBERS.find(n =>
-        STRIP_KEYS.some(
-          k =>
-            k.startsWith(`four${n}`) &&
-            engine.controls.get()[k] !== DEFAULT_CONTROLS[k],
-        ),
-      ) ?? 1,
+    () => firstMoved(engine.controls.get()) ?? 1,
   )
-  const [open, setOpen] = useState(() =>
-    STRIP_KEYS.some(k => engine.controls.get()[k] !== DEFAULT_CONTROLS[k]),
+  const [open, setOpen] = useState(
+    () => firstMoved(engine.controls.get()) !== undefined,
   )
   const moved = useBoardValue(
     c => STRIP_KEYS.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
   )
+  // A strip knob going off stock from somewhere the strip is not — a setting, a
+  // roll, a link — opens the strip on the channel it moved, so what a press just
+  // did is on screen. The record arm is left out: it is a lane control and
+  // pressing it is not a reason to open anything.
+  const hidden = useBoardValue(
+    c => STRIP_OPENERS.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
+  )
+  const [seen, setSeen] = useState(hidden)
+  if (hidden !== seen) {
+    setSeen(hidden)
+    if (seen === 0 && hidden > 0) {
+      setOpen(true)
+      setTrack(firstMoved(engine.controls.get()) ?? track)
+    }
+  }
   return (
     <div className={styles.wrap}>
       {TRACK_NUMBERS.map(n => (

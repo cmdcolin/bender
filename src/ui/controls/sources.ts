@@ -1335,6 +1335,7 @@ export const SOURCE_GROUPS: Group[] = [
     name: 'FM chip',
     place: 'Sources',
     folded: [
+      'effect and rhythm',
       'clocks and wires',
       'inside the patch',
       'knife on the bus',
@@ -1416,6 +1417,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'fmEffect',
         label: 'Effect',
+        part: 'effect and rhythm',
         min: 0,
         max: FM_EFFECT_NAMES.length - 1,
         step: 1,
@@ -1428,6 +1430,7 @@ export const SOURCE_GROUPS: Group[] = [
         key: 'fmNoiseBlob',
         lane: 'FM noise blob',
         label: 'Noise blob',
+        part: 'effect and rhythm',
         min: 0,
         max: 1,
         step: 0.01,
@@ -1437,6 +1440,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'fmRhythm',
         label: 'Rhythm',
+        part: 'effect and rhythm',
         min: 0,
         max: 1,
         step: 1,

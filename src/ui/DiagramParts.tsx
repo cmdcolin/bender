@@ -21,7 +21,7 @@ export function BoxView({
 }) {
   const lines = Array.isArray(box.value) ? box.value : [box.value]
   const pick = box.id !== undefined && box.keys?.length && onSelect
-  const look = `${box.touched ? styles.boxOn : styles.box} ${selected ? styles.selected : ''}`
+  const look = `${box.touched ? styles.boxOn : styles.box} ${selected ? styles.selected : ''} ${pick ? '' : styles.inert}`
   return (
     <g
       opacity={box.off ? 0.55 : 1}

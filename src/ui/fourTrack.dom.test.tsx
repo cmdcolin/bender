@@ -94,3 +94,26 @@ test('the record box says what record and erase do to the tape', () => {
   expect(screen.getByText(/write onto the loops themselves/)).toBeTruthy()
   expect(screen.getByRole('slider', { name: 'Record' })).toBeTruthy()
 })
+
+test('arming an empty loop that hears only itself points the channel at the board', () => {
+  openFourTrack()
+  fireEvent.click(screen.getByRole('button', { name: 'record track 1' }))
+  expect(engine.controls.get().four1In).toBe(choiceValue('four1In', 'board'))
+  expect(engine.controls.get().four1Rec).toBe(1)
+})
+
+test('arming leaves a channel that already hears something else alone', () => {
+  act(() => engine.set('four1In', choiceValue('four1In', 'mic')))
+  openFourTrack()
+  fireEvent.click(screen.getByRole('button', { name: 'record track 1' }))
+  expect(engine.controls.get().four1In).toBe(choiceValue('four1In', 'mic'))
+})
+
+test('a strip knob moving from elsewhere opens the strip on its channel, but the record arm does not', () => {
+  openFourTrack()
+  fireEvent.click(screen.getByRole('button', { name: 'record track 1' }))
+  expect(fold('channel strip')?.open).toBe(false)
+  act(() => engine.set('four3Mid', 9))
+  expect(fold('channel strip')?.open).toBe(true)
+  expect(screen.getByRole('img', { name: 'track 3 signal path' })).toBeTruthy()
+})
