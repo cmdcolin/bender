@@ -11,6 +11,7 @@ export const PATCH_GROUPS: Group[] = [
     // wire, so the four rows of source/destination pairs read as a bay
     // rather than as forty-nine choices to cross-reference by hand.
     editor: { kind: 'patch' },
+    folded: ['wire 2', 'wire 3', 'wire 4'],
     sliders: [
       {
         key: 'modLfoHz',
@@ -37,6 +38,7 @@ export const PATCH_GROUPS: Group[] = [
         {
           key: `mod${i}Src` as const,
           label: `Wire ${i + 1} from`,
+          ...(i > 0 ? { part: `wire ${i + 1}` } : {}),
           min: 0,
           max: 11,
           step: 1,
@@ -60,6 +62,7 @@ export const PATCH_GROUPS: Group[] = [
         {
           key: `mod${i}Dest` as const,
           label: `Wire ${i + 1} to`,
+          ...(i > 0 ? { part: `wire ${i + 1}` } : {}),
           min: 0,
           max: N_DEST - 1,
           step: 1,
@@ -333,6 +336,7 @@ export const PATCH_GROUPS: Group[] = [
           key: `mod${i}Depth` as const,
           lane: `wire ${i + 1} depth`,
           label: `Wire ${i + 1} depth`,
+          ...(i > 0 ? { part: `wire ${i + 1}` } : {}),
           min: -2,
           max: 2,
           normal: [-1, 1] as const,
