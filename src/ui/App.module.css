@@ -142,10 +142,9 @@
   composes: actionOff from './button.module.css';
 }
 
-/* The duration picker ends the verbs row, beside the verbs it times. */
+/* The duration picker opens the session buttons, right of the nameplate. */
 .morph {
   composes: btn;
-  margin-left: auto;
   text-align: center;
   appearance: none;
 }
@@ -160,7 +159,6 @@
   position: relative;
   overflow: hidden;
   min-width: 92px;
-  margin-left: auto;
 }
 
 .flightFill {

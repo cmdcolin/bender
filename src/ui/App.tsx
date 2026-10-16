@@ -530,6 +530,11 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                 <span className={styles.version}>{versionLabel}</span>
               </button>
             </Tip>
+            <MorphControl
+              seconds={morphSeconds}
+              drifting={drifting}
+              onSet={setMorphSeconds}
+            />
             {/* About the board as a whole rather than any one stage of it. */}
             <MidiPanel
               open={showMidi}
@@ -738,11 +743,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                 </button>
               </Tip>
             )}
-            <MorphControl
-              seconds={morphSeconds}
-              drifting={drifting}
-              onSet={setMorphSeconds}
-            />
           </div>
         </div>
 
