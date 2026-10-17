@@ -124,3 +124,15 @@
   font-size: var(--fs-xs);
   color: var(--alarm);
 }
+
+.subhead {
+  margin: var(--space-xs) 0 0;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
+.savedAs {
+  color: var(--fg3);
+}

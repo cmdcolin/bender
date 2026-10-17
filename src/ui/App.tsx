@@ -225,10 +225,13 @@ export function App(props: { openedFromLink?: boolean }) {
   // Recall morphs, the way pressing a preset chip does. An open lands the whole
   // board at once by putting it on the address bar — useBoardUrl hears the
   // hashchange and applies it, which is exactly what arriving on a link does.
-  const recall = (voice: SavedVoice) => {
-    const patch = boardFromUrl('', `#${voice.query}`)
+  const morphToQuery = (query: string) => {
+    const patch = boardFromUrl('', `#${query}`)
     if (patch !== null)
       engine.morphTo(boardFrom(patch, engine.controls.get()), morphSeconds)
+  }
+  const recall = (voice: SavedVoice) => {
+    morphToQuery(voice.query)
     lib.markRecalled(voice.name)
   }
   const openVoice = (voice: SavedVoice) => {
@@ -530,6 +533,11 @@ export function App(props: { openedFromLink?: boolean }) {
               the session rather than a verb over the board. */}
             <SavedVoices
               voices={lib.voices}
+              recent={lib.recent}
+              onRecallSession={s => morphToQuery(s.query)}
+              onOpenSession={s => {
+                window.location.hash = s.query
+              }}
               suggestName={suggestName}
               onSave={name => lib.saveVoice(name, boardQuery())}
               onRecall={recall}

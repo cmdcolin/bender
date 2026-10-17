@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
 import { Menu } from './Menu.tsx'
+import { sinceWords } from './relativeTime.ts'
 import styles from './SavedVoices.module.css'
 import { Tip } from './Tip.tsx'
 import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel.ts'
 
 import type { CloudStatus, VoiceFlash } from './useSavedVoices.ts'
-import type { SavedVoice } from './voiceModel.ts'
+import type { RecentSession, SavedVoice } from './voiceModel.ts'
 
 // The voice library: one button in the panel's chrome, beside the nameplate and
 // the MIDI drawer. A synth's save and recall.
@@ -24,6 +25,12 @@ import type { SavedVoice } from './voiceModel.ts'
 // is the only box about the account. Signed in, this button opens the list.
 export function SavedVoices(props: {
   voices: readonly SavedVoice[]
+  /** The autosaved visits before this one, newest first. Recalling one morphs
+      to its board and opening one lands it whole, as for a voice, but neither
+      makes it the voice you are in. */
+  recent: readonly RecentSession[]
+  onRecallSession: (session: RecentSession) => void
+  onOpenSession: (session: RecentSession) => void
   /** What the name box offers when you type nothing. A function rather than a
       value: working out which preset the board matches costs a pass over the
       catalog, and nothing wants that on every frame of a morph. Read when the
@@ -48,6 +55,8 @@ export function SavedVoices(props: {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null)
   const [name, setName] = useState('')
   const [suggested, setSuggested] = useState('')
+  // Read when the menu opens, so the words stay still while it is up.
+  const [now, setNow] = useState(0)
   // Which row's link just went to the clipboard. A copy is otherwise silent.
   const [copied, setCopied] = useState<string | null>(null)
 
@@ -78,6 +87,7 @@ export function SavedVoices(props: {
           aria-expanded={open}
           onClick={() => {
             setSuggested(props.suggestName())
+            setNow(Date.now())
             setOpen(o => !o)
           }}
         >
@@ -173,6 +183,43 @@ export function SavedVoices(props: {
                   ↗ lands it whole the way a link does, and ⧉ copies a link that
                   does what ↗ does.
                 </p>
+              </>
+            )}
+            {props.recent.length > 0 && (
+              <>
+                <p className={styles.subhead}>earlier sessions</p>
+                <div className={styles.list}>
+                  {props.recent.map(session => {
+                    const kept = props.voices.find(
+                      v => v.query === session.query,
+                    )
+                    return (
+                      <div className={styles.row} key={session.id}>
+                        <button
+                          className={styles.recall}
+                          title={`bring back the board as it stood ${sinceWords(session.at, now)}`}
+                          onClick={() => props.onRecallSession(session)}
+                        >
+                          {sinceWords(session.at, now)}
+                          {kept && (
+                            <span className={styles.savedAs}>
+                              {' '}
+                              saved as “{kept.name}”
+                            </span>
+                          )}
+                        </button>
+                        <button
+                          className={styles.rowBtn}
+                          aria-label={`open the session from ${sinceWords(session.at, now)}`}
+                          title="open it whole, the way a link does"
+                          onClick={() => props.onOpenSession(session)}
+                        >
+                          ↗
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
               </>
             )}
             {props.error === null ? null : (
