@@ -2,6 +2,75 @@
 
 All notable changes to bender are documented here.
 
+## [1.10.0](https://github.com/cmdcolin/bender/compare/v1.9.0...v1.10.0) - 2026-10-17
+
+### Features
+- *(ui)* [`fde30a1`](https://github.com/cmdcolin/bender/commit/fde30a155816f1b1123b2c9828652bce330a14c1) add a Level slider to each instrument
+- *(engine)* [`487b995`](https://github.com/cmdcolin/bender/commit/487b995109c13cd244a0bcd7709e33db91168933) add a bypass switch to each pedal
+- *(ui)* [`11f751f`](https://github.com/cmdcolin/bender/commit/11f751f386b805b8c9151e029d977ba8ce1fc921) bring pedals onto the bench as faces
+- *(ui)* [`0b29413`](https://github.com/cmdcolin/bender/commit/0b2941360530d58e74d5a1fb6158383550dd5e5e) show the drum pattern on the kit and run it when record is armed
+- *(ui)* [`71d4d51`](https://github.com/cmdcolin/bender/commit/71d4d51ac58a93ddcaf80e886637065bebb51a29) draw bench pedals as stompboxes and add a bench toggle to the stage panel
+- *(ui)* [`c64d48a`](https://github.com/cmdcolin/bender/commit/c64d48aeeb8a8490457b24fdf87e259a8d56218c) use sliders on the pedal faces and tighten them
+- *(ui)* [`8a92f35`](https://github.com/cmdcolin/bender/commit/8a92f35dd8c422b9d7b0b44baae602274b01db53) mark pedals on the bench in the signal path
+
+### Fixes
+- *(engine)* [`72af72a`](https://github.com/cmdcolin/bender/commit/72af72a1fb0034ca2e78ce95a18c88e50ab92d9d) place recorded hits on the step you heard
+- [`ad8db28`](https://github.com/cmdcolin/bender/commit/ad8db28d9a6918b1e66038dcb4c1765dc691242d) refuse a release off main or with stale demos or a missing sibling
+- [`c7ad2ad`](https://github.com/cmdcolin/bender/commit/c7ad2ad0b9ddf4394701a412b07130e4698796c8) let a Pages deploy finish when another push lands
+- [`2f61240`](https://github.com/cmdcolin/bender/commit/2f612404c5cab75481830f50c67b74b97b1d9ae5) fail browser scripts on a protocol error or a dropped socket
+- *(dsp)* [`b1e8156`](https://github.com/cmdcolin/bender/commit/b1e8156af23ae7e74396228d2d275469c88d1cef) ramp the summing drive and output gain across the block
+- [`374634e`](https://github.com/cmdcolin/bender/commit/374634ecdb13f3414ea44fa292954125d1bb38c4) wait for the app in browser scripts instead of sleeping a guess
+- *(dsp)* [`6a44fac`](https://github.com/cmdcolin/bender/commit/6a44fac6003d9d45b8e4d28bf5085e5cd2d79fa0) snap smoothed params onto their target
+- *(dsp)* [`406354f`](https://github.com/cmdcolin/bender/commit/406354fb29928abd95e5ed2f766a4a214e860138) keep the state-variable filter stable at high cutoffs
+- *(dsp)* [`6d0bb2a`](https://github.com/cmdcolin/bender/commit/6d0bb2a8ed20996bad7f677af4e7bed9df97fce5) flush denormals in screech followers and the delay motor
+- *(dsp)* [`771bd00`](https://github.com/cmdcolin/bender/commit/771bd003f7f55ecc9c6c96d9277c5a4d7bf8a305) clear the tape head's dc blocker and the amp's dry lines on reset
+- *(dsp)* [`b7819c8`](https://github.com/cmdcolin/bender/commit/b7819c8112e8058ba9f44aac006e12f4516f1548) release FM and PCM keys lifted before their block
+- *(dsp)* [`2d35c4f`](https://github.com/cmdcolin/bender/commit/2d35c4f1339329ea6d4d6e3ab04e923961a3b12e) end the PCM decay at the envelope floor
+- *(dsp)* [`9085380`](https://github.com/cmdcolin/bender/commit/90853804a4ad86c24715f17e6cc204520bd67259) let the toy's key-up end only notes the gate struck
+- *(dsp)* [`dbb9407`](https://github.com/cmdcolin/bender/commit/dbb94078d1d4aeb95e48d0ad17c146fa69afca76) bound the mono synth's key queue
+- *(dsp)* [`2e7ed69`](https://github.com/cmdcolin/bender/commit/2e7ed69137ebd5e07e59ea498080ea6ad69e88ba) flush denormals in four more decays
+- *(dsp)* [`2c4b604`](https://github.com/cmdcolin/bender/commit/2c4b604a421d35cfd60985ddae61eae6e9f671af) clear non-finite samples off the four-track's loops on reset
+- *(dsp)* [`a42b98d`](https://github.com/cmdcolin/bender/commit/a42b98d40450e0ddd4550910dcb7f3ad1e69b044) clamp the kit's bit depth to the ladder
+- *(engine)* [`145290b`](https://github.com/cmdcolin/bender/commit/145290b9a9fda454bd511e5ea9590270f22cea73) keep params and morphs moving in a hidden tab
+- *(engine)* [`8f52b5e`](https://github.com/cmdcolin/bender/commit/8f52b5e67b66292ad0cf5e474f9c68b342a21da3) drop a cancelled or overtaken roll after it decodes
+- *(engine)* [`2bd6b34`](https://github.com/cmdcolin/bender/commit/2bd6b342e522ac356a894824969f1efd9a1cf839) post the tamed board before panic
+- *(engine)* [`b44bace`](https://github.com/cmdcolin/bender/commit/b44bace5f3a485b75907f8a90ec7beaf4d941151) let start retry after a failed boot
+- *(engine)* [`7d8c605`](https://github.com/cmdcolin/bender/commit/7d8c6057c2560fb958e082906b542288a8626e51) open the mic once per click and let go when it ends
+- *(engine)* [`6726b55`](https://github.com/cmdcolin/bender/commit/6726b557dbc168a010150f35d7d131275472ee8c) refuse a new take while the last one is still saving
+- *(engine)* [`b7fe5fa`](https://github.com/cmdcolin/bender/commit/b7fe5fa61d187d97d3dc5473d29d870498bf56cf) release the note a key struck after the scale moves
+- *(ui)* [`f70c49c`](https://github.com/cmdcolin/bender/commit/f70c49ce8b0b7011b039093096f41628e212c901) let go of a keybed's notes when it leaves the bench
+- *(ui)* [`753063a`](https://github.com/cmdcolin/bender/commit/753063abe48e3e5fd192f27b7d96c099289489e5) strike a key once when a touch enters before it lands
+- *(ui)* [`c0b10bf`](https://github.com/cmdcolin/bender/commit/c0b10bf1cf8d14b9dbb60a0213aa439c9884dad0) play keybed and bend keys with Enter and Space
+- *(ui)* [`5342d4a`](https://github.com/cmdcolin/bender/commit/5342d4a896984a256dd1bf083de1f9d48a1a348e) leave ctrl+z to a text box being typed in
+- *(midi)* [`b3dc5c8`](https://github.com/cmdcolin/bender/commit/b3dc5c8103224d41945426a7bb34047e90406ee8) light every ring on a controller plugged in later
+- *(midi)* [`a581965`](https://github.com/cmdcolin/bender/commit/a581965e350cffc7122cb5e8c73a2285f79c90c7) ask for MIDI access once while a request is pending
+- *(ui)* [`9afc5a5`](https://github.com/cmdcolin/bender/commit/9afc5a5120e77e8103d087838580918404e37f0f) hand focus back to a menu's toggle when it shuts
+
+### Performance
+- *(dsp)* [`360f545`](https://github.com/cmdcolin/bender/commit/360f545ccee560ad24cd5e4e9b330821f6ecd167) lay the sampler's blank reel by at construction
+- *(dsp)* [`39eda7e`](https://github.com/cmdcolin/bender/commit/39eda7e0370accf26eb36bde3b76a440c07a3d10) work out Dolby B's sliding band only when it slides
+- *(dsp)* [`f2c5e5c`](https://github.com/cmdcolin/bender/commit/f2c5e5caf8d97504a8ee67763794f9cd7abe6d12) retune wired shifter and ring carriers every eighth sample
+- *(dsp)* [`44a8530`](https://github.com/cmdcolin/bender/commit/44a8530e6ab2c2c2340af657b68a2c16ee0ed02f) cut each four-track loop's buffer once at full length
+- *(dsp)* [`586ccc5`](https://github.com/cmdcolin/bender/commit/586ccc59e516b9bde7460f0156aca120e81bd52c) reuse the four-track's voicing and EQ coefficients
+- *(dsp)* [`3c5e93e`](https://github.com/cmdcolin/bender/commit/3c5e93e4a1c544de2c84bde630bae76c2072eff6) stop the FM chip allocating on the audio thread
+- *(dsp)* [`b6dff9a`](https://github.com/cmdcolin/bender/commit/b6dff9a35c8146c61ef6c844911c7e99e3ae5810) sort the toy's held keys in place
+- *(dsp)* [`99b120f`](https://github.com/cmdcolin/bender/commit/99b120fc2df3944d32bd4d40a734b36df338e2e9) replace the toy's envelope exp cache with a Taylor series
+- *(dsp)* [`67dde3b`](https://github.com/cmdcolin/bender/commit/67dde3b08348f51e1fdddfd7666cfb381f4c00a3) reuse the feedback loop's amp voicing each block
+- *(dsp)* [`818ee31`](https://github.com/cmdcolin/bender/commit/818ee3116d9385546149de8f9dc5f8a876c9b711) work out the SVF's stability bound only when damping moves
+- *(engine)* [`4e84b76`](https://github.com/cmdcolin/bender/commit/4e84b76b208f320bc9942c9188c6c0b71d2cd7ab) reuse the meter message and the retro slabs
+- *(ui)* [`ed59939`](https://github.com/cmdcolin/bender/commit/ed599391cdaae97f90415997a1d2b5680b0330f6) subscribe each keybed to the window once
+- *(ui)* [`a5bf292`](https://github.com/cmdcolin/bender/commit/a5bf29216a732a30ec8e64e63bb16f223c0e68cd) re-render a slider's MIDI mark only when its own key moves
+- *(ui)* [`587a3d7`](https://github.com/cmdcolin/bender/commit/587a3d7c438733048ba2cec1d7dad65bcc29663a) redraw only the drum rows whose playhead moved
+
+### Refactor
+- *(dsp)* [`40ca958`](https://github.com/cmdcolin/bender/commit/40ca9585b7b8fe1cc263fd2d6ba0797058844718) run brownout's sag through the shared Follower
+- *(dsp)* [`201036f`](https://github.com/cmdcolin/bender/commit/201036fb9eeb818a8ffd88e46ae9ee1ee4c173b7) share ringSize between the delay line and the spring tank
+- *(dsp)* [`62aa1ef`](https://github.com/cmdcolin/bender/commit/62aa1ef97b0bc038a5c254d9c568042fbe0798f0) share the FM chip's frequency spelling with its effects
+
+### Documentation
+- [`7679690`](https://github.com/cmdcolin/bender/commit/7679690e0354431f27b22b32149582524a357926) describe the bench, pedal faces and bypass in the user guide
+- *(ui)* [`9682350`](https://github.com/cmdcolin/bender/commit/96823504854ec727d8ba237873a8e09f929a2b04) name who knows a key is down in the keybed's press
+
 ## [1.9.0](https://github.com/cmdcolin/bender/compare/v1.8.0...v1.9.0) - 2026-10-17
 
 ### Features
