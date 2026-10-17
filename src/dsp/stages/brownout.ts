@@ -1,8 +1,8 @@
 import { IDX } from '../../engine/params.ts'
 import { Burst } from '../util/burst.ts'
+import { coef, Follower } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
-import { flushDenormal } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -16,7 +16,7 @@ import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 // rate the ear can average away.
 export class Brownout implements Stage {
   label = 'brownout'
-  private sag = 0
+  private sag = new Follower()
   private dropRemaining = 0
   private hum = new SineOsc()
   private rng: Rng
@@ -24,9 +24,13 @@ export class Brownout implements Stage {
   private crackleFault: Burst
 
   private readonly sr: number
+  private readonly attack: number
+  private readonly release: number
 
   constructor(sr: number, seed = 707) {
     this.sr = sr
+    this.attack = coef(0.02, sr)
+    this.release = coef(0.4, sr)
     this.rng = mulberry32(seed)
     this.dropFault = new Burst(sr, 2.2)
     this.crackleFault = new Burst(sr, 0.5)
@@ -55,8 +59,6 @@ export class Brownout implements Stage {
     )
     const cluster = p[IDX.faultCluster]!
     const couple = p[IDX.couple]!
-    const attack = 1 - Math.exp(-1 / (0.02 * this.sr))
-    const release = 1 - Math.exp(-1 / (0.4 * this.sr))
 
     for (let i = 0; i < io.n; i++) {
       this.dropFault.step()
@@ -69,18 +71,17 @@ export class Brownout implements Stage {
       const x =
         Math.max(Math.abs(io.l[i]!), Math.abs(io.r[i]!)) *
         (1 + couple * Math.max(ctx.bright[i]!, 0) * 1.6)
-      const coef = x > this.sag ? attack : release
-      this.sag = flushDenormal(this.sag + coef * (x - this.sag))
-      ctx.sag[i] = this.sag
+      const sag = this.sag.process(x, this.attack, this.release)
+      ctx.sag[i] = sag
 
-      let g = 1 / (1 + amt * 4 * this.sag)
+      let g = 1 / (1 + amt * 4 * sag)
       if (
         amt > 0 &&
         this.dropRemaining <= 0 &&
-        this.dropFault.roll(dropProb * (1 + this.sag), cluster, this.rng)
+        this.dropFault.roll(dropProb * (1 + sag), cluster, this.rng)
       ) {
         this.dropRemaining = Math.floor(
-          (0.01 + this.rng() * 0.08) * this.sr * (1 + this.sag),
+          (0.01 + this.rng() * 0.08) * this.sr * (1 + sag),
         )
       }
       if (this.dropRemaining > 0) {
@@ -89,8 +90,7 @@ export class Brownout implements Stage {
       }
 
       const crackle =
-        crackleAmt > 0 &&
-        this.crackleFault.roll(this.sag * 0.3, cluster, this.rng)
+        crackleAmt > 0 && this.crackleFault.roll(sag * 0.3, cluster, this.rng)
           ? (this.rng() * 2 - 1) * crackleAmt
           : 0
 
@@ -100,7 +100,7 @@ export class Brownout implements Stage {
       if (humLevel > 0) {
         const s = this.hum.step(humK)
         const buzz = Math.abs(s) * 2 - 1
-        hum = (s * 0.55 + buzz * 0.45) * humLevel * 0.25 * (1 + this.sag * 2.5)
+        hum = (s * 0.55 + buzz * 0.45) * humLevel * 0.25 * (1 + sag * 2.5)
         g *= 1 - humLevel * 0.25 * (0.5 + 0.5 * s) * (amt > 0 ? 1 : 0.4)
       }
 
@@ -110,7 +110,7 @@ export class Brownout implements Stage {
   }
 
   panic() {
-    this.sag = 0
+    this.sag.reset()
     this.dropRemaining = 0
     this.hum.reset()
     this.dropFault.reset()
