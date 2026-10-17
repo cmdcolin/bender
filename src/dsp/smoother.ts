@@ -1,11 +1,11 @@
 import { N_PARAMS, SMOOTH_SEC } from '../engine/params.ts'
 
 // Per-block parameter smoothing from the classes declared in PARAM_DEFS.
-// 'step' snaps, 'slew' eases over ~10 ms, 'ramp' over ~3 ms.
-//
-// Every param's per-block coefficient is worked out once, at the sample rate
-// the worklet actually got, and then the block is a multiply-add down a pair of
-// typed arrays.
+// 'step' snaps, 'slew' eases over ~10 ms, 'ramp' over ~3 ms. A float32 one-pole
+// stalls one rounding step short of its target, so the last gap snaps shut and
+// an "off" check downstream sees exactly 0.
+
+const SNAP = 1e-6
 
 export class Smoother {
   readonly cur = new Float32Array(N_PARAMS)
@@ -29,7 +29,12 @@ export class Smoother {
     const cur = this.cur
     const coef = this.coef
     for (let i = 0; i < N_PARAMS; i++) {
-      cur[i] = cur[i]! + coef[i]! * (target[i]! - cur[i]!)
+      const t = target[i]!
+      const gap = t - cur[i]!
+      cur[i] =
+        Math.abs(gap) < SNAP * Math.max(1, Math.abs(t))
+          ? t
+          : cur[i]! + coef[i]! * gap
     }
   }
 }
