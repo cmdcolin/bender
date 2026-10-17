@@ -1,0 +1,66 @@
+.menu {
+  composes: chipQuiet from './button.module.css';
+}
+
+.menuOn {
+  composes: chipOn from './button.module.css';
+}
+
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-md);
+}
+
+/* A pedal's own enclosure. The caps compose button.module.css, which reads the
+   case colours set here. One to a row on a phone, and as many abreast as fit
+   from there, never wider than the knobs want to be. */
+.pedal {
+  --case: var(--surface-raised);
+  --case-edge: var(--border);
+  --switch: var(--border-quiet);
+  --switch-hover: var(--border-hover);
+
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: 20rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md) var(--space-md);
+  background: var(--case);
+  border: 1px solid var(--case-edge);
+  border-radius: 8px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.name {
+  flex: 1 1 auto;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.knobs {
+  display: flex;
+  flex-direction: column;
+}
+
+.more {
+  composes: chipQuiet from './button.module.css';
+  align-self: flex-start;
+}
+
+@media (max-width: 40rem) {
+  .pedal {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

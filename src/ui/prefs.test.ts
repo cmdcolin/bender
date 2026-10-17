@@ -16,7 +16,7 @@ import {
 
 beforeEach(() => {
   localStorage.clear()
-  bench.set({ all: false, closed: [] })
+  bench.set({ all: false, closed: [], pedals: [] })
   morphSetting.set(1)
   keymap.set(DEFAULT_KEYMAP)
 })
@@ -40,13 +40,24 @@ test('a stored setup keeps the fields that are the right shape', () => {
       morph: 4,
       keys: ['a', 'a'],
     }),
-  ).toEqual({ at: 3, bench: { all: true, closed: ['FM chip'] }, morph: 4 })
+  ).toEqual({
+    at: 3,
+    bench: { all: true, closed: ['FM chip'], pedals: [] },
+    morph: 4,
+  })
   expect(readPrefs({ at: 3, morph: 5 })).toEqual({ at: 3 })
 })
 
 test('applying a setup writes the stores and this machine keeps it', () => {
-  applyPrefs({ bench: { all: true, closed: ['Mono synth'] }, morph: 8 })
-  expect(bench.get()).toEqual({ all: true, closed: ['Mono synth'] })
+  applyPrefs({
+    bench: { all: true, closed: ['Mono synth'], pedals: [] },
+    morph: 8,
+  })
+  expect(bench.get()).toEqual({
+    all: true,
+    closed: ['Mono synth'],
+    pedals: [],
+  })
   expect(morphSetting.get()).toBe(8)
   expect(localStorage.getItem('bender.morphSeconds')).toBe('8')
   expect(isApplying()).toBe(false)

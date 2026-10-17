@@ -8,6 +8,7 @@ import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
+import { PedalShelf, PedalsMenu } from './Pedals.tsx'
 
 import type { ComponentType } from 'react'
 
@@ -35,9 +36,15 @@ const LEVELLED: Row = [
 // mode goes on: the Level slider on its face runs down to zero, and a face that
 // left under the pointer would take the slider with it.
 const keep = (all: boolean, closed: ReadonlySet<string>) =>
-  setBench({ all, closed: [...closed] })
+  setBench({ ...bench.get(), all, closed: [...closed] })
 
-export function Instruments({ seconds }: { seconds: number }) {
+export function Instruments({
+  seconds,
+  onOpen,
+}: {
+  seconds: number
+  onOpen: (stage: string) => void
+}) {
   const { all, closed: closedList } = useStoreValue(bench)
   const closed = new Set(closedList)
   const fmUp = useBoardValue(c => c.fmLevel > 0)
@@ -86,6 +93,7 @@ export function Instruments({ seconds }: { seconds: number }) {
         >
           all instruments
         </button>
+        <PedalsMenu />
         {all &&
           [...TOY, ...LEVELLED]
             .filter(([stage]) => closed.has(stage))
@@ -101,6 +109,7 @@ export function Instruments({ seconds }: { seconds: number }) {
       </div>
       {shelf(TOY)}
       {shelf(LEVELLED)}
+      <PedalShelf seconds={seconds} onOpen={onOpen} />
     </>
   )
 }

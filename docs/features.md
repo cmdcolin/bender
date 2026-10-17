@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 469 knobs and switches in 34 groups, seven bends competing for six slots,
+ruin. 475 knobs and switches in 34 groups, seven bends competing for six slots,
 18 ROM tunes, 125 presets, 23 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -882,17 +882,18 @@ the signal; _octave_ rectifies into a ringing transformer; _gate_ is misbiased
 to the edge of cutoff.
 
 <details>
-<summary>7 controls</summary>
+<summary>8 controls</summary>
 
-| control | range                                        | what it does                                                                                      |
-| ------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Circuit | screamer, rat, muff, germanium, octave, gate | Which dirt box is on the board                                                                    |
-| Drive   | 0 to 60 dB                                   | Gain into the clipping stage — and how hard the pedal leans on its own battery                    |
-| Tone    | off to full                                  | Each circuit’s tone control is a different network, so the knob means something different on each |
-| Bias    | −1 to +1                                     | Shifts the clipper off centre — the classic starve mod                                            |
-| Battery | off to full                                  | How dead the 9V is                                                                                |
-| Level   | −24 to +12 dB                                | Makeup gain out of the pedal                                                                      |
-| Mix     | off to full                                  | Dry/wet — at zero the pedal is off the board                                                      |
+| control | range                                        | what it does                                                                                                              |
+| ------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Circuit | screamer, rat, muff, germanium, octave, gate | Which dirt box is on the board                                                                                            |
+| Drive   | 0 to 60 dB                                   | Gain into the clipping stage — and how hard the pedal leans on its own battery                                            |
+| Tone    | off to full                                  | Each circuit’s tone control is a different network, so the knob means something different on each                         |
+| Bias    | −1 to +1                                     | Shifts the clipper off centre — the classic starve mod                                                                    |
+| Battery | off to full                                  | How dead the 9V is                                                                                                        |
+| Level   | −24 to +12 dB                                | Makeup gain out of the pedal                                                                                              |
+| Bypass  | on or bypassed                               | Takes the stompbox out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix     | off to full                                  | Dry/wet — at zero the pedal is off the board                                                                              |
 
 </details>
 
@@ -906,7 +907,7 @@ five-second loop joined once: _Splice_ is how bad the join is, and _Erase_ how
 much of the last lap the erase head lets through under the new one.
 
 <details>
-<summary>20 controls</summary>
+<summary>21 controls</summary>
 
 | control        | range                   | what it does                                                                                                                                        |
 | -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -915,6 +916,7 @@ much of the last lap the erase head lets through under the new one.
 | Feedback       | 0 to 2, normal 0 to 1   | Past 1.0 the repeats grow until the tape saturates — a runaway howl that darkens each lap                                                           |
 | Tone           | 500 Hz to 15 kHz        | High-frequency loss per repeat — tape generation loss                                                                                               |
 | Bus send       | off to full             | How much of the whole board goes onto the tape                                                                                                      |
+| Bypass         | on or bypassed          | Takes the tape delay out of the path and leaves its knobs where you set them, so switching it back on brings the same sound                         |
 | Echo level     | off to full             | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                                          |
 | Wow            | 0 to 50 ms              | Slow speed wobble of the transport                                                                                                                  |
 | Wow rate       | 0.1 to 8 Hz             | How fast the wobble cycles                                                                                                                          |
@@ -947,17 +949,18 @@ relocking at the seam. _Hold_ lifts the record head on every hit and goes round
 the window it just took, which with the kit running is a beat repeat.
 
 <details>
-<summary>7 controls</summary>
+<summary>8 controls</summary>
 
-| control   | range                                            | what it does                                                                                               |
-| --------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| Mode      | standard, analog, reverse, modulate, hold, shift | Which delay the box is being                                                                               |
-| Time      | 20 ms to 2 s                                     | Delay time                                                                                                 |
-| Feedback  | 0 to 2, normal 0 to 1                            | How much of the repeat goes back in                                                                        |
-| Tone      | 800 Hz to 16 kHz                                 | High cut in the loop, so each lap comes back darker than the last                                          |
-| Mod depth | off to full                                      | How far the read head swings, up to six milliseconds at 0.7 Hz                                             |
-| Shift     | −24 to +24 st                                    | How far each repeat moves in pitch, and since the repeat is what goes back round, each lap moves again     |
-| E. level  | off to full                                      | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it |
+| control   | range                                            | what it does                                                                                                                 |
+| --------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Mode      | standard, analog, reverse, modulate, hold, shift | Which delay the box is being                                                                                                 |
+| Time      | 20 ms to 2 s                                     | Delay time                                                                                                                   |
+| Feedback  | 0 to 2, normal 0 to 1                            | How much of the repeat goes back in                                                                                          |
+| Tone      | 800 Hz to 16 kHz                                 | High cut in the loop, so each lap comes back darker than the last                                                            |
+| Mod depth | off to full                                      | How far the read head swings, up to six milliseconds at 0.7 Hz                                                               |
+| Shift     | −24 to +24 st                                    | How far each repeat moves in pitch, and since the repeat is what goes back round, each lap moves again                       |
+| Bypass    | on or bypassed                                   | Takes the delay pedal out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| E. level  | off to full                                      | Volume of the repeats on their own fader, added on top of the dry signal rather than crossfaded against it                   |
 
 </details>
 
@@ -969,17 +972,18 @@ and _Kick_ is how easily they are thrown against it: a slam at the input or a
 hit from the kit crashes the tank, the sound of kicking the amp.
 
 <details>
-<summary>7 controls</summary>
+<summary>8 controls</summary>
 
-| control      | range            | what it does                                                                                              |
-| ------------ | ---------------- | --------------------------------------------------------------------------------------------------------- |
-| Decay        | 0.1 to 30 s      | How long the springs ring                                                                                 |
-| Warble       | off to full      | Swings the length of each spring on its own slow sine, so a long tail stops ringing on the same few notes |
-| Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                                   |
-| Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                                      |
-| Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp        |
-| Reverb level | off to full      | Level of the spring tank, added on top of the dry signal                                                  |
-| Dry level †  | off to full      | Level of the dry signal, set separately from Reverb level                                                 |
+| control      | range            | what it does                                                                                                                 |
+| ------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Decay        | 0.1 to 30 s      | How long the springs ring                                                                                                    |
+| Warble       | off to full      | Swings the length of each spring on its own slow sine, so a long tail stops ringing on the same few notes                    |
+| Tone         | 500 Hz to 12 kHz | Damping inside the tank                                                                                                      |
+| Boing        | off to full      | Spring dispersion — the drip and chirp on transients                                                                         |
+| Kick         | off to full      | How easily the tank crashes — the springs thrown against the housing, the sound of kicking the amp                           |
+| Bypass       | on or bypassed   | Takes the spring verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Reverb level | off to full      | Level of the spring tank, added on top of the dry signal                                                                     |
+| Dry level †  | off to full      | Level of the dry signal, set separately from Reverb level                                                                    |
 
 </details>
 
@@ -999,18 +1003,19 @@ the dry away. _Flange_ is the same line an order of magnitude shorter with
 feedback round it.
 
 <details>
-<summary>8 controls</summary>
+<summary>9 controls</summary>
 
-| control  | range                                        | what it does                                                                                       |
-| -------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Mode     | chorus, ensemble, dimension, vibrato, flange | How many heads are on the line and where they sit                                                  |
-| Rate     | 0.05 to 12 Hz                                | How fast the clock sweeps                                                                          |
-| Depth    | off to full                                  | How far the sweep pushes the clock either side of where Delay leaves it                            |
-| Mix      | off to full                                  | Dry/wet — at zero the pedal is off the board                                                       |
-| Delay    | 0.3 to 25 ms                                 | How long the line runs, which on a bucket brigade is the same knob as how much top end survives it |
-| Feedback | 0 to 0.95                                    | How much of the line goes back into it, which is what turns a short delay into a flanger           |
-| Tone     | 800 Hz to 16 kHz                             | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken    |
-| Width    | off to full                                  | How far the lines spread across the stereo field                                                   |
+| control  | range                                        | what it does                                                                                                              |
+| -------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Mode     | chorus, ensemble, dimension, vibrato, flange | How many heads are on the line and where they sit                                                                         |
+| Rate     | 0.05 to 12 Hz                                | How fast the clock sweeps                                                                                                 |
+| Depth    | off to full                                  | How far the sweep pushes the clock either side of where Delay leaves it                                                   |
+| Bypass   | on or bypassed                               | Takes the ensemble out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix      | off to full                                  | Dry/wet — at zero the pedal is off the board                                                                              |
+| Delay    | 0.3 to 25 ms                                 | How long the line runs, which on a bucket brigade is the same knob as how much top end survives it                        |
+| Feedback | 0 to 0.95                                    | How much of the line goes back into it, which is what turns a short delay into a flanger                                  |
+| Tone     | 800 Hz to 16 kHz                             | High cut on what comes back off the lines, under whatever bandwidth the clock has already taken                           |
+| Width    | off to full                                  | How far the lines spread across the stereo field                                                                          |
 
 </details>
 
@@ -1043,25 +1048,26 @@ became:
   resonance, so every loud note leaves a howl behind it
 
 <details>
-<summary>15 controls</summary>
+<summary>16 controls</summary>
 
-| control           | range                          | what it does                                                                             |
-| ----------------- | ------------------------------ | ---------------------------------------------------------------------------------------- |
-| Amp               | fender or marshall             | Which amp the circuit is                                                                 |
-| Gain              | off to full                    | How hard the first stage is driven                                                       |
-| Bass              | off to full                    | The bass pot of the tone stack                                                           |
-| Mid               | off to full                    | The mid pot                                                                              |
-| Treble            | off to full                    | The treble pot, whose wiper is the output of the stack                                   |
-| Master            | off to full                    | How hard the power stage is driven                                                       |
-| Mix               | off to full                    | Dry/wet — at zero the pedal is off the board                                             |
-| Presence          | off to full                    | Boosts the highs going into the power stage                                              |
-| Sag               | off to full                    | How far the supply falls under load                                                      |
-| Bias              | off to full                    | Where the output tubes idle                                                              |
-| Speaker           | direct, open 1×12, closed 4×12 | What the output transformer drives                                                       |
-| Level             | −24 to +12 dB                  | Makeup gain out of the amp                                                               |
-| Dry cathode cap † | off to full                    | The cathode caps lose their value                                                        |
-| Weak tube †       | off to full                    | One of the two output tubes goes weak                                                    |
-| Microphonic †     | off to full                    | The first tube hears the cabinet’s air through its own mechanical resonance, near 900 Hz |
+| control           | range                          | what it does                                                                                                         |
+| ----------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Amp               | fender or marshall             | Which amp the circuit is                                                                                             |
+| Gain              | off to full                    | How hard the first stage is driven                                                                                   |
+| Bass              | off to full                    | The bass pot of the tone stack                                                                                       |
+| Mid               | off to full                    | The mid pot                                                                                                          |
+| Treble            | off to full                    | The treble pot, whose wiper is the output of the stack                                                               |
+| Master            | off to full                    | How hard the power stage is driven                                                                                   |
+| Bypass            | on or bypassed                 | Takes the amp out of the path and leaves its knobs where you set them, so switching it back on brings the same sound |
+| Mix               | off to full                    | Dry/wet — at zero the pedal is off the board                                                                         |
+| Presence          | off to full                    | Boosts the highs going into the power stage                                                                          |
+| Sag               | off to full                    | How far the supply falls under load                                                                                  |
+| Bias              | off to full                    | Where the output tubes idle                                                                                          |
+| Speaker           | direct, open 1×12, closed 4×12 | What the output transformer drives                                                                                   |
+| Level             | −24 to +12 dB                  | Makeup gain out of the amp                                                                                           |
+| Dry cathode cap † | off to full                    | The cathode caps lose their value                                                                                    |
+| Weak tube †       | off to full                    | One of the two output tubes goes weak                                                                                |
+| Microphonic †     | off to full                    | The first tube hears the cabinet’s air through its own mechanical resonance, near 900 Hz                             |
 
 </details>
 

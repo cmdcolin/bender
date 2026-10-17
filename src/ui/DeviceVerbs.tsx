@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
+import { PEDALS } from '../pedals.ts'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import { useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
@@ -21,6 +22,12 @@ const MUTE_OF: Record<string, ControlKey> = {
   'FM chip': 'fmMute',
   'Home keyboard': 'pcmMute',
   'Mono synth': 'monoMute',
+  Stompbox: 'stompMute',
+  'Tape delay': 'dlyMute',
+  'Delay pedal': 'echoMute',
+  'Spring verb': 'revMute',
+  Ensemble: 'ensMute',
+  'Tube amp': 'ampMute',
 }
 
 const LEVEL_OF: Record<string, ControlKey> = {
@@ -31,37 +38,58 @@ const LEVEL_OF: Record<string, ControlKey> = {
   'Mono synth': 'monoLevel',
 }
 
+const POWER = (
+  <svg className={styles.speaker} viewBox="0 0 12 12" aria-hidden="true">
+    <path
+      d="M6 1v4.5M3.2 3a4.5 4.5 0 1 0 5.6 0"
+      fill="none"
+      stroke="currentColor"
+    />
+  </svg>
+)
+
+const SPEAKER = (muted: boolean) => (
+  <svg className={styles.speaker} viewBox="0 0 12 12" aria-hidden="true">
+    <path d="M1 4h2.5L7 1v10L3.5 8H1Z" />
+    {muted ? (
+      <path d="M8.5 4.2 9.2 3.5 10.5 4.8 11.8 3.5 12.5 4.2 11.2 5.5 12.5 6.8 11.8 7.5 10.5 6.2 9.2 7.5 8.5 6.8 9.8 5.5Z" />
+    ) : (
+      <path
+        d="M8.5 4a2.5 2.5 0 0 1 0 4M9.5 2.5a4.5 4.5 0 0 1 0 7"
+        fill="none"
+        stroke="currentColor"
+      />
+    )}
+  </svg>
+)
+
+const isPedal = (stage: string) => PEDALS.some(p => p.group === stage)
+
 function Mute({ stage, control }: { stage: string; control: ControlKey }) {
   const muted = useControlValue(control) > 0.5
+  const pedal = isPedal(stage)
   return (
     <Tip
       text={
-        muted
-          ? `${stage} is muted. Unmute brings it back at the Level you left.`
-          : `Silences ${stage} and leaves its Level where it is.`
+        pedal
+          ? muted
+            ? `${stage} is bypassed. Switching it back on brings the sound you left.`
+            : `Takes ${stage} out of the path and leaves its knobs where they are.`
+          : muted
+            ? `${stage} is muted. Unmute brings it back at the Level you left.`
+            : `Silences ${stage} and leaves its Level where it is.`
       }
     >
       <button
         className={muted ? styles.capOn : styles.cap}
-        aria-label={`mute ${stage}`}
+        aria-label={`${pedal ? 'bypass' : 'mute'} ${stage}`}
         aria-pressed={muted}
         onClick={() => {
           engine.armStep()
           engine.set(control, muted ? 0 : 1)
         }}
       >
-        <svg className={styles.speaker} viewBox="0 0 12 12" aria-hidden="true">
-          <path d="M1 4h2.5L7 1v10L3.5 8H1Z" />
-          {muted ? (
-            <path d="M8.5 4.2 9.2 3.5 10.5 4.8 11.8 3.5 12.5 4.2 11.2 5.5 12.5 6.8 11.8 7.5 10.5 6.2 9.2 7.5 8.5 6.8 9.8 5.5Z" />
-          ) : (
-            <path
-              d="M8.5 4a2.5 2.5 0 0 1 0 4M9.5 2.5a4.5 4.5 0 0 1 0 7"
-              fill="none"
-              stroke="currentColor"
-            />
-          )}
-        </svg>
+        {pedal ? POWER : SPEAKER(muted)}
       </button>
     </Tip>
   )
@@ -150,9 +178,9 @@ function Rolls({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
-// The caps every instrument on the bench carries: its level, mute that machine,
-// roll its stage somewhere new, and, while the bench shows every instrument,
-// put the machine away.
+// The caps every instrument and pedal on the bench carries: an instrument's
+// level, mute or bypass, roll the stage somewhere new, and put the machine away
+// where it can be put away.
 export function DeviceVerbs({
   stage,
   seconds = 0,

@@ -351,7 +351,7 @@ export function App(props: { openedFromLink?: boolean }) {
         <div className={styles.scope}>
           <Scope />
         </div>
-        <Instruments seconds={morphSeconds} />
+        <Instruments seconds={morphSeconds} onOpen={setOpen} />
         <BodyPad onOpen={setOpen} />
         <div className={styles.studio}>
           <section className={styles.box} aria-label="recorder">
