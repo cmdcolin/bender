@@ -9,19 +9,6 @@
   background: var(--bg);
 }
 
-.modes {
-  display: flex;
-  gap: var(--gap-ctl);
-}
-
-.mode {
-  composes: chipQuiet from './button.module.css';
-}
-
-.modeOn {
-  composes: chipOn from './button.module.css';
-}
-
 .row {
   display: flex;
   align-items: center;

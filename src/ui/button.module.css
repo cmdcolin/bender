@@ -289,6 +289,20 @@
   font-size: var(--fs-sm);
 }
 
+/* A pick butted against its neighbours in a ToggleButtonGroup, which rounds
+   the two outer corners. */
+.pickJoined {
+  composes: pick;
+  flex: 1;
+  border-radius: 0;
+}
+
+.pickJoinedOn {
+  composes: pickOn;
+  flex: 1;
+  border-radius: 0;
+}
+
 /* Nothing saved here yet. Dashed, because a click on an empty slot does
    something different from a click on a full one. */
 .pickEmpty {

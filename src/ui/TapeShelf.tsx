@@ -4,8 +4,10 @@ import { POOLS } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
 import styles from './TapeShelf.module.css'
 import { Tip } from './Tip.tsx'
+import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 
-type Mode = 'random' | 'search'
+const MODES = ['random', 'search'] as const
+type Mode = (typeof MODES)[number]
 type Hits = { id: string; title: string }[] | 'searching' | 'none'
 
 // Where a tape comes from: a roll off one of the shelves, or a search of
@@ -33,22 +35,12 @@ export function TapeShelf({ onDone }: { onDone: () => void }) {
 
   return (
     <div className={styles.shelf}>
-      <div
-        className={styles.modes}
-        role="group"
-        aria-label="where the tape comes from"
-      >
-        {(['random', 'search'] as const).map(m => (
-          <button
-            key={m}
-            className={mode === m ? styles.modeOn : styles.mode}
-            aria-pressed={mode === m}
-            onClick={() => setMode(m)}
-          >
-            {m}
-          </button>
-        ))}
-      </div>
+      <ToggleButtonGroup
+        label="where the tape comes from"
+        options={MODES}
+        value={mode}
+        onChange={setMode}
+      />
       {mode === 'random' ? (
         <div className={styles.row}>
           <Tip text={POOLS[pool]!.blurb}>

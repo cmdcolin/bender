@@ -1,0 +1,28 @@
+.group {
+  display: flex;
+}
+
+.off {
+  composes: pickJoined from './button.module.css';
+}
+
+.on {
+  composes: pickJoinedOn from './button.module.css';
+  position: relative;
+}
+
+.off + .off,
+.off + .on,
+.on + .off {
+  margin-left: -1px;
+}
+
+.off:first-child,
+.on:first-child {
+  border-radius: var(--ctl-radius) 0 0 var(--ctl-radius);
+}
+
+.off:last-child,
+.on:last-child {
+  border-radius: 0 var(--ctl-radius) var(--ctl-radius) 0;
+}
