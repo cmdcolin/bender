@@ -83,11 +83,25 @@ const setFreq = (cpu: Cpu, fnum: number, block: number, on: boolean) => {
 
 const keyUp = (cpu: Cpu, block: number) => cpu.write(KEY, block << 1)
 
-// A pitch in hertz, spelled as the tightest block and count that reach it.
-const blockOf = (hz: number) => clamp(Math.floor(Math.log2(hz / FNUM_HZ)), 0, 7)
+// A9 down: what the frequency number is counted against. The chip holds nine
+// bits of frequency and three of octave, so the nine bits only ever have to
+// cover one octave and the block shifts it. Which is why a cut frequency line
+// is a lattice rather than a slide — the note lands on the nearest count the
+// remaining wires can still express, and the same wrong count every time.
+/** What a count of FNUM_FULL is worth at block 0. */
+export const FNUM_HZ = 32.7
+export const FNUM_FULL = 256
+
+/** The tightest block that reaches a pitch in hertz. */
+export const blockOf = (hz: number) =>
+  clamp(Math.floor(Math.log2(hz / FNUM_HZ)), 0, 7)
+/** The count, unrounded, that reaches a pitch in a given block. */
+export const fnumOf = (hz: number, block: number) =>
+  (hz / FNUM_HZ / Math.pow(2, block)) * FNUM_FULL
+
 const setHz = (cpu: Cpu, hz: number, on: boolean) => {
   const block = blockOf(hz)
-  setFreq(cpu, (hz / FNUM_HZ / Math.pow(2, block)) * 256, block, on)
+  setFreq(cpu, fnumOf(hz, block), block, on)
 }
 
 const strikeHz = (cpu: Cpu, hz: number) => {
@@ -116,9 +130,6 @@ const patch = (v: Omit<Voice, 'name'>) => pack(v)
 // modulator stops making harmonics and starts making a rush. It is where these
 // chips' own drum sounds came from, and it is where all the weather is.
 const NOISE_FB = 7
-
-/** What a count of 256 is worth at block 0. */
-const FNUM_HZ = 32.7
 
 const BIRD_BLOCK = 6
 const WEATHER_BLOCK = 4

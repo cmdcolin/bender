@@ -4,13 +4,17 @@ import { snap } from '../../scale.ts'
 import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
 import { DEST, hop } from '../modbus.ts'
 import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
-import { octaves } from '../util/pitch.ts'
+import { A3_HZ, octaves } from '../util/pitch.ts'
 import { mulberry32 } from '../util/rng.ts'
 import { softclip } from '../util/softclip.ts'
 import {
+  blockOf,
   type Cpu,
   EFFECT_CH,
   EFFECTS,
+  FNUM_FULL,
+  FNUM_HZ,
+  fnumOf,
   loadEffect,
   stopEffect,
 } from './fmEffects.ts'
@@ -91,14 +95,6 @@ class Lfsr {
     this.state = 1
   }
 }
-
-// A9 down: what the frequency number is counted against. The chip holds nine
-// bits of frequency and three of octave, so the nine bits only ever have to
-// cover one octave and the block shifts it. Which is why a cut frequency line
-// is a lattice rather than a slide — the note lands on the nearest count the
-// remaining wires can still express, and the same wrong count every time.
-const FNUM_BASE = 32.7
-const FNUM_FULL = 256
 
 // Attenuation, in the two step sizes the register file uses: three quarters of
 // a decibel for the modulator's six bits, three for the carrier's four.
@@ -230,7 +226,7 @@ const BLOB_SEED = 0xc4
 // block 5 and a count of 256 into the slot the register runs on, so the kit's
 // own clock works out at this — the die has one divider for it, and taking the
 // mode bit off does not give it another.
-const NOISE_HZ = FNUM_BASE * Math.pow(2, 5) * HAT_MULT
+const NOISE_HZ = FNUM_HZ * Math.pow(2, 5) * HAT_MULT
 
 const ENV_FLOOR = 0.0005
 
@@ -698,15 +694,9 @@ export class FmChip implements Stage {
   // exactly as the part laid it out. One wire wrong up there moves the pitch and
   // whether the note happens at all.
   private keyOn(note: number, lengthSamples: number, vol = 0, gated = false) {
-    const hz = 220 * Math.pow(2, note / 12)
-    const block = Math.min(
-      Math.max(Math.floor(Math.log2(hz / FNUM_BASE)), 0),
-      7,
-    )
-    const fnum = Math.min(
-      Math.round((hz / Math.pow(2, block) / FNUM_BASE) * FNUM_FULL),
-      511,
-    )
+    const hz = A3_HZ * Math.pow(2, note / 12)
+    const block = blockOf(hz)
+    const fnum = Math.min(Math.round(fnumOf(hz, block)), 511)
     const i = this.ch.indexOf(this.pick(note))
     const c = this.ch[i]!
     c.note = note
@@ -1048,7 +1038,7 @@ export class FmChip implements Stage {
     const key = this.regs[REG.keyBlock + n]!
     const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
     const inc =
-      ((fnum / FNUM_FULL) * FNUM_BASE * Math.pow(2, (key >> 1) & 7) * pitch) /
+      ((fnum / FNUM_FULL) * FNUM_HZ * Math.pow(2, (key >> 1) & 7) * pitch) /
       this.sr
     const vol = this.volume(n)
 
@@ -1473,7 +1463,7 @@ export class FmChip implements Stage {
         const key = this.regs[REG.keyBlock + n]!
         const fnum = this.regs[REG.fnumLo + n]! | ((key & 1) << 8)
         const block = (key >> 1) & 7
-        const hz = (fnum / FNUM_FULL) * FNUM_BASE * OCTAVE[block]! * pitch
+        const hz = (fnum / FNUM_FULL) * FNUM_HZ * OCTAVE[block]! * pitch
 
         const { mod, car } = this.chRates[n]!
         this.stepEnv(c.mod, raced ? this.raceRates : mod)
