@@ -371,6 +371,28 @@ For a drone, latch a key with **hold** on the bed and raise the loudness
 sustain, or turn up **Leaky VCA** under _voice card faults_, which sounds the
 synth with no key down at all. The _leaky drone_ preset starts there.
 
+## Pedals and levels on the bench
+
+The bench is the main area under the scope, where the instruments sit.
+
+- Every instrument has a **Level** slider on its face. The FM chip, home
+  keyboard and mono synth appear when their level comes up, and stay once they
+  have, so a face you pull to zero is still there to bring back.
+- The **pedals** button beside _all instruments_ lists the six pedals in signal
+  order. Check one to put its face on the bench, which starts with none.
+- A pedal's stage panel has a **bench** button that does the same, and a thin
+  bar on the pedal's box in the signal path marks the ones on the bench.
+
+A pedal face is the pedal's headline sliders in a painted enclosure.
+
+- The round footswitch is **bypass**, and its lamp is lit while the pedal is in
+  the path.
+- A bypassed pedal keeps its settings and keeps running, so switching it back on
+  picks up where it was.
+- The **⋯** button under the footswitch opens the pedal's full panel, which has
+  the same switch as a **Bypass** row that rolls, morphs and presets leave alone.
+- Faces go one to a row on a phone.
+
 ## The trigger patch
 
 The keyboard and drum machine share a power rail by accident; the trigger patch
