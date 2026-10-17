@@ -137,6 +137,12 @@ test('a key up in the same block as its key down still lets go', () => {
   expect(built.pcmKeys.soundingNotes(out)).toBe(0)
 })
 
+test('a held piano note frees its voice once it has decayed away', () => {
+  const out = new Int16Array(8)
+  const { built } = play({ ...ALONE, pcmEnv: 0 }, 14, b => b.pcmKeys.noteOn(12))
+  expect(built.pcmKeys.soundingNotes(out)).toBe(0)
+})
+
 test('the chord button fills the part from one key', () => {
   const out = new Int16Array(8)
   const { built } = play({ ...ALONE, pcmChord: 1 }, 0.1, b =>

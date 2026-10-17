@@ -158,6 +158,7 @@ export class PcmKeys implements Stage {
   private decayCoef = 0
   private releaseCoef = 0
   private sustainAt = 0
+  private decayTo = ENV_FLOOR
 
   private readonly sr: number
   private readonly rail: ToyRail
@@ -279,7 +280,7 @@ export class PcmKeys implements Stage {
         v.env *= this.decayCoef
         // A key nobody is holding never reaches the sustain: a gate is an edge,
         // and an edge has let go of the key before the attack is even over.
-        if (v.env <= this.sustainAt) {
+        if (v.env <= this.decayTo) {
           v.stage = v.held && this.sustainAt > 0 ? SUSTAIN : RELEASE
         }
         break
@@ -384,6 +385,7 @@ export class PcmKeys implements Stage {
     this.decayCoef = Math.exp(-1 / ((shape.decay / scale) * this.sr))
     this.releaseCoef = Math.exp(-1 / ((p[IDX.pcmRelease]! / scale) * this.sr))
     this.sustainAt = shape.sustain
+    this.decayTo = Math.max(shape.sustain, ENV_FLOOR)
     const toneCoef = lpCoef(p[IDX.pcmTone]!, this.sr)
     const vibDelay = VIB_DELAY * this.sr
     const vibStep = (VIB_HZ * scale * VIB_STEPS) / this.sr
