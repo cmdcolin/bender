@@ -2,6 +2,55 @@
 
 All notable changes to bender are documented here.
 
+## [1.9.0](https://github.com/cmdcolin/bender/compare/v1.8.0...v1.9.0) - 2026-10-17
+
+### Features
+- *(ui)* [`918bc6f`](https://github.com/cmdcolin/bender/commit/918bc6f54ba8514834a15cd7bbd0b210d0b780b6) put the tape shelf's mode switch and its controls on one row
+- *(ui)* [`f139f55`](https://github.com/cmdcolin/bender/commit/f139f5501afd7fd6c95dbe242cc108615f8cf9d9) redraw the cassette and reel deck from real tape hardware
+- *(ui)* [`7cea870`](https://github.com/cmdcolin/bender/commit/7cea8701a27b77953cabc2b884dbfdb02909ae85) an opt-in loop layout for the signal path
+- *(ui)* [`ff68b0b`](https://github.com/cmdcolin/bender/commit/ff68b0b1b06df3578becf01021d941b3dcbe64a5) draw the signal path as a loop in the panel and README
+- *(ui)* [`6c55714`](https://github.com/cmdcolin/bender/commit/6c55714af22d3e46ac51650064891bb60ada706f) let the reel strip carry the sampler, drop the reel-to-reel drawing
+- *(ui)* [`4a19426`](https://github.com/cmdcolin/bender/commit/4a19426bb4bbde9298f57bf6389ed3a848c068d8) spine and caption options for the signal path map
+- *(ui)* [`d8d4734`](https://github.com/cmdcolin/bender/commit/d8d4734d12fb5f4599f56c7a7da51cb327a8dab5) hang the line sources off one bus line and name the foot row
+- *(ui)* [`7250913`](https://github.com/cmdcolin/bender/commit/72509137bd4498d705e79072060f4dd44713b056) rename the sampler the tape loop and give it a transport
+- *(ui)* [`7af5c1f`](https://github.com/cmdcolin/bender/commit/7af5c1f1bb7bf495979793e195c4dd8c3c76ab09) size the tape loop's speed picks to match the buttons beside them
+- *(home)* [`7bdd695`](https://github.com/cmdcolin/bender/commit/7bdd69560dc75cdfc37fb736e6f8aeb7c6925aa2) drop the zoomed panel figure from the landing page and README
+- *(ui)* [`f6a4177`](https://github.com/cmdcolin/bender/commit/f6a4177e48235c70187f5933d53b6988a768435f) open the tape shelf as a popover so load a tape stops growing the box
+- *(home)* [`f792148`](https://github.com/cmdcolin/bender/commit/f7921486e04a58031e23c501cb4114714abfec77) lead the landing page with a generated heap of bent hardware
+- *(ui)* [`6126527`](https://github.com/cmdcolin/bender/commit/6126527c1cdd707fbc3febeffdeaf9018036c155) press the recorder and tape loop from deck keys
+- *(home)* [`3a1649e`](https://github.com/cmdcolin/bender/commit/3a1649ed2459cf245cb25a1c0ad9a05971fc6bd0) draw a new pile each visit and space the cassette reels apart
+- *(ui)* [`a731613`](https://github.com/cmdcolin/bender/commit/a7316137c1363af41748d55e528f846b5fb4c260) size every deck key alike, on one row, and drop the 3D look
+- *(home)* [`806cf21`](https://github.com/cmdcolin/bender/commit/806cf21bf63bef4b054aa6a63c82ab9b325ea049) space the pile by size, hide it until the swap, and add film grain
+- *(ui)* [`a272539`](https://github.com/cmdcolin/bender/commit/a27253971471a874276f2689e1bab246b926aa90) load a tape from a drawer of cassettes and match the studio boxes' height
+- *(home)* [`253e2b1`](https://github.com/cmdcolin/bender/commit/253e2b1e59ee7108a5cb96ec05bd468a5fd8337c) draw alligator, patch and frayed cables and strew loose components
+- *(ui)* [`c364785`](https://github.com/cmdcolin/bender/commit/c364785a288e517aae53a37b8166c3af7f4f3800) open the recorder's options as a popover and draw the empty tape as a reel
+- *(ui)* [`9edb7d6`](https://github.com/cmdcolin/bender/commit/9edb7d6b78a3d00ba726b100dfa79ae0a2d5a338) add a randomize cap to every instrument and an all-instruments mode with close caps
+- *(ui)* [`f7b9f76`](https://github.com/cmdcolin/bender/commit/f7b9f76276f3d78d3d0f6a17f4079d1060af73cf) keep the all-instruments mode and the closed instruments across reloads
+- *(home)* [`d9a4ca1`](https://github.com/cmdcolin/bender/commit/d9a4ca1f3c5d22f395f2b8d232f711c24ebcdcd1) add compact, wide, EQ, looper, fuzz, wah, expression and tuner pedals to the pile
+- *(home)* [`bd0bbe8`](https://github.com/cmdcolin/bender/commit/bd0bbe8b9eecbb7f12ed8fd13cddc9415d9149cd) drop the looper pedal and tangle in long, curling cables
+- *(home)* [`0f5d5b9`](https://github.com/cmdcolin/bender/commit/0f5d5b9328e300afec64d4729a28bd63aef52705) let the pile's cables flow in long arcs with softer shading
+- *(home)* [`b64f511`](https://github.com/cmdcolin/bender/commit/b64f511e852dc19bede8a9ec7c4fd2c7f14627dd) draw the pots standing up in 3D instead of from above
+- *(ui)* [`27288ef`](https://github.com/cmdcolin/bender/commit/27288eff74a674aedde04b265c07fb2f5cca5c28) sync the bench, morph time and key map to the account
+- *(ui)* [`8aaa5ee`](https://github.com/cmdcolin/bender/commit/8aaa5ee31072afbf269a4982f5757f98cd8ded4f) list the earlier sessions in the saved popover
+- *(ui)* [`3839507`](https://github.com/cmdcolin/bender/commit/3839507605a5bc6a942376806f1509fc7b46ab28) add a mute cap to each instrument
+- *(ui)* [`73f720d`](https://github.com/cmdcolin/bender/commit/73f720d701fa5020eb70eb66a373da1de9486db0) pick a kind of roll for each instrument
+
+### Fixes
+- *(ui)* [`a4abd0f`](https://github.com/cmdcolin/bender/commit/a4abd0fb0370cf69332bf402c0561e30825567aa) dim disabled buttons and tidy the sampler's tape shelf
+- *(ui)* [`40a66c8`](https://github.com/cmdcolin/bender/commit/40a66c84ddb8835ecd614e7843c24f68c6e415f4) space the cassette's hubs at real shell proportions
+- *(ui)* [`fe6d3d3`](https://github.com/cmdcolin/bender/commit/fe6d3d31529cccd290a1fe550303941c1ab3cef7) centre the signal path in its panel
+- *(ui)* [`33afe4a`](https://github.com/cmdcolin/bender/commit/33afe4afa6b9c3c625db8bbbe2c73d344fe63440) wrap the deck keys between groups and keep the recorder keys on screen
+- *(engine)* [`3b3a582`](https://github.com/cmdcolin/bender/commit/3b3a582e7dd2b3a71e3feee441ceaf720b15d27f) reload the page when a dev edit touches the worklet
+- *(engine)* [`875f121`](https://github.com/cmdcolin/bender/commit/875f121f2eb1062006b5bb33d4e7146cb648fa5e) reload the page when engine.ts changes in dev
+
+### Documentation
+- [`e559d6d`](https://github.com/cmdcolin/bender/commit/e559d6dfb4b704b2231cd8be10d599283e1af813) regenerate the panel figure for the loop layout
+- [`b048f37`](https://github.com/cmdcolin/bender/commit/b048f376134a9b767dc1eaeea671b833410e8cef) refresh the panel figure after the sampler change
+- [`2577842`](https://github.com/cmdcolin/bender/commit/257784282771244b02ea5437ba10ca0b8e094592) record the shared Astro dev server and build shape
+
+### Tests
+- *(ui)* [`156ce42`](https://github.com/cmdcolin/bender/commit/156ce4210c57bb1bcf2d7e545a0896b2b6fc3d7a) check the spine and caption options lay out on every board
+
 ## [1.8.0](https://github.com/cmdcolin/bender/compare/v1.7.0...v1.8.0) - 2026-10-17
 
 ### Features
