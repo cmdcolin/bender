@@ -462,6 +462,8 @@ class Midi {
   }
 
   enable() {
+    const status = this.status.get()
+    if (status !== 'idle' && status !== 'denied') return
     if (!('requestMIDIAccess' in navigator)) {
       this.status.set('unsupported')
       return

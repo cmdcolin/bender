@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 
 import { midi } from './midi.ts'
 import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
@@ -29,6 +29,19 @@ afterEach(() => {
   midi.status.set('idle')
   midi.bindings.set({})
   midi.pickups.set({})
+})
+
+test('a second connect while the browser is asking asks nothing more', () => {
+  const requestMIDIAccess = vi.fn(() => new Promise<MIDIAccess>(() => {}))
+  vi.stubGlobal('navigator', { requestMIDIAccess })
+  try {
+    midi.enable()
+    midi.enable()
+    expect(requestMIDIAccess).toHaveBeenCalledTimes(1)
+    expect(midi.status.get()).toBe('requesting')
+  } finally {
+    vi.unstubAllGlobals()
+  }
 })
 
 test('the wire costs the panel nothing until it is asked for', () => {
