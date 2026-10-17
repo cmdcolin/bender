@@ -944,7 +944,16 @@ export class Engine {
     this.flushSoon()
   }
 
-  async enableMic() {
+  private micPending: Promise<void> | null = null
+
+  enableMic(): Promise<void> {
+    this.micPending ??= this.openMic().finally(() => {
+      this.micPending = null
+    })
+    return this.micPending
+  }
+
+  private async openMic() {
     if (!this.ctx || this.micStream) return
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -957,6 +966,15 @@ export class Engine {
     const src = this.ctx.createMediaStreamSource(stream)
     src.connect(this.node!)
     this.micOn.set(true)
+    const ended = () => {
+      if (this.micStream !== stream) return
+      src.disconnect()
+      for (const track of stream.getTracks()) track.stop()
+      this.micStream = null
+      this.micOn.set(false)
+    }
+    for (const track of stream.getAudioTracks())
+      track.addEventListener('ended', ended, { once: true })
   }
 
   async loadSample(file: File) {

@@ -823,6 +823,48 @@ test('a boot that fails closes its context and lets the next start retry', async
   }
 })
 
+test('a double click on the mic opens it once, and a mic unplugged goes off', async () => {
+  const track = Object.assign(new EventTarget(), { stop: () => {} })
+  const stream = { getTracks: () => [track], getAudioTracks: () => [track] }
+  const asked = later<typeof stream>()
+  let asks = 0
+  let wired = 0
+  let unwired = 0
+  vi.stubGlobal('navigator', {
+    mediaDevices: {
+      getUserMedia: () => {
+        asks++
+        return asked.promise
+      },
+    },
+  })
+  try {
+    const engine = new Engine()
+    Object.assign(engine, {
+      node: {},
+      ctx: {
+        createMediaStreamSource: () => ({
+          connect: () => wired++,
+          disconnect: () => unwired++,
+        }),
+      },
+    })
+    const first = engine.enableMic()
+    const second = engine.enableMic()
+    asked.resolve(stream)
+    await Promise.all([first, second])
+    expect(asks).toBe(1)
+    expect(wired).toBe(1)
+    expect(engine.micOn.get()).toBe(true)
+
+    track.dispatchEvent(new Event('ended'))
+    expect(unwired).toBe(1)
+    expect(engine.micOn.get()).toBe(false)
+  } finally {
+    vi.unstubAllGlobals()
+  }
+})
+
 test('panic lands the tamed board before the worklet hears panic', () => {
   const engine = new Engine()
   const posted = wire(engine)
