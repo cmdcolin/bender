@@ -90,6 +90,7 @@ interface Thing {
   body: string
   weight: number
   boost?: number
+  turn?: number
 }
 
 const hull = (
@@ -436,17 +437,45 @@ const trimmer = (r: Rng): Thing => {
   return { hull: hull(-14, -14, 28, 28, 3), body: s, weight: 0, boost: 1.2 }
 }
 
+const ellipse = (
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  fill: string,
+) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}"/>`
+
+const cylinder = (
+  cx: number,
+  top: number,
+  bottom: number,
+  rx: number,
+  ry: number,
+  fill: string,
+) =>
+  `<path d="M${cx - rx},${top} L${cx - rx},${bottom} A${rx},${ry} 0 0 0 ${cx + rx},${bottom} L${cx + rx},${top} Z" fill="${mix(fill, C.ink, 0.3)}"/>` +
+  ellipse(cx, top, rx, ry, fill)
+
 const pot = (r: Rng): Thing => {
-  const angle = between(r, 0, TAU)
-  let s =
-    rect(-9, 12, 4, 9, C.copper) +
-    rect(-2, 12, 4, 9, C.copper) +
-    rect(5, 12, 4, 9, C.copper)
-  s += circle(0, 0, 15, C.cone, `stroke="${C.grey}" stroke-width="1.5"`)
-  s += circle(0, 0, 9, C.rim)
-  s += circle(0, 0, 5, C.steel)
-  s += `<line x1="${n(Math.cos(angle) * -5)}" y1="${n(Math.sin(angle) * -5)}" x2="${n(Math.cos(angle) * 5)}" y2="${n(Math.sin(angle) * 5)}" stroke="${C.black}" stroke-width="1.6"/>`
-  return { hull: hull(-15, -15, 30, 30, 15), body: s, weight: 0, boost: 1.2 }
+  let s = ''
+  for (const x of [-9, 0, 9])
+    s += rect(x - 1.5, 22, 3, 10, C.copper) + circle(x, 28, 0.9, C.ink)
+  s += cylinder(0, 0, 22, 16, 6, C.steel)
+  s += rect(-16, 11, 32, 2, mix(C.steel, C.ink, 0.45))
+  s += cylinder(0, -12, 0, 8, 3, C.gold)
+  for (let i = -5; i <= 5; i += 2.5)
+    s += `<line x1="${i}" y1="-10" x2="${i}" y2="-1" stroke="${mix(C.gold, C.ink, 0.5)}" stroke-width="0.7"/>`
+  s += cylinder(0, -9, -4, 11, 4, C.steel)
+  s += cylinder(0, -34, -11, 3.5, 1.4, C.grey)
+  s += ellipse(0, -34, 3.5, 1.4, C.steel)
+  s += `<line x1="${n(-2.6)}" y1="-34" x2="${n(2.6)}" y2="${n(-34 + between(r, -0.4, 0.4))}" stroke="${C.black}" stroke-width="0.9"/>`
+  return {
+    hull: hull(-15, -2, 30, 28, 12),
+    body: s,
+    weight: 0,
+    boost: 1.3,
+    turn: 30,
+  }
 }
 
 interface Spot {
@@ -679,7 +708,12 @@ export const pile = (seed = 3): string => {
       const spot = place(r, taken, tries, size, spread)
       heap.push({
         weight: thing.weight + r() * 0.9,
-        svg: drawThing(thing, spot, between(r, -180, 180), scale),
+        svg: drawThing(
+          thing,
+          spot,
+          between(r, -(thing.turn ?? 180), thing.turn ?? 180),
+          scale,
+        ),
       })
     }
   }
