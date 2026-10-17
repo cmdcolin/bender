@@ -795,3 +795,72 @@ test('a hidden tab, with no animation frames, still reaches the worklet', () => 
     vi.useRealTimers()
   }
 })
+
+const later = <T>() => {
+  let resolve!: (v: T) => void
+  const promise = new Promise<T>(r => (resolve = r))
+  return { promise, resolve }
+}
+
+const decoded = {
+  length: 8,
+  sampleRate: 48000,
+  numberOfChannels: 1,
+  getChannelData: () => new Float32Array(8),
+}
+
+const tapeDeck = () => {
+  const engine = new Engine()
+  const posted = wire(engine)
+  const decodes: ReturnType<typeof later<typeof decoded>>[] = []
+  Object.assign(engine, {
+    ctx: {
+      decodeAudioData: () => {
+        const d = later<typeof decoded>()
+        decodes.push(d)
+        return d.promise
+      },
+    },
+  })
+  type Bring = () => Promise<{
+    id: string
+    title: string
+    data: ArrayBuffer
+  } | null>
+  const bringTape = (bring: Bring) =>
+    (
+      engine as unknown as {
+        bringTape(a: string, b: string, f: Bring): Promise<void>
+      }
+    ).bringTape('', '', bring)
+  const samples = () => posted.filter(m => m.kind === 'sample')
+  return { engine, decodes, bringTape, samples }
+}
+
+const rolled = { id: 'x', title: 'rolled', data: new ArrayBuffer(8) }
+
+test('a roll cancelled while it decodes never reaches the tape', async () => {
+  const { engine, decodes, bringTape, samples } = tapeDeck()
+  const done = bringTape(async () => rolled)
+  await vi.waitFor(() => expect(decodes).toHaveLength(1))
+  engine.cancelRoll()
+  decodes[0]!.resolve(decoded)
+  await done
+  expect(samples()).toHaveLength(0)
+  expect(engine.archiveSource.get()).toBeNull()
+})
+
+test('a dropped file calls off a roll still in the air', async () => {
+  const { engine, decodes, bringTape, samples } = tapeDeck()
+  const fetched = later<typeof rolled>()
+  const done = bringTape(() => fetched.promise)
+  const dropped = engine.loadSample(new File([new Uint8Array(8)], 'mine.wav'))
+  await vi.waitFor(() => expect(decodes).toHaveLength(1))
+  decodes[0]!.resolve(decoded)
+  await dropped
+  fetched.resolve(rolled)
+  await done
+  expect(samples()).toHaveLength(1)
+  expect(engine.sampleName.get()).toBe('mine.wav')
+  expect(engine.archiveStep.get()).toBeNull()
+})

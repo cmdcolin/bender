@@ -948,6 +948,8 @@ export class Engine {
   }
 
   async loadSample(file: File) {
+    this.cancelRoll()
+    this.archiveSource.set(null)
     await this.decodeOnto(await file.arrayBuffer(), file.name)
   }
 
@@ -955,9 +957,14 @@ export class Engine {
   // mono, and cut to a length that is a sample rather than an outage — decoded
   // to float32 a half-hour broadcast is 345 MB, and it would go straight across
   // to the audio thread.
-  private async decodeOnto(data: ArrayBuffer, name: string) {
+  private async decodeOnto(
+    data: ArrayBuffer,
+    name: string,
+    signal?: AbortSignal,
+  ) {
     if (!this.ctx) return
     const buf = await this.ctx.decodeAudioData(data)
+    if (signal?.aborted) return
     const frames = Math.min(
       buf.length,
       Math.round(LOAD_SECONDS * buf.sampleRate),
@@ -1043,7 +1050,8 @@ export class Engine {
         this.archiveStep.set(missing)
         return
       }
-      await this.decodeOnto(got.data, got.title)
+      await this.decodeOnto(got.data, got.title, ctl.signal)
+      if (ctl.signal.aborted) return
       this.archiveSource.set({ id: got.id, title: got.title })
       this.archiveStep.set(null)
     } catch {
