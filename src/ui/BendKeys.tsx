@@ -33,6 +33,7 @@ import {
   remapOpen,
   throwForKey,
 } from './keymap.ts'
+import { claimPress, claimRelease } from './keyPress.ts'
 import { letterKeys } from './letters.ts'
 import { pressThrow, releaseThrow, useThrowKeys } from './throwKeys.ts'
 import { Tip } from './Tip.tsx'
@@ -177,6 +178,8 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
             onPointerUp={() => release(k)}
             onPointerCancel={() => release(k)}
             onLostPointerCapture={() => release(k)}
+            onKeyDown={e => claimPress(e) && press(k, e.shiftKey)}
+            onKeyUp={e => claimRelease(e) && release(k)}
           >
             <span className={on ? styles.letter : styles.letterOff}>
               {letter}
@@ -201,6 +204,8 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
             onPointerUp={() => releaseThrow(t)}
             onPointerCancel={() => releaseThrow(t)}
             onLostPointerCapture={() => releaseThrow(t)}
+            onKeyDown={e => claimPress(e) && pressThrow(t)}
+            onKeyUp={e => claimRelease(e) && releaseThrow(t)}
           >
             <span className={styles.letter}>{letter}</span>
             <span className={styles.what}>{t.name}</span>

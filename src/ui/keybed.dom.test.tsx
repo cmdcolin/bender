@@ -62,3 +62,13 @@ test('a touch that enters a key before it lands strikes it once', () => {
     noteOn.mockRestore()
   }
 })
+
+test('Enter and Space on a focused key hold it until they come up', () => {
+  bed()
+  for (const k of ['Enter', ' ']) {
+    fireEvent.keyDown(key('D3'), { key: k })
+    expect(engine.fmKeysDown.get().size).toBe(1)
+    fireEvent.keyUp(key('D3'), { key: k })
+    expect(engine.fmKeysDown.get().size).toBe(0)
+  }
+})

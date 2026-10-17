@@ -22,6 +22,7 @@ import {
   whiteKeys,
 } from './keyboard.ts'
 import { keymap, noteKeys, octaveKeys, remapOpen } from './keymap.ts'
+import { claimPress, claimRelease } from './keyPress.ts'
 import { letterKeys } from './letters.ts'
 import { useCoarse, useWidth } from './measure.ts'
 import { Menu } from './Menu.tsx'
@@ -356,6 +357,8 @@ export function Keybed({
         onPointerUp={() => release(note)}
         onPointerLeave={() => isDown(note) && release(note)}
         onPointerCancel={cancel(note)}
+        onKeyDown={e => claimPress(e) && press(note, e.altKey)}
+        onKeyUp={e => claimRelease(e) && release(note)}
       >
         {letters && noteLetters[note] && (
           <span className={black ? styles.blackLetter : styles.letter}>

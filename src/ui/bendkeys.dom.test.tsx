@@ -118,6 +118,19 @@ test('a pad takes a pointer the same way', () => {
   expect(heldNames()).toEqual([])
 })
 
+test('a pad and a throw take Enter and Space on focus', () => {
+  open()
+  const pad = screen.getByText('a').closest('button')!
+  const spin = screen.getByText('spin').closest('button')!
+  fireEvent.keyDown(pad, { key: 'Enter' })
+  expect(heldNames()).toEqual([bendName('a')])
+  fireEvent.keyUp(pad, { key: 'Enter' })
+  fireEvent.keyDown(spin, { key: ' ' })
+  expect(heldNames()).toEqual(['spin'])
+  fireEvent.keyUp(spin, { key: ' ' })
+  expect(heldNames()).toEqual([])
+})
+
 test('the bottom row holds the chosen throws, with the letters on a keybed', () => {
   open()
   const spin = screen.getByText('spin').closest('button')!
