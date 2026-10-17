@@ -7,7 +7,7 @@ import { BLOCK, METER_EVERY, type StereoBlock } from './stage.ts'
 import { PcmKeys } from './stages/pcmKeys.ts'
 import { ToyChip } from './stages/toyChip.ts'
 
-import type { ToWorklet } from '../engine/messages.ts'
+import type { MeterMsg, ToWorklet } from '../engine/messages.ts'
 
 const SCOPE_LEN = 512 // a power of two, so the ring wraps on a mask
 const SCOPE_MASK = SCOPE_LEN - 1
@@ -24,6 +24,7 @@ class BenderProcessor extends AudioWorkletProcessor {
   private scopeOut = new Float32Array(SCOPE_LEN)
   private scopePos = 0
   private meterCountdown = METER_EVERY
+  private meterMsg: MeterMsg
   // The chip's note report, written into per meter post and handed over as it
   // stands. Slicing it to length would have been one small array sixty times a
   // second on the thread that cannot afford a collection, so the count rides
@@ -72,6 +73,43 @@ class BenderProcessor extends AudioWorkletProcessor {
       n: BLOCK,
     }
     this.target.set(packParams(DEFAULT_CONTROLS))
+    const { chain, sampler, fourTrack } = this.built
+    this.meterMsg = {
+      kind: 'meter',
+      peak: 0,
+      scope: this.scopeOut,
+      tick: 0,
+      drumClock: 0,
+      drumStepMs: 0,
+      hits: 0,
+      tunePos: 0,
+      tuneFrac: 0,
+      tuneStepMs: 0,
+      duck: 0,
+      rail: 1,
+      reboots: 0,
+      notes: this.chipNotes,
+      noteCount: 0,
+      fmNotes: this.fmNotes,
+      fmNoteCount: 0,
+      pcmNotes: this.pcmNotes,
+      pcmNoteCount: 0,
+      monoNotes: this.monoNotes,
+      monoNoteCount: 0,
+      taps: chain.taps,
+      walk: chain.walk,
+      dropped: 0,
+      sampleSecs: 0,
+      samplePos: 0,
+      samplePlaying: false,
+      samplePeaks: sampler.peaks,
+      sampleIn: 0,
+      sampleOut: 1,
+      fourHeads: fourTrack.heads,
+      fourLaps: fourTrack.laps,
+      fourPeaks: fourTrack.peaks,
+      fourShed: fourTrack.shed,
+    }
     // oxlint-disable-next-line unicorn/prefer-add-event-listener -- assigning onmessage starts the port; a listener would need its own start()
     this.port.onmessage = (e: MessageEvent<ToWorklet>) => {
       const msg = e.data
@@ -300,45 +338,29 @@ class BenderProcessor extends AudioWorkletProcessor {
       const fmSounding = this.built.fmChip.soundingNotes(this.fmNotes)
       const pcmSounding = this.built.pcmKeys.soundingNotes(this.pcmNotes)
       const monoSounding = this.built.monoSynth.soundingNotes(this.monoNotes)
-      this.port.postMessage({
-        kind: 'meter',
-        peak,
-        scope,
-        tick: this.built.toyDrum.tick,
-        drumClock: this.built.toyDrum.stepClock,
-        drumStepMs: this.built.toyDrum.stepMs,
-        hits: this.built.toyDrum.takeFired(),
-        tunePos: this.built.toyChip.tunePos,
-        tuneFrac: this.built.toyChip.tuneFrac,
-        tuneStepMs: this.built.toyChip.tuneStepMs,
-        duck: this.duck,
-        rail: rail.v,
-        reboots: rail.rebootCount,
-        notes: this.chipNotes,
-        noteCount: sounding,
-        fmNotes: this.fmNotes,
-        fmNoteCount: fmSounding,
-        pcmNotes: this.pcmNotes,
-        pcmNoteCount: pcmSounding,
-        monoNotes: this.monoNotes,
-        monoNoteCount: monoSounding,
-        // The chain's own buffer, posted untransferred like the scope and the
-        // note report, and cleared here — the peaks are held between reads, so
-        // whoever reads them is the only thing that may clear them.
-        taps: this.built.chain.taps,
-        walk: this.built.chain.walk,
-        dropped: this.built.chain.dropped,
-        sampleSecs: sampler.frames / sampleRate,
-        samplePos: sampler.head,
-        samplePlaying: sampler.rolling,
-        samplePeaks: sampler.peaks,
-        sampleIn: sampler.windowIn,
-        sampleOut: sampler.windowOut,
-        fourHeads: four.heads,
-        fourLaps: four.laps,
-        fourPeaks: four.peaks,
-        fourShed: four.shed,
-      })
+      const m = this.meterMsg
+      m.peak = peak
+      m.tick = this.built.toyDrum.tick
+      m.drumClock = this.built.toyDrum.stepClock
+      m.drumStepMs = this.built.toyDrum.stepMs
+      m.hits = this.built.toyDrum.takeFired()
+      m.tunePos = this.built.toyChip.tunePos
+      m.tuneFrac = this.built.toyChip.tuneFrac
+      m.tuneStepMs = this.built.toyChip.tuneStepMs
+      m.duck = this.duck
+      m.rail = rail.v
+      m.reboots = rail.rebootCount
+      m.noteCount = sounding
+      m.fmNoteCount = fmSounding
+      m.pcmNoteCount = pcmSounding
+      m.monoNoteCount = monoSounding
+      m.dropped = this.built.chain.dropped
+      m.sampleSecs = sampler.frames / sampleRate
+      m.samplePos = sampler.head
+      m.samplePlaying = sampler.rolling
+      m.sampleIn = sampler.windowIn
+      m.sampleOut = sampler.windowOut
+      this.port.postMessage(m)
       this.peak = 0
       this.duck = 0
       this.built.chain.taps.fill(0)

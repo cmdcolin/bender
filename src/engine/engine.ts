@@ -1202,7 +1202,10 @@ export class Engine {
   private onRetro(msg: RetroMsg) {
     const sr = this.sampleRate()
     if (msg.n) {
-      this.retro.push({ l: msg.l.slice(0, msg.n), r: msg.r.slice(0, msg.n) })
+      this.retro.push({
+        l: msg.l.subarray(0, msg.n),
+        r: msg.r.subarray(0, msg.n),
+      })
       let frames = this.retro.reduce((n, c) => n + c.l.length, 0)
       while (frames - this.retro[0]!.l.length >= RETRO_S * sr) {
         frames -= this.retro.shift()!.l.length
