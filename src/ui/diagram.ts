@@ -16,6 +16,8 @@ export interface BoxSpec {
   x: number
   y: number
   w: number
+  /** Taller than its text needs, so a row of boxes shares one height. */
+  h?: number
   name: string
   value: string | string[]
   off?: boolean
@@ -45,6 +47,19 @@ export const rowShown = (key: ControlKey, c: Controls) => {
   const needs = sliderFor(key).needs
   return !needs || needs(c) || c[key] !== DEFAULT_CONTROLS[key]
 }
+
+export const CHAR_W = 4.6
+export const MONO_W = 6.02
+
+// Wide enough for the widest reading, so the box keeps its size as knobs move.
+export const boxWidth = (name: string, ...readings: string[]) =>
+  Math.ceil(
+    Math.max(
+      name.length * CHAR_W,
+      ...readings.map(reading => reading.length * MONO_W),
+    ) +
+      2 * PAD,
+  )
 
 export const boxHeight = (value: string | string[]) =>
   PAD + LINE_H * (1 + (Array.isArray(value) ? value.length : 1))

@@ -8,6 +8,70 @@ import { ControlSlider } from './Slider.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
+// A group the pointer and keyboard press to pick a box.
+export function Pressable({
+  name,
+  selected,
+  onSelect,
+  className = '',
+  opacity,
+  children,
+}: {
+  name: string
+  selected: boolean
+  onSelect?: () => void
+  className?: string
+  opacity?: number
+  children: ReactNode
+}) {
+  return (
+    <g
+      opacity={opacity}
+      className={onSelect ? `${styles.pick} ${className}` : className}
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      aria-pressed={onSelect ? selected : undefined}
+      aria-label={onSelect ? `${name} controls` : undefined}
+      onClick={onSelect}
+      onKeyDown={
+        onSelect
+          ? e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onSelect()
+              }
+            }
+          : undefined
+      }
+    >
+      {children}
+    </g>
+  )
+}
+
+// A frame round part of a drawing: accent when a knob inside is off stock,
+// filled when its rows are open.
+export function Plate({
+  x,
+  y,
+  w,
+  h,
+  touched = false,
+  selected = false,
+  inert = false,
+}: {
+  x: number
+  y: number
+  w: number
+  h: number
+  touched?: boolean
+  selected?: boolean
+  inert?: boolean
+}) {
+  const look = `${touched ? styles.boxOn : styles.box} ${selected ? styles.selected : ''} ${inert ? styles.inert : ''}`
+  return <rect x={x} y={y} width={w} height={h} rx={3} className={look} />
+}
+
 // A stage drawn as a box that reads what its knobs say: accent when one is off
 // stock, grey when nothing passes through it. The title is the browser's own
 // tooltip, which is all a picture inside a fold needs.
@@ -22,39 +86,28 @@ export function BoxView({
 }) {
   const lines = Array.isArray(box.value) ? box.value : [box.value]
   const pick = box.id !== undefined && box.keys?.length && onSelect
-  const look = `${box.touched ? styles.boxOn : styles.box} ${selected ? styles.selected : ''} ${pick ? '' : styles.inert}`
+  const h = box.h ?? boxHeight(box.value)
+  const top = box.y + (h - LINE_H * (1 + lines.length)) / 2
   return (
-    <g
+    <Pressable
+      name={box.name}
+      selected={selected}
+      onSelect={pick ? () => onSelect(box.id!) : undefined}
       opacity={box.off ? 0.55 : 1}
-      className={pick ? styles.pick : undefined}
-      role={pick ? 'button' : undefined}
-      tabIndex={pick ? 0 : undefined}
-      aria-pressed={pick ? selected : undefined}
-      aria-label={pick ? `${box.name} controls` : undefined}
-      onClick={pick ? () => onSelect(box.id!) : undefined}
-      onKeyDown={
-        pick
-          ? e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                onSelect(box.id!)
-              }
-            }
-          : undefined
-      }
     >
       <title>{`${box.name} — ${box.help}`}</title>
-      <rect
+      <Plate
         x={box.x}
         y={box.y}
-        width={box.w}
-        height={boxHeight(box.value)}
-        rx={3}
-        className={look}
+        w={box.w}
+        h={h}
+        touched={box.touched}
+        selected={selected}
+        inert={!pick}
       />
       <text
         x={box.x + box.w / 2}
-        y={box.y + LINE_H}
+        y={top + LINE_H}
         textAnchor="middle"
         className={styles.name}
       >
@@ -64,14 +117,14 @@ export function BoxView({
         <text
           key={line + i}
           x={box.x + box.w / 2}
-          y={box.y + LINE_H * (i + 2)}
+          y={top + LINE_H * (i + 2)}
           textAnchor="middle"
           className={box.touched ? styles.valueOn : styles.value}
         >
           {line}
         </text>
       ))}
-    </g>
+    </Pressable>
   )
 }
 
@@ -112,6 +165,59 @@ export function HeadBar({
       className={on ? styles.gapOn : styles.gap}
     />
   )
+}
+
+// A reel seen from above; `full` is how much of the flange the tape fills.
+export function Reel({
+  cx,
+  cy,
+  r,
+  full,
+  spokes = true,
+}: {
+  cx: number
+  cy: number
+  r: number
+  full: number
+  spokes?: boolean
+}) {
+  const hub = r * 0.22
+  const at = (deg: number, radius: number) => ({
+    x: cx + Math.cos((deg * Math.PI) / 180) * radius,
+    y: cy + Math.sin((deg * Math.PI) / 180) * radius,
+  })
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={r * full} className={styles.pack} />
+      <circle cx={cx} cy={cy} r={r} className={styles.reel} />
+      {spokes &&
+        [90, 210, 330].map(deg => (
+          <line
+            key={deg}
+            x1={at(deg, hub).x}
+            y1={at(deg, hub).y}
+            x2={at(deg, r * 0.92).x}
+            y2={at(deg, r * 0.92).y}
+            className={styles.reel}
+          />
+        ))}
+      <circle cx={cx} cy={cy} r={hub} className={styles.hub} />
+    </>
+  )
+}
+
+// The pinch roller above the tape and the capstan below it.
+export function Capstan({ x, y }: { x: number; y: number }) {
+  return (
+    <>
+      <circle cx={x} cy={y - 6} r={6} className={styles.reel} />
+      <circle cx={x} cy={y + 3} r={3} className={styles.hub} />
+    </>
+  )
+}
+
+export function TapeLine({ d }: { d: string }) {
+  return <path d={d} className={styles.tapeLine} />
 }
 
 export type WireLook = 'plain' | 'on' | 'dash' | 'alarm'
@@ -169,22 +275,14 @@ export function Label({
   )
   if (!pick) return text
   return (
-    <g
-      className={`${styles.pick} ${pick.selected ? styles.pickedLabel : ''}`}
-      role="button"
-      tabIndex={0}
-      aria-pressed={pick.selected}
-      aria-label={`${pick.id} controls`}
-      onClick={() => pick.onSelect(pick.id)}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          pick.onSelect(pick.id)
-        }
-      }}
+    <Pressable
+      name={pick.id}
+      selected={pick.selected}
+      onSelect={() => pick.onSelect(pick.id)}
+      className={pick.selected ? styles.pickedLabel : ''}
     >
       {text}
-    </g>
+    </Pressable>
   )
 }
 

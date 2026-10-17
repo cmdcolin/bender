@@ -50,7 +50,8 @@
 
 .wireAlarm {
   stroke: var(--alarm);
-  stroke-width: 1.5;
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
 }
 
 .wireDash {
@@ -64,6 +65,28 @@
 .tape {
   fill: var(--surface-raised);
   stroke: var(--border);
+}
+
+.tapeLine {
+  fill: none;
+  stroke: var(--fg4);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.reel {
+  fill: none;
+  stroke: var(--fg4);
+  stroke-width: 1;
+}
+
+.pack {
+  fill: var(--surface-raised);
+  stroke: var(--border);
+}
+
+.hub {
+  fill: var(--fg4);
 }
 
 .gap,
