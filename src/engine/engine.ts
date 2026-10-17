@@ -261,6 +261,31 @@ export function mergeNotes(
   return next
 }
 
+const FRAME_FALLBACK_MS = 50
+
+// Runs `run` on the next animation frame, or after FRAME_FALLBACK_MS when no
+// frame comes: a hidden tab pauses animation frames, and MIDI, drift and a hunt
+// still have to reach the worklet. Returns a cancel.
+function nextFrame(run: () => void): () => void {
+  let done = false
+  let frame = 0
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const cancel = () => {
+    done = true
+    cancelAnimationFrame(frame)
+    clearTimeout(timer)
+  }
+  const go = () => {
+    if (done) return
+    done = true
+    clearTimeout(timer)
+    run()
+  }
+  frame = requestAnimationFrame(go)
+  if (!done) timer = setTimeout(go, FRAME_FALLBACK_MS)
+  return cancel
+}
+
 // An iPhone with its ring switch on silent mutes Web Audio as an ambient sound.
 // Safari 16.4 and later let a page say it plays media, which keeps it audible.
 function playThroughSilentSwitch() {
@@ -271,7 +296,7 @@ function playThroughSilentSwitch() {
 
 // Owns the AudioContext, the worklet node and the control values. The UI
 // writes controls here; the engine coalesces them into one packed post per
-// animation frame.
+// frame.
 export class Engine {
   readonly controls = createStore<Controls>({ ...DEFAULT_CONTROLS })
 
@@ -423,7 +448,7 @@ export class Engine {
   private micStream: MediaStream | null = null
   private archiveRoll: AbortController | null = null
   private dirty = false
-  private rafQueued = false
+  private flushQueued = false
   // The board on the wire, written over rather than drawn fresh each flush.
   private readonly pack = new Float32Array(N_PARAMS)
   private huntToken = 0
@@ -568,13 +593,13 @@ export class Engine {
     this.flushSoon()
   }
 
-  private morphRaf = 0
+  private stopMorphTick: (() => void) | null = null
   private morphTarget: Controls | null = null
   private armed: Controls | null = null
 
   private cancelMorph() {
-    if (this.morphRaf) cancelAnimationFrame(this.morphRaf)
-    this.morphRaf = 0
+    this.stopMorphTick?.()
+    this.stopMorphTick = null
     this.morphTarget = null
     if (this.morphProgress.get() !== null) this.morphProgress.set(null)
   }
@@ -866,23 +891,21 @@ export class Engine {
       this.controls.set(glide.at(this.controls.get(), t))
       this.morphProgress.set(t)
       this.flushSoon()
-      this.morphRaf = requestAnimationFrame(tick)
+      this.stopMorphTick = nextFrame(tick)
     }
-    this.morphRaf = requestAnimationFrame(tick)
+    this.stopMorphTick = nextFrame(tick)
   }
 
   private flushSoon() {
     this.dirty = true
-    if (this.rafQueued) return
-    this.rafQueued = true
-    requestAnimationFrame(() => {
-      this.rafQueued = false
+    if (this.flushQueued) return
+    this.flushQueued = true
+    nextFrame(() => {
+      this.flushQueued = false
       if (this.dirty) this.flush()
     })
   }
 
-  // A script calls this directly, because the browser pauses animation frames
-  // in a hidden tab and flushSoon waits for one.
   flush() {
     this.dirty = false
     this.post({ kind: 'params', pack: this.packLive() })

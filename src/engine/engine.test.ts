@@ -16,10 +16,8 @@ import { IDX, MAX_SOURCES, STEM_FILES } from './params.ts'
 
 import type { RecMsg } from './messages.ts'
 
-// The engine drives morphs off the frame clock and posts params on one. Stubbed
-// out to nothing, so a morph asked for in seconds stays in flight for the whole
-// test and one asked for at `cut` lands synchronously — which is all the walk
-// cares about.
+// Animation frames never fire here, so morphs and param posts move only on the
+// engine's timer fallback, and a synchronous test sees a morph still in flight.
 beforeEach(() => {
   globalThis.requestAnimationFrame = () => 1
   globalThis.cancelAnimationFrame = () => {}
@@ -765,4 +763,35 @@ test('a take that runs out of room stops, saves what it has and says why', async
   await vi.waitFor(() => expect(files).toHaveLength(1))
   expect(engine.recNote.get()).toBe('stopped early: out of browser storage')
   expect(engine.recError.get()).toBe('')
+})
+
+const wire = (engine: Engine) => {
+  const posted: { kind: string; pack?: Float32Array }[] = []
+  Object.assign(engine, {
+    node: {
+      port: {
+        postMessage: (m: { kind: string; pack?: Float32Array }) =>
+          posted.push(m.pack ? { ...m, pack: Float32Array.from(m.pack) } : m),
+      },
+    },
+  })
+  return posted
+}
+
+test('a hidden tab, with no animation frames, still reaches the worklet', () => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] })
+  try {
+    const engine = new Engine()
+    const posted = wire(engine)
+    engine.set('dlyFb', 0.5)
+    vi.advanceTimersByTime(100)
+    expect(posted.at(-1)?.pack?.[IDX.dlyFb]).toBeCloseTo(0.5)
+
+    engine.morphTo(board({ dlyFb: 0.9 }), 1)
+    vi.advanceTimersByTime(1500)
+    expect(engine.controls.get().dlyFb).toBe(0.9)
+    expect(engine.morphProgress.get()).toBeNull()
+  } finally {
+    vi.useRealTimers()
+  }
 })
