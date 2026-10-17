@@ -2,6 +2,21 @@
 
 All notable changes to bender are documented here.
 
+## [1.8.0](https://github.com/cmdcolin/bender/compare/v1.7.0...v1.8.0) - 2026-10-17
+
+### Features
+- *(ui)* [`117020b`](https://github.com/cmdcolin/bender/commit/117020b084f086465383169c045a7039e89af5b7) sampler's random/search switch is a joined ToggleButtonGroup
+- *(ui)* [`9811bc4`](https://github.com/cmdcolin/bender/commit/9811bc43a26b4372fc328f4cb58c92be01414d5a) move the letters switch into the bend keys bar
+- *(ui)* [`8601e27`](https://github.com/cmdcolin/bender/commit/8601e27f449ab79ce9c8f9e70e56ac9d749e469a) remap the computer keys
+- *(ui)* [`02d1e75`](https://github.com/cmdcolin/bender/commit/02d1e753b0b8d1296d9323590374bdb1c86744f0) drop the where-to-start dialog
+- *(ui)* [`0c574e6`](https://github.com/cmdcolin/bender/commit/0c574e6ea688a7486833bcca4fba0b83091f0bac) draw the tape machine and tape delay as tape
+
+### Tests
+- *(ui)* [`63b3012`](https://github.com/cmdcolin/bender/commit/63b3012e5e32ed1a2288b6025f8dde7f77d37dcf) ToggleButtonGroup marks the active option and reports clicks
+
+### Chores
+- [`eaf67e3`](https://github.com/cmdcolin/bender/commit/eaf67e3cf6ef62a63d902a63312eae5c53bc6aa0) import demos.json with a json attribute so node's type stripping loads it
+
 ## [1.7.0](https://github.com/cmdcolin/bender/compare/v1.6.0...v1.7.0) - 2026-10-17
 
 ### Features
