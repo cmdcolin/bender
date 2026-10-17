@@ -149,7 +149,9 @@ export class TapeDelay implements Stage {
 
       let want = (1 - brake) * (1 - railDrag * ctx.droop[i]!)
       if (modSpeed) want *= octaves(modSpeed[i]! * 1.5)
-      this.motor += inertia * (Math.min(Math.max(want, 0), 4) - this.motor)
+      this.motor = flushDenormal(
+        this.motor + inertia * (Math.min(Math.max(want, 0), 4) - this.motor),
+      )
       // the read head runs at motor speed against a fixed write head, so the
       // gap opens while the transport is slow — that gap is the pitch dive
       this.slide = flushDenormal(

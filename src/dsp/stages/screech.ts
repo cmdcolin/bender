@@ -2,7 +2,7 @@ import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
-import { softclip } from '../util/softclip.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 import { dampAt, Svf } from '../util/svf.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
@@ -104,8 +104,10 @@ export class Screech implements Stage {
       if (wiper > 0) {
         const moved = Math.abs(f - this.fPrev) / (this.fPrev + 1e-4)
         this.fPrev = f
-        this.motion +=
-          motionK * (Math.min(moved * this.sr, MOTION_CAP) - this.motion)
+        this.motion = flushDenormal(
+          this.motion +
+            motionK * (Math.min(moved * this.sr, MOTION_CAP) - this.motion),
+        )
         if (this.liftLeft > 0) {
           this.liftLeft--
           f = this.liftF
@@ -124,7 +126,9 @@ export class Screech implements Stage {
       let inL = softclip(io.l[i]! * gain)
       let inR = softclip(io.r[i]! * gain)
       if (pop > 0) {
-        this.env += envK * (Math.abs(inL) + Math.abs(inR) - this.env)
+        this.env = flushDenormal(
+          this.env + envK * (Math.abs(inL) + Math.abs(inR) - this.env),
+        )
         const hz = pop * (POP_IDLE_HZ + POP_LOUD_HZ * this.env)
         if (this.rng() * this.sr < hz) {
           this.popSign = -this.popSign
@@ -132,7 +136,7 @@ export class Screech implements Stage {
         }
         inL += this.popV
         inR += this.popV
-        this.popV *= popFade
+        this.popV = flushDenormal(this.popV * popFade)
       }
       const wl = this.svfL.process(inL, f, d, mode)
       const wr = this.svfR.process(inR, f, d, mode)
