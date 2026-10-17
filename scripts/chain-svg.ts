@@ -8,7 +8,7 @@ import { writeFileSync } from 'node:fs'
 // pair of themes so it reads on GitHub light and dark. `pnpm diagram` rewrites
 // it; chain-map.test.ts fails if the committed copies fall behind.
 //
-// Folded, like the panel's. The source band is six boxes across now, so a
+// Folded into a loop, like the panel's. The source band is six boxes across now, so a
 // straight run below it is a picture three times taller than it is wide with
 // half of it empty either side.
 
@@ -70,7 +70,9 @@ export function renderDiagrams(): Record<string, string> {
     Object.entries(THEMES).map(([name, palette]) => [
       `img/chain-${name}.svg`,
       `<?xml version="1.0" encoding="UTF-8"?>\n${serialize(
-        drawMap(buildMap(BOARD, { palette, live: false, wrap: true })),
+        drawMap(
+          buildMap(BOARD, { palette, live: false, wrap: true, loop: true }),
+        ),
       )}\n`,
     ]),
   )

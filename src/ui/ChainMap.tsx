@@ -92,6 +92,7 @@ export function ChainMap({
   const playing = SOUNDING.filter(c => lit & (1 << c.tap)).map(c => c.name)
   const map = buildMap(controls, {
     wrap: true,
+    loop: true,
     open: open ?? undefined,
     playing,
   })
