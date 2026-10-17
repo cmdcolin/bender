@@ -312,18 +312,28 @@
 
 .drop,
 .dropHot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
   margin: 0;
   font-size: var(--fs-xs);
   color: var(--fg4);
-  border: 1px dashed transparent;
+  border: 1px dashed var(--border);
   border-radius: var(--ctl-radius);
-  padding: var(--space-xs) 0;
 }
 
 .dropHot {
   color: var(--accent);
   border-color: var(--accent);
-  padding: var(--space-xs) var(--space-md);
+}
+
+.tapeName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg3);
 }
 
 /* The roll's own line: what it is doing while it does it, and what it came back

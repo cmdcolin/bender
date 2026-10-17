@@ -50,7 +50,7 @@ import { Scope } from './Scope.tsx'
 import { OpenGroup, PathHint } from './Section.tsx'
 import { boardFrom, boardFromUrl, boardHash } from './share.ts'
 import { StartOverlay } from './StartOverlay.tsx'
-import { Cassette, ReelDeck } from './StudioArt.tsx'
+import { Cassette } from './StudioArt.tsx'
 import { TapeShelf } from './TapeShelf.tsx'
 import { Tip } from './Tip.tsx'
 import { useBoardUrl } from './useBoardUrl.ts'
@@ -452,87 +452,81 @@ export function App(props: { openedFromLink?: boolean }) {
           </section>
           <section className={styles.box} aria-label="sampler">
             <span className={styles.label}>sampler</span>
-            <div className={styles.artRow}>
-              <ReelDeck
-                name={sampleName || null}
-                running={tapeRunning && !!sampleName}
-                hot={dragging}
-              />
-              <div className={styles.controls}>
-                <div className={styles.ioRow}>
-                  <Tip
-                    text={
-                      sampleName
-                        ? 'Starts or stops the tape. A one-shot starts again from the front.'
-                        : 'Nothing to play yet. Load a tape, drop a file or open the mic.'
+            <div className={styles.controls}>
+              <div className={styles.ioRow}>
+                <Tip
+                  text={
+                    sampleName
+                      ? 'Starts or stops the tape. A one-shot starts again from the front.'
+                      : 'Nothing to play yet. Load a tape, drop a file or open the mic.'
+                  }
+                >
+                  <button
+                    className={tapeRunning ? styles.ioBtnToggled : styles.ioBtn}
+                    aria-pressed={tapeRunning}
+                    disabled={!sampleName}
+                    onClick={() => {
+                      const c = engine.controls.get()
+                      if (tapeRunning) {
+                        engine.set('sampleLevel', 0)
+                        return
+                      }
+                      engine.set('sampleLevel', 0.7)
+                      if (c.sampleMode === 1)
+                        engine.seekSample(Math.min(c.loopIn, c.loopOut))
+                    }}
+                  >
+                    {tapeRunning ? '■ stop' : '▶ play'}
+                  </button>
+                </Tip>
+                <Tip text="Puts a tape on the sampler off archive.org: a random one from a shelf, or one you search for.">
+                  <button
+                    className={
+                      showShelf && !archiveStep
+                        ? styles.ioBtnToggled
+                        : styles.ioBtn
+                    }
+                    aria-expanded={showShelf && !archiveStep}
+                    onClick={() =>
+                      archiveStep ? engine.cancelRoll() : setShowShelf(o => !o)
                     }
                   >
-                    <button
-                      className={
-                        tapeRunning ? styles.ioBtnToggled : styles.ioBtn
-                      }
-                      aria-pressed={tapeRunning}
-                      disabled={!sampleName}
-                      onClick={() => {
-                        const c = engine.controls.get()
-                        if (tapeRunning) {
-                          engine.set('sampleLevel', 0)
-                          return
-                        }
-                        engine.set('sampleLevel', 0.7)
-                        if (c.sampleMode === 1)
-                          engine.seekSample(Math.min(c.loopIn, c.loopOut))
-                      }}
-                    >
-                      {tapeRunning ? '■ stop' : '▶ play'}
-                    </button>
-                  </Tip>
-                  <Tip text="Puts a tape on the sampler off archive.org: a random one from a shelf, or one you search for.">
-                    <button
-                      className={
-                        showShelf && !archiveStep
-                          ? styles.ioBtnToggled
-                          : styles.ioBtn
-                      }
-                      aria-expanded={showShelf && !archiveStep}
-                      onClick={() =>
-                        archiveStep
-                          ? engine.cancelRoll()
-                          : setShowShelf(o => !o)
-                      }
-                    >
-                      {archiveStep ? '✕ cancel' : '⚄ load a tape'}
-                    </button>
-                  </Tip>
-                  <button
-                    className={micOn ? styles.ioBtnOn : styles.ioBtn}
-                    onClick={() => engine.enableMic()}
-                  >
-                    {micOn ? '● mic' : 'mic'}
+                    {archiveStep ? '✕ cancel' : '⚄ load a tape'}
                   </button>
-                </div>
-                {(!sampleName || dragging) && (
-                  <p className={dragging ? styles.dropHot : styles.drop}>
-                    or drop an audio file anywhere
-                  </p>
-                )}
-                {showShelf && !archiveStep && (
-                  <TapeShelf onDone={() => setShowShelf(false)} />
-                )}
-                <SampleReel>
-                  {!archiveStep && archiveSource && (
-                    <a
-                      className={styles.credit}
-                      href={detailsUrl(archiveSource.id)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      archive.org/{archiveSource.id}
-                    </a>
-                  )}
-                </SampleReel>
-                {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
+                </Tip>
+                <button
+                  className={micOn ? styles.ioBtnOn : styles.ioBtn}
+                  onClick={() => engine.enableMic()}
+                >
+                  {micOn ? '● mic' : 'mic'}
+                </button>
               </div>
+              {showShelf && !archiveStep && (
+                <TapeShelf onDone={() => setShowShelf(false)} />
+              )}
+              {(!sampleName || dragging) && (
+                <p className={dragging ? styles.dropHot : styles.drop}>
+                  drop an audio file anywhere
+                </p>
+              )}
+              <SampleReel>
+                {sampleName && (
+                  <span className={styles.tapeName} title={sampleName}>
+                    {sampleName}
+                  </span>
+                )}
+                {!archiveStep && archiveSource && (
+                  <a
+                    className={styles.credit}
+                    href={detailsUrl(archiveSource.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    archive.org/{archiveSource.id}
+                  </a>
+                )}
+              </SampleReel>
+              {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
             </div>
           </section>
         </div>

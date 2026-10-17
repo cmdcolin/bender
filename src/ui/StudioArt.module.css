@@ -4,12 +4,6 @@
   height: auto;
 }
 
-.deck {
-  flex: none;
-  width: 140px;
-  height: auto;
-}
-
 .shell {
   fill: var(--surface);
   stroke: var(--fg4);
@@ -59,26 +53,6 @@
   fill: var(--fg4);
 }
 
-.flange,
-.flangeHot {
-  fill: none;
-  stroke: var(--fg4);
-  stroke-width: 1.5;
-}
-
-.flangeHot {
-  stroke: var(--accent);
-}
-
-.reelSpoke {
-  stroke: var(--fg4);
-  stroke-width: 4;
-}
-
-.spindle {
-  fill: var(--fg3);
-}
-
 .still {
   transform-box: view-box;
 }
@@ -98,37 +72,4 @@
   .spin {
     animation: none;
   }
-}
-
-.deckText,
-.deckEmpty {
-  fill: var(--fg3);
-  font-size: 8px;
-  text-anchor: middle;
-}
-
-.deckEmpty {
-  fill: var(--fg4);
-}
-
-.tape {
-  fill: none;
-  stroke: var(--fg4);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-}
-
-.guide {
-  fill: var(--surface);
-  stroke: var(--fg3);
-  stroke-width: 1.5;
-}
-
-.headBlock {
-  fill: var(--surface);
-  stroke: var(--fg4);
-}
-
-.head {
-  fill: var(--fg3);
 }
