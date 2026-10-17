@@ -455,7 +455,7 @@ export class FmChip implements Stage {
   // pressed between two blocks is a message on a queue rather than a wire, so
   // it lands with the patch the block is about to run rather than the one the
   // last block left standing.
-  private queued: { note: number; vol: number }[] = []
+  private queued: { note: number; vol: number; held: boolean }[] = []
   // The write strobe, and how often its pulse comes out too narrow for the
   // address latch to catch.
   private strobe = 0
@@ -740,10 +740,13 @@ export class FmChip implements Stage {
     // came back up — so the queue holds the last of them rather than growing
     // for as long as the level is down.
     if (this.queued.length >= N_CH) this.queued.shift()
-    this.queued.push({ note, vol })
+    this.queued.push({ note, vol, held: true })
   }
 
+  // A key that came up before its block began lands as an edge, so it still
+  // sounds and *Note length* ends it.
   noteOff(note: number) {
+    for (const q of this.queued) if (q.note === note) q.held = false
     const n = Math.max(this.melodyChannels(), this.stuckCh + 1)
     for (let i = 0; i < n; i++) if (this.ch[i]!.note === note) this.keyOff(i)
   }
@@ -1333,8 +1336,9 @@ export class FmChip implements Stage {
       : chipX
     this.readPatch(rail.clockFactor)
     if (kit) this.readKit(rail.clockFactor)
-    // The keys, before the block: held, because a hand is holding them.
-    for (const q of this.queued) this.keyOn(q.note, 0, q.vol)
+    // The keys, before the block.
+    for (const q of this.queued)
+      this.keyOn(q.note, q.held ? 0 : lengthSamples, q.vol)
     this.queued.length = 0
     const { drive, makeup } = dacGains(p[IDX.fmDrive]!)
     let load = 0

@@ -127,6 +127,16 @@ test('a fifth note steals the oldest of the four', () => {
   ])
 })
 
+test('a key up in the same block as its key down still lets go', () => {
+  const out = new Int16Array(8)
+  const { out: x, built } = play({ ...ALONE, pcmRelease: 0.05 }, 1, b => {
+    b.pcmKeys.noteOn(12)
+    b.pcmKeys.noteOff(12)
+  })
+  expect(rms(x.subarray(0, Math.round(0.1 * SR)))).toBeGreaterThan(0.01)
+  expect(built.pcmKeys.soundingNotes(out)).toBe(0)
+})
+
 test('the chord button fills the part from one key', () => {
   const out = new Int16Array(8)
   const { built } = play({ ...ALONE, pcmChord: 1 }, 0.1, b =>

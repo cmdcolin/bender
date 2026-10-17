@@ -95,6 +95,19 @@ test('a hand on its own keys outlasts the length the driver would give it', () =
   expect(rms(tail(held, 0.2))).toBeGreaterThan(0.02)
 })
 
+test('a key up in the same block as its key down still lets go', () => {
+  const x = renderBender(
+    { ...FM_ONLY, fmVoice: FM_VOICE_NAMES.indexOf('organ'), fmLength: 0.05 },
+    2,
+    built => {
+      built.fmChip.noteOn(0)
+      built.fmChip.noteOff(0)
+    },
+  )
+  expect(rms(x.subarray(0, Math.round(0.05 * SR)))).toBeGreaterThan(0.02)
+  expect(rms(tail(x, 0.2))).toBeLessThan(1e-4)
+})
+
 test('every voice under the buttons is a patch that sounds', () => {
   for (let v = 0; v < FM_VOICES.length; v++) {
     expect(

@@ -129,7 +129,7 @@ export class PcmKeys implements Stage {
   private clock = 0
   private lastNote = 0
   private lastReboot = 0
-  private queued: { note: number; gain: number }[] = []
+  private queued: { note: number; gain: number; held: boolean }[] = []
 
   // What the address counter is walking this block: the ROM's own words, or the
   // sample memory — which is not an array here at all. It is the sampler's
@@ -178,10 +178,13 @@ export class PcmKeys implements Stage {
       A hand is a hand, so nothing here decides a length. */
   noteOn(note: number, gain = 1) {
     if (this.queued.length >= N_VOICES) this.queued.shift()
-    this.queued.push({ note, gain })
+    this.queued.push({ note, gain, held: true })
   }
 
+  // A key that came up before its block began lands as an edge, so it still
+  // sounds and lets go of itself.
   noteOff(note: number) {
+    for (const q of this.queued) if (q.note === note) q.held = false
     for (const v of this.voices) {
       if (v.root === note && v.stage !== IDLE) v.stage = RELEASE
     }
@@ -389,7 +392,7 @@ export class PcmKeys implements Stage {
 
     // The keys, before the block: a hand is holding them, so they land with the
     // voice this block is about to run rather than the one the last one left.
-    for (const q of this.queued) this.strike(q.note, q.gain, true, chord)
+    for (const q of this.queued) this.strike(q.note, q.gain, q.held, chord)
     this.queued.length = 0
 
     const span = this.loopEnd - this.loopStart
