@@ -13,6 +13,7 @@ const A3_MIDI = 57
 const OUT_TRIM = 0.6
 const FALLBACK_STEP_S = 0.125
 const CUTOFF_LANE_OCTAVES = 4
+const QUEUE_MAX = 32
 
 // The voice card of a three-oscillator monosynth, wired onto the toy's supply
 // and its gate line. Keys from its own bed and a controller arrive with their
@@ -55,11 +56,22 @@ export class MonoSynth implements Stage {
   noteOn(semitone: number, gain = 1) {
     const note = semitone + A3_MIDI
     this.dropGateHeld(note)
-    this.queued.push({ note, on: true, gain })
+    this.enqueue(note, true, gain)
   }
 
   noteOff(semitone: number) {
-    this.queued.push({ note: semitone + A3_MIDI, on: false, gain: 0 })
+    this.enqueue(semitone + A3_MIDI, false, 0)
+  }
+
+  // With the level at the floor the chain steps over this stage and nothing
+  // drains the queue, so it keeps one event per note, latest wins.
+  private enqueue(note: number, on: boolean, gain: number) {
+    const q = this.queued
+    let k = 0
+    for (const e of q) if (e.note !== note) q[k++] = e
+    q.length = k
+    if (k >= QUEUE_MAX) q.shift()
+    q.push({ note, on, gain })
   }
 
   /** The toy's key coming up. It ends only a note the gate is holding, so it

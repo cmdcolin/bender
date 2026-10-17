@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 
+import { buildBender } from '../build.ts'
 import { spectrum } from '../spectrum.ts'
 import { render, renderBender, rms, SR } from '../testRender.ts'
 
@@ -60,6 +61,16 @@ test('the toy’s key-up leaves a note on its own bed alone', () => {
     },
   )
   expect(rms(x.subarray(0.8 * SR))).toBeGreaterThan(0.05)
+})
+
+test('keys played with the fader down queue one event per note', () => {
+  const built = buildBender(SR)
+  for (let i = 0; i < 10_000; i++) {
+    built.monoSynth.noteOn(i % 12)
+    built.monoSynth.noteOff(i % 12)
+  }
+  const { queued } = built.monoSynth as unknown as { queued: unknown[] }
+  expect(queued.length).toBe(12)
 })
 
 test('a leaky VCA drones with no key down', () => {
