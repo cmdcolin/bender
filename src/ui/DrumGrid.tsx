@@ -36,12 +36,11 @@ import { useStruck } from './useStruck.ts'
 
 import type { Controls } from '../controls.ts'
 
-// The playhead only moves when a step does, so the grid redraws at the step rate
-// rather than at the meter's.
-function usePlayTick(): number {
-  return useSyncExternalStore(
-    engine.meter.subscribe,
-    () => engine.meter.get().tick,
+// Where a row's playhead stands, -1 while the kit is not running. Each row
+// reads its own, so a step redraws only the rows whose playhead moved.
+function useUnder(live: boolean, len: number): number {
+  return useSyncExternalStore(engine.meter.subscribe, () =>
+    live ? engine.meter.get().tick % len : -1,
   )
 }
 
@@ -111,7 +110,6 @@ export function DrumGrid() {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
   const slots = useStoreValue(engine.drumSlots)
-  const tick = usePlayTick()
   const struck = useStruck()
   // Two figures rather than the board: the grid is open while a morph travels,
   // and taking the whole of it would rebuild seven rows and their hundred and
@@ -246,12 +244,12 @@ export function DrumGrid() {
           <Row
             key={row.key}
             row={row}
-            tick={live ? tick : null}
+            live={live}
             lit={(struck & voiceBit(v)) !== 0}
             paint={paint}
           />
         ))}
-        <BendRow tick={live ? tick : null} />
+        <BendRow live={live} />
       </div>
 
       {/* The one place that may start the kit, because it is a button that says
@@ -276,14 +274,14 @@ export function DrumGrid() {
   )
 }
 
-function Row({
+const Row = memo(function Row({
   row,
-  tick,
+  live,
   lit,
   paint,
 }: {
   row: PanelRow
-  tick: number | null
+  live: boolean
   lit: boolean
   paint: Paint
 }) {
@@ -302,7 +300,7 @@ function Row({
         : 'voice'
   // Each row's own playhead: the counter is steps clocked, so a short row is
   // round again while the long ones are still in the bar.
-  const under = tick === null ? -1 : tick % len
+  const under = useUnder(live, len)
 
   const voice = DRUM_VOICES.findIndex(v => v.key === row.key)
 
@@ -379,7 +377,7 @@ function Row({
       </div>
     </Tip>
   )
-}
+})
 
 // Memoised because the playhead moves: a tick re-renders the row, and without
 // this every one of its sixteen cells would rebuild the tip hanging off it to
@@ -478,10 +476,10 @@ const Cell = memo(function Cell(props: {
 // The bend keys on the clock: step n fires bend key n for the length of the
 // step. Not a control, since the deal it points at is this session's, so the
 // row writes its own store and rides in no link.
-function BendRow({ tick }: { tick: number | null }) {
+function BendRow({ live }: { live: boolean }) {
   const mask = useStoreValue(bendRow)
   const deal = useStoreValue(bendDeal)
-  const under = tick === null ? -1 : tick % STEPS
+  const under = useUnder(live, STEPS)
   return (
     <Tip text="Steps that fire a bend key: the first step the first key, the second the second, each held for its step. Redeal the keys and the same steps fire the new ones.">
       <div className={styles.row}>
