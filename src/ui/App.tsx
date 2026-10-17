@@ -15,7 +15,7 @@ import { versionLabel } from '../version.ts'
 import { AboutDialog } from './AboutDialog.tsx'
 import { Account } from './Account.tsx'
 import styles from './App.module.css'
-import { BendKeys, LettersSwitch } from './BendKeys.tsx'
+import { BendKeys } from './BendKeys.tsx'
 import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
@@ -807,10 +807,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
           />
         )}
 
-        <div className={styles.lettersRow}>
-          <span className={styles.rowLabel}>letters</span>
-          <LettersSwitch />
-        </div>
         <Presets morphSeconds={morphSeconds} folded />
         <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
         {openGroup ? (

@@ -425,26 +425,3 @@
     border-top: 1px solid var(--border);
   }
 }
-
-.lettersRow {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-ctl);
-  padding: 0 var(--space-md);
-}
-
-.rowLabel {
-  flex: none;
-  width: 4.5em;
-  font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--fg4);
-}
-
-/* A finger has no letter keys to send anywhere. */
-@media (pointer: coarse) {
-  .lettersRow {
-    display: none;
-  }
-}

@@ -491,7 +491,7 @@ when you let go. A throw never lands in the link or the undo walk.
   always answer the keyboard.
 - **`z` and `x`:** let go of every bend key, and deal sixteen new ones.
 
-The bend keys answer the letters once **letters → bends** is lit; otherwise the
+The bend keys answer the letters once **bend keys** is lit; otherwise the
 letters play the toy keyboard. Shift pins a bend key down until you press it
 again. Every key also takes a click or a finger.
 
@@ -504,11 +504,11 @@ stage, so a chord of them is a chord. The dealer also leaves out:
 - a level or mix that would turn the board up by more than 6 dB
 - the end of a control's travel that it already sits at
 
-The **letters** switch under the keyboards sends the computer's letter keys to
+The **bend keys** toggle under the keyboards sends the computer's letter keys to
 the bend keys instead of the toy keyboard. The switch is remembered across a
 reload, and a link with `?bend` on it opens the same way.
 
-The chips beside the switch set how the next deal comes out:
+The chips beside the toggle set how the next deal comes out:
 
 - **tame** moves one control a key
 - **wild** moves one to three, with a fighting pair now and then

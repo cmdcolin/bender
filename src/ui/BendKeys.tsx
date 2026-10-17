@@ -68,29 +68,8 @@ function place(row: number, indent: number, i: number): CSSProperties {
 
 // Sixteen throws the dice dealt on the top two rows of letters, the six chosen
 // throws on the bottom row, and z and x to let go and redeal, laid out where
-// the fingers find them. Letters reach the bends only once the switch sends
-// them here instead of to a keybed; the bottom row always throws.
-export function LettersSwitch() {
-  const on = useStoreValue(letterKeys) === 'bends'
-  return (
-    <Tip
-      text={
-        on
-          ? 'The letter keys play the bend keys: hold one, shift pins it, z lets go of everything, x redeals. Press to hand them back to the toy keyboard.'
-          : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard.'
-      }
-    >
-      <button
-        className={on ? styles.letterSwitchOn : styles.letterSwitch}
-        aria-pressed={on}
-        onClick={() => setLetters(!on)}
-      >
-        bends
-      </button>
-    </Tip>
-  )
-}
-
+// the fingers find them. Letters reach the bends only once the toggle in the
+// bar sends them here instead of to a keybed; the bottom row always throws.
 export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   const deal = useStoreValue(bendDeal)
   const held = useStoreValue(engine.held)
@@ -253,64 +232,82 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
     )
   }
 
-  if (!on) return null
-
   return (
     <div className={styles.board}>
       <div className={styles.bar}>
-        <span className={styles.settings}>
-          {HEATS.map(h => (
-            <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
+        <Tip
+          text={
+            on
+              ? 'The letter keys play the bend keys: hold one, shift pins it, z lets go of everything, x redeals. Press to hand them back to the toy keyboard.'
+              : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard.'
+          }
+        >
+          <button
+            className={on ? styles.letterSwitchOn : styles.letterSwitch}
+            aria-pressed={on}
+            onClick={() => setLetters(!on)}
+          >
+            bend keys
+          </button>
+        </Tip>
+        {on && (
+          <span className={styles.settings}>
+            {HEATS.map(h => (
+              <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
+                <button
+                  className={heat === h ? styles.chipOn : styles.chip}
+                  aria-pressed={heat === h}
+                  onClick={() => setBendHeat(h)}
+                >
+                  {h}
+                </button>
+              </Tip>
+            ))}
+            <Tip
+              text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
+            >
               <button
-                className={heat === h ? styles.chipOn : styles.chip}
-                aria-pressed={heat === h}
-                onClick={() => setBendHeat(h)}
+                className={swell ? styles.chipOn : styles.chip}
+                aria-pressed={swell}
+                onClick={() => setBendSwell(!swell)}
               >
-                {h}
+                swell
               </button>
             </Tip>
-          ))}
-          <Tip
-            text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
-          >
-            <button
-              className={swell ? styles.chipOn : styles.chip}
-              aria-pressed={swell}
-              onClick={() => setBendSwell(!swell)}
-            >
-              swell
-            </button>
-          </Tip>
-          <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
-            <select
-              className={every === 0 ? styles.every : styles.everyOn}
-              value={every}
-              aria-label="redeal every"
-              onChange={e =>
-                setRedealEvery(
-                  REDEAL_BARS.find(b => b === Number(e.currentTarget.value)) ??
-                    0,
-                )
-              }
-            >
-              {REDEAL_BARS.map(b => (
-                <option key={b} value={b}>
-                  {b === 0
-                    ? 'keep the deal'
-                    : `redeal every ${b === 1 ? 'bar' : `${b} bars`}`}
-                </option>
-              ))}
-            </select>
-          </Tip>
-        </span>
-      </div>
-      <div className={styles.keys}>
-        {ROWS.map(({ letters, indent }, row) =>
-          letters
-            .split('')
-            .map((letter, i) => keyFor(letter, place(row, indent, i))),
+            <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
+              <select
+                className={every === 0 ? styles.every : styles.everyOn}
+                value={every}
+                aria-label="redeal every"
+                onChange={e =>
+                  setRedealEvery(
+                    REDEAL_BARS.find(
+                      b => b === Number(e.currentTarget.value),
+                    ) ?? 0,
+                  )
+                }
+              >
+                {REDEAL_BARS.map(b => (
+                  <option key={b} value={b}>
+                    {b === 0
+                      ? 'keep the deal'
+                      : `redeal every ${b === 1 ? 'bar' : `${b} bars`}`}
+                  </option>
+                ))}
+              </select>
+            </Tip>
+          </span>
         )}
       </div>
+      {on && (
+        <div className={styles.keys}>
+          {ROWS.map(({ letters, indent }, row) =>
+            letters
+              .split('')
+              .map((letter, i) => keyFor(letter, place(row, indent, i))),
+          )}
+        </div>
+      )}
     </div>
   )
 }

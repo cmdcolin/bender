@@ -11,7 +11,7 @@ import {
   redealEvery,
   toggleBendStep,
 } from './bendKeys.ts'
-import { BendKeys, LettersSwitch } from './BendKeys.tsx'
+import { BendKeys } from './BendKeys.tsx'
 import { letterKeys } from './letters.ts'
 import './testDom.ts'
 
@@ -55,10 +55,10 @@ test('the grid draws only while the letters go to the bends', () => {
 })
 
 test('the switch sends the letters here and back to the toy', () => {
-  render(<LettersSwitch />)
-  fireEvent.click(screen.getByRole('button', { name: 'bends' }))
+  render(<BendKeys morphSeconds={0} />)
+  fireEvent.click(screen.getByRole('button', { name: 'bend keys' }))
   expect(letterKeys.get()).toBe('bends')
-  fireEvent.click(screen.getByRole('button', { name: 'bends' }))
+  fireEvent.click(screen.getByRole('button', { name: 'bend keys' }))
   expect(letterKeys.get()).toBe('toy')
 })
 
