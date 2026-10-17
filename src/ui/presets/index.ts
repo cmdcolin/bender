@@ -10,6 +10,7 @@ export {
   rollGroup,
   rollKeys,
 } from './roll.ts'
+export { STAGE_ROLLS, stageRollsFor, type StageRoll } from './stageRolls.ts'
 export { applyRig, RIGS, rigsFor, rigStands, type RigDef } from './rigs.ts'
 export {
   huntCandidates,

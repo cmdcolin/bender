@@ -1,12 +1,18 @@
+import { useCallback, useState } from 'react'
+
 import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
 import { useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
-import { rollGroup } from './presets/index.ts'
-import { rollIn } from './rollBack.ts'
+import { Menu } from './Menu.tsx'
+import { menuItem } from './menuItems.ts'
+import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
+import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
+import type { Group } from './controls/types.ts'
+import type { StageRoll } from './presets/index.ts'
 
 const MUTE_OF: Record<string, ControlKey> = {
   'Toy keyboard': 'chipMute',
@@ -52,6 +58,89 @@ function Mute({ stage, control }: { stage: string; control: ControlKey }) {
   )
 }
 
+// The roll cap and the kinds of roll behind its caret. Picking a kind rolls at
+// once and stays on the face, so going again on it is one press, the way the
+// board's dice work.
+function Rolls({ group, seconds }: { group: Group; seconds: number }) {
+  const kinds = stageRollsFor(group)
+  const [held, setHeld] = useState(STAGE_ROLLS[0]!.name)
+  const [open, setOpen] = useState(false)
+  const [split, setSplit] = useState<HTMLSpanElement | null>(null)
+  const [caret, setCaret] = useState<HTMLButtonElement | null>(null)
+  const canUndo = useCanUndoRoll(group.name)
+  const close = useCallback(() => setOpen(false), [])
+  const face = kinds.find(k => k.name === held) ?? kinds[0]!
+
+  const roll = (kind: StageRoll) => {
+    setHeld(kind.name)
+    rollIn(
+      group.name,
+      kind.roll(group, engine.controls.get(), Math.random),
+      seconds,
+    )
+  }
+
+  return (
+    <span className={styles.split} ref={setSplit}>
+      <Tip text={`${face.blurb} Leaves the rest of the board alone.`}>
+        <button className={styles.face} onClick={() => roll(face)}>
+          {face.label}
+        </button>
+      </Tip>
+      <Tip
+        text={`The other ways to roll ${group.name}. Picking one rolls it, and it stays on the button.`}
+      >
+        <button
+          ref={setCaret}
+          className={open ? styles.caretOn : styles.caret}
+          aria-label={`pick a kind of roll for ${group.name}`}
+          aria-expanded={open}
+          onClick={() => setOpen(o => !o)}
+        >
+          ▾
+        </button>
+      </Tip>
+      {open && (
+        <Menu anchor={split} toggle={caret} role="menu" onClose={close}>
+          {kinds.map(kind => (
+            <Tip key={kind.name} text={kind.blurb}>
+              <button
+                role="menuitem"
+                className={menuItem(kind.name === face.name)}
+                onClick={() => {
+                  close()
+                  roll(kind)
+                }}
+              >
+                {kind.name}
+              </button>
+            </Tip>
+          ))}
+          <Tip
+            text={
+              canUndo
+                ? `Puts ${group.name} back where it stood before its last roll.`
+                : `No roll of ${group.name} to take back.`
+            }
+          >
+            <button
+              role="menuitem"
+              className={menuItem(false)}
+              disabled={!canUndo}
+              onClick={() => {
+                close()
+                undoRoll(group.name, seconds)
+              }}
+            >
+              undo
+            </button>
+          </Tip>
+        </Menu>
+      )}
+    </span>
+  )
+}
+
 // The caps every instrument on the bench carries: mute that machine, roll its
 // stage somewhere new, and, while the bench shows every instrument, put the
 // machine away.
@@ -70,22 +159,7 @@ export function DeviceVerbs({
   return (
     <>
       {mute && <Mute stage={stage} control={mute} />}
-      <Tip
-        text={`Rolls every control in ${stage} somewhere new and leaves the rest of the board alone. Undo is on the stage's own panel.`}
-      >
-        <button
-          className={styles.cap}
-          onClick={() =>
-            rollIn(
-              stage,
-              rollGroup(group, engine.controls.get(), Math.random),
-              seconds,
-            )
-          }
-        >
-          randomize
-        </button>
-      </Tip>
+      <Rolls group={group} seconds={seconds} />
       {onClose && (
         <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>
           <button

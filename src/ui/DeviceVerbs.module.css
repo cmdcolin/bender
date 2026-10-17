@@ -11,3 +11,37 @@
   height: 1em;
   fill: currentColor;
 }
+
+/* A cap in two halves, the roll and the way to pick another, sharing one edge
+   like the board's dice do. The radii and the shared edge are written against
+   `.split >` so they beat the cap's own rules whichever the bundler emits
+   last. */
+.split {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.face {
+  composes: cap from './button.module.css';
+}
+
+.caret {
+  composes: cap from './button.module.css';
+}
+
+.caretOn {
+  composes: capOn from './button.module.css';
+}
+
+.split > .face {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.split > .caret,
+.split > .caretOn {
+  padding: 0 var(--space-sm);
+  margin-left: -1px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}

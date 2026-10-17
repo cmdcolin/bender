@@ -86,14 +86,16 @@ const calmShy = (next: Controls, rand: () => number): Controls => {
   return next
 }
 
-export function mutate(
+/** A nudge of the sliders named, and nothing else on the board moved. */
+export function nudgeSliders(
   controls: Controls,
+  sliders: readonly SliderDef[],
   amount: number,
   rand: () => number,
 ): Controls {
   const next = { ...controls }
   const share = shakeShare(amount)
-  for (const def of ALL_SLIDERS) {
+  for (const def of sliders) {
     if (YOURS.has(def.key) || CLOCK_KEYS.has(def.key) || PART_KEYS.has(def.key))
       continue
     if (def.choices) {
@@ -109,6 +111,15 @@ export function mutate(
     if (def.shy && controls[def.key] === shyOff(def)) continue
     next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
+  return next
+}
+
+export function mutate(
+  controls: Controls,
+  amount: number,
+  rand: () => number,
+): Controls {
+  const next = nudgeSliders(controls, ALL_SLIDERS, amount, rand)
   inTime(next, () => true)
   // A shake reaches the bay like it reaches anything else, and either end of a
   // wire is one nudge from pointing at nothing — a source re-rolled onto a mic
@@ -263,6 +274,16 @@ const DRIFTERS = [
   'drumAccent',
 ] as const
 
+/** A fresh step pattern and row lengths for the kit, and nothing else moved. */
+export const rollPattern = (
+  current: Controls,
+  rand: () => number,
+): Controls => ({
+  ...current,
+  ...randomPattern(rand),
+  ...rollLengths(rand),
+})
+
 function rollLengths(rand: () => number): Record<DrumLenKey, number> {
   const pick = <T>(xs: readonly T[]) => xs[Math.floor(rand() * xs.length)]!
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.fromEntries widens to string keys; the entries are every row's length key
@@ -316,7 +337,7 @@ export function rollGroup(
   // machine at the far end of it up.
   if (group.editor?.kind === 'trigger') return cohereTriggers(next, rand)
   if (group.editor?.kind !== 'drums') return next
-  return { ...next, ...randomPattern(rand), ...rollLengths(rand) }
+  return rollPattern(next, rand)
 }
 
 /** Every control the stage owns, back where it booted. */

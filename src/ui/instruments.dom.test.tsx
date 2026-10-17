@@ -68,6 +68,45 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   expect(now.fmLevel).toBe(DEFAULT_CONTROLS.fmLevel)
 })
 
+test('the roll caret picks a kind, rolls it and keeps it on the face', () => {
+  render(<Instruments seconds={0} />)
+  fireEvent.click(allMode())
+  fireEvent.click(
+    screen.getByRole('button', { name: 'pick a kind of roll for Toy drums' }),
+  )
+  const names = screen
+    .getAllByRole('menuitem')
+    .map(item => item.textContent ?? '')
+  expect(names).toEqual([
+    'sound',
+    'nudge',
+    'faults',
+    'play',
+    'pattern',
+    'everything',
+    'undo',
+  ])
+  fireEvent.click(screen.getByRole('menuitem', { name: 'pattern' }))
+  expect(
+    screen.getAllByRole('button', { name: 'pattern' }).length,
+  ).toBeGreaterThan(0)
+  expect(screen.queryByRole('menuitem')).toBeNull()
+  expect(engine.controls.get().drumLevel).toBe(DEFAULT_CONTROLS.drumLevel)
+})
+
+test('undo in the roll menu puts the stage back', () => {
+  render(<Instruments seconds={0} />)
+  fireEvent.click(allMode())
+  const before = engine.controls.get()
+  fireEvent.click(screen.getAllByRole('button', { name: 'randomize' })[2]!)
+  expect(sameControls(engine.controls.get(), before)).toBe(false)
+  fireEvent.click(
+    screen.getByRole('button', { name: 'pick a kind of roll for FM chip' }),
+  )
+  fireEvent.click(screen.getByRole('menuitem', { name: 'undo' }))
+  expect(sameControls(engine.controls.get(), before)).toBe(true)
+})
+
 test('mute silences one machine and keeps its level, and a roll leaves it muted', () => {
   render(<Instruments seconds={0} />)
   fireEvent.click(allMode())
