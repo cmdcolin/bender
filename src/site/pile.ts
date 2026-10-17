@@ -232,16 +232,6 @@ const equalizer = (r: Rng): Thing => {
   return { hull: hull(-62, -52, 124, 104, 6), body: s, weight: 3 }
 }
 
-const looper = (r: Rng): Thing => {
-  let s = rect(-85, -35, 170, 70, pick(r, [C.blue, C.red, C.grey]), 6)
-  s += rect(-78, -29, 156, 8, C.cream, 2)
-  for (let i = 0; i < 4; i++) {
-    const x = -60 + i * 40
-    s += lamp(x, -12, i % 2 ? C.green : C.red) + footswitch(x, 10, 11)
-  }
-  return { hull: hull(-85, -35, 170, 70, 6), body: s, weight: 3 }
-}
-
 const fuzz = (r: Rng): Thing => {
   const body = pick(r, [C.steel, C.red, C.blue])
   let s = circle(0, 0, 44, body, `stroke="${C.grey}" stroke-width="2"`)
@@ -569,26 +559,69 @@ const fray = (r: Rng, x: number, y: number, angle: number, width: number) => {
 
 type CableKind = 'alligator' | 'patch' | 'frayed' | 'tape'
 
-const wire = (r: Rng, kind: CableKind) => {
+type Pt = readonly [number, number]
+
+const inside = (v: number, size: number) => {
+  const bounced = v < 30 ? 60 - v : v > size - 30 ? 2 * (size - 30) - v : v
+  return Math.min(size - 30, Math.max(30, bounced))
+}
+
+const waypoints = (r: Rng, long: boolean): Pt[] => {
   const x0 = between(r, 60, PILE_WIDTH - 60)
   const y0 = between(r, 60, PILE_HEIGHT - 60)
-  const heading = between(r, 0, TAU)
-  const length = between(r, 200, kind === 'tape' ? 520 : 420)
-  const dx = Math.cos(heading) * length
-  const dy = Math.sin(heading) * length * 0.6
-  const chord = Math.hypot(dx, dy)
-  const normal = [-dy / chord, dx / chord] as const
-  const looped = kind !== 'tape' && r() < 0.25
-  const [ta, tb] = looped ? [0.85, 0.15] : [0.33, 0.66]
-  const sa = looped ? between(r, 70, 130) : between(r, -110, 110)
-  const sb = looped ? sa : between(r, -110, 110)
-  const x3 = x0 + dx
-  const y3 = y0 + dy
-  const x1 = x0 + dx * ta + normal[0] * sa
-  const y1 = y0 + dy * ta + normal[1] * sa
-  const x2 = x0 + dx * tb + normal[0] * sb
-  const y2 = y0 + dy * tb + normal[1] * sb
-  const d = `M${n(x0)} ${n(y0)}C${n(x1)} ${n(y1)} ${n(x2)} ${n(y2)} ${n(x3)} ${n(y3)}`
+  const heading =
+    Math.atan2(PILE_HEIGHT / 2 - y0, PILE_WIDTH / 2 - x0) +
+    between(r, -1.2, 1.2)
+  const length = long ? between(r, 650, 1100) : between(r, 220, 460)
+  const stops = long ? 8 : 4
+  const curl = long ? 0.45 : 0.2
+  const ux = Math.cos(heading)
+  const uy = Math.sin(heading)
+  const points: Pt[] = [[x0, y0]]
+  for (let i = 1; i < stops; i++) {
+    const reach = (length * i) / (stops - 1) + between(r, -70, 70)
+    const sway = between(r, -150, 150)
+    const x = x0 + ux * reach - uy * sway
+    const y = y0 + uy * reach * 0.6 + ux * sway * 0.6
+    if (i < stops - 1 && r() < curl) {
+      const radius = between(r, 26, 46)
+      const cx = x + ux * radius
+      const cy = y + uy * radius
+      for (const turn of [Math.PI, 1.5 * Math.PI, 0, 0.5 * Math.PI]) {
+        const a = heading + turn
+        points.push([
+          inside(cx + Math.cos(a) * radius, PILE_WIDTH),
+          inside(cy + Math.sin(a) * radius, PILE_HEIGHT),
+        ])
+      }
+    } else points.push([inside(x, PILE_WIDTH), inside(y, PILE_HEIGHT)])
+  }
+  return points
+}
+
+const smooth = (p: Pt[]) => {
+  let d = `M${n(p[0]![0])} ${n(p[0]![1])}`
+  let first: Pt = p[0]!
+  let last: Pt = p[0]!
+  for (let i = 0; i < p.length - 1; i++) {
+    const a = p[i - 1] ?? p[i]!
+    const b = p[i]!
+    const c = p[i + 1]!
+    const e = p[i + 2] ?? c
+    const c1: Pt = [b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6]
+    const c2: Pt = [c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6]
+    if (i === 0) first = c1
+    last = c2
+    d += `C${n(c1[0])} ${n(c1[1])} ${n(c2[0])} ${n(c2[1])} ${n(c[0])} ${n(c[1])}`
+  }
+  return { d, first, last }
+}
+
+const wire = (r: Rng, kind: CableKind, long = false) => {
+  const points = waypoints(r, long || kind === 'tape')
+  const { d, first, last } = smooth(points)
+  const [x0, y0] = points[0]!
+  const [x3, y3] = points.at(-1)!
   const color =
     kind === 'tape' ? C.tape : pick(r, kind === 'patch' ? PATCH : WIRES)
   const width =
@@ -597,8 +630,8 @@ const wire = (r: Rng, kind: CableKind) => {
       : kind === 'patch'
         ? between(r, 4.5, 5.5)
         : between(r, 2.8, 3.6)
-  const tail = (Math.atan2(y3 - y2, x3 - x2) * 180) / Math.PI
-  const head = (Math.atan2(y0 - y1, x0 - x1) * 180) / Math.PI
+  const tail = (Math.atan2(y3 - last[1], x3 - last[0]) * 180) / Math.PI
+  const head = (Math.atan2(y0 - first[1], x0 - first[0]) * 180) / Math.PI
   const ends = (draw: (x: number, y: number, angle: number) => string) =>
     draw(x3, y3, tail) + draw(x0, y0, head)
   const stroke = (c: string, w: number, extra = '') =>
@@ -653,11 +686,10 @@ export const pile = (seed = 3): string => {
   toss(keyboard, 2, 14)
   toss(drums, 1, 14)
   toss(speaker, 1, 10)
-  toss(stomp, 1, 10)
+  toss(stomp, 2, 10)
   toss(compact, 1, 10)
   toss(wideBox, 1, 10)
   toss(equalizer, 1, 10)
-  toss(looper, 1, 10)
   toss(fuzz, 1, 10)
   toss(wah, 1, 10)
   toss(expression, 1, 10)
@@ -680,22 +712,24 @@ export const pile = (seed = 3): string => {
 
   const sorted = heap.toSorted((a, b) => b.weight - a.weight).map(h => h.svg)
   const split = Math.ceil(sorted.length * 0.55)
-  const kinds: CableKind[] = [
-    'alligator',
-    'patch',
-    'frayed',
-    'alligator',
-    'patch',
-    'frayed',
-    'alligator',
-    'patch',
-    'frayed',
-    'alligator',
-    'patch',
-    'frayed',
-    'alligator',
+  const kinds: [CableKind, boolean][] = [
+    ['alligator', false],
+    ['patch', true],
+    ['frayed', false],
+    ['alligator', false],
+    ['patch', false],
+    ['frayed', true],
+    ['alligator', false],
+    ['patch', false],
+    ['frayed', false],
+    ['alligator', true],
+    ['patch', false],
+    ['frayed', false],
+    ['alligator', false],
+    ['patch', true],
+    ['frayed', true],
   ]
-  const cables = kinds.map(kind => wire(r, kind))
+  const cables = kinds.map(([kind, long]) => wire(r, kind, long))
   const tapes = Array.from({ length: 2 }, () => wire(r, 'tape'))
 
   return (
