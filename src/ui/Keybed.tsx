@@ -1,4 +1,10 @@
-import { useEffect, useState, type PointerEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+} from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { semitoneName } from '../notes.ts'
@@ -233,55 +239,57 @@ export function Keybed({
     setOctave(next)
   }
 
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (
+      !owns ||
+      e.repeat ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.altKey ||
+      isTyping(e.target)
+    )
+      return
+    const pressed = e.key.toLowerCase()
+    const step =
+      pressed === octaveLetters.down ? -1 : pressed === octaveLetters.up ? 1 : 0
+    if (step !== 0) {
+      const next = octave + step
+      if (OCTAVES.includes(next)) shiftTo(next)
+      return
+    }
+    const note = noteLetters.indexOf(pressed)
+    if (note >= 0) press(note)
+  }
+  const onKeyUp = (e: KeyboardEvent) => {
+    if (!owns) return
+    const note = noteLetters.indexOf(e.key.toLowerCase())
+    if (note >= 0) release(note)
+  }
+
+  const latest = useRef({ onKeyDown, onKeyUp, releaseLoose })
+  // oxlint-disable-next-line react/refs -- the window listeners read this render's handlers through this ref
+  latest.current = { onKeyDown, onKeyUp, releaseLoose }
+
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (
-        !owns ||
-        e.repeat ||
-        e.metaKey ||
-        e.ctrlKey ||
-        e.altKey ||
-        isTyping(e.target)
-      )
-        return
-      const pressed = e.key.toLowerCase()
-      const step =
-        pressed === octaveLetters.down
-          ? -1
-          : pressed === octaveLetters.up
-            ? 1
-            : 0
-      if (step !== 0) {
-        const next = octave + step
-        if (OCTAVES.includes(next)) shiftTo(next)
-        return
-      }
-      const note = noteLetters.indexOf(pressed)
-      if (note >= 0) press(note)
-    }
-    const up = (e: KeyboardEvent) => {
-      if (!owns) return
-      const note = noteLetters.indexOf(e.key.toLowerCase())
-      if (note >= 0) release(note)
-    }
+    const down = (e: KeyboardEvent) => latest.current.onKeyDown(e)
+    const up = (e: KeyboardEvent) => latest.current.onKeyUp(e)
+    const blur = () => latest.current.releaseLoose()
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
-    window.addEventListener('blur', releaseLoose)
+    window.addEventListener('blur', blur)
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
-      window.removeEventListener('blur', releaseLoose)
+      window.removeEventListener('blur', blur)
     }
-  })
+  }, [latest])
 
   // The letters go to one bed at a time, and what this one is holding goes with
   // them: a note struck by a letter key whose wire has just moved has nothing
   // left that can let it go.
   useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect -- releaseLoose sets state; this runs only when the letters move to another bed
-    if (!owns) releaseLoose()
-    // oxlint-disable-next-line react/exhaustive-effect-dependencies, react-hooks/exhaustive-deps -- releaseLoose is rebuilt every render; this runs only when the letters move to another bed
-  }, [owns])
+    if (!owns) latest.current.releaseLoose()
+  }, [owns, latest])
 
   // A hand dragged across three octaves plays what it crosses. The capture a
   // touch hands to the key it started on would otherwise keep every event there,
