@@ -13,10 +13,10 @@ import styles from './Menu.module.css'
 // which scrolls and clips, and the top layer clears both without a portal to
 // escape their overflow or a z-index to outbid them.
 //
-// The shell only — placing, dismissing, and where the keyboard lands. What is
-// in the menu is the caller's, because the two that have one are a way of
-// rolling a board and a drawer of settings for a keybed, and they agree on
-// nothing but the box.
+// The shell only — placing, dismissing, and where the keyboard lands, which on
+// the way out is back on the toggle. What is in the menu is the caller's,
+// because the two that have one are a way of rolling a board and a drawer of
+// settings for a keybed, and they agree on nothing but the box.
 export function Menu(props: {
   anchor: HTMLElement | null
   /** The control that opens it, whose presses are its own business: without
@@ -73,6 +73,14 @@ export function Menu(props: {
       window.removeEventListener('pointerdown', onDown, true)
     }
   }, [onClose, toggle, refs])
+
+  useEffect(
+    () => () => {
+      const at = document.activeElement
+      if (at === null || at === document.body) toggle?.focus()
+    },
+    [toggle],
+  )
 
   return (
     <div
