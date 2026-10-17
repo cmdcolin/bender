@@ -1,11 +1,14 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { parseBench } from './bench.ts'
 import { Instruments } from './Instruments.tsx'
 import './testDom.ts'
+
+beforeEach(() => localStorage.clear())
 
 const group = (name: string) => screen.queryByRole('group', { name })
 const allMode = () => screen.getByRole('button', { name: 'all instruments' })
@@ -60,4 +63,25 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   expect(sameControls(now, DEFAULT_CONTROLS)).toBe(false)
   expect(now.drumLevel).toBe(DEFAULT_CONTROLS.drumLevel)
   expect(now.fmLevel).toBe(DEFAULT_CONTROLS.fmLevel)
+})
+
+test('the mode and what was closed come back after a reload', () => {
+  const first = render(<Instruments seconds={0} />)
+  fireEvent.click(allMode())
+  fireEvent.click(screen.getByRole('button', { name: 'close FM chip' }))
+  first.unmount()
+
+  render(<Instruments seconds={0} />)
+  expect(group('mono synth')).not.toBeNull()
+  expect(group('fm keyboard')).toBeNull()
+  expect(screen.getByRole('button', { name: '+ fm chip' })).not.toBeNull()
+})
+
+test('a stored bench that is not one reads as the default', () => {
+  expect(parseBench('{')).toEqual({ all: false, closed: [] })
+  expect(parseBench('7')).toEqual({ all: false, closed: [] })
+  expect(parseBench('{"all":true,"closed":["FM chip",3]}')).toEqual({
+    all: true,
+    closed: ['FM chip'],
+  })
 })

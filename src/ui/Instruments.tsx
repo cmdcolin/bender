@@ -1,5 +1,6 @@
 import { useState, type ComponentType } from 'react'
 
+import { loadBench, saveBench } from './bench.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
@@ -25,10 +26,19 @@ const LEVELLED: Row = [
 // The keyboards and the kit. Normally the toy and the kit always show and the
 // other three come and go with their faders. The all-instruments mode lays out
 // every one whatever its fader says, each with a close cap, and a row of what
-// has been closed to bring it back.
+// has been closed to bring it back. The mode and the closed set survive a
+// reload.
 export function Instruments({ seconds }: { seconds: number }) {
-  const [all, setAll] = useState(false)
-  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set())
+  const [saved] = useState(loadBench)
+  const [all, setAll] = useState(saved.all)
+  const [closed, setClosed] = useState<ReadonlySet<string>>(
+    new Set(saved.closed),
+  )
+  const keep = (nextAll: boolean, nextClosed: ReadonlySet<string>) => {
+    setAll(nextAll)
+    setClosed(nextClosed)
+    saveBench({ all: nextAll, closed: [...nextClosed] })
+  }
   const fmUp = useBoardValue(c => c.fmLevel > 0)
   const pcmUp = useBoardValue(c => c.pcmLevel > 0)
   const monoUp = useBoardValue(c => c.monoLevel > 0)
@@ -40,13 +50,10 @@ export function Instruments({ seconds }: { seconds: number }) {
   const shows = (stage: string) =>
     all ? !closed.has(stage) : (up.get(stage) ?? true)
 
-  const close = (stage: string) => setClosed(c => new Set(c).add(stage))
+  const close = (stage: string) => keep(all, new Set(closed).add(stage))
   const reopen = (stage: string) =>
-    setClosed(c => new Set([...c].filter(s => s !== stage)))
-  const toggle = () => {
-    setAll(!all)
-    setClosed(new Set())
-  }
+    keep(all, new Set([...closed].filter(s => s !== stage)))
+  const toggle = () => keep(!all, closed)
 
   const shelf = (machines: Row) => {
     const shown = machines.filter(([stage]) => shows(stage))
