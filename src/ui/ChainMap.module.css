@@ -30,6 +30,7 @@
    something to the path. It lights a door and nothing else. */
 .graph svg {
   display: block;
+  margin-inline: auto;
   max-width: 100%;
   height: auto;
   max-height: max(420px, calc(100vh - 400px));

@@ -879,17 +879,17 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           .map(t => (fbSide === side ? LANE : 0) + reach(t, side)),
       ),
     )
-  const [leftGutter, rightGutter] = [gutter('left'), gutter('right')]
+  const sideGutter = Math.max(gutter('left'), gutter('right'))
   // Which edge each tap reaches for, settled here and carried: sideOf reads an
   // x measured from zero, and the whole drawing is about to move right by the
   // gutter it just sized.
   const tapSide = new Map(taps.map(t => [t, sideOf(t.edge)]))
 
-  const colX = MARGIN + leftGutter
+  const colX = MARGIN + sideGutter
   for (const n of [...path, ...band, ...foot, ...parts, board, mix, bus])
     n.x += colX
 
-  const width = MARGIN * 2 + leftGutter + content + rightGutter
+  const width = MARGIN * 2 + sideGutter * 2 + content
   const laneX = (side: Side) =>
     side === 'left' ? MARGIN + LANE / 2 : width - MARGIN - LANE / 2
 
