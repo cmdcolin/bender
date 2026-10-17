@@ -1242,7 +1242,7 @@ export class Engine {
   }
 
   startRecording() {
-    if (!this.node || this.recording.get()) return
+    if (!this.node || this.recording.get() || this.rec) return
     const stems = this.recStems.get()
     const take = openTake(this.sampleRate())
     const at = stamp()

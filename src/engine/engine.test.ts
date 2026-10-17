@@ -765,6 +765,20 @@ test('a take that runs out of room stops, saves what it has and says why', async
   expect(engine.recError.get()).toBe('')
 })
 
+test('a new take waits for the last one to finish saving', async () => {
+  const { files, chunk, engine } = recorder(false)
+  const l = new Float32Array(N).fill(0.5)
+  chunk({ l, r: l, n: N, done: false })
+  engine.stopRecording()
+  engine.startRecording()
+  expect(engine.recording.get()).toBe(false)
+
+  chunk({ l, r: l, n: 0, done: true })
+  await vi.waitFor(() => expect(files).toHaveLength(1))
+  engine.startRecording()
+  expect(engine.recording.get()).toBe(true)
+})
+
 const wire = (engine: Engine) => {
   const posted: { kind: string; pack?: Float32Array }[] = []
   Object.assign(engine, {
