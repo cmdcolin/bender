@@ -28,6 +28,7 @@ import { MetalBank } from '../util/metal.ts'
 import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
@@ -1482,7 +1483,9 @@ export class ToyDrum implements Stage {
                 this.avalanche ? noiseBias : 1 - noiseBias,
               )
             }
-            this.noiseGate += noiseEdge * (this.avalanche - this.noiseGate)
+            this.noiseGate = flushDenormal(
+              this.noiseGate + noiseEdge * (this.avalanche - this.noiseGate),
+            )
           } else {
             this.avalanche = 1
             this.noiseGate = 1
@@ -1728,7 +1731,7 @@ export class ToyDrum implements Stage {
         if (trigLoad > 0) {
           let charge = 0
           for (let v = 0; v < N_VOICES; v++) charge += pulseOut[v]!
-          this.trigSag = this.trigSag * trigRecover + charge
+          this.trigSag = flushDenormal(this.trigSag * trigRecover + charge)
           spikeSum += charge
         }
         // What the next pass has to get through. One, at the least: a chip with

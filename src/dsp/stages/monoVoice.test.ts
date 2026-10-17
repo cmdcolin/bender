@@ -142,6 +142,20 @@ describe('MonoVoice', () => {
     expect(tail(0.5)).toBeGreaterThan(0.05)
   })
 
+  it('lets a held note decaying to no sustain land on zero', () => {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, { aD: 0.01, aS: 0, fD: 0.01, fS: 0 })
+    v.noteOn(36)
+    const x = new Float32Array(SR)
+    for (let s = 0; s < 20; s++) v.render(x, 0, x.length)
+    const { aEnv, fEnv } = v as unknown as {
+      aEnv: { level: number }
+      fEnv: { level: number }
+    }
+    expect(aEnv.level).toBe(0)
+    expect(fEnv.level).toBe(0)
+  })
+
   it('keeps random patches finite and under full scale', () => {
     let seed = 7
     const r = () => (seed = (seed * 16807) % 2147483647) / 2147483647

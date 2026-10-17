@@ -265,7 +265,7 @@ class Contour {
         }
         break
       case 2:
-        this.level += (this.s - this.level) * this.kd
+        this.level = flushDenormal(this.level + (this.s - this.level) * this.kd)
         break
       case 3:
         this.level = flushDenormal(this.level * this.kr)

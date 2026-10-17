@@ -18,7 +18,7 @@ import { Burst } from '../util/burst.ts'
 import { Drunk } from '../util/drift.ts'
 import { A3_HZ, octaves, wrap1 } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
-import { softclip } from '../util/softclip.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 import {
   decodeStep,
   encodeStep,
@@ -1002,10 +1002,12 @@ export class ToyChip implements Stage {
       }
       if (modClock) clock *= octaves(modClock[i]! * 3)
       if (cross > 0) {
-        this.crossLp =
-          this.lastOut + this.crossLpA * (this.crossLp - this.lastOut)
-        this.crossHp =
-          this.crossLp + this.crossHpA * (this.crossHp - this.crossLp)
+        this.crossLp = flushDenormal(
+          this.lastOut + this.crossLpA * (this.crossLp - this.lastOut),
+        )
+        this.crossHp = flushDenormal(
+          this.crossLp + this.crossHpA * (this.crossHp - this.crossLp),
+        )
         clock *= octaves(cross * softclip(this.crossLp - this.crossHp))
       }
       // Flat cells slow the divider itself, so the song runs late as well as low.
@@ -1303,6 +1305,9 @@ export class ToyChip implements Stage {
     this.env = 0
     this.bassEnv = 0
     this.chordEnv = 0
+    this.crossLp = 0
+    this.crossHp = 0
+    this.lastOut = 0
     for (const v of this.voices) {
       v.note = 0
       v.env = 0
