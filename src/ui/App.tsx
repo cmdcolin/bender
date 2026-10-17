@@ -302,6 +302,7 @@ export function App(props: { openedFromLink?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() !== 'z' || !(e.ctrlKey || e.metaKey)) return
+      if (isTyping(e.target)) return
       e.preventDefault()
       if (e.shiftKey) engine.redo(morphSeconds)
       else engine.undo(morphSeconds)
