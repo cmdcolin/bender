@@ -532,6 +532,7 @@ export const DEFAULT_CONTROLS = {
   stompBias: 0,
   stompSag: 0,
   stompLevel: 0,
+  stompMute: 0,
   stompMix: 0,
 
   delayMs: 350,
@@ -554,6 +555,7 @@ export const DEFAULT_CONTROLS = {
   dlySplice: 0,
   dlyErase: 0,
   dlyMix: 0,
+  dlyMute: 0,
 
   echoMode: 0,
   echoMs: 350,
@@ -562,6 +564,7 @@ export const DEFAULT_CONTROLS = {
   echoMod: 0.3,
   echoShift: 7,
   echoLevel: 0,
+  echoMute: 0,
 
   revDecayS: 2,
   revWarble: 0,
@@ -569,6 +572,7 @@ export const DEFAULT_CONTROLS = {
   revBoing: 0.5,
   revKick: 0,
   revMix: 0,
+  revMute: 0,
   revDry: 1,
 
   ensMode: 0,
@@ -578,6 +582,7 @@ export const DEFAULT_CONTROLS = {
   ensFeedback: 0,
   ensTone: 8000,
   ensMix: 0,
+  ensMute: 0,
   ensWidth: 1,
 
   ampVoice: 0,
@@ -592,6 +597,7 @@ export const DEFAULT_CONTROLS = {
   ampBias: 0.5,
   ampCab: 1,
   ampLevel: 0,
+  ampMute: 0,
   ampCap: 0,
   ampTube: 0,
   ampMicro: 0,

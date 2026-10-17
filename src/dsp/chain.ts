@@ -49,6 +49,16 @@ const MUTE_IDX = [
   IDX.monoMute,
 ]
 
+/** The bypass switches of the pedals, in the order the board numbers them. */
+const BYPASS_IDX = [
+  IDX.stompMute,
+  IDX.dlyMute,
+  IDX.echoMute,
+  IDX.revMute,
+  IDX.ensMute,
+  IDX.ampMute,
+]
+
 // Where the brightness bus sits at zero: a programme-like split of high against
 // total energy. Above it the loop is running brighter than the thing it started
 // as, which is what a squeal climbing its own feedback does.
@@ -302,6 +312,12 @@ export class Chain {
   /** Each muted source's gain as the last block ended, so a switch fades over
       one block rather than cutting. */
   private readonly muteGain = new Float32Array(MUTE_IDX.length).fill(1)
+
+  /** The same for each pedal's wet share, plus the block the pedal was handed,
+      which a bypassed pedal's output fades against. */
+  private readonly bypassGain = new Float32Array(BYPASS_IDX.length).fill(1)
+  private readonly dryL = new Float32Array(BLOCK)
+  private readonly dryR = new Float32Array(BLOCK)
 
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
@@ -617,7 +633,26 @@ export class Chain {
     for (const i of pedalOrderAt(p[IDX.pedalOrder]!)) {
       const s = this.pedals[i]
       if (!s) continue
-      if (!s.when || s.when(p, ctx)) s.process(io, p, ctx)
+      const to = 1 - p[BYPASS_IDX[i]!]!
+      const from = this.bypassGain[i]!
+      if (s.when && !s.when(p, ctx)) {
+        this.bypassGain[i] = to
+        continue
+      }
+      if (to === 1 && from === 1) {
+        s.process(io, p, ctx)
+        continue
+      }
+      this.dryL.set(io.l.subarray(0, n))
+      this.dryR.set(io.r.subarray(0, n))
+      s.process(io, p, ctx)
+      const step = (to - from) / n
+      for (let k = 0; k < n; k++) {
+        const g = from + step * (k + 1)
+        io.l[k] = this.dryL[k]! + (io.l[k]! - this.dryL[k]!) * g
+        io.r[k] = this.dryR[k]! + (io.r[k]! - this.dryR[k]!) * g
+      }
+      this.bypassGain[i] = to
     }
     for (const s of this.post) {
       if (s === this.tape && tapeAt !== TAPE_AT_END) continue

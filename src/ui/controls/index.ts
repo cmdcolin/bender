@@ -92,6 +92,12 @@ export const HOLD_KEYS = new Set<ControlKey>([
   'fmMute',
   'pcmMute',
   'monoMute',
+  'stompMute',
+  'dlyMute',
+  'echoMute',
+  'revMute',
+  'ensMute',
+  'ampMute',
   'bodyX',
   'bodyY',
 ])

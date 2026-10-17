@@ -507,6 +507,7 @@ export const PARAM_DEFS = [
   ['stompBias', 'slew'],
   ['stompSag', 'slew'],
   ['stompLevel', 'ramp'],
+  ['stompMute', 'ramp'],
   ['stompMix', 'slew'],
 
   ['delayMs', 'slew'],
@@ -529,6 +530,7 @@ export const PARAM_DEFS = [
   ['dlySplice', 'slew'],
   ['dlyErase', 'slew'],
   ['dlyMix', 'slew'],
+  ['dlyMute', 'ramp'],
 
   ['echoMode', 'step'],
   ['echoMs', 'step'],
@@ -537,6 +539,7 @@ export const PARAM_DEFS = [
   ['echoMod', 'slew'],
   ['echoShift', 'slew'],
   ['echoLevel', 'slew'],
+  ['echoMute', 'ramp'],
 
   ['revDecayS', 'slew'],
   ['revWarble', 'slew'],
@@ -544,6 +547,7 @@ export const PARAM_DEFS = [
   ['revBoing', 'slew'],
   ['revKick', 'slew'],
   ['revMix', 'slew'],
+  ['revMute', 'ramp'],
   ['revDry', 'slew'],
 
   ['ensMode', 'step'],
@@ -553,6 +557,7 @@ export const PARAM_DEFS = [
   ['ensFeedback', 'slew'],
   ['ensTone', 'slew'],
   ['ensMix', 'slew'],
+  ['ensMute', 'ramp'],
   ['ensWidth', 'slew'],
 
   ['ampVoice', 'step'],
@@ -567,6 +572,7 @@ export const PARAM_DEFS = [
   ['ampBias', 'slew'],
   ['ampCab', 'step'],
   ['ampLevel', 'slew'],
+  ['ampMute', 'ramp'],
   ['ampCap', 'slew'],
   ['ampTube', 'slew'],
   ['ampMicro', 'slew'],
