@@ -645,13 +645,21 @@ test('the loop runs the second column up, with the feedback bus above Output', (
   checkLayout(map)
 })
 
-test.each([{ spine: true }, { caption: true }, { spine: true, caption: true }])(
-  'the experiment options keep the layout sound: %o',
-  opts => {
-    for (const board of Object.values(BOARDS))
-      checkLayout(buildMap(board, { wrap: true, loop: true, ...opts }))
-  },
-)
+test('the folded band is an even grid, with a caption over the foot row', () => {
+  const map = buildMap(DEFAULT_CONTROLS, { wrap: true, loop: true })
+  const chaos = box(map, 'Chaos_osc')!
+  const noise = box(map, 'Noise_crackle')!
+  const sampler = box(map, 'Sampler')!
+  const tape = box(map, 'Four_track')!
+  expect(sampler.x).toBe(chaos.x)
+  expect(sampler.w).toBe(chaos.w)
+  expect(tape.x).toBe(noise.x)
+  expect(noise.y).toBe(chaos.y)
+  const caption = box(map, 'fittings')!
+  const bay = box(map, 'Patch_bay')!
+  expect(caption.label).toBe('fittings')
+  expect(caption.y + caption.h).toBeLessThanOrEqual(bay.y)
+})
 
 test('the loop folds the usual way where the feedback lands off the mix bus', () => {
   const to = (loop: boolean) =>
