@@ -37,6 +37,12 @@
   border-color: var(--border-hover);
 }
 
+.action:disabled {
+  color: var(--fg4);
+  border-color: var(--border-quiet);
+  cursor: default;
+}
+
 /* A verb that is still running: lit, and the ones that use it say so in the
    label too, because a border alone is a thing you notice only once you are
    looking for it. */
@@ -268,6 +274,11 @@
 .pick:hover:not(:disabled) {
   color: var(--fg);
   border-color: var(--border-hover);
+}
+
+.pick:disabled {
+  color: var(--fg4);
+  cursor: default;
 }
 
 .pickOn {

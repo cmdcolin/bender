@@ -76,7 +76,7 @@ export function TapeShelf({ onDone }: { onDone: () => void }) {
               className={styles.query}
               type="text"
               value={typed}
-              placeholder="search archive.org audio…"
+              placeholder="search archive.org…"
               aria-label="search archive.org for a tape"
               autoFocus
               onChange={e => setTyped(e.target.value)}

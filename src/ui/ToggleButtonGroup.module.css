@@ -1,5 +1,6 @@
 .group {
-  display: flex;
+  display: inline-flex;
+  align-self: flex-start;
 }
 
 .off {

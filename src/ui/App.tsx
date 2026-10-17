@@ -460,12 +460,13 @@ export function App(props: { openedFromLink?: boolean }) {
               />
               <div className={styles.controls}>
                 <div className={styles.ioRow}>
-                  {(!sampleName || dragging) && (
-                    <span className={dragging ? styles.dropHot : styles.drop}>
-                      drop an audio file anywhere
-                    </span>
-                  )}
-                  <Tip text="Starts or stops the tape. A one-shot starts again from the front.">
+                  <Tip
+                    text={
+                      sampleName
+                        ? 'Starts or stops the tape. A one-shot starts again from the front.'
+                        : 'Nothing to play yet. Load a tape, drop a file or open the mic.'
+                    }
+                  >
                     <button
                       className={
                         tapeRunning ? styles.ioBtnToggled : styles.ioBtn
@@ -510,6 +511,11 @@ export function App(props: { openedFromLink?: boolean }) {
                     {micOn ? '● mic' : 'mic'}
                   </button>
                 </div>
+                {(!sampleName || dragging) && (
+                  <p className={dragging ? styles.dropHot : styles.drop}>
+                    or drop an audio file anywhere
+                  </p>
+                )}
                 {showShelf && !archiveStep && (
                   <TapeShelf onDone={() => setShowShelf(false)} />
                 )}

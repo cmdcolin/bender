@@ -3,10 +3,8 @@
   flex-direction: column;
   gap: var(--space-xs);
   align-self: stretch;
-  padding: var(--space-sm);
-  border: 1px solid var(--border-quiet);
-  border-radius: 4px;
-  background: var(--bg);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-quiet);
 }
 
 .row {
