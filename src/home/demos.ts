@@ -1,7 +1,7 @@
 // `demos.json` lists the demos. Every one gets a line in the README; the ones
 // marked `showcase` also get a row in the landing page's Demos section, playing
 // a clip `scripts/demoreel.ts` renders offline at build time.
-import listed from '../../demos.json'
+import listed from '../../demos.json' with { type: 'json' }
 
 export interface Demo {
   name: string
