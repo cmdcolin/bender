@@ -1706,3 +1706,10 @@ test('a slow scan strikes a crowded step one voice at a time', () => {
   expect(flam - tight).toBeGreaterThan(0.02)
   expect(flam - tight).toBeLessThan(0.04)
 })
+
+test('a word wider than the ladder reads as the whole ladder', () => {
+  const at = { chipLevel: 0, drumLadder: 1 }
+  const wide = render({ ...at, drumBits: 24 }, 0.5)
+  expect(wide.every(Number.isFinite)).toBe(true)
+  expect(wide).toEqual(render({ ...at, drumBits: 16 }, 0.5))
+})

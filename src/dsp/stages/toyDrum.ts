@@ -811,11 +811,6 @@ export class ToyDrum implements Stage {
     tol: number,
   ): number {
     const word = code + (1 << (bits - 1))
-    if (bits > LADDER_BITS) {
-      let err = 0
-      for (let k = 0; k < bits; k++) if ((word >> k) & 1) err += this.trim[k]!
-      return err * amt * (tol / LADDER_TOL)
-    }
     // Each word's sum, taken in the same order the first time the word comes
     // up, and read back after that. NaN marks a word not yet summed.
     if (bits !== this.wordsBits) {
@@ -1159,7 +1154,10 @@ export class ToyDrum implements Stage {
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!
     const modCross = cross === 0 ? null : ctx.mod.read(DEST.drumCross)
     // The kit shares one cheap DAC; the panel's Bit depth is its word length.
-    const bits = Math.max(Math.round(p[IDX.drumBits]!), 1)
+    const bits = Math.min(
+      Math.max(Math.round(p[IDX.drumBits]!), 1),
+      LADDER_BITS,
+    )
     const q = Math.pow(2, bits - 1)
     const ladder = p[IDX.drumLadder]!
     const ladderTol = p[IDX.drumLadderTol]!
