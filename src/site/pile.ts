@@ -163,7 +163,16 @@ const drums = (r: Rng): Thing => {
   return { hull: hull(-100, -75, 200, 150, 12), body: s, weight: 3 }
 }
 
-const pedal = (r: Rng): Thing => {
+const footswitch = (x: number, y: number, r: number) =>
+  circle(x, y, r, C.steel, `stroke="${C.black}" stroke-width="1.5"`) +
+  circle(x, y, r * 0.6, C.grey)
+
+const lamp = (x: number, y: number, color: string) =>
+  circle(x, y, 3.5, color, `stroke="${C.black}" stroke-width="1"`)
+
+const pedalColors = [C.blue, C.teal, C.mustard, C.orange, C.pink, C.grey]
+
+const stomp = (r: Rng): Thing => {
   const body = pick(r, [C.blue, C.teal, C.grey, C.mustard])
   let s = rect(-45, -70, 90, 140, body, 9)
   s += rect(-50, -30, 5, 12, C.steel) + rect(45, -30, 5, 12, C.steel)
@@ -175,6 +184,100 @@ const pedal = (r: Rng): Thing => {
   s += circle(0, 44, 15, C.steel, `stroke="${C.black}" stroke-width="1.5"`)
   s += circle(0, 44, 9, C.grey)
   return { hull: hull(-45, -70, 90, 140, 9), body: s, weight: 2 }
+}
+
+const compact = (r: Rng): Thing => {
+  let s = rect(-30, -58, 60, 116, pick(r, pedalColors), 6)
+  s += knobAt(-13, -42, 6.5, C.steel, between(r, 0, TAU))
+  s += knobAt(13, -42, 6.5, C.steel, between(r, 0, TAU))
+  s += lamp(0, -26, C.red)
+  s += rect(-24, -18, 48, 20, C.cream, 3) + rect(-18, -11, 36, 4, C.black, 1)
+  s += rect(-26, 10, 52, 40, C.well, 5)
+  for (let i = 0; i < 4; i++) s += rect(-22, 16 + i * 8, 44, 2, C.cone, 1)
+  s += rect(-34, -34, 4, 10, C.steel) + rect(30, -34, 4, 10, C.steel)
+  return { hull: hull(-30, -58, 60, 116, 6), body: s, weight: 2 }
+}
+
+const wideBox = (r: Rng): Thing => {
+  let s = rect(
+    -70,
+    -55,
+    140,
+    110,
+    pick(r, [C.cream, C.red, C.grey, C.mustard]),
+    8,
+  )
+  for (const x of [-40, 0, 40])
+    s += knobAt(x, -28, 11, C.black, between(r, 0, TAU))
+  s += rect(-52, -4, 104, 16, C.white, 2) + rect(-44, 2, 60, 4, C.black, 1)
+  s += footswitch(0, 34, 14) + lamp(-52, 34, C.red)
+  for (const [x, y] of [
+    [-63, -48],
+    [63, -48],
+    [-63, 48],
+    [63, 48],
+  ] as const)
+    s += circle(x, y, 2.5, C.grey)
+  return { hull: hull(-70, -55, 140, 110, 8), body: s, weight: 3 }
+}
+
+const equalizer = (r: Rng): Thing => {
+  let s = rect(-62, -52, 124, 104, pick(r, [C.grey, C.mustard, C.teal]), 6)
+  for (let i = 0; i < 7; i++) {
+    const x = -45 + i * 15
+    s += rect(x - 2, -38, 4, 52, C.black, 2)
+    s += rect(x - 6, between(r, -36, 8), 12, 6, C.cream, 1)
+  }
+  s += footswitch(0, 36, 9) + lamp(46, -46, C.red)
+  return { hull: hull(-62, -52, 124, 104, 6), body: s, weight: 3 }
+}
+
+const looper = (r: Rng): Thing => {
+  let s = rect(-85, -35, 170, 70, pick(r, [C.blue, C.red, C.grey]), 6)
+  s += rect(-78, -29, 156, 8, C.cream, 2)
+  for (let i = 0; i < 4; i++) {
+    const x = -60 + i * 40
+    s += lamp(x, -12, i % 2 ? C.green : C.red) + footswitch(x, 10, 11)
+  }
+  return { hull: hull(-85, -35, 170, 70, 6), body: s, weight: 3 }
+}
+
+const fuzz = (r: Rng): Thing => {
+  const body = pick(r, [C.steel, C.red, C.blue])
+  let s = circle(0, 0, 44, body, `stroke="${C.grey}" stroke-width="2"`)
+  s += knobAt(-17, -14, 9, C.black, between(r, 0, TAU))
+  s += knobAt(17, -14, 9, C.black, between(r, 0, TAU))
+  s += footswitch(0, 26, 10)
+  return { hull: hull(-44, -44, 88, 88, 44), body: s, weight: 2 }
+}
+
+const wah = (r: Rng): Thing => {
+  const body = pick(r, [C.steel, C.red, C.mustard])
+  let s = `<path d="M-24,-80 L24,-80 L34,80 L-34,80 Z" fill="${body}" stroke="${body}" stroke-width="8" stroke-linejoin="round"/>`
+  s += rect(-21, -64, 42, 126, C.black, 4)
+  for (let i = 0; i < 10; i++) s += rect(-21, -60 + i * 12.5, 42, 4, C.cone, 1)
+  s += circle(-27, -76, 2.5, C.grey) + circle(27, -76, 2.5, C.grey)
+  return { hull: hull(-38, -84, 76, 168, 10), body: s, weight: 3 }
+}
+
+const expression = (r: Rng): Thing => {
+  const body = pick(r, [C.blue, C.grey, C.teal])
+  let s = rect(-35, -75, 70, 150, body, 8)
+  s += rect(-28, -66, 56, 102, mix(body, C.white, 0.15), 6)
+  for (let i = 0; i < 7; i++) s += rect(-28, -58 + i * 14, 56, 3, C.black, 1)
+  s += knobAt(-14, 56, 6.5, C.steel, between(r, 0, TAU)) + lamp(14, 56, C.green)
+  return { hull: hull(-35, -75, 70, 150, 8), body: s, weight: 3 }
+}
+
+const tuner = (r: Rng): Thing => {
+  let s = rect(-28, -45, 56, 90, pick(r, [C.teal, C.mustard, C.pink]), 6)
+  s += rect(-21, -36, 42, 28, C.screen, 3)
+  for (let i = -3; i <= 3; i++) s += rect(i * 5 - 0.5, -14, 1, 4, C.black)
+  const lean = between(r, -0.5, 0.5)
+  s += `<line x1="0" y1="-12" x2="${n(Math.sin(lean) * 16)}" y2="${n(-12 - Math.cos(lean) * 16)}" stroke="${C.black}" stroke-width="1.6" stroke-linecap="round"/>`
+  s += lamp(-8, 0, C.red) + lamp(8, 0, C.green)
+  s += footswitch(0, 24, 12)
+  return { hull: hull(-28, -45, 56, 90, 6), body: s, weight: 2 }
 }
 
 const cassette = (r: Rng): Thing => {
@@ -550,9 +653,17 @@ export const pile = (seed = 3): string => {
   toss(keyboard, 2, 14)
   toss(drums, 1, 14)
   toss(speaker, 1, 10)
-  toss(pedal, 3, 10)
-  toss(cassette, 3, 8)
-  toss(board, 3, 8)
+  toss(stomp, 1, 10)
+  toss(compact, 1, 10)
+  toss(wideBox, 1, 10)
+  toss(equalizer, 1, 10)
+  toss(looper, 1, 10)
+  toss(fuzz, 1, 10)
+  toss(wah, 1, 10)
+  toss(expression, 1, 10)
+  toss(tuner, 1, 10)
+  toss(cassette, 2, 8)
+  toss(board, 2, 8)
   toss(battery, 4, 4)
   toss(spool, 2, 4)
   toss(chip, 5, 3)
