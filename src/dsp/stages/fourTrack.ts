@@ -31,8 +31,7 @@ export const INPUT_AUX = 3
 
 /** The longest loop, at 1⅞. */
 export const MAX_LOOP_S = 60
-/** How a loop grows when a longer one is asked for: whole chunks, so a knob
-    being turned up reallocates a few times rather than every block. */
+/** How a loop grows when a longer one is asked for: whole chunks of tape. */
 const GROW_S = 5
 /** One cell of the wear map, in frames: about 10 ms of tape at 1⅞. */
 const CELL = 480
@@ -162,6 +161,9 @@ class Strip {
 class Loop {
   tape: Float32Array | null = null
   wear: Float32Array | null = null
+  /** Frames of tape threaded so far. The buffer is cut for the longest loop
+      the first time, so threading more never copies on the audio thread. */
+  threaded = 0
   /** Frames in the loop as cut, which the Length knob can move under the
       head; never more than the tape threaded. */
   len = 0
@@ -196,9 +198,12 @@ class Loop {
   private readonly gauss: Rng
   private readonly rng: Rng
 
+  private readonly maxFrames: number
+
   constructor(sr: number, gauss: Rng, rng: Rng) {
     this.gauss = gauss
     this.rng = rng
+    this.maxFrames = MAX_LOOP_S * sr
     this.enc = new Dbx(sr, false)
     this.dec = new Dbx(sr, true)
   }
@@ -207,15 +212,12 @@ class Loop {
   // loop is cut longer than what is on the spool. What was recorded stays
   // where it was; the new length is blank.
   thread(frames: number) {
-    const have = this.tape?.length ?? 0
-    if (frames <= have) return
+    if (frames <= this.threaded) return
+    this.threaded = Math.min(frames, this.maxFrames)
     this.wearDirty = true
-    const tape = new Float32Array(frames)
-    const wear = new Float32Array(Math.ceil(frames / CELL))
-    if (this.tape) tape.set(this.tape)
-    if (this.wear) wear.set(this.wear)
-    this.tape = tape
-    this.wear = wear
+    if (this.tape) return
+    this.tape = new Float32Array(this.maxFrames)
+    this.wear = new Float32Array(Math.ceil(this.maxFrames / CELL))
   }
 
   /** The head's reading at the current position, cubic between frames. */
@@ -451,7 +453,7 @@ class Loop {
     this.dec.reset()
     const tape = this.tape
     if (!tape) return
-    for (let i = 0; i < tape.length; i++)
+    for (let i = 0; i < this.threaded; i++)
       if (!Number.isFinite(tape[i])) tape[i] = 0
   }
 }
@@ -700,7 +702,7 @@ export class FourTrack implements Stage {
           : 0
       const loop = this.loops[k]!
       const frames = Math.round(Math.min(p[t.len]!, MAX_LOOP_S) * sr)
-      if (b.rec[k]! > 0 && (loop.tape?.length ?? 0) < frames)
+      if (b.rec[k]! > 0 && loop.threaded < frames)
         loop.thread(
           Math.min(
             Math.ceil(frames / (GROW_S * sr)) * GROW_S * sr,
@@ -708,7 +710,7 @@ export class FourTrack implements Stage {
           ),
         )
       if (loop.tape) {
-        loop.len = Math.min(Math.max(frames, CELL), loop.tape.length)
+        loop.len = Math.min(Math.max(frames, CELL), loop.threaded)
         if (loop.pos >= loop.len) loop.pos %= loop.len
       }
     }
