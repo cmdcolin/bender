@@ -10,6 +10,12 @@ const GETTING_STARTED =
 
 <h1 class="heroHead">Simulated circuit bending</h1>
 <figure class="pile" set:html={pile()} />
+<script>
+  import { pile } from '../site/pile.ts'
+
+  const figure = document.querySelector('.pile')
+  if (figure) figure.innerHTML = pile(Math.floor(Math.random() * 2 ** 31))
+</script>
 <p class="cta">
   <a class="btn primary big" href={appUrl}>
     Open the app →

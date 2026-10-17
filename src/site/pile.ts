@@ -129,9 +129,9 @@ const cassette = (r: Rng): Thing => {
   let s = rect(-65, -42, 130, 84, body, 6)
   s += rect(-55, -34, 110, 44, C.white, 3)
   s += rect(-48, -26, 96, 3, C.grey) + rect(-48, -19, 70, 3, C.grey)
-  s += rect(-34, -6, 68, 22, C.black, 11)
-  s += circle(-18, 5, 8, C.cream) + circle(18, 5, 8, C.cream)
-  s += circle(-18, 5, 3, C.black) + circle(18, 5, 3, C.black)
+  s += rect(-48, -6, 96, 22, C.black, 11)
+  s += circle(-30, 5, 9, C.cream) + circle(30, 5, 9, C.cream)
+  s += circle(-30, 5, 3.5, C.black) + circle(30, 5, 3.5, C.black)
   s += `<polygon points="-40,42 -32,24 32,24 40,42" fill="#2b2b31"/>`
   return { shadow: rect(-65, -42, 130, 84, '#000', 6), body: s, weight: 2 }
 }
