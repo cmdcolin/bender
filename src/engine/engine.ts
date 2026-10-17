@@ -7,8 +7,10 @@ import {
 import {
   asLen,
   asMask,
+  CYCLE,
   DRUM_VOICES,
   GRID_ROWS,
+  heardStep,
   quantizeStep,
   stepBit,
   type DrumMaybeKey,
@@ -111,12 +113,15 @@ export interface Meter {
   peak: number
   scope: Float32Array
   tick: number
+  drumClock: number
+  drumStepMs: number
   /** Voices the kit fired since the last meter, as the bit order of a step. */
   hits: number
   /** Where the tune's own counter is standing and how far through that step,
       which is the clock a note played into the memory lands on. */
   tunePos: number
   tuneFrac: number
+  tuneStepMs: number
   duck: number
   rail: number
   reboots: number
@@ -280,9 +285,12 @@ export class Engine {
       peak: 0,
       scope: new Float32Array(512),
       tick: 0,
+      drumClock: 0,
+      drumStepMs: 0,
       hits: 0,
       tunePos: 0,
       tuneFrac: 0,
+      tuneStepMs: 0,
       duck: 0,
       rail: 1,
       reboots: 0,
@@ -303,6 +311,13 @@ export class Engine {
   /** A hit played by hand writes the step it lands on. Off by default and never
       remembered: a machine that is recording you is a machine you asked to. */
   readonly drumRecord = createStore(false)
+  /** The last hit recording took: its voices, the counter step it went to, and
+      when. */
+  readonly drumTaken = createStore<{
+    bits: number
+    tick: number
+    at: number
+  } | null>(null)
   /** And the same switch on the keyboard: what you play goes into the memory,
       on the step the chip is standing on. Off by default, for the same reason. */
   readonly tuneRecord = createStore(false)
@@ -412,12 +427,9 @@ export class Engine {
   // The board on the wire, written over rather than drawn fresh each flush.
   private readonly pack = new Float32Array(N_PARAMS)
   private huntToken = 0
-  // The last step the kit reported and when it landed here, which is the clock a
-  // hit played by hand is quantized against. Read off the meter rather than off
-  // the message it arrives in, so there is one place the panel and the quantizer
-  // both agree the kit is standing.
-  private lastTick = -1
-  private tickAt = 0
+  // When the last meter landed. A hit or a note played in is placed by carrying
+  // the counters forward from where that meter said they stood.
+  private meterAt = 0
   // What each source's meter is falling from. The taps come back as the peak
   // since the last post, so a kick read that way is one frame at full and then
   // nothing — the same needle the desk draws, held here so a source playing a
@@ -431,10 +443,7 @@ export class Engine {
 
   constructor() {
     this.meter.subscribe(() => {
-      const tick = this.meter.get().tick
-      if (tick === this.lastTick) return
-      this.lastTick = tick
-      this.tickAt = performance.now()
+      this.meterAt = performance.now()
     })
   }
 
@@ -501,9 +510,12 @@ export class Engine {
           peak: msg.peak,
           scope: msg.scope,
           tick: msg.tick,
+          drumClock: msg.drumClock,
+          drumStepMs: msg.drumStepMs,
           hits: msg.hits,
           tunePos: msg.tunePos,
           tuneFrac: msg.tuneFrac,
+          tuneStepMs: msg.tuneStepMs,
           duck: msg.duck,
           rail: msg.rail,
           reboots: msg.reboots,
@@ -1311,6 +1323,23 @@ export class Engine {
       this.set('chipTune', YOURS)
     }
     this.tuneRecord.set(on)
+    if (on) this.setSongPlaying(true)
+  }
+
+  // Arming runs the kit. Armed and stopped, every hit sounds and none is kept,
+  // and nothing about playing says so.
+  armDrumRecord(on: boolean) {
+    this.drumRecord.set(on)
+    if (on) this.setDrumsPlaying(true)
+  }
+
+  // The counters run ahead of the ear by everything between the worklet and the
+  // speaker, which on Bluetooth is a couple of hundred milliseconds: more than
+  // a step at most tempos. A hand plays to what it hears.
+  private latencyMs() {
+    const ctx = this.ctx
+    if (!ctx) return 0
+    return ((ctx.baseLatency || 0) + (ctx.outputLatency || 0)) * 1000
   }
 
   // Where each key that is down struck — the step, and which of the memory's
@@ -1319,16 +1348,17 @@ export class Engine {
   // chords, and the toy sounds four of them.
   private struckAt = new Map<number, { step: number; lane: number }>()
 
-  /** Which step of the memory a note played now belongs to. The counter and how
-      far through its step it is both arrive with the meter, which is at most one
-      meter old — a few percent of a step at the rates a tune runs at. */
+  /** Which step of the memory a note played now belongs to. */
   private tuneStep(): number {
     const m = this.meter.get()
-    return quantizeStep(
-      m.tunePos,
-      m.tuneFrac,
-      asTuneLen(this.controls.get().tuneLen),
-    )
+    const { tick, phase } = heardStep({
+      tick: m.tunePos,
+      clock: m.tuneFrac,
+      stepMs: m.tuneStepMs,
+      ageMs: performance.now() - this.meterAt,
+      latencyMs: this.latencyMs(),
+    })
+    return quantizeStep(tick, phase, asTuneLen(this.controls.get().tuneLen))
   }
 
   private stepKey(step: number, lane = 0): TuneStepKey {
@@ -1393,41 +1423,48 @@ export class Engine {
   // kit answers a finger the way it answers the mic — but the kit does have to
   // be turned up, because Level is the switch that decides the box is there at
   // all.
+  //
+  // A hit recorded late in a step goes to the next one, which the kit has yet
+  // to play, so the kit is told to leave it out once rather than play it twice.
   drumHit(bits: number, gain = 1) {
     if (bits === 0) return
-    this.post({ kind: 'drumHit', bits, gain })
-    if (this.drumRecord.get() && this.drumsPlaying.get()) this.writeHit(bits)
+    if (!this.drumRecord.get() || !this.drumsPlaying.get()) {
+      this.post({ kind: 'drumHit', bits, gain })
+      return
+    }
+    const tick = this.heardDrumTick()
+    this.post({ kind: 'drumHit', bits, gain, skipTick: tick })
+    this.writeHit(bits, tick)
+    this.drumTaken.set({ bits, tick, at: performance.now() })
   }
 
-  // How far through the current step the hit arrived, which is what decides
-  // whether it belongs to this step or the next. The tick is a step counter and
-  // arrives with the meter, so the clock here is how long that tick has been
-  // standing — and swing is in it, because a held-back offbeat is a longer step
-  // and half of it is somewhere else.
-  //
-  // A report older than a whole step is not a step nearly over, it is a clock
-  // nobody is reading: the tab went to the background, the meter stopped, the
-  // audio never started. Clamping that to 1 said "just about to turn over" and
-  // put every hit one step to the right of the playhead — including the first
-  // hit of a session, where the last report was at time zero. What is actually
-  // known then is the step the kit last said it was standing on, so a stale
-  // clock rounds to that rather than past it.
-  private stepPhase(): number {
+  // The counter step a hit played now belongs to, rounded to the nearer. Swing
+  // is in it, because a held-back offbeat is a longer step and half of it is
+  // somewhere else. Before the worklet has said how long a step is, the tempo
+  // knob stands in.
+  private heardDrumTick(): number {
+    const m = this.meter.get()
     const c = this.controls.get()
     const swing = Math.min(Math.max(c.drumSwing, 0), 0.9)
-    const span = this.lastTick % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5
-    const stepMs = (60000 / Math.max(c.drumBpm, 1) / 4) * span
-    const since = performance.now() - this.tickAt
-    return since < stepMs ? since / stepMs : 0
+    const { tick, phase } = heardStep(
+      {
+        tick: m.tick,
+        clock: m.drumClock,
+        stepMs: m.drumStepMs || 15000 / Math.max(c.drumBpm, 1),
+        ageMs: performance.now() - this.meterAt,
+        latencyMs: this.latencyMs(),
+      },
+      t => (t % 2 === 0 ? 1 + swing * 0.5 : 1 - swing * 0.5),
+    )
+    return quantizeStep(tick, phase, CYCLE)
   }
 
   // A hit played by hand, written onto the grid. Each row takes its own column,
   // because each carries its own length — a five-step hat is somewhere else in
   // the bar than the kick is. One entry in the walk per hit: a hand that has
   // just played the wrong pad wants that hit back and nothing else.
-  private writeHit(bits: number) {
+  private writeHit(bits: number, tick: number) {
     const controls = this.controls.get()
-    const phase = this.stepPhase()
     // Worked out before anything is written, so the whole hit is one gesture:
     // arming per voice would bank a step per voice, and arming for a hit that
     // lands on steps already written would leave an arm nothing commits — which
@@ -1436,7 +1473,7 @@ export class Engine {
     for (const [v, voice] of DRUM_VOICES.entries()) {
       if ((bits & (1 << v)) === 0) continue
       const len = asLen(controls[voice.len])
-      const bit = stepBit(quantizeStep(this.lastTick, phase, len))
+      const bit = stepBit(tick % len)
       const mask = asMask(controls[voice.key])
       if ((mask & bit) === 0) writes.push([voice.key, mask | bit])
       // A hand playing a hit onto a step is asking for that hit, so a step it

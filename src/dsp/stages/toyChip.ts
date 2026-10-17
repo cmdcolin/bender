@@ -244,6 +244,7 @@ export class ToyChip implements Stage {
   // chip's bottom A and a note below zero is a note like any other.
   private note: number = REST
   private stepClock = 0
+  private stepHzNow = 1
   // The steps being played this block and how many of them come round: the
   // ROM's own table, or the memory's. Filled in place from the params rather
   // than built, because an array built per block is garbage per block on the
@@ -543,6 +544,11 @@ export class ToyChip implements Stage {
 
   get tuneFrac() {
     return Math.min(Math.max(this.stepClock, 0), 1)
+  }
+
+  /** How long a step of the tune lasts at the rate the chip is counting now. */
+  get tuneStepMs() {
+    return 1000 / this.stepHzNow
   }
 
   // Retrigger the note if it is already up, else take a silent voice; failing
@@ -1004,11 +1010,12 @@ export class ToyChip implements Stage {
       }
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
+      this.stepHzNow = stepHz * timing
 
       // sequencer — the run/stop line freezes it where it stands, and so does a
       // latched die: the counter stops clocking and the note it was on stays on
       if (this.transport.tune && !latched) {
-        this.stepClock += (stepHz * timing) / this.sr
+        this.stepClock += this.stepHzNow / this.sr
       }
       if (this.stepClock >= 1) {
         this.stepClock -= 1

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
-import { STEPS } from '../../drums.ts'
+import { CYCLE, STEPS } from '../../drums.ts'
 import { IDX, packParams } from '../../engine/params.ts'
 import { buildBender } from '../build.ts'
 import { DEST } from '../modbus.ts'
@@ -21,7 +21,6 @@ import {
   SR,
   stepMask,
 } from '../testRender.ts'
-import { CYCLE } from './toyDrum.ts'
 
 // One voice alone on an empty grid, nothing else in the kit or the chain.
 const soloVoice = (overrides: Partial<Controls>, seconds = 0.5) =>
@@ -325,6 +324,33 @@ test('the kit reports what fired, once each', () => {
   expect(built.toyDrum.takeFired()).toBe(1 | (1 << 2))
   // Reading takes them: a hit the panel has already lit is one it has seen.
   expect(built.toyDrum.takeFired()).toBe(0)
+})
+
+// A hit recorded late in a step goes to the next one, and has already sounded
+// by the time the counter gets there.
+test('a skipped step leaves its voices out once', () => {
+  const kicks = (skip: number) => {
+    const built = buildBender(SR)
+    built.transport.drums = true
+    const p = packParams({
+      ...DEFAULT_CONTROLS,
+      chipLevel: 0,
+      drumLevel: 1,
+      drumKick: 0xffff,
+      drumSwing: 0,
+    })
+    const io = makeIo()
+    built.toyDrum.skip(1, skip)
+    const at: number[] = []
+    while (built.toyDrum.tick < 20) {
+      built.chain.process(io, p)
+      if (built.toyDrum.takeFired() & 1) at.push(built.toyDrum.tick)
+    }
+    return at.filter(t => t <= 4)
+  }
+  expect(kicks(1)).toEqual([2, 3, 4])
+  // Two steps off is not a hit just played; nothing is left out.
+  expect(kicks(2)).toEqual([1, 2, 3, 4])
 })
 
 // Where the weight of a hit sits after its peak, in seconds. An exponential

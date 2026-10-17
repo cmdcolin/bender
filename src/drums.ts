@@ -163,6 +163,42 @@ export const asLen = (v: number) => Math.min(Math.max(Math.round(v), 1), STEPS)
 export const quantizeStep = (tick: number, phase: number, len: number) =>
   (((tick + (phase >= 0.5 ? 1 : 0)) % len) + len) % len
 
+// Every pattern length divides this, so the counter can wrap without a row
+// jumping mid-bar: it is the least common multiple of 1 through 16. At the
+// fastest tempo the panel offers, one lap of it is over an hour.
+export const CYCLE = 720720
+
+export interface StepReport {
+  /** The step the counter reported standing on. */
+  tick: number
+  /** How far into that step it had got, in unswung steps. */
+  clock: number
+  /** How long an unswung step lasts; 0 when nothing has said. */
+  stepMs: number
+  /** How long ago the report arrived. */
+  ageMs: number
+  /** How long the counter's sound takes to reach the ear. */
+  latencyMs: number
+}
+
+/** The step a listener was hearing when they played, and how far through it.
+    The counter runs ahead of the ear by the output latency, so the heard step
+    trails the reported one. A report older than its own step is a clock that
+    has stopped, read as it stood. `span` is each step's length in unswung
+    steps, which swing makes uneven. */
+export function heardStep(
+  r: StepReport,
+  span: (tick: number) => number = () => 1,
+): { tick: number; phase: number } {
+  let tick = r.tick
+  let into = r.clock
+  const ticking = r.stepMs > 0 && r.ageMs < span(tick) * r.stepMs
+  if (ticking) into += (r.ageMs - r.latencyMs) / r.stepMs
+  while (into < 0) into += span(--tick)
+  while (into >= span(tick)) into -= span(tick++)
+  return { tick, phase: Math.max(into, 0) / span(tick) }
+}
+
 export const stepBit = (step: number) => 1 << (STEPS - 1 - step)
 export const hasStep = (mask: number, step: number) =>
   (mask & stepBit(step)) !== 0

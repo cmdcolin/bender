@@ -370,6 +370,39 @@ test('a hit lands on the reported step when the clock has gone stale', () => {
   expect(hasStep(engine.controls.get().drumSnare, 9)).toBe(true)
 })
 
+// The kit's own report of how long a step lasts wins over the tempo knob: a
+// sagging rail stretches every step, and the knob knows nothing of it.
+test('a hit is placed by the step length the kit reports', () => {
+  const now = vi.spyOn(performance, 'now')
+  const engine = new Engine()
+  engine.setDrumsPlaying(true)
+  engine.drumRecord.set(true)
+  engine.patch({ drumKick: 0, drumSwing: 0, drumBpm: 120 })
+  now.mockReturnValue(1000)
+  engine.meter.set({
+    ...engine.meter.get(),
+    tick: 8,
+    drumClock: 0,
+    drumStepMs: 300,
+  })
+  now.mockReturnValue(1100)
+  engine.drumHit(1)
+  expect(hasStep(engine.controls.get().drumKick, 8)).toBe(true)
+  expect(engine.drumTaken.get()).toMatchObject({ bits: 1, tick: 8 })
+})
+
+test('arming record runs the machine it records into', () => {
+  const engine = new Engine()
+  engine.armDrumRecord(true)
+  expect(engine.drumsPlaying.get()).toBe(true)
+  expect(engine.songPlaying.get()).toBe(false)
+  engine.armDrumRecord(false)
+  expect(engine.drumsPlaying.get()).toBe(true)
+
+  engine.armTuneRecord(true)
+  expect(engine.songPlaying.get()).toBe(true)
+})
+
 test('a hit that writes nothing arms nothing', () => {
   const engine = new Engine()
   engine.setDrumsPlaying(true)

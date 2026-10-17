@@ -3,6 +3,7 @@ import {
   ACCENT_GAIN,
   ADDR_LINES,
   asLen,
+  CYCLE,
   DATA_LINES,
   DRUM_VOICES,
   GRID_ROWS,
@@ -106,11 +107,6 @@ const VOICE_PARAM = DRUM_VOICES.map(v => IDX[v.key])
 const MAYBE_PARAM = DRUM_VOICES.map(v => IDX[v.maybe])
 const LEN_PARAM = GRID_ROWS.map(r => IDX[r.len])
 const ACCENT_ROW = GRID_ROWS.length - 1
-
-// Every pattern length divides this, so the counter can wrap without a row
-// jumping mid-bar: it is the least common multiple of 1 through 16. At the
-// fastest tempo the panel offers, one lap of it is over an hour.
-export const CYCLE = 720720
 
 // Which envelope each amplifier leans across to, per drumCross choice. A voice
 // wired to itself is a voice nobody bridged.
@@ -564,7 +560,12 @@ export class ToyDrum implements Stage {
    * sequencer reads them.
    */
   tick = 0
-  private stepClock = 0
+  /** How far into the current step the counter has got, in unswung steps. */
+  stepClock = 0
+  /** How long an unswung step lasts at the rate the counter is clocking now. */
+  stepMs = 125
+  private skipBits = 0
+  private skipTick = -1
   /** Each row's length this block, clamped to something a modulo can use. */
   private lens = new Uint8Array(GRID_ROWS.length).fill(STEPS)
   private retrigPhase = 0
@@ -847,6 +848,15 @@ export class ToyDrum implements Stage {
     this.struckGain = Math.max(this.struckGain, gain)
   }
 
+  /** Leave `bits` out of the step at `tick`, once. A hit played in late in a
+      step is written to the next one, and has already sounded by the time the
+      counter gets there. */
+  skip(bits: number, tick: number) {
+    if ((tick - this.tick + CYCLE) % CYCLE !== 1) return
+    this.skipBits = bits
+    this.skipTick = tick
+  }
+
   // Which cell of the pattern memory answers for a row this tick. The counter
   // is one thing and the wires out of it are another: a fault here leaves the
   // counting alone — the grid's playhead goes on chasing the step it always did
@@ -1069,7 +1079,11 @@ export class ToyDrum implements Stage {
     const word = this.wordAt(p, this.tick)
     const at = STEPS - 1 - (this.tick % this.throwLen)
     this.throwing = ((Math.round(p[IDX.drumThrow]!) >> at) & 1) === 1
-    const named = word & VOICE_BITS
+    let named = word & VOICE_BITS
+    if (!fallback && this.tick === this.skipTick) {
+      named &= ~this.skipBits
+      this.skipTick = -1
+    }
     let bits = fallback ? named || 1 : named
     const accent = (word & ACCENT_BIT) !== 0
     const gain = accent ? 1 + (this.accentAmt - 1) * this.accentV : 1
@@ -1093,6 +1107,7 @@ export class ToyDrum implements Stage {
     const clock = rail.clockFactor
     const stepHz = (p[IDX.drumBpm]! / 60) * 4 * clock
     const modTempo = ctx.mod.read(DEST.drumBpm)
+    this.stepMs = 1000 / (modTempo ? stepHz * octaves(modTempo[0]!) : stepHz)
     const baseSwing = p[IDX.drumSwing]!
     const modSwing = ctx.mod.read(DEST.drumSwing)
     const slip = Math.min(Math.max(p[IDX.drumSlip]!, 0), 1)

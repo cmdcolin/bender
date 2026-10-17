@@ -106,6 +106,8 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
         case 'drumHit':
           this.built.toyDrum.strike(msg.bits, msg.gain)
+          if (msg.skipTick !== undefined)
+            this.built.toyDrum.skip(msg.bits, msg.skipTick)
           break
         case 'record':
           if (msg.on) {
@@ -303,9 +305,12 @@ class BenderProcessor extends AudioWorkletProcessor {
         peak,
         scope,
         tick: this.built.toyDrum.tick,
+        drumClock: this.built.toyDrum.stepClock,
+        drumStepMs: this.built.toyDrum.stepMs,
         hits: this.built.toyDrum.takeFired(),
         tunePos: this.built.toyChip.tunePos,
         tuneFrac: this.built.toyChip.tuneFrac,
+        tuneStepMs: this.built.toyChip.tuneStepMs,
         duck: this.duck,
         rail: rail.v,
         reboots: rail.rebootCount,

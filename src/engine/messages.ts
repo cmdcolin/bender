@@ -49,6 +49,9 @@ export interface DrumHitMsg {
   bits: number
   /** How hard it lands, the way an accented step lands harder than a plain one. */
   gain: number
+  /** The step a recorded hit was written to. If the counter has yet to reach
+      it, the kit leaves these voices out of it once, so the hit sounds once. */
+  skipTick?: number
 }
 
 // Both run lines in one message: they are two switches on one desk, and the
@@ -96,6 +99,10 @@ export interface MeterMsg {
   /** Steps the drum sequencer has clocked, for the grid's playheads: each row
       is this modulo its own length. */
   tick: number
+  /** How far into the current step the counter has got, in unswung steps, and
+      how long an unswung step lasts at the rate it is clocking. */
+  drumClock: number
+  drumStepMs: number
   /** Voices the kit has fired since the last meter, as the bit order of a step.
       The grid lights off this, so a hit from the mic, a bridged trigger line or
       a pad shows on the row it struck rather than only in the air. */
@@ -105,6 +112,7 @@ export interface MeterMsg {
       The chip's own, because every bend that drags it is in there. */
   tunePos: number
   tuneFrac: number
+  tuneStepMs: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number
   /** The toy supply, 0 at the floor and 1 at full cells — the number the pitch,
