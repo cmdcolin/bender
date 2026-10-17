@@ -2,7 +2,7 @@
 // tap costs three wraps and the board holds twenty-odd lines, and `%` on a
 // length the compiler can't see is an integer divide every time — the spring
 // tank alone was paying for fourteen of them a sample.
-const ringSize = (n: number) => 1 << Math.ceil(Math.log2(Math.max(n, 2)))
+export const ringSize = (n: number) => 1 << Math.ceil(Math.log2(Math.max(n, 2)))
 
 /** A constant delay split into what readAt wants, matching read()'s clamp. */
 export function fixedTap(delay: number, max: number) {

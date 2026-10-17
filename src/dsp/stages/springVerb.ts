@@ -2,6 +2,7 @@ import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { rail } from '../util/bridged.ts'
+import { ringSize } from '../util/delayline.ts'
 import { Transient } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
 import { lpCoef } from '../util/onepole.ts'
@@ -13,8 +14,6 @@ const AP_MS = [1.7, 2.9, 4.7, 6.3, 8.3, 11.9]
 const COMB_MS = [31, 37, 41, 43]
 const N_AP = AP_MS.length
 const N_COMB = COMB_MS.length
-
-const ringSize = (n: number) => 1 << Math.ceil(Math.log2(Math.max(n, 2)))
 
 // Warble swings each comb's length on its own sine, at rates that never line
 // up, so the tail's resonances stop standing still. The bottom of the travel is
