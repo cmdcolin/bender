@@ -40,6 +40,15 @@ const SLOT_IDX = [
   IDX.bendSlot5,
 ]
 
+/** The mute switches of the first sources, in the order the chain sums them. */
+const MUTE_IDX = [
+  IDX.chipMute,
+  IDX.drumMute,
+  IDX.fmMute,
+  IDX.pcmMute,
+  IDX.monoMute,
+]
+
 // Where the brightness bus sits at zero: a programme-like split of high against
 // total energy. Above it the loop is running brighter than the thing it started
 // as, which is what a squeal climbing its own feedback does.
@@ -290,6 +299,10 @@ export class Chain {
       for stems, and by nothing else. */
   capturing = false
 
+  /** Each muted source's gain as the last block ended, so a switch fades over
+      one block rather than cutting. */
+  private readonly muteGain = new Float32Array(MUTE_IDX.length).fill(1)
+
   sources: Stage[] = []
   bendById: (Stage | undefined)[] = []
   pedals: Stage[] = []
@@ -489,7 +502,11 @@ export class Chain {
       const s = this.sources[k]!
       if (!s.when || s.when(p, ctx)) {
         const vca = k < MAX_SOURCES ? ctx.mod.read(SOURCE_LEVEL_DEST[k]!) : null
-        if (vca && !cap) for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
+        const muteTo = k < MUTE_IDX.length ? 1 - p[MUTE_IDX[k]!]! : 1
+        const muteFrom = k < MUTE_IDX.length ? this.muteGain[k]! : 1
+        const muting = muteTo < 1 || muteFrom < 1
+        if ((vca || muting) && !cap)
+          for (let i = 0; i < n; i++) prevR[i] = io.r[i]!
         // The bus before this source ran, so what the source put there is what
         // the meter loop leaves behind minus it — a subtract afterwards rather
         // than a branch inside the loop that reads it.
@@ -503,6 +520,15 @@ export class Chain {
             io.l[i] = prev[i]! + (io.l[i]! - prev[i]!) * g
             io.r[i] = prevR[i]! + (io.r[i]! - prevR[i]!) * g
           }
+        }
+        if (muting) {
+          const step = (muteTo - muteFrom) / n
+          for (let i = 0; i < n; i++) {
+            const g = muteFrom + step * (i + 1)
+            io.l[i] = prev[i]! + (io.l[i]! - prev[i]!) * g
+            io.r[i] = prevR[i]! + (io.r[i]! - prevR[i]!) * g
+          }
+          this.muteGain[k] = muteTo
         }
         if (toyRef && k === TOY_TAP)
           for (let i = 0; i < n; i++) ctx.toy[i] = io.l[i]! - prev[i]!

@@ -68,6 +68,21 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   expect(now.fmLevel).toBe(DEFAULT_CONTROLS.fmLevel)
 })
 
+test('mute silences one machine and keeps its level, and a roll leaves it muted', () => {
+  render(<Instruments seconds={0} />)
+  fireEvent.click(allMode())
+  const mute = screen.getByRole('button', { name: 'mute Toy drums' })
+  expect(mute.getAttribute('aria-pressed')).toBe('false')
+  fireEvent.click(mute)
+  expect(engine.controls.get().drumMute).toBe(1)
+  expect(engine.controls.get().drumLevel).toBe(DEFAULT_CONTROLS.drumLevel)
+  expect(mute.getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(screen.getAllByRole('button', { name: 'randomize' })[1]!)
+  expect(engine.controls.get().drumMute).toBe(1)
+  fireEvent.click(mute)
+  expect(engine.controls.get().drumMute).toBe(0)
+})
+
 test('the mode and what was closed are stored for the next load', () => {
   render(<Instruments seconds={0} />)
   fireEvent.click(allMode())

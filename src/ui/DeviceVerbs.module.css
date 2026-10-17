@@ -1,3 +1,13 @@
 .cap {
   composes: cap from './button.module.css';
 }
+
+.capOn {
+  composes: capOn from './button.module.css';
+}
+
+.speaker {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}

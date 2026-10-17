@@ -3,6 +3,7 @@
 
 export const DEFAULT_CONTROLS = {
   chipLevel: 0.6,
+  chipMute: 0,
   chipTune: 0,
   chipTone: 0,
   chipAccomp: 0,
@@ -169,6 +170,7 @@ export const DEFAULT_CONTROLS = {
   tunePoly: 1,
 
   drumLevel: 0.7,
+  drumMute: 0,
   drumBpm: 118,
   drumSwing: 0,
   drumTune: 1,
@@ -267,6 +269,7 @@ export const DEFAULT_CONTROLS = {
   drumThrowLen: 16,
 
   fmLevel: 0,
+  fmMute: 0,
   fmVoice: 0,
   fmBright: 0.5,
   fmFeedback: 0,
@@ -308,6 +311,7 @@ export const DEFAULT_CONTROLS = {
   // up with it turned up would play two instruments before you touched
   // anything.
   pcmLevel: 0,
+  pcmMute: 0,
   pcmVoice: 0,
   pcmEnv: 0,
   pcmRelease: 0.35,
@@ -326,6 +330,7 @@ export const DEFAULT_CONTROLS = {
   // The mono synth, on the same gate line as the FM chip and the home
   // keyboard, so its fader boots at the floor too.
   monoLevel: 0,
+  monoMute: 0,
   monoKeyGate: 0,
   monoGate: 0.6,
   monoStruck: 0,

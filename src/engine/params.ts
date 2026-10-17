@@ -11,6 +11,7 @@ export type Smooth = 'slew' | 'ramp' | 'step'
 
 export const PARAM_DEFS = [
   ['chipLevel', 'slew'],
+  ['chipMute', 'ramp'],
   ['chipTune', 'step'],
   ['chipTone', 'step'],
   ['chipAccomp', 'slew'],
@@ -164,6 +165,7 @@ export const PARAM_DEFS = [
   ['tunePoly', 'step'],
 
   ['drumLevel', 'slew'],
+  ['drumMute', 'ramp'],
   ['drumBpm', 'slew'],
   ['drumSwing', 'slew'],
   ['drumTune', 'slew'],
@@ -252,6 +254,7 @@ export const PARAM_DEFS = [
   ['drumThrowLen', 'step'],
 
   ['fmLevel', 'slew'],
+  ['fmMute', 'ramp'],
   ['fmVoice', 'step'],
   ['fmBright', 'slew'],
   ['fmFeedback', 'step'],
@@ -289,6 +292,7 @@ export const PARAM_DEFS = [
   ['fmAdder', 'step'],
 
   ['pcmLevel', 'slew'],
+  ['pcmMute', 'ramp'],
   ['pcmVoice', 'step'],
   ['pcmEnv', 'step'],
   ['pcmRelease', 'slew'],
@@ -305,6 +309,7 @@ export const PARAM_DEFS = [
   ['pcmBusCut', 'slew'],
 
   ['monoLevel', 'slew'],
+  ['monoMute', 'ramp'],
   ['monoKeyGate', 'step'],
   ['monoGate', 'slew'],
   ['monoStruck', 'step'],

@@ -80,13 +80,18 @@ export const CUT_KEYS = new Set<ControlKey>([
   ...EDITOR_KEYS,
 ])
 
-// Yours, not the look's: how loud it comes out, how hot the mic runs and where
-// your finger is on the pad. Neither a random roll nor a morph touches them, so
+// Yours, not the look's: how loud it comes out, which machines you have muted,
+// how hot the mic runs and where your finger is on the pad. Neither a random roll nor a morph touches them, so
 // picking a look never changes your monitoring level and a morph never drags the
 // body pad out from under you mid-gesture.
 export const HOLD_KEYS = new Set<ControlKey>([
   'outGain',
   'micLevel',
+  'chipMute',
+  'drumMute',
+  'fmMute',
+  'pcmMute',
+  'monoMute',
   'bodyX',
   'bodyY',
 ])
