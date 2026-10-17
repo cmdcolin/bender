@@ -231,6 +231,11 @@ const LEAK_FLOOR = 0.3
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 const ascending = (a: number, b: number) => a - b
 
+/** e^-x. The clock moves every sample, so a cache never hits; at the rates an
+    envelope runs x stays tiny and four Taylor terms hold to 3e-9. */
+const expNeg = (x: number) =>
+  x < 0.05 ? 1 - x * (1 - (x / 2) * (1 - (x / 3) * (1 - x / 4))) : Math.exp(-x)
+
 const addOnce = (out: number[], g: number, skip: number[]) => {
   if (!skip.includes(g) && !out.includes(g)) out.push(g)
 }
@@ -319,8 +324,6 @@ export class ToyChip implements Stage {
   // Whether a hand is still on the key the gate is about to report. The ROM and
   // a trigger line strike and let go in the same instant; a finger does not.
   private keyHeldPending = false
-  private lastEnvRate = 0
-  private envDecay = 1
   // The last block's accompaniment level, kept for the note report: bass and
   // chord envelopes run whether or not anyone can hear them.
   private accompLevel = 0
@@ -1097,15 +1100,9 @@ export class ToyChip implements Stage {
       }
 
       // One envelope generator, timed off the ROM's own step rate the way a
-      // cheap chip ties decay to its tempo clock. The exp is recomputed only
-      // when the step rate or the clock changes; a latch holds the envelope
+      // cheap chip ties decay to its tempo clock; a latch holds the envelope
       // where it stood along with everything else it froze.
-      const envRate = stepHz * timing
-      if (envRate !== this.lastEnvRate) {
-        this.lastEnvRate = envRate
-        this.envDecay = Math.exp(-(0.8 * envRate) / this.sr)
-      }
-      const envDecay = latched ? 1 : this.envDecay
+      const envDecay = latched ? 1 : expNeg((0.8 * stepHz * timing) / this.sr)
       const cap = this.envCap
       if (cap === ENV_LEAKY) {
         this.env = leak(this.env, envDecay)
