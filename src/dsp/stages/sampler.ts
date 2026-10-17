@@ -23,6 +23,9 @@ export const PEAK_BINS = 256
 // not do is divide by nothing.
 const MIN_WINDOW = 2
 
+// The longest blank reel the Reel length knob threads.
+const MAX_REEL_S = 20
+
 // The two markers as frames. They round outward — the in point down, the out
 // point up — so a window is never narrower than the tape you asked for, and
 // only the in point is held back from the end: an out point clamped off the end
@@ -80,8 +83,13 @@ export class Sampler implements Stage {
   private winIn = 0
   private winOut = 1
 
+  private readonly sr: number
+  private readonly blank: Float32Array
+
   constructor(sr: number) {
+    this.sr = sr
     this.micTrig = new Transient(sr)
+    this.blank = new Float32Array(Math.round(MAX_REEL_S * sr))
   }
 
   /** The tape itself, for the one thing on the board that reads it rather
@@ -150,12 +158,16 @@ export class Sampler implements Stage {
     return (p[IDX.sampleLevel]! > 0 && this.buf !== null) || p[IDX.loopRec]! > 0
   }
 
-  // Threading a blank tape. Only ever on the way from nothing to armed, so the
-  // one allocation lands when you reach for the knob rather than in a block.
-  // The length is read here and not again: a reel you have recorded on is the
-  // length it is, and a knob that resized it would be throwing the take away.
-  private thread(secs: number, sr: number) {
-    this.buf = new Float32Array(Math.max(Math.round(secs * sr), 2))
+  // Threading a blank tape, cut from the reel the constructor laid by so
+  // nothing that size allocates inside a block. The length is read here and
+  // not again: a reel you have recorded on is the length it is, and a knob that
+  // resized it would be throwing the take away.
+  private thread(secs: number) {
+    const n = Math.min(
+      Math.max(Math.round(secs * this.sr), 2),
+      this.blank.length,
+    )
+    this.buf = this.blank.subarray(0, n)
     this.pos = 0
     this.playing = true
     this.binAt = -1
@@ -170,7 +182,7 @@ export class Sampler implements Stage {
 
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const rec = p[IDX.loopRec]!
-    if (rec > 0 && !this.buf) this.thread(p[IDX.loopSecs]!, ctx.sr)
+    if (rec > 0 && !this.buf) this.thread(p[IDX.loopSecs]!)
     const buf = this.buf
     if (!buf || buf.length < 2) return
     const n = buf.length
