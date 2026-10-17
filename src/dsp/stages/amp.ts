@@ -675,6 +675,8 @@ export class Amp implements Stage {
     this.flick = 1
     for (const s of this.cabL) s.reset()
     for (const s of this.cabR) s.reset()
+    this.dryL.reset()
+    this.dryR.reset()
     this.rail = 1
   }
 }

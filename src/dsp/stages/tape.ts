@@ -488,6 +488,8 @@ class TapeHead {
     this.dropWait = -1
     this.dropDepth = 0
     this.dropEnv = 0
+    this.dcX = 0
+    this.dcY = 0
   }
 }
 
