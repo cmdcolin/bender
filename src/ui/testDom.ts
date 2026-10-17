@@ -188,6 +188,7 @@ function stubLayout() {
 // next one is looking for, and one that left a memory armed is a test that
 // records the next one's keypresses.
 function resetBoard() {
+  engine.panic()
   engine.stopDrift()
   engine.stopHunt()
   engine.writeBoard({ ...DEFAULT_CONTROLS })
@@ -201,10 +202,6 @@ function resetBoard() {
   bendRow.set(0)
   redealEvery.set(0)
   bendSwell.set(false)
-  // A test that left a key down is a test that hands the next one a note it
-  // never played, and the beds light off these.
-  engine.keysDown.set(new Set())
-  engine.fmKeysDown.set(new Set())
   onGlass = false
 }
 

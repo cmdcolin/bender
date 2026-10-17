@@ -185,12 +185,10 @@ export function Keybed({
 
   const press = (key: number, latch = false) => {
     const semitone = at(key)
-    // A press on a note already pinned down is what lets it go — by the hold
-    // switch or by alt, either way, since a key you can see lit and cannot turn
-    // off is a stuck note however it got that way. What counts as down is what
-    // is sounding rather than what this component remembers sending: panic
-    // clears the board underneath it, and a dark key should strike.
-    if (keysDown.has(semitone) && (latch || sticky(semitone))) {
+    // A press on a note already pinned down, by the hold switch or by alt, lets
+    // it go. The engine says what is down rather than this component, because
+    // panic clears the board underneath it and a dark key should strike.
+    if (engine.isStruck(semitone, dest) && (latch || sticky(semitone))) {
       release(key, true)
       return
     }

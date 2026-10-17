@@ -1353,6 +1353,7 @@ export class Engine {
   // and a note played on it should not land in somebody else's tune.
   noteOn(semitone: number, gain = 1, dest: NoteDest = 'toy') {
     const note = this.locked(semitone)
+    this.struck[dest].set(semitone, note)
     this.post({ kind: 'noteOn', semitone: note, gain, dest })
     this.hold(note, true, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
@@ -1360,18 +1361,34 @@ export class Engine {
   }
 
   noteOff(semitone: number, dest: NoteDest = 'toy') {
-    const note = this.locked(semitone)
+    const struck = this.struck[dest]
+    const note = struck.get(semitone) ?? this.locked(semitone)
+    struck.delete(semitone)
     this.post({ kind: 'noteOff', semitone: note, dest })
     this.hold(note, false, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
       this.writeHeld(note)
   }
 
+  /** Whether a key, as pressed rather than as the scale lock snapped it, is
+      down on `dest`. */
+  isStruck(semitone: number, dest: NoteDest): boolean {
+    return this.struck[dest].has(semitone)
+  }
+
+  // Each key down and the note the lock snapped it to, so the release lets go of
+  // that note even after the scale has changed under it.
+  private readonly struck: Record<NoteDest, Map<number, number>> = {
+    toy: new Map(),
+    fm: new Map(),
+    pcm: new Map(),
+    mono: new Map(),
+  }
+
   // The key line's matrix, taken here rather than down on the wire: the drawn
   // keybeds light what is down, so the key that lights has to be the key that
-  // sounds — and a note whose two halves went through different keys is a note
-  // that never comes up. Recording is on the far side of it too, because what
-  // the memory takes is what you heard yourself play.
+  // sounds. Recording is on the far side of it too, because what the memory
+  // takes is what you heard yourself play.
   private locked(semitone: number) {
     const c = this.controls.get()
     return snap(semitone, c.keyScale, c.keyRoot)
@@ -1574,6 +1591,7 @@ export class Engine {
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
     this.flush()
     this.post({ kind: 'panic' })
+    for (const struck of Object.values(this.struck)) struck.clear()
     if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
     if (this.fmKeysDown.get().size > 0) this.fmKeysDown.set(new Set())
     if (this.pcmKeysDown.get().size > 0) this.pcmKeysDown.set(new Set())

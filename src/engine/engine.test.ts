@@ -214,6 +214,25 @@ test('the key lock lights the key it snapped to, not the one you pressed', () =>
   expect(engine.keysDown.get().size).toBe(0)
 })
 
+test('a key lets go of the note it struck after the scale moves under it', () => {
+  const engine = new Engine()
+  const posted = wire(engine) as unknown as {
+    kind: string
+    semitone?: number
+  }[]
+  engine.set('keyScale', SCALE_NAMES.indexOf('major'))
+  engine.set('keyRoot', 0)
+  engine.noteOn(4, 1, 'fm')
+  expect(engine.isStruck(4, 'fm')).toBe(true)
+  engine.set('keyScale', SCALE_NAMES.indexOf('off'))
+  engine.noteOff(4, 'fm')
+  expect(posted.filter(m => m.kind === 'noteOff').map(m => m.semitone)).toEqual(
+    [3],
+  )
+  expect(engine.fmKeysDown.get().size).toBe(0)
+  expect(engine.isStruck(4, 'fm')).toBe(false)
+})
+
 test('striking a note already down is not news', () => {
   const engine = new Engine()
   engine.noteOn(3)
