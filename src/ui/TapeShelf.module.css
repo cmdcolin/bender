@@ -9,12 +9,22 @@
 
 .row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--gap-ctl);
 }
 
+.source {
+  display: flex;
+  flex: 1 1 11rem;
+  align-items: center;
+  gap: var(--gap-ctl);
+  min-width: 0;
+}
+
 .pool {
   composes: select from './button.module.css';
+  min-width: 0;
 }
 
 .go {

@@ -35,79 +35,83 @@ export function TapeShelf({ onDone }: { onDone: () => void }) {
 
   return (
     <div className={styles.shelf}>
-      <ToggleButtonGroup
-        label="where the tape comes from"
-        options={MODES}
-        value={mode}
-        onChange={setMode}
-      />
-      {mode === 'random' ? (
-        <div className={styles.row}>
-          <Tip text={POOLS[pool]!.blurb}>
-            <select
-              className={styles.pool}
-              aria-label="the shelf the tape comes from"
-              value={pool}
-              onChange={e => setPool(Number(e.target.value))}
-            >
-              {POOLS.map((p, i) => (
-                <option key={p.label} value={i}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
-          </Tip>
-          <Tip text="Pulls a random tape off archive.org from the shelf beside it.">
-            <button
-              className={styles.go}
-              onClick={() => {
-                void engine.rollSample(POOLS[pool]!)
-                onDone()
-              }}
-            >
-              ⚄ roll
-            </button>
-          </Tip>
+      <div className={styles.row}>
+        <ToggleButtonGroup
+          label="where the tape comes from"
+          options={MODES}
+          value={mode}
+          onChange={setMode}
+        />
+        <div className={styles.source}>
+          {mode === 'random' ? (
+            <>
+              <Tip text={POOLS[pool]!.blurb}>
+                <select
+                  className={styles.pool}
+                  aria-label="the shelf the tape comes from"
+                  value={pool}
+                  onChange={e => setPool(Number(e.target.value))}
+                >
+                  {POOLS.map((p, i) => (
+                    <option key={p.label} value={i}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </Tip>
+              <Tip text="Pulls a random tape off archive.org from the shelf beside it.">
+                <button
+                  className={styles.go}
+                  onClick={() => {
+                    void engine.rollSample(POOLS[pool]!)
+                    onDone()
+                  }}
+                >
+                  ⚄ roll
+                </button>
+              </Tip>
+            </>
+          ) : (
+            <>
+              <input
+                className={styles.query}
+                type="text"
+                value={typed}
+                placeholder="search archive.org…"
+                aria-label="search archive.org for a tape"
+                autoFocus
+                onChange={e => setTyped(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') void search()
+                }}
+              />
+              <button className={styles.go} onClick={() => void search()}>
+                search
+              </button>
+            </>
+          )}
         </div>
-      ) : (
-        <>
-          <div className={styles.row}>
-            <input
-              className={styles.query}
-              type="text"
-              value={typed}
-              placeholder="search archive.org…"
-              aria-label="search archive.org for a tape"
-              autoFocus
-              onChange={e => setTyped(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') void search()
-              }}
-            />
-            <button className={styles.go} onClick={() => void search()}>
-              search
-            </button>
-          </div>
-          {hits === 'searching' && <p className={styles.note}>searching…</p>}
-          {hits === 'none' && (
-            <p className={styles.note}>nothing on archive.org for that</p>
-          )}
-          {Array.isArray(hits) && (
-            <ul className={styles.hits}>
-              {hits.map(h => (
-                <li key={h.id}>
-                  <button
-                    className={styles.hit}
-                    title={h.title}
-                    onClick={() => pick(h)}
-                  >
-                    {h.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
+      </div>
+      {mode === 'search' && hits === 'searching' && (
+        <p className={styles.note}>searching…</p>
+      )}
+      {mode === 'search' && hits === 'none' && (
+        <p className={styles.note}>nothing on archive.org for that</p>
+      )}
+      {mode === 'search' && Array.isArray(hits) && (
+        <ul className={styles.hits}>
+          {hits.map(h => (
+            <li key={h.id}>
+              <button
+                className={styles.hit}
+                title={h.title}
+                onClick={() => pick(h)}
+              >
+                {h.title}
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   )
