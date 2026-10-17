@@ -698,3 +698,12 @@ test('a patch wire onto any destination draws onto that destination’s box', ()
   }
   expect(undrawn).toEqual([])
 })
+
+test('a pedal with its face on the bench says so on its box and the others do not', () => {
+  const drawn = (benched: string[]) =>
+    serialize(drawMap(buildMap(DEFAULT_CONTROLS, { benched })))
+  expect(drawn([])).not.toContain('on the bench')
+  const one = drawn(['Tube amp'])
+  expect(one.match(/on the bench/g)).toHaveLength(1)
+  expect(one).toContain('class="benched"')
+})

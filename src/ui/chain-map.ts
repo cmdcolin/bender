@@ -339,6 +339,8 @@ export interface MapNode {
   level?: number
   /** 'inst' only: something is coming out of it right now */
   playing?: boolean
+  /** 'stage' only: the stage has its face on the bench in the main area */
+  benched?: boolean
 }
 
 export interface MapWire {
@@ -389,6 +391,8 @@ export interface Options {
   /** Sources putting something on the bus right now, off the meters the desk
       reads — the panel knows it and the README doesn't. */
   playing?: readonly string[]
+  /** Stages with a face on the bench, marked on their boxes. */
+  benched?: readonly string[]
 }
 
 const midX = (n: MapNode) => n.x + n.w / 2
@@ -510,6 +514,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       active,
       open: o.open === name,
       door: name,
+      benched: o.benched?.includes(name),
     })
   }
 
@@ -1648,6 +1653,27 @@ function touchedMark(
   ]
 }
 
+// A bar down the left edge of a stage whose face is on the bench, so the map
+// says which pedals are in the main area without opening each one.
+function benchedMark(n: MapNode, k: Palette): El[] {
+  if (!n.benched) return []
+  return [
+    el(
+      'rect',
+      {
+        className: 'benched',
+        x: n.x + 2,
+        y: n.y + 3,
+        width: 2,
+        height: n.h - 6,
+        rx: 1,
+        fill: k.fg,
+      },
+      [el('title', {}, ['on the bench'])],
+    ),
+  ]
+}
+
 // How far up a source's fader is, along the foot of its own box. A source with
 // something coming out of it lights the bar, which is the map saying that what
 // you are hearing starts here — the fader is where it is set to, and the colour
@@ -2072,6 +2098,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
       FONT,
       n.active || n.open ? k.fg : k.dim,
     ),
+    ...benchedMark(n, k),
   ]
   return el('g', { className: 'node' }, [
     ...door(inner, n.door, links),

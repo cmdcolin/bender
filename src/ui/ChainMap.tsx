@@ -8,6 +8,7 @@ import {
 
 import { engine } from '../engine/engine.ts'
 import { MAX_SOURCES } from '../engine/params.ts'
+import { bench } from './bench.ts'
 import { buildMap, drawMap } from './chain-map.ts'
 import styles from './ChainMap.module.css'
 import { CHANNELS, GROUPS } from './controls/index.ts'
@@ -90,11 +91,13 @@ export function ChainMap({
   // threaded, and a switch says nothing about the fader in front of it.
   const lit = useStoreValue(engine.sounding)
   const playing = SOUNDING.filter(c => lit & (1 << c.tap)).map(c => c.name)
+  const { pedals: benched } = useStoreValue(bench)
   const map = buildMap(controls, {
     wrap: true,
     loop: true,
     open: open ?? undefined,
     playing,
+    benched,
   })
 
   // Clicking a stage's door opens its panel. The touched dot beside a box is
