@@ -2,7 +2,7 @@ import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
 import { KEY_BIAS } from '../trigbus.ts'
 import { DelayLine } from '../util/delayline.ts'
-import { QuadOsc } from '../util/lfo.ts'
+import { QuadOsc, RATE_MASK } from '../util/lfo.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
@@ -229,7 +229,7 @@ export class RingMod implements Stage {
               if (!mod) this.tune(this.hz)
             }
           }
-          if (mod) {
+          if (mod && (i & RATE_MASK) === 0) {
             carrier.setRate(
               Math.min(this.hz * octaves(mod[i]! * 4), this.sr * 0.45),
               this.sr,

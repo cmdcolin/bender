@@ -46,6 +46,10 @@ export class SineOsc {
 // walks the amplitude by about 3e-12 over twenty seconds, and grows with the
 // square root of that, so a board left running for a week is still ten thousand
 // times inside the noise floor.
+/** A modulated QuadOsc resets its rate where `i & RATE_MASK` is 0, every
+    eighth sample, rather than paying cos and sin on every one. */
+export const RATE_MASK = 7
+
 export class QuadOsc {
   re = 1
   im = 0

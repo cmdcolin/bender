@@ -1,6 +1,6 @@
 import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
-import { QuadOsc } from '../util/lfo.ts'
+import { QuadOsc, RATE_MASK } from '../util/lfo.ts'
 import { octaves } from '../util/pitch.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
 
@@ -89,14 +89,13 @@ export class Shifter implements Stage {
     const baseHz = p[IDX.shiftHz]!
     const mod = ctx.mod.read(DEST.shiftHz)
     // A shift that holds still turns the carrier by the same angle every
-    // sample, so the rate is set once and the pair costs four multiplies from
-    // there. A wire on it moves the angle per sample, which is the two library
-    // calls back — no worse than it was, and only while something is wired.
+    // sample, so the rate is set once a block. A wire on it resets the rate
+    // every eighth sample.
     const carrier = this.carrier
     if (!mod) carrier.setRate(baseHz, this.sr)
 
     for (let i = 0; i < io.n; i++) {
-      if (mod) {
+      if (mod && (i & RATE_MASK) === 0) {
         carrier.setRate(
           Math.min(baseHz * octaves(mod[i]! * 4), this.sr * 0.4),
           this.sr,
