@@ -2,14 +2,14 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { buildMap } from './chain-map'
-import { CHANNELS, GROUPS, groupKeys, touchedCount } from './controls'
-import { resetGroup, rollGroup } from './presets'
-import { YOURS } from './presets/yours'
-import { OpenGroup } from './Section'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { buildMap } from './chain-map.ts'
+import { CHANNELS, GROUPS, groupKeys, touchedCount } from './controls/index.ts'
+import { resetGroup, rollGroup } from './presets/index.ts'
+import { YOURS } from './presets/yours.ts'
+import { OpenGroup } from './Section.tsx'
+import './testDom.ts'
 
 // The desk. It is the one panel made of other panels' controls, so what is
 // tested here is the thing that makes that safe: the faders are drawn, the

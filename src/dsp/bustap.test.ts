@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { SOURCE_TAPS, TAP_BUS, TAP_MIC, packParams } from '../engine/params'
-import { CHANNELS } from '../ui/controls'
-import { buildBender, buildChain } from './build'
-import { BLOCK } from './stage'
-import { makeIo, rms, SR } from './testRender'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { SOURCE_TAPS, TAP_BUS, TAP_MIC, packParams } from '../engine/params.ts'
+import { CHANNELS } from '../ui/controls/index.ts'
+import { buildBender, buildChain } from './build.ts'
+import { BLOCK } from './stage.ts'
+import { makeIo, rms, SR } from './testRender.ts'
 
 // Every source silent, so a board can be built up one channel at a time.
 const HUSH: Partial<Controls> = {

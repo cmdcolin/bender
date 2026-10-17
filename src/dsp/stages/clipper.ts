@@ -1,8 +1,8 @@
-import { IDX } from '../../engine/params'
-import { OnePoleLP, lpCoef } from '../util/onepole'
-import { softclip } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { softclip } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 function fold(x: number): number {
   // reflect off ±1 until inside
@@ -34,7 +34,11 @@ export class Clipper implements Stage {
   private wasNegL = false
   private wasNegR = false
 
-  constructor(private readonly sr: number) {}
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
+  }
 
   when(p: Float32Array) {
     return p[IDX.distMix]! > 0

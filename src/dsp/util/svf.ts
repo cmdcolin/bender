@@ -1,4 +1,4 @@
-import { flushDenormal, softclip } from './softclip'
+import { flushDenormal, softclip } from './softclip.ts'
 
 // Chamberlin state-variable filter with a saturating band path, so negative
 // damping holds a scream instead of blowing up. Mode 0 low, 1 band, 2 high.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { engine } from '../engine/engine'
-import { useStoreValue } from './ControlsContext'
+import { engine } from '../engine/engine.ts'
+import { useStoreValue } from './ControlsContext.ts'
 import styles from './HuntDialog.module.css'
 
 // How long the landed note stays up on its own. Long enough to read at a

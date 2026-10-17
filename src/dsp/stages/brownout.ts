@@ -1,10 +1,10 @@
-import { IDX } from '../../engine/params'
-import { Burst } from '../util/burst'
-import { SineOsc } from '../util/lfo'
-import { mulberry32, type Rng } from '../util/rng'
-import { flushDenormal } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { Burst } from '../util/burst.ts'
+import { SineOsc } from '../util/lfo.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // Master supply starve: loud passages sag the rail and pump the whole mix,
 // a loose power jack drops out at random, and the harder the supply works the
@@ -23,10 +23,10 @@ export class Brownout implements Stage {
   private dropFault: Burst
   private crackleFault: Burst
 
-  constructor(
-    private readonly sr: number,
-    seed = 707,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 707) {
+    this.sr = sr
     this.rng = mulberry32(seed)
     this.dropFault = new Burst(sr, 2.2)
     this.crackleFault = new Burst(sr, 0.5)

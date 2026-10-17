@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { packParams } from '../engine/params'
-import { buildBender } from './build'
-import { DEST, hop } from './modbus'
-import { BLOCK } from './stage'
-import { makeIo, pitchHz, render, rms, SR, tail } from './testRender'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { packParams } from '../engine/params.ts'
+import { buildBender } from './build.ts'
+import { DEST, hop } from './modbus.ts'
+import { BLOCK } from './stage.ts'
+import { makeIo, pitchHz, render, rms, SR, tail } from './testRender.ts'
 
 // How many times the watchdog tripped over `seconds` of a board — the supply is
 // the one thing a wire can reach that has a counter on it.

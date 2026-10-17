@@ -8,7 +8,7 @@
 // third off, which is invisible until something outside the app — a controller —
 // plays a note and lights the wrong key.
 
-import { toSemitone } from '../notes'
+import { toSemitone } from '../notes.ts'
 
 // Three octaves on the board, where there is room for three. The chip's divider
 // reaches either side of them, so the octave switch moves the whole keyboard

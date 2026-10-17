@@ -1,5 +1,5 @@
-import { coef } from './follower'
-import { flushDenormal, softclip } from './softclip'
+import { coef } from './follower.ts'
+import { flushDenormal, softclip } from './softclip.ts'
 
 /** How far apart the two rails can be pushed, as a share of the nominal one.
     Past this the smaller rail is doing all the clipping and the larger one has

@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { YOURS } from '../dsp/stages/roms'
-import { engine } from '../engine/engine'
-import { HOLD, REST, TUNE_LANE_KEYS } from '../tune'
-import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi'
-import { boardFromUrl } from './share'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { engine } from '../engine/engine.ts'
+import { HOLD, REST, TUNE_LANE_KEYS } from '../tune.ts'
+import { createBenderApi, GUIDE_MAX_CHARS } from './agentApi.ts'
+import { boardFromUrl } from './share.ts'
+import './testDom.ts'
 
 const bender = createBenderApi()
 

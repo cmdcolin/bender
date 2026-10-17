@@ -1,10 +1,14 @@
-import { DEST } from '../dsp/modbus'
-import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from '../dsp/stages/tape'
-import { PEDALS, pedalOrderAt } from '../pedals'
-import { bendAt, BENDS, sliderFor, touchedCount } from './controls'
-import { arrowhead, el, route, textWidth, type El, type Point } from './svg'
+import { DEST } from '../dsp/modbus.ts'
+import {
+  TAPE_AT_BENDS,
+  TAPE_AT_END,
+  TAPE_AT_PEDALS,
+} from '../dsp/stages/tape.ts'
+import { PEDALS, pedalOrderAt } from '../pedals.ts'
+import { bendAt, BENDS, sliderFor, touchedCount } from './controls/index.ts'
+import { arrowhead, el, route, textWidth, type El, type Point } from './svg.ts'
 
-import type { ControlKey, Controls } from '../controls'
+import type { ControlKey, Controls } from '../controls.ts'
 
 // The signal path, laid out and drawn: live bend order, the feedback wire, and
 // where it lands. The panel mounts the drawing as React elements and

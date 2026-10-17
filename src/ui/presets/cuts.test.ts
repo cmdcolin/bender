@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
-import { highEnergy, render, rms, SR } from '../../dsp/testRender'
-import { sliderFor } from '../controls'
+import { DEFAULT_CONTROLS, type ControlKey } from '../../controls.ts'
+import { highEnergy, render, rms, SR } from '../../dsp/testRender.ts'
+import { sliderFor } from '../controls/index.ts'
 import {
   applyCut,
   CUTS,
@@ -11,8 +11,8 @@ import {
   cutStands,
   cutWired,
   partKeys,
-} from './cuts'
-import { mine } from './testBoard'
+} from './cuts.ts'
+import { mine } from './testBoard.ts'
 
 // A board with something going on for the knife to reach. Sakura is 32 steps at
 // three a second, so a stock board plays six of them in the two seconds a test

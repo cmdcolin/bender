@@ -1,4 +1,4 @@
-import { mulberry32 } from '../util/rng'
+import { mulberry32 } from '../util/rng.ts'
 
 // The sample ROM of an eight-bit home keyboard, cut in code rather than
 // recorded. One short waveform a voice: an attack segment, then a loop the

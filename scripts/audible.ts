@@ -1,6 +1,6 @@
-import { EMPTY_MASKS } from '../src/drums'
+import { EMPTY_MASKS } from '../src/drums.ts'
 
-import type { Controls } from '../src/controls'
+import type { Controls } from '../src/controls.ts'
 
 // Which paths in the kit actually reach the output, measured by taking each one
 // out and listening to what changed.
@@ -221,21 +221,24 @@ const RENDER = join(tree, 'render.ts')
 writeFileSync(
   RENDER,
   `import { writeFileSync } from 'node:fs'
-import { DEFAULT_CONTROLS } from './src/controls'
-import { render } from './src/dsp/testRender'
+import { DEFAULT_CONTROLS } from './src/controls.ts'
+import { render } from './src/dsp/testRender.ts'
 const [out, board, seconds] = process.argv.slice(2)
 const x = render({ ...DEFAULT_CONTROLS, ...JSON.parse(board!) }, Number(seconds))
 writeFileSync(out!, Buffer.from(x.buffer))
 `,
 )
 
-const tsx = join(root, 'node_modules', '.bin', 'tsx')
 const take = (board: Partial<Controls>, seconds: number) => {
   const out = join(tree, 'take.f32')
-  execFileSync(tsx, [RENDER, out, JSON.stringify(board), String(seconds)], {
-    cwd: tree,
-    stdio: ['ignore', 'ignore', 'inherit'],
-  })
+  execFileSync(
+    process.execPath,
+    [RENDER, out, JSON.stringify(board), String(seconds)],
+    {
+      cwd: tree,
+      stdio: ['ignore', 'ignore', 'inherit'],
+    },
+  )
   return new Float32Array(readFileSync(out).buffer.slice(0))
 }
 

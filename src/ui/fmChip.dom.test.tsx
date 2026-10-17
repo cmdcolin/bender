@@ -2,10 +2,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { FmChipDiagram } from './FmChipDiagram'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { FmChipDiagram } from './FmChipDiagram.tsx'
+import './testDom.ts'
 
 const box = (name: string) =>
   screen.getByRole('button', { name: `${name} controls` })

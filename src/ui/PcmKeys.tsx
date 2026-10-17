@@ -1,4 +1,4 @@
-import { GateJumper, Keybed } from './Keybed'
+import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
 
 // The home keyboard's bed: a grey moulded case with the model name on the deck,

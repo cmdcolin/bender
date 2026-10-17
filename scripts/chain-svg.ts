@@ -1,6 +1,6 @@
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { buildMap, drawMap, type Palette } from '../src/ui/chain-map'
-import { serialize } from '../src/ui/svg'
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
+import { buildMap, drawMap, type Palette } from '../src/ui/chain-map.ts'
+import { serialize } from '../src/ui/svg.ts'
 
 import { writeFileSync } from 'node:fs'
 

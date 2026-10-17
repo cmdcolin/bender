@@ -13,8 +13,8 @@
 // Pure and frame-free on purpose: the engine owns the clock, this owns the
 // answer to "what does the board look like a third of the way along".
 
-import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls'
-import { CUT_KEYS, HOLD_KEYS } from '../ui/controls'
+import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls.ts'
+import { CUT_KEYS, HOLD_KEYS } from '../ui/controls/index.ts'
 
 // Eased, not linear. A linear morph lurches into motion and stops dead, which
 // reads as two cuts with a slide between them; smoothstep leaves and arrives at
@@ -28,13 +28,18 @@ export class Glide {
   private readonly travel: ControlKey[]
   private readonly switching: ControlKey[]
 
+  private readonly from: Controls
+  private readonly to: Controls
+
   constructor(
-    private readonly from: Controls,
-    private readonly to: Controls,
+    from: Controls,
+    to: Controls,
     // Keys HOLD_KEYS would otherwise shield — set by a caller that means to
     // change one of them on purpose, such as a reset that owns outGain.
     forceKeys: ReadonlySet<ControlKey> = new Set(),
   ) {
+    this.from = from
+    this.to = to
     const moved = CONTROL_KEYS.filter(
       k => (forceKeys.has(k) || !HOLD_KEYS.has(k)) && from[k] !== to[k],
     )

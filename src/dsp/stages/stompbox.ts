@@ -1,12 +1,12 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { Follower, coef } from '../util/follower'
-import { SineOsc } from '../util/lfo'
-import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
-import { octaves } from '../util/pitch'
-import { flushDenormal, softclip } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { Follower, coef } from '../util/follower.ts'
+import { SineOsc } from '../util/lfo.ts'
+import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { octaves } from '../util/pitch.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // Ids match the stompCircuit choices, from 1: the screamer is 0 and it is the
 // default arm of both switches, so it never needs naming.
@@ -254,7 +254,10 @@ export class Stompbox implements Stage {
     thresh: 0,
   }
 
-  constructor(private readonly sr: number) {
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     this.left = new Box(sr)
     this.right = new Box(sr)
   }

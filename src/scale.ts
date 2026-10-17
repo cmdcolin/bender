@@ -3,7 +3,7 @@
 // function that pulls a semitone onto the nearest of them — shared, because the
 // panel has to light the key that sounds and the audio thread has to strike it,
 // and the two arriving at different answers is a keyboard that lies.
-import { A3 } from './notes'
+import { A3 } from './notes.ts'
 
 export const SCALE_NAMES = [
   'off',

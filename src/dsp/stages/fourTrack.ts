@@ -1,16 +1,16 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage'
-import { BiquadState, flat, peak, shelf } from '../util/biquad'
-import { coef } from '../util/follower'
-import { SineOsc } from '../util/lfo'
-import { LoopAmp, ampVoicing, type AmpVoicing } from '../util/loopamp'
-import { lpCoef } from '../util/onepole'
-import { octaves } from '../util/pitch'
-import { gaussian, mulberry32, type Rng } from '../util/rng'
-import { flushDenormal, softclip } from '../util/softclip'
-import { PEAK_BINS } from './sampler'
-import { Dbx } from './tapeNr'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
+import { BiquadState, flat, peak, shelf } from '../util/biquad.ts'
+import { coef } from '../util/follower.ts'
+import { SineOsc } from '../util/lfo.ts'
+import { LoopAmp, ampVoicing, type AmpVoicing } from '../util/loopamp.ts'
+import { lpCoef } from '../util/onepole.ts'
+import { octaves } from '../util/pitch.ts'
+import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
+import { PEAK_BINS } from './sampler.ts'
+import { Dbx } from './tapeNr.ts'
 
 // A cassette four-track: a desk of four channel strips in front of a deck of
 // four tape loops. Each loop is cut to its own length and spliced, so four
@@ -115,7 +115,11 @@ class Strip {
   private keyMidHz = NaN
   private keyHi = NaN
 
-  constructor(private readonly gauss: Rng) {}
+  private readonly gauss: Rng
+
+  constructor(gauss: Rng) {
+    this.gauss = gauss
+  }
 
   tune(low: number, midHz: number, mid: number, high: number, sr: number) {
     if (low !== this.keyLo) {
@@ -189,11 +193,12 @@ class Loop {
   readonly enc: Dbx
   readonly dec: Dbx
 
-  constructor(
-    sr: number,
-    private readonly gauss: Rng,
-    private readonly rng: Rng,
-  ) {
+  private readonly gauss: Rng
+  private readonly rng: Rng
+
+  constructor(sr: number, gauss: Rng, rng: Rng) {
+    this.gauss = gauss
+    this.rng = rng
     this.enc = new Dbx(sr, false)
     this.dec = new Dbx(sr, true)
   }
@@ -526,10 +531,10 @@ export class FourTrack implements Stage {
   private readonly auxC: number
   private readonly smooth: number
 
-  constructor(
-    private readonly sr: number,
-    seed = 1,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 1) {
+    this.sr = sr
     const draw = mulberry32(seed)
     const next = () => (draw() * 0x1_0000_0000) >>> 0
     this.gauss = gaussian(mulberry32(next()))

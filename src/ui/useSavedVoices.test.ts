@@ -2,10 +2,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 
-import { useSavedVoices } from './useSavedVoices'
-import { QUERY_MAX } from './voiceModel'
+import { useSavedVoices } from './useSavedVoices.ts'
+import { QUERY_MAX } from './voiceModel.ts'
 
-import type { SavedVoice } from './voiceModel'
+import type { SavedVoice } from './voiceModel.ts'
 
 const cloud = vi.hoisted(() => {
   const user = { uid: 'u1', name: 'Tester', photo: null }
@@ -24,7 +24,7 @@ const cloud = vi.hoisted(() => {
   }
 })
 
-vi.mock('./cloud', () => ({
+vi.mock('./cloud.ts', () => ({
   wasSignedIn: () => false,
   watchAuth: (onUser: (u: typeof cloud.user | null) => void) => {
     if (cloud.failSdk) return Promise.reject(new Error('offline'))

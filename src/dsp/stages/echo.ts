@@ -1,13 +1,13 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { Bbd } from '../util/bbd'
-import { DelayLine } from '../util/delayline'
-import { Follower, coef as timeCoef } from '../util/follower'
-import { SineOsc } from '../util/lfo'
-import { OnePoleLP, lpCoef } from '../util/onepole'
-import { octaves } from '../util/pitch'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { Bbd } from '../util/bbd.ts'
+import { DelayLine } from '../util/delayline.ts'
+import { Follower, coef as timeCoef } from '../util/follower.ts'
+import { SineOsc } from '../util/lfo.ts'
+import { OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { octaves } from '../util/pitch.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 export const ECHO_MODE = {
   standard: 0,
@@ -91,7 +91,10 @@ export class Echo implements Stage {
   private readonly maxRead: number
   private readonly fadeStep: number
 
-  constructor(private readonly sr: number) {
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     this.maxDelay = (MAX_MS / 1000) * sr
     // A backwards head walks away from the write head at twice the rate, so it
     // reaches a whole window past the window it is playing: reverse needs a

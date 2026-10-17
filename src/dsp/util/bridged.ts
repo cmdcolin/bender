@@ -1,4 +1,4 @@
-import { flushDenormal, softclip } from './softclip'
+import { flushDenormal, softclip } from './softclip.ts'
 
 // Where the transistor starts running out of rail, and where it stops
 // altogether. A hit lands around 1 and an accent around 1.7, so the knee has to

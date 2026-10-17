@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { DEST } from './modbus'
-import { peaksOf, PEAK_BINS } from './stages/sampler'
-import { bin, deviation, sine, SR, renderBender, rms } from './testRender'
+import { DEST } from './modbus.ts'
+import { peaksOf, PEAK_BINS } from './stages/sampler.ts'
+import { bin, deviation, sine, SR, renderBender, rms } from './testRender.ts'
 
-import type { Controls } from '../controls'
+import type { Controls } from '../controls.ts'
 
 const REEL_S = 1
 

@@ -6,11 +6,11 @@ import {
   type ReactNode,
 } from 'react'
 
-import { PEAK_BINS } from '../dsp/stages/sampler'
-import { engine } from '../engine/engine'
-import { useBoardValue } from './ControlsContext'
+import { PEAK_BINS } from '../dsp/stages/sampler.ts'
+import { engine } from '../engine/engine.ts'
+import { useBoardValue } from './ControlsContext.ts'
 import styles from './SampleReel.module.css'
-import { Tip } from './Tip'
+import { Tip } from './Tip.tsx'
 
 // How near a marker the pointer has to land for the drag to be that marker
 // rather than a seek, as a fraction of the reel's width. A marker is a

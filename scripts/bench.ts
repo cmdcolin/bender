@@ -1,8 +1,13 @@
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { buildBender } from '../src/dsp/build'
-import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../src/dsp/stage'
-import { packParams } from '../src/engine/params'
-import { BOARDS } from './boards'
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
+import { buildBender } from '../src/dsp/build.ts'
+import {
+  BLOCK,
+  type Ctx,
+  type Stage,
+  type StereoBlock,
+} from '../src/dsp/stage.ts'
+import { packParams } from '../src/engine/params.ts'
+import { BOARDS } from './boards.ts'
 
 // What the board costs per block, offline. The worklet gets 2.7 ms to render
 // 2.7 ms of audio; anything the whole chain spends past a few percent of that

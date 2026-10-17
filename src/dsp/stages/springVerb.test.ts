@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { DEST } from '../modbus'
-import { magnitudes } from '../spectrum'
-import { playHeldKey, render, renderBender, rms, SR } from '../testRender'
+import { DEST } from '../modbus.ts'
+import { magnitudes } from '../spectrum.ts'
+import { playHeldKey, render, renderBender, rms, SR } from '../testRender.ts'
 
-import type { Controls } from '../../controls'
+import type { Controls } from '../../controls.ts'
 
 const kit = (overrides: Partial<Controls>) =>
   rms(

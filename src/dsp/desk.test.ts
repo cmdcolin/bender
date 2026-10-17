@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 
-import { bursts, crest, render, rms } from './testRender'
+import { bursts, crest, render, rms } from './testRender.ts'
 
-import type { Controls } from '../controls'
+import type { Controls } from '../controls.ts'
 
 // Nothing plugged in but the contact crackle the loop feeds on, which is the
 // board a no-input desk is played on.

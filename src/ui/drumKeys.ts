@@ -14,9 +14,9 @@
 
 import { useEffect } from 'react'
 
-import { N_DRUM_VOICES, voiceBit } from '../drums'
-import { engine } from '../engine/engine'
-import { isTyping } from './isTyping'
+import { N_DRUM_VOICES, voiceBit } from '../drums.ts'
+import { engine } from '../engine/engine.ts'
+import { isTyping } from './isTyping.ts'
 
 /** The number printed on a voice's pad, which is its place in the kit. */
 export const padKeyFor = (voice: number) => String(voice + 1)

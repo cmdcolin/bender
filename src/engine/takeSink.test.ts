@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { openTake, sweepTakes } from './takeSink'
+import { openTake, sweepTakes } from './takeSink.ts'
 
 interface Entry {
   kind: 'file' | 'directory'
@@ -18,7 +18,10 @@ const entry = (kind: Entry['kind']): Entry => ({
 
 class Writable {
   private swap: Uint8Array<ArrayBuffer>
-  constructor(private target: Entry) {
+  private target: Entry
+
+  constructor(target: Entry) {
+    this.target = target
     this.swap = new Uint8Array()
   }
   async write(

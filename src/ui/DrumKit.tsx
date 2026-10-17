@@ -1,17 +1,17 @@
 import { memo } from 'react'
 
-import { DRUM_VOICES, STEPS, voiceBit, type DrumVoice } from '../drums'
-import { engine } from '../engine/engine'
+import { DRUM_VOICES, STEPS, voiceBit, type DrumVoice } from '../drums.ts'
+import { engine } from '../engine/engine.ts'
 import {
   useControlValue,
   useMeterValue,
   useStoreValue,
-} from './ControlsContext'
-import { padKeyFor } from './drumKeys'
+} from './ControlsContext.ts'
+import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
-import { useCoarse } from './measure'
-import { Tip } from './Tip'
-import { useStruck } from './useStruck'
+import { useCoarse } from './measure.ts'
+import { Tip } from './Tip.tsx'
+import { useStruck } from './useStruck.ts'
 
 const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 

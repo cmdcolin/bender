@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../controls'
+import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../controls.ts'
 import {
   bayLfoWires,
   laneHasSpare,
@@ -9,8 +9,8 @@ import {
   laneWire,
   solderLane,
   unsolderLane,
-} from './bayWire'
-import { ALL_SLIDERS, choiceValue, sliderFor } from './controls'
+} from './bayWire.ts'
+import { ALL_SLIDERS, choiceValue, sliderFor } from './controls/index.ts'
 
 const SRC_OFF = choiceValue('mod0Src', 'off')
 const SRC_LFO = choiceValue('mod0Src', 'LFO')

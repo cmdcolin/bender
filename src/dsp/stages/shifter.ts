@@ -1,10 +1,10 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { QuadOsc } from '../util/lfo'
-import { octaves } from '../util/pitch'
-import { flushDenormal, softclip } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { QuadOsc } from '../util/lfo.ts'
+import { octaves } from '../util/pitch.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // Two allpass chains whose outputs stay about 90° apart across the band.
 const COEF_A = [0.6923878, 0.9360654322959, 0.988229522686, 0.9987488452737]
@@ -72,7 +72,11 @@ export class Shifter implements Stage {
   private fbL = 0
   private fbR = 0
 
-  constructor(private readonly sr: number) {}
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
+  }
 
   when(p: Float32Array) {
     return p[IDX.shiftMix]! > 0

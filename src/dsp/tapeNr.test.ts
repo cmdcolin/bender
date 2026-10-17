@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { NR_DBX, NR_DOLBY_B, compander } from './stages/tapeNr'
-import { bin, renderBender, sine } from './testRender'
+import { NR_DBX, NR_DOLBY_B, compander } from './stages/tapeNr.ts'
+import { bin, renderBender, sine } from './testRender.ts'
 
-import type { Controls } from '../controls'
-import type { BuiltChain } from './build'
+import type { Controls } from '../controls.ts'
+import type { BuiltChain } from './build.ts'
 
 const SR = 48000
 const db = (x: number) => 20 * Math.log10(x)

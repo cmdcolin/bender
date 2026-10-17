@@ -1,12 +1,12 @@
-import { IDX } from '../../engine/params'
-import { DelayLine } from '../util/delayline'
-import { SineOsc } from '../util/lfo'
-import { Highpass, lpCoef } from '../util/onepole'
-import { gaussian, mulberry32, type Rng } from '../util/rng'
-import { flushDenormal, softclip } from '../util/softclip'
-import { Dbx, DolbyB, NR_DBX, NR_DOLBY_B, type Compander } from './tapeNr'
+import { IDX } from '../../engine/params.ts'
+import { DelayLine } from '../util/delayline.ts'
+import { SineOsc } from '../util/lfo.ts'
+import { Highpass, lpCoef } from '../util/onepole.ts'
+import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
+import { Dbx, DolbyB, NR_DBX, NR_DOLBY_B, type Compander } from './tapeNr.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // Speed moves the whole machine at once: the head gap loses highs at a
 // wavelength, so a slower tape loses them lower; the replay bump sits at a
@@ -554,10 +554,10 @@ export class Tape implements Stage {
   // in the same places and the machine going off at the same moment. The heads
   // take a seed each and split it again, since a head owns both its hiss and
   // its own shed oxide.
-  constructor(
-    private readonly sr: number,
-    seed = 1,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 1) {
+    this.sr = sr
     const draw = mulberry32(seed)
     const next = () => (draw() * 0x1_0000_0000) >>> 0
     this.headL = new TapeHead(sr, next())

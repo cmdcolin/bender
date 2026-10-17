@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { PRESETS } from '../ui/presets'
-import { SHELVES, leadOf } from './shelves'
+import { PRESETS } from '../ui/presets/index.ts'
+import { SHELVES, leadOf } from './shelves.ts'
 
 test('every preset sits on exactly one shelf', () => {
   const shelved = SHELVES.flatMap(s => s.presets.map(p => p.name))

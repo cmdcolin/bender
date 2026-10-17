@@ -1,6 +1,6 @@
-import { MAX_LOOP_S } from '../../dsp/stages/fourTrack'
+import { MAX_LOOP_S } from '../../dsp/stages/fourTrack.ts'
 
-import type { Group, SliderDef } from './types'
+import type { Group, SliderDef } from './types.ts'
 
 export type Track = 1 | 2 | 3 | 4
 export const TRACK_NUMBERS: readonly Track[] = [1, 2, 3, 4]

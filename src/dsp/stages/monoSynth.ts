@@ -1,12 +1,12 @@
-import { ACCENT_GAIN } from '../../drums'
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { BLOCK } from '../stage'
-import { KEY_BIAS, voiceMask } from '../trigbus'
-import { MonoVoice } from './monoVoice'
+import { ACCENT_GAIN } from '../../drums.ts'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { BLOCK } from '../stage.ts'
+import { KEY_BIAS, voiceMask } from '../trigbus.ts'
+import { MonoVoice } from './monoVoice.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
+import type { ToyRail } from '../toyRail.ts'
 
 // The board counts semitones up from A3, the voice counts MIDI notes.
 const A3_MIDI = 57
@@ -37,10 +37,12 @@ export class MonoSynth implements Stage {
   private pitchLane: Float32Array | null = null
   private cutLane: Float32Array | null = null
 
-  constructor(
-    private readonly sr: number,
-    private readonly rail: ToyRail,
-  ) {
+  private readonly sr: number
+  private readonly rail: ToyRail
+
+  constructor(sr: number, rail: ToyRail) {
+    this.sr = sr
+    this.rail = rail
     this.voice = new MonoVoice(sr)
     this.stepSamples = FALLBACK_STEP_S * sr
   }

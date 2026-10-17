@@ -1,4 +1,4 @@
-import type { ControlKey } from './controls'
+import type { ControlKey } from './controls.ts'
 
 // The drum machine's vocabulary, in one place: what the voices are, in the
 // bit order of a step; the controls each row's pattern and length live in; and

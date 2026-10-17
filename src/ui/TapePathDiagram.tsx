@@ -1,5 +1,10 @@
-import { boxHeight, useReadings, useSelectedBox, type BoxSpec } from './diagram'
-import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts'
+import {
+  boxHeight,
+  useReadings,
+  useSelectedBox,
+  type BoxSpec,
+} from './diagram.ts'
+import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 
 const KEYS = [
   'tapeMix',

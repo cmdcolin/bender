@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
-import { Menu } from './Menu'
+import { Menu } from './Menu.tsx'
 import styles from './SavedVoices.module.css'
-import { Tip } from './Tip'
-import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel'
+import { Tip } from './Tip.tsx'
+import { cleanVoiceName, VOICE_NAME_MAX } from './voiceModel.ts'
 
-import type { CloudStatus, VoiceFlash } from './useSavedVoices'
-import type { SavedVoice } from './voiceModel'
+import type { CloudStatus, VoiceFlash } from './useSavedVoices.ts'
+import type { SavedVoice } from './voiceModel.ts'
 
 // The voice library: one button in the panel's chrome, beside the nameplate and
 // the MIDI drawer. A synth's save and recall.

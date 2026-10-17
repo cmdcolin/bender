@@ -1,19 +1,19 @@
-import { ACCENT_GAIN } from '../../drums'
-import { IDX } from '../../engine/params'
-import { snap } from '../../scale'
-import { Bus, FAULT_NAMES, Strobe } from '../bus'
-import { DEST, hop } from '../modbus'
-import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus'
-import { octaves } from '../util/pitch'
-import { mulberry32 } from '../util/rng'
-import { softclip } from '../util/softclip'
+import { ACCENT_GAIN } from '../../drums.ts'
+import { IDX } from '../../engine/params.ts'
+import { snap } from '../../scale.ts'
+import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
+import { DEST, hop } from '../modbus.ts'
+import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
+import { octaves } from '../util/pitch.ts'
+import { mulberry32 } from '../util/rng.ts'
+import { softclip } from '../util/softclip.ts'
 import {
   type Cpu,
   EFFECT_CH,
   EFFECTS,
   loadEffect,
   stopEffect,
-} from './fmEffects'
+} from './fmEffects.ts'
 import {
   AM,
   attackSecs,
@@ -37,10 +37,10 @@ import {
   scaledRate,
   TEST,
   VIB,
-} from './fmVoices'
+} from './fmVoices.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
+import type { ToyRail } from '../toyRail.ts'
 
 // The other chip on the board: two operators a voice, four voices, and a
 // register file the CPU writes over a bus.
@@ -486,10 +486,13 @@ export class FmChip implements Stage {
     s: new Float64Array(4),
   }
 
-  constructor(
-    private readonly sr: number,
-    private readonly rail: ToyRail,
-  ) {}
+  private readonly sr: number
+  private readonly rail: ToyRail
+
+  constructor(sr: number, rail: ToyRail) {
+    this.sr = sr
+    this.rail = rail
+  }
 
   when(p: Float32Array) {
     return p[IDX.fmLevel]! > 0

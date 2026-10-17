@@ -2,10 +2,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { MicPatch } from './MicPatch'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { MicPatch } from './MicPatch.tsx'
+import './testDom.ts'
 
 const jack = (name: string) =>
   screen.getByRole('button', { name: `solder the mic to ${name}` })

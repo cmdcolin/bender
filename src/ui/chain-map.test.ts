@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { HEAVY } from '../../scripts/boards'
-import { renderDiagrams } from '../../scripts/chain-svg'
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { DEST, N_DEST } from '../dsp/modbus'
-import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus'
-import { PEDALS, pedalOrderAt } from '../pedals'
+import { HEAVY } from '../../scripts/boards.ts'
+import { renderDiagrams } from '../../scripts/chain-svg.ts'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { DEST, N_DEST } from '../dsp/modbus.ts'
+import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus.ts'
+import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import {
   buildMap,
   drawMap,
@@ -14,9 +14,9 @@ import {
   PANEL,
   type ChainMap,
   WIRE_TARGET,
-} from './chain-map'
-import { BENDS, GROUPS } from './controls'
-import { serialize } from './svg'
+} from './chain-map.ts'
+import { BENDS, GROUPS } from './controls/index.ts'
+import { serialize } from './svg.ts'
 
 import { readFileSync } from 'node:fs'
 

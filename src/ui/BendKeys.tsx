@@ -1,7 +1,8 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 
-import { engine } from '../engine/engine'
-import { HEATS, type BendKey } from './bendDeal'
+import { engine } from '../engine/engine.ts'
+import { HEATS, type BendKey } from './bendDeal.ts'
+import styles from './BendKeys.module.css'
 import {
   bendDeal,
   bendHeat,
@@ -21,16 +22,15 @@ import {
   setBendHeat,
   setBendSwell,
   setRedealEvery,
-} from './bendKeys'
-import styles from './BendKeys.module.css'
-import { useStoreValue } from './ControlsContext'
-import { isTyping } from './isTyping'
-import { letterKeys } from './letters'
-import { pressThrow, releaseThrow, useThrowKeys } from './throwKeys'
-import { throwForKey } from './throws'
-import { Tip } from './Tip'
+} from './bendKeys.ts'
+import { useStoreValue } from './ControlsContext.ts'
+import { isTyping } from './isTyping.ts'
+import { letterKeys } from './letters.ts'
+import { pressThrow, releaseThrow, useThrowKeys } from './throwKeys.ts'
+import { throwForKey } from './throws.ts'
+import { Tip } from './Tip.tsx'
 
-import type { MorphSeconds } from './morph'
+import type { MorphSeconds } from './morph.ts'
 
 const omitFrom = (set: Set<string>, value: string) => {
   const next = new Set(set)

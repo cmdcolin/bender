@@ -2,10 +2,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeAll, expect, test } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { Presets } from './PresetRow'
-import { applyPreset, PRESETS } from './presets'
-import './testDom'
+import { engine } from '../engine/engine.ts'
+import { Presets } from './PresetRow.tsx'
+import { applyPreset, PRESETS } from './presets/index.ts'
+import './testDom.ts'
 
 // A preset chip is two gestures on one button: press it and the whole board
 // arrives, drag it sideways and the board follows your hand part of the way

@@ -2,12 +2,12 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { choiceValue } from './controls'
-import { PatchBay } from './PatchBay'
-import { bayFaults } from './presets/patch'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { choiceValue } from './controls/index.ts'
+import { PatchBay } from './PatchBay.tsx'
+import { bayFaults } from './presets/patch.ts'
+import './testDom.ts'
 
 // A wire off a mic nobody has turned on, onto a reverb that is dry: two rows of
 // the panel saying something is happening, and nothing is.

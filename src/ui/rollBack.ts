@@ -1,10 +1,10 @@
 import { useSyncExternalStore } from 'react'
 
-import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls'
-import { engine } from '../engine/engine'
-import { createStore } from '../listeners'
-import { HOLD_KEYS } from './controls'
-import { useBoardValue } from './ControlsContext'
+import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { createStore } from '../listeners.ts'
+import { HOLD_KEYS } from './controls/index.ts'
+import { useBoardValue } from './ControlsContext.ts'
 
 // For each stage and fold, the values its rolls overwrote. Undo there puts the
 // last roll's controls back and leaves every other control where it stands.

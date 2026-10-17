@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { SR, bin, highEnergy, renderStereo, rms, sine } from '../testRender'
-import { ENS_MODE } from './ensemble'
+import { SR, bin, highEnergy, renderStereo, rms, sine } from '../testRender.ts'
+import { ENS_MODE } from './ensemble.ts'
 
-import type { Controls } from '../../controls'
-import type { BuiltChain } from '../build'
+import type { Controls } from '../../controls.ts'
+import type { BuiltChain } from '../build.ts'
 
 // A steady 400 Hz tone off the sampler, so what the pedal did to it is the only
 // thing moving in the take.

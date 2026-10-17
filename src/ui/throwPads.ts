@@ -1,10 +1,10 @@
-import { isControlKey, type ControlKey } from '../controls'
-import { engine } from '../engine/engine'
-import { createStore } from '../listeners'
-import { bendDeal, bendName, isBendName } from './bendKeys'
-import { padId, type PadBinding } from './pads'
-import { omit, parseMap, read, write } from './persist'
-import { THROWS } from './throws'
+import { isControlKey, type ControlKey } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { createStore } from '../listeners.ts'
+import { bendDeal, bendName, isBendName } from './bendKeys.ts'
+import { padId, type PadBinding } from './pads.ts'
+import { omit, parseMap, read, write } from './persist.ts'
+import { THROWS } from './throws.ts'
 
 export type ThrowPadMap = Partial<Record<string, PadBinding>>
 

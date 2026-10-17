@@ -1,7 +1,11 @@
-import { DEFAULT_CONTROLS, sameControls, type Controls } from '../../controls'
-import { Glide } from '../../engine/glide'
-import { PRESETS, type PresetDef } from './table'
-import { keepYours } from './yours'
+import {
+  DEFAULT_CONTROLS,
+  sameControls,
+  type Controls,
+} from '../../controls.ts'
+import { Glide } from '../../engine/glide.ts'
+import { PRESETS, type PresetDef } from './table.ts'
+import { keepYours } from './yours.ts'
 
 export function applyPreset(preset: PresetDef, current: Controls): Controls {
   return keepYours(

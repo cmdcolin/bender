@@ -1,7 +1,7 @@
-import { SOURCE_TAPS, TAP_MIC, type SourceTap } from '../../engine/params'
+import { SOURCE_TAPS, TAP_MIC, type SourceTap } from '../../engine/params.ts'
 
-import type { ControlKey } from '../../controls'
-import type { Group } from './types'
+import type { ControlKey } from '../../controls.ts'
+import type { Group } from './types.ts'
 
 // Where the seven of them meet.
 //

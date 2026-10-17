@@ -12,9 +12,9 @@ import {
   type DrumMaybeKey,
   type DrumStepKey,
   type DrumVoiceKey,
-} from './drums'
+} from './drums.ts'
 
-import type { Rng } from './dsp/util/rng'
+import type { Rng } from './dsp/util/rng.ts'
 
 // What the machine can do to a pattern that a hand drawing sixteen contacts one
 // at a time cannot be bothered to: write a fresh one, nudge the one you have,

@@ -1,13 +1,13 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type ControlKey } from '../controls'
-import { dealBendKeys, HEATS } from './bendDeal'
-import { BEND_ENDS, STAGE_DB } from './bendEnds'
-import { sliderFor } from './controls'
-import { LETTERS } from './keyboard'
-import { heard } from './presets/scenarios'
-import { CLOCK_KEYS, PART_KEYS, YOURS } from './presets/yours'
-import { toPos } from './slider-scale'
+import { DEFAULT_CONTROLS, type ControlKey } from '../controls.ts'
+import { dealBendKeys, HEATS } from './bendDeal.ts'
+import { BEND_ENDS, STAGE_DB } from './bendEnds.ts'
+import { sliderFor } from './controls/index.ts'
+import { LETTERS } from './keyboard.ts'
+import { heard } from './presets/scenarios.ts'
+import { CLOCK_KEYS, PART_KEYS, YOURS } from './presets/yours.ts'
+import { toPos } from './slider-scale.ts'
 
 // A small deterministic generator, so a deal is the same deal every run.
 function seeded(seed: number) {

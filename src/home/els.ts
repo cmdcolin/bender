@@ -1,7 +1,7 @@
 // Every element the home works from, found once. The landing page renders all
 // of them — some from SiteBar.astro and WhySignInCard.astro — so a missing one
 // is a mistake in the page rather than a state to handle, and `need` throws.
-import { need, needOf } from './dom'
+import { need, needOf } from './dom.ts'
 
 export const landing = need('landing')
 export const home = need('home')

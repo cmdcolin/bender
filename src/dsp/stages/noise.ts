@@ -1,8 +1,8 @@
-import { IDX } from '../../engine/params'
-import { mulberry32, type Rng } from '../util/rng'
-import { flushDenormal } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // White noise through a tilt, plus dirty-pot contact crackle: Poisson spikes
 // rung through a 2-pole resonator.
@@ -14,10 +14,10 @@ export class Noise implements Stage {
   private ring2 = 0
   private rng: Rng
 
-  constructor(
-    private readonly sr: number,
-    seed = 303,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 303) {
+    this.sr = sr
     this.rng = mulberry32(seed)
   }
 

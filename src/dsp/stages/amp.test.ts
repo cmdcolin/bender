@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { BLOCK, type Ctx } from '../stage'
-import { SR, bin, makeIo, renderStereo, rms, sine } from '../testRender'
-import { LATENCY } from '../util/halfband'
-import { mulberry32 } from '../util/rng'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { BLOCK, type Ctx } from '../stage.ts'
+import { SR, bin, makeIo, renderStereo, rms, sine } from '../testRender.ts'
+import { LATENCY } from '../util/halfband.ts'
+import { mulberry32 } from '../util/rng.ts'
 import {
   AMP_CAB,
   AMP_VOICE,
@@ -13,7 +13,7 @@ import {
   stackAnalog,
   stackDigital,
   type StackParts,
-} from './amp'
+} from './amp.ts'
 
 const FENDER: StackParts = {
   r1: 250e3,

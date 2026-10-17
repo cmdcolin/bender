@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 
-import { engine } from '../engine/engine'
-import { isTyping } from './isTyping'
-import { THROWS, throwForKey, type ThrowDef } from './throws'
+import { engine } from '../engine/engine.ts'
+import { isTyping } from './isTyping.ts'
+import { THROWS, throwForKey, type ThrowDef } from './throws.ts'
 
 export const pressThrow = (t: ThrowDef) =>
   engine.holdThrow(t.name, t.push(engine.controls.get()))

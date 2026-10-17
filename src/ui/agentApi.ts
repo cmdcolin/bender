@@ -4,13 +4,13 @@ import {
   isControlKey,
   type ControlKey,
   type Controls,
-} from '../controls'
-import { DRUM_VOICES, GRID_ROWS, parseRow, rowText } from '../drums'
-import { BLOCK, METER_EVERY } from '../dsp/stage'
-import { YOURS } from '../dsp/stages/roms'
-import { engine, SOUND_FLOOR } from '../engine/engine'
-import { STEM_FILES } from '../engine/params'
-import { semitoneName } from '../notes'
+} from '../controls.ts'
+import { DRUM_VOICES, GRID_ROWS, parseRow, rowText } from '../drums.ts'
+import { BLOCK, METER_EVERY } from '../dsp/stage.ts'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { engine, SOUND_FLOOR } from '../engine/engine.ts'
+import { STEM_FILES } from '../engine/params.ts'
+import { semitoneName } from '../notes.ts'
 import {
   asTuneLen,
   isNote,
@@ -20,7 +20,7 @@ import {
   REST,
   TUNE_LANE_KEYS,
   TUNE_LANES,
-} from '../tune'
+} from '../tune.ts'
 import {
   ALL_SLIDERS,
   EDITOR_KEYS,
@@ -28,10 +28,10 @@ import {
   GROUPS,
   SLIDER_BY_KEY,
   type SliderDef,
-} from './controls'
-import { applyPreset, PRESETS, presetNameFor } from './presets'
-import { coerceControl, encodeControls } from './share'
-import { formatValue } from './slider-scale'
+} from './controls/index.ts'
+import { applyPreset, PRESETS, presetNameFor } from './presets/index.ts'
+import { coerceControl, encodeControls } from './share.ts'
+import { formatValue } from './slider-scale.ts'
 
 // The Claude in Chrome extension cuts a returned string at 1000 characters and
 // blocks some longer ones outright, so each text an agent reads stays under

@@ -1,18 +1,18 @@
 // A board on the home, as a card: the mark, the name, and — for a saved voice —
 // the row of verbs under it.
 
-import { boardUrl } from '../site/paths'
-import { editVoices, type CloudUser } from '../ui/cloud'
+import { boardUrl } from '../site/paths.ts'
+import { editVoices, type CloudUser } from '../ui/cloud.ts'
 import {
   VOICE_NAME_MAX,
   cleanVoiceName,
   removeVoice,
   renameVoice,
-} from '../ui/voiceModel'
-import { el } from './dom'
-import { markFor } from './mark'
+} from '../ui/voiceModel.ts'
+import { el } from './dom.ts'
+import { markFor } from './mark.ts'
 
-import type { SavedVoice } from '../ui/voiceModel'
+import type { SavedVoice } from '../ui/voiceModel.ts'
 
 export function card(
   query: string,

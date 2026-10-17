@@ -1,6 +1,6 @@
 import styles from './pocket.module.css'
 
-import type { Shelf } from './shelves'
+import type { Shelf } from './shelves.ts'
 
 export const BENDS_TAB = 'bends'
 

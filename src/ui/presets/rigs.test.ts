@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
-import { pitchHz, render, rms, SR } from '../../dsp/testRender'
-import { groupKeys, sliderFor, snapToStep } from '../controls'
-import { applyRig, RIGS, rigStands, rigsFor } from './rigs'
-import { mine } from './testBoard'
+import { DEFAULT_CONTROLS, type ControlKey } from '../../controls.ts'
+import { pitchHz, render, rms, SR } from '../../dsp/testRender.ts'
+import { groupKeys, sliderFor, snapToStep } from '../controls/index.ts'
+import { applyRig, RIGS, rigStands, rigsFor } from './rigs.ts'
+import { mine } from './testBoard.ts'
 
 const diff = (a: Float32Array, b: Float32Array) => a.map((v, i) => v - b[i]!)
 

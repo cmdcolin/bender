@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
 
-import { engine } from '../engine/engine'
-import { TAP_BUS } from '../engine/params'
-import { CHANNELS, sliderFor } from './controls'
+import { engine } from '../engine/engine.ts'
+import { TAP_BUS } from '../engine/params.ts'
+import { CHANNELS, sliderFor } from './controls/index.ts'
 import styles from './Mixer.module.css'
-import { ControlSlider } from './Slider'
-import { Tip } from './Tip'
+import { ControlSlider } from './Slider.tsx'
+import { Tip } from './Tip.tsx'
 
 // Where a channel doing nothing at all sits on the bar. A fader is linear and
 // hearing is not: half up is six decibels down, which on a linear meter is a bar

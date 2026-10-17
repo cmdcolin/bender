@@ -1,10 +1,10 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { Burst } from '../util/burst'
-import { Transient } from '../util/follower'
-import { mulberry32, type Rng } from '../util/rng'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { Burst } from '../util/burst.ts'
+import { Transient } from '../util/follower.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // Rolling record buffer with probabilistic stutter/reverse/repitch replay of
 // the last slice — the broken CD player.
@@ -25,10 +25,10 @@ export class GlitchBuf implements Stage {
   private micTrig: Transient
   private fault: Burst
 
-  constructor(
-    private readonly sr: number,
-    seed = 505,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 505) {
+    this.sr = sr
     const n = Math.ceil(2 * sr)
     this.bufL = new Float32Array(n)
     this.bufR = new Float32Array(n)

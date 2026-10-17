@@ -1,4 +1,4 @@
-import { N_PARAMS, SMOOTH_SEC } from '../engine/params'
+import { N_PARAMS, SMOOTH_SEC } from '../engine/params.ts'
 
 // Per-block parameter smoothing from the classes declared in PARAM_DEFS.
 // 'step' snaps, 'slew' eases over ~10 ms, 'ramp' over ~3 ms.

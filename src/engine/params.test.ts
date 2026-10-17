@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../controls'
-import { IDX, N_PARAMS, PARAM_DEFS, packParams } from './params'
+import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../controls.ts'
+import { IDX, N_PARAMS, PARAM_DEFS, packParams } from './params.ts'
 
 test('every control has exactly one param entry', () => {
   const names = PARAM_DEFS.map(([n]) => n)

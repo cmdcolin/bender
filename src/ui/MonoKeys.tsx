@@ -1,4 +1,4 @@
-import { GateJumper, Keybed } from './Keybed'
+import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './MonoKeys.module.css'
 
 // The mono synth's bed: walnut cheeks, a black panel with three knob caps for

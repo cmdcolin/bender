@@ -2,10 +2,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { bendDeal, bendName } from '../ui/bendKeys'
-import '../ui/testDom'
-import { PocketPage } from './PocketPage'
+import { engine } from '../engine/engine.ts'
+import { bendDeal, bendName } from '../ui/bendKeys.ts'
+import '../ui/testDom.ts'
+import { PocketPage } from './PocketPage.tsx'
 
 const tab = (name: string) => screen.getByRole('tab', { name })
 

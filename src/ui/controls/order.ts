@@ -1,7 +1,7 @@
-import { PEDAL_ORDER_NAMES, PEDAL_ORDERS } from '../../pedals'
-import { BENDS, BEND_SLOT_KEYS } from './bends'
+import { PEDAL_ORDER_NAMES, PEDAL_ORDERS } from '../../pedals.ts'
+import { BENDS, BEND_SLOT_KEYS } from './bends.ts'
 
-import type { Group } from './types'
+import type { Group } from './types.ts'
 
 // One door for both runs that are yours to order: the six positions the bends
 // compete for, on their way from the mix bus to the pedals, and the six

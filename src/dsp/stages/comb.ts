@@ -1,11 +1,11 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { DelayLine } from '../util/delayline'
-import { OnePoleLP, lpCoef } from '../util/onepole'
-import { octaves } from '../util/pitch'
-import { softclip } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { DelayLine } from '../util/delayline.ts'
+import { OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { octaves } from '../util/pitch.ts'
+import { softclip } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // Karplus-style feedback resonator. Feedback past unity self-oscillates at the
 // comb pitch, held by the in-loop saturation.
@@ -16,7 +16,10 @@ export class Comb implements Stage {
   private dampL = new OnePoleLP()
   private dampR = new OnePoleLP()
 
-  constructor(private readonly sr: number) {
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     const max = sr / 20 + 4
     this.lineL = new DelayLine(max)
     this.lineR = new DelayLine(max)

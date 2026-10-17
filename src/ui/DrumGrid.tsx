@@ -6,7 +6,7 @@ import {
   type RefObject,
 } from 'react'
 
-import { DRUM_MOVES, masksOf, throwLast, type DrumMove } from '../drum-moves'
+import { DRUM_MOVES, masksOf, throwLast, type DrumMove } from '../drum-moves.ts'
 import {
   asLen,
   DRUM_ROMS,
@@ -21,20 +21,20 @@ import {
   type DrumRom,
   type PanelRow,
   type StepState,
-} from '../drums'
-import { engine } from '../engine/engine'
-import { bendDeal, bendRow, toggleBendStep } from './bendKeys'
+} from '../drums.ts'
+import { engine } from '../engine/engine.ts'
+import { bendDeal, bendRow, toggleBendStep } from './bendKeys.ts'
 import {
   useBoardValue,
   useControlValue,
   useStoreValue,
-} from './ControlsContext'
+} from './ControlsContext.ts'
 import styles from './DrumGrid.module.css'
-import { padKeyFor } from './drumKeys'
-import { Tip } from './Tip'
-import { useStruck } from './useStruck'
+import { padKeyFor } from './drumKeys.ts'
+import { Tip } from './Tip.tsx'
+import { useStruck } from './useStruck.ts'
 
-import type { Controls } from '../controls'
+import type { Controls } from '../controls.ts'
 
 // The playhead only moves when a step does, so the grid redraws at the step rate
 // rather than at the meter's.

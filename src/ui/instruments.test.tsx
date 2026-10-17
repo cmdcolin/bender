@@ -2,11 +2,11 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
-import { voiceBit } from '../drums'
-import { engine } from '../engine/engine'
-import { App } from './App'
-import { DrumKit } from './DrumKit'
-import './testDom'
+import { voiceBit } from '../drums.ts'
+import { engine } from '../engine/engine.ts'
+import { App } from './App.tsx'
+import { DrumKit } from './DrumKit.tsx'
+import './testDom.ts'
 
 const pad = (name: string) =>
   screen.getByRole('button', { name: `${name} pad` })

@@ -6,17 +6,17 @@ import {
   type ReactNode,
 } from 'react'
 
-import { engine } from '../engine/engine'
-import { MAX_SOURCES } from '../engine/params'
-import { buildMap, drawMap } from './chain-map'
+import { engine } from '../engine/engine.ts'
+import { MAX_SOURCES } from '../engine/params.ts'
+import { buildMap, drawMap } from './chain-map.ts'
 import styles from './ChainMap.module.css'
-import { CHANNELS, GROUPS } from './controls'
-import { useStoreValue } from './ControlsContext'
-import { useCoarse } from './measure'
-import { Shelf } from './Section'
+import { CHANNELS, GROUPS } from './controls/index.ts'
+import { useStoreValue } from './ControlsContext.ts'
+import { useCoarse } from './measure.ts'
+import { Shelf } from './Section.tsx'
 
-import type { Controls } from '../controls'
-import type { El } from './svg'
+import type { Controls } from '../controls.ts'
+import type { El } from './svg.ts'
 
 const GROUP_BY_NAME = new Map(GROUPS.map(g => [g.name, g]))
 

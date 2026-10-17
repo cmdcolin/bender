@@ -1,10 +1,10 @@
-import { IDX, MAX_SOURCES } from '../engine/params'
-import { DEST } from './modbus'
-import { BLOCK, type StereoBlock } from './stage'
-import { Lowpass, lpCoef } from './util/onepole'
-import { octaves } from './util/pitch'
+import { IDX, MAX_SOURCES } from '../engine/params.ts'
+import { DEST } from './modbus.ts'
+import { BLOCK, type StereoBlock } from './stage.ts'
+import { Lowpass, lpCoef } from './util/onepole.ts'
+import { octaves } from './util/pitch.ts'
 
-import type { Chain } from './chain'
+import type { Chain } from './chain.ts'
 
 // The deck the whole instrument is printed to.
 //
@@ -88,10 +88,13 @@ export class Deck {
   /** This callback's stems, resampled alongside the mix, in chain layout. */
   readonly stems = new Float32Array(MAX_SOURCES * BLOCK)
 
-  constructor(
-    private readonly chain: Chain,
-    private readonly sr: number,
-  ) {}
+  private readonly chain: Chain
+  private readonly sr: number
+
+  constructor(chain: Chain, sr: number) {
+    this.chain = chain
+    this.sr = sr
+  }
 
   /** The real input, at the rate it actually arrived. What the chain gets is
       read back out of here at the deck's own speed. */

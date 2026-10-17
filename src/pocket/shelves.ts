@@ -1,5 +1,5 @@
-import { DEFAULT_CONTROLS, type ControlKey } from '../controls'
-import { PRESETS, type PresetDef } from '../ui/presets'
+import { DEFAULT_CONTROLS, type ControlKey } from '../controls.ts'
+import { PRESETS, type PresetDef } from '../ui/presets/index.ts'
 
 export interface Shelf {
   name: string

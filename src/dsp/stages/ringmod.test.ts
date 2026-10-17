@@ -1,15 +1,28 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { IDX, packParams, SOURCE_TAPS } from '../../engine/params'
-import { REST, TUNE_STEP_KEYS } from '../../tune'
-import { buildBender, type BuiltChain } from '../build'
-import { DEST } from '../modbus'
-import { spectrum } from '../spectrum'
-import { BLOCK, type StereoBlock } from '../stage'
-import { bin, deviation, envelope, quiet, render, rms, SR } from '../testRender'
-import { RING_FROM, RING_FROM_LATE, RING_FROM_TAP, RING_TRACK } from './ringmod'
-import { YOURS } from './roms'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { IDX, packParams, SOURCE_TAPS } from '../../engine/params.ts'
+import { REST, TUNE_STEP_KEYS } from '../../tune.ts'
+import { buildBender, type BuiltChain } from '../build.ts'
+import { DEST } from '../modbus.ts'
+import { spectrum } from '../spectrum.ts'
+import { BLOCK, type StereoBlock } from '../stage.ts'
+import {
+  bin,
+  deviation,
+  envelope,
+  quiet,
+  render,
+  rms,
+  SR,
+} from '../testRender.ts'
+import {
+  RING_FROM,
+  RING_FROM_LATE,
+  RING_FROM_TAP,
+  RING_TRACK,
+} from './ringmod.ts'
+import { YOURS } from './roms.ts'
 
 // A3, the chip's semitone zero, and the note every tracking case here is
 // judged against.

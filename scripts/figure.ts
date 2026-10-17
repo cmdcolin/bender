@@ -1,7 +1,7 @@
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { encodeControls } from '../src/ui/share'
-import { attach, chromePath, sleep } from './chrome'
-import { serveDev } from './serve'
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
+import { encodeControls } from '../src/ui/share.ts'
+import { attach, chromePath, sleep } from './chrome.ts'
+import { serveDev } from './serve.ts'
 
 import { execFileSync, spawn } from 'node:child_process'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'

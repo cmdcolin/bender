@@ -7,7 +7,7 @@ import SignedInHint from '../components/SignedInHint.astro'
 import SocialMeta from '../components/SocialMeta.astro'
 import WhySignInCard from '../components/WhySignInCard.astro'
 import Page from '../layouts/Page.astro'
-import { ORIGIN, PANEL_SHOT } from '../site/site'
+import { ORIGIN, PANEL_SHOT } from '../site/site.ts'
 
 const TITLE = 'bender — a circuit bender in the browser'
 const DESCRIPTION =
@@ -35,8 +35,8 @@ const SHARE_IMAGE = `${ORIGIN}${PANEL_SHOT.file}`
     <BoardRedirect />
     <SignedInHint />
     <script>
-      import '../home/main'
-      import '../home/listen'
+      import '../home/main.ts'
+      import '../home/listen.ts'
     </script>
   </Fragment>
 

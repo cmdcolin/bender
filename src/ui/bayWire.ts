@@ -1,5 +1,9 @@
-import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
-import { choiceName, choiceValue } from './controls'
+import {
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../controls.ts'
+import { choiceName, choiceValue } from './controls/index.ts'
 
 // The patch bay, from the far end: a control row asking whether the bay is on
 // it, and putting a lead there when it isn't.

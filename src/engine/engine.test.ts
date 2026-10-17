@@ -1,20 +1,20 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { hasStep, quantizeStep, STEPS } from '../drums'
-import { YOURS } from '../dsp/stages/roms'
-import { SCALE_NAMES } from '../scale'
-import { HOLD, REST, TUNE_STEP_KEYS } from '../tune'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { hasStep, quantizeStep, STEPS } from '../drums.ts'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { SCALE_NAMES } from '../scale.ts'
+import { HOLD, REST, TUNE_STEP_KEYS } from '../tune.ts'
 import {
   edgeScore,
   Engine,
   mergeNotes,
   soundingMask,
   tailScore,
-} from './engine'
-import { IDX, MAX_SOURCES, STEM_FILES } from './params'
+} from './engine.ts'
+import { IDX, MAX_SOURCES, STEM_FILES } from './params.ts'
 
-import type { RecMsg } from './messages'
+import type { RecMsg } from './messages.ts'
 
 // The engine drives morphs off the frame clock and posts params on one. Stubbed
 // out to nothing, so a morph asked for in seconds stays in flight for the whole

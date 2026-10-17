@@ -1,8 +1,8 @@
-import { GRID_ROWS, THROW_ROW } from '../../drums'
-import { TUNE_ALL_STEP_KEYS } from '../../tune'
-import { HOLD_KEYS } from '../controls'
+import { GRID_ROWS, THROW_ROW } from '../../drums.ts'
+import { TUNE_ALL_STEP_KEYS } from '../../tune.ts'
+import { HOLD_KEYS } from '../controls/index.ts'
 
-import type { ControlKey, Controls } from '../../controls'
+import type { ControlKey, Controls } from '../../controls.ts'
 
 // What a morph holds is yours during the trip; this is what is yours over the
 // whole gesture. On top of the levels and contacts you have your hands on, what

@@ -2,10 +2,10 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { choiceValue, GROUPS } from './controls'
-import { OpenGroup } from './Section'
-import './testDom'
+import { engine } from '../engine/engine.ts'
+import { choiceValue, GROUPS } from './controls/index.ts'
+import { OpenGroup } from './Section.tsx'
+import './testDom.ts'
 
 const openFourTrack = () => {
   const group = GROUPS.find(g => g.name === 'Four-track')

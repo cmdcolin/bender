@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { buildBender } from '../build'
-import { Strobe } from '../bus'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { buildBender } from '../build.ts'
+import { Strobe } from '../bus.ts'
 import {
   deviation,
   makeIo,
@@ -12,9 +12,9 @@ import {
   renderBender,
   rms,
   SR,
-} from '../testRender'
-import { FM_EFFECT_NAMES } from './fmEffects'
-import { romIndex } from './roms'
+} from '../testRender.ts'
+import { FM_EFFECT_NAMES } from './fmEffects.ts'
+import { romIndex } from './roms.ts'
 
 const NOTHING_PLAYING: Partial<Controls> = {
   chipLevel: 0,

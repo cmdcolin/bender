@@ -1,5 +1,5 @@
-import { lpCoef } from '../util/onepole'
-import { flushDenormal } from '../util/softclip'
+import { lpCoef } from '../util/onepole.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
 // The two companders a cassette deck put either side of the tape. Each encodes
 // before the record head and decodes after the replay head. The decoder sets
@@ -65,10 +65,10 @@ export class DolbyB {
   private readonly rel: number
   private readonly sr: number
 
-  constructor(
-    sr: number,
-    private readonly decode: boolean,
-  ) {
+  private readonly decode: boolean
+
+  constructor(sr: number, decode: boolean) {
+    this.decode = decode
     this.sr = sr
     this.atk = lpCoef(1 / (2 * Math.PI * 0.002), sr)
     this.rel = lpCoef(1 / (2 * Math.PI * 0.08), sr)
@@ -114,10 +114,10 @@ export class Dbx {
   private readonly atk: number
   private readonly rel: number
 
-  constructor(
-    sr: number,
-    private readonly decode: boolean,
-  ) {
+  private readonly decode: boolean
+
+  constructor(sr: number, decode: boolean) {
+    this.decode = decode
     this.emph = new Shelf(1500, 6000, sr, decode)
     this.hpC = lpCoef(80, sr)
     this.atk = lpCoef(1 / (2 * Math.PI * 0.0015), sr)

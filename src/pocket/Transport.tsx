@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import { engine } from '../engine/engine'
-import { useStoreValue } from '../ui/ControlsContext'
-import { deliver } from './deliver'
+import { engine } from '../engine/engine.ts'
+import { useStoreValue } from '../ui/ControlsContext.ts'
+import { deliver } from './deliver.ts'
 import styles from './pocket.module.css'
 
 const clock = (seconds: number) => {

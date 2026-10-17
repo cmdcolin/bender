@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { buildChain } from '../build'
-import { BLOCK, type StereoBlock } from '../stage'
-import { ROMS, ROM_NAMES } from './roms'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { buildChain } from '../build.ts'
+import { BLOCK, type StereoBlock } from '../stage.ts'
+import { ROMS, ROM_NAMES } from './roms.ts'
 
 test('every ROM is playable: named, clocked, and made of legal steps', () => {
   expect(new Set(ROM_NAMES).size).toBe(ROMS.length)

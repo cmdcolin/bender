@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune'
-import { buildBender, buildChain, type BuiltChain } from '../build'
-import { DEST } from '../modbus'
-import { spectrum } from '../spectrum'
-import { BLOCK } from '../stage'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune.ts'
+import { buildBender, buildChain, type BuiltChain } from '../build.ts'
+import { DEST } from '../modbus.ts'
+import { spectrum } from '../spectrum.ts'
+import { BLOCK } from '../stage.ts'
 import {
   bin,
   deviation,
@@ -18,9 +18,9 @@ import {
   rms,
   SR,
   tail,
-} from '../testRender'
-import { YOURS } from './roms'
-import { ToyChip } from './toyChip'
+} from '../testRender.ts'
+import { YOURS } from './roms.ts'
+import { ToyChip } from './toyChip.ts'
 
 // A memory written out as the controls that carry it. Anything not named is a
 // step with nothing on it.

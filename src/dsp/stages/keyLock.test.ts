@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { SCALE_NAMES, snap } from '../../scale'
-import { renderBender } from '../testRender'
-import { ANY_CHOICE } from '../trigbus'
-import { ToyChip } from './toyChip'
+import { SCALE_NAMES, snap } from '../../scale.ts'
+import { renderBender } from '../testRender.ts'
+import { ANY_CHOICE } from '../trigbus.ts'
+import { ToyChip } from './toyChip.ts'
 
-import type { Controls } from '../../controls'
+import type { Controls } from '../../controls.ts'
 
 // The key line's matrix, from the audio thread's end. The keybeds are snapped
 // before the note ever reaches a wire, so what is left to hold down here is the

@@ -1,10 +1,10 @@
 // The account end of the bar — the avatar and the menu under it — and the card
 // that answers "why sign in?". main.ts owns the sign-in itself; these are the
 // two things on screen it drives.
-import { el, need } from './dom'
-import { acctBtn, acctMenu, acctName, avatar, whyBtns, whyCard } from './els'
+import { el, need } from './dom.ts'
+import { acctBtn, acctMenu, acctName, avatar, whyBtns, whyCard } from './els.ts'
 
-import type { CloudUser } from '../ui/cloud'
+import type { CloudUser } from '../ui/cloud.ts'
 
 // CROSS_REPO_SYNC(home-account)
 function paintAvatar(user: CloudUser) {

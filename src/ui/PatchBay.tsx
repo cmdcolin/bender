@@ -1,11 +1,11 @@
-import { engine } from '../engine/engine'
-import { sliderFor } from './controls'
-import { useBoardValue, useStoreValue } from './ControlsContext'
-import { useSelectedBox } from './diagram'
-import { BoxRows } from './DiagramParts'
+import { engine } from '../engine/engine.ts'
+import { sliderFor } from './controls/index.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { useSelectedBox } from './diagram.ts'
+import { BoxRows } from './DiagramParts.tsx'
 import styles from './PatchBay.module.css'
-import { coherePatch, wireFault } from './presets/patch'
-import { Tip } from './Tip'
+import { coherePatch, wireFault } from './presets/patch.ts'
+import { Tip } from './Tip.tsx'
 
 const SRC = sliderFor('mod0Src').choices!
 const DEST = sliderFor('mod0Dest').choices!

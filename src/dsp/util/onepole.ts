@@ -1,4 +1,4 @@
-import { flushDenormal } from './softclip'
+import { flushDenormal } from './softclip.ts'
 
 export function lpCoef(hz: number, sr: number): number {
   return 1 - Math.exp((-2 * Math.PI * hz) / sr)

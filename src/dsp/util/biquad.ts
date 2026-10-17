@@ -1,4 +1,4 @@
-import { flushDenormal } from './softclip'
+import { flushDenormal } from './softclip.ts'
 
 export interface Biquad {
   b0: number

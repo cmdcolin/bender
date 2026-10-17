@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { packParams } from '../engine/params'
-import { PEDAL_ORDERS } from '../pedals'
-import { buildChain } from './build'
-import { makeIo, render, renderBender, rms, SR } from './testRender'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { packParams } from '../engine/params.ts'
+import { PEDAL_ORDERS } from '../pedals.ts'
+import { buildChain } from './build.ts'
+import { makeIo, render, renderBender, rms, SR } from './testRender.ts'
 
 test('all-mixes-zero equals no bends: same output with slots emptied', () => {
   const base: Partial<Controls> = { chipLevel: 0.5 }

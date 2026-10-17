@@ -1,9 +1,9 @@
 import { useEffect, useState, type PointerEvent, type ReactNode } from 'react'
 
-import { engine } from '../engine/engine'
-import { semitoneName } from '../notes'
-import { useControlValue, useStoreValue } from './ControlsContext'
-import { isTyping } from './isTyping'
+import { engine } from '../engine/engine.ts'
+import { semitoneName } from '../notes.ts'
+import { useControlValue, useStoreValue } from './ControlsContext.ts'
+import { isTyping } from './isTyping.ts'
 import styles from './Keybed.module.css'
 import {
   blackAbove,
@@ -15,15 +15,15 @@ import {
   pitch,
   topKey,
   whiteKeys,
-} from './keyboard'
-import { letterKeys } from './letters'
-import { useCoarse, useWidth } from './measure'
-import { Menu } from './Menu'
-import { menuCheck } from './menuItems'
-import { Tip } from './Tip'
+} from './keyboard.ts'
+import { letterKeys } from './letters.ts'
+import { useCoarse, useWidth } from './measure.ts'
+import { Menu } from './Menu.tsx'
+import { menuCheck } from './menuItems.ts'
+import { Tip } from './Tip.tsx'
 
-import type { ControlKey } from '../controls'
-import type { NoteDest } from '../engine/messages'
+import type { ControlKey } from '../controls.ts'
+import type { NoteDest } from '../engine/messages.ts'
 
 // The machines with keys on them, and the two stores each one reports through:
 // what a hand is holding down on that bed, and what the chip behind it is

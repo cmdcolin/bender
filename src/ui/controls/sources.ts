@@ -5,9 +5,9 @@ import {
   N_DRUM_VOICES,
   THROW_ROW,
   VOICE_LABELS,
-} from '../../drums'
-import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus'
-import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
+} from '../../drums.ts'
+import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
+import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects.ts'
 import {
   fallSecs,
   FM_LFO_NAMES,
@@ -15,12 +15,12 @@ import {
   MULT,
   PATCH_ADDR_LINES,
   PATCH_DATA_LINES,
-} from '../../dsp/stages/fmVoices'
+} from '../../dsp/stages/fmVoices.ts'
 import {
   MONO_OSC3_NAMES,
   MONO_RANGE_NAMES,
   MONO_WAVE_NAMES,
-} from '../../dsp/stages/monoVoice'
+} from '../../dsp/stages/monoVoice.ts'
 import {
   PCM_ADDR_LINES,
   PCM_CHORD_NAMES,
@@ -29,14 +29,14 @@ import {
   PCM_VIBRATO_NAMES,
   PCM_VOICE_NAMES,
   SAMPLE_SECS,
-} from '../../dsp/stages/pcmRom'
+} from '../../dsp/stages/pcmRom.ts'
 import {
   ROM_ADDR_LINES,
   ROM_DATA_LINES,
   ROMS,
   TUNE_NAMES,
   YOURS,
-} from '../../dsp/stages/roms'
+} from '../../dsp/stages/roms.ts'
 import {
   ARP_MODES,
   ARP_SYNC_MODES,
@@ -46,7 +46,7 @@ import {
   GHOST_MODES,
   LOOP_TARGETS,
   SYNC_MODES,
-} from '../../dsp/stages/toyChip'
+} from '../../dsp/stages/toyChip.ts'
 import {
   BANK_GATE_NAMES,
   BANK_SYNC_NAMES,
@@ -59,18 +59,18 @@ import {
   RESET_NAMES,
   ROM_COUNT_NAMES,
   RING_TRIG_NAMES,
-} from '../../dsp/stages/toyDrum'
-import { NOTE_NAMES } from '../../notes'
-import { SCALE_NAMES } from '../../scale'
-import { TUNE_ALL_STEP_KEYS } from '../../tune'
+} from '../../dsp/stages/toyDrum.ts'
+import { NOTE_NAMES } from '../../notes.ts'
+import { SCALE_NAMES } from '../../scale.ts'
+import { TUNE_ALL_STEP_KEYS } from '../../tune.ts'
 
-import type { Controls } from '../../controls'
+import type { Controls } from '../../controls.ts'
 
 /** True while the chip is playing the memory rather than one of its own songs. */
 const playingYours = (c: Controls) => Math.round(c.chipTune) === YOURS
-import { FOUR_TRACK_GROUP } from './fourTrack'
+import { FOUR_TRACK_GROUP } from './fourTrack.ts'
 
-import type { Group, SliderDef } from './types'
+import type { Group, SliderDef } from './types.ts'
 
 // The toy has no sync input, so locking it to the kit means picking the crystal
 // speed at which the ROM's own steps divide into the kit's. Which multiple of

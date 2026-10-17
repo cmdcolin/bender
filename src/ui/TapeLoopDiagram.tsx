@@ -1,5 +1,5 @@
-import { HEAD_CHOICES } from '../dsp/stages/tapeDelay'
-import { useReadings, useSelectedBox } from './diagram'
+import { HEAD_CHOICES } from '../dsp/stages/tapeDelay.ts'
+import { useReadings, useSelectedBox } from './diagram.ts'
 import {
   Band,
   BoxRows,
@@ -8,7 +8,7 @@ import {
   HeadBar,
   Label,
   Wire,
-} from './DiagramParts'
+} from './DiagramParts.tsx'
 
 const KEYS = [
   'dlySend',

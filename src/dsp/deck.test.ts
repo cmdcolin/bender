@@ -1,18 +1,18 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import {
   MAX_SOURCES,
   N_PARAMS,
   packParams,
   SOURCE_TAPS,
-} from '../engine/params'
-import { buildBender, type BuiltChain } from './build'
-import { Deck } from './deck'
-import { DEST } from './modbus'
-import { Smoother } from './smoother'
-import { BLOCK } from './stage'
-import { bin, makeIo, pitchHz, rms, sine, SR } from './testRender'
+} from '../engine/params.ts'
+import { buildBender, type BuiltChain } from './build.ts'
+import { Deck } from './deck.ts'
+import { DEST } from './modbus.ts'
+import { Smoother } from './smoother.ts'
+import { BLOCK } from './stage.ts'
+import { bin, makeIo, pitchHz, rms, sine, SR } from './testRender.ts'
 
 // The deck's own rig, because testRender's is deliberately not it: renderBender
 // hands the mic straight to the chain, which is what the alignment tests over

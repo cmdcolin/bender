@@ -1,14 +1,14 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { sliderFor } from './controls'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { sliderFor } from './controls/index.ts'
 import {
   boardFrom,
   boardFromUrl,
   boardHash,
   decodeControls,
   encodeControls,
-} from './share'
+} from './share.ts'
 
 test('a board survives the round trip', () => {
   const board: Controls = {

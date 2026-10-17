@@ -1,7 +1,7 @@
-import { Burst } from './util/burst'
-import { Drunk } from './util/drift'
-import { mulberry32, type Rng } from './util/rng'
-import { flushDenormal } from './util/softclip'
+import { Burst } from './util/burst.ts'
+import { Drunk } from './util/drift.ts'
+import { mulberry32, type Rng } from './util/rng.ts'
+import { flushDenormal } from './util/softclip.ts'
 
 // How fast a jammed die and its supply come to rest against each other. Where
 // they come to rest is a part value now — see PARTS.latchHold.
@@ -193,10 +193,10 @@ export class ToyRail {
   private clipFault: Burst
   private rng: Rng
 
-  constructor(
-    private readonly sr: number,
-    seed = 909,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 909) {
+    this.sr = sr
     this.rng = mulberry32(seed)
     this.clipFault = new Burst(sr, 0.8)
     this.decouple = 1 - Math.exp(-1 / (PARTS.decouple * sr))

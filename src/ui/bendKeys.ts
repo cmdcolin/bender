@@ -1,12 +1,12 @@
-import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls'
-import { STEPS, stepBit } from '../drums'
-import { engine } from '../engine/engine'
-import { createStore } from '../listeners'
-import { dealBendKeys, isHeat, type BendKey, type Heat } from './bendDeal'
-import { sliderFor, snapToStep } from './controls'
-import { LETTERS } from './keyboard'
-import { read, write } from './persist'
-import { fromPos, toPos } from './slider-scale'
+import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls.ts'
+import { STEPS, stepBit } from '../drums.ts'
+import { engine } from '../engine/engine.ts'
+import { createStore } from '../listeners.ts'
+import { dealBendKeys, isHeat, type BendKey, type Heat } from './bendDeal.ts'
+import { sliderFor, snapToStep } from './controls/index.ts'
+import { LETTERS } from './keyboard.ts'
+import { read, write } from './persist.ts'
+import { fromPos, toPos } from './slider-scale.ts'
 
 export const bendName = (letter: string) => `bend:${letter}`
 export const isBendName = (name: string) =>

@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 
-import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls'
-import { hasStep } from '../../drums'
-import { mulberry32 } from '../../dsp/util/rng'
+import { CONTROL_KEYS, DEFAULT_CONTROLS } from '../../controls.ts'
+import { hasStep } from '../../drums.ts'
+import { mulberry32 } from '../../dsp/util/rng.ts'
 import {
   ALL_SLIDERS,
   BENDS,
@@ -10,9 +10,9 @@ import {
   type Group,
   groupKeys,
   sliderFor,
-} from '../controls'
-import { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll'
-import { mine, yours } from './testBoard'
+} from '../controls/index.ts'
+import { mutate, randomLook, resetGroup, rollGroup, rollKeys } from './roll.ts'
+import { mine, yours } from './testBoard.ts'
 
 const groupNamed = (name: string): Group =>
   GROUPS.find(g => g.name === name) as Group

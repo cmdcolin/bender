@@ -2,13 +2,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { BENDS, bendAt, GROUPS, groupKeys } from './controls'
-import { applyRig, rigsFor } from './presets'
-import { OpenGroup } from './Section'
-import { SlotRack } from './SlotRack'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { BENDS, bendAt, GROUPS, groupKeys } from './controls/index.ts'
+import { applyRig, rigsFor } from './presets/index.ts'
+import { OpenGroup } from './Section.tsx'
+import { SlotRack } from './SlotRack.tsx'
+import './testDom.ts'
 
 // The rack, drawn on its own under most tests here — SlotRack needs no group
 // to render, and the merged Signal order panel would add the pedal rack's own

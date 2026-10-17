@@ -1,5 +1,5 @@
-import type { ModBus } from './modbus'
-import type { TriggerBus } from './trigbus'
+import type { ModBus } from './modbus.ts'
+import type { TriggerBus } from './trigbus.ts'
 
 export interface StereoBlock {
   l: Float32Array

@@ -1,8 +1,8 @@
-import { engine } from './engine/engine'
-import { exposeBenderApi } from './ui/agentApi'
-import { App } from './ui/App'
-import { keepRunState } from './ui/runState'
-import { boardFromLocation } from './ui/share'
+import { engine } from './engine/engine.ts'
+import { exposeBenderApi } from './ui/agentApi.ts'
+import { App } from './ui/App.tsx'
+import { keepRunState } from './ui/runState.ts'
+import { boardFromLocation } from './ui/share.ts'
 import './theme.css'
 
 // A url that names a board sets the board up, and stops there. It used to press

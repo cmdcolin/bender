@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { gaussian, mulberry32 } from './util/rng'
+import { gaussian, mulberry32 } from './util/rng.ts'
 
 // The table is drawn once and read for the life of the process, so whatever it
 // averages to is a dc offset on every draw rather than an error that washes out

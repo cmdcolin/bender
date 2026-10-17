@@ -1,4 +1,4 @@
-import type { Controls } from '../src/controls'
+import type { Controls } from '../src/controls.ts'
 
 // Every pedal wet, tape on, the supply dying, four wires in the bay and the
 // faults rolling — and the bend slots named outright.

@@ -1,9 +1,9 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { octaves, wrap1 } from '../util/pitch'
-import { flushDenormal } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { octaves, wrap1 } from '../util/pitch.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // The rail A gives up at, and the rail it will start again on.
 //
@@ -57,7 +57,11 @@ export class ChaosOsc implements Stage {
   private rail = 1
   private stalled = false
 
-  constructor(private readonly sr: number) {}
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
+  }
 
   // Also runs while the feedback bus is patched into the FM input, so the
   // loop stays alive even with the level down.

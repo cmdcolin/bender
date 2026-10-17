@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { MonoVoice, SYNC, WAVE, type MonoPatch } from './monoVoice'
+import { MonoVoice, SYNC, WAVE, type MonoPatch } from './monoVoice.ts'
 
 const SR = 48000
 

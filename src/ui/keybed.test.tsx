@@ -2,13 +2,13 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { App } from './App'
-import { FmKeys } from './FmKeys'
-import { Keys } from './Keys'
-import { MonoKeys } from './MonoKeys'
-import { PcmKeys } from './PcmKeys'
-import { measure, touch } from './testDom'
+import { engine } from '../engine/engine.ts'
+import { App } from './App.tsx'
+import { FmKeys } from './FmKeys.tsx'
+import { Keys } from './Keys.tsx'
+import { MonoKeys } from './MonoKeys.tsx'
+import { PcmKeys } from './PcmKeys.tsx'
+import { measure, touch } from './testDom.ts'
 
 // Three keybeds on one panel, and one computer keyboard in front of them. What
 // makes that work at all is that a note says which bed it came off: the FM

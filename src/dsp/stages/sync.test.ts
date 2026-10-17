@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { REST, TUNE_STEP_KEYS } from '../../tune'
-import { bursts, render, rms } from '../testRender'
-import { YOURS } from './roms'
+import { REST, TUNE_STEP_KEYS } from '../../tune.ts'
+import { bursts, render, rms } from '../testRender.ts'
+import { YOURS } from './roms.ts'
 
-import type { Controls } from '../../controls'
+import type { Controls } from '../../controls.ts'
 
 // The wire from the kit's step clock to the toy's timing chain. What has to
 // hold is that it counts off the kit, that it replaces the song's own rate and

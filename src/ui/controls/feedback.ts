@@ -1,4 +1,4 @@
-import type { Group } from './types'
+import type { Group } from './types.ts'
 
 export const FEEDBACK_GROUPS: Group[] = [
   {

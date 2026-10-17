@@ -1,10 +1,10 @@
-import { YOURS } from '../dsp/stages/roms'
-import { engine } from '../engine/engine'
-import { useBoardValue, useStoreValue } from './ControlsContext'
-import { Keybed } from './Keybed'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { engine } from '../engine/engine.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { Keybed } from './Keybed.tsx'
 import styles from './Keys.module.css'
-import { RailLamp } from './RailLamp'
-import { Tip } from './Tip'
+import { RailLamp } from './RailLamp.tsx'
+import { Tip } from './Tip.tsx'
 
 // The toy: a moulded case with a badge, a speaker and its own melody memory on
 // the deck, around the bed every keyboard on this board shares.

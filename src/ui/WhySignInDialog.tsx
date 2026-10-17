@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { siteRoot, privacyUrl } from '../site/paths'
+import { siteRoot, privacyUrl } from '../site/paths.ts'
 import {
   FREE_WITHOUT,
   HOW,
@@ -10,7 +10,7 @@ import {
   SHOT_CAPTION,
   SHOT_H,
   SHOT_W,
-} from './whySignIn'
+} from './whySignIn.ts'
 import styles from './WhySignInDialog.module.css'
 
 // Why an account, and the two ways on from the question: sign in, or copy the

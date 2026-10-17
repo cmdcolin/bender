@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
-import { engine } from '../engine/engine'
+import { engine } from '../engine/engine.ts'
 import styles from './RailLamp.module.css'
-import { Tip } from './Tip'
+import { Tip } from './Tip.tsx'
 
 // Three cells in the battery compartment, which is what the toys ran on.
 const NOMINAL_V = 4.5

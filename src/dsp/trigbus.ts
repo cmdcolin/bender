@@ -1,5 +1,5 @@
-import { N_DRUM_VOICES } from '../drums'
-import { BLOCK } from './stage'
+import { N_DRUM_VOICES } from '../drums.ts'
+import { BLOCK } from './stage.ts'
 
 export { N_DRUM_VOICES }
 

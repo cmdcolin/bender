@@ -1,13 +1,19 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type ControlKey } from '../../controls'
-import { GRID_ROWS } from '../../drums'
-import { spectrum } from '../../dsp/spectrum'
-import { deviation, render, renderBender, rms, SR } from '../../dsp/testRender'
-import { HOLD_KEYS } from '../controls'
-import { applyPreset, presetPath } from './apply'
-import { PRESETS } from './table'
-import { mine } from './testBoard'
+import { DEFAULT_CONTROLS, type ControlKey } from '../../controls.ts'
+import { GRID_ROWS } from '../../drums.ts'
+import { spectrum } from '../../dsp/spectrum.ts'
+import {
+  deviation,
+  render,
+  renderBender,
+  rms,
+  SR,
+} from '../../dsp/testRender.ts'
+import { HOLD_KEYS } from '../controls/index.ts'
+import { applyPreset, presetPath } from './apply.ts'
+import { PRESETS } from './table.ts'
+import { mine } from './testBoard.ts'
 
 test('a preset moves what it names and keeps the rest of what is yours', () => {
   const before = mine()

@@ -1,9 +1,9 @@
-import { ACCENT_GAIN } from '../../drums'
-import { IDX } from '../../engine/params'
-import { Bus, FAULT_NAMES } from '../bus'
-import { DEST, hop } from '../modbus'
-import { KEY_BIAS, voiceMask } from '../trigbus'
-import { lpCoef, OnePoleLP } from '../util/onepole'
+import { ACCENT_GAIN } from '../../drums.ts'
+import { IDX } from '../../engine/params.ts'
+import { Bus, FAULT_NAMES } from '../bus.ts'
+import { DEST, hop } from '../modbus.ts'
+import { KEY_BIAS, voiceMask } from '../trigbus.ts'
+import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import {
   buildPcmRom,
   CHORDS,
@@ -16,11 +16,11 @@ import {
   ROM_PER_CYCLE,
   SAMPLE_SECS,
   SAMPLED,
-} from './pcmRom'
+} from './pcmRom.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
-import type { Sampler } from './sampler'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
+import type { ToyRail } from '../toyRail.ts'
+import type { Sampler } from './sampler.ts'
 
 // The third machine on the rail: the eight-bit home keyboard, and the only one
 // on this board that makes pads, strings, choirs and bells.
@@ -159,11 +159,14 @@ export class PcmKeys implements Stage {
   private releaseCoef = 0
   private sustainAt = 0
 
-  constructor(
-    private readonly sr: number,
-    private readonly rail: ToyRail,
-    private readonly sampler: Sampler,
-  ) {
+  private readonly sr: number
+  private readonly rail: ToyRail
+  private readonly sampler: Sampler
+
+  constructor(sr: number, rail: ToyRail, sampler: Sampler) {
+    this.sr = sr
+    this.rail = rail
+    this.sampler = sampler
     this.decim = sr / ROM_HZ
   }
 

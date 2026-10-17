@@ -1,4 +1,4 @@
-import { DEFAULT_CONTROLS } from '../../controls'
+import { DEFAULT_CONTROLS } from '../../controls.ts'
 import {
   ACCENT_GAIN,
   ADDR_LINES,
@@ -8,22 +8,27 @@ import {
   GRID_ROWS,
   STEPS,
   VOICE_LABELS,
-} from '../../drums'
-import { IDX, packParams } from '../../engine/params'
-import { Bus, FAULT_NAMES } from '../bus'
-import { DEST, hop, ModBus } from '../modbus'
-import { BLOCK } from '../stage'
-import { ToyRail } from '../toyRail'
-import { Transport } from '../transport'
-import { N_DRUM_VOICES, STEP_CHOICE, TriggerBus, voiceMask } from '../trigbus'
-import { BridgedT } from '../util/bridged'
-import { coef, Transient } from '../util/follower'
-import { MetalBank } from '../util/metal'
-import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole'
-import { octaves } from '../util/pitch'
-import { mulberry32, type Rng } from '../util/rng'
+} from '../../drums.ts'
+import { IDX, packParams } from '../../engine/params.ts'
+import { Bus, FAULT_NAMES } from '../bus.ts'
+import { DEST, hop, ModBus } from '../modbus.ts'
+import { BLOCK } from '../stage.ts'
+import { ToyRail } from '../toyRail.ts'
+import { Transport } from '../transport.ts'
+import {
+  N_DRUM_VOICES,
+  STEP_CHOICE,
+  TriggerBus,
+  voiceMask,
+} from '../trigbus.ts'
+import { BridgedT } from '../util/bridged.ts'
+import { coef, Transient } from '../util/follower.ts'
+import { MetalBank } from '../util/metal.ts'
+import { Highpass, Lowpass, lpCoef, OnePoleLP } from '../util/onepole.ts'
+import { octaves } from '../util/pitch.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 const TAU = 2 * Math.PI
 
@@ -741,12 +746,14 @@ export class ToyDrum implements Stage {
   private scanThrow = 0
   private scanSamples = 0
 
-  constructor(
-    private readonly sr: number,
-    private readonly rail: ToyRail,
-    private readonly transport: Transport,
-    seed = 202,
-  ) {
+  private readonly sr: number
+  private readonly rail: ToyRail
+  private readonly transport: Transport
+
+  constructor(sr: number, rail: ToyRail, transport: Transport, seed = 202) {
+    this.sr = sr
+    this.rail = rail
+    this.transport = transport
     // Before anything else draws on the board: the scratch kit inside cutRom
     // runs this same constructor, and it has to find the flag rather than a
     // half-built instance.

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { Halfband, LATENCY, Upsampler } from './halfband'
+import { Halfband, LATENCY, Upsampler } from './halfband.ts'
 
 const SR = 48000
 

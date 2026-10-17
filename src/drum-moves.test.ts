@@ -10,7 +10,7 @@ import {
   randomPattern,
   shiftPattern,
   varyPattern,
-} from './drum-moves'
+} from './drum-moves.ts'
 import {
   DRUM_ROMS,
   GRID_ROWS,
@@ -20,8 +20,8 @@ import {
   stepBit,
   type DrumLens,
   type DrumMasks,
-} from './drums'
-import { mulberry32 } from './dsp/util/rng'
+} from './drums.ts'
+import { mulberry32 } from './dsp/util/rng.ts'
 
 const romNamed = (name: string) => DRUM_ROMS.find(r => r.name === name)!.masks
 

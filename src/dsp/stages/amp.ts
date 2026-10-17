@@ -1,4 +1,4 @@
-import { IDX } from '../../engine/params'
+import { IDX } from '../../engine/params.ts'
 import {
   BiquadState,
   bandpass,
@@ -7,16 +7,16 @@ import {
   peak,
   response,
   type Biquad,
-} from '../util/biquad'
-import { Burst } from '../util/burst'
-import { DelayLine } from '../util/delayline'
-import { Follower, coef } from '../util/follower'
-import { Halfband, LATENCY, Upsampler } from '../util/halfband'
-import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
-import { mulberry32, type Rng } from '../util/rng'
-import { flushDenormal, softclip } from '../util/softclip'
+} from '../util/biquad.ts'
+import { Burst } from '../util/burst.ts'
+import { DelayLine } from '../util/delayline.ts'
+import { Follower, coef } from '../util/follower.ts'
+import { Halfband, LATENCY, Upsampler } from '../util/halfband.ts'
+import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 export const AMP_VOICE = { fender: 0, marshall: 1 } as const
 export const AMP_VOICE_NAMES = Object.keys(AMP_VOICE)
@@ -528,7 +528,10 @@ export class Amp implements Stage {
   private readonly osr: number
   private readonly k: Knobs
 
-  constructor(private readonly sr: number) {
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     this.osr = sr * OS
     this.left = new Channel(1, 0x5a1, this.osr)
     this.right = new Channel(1.07, 0x5a2, this.osr)

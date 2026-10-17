@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { SOURCE_TAPS, STEM_FILES, packParams } from '../engine/params'
-import { buildBender } from './build'
-import { Chain } from './chain'
-import { BLOCK, type Stage, type StereoBlock } from './stage'
-import { makeIo, quiet, renderStems, rms, SR } from './testRender'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { SOURCE_TAPS, STEM_FILES, packParams } from '../engine/params.ts'
+import { buildBender } from './build.ts'
+import { Chain } from './chain.ts'
+import { BLOCK, type Stage, type StereoBlock } from './stage.ts'
+import { makeIo, quiet, renderStems, rms, SR } from './testRender.ts'
 
 const TOY = SOURCE_TAPS.indexOf('toyChip')
 const KIT = SOURCE_TAPS.indexOf('toyDrum')

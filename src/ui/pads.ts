@@ -4,10 +4,15 @@
 // lands, and the three ways a pad gets bound — General MIDI for free, a sweep
 // down the kit, or one voice armed on its own.
 
-import { ACCENT_GAIN, DRUM_VOICES, voiceBit, type DrumVoiceKey } from '../drums'
-import { engine } from '../engine/engine'
-import { createStore } from '../listeners'
-import { omit, parseMap, read, write } from './persist'
+import {
+  ACCENT_GAIN,
+  DRUM_VOICES,
+  voiceBit,
+  type DrumVoiceKey,
+} from '../drums.ts'
+import { engine } from '../engine/engine.ts'
+import { createStore } from '../listeners.ts'
+import { omit, parseMap, read, write } from './persist.ts'
 
 // One pad = a (channel, note) pair, the way a knob is a (channel, controller)
 // one. A pad has no position to keep and nothing to catch up with: it is a

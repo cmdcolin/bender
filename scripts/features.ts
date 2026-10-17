@@ -1,19 +1,19 @@
 import { format, resolveConfig } from 'prettier'
 
 import pkg from '../package.json' with { type: 'json' }
-import { DEFAULT_CONTROLS } from '../src/controls'
-import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums'
-import { ROMS } from '../src/dsp/stages/roms'
-import { PEDAL_ORDERS } from '../src/pedals'
-import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls'
-import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends'
-import { STAGE_ORDER } from '../src/ui/controls/types'
-import { CUTS } from '../src/ui/presets/cuts'
-import { RIGS } from '../src/ui/presets/rigs'
-import { PRESETS } from '../src/ui/presets/table'
-import { boardHash } from '../src/ui/share'
+import { DEFAULT_CONTROLS } from '../src/controls.ts'
+import { DRUM_VOICES, GRID_ROWS, STEPS } from '../src/drums.ts'
+import { ROMS } from '../src/dsp/stages/roms.ts'
+import { PEDAL_ORDERS } from '../src/pedals.ts'
+import { BENDS, BEND_SLOT_KEYS } from '../src/ui/controls/bends.ts'
+import { ALL_SLIDERS, CHANNELS, GROUPS } from '../src/ui/controls/index.ts'
+import { STAGE_ORDER } from '../src/ui/controls/types.ts'
+import { CUTS } from '../src/ui/presets/cuts.ts'
+import { RIGS } from '../src/ui/presets/rigs.ts'
+import { PRESETS } from '../src/ui/presets/table.ts'
+import { boardHash } from '../src/ui/share.ts'
 
-import type { Group, SliderDef } from '../src/ui/controls/types'
+import type { Group, SliderDef } from '../src/ui/controls/types.ts'
 
 // Generates docs/features.md. `pnpm features` rewrites it; features.test.ts
 // fails if the committed copy falls behind.

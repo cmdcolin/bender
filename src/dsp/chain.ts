@@ -5,23 +5,23 @@ import {
   SOURCE_TAPS,
   TAP_BUS,
   TAP_MIC,
-} from '../engine/params'
-import { pedalOrderAt } from '../pedals'
-import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus'
-import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage'
-import { RING_FROM_TAP } from './stages/ringmod'
-import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape'
-import { DAC_REF_TOY } from './stages/toyDrum'
-import { Thermal } from './thermal'
-import { TriggerBus } from './trigbus'
-import { Burst } from './util/burst'
-import { DelayLine } from './util/delayline'
-import { Follower, coef } from './util/follower'
-import { LoopAmp, ampVoicing, type AmpVoicing } from './util/loopamp'
-import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole'
-import { octaves } from './util/pitch'
-import { mulberry32, type Rng } from './util/rng'
-import { flushDenormal, softclip } from './util/softclip'
+} from '../engine/params.ts'
+import { pedalOrderAt } from '../pedals.ts'
+import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
+import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage.ts'
+import { RING_FROM_TAP } from './stages/ringmod.ts'
+import { TAPE_AT_BENDS, TAPE_AT_END, TAPE_AT_PEDALS } from './stages/tape.ts'
+import { DAC_REF_TOY } from './stages/toyDrum.ts'
+import { Thermal } from './thermal.ts'
+import { TriggerBus } from './trigbus.ts'
+import { Burst } from './util/burst.ts'
+import { DelayLine } from './util/delayline.ts'
+import { Follower, coef } from './util/follower.ts'
+import { LoopAmp, ampVoicing, type AmpVoicing } from './util/loopamp.ts'
+import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole.ts'
+import { octaves } from './util/pitch.ts'
+import { mulberry32, type Rng } from './util/rng.ts'
+import { flushDenormal, softclip } from './util/softclip.ts'
 
 const LIMIT_CEIL = 0.891 // −1 dBFS
 
@@ -57,10 +57,12 @@ class Joint {
   /** Set by pass(): the joint has just broken, or just come back. */
   moved = false
 
-  constructor(
-    private readonly sr: number,
-    private readonly rng: Rng,
-  ) {
+  private readonly sr: number
+  private readonly rng: Rng
+
+  constructor(sr: number, rng: Rng) {
+    this.sr = sr
+    this.rng = rng
     this.burst = new Burst(sr, 1.2)
   }
 
@@ -296,10 +298,10 @@ export class Chain {
       of it to the head of the bends or the pedals. */
   tape: Stage | null = null
 
-  constructor(
-    readonly sr: number,
-    seed = 1,
-  ) {
+  readonly sr: number
+
+  constructor(sr: number, seed = 1) {
+    this.sr = sr
     this.ctx = {
       sr,
       mic: new Float32Array(BLOCK),

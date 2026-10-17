@@ -2,9 +2,9 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../../controls'
-import { randomPattern } from '../../drum-moves'
-import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums'
+} from '../../controls.ts'
+import { randomPattern } from '../../drum-moves.ts'
+import { type DrumLenKey, GRID_ROWS, STEPS } from '../../drums.ts'
 import {
   ALL_SLIDERS,
   BENDS,
@@ -14,13 +14,13 @@ import {
   type SliderDef,
   sliderFor,
   snapToStep,
-} from '../controls'
-import { fromPos, ordinary, pastNormal, toPos } from '../slider-scale'
-import { applyPreset } from './apply'
-import { coherePatch, cohereTriggers } from './patch'
-import { inTime } from './quantize'
-import { PRESETS } from './table'
-import { CLOCK_KEYS, keepYours, PART_KEYS, YOURS } from './yours'
+} from '../controls/index.ts'
+import { fromPos, ordinary, pastNormal, toPos } from '../slider-scale.ts'
+import { applyPreset } from './apply.ts'
+import { coherePatch, cohereTriggers } from './patch.ts'
+import { inTime } from './quantize.ts'
+import { PRESETS } from './table.ts'
+import { CLOCK_KEYS, keepYours, PART_KEYS, YOURS } from './yours.ts'
 
 // Along the control's own travel, not across its span: a log slider moves by a
 // proportion of where it sits, so a 40 ms delay comes back a few milliseconds

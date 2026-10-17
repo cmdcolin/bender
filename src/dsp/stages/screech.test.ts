@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { deviation, render, rms } from '../testRender'
+import { deviation, render, rms } from '../testRender.ts'
 
 test('screech filter self-oscillates past unity resonance', () => {
   const out = render(

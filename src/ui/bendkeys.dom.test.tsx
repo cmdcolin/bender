@@ -2,8 +2,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { BendKeys, LettersSwitch } from './BendKeys'
+import { engine } from '../engine/engine.ts'
 import {
   bendDeal,
   bendName,
@@ -11,9 +10,10 @@ import {
   bendSwell,
   redealEvery,
   toggleBendStep,
-} from './bendKeys'
-import { letterKeys } from './letters'
-import './testDom'
+} from './bendKeys.ts'
+import { BendKeys, LettersSwitch } from './BendKeys.tsx'
+import { letterKeys } from './letters.ts'
+import './testDom.ts'
 
 const stroke = (type: 'keydown' | 'keyup', key: string, shiftKey = false) =>
   act(() => {

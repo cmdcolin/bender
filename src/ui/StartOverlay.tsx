@@ -1,4 +1,4 @@
-import { engine } from '../engine/engine'
+import { engine } from '../engine/engine.ts'
 import styles from './StartOverlay.module.css'
 
 // What a shared link opens onto: a board already patched and waiting, with

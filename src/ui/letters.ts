@@ -1,6 +1,6 @@
-import { createStore } from '../listeners'
+import { createStore } from '../listeners.ts'
 
-import type { NoteDest } from '../engine/messages'
+import type { NoteDest } from '../engine/messages.ts'
 
 /** Where the letter keys go: one of the keybeds, or the bend keys. */
 export type LetterDest = NoteDest | 'bends'

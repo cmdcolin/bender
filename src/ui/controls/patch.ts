@@ -1,7 +1,7 @@
-import { VOICE_LABELS } from '../../drums'
-import { N_DEST } from '../../dsp/modbus'
+import { VOICE_LABELS } from '../../drums.ts'
+import { N_DEST } from '../../dsp/modbus.ts'
 
-import type { Group } from './types'
+import type { Group } from './types.ts'
 
 export const PATCH_GROUPS: Group[] = [
   {

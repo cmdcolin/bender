@@ -6,10 +6,15 @@
 // costs nothing for the first minute and a fifth of the budget after ten.
 //
 //   pnpm soak 600
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { buildBender } from '../src/dsp/build'
-import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../src/dsp/stage'
-import { packParams } from '../src/engine/params'
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
+import { buildBender } from '../src/dsp/build.ts'
+import {
+  BLOCK,
+  type Ctx,
+  type Stage,
+  type StereoBlock,
+} from '../src/dsp/stage.ts'
+import { packParams } from '../src/engine/params.ts'
 
 const SR = 48000
 const WINDOW_S = 20

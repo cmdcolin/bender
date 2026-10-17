@@ -5,15 +5,20 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../controls'
-import { LEN_KEYS } from '../drums'
-import { TUNE_STEP_KEYS } from '../tune'
-import { ALL_SLIDERS, EDITOR_KEYS, SLIDER_BY_KEY, sliderFor } from './controls'
-import { packControls, unpackControls, URL_KEY_ORDER } from './packed'
-import { applyPreset } from './presets/apply'
-import { randomLook } from './presets/roll'
-import { PRESETS } from './presets/table'
-import { encodeControls } from './share'
+} from '../controls.ts'
+import { LEN_KEYS } from '../drums.ts'
+import { TUNE_STEP_KEYS } from '../tune.ts'
+import {
+  ALL_SLIDERS,
+  EDITOR_KEYS,
+  SLIDER_BY_KEY,
+  sliderFor,
+} from './controls/index.ts'
+import { packControls, unpackControls, URL_KEY_ORDER } from './packed.ts'
+import { applyPreset } from './presets/apply.ts'
+import { randomLook } from './presets/roll.ts'
+import { PRESETS } from './presets/table.ts'
+import { encodeControls } from './share.ts'
 
 const nothing = () => false
 const stock = (): Controls => ({ ...DEFAULT_CONTROLS })

@@ -1,8 +1,8 @@
 import { memo, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
-import { YOURS } from '../dsp/stages/roms'
-import { engine } from '../engine/engine'
-import { isSharp, semitoneName } from '../notes'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { engine } from '../engine/engine.ts'
+import { isSharp, semitoneName } from '../notes.ts'
 import {
   asTuneLen,
   HOLD,
@@ -16,13 +16,13 @@ import {
   TUNE_LANE_KEYS,
   TUNE_STEPS,
   voicing,
-} from '../tune'
+} from '../tune.ts'
 import {
   useBoardValue,
   useControlValue,
   useStoreValue,
-} from './ControlsContext'
-import { Tip } from './Tip'
+} from './ControlsContext.ts'
+import { Tip } from './Tip.tsx'
 import styles from './TuneRoll.module.css'
 
 import type { RefObject } from 'react'

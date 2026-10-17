@@ -12,7 +12,7 @@ import {
   suggestVoiceName,
   upsertVoice,
   VOICE_NAME_MAX,
-} from './voiceModel'
+} from './voiceModel.ts'
 
 test('a name loses its line breaks and its excess length', () => {
   expect(cleanVoiceName('  broken \n toy  ')).toBe('broken toy')

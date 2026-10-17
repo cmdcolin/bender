@@ -1,7 +1,12 @@
-import { cabDb, stackDb } from '../dsp/stages/amp'
-import { boxHeight, useReadings, useSelectedBox, type BoxSpec } from './diagram'
+import { cabDb, stackDb } from '../dsp/stages/amp.ts'
 import styles from './Diagram.module.css'
-import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts'
+import {
+  boxHeight,
+  useReadings,
+  useSelectedBox,
+  type BoxSpec,
+} from './diagram.ts'
+import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 
 const KEYS = [
   'ampMix',

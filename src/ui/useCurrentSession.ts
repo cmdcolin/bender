@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { engine } from '../engine/engine'
-import { putSession } from './cloud'
-import { takeSessionId } from './resumeHandoff'
-import { boardHash } from './share'
-import { newVoiceId } from './voiceModel'
+import { engine } from '../engine/engine.ts'
+import { putSession } from './cloud.ts'
+import { takeSessionId } from './resumeHandoff.ts'
+import { boardHash } from './share.ts'
+import { newVoiceId } from './voiceModel.ts'
 
 // The board a signed-in user has open, mirrored onto their account so the home
 // page can offer it back on the next machine. The same hash the address bar

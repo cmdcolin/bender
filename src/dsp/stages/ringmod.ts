@@ -1,11 +1,11 @@
-import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params'
-import { DEST } from '../modbus'
-import { KEY_BIAS } from '../trigbus'
-import { DelayLine } from '../util/delayline'
-import { QuadOsc } from '../util/lfo'
-import { A3_HZ, octaves } from '../util/pitch'
+import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { KEY_BIAS } from '../trigbus.ts'
+import { DelayLine } from '../util/delayline.ts'
+import { QuadOsc } from '../util/lfo.ts'
+import { A3_HZ, octaves } from '../util/pitch.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 export const RING_SHAPES = ['sine', 'square', 'diode']
 
@@ -130,7 +130,10 @@ export class RingMod implements Stage {
       zero until the sequencer has moved. */
   private stepLen = 0
 
-  constructor(private readonly sr: number) {
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     this.maxLate = MAX_LATE_S * sr
     this.late = new DelayLine(this.maxLate + 4)
   }

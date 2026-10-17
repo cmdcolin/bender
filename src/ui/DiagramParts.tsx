@@ -1,12 +1,12 @@
 import { useId, type ReactNode } from 'react'
 
-import { sliderFor } from './controls'
-import { useBoardValue } from './ControlsContext'
-import { boxHeight, LINE_H, rowShown, type BoxSpec } from './diagram'
+import { sliderFor } from './controls/index.ts'
+import { useBoardValue } from './ControlsContext.ts'
 import styles from './Diagram.module.css'
-import { ControlSlider } from './Slider'
+import { boxHeight, LINE_H, rowShown, type BoxSpec } from './diagram.ts'
+import { ControlSlider } from './Slider.tsx'
 
-import type { ControlKey } from '../controls'
+import type { ControlKey } from '../controls.ts'
 
 // A stage drawn as a box that reads what its knobs say: accent when one is off
 // stock, grey when nothing passes through it. The title is the browser's own

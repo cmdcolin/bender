@@ -1,13 +1,13 @@
-import { DEFAULT_CONTROLS } from '../controls'
-import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params'
-import { buildBender, type BuiltChain } from './build'
-import { Deck } from './deck'
-import { Smoother } from './smoother'
-import { BLOCK, METER_EVERY, type StereoBlock } from './stage'
-import { PcmKeys } from './stages/pcmKeys'
-import { ToyChip } from './stages/toyChip'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { MAX_SOURCES, N_PARAMS, packParams } from '../engine/params.ts'
+import { buildBender, type BuiltChain } from './build.ts'
+import { Deck } from './deck.ts'
+import { Smoother } from './smoother.ts'
+import { BLOCK, METER_EVERY, type StereoBlock } from './stage.ts'
+import { PcmKeys } from './stages/pcmKeys.ts'
+import { ToyChip } from './stages/toyChip.ts'
 
-import type { ToWorklet } from '../engine/messages'
+import type { ToWorklet } from '../engine/messages.ts'
 
 const SCOPE_LEN = 512 // a power of two, so the ring wraps on a mask
 const SCOPE_MASK = SCOPE_LEN - 1

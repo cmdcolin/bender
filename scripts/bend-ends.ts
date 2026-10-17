@@ -2,15 +2,20 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../src/controls'
-import { render, rms, SR } from '../src/dsp/testRender'
-import { gateUp, HIGH_POS, LOW_POS } from '../src/ui/bendDeal'
-import { groupFor, sliderFor, snapToStep } from '../src/ui/controls'
-import { applyPreset } from '../src/ui/presets/apply'
-import { drivable, gateOf, heard, inChain } from '../src/ui/presets/scenarios'
-import { PRESETS } from '../src/ui/presets/table'
-import { YOURS } from '../src/ui/presets/yours'
-import { fromPos } from '../src/ui/slider-scale'
+} from '../src/controls.ts'
+import { render, rms, SR } from '../src/dsp/testRender.ts'
+import { gateUp, HIGH_POS, LOW_POS } from '../src/ui/bendDeal.ts'
+import { groupFor, sliderFor, snapToStep } from '../src/ui/controls/index.ts'
+import { applyPreset } from '../src/ui/presets/apply.ts'
+import {
+  drivable,
+  gateOf,
+  heard,
+  inChain,
+} from '../src/ui/presets/scenarios.ts'
+import { PRESETS } from '../src/ui/presets/table.ts'
+import { YOURS } from '../src/ui/presets/yours.ts'
+import { fromPos } from '../src/ui/slider-scale.ts'
 
 // Which end of each control a bend key can be heard at, measured with the
 // control's stage brought up the way a key brings it up.
@@ -190,7 +195,7 @@ writeFileSync(
   `// Written by \`pnpm bend-ends\`: each control's level change in dB at the low
 // and high end of its travel, measured on the stock board with its stage up,
 // or null where the end made no change anyone could hear.
-import type { ControlKey } from '../controls'
+import type { ControlKey } from '../controls.ts'
 
 export const BEND_ENDS: Partial<
   Record<ControlKey, readonly [low: number | null, high: number | null]>

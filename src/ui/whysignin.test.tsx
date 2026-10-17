@@ -2,9 +2,9 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { App } from './App'
-import { PITCH, SHOT, SHOT_ALT } from './whySignIn'
-import './testDom'
+import { App } from './App.tsx'
+import { PITCH, SHOT, SHOT_ALT } from './whySignIn.ts'
+import './testDom.ts'
 
 // Signed out, a save is the moment somebody wants an account — so it is the
 // moment the app owes them the reason for one. Nothing here signs in: what is

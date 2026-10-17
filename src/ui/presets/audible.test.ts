@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { deviation, renderStems, rms } from '../../dsp/testRender'
-import { mulberry32 } from '../../dsp/util/rng'
-import { randomLook } from './roll'
-import { SCENARIOS } from './scenarios'
-import { mine } from './testBoard'
+import { deviation, renderStems, rms } from '../../dsp/testRender.ts'
+import { mulberry32 } from '../../dsp/util/rng.ts'
+import { randomLook } from './roll.ts'
+import { SCENARIOS } from './scenarios.ts'
+import { mine } from './testBoard.ts'
 
 // Every roll in the dice menu, played: a dud is a roll that hands back silence,
 // or a board that sounds exactly like the one you pressed it on.

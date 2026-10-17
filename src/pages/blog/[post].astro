@@ -2,9 +2,9 @@
 import { getCollection, render } from 'astro:content'
 
 import Page from '../../layouts/Page.astro'
-import { appUrl, blogUrl, siteRoot } from '../../site/paths'
-import { isoDay, longDate, published } from '../../site/posts'
-import { ORIGIN } from '../../site/site'
+import { appUrl, blogUrl, siteRoot } from '../../site/paths.ts'
+import { isoDay, longDate, published } from '../../site/posts.ts'
+import { ORIGIN } from '../../site/site.ts'
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', published)

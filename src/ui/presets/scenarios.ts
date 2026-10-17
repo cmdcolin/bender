@@ -8,21 +8,21 @@ import {
   ALL_SLIDERS,
   sliderFor,
   snapToStep,
-} from '../controls'
-import { fromPos } from '../slider-scale'
-import { applyCut, CUTS, type CutDef } from './cuts'
+} from '../controls/index.ts'
+import { fromPos } from '../slider-scale.ts'
+import { applyCut, CUTS, type CutDef } from './cuts.ts'
 import {
   coherePatch,
   cohereTriggers,
   micWired,
   solderBay,
   solderCascade,
-} from './patch'
-import { inTime } from './quantize'
-import { rollGroup, rollKeys } from './roll'
-import { CLOCK_KEYS, PART_KEYS, YOURS } from './yours'
+} from './patch.ts'
+import { inTime } from './quantize.ts'
+import { rollGroup, rollKeys } from './roll.ts'
+import { CLOCK_KEYS, PART_KEYS, YOURS } from './yours.ts'
 
-import type { ControlKey, Controls } from '../../controls'
+import type { ControlKey, Controls } from '../../controls.ts'
 
 export interface ScenarioDef {
   name: string

@@ -2,10 +2,10 @@
 import { act, fireEvent, render } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { useBoardUrl } from './useBoardUrl'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { useBoardUrl } from './useBoardUrl.ts'
+import './testDom.ts'
 
 // The address bar as the board. A hash arriving is a whole board arriving, and
 // the only interesting half of that is what it says about the controls it does

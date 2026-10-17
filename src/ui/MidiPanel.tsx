@@ -1,12 +1,12 @@
 import { Suspense, lazy, useEffect, type ReactNode } from 'react'
 
-import { useStoreValue } from './ControlsContext'
-import { midi, type MidiStatus } from './midi'
+import { useStoreValue } from './ControlsContext.ts'
+import { midi, type MidiStatus } from './midi.ts'
 import styles from './MidiPanel.module.css'
-import { Tip } from './Tip'
+import { Tip } from './Tip.tsx'
 
 const Wired = lazy(() =>
-  import('./MidiWired').then(m => ({ default: m.Wired })),
+  import('./MidiWired.tsx').then(m => ({ default: m.Wired })),
 )
 
 // The wire, behind a button in the nameplate row. Everything it offers needs a

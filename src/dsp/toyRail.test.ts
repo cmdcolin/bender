@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { playKeys, SR } from './testRender'
-import { DEAD_V, PARTS, ToyRail } from './toyRail'
+import { playKeys, SR } from './testRender.ts'
+import { DEAD_V, PARTS, ToyRail } from './toyRail.ts'
 
-import type { Controls } from '../controls'
+import type { Controls } from '../controls.ts'
 
 test('a starving rail collapses the voices raggedly, not in lockstep', () => {
   const rail = new ToyRail(SR)

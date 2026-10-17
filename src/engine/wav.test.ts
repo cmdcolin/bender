@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { encodeMonoWav, encodeWav } from './wav'
+import { encodeMonoWav, encodeWav } from './wav.ts'
 
 async function bytes(blob: Blob): Promise<DataView> {
   return new DataView(await blob.arrayBuffer())

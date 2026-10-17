@@ -3,9 +3,9 @@ import {
   isControlKey,
   type ControlKey,
   type Controls,
-} from '../../controls'
-import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp'
-import { choiceValue, GROUPS, groupKeys, sliderFor } from '../controls'
+} from '../../controls.ts'
+import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
+import { choiceValue, GROUPS, groupKeys, sliderFor } from '../controls/index.ts'
 
 // A whole stage set up, where a cut is three controls under one heading. Some
 // machines only say anything with every knob on the panel pointing the same

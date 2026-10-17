@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { engine } from '../engine/engine'
-import { PEDALS, PEDAL_ORDERS, pedalOrderAt } from '../pedals'
-import { useBoardValue } from './ControlsContext'
-import { move } from './reorder'
+import { engine } from '../engine/engine.ts'
+import { PEDALS, PEDAL_ORDERS, pedalOrderAt } from '../pedals.ts'
+import { useBoardValue } from './ControlsContext.ts'
+import { move } from './reorder.ts'
 import styles from './SlotRack.module.css'
 
 // The board's own drawing, in the grammar the bend rack already uses: a row per

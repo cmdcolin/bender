@@ -4,11 +4,11 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../../controls'
-import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums'
-import { mulberry32 } from '../../dsp/util/rng'
-import { BENDS, GROUPS, choiceValue } from '../controls'
-import { applyPreset } from './apply'
+} from '../../controls.ts'
+import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
+import { mulberry32 } from '../../dsp/util/rng.ts'
+import { BENDS, GROUPS, choiceValue } from '../controls/index.ts'
+import { applyPreset } from './apply.ts'
 import {
   bayFaults,
   cohereGates,
@@ -16,11 +16,11 @@ import {
   cohereTriggers,
   solderBay,
   solderCascade,
-} from './patch'
-import { mutate, randomLook, rollGroup } from './roll'
-import { SCENARIOS } from './scenarios'
-import { PRESETS } from './table'
-import { mine } from './testBoard'
+} from './patch.ts'
+import { mutate, randomLook, rollGroup } from './roll.ts'
+import { SCENARIOS } from './scenarios.ts'
+import { PRESETS } from './table.ts'
+import { mine } from './testBoard.ts'
 
 const patchBay = GROUPS.find(g => g.editor?.kind === 'patch')!
 const scenarioNamed = (name: string) =>

@@ -1,14 +1,14 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { SOURCE_TAPS } from '../../engine/params'
-import { OCTAVES, pitch } from '../../ui/keyboard'
-import { buildBender, buildChain } from '../build'
-import { FAULT } from '../bus'
-import { DEST } from '../modbus'
-import { spectrum } from '../spectrum'
-import { BLOCK } from '../stage'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { SOURCE_TAPS } from '../../engine/params.ts'
+import { OCTAVES, pitch } from '../../ui/keyboard.ts'
+import { buildBender, buildChain } from '../build.ts'
+import { FAULT } from '../bus.ts'
+import { DEST } from '../modbus.ts'
+import { spectrum } from '../spectrum.ts'
+import { BLOCK } from '../stage.ts'
 import {
   bin,
   bursts,
@@ -26,9 +26,9 @@ import {
   rms,
   SR,
   tail,
-} from '../testRender'
-import { ANY_CHOICE } from '../trigbus'
-import { FM_EFFECT_NAMES } from './fmEffects'
+} from '../testRender.ts'
+import { ANY_CHOICE } from '../trigbus.ts'
+import { FM_EFFECT_NAMES } from './fmEffects.ts'
 import {
   FM_VOICE_NAMES,
   FM_VOICES,
@@ -42,10 +42,10 @@ import {
   ROM_VOICE_NAMES,
   ROM_VOICES,
   scaledRate,
-} from './fmVoices'
-import { romIndex } from './roms'
+} from './fmVoices.ts'
+import { romIndex } from './roms.ts'
 
-import type { BuiltChain } from '../build'
+import type { BuiltChain } from '../build.ts'
 
 // The toy turned down to nothing, so what comes out is the other chip playing
 // the key line the toy brings out.

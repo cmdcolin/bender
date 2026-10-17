@@ -1,6 +1,6 @@
-import { flushDenormal } from './softclip'
+import { flushDenormal } from './softclip.ts'
 
-import type { Rng } from './rng'
+import type { Rng } from './rng.ts'
 
 // Self-exciting fault timing.
 //

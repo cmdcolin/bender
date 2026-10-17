@@ -2,9 +2,9 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../../controls'
-import { choiceValue, GROUPS, sliderFor } from '../controls'
-import { formatValue } from '../slider-scale'
+} from '../../controls.ts'
+import { choiceValue, GROUPS, sliderFor } from '../controls/index.ts'
+import { formatValue } from '../slider-scale.ts'
 
 // A knife on a bus is three controls that only mean anything together — a wire,
 // what happened to it, and how far through the trace the blade went — and most

@@ -1,8 +1,8 @@
-import { engine } from './engine/engine'
-import { PocketPage } from './pocket/PocketPage'
-import { exposeBenderApi } from './ui/agentApi'
-import { keepRunState } from './ui/runState'
-import { boardFromLocation } from './ui/share'
+import { engine } from './engine/engine.ts'
+import { PocketPage } from './pocket/PocketPage.tsx'
+import { exposeBenderApi } from './ui/agentApi.ts'
+import { keepRunState } from './ui/runState.ts'
+import { boardFromLocation } from './ui/share.ts'
 import './theme.css'
 
 // The phone page's root. It reads a board off the link and puts back what the

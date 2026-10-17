@@ -1,11 +1,11 @@
-import { IDX, type SOURCE_TAPS } from '../engine/params'
-import { BLOCK } from './stage'
-import { Chaos, Drunk } from './util/drift'
-import { Decay, Follower, coef } from './util/follower'
-import { wrap1 } from './util/pitch'
-import { mulberry32, type Rng } from './util/rng'
+import { IDX, type SOURCE_TAPS } from '../engine/params.ts'
+import { BLOCK } from './stage.ts'
+import { Chaos, Drunk } from './util/drift.ts'
+import { Decay, Follower, coef } from './util/follower.ts'
+import { wrap1 } from './util/pitch.ts'
+import { mulberry32, type Rng } from './util/rng.ts'
 
-import type { TriggerBus } from './trigbus'
+import type { TriggerBus } from './trigbus.ts'
 
 // Where a patch wire can land. Ids match the mod*Dest choices.
 export const DEST = {
@@ -287,10 +287,10 @@ export class ModBus {
   private drunk = new Drunk()
   private rng: Rng
 
-  constructor(
-    private readonly sr: number,
-    seed = 808,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 808) {
+    this.sr = sr
     for (let i = 0; i < N_DEST; i++) this.lanes.push(new Float32Array(BLOCK))
     this.rng = mulberry32(seed)
   }

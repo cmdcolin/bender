@@ -1,5 +1,5 @@
-import { attach, chromePath, type Page } from './chrome'
-import { serveDev } from './serve'
+import { attach, chromePath, type Page } from './chrome.ts'
+import { serveDev } from './serve.ts'
 
 import { spawn } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // Drives window.bender in headless Chrome the way a browsing agent does, and
-// exits non-zero when a check fails. Usage: pnpm exec tsx scripts/agent.ts
+// exits non-zero when a check fails. Usage: node scripts/agent.ts
 
 const PORT = 5211
 const DEBUG_PORT = 9411

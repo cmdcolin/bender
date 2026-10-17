@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 
-import { Bus, FAULT } from './bus'
-import { romIndex } from './stages/roms'
-import { pitchHz, render, rms, SR } from './testRender'
+import { Bus, FAULT } from './bus.ts'
+import { romIndex } from './stages/roms.ts'
+import { pitchHz, render, rms, SR } from './testRender.ts'
 
 const straight = (bus: Bus, word: number) => bus.read(word, -1, 0, 1)
 

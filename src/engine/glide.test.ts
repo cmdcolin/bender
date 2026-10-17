@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { Glide } from './glide'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { Glide } from './glide.ts'
 
 const board = (patch: Partial<Controls>): Controls => ({
   ...DEFAULT_CONTROLS,

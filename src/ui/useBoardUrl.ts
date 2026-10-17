@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
-import { engine } from '../engine/engine'
-import { boardFrom, boardFromLocation, boardUrl } from './share'
+import { engine } from '../engine/engine.ts'
+import { boardFrom, boardFromLocation, boardUrl } from './share.ts'
 
 // The address bar as a mirror of the board: every control that is off stock is
 // in the url's hash at all times, so a reload keeps the board and copying out of the

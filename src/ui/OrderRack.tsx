@@ -1,6 +1,6 @@
 import styles from './OrderRack.module.css'
-import { PedalRack } from './PedalRack'
-import { SlotRack } from './SlotRack'
+import { PedalRack } from './PedalRack.tsx'
+import { SlotRack } from './SlotRack.tsx'
 
 // The one button that governs order, in two sections rather than two doors:
 // the six sockets the bends compete for, and the five pedals waiting

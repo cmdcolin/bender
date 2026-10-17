@@ -2,12 +2,12 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { YOURS } from '../dsp/stages/roms'
-import { engine } from '../engine/engine'
-import { HOLD, REST } from '../tune'
-import { GROUPS } from './controls'
-import { OpenGroup } from './Section'
-import './testDom'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { engine } from '../engine/engine.ts'
+import { HOLD, REST } from '../tune.ts'
+import { GROUPS } from './controls/index.ts'
+import { OpenGroup } from './Section.tsx'
+import './testDom.ts'
 
 // The melody memory, as the panel draws it. An empty memory opens on the
 // keyboard's own bottom C, so these name their cells from there.

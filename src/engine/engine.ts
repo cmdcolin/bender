@@ -3,7 +3,7 @@ import {
   sameControls,
   type ControlKey,
   type Controls,
-} from '../controls'
+} from '../controls.ts'
 import {
   asLen,
   asMask,
@@ -13,10 +13,10 @@ import {
   stepBit,
   type DrumMaybeKey,
   type DrumStepKey,
-} from '../drums'
-import { TRACKS } from '../dsp/stages/fourTrack'
-import { YOURS } from '../dsp/stages/roms'
-import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler'
+} from '../drums.ts'
+import { TRACKS } from '../dsp/stages/fourTrack.ts'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler.ts'
 import workletUrl from '../dsp/worklet.ts?worker&url'
 import {
   EMPTY_HISTORY,
@@ -24,9 +24,9 @@ import {
   stepBack,
   stepForward,
   type History,
-} from '../history'
-import { createStore, type Store } from '../listeners'
-import { snap } from '../scale'
+} from '../history.ts'
+import { createStore, type Store } from '../listeners.ts'
+import { snap } from '../scale.ts'
 import {
   asTuneLen,
   foldNote,
@@ -35,7 +35,7 @@ import {
   TUNE_LANE_KEYS,
   laneForNote,
   type TuneStepKey,
-} from '../tune'
+} from '../tune.ts'
 import {
   LOAD_SECONDS,
   fetchItem,
@@ -43,11 +43,17 @@ import {
   searchText,
   type Pool,
   type Rolled,
-} from './archive'
-import { Glide } from './glide'
-import { MAX_SOURCES, N_PARAMS, N_TAPS, STEM_FILES, packParams } from './params'
-import { openTake, sweepTakes } from './takeSink'
-import { encodeWav, pcmMono, pcmStereo } from './wav'
+} from './archive.ts'
+import { Glide } from './glide.ts'
+import {
+  MAX_SOURCES,
+  N_PARAMS,
+  N_TAPS,
+  STEM_FILES,
+  packParams,
+} from './params.ts'
+import { openTake, sweepTakes } from './takeSink.ts'
+import { encodeWav, pcmMono, pcmStereo } from './wav.ts'
 
 import type {
   FromWorklet,
@@ -55,8 +61,8 @@ import type {
   RecMsg,
   RetroMsg,
   ToWorklet,
-} from './messages'
-import type { Take, WavSink } from './takeSink'
+} from './messages.ts'
+import type { Take, WavSink } from './takeSink.ts'
 
 export const RETRO_S = 30
 const DRIFT_TAP_S = 2.5

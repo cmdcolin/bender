@@ -1,9 +1,9 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { octaves } from '../util/pitch'
-import { mulberry32, type Rng } from '../util/rng'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { octaves } from '../util/pitch.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // Bit depth quantizer plus a jittered sample-and-hold. The hold phases are
 // offset per channel so heavy crush smears into stereo hash.
@@ -15,10 +15,10 @@ export class Crusher implements Stage {
   private countR: number
   private rng: Rng
 
-  constructor(
-    private readonly sr: number,
-    seed = 404,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 404) {
+    this.sr = sr
     this.rng = mulberry32(seed)
     this.countR = 2
   }

@@ -1,4 +1,11 @@
-import { CAR_HALF, KEY_ON, MOD_HALF, pack, REG, type Voice } from './fmVoices'
+import {
+  CAR_HALF,
+  KEY_ON,
+  MOD_HALF,
+  pack,
+  REG,
+  type Voice,
+} from './fmVoices.ts'
 
 // The effect ROM: the CPU spraying writes.
 //
@@ -27,7 +34,7 @@ import { CAR_HALF, KEY_ON, MOD_HALF, pack, REG, type Voice } from './fmVoices'
 //
 // It is the counterpart to the toy's tune ROM. That one holds notes; this one
 // holds register writes.
-import type { Rng } from '../util/rng'
+import type { Rng } from '../util/rng.ts'
 
 /** The channel the CPU keeps for itself while an effect runs. */
 export const EFFECT_CH = 3

@@ -9,10 +9,10 @@ import {
   rms,
   sine,
   tail,
-} from '../testRender'
+} from '../testRender.ts'
 
-import type { Controls } from '../../controls'
-import type { BuiltChain } from '../build'
+import type { Controls } from '../../controls.ts'
+import type { BuiltChain } from '../build.ts'
 
 // The echo returns on a fader of its own, so the dry is always in the room
 // with it. These play a one-shot second and listen to the last half of the

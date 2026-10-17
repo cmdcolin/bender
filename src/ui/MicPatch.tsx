@@ -1,6 +1,6 @@
-import { engine } from '../engine/engine'
-import { sliderFor } from './controls'
-import { useControlValue } from './ControlsContext'
+import { engine } from '../engine/engine.ts'
+import { sliderFor } from './controls/index.ts'
+import { useControlValue } from './ControlsContext.ts'
 import styles from './MicPatch.module.css'
 
 const DEST = sliderFor('micPatch').choices!

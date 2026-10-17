@@ -1,11 +1,11 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage'
-import { rail } from '../util/bridged'
-import { Transient } from '../util/follower'
-import { SineOsc } from '../util/lfo'
-import { lpCoef } from '../util/onepole'
-import { mulberry32, type Rng } from '../util/rng'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
+import { rail } from '../util/bridged.ts'
+import { Transient } from '../util/follower.ts'
+import { SineOsc } from '../util/lfo.ts'
+import { lpCoef } from '../util/onepole.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
 
 // Six allpasses rather than three: the chirp is how far the low end lags the
 // top through the chain, and three stages was a drip where a spring is a boing.
@@ -52,11 +52,10 @@ class Tank {
   /** each comb's delay in seconds, which is what sets its feedback from decay */
   readonly delaySec: Float64Array
 
-  constructor(
-    delays: number[],
-    sr: number,
-    private readonly rateX: number,
-  ) {
+  private readonly rateX: number
+
+  constructor(delays: number[], sr: number, rateX: number) {
+    this.rateX = rateX
     let acc = 0
     const warble = (WARBLE_MS / 1000) * sr
     for (let k = 0; k < delays.length; k++) {
@@ -167,7 +166,10 @@ export class SpringVerb implements Stage {
   private crashEnv = 0
   private readonly crashFall: number
 
-  constructor(private readonly sr: number) {
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     this.slam = new Transient(sr)
     this.noise = mulberry32(0x5c4a)
     this.crashFall = Math.exp(-1 / (CRASH_S * sr))

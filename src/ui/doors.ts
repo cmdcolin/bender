@@ -1,8 +1,8 @@
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { demos } from '../home/demos'
-import { SCENARIOS } from './presets/scenarios'
-import { PRESETS } from './presets/table'
-import { boardFromUrl } from './share'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { demos } from '../home/demos.ts'
+import { SCENARIOS } from './presets/scenarios.ts'
+import { PRESETS } from './presets/table.ts'
+import { boardFromUrl } from './share.ts'
 
 // The ways in a fresh tab offers before anything plays. Each door hands back
 // the board it opens onto, from stock.

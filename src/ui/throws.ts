@@ -1,4 +1,4 @@
-import type { Controls } from '../controls'
+import type { Controls } from '../controls.ts'
 
 export interface ThrowDef {
   name: string

@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { semitoneName } from './notes'
-import { SCALE_NAMES, snap } from './scale'
+import { semitoneName } from './notes.ts'
+import { SCALE_NAMES, snap } from './scale.ts'
 
 const scale = (name: string) => SCALE_NAMES.indexOf(name)
 const C = 0

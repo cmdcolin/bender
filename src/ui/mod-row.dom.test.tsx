@@ -2,11 +2,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { choiceValue, GROUPS } from './controls'
-import { OpenGroup } from './Section'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { choiceValue, GROUPS } from './controls/index.ts'
+import { OpenGroup } from './Section.tsx'
+import './testDom.ts'
 
 // The bay reaching a stage from the stage's own panel. Every wire it solders is
 // one of the bay's four and reads the same in the bay's own diagram — what is

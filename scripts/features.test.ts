@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type ControlKey } from '../src/controls'
-import { PRESETS } from '../src/ui/presets/table'
-import { boardFromUrl, boardHash } from '../src/ui/share'
-import { renderFeatures } from './features'
+import { DEFAULT_CONTROLS, type ControlKey } from '../src/controls.ts'
+import { PRESETS } from '../src/ui/presets/table.ts'
+import { boardFromUrl, boardHash } from '../src/ui/share.ts'
+import { renderFeatures } from './features.ts'
 
 import { readFileSync } from 'node:fs'
 

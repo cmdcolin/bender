@@ -1,8 +1,8 @@
-import { sliderFor } from './controls'
-import { useControlValue } from './ControlsContext'
-import { useSelectedBox } from './diagram'
+import { sliderFor } from './controls/index.ts'
+import { useControlValue } from './ControlsContext.ts'
 import diagramStyles from './Diagram.module.css'
-import { BoxRows } from './DiagramParts'
+import { useSelectedBox } from './diagram.ts'
+import { BoxRows } from './DiagramParts.tsx'
 import styles from './TriggerPatch.module.css'
 
 import type { ReactNode } from 'react'

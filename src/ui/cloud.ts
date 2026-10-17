@@ -2,16 +2,16 @@ import {
   forget as removeStored,
   read as readStored,
   write as writeString,
-} from './persist'
+} from './persist.ts'
 import {
   pushRecent,
   readRecent,
   readVoices,
   removeRecent,
   VOICE_MAX,
-} from './voiceModel'
+} from './voiceModel.ts'
 
-import type { RecentSession, SavedVoice } from './voiceModel'
+import type { RecentSession, SavedVoice } from './voiceModel.ts'
 import type { FirebaseApp } from 'firebase/app'
 import type { Auth, User } from 'firebase/auth'
 import type { Firestore } from 'firebase/firestore/lite'

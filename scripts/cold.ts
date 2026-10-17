@@ -13,11 +13,11 @@
 // Nothing here is a steady-state problem. Every block over budget in this
 // report is a dropout on page load, and they are gone by the time the other two
 // scripts start looking.
-import { DEFAULT_CONTROLS } from '../src/controls'
-import { buildBender } from '../src/dsp/build'
-import { BLOCK, type StereoBlock } from '../src/dsp/stage'
-import { packParams } from '../src/engine/params'
-import { BOARDS } from './boards'
+import { DEFAULT_CONTROLS } from '../src/controls.ts'
+import { buildBender } from '../src/dsp/build.ts'
+import { BLOCK, type StereoBlock } from '../src/dsp/stage.ts'
+import { packParams } from '../src/engine/params.ts'
+import { BOARDS } from './boards.ts'
 
 const SR = 48000
 const which = process.argv[2] ?? 'stock'

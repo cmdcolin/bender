@@ -5,7 +5,7 @@
 
 import { expect, test } from 'vitest'
 
-import { isSharp, semitoneName, toSemitone } from '../notes'
+import { isSharp, semitoneName, toSemitone } from '../notes.ts'
 import {
   blackAbove,
   MIN_KEY,
@@ -15,7 +15,7 @@ import {
   pitch,
   topKey,
   whiteKeys,
-} from './keyboard'
+} from './keyboard.ts'
 
 const TOP = topKey(OCTAVES_DRAWN)
 const WHITE_KEYS = whiteKeys(OCTAVES_DRAWN)

@@ -2,28 +2,28 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../../controls'
-import { BEND_GROUPS } from './bends'
-import { FEEDBACK_GROUPS } from './feedback'
-import { MASTER_GROUPS } from './master'
-import { MIX_GROUPS } from './mix'
-import { ORDER_GROUPS } from './order'
-import { PATCH_GROUPS } from './patch'
-import { PEDAL_GROUPS } from './pedals'
-import { SOURCE_GROUPS } from './sources'
-import { TAPE_GROUPS } from './tape'
+} from '../../controls.ts'
+import { BEND_GROUPS } from './bends.ts'
+import { FEEDBACK_GROUPS } from './feedback.ts'
+import { MASTER_GROUPS } from './master.ts'
+import { MIX_GROUPS } from './mix.ts'
+import { ORDER_GROUPS } from './order.ts'
+import { PATCH_GROUPS } from './patch.ts'
+import { PEDAL_GROUPS } from './pedals.ts'
+import { SOURCE_GROUPS } from './sources.ts'
+import { TAPE_GROUPS } from './tape.ts'
 
-import type { Group, SliderDef } from './types'
+import type { Group, SliderDef } from './types.ts'
 
-export { BENDS, BEND_SLOT_KEYS, bendAt } from './bends'
-export { CHANNELS, type Channel } from './mix'
-export { TRACK_NUMBERS, type Track } from './fourTrack'
+export { BENDS, BEND_SLOT_KEYS, bendAt } from './bends.ts'
+export { CHANNELS, type Channel } from './mix.ts'
+export { TRACK_NUMBERS, type Track } from './fourTrack.ts'
 export {
   STAGE_ORDER,
   type Group,
   type SliderDef,
   type StagePlace,
-} from './types'
+} from './types.ts'
 
 // One file per place on the board, stitched together in the order the panel
 // lays them out.

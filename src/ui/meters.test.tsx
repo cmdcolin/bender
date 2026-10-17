@@ -2,11 +2,11 @@
 import { act, render } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { N_TAPS, TAP_BUS } from '../engine/params'
-import { Mixer } from './Mixer'
-import { Scope } from './Scope'
-import './testDom'
+import { engine } from '../engine/engine.ts'
+import { N_TAPS, TAP_BUS } from '../engine/params.ts'
+import { Mixer } from './Mixer.tsx'
+import { Scope } from './Scope.tsx'
+import './testDom.ts'
 
 // The widgets that draw off the meter request animation frames only while
 // they have something new to draw, so a silent board leaves the compositor

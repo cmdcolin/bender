@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { engine } from '../engine/engine'
-import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls'
-import { useBoardValue, useMeterValue } from './ControlsContext'
-import { move } from './reorder'
+import { engine } from '../engine/engine.ts'
+import { BENDS, BEND_SLOT_KEYS, bendAt } from './controls/index.ts'
+import { useBoardValue, useMeterValue } from './ControlsContext.ts'
+import { move } from './reorder.ts'
 import styles from './SlotRack.module.css'
 
-import type { Controls } from '../controls'
+import type { Controls } from '../controls.ts'
 
 /** Dropped on the shelf rather than on a position: the bend comes out of the
     chain. */

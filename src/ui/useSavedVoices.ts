@@ -8,15 +8,15 @@ import {
   wasSignedIn,
   watchAuth,
   type CloudUser,
-} from './cloud'
+} from './cloud.ts'
 import {
   QUERY_MAX,
   removeVoice,
   suggestVoiceName,
   upsertVoice,
-} from './voiceModel'
+} from './voiceModel.ts'
 
-import type { SavedVoice } from './voiceModel'
+import type { SavedVoice } from './voiceModel.ts'
 
 // The voice library: who is signed in, what they have saved, and the verbs over
 // it. Firestore is the only store, and the hook writes nothing to this device,

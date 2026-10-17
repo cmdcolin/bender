@@ -1,5 +1,5 @@
-import { IDX } from '../../engine/params'
-import { snap } from '../../scale'
+import { IDX } from '../../engine/params.ts'
+import { snap } from '../../scale.ts'
 import {
   asTuneLen,
   decodeTune,
@@ -10,15 +10,15 @@ import {
   REST,
   TUNE_LANE_KEYS,
   TUNE_STEPS,
-} from '../../tune'
-import { Bus, FAULT_NAMES } from '../bus'
-import { DEST, hop } from '../modbus'
-import { voiceMask } from '../trigbus'
-import { Burst } from '../util/burst'
-import { Drunk } from '../util/drift'
-import { A3_HZ, octaves, wrap1 } from '../util/pitch'
-import { mulberry32, type Rng } from '../util/rng'
-import { softclip } from '../util/softclip'
+} from '../../tune.ts'
+import { Bus, FAULT_NAMES } from '../bus.ts'
+import { DEST, hop } from '../modbus.ts'
+import { voiceMask } from '../trigbus.ts'
+import { Burst } from '../util/burst.ts'
+import { Drunk } from '../util/drift.ts'
+import { A3_HZ, octaves, wrap1 } from '../util/pitch.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
+import { softclip } from '../util/softclip.ts'
 import {
   decodeStep,
   encodeStep,
@@ -27,11 +27,11 @@ import {
   ROMS,
   YOURS,
   type Rom,
-} from './roms'
+} from './roms.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
-import type { ToyRail } from '../toyRail'
-import type { Transport } from '../transport'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
+import type { ToyRail } from '../toyRail.ts'
+import type { Transport } from '../transport.ts'
 
 // One index table per lane: the melody the oscillator plays, then the two
 // stacked chips whose notes come out on the key line.
@@ -372,12 +372,14 @@ export class ToyChip implements Stage {
   private ghostCols = 0
   private ghosts: number[] = []
 
-  constructor(
-    private readonly sr: number,
-    private readonly rail: ToyRail,
-    private readonly transport: Transport,
-    seed = 101,
-  ) {
+  private readonly sr: number
+  private readonly rail: ToyRail
+  private readonly transport: Transport
+
+  constructor(sr: number, rail: ToyRail, transport: Transport, seed = 101) {
+    this.sr = sr
+    this.rail = rail
+    this.transport = transport
     this.rng = mulberry32(seed)
     this.counterFault = new Burst(sr, 1.1)
     this.dataBus = new Bus(ROM_DATA_LINES, seed ^ 0xda7a)

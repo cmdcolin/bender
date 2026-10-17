@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { engine } from '../engine/engine'
-import { noteName } from '../notes'
-import { bendDeal, bendName } from './bendKeys'
-import { ALL_SLIDERS, groupFor, sliderFor } from './controls'
-import { useControlValue, useStoreValue } from './ControlsContext'
+import { engine } from '../engine/engine.ts'
+import { noteName } from '../notes.ts'
+import { bendDeal, bendName } from './bendKeys.ts'
+import { ALL_SLIDERS, groupFor, sliderFor } from './controls/index.ts'
+import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import {
   AUTOMAP_KEYS,
   DEVICE_PROFILES,
@@ -12,12 +12,12 @@ import {
   midi,
   parseRoute,
   type DeviceProfile,
-} from './midi'
+} from './midi.ts'
 import styles from './MidiPanel.module.css'
-import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads'
-import { formatValue, fromPos, toPos } from './slider-scale'
-import { THROWS } from './throws'
-import { Tip } from './Tip'
+import { GM_CHANNEL, VOICE_KEYS, voiceLabel } from './pads.ts'
+import { formatValue, fromPos, toPos } from './slider-scale.ts'
+import { THROWS } from './throws.ts'
+import { Tip } from './Tip.tsx'
 
 function label(key: Parameters<typeof sliderFor>[0]): string {
   return `${groupFor(key)} · ${sliderFor(key).label}`

@@ -2,12 +2,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { App } from './App'
-import { DOORS } from './doors'
-import { PRESETS } from './presets/table'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { App } from './App.tsx'
+import { DOORS } from './doors.ts'
+import { PRESETS } from './presets/table.ts'
+import './testDom.ts'
 
 const doors = () => screen.queryByRole('dialog', { name: 'pick a way in' })
 

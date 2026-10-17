@@ -7,7 +7,7 @@ import {
   stepBack,
   stepForward,
   type History,
-} from './history'
+} from './history.ts'
 
 const same = (a: string, b: string) => a === b
 const of = (past: string[], future: string[] = []): History<string> => ({

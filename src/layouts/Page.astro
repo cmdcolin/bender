@@ -9,7 +9,7 @@
 import Analytics from '../components/Analytics.astro'
 import Footer from '../components/Footer.astro'
 import SiteBar from '../components/SiteBar.astro'
-import { siteRoot } from '../site/paths'
+import { siteRoot } from '../site/paths.ts'
 // Every stylesheet the site has, here and in this order, because the order is
 // the cascade and a page cannot be trusted to land after the shared sheets:
 // Astro emits a layout's stylesheets *after* the importing page's, so a sheet

@@ -1,15 +1,15 @@
-import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums'
+import { DRUM_VOICES, N_DRUM_VOICES } from '../../drums.ts'
 import {
   BEND_SLOT_KEYS,
   bendAt,
   choiceValue,
   sliderFor,
   snapToStep,
-} from '../controls'
-import { fromPos, ordinary } from '../slider-scale'
-import { inTime } from './quantize'
+} from '../controls/index.ts'
+import { fromPos, ordinary } from '../slider-scale.ts'
+import { inTime } from './quantize.ts'
 
-import type { ControlKey, Controls } from '../../controls'
+import type { ControlKey, Controls } from '../../controls.ts'
 
 // A patch bay rolled at random hands back four wires that read as a patch and
 // mostly aren't one: a wire onto a reverb that is dry, one off a mic nobody has

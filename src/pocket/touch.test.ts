@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { BEND_SLOT_KEYS, bendAt } from '../ui/controls'
-import { heard } from '../ui/presets/scenarios'
-import { TOUCH_MODES, tiltPoint, touchMode, touchPush } from './touch'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { BEND_SLOT_KEYS, bendAt } from '../ui/controls/index.ts'
+import { heard } from '../ui/presets/scenarios.ts'
+import { TOUCH_MODES, tiltPoint, touchMode, touchPush } from './touch.ts'
 
 const LAST_SLOT = BEND_SLOT_KEYS.at(-1)!
 const mode = (name: string) => touchMode(name)

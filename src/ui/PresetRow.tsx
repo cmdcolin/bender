@@ -1,15 +1,15 @@
 import { useRef, useState } from 'react'
 
-import { sameControls, type Controls } from '../controls'
-import { engine } from '../engine/engine'
-import { useBoardValue } from './ControlsContext'
-import { useCoarse } from './measure'
+import { sameControls, type Controls } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { useBoardValue } from './ControlsContext.ts'
+import { useCoarse } from './measure.ts'
 import styles from './PresetRow.module.css'
-import { PRESETS, presetPath, type PresetDef } from './presets'
-import { Tip } from './Tip'
+import { PRESETS, presetPath, type PresetDef } from './presets/index.ts'
+import { Tip } from './Tip.tsx'
 
-import type { Glide } from '../engine/glide'
-import type { MorphSeconds } from './morph'
+import type { Glide } from '../engine/glide.ts'
+import type { MorphSeconds } from './morph.ts'
 
 // Far enough that an ordinary click can wobble without scrubbing the board.
 const DRAG_SLOP = 4

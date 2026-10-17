@@ -1,4 +1,4 @@
-import type { Rng } from './rng'
+import type { Rng } from './rng.ts'
 
 // Control sources that never come round again.
 //

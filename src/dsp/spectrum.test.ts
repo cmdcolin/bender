@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 
-import { BANDS, spectrum } from './spectrum'
-import { sine, SR } from './testRender'
-import { mulberry32 } from './util/rng'
+import { BANDS, spectrum } from './spectrum.ts'
+import { sine, SR } from './testRender.ts'
+import { mulberry32 } from './util/rng.ts'
 
 const noise = (seconds: number, amp = 0.6) => {
   const rng = mulberry32(11)

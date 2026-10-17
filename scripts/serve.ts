@@ -1,6 +1,6 @@
 import { build, dev, preview } from 'astro'
 
-import config from '../astro.config'
+import config from '../astro.config.ts'
 
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { join } from 'node:path'

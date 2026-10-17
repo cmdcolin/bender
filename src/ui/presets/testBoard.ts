@@ -1,8 +1,8 @@
 // A board mid-session: a song chosen, a pattern written, levels set by hand —
 // and the reading of it that says what is yours rather than the circuit's.
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { PATTERN_KEYS } from '../../drums'
-import { romIndex } from '../../dsp/stages/roms'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { PATTERN_KEYS } from '../../drums.ts'
+import { romIndex } from '../../dsp/stages/roms.ts'
 
 export const mine = (): Controls => ({
   ...DEFAULT_CONTROLS,

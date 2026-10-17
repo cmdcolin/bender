@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import { N_DRUM_VOICES, voiceBit } from '../drums'
-import { engine } from '../engine/engine'
+import { N_DRUM_VOICES, voiceBit } from '../drums.ts'
+import { engine } from '../engine/engine.ts'
 
 // How long a row or pad stays lit after a hit: long enough to see at a glance,
 // and short enough that sixteenth hats still flash sixteen times.

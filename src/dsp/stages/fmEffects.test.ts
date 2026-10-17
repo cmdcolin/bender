@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { buildBender, buildChain } from '../build'
-import { FAULT } from '../bus'
-import { spectrum } from '../spectrum'
-import { BLOCK } from '../stage'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { buildBender, buildChain } from '../build.ts'
+import { FAULT } from '../bus.ts'
+import { spectrum } from '../spectrum.ts'
+import { BLOCK } from '../stage.ts'
 import {
   bin,
   bursts,
@@ -16,9 +16,9 @@ import {
   renderBender,
   rms,
   SR,
-} from '../testRender'
-import { type Cpu, EFFECTS, FM_EFFECT_NAMES } from './fmEffects'
-import { romIndex } from './roms'
+} from '../testRender.ts'
+import { type Cpu, EFFECTS, FM_EFFECT_NAMES } from './fmEffects.ts'
+import { romIndex } from './roms.ts'
 
 // Nothing is playing here: the toy is down, the transport is stopped and no key
 // has been pressed. Whatever comes out is the CPU running a script at a chip

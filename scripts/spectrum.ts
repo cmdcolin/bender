@@ -27,18 +27,18 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../src/controls'
-import { FAULT } from '../src/dsp/bus'
-import { BANDS, spectrum } from '../src/dsp/spectrum'
-import { FM_EFFECT_NAMES } from '../src/dsp/stages/fmEffects'
-import { PCM_VOICE_NAMES } from '../src/dsp/stages/pcmRom'
-import { romIndex } from '../src/dsp/stages/roms'
-import { render, renderStems, rms, SR } from '../src/dsp/testRender'
-import { ANY_CHOICE } from '../src/dsp/trigbus'
-import { SOURCE_TAPS, type SourceTap } from '../src/engine/params'
-import { sliderFor } from '../src/ui/controls'
-import { applyCut, CUTS, cutOff } from '../src/ui/presets/cuts'
-import { PRESETS } from '../src/ui/presets/table'
+} from '../src/controls.ts'
+import { FAULT } from '../src/dsp/bus.ts'
+import { BANDS, spectrum } from '../src/dsp/spectrum.ts'
+import { FM_EFFECT_NAMES } from '../src/dsp/stages/fmEffects.ts'
+import { PCM_VOICE_NAMES } from '../src/dsp/stages/pcmRom.ts'
+import { romIndex } from '../src/dsp/stages/roms.ts'
+import { render, renderStems, rms, SR } from '../src/dsp/testRender.ts'
+import { ANY_CHOICE } from '../src/dsp/trigbus.ts'
+import { SOURCE_TAPS, type SourceTap } from '../src/engine/params.ts'
+import { sliderFor } from '../src/ui/controls/index.ts'
+import { applyCut, CUTS, cutOff } from '../src/ui/presets/cuts.ts'
+import { PRESETS } from '../src/ui/presets/table.ts'
 
 // The same board `knife.ts` judges a wire on, for the same reasons: the song
 // run up to where all of it goes past, and a bar whose halves differ.

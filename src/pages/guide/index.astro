@@ -1,8 +1,8 @@
 ---
 import { getEntry, render } from 'astro:content'
-import { guideUrl } from '../../site/paths'
+import { guideUrl } from '../../site/paths.ts'
 import Page from '../../layouts/Page.astro'
-import { ORIGIN } from '../../site/site'
+import { ORIGIN } from '../../site/site.ts'
 
 const entry = await getEntry('docs', 'user-guide')
 if (entry === undefined) throw new Error('docs/USER-GUIDE.md missing')

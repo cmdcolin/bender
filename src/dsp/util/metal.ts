@@ -1,4 +1,4 @@
-import { wrap1 } from './pitch'
+import { wrap1 } from './pitch.ts'
 
 // The six square oscillators every metal voice on a drum machine of this kind
 // is made out of, and the reason its cowbell and its cymbal are relatives.
@@ -62,7 +62,10 @@ export class MetalBank {
   /** The pair the cowbell is soldered to, summed. */
   bell = 0
 
-  constructor(private sr: number) {
+  private sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     this.tune(0)
   }
 

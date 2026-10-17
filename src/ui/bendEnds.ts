@@ -1,7 +1,7 @@
 // Written by `pnpm bend-ends`: each control's level change in dB at the low
 // and high end of its travel, measured on the stock board with its stage up,
 // or null where the end made no change anyone could hear.
-import type { ControlKey } from '../controls'
+import type { ControlKey } from '../controls.ts'
 
 export const BEND_ENDS: Partial<
   Record<ControlKey, readonly [low: number | null, high: number | null]>

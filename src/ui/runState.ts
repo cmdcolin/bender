@@ -1,5 +1,5 @@
-import { engine } from '../engine/engine'
-import { readSession, writeSession } from './persist'
+import { engine } from '../engine/engine.ts'
+import { readSession, writeSession } from './persist.ts'
 
 // Which of the two machines were running, kept for the length of the tab.
 //

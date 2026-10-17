@@ -1,22 +1,22 @@
-import { DATA_LINES, DRUM_ROMS } from '../../drums'
-import { FAULT } from '../../dsp/bus'
-import { DEST } from '../../dsp/modbus'
-import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp'
-import { ECHO_MODE } from '../../dsp/stages/echo'
-import { ENS_MODE } from '../../dsp/stages/ensemble'
-import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects'
-import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices'
-import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom'
-import { RING_FROM } from '../../dsp/stages/ringmod'
-import { ARP_MODES, ARP_SYNC_MODES } from '../../dsp/stages/toyChip'
+import { DATA_LINES, DRUM_ROMS } from '../../drums.ts'
+import { FAULT } from '../../dsp/bus.ts'
+import { DEST } from '../../dsp/modbus.ts'
+import { AMP_CAB, AMP_VOICE } from '../../dsp/stages/amp.ts'
+import { ECHO_MODE } from '../../dsp/stages/echo.ts'
+import { ENS_MODE } from '../../dsp/stages/ensemble.ts'
+import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects.ts'
+import { FM_VOICE_NAMES } from '../../dsp/stages/fmVoices.ts'
+import { PCM_VOICE_NAMES } from '../../dsp/stages/pcmRom.ts'
+import { RING_FROM } from '../../dsp/stages/ringmod.ts'
+import { ARP_MODES, ARP_SYNC_MODES } from '../../dsp/stages/toyChip.ts'
 import {
   BANK_GATE_NAMES,
   DAC_REF_NAMES,
   DICE_NAMES,
-} from '../../dsp/stages/toyDrum'
-import { ANY_CHOICE } from '../../dsp/trigbus'
+} from '../../dsp/stages/toyDrum.ts'
+import { ANY_CHOICE } from '../../dsp/trigbus.ts'
 
-import type { Controls } from '../../controls'
+import type { Controls } from '../../controls.ts'
 
 export interface PresetDef {
   name: string

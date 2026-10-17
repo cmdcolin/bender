@@ -3,9 +3,9 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, expect, test } from 'vitest'
 
-import { midi } from './midi'
-import { MidiMenuItem, MidiPanel } from './MidiPanel'
-import './testDom'
+import { midi } from './midi.ts'
+import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
+import './testDom.ts'
 
 // The wire lives behind a button in the nameplate row now rather than in a
 // section of its own. What that has to get right is the half it leaves outside:

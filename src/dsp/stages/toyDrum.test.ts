@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { STEPS } from '../../drums'
-import { IDX, packParams } from '../../engine/params'
-import { buildBender } from '../build'
-import { DEST } from '../modbus'
-import { spectrum } from '../spectrum'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { STEPS } from '../../drums.ts'
+import { IDX, packParams } from '../../engine/params.ts'
+import { buildBender } from '../build.ts'
+import { DEST } from '../modbus.ts'
+import { spectrum } from '../spectrum.ts'
 import {
   bin,
   deviation,
@@ -20,8 +20,8 @@ import {
   rms,
   SR,
   stepMask,
-} from '../testRender'
-import { CYCLE } from './toyDrum'
+} from '../testRender.ts'
+import { CYCLE } from './toyDrum.ts'
 
 // One voice alone on an empty grid, nothing else in the kit or the chain.
 const soloVoice = (overrides: Partial<Controls>, seconds = 0.5) =>

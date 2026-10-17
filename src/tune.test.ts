@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from './controls'
+import { DEFAULT_CONTROLS } from './controls.ts'
 import {
   asTuneLen,
   asTuneStep,
@@ -18,7 +18,7 @@ import {
   TUNE_STEPS,
   TUNE_STEP_KEYS,
   voicing,
-} from './tune'
+} from './tune.ts'
 
 test('parseLane reads notes, rests and holds, and laneText writes them back', () => {
   const steps = parseLane('A3 C4 | ~ . Bb3 A#3 C2 C#7')

@@ -1,4 +1,4 @@
-import type { ControlKey, Controls } from '../../controls'
+import type { ControlKey, Controls } from '../../controls.ts'
 
 export interface SliderDef {
   key: ControlKey

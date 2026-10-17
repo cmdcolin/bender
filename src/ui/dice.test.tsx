@@ -2,10 +2,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, sameControls } from '../controls'
-import { engine } from '../engine/engine'
-import { Dice } from './Dice'
-import './testDom'
+import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { Dice } from './Dice.tsx'
+import './testDom.ts'
 
 // The eight rolls behind one button. What the row of eight was good at is that
 // every one of them was one press, and the menu is only worth having if picking

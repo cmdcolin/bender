@@ -2,8 +2,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { App } from './App'
-import './testDom'
+import { App } from './App.tsx'
+import './testDom.ts'
 
 // The nameplate is the only way to the source, the docs and the build number,
 // and none of the three is reachable from a panel made of stages otherwise.

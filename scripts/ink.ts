@@ -1,5 +1,5 @@
-import { attach, chromePath, sleep, type Page } from './chrome'
-import { serveDev } from './serve'
+import { attach, chromePath, sleep, type Page } from './chrome.ts'
+import { serveDev } from './serve.ts'
 
 // Walks the whole panel and asks three things a screenshot cannot: is any text
 // drawn on top of any other text, is there a control with nothing an assistive

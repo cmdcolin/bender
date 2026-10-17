@@ -1,11 +1,11 @@
 import { preview } from 'astro'
 
-import config from '../astro.config'
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { encodeControls } from '../src/ui/share'
-import { HEAVY } from './boards'
-import { attach, chromePath, sleep, type Page } from './chrome'
-import { buildAndPreview } from './serve'
+import config from '../astro.config.ts'
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
+import { encodeControls } from '../src/ui/share.ts'
+import { HEAVY } from './boards.ts'
+import { attach, chromePath, sleep, type Page } from './chrome.ts'
+import { buildAndPreview } from './serve.ts'
 
 // CPU time the app costs every Chrome thread, and the underruns Chrome counted
 // while it ran. `pnpm panel` reads the main thread's timeline; this reads

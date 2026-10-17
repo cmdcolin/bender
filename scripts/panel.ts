@@ -1,8 +1,8 @@
-import { DEFAULT_CONTROLS, type Controls } from '../src/controls'
-import { encodeControls } from '../src/ui/share'
-import { HEAVY } from './boards'
-import { attach, chromePath, sleep, type Page } from './chrome'
-import { buildAndPreview } from './serve'
+import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
+import { encodeControls } from '../src/ui/share.ts'
+import { HEAVY } from './boards.ts'
+import { attach, chromePath, sleep, type Page } from './chrome.ts'
+import { buildAndPreview } from './serve.ts'
 
 // What the panel costs the *browser's* main thread, and which part of a frame
 // it costs it in.

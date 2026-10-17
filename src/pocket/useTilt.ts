@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { tiltPoint, type Tilt } from './touch'
+import { tiltPoint, type Tilt } from './touch.ts'
 
 type Point = { x: number; y: number }
 

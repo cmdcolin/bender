@@ -1,5 +1,5 @@
-import { engine } from '../engine/engine'
-import { HEATS } from '../ui/bendDeal'
+import { engine } from '../engine/engine.ts'
+import { HEATS } from '../ui/bendDeal.ts'
 import {
   bendDeal,
   bendHeat,
@@ -11,10 +11,10 @@ import {
   redealAll,
   setBendHeat,
   setBendSwell,
-} from '../ui/bendKeys'
-import { useStoreValue } from '../ui/ControlsContext'
-import { THROWS } from '../ui/throws'
-import { buzz } from './haptics'
+} from '../ui/bendKeys.ts'
+import { useStoreValue } from '../ui/ControlsContext.ts'
+import { THROWS } from '../ui/throws.ts'
+import { buzz } from './haptics.ts'
 import styles from './pocket.module.css'
 
 // The sixteen dealt bends as switches: a tap pins one on and a second tap lets

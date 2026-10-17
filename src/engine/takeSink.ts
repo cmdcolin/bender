@@ -11,7 +11,7 @@
 // close. `createWritable` commits nothing until `close`, so a tab that dies
 // mid-take loses it; `sweepTakes` clears what it leaves.
 
-import { wavHeader } from './wav'
+import { wavHeader } from './wav.ts'
 
 export interface WavSink {
   write: (pcm: Int16Array<ArrayBuffer>) => void

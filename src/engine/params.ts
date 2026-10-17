@@ -2,7 +2,7 @@
 // layout of the packed Float32Array. Shared by both sides; keep dependency-free
 // beyond controls.ts (pure data).
 
-import type { ControlKey, Controls } from '../controls'
+import type { ControlKey, Controls } from '../controls.ts'
 
 // slew: one-pole toward target (~10 ms) — knob moves smear musically.
 // ramp: per-sample linear across the block — gains where zipper is audible.

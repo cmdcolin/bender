@@ -1,15 +1,15 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { DelayLine, fixedTap } from '../util/delayline'
-import { coef as timeCoef } from '../util/follower'
-import { QuadOsc, SineOsc } from '../util/lfo'
-import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole'
-import { octaves } from '../util/pitch'
-import { mulberry32, type Rng } from '../util/rng'
-import { flushDenormal, softclip } from '../util/softclip'
-import { dampAt, Svf, svfF } from '../util/svf'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { DelayLine, fixedTap } from '../util/delayline.ts'
+import { coef as timeCoef } from '../util/follower.ts'
+import { QuadOsc, SineOsc } from '../util/lfo.ts'
+import { DcBlocker, OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { octaves } from '../util/pitch.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
+import { dampAt, Svf, svfF } from '../util/svf.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // The reel is a loop, joined once. How long the join is past the heads, and
 // how much of it is tape with no oxide on it.
@@ -69,10 +69,10 @@ export class TapeDelay implements Stage {
   private readonly gap: number
   private rng: Rng
 
-  constructor(
-    private readonly sr: number,
-    seed: number,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed: number) {
+    this.sr = sr
     // The line rounds up to a power of two, so at every rate the board runs at
     // this is the same buffer 4.5 s asked for — the last second of it was
     // allocated either way and simply wasn't reachable.

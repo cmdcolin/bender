@@ -1,8 +1,8 @@
-import { Follower, coef as timeCoef } from './follower'
-import { SineOsc } from './lfo'
-import { lpCoef } from './onepole'
-import { gaussian, mulberry32, type Rng } from './rng'
-import { flushDenormal, softclip } from './softclip'
+import { Follower, coef as timeCoef } from './follower.ts'
+import { SineOsc } from './lfo.ts'
+import { lpCoef } from './onepole.ts'
+import { gaussian, mulberry32, type Rng } from './rng.ts'
+import { flushDenormal, softclip } from './softclip.ts'
 
 // A bucket brigade, shared by the two boxes on the board built out of one: the
 // delay pedal's analog mode and the ensemble.
@@ -79,11 +79,12 @@ export class Bbd {
   private whineK = 0
   private whineAmp = 0
 
-  constructor(
-    private readonly sr: number,
-    private readonly n: number,
-    chip: BbdChip,
-  ) {
+  private readonly sr: number
+  private readonly n: number
+
+  constructor(sr: number, n: number, chip: BbdChip) {
+    this.sr = sr
+    this.n = n
     this.stages = chip.stages
     this.hiss = chip.hiss
     this.level = chip.level

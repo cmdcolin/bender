@@ -2,9 +2,9 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { App } from './App'
-import './testDom'
+import { engine } from '../engine/engine.ts'
+import { App } from './App.tsx'
+import './testDom.ts'
 
 // The map is the panel's only index, so every door on it has to be reachable
 // without a pointer: the boxes are links and always were. The touched dot

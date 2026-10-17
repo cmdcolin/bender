@@ -1,11 +1,11 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { buildBender, type BuiltChain } from '../build'
-import { FAULT } from '../bus'
-import { BLOCK } from '../stage'
-import { bin, makeIo, rms, sine, SR, tail } from '../testRender'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { buildBender, type BuiltChain } from '../build.ts'
+import { FAULT } from '../bus.ts'
+import { BLOCK } from '../stage.ts'
+import { bin, makeIo, rms, sine, SR, tail } from '../testRender.ts'
 import {
   buildPcmRom,
   noteHz,
@@ -13,7 +13,7 @@ import {
   rateReg,
   regHz,
   SAMPLED,
-} from './pcmRom'
+} from './pcmRom.ts'
 
 const voice = (name: string) => PCM_VOICE_NAMES.indexOf(name)
 const ORGAN = 1

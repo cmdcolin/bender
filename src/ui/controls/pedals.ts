@@ -1,9 +1,9 @@
-import { AMP_CAB_NAMES, AMP_VOICE_NAMES } from '../../dsp/stages/amp'
-import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo'
-import { ENS_MODE, ENS_MODE_NAMES } from '../../dsp/stages/ensemble'
-import { HEAD_CHOICES } from '../../dsp/stages/tapeDelay'
+import { AMP_CAB_NAMES, AMP_VOICE_NAMES } from '../../dsp/stages/amp.ts'
+import { ECHO_MODE, ECHO_MODE_NAMES } from '../../dsp/stages/echo.ts'
+import { ENS_MODE, ENS_MODE_NAMES } from '../../dsp/stages/ensemble.ts'
+import { HEAD_CHOICES } from '../../dsp/stages/tapeDelay.ts'
 
-import type { Group } from './types'
+import type { Group } from './types.ts'
 
 export const PEDAL_GROUPS: Group[] = [
   {

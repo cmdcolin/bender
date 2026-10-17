@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
 import styles from './Account.module.css'
-import { warmSignIn } from './cloud'
-import { Menu } from './Menu'
-import { menuItem } from './menuItems'
-import { Tip } from './Tip'
+import { warmSignIn } from './cloud.ts'
+import { Menu } from './Menu.tsx'
+import { menuItem } from './menuItems.ts'
+import { Tip } from './Tip.tsx'
 
-import type { CloudUser } from './cloud'
-import type { CloudStatus } from './useSavedVoices'
+import type { CloudUser } from './cloud.ts'
+import type { CloudStatus } from './useSavedVoices.ts'
 
 // The account control: who is signed in, and the way in and out. It sits beside
 // the library button, because a list of boards and an account are two facts and

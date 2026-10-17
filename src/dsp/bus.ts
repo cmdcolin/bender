@@ -1,4 +1,4 @@
-import { mulberry32, type Rng } from './util/rng'
+import { mulberry32, type Rng } from './util/rng.ts'
 
 // The wires between two parts of a chip, and what a knife does to one of them.
 //
@@ -53,10 +53,12 @@ export class Bus {
   /** The last word an unbroken bus carried, which is what a new cut holds. */
   private last = -1
 
-  constructor(
-    private readonly width: number,
-    private readonly seed = 7,
-  ) {
+  private readonly width: number
+  private readonly seed
+
+  constructor(width: number, seed = 7) {
+    this.width = width
+    this.seed = seed
     this.rng = mulberry32(seed)
   }
 
@@ -136,7 +138,10 @@ export class Strobe {
   private latched = 0
   private rng: Rng
 
-  constructor(private readonly seed = 0xa3) {
+  private readonly seed
+
+  constructor(seed = 0xa3) {
+    this.seed = seed
     this.rng = mulberry32(seed)
   }
 

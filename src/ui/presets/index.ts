@@ -1,7 +1,7 @@
 // The looks the board ships with, and the rolls that go looking for the ones it
 // doesn't: the table in table.ts, and a file per thing a roll is about.
-export { PRESETS, type PresetDef } from './table'
-export { applyPreset, presetNameFor, presetPath } from './apply'
+export { PRESETS, type PresetDef } from './table.ts'
+export { applyPreset, presetNameFor, presetPath } from './apply.ts'
 export {
   mutate,
   randomLook,
@@ -9,14 +9,14 @@ export {
   resetKeys,
   rollGroup,
   rollKeys,
-} from './roll'
-export { applyRig, RIGS, rigsFor, rigStands, type RigDef } from './rigs'
+} from './roll.ts'
+export { applyRig, RIGS, rigsFor, rigStands, type RigDef } from './rigs.ts'
 export {
   huntCandidates,
   SCENARIOS,
   tailCandidates,
   type ScenarioDef,
-} from './scenarios'
+} from './scenarios.ts'
 export {
   applyCut,
   CUTS,
@@ -27,4 +27,4 @@ export {
   cutWired,
   partKeys,
   type CutDef,
-} from './cuts'
+} from './cuts.ts'

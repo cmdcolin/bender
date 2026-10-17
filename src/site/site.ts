@@ -5,7 +5,7 @@ import {
   guideUrl,
   privacyUrl,
   siteRoot,
-} from './paths'
+} from './paths.ts'
 
 // Where the site is served from, for the canonical link every page carries and
 // for the absolute URLs a shared link unfurls with. The host is GitHub Pages

@@ -1,11 +1,11 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { octaves } from '../util/pitch'
-import { mulberry32, type Rng } from '../util/rng'
-import { softclip } from '../util/softclip'
-import { dampAt, Svf } from '../util/svf'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { octaves } from '../util/pitch.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
+import { softclip } from '../util/softclip.ts'
+import { dampAt, Svf } from '../util/svf.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 // The floor the coupled damping can be driven to: as far negative as the
 // resonance knob alone reaches at its top, and no further.
@@ -48,10 +48,10 @@ export class Screech implements Stage {
   private liftLeft = 0
   private liftF = 0
 
-  constructor(
-    private readonly sr: number,
-    seed = 404,
-  ) {
+  private readonly sr: number
+
+  constructor(sr: number, seed = 404) {
+    this.sr = sr
     this.rng = mulberry32(seed)
   }
 

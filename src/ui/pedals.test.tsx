@@ -2,11 +2,11 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { PEDALS, PEDAL_ORDERS, pedalOrderAt } from '../pedals'
-import { PedalRack } from './PedalRack'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { PEDALS, PEDAL_ORDERS, pedalOrderAt } from '../pedals.ts'
+import { PedalRack } from './PedalRack.tsx'
+import './testDom.ts'
 
 // The pedal board: six boxes in the order the signal meets them, dragged or
 // arrow-keyed like the bend rack upstream. What it writes is one control naming

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from './controls'
+import { DEFAULT_CONTROLS } from './controls.ts'
 import {
   DRUM_ROMS,
   GRID_ROWS,
@@ -13,7 +13,7 @@ import {
   stepBit,
   toggleStep,
   type DrumMasks,
-} from './drums'
+} from './drums.ts'
 
 test('parseRow reads hits, dice hits and rests, and rowText writes them back', () => {
   const row = parseRow('X...|?.x.')

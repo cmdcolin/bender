@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { IDX } from '../engine/params'
-import { INPUT_AUX, INPUT_MIC } from './stages/fourTrack'
-import { bin, pitchHz, renderBender, rms } from './testRender'
+import { IDX } from '../engine/params.ts'
+import { INPUT_AUX, INPUT_MIC } from './stages/fourTrack.ts'
+import { bin, pitchHz, renderBender, rms } from './testRender.ts'
 
-import type { Controls } from '../controls'
+import type { Controls } from '../controls.ts'
 
 const SR = 48000
 const db = (x: number) => 20 * Math.log10(x)

@@ -3,7 +3,7 @@
 
 import { beforeEach, expect, test, vi } from 'vitest'
 
-import { describe, isLoopback, midi } from './midi'
+import { describe, isLoopback, midi } from './midi.ts'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
 

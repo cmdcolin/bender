@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { packParams } from '../engine/params'
-import { buildChain, type BuiltChain } from './build'
-import { BLOCK, type StereoBlock } from './stage'
-import { bin, renderBender, sine } from './testRender'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { packParams } from '../engine/params.ts'
+import { buildChain, type BuiltChain } from './build.ts'
+import { BLOCK, type StereoBlock } from './stage.ts'
+import { bin, renderBender, sine } from './testRender.ts'
 
 const SR = 48000
 

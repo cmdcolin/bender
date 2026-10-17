@@ -1,4 +1,4 @@
-import type { SliderDef } from './controls'
+import type { SliderDef } from './controls/index.ts'
 
 // Maps a slider's physical value to track position [0,1] and back, honoring
 // the log curve. A log slider whose min is 0 gets a synthetic floor four

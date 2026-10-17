@@ -1,18 +1,23 @@
-import { type ControlKey, type Controls } from '../controls'
-import { BEND_ENDS, STAGE_DB } from './bendEnds'
-import { groupFor, sliderFor, snapToStep, type SliderDef } from './controls'
-import { bendAt, BEND_SLOT_KEYS, BENDS } from './controls/bends'
-import { LETTERS } from './keyboard'
-import { inTime } from './presets/quantize'
+import { type ControlKey, type Controls } from '../controls.ts'
+import { BEND_ENDS, STAGE_DB } from './bendEnds.ts'
+import { bendAt, BEND_SLOT_KEYS, BENDS } from './controls/bends.ts'
+import {
+  groupFor,
+  sliderFor,
+  snapToStep,
+  type SliderDef,
+} from './controls/index.ts'
+import { LETTERS } from './keyboard.ts'
+import { inTime } from './presets/quantize.ts'
 import {
   ANTAGONISTS,
   drivable,
   gateOf,
   heard,
   inChain,
-} from './presets/scenarios'
-import { YOURS } from './presets/yours'
-import { fromPos, toPos } from './slider-scale'
+} from './presets/scenarios.ts'
+import { YOURS } from './presets/yours.ts'
+import { fromPos, toPos } from './slider-scale.ts'
 
 // A bend key is a throw dealt by the dice: one letter of the keyboard that
 // pushes a few controls to an end of their travel while it is down and springs

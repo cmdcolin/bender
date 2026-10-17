@@ -1,10 +1,14 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
-import { packParams } from '../engine/params'
-import { buildBender } from './build'
-import { BLOCK, type StereoBlock } from './stage'
-import { ENS_MODE } from './stages/ensemble'
+import {
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../controls.ts'
+import { packParams } from '../engine/params.ts'
+import { buildBender } from './build.ts'
+import { BLOCK, type StereoBlock } from './stage.ts'
+import { ENS_MODE } from './stages/ensemble.ts'
 
 // The smallest double the hardware still handles in one piece. Under it,
 // arithmetic falls to microcode and runs about twenty times slower.

@@ -1,14 +1,14 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { boardHash } from './share'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { boardHash } from './share.ts'
 import {
   MIN_GAP_MS,
   nextWriteAt,
   observe,
   SETTLE_MS,
   type Opened,
-} from './useCurrentSession'
+} from './useCurrentSession.ts'
 
 test('a board already written to the account is not written again', () => {
   expect(nextWriteAt({ query: 'p=1', at: 0 }, 'p=1', 1000)).toBeNull()

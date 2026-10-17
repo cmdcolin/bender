@@ -1,18 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { PEAK_BINS } from '../dsp/stages/sampler'
-import { engine } from '../engine/engine'
-import { choiceValue, sliderFor, TRACK_NUMBERS, type Track } from './controls'
-import { useBoardValue, useControlValue } from './ControlsContext'
-import { STRIP_KEYS } from './diagram'
-import { Fold } from './Fold'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { PEAK_BINS } from '../dsp/stages/sampler.ts'
+import { engine } from '../engine/engine.ts'
+import {
+  choiceValue,
+  sliderFor,
+  TRACK_NUMBERS,
+  type Track,
+} from './controls/index.ts'
+import { useBoardValue, useControlValue } from './ControlsContext.ts'
+import { STRIP_KEYS } from './diagram.ts'
+import { Fold } from './Fold.tsx'
 import styles from './FourTrack.module.css'
-import { ControlSlider } from './Slider'
-import { StripDiagram } from './StripDiagram'
-import { Tip } from './Tip'
+import { ControlSlider } from './Slider.tsx'
+import { StripDiagram } from './StripDiagram.tsx'
+import { Tip } from './Tip.tsx'
 
-import type { ControlKey, Controls } from '../controls'
+import type { ControlKey, Controls } from '../controls.ts'
 
 const HEIGHT = 22
 const MID = HEIGHT / 2

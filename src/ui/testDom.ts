@@ -1,14 +1,14 @@
 import { cleanup } from '@testing-library/react'
 import { afterEach, beforeAll } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { EMPTY_HISTORY } from '../history'
-import { bendRow, bendSwell, redealEvery } from './bendKeys'
-import { letterKeys } from './letters'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { EMPTY_HISTORY } from '../history.ts'
+import { bendRow, bendSwell, redealEvery } from './bendKeys.ts'
+import { letterKeys } from './letters.ts'
 
 // What the panel needs under it that jsdom does not have, and a board back
-// where it booted between tests. Imported for its hooks — `import './testDom'`
+// where it booted between tests. Imported for its hooks — `import './testDom.ts'`
 // is the whole of using it.
 //
 // The board itself already runs in node: it is a store and a table of numbers.
@@ -69,7 +69,11 @@ function stubAudio() {
 const watched = new Map<Element, Set<() => void>>()
 
 class Tape {
-  constructor(private report: () => void) {}
+  private report: () => void
+
+  constructor(report: () => void) {
+    this.report = report
+  }
   observe(el: Element) {
     const seen = watched.get(el)
     if (seen) seen.add(this.report)

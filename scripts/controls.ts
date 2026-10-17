@@ -1,5 +1,5 @@
-import { attach, chromePath, sleep } from './chrome'
-import { serveDev } from './serve'
+import { attach, chromePath, sleep } from './chrome.ts'
+import { serveDev } from './serve.ts'
 
 import { spawn } from 'node:child_process'
 import { mkdtempSync } from 'node:fs'

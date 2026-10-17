@@ -3,12 +3,12 @@
 // it, and the clips stay out of git.
 //
 // Run: pnpm reel. Needs ffmpeg on the path.
-import { DEFAULT_CONTROLS } from '../src/controls'
-import { buildBender } from '../src/dsp/build'
-import { BLOCK } from '../src/dsp/stage'
-import { packParams } from '../src/engine/params'
-import { clipPath, showcase } from '../src/home/demos'
-import { boardFromUrl } from '../src/ui/share'
+import { DEFAULT_CONTROLS } from '../src/controls.ts'
+import { buildBender } from '../src/dsp/build.ts'
+import { BLOCK } from '../src/dsp/stage.ts'
+import { packParams } from '../src/engine/params.ts'
+import { clipPath, showcase } from '../src/home/demos.ts'
+import { boardFromUrl } from '../src/ui/share.ts'
 
 import { execFileSync } from 'node:child_process'
 import { mkdirSync } from 'node:fs'

@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { packParams } from '../engine/params'
-import { buildBender } from './build'
-import { BLOCK } from './stage'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { packParams } from '../engine/params.ts'
+import { buildBender } from './build.ts'
+import { BLOCK } from './stage.ts'
 
 // Globals a window or a worker has and an AudioWorkletGlobalScope does not. A
 // call to any of them while the board is built or rendered throws on the audio

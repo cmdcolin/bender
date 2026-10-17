@@ -1,7 +1,7 @@
-import { RING_FROM, RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod'
+import { RING_FROM, RING_SHAPES, RING_TRACK } from '../../dsp/stages/ringmod.ts'
 
-import type { ControlKey } from '../../controls'
-import type { Group } from './types'
+import type { ControlKey } from '../../controls.ts'
+import type { Group } from './types.ts'
 
 // Which stage each bend slot names, the short name a slot wears when it names
 // it, and the dry/wet that decides whether you hear it. The slot choices and

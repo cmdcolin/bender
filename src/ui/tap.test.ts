@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { ALL_SLIDERS, sliderFor } from './controls'
-import { TAP_GAP_MS, tapRun, tapValue } from './tap'
+import { ALL_SLIDERS, sliderFor } from './controls/index.ts'
+import { TAP_GAP_MS, tapRun, tapValue } from './tap.ts'
 
 const at = (...ms: number[]) =>
   ms.reduce<number[]>((run, t) => tapRun(run, t), [])

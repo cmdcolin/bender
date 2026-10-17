@@ -1,5 +1,5 @@
-import { attach, chromePath, sleep, type Page } from './chrome'
-import { buildAndPreview } from './serve'
+import { attach, chromePath, sleep, type Page } from './chrome.ts'
+import { buildAndPreview } from './serve.ts'
 
 import { spawn } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'

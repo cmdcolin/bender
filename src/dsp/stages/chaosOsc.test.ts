@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
 import {
   bursts,
   deviation,
@@ -13,9 +13,9 @@ import {
   rms,
   SR,
   tail,
-} from '../testRender'
+} from '../testRender.ts'
 
-import type { Controls } from '../../controls'
+import type { Controls } from '../../controls.ts'
 
 // The oscillator on its own, with the other two boxes down: everything here is
 // about the pair and the supply under them, and the kit — which is up on a

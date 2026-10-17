@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { IDX } from '../../engine/params'
+import { IDX } from '../../engine/params.ts'
 import {
   SR,
   bin,
@@ -10,11 +10,11 @@ import {
   rms,
   sine,
   tail,
-} from '../testRender'
-import { ECHO_MODE } from './echo'
+} from '../testRender.ts'
+import { ECHO_MODE } from './echo.ts'
 
-import type { Controls } from '../../controls'
-import type { BuiltChain } from '../build'
+import type { Controls } from '../../controls.ts'
+import type { BuiltChain } from '../build.ts'
 
 // A one-shot second of tone, listened to over the next one, where the only
 // thing still sounding is what came back off the pedal.

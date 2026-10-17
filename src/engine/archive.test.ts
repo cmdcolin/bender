@@ -12,7 +12,7 @@ import {
   searchUrl,
   textSearchUrl,
   wordsOf,
-} from './archive'
+} from './archive.ts'
 
 test('every pool asks for audio and nothing else', () => {
   for (const p of POOLS) {

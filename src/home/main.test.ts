@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { expect, test, vi } from 'vitest'
 
-import '../ui/testDom'
+import '../ui/testDom.ts'
 
 const user = { uid: 'u1', name: 'Tester', photo: null }
 
-vi.mock('../ui/cloud', () => ({
+vi.mock('../ui/cloud.ts', () => ({
   wasSignedIn: () => true,
   watchAuth: () => Promise.reject(new Error('offline')),
   warmSignIn: () => {},
@@ -31,7 +31,7 @@ test('a sign-in after the subscription failed to load paints the home', async ()
       <button id="whyClose"></button><button id="whySignIn"></button>
       <p id="whyTrouble" hidden></p>
     </dialog>`
-  await import('./main')
+  await import('./main.ts')
   await flush()
 
   document.getElementById('signIn')!.click()

@@ -1,7 +1,7 @@
-import { BEND_SLOT_KEYS } from '../ui/controls'
-import { inChain } from '../ui/presets/scenarios'
+import { BEND_SLOT_KEYS } from '../ui/controls/index.ts'
+import { inChain } from '../ui/presets/scenarios.ts'
 
-import type { ControlKey, Controls } from '../controls'
+import type { ControlKey, Controls } from '../controls.ts'
 
 export const TOUCH = 'pocket:touch'
 export const TILT = 'pocket:tilt'

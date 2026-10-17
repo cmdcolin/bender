@@ -20,11 +20,11 @@ import {
   DEFAULT_CONTROLS,
   type ControlKey,
   type Controls,
-} from '../src/controls'
-import { FAULT } from '../src/dsp/bus'
-import { romIndex } from '../src/dsp/stages/roms'
-import { pitchHz, render, rms, SR } from '../src/dsp/testRender'
-import { sliderFor } from '../src/ui/controls'
+} from '../src/controls.ts'
+import { FAULT } from '../src/dsp/bus.ts'
+import { romIndex } from '../src/dsp/stages/roms.ts'
+import { pitchHz, render, rms, SR } from '../src/dsp/testRender.ts'
+import { sliderFor } from '../src/ui/controls/index.ts'
 
 // The song and the pattern a knife is judged on. Stock sakura is 32 steps at
 // three a second, so two seconds of it is six steps and the far end of the

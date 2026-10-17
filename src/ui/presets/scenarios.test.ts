@@ -1,10 +1,10 @@
 import { expect, test } from 'vitest'
 
-import { mulberry32 } from '../../dsp/util/rng'
-import { BENDS, BEND_SLOT_KEYS } from '../controls'
-import { CUTS, cutStands, cutWired } from './cuts'
-import { SCENARIOS } from './scenarios'
-import { mine, yours } from './testBoard'
+import { mulberry32 } from '../../dsp/util/rng.ts'
+import { BENDS, BEND_SLOT_KEYS } from '../controls/index.ts'
+import { CUTS, cutStands, cutWired } from './cuts.ts'
+import { SCENARIOS } from './scenarios.ts'
+import { mine, yours } from './testBoard.ts'
 
 const scenarioNamed = (name: string) =>
   SCENARIOS.find(s => s.name === name)!.roll

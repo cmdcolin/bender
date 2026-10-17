@@ -1,6 +1,6 @@
-import { type Track } from './controls'
-import { useReadings, useSelectedBox, type BoxSpec } from './diagram'
-import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts'
+import { type Track } from './controls/index.ts'
+import { useReadings, useSelectedBox, type BoxSpec } from './diagram.ts'
+import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 
 const BOX_H = 28
 const TOP = 26

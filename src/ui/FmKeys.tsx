@@ -1,5 +1,5 @@
 import styles from './FmKeys.module.css'
-import { GateJumper, Keybed } from './Keybed'
+import { GateJumper, Keybed } from './Keybed.tsx'
 
 // FmKeys draws the FM chip's keyboard as a green circuit board with the chip on
 // it and a row of piano keys. The switch on the deck cuts or solders

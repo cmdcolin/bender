@@ -1,13 +1,18 @@
 import { expect, test } from 'vitest'
 
-import { ALL_SLIDERS, sliderFor, snapToStep, type SliderDef } from './controls'
+import {
+  ALL_SLIDERS,
+  sliderFor,
+  snapToStep,
+  type SliderDef,
+} from './controls/index.ts'
 import {
   formatValue,
   fromPos,
   ordinary,
   readoutChars,
   toPos,
-} from './slider-scale'
+} from './slider-scale.ts'
 
 // The maths under every knob: where a value sits on a thousand-position track,
 // what comes back when you drop the thumb there, and what the row prints.

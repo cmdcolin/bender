@@ -1,15 +1,15 @@
 import { useState } from 'react'
 
-import { POOLS } from '../engine/archive'
-import { engine } from '../engine/engine'
-import { CHANNELS, sliderFor, snapToStep } from '../ui/controls'
-import { useControlValue, useStoreValue } from '../ui/ControlsContext'
-import { mutate } from '../ui/presets'
+import { POOLS } from '../engine/archive.ts'
+import { engine } from '../engine/engine.ts'
+import { CHANNELS, sliderFor, snapToStep } from '../ui/controls/index.ts'
+import { useControlValue, useStoreValue } from '../ui/ControlsContext.ts'
+import { mutate } from '../ui/presets/index.ts'
 import rangeStyles from '../ui/range.module.css'
-import { fromPos, toPos } from '../ui/slider-scale'
+import { fromPos, toPos } from '../ui/slider-scale.ts'
 import styles from './pocket.module.css'
 
-import type { ControlKey } from '../controls'
+import type { ControlKey } from '../controls.ts'
 import type { CSSProperties, ReactNode } from 'react'
 
 const STEPS = 1000

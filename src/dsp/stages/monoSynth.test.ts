@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
-import { spectrum } from '../spectrum'
-import { render, renderBender, rms, SR } from '../testRender'
+import { spectrum } from '../spectrum.ts'
+import { render, renderBender, rms, SR } from '../testRender.ts'
 
 const ALONE = { chipLevel: 0, drumLevel: 0, monoLevel: 1 }
 

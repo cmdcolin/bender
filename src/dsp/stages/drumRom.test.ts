@@ -1,9 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../../controls'
-import { packParams } from '../../engine/params'
-import { buildBender } from '../build'
-import { BLOCK } from '../stage'
+import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
+import { packParams } from '../../engine/params.ts'
+import { buildBender } from '../build.ts'
+import { BLOCK } from '../stage.ts'
 import {
   envelope,
   highEnergy,
@@ -14,8 +14,8 @@ import {
   rms,
   SR,
   stepMask,
-} from '../testRender'
-import { kitRom, ROM_BITS, ROM_RATE, ROM_SECS } from './toyDrum'
+} from '../testRender.ts'
+import { kitRom, ROM_BITS, ROM_RATE, ROM_SECS } from './toyDrum.ts'
 
 // One voice alone on an empty grid, off whichever kit the switch is on.
 const solo = (overrides: Partial<Controls>, seconds = 0.5) =>

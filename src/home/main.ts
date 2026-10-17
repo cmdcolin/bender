@@ -8,7 +8,7 @@
 // that needs it, so the only loads that reach Google are the ones that already
 // know this browser signed in and the ones where somebody pressed the button.
 
-import { guideUrl, siteRoot } from '../site/paths'
+import { guideUrl, siteRoot } from '../site/paths.ts'
 import {
   fetchHome,
   signIn,
@@ -18,9 +18,9 @@ import {
   watchAuth,
   type CloudUser,
   type HomeDoc,
-} from '../ui/cloud'
-import { closeMenu, paintAvatar } from './account'
-import { el } from './dom'
+} from '../ui/cloud.ts'
+import { closeMenu, paintAvatar } from './account.ts'
+import { el } from './dom.ts'
 import {
   acct,
   demos,
@@ -32,15 +32,15 @@ import {
   whyCard,
   whySignInBtn,
   whyTrouble,
-} from './els'
+} from './els.ts'
 import {
   earlierSection,
   failedSection,
   resumeSection,
   voicesSection,
-} from './sections'
+} from './sections.ts'
 
-import type { CardEdits } from './cards'
+import type { CardEdits } from './cards.ts'
 
 // --- the two states ---------------------------------------------------------
 

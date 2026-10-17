@@ -1,7 +1,7 @@
-import { engine } from '../engine/engine'
-import { DOORS, type Door } from './doors'
+import { engine } from '../engine/engine.ts'
+import { DOORS, type Door } from './doors.ts'
 import styles from './DoorsDialog.module.css'
-import { boardFrom } from './share'
+import { boardFrom } from './share.ts'
 
 // What a fresh tab opens onto: a handful of boards to start from, each one
 // playing on the press, eased up over a couple of seconds.

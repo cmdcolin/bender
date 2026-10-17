@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
 
-import { markBars } from './mark'
+import { markBars } from './mark.ts'
 
 test('a mark is the same every time and different for a different board', () => {
   expect(markBars('p=abc')).toEqual(markBars('p=abc'))

@@ -1,9 +1,13 @@
 import { useState } from 'react'
 
-import { DEFAULT_CONTROLS, type ControlKey, type Controls } from '../controls'
-import { sliderFor, TRACK_NUMBERS } from './controls'
-import { useBoardValue } from './ControlsContext'
-import { formatValue } from './slider-scale'
+import {
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../controls.ts'
+import { sliderFor, TRACK_NUMBERS } from './controls/index.ts'
+import { useBoardValue } from './ControlsContext.ts'
+import { formatValue } from './slider-scale.ts'
 
 export const LINE_H = 11
 const PAD = 6

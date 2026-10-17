@@ -1,15 +1,15 @@
 // The sections down the signed-in home, in the order they are stacked: the
 // board you had open last, the ones before it, and everything you have saved.
 
-import { appUrl, boardUrl } from '../site/paths'
-import { sinceWords } from '../ui/relativeTime'
-import { handOffSession } from '../ui/resumeHandoff'
-import { card, cardActions, type CardEdits } from './cards'
-import { el } from './dom'
-import { markFor } from './mark'
+import { appUrl, boardUrl } from '../site/paths.ts'
+import { sinceWords } from '../ui/relativeTime.ts'
+import { handOffSession } from '../ui/resumeHandoff.ts'
+import { card, cardActions, type CardEdits } from './cards.ts'
+import { el } from './dom.ts'
+import { markFor } from './mark.ts'
 
-import type { HomeDoc } from '../ui/cloud'
-import type { RecentSession, SavedVoice } from '../ui/voiceModel'
+import type { HomeDoc } from '../ui/cloud.ts'
+import type { RecentSession, SavedVoice } from '../ui/voiceModel.ts'
 
 function section(id: string, heading: string, sub?: string): HTMLElement {
   const box = el('section', 'homeSec')

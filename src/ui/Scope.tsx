@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { engine } from '../engine/engine'
+import { engine } from '../engine/engine.ts'
 import styles from './Scope.module.css'
 
 // Oscilloscope + peak meter fed by the worklet's meter posts.

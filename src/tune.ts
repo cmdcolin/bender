@@ -1,6 +1,6 @@
-import { midiFromName, semitoneName, toSemitone } from './notes'
+import { midiFromName, semitoneName, toSemitone } from './notes.ts'
 
-import type { ControlKey, Controls } from './controls'
+import type { ControlKey, Controls } from './controls.ts'
 
 // The melody memory: the thirty-two steps the toy keeps of what you played,
 // and the word each one is filed as.

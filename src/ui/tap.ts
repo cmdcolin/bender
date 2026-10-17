@@ -1,6 +1,6 @@
-import { snapToStep } from './controls'
+import { snapToStep } from './controls/index.ts'
 
-import type { SliderDef } from './controls'
+import type { SliderDef } from './controls/index.ts'
 
 // A speed you can hear but cannot name. The tempo, the delay time and the bay's
 // oscillator are all the same question asked in three units — how long between

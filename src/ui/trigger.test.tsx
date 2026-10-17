@@ -2,11 +2,11 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { ANY_CHOICE } from '../dsp/trigbus'
-import { GROUPS, groupKeys, touchedCount } from './controls'
-import { OpenGroup } from './Section'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { ANY_CHOICE } from '../dsp/trigbus.ts'
+import { GROUPS, groupKeys, touchedCount } from './controls/index.ts'
+import { OpenGroup } from './Section.tsx'
+import './testDom.ts'
 
 // Which box fires which. There are three boxes on the board and four wires
 // between them, and two of the four were on the FM chip's panel with nothing

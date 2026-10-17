@@ -9,19 +9,24 @@
 // that talks back to a desk without being asked is a board somebody has to
 // debug.
 
-import { CONTROL_KEYS, isControlKey, type ControlKey } from '../controls'
-import { VOICE_LABELS, type DrumVoiceKey } from '../drums'
-import { engine } from '../engine/engine'
-import { createStore } from '../listeners'
-import { noteName, toMidiNote, toSemitone } from '../notes'
-import { ALL_SLIDERS, SLIDER_BY_KEY, sliderFor, snapToStep } from './controls'
-import { PadKit } from './pads'
-import { forget, omit, parseMap, read, write } from './persist'
-import { fromPos, toPos } from './slider-scale'
-import { ThrowPads, type EffectArm } from './throwPads'
+import { CONTROL_KEYS, isControlKey, type ControlKey } from '../controls.ts'
+import { VOICE_LABELS, type DrumVoiceKey } from '../drums.ts'
+import { engine } from '../engine/engine.ts'
+import { createStore } from '../listeners.ts'
+import { noteName, toMidiNote, toSemitone } from '../notes.ts'
+import {
+  ALL_SLIDERS,
+  SLIDER_BY_KEY,
+  sliderFor,
+  snapToStep,
+} from './controls/index.ts'
+import { PadKit } from './pads.ts'
+import { forget, omit, parseMap, read, write } from './persist.ts'
+import { fromPos, toPos } from './slider-scale.ts'
+import { ThrowPads, type EffectArm } from './throwPads.ts'
 
-import type { NoteDest } from '../engine/messages'
-import type { SliderDef } from './controls'
+import type { NoteDest } from '../engine/messages.ts'
+import type { SliderDef } from './controls/index.ts'
 
 // One CC source = a (channel, controller) pair. The channel is kept so two
 // knobs that share a controller number on different channels stay distinct.

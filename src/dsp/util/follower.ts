@@ -1,4 +1,4 @@
-import { flushDenormal } from './softclip'
+import { flushDenormal } from './softclip.ts'
 
 export const coef = (sec: number, sr: number) => 1 - Math.exp(-1 / (sec * sr))
 

@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { IDX, N_PARAMS, PARAM_DEFS, packParams } from '../engine/params'
-import { EDITOR_KEYS, sliderFor } from '../ui/controls'
-import { buildChain } from './build'
-import { Smoother } from './smoother'
-import { BLOCK, type StereoBlock } from './stage'
-import { mulberry32 } from './util/rng'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { IDX, N_PARAMS, PARAM_DEFS, packParams } from '../engine/params.ts'
+import { EDITOR_KEYS, sliderFor } from '../ui/controls/index.ts'
+import { buildChain } from './build.ts'
+import { Smoother } from './smoother.ts'
+import { BLOCK, type StereoBlock } from './stage.ts'
+import { mulberry32 } from './util/rng.ts'
 
 const LIMIT_CEIL = 0.891
 

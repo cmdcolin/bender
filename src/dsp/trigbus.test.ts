@@ -9,11 +9,11 @@ import {
   sine,
   stepMask,
   tail,
-} from './testRender'
-import { ANY_CHOICE, STEP_CHOICE } from './trigbus'
+} from './testRender.ts'
+import { ANY_CHOICE, STEP_CHOICE } from './trigbus.ts'
 
-import type { Controls } from '../controls'
-import type { BuiltChain } from './build'
+import type { Controls } from '../controls.ts'
+import type { BuiltChain } from './build.ts'
 
 // The two boxes' trigger lines, bridged. The kit's hit arrives at the chip a
 // block late, so these run long enough for that to be beside the point.

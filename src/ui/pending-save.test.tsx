@@ -2,13 +2,13 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, expect, test, vi } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { App } from './App'
-import { boardHash } from './share'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { App } from './App.tsx'
+import { boardHash } from './share.ts'
+import './testDom.ts'
 
-import type { SavedVoice } from './voiceModel'
+import type { SavedVoice } from './voiceModel.ts'
 
 // The save somebody presses before they have an account. It is held, the app
 // asks why-an-account, and the sign-in that answers writes the board that was
@@ -30,7 +30,7 @@ const cloud = vi.hoisted(() => {
   return state
 })
 
-vi.mock('./cloud', () => ({
+vi.mock('./cloud.ts', () => ({
   wasSignedIn: () => false,
   warmSignIn: () => {},
   // Firebase's own subscription fires immediately with whoever is restored, so

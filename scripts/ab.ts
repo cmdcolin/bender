@@ -55,12 +55,7 @@ try {
   symlinkSync(join(here, 'node_modules'), join(work, 'node_modules'))
 
   const p50 = (root: string) => {
-    const out = run('npx', [
-      'tsx',
-      join(root, 'scripts/blocks.ts'),
-      seconds,
-      poly,
-    ])
+    const out = run('node', [join(root, 'scripts/blocks.ts'), seconds, poly])
     const m = out.match(/p\s+50\.0\s+([\d.]+)ms/)
     if (!m) throw new Error(`no p50 in blocks output:\n${out}`)
     return Number(m[1])

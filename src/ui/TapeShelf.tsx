@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react'
 
-import { POOLS } from '../engine/archive'
-import { engine } from '../engine/engine'
+import { POOLS } from '../engine/archive.ts'
+import { engine } from '../engine/engine.ts'
 import styles from './TapeShelf.module.css'
-import { Tip } from './Tip'
+import { Tip } from './Tip.tsx'
 
 type Mode = 'random' | 'search'
 type Hits = { id: string; title: string }[] | 'searching' | 'none'

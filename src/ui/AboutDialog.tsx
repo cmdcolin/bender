@@ -1,5 +1,5 @@
-import { guideUrl, privacyUrl } from '../site/paths'
-import { gitSha, versionLabel } from '../version'
+import { guideUrl, privacyUrl } from '../site/paths.ts'
+import { gitSha, versionLabel } from '../version.ts'
 import styles from './AboutDialog.module.css'
 
 const REPO = 'https://github.com/cmdcolin/bender'

@@ -1,12 +1,12 @@
-import { IDX } from '../../engine/params'
-import { DEST } from '../modbus'
-import { Bbd } from '../util/bbd'
-import { DelayLine } from '../util/delayline'
-import { OnePoleLP, lpCoef } from '../util/onepole'
-import { octaves, wrap1 } from '../util/pitch'
-import { flushDenormal } from '../util/softclip'
+import { IDX } from '../../engine/params.ts'
+import { DEST } from '../modbus.ts'
+import { Bbd } from '../util/bbd.ts'
+import { DelayLine } from '../util/delayline.ts'
+import { OnePoleLP, lpCoef } from '../util/onepole.ts'
+import { octaves, wrap1 } from '../util/pitch.ts'
+import { flushDenormal } from '../util/softclip.ts'
 
-import type { Ctx, Stage, StereoBlock } from '../stage'
+import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 
 export const ENS_MODE = {
   chorus: 0,
@@ -104,7 +104,10 @@ export class Ensemble implements Stage {
   /** what the flanger's line handed back, which is the only feedback here */
   private ret = 0
 
-  constructor(private readonly sr: number) {
+  private readonly sr: number
+
+  constructor(sr: number) {
+    this.sr = sr
     this.maxRead = ((25 * (1 + SWING)) / 1000) * sr
     this.lines = Array.from(
       { length: LINES },

@@ -1,6 +1,11 @@
-import { sliderFor } from './controls'
-import { boxHeight, useReadings, useSelectedBox, type BoxSpec } from './diagram'
-import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts'
+import { sliderFor } from './controls/index.ts'
+import {
+  boxHeight,
+  useReadings,
+  useSelectedBox,
+  type BoxSpec,
+} from './diagram.ts'
+import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 import styles from './FeedbackLoops.module.css'
 
 const DEST = sliderFor('fbDest').choices!

@@ -1,9 +1,9 @@
 // The rig the dsp tests render through: a board at 48 kHz run block by block,
 // and the measurements that turn what came out of it into something to assert on.
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { MAX_SOURCES, packParams } from '../engine/params'
-import { buildBender, buildChain, type BuiltChain } from './build'
-import { BLOCK, type StereoBlock } from './stage'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { MAX_SOURCES, packParams } from '../engine/params.ts'
+import { buildBender, buildChain, type BuiltChain } from './build.ts'
+import { BLOCK, type StereoBlock } from './stage.ts'
 
 export const SR = 48000
 

@@ -6,16 +6,16 @@
 // is not in it.
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { packParams } from '../engine/params'
-import { buildBender, buildChain } from './build'
-import { DEST } from './modbus'
-import { BLOCK, type StereoBlock } from './stage'
-import { Thermal } from './thermal'
-import { ToyRail } from './toyRail'
-import { Burst } from './util/burst'
-import { Chaos, Drunk } from './util/drift'
-import { mulberry32 } from './util/rng'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { packParams } from '../engine/params.ts'
+import { buildBender, buildChain } from './build.ts'
+import { DEST } from './modbus.ts'
+import { BLOCK, type StereoBlock } from './stage.ts'
+import { Thermal } from './thermal.ts'
+import { ToyRail } from './toyRail.ts'
+import { Burst } from './util/burst.ts'
+import { Chaos, Drunk } from './util/drift.ts'
+import { mulberry32 } from './util/rng.ts'
 
 const SR = 48000
 

@@ -1,26 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { engine } from '../engine/engine'
-import { AmpPathDiagram } from './AmpPathDiagram'
-import { groupAnchor } from './chain-map'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { AmpPathDiagram } from './AmpPathDiagram.tsx'
+import { groupAnchor } from './chain-map.ts'
 import {
   groupKeys,
   touchedCount,
   SLIDER_BY_KEY,
   type Group,
   type SliderDef,
-} from './controls'
-import { useBoardValue } from './ControlsContext'
-import { DrumGrid } from './DrumGrid'
-import { FeedbackLoops } from './FeedbackLoops'
-import { FmChipDiagram } from './FmChipDiagram'
-import { Fold } from './Fold'
-import { FourTrack } from './FourTrack'
-import { MicPatch } from './MicPatch'
-import { Mixer } from './Mixer'
-import { OrderRack } from './OrderRack'
-import { PatchBay } from './PatchBay'
+} from './controls/index.ts'
+import { useBoardValue } from './ControlsContext.ts'
+import { DrumGrid } from './DrumGrid.tsx'
+import { FeedbackLoops } from './FeedbackLoops.tsx'
+import { FmChipDiagram } from './FmChipDiagram.tsx'
+import { Fold } from './Fold.tsx'
+import { FourTrack } from './FourTrack.tsx'
+import { MicPatch } from './MicPatch.tsx'
+import { Mixer } from './Mixer.tsx'
+import { OrderRack } from './OrderRack.tsx'
+import { PatchBay } from './PatchBay.tsx'
 import {
   applyCut,
   applyRig,
@@ -36,16 +36,16 @@ import {
   rigStands,
   rollGroup,
   rollKeys,
-} from './presets'
-import { scrollIntoPanel } from './reveal'
-import { rollIn, undoRoll, useCanUndoRoll } from './rollBack'
+} from './presets/index.ts'
+import { scrollIntoPanel } from './reveal.ts'
+import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import styles from './Section.module.css'
-import { ControlSlider, ReserveReadout } from './Slider'
-import { TapeLoopDiagram } from './TapeLoopDiagram'
-import { TapePathDiagram } from './TapePathDiagram'
-import { Tip } from './Tip'
-import { TriggerPatch } from './TriggerPatch'
-import { TuneRoll } from './TuneRoll'
+import { ControlSlider, ReserveReadout } from './Slider.tsx'
+import { TapeLoopDiagram } from './TapeLoopDiagram.tsx'
+import { TapePathDiagram } from './TapePathDiagram.tsx'
+import { Tip } from './Tip.tsx'
+import { TriggerPatch } from './TriggerPatch.tsx'
+import { TuneRoll } from './TuneRoll.tsx'
 
 // A count rather than the board it is counted off, so the eight parts on the
 // shelf sit still through a morph instead of each recounting its group sixty

@@ -1,7 +1,7 @@
 import { beforeEach, expect, test } from 'vitest'
 
-import { engine } from '../engine/engine'
-import { keepRunState } from './runState'
+import { engine } from '../engine/engine.ts'
+import { keepRunState } from './runState.ts'
 
 // The tab's shelf, standing in for the one node has never heard of.
 const shelf = new Map<string, string>()

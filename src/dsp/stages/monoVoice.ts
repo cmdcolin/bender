@@ -1,9 +1,9 @@
-import { Drunk } from '../util/drift'
-import { Halfband } from '../util/halfband'
-import { DcBlocker } from '../util/onepole'
-import { octaves, wrap1 } from '../util/pitch'
-import { gaussian, mulberry32, type Rng } from '../util/rng'
-import { flushDenormal, softclip } from '../util/softclip'
+import { Drunk } from '../util/drift.ts'
+import { Halfband } from '../util/halfband.ts'
+import { DcBlocker } from '../util/onepole.ts'
+import { octaves, wrap1 } from '../util/pitch.ts'
+import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
+import { flushDenormal, softclip } from '../util/softclip.ts'
 
 export const WAVE = {
   tri: 0,

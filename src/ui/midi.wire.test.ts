@@ -4,16 +4,16 @@
 
 import { beforeEach, expect, test, vi } from 'vitest'
 
-import { DEFAULT_CONTROLS, type Controls } from '../controls'
-import { ACCENT_GAIN, hasStep } from '../drums'
-import { YOURS } from '../dsp/stages/roms'
-import { bursts, render } from '../dsp/testRender'
-import { engine } from '../engine/engine'
-import { REST, TUNE_STEP_KEYS } from '../tune'
-import { bendName, redealBendKeys } from './bendKeys'
-import { sliderFor } from './controls'
-import { ccToValue, midi, velocity } from './midi'
-import { padGain } from './pads'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { ACCENT_GAIN, hasStep } from '../drums.ts'
+import { YOURS } from '../dsp/stages/roms.ts'
+import { bursts, render } from '../dsp/testRender.ts'
+import { engine } from '../engine/engine.ts'
+import { REST, TUNE_STEP_KEYS } from '../tune.ts'
+import { bendName, redealBendKeys } from './bendKeys.ts'
+import { sliderFor } from './controls/index.ts'
+import { ccToValue, midi, velocity } from './midi.ts'
+import { padGain } from './pads.ts'
 
 type Handler = ((e: MIDIMessageEvent) => void) | null
 

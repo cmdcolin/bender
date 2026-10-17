@@ -8,9 +8,9 @@ import {
   rms,
   sine,
   tail,
-} from '../testRender'
+} from '../testRender.ts'
 
-import type { Controls } from '../../controls'
+import type { Controls } from '../../controls.ts'
 
 // A 400 Hz sine on the sampler, so what comes back out of the pedal is only
 // what the pedal made of it.

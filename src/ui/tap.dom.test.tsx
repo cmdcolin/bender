@@ -2,11 +2,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls'
-import { engine } from '../engine/engine'
-import { GROUPS } from './controls'
-import { OpenGroup } from './Section'
-import './testDom'
+import { DEFAULT_CONTROLS } from '../controls.ts'
+import { engine } from '../engine/engine.ts'
+import { GROUPS } from './controls/index.ts'
+import { OpenGroup } from './Section.tsx'
+import './testDom.ts'
 
 // The beat, and the two other speeds a hand keeps rather than reads: pressed in
 // time rather than dialled, and the whole run is one step in the walk.

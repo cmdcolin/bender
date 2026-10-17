@@ -6,11 +6,11 @@
 //
 //   pnpm blocks             the everything-on board, 20 s
 //   pnpm blocks 20 4        the same, with four keys held down and retriggered
-import { DEFAULT_CONTROLS } from '../src/controls'
-import { buildBender } from '../src/dsp/build'
-import { BLOCK, type StereoBlock } from '../src/dsp/stage'
-import { packParams } from '../src/engine/params'
-import { HEAVY } from './boards'
+import { DEFAULT_CONTROLS } from '../src/controls.ts'
+import { buildBender } from '../src/dsp/build.ts'
+import { BLOCK, type StereoBlock } from '../src/dsp/stage.ts'
+import { packParams } from '../src/engine/params.ts'
+import { HEAVY } from './boards.ts'
 
 const SR = 48000
 const seconds = Number(process.argv[2] ?? 20)

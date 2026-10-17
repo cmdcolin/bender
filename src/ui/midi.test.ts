@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest'
 
-import { CONTROL_KEYS } from '../controls'
-import { ACCENT_GAIN, N_DRUM_VOICES } from '../drums'
-import { ALL_SLIDERS, sliderFor } from './controls'
+import { CONTROL_KEYS } from '../controls.ts'
+import { ACCENT_GAIN, N_DRUM_VOICES } from '../drums.ts'
+import { ALL_SLIDERS, sliderFor } from './controls/index.ts'
 import {
   applyDelta,
   AUTOMAP_KEYS,
@@ -13,10 +13,10 @@ import {
   isOffsetSpelling,
   parseBindings,
   velocity,
-} from './midi'
-import { gmVoice, GM_PADS, padGain, parsePads, VOICE_KEYS } from './pads'
-import { omit } from './persist'
-import { toPos } from './slider-scale'
+} from './midi.ts'
+import { gmVoice, GM_PADS, padGain, parsePads, VOICE_KEYS } from './pads.ts'
+import { omit } from './persist.ts'
+import { toPos } from './slider-scale.ts'
 
 test('a CC sweeps the whole of a control and lands on its grid', () => {
   const def = sliderFor('filtHz')
