@@ -1,5 +1,5 @@
 // A heap of bent hardware on the floor, seen from above, drawn as flat SVG
-// shapes. The seed fixes the heap, so every build draws the same one.
+// shapes. One seed always draws the same heap.
 export const PILE_WIDTH = 1200
 export const PILE_HEIGHT = 540
 
@@ -19,10 +19,17 @@ const C = {
   copper: '#c98a4b',
   gold: '#d9b45a',
   tape: '#6b4630',
+  ink: '#000',
+  plastic: '#2b2b31',
+  screen: '#7fe3b0',
+  rim: '#25252c',
+  well: '#18181d',
+  cone: '#33333c',
 }
 
 const WIRES = [C.red, C.mustard, C.teal, C.pink, C.blue, C.white, C.grey]
-const BODIES = [C.red, C.teal, C.mustard, C.pink, C.blue]
+const BODIES = [C.teal, C.mustard, C.pink, C.blue]
+const TAU = Math.PI * 2
 
 type Rng = () => number
 
@@ -39,13 +46,30 @@ const n = (x: number) => Math.round(x * 10) / 10
 const between = (r: Rng, lo: number, hi: number) => lo + r() * (hi - lo)
 const pick = <T>(r: Rng, xs: readonly T[]) => xs[Math.floor(r() * xs.length)]!
 const gauss = (r: Rng) =>
-  Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r())
+  Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(TAU * r())
+
+interface Hull {
+  x: number
+  y: number
+  w: number
+  h: number
+  rx: number
+}
 
 interface Thing {
-  shadow: string
+  hull: Hull
   body: string
   weight: number
+  boost?: number
 }
+
+const hull = (
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  rx: number,
+): Hull => ({ x, y, w, h, rx })
 
 const rect = (
   x: number,
@@ -85,16 +109,16 @@ const keyboard = (r: Rng): Thing => {
   for (const k of [1, 2, 4, 5, 6])
     s += rect(-50 + k * 17 - 5, 0, 10, 28, C.black, 1)
   for (let k = 0; k < 3; k++)
-    s += knobAt(40 + k * 26, -36, 7, C.steel, between(r, 0, 6.28))
-  return { shadow: rect(-130, -58, 260, 116, '#000', 10), body: s, weight: 3 }
+    s += knobAt(40 + k * 26, -36, 7, C.steel, between(r, 0, TAU))
+  return { hull: hull(-130, -58, 260, 116, 10), body: s, weight: 3 }
 }
 
 const drums = (r: Rng): Thing => {
   const body = pick(r, BODIES)
   let s = rect(-100, -75, 200, 150, body, 12)
-  s += rect(-82, -61, 70, 22, '#7fe3b0', 3)
-  s += knobAt(30, -50, 9, C.steel, between(r, 0, 6.28))
-  s += knobAt(62, -50, 9, C.steel, between(r, 0, 6.28))
+  s += rect(-82, -61, 70, 22, C.screen, 3)
+  s += knobAt(30, -50, 9, C.steel, between(r, 0, TAU))
+  s += knobAt(62, -50, 9, C.steel, between(r, 0, TAU))
   const pads = [C.pink, C.mustard, C.teal, C.white]
   for (let row = 0; row < 3; row++)
     for (let col = 0; col < 4; col++)
@@ -107,21 +131,21 @@ const drums = (r: Rng): Thing => {
         4,
         `stroke="${C.black}" stroke-width="1"`,
       )
-  return { shadow: rect(-100, -75, 200, 150, '#000', 12), body: s, weight: 3 }
+  return { hull: hull(-100, -75, 200, 150, 12), body: s, weight: 3 }
 }
 
 const pedal = (r: Rng): Thing => {
-  const body = pick(r, [C.blue, C.red, C.teal, C.grey, C.mustard])
+  const body = pick(r, [C.blue, C.teal, C.grey, C.mustard])
   let s = rect(-45, -70, 90, 140, body, 9)
   s += rect(-50, -30, 5, 12, C.steel) + rect(45, -30, 5, 12, C.steel)
-  s += knobAt(-22, -46, 9, C.steel, between(r, 0, 6.28))
-  s += knobAt(22, -46, 9, C.steel, between(r, 0, 6.28))
+  s += knobAt(-22, -46, 9, C.steel, between(r, 0, TAU))
+  s += knobAt(22, -46, 9, C.steel, between(r, 0, TAU))
   s += circle(0, -26, 4, C.red)
   s += rect(-32, -14, 64, 30, C.cream, 3)
   s += rect(-24, -7, 48, 4, C.black, 1) + rect(-24, 3, 30, 4, C.black, 1)
   s += circle(0, 44, 15, C.steel, `stroke="${C.black}" stroke-width="1.5"`)
   s += circle(0, 44, 9, C.grey)
-  return { shadow: rect(-45, -70, 90, 140, '#000', 9), body: s, weight: 2 }
+  return { hull: hull(-45, -70, 90, 140, 9), body: s, weight: 2 }
 }
 
 const cassette = (r: Rng): Thing => {
@@ -132,17 +156,17 @@ const cassette = (r: Rng): Thing => {
   s += rect(-48, -6, 96, 22, C.black, 11)
   s += circle(-30, 5, 9, C.cream) + circle(30, 5, 9, C.cream)
   s += circle(-30, 5, 3.5, C.black) + circle(30, 5, 3.5, C.black)
-  s += `<polygon points="-40,42 -32,24 32,24 40,42" fill="#2b2b31"/>`
-  return { shadow: rect(-65, -42, 130, 84, '#000', 6), body: s, weight: 2 }
+  s += `<polygon points="-40,42 -32,24 32,24 40,42" fill="${C.plastic}"/>`
+  return { hull: hull(-65, -42, 130, 84, 6), body: s, weight: 2 }
 }
 
 const battery = (r: Rng): Thing => {
-  let s = rect(-20, -34, 40, 68, pick(r, [C.black, '#2a2a31', C.blue]), 3)
+  let s = rect(-20, -34, 40, 68, pick(r, [C.black, C.plastic, C.blue]), 3)
   s += rect(-20, -8, 40, 18, C.copper)
   s += rect(-20, -34, 40, 14, C.steel, 3)
   s += circle(-8, -27, 5, C.steel, `stroke="${C.grey}" stroke-width="1.5"`)
   s += circle(8, -27, 5, C.steel, `stroke="${C.grey}" stroke-width="1.5"`)
-  return { shadow: rect(-20, -34, 40, 68, '#000', 3), body: s, weight: 1 }
+  return { hull: hull(-20, -34, 40, 68, 3), body: s, weight: 1, boost: 1.1 }
 }
 
 const board = (r: Rng): Thing => {
@@ -157,7 +181,7 @@ const board = (r: Rng): Thing => {
     s += circle(n(between(r, -68, 68)), n(between(r, -43, 43)), 2.6, C.gold)
   s += rect(-60, 28, 4, 14, C.copper) + rect(-52, 28, 4, 14, C.red)
   s += circle(-66, -42, 3, C.black) + circle(66, 42, 3, C.black)
-  return { shadow: rect(-75, -50, 150, 100, '#000', 4), body: s, weight: 2 }
+  return { hull: hull(-75, -50, 150, 100, 4), body: s, weight: 2 }
 }
 
 const chip = (): Thing => {
@@ -166,28 +190,29 @@ const chip = (): Thing => {
     s +=
       rect(-22 + i * 8, -15, 3, 4, C.steel) +
       rect(-22 + i * 8, 11, 3, 4, C.steel)
-  return { shadow: rect(-25, -13, 50, 26, '#000', 2), body: s, weight: 0 }
+  return { hull: hull(-25, -13, 50, 26, 2), body: s, weight: 0, boost: 1.35 }
 }
 
 const knob = (r: Rng): Thing => ({
-  shadow: circle(0, 0, 13, '#000'),
+  hull: hull(-13, -13, 26, 26, 13),
   body: knobAt(
     0,
     0,
     13,
     pick(r, [C.cream, C.red, C.steel, C.mustard]),
-    between(r, 0, 6.28),
+    between(r, 0, TAU),
   ),
   weight: 0,
+  boost: 1.5,
 })
 
 const speaker = (): Thing => ({
-  shadow: circle(0, 0, 48, '#000'),
+  hull: hull(-48, -48, 96, 96, 48),
   body:
-    circle(0, 0, 48, '#25252c') +
-    circle(0, 0, 40, '#18181d', `stroke="${C.steel}" stroke-width="3"`) +
-    circle(0, 0, 26, '#33333c') +
-    circle(0, 0, 9, '#18181d') +
+    circle(0, 0, 48, C.rim) +
+    circle(0, 0, 40, C.well, `stroke="${C.steel}" stroke-width="3"`) +
+    circle(0, 0, 26, C.cone) +
+    circle(0, 0, 9, C.well) +
     [
       [-38, -38],
       [38, -38],
@@ -205,7 +230,7 @@ const screwdriver = (r: Rng): Thing => {
   for (let i = 0; i < 4; i++)
     s += rect(-44 + i * 9, -8, 3, 16, C.black, 0, 'opacity="0.35"')
   s += rect(-4, -2, 70, 4, C.steel) + rect(66, -3, 8, 6, C.grey)
-  return { shadow: rect(-50, -8, 124, 16, '#000', 6), body: s, weight: 0 }
+  return { hull: hull(-50, -8, 124, 16, 6), body: s, weight: 0 }
 }
 
 const spool = (): Thing => {
@@ -215,17 +240,18 @@ const spool = (): Thing => {
     circle(0, 0, 5, C.cream)
   s += circle(0, 0, 2, C.black)
   s += `<line x1="0" y1="-14" x2="0" y2="-20" stroke="${C.cream}" stroke-width="2"/>`
-  return { shadow: circle(0, 0, 20, '#000'), body: s, weight: 0 }
+  return { hull: hull(-20, -20, 40, 40, 20), body: s, weight: 0, boost: 1.4 }
 }
 
 interface Spot {
   x: number
   y: number
+  r: number
 }
 
-const place = (r: Rng, taken: Spot[], tries: number): Spot => {
-  let best: Spot = { x: 0, y: 0 }
-  let far = -1
+const place = (r: Rng, taken: Spot[], tries: number, size: number): Spot => {
+  let best: Spot = { x: 0, y: 0, r: size }
+  let room = -Infinity
   for (let i = 0; i < tries; i++) {
     const x = Math.min(
       PILE_WIDTH - 40,
@@ -235,10 +261,13 @@ const place = (r: Rng, taken: Spot[], tries: number): Spot => {
       PILE_HEIGHT - 40,
       Math.max(40, PILE_HEIGHT / 2 + gauss(r) * 105),
     )
-    const gap = Math.min(...taken.map(t => Math.hypot(t.x - x, t.y - y)), 1e9)
-    if (gap > far) {
-      far = gap
-      best = { x, y }
+    const gap = Math.min(
+      ...taken.map(t => Math.hypot(t.x - x, t.y - y) - t.r - size),
+      Infinity,
+    )
+    if (gap > room) {
+      room = gap
+      best = { x, y, r: size }
     }
   }
   taken.push(best)
@@ -248,13 +277,15 @@ const place = (r: Rng, taken: Spot[], tries: number): Spot => {
 const at = (spot: Spot, turn: number, scale: number, inner: string) =>
   `<g transform="translate(${n(spot.x)} ${n(spot.y)}) rotate(${n(turn)}) scale(${n(scale)})">${inner}</g>`
 
-const drawThing = (thing: Thing, spot: Spot, turn: number, scale: number) =>
-  at(
+const drawThing = (thing: Thing, spot: Spot, turn: number, scale: number) => {
+  const { x, y, w, h, rx } = thing.hull
+  return at(
     spot,
     turn,
     scale,
-    `<g transform="translate(5 7)" fill="#000" opacity="0.4">${thing.shadow}</g>${thing.body}`,
+    `<g transform="translate(5 7)" opacity="0.4">${rect(x, y, w, h, C.ink, rx)}</g>${thing.body}`,
   )
+}
 
 const clip = (x: number, y: number, angle: number, sleeve: string) =>
   `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(angle)})">` +
@@ -279,7 +310,7 @@ const bare = (x: number, y: number, angle: number, color: string) =>
 const wire = (r: Rng, kind: 'cable' | 'tape') => {
   const x0 = between(r, 60, PILE_WIDTH - 60)
   const y0 = between(r, 60, PILE_HEIGHT - 60)
-  const heading = between(r, 0, 6.28)
+  const heading = between(r, 0, TAU)
   const length = between(r, 180, kind === 'tape' ? 520 : 400)
   const x3 = x0 + Math.cos(heading) * length
   const y3 = y0 + Math.sin(heading) * length * 0.6
@@ -307,7 +338,7 @@ const wire = (r: Rng, kind: 'cable' | 'tape') => {
   const stroke = (c: string, w: number, extra = '') =>
     `<path d="${d}" fill="none" stroke="${c}" stroke-width="${n(w)}" stroke-linecap="round" ${extra}/>`
   return (
-    `<g transform="translate(4 6)" opacity="0.4">${stroke('#000', width)}</g>` +
+    `<g transform="translate(4 6)" opacity="0.4">${stroke(C.ink, width)}</g>` +
     stroke(color, width) +
     ends
   )
@@ -332,8 +363,9 @@ export const pile = (seed = 3): string => {
   const toss = (make: (r: Rng) => Thing, count: number, tries: number) => {
     for (let i = 0; i < count; i++) {
       const thing = make(r)
-      const spot = place(r, taken, tries)
-      const scale = between(r, 0.85, 1.12)
+      const scale = between(r, 0.85, 1.12) * (thing.boost ?? 1)
+      const size = (Math.hypot(thing.hull.w, thing.hull.h) / 2) * 0.45 * scale
+      const spot = place(r, taken, tries, size)
       heap.push({
         weight: thing.weight + r() * 0.9,
         svg: drawThing(thing, spot, between(r, -180, 180), scale),
@@ -341,17 +373,17 @@ export const pile = (seed = 3): string => {
     }
   }
 
-  toss(keyboard, 2, 10)
-  toss(drums, 1, 10)
-  toss(speaker, 1, 8)
-  toss(pedal, 3, 6)
-  toss(cassette, 3, 5)
-  toss(board, 3, 5)
-  toss(battery, 4, 3)
-  toss(spool, 2, 3)
-  toss(chip, 7, 2)
-  toss(knob, 7, 2)
-  toss(screwdriver, 1, 3)
+  toss(keyboard, 2, 14)
+  toss(drums, 1, 14)
+  toss(speaker, 1, 10)
+  toss(pedal, 3, 10)
+  toss(cassette, 3, 8)
+  toss(board, 3, 8)
+  toss(battery, 4, 4)
+  toss(spool, 2, 4)
+  toss(chip, 5, 3)
+  toss(knob, 5, 3)
+  toss(screwdriver, 1, 4)
 
   const sorted = heap.toSorted((a, b) => b.weight - a.weight).map(h => h.svg)
   const split = Math.ceil(sorted.length * 0.55)
@@ -359,7 +391,7 @@ export const pile = (seed = 3): string => {
   const tapes = Array.from({ length: 2 }, () => wire(r, 'tape'))
 
   return (
-    `<svg viewBox="0 0 ${PILE_WIDTH} ${PILE_HEIGHT}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A messy pile of bent hardware on the floor: toy keyboards, a drum machine, guitar pedals, cassettes, circuit boards, batteries and loose cables with alligator clips">` +
+    `<svg viewBox="0 0 ${PILE_WIDTH} ${PILE_HEIGHT}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">` +
     floor() +
     cables.slice(0, 7).join('') +
     sorted.slice(0, split).join('') +

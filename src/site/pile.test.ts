@@ -7,10 +7,9 @@ test('the same seed draws the same heap, and another seed a different one', () =
   expect(pile(5)).not.toBe(pile(6))
 })
 
-test('the heap is one labelled svg of flat colour with no stray numbers', () => {
+test('the heap is one decorative svg of flat colour with no stray numbers', () => {
   const svg = pile()
   expect(svg.startsWith('<svg ')).toBe(true)
-  expect(svg).toContain('role="img"')
-  expect(svg).toMatch(/aria-label="[^"]+"/)
+  expect(svg).toContain('aria-hidden="true"')
   expect(svg).not.toMatch(/Gradient|filter|NaN|undefined/)
 })

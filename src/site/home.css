@@ -12,6 +12,7 @@
   letter-spacing: -0.01em;
 }
 .pile {
+  position: relative;
   margin: 0 0 1.5rem;
   border: 1px solid var(--border-faint);
   border-radius: 0.6rem;
@@ -21,7 +22,48 @@
   display: block;
   width: 100%;
   height: auto;
+  max-height: 55vh;
   aspect-ratio: 1200 / 540;
+  opacity: 0;
+  animation: pileShow 0s 1.2s forwards;
+}
+.pile[data-ready] svg {
+  opacity: 1;
+  animation: none;
+}
+.pile[data-ready]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  background-size: 128px;
+  opacity: 0.1;
+  pointer-events: none;
+  animation: grain 0.7s steps(1) infinite;
+}
+@keyframes pileShow {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes grain {
+  20% {
+    background-position: -37px 21px;
+  }
+  40% {
+    background-position: 52px -64px;
+  }
+  60% {
+    background-position: -90px -12px;
+  }
+  80% {
+    background-position: 18px 77px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pile[data-ready]::after {
+    animation: none;
+  }
 }
 @media (max-width: 40rem) {
   .pile svg {

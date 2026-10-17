@@ -1,6 +1,4 @@
 ---
-// The top of the landing page: a headline, a heap of hardware on the floor, and
-// the ways in.
 import { appUrl, pocketUrl } from '../site/paths.ts'
 import { pile } from '../site/pile.ts'
 
@@ -11,10 +9,16 @@ const GETTING_STARTED =
 <h1 class="heroHead">Simulated circuit bending</h1>
 <figure class="pile" set:html={pile()} />
 <script>
+  import { noiseTile } from '../site/grain.ts'
   import { pile } from '../site/pile.ts'
 
-  const figure = document.querySelector('.pile')
-  if (figure) figure.innerHTML = pile(Math.floor(Math.random() * 2 ** 31))
+  const figure = document.querySelector<HTMLElement>('.pile')
+  if (figure) {
+    figure.innerHTML = pile(Math.floor(Math.random() * 2 ** 31))
+    const grain = noiseTile()
+    if (grain) figure.style.setProperty('--grain', `url(${grain})`)
+    figure.dataset.ready = ''
+  }
 </script>
 <p class="cta">
   <a class="btn primary big" href={appUrl}>
