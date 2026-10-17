@@ -25,6 +25,7 @@ export class MonoSynth implements Stage {
   private readonly buf = new Float32Array(BLOCK)
   private readonly cutoffLane = new Float32Array(BLOCK)
   private readonly queued: { note: number; on: boolean; gain: number }[] = []
+  private readonly gateHeld: number[] = []
   private lastReboot = 0
   private lastNote = A3_MIDI
   private gateNote = -1
@@ -52,11 +53,26 @@ export class MonoSynth implements Stage {
   }
 
   noteOn(semitone: number, gain = 1) {
-    this.queued.push({ note: semitone + A3_MIDI, on: true, gain })
+    const note = semitone + A3_MIDI
+    this.dropGateHeld(note)
+    this.queued.push({ note, on: true, gain })
   }
 
   noteOff(semitone: number) {
     this.queued.push({ note: semitone + A3_MIDI, on: false, gain: 0 })
+  }
+
+  /** The toy's key coming up. It ends only a note the gate is holding, so it
+      still reaches one held across a cut jumper and never one on these keys. */
+  gateOff(semitone: number) {
+    if (this.dropGateHeld(semitone + A3_MIDI)) this.noteOff(semitone)
+  }
+
+  private dropGateHeld(note: number): boolean {
+    const i = this.gateHeld.indexOf(note)
+    if (i < 0) return false
+    this.gateHeld.splice(i, 1)
+    return true
   }
 
   soundingNotes(out: Int16Array): number {
@@ -123,7 +139,10 @@ export class MonoSynth implements Stage {
     const voice = this.voice
     this.lastNote = note
     voice.noteOn(note, gain)
-    if (held) return
+    if (held) {
+      if (!this.gateHeld.includes(note)) this.gateHeld.push(note)
+      return
+    }
     if (this.gateNote >= 0 && this.gateNote !== note) {
       voice.noteOff(this.gateNote)
     }
@@ -152,6 +171,7 @@ export class MonoSynth implements Stage {
       voice.allOff()
       this.gateNote = -1
       this.queued.length = 0
+      this.gateHeld.length = 0
     }
     this.patch(p, ctx)
     voice.bend = 12 * Math.log2(rail.pitchFactor)
@@ -223,6 +243,7 @@ export class MonoSynth implements Stage {
   panic() {
     this.voice.panic()
     this.queued.length = 0
+    this.gateHeld.length = 0
     this.gateNote = -1
     this.gateLeft = 0
   }

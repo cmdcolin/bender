@@ -319,6 +319,8 @@ interface Channel {
   started: number
   /** samples until the CPU gets round to writing the key back up */
   offIn: number
+  /** struck off the toy's gate, so the toy's key-up is the one that ends it */
+  gated: boolean
 }
 
 // One coefficient set per operator per block. Recomputed from the rail once a
@@ -371,6 +373,7 @@ export class FmChip implements Stage {
     note: 0,
     started: 0,
     offIn: 0,
+    gated: false,
   }))
   private clock = 0
   /** the chip's own crystal this block, which the envelope rates count off */
@@ -691,7 +694,7 @@ export class FmChip implements Stage {
   // write — which is the write that also carries the top bit of the frequency,
   // exactly as the part laid it out. One wire wrong up there moves the pitch and
   // whether the note happens at all.
-  private keyOn(note: number, lengthSamples: number, vol = 0) {
+  private keyOn(note: number, lengthSamples: number, vol = 0, gated = false) {
     const hz = 220 * Math.pow(2, note / 12)
     const block = Math.min(
       Math.max(Math.floor(Math.log2(hz / FNUM_BASE)), 0),
@@ -706,6 +709,7 @@ export class FmChip implements Stage {
     c.note = note
     c.started = this.clock++
     c.offIn = lengthSamples
+    c.gated = gated
     // The key up before the key down, which is how a driver retriggers a channel
     // it is already using: the chip has no other way to be told this is a new
     // note. It is also the write that stops arriving first when a line goes.
@@ -747,8 +751,21 @@ export class FmChip implements Stage {
   // sounds and *Note length* ends it.
   noteOff(note: number) {
     for (const q of this.queued) if (q.note === note) q.held = false
+    this.keyUp(note, false)
+  }
+
+  /** The toy's key coming up. It ends only what the gate struck, so it still
+      reaches a note held across a cut jumper and never one on these keys. */
+  gateOff(note: number) {
+    this.keyUp(note, true)
+  }
+
+  private keyUp(note: number, gated: boolean) {
     const n = Math.max(this.melodyChannels(), this.stuckCh + 1)
-    for (let i = 0; i < n; i++) if (this.ch[i]!.note === note) this.keyOff(i)
+    for (let i = 0; i < n; i++) {
+      const c = this.ch[i]!
+      if (c.note === note && c.gated === gated) this.keyOff(i)
+    }
   }
 
   /** Every note the chip is holding down, for the panel's second keybed — its
@@ -1383,6 +1400,8 @@ export class FmChip implements Stage {
         this.keyOn(
           struck - KEY_BIAS,
           ctx.trig.keyHeld[i]! > 0 ? 0 : lengthSamples,
+          0,
+          true,
         )
         // With the bank switched over there is a bass drum sitting on the
         // channel the note would have had, and a driver asked for rhythm puts
@@ -1589,6 +1608,7 @@ export class FmChip implements Stage {
       c.mod = newOp()
       c.car = newOp()
       c.offIn = 0
+      c.gated = false
     }
     this.noise.reset()
     this.blobRng = mulberry32(BLOB_SEED)

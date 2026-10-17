@@ -130,9 +130,9 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     rail,
     noteOff(semitone: number) {
       toyChip.noteOff(semitone)
-      fmChip.noteOff(semitone)
-      pcmKeys.noteOff(semitone)
-      monoSynth.noteOff(semitone)
+      fmChip.gateOff(semitone)
+      pcmKeys.gateOff(semitone)
+      monoSynth.gateOff(semitone)
     },
   }
 }

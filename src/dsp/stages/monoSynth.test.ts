@@ -46,6 +46,22 @@ test('a key from its own bed sounds until it comes up', () => {
   expect(after).toBeLessThan(held / 100)
 })
 
+test('the toy’s key-up leaves a note on its own bed alone', () => {
+  const x = renderBender(
+    { ...ALONE, monoKeyGate: 1, monoAR: 0.05 },
+    1,
+    built => {
+      built.monoSynth.noteOn(0)
+      built.toyChip.noteOn(0)
+    },
+    undefined,
+    (built, secs) => {
+      if (Math.abs(secs - 0.3) < 0.002) built.noteOff(0)
+    },
+  )
+  expect(rms(x.subarray(0.8 * SR))).toBeGreaterThan(0.05)
+})
+
 test('a leaky VCA drones with no key down', () => {
   expect(
     rms(render({ ...ALONE, monoKeyGate: 1, monoLeak: 1 }, 2)),

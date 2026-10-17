@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
-import { packParams } from '../../engine/params.ts'
+import { IDX, packParams } from '../../engine/params.ts'
 import { SOURCE_TAPS } from '../../engine/params.ts'
 import { OCTAVES, pitch } from '../../ui/keyboard.ts'
 import { buildBender, buildChain } from '../build.ts'
@@ -93,6 +93,45 @@ test('a hand on its own keys outlasts the length the driver would give it', () =
     built => built.fmChip.noteOn(0),
   )
   expect(rms(tail(held, 0.2))).toBeGreaterThan(0.02)
+})
+
+const ORGAN_ONLY = { ...FM_ONLY, fmVoice: FM_VOICE_NAMES.indexOf('organ') }
+
+test('the toy’s key-up leaves a note on the chip’s own keys alone', () => {
+  let up = false
+  const x = renderBender(
+    { ...ORGAN_ONLY, fmKeyGate: 1 },
+    1,
+    built => {
+      built.fmChip.noteOn(0)
+      built.toyChip.noteOn(0)
+    },
+    undefined,
+    (built, secs) => {
+      if (secs < 0.3 || up) return
+      built.noteOff(0)
+      up = true
+    },
+  )
+  expect(rms(tail(x, 0.2))).toBeGreaterThan(0.02)
+})
+
+test('the toy’s key-up ends its note after the jumper is cut', () => {
+  let up = false
+  const x = renderBender(
+    ORGAN_ONLY,
+    2,
+    built => built.toyChip.noteOn(0),
+    undefined,
+    (built, secs, p) => {
+      if (secs >= 0.2) p[IDX.fmKeyGate] = 1
+      if (secs < 0.3 || up) return
+      built.noteOff(0)
+      up = true
+    },
+  )
+  expect(rms(x.subarray(0, Math.round(0.2 * SR)))).toBeGreaterThan(0.02)
+  expect(rms(tail(x, 0.2))).toBeLessThan(1e-4)
 })
 
 test('a key up in the same block as its key down still lets go', () => {

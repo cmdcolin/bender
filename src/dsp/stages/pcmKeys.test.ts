@@ -137,6 +137,20 @@ test('a key up in the same block as its key down still lets go', () => {
   expect(built.pcmKeys.soundingNotes(out)).toBe(0)
 })
 
+test('the toy’s key-up leaves a note on the chip’s own keys alone', () => {
+  const out = new Int16Array(8)
+  const built = buildBender(SR)
+  built.pcmKeys.noteOn(0)
+  built.toyChip.noteOn(0)
+  const p = packParams({ ...DEFAULT_CONTROLS, ...ALONE, pcmKeyGate: 1 })
+  const io = makeIo()
+  for (let b = 0; b < 300; b++) {
+    if (b === 20) built.noteOff(0)
+    built.chain.process(io, p)
+  }
+  expect(built.pcmKeys.soundingNotes(out)).toBe(1)
+})
+
 test('a held piano note frees its voice once it has decayed away', () => {
   const out = new Int16Array(8)
   const { built } = play({ ...ALONE, pcmEnv: 0 }, 14, b => b.pcmKeys.noteOn(12))

@@ -103,6 +103,8 @@ interface Voice {
   age: number
   /** whether a hand is still on it. A gate edge is not, so it lets go at once */
   held: boolean
+  /** struck off the toy's gate, so the toy's key-up is the one that ends it */
+  gated: boolean
   gain: number
 }
 
@@ -117,6 +119,7 @@ const newVoice = (): Voice => ({
   started: 0,
   age: 0,
   held: false,
+  gated: false,
   gain: 1,
 })
 
@@ -186,8 +189,19 @@ export class PcmKeys implements Stage {
   // sounds and lets go of itself.
   noteOff(note: number) {
     for (const q of this.queued) if (q.note === note) q.held = false
+    this.release(note, false)
+  }
+
+  /** The toy's key coming up. It ends only what the gate struck, so it still
+      reaches a note held across a cut jumper and never one on these keys. */
+  gateOff(note: number) {
+    this.release(note, true)
+  }
+
+  private release(note: number, gated: boolean) {
     for (const v of this.voices) {
-      if (v.root === note && v.stage !== IDLE) v.stage = RELEASE
+      if (v.root === note && v.gated === gated && v.stage !== IDLE)
+        v.stage = RELEASE
     }
   }
 
@@ -211,12 +225,19 @@ export class PcmKeys implements Stage {
     return steal
   }
 
-  private key(note: number, gain: number, held: boolean, root: number) {
+  private key(
+    note: number,
+    gain: number,
+    held: boolean,
+    root: number,
+    gated: boolean,
+  ) {
     const v = this.pick(note)
     v.note = note
     v.root = root
     v.gain = gain
     v.held = held
+    v.gated = gated
     v.started = this.clock++
     v.age = 0
     v.pos = 0
@@ -231,10 +252,16 @@ export class PcmKeys implements Stage {
   // One key, and whatever the chord button puts under it. A four-note voicing
   // is the whole part, and that is not the panel being mean: the chip has four
   // voices and the button has no way to ask for a fifth.
-  private strike(note: number, gain: number, held: boolean, chord: number) {
+  private strike(
+    note: number,
+    gain: number,
+    held: boolean,
+    chord: number,
+    gated = false,
+  ) {
     this.lastNote = note
     for (const step of CHORDS[chord] ?? CHORDS[0]!) {
-      this.key(note + step, gain, held, note)
+      this.key(note + step, gain, held, note, gated)
     }
   }
 
@@ -410,7 +437,7 @@ export class PcmKeys implements Stage {
       // FM chip's, so out of the box the demo song plays the strings.
       const struck = gateOn ? ctx.trig.key[i]! : 0
       if (struck !== 0) {
-        this.strike(struck - KEY_BIAS, 1, ctx.trig.keyHeld[i]! > 0, chord)
+        this.strike(struck - KEY_BIAS, 1, ctx.trig.keyHeld[i]! > 0, chord, true)
       }
 
       // And the kit's own lines, for whoever clipped them on here. A trigger
