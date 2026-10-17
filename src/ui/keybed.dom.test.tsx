@@ -38,3 +38,13 @@ test('with hold on, a second press on an off-scale key lets it go', () => {
   tap(key('C#3'))
   expect(engine.fmKeysDown.get().size).toBe(0)
 })
+
+test('a bed taken off the bench lets go of what it held and pinned', () => {
+  const { unmount } = bed()
+  fireEvent.pointerDown(key('C3'), { altKey: true })
+  fireEvent.click(screen.getByRole('button', { name: 'hold' }))
+  tap(key('E3'))
+  expect(engine.fmKeysDown.get().size).toBe(2)
+  unmount()
+  expect(engine.fmKeysDown.get().size).toBe(0)
+})

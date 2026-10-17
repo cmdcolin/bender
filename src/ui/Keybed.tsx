@@ -85,12 +85,6 @@ export function GateJumper({
   )
 }
 
-const omitFrom = (set: Set<number>, value: number) => {
-  const next = new Set(set)
-  next.delete(value)
-  return next
-}
-
 // Who is holding a key down, and so what colour it is.
 type Lit = 'hand' | 'chip' | 'dark'
 
@@ -129,11 +123,11 @@ export function Keybed({
 }: Props) {
   // What was sent, not which key was pressed: the octave moves under your hand
   // and a note has to be let go at the pitch it went down at.
-  const [held, setHeld] = useState<Set<number>>(new Set())
+  const held = useRef(new Set<number>())
   // Notes alt-click has pinned down, one at a time. The hold switch latches
   // everything you touch after it; this holds a drone under both hands while the
   // rest of the board still plays and lets go the way keys normally do.
-  const [latched, setLatched] = useState<Set<number>>(new Set())
+  const latched = useRef(new Set<number>())
   const [hold, setHold] = useState(false)
   const [octave, setOctave] = useState(0)
   // The drawer, and the button it hangs off. Held as state rather than a ref
@@ -176,7 +170,7 @@ export function Keybed({
   const noteLetters = noteKeys(map)
   const octaveLetters = octaveKeys(map)
   const other = NEXT_BED[dest]
-  const isDown = (key: number) => held.has(at(key))
+  const isDown = (key: number) => held.current.has(at(key))
   const litBy = (key: number): Lit =>
     keysDown.has(at(key)) ? 'hand' : chipNotes.has(at(key)) ? 'chip' : 'dark'
   // A keybed reaches further than three octaves, and so does the tune when the
@@ -187,7 +181,7 @@ export function Keybed({
   const above = playing.some(s => s > at(top))
 
   // Whether letting go of a key lets go of the note.
-  const sticky = (semitone: number) => hold || latched.has(semitone)
+  const sticky = (semitone: number) => hold || latched.current.has(semitone)
 
   const press = (key: number, latch = false) => {
     const semitone = at(key)
@@ -199,22 +193,22 @@ export function Keybed({
       return
     }
     engine.noteOn(semitone, 1, dest)
-    setHeld(h => new Set(h).add(semitone))
-    if (latch) setLatched(l => new Set(l).add(semitone))
+    held.current.add(semitone)
+    if (latch) latched.current.add(semitone)
   }
 
   const release = (key: number, force = false) => {
     const semitone = at(key)
     if (!force && sticky(semitone)) return
     engine.noteOff(semitone, dest)
-    setHeld(h => omitFrom(h, semitone))
-    if (latched.has(semitone)) setLatched(l => omitFrom(l, semitone))
+    held.current.delete(semitone)
+    latched.current.delete(semitone)
   }
 
   const releaseAll = () => {
-    for (const semitone of held) engine.noteOff(semitone, dest)
-    setHeld(new Set())
-    setLatched(new Set())
+    for (const semitone of held.current) engine.noteOff(semitone, dest)
+    held.current.clear()
+    latched.current.clear()
   }
 
   // What a hand was holding, when the hand goes away: the window loses focus
@@ -222,14 +216,11 @@ export function Keybed({
   // note is held for ever by a key nobody is pressing any more. What was pinned
   // down on purpose stays down — that is what pinning it was for.
   const releaseLoose = () => {
-    const loose = [...held].filter(semitone => !sticky(semitone))
-    if (loose.length === 0) return
-    for (const semitone of loose) engine.noteOff(semitone, dest)
-    setHeld(h => {
-      const next = new Set(h)
-      for (const semitone of loose) next.delete(semitone)
-      return next
-    })
+    for (const semitone of held.current) {
+      if (sticky(semitone)) continue
+      engine.noteOff(semitone, dest)
+      held.current.delete(semitone)
+    }
   }
 
   // Whatever is down went down at the old octave, and nothing is going to let go
@@ -283,6 +274,14 @@ export function Keybed({
       window.removeEventListener('blur', blur)
     }
   }, [latest])
+
+  useEffect(() => {
+    const notes = held.current
+    return () => {
+      for (const semitone of notes) engine.noteOff(semitone, dest)
+      notes.clear()
+    }
+  }, [dest, held])
 
   // The letters go to one bed at a time, and what this one is holding goes with
   // them: a note struck by a letter key whose wire has just moved has nothing
