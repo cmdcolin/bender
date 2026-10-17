@@ -618,6 +618,41 @@ test('the fold halves the drawing and hands the path across', () => {
   expect(box(folded, fold.to)!.x).toBeGreaterThan(box(folded, fold.from)!.x)
 })
 
+test('the folded drawing centres its boxes in the svg', () => {
+  const map = buildMap(DEFAULT_CONTROLS, { wrap: true })
+  const boxes = map.nodes.filter(n => n.kind === 'stage')
+  const left = Math.min(...boxes.map(n => n.x))
+  const right = Math.max(...boxes.map(n => n.x + n.w))
+  expect(left).toBeCloseTo(map.width - right, 0)
+})
+
+test.each(Object.entries(BOARDS))('the loop holds together: %s', (_, board) =>
+  checkLayout(buildMap(board, { wrap: true, loop: true })),
+)
+
+test('the loop runs the second column up, with the feedback bus above Output', () => {
+  const map = buildMap(DEFAULT_CONTROLS, { wrap: true, loop: true })
+  const [mix, bus, out] = ['mix', 'Feedback_bus', 'Output'].map(id =>
+    box(map, id)!,
+  )
+  expect(out!.x).toBe(bus!.x)
+  expect(bus!.y + bus!.h).toBeLessThan(out!.y)
+  expect(mix!.y + mix!.h).toBeLessThan(bus!.y)
+  const fold = map.wires.find(w => w.id === 'fold')!
+  expect(box(map, fold.to)!.y).toBeGreaterThan(out!.y)
+  expect(hop(map, 'Feedback_bus', 'mix')).toBeTruthy()
+  expect(map.wires.find(w => w.id === 'fb-out')!.from).toBe('Output')
+  checkLayout(map)
+})
+
+test('the loop folds the usual way where the feedback lands off the mix bus', () => {
+  const to = (loop: boolean) =>
+    buildMap({ ...DEFAULT_CONTROLS, fbDest: 1 }, { wrap: true, loop })
+  expect(to(true).nodes.map(n => [n.id, n.x, n.y])).toEqual(
+    to(false).nodes.map(n => [n.id, n.x, n.y]),
+  )
+})
+
 test('a patch wire onto any destination draws onto that destination’s box', () => {
   const board: Controls = {
     ...DEFAULT_CONTROLS,

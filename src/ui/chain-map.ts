@@ -379,6 +379,11 @@ export interface Options {
       it — a straight run is 500px tall and buries every control under itself —
       and the README, drawn as a standalone image, does not. */
   wrap?: boolean
+  /** With wrap, runs the second column back up instead of down again, so the
+      path is a loop: Output ends level with the mix bus and the feedback bus
+      sits between them. Only where the feedback lands on the mix bus; any other
+      destination folds the usual way. */
+  loop?: boolean
   /** The stage whose controls the panel is showing, lit on the map. */
   open?: string
   /** Sources putting something on the bus right now, off the meters the desk
@@ -681,8 +686,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const trigs = triggerBridges(c)
   doors.add('Trigger patch')
 
-  const cut = o.wrap ? foldAt(path) : path.length
+  const loop = !!o.wrap && !!o.loop && Math.round(c.fbDest) === 0
+  const cut = !o.wrap
+    ? path.length
+    : loop
+      ? Math.min(foldAt([...path, bus]), path.length - 1)
+      : foldAt(path)
   const [down, up] = [path.slice(0, cut), path.slice(cut)]
+  const upCol = loop ? [bus, ...up.toReversed()] : up
   const cols = up.length ? 2 : 1
 
   // One content width for the whole drawing, wide enough for the source band
@@ -780,17 +791,18 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     lineY + (lineRows.length - 1) * (INST_H + BAND_GAP) + INST_H + COLLECT_H
   mix.y = collectY + BAND_GAP
 
-  const pathTop = mix.y + mix.h + ROW_GAP
-  for (const col of [down, up]) {
+  const pathTop = mix.y + mix.h + (loop ? LABEL_H + ROW_GAP : ROW_GAP)
+  for (const col of [down, upCol]) {
     let y = pathTop
     for (const n of col) {
       n.y = y
       y += n.h + ROW_GAP
     }
   }
-  const bodyBottom = pathTop + Math.max(stack(down), stack(up))
-  bus.y = bodyBottom + BUS_GAP
-  for (const n of foot) n.y = bus.y + bus.h + ROW_GAP
+  const bodyBottom = pathTop + Math.max(stack(down), stack(upCol))
+  if (!loop) bus.y = bodyBottom + BUS_GAP
+  const footY = loop ? bodyBottom + BUS_GAP : bus.y + bus.h + ROW_GAP
+  for (const n of foot) n.y = footY
 
   // --- across it, at an origin of zero, so the gutters can be measured off the
   // --- x each box has already landed on and everything shifted once after ----
@@ -818,8 +830,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   board.x = 0
   mix.x = 0
   for (const n of down) n.x = 0
-  for (const n of up) n.x = boxW + COL_GAP
-  bus.x = (content - boxW) / 2
+  for (const n of upCol) n.x = boxW + COL_GAP
+  if (!loop) bus.x = (content - boxW) / 2
   const footSpan =
     foot.reduce((a, n) => a + n.w, 0) + INST_GAP * (foot.length - 1)
   {
@@ -870,13 +882,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     tapWidth(t) +
     STUB -
     (side === 'left' ? t.edge.x : content - (t.edge.x + t.edge.w))
+  const laneSide = loop ? undefined : fbSide
   const gutter = (side: Side) =>
     Math.ceil(
       Math.max(
-        fbSide === side ? LANE : 0,
+        laneSide === side ? LANE : 0,
         ...taps
           .filter(t => sideOf(t.edge) === side)
-          .map(t => (fbSide === side ? LANE : 0) + reach(t, side)),
+          .map(t => (laneSide === side ? LANE : 0) + reach(t, side)),
       ),
     )
   const sideGutter = Math.max(gutter('left'), gutter('right'))
@@ -1197,10 +1210,15 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         `${a.id}-${b.id}`,
         a,
         b,
-        [
-          [midX(a), a.y + a.h],
-          [midX(b), b.y],
-        ],
+        loop && col === up
+          ? [
+              [midX(a), a.y],
+              [midX(b), b.y + b.h],
+            ]
+          : [
+              [midX(a), a.y + a.h],
+              [midX(b), b.y],
+            ],
         { color: k.border },
       )
     }
@@ -1209,7 +1227,22 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // The fold: down the left, up the empty channel between the columns, into the
   // top of the right. Slack, and the one line on the map that isn't a short hop,
   // which is what makes it read as the cable carrying the eye across.
-  if (up.length) {
+  if (loop) {
+    const [a, b] = [down[down.length - 1]!, up[0]!]
+    const turnY = Math.max(a.y + a.h, b.y + b.h) + ROW_GAP
+    wire(
+      'fold',
+      a,
+      b,
+      [
+        [midX(a), a.y + a.h],
+        [midX(a), turnY],
+        [midX(b), turnY],
+        [midX(b), b.y + b.h],
+      ],
+      { color: k.accent },
+    )
+  } else if (up.length) {
     const [a, b] = [down[down.length - 1]!, up[0]!]
     const chan = colX + boxW + COL_GAP / 2
     wire(
@@ -1233,14 +1266,41 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     'fb-out',
     tail,
     bus,
-    elbowV([midX(tail), tail.y + tail.h], [midX(bus), bus.y], bus.y - 10),
+    loop
+      ? [
+          [midX(tail), tail.y],
+          [midX(bus), bus.y + bus.h],
+        ]
+      : elbowV([midX(tail), tail.y + tail.h], [midX(bus), bus.y], bus.y - 10),
     { color: fbColor, dash: '4 3', door: 'Feedback bus' },
   )
   // Home the long way, round the outside of the rack. The wire carries the
   // bus's own door, so clicking the line that runs off the output opens the
   // bus's controls without hunting for the box.
   const fbY = midY(fbTarget)
-  {
+  const fbLabel = live ? c.fbAmt.toFixed(2) : 'feedback'
+  if (loop) {
+    wire(
+      'fb-home',
+      bus,
+      fbTarget,
+      [
+        [midX(bus), bus.y],
+        [midX(bus), fbTarget.y + fbTarget.h],
+      ],
+      {
+        color: fbColor,
+        dash: '4 3',
+        door: 'Feedback bus',
+        label: {
+          text: fbLabel,
+          x: midX(bus) + 5,
+          y: bus.y - ROW_GAP,
+          anchor: 'start',
+        },
+      },
+    )
+  } else {
     const lane = laneX(fbSide)
     const [busEdge, landing] =
       fbSide === 'left'
@@ -1261,7 +1321,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         dash: '4 3',
         door: 'Feedback bus',
         label: {
-          text: live ? c.fbAmt.toFixed(2) : 'feedback',
+          text: fbLabel,
           x: lane + (fbSide === 'left' ? 4 : -4),
           y: bodyBottom + 13,
           anchor: fbSide === 'left' ? 'start' : 'end',
@@ -1289,7 +1349,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // Where a label would be struck through by a line already drawn: its
   // neighbours, and the run the feedback wire comes home on.
   const taken: Record<Side, [number, number][]> = { left: [], right: [] }
-  taken[fbSide].push([fbY - LABEL_H / 2, fbY + LABEL_H / 2])
+  if (laneSide) taken[laneSide].push([fbY - LABEL_H / 2, fbY + LABEL_H / 2])
   const clear = (side: Side, want: number, h: number) => {
     let y = want
     for (const [top, bottom] of taken[side].toSorted((a, b) => a[0] - b[0]))
