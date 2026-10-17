@@ -76,7 +76,15 @@ async function shoot(url: string, into: string) {
       deviceScaleFactor: DPR,
       mobile: false,
     })
-    await sleep(3000)
+    for (let i = 0; i < 60; i++) {
+      const { result: found } = await page.send<{ result: { value: boolean } }>(
+        'Runtime.evaluate',
+        { expression: `!!document.querySelector('[class*="graph"]')` },
+      )
+      if (found.value) break
+      await sleep(500)
+    }
+    await sleep(500)
 
     const { result } = await page.send<{ result: { value: string } }>(
       'Runtime.evaluate',

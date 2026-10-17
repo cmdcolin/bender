@@ -19,7 +19,7 @@ export const ORIGIN = `https://cmdcolin.github.io${siteRoot}`
 // landing.test.ts reads the JPEG and checks.
 export const PANEL_SHOT = {
   file: 'panel-callout.jpg',
-  width: 1911,
+  width: 1902,
   height: 1294,
 } as const
 
