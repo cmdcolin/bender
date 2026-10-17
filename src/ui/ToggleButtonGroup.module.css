@@ -27,3 +27,9 @@
 .on:last-child {
   border-radius: 0 var(--ctl-radius) var(--ctl-radius) 0;
 }
+
+.large > button {
+  min-height: var(--ctl-h);
+  font-size: var(--fs-sm);
+  padding: 0 var(--space-md);
+}

@@ -6,9 +6,14 @@ export function ToggleButtonGroup<T extends string>(props: {
   value: T | null
   onChange: (value: T) => void
   disabled?: boolean
+  large?: boolean
 }) {
   return (
-    <div className={styles.group} role="group" aria-label={props.label}>
+    <div
+      className={props.large ? `${styles.group} ${styles.large}` : styles.group}
+      role="group"
+      aria-label={props.label}
+    >
       {props.options.map(option => (
         <button
           key={option}

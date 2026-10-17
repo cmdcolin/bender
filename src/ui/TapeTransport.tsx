@@ -79,6 +79,7 @@ export function TapeTransport({ loaded }: { loaded: boolean }) {
             options={SPEED_LABELS}
             value={current}
             disabled={!loaded}
+            large
             onChange={l =>
               engine.set('sampleSpeed', (reversed ? -1 : 1) * SPEEDS[l])
             }
