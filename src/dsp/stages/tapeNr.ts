@@ -57,10 +57,16 @@ class Shelf {
 const DOLBY_BOOST = 2.16
 const DOLBY_HZ = 3000
 const DOLBY_KNEE = 0.02
+// How far the sliding band may move before its coefficient is worked out again.
+// The rule reads only the envelope, so an encoder and its decoder recompute on
+// the same samples however far apart the tape puts them.
+const DOLBY_SLACK = 0.002
 
 export class DolbyB {
   private lp = 0
   private env = 0
+  private c = 0
+  private overAt = -1
   private readonly atk: number
   private readonly rel: number
   private readonly sr: number
@@ -77,7 +83,11 @@ export class DolbyB {
   process(x: number): number {
     const over = this.env / DOLBY_KNEE
     const g = DOLBY_BOOST / (1 + over)
-    const c = lpCoef(Math.min(DOLBY_HZ * (1 + over), this.sr * 0.4), this.sr)
+    if (Math.abs(over - this.overAt) > DOLBY_SLACK * (1 + this.overAt)) {
+      this.overAt = over
+      this.c = lpCoef(Math.min(DOLBY_HZ * (1 + over), this.sr * 0.4), this.sr)
+    }
+    const c = this.c
     const gh = g * (1 - c)
     const out = this.decode ? (x + gh * this.lp) / (1 + gh) : x
     const into = this.decode ? out : x
@@ -93,6 +103,7 @@ export class DolbyB {
   reset() {
     this.lp = 0
     this.env = 0
+    this.overAt = -1
   }
 }
 

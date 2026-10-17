@@ -41,6 +41,22 @@ test('each decoder undoes its encoder through a flat tape', () => {
   }
 })
 
+test('Dolby B still undoes itself when the tape sits between the two', () => {
+  const enc = compander(NR_DOLBY_B, SR, false)!
+  const dec = compander(NR_DOLBY_B, SR, true)!
+  const x = programme(4)
+  const gap = 7
+  for (let i = 0; i < gap; i++) dec.process(0)
+  let err = 0
+  let sig = 0
+  for (let i = 0; i < x.length; i++) {
+    const y = dec.process(enc.process(x[i]!))
+    err += (y - x[i]!) ** 2
+    sig += x[i]! ** 2
+  }
+  expect(db(Math.sqrt(err / sig))).toBeLessThan(-80)
+})
+
 const QUIET: Partial<Controls> = {
   chipLevel: 0,
   drumLevel: 0,
