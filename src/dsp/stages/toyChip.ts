@@ -229,6 +229,11 @@ const LEAK_FLOOR = 0.3
 // centres the result, so a narrow tap swings the same peak-to-peak as a square
 // but comes out as a spike carrying less of the energy.
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
+const ascending = (a: number, b: number) => a - b
+
+const addOnce = (out: number[], g: number, skip: number[]) => {
+  if (!skip.includes(g) && !out.includes(g)) out.push(g)
+}
 
 const pulse = (phase: number, duty: number, inc: number) => {
   const d = Math.max(duty, inc)
@@ -372,6 +377,7 @@ export class ToyChip implements Stage {
   private loadedStamp = 0
   private ghostCols = 0
   private ghosts: number[] = []
+  private nextGhosts: number[] = []
 
   private readonly sr: number
   private readonly rail: ToyRail
@@ -402,11 +408,11 @@ export class ToyChip implements Stage {
 
   // Every pair of held keys in different rows and columns closes the other two
   // corners of their rectangle.
-  private ghostKeys(): number[] {
+  private ghostKeys(out: number[]) {
+    out.length = 0
     const cols = this.ghostCols
-    if (!cols) return []
+    if (!cols) return
     const keys = this.heldKeys
-    const out: number[] = []
     for (let i = 0; i < keys.length; i++) {
       for (let j = i + 1; j < keys.length; j++) {
         const a = keys[i]!
@@ -416,24 +422,33 @@ export class ToyChip implements Stage {
         const ca = a - ra * cols
         const cb = b - rb * cols
         if (ra === rb || ca === cb) continue
-        for (const g of [ra * cols + cb, rb * cols + ca])
-          if (!keys.includes(g) && !out.includes(g)) out.push(g)
+        addOnce(out, ra * cols + cb, keys)
+        addOnce(out, rb * cols + ca, keys)
       }
     }
-    return out
+  }
+
+  private sortHeld() {
+    const up = this.arpUp
+    up.length = 0
+    for (const k of this.heldKeys) up.push(k)
+    for (const g of this.ghosts) up.push(g)
+    up.sort(ascending)
   }
 
   // Strikes the corners that just closed and lets go of the ones that opened.
   private regroundGhosts() {
-    const next = this.ghostKeys()
-    for (const g of this.ghosts)
+    const was = this.ghosts
+    const next = this.nextGhosts
+    this.ghostKeys(next)
+    for (const g of was)
       if (!next.includes(g) && !this.heldKeys.includes(g))
         for (const v of this.voices) if (v.note === g) v.held = false
-    const fresh = next.filter(g => !this.ghosts.includes(g))
     this.ghosts = next
-    this.arpUp = [...this.heldKeys, ...next].toSorted((a, b) => a - b)
+    this.nextGhosts = was
+    this.sortHeld()
     if (this.arping) return
-    for (const g of fresh) this.strike(g, 1).held = true
+    for (const g of next) if (!was.includes(g)) this.strike(g, 1).held = true
   }
 
   // The toy's own keys are switches: they pass no gain and strike at full. A
@@ -442,7 +457,7 @@ export class ToyChip implements Stage {
   noteOn(semitone: number, gain = 1) {
     if (!this.heldKeys.includes(semitone)) {
       this.heldKeys.push(semitone)
-      this.arpUp = this.heldKeys.toSorted((a, b) => a - b)
+      this.sortHeld()
       // A chord going down on an idle arpeggiator strikes its first note there
       // and then, rather than a beat later: the count starts under your hand.
       if (this.heldKeys.length === 1) this.arpClock = 1
@@ -474,7 +489,7 @@ export class ToyChip implements Stage {
     const at = this.heldKeys.indexOf(semitone)
     if (at >= 0) {
       this.heldKeys.splice(at, 1)
-      this.arpUp = this.heldKeys.toSorted((a, b) => a - b)
+      this.sortHeld()
       // The last key up ends the figure rather than pausing it, so the next
       // chord starts on its own first note instead of halfway through the last.
       if (this.heldKeys.length === 0) this.arpStep = 0
