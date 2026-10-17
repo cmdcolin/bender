@@ -5,9 +5,13 @@ import {
   candidatesIn,
   corsUrl,
   detailsUrl,
+  fetchItem,
   pickFile,
   roll,
+  searchText,
   searchUrl,
+  textSearchUrl,
+  wordsOf,
 } from './archive'
 
 test('every pool asks for audio and nothing else', () => {
@@ -182,6 +186,52 @@ test('two rolls of the dice look at different pages', () => {
   const page = (r: number) =>
     new URL(searchUrl('q', 1 + Math.floor(r * 200))).searchParams.get('page')
   expect(page(0.1)).not.toBe(page(0.9))
+})
+
+test('typed words lose the characters and words the query language reads as operators', () => {
+  expect(wordsOf('  "the golden" goose -(78) AND:foo NOT  ')).toBe(
+    'the golden goose 78 foo',
+  )
+  expect(wordsOf('Édith Piaf')).toBe('Édith Piaf')
+  expect(wordsOf('  +-"()  ')).toBeNull()
+})
+
+test('a typed search asks for audio, most downloaded first', () => {
+  const u = new URL(textSearchUrl('golden goose'))
+  expect(u.searchParams.get('q')).toBe(
+    '(title:(golden goose) OR creator:(golden goose)) AND mediatype:audio',
+  )
+  expect(u.searchParams.getAll('sort[]')).toEqual(['downloads desc'])
+  expect(u.searchParams.getAll('fl[]')).toEqual(['identifier', 'title'])
+})
+
+test('a search with no words never reaches the network', async () => {
+  let calls = 0
+  const fake = (async () => {
+    calls++
+    return json({ response: { docs: [{ identifier: 'a' }] } })
+  }) as unknown as typeof fetch
+  expect(await searchText('  "" ', { fetch: fake })).toEqual([])
+  expect(calls).toBe(0)
+})
+
+test('a typed search lists what the archive found', async () => {
+  const fake = (async () =>
+    json({
+      response: {
+        docs: [{ identifier: 'a', title: 'A' }, { identifier: 'b' }],
+      },
+    })) as unknown as typeof fetch
+  expect(await searchText('goose', { fetch: fake })).toEqual([
+    { id: 'a', title: 'A' },
+    { id: 'b', title: 'b' },
+  ])
+})
+
+test('an item with no mp3 is null rather than a throw', async () => {
+  const fake = (async () =>
+    json(files({ name: 'a.flac', size: '10' }))) as unknown as typeof fetch
+  expect(await fetchItem('x', 'X', { fetch: fake })).toBeNull()
 })
 
 function json(body: unknown): Response {

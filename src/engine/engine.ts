@@ -36,7 +36,14 @@ import {
   laneForNote,
   type TuneStepKey,
 } from '../tune'
-import { LOAD_SECONDS, roll, type Pool } from './archive'
+import {
+  LOAD_SECONDS,
+  fetchItem,
+  roll,
+  searchText,
+  type Pool,
+  type Rolled,
+} from './archive'
 import { Glide } from './glide'
 import { MAX_SOURCES, N_PARAMS, N_TAPS, STEM_FILES, packParams } from './params'
 import { openTake, sweepTakes } from './takeSink'
@@ -949,15 +956,42 @@ export class Engine {
    * is in the air cancels the first rather than racing it onto the sampler.
    */
   async rollSample(pool: Pool) {
+    await this.bringTape(
+      `searching ${pool.label}…`,
+      `nothing came back from ${pool.label}`,
+      opts => roll({ ...opts, pool, rng: Math.random }),
+    )
+  }
+
+  /** One item the archive search listed, onto the tape. */
+  async loadArchive(item: { id: string; title: string }) {
+    await this.bringTape(
+      `reading ${item.title}…`,
+      `no mp3 came back for ${item.title}`,
+      opts => fetchItem(item.id, item.title, opts),
+    )
+  }
+
+  /** What archive.org has for the words typed, most downloaded first. */
+  searchArchive(typed: string) {
+    return searchText(typed)
+  }
+
+  private async bringTape(
+    first: string,
+    missing: string,
+    bring: (opts: {
+      signal: AbortSignal
+      onStep: (m: string) => void
+    }) => Promise<Rolled | null>,
+  ) {
     if (!this.ctx) return
     this.archiveRoll?.abort()
     const ctl = new AbortController()
     this.archiveRoll = ctl
-    this.archiveStep.set(`searching ${pool.label}…`)
+    this.archiveStep.set(first)
     try {
-      const got = await roll({
-        pool,
-        rng: Math.random,
+      const got = await bring({
         signal: ctl.signal,
         onStep: m => {
           if (!ctl.signal.aborted) this.archiveStep.set(m)
@@ -965,7 +999,7 @@ export class Engine {
       })
       if (ctl.signal.aborted) return
       if (!got) {
-        this.archiveStep.set(`nothing came back from ${pool.label}`)
+        this.archiveStep.set(missing)
         return
       }
       await this.decodeOnto(got.data, got.title)

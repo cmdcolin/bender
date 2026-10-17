@@ -235,15 +235,16 @@
 
 .artRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-lg);
 }
 
 .controls {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-md);
+  align-items: stretch;
+  gap: var(--space-sm);
   min-width: 0;
 }
 
@@ -321,10 +322,6 @@
 .dropHot {
   color: var(--accent);
   border-color: var(--accent);
-}
-
-.pool {
-  composes: select from './button.module.css';
 }
 
 /* The roll's own line: what it is doing while it does it, and what it came back

@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import { DEFAULT_CONTROLS } from '../controls'
-import { POOLS, detailsUrl } from '../engine/archive'
+import { detailsUrl } from '../engine/archive'
 import { engine } from '../engine/engine'
 import { pocketUrl } from '../site/paths'
 import { versionLabel } from '../version'
@@ -49,6 +49,7 @@ import { OpenGroup, PathHint } from './Section'
 import { boardFrom, boardFromUrl, boardHash } from './share'
 import { StartOverlay } from './StartOverlay'
 import { Cassette, ReelDeck } from './StudioArt'
+import { TapeShelf } from './TapeShelf'
 import { Tip } from './Tip'
 import { useBoardUrl } from './useBoardUrl'
 import { useCurrentSession } from './useCurrentSession'
@@ -180,7 +181,7 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   const pcmUp = useBoardValue(c => c.pcmLevel > 0)
   const monoUp = useBoardValue(c => c.monoLevel > 0)
   const [dragging, setDragging] = useState(false)
-  const [pool, setPool] = useState(0)
+  const [showShelf, setShowShelf] = useState(false)
   const tapeRunning = useBoardValue(c => c.sampleLevel > 0)
   // Which stage's controls the panel is showing. The map is the way in — every
   // group has a door on it, the stages along the path and the rest of the board
@@ -482,31 +483,22 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                       {tapeRunning ? '■ stop' : '▶ play'}
                     </button>
                   </Tip>
-                  <Tip text="Pulls a random tape off archive.org and puts it on the sampler. The shelf beside it picks what kind.">
+                  <Tip text="Puts a tape on the sampler off archive.org: a random one from a shelf, or one you search for.">
                     <button
-                      className={styles.ioBtn}
+                      className={
+                        showShelf && !archiveStep
+                          ? styles.ioBtnToggled
+                          : styles.ioBtn
+                      }
+                      aria-expanded={showShelf && !archiveStep}
                       onClick={() =>
                         archiveStep
                           ? engine.cancelRoll()
-                          : engine.rollSample(POOLS[pool]!)
+                          : setShowShelf(o => !o)
                       }
                     >
                       {archiveStep ? '✕ cancel' : '⚄ load a tape'}
                     </button>
-                  </Tip>
-                  <Tip text={POOLS[pool]!.blurb}>
-                    <select
-                      className={styles.pool}
-                      aria-label="the shelf the tape comes from"
-                      value={pool}
-                      onChange={e => setPool(Number(e.target.value))}
-                    >
-                      {POOLS.map((p, i) => (
-                        <option key={p.label} value={i}>
-                          {p.label}
-                        </option>
-                      ))}
-                    </select>
                   </Tip>
                   <button
                     className={micOn ? styles.ioBtnOn : styles.ioBtn}
@@ -515,21 +507,24 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                     {micOn ? '● mic' : 'mic'}
                   </button>
                 </div>
+                {showShelf && !archiveStep && (
+                  <TapeShelf onDone={() => setShowShelf(false)} />
+                )}
+                <SampleReel>
+                  {!archiveStep && archiveSource && (
+                    <a
+                      className={styles.credit}
+                      href={detailsUrl(archiveSource.id)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      archive.org/{archiveSource.id}
+                    </a>
+                  )}
+                </SampleReel>
+                {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
               </div>
             </div>
-            <SampleReel>
-              {!archiveStep && archiveSource && (
-                <a
-                  className={styles.credit}
-                  href={detailsUrl(archiveSource.id)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  archive.org/{archiveSource.id}
-                </a>
-              )}
-            </SampleReel>
-            {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
           </section>
         </div>
         <BendKeys morphSeconds={morphSeconds} />

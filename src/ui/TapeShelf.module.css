@@ -1,0 +1,93 @@
+.shelf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  align-self: stretch;
+  padding: var(--space-sm);
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
+  background: var(--bg);
+}
+
+.modes {
+  display: flex;
+  gap: var(--gap-ctl);
+}
+
+.mode {
+  composes: chipQuiet from './button.module.css';
+}
+
+.modeOn {
+  composes: chipOn from './button.module.css';
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-ctl);
+}
+
+.pool {
+  composes: select from './button.module.css';
+}
+
+.go {
+  composes: action from './button.module.css';
+  white-space: nowrap;
+}
+
+.query {
+  flex: 1;
+  min-width: 0;
+  height: var(--ctl-h);
+  padding: 0 var(--space-sm);
+  font-size: var(--fs-sm);
+  color: var(--fg);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+}
+
+.query:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.hits {
+  display: flex;
+  flex-direction: column;
+  max-height: 132px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.hit {
+  display: block;
+  width: 100%;
+  padding: 3px var(--space-xs);
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg2);
+  background: none;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.hit:hover,
+.hit:focus-visible {
+  color: var(--fg);
+  background: var(--surface-raised);
+}

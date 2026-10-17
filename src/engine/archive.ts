@@ -128,18 +128,42 @@ export const detailsUrl = (id: string) => DETAILS + encodeURIComponent(id)
 
 // `fl[]` and `sort[]` repeat their key, which URLSearchParams handles, but the
 // brackets have to survive — archive.org reads `fl[]`, not `fl`.
-export function searchUrl(query: string, page: number): string {
+function searchParams(q: string, rows: number, page: number, sort: string) {
   const params = new URLSearchParams({
-    q: `${query} AND mediatype:audio`,
-    rows: String(CANDIDATES),
+    q: `${q} AND mediatype:audio`,
+    rows: String(rows),
     page: String(page),
     output: 'json',
   })
   params.append('fl[]', 'identifier')
   params.append('fl[]', 'title')
-  params.append('sort[]', 'random')
+  params.append('sort[]', sort)
   return `${SEARCH}?${params.toString()}`
 }
+
+export const searchUrl = (query: string, page: number) =>
+  searchParams(query, CANDIDATES, page, 'random')
+
+const HITS = 12
+
+/** What was typed with the characters the archive's query language reads as
+    operators turned into spaces, or null when no words are left. */
+export function wordsOf(typed: string): string | null {
+  const words = typed
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(w => w && !['AND', 'OR', 'NOT'].includes(w))
+  return words.length ? words.join(' ') : null
+}
+
+/** Matched against titles and creators only: the bare words search every field
+    and the most-downloaded hit is whatever mentions them in a description. */
+export const textSearchUrl = (words: string) =>
+  searchParams(
+    `(title:(${words}) OR creator:(${words}))`,
+    HITS,
+    1,
+    'downloads desc',
+  )
 
 // Every path segment escaped, because the file names on this archive carry
 // spaces, commas and apostrophes as a matter of course.
@@ -273,14 +297,75 @@ export interface Rolled extends Take {
   data: ArrayBuffer
 }
 
-export interface RollOpts {
-  pool: Pool
-  /** 0..1. The page a roll lands on, and so which slice of the pool it sees. */
-  rng: () => number
+interface ItemOpts {
   fetch?: typeof globalThis.fetch
   signal?: AbortSignal
   /** What to say while it works — a roll can take a few seconds. */
   onStep?: (message: string) => void
+}
+
+/**
+ * Open one item, pick its smallest mp3 and bring the front of it back. Null
+ * when the item has no mp3, or the network or the caller says no.
+ */
+export async function fetchItem(
+  id: string,
+  title: string,
+  opts: ItemOpts,
+): Promise<Rolled | null> {
+  const fetcher = opts.fetch ?? globalThis.fetch
+  const step = opts.onStep ?? (() => {})
+  step(`reading ${title}…`)
+  const meta = await readJson(
+    METADATA + encodeURIComponent(id),
+    fetcher,
+    opts.signal,
+    READ_TIMEOUT_MS,
+  )
+  if (!meta) return null
+  const take = pickFile(id, title, meta)
+  if (!take) return null
+
+  step(`fetching ${title} (${Math.round(take.bytes / 100_000) / 10} MB)…`)
+  const ctl = new AbortController()
+  const timer = setTimeout(() => ctl.abort(), DOWNLOAD_TIMEOUT_MS)
+  const onAbort = () => ctl.abort()
+  opts.signal?.addEventListener('abort', onAbort)
+  try {
+    const res = await fetcher(corsUrl(take.id, take.file), {
+      signal: ctl.signal,
+    })
+    if (!res.ok) return null
+    return { ...take, data: await readCapped(res, FETCH_CAP_BYTES) }
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timer)
+    opts.signal?.removeEventListener('abort', onAbort)
+  }
+}
+
+/** The archive's most-downloaded audio for what was typed, most popular first. */
+export async function searchText(
+  typed: string,
+  opts: Pick<ItemOpts, 'fetch' | 'signal'> = {},
+): Promise<{ id: string; title: string }[]> {
+  const words = wordsOf(typed)
+  if (!words) return []
+  return candidatesIn(
+    await readJson(
+      textSearchUrl(words),
+      opts.fetch ?? globalThis.fetch,
+      opts.signal,
+      READ_TIMEOUT_MS,
+    ),
+  )
+}
+
+export interface RollOpts extends ItemOpts {
+  pool: Pool
+  /** 0..1. The page a roll lands on, and so which slice of the pool it sees. */
+  rng: () => number
 }
 
 /**
@@ -315,37 +400,10 @@ export async function roll(opts: RollOpts): Promise<Rolled | null> {
     if (!candidates.length) return null
   }
 
-  for (let i = 0; i < candidates.length; i++) {
+  for (const { id, title } of candidates) {
     if (opts.signal?.aborted) return null
-    const { id, title } = candidates[i]!
-    step(`reading ${title}…`)
-    const meta = await readJson(
-      METADATA + encodeURIComponent(id),
-      fetcher,
-      opts.signal,
-      READ_TIMEOUT_MS,
-    )
-    if (!meta) continue
-    const take = pickFile(id, title, meta)
-    if (!take) continue
-
-    step(`fetching ${title} (${Math.round(take.bytes / 100_000) / 10} MB)…`)
-    const ctl = new AbortController()
-    const timer = setTimeout(() => ctl.abort(), DOWNLOAD_TIMEOUT_MS)
-    const onAbort = () => ctl.abort()
-    opts.signal?.addEventListener('abort', onAbort)
-    try {
-      const res = await fetcher(corsUrl(take.id, take.file), {
-        signal: ctl.signal,
-      })
-      if (!res.ok) continue
-      return { ...take, data: await readCapped(res, FETCH_CAP_BYTES) }
-    } catch {
-      continue
-    } finally {
-      clearTimeout(timer)
-      opts.signal?.removeEventListener('abort', onAbort)
-    }
+    const got = await fetchItem(id, title, opts)
+    if (got) return got
   }
   return null
 }
