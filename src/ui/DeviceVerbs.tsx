@@ -1,13 +1,14 @@
 import { useCallback, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
-import { GROUPS } from './controls/index.ts'
+import { GROUPS, sliderFor } from './controls/index.ts'
 import { useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
 import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
+import { ControlSlider } from './Slider.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
@@ -20,6 +21,14 @@ const MUTE_OF: Record<string, ControlKey> = {
   'FM chip': 'fmMute',
   'Home keyboard': 'pcmMute',
   'Mono synth': 'monoMute',
+}
+
+const LEVEL_OF: Record<string, ControlKey> = {
+  'Toy keyboard': 'chipLevel',
+  'Toy drums': 'drumLevel',
+  'FM chip': 'fmLevel',
+  'Home keyboard': 'pcmLevel',
+  'Mono synth': 'monoLevel',
 }
 
 function Mute({ stage, control }: { stage: string; control: ControlKey }) {
@@ -141,9 +150,9 @@ function Rolls({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
-// The caps every instrument on the bench carries: mute that machine, roll its
-// stage somewhere new, and, while the bench shows every instrument, put the
-// machine away.
+// The caps every instrument on the bench carries: its level, mute that machine,
+// roll its stage somewhere new, and, while the bench shows every instrument,
+// put the machine away.
 export function DeviceVerbs({
   stage,
   seconds = 0,
@@ -156,8 +165,14 @@ export function DeviceVerbs({
   const group = GROUPS.find(g => g.name === stage)
   if (!group) throw new Error(`no stage named ${stage}`)
   const mute = MUTE_OF[stage]
+  const level = LEVEL_OF[stage]
   return (
     <>
+      {level && (
+        <span className={styles.level}>
+          <ControlSlider def={sliderFor(level)} />
+        </span>
+      )}
       {mute && <Mute stage={stage} control={mute} />}
       <Rolls group={group} seconds={seconds} />
       {onClose && (

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
@@ -120,6 +120,24 @@ test('mute silences one machine and keeps its level, and a roll leaves it muted'
   expect(engine.controls.get().drumMute).toBe(1)
   fireEvent.click(mute)
   expect(engine.controls.get().drumMute).toBe(0)
+})
+
+test('each machine has a Level slider that moves its own level', () => {
+  render(<Instruments seconds={0} />)
+  fireEvent.click(allMode())
+  const levels = screen.getAllByRole('slider', { name: 'Level' })
+  expect(levels).toHaveLength(5)
+  fireEvent.change(levels[1]!, { target: { value: '0' } })
+  expect(engine.controls.get().drumLevel).toBe(0)
+  expect(engine.controls.get().chipLevel).toBe(DEFAULT_CONTROLS.chipLevel)
+})
+
+test('a machine pulled down to no level stays on the bench', () => {
+  engine.set('fmLevel', 0.5)
+  render(<Instruments seconds={0} />)
+  expect(group('fm keyboard')).not.toBeNull()
+  act(() => engine.set('fmLevel', 0))
+  expect(group('fm keyboard')).not.toBeNull()
 })
 
 test('the mode and what was closed are stored for the next load', () => {

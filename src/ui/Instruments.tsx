@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { bench, setBench } from './bench.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
@@ -28,6 +30,10 @@ const LEVELLED: Row = [
 // every one whatever its fader says, each with a close cap, and a row of what
 // has been closed to bring it back. The mode and the closed set survive a
 // reload.
+//
+// A machine that has come up stays until the page reloads or the all-instruments
+// mode goes on: the Level slider on its face runs down to zero, and a face that
+// left under the pointer would take the slider with it.
 const keep = (all: boolean, closed: ReadonlySet<string>) =>
   setBench({ all, closed: [...closed] })
 
@@ -37,13 +43,17 @@ export function Instruments({ seconds }: { seconds: number }) {
   const fmUp = useBoardValue(c => c.fmLevel > 0)
   const pcmUp = useBoardValue(c => c.pcmLevel > 0)
   const monoUp = useBoardValue(c => c.monoLevel > 0)
+  const [kept, setKept] = useState<ReadonlySet<string>>(new Set())
   const up = new Map([
     ['FM chip', fmUp],
     ['Home keyboard', pcmUp],
     ['Mono synth', monoUp],
   ])
+  const risen = [...up].filter(([stage, on]) => on && !kept.has(stage))
+  if (risen.length > 0)
+    setKept(new Set([...kept, ...risen.map(([stage]) => stage)]))
   const shows = (stage: string) =>
-    all ? !closed.has(stage) : (up.get(stage) ?? true)
+    all ? !closed.has(stage) : (up.get(stage) ?? true) || kept.has(stage)
 
   const close = (stage: string) => keep(all, new Set(closed).add(stage))
   const reopen = (stage: string) =>
