@@ -11,17 +11,6 @@
   line-height: 1.15;
   letter-spacing: -0.01em;
 }
-.figure {
-  margin: 0 0 1.5rem;
-  border: 1px solid var(--border-faint);
-  border-radius: 0.6rem;
-  overflow: hidden;
-}
-.figure img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
 .cta {
   display: flex;
   flex-wrap: wrap;

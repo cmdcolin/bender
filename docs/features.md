@@ -1752,7 +1752,7 @@ same circuits and is playing the recording back.
 ## Scripts
 
 <details>
-<summary>39 commands</summary>
+<summary>38 commands</summary>
 
 | command             | what it does                                                                                                                                                                            |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1775,7 +1775,6 @@ same circuits and is playing the recording back.
 | `pnpm reel`         | renders the showcase demos to mp3 for the landing page's Demos section                                                                                                                  |
 | `pnpm diagram`      | re-renders the README's signal path                                                                                                                                                     |
 | `pnpm features`     | rewrites docs/features.md — this file                                                                                                                                                   |
-| `pnpm figure`       | re-shoots the README's screenshot of the app and its panel                                                                                                                              |
 | `pnpm guide-shots`  | re-shoots the six pictures in docs/USER-GUIDE.md                                                                                                                                        |
 | `pnpm ink`          | walks every stage at three widths, looking for text drawn over text, a control nothing can announce, and text too faint to read                                                         |
 | `pnpm knife`        | sweeps every wire and fault on every bus and reports which you can hear                                                                                                                 |

@@ -3,11 +3,11 @@ import { accessSync, constants } from 'node:fs'
 
 // Enough of the devtools protocol to open a page, ask it a question, drive it
 // and listen to what it says back. Shared by the two scripts that need a real
-// browser rather than jsdom: figure.ts, which takes the README's picture, and
-// panel.ts, which measures what the panel costs the main thread.
+// browser rather than jsdom: guide-shots.ts, which takes the guide's pictures,
+// and panel.ts, which measures what the panel costs the main thread.
 //
 // A protocol socket rather than a browser library, so the repo owes nothing to
-// a 300 MB dependency for two scripts nobody runs in CI.
+// a 300 MB dependency for scripts nobody runs in CI.
 
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 

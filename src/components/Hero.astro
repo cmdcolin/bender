@@ -1,22 +1,12 @@
 ---
-// The top of the landing page: a headline, a picture of the panel, and the
-// ways in.
-import { appUrl, pocketUrl, siteRoot } from '../site/paths.ts'
-import { PANEL_SHOT } from '../site/site.ts'
+// The top of the landing page: a headline and the ways in.
+import { appUrl, pocketUrl } from '../site/paths.ts'
 
 const GETTING_STARTED =
   'https://github.com/cmdcolin/bender/blob/main/docs/GETTING-STARTED.md'
 ---
 
 <h1 class="heroHead">Simulated circuit bending</h1>
-<figure class="figure">
-  <img
-    src={`${siteRoot}${PANEL_SHOT.file}`}
-    width={PANEL_SHOT.width}
-    height={PANEL_SHOT.height}
-    alt="The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise, sampler and four-track feeding the mix bus, the bends running down the left, the pedals and the tape machine running back up the right to the output, and the feedback bus above it returning to the mix bus"
-  />
-</figure>
 <p class="cta">
   <a class="btn primary big" href={appUrl}>
     Open the app →

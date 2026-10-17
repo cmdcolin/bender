@@ -16,8 +16,6 @@ always did.
 You interact with the audio using the signal path diagram. Clicking on buttons
 there opens settings panels.
 
-![The panel drawn large on the left and the whole app small beside it, with the panel ringed in red where it sits down the right-hand side of the window: the toy board and its shared supply at the top, the chaos oscillator, noise, sampler and four-track feeding the mix bus, the bends running down the left, the pedals and the tape machine running back up the right to the output, and the feedback bus above it returning to the mix bus](docs/img/panel-callout.jpg)
-
 Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 
 ## Features

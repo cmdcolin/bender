@@ -23,7 +23,6 @@
     "reel": "node scripts/demoreel.ts",
     "diagram": "node scripts/chain-svg.ts",
     "features": "node scripts/features.ts",
-    "figure": "node scripts/figure.ts",
     "guide-shots": "node scripts/guide-shots.ts",
     "ink": "node scripts/ink.ts",
     "knife": "node scripts/knife.ts",

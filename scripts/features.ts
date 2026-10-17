@@ -134,7 +134,6 @@ const SCRIPTS: Record<string, string> = {
   reel: "renders the showcase demos to mp3 for the landing page's Demos section",
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
-  figure: "re-shoots the README's screenshot of the app and its panel",
   'guide-shots': 're-shoots the six pictures in docs/USER-GUIDE.md',
   dash: "re-shoots the why-sign-in card's screenshot of the signed-in home page",
   knife:

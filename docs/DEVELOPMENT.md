@@ -103,27 +103,14 @@ the main and audio threads is [dataflow.md](dataflow.md).
 - `pnpm diagram` regenerates the signal path diagram (`img/chain-*.svg`) from
   the same layout code the panel draws with. Run it after any change to
   `src/ui/chain-map.ts`.
-- `pnpm figure` regenerates the README's screenshot
-  (`docs/img/panel-callout.jpg`): it starts the dev server, opens the app in a
-  headless Chrome on a board with the bends, the tape and three patch wires
-  turned on, and composes the panel enlarged beside the whole window with the
-  panel ringed in red. It asks the page where the panel is rather than carrying
-  crop coordinates, so a layout change moves the box on its own. Wants a Chrome
-  (on PATH, in `/Applications`, or at `BENDER_CHROME`) and ImageMagick's
-  `magick`.
-
-  Regenerate it on Linux, which is where the committed one came from. The shot
-  is of live text in `system-ui`, so the font the stack resolves to decides how
-  wide the boxes are: the same board re-shot on a Mac came out nine pixels wider
-  and differed from the committed image everywhere. That is the platform, not
-  the panel, and it is not worth a commit.
-
 - `pnpm dash` regenerates the screenshot in the why-sign-in card
   (`public/dashboard.jpg`): it starts the dev server, opens the home page in a
   headless Chrome, and calls `showHome` with voices invented in the script, so
   the shot needs no account and reaches nothing but localhost. Only the dev
-  server hands `showHome` to the page. Same Chrome and `magick` as
-  `pnpm figure`, and the same reason to regenerate it on Linux.
+  server hands `showHome` to the page. Wants a Chrome (on PATH, in
+  `/Applications`, or at `BENDER_CHROME`) and ImageMagick's `magick`. Regenerate
+  it on Linux: the shot is of live text in `system-ui`, so the font the stack
+  resolves to decides how wide the boxes are.
 
 - `demos.json` lists the demos. `pnpm demos` writes them into the README, and
   the build fails if that block is stale. `pnpm reel` renders the ones marked

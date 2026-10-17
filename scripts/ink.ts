@@ -9,7 +9,7 @@ import { serveDev } from './serve.ts'
 //   pnpm ink            every stage, at all three shells
 //   pnpm ink 470        one shell, by its panel width
 //
-// The other browser scripts here measure: figure.ts takes a picture and
+// The other browser scripts here measure: guide-shots.ts takes pictures and
 // panel.ts times a frame. Both are blind to this class of fault, because the
 // fault is never in the state they capture — it is in the stage nobody had
 // open, on the one label long enough to need the whole row. The panel draws

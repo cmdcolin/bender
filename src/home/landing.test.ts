@@ -70,9 +70,9 @@ test('the showcase links each of its clips and nothing else', () => {
     expect(landing).toContain(`demos/${slug(demo.name)}.mp3`)
 })
 
-test('the demos come after the panel figure, at the foot of the page', () => {
+test('the demos come after the call-to-action buttons', () => {
   expect(landing.indexOf('id="demos"')).toBeGreaterThan(
-    landing.indexOf('panel-callout.jpg'),
+    landing.indexOf('class="cta"'),
   )
 })
 
@@ -102,11 +102,10 @@ test('the pages it can render name themselves canonically, once each', () => {
   }
 })
 
-// The browser reserves space for the figure from these before it has the file,
-// so a ratio that disagrees with the image moves the page as it loads. Read out
-// of the JPEG rather than compared against the same constant that wrote them,
-// which would only have agreed with itself.
-test('the panel figure declares the shape the file actually is', () => {
+// The unfurled card reserves its size from these, so they have to match the
+// file. Read out of the JPEG rather than compared against the constant that
+// wrote them, which would only have agreed with itself.
+test('the share image declares the shape the file actually is', () => {
   const jpeg = readFileSync(`public/${PANEL_SHOT.file}`)
   let at = 2
   let shape: { width: number; height: number } | undefined
@@ -130,9 +129,8 @@ test('the panel figure declares the shape the file actually is', () => {
   }
 
   expect(shape).toEqual({ width: PANEL_SHOT.width, height: PANEL_SHOT.height })
-  expect(landing).toContain(
-    `${PANEL_SHOT.file}" width="${PANEL_SHOT.width}" height="${PANEL_SHOT.height}"`,
-  )
+  expect(landing).toContain(`content="${PANEL_SHOT.width}"`)
+  expect(landing).toContain(`content="${PANEL_SHOT.height}"`)
 })
 
 test('the bar links the about page and the blog, and the about page links privacy', async () => {

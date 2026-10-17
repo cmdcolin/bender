@@ -13,10 +13,9 @@ import {
 // half comes from `siteRoot` rather than being written out a second time.
 export const ORIGIN = `https://cmdcolin.github.io${siteRoot}`
 
-// The panel picture: the landing page leads with it and a shared link unfurls
-// with it. The browser reserves space for the figure from these numbers before
-// it has the file, so they have to be the shape the file actually is —
-// landing.test.ts reads the JPEG and checks.
+// The panel picture a shared link unfurls with, and the README's figure. The
+// card declares these numbers as its size, so they have to be the shape the
+// file actually is — landing.test.ts reads the JPEG and checks.
 export const PANEL_SHOT = {
   file: 'panel-callout.jpg',
   width: 1902,

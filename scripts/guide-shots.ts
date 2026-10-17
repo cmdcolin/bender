@@ -9,13 +9,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // The six pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
-// docs/img/guide-*.jpg from the app as it is now, the same way figure.ts
-// rewrites the README's. Each shot is a board, a thing to click once the page
+// docs/img/guide-*.jpg from the app as it is now. Each shot is a board, a thing to click once the page
 // is up, and the element (or elements) to crop to — read off the page rather
 // than hand-picked pixels, so a layout change breaks the shot instead of
 // quietly outdating it.
 //
-// Same headless-Chrome-over-devtools-protocol approach as figure.ts and
+// Same headless-Chrome-over-devtools-protocol approach as
 // panel.ts, sharing chrome.ts and serve.ts. Wants a Chrome and ImageMagick's
 // `magick`.
 
