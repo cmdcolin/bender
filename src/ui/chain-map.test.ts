@@ -645,6 +645,14 @@ test('the loop runs the second column up, with the feedback bus above Output', (
   checkLayout(map)
 })
 
+test.each([{ spine: true }, { caption: true }, { spine: true, caption: true }])(
+  'the experiment options keep the layout sound: %o',
+  opts => {
+    for (const board of Object.values(BOARDS))
+      checkLayout(buildMap(board, { wrap: true, loop: true, ...opts }))
+  },
+)
+
 test('the loop folds the usual way where the feedback lands off the mix bus', () => {
   const to = (loop: boolean) =>
     buildMap({ ...DEFAULT_CONTROLS, fbDest: 1 }, { wrap: true, loop })
