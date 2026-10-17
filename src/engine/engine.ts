@@ -1539,6 +1539,7 @@ export class Engine {
   panic() {
     this.held.set(new Map())
     this.patch({ fbAmt: 0, dlyFb: Math.min(this.controls.get().dlyFb, 1) })
+    this.flush()
     this.post({ kind: 'panic' })
     if (this.keysDown.get().size > 0) this.keysDown.set(new Set())
     if (this.fmKeysDown.get().size > 0) this.fmKeysDown.set(new Set())

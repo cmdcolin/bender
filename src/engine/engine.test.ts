@@ -796,6 +796,15 @@ test('a hidden tab, with no animation frames, still reaches the worklet', () => 
   }
 })
 
+test('panic lands the tamed board before the worklet hears panic', () => {
+  const engine = new Engine()
+  const posted = wire(engine)
+  engine.patch({ fbAmt: 1.5 })
+  engine.panic()
+  const at = posted.findIndex(m => m.kind === 'panic')
+  expect(posted[at - 1]?.pack?.[IDX.fbAmt]).toBe(0)
+})
+
 const later = <T>() => {
   let resolve!: (v: T) => void
   const promise = new Promise<T>(r => (resolve = r))
