@@ -17,7 +17,12 @@ import { TriggerBus } from './trigbus.ts'
 import { Burst } from './util/burst.ts'
 import { DelayLine } from './util/delayline.ts'
 import { Follower, coef } from './util/follower.ts'
-import { LoopAmp, ampVoicing, type AmpVoicing } from './util/loopamp.ts'
+import {
+  LoopAmp,
+  ampVoicing,
+  newVoicing,
+  type AmpVoicing,
+} from './util/loopamp.ts'
 import { DcBlocker, OnePoleLP, lpCoef } from './util/onepole.ts'
 import { octaves } from './util/pitch.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
@@ -237,6 +242,7 @@ export class Chain {
   private deskRail = 1
   private deskLast = 0
   private driveDbWas = Number.NaN
+  private readonly fbVoicing = newVoicing()
   private outGainWas = -1
   private outEnv = new Follower()
   private limitEnv = 0
@@ -908,6 +914,7 @@ export class Chain {
       p[IDX.fbSlew]!,
       p[IDX.fbBlock]!,
       this.sr,
+      this.fbVoicing,
     )
 
     for (let i = 0; i < n; i++) {
