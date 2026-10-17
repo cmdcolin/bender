@@ -21,7 +21,6 @@ import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { Dice } from './Dice.tsx'
-import { DoorsDialog } from './DoorsDialog.tsx'
 import { useDrumKeys } from './drumKeys.ts'
 import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
@@ -163,7 +162,7 @@ const copyLink = (query: string) => {
     .catch(() => false)
 }
 
-export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
+export function App(props: { openedFromLink?: boolean }) {
   const running = useStoreValue(engine.running)
   const remapping = useStoreValue(remapOpen)
   const coarse = useCoarse()
@@ -207,7 +206,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   // door, is the last anyone hears of it — pressing play from the row below
   // afterwards is a second gesture and gets no overlay to answer to.
   const [showStart, setShowStart] = useState(!!props.openedFromLink)
-  const [showDoors, setShowDoors] = useState(!!props.openedBare)
   const [showAbout, setShowAbout] = useState(false)
   // Why an account, and the name of the save waiting on the answer. `null` is
   // shut, and `{ pending: null }` is the card opened from the menu with no save
@@ -802,8 +800,6 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
             press and starts both machines together, eased up rather than
             landing at whatever level the board was left. */}
         {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
-
-        {showDoors && <DoorsDialog onClose={() => setShowDoors(false)} />}
 
         {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
 

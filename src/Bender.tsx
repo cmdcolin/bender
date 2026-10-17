@@ -19,15 +19,9 @@ const returning = keepRunState()
 exposeBenderApi()
 
 // A board somebody sent is one this tab has not seen: the overlay that says
-// where to press goes up for that, and not for your own reload. A tab with no
-// board and no past gets the doors instead. The hash alone
+// where to press goes up for that, and not for your own reload. The hash alone
 // cannot tell them apart, because the address bar carries every board — turn
 // one knob and reload, and the url is a link by every test but this one.
 export default function Bender() {
-  return (
-    <App
-      openedFromLink={!!shared && !returning}
-      openedBare={!shared && !returning}
-    />
-  )
+  return <App openedFromLink={!!shared && !returning} />
 }
