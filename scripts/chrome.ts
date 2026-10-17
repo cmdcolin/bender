@@ -79,7 +79,12 @@ export async function attach(port: number): Promise<Page> {
 
   const ws = new WebSocket(socket)
   await new Promise(r => ws.addEventListener('open', r, { once: true }))
-  const waiting = new Map<number, (v: unknown) => void>()
+  type Waiter = {
+    method: string
+    resolve: (v: unknown) => void
+    reject: (e: Error) => void
+  }
+  const waiting = new Map<number, Waiter>()
   const listeners = new Map<string, ((params: unknown) => void)[]>()
   let id = 0
   ws.addEventListener('message', e => {
@@ -89,24 +94,38 @@ export async function attach(port: number): Promise<Page> {
       method,
       result,
       params,
+      error,
     } = msg as {
       id?: number
       method?: string
       result?: unknown
       params?: unknown
+      error?: { message?: string }
     }
     if (at !== undefined) {
-      waiting.get(at)?.(result)
+      const waiter = waiting.get(at)
       waiting.delete(at)
+      if (error)
+        waiter?.reject(new Error(`${waiter.method}: ${error.message ?? ''}`))
+      else waiter?.resolve(result)
     } else if (method !== undefined) {
       for (const fn of listeners.get(method) ?? []) fn(params)
     }
   })
+  ws.addEventListener('close', () => {
+    for (const waiter of waiting.values())
+      waiter.reject(new Error(`${waiter.method}: chrome closed the socket`))
+    waiting.clear()
+  })
   return {
     send: <T>(method: string, params: object = {}) =>
-      new Promise<T>(resolve => {
+      new Promise<T>((resolve, reject) => {
         const at = ++id
-        waiting.set(at, resolve as (v: unknown) => void)
+        waiting.set(at, {
+          method,
+          resolve: resolve as (v: unknown) => void,
+          reject,
+        })
         ws.send(JSON.stringify({ id: at, method, params }))
       }),
     on: (method, fn) => {

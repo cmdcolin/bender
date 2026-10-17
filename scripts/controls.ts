@@ -2,7 +2,7 @@ import { attach, chromePath, sleep } from './chrome.ts'
 import { serveDev } from './serve.ts'
 
 import { spawn } from 'node:child_process'
-import { mkdtempSync } from 'node:fs'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -98,8 +98,11 @@ async function main() {
     )
     page.close()
   } finally {
+    const gone = new Promise(r => chrome.on('exit', r))
     chrome.kill()
+    await gone
     await stop()
+    rmSync(profile, { recursive: true, force: true })
   }
 
   for (const h of Object.keys(all).sort((a, b) => Number(a) - Number(b))) {
