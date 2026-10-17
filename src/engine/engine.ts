@@ -1487,3 +1487,6 @@ function stamp(): string {
 }
 
 export const engine = new Engine()
+
+// A hot update would build a second engine beside the one holding the audio context.
+import.meta.hot?.accept(() => location.reload())
