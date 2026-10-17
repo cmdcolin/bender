@@ -73,18 +73,18 @@ export function Cassette({ running }: { running: boolean }) {
       <line x1="32" y1="18" x2="104" y2="18" className={styles.ruling} />
       <line x1="15" y1="30" x2="104" y2="30" className={styles.ruling} />
       <rect
-        x="30"
+        x="18"
         y="40"
-        width="60"
+        width="84"
         height="22"
         rx="3"
         className={styles.window}
       />
-      <CassetteHub cx={45} cy={51} running={running} />
-      <CassetteHub cx={75} cy={51} running={running} />
-      <path d="M32 72 L38 64.5 L82 64.5 L88 72 Z" className={styles.window} />
-      <circle cx="47" cy="69" r="1.6" className={styles.hole} />
-      <circle cx="73" cy="69" r="1.6" className={styles.hole} />
+      <CassetteHub cx={36} cy={51} running={running} />
+      <CassetteHub cx={84} cy={51} running={running} />
+      <path d="M28 72 L36 64.5 L84 64.5 L92 72 Z" className={styles.window} />
+      <circle cx="49" cy="69" r="1.6" className={styles.hole} />
+      <circle cx="71" cy="69" r="1.6" className={styles.hole} />
       <circle cx="8" cy="8" r="1.6" className={styles.screw} />
       <circle cx="112" cy="8" r="1.6" className={styles.screw} />
       <circle cx="8" cy="68" r="1.6" className={styles.screw} />
