@@ -2,6 +2,78 @@
 
 All notable changes to bender are documented here.
 
+## [1.7.0](https://github.com/cmdcolin/bender/compare/v1.6.0...v1.7.0) - 2026-10-17
+
+### Features
+- *(dsp)* [`49e5c53`](https://github.com/cmdcolin/bender/commit/49e5c53f33346f93f7e1f9b195beb9add298c07b) the tape machine runs at 1⅞ and 15⁄16 ips
+- *(dsp)* [`03168bc`](https://github.com/cmdcolin/bender/commit/03168bc863b3befa7877131230c7406457b4742e) a Format switch puts the tape machine on cassette or microcassette
+- *(dsp)* [`6e1a96a`](https://github.com/cmdcolin/bender/commit/6e1a96a35604807cd9226223d9fda83583796b9a) Dolby B and dbx either side of the tape
+- *(dsp)* [`b203a06`](https://github.com/cmdcolin/bender/commit/b203a0626952bc9b57efbcdf13dab89cc1b10ad6) Tape at moves the tape machine ahead of the pedals or the bends
+- *(dsp)* [`807917a`](https://github.com/cmdcolin/bender/commit/807917ac4c31a9f09ae819c5e4dc21213fd248b1) a cassette four-track on the board, four tape loops behind a desk
+- *(ui)* [`a5aa1fa`](https://github.com/cmdcolin/bender/commit/a5aa1fac6aac1566c5465ada67ee9795395b5539) six presets for tape loops, a no-input desk and the wrong deck
+- *(ui)* [`35f51df`](https://github.com/cmdcolin/bender/commit/35f51df31bd9cf942de9fb3c4b7257296e96ec20) the four-track panel draws its loops and blanks the cassette
+- *(ui)* [`ef7d408`](https://github.com/cmdcolin/bender/commit/ef7d40822c665266cb2e5abc96b89b8ca42380e7) four-track opens on four lanes, with the strip knobs folded behind a diagram
+- *(ui)* [`d5d9a66`](https://github.com/cmdcolin/bender/commit/d5d9a66767ccc6971be849523e357755f6d92236) one-press mixer feedback on the four-track, with the board's echo in the loop
+- *(ui)* [`ffaa50a`](https://github.com/cmdcolin/bender/commit/ffaa50ad4196fb45dc3921d3b225c07dc9fab8bd) tape delay and tape machine open on their everyday knobs
+- *(ui)* [`cc42f28`](https://github.com/cmdcolin/bender/commit/cc42f28d0c2fc76f6b2223f809e92e32bb58fc8c) tape loop and tape path drawings, and compact four-track lanes
+- *(ui)* [`b7bd57b`](https://github.com/cmdcolin/bender/commit/b7bd57b371c304e2c28dcd2b7747b3d367f618fe) fold the toy keyboard's arp and die rows, the FM chip's clocks and the bay's spare wires
+- *(ui)* [`f9bf8c2`](https://github.com/cmdcolin/bender/commit/f9bf8c2439fdb2290902f0e9aea0def981d9305d) fold board parts, the home keyboard's clock, the ensemble's line and the sampler's record head
+- *(ui)* [`afd1a90`](https://github.com/cmdcolin/bender/commit/afd1a904716826c202d52376d14e850cbf75f125) press a box in a diagram to open its knobs, and a more compact four-track
+- *(ui)* [`9bc501a`](https://github.com/cmdcolin/bender/commit/9bc501aa2e7a6f5275d4b5a908d28f24a46230e9) hide the body pad until a wire uses it and fold the bend keys
+- *(ui)* [`decb757`](https://github.com/cmdcolin/bender/commit/decb757658cdfaf32f30efa5407b6e3e7c8c2727) footer as a studio plate with a tape counter, folded recorder extras and one row of presets
+- *(ui)* [`1a9cc27`](https://github.com/cmdcolin/bender/commit/1a9cc27e1ddc33794ee55e3d2401ce40e8332e3b) first rec arm does something, the strip opens when a setting moves it, inert boxes dashed
+- *(ui)* [`8ecc5ca`](https://github.com/cmdcolin/bender/commit/8ecc5caaa87c2d4fcb01524f92fd208e35e00dc1) fold the presets to one chip and drop the keys hint
+- *(ui)* [`763d7f8`](https://github.com/cmdcolin/bender/commit/763d7f814a68fbe4296207fcc4c2697164efc6ab) press a wire in the patch bay to open its from, to and depth
+- *(ui)* [`a279f88`](https://github.com/cmdcolin/bender/commit/a279f8847261af358d8e68c63020089db17c2dd3) play the tune from the toy keyboard and drop the transport row
+- *(ui)* [`0cf5798`](https://github.com/cmdcolin/bender/commit/0cf5798ea9984c2db68d392d31fc7eea8058d7b2) morph picker joins the verbs row, session buttons right-align under the nameplate
+- *(ui)* [`cf61b27`](https://github.com/cmdcolin/bender/commit/cf61b27188f5fffc3708f7fcc250c77237d176c0) press a strip, the return amps, the destination or cross in the feedback bus to open its knobs
+- *(ui)* [`0f4bb7b`](https://github.com/cmdcolin/bender/commit/0f4bb7b95ef40fcfbd44fd210f8a2b866e755a71) letters switch reads notes | bends, and go wild goes
+- *(ui)* [`f7dd071`](https://github.com/cmdcolin/bender/commit/f7dd071668da97d4cd2fc0d8c372890b44b26a87) morph picker back in the nameplate row, where it fits at panel width
+- *(dsp)* [`c3468b8`](https://github.com/cmdcolin/bender/commit/c3468b858717bedc17f5f0b3166adf8bf6a51a79) a tube amp pedal, the sixth on the board
+- *(dsp)* [`61be1b5`](https://github.com/cmdcolin/bender/commit/61be1b57debef9b1a460b40635622828e16aa85c) amp presets, an audio-taper bass pot, and the amp in the benchmark boards
+- *(ui)* [`c24b2f3`](https://github.com/cmdcolin/bender/commit/c24b2f398ea80668212c99b8e167fd25e1c552b6) studio plate as four labelled rows: tape, sample, letters, presets
+- *(ui)* [`318a062`](https://github.com/cmdcolin/bender/commit/318a0628cf995edbab1b6a3c7cef422b3b3a283c) signed out, sign in is the only account box; reset goes quiet
+- *(ui)* [`b73da42`](https://github.com/cmdcolin/bender/commit/b73da42b4d433ddaebccbedf6ba6b95b9e740063) FM chip drawn as its signal path, with each box opening its knobs
+- *(ui)* [`3bda737`](https://github.com/cmdcolin/bender/commit/3bda737ac1c312cd56e8fd9ce7f0033035aa3ac6) recorder and sampler as two boxes side by side, flat
+- *(ui)* [`fb2f74b`](https://github.com/cmdcolin/bender/commit/fb2f74baf991d129ad20dfa307a20dd2c45824d0) cassette and cartridge drawings, letters and presets move to the sidebar
+- *(ui)* [`07b3a65`](https://github.com/cmdcolin/bender/commit/07b3a650d4d79d69b86108bad9077c19e1f2e1aa) press a wire in the trigger patch to open its rows
+- *(dsp)* [`3dbd5da`](https://github.com/cmdcolin/bender/commit/3dbd5dab267b4f8d02e39846aed9d11f3e93df25) amp faults, and a signal-path diagram with the tone stack's response
+- *(ui)* [`8ed67c2`](https://github.com/cmdcolin/bender/commit/8ed67c252e104ccf7d31997da6e2a8155fb023db) press a jack in the mic patch to solder the mic there
+- *(ui)* [`e2e60e9`](https://github.com/cmdcolin/bender/commit/e2e60e97267796b6247707ed43e9537c5fb24a24) sampler reel gets a tape counter beside the waveform, and drops the repeats
+- *(ui)* [`bb36196`](https://github.com/cmdcolin/bender/commit/bb361969cc12d0da5dcb58f5a7e919c239a624e7) sampler gets a play/stop button, and a loaded tape starts playing
+- *(engine)* [`bc2244e`](https://github.com/cmdcolin/bender/commit/bc2244e446a803265d1be3ded6055711c01eaedc) stream takes to a wav file in the origin-private file system
+- *(ui)* [`0327941`](https://github.com/cmdcolin/bender/commit/0327941a7ac8cbf420c86514abfe41d67198c0d2) sampler's picture is an open-reel deck, not a cartridge in a slot
+- *(engine)* [`723cb06`](https://github.com/cmdcolin/bender/commit/723cb06401d5876e887a821e8c3f4f091f8bec06) say when a take is running out of room, and recheck the quota mid-take
+- *(ui)* [`28d7e47`](https://github.com/cmdcolin/bender/commit/28d7e4733b476a3252b62d7fcf4428e238376941) sampler loads a tape by random or by searching archive.org
+
+### Fixes
+- *(ui)* [`32ca064`](https://github.com/cmdcolin/bender/commit/32ca064934485976eec6c776db6b86a966c6e960) the doors carry their own descriptions
+- *(ui)* [`4d6c86b`](https://github.com/cmdcolin/bender/commit/4d6c86b0dc6c0219561ffbae76d82ddd20bba725) dB readouts print one decimal
+- *(ui)* [`8d2009e`](https://github.com/cmdcolin/bender/commit/8d2009e38597b2b3d82284e50146e3bc6efd6f09) readouts print no more places than their step reaches
+- *(ui)* [`b5fa484`](https://github.com/cmdcolin/bender/commit/b5fa4846214dcda09bd246a7dafcfc0b41d0772f) follow the one-decimal dB readouts in the four-track tests and features doc
+- *(ui)* [`be5291e`](https://github.com/cmdcolin/bender/commit/be5291e9801367a45d239e055aa5a4755ee38fa2) let tooltips wrap inside the transport and I/O rows
+- *(ui)* [`cf1f824`](https://github.com/cmdcolin/bender/commit/cf1f8242eef0db08fb9b13f90e9c71de1bd7b4c4) reset white-space on tooltips so no parent rule can unwrap them
+
+### Performance
+- *(ui)* [`0a26d3e`](https://github.com/cmdcolin/bender/commit/0a26d3e709e2388b556d78c200c63d3d298f6fb3) load the midi wire panel on first open
+
+### Refactor
+- *(home)* [`9942ffe`](https://github.com/cmdcolin/bender/commit/9942ffe2af150b68838a3c74b4a65546ad2d48f4) drop the demos' generated description
+
+### Documentation
+- [`a200eba`](https://github.com/cmdcolin/bender/commit/a200eba4b1bac079335ee0144f67fcc0ab0a119c) the tape machine's formats and the four-track in the README
+- [`eca8654`](https://github.com/cmdcolin/bender/commit/eca865483f694a35293524f70ae6918b01cfc552) park sides, board cases and the tape follow-ups as ideas
+- [`ba6222c`](https://github.com/cmdcolin/bender/commit/ba6222c92ef6b2c3e67f7c9f91a4ac3828457fe0) a take says when it runs low on room
+
+### Tests
+- *(ui)* [`b207dbc`](https://github.com/cmdcolin/bender/commit/b207dbc11755702cf7ad3353e8e0fbdf82ec461b) look the preset row's toggle up once per count
+- *(engine)* [`2853a07`](https://github.com/cmdcolin/bender/commit/2853a07c8a9c26251a86e0351119b45b445607b8) type the fake file system's bytes
+
+### Chores
+- [`73dfb01`](https://github.com/cmdcolin/bender/commit/73dfb01c6c800262c97ce74445b3163c74d2be27) bump dependencies
+- [`6133def`](https://github.com/cmdcolin/bender/commit/6133def69eb6bb100c1ff2e3b4ab0852cc4a7aaf) run scripts with node's type stripping, drop tsx
+- [`f374087`](https://github.com/cmdcolin/bender/commit/f374087a185061fdeff9c3443f15815586ef7894) hoist handlers that capture nothing out of their components
+
 ## [1.6.0](https://github.com/cmdcolin/bender/compare/v1.5.1...v1.6.0) - 2026-10-14
 
 ### Features
