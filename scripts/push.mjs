@@ -32,6 +32,10 @@ if (read('git status --porcelain')) {
 // Everything below asks the remote rather than the local refs, and runs before
 // the slow checks — a release cut from a stale checkout should fail in a second
 // rather than after a full test run.
+if (read('git rev-parse --abbrev-ref HEAD') !== 'main') {
+  refuse('releases are cut from main — switch to it first')
+}
+
 run('git fetch --tags --force --quiet origin main')
 
 // `pnpm version` counts up from whatever package.json says *here*. A checkout
@@ -86,7 +90,8 @@ for (const check of [
   'pnpm lint',
   'pnpm format:check',
   'pnpm typecheck',
-  'pnpm sync:check',
+  'pnpm sync:check --strict',
+  'node scripts/demogen.mjs --check',
   'pnpm test',
 ]) {
   run(check)
