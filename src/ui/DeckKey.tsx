@@ -155,7 +155,8 @@ export function DeckWell(props: { label: string; children: ReactNode }) {
   )
 }
 
-// A rule between groups of keys in one bar.
-export function DeckDivider() {
-  return <span className={styles.divider} aria-hidden />
+// Keys that belong together. A bar that runs out of width wraps between groups
+// rather than through one.
+export function DeckGroup(props: { children: ReactNode }) {
+  return <div className={styles.group}>{props.children}</div>
 }

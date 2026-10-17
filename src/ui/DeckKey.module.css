@@ -1,23 +1,22 @@
 /* The bar a deck's keys sit in, so a row of them reads as one transport rather
-   than a scatter of buttons. It wraps rather than shrinks a key. */
+   than a scatter of buttons. It hugs its keys and wraps between groups. */
 .well {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs);
+  align-self: flex-start;
+  gap: var(--space-xs) var(--space-lg);
+  max-width: 100%;
+  padding: var(--space-xs) var(--space-md);
   background: var(--bg);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
 }
 
-/* A thin rule between groups of keys: where the tape comes from, what the
-   transport does, how fast it runs. */
-.divider {
-  align-self: stretch;
-  width: 1px;
-  margin: 0 var(--space-xs);
-  background: var(--border-quiet);
+/* Where the tape comes from, what the transport does, how fast it runs. */
+.group {
+  display: flex;
+  gap: var(--space-xs);
 }
 
 .key {

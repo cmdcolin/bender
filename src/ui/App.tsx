@@ -20,7 +20,7 @@ import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { DeckDivider, DeckKey, DeckWell } from './DeckKey.tsx'
+import { DeckGroup, DeckKey, DeckWell } from './DeckKey.tsx'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
 import { HuntDialog } from './HuntDialog.tsx'
@@ -365,35 +365,38 @@ export function App(props: { openedFromLink?: boolean }) {
                     {clock(recSeconds)}
                   </span>
                   <DeckWell label="recorder keys">
-                    <Tip
-                      text={
-                        recStems
-                          ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                          : 'Records the output to a wav file — stopping saves it.'
-                      }
-                    >
-                      <DeckKey
-                        glyph="rec"
-                        legend="rec"
-                        name={recStems ? 'record stems' : 'record wav'}
-                        red
-                        latched={recording}
-                        onClick={() => {
-                          if (!recording) engine.startRecording()
-                        }}
-                      />
-                    </Tip>
-                    <Tip text="Stops the take and saves it.">
-                      <DeckKey
-                        glyph="stop"
-                        legend="stop"
-                        name="stop and save"
-                        disabled={!recording}
-                        onClick={() => engine.stopRecording()}
-                      />
-                    </Tip>
-                    <DeckDivider />
-                    <RecorderMore recording={recording} recStems={recStems} />
+                    <DeckGroup>
+                      <Tip
+                        text={
+                          recStems
+                            ? 'Records the output and every source that had something on it — stopping saves the lot.'
+                            : 'Records the output to a wav file — stopping saves it.'
+                        }
+                      >
+                        <DeckKey
+                          glyph="rec"
+                          legend="rec"
+                          name={recStems ? 'record stems' : 'record wav'}
+                          red
+                          latched={recording}
+                          onClick={() => {
+                            if (!recording) engine.startRecording()
+                          }}
+                        />
+                      </Tip>
+                      <Tip text="Stops the take and saves it.">
+                        <DeckKey
+                          glyph="stop"
+                          legend="stop"
+                          name="stop and save"
+                          disabled={!recording}
+                          onClick={() => engine.stopRecording()}
+                        />
+                      </Tip>
+                    </DeckGroup>
+                    <DeckGroup>
+                      <RecorderMore recording={recording} recStems={recStems} />
+                    </DeckGroup>
                   </DeckWell>
                 </div>
                 {recError && (

@@ -226,8 +226,15 @@
 
 .artRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: var(--space-lg);
+}
+
+/* The keys drop under the picture in a box too narrow for both, rather than
+   shrinking to a sliver beside it. */
+.artRow > .controls {
+  flex: 1 1 8rem;
 }
 
 .controls {
@@ -300,7 +307,10 @@
   justify-content: center;
   height: 40px;
   margin: 0;
+  padding: 0 36px;
   font-size: var(--fs-xs);
+  line-height: 1.2;
+  text-align: center;
   color: var(--fg4);
   background: #0a0a0c;
   border: 1px solid var(--border-quiet);
