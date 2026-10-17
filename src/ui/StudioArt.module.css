@@ -16,9 +16,13 @@
   stroke-width: 1.5;
 }
 
-.label {
+.paper {
   fill: var(--bg);
   stroke: var(--border);
+}
+
+.stripe {
+  fill: var(--accent);
 }
 
 .ruling {
@@ -31,19 +35,48 @@
   stroke: var(--fg4);
 }
 
+.tapePack {
+  fill: var(--border);
+}
+
 .hub {
-  fill: none;
+  fill: var(--bg);
   stroke: var(--fg3);
   stroke-width: 1.5;
 }
 
-.spoke {
+.tooth {
   stroke: var(--fg3);
   stroke-width: 1.5;
+}
+
+.hole {
+  fill: var(--bg);
+  stroke: var(--fg4);
 }
 
 .screw {
   fill: var(--fg4);
+}
+
+.flange,
+.flangeHot {
+  fill: none;
+  stroke: var(--fg4);
+  stroke-width: 1.5;
+}
+
+.flangeHot {
+  stroke: var(--accent);
+}
+
+.reelSpoke {
+  stroke: var(--fg4);
+  stroke-width: 4;
+}
+
+.spindle {
+  fill: var(--fg3);
 }
 
 .still {
@@ -67,32 +100,33 @@
   }
 }
 
-.deckText {
+.deckText,
+.deckEmpty {
   fill: var(--fg3);
   font-size: 8px;
   text-anchor: middle;
 }
 
-.pack,
-.packHot {
-  fill: var(--bg);
-  stroke: var(--border);
-  stroke-width: 1.5;
-}
-
-.packHot {
-  stroke: var(--accent);
+.deckEmpty {
+  fill: var(--fg4);
 }
 
 .tape {
   fill: none;
-  stroke: var(--fg3);
+  stroke: var(--fg4);
   stroke-width: 1.5;
   stroke-linejoin: round;
 }
 
 .guide {
-  fill: var(--fg4);
+  fill: var(--surface);
+  stroke: var(--fg3);
+  stroke-width: 1.5;
+}
+
+.headBlock {
+  fill: var(--surface);
+  stroke: var(--fg4);
 }
 
 .head {

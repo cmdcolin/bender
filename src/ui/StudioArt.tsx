@@ -1,25 +1,44 @@
 import styles from './StudioArt.module.css'
 
-export function Cassette({ running }: { running: boolean }) {
-  const reel = (cx: number) => (
-    <g
-      className={running ? styles.spin : styles.still}
-      style={{ transformOrigin: `${cx}px 55px` }}
-    >
-      <circle cx={cx} cy={55} r={8} className={styles.hub} />
-      {[0, 60, 120].map(a => (
-        <line
-          key={a}
-          x1={cx}
-          y1={55 - 7}
-          x2={cx}
-          y2={55 + 7}
-          className={styles.spoke}
-          transform={`rotate(${a} ${cx} 55)`}
-        />
-      ))}
+const turns = (running: boolean) => (running ? styles.spin : styles.still)
+
+const angles = (count: number) =>
+  Array.from({ length: count }, (_, i) => (360 / count) * i)
+
+function CassetteHub({
+  cx,
+  cy,
+  running,
+}: {
+  cx: number
+  cy: number
+  running: boolean
+}) {
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={10} className={styles.tapePack} />
+      <g
+        className={turns(running)}
+        style={{ transformOrigin: `${cx}px ${cy}px` }}
+      >
+        <circle cx={cx} cy={cy} r={6} className={styles.hub} />
+        {angles(6).map(a => (
+          <line
+            key={a}
+            x1={cx}
+            y1={cy - 3}
+            x2={cx}
+            y2={cy - 6}
+            className={styles.tooth}
+            transform={`rotate(${a} ${cx} ${cy})`}
+          />
+        ))}
+      </g>
     </g>
   )
+}
+
+export function Cassette({ running }: { running: boolean }) {
   return (
     <svg
       className={styles.cassette}
@@ -37,24 +56,35 @@ export function Cassette({ running }: { running: boolean }) {
       />
       <rect
         x="10"
-        y="9"
+        y="8"
         width="100"
         height="28"
         rx="2"
-        className={styles.label}
+        className={styles.paper}
       />
-      <line x1="16" y1="20" x2="104" y2="20" className={styles.ruling} />
-      <line x1="16" y1="28" x2="104" y2="28" className={styles.ruling} />
       <rect
-        x="26"
-        y="42"
-        width="68"
-        height="26"
-        rx="13"
+        x="15"
+        y="13"
+        width="11"
+        height="11"
+        rx="2"
+        className={styles.stripe}
+      />
+      <line x1="32" y1="18" x2="104" y2="18" className={styles.ruling} />
+      <line x1="15" y1="30" x2="104" y2="30" className={styles.ruling} />
+      <rect
+        x="30"
+        y="40"
+        width="60"
+        height="22"
+        rx="3"
         className={styles.window}
       />
-      {reel(46)}
-      {reel(74)}
+      <CassetteHub cx={45} cy={51} running={running} />
+      <CassetteHub cx={75} cy={51} running={running} />
+      <path d="M32 72 L38 64.5 L82 64.5 L88 72 Z" className={styles.window} />
+      <circle cx="47" cy="69" r="1.6" className={styles.hole} />
+      <circle cx="73" cy="69" r="1.6" className={styles.hole} />
       <circle cx="8" cy="8" r="1.6" className={styles.screw} />
       <circle cx="112" cy="8" r="1.6" className={styles.screw} />
       <circle cx="8" cy="68" r="1.6" className={styles.screw} />
@@ -63,7 +93,56 @@ export function Cassette({ running }: { running: boolean }) {
   )
 }
 
-const DECK_REELS = [34, 106] as const
+const REELS = [34, 106] as const
+const REEL_Y = 30
+const FLANGE = 19
+const PACK = 14
+const GUIDES = [52, 88] as const
+const GUIDE_Y = 63
+
+function Reel({
+  cx,
+  loaded,
+  running,
+  hot,
+}: {
+  cx: number
+  loaded: boolean
+  running: boolean
+  hot: boolean
+}) {
+  return (
+    <g>
+      {loaded && (
+        <circle cx={cx} cy={REEL_Y} r={PACK} className={styles.tapePack} />
+      )}
+      <g
+        className={turns(running)}
+        style={{ transformOrigin: `${cx}px ${REEL_Y}px` }}
+      >
+        <circle
+          cx={cx}
+          cy={REEL_Y}
+          r={FLANGE}
+          className={hot ? styles.flangeHot : styles.flange}
+        />
+        {angles(3).map(a => (
+          <line
+            key={a}
+            x1={cx}
+            y1={REEL_Y - 6}
+            x2={cx}
+            y2={REEL_Y - FLANGE + 1}
+            className={styles.reelSpoke}
+            transform={`rotate(${a} ${cx} ${REEL_Y})`}
+          />
+        ))}
+        <circle cx={cx} cy={REEL_Y} r={6} className={styles.hub} />
+      </g>
+      <circle cx={cx} cy={REEL_Y} r={1.6} className={styles.spindle} />
+    </g>
+  )
+}
 
 export function ReelDeck({
   name,
@@ -75,6 +154,7 @@ export function ReelDeck({
   hot: boolean
 }) {
   const shown = name && name.length > 20 ? `${name.slice(0, 19)}…` : name
+  const bottom = REEL_Y + PACK
   return (
     <svg
       className={styles.deck}
@@ -90,56 +170,45 @@ export function ReelDeck({
         rx="6"
         className={styles.shell}
       />
-      <path
-        d={`M${DECK_REELS[0]} 48 L52 63 L88 63 L${DECK_REELS[1]} 48`}
-        className={styles.tape}
-      />
-      {DECK_REELS.map(cx => (
-        <g key={cx}>
-          <circle
-            cx={cx}
-            cy={30}
-            r={18}
-            className={hot ? styles.packHot : styles.pack}
-          />
-          <g
-            className={running ? styles.spin : styles.still}
-            style={{ transformOrigin: `${cx}px 30px` }}
-          >
-            <circle cx={cx} cy={30} r={7} className={styles.hub} />
-            {[0, 60, 120].map(a => (
-              <line
-                key={a}
-                x1={cx}
-                y1={24}
-                x2={cx}
-                y2={36}
-                className={styles.spoke}
-                transform={`rotate(${a} ${cx} 30)`}
-              />
-            ))}
-          </g>
-        </g>
+      {name && (
+        <path
+          d={`M${REELS[0]} ${bottom} L${GUIDES[0]} ${GUIDE_Y} L${GUIDES[1]} ${GUIDE_Y} L${REELS[1]} ${bottom}`}
+          className={styles.tape}
+        />
+      )}
+      {REELS.map(cx => (
+        <Reel key={cx} cx={cx} loaded={!!name} running={running} hot={hot} />
       ))}
-      <circle cx="52" cy="63" r="2.5" className={styles.guide} />
-      <circle cx="88" cy="63" r="2.5" className={styles.guide} />
+      {GUIDES.map(cx => (
+        <circle key={cx} cx={cx} cy={GUIDE_Y} r={3} className={styles.guide} />
+      ))}
       <rect
-        x="63"
-        y="64"
-        width="14"
-        height="7"
-        rx="1"
-        className={styles.head}
+        x="60"
+        y="65"
+        width="20"
+        height="8"
+        rx="1.5"
+        className={styles.headBlock}
       />
+      {[63, 68.5, 74].map(x => (
+        <rect
+          key={x}
+          x={x}
+          y="66.5"
+          width="3"
+          height="5"
+          className={styles.head}
+        />
+      ))}
       <rect
         x="12"
-        y="74"
+        y="76"
         width="116"
-        height="12"
+        height="11"
         rx="2"
-        className={styles.label}
+        className={styles.paper}
       />
-      <text x="70" y="83" className={styles.deckText}>
+      <text x="70" y="84" className={name ? styles.deckText : styles.deckEmpty}>
         {shown ?? 'no tape'}
       </text>
     </svg>
