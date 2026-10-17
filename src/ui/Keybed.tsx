@@ -188,10 +188,12 @@ export function Keybed({
     // A press on a note already pinned down, by the hold switch or by alt, lets
     // it go. The engine says what is down rather than this component, because
     // panic clears the board underneath it and a dark key should strike.
-    if (engine.isStruck(semitone, dest) && (latch || sticky(semitone))) {
+    const down = engine.isStruck(semitone, dest)
+    if (down && (latch || sticky(semitone))) {
       release(key, true)
       return
     }
+    if (down && held.current.has(semitone)) return
     engine.noteOn(semitone, 1, dest)
     held.current.add(semitone)
     if (latch) latched.current.add(semitone)

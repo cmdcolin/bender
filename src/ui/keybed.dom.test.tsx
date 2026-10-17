@@ -48,3 +48,17 @@ test('a bed taken off the bench lets go of what it held and pinned', () => {
   unmount()
   expect(engine.fmKeysDown.get().size).toBe(0)
 })
+
+test('a touch that enters a key before it lands strikes it once', () => {
+  const noteOn = vi.spyOn(engine, 'noteOn')
+  try {
+    bed()
+    fireEvent.pointerEnter(key('D3'), { buttons: 1 })
+    fireEvent.pointerDown(key('D3'), { buttons: 1 })
+    expect(noteOn).toHaveBeenCalledTimes(1)
+    fireEvent.pointerUp(key('D3'))
+    expect(engine.fmKeysDown.get().size).toBe(0)
+  } finally {
+    noteOn.mockRestore()
+  }
+})
