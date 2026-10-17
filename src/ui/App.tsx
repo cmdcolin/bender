@@ -45,6 +45,7 @@ import {
 import { PcmKeys } from './PcmKeys.tsx'
 import { Presets } from './PresetRow.tsx'
 import { mutate, presetNameFor } from './presets/index.ts'
+import { RecorderMore } from './RecorderMore.tsx'
 import { SampleReel } from './SampleReel.tsx'
 import { SavedVoices } from './SavedVoices.tsx'
 import { Scope } from './Scope.tsx'
@@ -213,7 +214,6 @@ export function App(props: { openedFromLink?: boolean }) {
   // shut, and `{ pending: null }` is the card opened from the menu with no save
   // behind it.
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
-  const [showOptions, setShowOptions] = useState(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showMidi, setShowMidi] = useState(false)
   const [menuBtn, setMenuBtn] = useState<HTMLButtonElement | null>(null)
@@ -321,6 +321,12 @@ export function App(props: { openedFromLink?: boolean }) {
     if (file) await engine.loadSample(file)
   }
 
+  const drop = (
+    <p className={dragging ? styles.slotHot : styles.slot}>
+      drop an audio file anywhere
+    </p>
+  )
+
   return (
     // The whole window takes the drop, because the hint says anywhere and a
     // dragover nobody cancels is a drop the browser takes itself — which on the
@@ -406,14 +412,7 @@ export function App(props: { openedFromLink?: boolean }) {
                       />
                     </Tip>
                     <DeckDivider />
-                    <DeckKey
-                      glyph="more"
-                      legend="more"
-                      name="options"
-                      latched={showOptions}
-                      aria-expanded={showOptions}
-                      onClick={() => setShowOptions(o => !o)}
-                    />
+                    <RecorderMore recording={recording} recStems={recStems} />
                   </DeckWell>
                 </div>
                 {recError && (
@@ -425,38 +424,6 @@ export function App(props: { openedFromLink?: boolean }) {
                   <p className={styles.rolling} role="status">
                     {recNote}
                   </p>
-                )}
-                {showOptions && (
-                  <div className={styles.ioRow}>
-                    <Tip text="Saves the last 30 seconds you heard as a wav, even if you were not recording.">
-                      <button
-                        className={styles.ioBtn}
-                        onClick={() => engine.keepLast('wav')}
-                      >
-                        save the last 30 s
-                      </button>
-                    </Tip>
-                    <Tip text="Puts the last 30 seconds you heard on the tape loop, to play back through the board.">
-                      <button
-                        className={styles.ioBtn}
-                        onClick={() => engine.keepLast('reel')}
-                      >
-                        last 30 s → tape loop
-                      </button>
-                    </Tip>
-                    <Tip text="Also saves each machine on its own, dry, one wav each — what you drag into a DAW. Locked while a take runs.">
-                      <button
-                        className={
-                          recStems ? styles.ioBtnToggled : styles.ioBtn
-                        }
-                        aria-pressed={recStems}
-                        disabled={recording}
-                        onClick={() => engine.recStems.set(!recStems)}
-                      >
-                        one wav per machine
-                      </button>
-                    </Tip>
-                  </div>
                 )}
               </div>
             </div>
@@ -501,10 +468,13 @@ export function App(props: { openedFromLink?: boolean }) {
                   onDone={() => setShowShelf(false)}
                 />
               )}
-              {(!sampleName || dragging) && (
-                <p className={dragging ? styles.dropHot : styles.drop}>
-                  drop an audio file anywhere
-                </p>
+              {sampleName ? (
+                dragging && drop
+              ) : (
+                <div className={styles.emptyReel}>
+                  {drop}
+                  <span className={styles.tapeName}>nothing on the tape</span>
+                </div>
               )}
               <SampleReel>
                 {sampleName && (

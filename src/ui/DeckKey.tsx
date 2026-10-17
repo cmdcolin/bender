@@ -21,6 +21,25 @@ const GLYPHS = {
       <rect x="3.5" y="11" width="5" height="1" />
     </>
   ),
+  save: (
+    <>
+      <path d="M5 1h2v5h2.5L6 10 2.5 6H5Z" />
+      <rect x="1" y="11" width="10" height="1" />
+    </>
+  ),
+  tape: (
+    <path
+      fillRule="evenodd"
+      d="M1.5 2h9A1.5 1.5 0 0 1 12 3.5v5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 0 8.5v-5A1.5 1.5 0 0 1 1.5 2ZM3.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"
+    />
+  ),
+  stems: (
+    <>
+      <rect x="1" y="2" width="10" height="2" />
+      <rect x="1" y="5" width="10" height="2" />
+      <rect x="1" y="8" width="10" height="2" />
+    </>
+  ),
   more: (
     <>
       <circle cx="2" cy="6" r="1.4" />
@@ -83,6 +102,27 @@ export function DeckKey({
         {GLYPHS[glyph]}
       </svg>
       {legend}
+    </button>
+  )
+}
+
+// A key laid out as a row: the glyph, then a sentence saying what it does.
+export function DeckRow({
+  glyph,
+  children,
+  latched,
+  ...rest
+}: Rest & { glyph: Glyph; children: ReactNode; latched?: boolean }) {
+  return (
+    <button
+      {...rest}
+      className={latched ? styles.keyRowOn : styles.keyRow}
+      aria-pressed={latched}
+    >
+      <svg className={styles.glyph} viewBox="0 0 12 12" aria-hidden>
+        {GLYPHS[glyph]}
+      </svg>
+      {children}
     </button>
   )
 }

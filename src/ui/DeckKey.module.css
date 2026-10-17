@@ -44,6 +44,14 @@
   composes: deckWordOn from './button.module.css';
 }
 
+.keyRow {
+  composes: deckRow from './button.module.css';
+}
+
+.keyRowOn {
+  composes: deckRowOn from './button.module.css';
+}
+
 .glyph {
   width: 12px;
   height: 12px;

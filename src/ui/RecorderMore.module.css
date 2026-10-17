@@ -1,0 +1,7 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 14rem;
+  padding: var(--space-xs);
+}

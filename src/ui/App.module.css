@@ -291,16 +291,19 @@
   composes: actionLoudOn from './button.module.css';
 }
 
-.ioBtn {
-  composes: action from './button.module.css';
+/* The empty reel: the same dark strip the tape is drawn on, with a reel hub
+   at each end, so a tape loop with nothing on it is the same height as one with
+   a tape and the drop target looks like the thing it is feeding. */
+.emptyReel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: var(--fs-xs);
 }
 
-.ioBtnToggled {
-  composes: actionOn from './button.module.css';
-}
-
-.drop,
-.dropHot {
+.slot,
+.slotHot {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,12 +311,42 @@
   margin: 0;
   font-size: var(--fs-xs);
   color: var(--fg4);
-  border: 1px dashed var(--border);
-  border-radius: var(--ctl-radius);
+  background: #0a0a0c;
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
 }
 
-.dropHot {
+.slot::before,
+.slot::after,
+.slotHot::before,
+.slotHot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
+
+.slot::before,
+.slotHot::before {
+  left: var(--space-lg);
+}
+
+.slot::after,
+.slotHot::after {
+  right: var(--space-lg);
+}
+
+.slotHot {
   color: var(--accent);
+  border-color: var(--accent);
+}
+
+.slotHot::before,
+.slotHot::after {
   border-color: var(--accent);
 }
 

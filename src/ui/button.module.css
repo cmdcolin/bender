@@ -528,6 +528,25 @@
   composes: deckOn deckWord;
 }
 
+/* A deck key laid out as a row, for a short list of what a key can do: the
+   glyph beside a sentence, full width, as tall as the keys beside it. */
+.deckRow {
+  composes: deck;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--space-md);
+  width: 100%;
+  padding: 0 var(--space-md);
+  font-size: var(--fs-sm);
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.deckRowOn {
+  composes: deckOn deckRow;
+}
+
 /* Under a finger, theme.css raises both heights to 32px and the padding grows
    to match. A tablet is as wide as a laptop, so the query asks about the
    pointer and leaves the window width alone. */
