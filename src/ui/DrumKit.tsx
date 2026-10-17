@@ -1,6 +1,13 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 
-import { DRUM_VOICES, STEPS, voiceBit, type DrumVoice } from '../drums.ts'
+import {
+  asLen,
+  DRUM_VOICES,
+  STEPS,
+  stepState,
+  voiceBit,
+  type DrumVoice,
+} from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import {
   useControlValue,
@@ -16,19 +23,21 @@ import { useStruck } from './useStruck.ts'
 
 const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 
-// DrumKit draws the toy drum machine as a moulded case with eight rubber pads,
-// sixteen step lamps and switches that run the pattern and arm recording. A pad
-// lights on every hit the kit reports, from the pads, the number keys, the
-// pattern or a trigger patch.
+// DrumKit draws the toy drum machine as a moulded case with switches that run
+// the pattern and arm recording, the pattern in miniature, and eight rubber
+// pads. A pad lights on every hit the kit reports, from the pads, the number
+// keys, the pattern or a trigger patch.
 //
-// The lamps, the pads and the switches render as separate components, so a step
-// redraws only the lamps and a hit redraws only the pads that changed.
+// The pattern and the pads render as separate components, so a step redraws
+// only the pattern and a hit redraws only the pads that changed.
 export function DrumKit({
   seconds,
   onClose,
+  onOpen,
 }: {
   seconds?: number
   onClose?: () => void
+  onOpen?: (stage: string) => void
 }) {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
@@ -37,7 +46,6 @@ export function DrumKit({
     <div className={styles.kit} role="group" aria-label="toy drums">
       <div className={styles.deck}>
         <span className={styles.brand}>drums</span>
-        <StepLamps playing={playing} />
         <div className={styles.switches}>
           <Tip
             text={
@@ -58,10 +66,10 @@ export function DrumKit({
           <Tip
             text={
               !armed
-                ? 'Records hits into the pattern, writing each hit to the nearest step while the pattern runs.'
+                ? 'Records hits into the pattern on the nearest step, and runs the pattern if it is stopped.'
                 : playing
-                  ? 'The kit is writing each hit to the nearest step. Press to stop recording.'
-                  : 'Recording is armed and the pattern is stopped, so the kit plays hits and writes none of them. Press play to start writing.'
+                  ? 'Each hit goes to the nearest step and flashes there. Press to stop recording.'
+                  : 'Recording is armed but the pattern is stopped, so hits sound and none is kept. Press play to record.'
             }
           >
             <button
@@ -69,7 +77,7 @@ export function DrumKit({
                 !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
               }
               aria-pressed={armed}
-              onClick={() => engine.drumRecord.set(!armed)}
+              onClick={() => engine.armDrumRecord(!armed)}
             >
               rec
             </button>
@@ -77,32 +85,94 @@ export function DrumKit({
           <DeviceVerbs stage="Toy drums" seconds={seconds} onClose={onClose} />
         </div>
       </div>
+      <Pattern
+        playing={playing}
+        onOpen={onOpen && (() => onOpen('Toy drums'))}
+      />
       <Pads />
     </div>
   )
 }
 
-function StepLamps({ playing }: { playing: boolean }) {
+// The pattern in miniature, a row of lights per voice, so the kit shows what it
+// plays without the panel open, and a recorded hit flashes on the step it went
+// to. Pressing it opens the grid.
+function Pattern({
+  playing,
+  onOpen,
+}: {
+  playing: boolean
+  onOpen?: () => void
+}) {
   const level = useControlValue('drumLevel')
   const tick = useMeterValue(m => m.tick)
-  const step = playing && level > 0 ? tick % STEPS : -1
+  const taken = useStoreValue(engine.drumTaken)
+  // A hit taken before the pattern mounted is old news, not one to flash.
+  const [old] = useState(taken)
+  const fresh = taken === old ? null : taken
+  const at = playing && level > 0 ? tick : -1
+  const rows = DRUM_VOICES.map((voice, v) => (
+    <PatternRow
+      key={voice.key}
+      voice={voice}
+      tick={at}
+      taken={fresh && fresh.bits & voiceBit(v) ? fresh : null}
+    />
+  ))
+  if (!onOpen)
+    return (
+      <div className={styles.pattern} aria-hidden="true">
+        {rows}
+      </div>
+    )
   return (
-    <span className={styles.lamps} aria-hidden="true">
-      {Array.from({ length: STEPS }, (_, s) => (
-        <span
-          key={s}
-          className={
-            s === step
-              ? styles.lampOn
-              : s % 4 === 0
-                ? styles.lampBeat
-                : styles.lamp
-          }
-        />
-      ))}
-    </span>
+    <Tip text="The pattern, a row of lights per voice. Opens the grid to edit it.">
+      <button
+        className={styles.patternButton}
+        aria-label="edit the drum pattern"
+        onClick={onOpen}
+      >
+        {rows}
+      </button>
+    </Tip>
   )
 }
+
+const PatternRow = memo(function PatternRow({
+  voice,
+  tick,
+  taken,
+}: {
+  voice: DrumVoice
+  tick: number
+  taken: { tick: number; at: number } | null
+}) {
+  const mask = useControlValue(voice.key)
+  const maybe = useControlValue(voice.maybe)
+  const len = asLen(useControlValue(voice.len))
+  const head = tick < 0 ? -1 : tick % len
+  const flash = taken ? taken.tick % len : -1
+  return (
+    <span className={styles.row} aria-hidden="true">
+      {Array.from({ length: STEPS }, (_, s) => {
+        const state = s < len ? stepState(mask, maybe, s) : 'out'
+        const classes = [
+          styles.cell,
+          styles[state],
+          s % 4 === 0 && styles.beat,
+          s === head && styles.head,
+          s === flash && styles.taken,
+        ]
+        return (
+          <span
+            key={s === flash ? `${s}@${taken?.at}` : s}
+            className={classes.filter(Boolean).join(' ')}
+          />
+        )
+      })}
+    </span>
+  )
+})
 
 function Pads() {
   const struck = useStruck()

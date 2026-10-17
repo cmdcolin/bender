@@ -57,32 +57,82 @@
   color: #efeadd;
 }
 
-/* There are sixteen lamps, one per step, and every fourth is a shade brighter
-   to mark the beats. The lamp for the current step lights red. */
-.lamps {
-  display: flex;
-  align-items: center;
+/* The pattern in miniature: a row of lights per voice, sixteen steps across in
+   fours. A step that plays is pale, a step on the dice dimmer, and a step past
+   the row's length barely there. Each row's playhead is red, and a recorded hit
+   flashes in the record colour. */
+.pattern,
+.patternButton {
+  display: grid;
   gap: 2px;
-  min-width: 0;
+  padding: 4px;
+  background: var(--rubber);
+  border: 1px solid var(--rubber-edge);
+  border-radius: 4px;
 }
 
-.lamp,
-.lampBeat,
-.lampOn {
-  flex: none;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #17171b;
+.patternButton {
+  width: 100%;
+  font: inherit;
+  cursor: pointer;
 }
 
-.lampBeat {
+.patternButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  column-gap: 2px;
+}
+
+.cell {
+  height: 3px;
+  border-radius: 1px;
   background: #24242b;
 }
 
-.lampOn {
+.beat:not(:first-child) {
+  margin-left: 2px;
+}
+
+.off.beat {
+  background: #2e2e37;
+}
+
+.on {
+  background: #d9d4c6;
+}
+
+.maybe {
+  background: #6f6f7c;
+}
+
+.out {
+  background: #1d1d22;
+}
+
+.off.head,
+.maybe.head {
+  background: #6b2a22;
+}
+
+.on.head {
   background: var(--alarm);
   box-shadow: 0 0 4px var(--alarm);
+}
+
+.taken {
+  animation: taken 400ms ease-out;
+}
+
+@keyframes taken {
+  from {
+    background: var(--accent2);
+    box-shadow: 0 0 6px var(--accent2);
+  }
 }
 
 .switches {
@@ -188,6 +238,10 @@
   .pad:hover {
     filter: brightness(1.15);
   }
+
+  .patternButton:hover {
+    border-color: var(--switch-hover);
+  }
 }
 
 @media (pointer: coarse) {
@@ -198,6 +252,10 @@
 
   .pads {
     height: 96px;
+  }
+
+  .cell {
+    height: 4px;
   }
 }
 

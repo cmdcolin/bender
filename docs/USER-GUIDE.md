@@ -42,9 +42,10 @@ square.
 
 ## The melody memory
 
-**Rec** on the deck, or **record** on the piano roll, arms recording — even with
-the chip silent. Every key you press after that, on-screen, on the letter keys,
-or from a controller, writes to the step the chip is standing on.
+**Rec** on the deck, or **record** on the piano roll, arms recording and runs the
+tune — even with the chip silent. Every key you press after that, on-screen, on
+the letter keys, or from a controller, writes to the step you heard when you
+played it.
 
 What you record isn't a separate sequencer: it's the 19th entry on **Tune**, one
 past the 18 ROM songs, and the chip treats it the same as any of them — **Memory
@@ -208,13 +209,20 @@ The **echo** row under the accents throws hits into the tape delay. **Throw**
 lights the bar's last snare. The first throw on a silent delay brings it up with
 **Bus send** at zero, so only the throws echo.
 
-![The toy drum machine's pad deck: eight numbered rubber pads, kick through cymbal, above the play and REC switches.](img/guide-drums.jpg)
+![The toy drum machine's pad deck: eight numbered rubber pads, kick through cymbal, under the play and REC switches and a small copy of the drum pattern.](img/guide-drums.jpg)
 
 A row's name is also a preview button. The kit plays on the number row too: `1`
-is the kick through `8` the cymbal. The toy drum machine's rubber pads do the
-same, with lamps that follow the step counter and its own **▶**/**rec**
-switches. **Record** arms the kit to write from what you play — needs the kit
-running to land on a step.
+is the kick through `8` the cymbal. The toy drum machine's rubber pads play the
+same voices. Above them sit the kit's own **▶** and **rec** switches and a small
+copy of the pattern, with a row of lights per voice and each row's playhead in
+red. Press the copy to open the grid.
+
+**Rec** on the kit, or **record** on the grid, arms the kit and runs it. Each
+hit you play writes to the nearest step, and that step flashes on the kit's
+copy. The kit allows for output latency when it places a hit, so Bluetooth
+headphones, which add a couple of hundred milliseconds, don't push hits late. A
+recorded hit sounds once, even when it rounds forward onto the step about to
+play.
 
 ## Playing the FM chip
 

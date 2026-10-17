@@ -154,7 +154,7 @@ export function TuneRoll() {
         <Tip
           text={
             !armed
-              ? 'play the melody in: arm this and every key you press — on screen, on the letter keys, on a controller — writes the step the chip is standing on. Arming puts the memory on, since a memory the chip is not playing records in silence'
+              ? 'play the melody in: arm this and every key you press — on screen, on the letter keys, on a controller — writes the step the chip is standing on. Arming puts the memory on and runs the tune, since a memory the chip is not playing records in silence'
               : playing
                 ? 'every key you press writes the step it lands on, and a key held across steps comes out as one long note. Press to stop'
                 : 'armed, but the tune is stopped — the keys still sound and nothing is written. Run the tune and they land on the step they arrive in'

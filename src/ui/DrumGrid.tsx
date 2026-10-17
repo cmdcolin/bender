@@ -162,7 +162,7 @@ export function DrumGrid() {
           </Tip>
         ))}
         {/* The other way a pattern gets written: play it in rather than draw
-            it. It needs the kit running for there to be a step to land on, and
+            it. Arming runs the kit, since a hit needs a step to land on, and
             it is never on when you arrive — a machine that records you is one
             you asked to.
 
@@ -173,7 +173,7 @@ export function DrumGrid() {
         <Tip
           text={
             !armed
-              ? 'play the pattern in: arm this and every hit — the number keys, a row’s name, a pad on a controller — writes the step it lands on, rounded to the nearest. The kit has to be running for there to be a step'
+              ? 'play the pattern in: arm this and every hit — the number keys, a row’s name, a pad on a controller — writes the step it lands on, rounded to the nearest. Arming runs the kit'
               : playing
                 ? 'every hit writes the step it lands on, rounded to the nearest. Press to stop'
                 : 'armed, but the kit is stopped — hits sound and nothing is written. Run the kit and they land on the step they arrive in'
@@ -184,7 +184,7 @@ export function DrumGrid() {
               !armed ? styles.rec : playing ? styles.recOn : styles.recIdle
             }
             aria-pressed={armed}
-            onClick={() => engine.drumRecord.set(!armed)}
+            onClick={() => engine.armDrumRecord(!armed)}
           >
             record
           </button>

@@ -12,7 +12,11 @@ import { PedalShelf, PedalsMenu } from './Pedals.tsx'
 
 import type { ComponentType } from 'react'
 
-type Machine = ComponentType<{ seconds?: number; onClose?: () => void }>
+type Machine = ComponentType<{
+  seconds?: number
+  onClose?: () => void
+  onOpen?: (stage: string) => void
+}>
 type Row = [stage: string, Machine: Machine][]
 
 const TOY: Row = [
@@ -77,6 +81,7 @@ export function Instruments({
             key={stage}
             seconds={seconds}
             onClose={all ? () => close(stage) : undefined}
+            onOpen={onOpen}
           />
         ))}
       </div>
