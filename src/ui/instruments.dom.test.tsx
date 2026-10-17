@@ -174,15 +174,14 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
   expect(bench.get().pedals).toEqual([])
 })
 
-test('a pedal knob steps with the arrow keys and goes back to stock on a double press', () => {
+test('a pedal slider moves its own control and goes back to stock on a double press', () => {
   bench.set({ all: false, closed: [], pedals: ['Spring verb'] })
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const mix = screen.getByRole('slider', { name: 'Reverb level' })
-  fireEvent.keyDown(mix, { key: 'End' })
+  fireEvent.change(mix, { target: { value: '1000' } })
   expect(engine.controls.get().revMix).toBe(1)
-  fireEvent.keyDown(mix, { key: 'ArrowDown' })
-  expect(engine.controls.get().revMix).toBeLessThan(1)
-  fireEvent.doubleClick(mix)
+  expect(engine.controls.get().revDecayS).toBe(DEFAULT_CONTROLS.revDecayS)
+  fireEvent.doubleClick(screen.getByText('Reverb level'))
   expect(engine.controls.get().revMix).toBe(DEFAULT_CONTROLS.revMix)
 })
 
