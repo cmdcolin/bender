@@ -21,6 +21,8 @@ export const PEDALS = [
   { group: 'Tube amp', label: 'amp' },
 ] as const
 
+export const isPedal = (stage: string) => PEDALS.some(p => p.group === stage)
+
 // Lexicographic, and pinned by pedals.test.ts. A packed link says "order 9", so
 // the day this list is generated a different way every link ever made quietly
 // decodes to a different board — the same bargain the wire order in packed.ts

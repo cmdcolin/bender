@@ -1,34 +1,98 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type CSSProperties } from 'react'
 
+import { engine } from '../engine/engine.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
 import { bench, setBench } from './bench.ts'
 import { sliderFor } from './controls/index.ts'
-import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import {
+  useBoardValue,
+  useControlValue,
+  useStoreValue,
+} from './ControlsContext.ts'
 import { DeviceVerbs } from './DeviceVerbs.tsx'
+import { Knob } from './Knob.tsx'
 import { Menu } from './Menu.tsx'
 import { menuCheck } from './menuItems.ts'
 import styles from './Pedals.module.css'
-import { ControlSlider } from './Slider.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
-// The knobs a pedal wears on the bench: what you reach for first, with the mix
-// last. The rest are one press away on the stage's own panel.
-const FACE: Record<string, readonly ControlKey[]> = {
-  Stompbox: ['stompCircuit', 'stompDrive', 'stompTone', 'stompMix'],
-  'Tape delay': ['delayMs', 'dlyFb', 'dlyMix'],
-  'Delay pedal': ['echoMs', 'echoFb', 'echoLevel'],
-  'Spring verb': ['revDecayS', 'revToneHz', 'revMix'],
-  Ensemble: ['ensRate', 'ensDepth', 'ensMix'],
-  'Tube amp': ['ampVoice', 'ampGain', 'ampMix'],
+// What a pedal wears on the bench: its enclosure colour, an optional selector
+// switch, the knobs you reach for first with the mix last, and the control its
+// footswitch throws. The rest are one press away on the stage's own panel.
+interface Face {
+  colour: string
+  switch?: ControlKey
+  knobs: readonly ControlKey[]
+  bypass: ControlKey
 }
+
+const FACE: Record<string, Face> = {
+  Stompbox: {
+    colour: '#2f7040',
+    switch: 'stompCircuit',
+    knobs: ['stompDrive', 'stompTone', 'stompMix'],
+    bypass: 'stompMute',
+  },
+  'Tape delay': {
+    colour: '#75592c',
+    knobs: ['delayMs', 'dlyFb', 'dlyMix'],
+    bypass: 'dlyMute',
+  },
+  'Delay pedal': {
+    colour: '#2f5c8f',
+    knobs: ['echoMs', 'echoFb', 'echoLevel'],
+    bypass: 'echoMute',
+  },
+  'Spring verb': {
+    colour: '#24706f',
+    knobs: ['revDecayS', 'revToneHz', 'revMix'],
+    bypass: 'revMute',
+  },
+  Ensemble: {
+    colour: '#62408a',
+    knobs: ['ensRate', 'ensDepth', 'ensMix'],
+    bypass: 'ensMute',
+  },
+  'Tube amp': {
+    colour: '#8a2c2c',
+    switch: 'ampVoice',
+    knobs: ['ampGain', 'ampMaster', 'ampMix'],
+    bypass: 'ampMute',
+  },
+}
+
+const cssVars = (vars: Record<`--${string}`, string>): CSSProperties => vars
 
 const show = (shown: readonly string[], pedal: string) =>
   setBench({ ...bench.get(), pedals: [...shown, pedal] })
 
 const hide = (shown: readonly string[], pedal: string) =>
   setBench({ ...bench.get(), pedals: shown.filter(p => p !== pedal) })
+
+/** The button on a pedal's own panel that puts it on the bench, or takes it off. */
+export function BenchToggle({ stage }: { stage: string }) {
+  const { pedals: shown } = useStoreValue(bench)
+  const on = shown.includes(stage)
+  return (
+    <Tip
+      text={
+        on
+          ? `${stage} is on the bench with the instruments. Press to put it away.`
+          : `Put ${stage} on the bench with the instruments, so its knobs sit in the main area.`
+      }
+    >
+      <button
+        className={on ? styles.benchOn : styles.bench}
+        aria-pressed={on}
+        onClick={() => (on ? hide(shown, stage) : show(shown, stage))}
+      >
+        bench
+      </button>
+    </Tip>
+  )
+}
 
 // The pedals in the order the signal meets them, which is the order both the
 // menu and the shelf list them in.
@@ -86,6 +150,66 @@ export function PedalsMenu() {
   )
 }
 
+// A selector switch: one press goes to the next position, as a pedal's mode
+// switch does.
+function Selector({ control }: { control: ControlKey }) {
+  const def = sliderFor(control)
+  const value = useControlValue(control)
+  const choices = def.choices!
+  const at = Math.round(value) - def.min
+  return (
+    <Tip text={def.help}>
+      <button
+        className={styles.selector}
+        aria-label={`${def.label}: ${choices[at]}`}
+        onClick={() => {
+          engine.armStep()
+          engine.set(control, def.min + ((at + 1) % choices.length))
+        }}
+      >
+        {choices[at]}
+        <span aria-hidden="true"> ›</span>
+      </button>
+    </Tip>
+  )
+}
+
+// The footswitch. The lamp is lit while the pedal is in the path.
+function Footswitch({
+  stage,
+  control,
+}: {
+  stage: string
+  control: ControlKey
+}) {
+  const bypassed = useControlValue(control) > 0.5
+  return (
+    <Tip
+      text={
+        bypassed
+          ? `${stage} is bypassed. Press to switch it back on at the sound you left.`
+          : `Press to take ${stage} out of the path. Its knobs stay where they are.`
+      }
+    >
+      <span className={styles.bay}>
+        <span
+          className={bypassed ? styles.lampOff : styles.lampOn}
+          aria-hidden="true"
+        />
+        <button
+          className={styles.foot}
+          aria-label={`bypass ${stage}`}
+          aria-pressed={bypassed}
+          onClick={() => {
+            engine.armStep()
+            engine.set(control, bypassed ? 0 : 1)
+          }}
+        />
+      </span>
+    </Tip>
+  )
+}
+
 function PedalFace({
   stage,
   seconds,
@@ -97,20 +221,31 @@ function PedalFace({
   onOpen: (stage: string) => void
   onClose: () => void
 }) {
+  const face = FACE[stage]!
   return (
-    <div className={styles.pedal} role="group" aria-label={stage.toLowerCase()}>
+    <div
+      className={styles.pedal}
+      style={cssVars({ '--pedal': face.colour })}
+      role="group"
+      aria-label={stage.toLowerCase()}
+    >
       <div className={styles.head}>
         <span className={styles.name}>{stage}</span>
-        <DeviceVerbs stage={stage} seconds={seconds} onClose={onClose} />
+        <DeviceVerbs stage={stage} seconds={seconds} onClose={onClose} noMute />
       </div>
+      {face.switch && <Selector control={face.switch} />}
       <div className={styles.knobs}>
-        {FACE[stage]!.map(key => (
-          <ControlSlider key={key} def={sliderFor(key)} />
+        {face.knobs.map(key => (
+          <Knob key={key} def={sliderFor(key)} />
         ))}
       </div>
-      <button className={styles.more} onClick={() => onOpen(stage)}>
-        all controls
-      </button>
+      <div className={styles.floor}>
+        <button className={styles.more} onClick={() => onOpen(stage)}>
+          all controls
+        </button>
+        <Footswitch stage={stage} control={face.bypass} />
+        <span aria-hidden="true" />
+      </div>
     </div>
   )
 }

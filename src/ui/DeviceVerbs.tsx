@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
-import { PEDALS } from '../pedals.ts'
+import { isPedal } from '../pedals.ts'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import { useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
@@ -62,8 +62,6 @@ const SPEAKER = (muted: boolean) => (
     )}
   </svg>
 )
-
-const isPedal = (stage: string) => PEDALS.some(p => p.group === stage)
 
 function Mute({ stage, control }: { stage: string; control: ControlKey }) {
   const muted = useControlValue(control) > 0.5
@@ -185,10 +183,13 @@ export function DeviceVerbs({
   stage,
   seconds = 0,
   onClose,
+  noMute,
 }: {
   stage: string
   seconds?: number
   onClose?: () => void
+  /** For a face that draws its own switch for it. */
+  noMute?: boolean
 }) {
   const group = GROUPS.find(g => g.name === stage)
   if (!group) throw new Error(`no stage named ${stage}`)
@@ -201,7 +202,7 @@ export function DeviceVerbs({
           <ControlSlider def={sliderFor(level)} />
         </span>
       )}
-      {mute && <Mute stage={stage} control={mute} />}
+      {mute && !noMute && <Mute stage={stage} control={mute} />}
       <Rolls group={group} seconds={seconds} />
       {onClose && (
         <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>

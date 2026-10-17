@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
 import { groupAnchor } from './chain-map.ts'
 import {
@@ -21,6 +22,7 @@ import { MicPatch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
 import { OrderRack } from './OrderRack.tsx'
 import { PatchBay } from './PatchBay.tsx'
+import { BenchToggle } from './Pedals.tsx'
 import {
   applyCut,
   applyRig,
@@ -532,6 +534,7 @@ export function OpenGroup({
     <div className={styles.section} ref={el} id={groupAnchor(group.name)}>
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
+        {isPedal(group.name) && <BenchToggle stage={group.name} />}
         <Tip
           text={
             group.editor?.kind === 'drums'

@@ -5,7 +5,9 @@ import { beforeEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { bench, parseBench } from './bench.ts'
+import { GROUPS } from './controls/index.ts'
 import { Instruments } from './Instruments.tsx'
+import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
 beforeEach(() => {
@@ -170,6 +172,43 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
   fireEvent.click(screen.getByRole('button', { name: 'close Spring verb' }))
   expect(group('spring verb')).toBeNull()
   expect(bench.get().pedals).toEqual([])
+})
+
+test('a pedal knob steps with the arrow keys and goes back to stock on a double press', () => {
+  bench.set({ all: false, closed: [], pedals: ['Spring verb'] })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  const mix = screen.getByRole('slider', { name: 'Reverb level' })
+  fireEvent.keyDown(mix, { key: 'End' })
+  expect(engine.controls.get().revMix).toBe(1)
+  fireEvent.keyDown(mix, { key: 'ArrowDown' })
+  expect(engine.controls.get().revMix).toBeLessThan(1)
+  fireEvent.doubleClick(mix)
+  expect(engine.controls.get().revMix).toBe(DEFAULT_CONTROLS.revMix)
+})
+
+test('a pedal selector switch goes to the next position on each press', () => {
+  bench.set({ all: false, closed: [], pedals: ['Stompbox'] })
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  const before = engine.controls.get().stompCircuit
+  fireEvent.click(screen.getByRole('button', { name: /^Circuit: / }))
+  expect(engine.controls.get().stompCircuit).toBe(before + 1)
+})
+
+test('the stage panel of a pedal puts it on the bench and takes it off', () => {
+  const verb = GROUPS.find(g => g.name === 'Spring verb')!
+  render(<OpenGroup group={verb} onClose={() => {}} seconds={0} />)
+  const toggle = screen.getByRole('button', { name: 'bench' })
+  fireEvent.click(toggle)
+  expect(bench.get().pedals).toEqual(['Spring verb'])
+  expect(toggle.getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(toggle)
+  expect(bench.get().pedals).toEqual([])
+})
+
+test('an instrument stage panel has no bench toggle', () => {
+  const toy = GROUPS.find(g => g.name === 'Toy keyboard')!
+  render(<OpenGroup group={toy} onClose={() => {}} seconds={0} />)
+  expect(screen.queryByRole('button', { name: 'bench' })).toBeNull()
 })
 
 test('the mode and what was closed are stored for the next load', () => {
