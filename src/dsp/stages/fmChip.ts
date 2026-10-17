@@ -312,6 +312,37 @@ interface Op {
 
 const newOp = (): Op => ({ phase: 0, env: 0, stage: IDLE, fb1: 0, fb2: 0 })
 
+const newPanel = (): Panel => ({
+  bright: -1,
+  fb: -1,
+  lfo: -1,
+  modRatio: -1,
+  carRatio: -1,
+  modDecay: -1,
+})
+
+function strike(op: Op) {
+  op.stage = ATTACK
+  op.phase = 0
+  op.fb1 = 0
+  op.fb2 = 0
+}
+
+function kitEdge(before: number, now: number, bit: number, op: Op) {
+  const was = (before & bit) !== 0
+  const is = (now & bit) !== 0
+  if (is && !was) strike(op)
+  else if (was && !is && op.stage !== IDLE) op.stage = RELEASE
+}
+
+function clear(op: Op) {
+  op.phase = 0
+  op.env = 0
+  op.stage = IDLE
+  op.fb1 = 0
+  op.fb2 = 0
+}
+
 interface Channel {
   mod: Op
   car: Op
@@ -470,14 +501,8 @@ export class FmChip implements Stage {
   // something it knows about has moved. A processor that rewrote eight registers
   // every sample would paper over every fault the moment it landed.
   private sentVoice = -1
-  private sent: Panel = {
-    bright: -1,
-    fb: -1,
-    lfo: -1,
-    modRatio: -1,
-    carRatio: -1,
-    modDecay: -1,
-  }
+  private readonly sent = newPanel()
+  private readonly panel = newPanel()
   // The effect ROM, and the driver running it: a script of writes over time,
   // clocked off the CPU rather than off the rail.
   private effect = -1
@@ -554,37 +579,15 @@ export class FmChip implements Stage {
     if ((now & RHY.on) === 0) return
     const bass = this.ch[RHYTHM_CH]!
     const pair = this.ch[RHYTHM_CH + 1]!
-    const edge = (bit: number, op: Op, other?: Op) => {
-      const was = (before & bit) !== 0
-      const is = (now & bit) !== 0
-      if (is && !was) {
-        op.stage = ATTACK
-        op.phase = 0
-        op.fb1 = 0
-        op.fb2 = 0
-        if (other) {
-          other.stage = ATTACK
-          other.phase = 0
-          other.fb1 = 0
-          other.fb2 = 0
-        }
-      } else if (was && !is) {
-        if (op.stage !== IDLE) op.stage = RELEASE
-        if (other && other.stage !== IDLE) other.stage = RELEASE
-      }
-    }
-    edge(RHY.bass, bass.car, bass.mod)
-    edge(RHY.snare, pair.car)
-    edge(RHY.hat, pair.mod)
+    kitEdge(before, now, RHY.bass, bass.car)
+    kitEdge(before, now, RHY.bass, bass.mod)
+    kitEdge(before, now, RHY.snare, pair.car)
+    kitEdge(before, now, RHY.hat, pair.mod)
   }
 
   private attack(i: number) {
-    for (const op of [this.ch[i]!.mod, this.ch[i]!.car]) {
-      op.stage = ATTACK
-      op.phase = 0
-      op.fb1 = 0
-      op.fb2 = 0
-    }
+    strike(this.ch[i]!.mod)
+    strike(this.ch[i]!.car)
   }
 
   private release(i: number) {
@@ -1176,14 +1179,13 @@ export class FmChip implements Stage {
     const voice = Math.round(p[IDX.fmVoice]!)
     const brightKnob = p[IDX.fmBright]!
     const fbKnob = Math.round(p[IDX.fmFeedback]!)
-    const panel: Panel = {
-      bright: Math.min(brightKnob, 1),
-      fb: Math.min(fbKnob, FB_REGISTER_MAX),
-      lfo: Math.round(p[IDX.fmLfo]!),
-      modRatio: Math.round(p[IDX.fmModRatio]!),
-      carRatio: Math.round(p[IDX.fmCarRatio]!),
-      modDecay: Math.round(p[IDX.fmModDecay]!),
-    }
+    const panel = this.panel
+    panel.bright = Math.min(brightKnob, 1)
+    panel.fb = Math.min(fbKnob, FB_REGISTER_MAX)
+    panel.lfo = Math.round(p[IDX.fmLfo]!)
+    panel.modRatio = Math.round(p[IDX.fmModRatio]!)
+    panel.carRatio = Math.round(p[IDX.fmCarRatio]!)
+    panel.modDecay = Math.round(p[IDX.fmModDecay]!)
     const bay = ctx.mod
     this.dataLine =
       hop(p[IDX.fmDataLine]!, DATA_WIDTH + 1, bay.read(DEST.fmDataLine)) - 1
@@ -1317,7 +1319,12 @@ export class FmChip implements Stage {
       panel.modDecay !== sent.modDecay
     ) {
       this.sentVoice = voice
-      this.sent = panel
+      sent.bright = panel.bright
+      sent.fb = panel.fb
+      sent.lfo = panel.lfo
+      sent.modRatio = panel.modRatio
+      sent.carRatio = panel.carRatio
+      sent.modDecay = panel.modDecay
       if (this.effect < 0) this.sendVoice(voice, panel)
     }
 
@@ -1605,8 +1612,8 @@ export class FmChip implements Stage {
     this.cpu.s.fill(0)
     this.cpu.rng = mulberry32(EFFECT_SEED)
     for (const c of this.ch) {
-      c.mod = newOp()
-      c.car = newOp()
+      clear(c.mod)
+      clear(c.car)
       c.offIn = 0
       c.gated = false
     }
