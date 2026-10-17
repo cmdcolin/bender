@@ -1,12 +1,15 @@
 ---
-// The top of the landing page: a headline and the ways in.
+// The top of the landing page: a headline, a heap of hardware on the floor, and
+// the ways in.
 import { appUrl, pocketUrl } from '../site/paths.ts'
+import { pile } from '../site/pile.ts'
 
 const GETTING_STARTED =
   'https://github.com/cmdcolin/bender/blob/main/docs/GETTING-STARTED.md'
 ---
 
 <h1 class="heroHead">Simulated circuit bending</h1>
+<figure class="pile" set:html={pile()} />
 <p class="cta">
   <a class="btn primary big" href={appUrl}>
     Open the app →

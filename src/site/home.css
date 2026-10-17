@@ -11,6 +11,23 @@
   line-height: 1.15;
   letter-spacing: -0.01em;
 }
+.pile {
+  margin: 0 0 1.5rem;
+  border: 1px solid var(--border-faint);
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+.pile svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1200 / 540;
+}
+@media (max-width: 40rem) {
+  .pile svg {
+    aspect-ratio: 4 / 3;
+  }
+}
 .cta {
   display: flex;
   flex-wrap: wrap;
