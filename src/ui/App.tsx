@@ -187,6 +187,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const monoUp = useBoardValue(c => c.monoLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [showShelf, setShowShelf] = useState(false)
+  const [shelfBtn, setShelfBtn] = useState<HTMLButtonElement | null>(null)
   // Which stage's controls the panel is showing. The map is the way in — every
   // group has a door on it, the stages along the path and the rest of the board
   // drawn where it sits — so one stage is open at a time and the rest of the
@@ -456,6 +457,7 @@ export function App(props: { openedFromLink?: boolean }) {
               <div className={styles.ioRow}>
                 <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
                   <button
+                    ref={setShelfBtn}
                     className={
                       showShelf && !archiveStep
                         ? styles.ioBtnToggled
@@ -477,7 +479,10 @@ export function App(props: { openedFromLink?: boolean }) {
                 </button>
               </div>
               {showShelf && !archiveStep && (
-                <TapeShelf onDone={() => setShowShelf(false)} />
+                <TapeShelf
+                  anchor={shelfBtn}
+                  onDone={() => setShowShelf(false)}
+                />
               )}
               {(!sampleName || dragging) && (
                 <p className={dragging ? styles.dropHot : styles.drop}>
