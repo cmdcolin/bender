@@ -32,7 +32,13 @@ export function PcmKeys({
           solderedTip="the keyboard’s key input is soldered onto the toy’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
         />
       }
-      verbs={<DeviceVerbs stage="Home keyboard" seconds={seconds} onClose={onClose} />}
+      verbs={
+        <DeviceVerbs
+          stage="Home keyboard"
+          seconds={seconds}
+          onClose={onClose}
+        />
+      }
       tail={<span className={styles.window} aria-hidden="true" />}
     />
   )

@@ -290,3 +290,23 @@ export async function dropSession(
   })
 }
 // CROSS_REPO_SYNC_END(saved-list-cloud)
+
+// The player's setup, kept beside the voices. Outside the regions above: it is
+// bender's own, and videoskillet's rules for `users/{uid}` have no `prefs`.
+// Read raw, for prefs.ts to sanitise.
+export async function fetchPrefs(uid: string): Promise<unknown> {
+  const { db, fs } = await loadSdk()
+  const snap = await fs.getDoc(fs.doc(db, COLLECTION, uid))
+  return snap.exists() ? snap.data().prefs : undefined
+}
+
+// `mergeFields` rather than `merge`: a merge joins nested maps, so a bench the
+// player emptied would come back with the old closed list under it.
+export async function putPrefs(uid: string, prefs: object): Promise<void> {
+  const { db, fs } = await loadSdk()
+  await fs.setDoc(
+    fs.doc(db, COLLECTION, uid),
+    { prefs },
+    { mergeFields: ['prefs'] },
+  )
+}

@@ -33,10 +33,10 @@ import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
 import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
 import {
-  loadMorph,
   MORPH_LABELS,
   MORPH_SECONDS,
-  saveMorph,
+  morphSetting,
+  setMorph,
   type MorphSeconds,
 } from './morph.ts'
 import { Presets } from './PresetRow.tsx'
@@ -55,6 +55,7 @@ import { Tip } from './Tip.tsx'
 import { useBoardUrl } from './useBoardUrl.ts'
 import { useCurrentSession } from './useCurrentSession.ts'
 import { useSavedVoices } from './useSavedVoices.ts'
+import { useSyncedPrefs } from './useSyncedPrefs.ts'
 import { suggestVoiceName, type SavedVoice } from './voiceModel.ts'
 import { WhySignInDialog } from './WhySignInDialog.tsx'
 
@@ -137,9 +138,7 @@ function MorphControl(props: {
         value={props.seconds}
         onChange={e => {
           const picked = MORPH_SECONDS.find(s => String(s) === e.target.value)
-          if (picked === undefined) return
-          props.onSet(picked)
-          saveMorph(picked)
+          if (picked !== undefined) props.onSet(picked)
         }}
       >
         {MORPH_SECONDS.map(s => (
@@ -190,7 +189,7 @@ export function App(props: { openedFromLink?: boolean }) {
   const [open, setOpen] = useState<string | null>(null)
   const openGroup = GROUPS.find(g => g.name === open)
   const toggle = (name: string) => setOpen(o => (o === name ? null : name))
-  const [morphSeconds, setMorphSeconds] = useState<MorphSeconds>(loadMorph)
+  const morphSeconds = useStoreValue(morphSetting)
   const walk = useStoreValue(engine.history)
   const drifting = useStoreValue(engine.drifting)
   // Whether the last hunt reached the end and kept a board, as against being
@@ -240,6 +239,7 @@ export function App(props: { openedFromLink?: boolean }) {
   useEffect(() => engine.autostart(), [])
   useBoardUrl()
   useCurrentSession(libUid)
+  useSyncedPrefs(libUid)
   useDrumKeys()
 
   // Space is the run/stop line over both machines, wherever the focus is; the
@@ -518,7 +518,7 @@ export function App(props: { openedFromLink?: boolean }) {
             <MorphControl
               seconds={morphSeconds}
               drifting={drifting}
-              onSet={setMorphSeconds}
+              onSet={setMorph}
             />
             {/* About the board as a whole rather than any one stage of it. */}
             <MidiPanel

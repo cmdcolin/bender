@@ -103,18 +103,22 @@ actually does to the circuit is [Bends](BENDS.md).
 
 ## What is stored where
 
-Signing in puts two things on your account, and nothing else: your **voices**
-(each one a name and the board hash the address bar carries) and the **board you
-last had open**, one per visit and the last eight of them, each written a few
-seconds after the board stops moving and once more when the tab is hidden. That
-is what lets the home page offer a session back on another machine. Resuming a
-session from the home page carries on writing to it; any other visit starts a
-new one.
+Signing in puts three things on your account, and nothing else:
+
+- **Voices:** each one a name and the board hash the address bar carries.
+- **Recent sessions:** the board you last had open, one per visit and the last
+  eight. Each writes a few seconds after the board stops moving and once more
+  when the tab is hidden. The home page offers one back on another machine.
+  Resuming a session from the home page carries on writing to it; any other
+  visit starts a new one.
+- **Setup:** the bench layout, the morph time and the remapped computer keys.
+  `src/ui/useSyncedPrefs.ts` keeps it. Every change stamps a clock on this
+  machine, and on sign-in the newer side wins.
 
 Everything else stays on the device it was set on, in `localStorage` — MIDI knob
-and pad maps, the morph duration, whether the machines were running — because it
-is a fact about this machine rather than about the music. The undo walk is a
-fact about this tab and goes when the tab does.
+and pad maps, whether the machines were running — because it is a fact about
+this machine rather than about the music. The undo walk is a fact about this tab
+and goes when the tab does.
 
 Signed out, none of the Firebase SDK is fetched at all: the imports in
 `src/ui/cloud.ts` are dynamic and gated on a localStorage hint saying this
@@ -125,3 +129,8 @@ bender shares a Firebase project with
 [videoskillet.js](https://github.com/cmdcolin/videoskillet) and keeps its own
 data under `benderUsers/{uid}`. The rules for that collection are deployed from
 the videoskillet repository's `firestore.rules`; there is no rules file here.
+
+The setup lives under `prefs` in the same document. A change to `prefs` needs
+the rules deployed first; a write the rules refuse fails quietly and the setup
+stays on this machine. The write uses `mergeFields`, because a plain merge joins
+nested maps and keeps keys the player removed.

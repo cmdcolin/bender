@@ -1,3 +1,6 @@
+import { createStore } from '../listeners.ts'
+import { read, write } from './persist.ts'
+
 // How long a new look takes to arrive. The travelling itself is the engine's;
 // this is the UI's half — the durations on offer and where the choice is kept.
 //
@@ -28,18 +31,9 @@ export function parseMorph(raw: string | null): MorphSeconds {
   return MORPH_SECONDS.find(s => String(s) === raw) ?? 1
 }
 
-export function loadMorph(): MorphSeconds {
-  try {
-    return parseMorph(localStorage.getItem(KEY))
-  } catch {
-    return 1
-  }
-}
+export const morphSetting = createStore<MorphSeconds>(parseMorph(read(KEY)))
 
-export function saveMorph(seconds: MorphSeconds) {
-  try {
-    localStorage.setItem(KEY, String(seconds))
-  } catch {
-    // A board that will not persist its morph is still a board.
-  }
+export function setMorph(seconds: MorphSeconds) {
+  morphSetting.set(seconds)
+  write(KEY, String(seconds))
 }

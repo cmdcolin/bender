@@ -53,6 +53,8 @@ vi.mock('./cloud.ts', () => ({
   },
   signOut: () => Promise.resolve(),
   fetchHome: () => Promise.resolve({ voices: cloud.voices, recent: [] }),
+  fetchPrefs: () => Promise.resolve(undefined),
+  putPrefs: () => Promise.resolve(),
   editVoices: async (
     _uid: string,
     edit: (voices: SavedVoice[]) => SavedVoice[],

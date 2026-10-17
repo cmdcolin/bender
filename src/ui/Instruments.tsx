@@ -1,13 +1,13 @@
-import { useState, type ComponentType } from 'react'
-
-import { loadBench, saveBench } from './bench.ts'
-import { useBoardValue } from './ControlsContext.ts'
+import { bench, setBench } from './bench.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
 import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
+
+import type { ComponentType } from 'react'
 
 type Machine = ComponentType<{ seconds?: number; onClose?: () => void }>
 type Row = [stage: string, Machine: Machine][]
@@ -28,17 +28,12 @@ const LEVELLED: Row = [
 // every one whatever its fader says, each with a close cap, and a row of what
 // has been closed to bring it back. The mode and the closed set survive a
 // reload.
+const keep = (all: boolean, closed: ReadonlySet<string>) =>
+  setBench({ all, closed: [...closed] })
+
 export function Instruments({ seconds }: { seconds: number }) {
-  const [saved] = useState(loadBench)
-  const [all, setAll] = useState(saved.all)
-  const [closed, setClosed] = useState<ReadonlySet<string>>(
-    new Set(saved.closed),
-  )
-  const keep = (nextAll: boolean, nextClosed: ReadonlySet<string>) => {
-    setAll(nextAll)
-    setClosed(nextClosed)
-    saveBench({ all: nextAll, closed: [...nextClosed] })
-  }
+  const { all, closed: closedList } = useStoreValue(bench)
+  const closed = new Set(closedList)
   const fmUp = useBoardValue(c => c.fmLevel > 0)
   const pcmUp = useBoardValue(c => c.pcmLevel > 0)
   const monoUp = useBoardValue(c => c.monoLevel > 0)

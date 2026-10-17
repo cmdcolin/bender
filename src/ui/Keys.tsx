@@ -80,7 +80,9 @@ export function Keys({
           </Tip>
         </>
       }
-      verbs={<DeviceVerbs stage="Toy keyboard" seconds={seconds} onClose={onClose} />}
+      verbs={
+        <DeviceVerbs stage="Toy keyboard" seconds={seconds} onClose={onClose} />
+      }
       tail={<span className={styles.grille} aria-hidden="true" />}
     />
   )

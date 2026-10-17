@@ -35,7 +35,9 @@ export function MonoKeys({
           solderedTip="the synth’s key input is soldered onto the toy’s gate, so the tune next door plays it too, an octave or two down. Press to cut the jumper"
         />
       }
-      verbs={<DeviceVerbs stage="Mono synth" seconds={seconds} onClose={onClose} />}
+      verbs={
+        <DeviceVerbs stage="Mono synth" seconds={seconds} onClose={onClose} />
+      }
       tail={<span className={styles.rocker} aria-hidden="true" />}
     />
   )

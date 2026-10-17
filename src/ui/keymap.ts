@@ -19,7 +19,7 @@ export const DEFAULT_KEYMAP: readonly string[] = [
   ...THROWS.map(t => t.key),
 ]
 
-const isKeymap = (value: unknown): value is string[] =>
+export const isKeymap = (value: unknown): value is string[] =>
   Array.isArray(value) &&
   value.length === DEFAULT_KEYMAP.length &&
   value.every(
@@ -81,6 +81,10 @@ export function moveKey(from: string, to: string) {
   const j = next.indexOf(to)
   next[i] = to
   if (j >= 0) next[j] = from
+  setKeymap(next)
+}
+
+export function setKeymap(next: readonly string[]) {
   keymap.set(next)
   write(KEYMAP_KEY, JSON.stringify(next))
 }
