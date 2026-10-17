@@ -4,7 +4,11 @@ import { engine } from '../engine/engine.ts'
 import { noteName } from '../notes.ts'
 import { bendDeal, bendName } from './bendKeys.ts'
 import { ALL_SLIDERS, groupFor, sliderFor } from './controls/index.ts'
-import { useControlValue, useStoreValue } from './ControlsContext.ts'
+import {
+  useControlValue,
+  useStoreSelect,
+  useStoreValue,
+} from './ControlsContext.ts'
 import {
   AUTOMAP_KEYS,
   DEVICE_PROFILES,
@@ -413,7 +417,7 @@ export function Wired() {
   const lights = useStoreValue(midi.lights)
   const clockOut = useStoreValue(midi.clockOut)
   const noteOut = useStoreValue(midi.noteOut)
-  const stranded = Object.keys(useStoreValue(midi.pickups)).length
+  const stranded = useStoreSelect(midi.pickups, p => Object.keys(p).length)
   const [deviceName, setDeviceName] = useState(DEVICE_PROFILES[0]?.name ?? '')
   const [encoders, setEncoders] = useState(false)
   const device: DeviceProfile | undefined =

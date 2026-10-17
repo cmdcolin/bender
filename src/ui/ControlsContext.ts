@@ -44,3 +44,12 @@ export function useStoreValue<T>(store: {
 }): T {
   return useSyncExternalStore(store.subscribe, store.get)
 }
+
+/** One figure read off a store, with the same bargain as useBoardValue: the
+    component hears only the writes that moved what `read` returns. */
+export function useStoreSelect<S, T>(
+  store: { subscribe: (fn: () => void) => () => void; get: () => S },
+  read: (s: S) => T,
+): T {
+  return useSyncExternalStore(store.subscribe, () => read(store.get()))
+}

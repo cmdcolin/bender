@@ -24,6 +24,7 @@ import { choiceName, sliderFor, snapToStep } from './controls/index.ts'
 import {
   useBoardValue,
   useControlValue,
+  useStoreSelect,
   useStoreValue,
 } from './ControlsContext.ts'
 import { midi } from './midi.ts'
@@ -57,8 +58,8 @@ function write(key: SliderDef['key'], value: number) {
 function Bind({ def }: { def: SliderDef }) {
   const status = useStoreValue(midi.status)
   const armed = useStoreValue(midi.armed)
-  const binding = useStoreValue(midi.bindings)[def.key]
-  const waiting = useStoreValue(midi.pickups)[def.key]
+  const binding = useStoreSelect(midi.bindings, b => b[def.key])
+  const waiting = useStoreSelect(midi.pickups, p => p[def.key])
   if (status !== 'ready') return null
   const mine = armed === def.key
   return (
