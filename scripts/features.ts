@@ -48,7 +48,7 @@ const BLURBS: Record<string, string> = {
     'Two oscillators on one starving supply. B drags A’s frequency around, the output current drains the rail, the rail drags pitch and amplitude, and the stall-and-recover cycle motorboats on its own.',
   'Noise & crackle':
     'Hiss with a colour control, and sparse crackle with a rate of its own.',
-  Sampler:
+  'Tape loop':
     'A loaded audio file, looping through the chain — or, with *Struck by* on a voice and *Ending* on one-shot, a seventh drum voice playing whatever you dropped. The bay reaches its capstan and both loop markers, so a wire drags the reel’s pitch the way a starve drags the toy’s, or walks the loop window around the recording while the head plays on.',
   'Four-track':
     'A cassette four-track: a desk of four channel strips in front of four tape loops, each cut to its own length and all on one capstan. A channel hears its own loop, the board, the mic or the desk’s aux return, through a trim preamp and three bands of EQ into a fader and an aux send, and records onto its loop over whatever the erase head left. Input on the board with a loop recording is a loop round the whole board, so each lap comes back through every bend again. Input on the aux with its send up is a mixer with nothing plugged in: the sweepable mid tunes the squeal and the op-amp rails clip it. *Wear* sheds oxide at the same places every lap, and *Batteries* drags the motor and the rails down together.',
@@ -82,7 +82,7 @@ const BLURBS: Record<string, string> = {
   'Tube amp':
     'Gain stages, a passive tone stack, a push-pull power stage on a supply that sags, an output transformer and a speaker, run at twice the board’s rate so the clipping does not alias. Each triode clips its two halves differently, and a conducting grid charges its coupling cap, so a hard chord squashes the next note for a moment. The tone stack is the real network of three pots that load each other, solved from its netlist, so each knob also changes what the other two do. *Fender* is one gain stage into the stack and a recovery stage; *marshall* cascades two ahead of it, with small cathode caps that thin the bass. A cold *Bias* leaves the output pair crossing over on quiet notes, and *Sag* pulls the rail down under load and shares it with the board’s own dying supply. Three faults sit on the stages: a *Dry cathode cap* that thins the bass and costs gain, a *Weak tube* that loses its even-harmonic cancellation and then arcs, and a *Microphonic* first tube that hears the cabinet and howls at its own resonance. The panel draws the path, with the tone stack’s response underneath.',
   'Patch bay':
-    'Wires, each from a source to a destination at a signed depth. A wire can land on the toy’s supply rail, on the sampler’s capstan and loop markers, or on another wire’s depth — which is how the bay modulates itself.',
+    'Wires, each from a source to a destination at a signed depth. A wire can land on the toy’s supply rail, on the tape loop’s capstan and loop markers, or on another wire’s depth — which is how the bay modulates itself.',
   'Trigger patch':
     'The two boxes’ trigger lines, bridged. The kit can play the keys and the keys can play the kit.',
   'Body contact': 'Two axes, for the hand on the circuit.',
@@ -417,7 +417,7 @@ renders it with the same layout the app uses.
   order, so one always sits out. A mix at zero takes the stage out of the path
   rather than merely silencing it.
 - **A patch bay that modulates itself.** ${cap(num(wires.sliders.filter(s => s.label.endsWith('depth')).length))} wires, ${dests} destinations — among them
-  the supply rail, the sampler's capstan, and the other wires' own depths.
+  the supply rail, the tape loop's capstan, and the other wires' own depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   \`process()\`, so the global loop is at audio rate and every feedback path
   saturates in-loop. Runaway is a feature; a fixed safety tail means no setting
@@ -425,7 +425,7 @@ renders it with the same layout the app uses.
 - **The board ages while you play.** Heat builds off whatever you make it
   dissipate, dry joints drop a bend out of the path mid-note, and *Re-solder*
   rewires the signal chain on its own.
-- **The sampler is the tape.** Drop an audio file anywhere on the page, or roll
+- **The tape loop re-records itself.** Drop an audio file anywhere on the page, or roll
   one off archive.org, and it plays at any speed either way round. Arm *Record*
   and the board lays its own output back onto the reel where the play head is
   reading: what comes past next lap has been through the mix bus, the bends, the

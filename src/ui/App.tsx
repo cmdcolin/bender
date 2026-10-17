@@ -52,6 +52,7 @@ import { boardFrom, boardFromUrl, boardHash } from './share.ts'
 import { StartOverlay } from './StartOverlay.tsx'
 import { Cassette } from './StudioArt.tsx'
 import { TapeShelf } from './TapeShelf.tsx'
+import { TapeTransport } from './TapeTransport.tsx'
 import { Tip } from './Tip.tsx'
 import { useBoardUrl } from './useBoardUrl.ts'
 import { useCurrentSession } from './useCurrentSession.ts'
@@ -186,7 +187,6 @@ export function App(props: { openedFromLink?: boolean }) {
   const monoUp = useBoardValue(c => c.monoLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [showShelf, setShowShelf] = useState(false)
-  const tapeRunning = useBoardValue(c => c.sampleLevel > 0)
   // Which stage's controls the panel is showing. The map is the way in — every
   // group has a door on it, the stages along the path and the rest of the board
   // drawn where it sits — so one stage is open at a time and the rest of the
@@ -425,12 +425,12 @@ export function App(props: { openedFromLink?: boolean }) {
                         save the last 30 s
                       </button>
                     </Tip>
-                    <Tip text="Puts the last 30 seconds you heard on the sampler's tape, to play back through the board.">
+                    <Tip text="Puts the last 30 seconds you heard on the tape loop, to play back through the board.">
                       <button
                         className={styles.ioBtn}
                         onClick={() => engine.keepLast('reel')}
                       >
-                        last 30 s → sampler
+                        last 30 s → tape loop
                       </button>
                     </Tip>
                     <Tip text="Also saves each machine on its own, dry, one wav each — what you drag into a DAW. Locked while a take runs.">
@@ -450,36 +450,11 @@ export function App(props: { openedFromLink?: boolean }) {
               </div>
             </div>
           </section>
-          <section className={styles.box} aria-label="sampler">
-            <span className={styles.label}>sampler</span>
+          <section className={styles.box} aria-label="tape loop">
+            <span className={styles.label}>tape loop</span>
             <div className={styles.controls}>
               <div className={styles.ioRow}>
-                <Tip
-                  text={
-                    sampleName
-                      ? 'Starts or stops the tape. A one-shot starts again from the front.'
-                      : 'Nothing to play yet. Load a tape, drop a file or open the mic.'
-                  }
-                >
-                  <button
-                    className={tapeRunning ? styles.ioBtnToggled : styles.ioBtn}
-                    aria-pressed={tapeRunning}
-                    disabled={!sampleName}
-                    onClick={() => {
-                      const c = engine.controls.get()
-                      if (tapeRunning) {
-                        engine.set('sampleLevel', 0)
-                        return
-                      }
-                      engine.set('sampleLevel', 0.7)
-                      if (c.sampleMode === 1)
-                        engine.seekSample(Math.min(c.loopIn, c.loopOut))
-                    }}
-                  >
-                    {tapeRunning ? '■ stop' : '▶ play'}
-                  </button>
-                </Tip>
-                <Tip text="Puts a tape on the sampler off archive.org: a random one from a shelf, or one you search for.">
+                <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
                   <button
                     className={
                       showShelf && !archiveStep
@@ -526,6 +501,7 @@ export function App(props: { openedFromLink?: boolean }) {
                   </a>
                 )}
               </SampleReel>
+              <TapeTransport loaded={!!sampleName} />
               {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
             </div>
           </section>

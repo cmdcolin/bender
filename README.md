@@ -38,7 +38,7 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 - Tap in the tempo, either delay time, or the modulation rate
 - Buttons to easily randomize settings
 - Connect MIDI controller (works with Chrome, Firefox Nightly)
-- "Tape loop" sampler that has tape head re-recording-over-the-loop effect
+- Tape loop: a looping tape with a head that re-records over the loop
 - Varispeed deck under the whole board — slow the entire instrument for real,
   tempo and pitch together, with a motor that winds down
 - A tape machine that runs open reel, cassette or microcassette, with Dolby B or

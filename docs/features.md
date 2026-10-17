@@ -40,7 +40,8 @@ renders it with the same layout the app uses.
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
 - **A patch bay that modulates itself.** Four wires, 108 destinations — among
-  them the supply rail, the sampler's capstan, and the other wires' own depths.
+  them the supply rail, the tape loop's capstan, and the other wires' own
+  depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
   `process()`, so the global loop is at audio rate and every feedback path
   saturates in-loop. Runaway is a feature; a fixed safety tail means no setting
@@ -48,14 +49,14 @@ renders it with the same layout the app uses.
 - **The board ages while you play.** Heat builds off whatever you make it
   dissipate, dry joints drop a bend out of the path mid-note, and _Re-solder_
   rewires the signal chain on its own.
-- **The sampler is the tape.** Drop an audio file anywhere on the page, or roll
-  one off archive.org, and it plays at any speed either way round. Arm _Record_
-  and the board lays its own output back onto the reel where the play head is
-  reading: what comes past next lap has been through the mix bus, the bends, the
-  pedals and the tape machine, and goes through all of them again. Nothing
-  stands in for generation loss — the loop really is re-recorded every lap,
-  which is why a bend in the path makes it diverge rather than fade. The reel
-  under the keys is drawn off the tape as the head reads it: drag its two
+- **The tape loop re-records itself.** Drop an audio file anywhere on the page,
+  or roll one off archive.org, and it plays at any speed either way round. Arm
+  _Record_ and the board lays its own output back onto the reel where the play
+  head is reading: what comes past next lap has been through the mix bus, the
+  bends, the pedals and the tape machine, and goes through all of them again.
+  Nothing stands in for generation loss — the loop really is re-recorded every
+  lap, which is why a bend in the path makes it diverge rather than fade. The
+  reel under the keys is drawn off the tape as the head reads it: drag its two
   markers to trim the loop, drag the tape itself to move the head.
 - **A microphone into the middle of the board.** _Mic patch_ is not a channel —
   on one setting the mic reaches the mix, on the other six it is soldered onto
@@ -582,7 +583,7 @@ Hiss with a colour control, and sparse crackle with a rate of its own.
 
 </details>
 
-### Sampler
+### Tape loop
 
 A loaded audio file, looping through the chain — or, with _Struck by_ on a voice
 and _Ending_ on one-shot, a seventh drum voice playing whatever you dropped. The
@@ -1064,8 +1065,8 @@ became:
 ### Patch bay
 
 Wires, each from a source to a destination at a signed depth. A wire can land on
-the toy’s supply rail, on the sampler’s capstan and loop markers, or on another
-wire’s depth — which is how the bay modulates itself.
+the toy’s supply rail, on the tape loop’s capstan and loop markers, or on
+another wire’s depth — which is how the bay modulates itself.
 
 <details>
 <summary>14 controls</summary>
@@ -1407,8 +1408,8 @@ board on it — a link never presses play, so it is loaded and waiting.
   delay pedal
 - [**bent sampler**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.3,pcmLevel:0.9,pcmVoice:11,pcmEnv:1,pcmRelease:0.4,pcmTone:5000,pcmAddrLine:2,pcmAddrFault:3,pcmDataLine:8,pcmDataFault:2,delayMs:260,dlyMix:0.3)
   — Whatever you dropped, played across the keyboard off the sample memory with
-  a data line on the rail and the address bus bridged — the sampler’s own fader
-  down, so the only copy you hear is the keyed one
+  a data line on the rail and the address bus bridged — the tape loop’s own
+  fader down, so the only copy you hear is the keyed one
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
   — Starved rail, sagging pitch, watchdog reboots mid-tune
 - [**paperclip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.5,chipStarve:0.3,chipCap:0.6,chipClipHz:3,chipClipClock:0.45,drumLevel:0.25,brownAmt:0.25,humLevel:0.2,faultCluster:0.55)

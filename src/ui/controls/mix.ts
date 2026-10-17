@@ -48,7 +48,7 @@ export const CHANNELS: readonly Channel[] = [
   { key: 'noiseLevel', name: 'Noise & crackle', tap: sourceTap('noise') },
   {
     key: 'sampleLevel',
-    name: 'Sampler',
+    name: 'Tape loop',
     tap: sourceTap('sampler'),
     yours: true,
   },

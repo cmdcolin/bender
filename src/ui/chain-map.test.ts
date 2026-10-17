@@ -175,7 +175,7 @@ test('each source is a box of its own, and a door of its own', () => {
     'FM chip',
     'Home keyboard',
     'Chaos osc',
-    'Sampler',
+    'Tape loop',
   ])
     expect(box(map, name.replace(/\W+/g, '_'))?.kind).toBe('inst')
   expect(hop(map, 'Chaos_osc', 'mix')).toBeTruthy()
@@ -259,7 +259,7 @@ test('a source box carries how far up its fader is, on its own travel', () => {
   // The bar counts up to the top of the normal stretch, so ×1 fills it and an
   // overdriven fader stays full.
   expect(
-    level({ ...DEFAULT_CONTROLS, sampleLevel: 0.5 }, 'Sampler'),
+    level({ ...DEFAULT_CONTROLS, sampleLevel: 0.5 }, 'Tape_loop'),
   ).toBeCloseTo(0.5)
   expect(level({ ...DEFAULT_CONTROLS, fmLevel: 3 }, 'FM_chip')).toBeCloseTo(3)
 })
@@ -649,7 +649,7 @@ test('the folded band is an even grid, with a caption over the foot row', () => 
   const map = buildMap(DEFAULT_CONTROLS, { wrap: true, loop: true })
   const chaos = box(map, 'Chaos_osc')!
   const noise = box(map, 'Noise_crackle')!
-  const sampler = box(map, 'Sampler')!
+  const sampler = box(map, 'Tape_loop')!
   const tape = box(map, 'Four_track')!
   expect(sampler.x).toBe(chaos.x)
   expect(sampler.w).toBe(chaos.w)

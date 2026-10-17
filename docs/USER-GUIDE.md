@@ -315,11 +315,11 @@ the counter itself, which is the classic bend on a keyboard like this — pitch
 and aliasing move together, because on this part they are the same thing.
 
 **sampled** is the voice the machine is famous for. It plays whatever you
-dropped on the sampler across the keys, out of a second and a half of memory at
-the ROM's own rate, with the reel's own loop markers as its loop — so a file on
-the page and a chord button is a vaporwave part. Turn the sampler's own fader
-down and the keyed copy is the only one you hear. With nothing threaded it is
-silent.
+dropped on the tape loop across the keys, out of a second and a half of memory
+at the ROM's own rate, with the reel's own loop markers as its loop — so a file
+on the page and a chord button is a vaporwave part. Turn the tape loop's own
+fader down and the keyed copy is the only one you hear. With nothing threaded it
+is silent.
 
 The knife reaches both of the chip's buses. **Address line** is the counter's
 own wires: every word that comes back is a real word from the wrong place, so a
@@ -548,7 +548,7 @@ different from the keyboard's **Rec** and the drum machine's **Record**, which
 capture what you played rather than what comes out of the speakers.
 
 **⟲ last 30s** saves the last half minute of output even if nothing was
-recording, and **⟲ → reel** puts it on the sampler instead.
+recording, and **⟲ → reel** puts it on the tape loop instead.
 
 ### Varispeed
 
@@ -569,8 +569,8 @@ stems both, is what the deck played.
 
 The selector beside it sets what a take comes back as. **Master only** is one
 file. **Master + stems** adds one wav per source that had anything on it — toy
-keyboard, drums, FM chip, chaos oscillator, noise, sampler — named
-`bender-<stamp>-toy.wav`, `-drums`, `-fm`, `-chaos`, `-noise`, and `-sampler`,
+keyboard, drums, FM chip, chaos oscillator, noise, tape loop — named
+`bender-<stamp>-toy.wav`, `-drums`, `-fm`, `-chaos`, `-noise`, and `-tape-loop`,
 beside `bender-<stamp>-master.wav`.
 
 A stem is the dry source, taken where it sums into the mix bus — before the bus
@@ -681,7 +681,7 @@ account holds.
 
 Signed in, the app also mirrors the board you have open onto your account; the
 [home page](https://cmdcolin.github.io/bender/) offers it back under **Continue
-where you left off**. A recording on the sampler and the mic don't travel with
+where you left off**. A recording on the tape loop and the mic don't travel with
 it. Opening the app, a demo, or a shared link doesn't touch the mirror until you
 change something.
 

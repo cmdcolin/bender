@@ -2622,7 +2622,7 @@ export const SOURCE_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Sampler',
+    name: 'Tape loop',
     place: 'Sources',
     // The reel itself lives beside the keys rather than in here, because it is
     // the one thing on this stage you watch rather than set: what is on the
@@ -2636,7 +2636,7 @@ export const SOURCE_GROUPS: Group[] = [
     sliders: [
       {
         key: 'sampleLevel',
-        lane: 'sampler level',
+        lane: 'tape loop level',
         label: 'Level',
         role: 'level',
         min: 0,
@@ -2648,7 +2648,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'sampleSpeed',
-        lane: 'tape speed (sampler)',
+        lane: 'tape loop speed',
         label: 'Speed',
         min: -4,
         max: 4,

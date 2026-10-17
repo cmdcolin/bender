@@ -475,7 +475,9 @@ test('a fold with nothing moved under it offers no way back', () => {
 // going one way and a tape going the other, and landing on neither by dragging
 // past is the thing that made the change too quiet to notice.
 const speed = () => {
-  render(<OpenGroup group={group('Sampler')} onClose={() => {}} seconds={1} />)
+  render(
+    <OpenGroup group={group('Tape loop')} onClose={() => {}} seconds={1} />,
+  )
   return screen.getByRole('slider', { name: 'Speed' })
 }
 

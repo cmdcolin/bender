@@ -49,9 +49,9 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   wDepth3: 'Patch bay',
   echoMs: 'Delay pedal',
   ensRate: 'Ensemble',
-  sampleSpeed: 'Sampler',
-  loopSlide: 'Sampler',
-  loopSpan: 'Sampler',
+  sampleSpeed: 'Tape loop',
+  loopSlide: 'Tape loop',
+  loopSpan: 'Tape loop',
   oscStarve: 'Chaos osc',
   oscHz: 'Chaos osc',
   chipLevel: 'Toy keyboard',
@@ -59,7 +59,7 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fmLevel: 'FM chip',
   oscLevel: 'Chaos osc',
   noiseLevel: 'Noise & crackle',
-  sampleLevel: 'Sampler',
+  sampleLevel: 'Tape loop',
   filtRes: 'Screech filter',
   fmBright: 'FM chip',
   fbMs: 'Feedback bus',
@@ -187,7 +187,7 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Toy drums': ['drumLevel'],
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
-  Sampler: ['sampleLevel'],
+  'Tape loop': ['sampleLevel'],
   'Four-track': ['fourLevel'],
 }
 
@@ -222,7 +222,7 @@ const MONO = 'Mono synth'
 const LINE_ROW = [
   'Chaos osc',
   'Noise & crackle',
-  'Sampler',
+  'Tape loop',
   'Four-track',
 ] as const
 
@@ -1903,7 +1903,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       strokeWidth: 0.9,
     }),
   ],
-  Sampler: (x, y, c) => [
+  'Tape loop': (x, y, c) => [
     el('path', {
       d: [3.4, 8, 5, 10.4, 6, 2.8]
         .map((h, i) => `M ${x + 1.2 + i * 2} ${y + 6 - h / 2} v ${h}`)

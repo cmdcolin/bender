@@ -82,7 +82,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'bent sampler',
     blurb:
-      'Whatever you dropped, played across the keyboard off the sample memory with a data line on the rail and the address bus bridged — the sampler’s own fader down, so the only copy you hear is the keyed one',
+      'Whatever you dropped, played across the keyboard off the sample memory with a data line on the rail and the address bus bridged — the tape loop’s own fader down, so the only copy you hear is the keyed one',
     patch: {
       pcmLevel: 0.9,
       pcmVoice: keys('sampled'),

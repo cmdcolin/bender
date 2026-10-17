@@ -696,7 +696,7 @@ export const STEM_FILES = [
   'mono',
   'chaos',
   'noise',
-  'sampler',
+  'tape-loop',
   'four-track',
 ] as const
 
