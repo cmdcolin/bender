@@ -384,6 +384,11 @@ export interface Options {
       sits between them. Only where the feedback lands on the mix bus; any other
       destination folds the usual way. */
   loop?: boolean
+  /** With wrap, lays the four line sources out as an even grid hung off one
+      bus line down the middle, instead of an inset pair under a pair. */
+  spine?: boolean
+  /** Names the foot row, so it reads as fittings rather than a fourth stage. */
+  caption?: boolean
   /** The stage whose controls the panel is showing, lit on the map. */
   open?: string
   /** Sources putting something on the bus right now, off the meters the desk
@@ -550,6 +555,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // two and two. The upper pair's leads run down the outside of the lower pair,
   // which sits in from the edges to leave them the room.
   const lineRows = o.wrap ? [lines.slice(0, 2), lines.slice(2)] : [lines]
+  const spine = !!o.wrap && !!o.spine
+  const lineGap = spine ? INST_GAP * 1.5 : INST_GAP
   // The frame is a door too: the parts on the board — the cap on the timing
   // pin, the reset chip, the one output stage — are what the outline is round.
   // So the lip says what it opens rather than what the outline is: four named
@@ -664,6 +671,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       c.relayRate > 0,
   )
   const order = stage('Signal order', touchedCount('Signal order', c) > 0)
+  const fittings = o.caption
+    ? node('fittings', 'label', 'fittings', {
+        w: textWidth('fittings', SMALL),
+        active: false,
+        anchor: 'start',
+        h: LABEL_H,
+      })
+    : undefined
   // Pad then bay, left to right, because that is the way the one wire between
   // them runs: the pad's two axes reach the board only through the bay. Wear
   // and Signal order touch neither, so they stand clear on the end.
@@ -801,8 +816,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
   const bodyBottom = pathTop + Math.max(stack(down), stack(upCol))
   if (!loop) bus.y = bodyBottom + BUS_GAP
-  const footY = loop ? bodyBottom + BUS_GAP : bus.y + bus.h + ROW_GAP
+  const captionY = loop ? bodyBottom + BUS_GAP : bus.y + bus.h + ROW_GAP
+  const footY = captionY + (o.caption ? LABEL_H + 2 : 0)
   for (const n of foot) n.y = footY
+  if (fittings) fittings.y = captionY
 
   // --- across it, at an origin of zero, so the gutters can be measured off the
   // --- x each box has already landed on and everything shifted once after ----
@@ -818,6 +835,11 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       natural,
     )
   for (const [r, row] of lineRows.entries()) {
+    if (spine) {
+      const w = (content - lineGap) / 2
+      for (const [i, n] of row.entries()) [n.w, n.x] = [w, i * (w + lineGap)]
+      continue
+    }
     const inset = r > 0 ? INST_GAP : 0
     spread(
       row,
@@ -901,6 +923,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const colX = MARGIN + sideGutter
   for (const n of [...path, ...band, ...foot, ...parts, board, mix, bus])
     n.x += colX
+  if (fittings) fittings.x = foot[0]!.x
 
   const width = MARGIN * 2 + sideGutter * 2 + content
   const laneX = (side: Side) =>
@@ -1145,7 +1168,27 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   for (let r = 1; r < channels.length; r++)
     boardOut.push([channels[r - 1]!, between(r)], [channels[r]!, between(r)])
   boardOut.push([channels[channels.length - 1]!, collectY])
-  bar('board-out', board, mix, boardOut, { color: k.border })
+  bar(
+    'board-out',
+    board,
+    mix,
+    spine ? [boardOut[0]!, boardOut[boardOut.length - 1]!] : boardOut,
+    { color: k.border },
+  )
+  if (spine) {
+    for (const row of lineRows)
+      for (const [i, src] of row.entries())
+        bar(
+          `${src.id}-out`,
+          src,
+          mix,
+          [
+            [i === 0 ? src.x + src.w : src.x, midY(src)],
+            [channels[0]!, midY(src)],
+          ],
+          { color: k.border },
+        )
+  }
   // The upper pair of a stacked band leads down its outer edges, clear of the
   // pair under it.
   const leadX = (src: MapNode, r: number, i: number) =>
@@ -1155,7 +1198,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         : src.x + src.w - INST_GAP / 2
       : midX(src)
   const leads: number[] = []
-  for (const [r, row] of lineRows.entries())
+  for (const [r, row] of spine ? [] : lineRows.entries())
     for (const [i, src] of row.entries()) {
       const x = leadX(src, r, i)
       leads.push(x)
@@ -1170,16 +1213,17 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         { color: k.border },
       )
     }
-  bar(
-    'collect',
-    mix,
-    mix,
-    [
-      [Math.min(...channels, ...leads), collectY],
-      [Math.max(...channels, ...leads), collectY],
-    ],
-    { color: k.border },
-  )
+  if (!spine)
+    bar(
+      'collect',
+      mix,
+      mix,
+      [
+        [Math.min(...channels, ...leads), collectY],
+        [Math.max(...channels, ...leads), collectY],
+      ],
+      { color: k.border },
+    )
   wire(
     'collect-mix',
     mix,
@@ -1406,6 +1450,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       ...parts,
       ...notes,
       ...labels,
+      ...(fittings ? [fittings] : []),
     ],
     wires,
     doors,
