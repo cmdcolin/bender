@@ -9,8 +9,14 @@ const F_MARGIN = 0.98
 export class Svf {
   low = 0
   band = 0
+  private dampWas = Number.NaN
+  private fMax = 0
   process(x: number, fIn: number, damp: number, mode: number): number {
-    const f = Math.min(fIn, F_MARGIN * (Math.sqrt(damp * damp + 4) - damp))
+    if (damp !== this.dampWas) {
+      this.dampWas = damp
+      this.fMax = F_MARGIN * (Math.sqrt(damp * damp + 4) - damp)
+    }
+    const f = fIn < this.fMax ? fIn : this.fMax
     this.low = flushDenormal(this.low + f * this.band)
     const high = x - this.low - damp * this.band
     this.band = flushDenormal(softclip(this.band + f * high))
