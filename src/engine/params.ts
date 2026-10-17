@@ -5,7 +5,9 @@
 import type { ControlKey, Controls } from '../controls.ts'
 
 // slew: one-pole toward target (~10 ms) — knob moves smear musically.
-// ramp: per-sample linear across the block — gains where zipper is audible.
+// ramp: one-pole toward target (~3 ms) — gains where zipper is audible. The
+//   chain's mutes, bypasses, summing drive and output gain also interpolate
+//   across the block.
 // step: snap instantly — hard steps are the circuit-bent aesthetic.
 export type Smooth = 'slew' | 'ramp' | 'step'
 

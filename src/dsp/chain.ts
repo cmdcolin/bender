@@ -236,6 +236,8 @@ export class Chain {
   private readonly deskEnv = new Follower()
   private deskRail = 1
   private deskLast = 0
+  private driveDbWas = Number.NaN
+  private outGainWas = -1
   private outEnv = new Follower()
   private limitEnv = 0
   // The six slot params, read once a block into a buffer this owns, and one bit
@@ -591,8 +593,22 @@ export class Chain {
     // stage being driven on its own — and the feedback return lands here, so
     // a howl saturates in the amp it is coming back through.
     const driveDb = p[IDX.mixDrive]!
+    const driveFrom = Number.isNaN(this.driveDbWas) ? driveDb : this.driveDbWas
+    this.driveDbWas = driveDb
     let busPeak = 0
-    if (driveDb === 0) {
+    if (driveFrom !== driveDb) {
+      const dbStep = (driveDb - driveFrom) / n
+      for (let i = 0; i < n; i++) {
+        const g = Math.pow(10, (driveFrom + dbStep * (i + 1)) / 20)
+        const makeup = softclip(BUS_REF) / softclip(BUS_REF * g)
+        const l = softclip(io.l[i]! * g) * makeup
+        const r = softclip(io.r[i]! * g) * makeup
+        io.l[i] = l
+        io.r[i] = r
+        const a = Math.max(l < 0 ? -l : l, r < 0 ? -r : r)
+        if (a > busPeak) busPeak = a
+      }
+    } else if (driveDb === 0) {
       for (let i = 0; i < n; i++) {
         const l = io.l[i]!
         const r = io.r[i]!
@@ -684,7 +700,10 @@ export class Chain {
   // process() and inlines the dc blockers, the clipper and the followers.
   private tail(io: StereoBlock, p: Float32Array, n: number) {
     const ctx = this.ctx
-    const gain = Math.pow(10, p[IDX.outGain]! / 20)
+    const gainTo = Math.pow(10, p[IDX.outGain]! / 20)
+    const gainFrom = this.outGainWas < 0 ? gainTo : this.outGainWas
+    const gainStep = (gainTo - gainFrom) / n
+    this.outGainWas = gainTo
     const dcCoef = 1 - (2 * Math.PI * 10) / this.sr
     const envA = coef(0.005, this.sr)
     const envR = coef(0.08, this.sr)
@@ -692,6 +711,7 @@ export class Chain {
     const brightA = coef(0.008, this.sr)
     const brightR = coef(0.05, this.sr)
     for (let i = 0; i < n; i++) {
+      const gain = gainFrom + gainStep * (i + 1)
       const l = softclip(this.dcL.process(io.l[i]! * gain, dcCoef))
       const r = softclip(this.dcR.process(io.r[i]! * gain, dcCoef))
       io.l[i] = l
