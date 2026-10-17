@@ -4,7 +4,12 @@ import { BLOCK, type Ctx, type Stage, type StereoBlock } from '../stage.ts'
 import { BiquadState, flat, peak, shelf } from '../util/biquad.ts'
 import { coef } from '../util/follower.ts'
 import { SineOsc } from '../util/lfo.ts'
-import { LoopAmp, ampVoicing, type AmpVoicing } from '../util/loopamp.ts'
+import {
+  LoopAmp,
+  ampVoicing,
+  newVoicing,
+  type AmpVoicing,
+} from '../util/loopamp.ts'
 import { lpCoef } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
 import { gaussian, mulberry32, type Rng } from '../util/rng.ts'
@@ -103,9 +108,9 @@ class Strip {
   private readonly lo = new BiquadState()
   private readonly mid = new BiquadState()
   private readonly hi = new BiquadState()
-  loC = flat()
-  midC = flat()
-  hiC = flat()
+  readonly loC = flat()
+  readonly midC = flat()
+  readonly hiC = flat()
   loOn = false
   midOn = false
   hiOn = false
@@ -124,18 +129,18 @@ class Strip {
     if (low !== this.keyLo) {
       this.keyLo = low
       this.loOn = low !== 0
-      this.loC = shelf(LOW_HZ, low, sr, false)
+      shelf(LOW_HZ, low, sr, false, this.loC)
     }
     if (mid !== this.keyMid || midHz !== this.keyMidHz) {
       this.keyMid = mid
       this.keyMidHz = midHz
       this.midOn = mid !== 0
-      this.midC = peak(midHz, mid, MID_Q, sr)
+      peak(midHz, mid, MID_Q, sr, this.midC)
     }
     if (high !== this.keyHi) {
       this.keyHi = high
       this.hiOn = high !== 0
-      this.hiC = shelf(HIGH_HZ, high, sr, true)
+      shelf(HIGH_HZ, high, sr, true, this.hiC)
     }
   }
 
@@ -503,6 +508,7 @@ export class FourTrack implements Stage {
     r: new LoopAmp(),
   }
   private readonly s: Settings
+  private readonly voicing = newVoicing()
   private readonly gauss: Rng
   private aux = 0
   private auxHp = 0
@@ -640,6 +646,7 @@ export class FourTrack implements Stage {
       0.15 + 0.35 * battery,
       0.5 * battery,
       sr,
+      this.voicing,
     )
     const sag =
       battery * SAG * (1 - SAG_LOAD + SAG_LOAD * Math.min(this.load, 2))

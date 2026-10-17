@@ -51,26 +51,35 @@ export interface AmpVoicing {
   blockRel: number
 }
 
+export const newVoicing = (): AmpVoicing => ({
+  rails: 0,
+  asym: 0,
+  slewStep: 0,
+  block: 0,
+  blockAtk: 0,
+  blockRel: 0,
+})
+
 export function ampVoicing(
   rails: number,
   asym: number,
   slew: number,
   block: number,
   sr: number,
+  out: AmpVoicing = newVoicing(),
 ): AmpVoicing {
   // A knob at rest is a stage that isn't there, not a stage set gently: the
   // slew limiter and the coupling cap both leave the sample untouched at zero,
   // so a board that never asked for either renders what it always rendered.
   const corner =
     slew > 0 ? SLEW_TOP * Math.pow(SLEW_BOTTOM / SLEW_TOP, slew) : 0
-  return {
-    rails,
-    asym: Math.min(Math.max(asym, -1), 1) * ASYM_MAX,
-    slewStep: corner > 0 ? (2 * Math.PI * corner) / sr : 0,
-    block,
-    blockAtk: coef(BLOCK_ATK, sr),
-    blockRel: coef(BLOCK_REL, sr),
-  }
+  out.rails = rails
+  out.asym = Math.min(Math.max(asym, -1), 1) * ASYM_MAX
+  out.slewStep = corner > 0 ? (2 * Math.PI * corner) / sr : 0
+  out.block = block
+  out.blockAtk = coef(BLOCK_ATK, sr)
+  out.blockRel = coef(BLOCK_REL, sr)
+  return out
 }
 
 /**

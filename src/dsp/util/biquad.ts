@@ -15,6 +15,7 @@ export function shelf(
   db: number,
   sr: number,
   high: boolean,
+  out: Biquad = flat(),
 ): Biquad {
   const a = Math.pow(10, db / 40)
   const w = (2 * Math.PI * hz) / sr
@@ -28,22 +29,32 @@ export function shelf(
   const a0 = a + 1 + sign * (a - 1) * cos + s
   const a1 = -sign * 2 * (a - 1 + sign * (a + 1) * cos)
   const a2 = a + 1 + sign * (a - 1) * cos - s
-  return { b0: b0 / a0, b1: b1 / a0, b2: b2 / a0, a1: a1 / a0, a2: a2 / a0 }
+  out.b0 = b0 / a0
+  out.b1 = b1 / a0
+  out.b2 = b2 / a0
+  out.a1 = a1 / a0
+  out.a2 = a2 / a0
+  return out
 }
 
-export function peak(hz: number, db: number, q: number, sr: number): Biquad {
+export function peak(
+  hz: number,
+  db: number,
+  q: number,
+  sr: number,
+  out: Biquad = flat(),
+): Biquad {
   const a = Math.pow(10, db / 40)
   const w = (2 * Math.PI * Math.min(hz, sr * 0.45)) / sr
   const cos = Math.cos(w)
   const alpha = Math.sin(w) / (2 * q)
   const a0 = 1 + alpha / a
-  return {
-    b0: (1 + alpha * a) / a0,
-    b1: (-2 * cos) / a0,
-    b2: (1 - alpha * a) / a0,
-    a1: (-2 * cos) / a0,
-    a2: (1 - alpha / a) / a0,
-  }
+  out.b0 = (1 + alpha * a) / a0
+  out.b1 = (-2 * cos) / a0
+  out.b2 = (1 - alpha * a) / a0
+  out.a1 = (-2 * cos) / a0
+  out.a2 = (1 - alpha / a) / a0
+  return out
 }
 
 export function lowpass(hz: number, q: number, sr: number): Biquad {
