@@ -3,7 +3,7 @@ import { applyPreset } from '../src/ui/presets/apply.ts'
 import { PRESETS } from '../src/ui/presets/table.ts'
 import { boardHash } from '../src/ui/share.ts'
 import { SHOT, SHOT_H, SHOT_W } from '../src/ui/whySignIn.ts'
-import { attach, chromePath, sleep } from './chrome.ts'
+import { attach, chromePath, sleep, until } from './chrome.ts'
 import { serveDev } from './serve.ts'
 
 import { execFileSync, spawn } from 'node:child_process'
@@ -92,7 +92,7 @@ async function shoot(url: string, into: string) {
       deviceScaleFactor: DPR,
       mobile: false,
     })
-    await sleep(2500)
+    await until(page, '!!window.benderShowHome')
 
     await page.send('Runtime.evaluate', {
       expression: `(() => {

@@ -136,3 +136,21 @@ export async function attach(port: number): Promise<Page> {
     close: () => ws.close(),
   }
 }
+
+export const APP_READY = `!!window.bender && !!document.querySelector('[data-door]')`
+
+/** Poll an expression in the page until it holds, instead of guessing a load time. */
+export async function until(page: Page, expression: string, ms = 60_000) {
+  const end = Date.now() + ms
+  for (;;) {
+    const answer = await page
+      .send<{ result: { value?: unknown } }>('Runtime.evaluate', {
+        expression,
+        returnByValue: true,
+      })
+      .catch(() => null)
+    if (answer?.result.value) return
+    if (Date.now() > end) throw new Error(`timed out waiting for ${expression}`)
+    await sleep(100)
+  }
+}

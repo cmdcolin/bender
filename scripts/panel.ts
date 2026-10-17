@@ -1,7 +1,14 @@
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
 import { encodeControls } from '../src/ui/share.ts'
 import { HEAVY } from './boards.ts'
-import { attach, chromePath, sleep, type Page } from './chrome.ts'
+import {
+  attach,
+  chromePath,
+  sleep,
+  APP_READY,
+  until,
+  type Page,
+} from './chrome.ts'
 import { buildAndPreview } from './serve.ts'
 
 // What the panel costs the *browser's* main thread, and which part of a frame
@@ -238,7 +245,7 @@ async function main() {
   try {
     const page = await attach(DEBUG_PORT)
     await page.send('Runtime.enable')
-    await sleep(2500)
+    await until(page, APP_READY)
     await mouse(page, 'mousePressed', 700, 950)
     await mouse(page, 'mouseReleased', 700, 950)
     await sleep(400)

@@ -1,4 +1,11 @@
-import { attach, chromePath, sleep, type Page } from './chrome.ts'
+import {
+  attach,
+  chromePath,
+  sleep,
+  APP_READY,
+  until,
+  type Page,
+} from './chrome.ts'
 import { serveDev } from './serve.ts'
 
 // Walks the whole panel and asks three things a screenshot cannot: is any text
@@ -311,7 +318,7 @@ async function main() {
   try {
     const page = await attach(DEBUG_PORT)
     await page.send('Runtime.enable')
-    await sleep(2500)
+    await until(page, APP_READY)
     // In silence: nothing here needs the board running, and an AudioContext is
     // one more thing that can fail on a machine with no output device.
     await ask(

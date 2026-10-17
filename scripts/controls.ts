@@ -1,4 +1,4 @@
-import { attach, chromePath, sleep } from './chrome.ts'
+import { attach, chromePath, sleep, APP_READY, until } from './chrome.ts'
 import { serveDev } from './serve.ts'
 
 import { spawn } from 'node:child_process'
@@ -82,7 +82,7 @@ async function main() {
       await page.send('Emulation.setTouchEmulationEnabled', { enabled: true })
       await page.send('Page.reload')
     }
-    await sleep(3000)
+    await until(page, APP_READY)
     await ask(`document.querySelector('[class*=start]')?.click()`)
     await sleep(500)
     await collect()

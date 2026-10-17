@@ -1,6 +1,13 @@
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
 import { encodeControls } from '../src/ui/share.ts'
-import { attach, chromePath, sleep, type Page } from './chrome.ts'
+import {
+  attach,
+  chromePath,
+  sleep,
+  APP_READY,
+  until,
+  type Page,
+} from './chrome.ts'
 import { serveDev } from './serve.ts'
 
 import { execFileSync, spawn } from 'node:child_process'
@@ -118,7 +125,6 @@ const clickText = (page: Page, text: string) =>
 // with these shots, so both come down first, whether or not they are there.
 async function dismissStart(page: Page) {
   await clickText(page, 'look at it in silence')
-  await clickText(page, 'look around in silence')
 }
 
 interface Rect {
@@ -192,7 +198,7 @@ async function shoot(url: string, shot: Shot, into: string) {
       deviceScaleFactor: DPR,
       mobile: false,
     })
-    await sleep(2500)
+    await until(page, APP_READY)
     await dismissStart(page)
     await sleep(300)
     if (shot.act) {
