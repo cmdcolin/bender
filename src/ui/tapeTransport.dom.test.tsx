@@ -14,7 +14,7 @@ const speed = () => engine.controls.get().sampleSpeed
 test('with nothing on the tape every verb is dead', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<TapeTransport loaded={false} />)
-  for (const name of ['▶ play', '◀ reverse', '½×', '1×', '2×'])
+  for (const name of ['play', 'reverse', '½×', '1×', '2×'])
     expect(
       screen.getByRole<HTMLButtonElement>('button', { name }).disabled,
     ).toBe(true)
@@ -25,21 +25,21 @@ test('reverse turns the speed round and the speed picks keep the direction', () 
   render(<TapeTransport loaded />)
   press('2×')
   expect(speed()).toBe(2)
-  press('◀ reverse')
+  press('reverse')
   expect(speed()).toBe(-2)
-  expect(screen.getByRole('button', { name: '◀ reverse' }).ariaPressed).toBe(
+  expect(screen.getByRole('button', { name: 'reverse' }).ariaPressed).toBe(
     'true',
   )
   press('½×')
   expect(speed()).toBe(-0.5)
-  press('◀ reverse')
+  press('reverse')
   expect(speed()).toBe(0.5)
 })
 
 test('reverse on a frozen tape runs it backwards at normal speed', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, sampleSpeed: 0 })
   render(<TapeTransport loaded />)
-  press('◀ reverse')
+  press('reverse')
   expect(speed()).toBe(-1)
 })
 
@@ -53,8 +53,22 @@ test('a speed between the picks leaves all three unpressed', () => {
 test('play starts the tape and stop takes the level back to nothing', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, sampleLevel: 0 })
   render(<TapeTransport loaded />)
-  press('▶ play')
+  press('play')
   expect(engine.controls.get().sampleLevel).toBeGreaterThan(0)
-  press('■ stop')
+  press('stop')
   expect(engine.controls.get().sampleLevel).toBe(0)
+})
+
+test('play stays down until stop pops it, and stop is dead while stopped', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, sampleLevel: 0 })
+  render(<TapeTransport loaded />)
+  const stop = () =>
+    screen.getByRole<HTMLButtonElement>('button', { name: 'stop' })
+  expect(stop().disabled).toBe(true)
+  press('play')
+  const level = engine.controls.get().sampleLevel
+  press('play')
+  expect(engine.controls.get().sampleLevel).toBe(level)
+  expect(screen.getByRole('button', { name: 'play' }).ariaPressed).toBe('true')
+  expect(stop().disabled).toBe(false)
 })

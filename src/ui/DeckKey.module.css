@@ -1,0 +1,42 @@
+/* The recess a deck's keys stand in: a bar of black the keys sit down into,
+   so a row of them reads as one transport rather than a row of buttons. */
+.well {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-xs) var(--space-sm);
+  background: var(--bg);
+  border: 1px solid var(--border-quiet);
+  border-radius: 4px;
+}
+
+.key {
+  composes: deck from './button.module.css';
+}
+
+.keyOn {
+  composes: deckOn from './button.module.css';
+}
+
+.keyRed {
+  composes: deckRed from './button.module.css';
+}
+
+.keyRedOn {
+  composes: deckRedOn from './button.module.css';
+}
+
+.keySmall {
+  composes: deckSmall from './button.module.css';
+}
+
+.keySmallOn {
+  composes: deckSmallOn from './button.module.css';
+}
+
+.glyph {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}

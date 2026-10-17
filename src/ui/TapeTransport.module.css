@@ -4,13 +4,3 @@
   align-items: center;
   gap: var(--gap-ctl);
 }
-
-.verb {
-  composes: action from './button.module.css';
-  white-space: nowrap;
-}
-
-.verbOn {
-  composes: actionOn from './button.module.css';
-  white-space: nowrap;
-}

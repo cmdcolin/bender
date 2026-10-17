@@ -444,6 +444,110 @@
   border-color: var(--accent);
 }
 
+/* A key on the front of a tape deck: a glyph over its engraved legend, raised
+   on a hard edge of the case and sinking into it when pressed. Taller than
+   every other kind because a deck's keys are hit rather than aimed at. */
+.deck {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 44px;
+  min-height: 38px;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  background: var(--surface-raised);
+  color: var(--fg2);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+  box-shadow: 0 3px 0 var(--border-quiet);
+  cursor: pointer;
+}
+
+.deck:hover:not(:disabled) {
+  color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+.deck:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.deck:disabled {
+  color: var(--fg4);
+  border-color: var(--border-quiet);
+  box-shadow: 0 3px 0 var(--surface);
+  cursor: default;
+}
+
+/* Latched down, the way play stays in until stop pops it: sunk, darker than the
+   case, its glyph lit. */
+.deckOn {
+  composes: deck;
+  transform: translateY(3px);
+  box-shadow: none;
+  background: var(--surface);
+  color: var(--accent);
+  border-color: var(--fg4);
+}
+
+.deckOn:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--fg4);
+}
+
+/* Record, and anything live that has to read as dangerous: red at rest, and
+   latched in the alarm wash while it runs. */
+.deckRed {
+  composes: deck;
+  color: var(--alarm);
+}
+
+.deckRed:hover:not(:disabled) {
+  color: var(--alarm);
+}
+
+.deckRedOn {
+  composes: deckOn;
+  background: var(--alarm-wash);
+  color: var(--alarm);
+  border-color: var(--alarm);
+}
+
+.deckRedOn:hover:not(:disabled) {
+  color: var(--alarm);
+  border-color: var(--alarm);
+}
+
+/* A short key for a speed: no glyph, one word. */
+.deckSmall {
+  composes: deck;
+  min-width: 32px;
+  min-height: 26px;
+  font-size: var(--fs-sm);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.deckSmallOn {
+  composes: deckSmall;
+  transform: translateY(3px);
+  box-shadow: none;
+  background: var(--surface);
+  color: var(--accent);
+  border-color: var(--fg4);
+}
+
+.deckSmallOn:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--fg4);
+}
+
 /* Under a finger, theme.css raises both heights to 32px and the padding grows
    to match. A tablet is as wide as a laptop, so the query asks about the
    pointer and leaves the window width alone. */
@@ -451,7 +555,9 @@
   .action,
   .chip,
   .pick,
-  .cap {
+  .cap,
+  .deck,
+  .deckSmall {
     padding: 0 var(--space-md);
   }
 }

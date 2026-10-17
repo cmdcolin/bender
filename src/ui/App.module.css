@@ -295,19 +295,8 @@
   composes: action from './button.module.css';
 }
 
-/* Running, and the way out of it: stopping the mic or the recorder is the
-   thing this button is for once it has started. */
 .ioBtnToggled {
   composes: actionOn from './button.module.css';
-}
-
-.ioBtnOn {
-  composes: actionDanger from './button.module.css';
-}
-
-.recBtnOn {
-  composes: actionLive from './button.module.css';
-  font-variant-numeric: tabular-nums;
 }
 
 .drop,

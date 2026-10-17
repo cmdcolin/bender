@@ -20,6 +20,7 @@ import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { DeckKey, DeckWell } from './DeckKey.tsx'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
 import { DrumKit } from './DrumKit.tsx'
@@ -376,28 +377,35 @@ export function App(props: { openedFromLink?: boolean }) {
                   >
                     {clock(recSeconds)}
                   </span>
-                  <Tip
-                    text={
-                      recStems
-                        ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                        : 'Records the output to a wav file — stopping saves it.'
-                    }
-                  >
-                    <button
-                      className={recording ? styles.recBtnOn : styles.ioBtn}
-                      onClick={() =>
-                        recording
-                          ? engine.stopRecording()
-                          : engine.startRecording()
+                  <DeckWell label="recorder keys">
+                    <Tip
+                      text={
+                        recStems
+                          ? 'Records the output and every source that had something on it — stopping saves the lot.'
+                          : 'Records the output to a wav file — stopping saves it.'
                       }
                     >
-                      {recording
-                        ? `■ stop & save ${clock(recSeconds)}`
-                        : recStems
-                          ? '● record stems'
-                          : '● record wav'}
-                    </button>
-                  </Tip>
+                      <DeckKey
+                        glyph="rec"
+                        legend="rec"
+                        name={recStems ? 'record stems' : 'record wav'}
+                        red
+                        latched={recording}
+                        onClick={() => {
+                          if (!recording) engine.startRecording()
+                        }}
+                      />
+                    </Tip>
+                    <Tip text="Stops the take and saves it.">
+                      <DeckKey
+                        glyph="stop"
+                        legend="stop"
+                        name="stop and save"
+                        disabled={!recording}
+                        onClick={() => engine.stopRecording()}
+                      />
+                    </Tip>
+                  </DeckWell>
                   <button
                     className={showOptions ? styles.ioBtnToggled : styles.ioBtn}
                     aria-expanded={showOptions}
@@ -454,30 +462,30 @@ export function App(props: { openedFromLink?: boolean }) {
           <section className={styles.box} aria-label="tape loop">
             <span className={styles.label}>tape loop</span>
             <div className={styles.controls}>
-              <div className={styles.ioRow}>
+              <DeckWell label="tape source">
                 <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
-                  <button
+                  <DeckKey
                     ref={setShelfBtn}
-                    className={
-                      showShelf && !archiveStep
-                        ? styles.ioBtnToggled
-                        : styles.ioBtn
-                    }
+                    glyph={archiveStep ? 'cancel' : 'eject'}
+                    legend={archiveStep ? 'cancel' : 'load'}
+                    name={archiveStep ? 'cancel' : 'load a tape'}
+                    latched={showShelf && !archiveStep}
                     aria-expanded={showShelf && !archiveStep}
                     onClick={() =>
                       archiveStep ? engine.cancelRoll() : setShowShelf(o => !o)
                     }
-                  >
-                    {archiveStep ? '✕ cancel' : '⚄ load a tape'}
-                  </button>
+                  />
                 </Tip>
-                <button
-                  className={micOn ? styles.ioBtnOn : styles.ioBtn}
-                  onClick={() => engine.enableMic()}
-                >
-                  {micOn ? '● mic' : 'mic'}
-                </button>
-              </div>
+                <Tip text="Opens the microphone as an input to the board.">
+                  <DeckKey
+                    glyph="mic"
+                    legend="mic"
+                    red
+                    latched={micOn}
+                    onClick={() => engine.enableMic()}
+                  />
+                </Tip>
+              </DeckWell>
               {showShelf && !archiveStep && (
                 <TapeShelf
                   anchor={shelfBtn}
