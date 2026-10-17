@@ -25,9 +25,16 @@ import {
 } from './bendKeys.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { isTyping } from './isTyping.ts'
+import {
+  KEY_ROWS,
+  keymap,
+  noteKeys,
+  octaveKeys,
+  remapOpen,
+  throwForKey,
+} from './keymap.ts'
 import { letterKeys } from './letters.ts'
 import { pressThrow, releaseThrow, useThrowKeys } from './throwKeys.ts'
-import { throwForKey } from './throws.ts'
 import { Tip } from './Tip.tsx'
 
 import type { MorphSeconds } from './morph.ts'
@@ -52,11 +59,7 @@ const HEAT_TIP = {
 
 // The three rows of letters as they sit on a keyboard, each indented by its
 // stagger in quarters of a key.
-const ROWS = [
-  { letters: 'qwertyuiop', indent: 0 },
-  { letters: 'asdfghjkl', indent: 1 },
-  { letters: 'zxcvbnm,', indent: 3 },
-]
+const INDENTS = [0, 1, 3]
 
 function place(row: number, indent: number, i: number): CSSProperties {
   const vars: Record<`--${string}`, number> = {
@@ -77,6 +80,9 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   const heat = useStoreValue(bendHeat)
   const swell = useStoreValue(bendSwell)
   const every = useStoreValue(redealEvery)
+  const map = useStoreValue(keymap)
+  const noteLetters = noteKeys(map)
+  const octaveLetters = octaveKeys(map)
   const [latched, setLatched] = useState<Set<string>>(new Set())
   // A swell with the morph set to instant still swells: the switch is the ask.
   const seconds = swell ? Math.max(morphSeconds, 1) : 0
@@ -125,16 +131,16 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
       if (!on || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return
       if (isTyping(e.target)) return
       const pressed = e.key.toLowerCase()
-      if (pressed === 'z') letGoAll()
-      else if (pressed === 'x') redealAll()
+      if (pressed === octaveLetters.down) letGoAll()
+      else if (pressed === octaveLetters.up) redealAll()
       else {
-        const k = deal.find(d => d.letter === pressed)
+        const k = deal[noteLetters.indexOf(pressed)]
         if (k) press(k, e.shiftKey)
       }
     }
     const up = (e: KeyboardEvent) => {
       if (!on) return
-      const k = deal.find(d => d.letter === e.key.toLowerCase())
+      const k = deal[noteLetters.indexOf(e.key.toLowerCase())]
       if (k) release(k)
     }
     // The window losing focus loses the key-up with it, so what a hand was
@@ -153,14 +159,14 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
   })
 
   const keyFor = (letter: string, style: CSSProperties) => {
-    const k = deal.find(d => d.letter === letter)
+    const k = deal[noteLetters.indexOf(letter)]
     if (k) {
       const lit =
         held.has(bendName(k.letter)) || held.has(bendStepName(k.letter))
       return (
         <Tip key={letter} text={`${k.says}, while held. Shift pins it down.`}>
           <button
-            className={`${lit ? styles.keyHeld : styles.key}${latched.has(letter) ? ` ${styles.pinned}` : ''}`}
+            className={`${lit ? styles.keyHeld : styles.key}${latched.has(k.letter) ? ` ${styles.pinned}` : ''}`}
             style={style}
             aria-pressed={lit}
             aria-label={`${letter}: ${k.stages.join(', ')}`}
@@ -201,12 +207,18 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
           </button>
         </Tip>
       )
-    if (letter === 'z' || letter === 'x')
+    const verb =
+      letter === octaveLetters.down
+        ? 'let go'
+        : letter === octaveLetters.up
+          ? 'redeal'
+          : null
+    if (verb)
       return (
         <Tip
           key={letter}
           text={
-            letter === 'z'
+            verb === 'let go'
               ? 'Let go of every bend key, pinned or held.'
               : 'Deal sixteen new bend keys for the board as it stands. Everything held lets go first.'
           }
@@ -214,14 +226,12 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
           <button
             className={styles.verbKey}
             style={style}
-            onClick={letter === 'z' ? letGoAll : redealAll}
+            onClick={verb === 'let go' ? letGoAll : redealAll}
           >
             <span className={on ? styles.letter : styles.letterOff}>
               {letter}
             </span>
-            <span className={styles.what}>
-              {letter === 'z' ? 'let go' : 'redeal'}
-            </span>
+            <span className={styles.what}>{verb}</span>
           </button>
         </Tip>
       )
@@ -238,7 +248,7 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
         <Tip
           text={
             on
-              ? 'The letter keys play the bend keys: hold one, shift pins it, z lets go of everything, x redeals. Press to hand them back to the toy keyboard.'
+              ? `The letter keys play the bend keys: hold one, shift pins it, ${octaveLetters.down} lets go of everything, ${octaveLetters.up} redeals. Press to hand them back to the toy keyboard.`
               : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard.'
           }
         >
@@ -296,15 +306,23 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
                 ))}
               </select>
             </Tip>
+            <Tip text="Choose which computer key plays each bend, throws, lets go and redeals.">
+              <button
+                className={styles.chip}
+                onClick={() => remapOpen.set(true)}
+              >
+                remap keys
+              </button>
+            </Tip>
           </span>
         )}
       </div>
       {on && (
         <div className={styles.keys}>
-          {ROWS.map(({ letters, indent }, row) =>
+          {KEY_ROWS.map((letters, row) =>
             letters
               .split('')
-              .map((letter, i) => keyFor(letter, place(row, indent, i))),
+              .map((letter, i) => keyFor(letter, place(row, INDENTS[row]!, i))),
           )}
         </div>
       )}

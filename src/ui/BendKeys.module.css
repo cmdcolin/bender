@@ -50,11 +50,11 @@
   composes: selectSmOn from './button.module.css';
 }
 
-/* Forty columns, four to a key, so a row can sit a quarter of a key over from
+/* Forty-four columns, four to a key, so a row can sit a quarter of a key over from
    the one above it the way a keyboard's rows do. */
 .keys {
   display: grid;
-  grid-template-columns: repeat(40, minmax(0, 1fr));
+  grid-template-columns: repeat(44, minmax(0, 1fr));
   gap: var(--space-xs);
 }
 

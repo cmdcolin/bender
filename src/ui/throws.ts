@@ -56,6 +56,3 @@ export const THROWS: ThrowDef[] = [
     push: () => ({ bits: 3, crushMix: 1 }),
   },
 ]
-
-export const throwForKey = (key: string) =>
-  THROWS.find(t => t.key === key.toLowerCase())

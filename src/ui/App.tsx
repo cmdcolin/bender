@@ -27,7 +27,10 @@ import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
 import { HuntDialog } from './HuntDialog.tsx'
 import { isTyping } from './isTyping.ts'
+import { remapOpen } from './keymap.ts'
 import { Keys } from './Keys.tsx'
+import { KeysDialog } from './KeysDialog.tsx'
+import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
 import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
@@ -162,6 +165,8 @@ const copyLink = (query: string) => {
 
 export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
   const running = useStoreValue(engine.running)
+  const remapping = useStoreValue(remapOpen)
+  const coarse = useCoarse()
   const micOn = useStoreValue(engine.micOn)
   // The switch runs whichever tune the chip is on, and the melody memory is one
   // of them — writing the roll puts the chip on yours, so a button that says
@@ -645,6 +650,18 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
                 >
                   phone version
                 </button>
+                {coarse || (
+                  <button
+                    role="menuitem"
+                    className={menuItem(false)}
+                    onClick={() => {
+                      setShowMenu(false)
+                      remapOpen.set(true)
+                    }}
+                  >
+                    computer keys
+                  </button>
+                )}
                 <MidiMenuItem
                   className={menuItem(false)}
                   onPick={() => {
@@ -789,6 +806,8 @@ export function App(props: { openedFromLink?: boolean; openedBare?: boolean }) {
         {showDoors && <DoorsDialog onClose={() => setShowDoors(false)} />}
 
         {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
+
+        {remapping && <KeysDialog onClose={() => remapOpen.set(false)} />}
 
         {/* Closing on the way to the popup leaves the Google window clear.
             The save the card was holding lands on the save button below. */}

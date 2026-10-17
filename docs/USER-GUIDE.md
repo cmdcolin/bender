@@ -11,6 +11,18 @@ or phone. `z`/`x` shift the whole board two octaves either way. The sixteen keys
 under your typing hand carry their letter, printed the way the toy printed note
 names on its own keys.
 
+### Remapping the computer keys
+
+Open **computer keys** in the ☰ menu, or **remap keys** in a keybed's drawer or
+the bend board's bar.
+
+- Click a key, then press or click where it should go. A key already there takes
+  the vacated place, so nothing ends up unbound or doubled.
+- Notes, the two octave keys and the six throws all move. The bend keys sit on
+  the sixteen note keys and follow them.
+- **reset** restores the stock layout.
+- The layout stays in this browser, outside the link and any saved board.
+
 **Hold** latches every key you touch until you press it again. Alt-click pins
 down a single key on its own, for a drone under both hands. A key that loses its
 release — the window loses focus, a controller unplugs mid-press — releases

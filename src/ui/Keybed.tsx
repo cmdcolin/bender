@@ -7,7 +7,6 @@ import { isTyping } from './isTyping.ts'
 import styles from './Keybed.module.css'
 import {
   blackAbove,
-  LETTERS,
   MIN_KEY,
   OCTAVES,
   OCTAVES_DRAWN,
@@ -16,10 +15,11 @@ import {
   topKey,
   whiteKeys,
 } from './keyboard.ts'
+import { keymap, noteKeys, octaveKeys, remapOpen } from './keymap.ts'
 import { letterKeys } from './letters.ts'
 import { useCoarse, useWidth } from './measure.ts'
 import { Menu } from './Menu.tsx'
-import { menuCheck } from './menuItems.ts'
+import { menuCheck, menuItem } from './menuItems.ts'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
@@ -78,18 +78,6 @@ export function GateJumper({
     </Tip>
   )
 }
-
-const KEY_MAP: Record<string, number> = Object.fromEntries(
-  LETTERS.map((letter, note) => [letter, note]),
-)
-
-// The letter each key answers to, drawn on the key itself. Cheap keyboards
-// printed the note names on theirs, and it beats hunting for a hint under the
-// panel — sixteen keys carry one, and the rest of the board is for the mouse or
-// for the octave switch to bring under your hands.
-const LETTER: Record<number, string> = Object.fromEntries(
-  Object.entries(KEY_MAP).map(([letter, note]) => [note, letter]),
-)
 
 const omitFrom = (set: Set<number>, value: number) => {
   const next = new Set(set)
@@ -168,6 +156,9 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // tips are all hints at a thing that is not there — and the keys they were
   // printed on are the ones a finger needs the room of.
   const letters = owns && !coarse
+  const map = useStoreValue(keymap)
+  const noteLetters = noteKeys(map)
+  const octaveLetters = octaveKeys(map)
   const other = NEXT_BED[dest]
   const isDown = (key: number) => held.has(at(key))
   const litBy = (key: number): Lit =>
@@ -246,19 +237,24 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
       )
         return
       const pressed = e.key.toLowerCase()
-      const step = pressed === 'z' ? -1 : pressed === 'x' ? 1 : 0
+      const step =
+        pressed === octaveLetters.down
+          ? -1
+          : pressed === octaveLetters.up
+            ? 1
+            : 0
       if (step !== 0) {
         const next = octave + step
         if (OCTAVES.includes(next)) shiftTo(next)
         return
       }
-      const note = KEY_MAP[pressed]
-      if (note !== undefined) press(note)
+      const note = noteLetters.indexOf(pressed)
+      if (note >= 0) press(note)
     }
     const up = (e: KeyboardEvent) => {
       if (!owns) return
-      const note = KEY_MAP[e.key.toLowerCase()]
-      if (note !== undefined) release(note)
+      const note = noteLetters.indexOf(e.key.toLowerCase())
+      if (note >= 0) release(note)
     }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
@@ -300,7 +296,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
   // disappearing, so the switch keeps the same shape wherever the board stands.
   const stepper = (delta: number, way: string, mark: string) => (
     <Tip
-      text={`move the whole board one octave ${way}${letters ? ` — ${delta < 0 ? 'z' : 'x'} does the same` : ''}`}
+      text={`move the whole board one octave ${way}${letters ? ` — ${delta < 0 ? octaveLetters.down : octaveLetters.up} does the same` : ''}`}
     >
       <button
         className={styles.octave}
@@ -344,9 +340,9 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
         onPointerLeave={() => isDown(note) && release(note)}
         onPointerCancel={cancel(note)}
       >
-        {letters && LETTER[note] && (
+        {letters && noteLetters[note] && (
           <span className={black ? styles.blackLetter : styles.letter}>
-            {LETTER[note]}
+            {noteLetters[note]}
           </span>
         )}
       </button>
@@ -393,7 +389,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
                 {OCTAVES.map(o => (
                   <Tip
                     key={o}
-                    text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${letters ? ' — z and x do the same' : ''}`}
+                    text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${letters ? ` — ${octaveLetters.down} and ${octaveLetters.up} do the same` : ''}`}
                   >
                     <button
                       className={o === octave ? styles.octaveOn : styles.octave}
@@ -418,8 +414,8 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
               <Tip
                 text={
                   owns
-                    ? 'the computer keyboard is wired to this bed — a s d f play it, z and x move the octave. Turning it off hands the letters back to the toy, because there is one keyboard and it has to play one of them'
-                    : 'wire the computer keyboard to this bed: a s d f play it, z and x move the octave. There is one keyboard in front of the panel and several beds on it, so it plays whichever is switched on'
+                    ? `the computer keyboard is wired to this bed — ${noteLetters.slice(0, 4).join(' ')} play it, ${octaveLetters.down} and ${octaveLetters.up} move the octave. Turning it off hands the letters back to the toy, because there is one keyboard and it has to play one of them`
+                    : `wire the computer keyboard to this bed: ${noteLetters.slice(0, 4).join(' ')} play it, ${octaveLetters.down} and ${octaveLetters.up} move the octave. There is one keyboard in front of the panel and several beds on it, so it plays whichever is switched on`
                 }
               >
                 <label className={menuCheck}>
@@ -430,6 +426,17 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
                   />
                   computer keyboard plays this bed
                 </label>
+              </Tip>
+              <Tip text="Choose which computer key plays each note, moves the octave or throws a bend.">
+                <button
+                  className={menuItem(false)}
+                  onClick={() => {
+                    setOpen(false)
+                    remapOpen.set(true)
+                  }}
+                >
+                  remap keys…
+                </button>
               </Tip>
             </Menu>
           )}
