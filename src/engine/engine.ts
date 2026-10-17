@@ -473,7 +473,10 @@ export class Engine {
   }
 
   async start() {
-    this.booting ??= this.boot()
+    this.booting ??= this.boot().catch((e: unknown) => {
+      this.booting = undefined
+      throw e
+    })
     await this.booting
     await this.ctx?.resume()
     this.running.set(this.ctx?.state === 'running')
@@ -505,6 +508,15 @@ export class Engine {
     playThroughSilentSwitch()
     void sweepTakes()
     const ctx = new AudioContext()
+    try {
+      await this.mount(ctx)
+    } catch (e) {
+      void ctx.close()
+      throw e
+    }
+  }
+
+  private async mount(ctx: AudioContext) {
     await ctx.audioWorklet.addModule(workletUrl)
     const node = new AudioWorkletNode(ctx, 'bender', {
       numberOfInputs: 1,

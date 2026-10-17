@@ -796,6 +796,33 @@ test('a hidden tab, with no animation frames, still reaches the worklet', () => 
   }
 })
 
+test('a boot that fails closes its context and lets the next start retry', async () => {
+  const closed: number[] = []
+  let built = 0
+  vi.stubGlobal(
+    'AudioContext',
+    class {
+      readonly id = ++built
+      audioWorklet = {
+        addModule: () => Promise.reject(new Error('no worklet')),
+      }
+      close() {
+        closed.push(this.id)
+        return Promise.resolve()
+      }
+    },
+  )
+  try {
+    const engine = new Engine()
+    await expect(engine.start()).rejects.toThrow('no worklet')
+    await expect(engine.start()).rejects.toThrow('no worklet')
+    expect(built).toBe(2)
+    expect(closed).toEqual([1, 2])
+  } finally {
+    vi.unstubAllGlobals()
+  }
+})
+
 test('panic lands the tamed board before the worklet hears panic', () => {
   const engine = new Engine()
   const posted = wire(engine)
