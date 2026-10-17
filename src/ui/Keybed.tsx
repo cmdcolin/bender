@@ -187,8 +187,8 @@ export function Keybed({
   const press = (key: number, latch = false) => {
     const semitone = at(key)
     // A press on a note already pinned down, by the hold switch or by alt, lets
-    // it go. The engine says what is down rather than this component, because
-    // panic clears the board underneath it and a dark key should strike.
+    // it go. The engine knows what is down: panic clears the board underneath
+    // this component, and a dark key should strike.
     const down = engine.isStruck(semitone, dest)
     if (down && (latch || sticky(semitone))) {
       release(key, true)

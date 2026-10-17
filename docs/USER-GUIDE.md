@@ -42,9 +42,9 @@ square.
 
 ## The melody memory
 
-**Rec** on the deck, or **record** on the piano roll, arms recording and runs the
-tune — even with the chip silent. Every key you press after that, on-screen, on
-the letter keys, or from a controller, writes to the step you heard when you
+**Rec** on the deck, or **record** on the piano roll, arms recording and runs
+the tune — even with the chip silent. Every key you press after that, on-screen,
+on the letter keys, or from a controller, writes to the step you heard when you
 played it.
 
 What you record isn't a separate sequencer: it's the 19th entry on **Tune**, one
@@ -390,7 +390,8 @@ A pedal face is the pedal's headline sliders in a painted enclosure.
 - A bypassed pedal keeps its settings and keeps running, so switching it back on
   picks up where it was.
 - The **⋯** button under the footswitch opens the pedal's full panel, which has
-  the same switch as a **Bypass** row that rolls, morphs and presets leave alone.
+  the same switch as a **Bypass** row that rolls, morphs and presets leave
+  alone.
 - Faces go one to a row on a phone.
 
 ## The trigger patch
