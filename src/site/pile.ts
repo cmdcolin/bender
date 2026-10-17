@@ -19,7 +19,12 @@ const C = {
   copper: '#c98a4b',
   gold: '#d9b45a',
   tape: '#6b4630',
-  ink: '#000',
+  ink: '#000000',
+  tan: '#d9b98a',
+  film: '#6fa8c9',
+  brown: '#8a5a2b',
+  orange: '#e0883d',
+  violet: '#8a5cc4',
   plastic: '#2b2b31',
   screen: '#7fe3b0',
   rim: '#25252c',
@@ -28,6 +33,18 @@ const C = {
 }
 
 const WIRES = [C.red, C.mustard, C.teal, C.pink, C.blue, C.white, C.grey]
+const PATCH = [C.blue, C.red, C.teal, C.mustard, C.pink, C.plastic]
+const BANDS = [
+  C.brown,
+  C.red,
+  C.orange,
+  C.mustard,
+  C.green,
+  C.blue,
+  C.violet,
+  C.grey,
+  C.white,
+]
 const BODIES = [C.teal, C.mustard, C.pink, C.blue]
 const TAU = Math.PI * 2
 
@@ -43,6 +60,18 @@ const seeded =
   }
 
 const n = (x: number) => Math.round(x * 10) / 10
+const mix = (a: string, b: string, k: number) =>
+  '#' +
+  [1, 3, 5]
+    .map(i =>
+      Math.round(
+        parseInt(a.slice(i, i + 2), 16) * (1 - k) +
+          parseInt(b.slice(i, i + 2), 16) * k,
+      )
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')
 const between = (r: Rng, lo: number, hi: number) => lo + r() * (hi - lo)
 const pick = <T>(r: Rng, xs: readonly T[]) => xs[Math.floor(r() * xs.length)]!
 const gauss = (r: Rng) =>
@@ -243,23 +272,113 @@ const spool = (): Thing => {
   return { hull: hull(-20, -20, 40, 40, 20), body: s, weight: 0, boost: 1.4 }
 }
 
+const lead = (x1: number, y1: number, x2: number, y2: number) =>
+  `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${C.steel}" stroke-width="2" stroke-linecap="round"/>`
+
+const resistor = (r: Rng): Thing => {
+  let s = lead(-42, 0, -20, 0) + lead(20, 0, 42, 0)
+  s += rect(-20, -7, 40, 14, pick(r, [C.tan, C.film]), 7)
+  for (const [x, color] of [
+    [-13, pick(r, BANDS)],
+    [-6, pick(r, BANDS)],
+    [1, pick(r, BANDS)],
+    [11, C.gold],
+  ] as const)
+    s += rect(x, -7, 4, 14, color)
+  return { hull: hull(-20, -7, 40, 14, 7), body: s, weight: 0, boost: 1.25 }
+}
+
+const electrolytic = (r: Rng): Thing => {
+  const body = pick(r, [
+    C.plastic,
+    mix(C.blue, C.ink, 0.45),
+    mix(C.green, C.ink, 0.3),
+  ])
+  let s = circle(0, 0, 16, body)
+  s += `<path d="M-9,-13 A16,16 0 0 0 -9,13 L-4,11 A11.7,11.7 0 0 1 -4,-11 Z" fill="${C.steel}"/>`
+  const vent = `stroke="${mix(body, C.white, 0.3)}" stroke-width="1.2"`
+  s += `<line x1="1" y1="0" x2="11" y2="0" ${vent}/><line x1="6" y1="-5" x2="6" y2="5" ${vent}/>`
+  return { hull: hull(-16, -16, 32, 32, 16), body: s, weight: 0, boost: 1.2 }
+}
+
+const disc = (): Thing => {
+  let s = lead(-4, 6, -4, 24) + lead(4, 6, 4, 24)
+  s += circle(0, 0, 10, C.orange)
+  s += rect(-5, -1, 10, 2, mix(C.orange, C.ink, 0.5), 1)
+  return { hull: hull(-10, -10, 20, 20, 10), body: s, weight: 0, boost: 1.3 }
+}
+
+const led = (r: Rng): Thing => {
+  const color = pick(r, [C.red, C.mustard, C.green, C.teal])
+  let s = lead(-3, 10, -3, 28) + lead(3, 10, 3, 22)
+  s += circle(0, 0, 11, mix(color, C.ink, 0.35))
+  s += circle(0, 0, 8.5, color)
+  s += circle(-3, -3, 2.5, mix(color, C.white, 0.6))
+  return { hull: hull(-11, -11, 22, 22, 11), body: s, weight: 0, boost: 1.3 }
+}
+
+const diode = (): Thing => {
+  let s = lead(-30, 0, -12, 0) + lead(12, 0, 30, 0)
+  s += rect(-12, -4.5, 24, 9, C.orange, 4.5)
+  s += rect(5, -4.5, 4, 9, C.black)
+  return { hull: hull(-12, -4.5, 24, 9, 4.5), body: s, weight: 0, boost: 1.4 }
+}
+
+const transistor = (): Thing => {
+  let s = lead(-6, 8, -6, 26) + lead(0, 8, 0, 26) + lead(6, 8, 6, 26)
+  s += `<path d="M-10,8 L-10,-2 A10,10 0 0 1 10,-2 L10,8 Z" fill="${C.black}"/>`
+  s += rect(-5, 0, 10, 2, C.grey, 1)
+  return { hull: hull(-10, -12, 20, 20, 6), body: s, weight: 0, boost: 1.3 }
+}
+
+const trimmer = (r: Rng): Thing => {
+  const angle = between(r, 0, TAU)
+  let s =
+    rect(-8, 14, 3, 6, C.steel) +
+    rect(-1.5, 14, 3, 6, C.steel) +
+    rect(5, 14, 3, 6, C.steel)
+  s += rect(-14, -14, 28, 28, C.blue, 3)
+  s += circle(0, 0, 8, C.gold, `stroke="${C.black}" stroke-width="1.2"`)
+  s += `<line x1="${n(Math.cos(angle) * -6)}" y1="${n(Math.sin(angle) * -6)}" x2="${n(Math.cos(angle) * 6)}" y2="${n(Math.sin(angle) * 6)}" stroke="${C.black}" stroke-width="2" stroke-linecap="round"/>`
+  return { hull: hull(-14, -14, 28, 28, 3), body: s, weight: 0, boost: 1.2 }
+}
+
+const pot = (r: Rng): Thing => {
+  const angle = between(r, 0, TAU)
+  let s =
+    rect(-9, 12, 4, 9, C.copper) +
+    rect(-2, 12, 4, 9, C.copper) +
+    rect(5, 12, 4, 9, C.copper)
+  s += circle(0, 0, 15, C.cone, `stroke="${C.grey}" stroke-width="1.5"`)
+  s += circle(0, 0, 9, C.rim)
+  s += circle(0, 0, 5, C.steel)
+  s += `<line x1="${n(Math.cos(angle) * -5)}" y1="${n(Math.sin(angle) * -5)}" x2="${n(Math.cos(angle) * 5)}" y2="${n(Math.sin(angle) * 5)}" stroke="${C.black}" stroke-width="1.6"/>`
+  return { hull: hull(-15, -15, 30, 30, 15), body: s, weight: 0, boost: 1.2 }
+}
+
 interface Spot {
   x: number
   y: number
   r: number
 }
 
-const place = (r: Rng, taken: Spot[], tries: number, size: number): Spot => {
+const place = (
+  r: Rng,
+  taken: Spot[],
+  tries: number,
+  size: number,
+  spread: number,
+): Spot => {
   let best: Spot = { x: 0, y: 0, r: size }
   let room = -Infinity
   for (let i = 0; i < tries; i++) {
     const x = Math.min(
       PILE_WIDTH - 40,
-      Math.max(40, PILE_WIDTH / 2 + gauss(r) * 250),
+      Math.max(40, PILE_WIDTH / 2 + gauss(r) * 250 * spread),
     )
     const y = Math.min(
       PILE_HEIGHT - 40,
-      Math.max(40, PILE_HEIGHT / 2 + gauss(r) * 105),
+      Math.max(40, PILE_HEIGHT / 2 + gauss(r) * 105 * spread),
     )
     const gap = Math.min(
       ...taken.map(t => Math.hypot(t.x - x, t.y - y) - t.r - size),
@@ -287,60 +406,110 @@ const drawThing = (thing: Thing, spot: Spot, turn: number, scale: number) => {
   )
 }
 
-const clip = (x: number, y: number, angle: number, sleeve: string) =>
+const jaw = (sign: number, fill: string) =>
+  `<polygon points="${[
+    [6, -5],
+    [38, -11],
+    [38, -3],
+    [35, -5.4],
+    [32, -3.2],
+    [29, -5],
+    [26, -2.8],
+    [23, -4.2],
+    [6, -1.5],
+  ]
+    .map(([px, py]) => `${px},${py! * sign}`)
+    .join(' ')}" fill="${fill}"/>`
+
+const alligator = (x: number, y: number, angle: number, color: string) => {
+  return (
+    `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(angle)})">` +
+    jaw(1, C.steel) +
+    jaw(-1, C.grey) +
+    rect(0, -4.5, 8, 9, C.steel, 1) +
+    rect(-22, -6.5, 22, 13, color, 4) +
+    rect(
+      -22,
+      -6.5,
+      22,
+      13,
+      'none',
+      4,
+      `stroke="${C.ink}" stroke-opacity="0.35"`,
+    ) +
+    circle(16, 0, 2, C.black) +
+    `</g>`
+  )
+}
+
+const jack = (x: number, y: number, angle: number, color: string) =>
   `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(angle)})">` +
-  `<polygon points="0,-7 34,-12 34,-1 0,-1" fill="${C.steel}"/>` +
-  `<polygon points="0,7 34,12 34,1 0,1" fill="${C.grey}"/>` +
-  `<polygon points="26,-11 34,-12 34,-6" fill="${C.black}"/><polygon points="26,11 34,12 34,6" fill="${C.black}"/>` +
-  rect(-18, -8, 18, 16, sleeve, 3) +
+  rect(-24, -7, 24, 14, C.plastic, 4) +
+  rect(-24, -7, 9, 14, color, 4) +
+  rect(0, -6, 16, 12, C.steel, 2) +
+  rect(16, -3.5, 3, 7, C.black) +
+  rect(19, -3.5, 8, 7, C.steel, 1) +
+  rect(27, -3.5, 2, 7, C.black) +
+  rect(29, -3, 8, 6, C.steel, 3) +
   `</g>`
 
-const plug = (x: number, y: number, angle: number) =>
-  `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(angle)})">` +
-  rect(-6, -6, 22, 12, C.black, 2) +
-  rect(16, -4, 20, 8, C.steel, 2) +
-  rect(36, -2.5, 8, 5, C.steel, 2) +
-  `</g>`
+const fray = (r: Rng, x: number, y: number, angle: number, width: number) => {
+  let s = rect(0, -width / 2 + 0.6, 7, width - 1.2, C.copper, 1)
+  for (let i = 0; i < 7; i++) {
+    const spread = (i - 3) * between(r, 3, 4.5)
+    const reach = between(r, 12, 22)
+    const bow = between(r, -5, 5)
+    s += `<path d="M7,${n((i - 3) * 0.3)}Q${n(7 + reach / 2)},${n(spread / 2 + bow)} ${n(7 + reach)},${n(spread)}" fill="none" stroke="${i % 3 ? C.copper : C.gold}" stroke-width="1.1" stroke-linecap="round"/>`
+  }
+  return `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(angle)})">${s}</g>`
+}
 
-const bare = (x: number, y: number, angle: number, color: string) =>
-  `<g transform="translate(${n(x)} ${n(y)}) rotate(${n(angle)})" stroke="${C.copper}" stroke-width="1.4" stroke-linecap="round">` +
-  `<line x1="0" y1="0" x2="9" y2="-3"/><line x1="0" y1="0" x2="11" y2="0"/><line x1="0" y1="0" x2="9" y2="3"/>` +
-  `<line x1="-8" y1="0" x2="0" y2="0" stroke="${color}" stroke-width="4"/></g>`
+type CableKind = 'alligator' | 'patch' | 'frayed' | 'tape'
 
-const wire = (r: Rng, kind: 'cable' | 'tape') => {
+const wire = (r: Rng, kind: CableKind) => {
   const x0 = between(r, 60, PILE_WIDTH - 60)
   const y0 = between(r, 60, PILE_HEIGHT - 60)
   const heading = between(r, 0, TAU)
-  const length = between(r, 180, kind === 'tape' ? 520 : 400)
-  const x3 = x0 + Math.cos(heading) * length
-  const y3 = y0 + Math.sin(heading) * length * 0.6
-  const bend = () => between(r, -150, 150)
-  const x1 = x0 + (x3 - x0) / 3 + bend()
-  const y1 = y0 + (y3 - y0) / 3 + bend()
-  const x2 = x0 + ((x3 - x0) * 2) / 3 + bend()
-  const y2 = y0 + ((y3 - y0) * 2) / 3 + bend()
+  const length = between(r, 200, kind === 'tape' ? 520 : 420)
+  const dx = Math.cos(heading) * length
+  const dy = Math.sin(heading) * length * 0.6
+  const chord = Math.hypot(dx, dy)
+  const normal = [-dy / chord, dx / chord] as const
+  const looped = kind !== 'tape' && r() < 0.25
+  const [ta, tb] = looped ? [0.85, 0.15] : [0.33, 0.66]
+  const sa = looped ? between(r, 70, 130) : between(r, -110, 110)
+  const sb = looped ? sa : between(r, -110, 110)
+  const x3 = x0 + dx
+  const y3 = y0 + dy
+  const x1 = x0 + dx * ta + normal[0] * sa
+  const y1 = y0 + dy * ta + normal[1] * sa
+  const x2 = x0 + dx * tb + normal[0] * sb
+  const y2 = y0 + dy * tb + normal[1] * sb
   const d = `M${n(x0)} ${n(y0)}C${n(x1)} ${n(y1)} ${n(x2)} ${n(y2)} ${n(x3)} ${n(y3)}`
-  const color = kind === 'tape' ? C.tape : pick(r, WIRES)
-  const width = kind === 'tape' ? 2.5 : between(r, 3, 5)
+  const color =
+    kind === 'tape' ? C.tape : pick(r, kind === 'patch' ? PATCH : WIRES)
+  const width =
+    kind === 'tape'
+      ? 2.5
+      : kind === 'patch'
+        ? between(r, 4.5, 5.5)
+        : between(r, 2.8, 3.6)
   const tail = (Math.atan2(y3 - y2, x3 - x2) * 180) / Math.PI
   const head = (Math.atan2(y0 - y1, x0 - x1) * 180) / Math.PI
-  let ends = ''
-  if (kind === 'cable') {
-    const sleeve = pick(r, [C.red, C.black])
-    const ending = (x: number, y: number, angle: number) => {
-      const roll = r()
-      if (roll < 0.45) return clip(x, y, angle, sleeve)
-      if (roll < 0.75) return plug(x, y, angle)
-      return bare(x, y, angle, color)
-    }
-    ends = ending(x3, y3, tail) + ending(x0, y0, head)
-  }
+  const ends = (draw: (x: number, y: number, angle: number) => string) =>
+    draw(x3, y3, tail) + draw(x0, y0, head)
   const stroke = (c: string, w: number, extra = '') =>
     `<path d="${d}" fill="none" stroke="${c}" stroke-width="${n(w)}" stroke-linecap="round" ${extra}/>`
+  let tips = ''
+  if (kind === 'alligator') tips = ends((x, y, a) => alligator(x, y, a, color))
+  if (kind === 'patch') tips = ends((x, y, a) => jack(x, y, a, color))
+  if (kind === 'frayed') tips = ends((x, y, a) => fray(r, x, y, a, width))
   return (
-    `<g transform="translate(4 6)" opacity="0.4">${stroke(C.ink, width)}</g>` +
+    `<g transform="translate(4 6)" opacity="0.4">${stroke(C.ink, width + 1.6)}</g>` +
+    stroke(mix(color, C.ink, 0.5), width + 1.6) +
     stroke(color, width) +
-    ends
+    stroke(mix(color, C.white, 0.5), width * 0.3) +
+    tips
   )
 }
 
@@ -360,12 +529,17 @@ export const pile = (seed = 3): string => {
   const taken: Spot[] = []
   const heap: { weight: number; svg: string }[] = []
 
-  const toss = (make: (r: Rng) => Thing, count: number, tries: number) => {
+  const toss = (
+    make: (r: Rng) => Thing,
+    count: number,
+    tries: number,
+    spread = 1,
+  ) => {
     for (let i = 0; i < count; i++) {
       const thing = make(r)
       const scale = between(r, 0.85, 1.12) * (thing.boost ?? 1)
       const size = (Math.hypot(thing.hull.w, thing.hull.h) / 2) * 0.45 * scale
-      const spot = place(r, taken, tries, size)
+      const spot = place(r, taken, tries, size, spread)
       heap.push({
         weight: thing.weight + r() * 0.9,
         svg: drawThing(thing, spot, between(r, -180, 180), scale),
@@ -382,12 +556,35 @@ export const pile = (seed = 3): string => {
   toss(battery, 4, 4)
   toss(spool, 2, 4)
   toss(chip, 5, 3)
-  toss(knob, 5, 3)
+  toss(knob, 3, 3)
+  toss(resistor, 7, 3, 1.5)
+  toss(electrolytic, 3, 3, 1.3)
+  toss(disc, 2, 3, 1.4)
+  toss(led, 3, 3, 1.4)
+  toss(diode, 3, 3, 1.5)
+  toss(transistor, 3, 3, 1.4)
+  toss(trimmer, 2, 3, 1.3)
+  toss(pot, 2, 3, 1.3)
   toss(screwdriver, 1, 4)
 
   const sorted = heap.toSorted((a, b) => b.weight - a.weight).map(h => h.svg)
   const split = Math.ceil(sorted.length * 0.55)
-  const cables = Array.from({ length: 13 }, () => wire(r, 'cable'))
+  const kinds: CableKind[] = [
+    'alligator',
+    'patch',
+    'frayed',
+    'alligator',
+    'patch',
+    'frayed',
+    'alligator',
+    'patch',
+    'frayed',
+    'alligator',
+    'patch',
+    'frayed',
+    'alligator',
+  ]
+  const cables = kinds.map(kind => wire(r, kind))
   const tapes = Array.from({ length: 2 }, () => wire(r, 'tape'))
 
   return (
