@@ -486,6 +486,7 @@ class Midi {
           if ((e as MIDIConnectionEvent).port?.state === 'disconnected')
             this.allNotesOff()
           this.listen(access)
+          this.lit.clear()
           this.lightAll()
         }
         access.addEventListener('statechange', this.onStateChange)
@@ -619,7 +620,9 @@ class Midi {
   setLights(on: boolean) {
     this.lights.set(on)
     write(LIGHTS_KEY, on ? '1' : '0')
-    if (on) this.lightAll()
+    if (!on) return
+    this.lit.clear()
+    this.lightAll()
   }
 
   // Switching off mid-bar leaves whatever is following this halfway through a

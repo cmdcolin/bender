@@ -589,6 +589,21 @@ test('the rings follow the board, and only where it moved', () => {
   midi.setLights(false)
 })
 
+test('a controller plugged in later gets every ring lit', () => {
+  midi.arm('dlyMix')
+  cc(35, 0)
+  midi.setLights(true)
+  sent.length = 0
+  onStateChange?.({ port: { state: 'connected' } } as unknown as Event)
+  expect(sent).toContainEqual([0xb0, 35, 0])
+
+  midi.setLights(false)
+  sent.length = 0
+  midi.setLights(true)
+  expect(sent).toContainEqual([0xb0, 35, 0])
+  midi.setLights(false)
+})
+
 test('the rings stay dark until they are switched on', () => {
   midi.arm('dlyMix')
   cc(34, 0)
