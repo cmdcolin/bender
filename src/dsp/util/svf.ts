@@ -1,11 +1,16 @@
 import { flushDenormal, softclip } from './softclip.ts'
 
+const F_MARGIN = 0.98
+
 // Chamberlin state-variable filter with a saturating band path, so negative
 // damping holds a scream instead of blowing up. Mode 0 low, 1 band, 2 high.
+// Positive damping is stable only while f² + 2·damp·f < 4, so process pulls f
+// under that bound.
 export class Svf {
   low = 0
   band = 0
-  process(x: number, f: number, damp: number, mode: number): number {
+  process(x: number, fIn: number, damp: number, mode: number): number {
+    const f = Math.min(fIn, F_MARGIN * (Math.sqrt(damp * damp + 4) - damp))
     this.low = flushDenormal(this.low + f * this.band)
     const high = x - this.low - damp * this.band
     this.band = flushDenormal(softclip(this.band + f * high))
@@ -28,6 +33,6 @@ export class Svf {
 export const dampAt = (res: number) =>
   2 * (1 - Math.min(res, 1)) + (res > 1 ? -(res - 1) * 1.5 : 0)
 
-/** The SVF's frequency coefficient, clamped under the stable limit. */
+/** The SVF's frequency coefficient, held under 0.22·sr for negative damping. */
 export const svfF = (hz: number, sr: number) =>
   2 * Math.sin((Math.PI * Math.min(Math.max(hz, 10), sr * 0.22)) / sr)
