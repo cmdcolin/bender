@@ -444,27 +444,27 @@
   border-color: var(--accent);
 }
 
-/* A key on the front of a tape deck: a glyph over its engraved legend, raised
-   on a hard edge of the case and sinking into it when pressed. Taller than
-   every other kind because a deck's keys are hit rather than aimed at. */
+/* A key on the front of a tape deck: a glyph over its engraved legend. Every
+   deck key is the same size, so a transport reads as one row of keys whatever
+   is printed on them; this is the one kind with a fixed width, and the legends
+   are written to fit it. A key shows it is down by lighting, not by moving. */
 .deck {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 3px;
-  min-width: 44px;
-  min-height: 38px;
-  padding: var(--space-xs) var(--space-sm);
+  width: 44px;
+  height: 38px;
+  padding: 0 2px;
   font-size: var(--fs-xs);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1;
   background: var(--surface-raised);
   color: var(--fg2);
   border: 1px solid var(--border);
   border-radius: var(--ctl-radius);
-  box-shadow: 0 3px 0 var(--border-quiet);
   cursor: pointer;
 }
 
@@ -473,36 +473,28 @@
   border-color: var(--border-hover);
 }
 
-.deck:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: none;
-}
-
 .deck:disabled {
   color: var(--fg4);
   border-color: var(--border-quiet);
-  box-shadow: 0 3px 0 var(--surface);
   cursor: default;
 }
 
-/* Latched down, the way play stays in until stop pops it: sunk, darker than the
-   case, its glyph lit. */
+/* Down, the way play stays in until stop pops it: ringed and lit in the
+   accent. */
 .deckOn {
   composes: deck;
-  transform: translateY(3px);
-  box-shadow: none;
   background: var(--surface);
   color: var(--accent);
-  border-color: var(--fg4);
+  border-color: var(--accent);
 }
 
 .deckOn:hover:not(:disabled) {
   color: var(--accent);
-  border-color: var(--fg4);
+  border-color: var(--accent);
 }
 
 /* Record, and anything live that has to read as dangerous: red at rest, and
-   latched in the alarm wash while it runs. */
+   washed in the alarm colour while it runs. */
 .deckRed {
   composes: deck;
   color: var(--alarm);
@@ -524,28 +516,16 @@
   border-color: var(--alarm);
 }
 
-/* A short key for a speed: no glyph, one word. */
-.deckSmall {
+/* A deck key with a word on it where the glyph goes, such as a speed. */
+.deckWord {
   composes: deck;
-  min-width: 32px;
-  min-height: 26px;
   font-size: var(--fs-sm);
   letter-spacing: 0;
   text-transform: none;
 }
 
-.deckSmallOn {
-  composes: deckSmall;
-  transform: translateY(3px);
-  box-shadow: none;
-  background: var(--surface);
-  color: var(--accent);
-  border-color: var(--fg4);
-}
-
-.deckSmallOn:hover:not(:disabled) {
-  color: var(--accent);
-  border-color: var(--fg4);
+.deckWordOn {
+  composes: deckOn deckWord;
 }
 
 /* Under a finger, theme.css raises both heights to 32px and the padding grows
@@ -555,9 +535,7 @@
   .action,
   .chip,
   .pick,
-  .cap,
-  .deck,
-  .deckSmall {
+  .cap {
     padding: 0 var(--space-md);
   }
 }

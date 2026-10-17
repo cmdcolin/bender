@@ -21,6 +21,13 @@ const GLYPHS = {
       <rect x="3.5" y="11" width="5" height="1" />
     </>
   ),
+  more: (
+    <>
+      <circle cx="2" cy="6" r="1.4" />
+      <circle cx="6" cy="6" r="1.4" />
+      <circle cx="10" cy="6" r="1.4" />
+    </>
+  ),
   cancel: (
     <path d="M2 1 6 5 10 1 11 2 7 6 11 10 10 11 6 7 2 11 1 10 5 6 1 2Z" />
   ),
@@ -71,7 +78,7 @@ export function DeckKey({
   )
 }
 
-// A short key with a word on it, such as a speed.
+// A key with a word where the glyph goes, such as a speed.
 export function DeckWord({
   children,
   name,
@@ -81,7 +88,7 @@ export function DeckWord({
   return (
     <button
       {...rest}
-      className={latched ? styles.keySmallOn : styles.keySmall}
+      className={latched ? styles.keyWordOn : styles.keyWord}
       aria-label={name}
       aria-pressed={latched}
     >
@@ -90,11 +97,16 @@ export function DeckWord({
   )
 }
 
-// The recess the keys stand in.
+// The bar the keys sit in.
 export function DeckWell(props: { label: string; children: ReactNode }) {
   return (
     <div className={styles.well} role="group" aria-label={props.label}>
       {props.children}
     </div>
   )
+}
+
+// A rule between groups of keys in one bar.
+export function DeckDivider() {
+  return <span className={styles.divider} aria-hidden />
 }

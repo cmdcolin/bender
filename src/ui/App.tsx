@@ -20,7 +20,7 @@ import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
-import { DeckKey, DeckWell } from './DeckKey.tsx'
+import { DeckDivider, DeckKey, DeckWell } from './DeckKey.tsx'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
 import { DrumKit } from './DrumKit.tsx'
@@ -405,14 +405,16 @@ export function App(props: { openedFromLink?: boolean }) {
                         onClick={() => engine.stopRecording()}
                       />
                     </Tip>
+                    <DeckDivider />
+                    <DeckKey
+                      glyph="more"
+                      legend="more"
+                      name="options"
+                      latched={showOptions}
+                      aria-expanded={showOptions}
+                      onClick={() => setShowOptions(o => !o)}
+                    />
                   </DeckWell>
-                  <button
-                    className={showOptions ? styles.ioBtnToggled : styles.ioBtn}
-                    aria-expanded={showOptions}
-                    onClick={() => setShowOptions(o => !o)}
-                  >
-                    options
-                  </button>
                 </div>
                 {recError && (
                   <p className={styles.recError} role="alert">
@@ -462,30 +464,37 @@ export function App(props: { openedFromLink?: boolean }) {
           <section className={styles.box} aria-label="tape loop">
             <span className={styles.label}>tape loop</span>
             <div className={styles.controls}>
-              <DeckWell label="tape source">
-                <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
-                  <DeckKey
-                    ref={setShelfBtn}
-                    glyph={archiveStep ? 'cancel' : 'eject'}
-                    legend={archiveStep ? 'cancel' : 'load'}
-                    name={archiveStep ? 'cancel' : 'load a tape'}
-                    latched={showShelf && !archiveStep}
-                    aria-expanded={showShelf && !archiveStep}
-                    onClick={() =>
-                      archiveStep ? engine.cancelRoll() : setShowShelf(o => !o)
-                    }
-                  />
-                </Tip>
-                <Tip text="Opens the microphone as an input to the board.">
-                  <DeckKey
-                    glyph="mic"
-                    legend="mic"
-                    red
-                    latched={micOn}
-                    onClick={() => engine.enableMic()}
-                  />
-                </Tip>
-              </DeckWell>
+              <TapeTransport
+                loaded={!!sampleName}
+                lead={
+                  <>
+                    <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
+                      <DeckKey
+                        ref={setShelfBtn}
+                        glyph={archiveStep ? 'cancel' : 'eject'}
+                        legend={archiveStep ? 'abort' : 'load'}
+                        name={archiveStep ? 'cancel' : 'load a tape'}
+                        latched={showShelf && !archiveStep}
+                        aria-expanded={showShelf && !archiveStep}
+                        onClick={() =>
+                          archiveStep
+                            ? engine.cancelRoll()
+                            : setShowShelf(o => !o)
+                        }
+                      />
+                    </Tip>
+                    <Tip text="Opens the microphone as an input to the board.">
+                      <DeckKey
+                        glyph="mic"
+                        legend="mic"
+                        red
+                        latched={micOn}
+                        onClick={() => engine.enableMic()}
+                      />
+                    </Tip>
+                  </>
+                }
+              />
               {showShelf && !archiveStep && (
                 <TapeShelf
                   anchor={shelfBtn}
@@ -514,7 +523,6 @@ export function App(props: { openedFromLink?: boolean }) {
                   </a>
                 )}
               </SampleReel>
-              <TapeTransport loaded={!!sampleName} />
               {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
             </div>
           </section>

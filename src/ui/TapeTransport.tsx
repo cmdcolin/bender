@@ -1,8 +1,9 @@
 import { engine } from '../engine/engine.ts'
 import { useBoardValue } from './ControlsContext.ts'
-import { DeckKey, DeckWell, DeckWord } from './DeckKey.tsx'
-import styles from './TapeTransport.module.css'
+import { DeckDivider, DeckKey, DeckWell, DeckWord } from './DeckKey.tsx'
 import { Tip } from './Tip.tsx'
+
+import type { ReactNode } from 'react'
 
 const SPEED_LABELS = ['½×', '1×', '2×'] as const
 type Speed = (typeof SPEED_LABELS)[number]
@@ -22,7 +23,13 @@ function play() {
 // round, run it at half or double. The Speed knob in the panel does all of it
 // and more; these are the keys that come up every time, laid out as on a deck:
 // play stays down until stop pops it.
-export function TapeTransport({ loaded }: { loaded: boolean }) {
+export function TapeTransport({
+  loaded,
+  lead,
+}: {
+  loaded: boolean
+  lead?: ReactNode
+}) {
   const running = useBoardValue(c => c.sampleLevel > 0)
   const speed = useBoardValue(c => c.sampleSpeed)
   const reversed = speed < 0
@@ -30,73 +37,68 @@ export function TapeTransport({ loaded }: { loaded: boolean }) {
     SPEED_LABELS.find(l => Math.abs(Math.abs(speed) - SPEEDS[l]) < 0.005) ??
     null
 
+  const speedTip = loaded
+    ? 'Tape speed: half, normal or double, in whichever direction it is running. The Speed knob in the panel goes anywhere between.'
+    : NOTHING
+
   return (
-    <div className={styles.row}>
-      <DeckWell label="transport">
-        <Tip
-          text={
-            loaded
-              ? 'Runs the tape backwards from where the head stands. Press again to go forwards.'
-              : NOTHING
-          }
-        >
-          <DeckKey
-            glyph="reverse"
-            legend="reverse"
-            latched={reversed}
-            disabled={!loaded}
-            onClick={() => engine.set('sampleSpeed', speed === 0 ? -1 : -speed)}
-          />
-        </Tip>
-        <Tip
-          text={
-            loaded
-              ? 'Starts the tape. A one-shot starts again from the front.'
-              : NOTHING
-          }
-        >
-          <DeckKey
-            glyph="play"
-            legend="play"
-            latched={running}
-            disabled={!loaded}
-            onClick={play}
-          />
-        </Tip>
-        <Tip text={loaded ? 'Stops the tape.' : NOTHING}>
-          <DeckKey
-            glyph="stop"
-            legend="stop"
-            disabled={!loaded || !running}
-            onClick={() => engine.set('sampleLevel', 0)}
-          />
-        </Tip>
-      </DeckWell>
+    <DeckWell label="tape deck">
+      {lead}
+      {lead && <DeckDivider />}
       <Tip
         text={
           loaded
-            ? 'Tape speed: half, normal or double, in whichever direction it is running. The Speed knob in the panel goes anywhere between.'
+            ? 'Runs the tape backwards from where the head stands. Press again to go forwards.'
             : NOTHING
         }
       >
-        <div>
-          <DeckWell label="tape speed">
-            {SPEED_LABELS.map(l => (
-              <DeckWord
-                key={l}
-                name={l}
-                latched={l === current}
-                disabled={!loaded}
-                onClick={() =>
-                  engine.set('sampleSpeed', (reversed ? -1 : 1) * SPEEDS[l])
-                }
-              >
-                {l}
-              </DeckWord>
-            ))}
-          </DeckWell>
-        </div>
+        <DeckKey
+          glyph="reverse"
+          legend="rev"
+          name="reverse"
+          latched={reversed}
+          disabled={!loaded}
+          onClick={() => engine.set('sampleSpeed', speed === 0 ? -1 : -speed)}
+        />
       </Tip>
-    </div>
+      <Tip
+        text={
+          loaded
+            ? 'Starts the tape. A one-shot starts again from the front.'
+            : NOTHING
+        }
+      >
+        <DeckKey
+          glyph="play"
+          legend="play"
+          latched={running}
+          disabled={!loaded}
+          onClick={play}
+        />
+      </Tip>
+      <Tip text={loaded ? 'Stops the tape.' : NOTHING}>
+        <DeckKey
+          glyph="stop"
+          legend="stop"
+          disabled={!loaded || !running}
+          onClick={() => engine.set('sampleLevel', 0)}
+        />
+      </Tip>
+      <DeckDivider />
+      {SPEED_LABELS.map(l => (
+        <Tip key={l} text={speedTip}>
+          <DeckWord
+            name={l}
+            latched={l === current}
+            disabled={!loaded}
+            onClick={() =>
+              engine.set('sampleSpeed', (reversed ? -1 : 1) * SPEEDS[l])
+            }
+          >
+            {l}
+          </DeckWord>
+        </Tip>
+      ))}
+    </DeckWell>
   )
 }

@@ -1,14 +1,23 @@
-/* The recess a deck's keys stand in: a bar of black the keys sit down into,
-   so a row of them reads as one transport rather than a row of buttons. */
+/* The bar a deck's keys sit in, so a row of them reads as one transport rather
+   than a scatter of buttons. It wraps rather than shrinks a key. */
 .well {
-  display: inline-flex;
-  align-self: flex-start;
-  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-xs) var(--space-sm);
+  padding: var(--space-xs);
   background: var(--bg);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
+}
+
+/* A thin rule between groups of keys: where the tape comes from, what the
+   transport does, how fast it runs. */
+.divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 0 var(--space-xs);
+  background: var(--border-quiet);
 }
 
 .key {
@@ -27,12 +36,12 @@
   composes: deckRedOn from './button.module.css';
 }
 
-.keySmall {
-  composes: deckSmall from './button.module.css';
+.keyWord {
+  composes: deckWord from './button.module.css';
 }
 
-.keySmallOn {
-  composes: deckSmallOn from './button.module.css';
+.keyWordOn {
+  composes: deckWordOn from './button.module.css';
 }
 
 .glyph {
