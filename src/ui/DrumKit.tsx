@@ -7,6 +7,7 @@ import {
   useMeterValue,
   useStoreValue,
 } from './ControlsContext.ts'
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
 import { useCoarse } from './measure.ts'
@@ -22,7 +23,13 @@ const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 //
 // The lamps, the pads and the switches render as separate components, so a step
 // redraws only the lamps and a hit redraws only the pads that changed.
-export function DrumKit() {
+export function DrumKit({
+  seconds,
+  onClose,
+}: {
+  seconds?: number
+  onClose?: () => void
+}) {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
 
@@ -67,6 +74,7 @@ export function DrumKit() {
               rec
             </button>
           </Tip>
+          <DeviceVerbs stage="Toy drums" seconds={seconds} onClose={onClose} />
         </div>
       </div>
       <Pads />

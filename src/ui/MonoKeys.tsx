@@ -1,9 +1,16 @@
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './MonoKeys.module.css'
 
 // The mono synth's bed: walnut cheeks, a black panel with three knob caps for
 // the oscillators, and the jumper off the toy's gate.
-export function MonoKeys() {
+export function MonoKeys({
+  seconds,
+  onClose,
+}: {
+  seconds?: number
+  onClose?: () => void
+}) {
   return (
     <Keybed
       dest="mono"
@@ -28,6 +35,7 @@ export function MonoKeys() {
           solderedTip="the synth’s key input is soldered onto the toy’s gate, so the tune next door plays it too, an octave or two down. Press to cut the jumper"
         />
       }
+      verbs={<DeviceVerbs stage="Mono synth" seconds={seconds} onClose={onClose} />}
       tail={<span className={styles.rocker} aria-hidden="true" />}
     />
   )

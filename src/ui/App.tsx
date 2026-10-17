@@ -19,22 +19,19 @@ import { BendKeys } from './BendKeys.tsx'
 import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
-import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { useStoreValue } from './ControlsContext.ts'
 import { DeckDivider, DeckKey, DeckWell } from './DeckKey.tsx'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
-import { DrumKit } from './DrumKit.tsx'
-import { FmKeys } from './FmKeys.tsx'
 import { HuntDialog } from './HuntDialog.tsx'
+import { Instruments } from './Instruments.tsx'
 import { isTyping } from './isTyping.ts'
 import { remapOpen } from './keymap.ts'
-import { Keys } from './Keys.tsx'
 import { KeysDialog } from './KeysDialog.tsx'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
 import { MidiMenuItem, MidiPanel } from './MidiPanel.tsx'
-import { MonoKeys } from './MonoKeys.tsx'
 import {
   loadMorph,
   MORPH_LABELS,
@@ -42,7 +39,6 @@ import {
   saveMorph,
   type MorphSeconds,
 } from './morph.ts'
-import { PcmKeys } from './PcmKeys.tsx'
 import { Presets } from './PresetRow.tsx'
 import { mutate, presetNameFor } from './presets/index.ts'
 import { RecorderMore } from './RecorderMore.tsx'
@@ -184,9 +180,6 @@ export function App(props: { openedFromLink?: boolean }) {
   const sampleName = useStoreValue(engine.sampleName)
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
-  const fmUp = useBoardValue(c => c.fmLevel > 0)
-  const pcmUp = useBoardValue(c => c.pcmLevel > 0)
-  const monoUp = useBoardValue(c => c.monoLevel > 0)
   const [dragging, setDragging] = useState(false)
   const [showShelf, setShowShelf] = useState(false)
   const [shelfBtn, setShelfBtn] = useState<HTMLButtonElement | null>(null)
@@ -355,19 +348,7 @@ export function App(props: { openedFromLink?: boolean }) {
         <div className={styles.scope}>
           <Scope />
         </div>
-        <div className={styles.shelf}>
-          <Keys />
-          <DrumKit />
-        </div>
-        {/* The FM, home and mono keyboards show only while their levels
-            are above zero. */}
-        {(fmUp || pcmUp || monoUp) && (
-          <div className={styles.shelf}>
-            {fmUp && <FmKeys />}
-            {pcmUp && <PcmKeys />}
-            {monoUp && <MonoKeys />}
-          </div>
-        )}
+        <Instruments seconds={morphSeconds} />
         <BodyPad onOpen={setOpen} />
         <div className={styles.studio}>
           <section className={styles.box} aria-label="recorder">

@@ -1,0 +1,25 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-ctl);
+}
+
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-md);
+}
+
+.mode {
+  composes: chipQuiet from './button.module.css';
+}
+
+.modeOn {
+  composes: chipOn from './button.module.css';
+}
+
+.reopen {
+  composes: chipQuiet from './button.module.css';
+}

@@ -1,10 +1,17 @@
 import styles from './FmKeys.module.css'
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { GateJumper, Keybed } from './Keybed.tsx'
 
 // FmKeys draws the FM chip's keyboard as a green circuit board with the chip on
 // it and a row of piano keys. The switch on the deck cuts or solders
 // the jumper from the toy's gate.
-export function FmKeys() {
+export function FmKeys({
+  seconds,
+  onClose,
+}: {
+  seconds?: number
+  onClose?: () => void
+}) {
   return (
     <Keybed
       dest="fm"
@@ -27,6 +34,7 @@ export function FmKeys() {
           solderedTip="the chip’s key input is soldered onto the toy’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
         />
       }
+      verbs={<DeviceVerbs stage="FM chip" seconds={seconds} onClose={onClose} />}
       tail={<span className={styles.header} aria-hidden="true" />}
     />
   )

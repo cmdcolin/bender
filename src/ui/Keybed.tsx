@@ -106,11 +106,21 @@ interface Props {
   /** Switches that belong to this machine, ahead of the ones every bed has. */
   extras?: ReactNode
   tail?: ReactNode
+  /** The randomize and close caps, last on the deck. */
+  verbs?: ReactNode
 }
 
 // A keybed: clickable, and the computer's letter keys wherever they are wired.
 // Hold latches what you press, so both hands are free for the panel.
-export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
+export function Keybed({
+  dest,
+  label,
+  caseClass,
+  badge,
+  extras,
+  tail,
+  verbs,
+}: Props) {
   // What was sent, not which key was pressed: the octave moves under your hand
   // and a note has to be let go at the pitch it went down at.
   const [held, setHeld] = useState<Set<number>>(new Set())
@@ -441,6 +451,7 @@ export function Keybed({ dest, label, caseClass, badge, extras, tail }: Props) {
             </Menu>
           )}
           {tail}
+          {verbs}
         </div>
       </div>
       <div className={styles.keys} ref={setBed}>

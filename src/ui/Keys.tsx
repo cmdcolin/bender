@@ -1,6 +1,7 @@
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './Keys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -8,7 +9,13 @@ import { Tip } from './Tip.tsx'
 
 // The toy: a moulded case with a badge, a speaker and its own melody memory on
 // the deck, around the bed every keyboard on this board shares.
-export function Keys() {
+export function Keys({
+  seconds,
+  onClose,
+}: {
+  seconds?: number
+  onClose?: () => void
+}) {
   // The memory's own switch, on the deck rather than only on the roll: arming
   // it is something you do with your hands already on the keys, and the roll is
   // one panel away behind whatever stage is open.
@@ -73,6 +80,7 @@ export function Keys() {
           </Tip>
         </>
       }
+      verbs={<DeviceVerbs stage="Toy keyboard" seconds={seconds} onClose={onClose} />}
       tail={<span className={styles.grille} aria-hidden="true" />}
     />
   )

@@ -44,6 +44,7 @@
 .deck {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   min-height: 22px;
 }
@@ -87,6 +88,7 @@
 .switches {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--gap-ctl);
   margin-left: auto;
 }

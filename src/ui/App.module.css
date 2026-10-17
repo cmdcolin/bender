@@ -20,15 +20,6 @@
   flex: none;
 }
 
-/* A shelf lays out a row of instruments and wraps when the column is too
-   narrow. */
-.shelf {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: var(--space-md);
-}
-
 .panel {
   width: clamp(470px, 30vw, 600px);
   flex: none;

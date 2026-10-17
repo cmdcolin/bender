@@ -1,10 +1,17 @@
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
 
 // The home keyboard's bed: a grey moulded case with the model name on the deck,
 // a window over the sample memory, and the same jumper off the toy's gate the
 // FM chip has.
-export function PcmKeys() {
+export function PcmKeys({
+  seconds,
+  onClose,
+}: {
+  seconds?: number
+  onClose?: () => void
+}) {
   return (
     <Keybed
       dest="pcm"
@@ -25,6 +32,7 @@ export function PcmKeys() {
           solderedTip="the keyboard’s key input is soldered onto the toy’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
         />
       }
+      verbs={<DeviceVerbs stage="Home keyboard" seconds={seconds} onClose={onClose} />}
       tail={<span className={styles.window} aria-hidden="true" />}
     />
   )
