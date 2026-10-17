@@ -49,6 +49,11 @@ function grabbed(at: number, from: number, to: number): Grab {
   return dIn <= dOut ? 'in' : 'out'
 }
 
+const fractionAcross = (e: PointerEvent<HTMLCanvasElement>) => {
+  const r = e.currentTarget.getBoundingClientRect()
+  return clamp01((e.clientX - r.left) / r.width)
+}
+
 /** How long the reel is, in seconds, or 0 with no tape threaded. */
 const useReelSeconds = () =>
   useSyncExternalStore(
@@ -246,11 +251,6 @@ export function SampleReel({ children }: { children?: ReactNode }) {
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- the canvas only mounts once a tape is threaded, so the effect has to rerun then
   }, [threaded, level, rec])
 
-  const at = (e: PointerEvent<HTMLCanvasElement>) => {
-    const r = e.currentTarget.getBoundingClientRect()
-    return clamp01((e.clientX - r.left) / r.width)
-  }
-
   // A marker under the pointer writes the control it is; anywhere else drops
   // the head, which is a gesture rather than a control — where the tape has got
   // to is not something the board says.
@@ -298,7 +298,7 @@ export function SampleReel({ children }: { children?: ReactNode }) {
             className={styles.reel}
             onPointerDown={e => {
               const c = engine.controls.get()
-              const where = at(e)
+              const where = fractionAcross(e)
               grab.current = grabbed(
                 where,
                 Math.min(c.loopIn, c.loopOut),
@@ -307,7 +307,7 @@ export function SampleReel({ children }: { children?: ReactNode }) {
               e.currentTarget.setPointerCapture(e.pointerId)
               track(where)
             }}
-            onPointerMove={e => grab.current && track(at(e))}
+            onPointerMove={e => grab.current && track(fractionAcross(e))}
             onPointerUp={() => (grab.current = null)}
             onPointerCancel={() => (grab.current = null)}
           />

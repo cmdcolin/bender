@@ -38,6 +38,9 @@ const HEIGHT = 150
 const rowMid = (i: number) => ROW_Y[i]! + boxHeight(['', '']) / 2
 const MID = rowMid(1)
 
+const bend = (from: number, to: number, reach: number) =>
+  `M${BOX_X} ${rowMid(from)} Q${BOX_X - reach} ${(rowMid(from) + rowMid(to)) / 2} ${BOX_X} ${rowMid(to)}`
+
 // Three sends off one tap, each through its own delay, meeting on one bus that
 // runs through the return amps into wherever the return is patched. Each box
 // reads its knobs and opens them under the drawing; strip 1 starts open since
@@ -90,8 +93,6 @@ export function FeedbackLoops() {
         ? (['fbCross'] as const)
         : undefined
       : boxes.find(b => b.id === pick.selected)?.keys
-  const bend = (from: number, to: number, reach: number) =>
-    `M${BOX_X} ${rowMid(from)} Q${BOX_X - reach} ${(rowMid(from) + rowMid(to)) / 2} ${BOX_X} ${rowMid(to)}`
   const arcStyle = { opacity: 0.25 + r.value('fbCross') * 0.6 }
 
   return (

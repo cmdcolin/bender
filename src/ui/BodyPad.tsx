@@ -19,6 +19,14 @@ function resistance(x: number, y: number): string {
     : `${Math.round(kohm)} kΩ`
 }
 
+const track = (e: PointerEvent<HTMLDivElement>) => {
+  const r = e.currentTarget.getBoundingClientRect()
+  engine.patch({
+    bodyX: clamp01((e.clientX - r.left) / r.width),
+    bodyY: clamp01(1 - (e.clientY - r.top) / r.height),
+  })
+}
+
 // The bare contacts every bent toy grows sooner or later: touch both and your
 // body becomes the resistor. The pad shows only once an axis is wired in the
 // patch bay; before that it would do nothing.
@@ -43,14 +51,6 @@ export function BodyPad({ onOpen }: { onOpen: (name: string) => void }) {
   )
   const wires = soldered ? soldered.split('\n') : []
   const [held, setHeld] = useState(false)
-
-  const track = (e: PointerEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect()
-    engine.patch({
-      bodyX: clamp01((e.clientX - r.left) / r.width),
-      bodyY: clamp01(1 - (e.clientY - r.top) / r.height),
-    })
-  }
 
   const lift = () => {
     setHeld(false)

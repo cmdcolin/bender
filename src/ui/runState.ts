@@ -42,6 +42,15 @@ function stored(): RunState | null {
   }
 }
 
+const save = () =>
+  writeSession(
+    KEY,
+    JSON.stringify({
+      song: engine.songPlaying.get(),
+      drums: engine.drumsPlaying.get(),
+    }),
+  )
+
 /** Puts back what this tab was running, keeps the shelf up to date after, and
     answers whether the tab had been here before. */
 export function keepRunState(): boolean {
@@ -50,14 +59,6 @@ export function keepRunState(): boolean {
     engine.setSongPlaying(was.song)
     engine.setDrumsPlaying(was.drums)
   }
-  const save = () =>
-    writeSession(
-      KEY,
-      JSON.stringify({
-        song: engine.songPlaying.get(),
-        drums: engine.drumsPlaying.get(),
-      }),
-    )
   // On the way in as well as on every change, so a tab where you turned knobs
   // and never pressed play still counts as a tab that has been here.
   save()
