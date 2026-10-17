@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { IDX } from '../engine/params.ts'
-import { INPUT_AUX, INPUT_MIC } from './stages/fourTrack.ts'
+import { FourTrack, INPUT_AUX, INPUT_MIC } from './stages/fourTrack.ts'
 import { bin, pitchHz, renderBender, rms } from './testRender.ts'
 
 import type { Controls } from '../controls.ts'
@@ -202,4 +202,15 @@ test('side B plays loop 1 backwards on channel 4', () => {
   // A lap of side B starts on the silence at the swell's end and then plays
   // the swell as a fade: loud first and dying away.
   expect(rms(at(x, 1.12, 1.2))).toBeGreaterThan(3 * rms(at(x, 1.42, 1.5)))
+})
+
+test('panic clears a NaN off the tape', () => {
+  const deck = new FourTrack(SR)
+  const loop = deck.loops[0]!
+  loop.thread(SR)
+  loop.tape![5] = NaN
+  loop.tape![6] = 0.25
+  deck.panic()
+  expect(loop.tape![5]).toBe(0)
+  expect(loop.tape![6]).toBe(0.25)
 })

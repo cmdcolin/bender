@@ -449,6 +449,10 @@ class Loop {
     this.wearAt = -1
     this.enc.reset()
     this.dec.reset()
+    const tape = this.tape
+    if (!tape) return
+    for (let i = 0; i < tape.length; i++)
+      if (!Number.isFinite(tape[i])) tape[i] = 0
   }
 }
 
