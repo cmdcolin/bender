@@ -573,18 +573,19 @@ const waypoints = (r: Rng, long: boolean): Pt[] => {
     Math.atan2(PILE_HEIGHT / 2 - y0, PILE_WIDTH / 2 - x0) +
     between(r, -1.2, 1.2)
   const length = long ? between(r, 650, 1100) : between(r, 220, 460)
-  const stops = long ? 8 : 4
-  const curl = long ? 0.45 : 0.2
+  const stops = long ? 6 : 3
+  const curl = long ? 0.22 : 0.08
   const ux = Math.cos(heading)
   const uy = Math.sin(heading)
   const points: Pt[] = [[x0, y0]]
+  let sway = between(r, -60, 60)
   for (let i = 1; i < stops; i++) {
-    const reach = (length * i) / (stops - 1) + between(r, -70, 70)
-    const sway = between(r, -150, 150)
+    const reach = (length * i) / (stops - 1) + between(r, -20, 20)
+    sway = Math.max(-120, Math.min(120, sway + between(r, -55, 55)))
     const x = x0 + ux * reach - uy * sway
     const y = y0 + uy * reach * 0.6 + ux * sway * 0.6
     if (i < stops - 1 && r() < curl) {
-      const radius = between(r, 26, 46)
+      const radius = between(r, 34, 58)
       const cx = x + ux * radius
       const cy = y + uy * radius
       for (const turn of [Math.PI, 1.5 * Math.PI, 0, 0.5 * Math.PI]) {
@@ -642,9 +643,9 @@ const wire = (r: Rng, kind: CableKind, long = false) => {
   if (kind === 'frayed') tips = ends((x, y, a) => fray(r, x, y, a, width))
   return (
     `<g transform="translate(4 6)" opacity="0.4">${stroke(C.ink, width + 1.6)}</g>` +
-    stroke(mix(color, C.ink, 0.5), width + 1.6) +
+    stroke(mix(color, C.ink, 0.3), width + 1.2) +
     stroke(color, width) +
-    stroke(mix(color, C.white, 0.5), width * 0.3) +
+    stroke(mix(color, C.white, 0.28), width * 0.22) +
     tips
   )
 }
