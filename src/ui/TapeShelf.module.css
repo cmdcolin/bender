@@ -1,44 +1,89 @@
-.shelf {
+.drawer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
-  width: min(20rem, calc(100vw - 2 * var(--space-md)));
+  gap: var(--space-md);
+  width: min(23rem, calc(100vw - 2 * var(--space-md)));
   padding: var(--space-xs);
 }
 
-.row {
+.cassettes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+/* A cassette in the drawer: a paper label with a coloured stripe over a strip
+   of two reel holes. Pressing one is the whole question — no shelf to pick and
+   a roll to press after it. */
+.cassette {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--gap-ctl);
+  flex-direction: column;
+  gap: var(--space-sm);
+  height: 68px;
+  padding: var(--space-sm);
+  color: var(--fg2);
+  background: var(--surface-raised);
+  border: 1px solid var(--fg4);
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.source {
+.cassette:hover,
+.cassette:focus-visible {
+  color: var(--fg);
+  border-color: var(--accent);
+  outline: none;
+}
+
+.cassetteAny {
+  composes: cassette;
+  background: none;
+  border-style: dashed;
+}
+
+.paper {
   display: flex;
-  flex: 1 1 11rem;
+  flex: 1;
   align-items: center;
-  gap: var(--gap-ctl);
-  min-width: 0;
+  justify-content: center;
+  padding: 0 var(--space-xs);
+  font-size: var(--fs-sm);
+  line-height: 1.15;
+  text-align: center;
+  background: var(--bg);
+  border-top: 4px solid var(--stripe, var(--fg4));
+  border-radius: 2px;
 }
 
-.pool {
-  composes: select from './button.module.css';
-  min-width: 0;
+.reels {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  gap: var(--space-xl);
 }
 
-.go {
-  composes: action from './button.module.css';
-  white-space: nowrap;
+.reels i {
+  width: 9px;
+  height: 9px;
+  background: var(--bg);
+  border: 2px solid var(--fg4);
+  border-radius: 50%;
+}
+
+.searchRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
 }
 
 .query {
   flex: 1;
   min-width: 0;
-  height: var(--ctl-h);
-  padding: 0 var(--space-sm);
+  height: 38px;
+  padding: 0 var(--space-md);
   font-size: var(--fs-sm);
   color: var(--fg);
-  background: var(--surface-raised);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--ctl-radius);
 }
@@ -57,7 +102,8 @@
 .hits {
   display: flex;
   flex-direction: column;
-  max-height: 132px;
+  gap: var(--space-xs);
+  max-height: 168px;
   margin: 0;
   padding: 0;
   overflow-y: auto;
@@ -67,15 +113,16 @@
 .hit {
   display: block;
   width: 100%;
-  padding: 3px var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
   overflow: hidden;
-  font-size: var(--fs-xs);
+  font-size: var(--fs-sm);
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--fg2);
-  background: none;
-  border: none;
+  background: var(--bg);
+  border: 1px solid var(--border-quiet);
+  border-left: 4px solid var(--fg4);
   border-radius: 2px;
   cursor: pointer;
 }
@@ -83,5 +130,6 @@
 .hit:hover,
 .hit:focus-visible {
   color: var(--fg);
-  background: var(--surface-raised);
+  border-color: var(--accent);
+  outline: none;
 }
