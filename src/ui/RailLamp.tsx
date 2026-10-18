@@ -11,11 +11,9 @@ const NOMINAL_V = 4.5
 // enough to hear and far too short to read — so the lamp holds the word.
 const FLASH_MS = 260
 
-// The rail, on the panel. It is the number everything else on the board comes
-// off — pitch, tempo, how loud a voice is, whether the chip is running at all —
-// and until now you could only infer it from the sound. Written straight to the
-// DOM off the meter's own posts, the way the scope is: a React render every 8 ms
-// to move one number is a render the board can feel.
+// The shared supply rail, drawn on the deck of every machine that runs off it.
+// The lamp writes to the DOM off each meter post, because a React render every
+// 8 ms for one number drops frames.
 export function RailLamp() {
   const dot = useRef<HTMLSpanElement>(null)
   const label = useRef<HTMLSpanElement>(null)
@@ -60,7 +58,7 @@ export function RailLamp() {
   }, [])
 
   return (
-    <Tip text="The toy's supply rail, 4.5 V on fresh cells. Everything the chip does rides on it: pitch and tempo sag as it falls, and under about half a volt the watchdog power-cycles the chip — which is what the lamp says on a reboot.">
+    <Tip text="The battery rail the toy keyboard, drums, FM chip, home keyboard and mono synth share, 4.5 V on fresh cells. Pitch, tempo and level sag as it falls, and near one volt the watchdog reboots the chips, which the lamp shows as reboot.">
       <span className={styles.lamp}>
         <span ref={dot} className={styles.dot} />
         <span ref={label} className={styles.volts}>

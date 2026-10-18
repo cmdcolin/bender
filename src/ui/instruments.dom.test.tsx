@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
@@ -132,6 +132,19 @@ test('each machine has a Level slider that moves its own level', () => {
   fireEvent.change(levels[1]!, { target: { value: '0' } })
   expect(engine.controls.get().drumLevel).toBe(0)
   expect(engine.controls.get().chipLevel).toBe(DEFAULT_CONTROLS.chipLevel)
+})
+
+test('every machine on the shared rail shows the rail lamp', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(allMode())
+  for (const name of [
+    'toy keyboard',
+    'toy drums',
+    'fm keyboard',
+    'home keyboard',
+    'mono synth',
+  ])
+    expect(within(group(name)!).getByText('4.50 V')).toBeTruthy()
 })
 
 test('a machine pulled down to no level stays on the bench', () => {

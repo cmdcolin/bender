@@ -1,6 +1,7 @@
 import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
+import { RailLamp } from './RailLamp.tsx'
 
 // The home keyboard's bed: a grey moulded case with the model name on the deck,
 // a window over the sample memory, and the same jumper off the toy's gate the
@@ -24,13 +25,16 @@ export function PcmKeys({
         </span>
       }
       extras={
-        <GateJumper
-          control="pcmKeyGate"
-          cut={styles.cut}
-          soldered={styles.soldered}
-          cutTip="the jumper off the toy’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-          solderedTip="the keyboard’s key input is soldered onto the toy’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
-        />
+        <>
+          <RailLamp />
+          <GateJumper
+            control="pcmKeyGate"
+            cut={styles.cut}
+            soldered={styles.soldered}
+            cutTip="the jumper off the toy’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+            solderedTip="the keyboard’s key input is soldered onto the toy’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
+          />
+        </>
       }
       verbs={
         <DeviceVerbs

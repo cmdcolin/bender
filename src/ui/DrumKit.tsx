@@ -18,6 +18,7 @@ import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
 import { useCoarse } from './measure.ts'
+import { RailLamp } from './RailLamp.tsx'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
 
@@ -47,6 +48,7 @@ export function DrumKit({
       <div className={styles.deck}>
         <span className={styles.brand}>drums</span>
         <div className={styles.switches}>
+          <RailLamp />
           <Tip
             text={
               playing

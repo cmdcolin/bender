@@ -35,9 +35,6 @@ export function Keys({
       }
       extras={
         <>
-          {/* On the deck, which is where a toy put everything. The lamp is the
-              battery light: a note that comes out flat, quiet or not at all is
-              that number falling. */}
           <RailLamp />
           <Tip
             text={
