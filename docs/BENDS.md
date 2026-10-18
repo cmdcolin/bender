@@ -34,6 +34,17 @@ so on those the wire is something you find rather than something to learn. The
 named cuts under _knife on the bus_ are the shortcut: each one is a wire and a
 fault somebody already found worth keeping.
 
+The panel draws the same buses inside each _knife on the bus_ fold, one trace a
+bit with the lowest on top, and the drawing follows the rows under it:
+
+- The knifed trace turns red and shows its line name.
+- A slash marks a cut, dotted across the gap while **Cut depth** leaves it
+  conducting. A ground symbol or a +V bar marks a short to a rail, and a blob of
+  solder joins a bridged pair.
+- The drawing adds a wire for the toy's loop wire, the drum kit's counter reset,
+  the kit's clock and the FM chip's strobe, and turns each one red once its knob
+  is up.
+
 ## The shared power rail
 
 **Starve** sags the supply the toy keyboard, the drum machine, and the FM chip

@@ -1,0 +1,43 @@
+.chip {
+  fill: none;
+  stroke: var(--border-hover);
+}
+
+.chipName {
+  font-size: 11px;
+  fill: var(--fg2);
+}
+
+.trace,
+.traceCut,
+.jumper,
+.conduct {
+  fill: none;
+  stroke: var(--fg4);
+  stroke-width: 0.75;
+}
+
+.traceCut,
+.jumper {
+  stroke: var(--alarm);
+  stroke-width: 1.25;
+}
+
+.conduct {
+  stroke: var(--alarm);
+  stroke-dasharray: 1 1.5;
+}
+
+.solder {
+  fill: var(--alarm);
+}
+
+.bus,
+.knifed {
+  font-size: 10px;
+  fill: var(--fg3);
+}
+
+.knifed {
+  fill: var(--alarm);
+}

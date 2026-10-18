@@ -4,6 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
+import { KnifeDrawing } from './BusDiagram.tsx'
 import { groupAnchor } from './chain-map.ts'
 import {
   groupKeys,
@@ -358,6 +359,7 @@ function PartFold({
         standing={standing}
         seconds={seconds}
       />
+      <KnifeDrawing group={group.name} part={name} />
       {rows.map(def => (
         <ControlSlider key={def.key} def={def} />
       ))}
@@ -389,15 +391,18 @@ function BoxVerbs({
     c => cuts.find(cut => cutStands(cut, c))?.name ?? '',
   )
   return (
-    <PartVerbs
-      cuts={cuts}
-      group={group}
-      part={part}
-      rows={rows}
-      moved={moved}
-      standing={standing}
-      seconds={seconds}
-    />
+    <>
+      <PartVerbs
+        cuts={cuts}
+        group={group}
+        part={part}
+        rows={rows}
+        moved={moved}
+        standing={standing}
+        seconds={seconds}
+      />
+      <KnifeDrawing group={group.name} part={part} />
+    </>
   )
 }
 
