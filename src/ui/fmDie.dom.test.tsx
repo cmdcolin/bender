@@ -57,7 +57,6 @@ test('each fault reads on the part it bends', () => {
   set({
     fmAlloc: 2,
     fmDacSlot: 3,
-    fmDacSlip: 0.4,
     fmColdBoot: 1,
     fmAdder: 3,
   })
@@ -65,19 +64,47 @@ test('each fault reads on the part it bends', () => {
     expect.arrayContaining([
       'stuck on 2',
       'stuck on 3',
-      'slip 40%',
       'garbage',
       'adder 9 bits',
     ]),
   )
 })
 
-test('a stuck allocator and a stuck slot each draw one channel in red', () => {
+test('slip reads only while the slot counter runs', () => {
   open()
-  set({ fmAlloc: 2 })
-  expect(alarms()).toBe(1)
+  set({ fmDacSlip: 0.4 })
+  expect(words()).toContain('slip 40%')
   set({ fmDacSlot: 3 })
+  expect(words()).not.toContain('slip 40%')
+})
+
+const alarmRow = () => {
+  const d = die().querySelector('path[class*="wireAlarm"]')?.getAttribute('d')
+  return Number(/V(\d+(?:\.\d+)?)/.exec(d ?? '')?.[1])
+}
+
+const dashes = () => die().querySelectorAll('path[class*="wireDash"]').length
+
+test('a stuck allocator draws its channel in red and the other three dashed', () => {
+  open()
+  const rows = [1, 2, 3, 4].map(n => {
+    set({ fmAlloc: n })
+    expect(alarms()).toBe(1)
+    expect(dashes()).toBe(3)
+    return alarmRow()
+  })
+  expect(rows).toEqual(rows.toSorted((a, b) => a - b))
+  expect(new Set(rows).size).toBe(4)
+  set({ fmAlloc: 0 })
+  expect(alarms()).toBe(0)
+  expect(dashes()).toBe(0)
+})
+
+test('a stuck slot draws its channel in red beside the allocator’s', () => {
+  open()
+  set({ fmAlloc: 2, fmDacSlot: 3 })
   expect(alarms()).toBe(2)
+  expect(dashes()).toBe(6)
   set({ fmAlloc: 0, fmDacSlot: 0 })
   expect(alarms()).toBe(0)
 })

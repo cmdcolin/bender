@@ -47,10 +47,6 @@ const stuckLast = (stuck: number) =>
     (a, b) => Number(a === stuck - 1) - Number(b === stuck - 1),
   )
 
-// The allocator hands each note to a channel, the register file holds what the
-// driver wrote, four voices run off it, and one converter takes a slot for each
-// in turn. A stuck allocator or slot counter draws the one channel it leaves in
-// red. The log adder does the arithmetic inside every operator.
 export function FmDieDiagram() {
   const r = useReadings(KEYS)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
@@ -184,15 +180,17 @@ export function FmDieDiagram() {
             <Chip
               box={regsBox}
               reading={boot > 0 ? BOOT[boot] : undefined}
-              help="The register file the driver writes. At power-on it holds clean zeros, or whatever the die felt like."
+              help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
             />
             <Chip
               box={dacBox}
               reading={[
                 ...(slot > 0 ? [SLOTS[slot]!] : []),
-                ...(slip > 0 ? [`slip ${Math.round(slip * 100)}%`] : []),
+                ...(slot === 0 && slip > 0
+                  ? [`slip ${Math.round(slip * 100)}%`]
+                  : []),
               ]}
-              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot, and a slow one skips slots."
+              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
             />
           </>
         )}
