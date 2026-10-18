@@ -1,16 +1,20 @@
 import type { ControlKey } from '../controls.ts'
 
-// The knobs each box of a die drawing opens.
+// The knobs each box of a die drawing opens. The pot solders onto the clock,
+// the counter, the bias or the gate, so each of those boxes opens it.
+
+const POT: readonly ControlKey[] = ['chipBendSpot', 'chipBendPot']
 
 export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
   'key matrix': ['chipGhost'],
-  'tune ROM': ['chipOutAddr', 'chipOutData', 'chipStepTap'],
+  'tune ROM': ['chipOutAddr', 'chipOutData', 'chipStepTap', ...POT],
   clock: [
     'chipClockX',
     'chipDrift',
     'chipCrosstalk',
     'chipFmClock',
     'chipHardSync',
+    ...POT,
   ],
   voices: ['chipShort', 'chipPwmTap', 'chipXor', 'chipDutyEnv'],
   envelope: [
@@ -19,11 +23,10 @@ export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
     'chipEnvDiv',
     'chipPwm',
     'chipEnvBits',
+    ...POT,
   ],
-  'output pin': ['chipScan', 'chipHold'],
+  'output pin': ['chipScan', 'chipHold', ...POT],
 }
-
-export const BEND_KEYS: readonly ControlKey[] = ['chipBendSpot', 'chipBendPot']
 
 export const VOICE_BOXES = {
   'one-shots': ['drumPulse', 'drumPulseShare', 'drumTrigLoad'],

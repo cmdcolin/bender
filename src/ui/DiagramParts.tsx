@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { Fragment, useId, type ReactNode } from 'react'
 
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
@@ -248,6 +248,7 @@ export function BoxRows({
   note,
   verbs,
   hint,
+  under,
 }: {
   keys: readonly ControlKey[] | undefined
   note?: string
@@ -255,20 +256,25 @@ export function BoxRows({
   verbs?: ReactNode
   /** Said while no box is open. */
   hint?: string
+  /** An editor drawn after the last shown row of `keys`. */
+  under?: { keys: readonly ControlKey[]; node: ReactNode }
 }) {
   const shown = useBoardValue(c =>
     (keys ?? []).filter(k => rowShown(k, c)).join(','),
   ).split(',')
   if (!keys) return hint ? <p className={styles.hint}>{hint}</p> : null
+  const rows = keys.filter(key => shown.includes(key))
+  const last = rows.findLast(key => under?.keys.includes(key))
   return (
     <div className={styles.rows}>
       {note && <p className={styles.noteLine}>{note}</p>}
       {verbs}
-      {keys
-        .filter(key => shown.includes(key))
-        .map(key => (
-          <ControlSlider key={key} def={sliderFor(key)} />
-        ))}
+      {rows.map(key => (
+        <Fragment key={key}>
+          <ControlSlider def={sliderFor(key)} />
+          {key === last && under?.node}
+        </Fragment>
+      ))}
     </div>
   )
 }

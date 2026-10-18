@@ -133,14 +133,16 @@ at once — see **Part spread** under [the parts rack](#the-parts-rack) below.
 
 ## The toy chip's pins
 
-The Toy keyboard panel is one drawing of the parts these bends reach. A keyboard
-box at its left opens first and holds the playing rows: tune, level, tone,
-accompaniment, arpeggio and key lock. The key matrix and the tune ROM strike the
-voices, each voice's envelope sets its level, and the output pin carries every
-voice off the chip. Dashed wires carry the clock down to the voices, the PWM
-carrier and the scan counter, and a dashed wire from the output back to the
-clock marks the crosstalk path. A bend turns its part or wire red, and the
-drawing hangs the **Bend spot** pot off the part it is soldered to.
+The Toy keyboard panel is one drawing of the parts these bends reach. The
+keyboard box at its top left opens first and holds the playing rows: tune,
+level, tone, accompaniment, arpeggio and key lock. The key matrix and the tune
+ROM strike the voices, each voice's envelope sets its level, and the output pin
+carries every voice off the chip. Dashed wires carry the clock down to the
+voices, the PWM carrier and the scan counter, and a dashed wire from the output
+back to the clock marks the crosstalk path. A bend turns its part or wire red,
+and the drawing hangs the **Bend spot** pot off the part it is soldered to. The
+clock, tune ROM, envelope and output pin boxes each open **Bend spot** and
+**Bend pot**, and pressing the pot opens the box it hangs on.
 
 The drawing gives each feedback bend a red wire of its own:
 

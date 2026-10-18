@@ -5,7 +5,7 @@ import { expect, test } from 'vitest'
 import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
-import { BEND_KEYS, NODE_KEYS } from './toyBoxKeys.ts'
+import { NODE_KEYS } from './toyBoxKeys.ts'
 import './testDom.ts'
 
 import type { Controls } from '../controls.ts'
@@ -115,13 +115,11 @@ test('pressing a part opens its rows, and a second press puts them away', () => 
   expect(screen.queryByText('Envelope cap')).toBeNull()
 })
 
-test('every knob in the die fold sits in one of the parts or under the bend spot', () => {
+test('every knob in the die fold sits in one of the parts', () => {
   const fold = GROUPS.find(g => g.name === 'Toy keyboard')!
     .sliders.filter(d => d.part === 'inside the die')
     .map(d => d.key)
-  expect([...Object.values(NODE_KEYS).flat(), ...BEND_KEYS].toSorted()).toEqual(
-    fold.toSorted(),
-  )
+  expect(new Set(Object.values(NODE_KEYS).flat())).toEqual(new Set(fold))
 })
 
 test('the keyboard box starts open on the playing rows, and the bus box swaps in its own', () => {
@@ -157,7 +155,15 @@ test('showing the piano roll opens the keyboard box', () => {
   fireEvent.click(screen.getByRole('button', { name: 'show piano roll' }))
 })
 
-test('the bend spot rows stay under the drawing with no part open', () => {
+test('the bend spot opens from the boxes it solders to, and the pot opens its box', () => {
   open()
+  expect(screen.queryByText('Bend spot')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'clock controls' }))
   expect(screen.getByText('Bend spot')).not.toBeNull()
+  set({ chipBendSpot: 4, chipBendPot: 0.5 })
+  fireEvent.click(screen.getByRole('button', { name: 'keyboard controls' }))
+  expect(screen.queryByText('Bend spot')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'bend pot controls' }))
+  expect(screen.getByText('Envelope cap')).not.toBeNull()
+  set({ chipBendSpot: 0, chipBendPot: 0 })
 })

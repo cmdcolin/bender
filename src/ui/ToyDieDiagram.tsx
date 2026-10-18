@@ -15,7 +15,7 @@ import {
   type WireLook,
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
-import { BEND_KEYS, NODE_KEYS } from './toyBoxKeys.ts'
+import { NODE_KEYS } from './toyBoxKeys.ts'
 
 import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './foldDrawings.tsx'
@@ -63,22 +63,31 @@ const TOY_TAP = CHANNELS.find(c => c.name === 'Toy keyboard')!.tap
 
 const WIDTH = 420
 const ROOM = 22
-const ROW_GAP = 32
-const BOX_H = boxHeight('a\nb')
-const GAPS = [22, 38, 22]
+const ROW_GAP = 44
+const BOX_H = boxHeight('a')
+const GAPS = [30, 38, 22]
 const TAIL = 34
 const TOP = ROOM
-const LOW = ROOM + BOX_H + ROW_GAP
-const SMALL_H = boxHeight('a')
-const SMALL_GAP = 14
-const SMALL_Y = LOW + BOX_H + SMALL_GAP
-const HEIGHT = SMALL_Y + SMALL_H + 4
+const LOW = TOP + BOX_H + ROW_GAP
+const RAIL = LOW - 22
+const BUS_Y = TOP + BOX_H + 12
+const HEIGHT = LOW + BOX_H + ROOM
 const VOICES_W = 64
-const KEYBOARD_W = 30
-const KEYBOARD_GAP = 18
-const SIDE = 11
+const GLYPH_W = 18
+const GLYPH_GAP = 4
+const INSET = boxWidth('') / 2
+const SIDE = 6
+
+// Which box each bend spot solders the pot onto.
+const SPOT_BOX: Record<string, string> = {
+  clock: 'clock',
+  counter: 'tune ROM',
+  bias: 'output pin',
+  gate: 'envelope',
+}
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
+const middle = (b: ChipBox) => b.x + b.w / 2
 const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 
 // A variable resistor from a spot on the die to ground, above or below its box.
@@ -87,11 +96,15 @@ function Pot({
   y,
   dir,
   on,
+  box,
+  pick,
 }: {
   x: number
   y: number
   dir: 1 | -1
   on: boolean
+  box: string
+  pick: ReturnType<typeof useSelectedBox>
 }) {
   const at = (d: number) => y + dir * d
   const zig = [3, 5, 7, 9, 11, 13]
@@ -99,7 +112,12 @@ function Pot({
     .join(' ')
   const g = at(16)
   return (
-    <g className={on ? styles.potOn : styles.pot}>
+    <Pressable
+      name="bend pot"
+      selected={pick.selected === box}
+      onSelect={() => pick.toggle(box)}
+      className={on ? styles.potOn : styles.pot}
+    >
       <path
         d={`M${x} ${y} V${at(3)} ${zig} L${x} ${at(14)} V${g} M${x - 5} ${g} H${x + 5} M${x - 3} ${g + dir * 2} H${x + 3} M${x - 1} ${g + dir * 4} H${x + 1}`}
       />
@@ -107,7 +125,7 @@ function Pot({
       <text x={x + 9} y={at(10) + 3}>
         pot
       </text>
-    </g>
+    </Pressable>
   )
 }
 
@@ -121,7 +139,7 @@ function KeyboardNode({
   lit: boolean
   pick: ReturnType<typeof useSelectedBox>
 }) {
-  const x = box.x + (box.w - 18) / 2
+  const x = box.x + INSET
   const y = box.y + (box.h - 12) / 2
   return (
     <Pressable
@@ -144,7 +162,7 @@ function KeyboardNode({
         <rect
           x={x}
           y={y}
-          width={18}
+          width={GLYPH_W}
           height={12}
           rx={1.5}
           className={styles.glyph}
@@ -166,6 +184,13 @@ function KeyboardNode({
           />
         ))}
       </g>
+      <text
+        x={x + GLYPH_W + GLYPH_GAP}
+        y={box.y + box.h / 2 + 3}
+        className={lit ? styles.chipNameOn : styles.chipName}
+      >
+        {KEYBOARD}
+      </text>
     </Pressable>
   )
 }
@@ -242,11 +267,10 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
     boxWidth('envelope'),
     boxWidth('output pin'),
   ]
-  const start = KEYBOARD_W + KEYBOARD_GAP
-  const width = widths.reduce((a, b) => a + b, start + TAIL + sum(GAPS))
+  const width = widths.reduce((a, b) => a + b, TAIL + sum(GAPS))
   const row = names.map((name, i): ChipBox => ({
     name,
-    x: Math.round(start + sum(widths.slice(0, i)) + sum(GAPS.slice(0, i))),
+    x: Math.round(sum(widths.slice(0, i)) + sum(GAPS.slice(0, i))),
     y: LOW,
     w: widths[i]!,
     h: BOX_H,
@@ -255,57 +279,59 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
   const keyboard: ChipBox = {
     name: KEYBOARD,
     x: 0,
-    y: LOW,
-    w: KEYBOARD_W,
+    y: TOP,
+    w: boxWidth(KEYBOARD) + GLYPH_W + GLYPH_GAP,
     h: BOX_H,
-  }
-  const bus: ChipBox = {
-    name: 'bus',
-    x: voices.x + (voices.w - boxWidth('bus')) / 2,
-    y: SMALL_Y,
-    w: boxWidth('bus'),
-    h: SMALL_H,
   }
   const rom: ChipBox = {
     name: 'tune ROM',
-    x: start,
+    x: voices.x,
     y: TOP,
     w: boxWidth('tune ROM'),
     h: BOX_H,
   }
-  const clockRight = pin.x + pin.w * 0.6
+  const clockW = boxWidth('clock')
   const clock: ChipBox = {
     name: 'clock',
-    x: voices.x + 22,
+    x: Math.round(middle(env) - clockW / 2),
     y: TOP,
-    w: clockRight - voices.x - 22,
+    w: clockW,
+    h: BOX_H,
+  }
+  const feed = voices.x + 19
+  const busW = boxWidth('bus')
+  const bus: ChipBox = {
+    name: 'bus',
+    x: feed - busW / 2,
+    y: BUS_Y,
+    w: busW,
     h: BOX_H,
   }
   const mid = LOW + BOX_H / 2
   const clockMid = TOP + BOX_H / 2
+  const clockX = middle(clock)
   const pinRight = pin.x + pin.w
   const tap = pinRight + 12
-  const route = LOW - 9
-  const tuneX = rom.x + rom.w * 0.75
-  const stepFrom = voices.x + 20
-  const stepTo = rom.x + rom.w * 0.3
+  const stepX = voices.x + 38
   const spot = read('chipBendSpot')
+  const spotBox = spot > 0 ? SPOT_BOX[SPOTS[spot]!] : undefined
+  const potted = (name: string) => spotBox === name
   const scan = up('chipScan')
   const pwmTap = up('chipPwmTap')
   const stepTap = up('chipStepTap')
   const cross = up('chipCrosstalk')
   const drops: [number, boolean, string][] = [
-    [voices.x + voices.w / 2, false, ''],
-    [env.x + env.w / 2, up('chipPwm') && !pwmTap, 'PWM'],
+    [voices.x + voices.w - 8, false, ''],
+    [clockX, up('chipPwm') && !pwmTap, 'PWM'],
     [pin.x + pin.w * 0.3, scan, 'scan'],
   ]
   const potAt: Record<string, [number, number, 1 | -1]> = {
     clock: [clock.x + 14, TOP, -1],
-    counter: [rom.x + rom.w / 2, TOP, -1],
-    bias: [pin.x + pin.w / 2, LOW + BOX_H, 1],
-    gate: [env.x + env.w / 2, LOW + BOX_H, 1],
+    'tune ROM': [middle(rom), TOP, -1],
+    'output pin': [middle(pin), LOW + BOX_H, 1],
+    envelope: [middle(env), LOW + BOX_H, 1],
   }
-  const placed = spot > 0 ? potAt[SPOTS[spot]!] : undefined
+  const placed = spotBox ? potAt[spotBox] : undefined
   const loopL = env.x + env.w * 0.7
   const loopR = env.x + env.w - 5
   return (
@@ -321,7 +347,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
             <>
               <Wire
                 arrow={arrow}
-                d={`M${keyboard.w} ${mid} H${keys.x}`}
+                d={`M${middle(keys)} ${TOP + BOX_H} V${LOW}`}
                 look={flow}
               />
               {row.slice(1).map((to, i) => (
@@ -358,31 +384,37 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               >
                 tempo
               </text>
+              <Wire d={`M${feed} ${TOP + BOX_H} V${bus.y}`} />
               <Wire
                 arrow={arrow}
-                d={`M${tuneX} ${TOP + BOX_H} V${route} H${voices.x + 10} V${LOW}`}
+                d={`M${feed} ${bus.y + BOX_H} V${LOW}`}
+                look={knifed ? 'alarm' : 'plain'}
               />
               {stepTap && (
                 <>
                   <Wire
                     arrow={arrow}
-                    d={`M${stepFrom} ${LOW} V${route - 8} H${stepTo} V${TOP + BOX_H}`}
+                    d={`M${stepX} ${LOW} V${TOP + BOX_H}`}
                     look="alarm"
                   />
-                  <Say x={tuneX + 4} y={route - 13}>
+                  <Say x={stepX + 4} y={TOP + BOX_H + 11}>
                     step tap
                   </Say>
                 </>
               )}
+              <Wire
+                d={`M${clockX} ${TOP + BOX_H} V${RAIL} M${drops[0]![0]} ${RAIL} H${drops[2]![0]}`}
+                look="dash"
+              />
               {drops.map(([x, on, say]) => (
                 <g key={x}>
                   <Wire
                     arrow={arrow}
-                    d={`M${x} ${TOP + BOX_H} V${LOW}`}
+                    d={`M${x} ${RAIL} V${LOW}`}
                     look={bent(on)}
                   />
                   {on && (
-                    <Say x={x + 4} y={TOP + BOX_H + 11}>
+                    <Say x={x + 4} y={RAIL + 11}>
                       {say}
                     </Say>
                   )}
@@ -397,7 +429,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   />
                   <Say
                     x={(voices.x + voices.w + env.x) / 2}
-                    y={mid - SIDE - 6}
+                    y={LOW - 4}
                     anchor="middle"
                   >
                     PWM
@@ -413,7 +445,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   />
                   <Say
                     x={(voices.x + voices.w + env.x) / 2}
-                    y={mid + SIDE + 13}
+                    y={LOW + BOX_H + 11}
                     anchor="middle"
                   >
                     dive
@@ -433,7 +465,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               )}
               <Wire
                 arrow={arrow}
-                d={`M${tap} ${mid} V${clockMid} H${clockRight}`}
+                d={`M${tap} ${mid} V${clockMid} H${clock.x + clock.w}`}
                 look={bent(cross)}
               />
               <circle
@@ -453,13 +485,15 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               <Node
                 pick={pick}
                 box={rom}
-                lit={up('chipOutAddr') || up('chipOutData')}
+                lit={
+                  up('chipOutAddr') || up('chipOutData') || potted('tune ROM')
+                }
                 help="The counter that steps through the tune and the ROM that holds its notes. The output pin can be soldered onto one of its address or note-code wires."
               />
               <Node
                 pick={pick}
                 box={clock}
-                lit={up('chipDrift')}
+                lit={up('chipDrift') || potted('clock')}
                 help="The crystal and its divider. Pitch, tempo, the scan counter and the PWM carrier all count off it."
               />
               <Node
@@ -476,24 +510,20 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               <Node
                 pick={pick}
                 box={env}
-                lit={up('chipEnvCap')}
+                lit={up('chipEnvCap') || potted('envelope')}
                 help="The capacitor each note’s level follows. The PWM carrier switches that level on and off."
               />
               <Node
                 pick={pick}
                 box={pin}
-                lit={!scan && up('chipShort')}
+                lit={(!scan && up('chipShort')) || potted('output pin')}
                 help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${bus.x + bus.w / 2} ${bus.y} V${voices.y + BOX_H}`}
-                look={bent(knifed)}
               />
               <KeyboardNode box={keyboard} lit={played} pick={pick} />
               <Node
                 pick={pick}
                 box={bus}
+                lit={knifed}
                 help="The address and data wires between the counter, the tune ROM and the voices. The rows put a knife on them."
               />
               {placed && (
@@ -502,20 +532,19 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   y={placed[1]}
                   dir={placed[2]}
                   on={up('chipBendPot')}
+                  box={spotBox!}
+                  pick={pick}
                 />
               )}
             </>
           )}
         </Diagram>
       </div>
-      {pick.selected === KEYBOARD && editor ? (
-        <>
-          <BoxRows keys={LEAD_KEYS} />
-          {editor}
-          <BoxRows keys={PLAY_KEYS} />
-        </>
-      ) : pick.selected === KEYBOARD ? (
-        <BoxRows keys={KEYBOARD_KEYS} />
+      {pick.selected === KEYBOARD ? (
+        <BoxRows
+          keys={KEYBOARD_KEYS}
+          under={editor ? { keys: LEAD_KEYS, node: editor } : undefined}
+        />
       ) : (
         <BoxRows
           hint="Press a box for its settings."
@@ -529,7 +558,6 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
           verbs={pick.selected === 'bus' && verbs?.(BUS)}
         />
       )}
-      <BoxRows keys={BEND_KEYS} />
     </>
   )
 }
