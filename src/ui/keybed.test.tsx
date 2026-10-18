@@ -130,9 +130,9 @@ test('moving the letters lets go of what they were holding', () => {
 
 test('the gate switch cuts the jumper, and the walk takes it back', () => {
   render(<FmKeys />)
-  fireEvent.click(screen.getByRole('button', { name: 'toy gate' }))
+  fireEvent.click(screen.getByRole('button', { name: 'follows toy keys' }))
   expect(engine.controls.get().fmKeyGate).toBe(1)
-  expect(screen.getByRole('button', { name: 'gate cut' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'toy keys cut' })).toBeTruthy()
   act(() => engine.undo(0))
   expect(engine.controls.get().fmKeyGate).toBe(0)
 })

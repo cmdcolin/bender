@@ -86,7 +86,7 @@ const BLURBS: Record<string, string> = {
   'Patch bay':
     'Wires, each from a source to a destination at a signed depth. A wire can land on the toy’s supply rail, on the tape loop’s capstan and loop markers, or on another wire’s depth — which is how the bay modulates itself.',
   'Trigger patch':
-    'The two boxes’ trigger lines, bridged. The kit can play the keys and the keys can play the kit.',
+    'Which machine plays which. The kit can play the toy keyboard and the keyboard can play the kit, and the FM chip, home keyboard and mono synth each take the kit’s hits through *Kit voice that plays this…* and the toy keyboard’s notes through a jumper that is soldered out of the box.',
   'Body contact': 'Two axes, for the hand on the circuit.',
   'Feedback bus':
     'The output fed back in, at a loop time short enough for kHz mixer squeal. *Patched into* decides where the return lands.',

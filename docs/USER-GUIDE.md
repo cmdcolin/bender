@@ -50,8 +50,8 @@ played it.
 What you record isn't a separate sequencer: it's the 19th entry on **Tune**, one
 past the 18 ROM songs, and the chip treats it the same as any of them — **Memory
 rate** sets its speed, the auto bass-chord plays under it, the clock bend and a
-brownout affect it the same way, and **Struck by** can clock it from the drum
-machine instead of the crystal.
+brownout affect it the same way, and **Kit voice that plays this…** can clock it
+from the drum machine instead of the crystal.
 
 The **piano roll** draws that memory: one row per pitch, one column per step.
 Click a cell to place a note, drag to draw a run, click again to remove it,
@@ -227,8 +227,8 @@ play.
 ## Playing the FM chip
 
 The FM chip has no sequencer of its own; its key input is wired onto the toy
-keyboard's gate line, so it plays whatever the toy strikes. **Struck by** can
-wire a kit voice onto that line too.
+keyboard's gate line, so it plays whatever the toy strikes. **Kit voice that
+plays this chip** can wire a kit voice onto that line too.
 
 ![The FM chip's keybed: a green circuit board with TOY GATE and HOLD switches, an octave switch, and rows of push-button keys.](img/guide-fm.jpg)
 
@@ -302,8 +302,8 @@ only thing on the board that makes pads, strings, choirs and bells. There is no
 oscillator in it: a ROM holds one short recording of each voice — an attack and
 then a loop — and a counter walks that ROM at whatever rate the note asks for.
 Bring **Level** up and its bed appears under the toy's, in grey plastic, with
-the same **toy gate** jumper the FM chip has: soldered out of the box, so the
-demo song plays it.
+the same **Plays the toy keyboard’s notes** jumper the FM chip has: soldered out
+of the box, so the demo song plays it.
 
 **Voice** picks the recording and **Envelope** picks one of the four buttons
 down the side of the case — _piano_ falls away whether or not you are holding
@@ -340,8 +340,9 @@ hearing first.
 
 The fourth machine on the rail is a three-oscillator monosynth voice card with a
 transistor ladder filter, built after the Model D. Bring **Level** up and its
-bed appears under the toy's, with walnut cheeks and a **toy gate** jumper. The
-jumper comes soldered, so the toy's tune plays the synth two octaves down.
+bed appears under the toy's, with walnut cheeks and a **Plays the toy keyboard’s
+notes** jumper. The jumper comes soldered, so the toy's tune plays the synth two
+octaves down.
 
 The top of the panel holds the knobs a bass line lives on. **Cutoff** sets the
 four-pole filter, **Emphasis** is its resonance, and past about 0.95 the ladder
@@ -352,10 +353,11 @@ saturation, and **Glide** slides between notes.
 Notes off the toy's gate and the kit's trigger lines have no key-up, so **Gate**
 under _keys_ sets how long each stays down, as a fraction of the toy's sequencer
 step. At 1 each note is still down when the next one arrives, so the tune plays
-legato and glides. **Struck by** clips a kit line onto the synth: with the kick
-on it, every kick restarts the last note played. With the jumper cut, notes
-reach the synth from its bed, the kit's lines and a controller. The MIDI panel's
-_bass split_ route puts the synth under the split point and the toy above it.
+legato and glides. **Kit voice that plays this synth** clips a kit line onto the
+synth: with the kick on it, every kick restarts the last note played. With the
+jumper cut, notes reach the synth from its bed, the kit's lines and a
+controller. The MIDI panel's _bass split_ route puts the synth under the split
+point and the toy above it.
 
 The folded headings hold the rest of a Model D. _oscillators_ has the three
 waveforms and footages, osc 2 and osc 3 tuning, hard or soft sync and **Osc 2
@@ -414,12 +416,12 @@ so a key fires whatever column the sequencer sits on.
 Bridge both directions and the two machines play each other — a rattle at the
 audio block rate, held in check by the safety tail.
 
-Two more wires land on the FM chip, the only way anything reaches it. **Toy
-gate** is the factory jumper off the keyboard's gate line; cut it and the chip
-stops following the keyboard. **Struck by** clips the kit's trigger lines onto
-the same input, one voice per pentatonic step, turning a drum pattern into a
-riff. Every wire here, and the shared rail, can also be bent — see
-[Bends](BENDS.md).
+Two more wires land on the FM chip, the only way anything reaches it. **Plays
+the toy keyboard’s notes** is the factory jumper off the keyboard's gate line;
+cut it and the chip stops following the keyboard. **Kit voice that plays this
+chip** clips the kit's trigger lines onto the same input, one voice per
+pentatonic step, turning a drum pattern into a riff. Every wire here, and the
+shared rail, can also be bent — see [Bends](BENDS.md).
 
 ## The four-track
 

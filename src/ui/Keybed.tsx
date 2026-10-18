@@ -87,7 +87,7 @@ export function GateJumper({
           engine.set(control, cut ? 0 : 1)
         }}
       >
-        {cut ? 'gate cut' : 'toy gate'}
+        {cut ? 'toy keys cut' : 'follows toy keys'}
       </button>
     </Tip>
   )

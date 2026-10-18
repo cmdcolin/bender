@@ -4,7 +4,7 @@
 .diagram {
   display: block;
   width: 100%;
-  max-width: 300px;
+  max-width: 340px;
   height: auto;
   margin: var(--space-2xs) 0 var(--space-md);
 }

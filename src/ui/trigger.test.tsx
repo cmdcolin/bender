@@ -1,16 +1,17 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { ANY_CHOICE } from '../dsp/trigbus.ts'
+import { engine } from '../engine/engine.ts'
 import { GROUPS, groupKeys, touchedCount } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
-// Which box fires which. There are three boxes on the board and four wires
-// between them, and two of the four were on the FM chip's panel with nothing
-// anywhere saying they were the same kind of thing as the other two.
+// Which box plays which. Five machines on the board and nine wires between
+// them: the kit and the toy keyboard each way, and the kit's hits and the
+// keyboard's notes onto each of the three machines with no sequencer of its own.
 
 const patch = () => {
   const g = GROUPS.find(each => each.name === 'Trigger patch')
@@ -21,28 +22,48 @@ const patch = () => {
 const openPatch = () =>
   render(<OpenGroup group={patch()} onClose={() => {}} seconds={0} />)
 
-test('each of the four trigger wires opens its own rows, drawn once', () => {
+test('each trigger wire opens its own rows, drawn once', () => {
   openPatch()
   const wires: [string, string[]][] = [
-    ['kit → keys', ['Kit fires keys', 'and plays']],
-    ['keys → kit', ['Keys fire kit']],
-    ['kit → FM', ['Struck by']],
-    ['gate', ['Toy gate']],
+    [
+      'kit → keys',
+      ['Kit voice that plays the toy keyboard', 'The note it plays'],
+    ],
+    ['keys → kit', ['Kit voice the toy keyboard plays']],
+    ['kit → FM chip', ['Kit voice that plays this chip']],
+    ['keys → FM chip', ['Plays the toy keyboard’s notes']],
+    ['kit → Home keyboard', ['Kit voice that plays this keyboard']],
+    ['keys → Mono synth', ['Plays the toy keyboard’s notes']],
   ]
-  expect(screen.queryByText('Struck by')).toBeNull()
+  expect(screen.queryByText('Kit voice that plays this chip')).toBeNull()
   for (const [wire, rows] of wires) {
     fireEvent.click(screen.getByRole('button', { name: `${wire} controls` }))
     for (const name of rows)
       expect(screen.getAllByText(name), name).toHaveLength(1)
   }
-  expect(screen.queryByText('Struck by')).toBeNull()
+  expect(screen.queryByText('Kit voice that plays this chip')).toBeNull()
 })
 
-test('the picture names the third box and both wires onto it', () => {
+test('pressing a machine opens both of its rows', () => {
   openPatch()
-  expect(screen.getByText('FM chip')).toBeTruthy()
-  expect(screen.getByText('kit → FM')).toBeTruthy()
-  expect(screen.getByText('gate')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Mono synth controls' }))
+  expect(screen.getAllByText('Kit voice that plays this synth')).toHaveLength(1)
+  expect(screen.getAllByText('Plays the toy keyboard’s notes')).toHaveLength(1)
+})
+
+test('each machine says in words what plays it', () => {
+  render(<OpenGroup group={patch()} onClose={() => {}} seconds={0} />)
+  expect(screen.queryByText('nothing plays it')).toBeNull()
+  act(() => {
+    engine.set('fmKeyGate', 1)
+    engine.set('fmStruck', 1)
+  })
+  expect(screen.getAllByText('kick hits')).toHaveLength(1)
+  act(() => {
+    engine.set('monoKeyGate', 1)
+    engine.set('pcmKeyGate', 1)
+  })
+  expect(screen.getAllByText('nothing plays it')).toHaveLength(2)
 })
 
 test('the patch counts and rolls the chip’s two as its own', () => {

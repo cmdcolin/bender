@@ -45,16 +45,20 @@ much as a way of skipping to it.
 Sources sit at the head of the path as boxes of their own. Five of them share
 one power supply: the toy keyboard, the drum machine, the FM chip, the home
 keyboard and the mono synth are dies on one rail. The map draws them inside a
-dashed frame with the dotted supply rail running past every box. **Starve**, a
-knob on the keyboard's panel, drags that rail down, so it dives the chips' pitch
-and slows the kit's tempo with it.
+dashed frame with the dotted supply rail running past every box. A battery box
+on the rail opens **Power supply**, and so does the voltage lamp on each
+machine's deck. Its **Starve** knob drags the rail down, so it dives the chips'
+pitch and slows the kit's tempo with it.
 
 - **The key line:** the toy's gate line runs along the top row from the toy
   keyboard to the FM chip and the home keyboard, then drops onto the mono synth.
-  All three play whatever note the toy strikes.
-- **Toy gate:** each of the three has a **Toy gate** jumper. With it cut, the
-  chip answers only its own keybed and any trigger bridge you patch across from
-  the drums. See [the trigger patch](USER-GUIDE.md) in the user guide.
+  All three play whatever note the toy strikes, from your keys, its tune or its
+  arpeggio. The line dashes from the far end in as you cut jumpers.
+- **Jumpers:** each of the three has a **Plays the toy keyboard’s notes**
+  jumper. With it cut, the chip answers only its own keybed and any trigger
+  bridge you patch across from the drums. Each bridge on the map reads
+  `kick → FM`: the kit voice, then the machine it strikes. See
+  [the trigger patch](USER-GUIDE.md) in the user guide.
 - **In the panel:** the map puts the five on two rows, with the drums under the
   toy keyboard. The README's diagram uses the same layout.
 

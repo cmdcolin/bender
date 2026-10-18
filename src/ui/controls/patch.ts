@@ -359,26 +359,34 @@ export const PATCH_GROUPS: Group[] = [
   {
     name: 'Trigger patch',
     place: 'Patch',
-    // The loop drawn above these rows, in TriggerPatch: the kit, the keyboard
-    // and the chip with no keyboard of its own as three boxes, with every wire
-    // that makes one strike another between them. Solder both of the pair and
-    // the toys play each other; the chip is on the end of two more.
+    // The loop drawn above these rows, in TriggerPatch: the kit and the
+    // keyboard, and under them the three machines with no sequencer of their
+    // own, with every wire that makes one strike another. Solder both of the
+    // pair and the toys play each other; each of the three takes the kit's hits
+    // and the keyboard's notes through a wire of its own.
     //
-    // The widget draws all five rows itself, its own three and the chip's two,
-    // because the picture is only half an answer if the knobs it names are on
-    // another panel — and the order it wants them in is the order of the wires
-    // in the picture.
+    // The widget draws all nine rows itself, its own three and each machine's
+    // two, because the picture is only half an answer if the knobs it names are
+    // on another panel — and the order it wants them in is the order of the
+    // wires in the picture.
     editor: { kind: 'trigger' },
     handled: ['trigToKeys', 'trigKeysNote', 'trigToDrum'],
-    // The chip's end of those two wires. They belong to the chip's own panel,
-    // where a hand reaching for the FM chip finds them; they are also two of
-    // the four wires this patch is, which is the only place all four are one
+    // The machines' ends of those wires. They belong to each machine's own
+    // panel, where a hand reaching for it finds them; they are also six of the
+    // nine wires this patch is, which is the only place all of them are one
     // thing you can see.
-    borrows: ['fmStruck', 'fmKeyGate'],
+    borrows: [
+      'fmStruck',
+      'fmKeyGate',
+      'pcmStruck',
+      'pcmKeyGate',
+      'monoStruck',
+      'monoKeyGate',
+    ],
     sliders: [
       {
         key: 'trigToKeys',
-        label: 'Kit fires keys',
+        label: 'Kit voice that plays the toy keyboard',
         min: 0,
         max: VOICE_LABELS.length + 1,
         step: 1,
@@ -388,7 +396,7 @@ export const PATCH_GROUPS: Group[] = [
       },
       {
         key: 'trigKeysNote',
-        label: 'and plays',
+        label: 'The note it plays',
         min: 0,
         max: 3,
         step: 1,
@@ -398,7 +406,7 @@ export const PATCH_GROUPS: Group[] = [
       },
       {
         key: 'trigToDrum',
-        label: 'Keys fire kit',
+        label: 'Kit voice the toy keyboard plays',
         min: 0,
         max: VOICE_LABELS.length + 2,
         step: 1,

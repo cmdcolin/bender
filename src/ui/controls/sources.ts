@@ -1465,7 +1465,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmStruck',
-        label: 'Struck by',
+        label: 'Kit voice that plays this chip',
         part: 'clocks and wires',
         min: 0,
         max: N_DRUM_VOICES + 1,
@@ -1476,13 +1476,13 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmKeyGate',
-        label: 'Toy gate',
+        label: 'Plays the toy keyboard’s notes',
         part: 'clocks and wires',
         min: 0,
         max: 1,
         step: 1,
         unit: '',
-        choices: ['soldered', 'cut'],
+        choices: ['yes, soldered', 'no, cut'],
         help: 'The jumper from the toy’s gate line onto this chip’s key input — the accident of a wiring loom that makes the two boxes play the same part. Cut it and the chip stops following the keyboard next door and answers only its own keys, the kit’s trigger lines and the effect ROM. Its own keybed plays either way.',
       },
       {
@@ -1878,7 +1878,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'pcmStruck',
-        label: 'Struck by',
+        label: 'Kit voice that plays this keyboard',
         part: 'clock and wires',
         min: 0,
         max: N_DRUM_VOICES + 1,
@@ -1889,13 +1889,13 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'pcmKeyGate',
-        label: 'Toy gate',
+        label: 'Plays the toy keyboard’s notes',
         part: 'clock and wires',
         min: 0,
         max: 1,
         step: 1,
         unit: '',
-        choices: ['soldered', 'cut'],
+        choices: ['yes, soldered', 'no, cut'],
         help: 'The same jumper the FM chip has, off the toy’s gate line onto this keyboard’s key input. Out of the box the demo song and the arpeggio play the strings. Cut it and the keyboard answers only its own bed, the kit’s trigger lines and a controller. Its own keybed plays either way.',
       },
       {
@@ -2375,7 +2375,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'monoStruck',
         part: 'keys',
-        label: 'Struck by',
+        label: 'Kit voice that plays this synth',
         min: 0,
         max: N_DRUM_VOICES + 1,
         step: 1,
@@ -2386,12 +2386,12 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'monoKeyGate',
         part: 'keys',
-        label: 'Toy gate',
+        label: 'Plays the toy keyboard’s notes',
         min: 0,
         max: 1,
         step: 1,
         unit: '',
-        choices: ['soldered', 'cut'],
+        choices: ['yes, soldered', 'no, cut'],
         help: 'The jumper from the toy’s gate line to the synth’s key input. Soldered, the toy’s tune and arpeggio play the synth. Cut, notes reach it from its bed, the kit’s trigger lines and a controller.',
       },
       {
@@ -2661,7 +2661,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'sampleTrig',
-        label: 'Struck by',
+        label: 'Restarts the file on',
         min: 0,
         max: VOICE_LABELS.length + 3,
         step: 1,

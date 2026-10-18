@@ -319,8 +319,8 @@ That register is the only noise on the part. The two slots take it at different
 rates off one divider, which is why they do not sound alike: the hi-hat gets
 every bit and comes out as sand, and the snare latches one in eight and holds
 it, which is a rattle with a body under it. Every note strikes the bass drum;
-the snare and the hi-hat want the kit's own trigger lines, which is what
-**Struck by** clips on.
+the snare and the hi-hat want the kit's own trigger lines, which is what **Kit
+voice that plays this chip** clips on.
 
 What that is worth is the whole spectrum rather than the top of it. With the
 bank switched over the same knives land somewhere new — a wire that used to move
@@ -911,11 +911,11 @@ the chip's supply rail, the oscillator's FM input, the delay's feedback path,
 the ring modulator's carrier, or the trigger line of the drum machine or the
 glitch buffer.
 
-**Struck by** puts a dropped audio file on a trigger line of your choice — one
-of the kit's voices, any hit at all, a keyboard note, or the mic. With
-**Ending** set to one-shot, the file plays as one more drum voice, retriggered
-from the top on every hit; left as a loop, each hit just drops the needle back
-at the start of whatever's already playing.
+**Restarts the file on** puts a dropped audio file on a trigger line of your
+choice — one of the kit's voices, any hit at all, a keyboard note, or the mic.
+With **Ending** set to one-shot, the file plays as one more drum voice,
+retriggered from the top on every hit; left as a loop, each hit just drops the
+needle back at the start of whatever's already playing.
 
 ## The patch bay and body pad
 
