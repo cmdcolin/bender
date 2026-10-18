@@ -47,7 +47,7 @@ test('the home keyboard draws its buses under either bus box', () => {
   expect(
     screen.queryByRole('img', { name: 'home keyboard bus wiring' }),
   ).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'address bus controls' }))
+  fireEvent.click(screen.getByRole('button', { name: 'addr bus controls' }))
   expect(texts(drawing('home keyboard bus wiring'))).toContain('A0–A13')
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
   expect(texts(drawing('home keyboard bus wiring'))).toContain('D0–D7')

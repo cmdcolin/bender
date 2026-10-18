@@ -34,7 +34,7 @@ const KEYS = [
 type Key = (typeof KEYS)[number]
 
 const PARTS: Record<string, string> = {
-  'address bus': 'knife on the bus',
+  'addr bus': 'knife on the bus',
   'data bus': 'knife on the bus',
 }
 
@@ -46,7 +46,7 @@ const GAP = 18
 const BOX_H = boxHeight('')
 
 // How far each bus box leans away from the other, so the two do not touch.
-const BUS_LEAN = 20
+const BUS_LEAN = 14
 
 const midOf = (from: BoxSpec, to: BoxSpec) =>
   Math.round((from.x + from.w + to.x) / 2)
@@ -157,7 +157,7 @@ export function PcmKeysDiagram({
       'The die’s one LFO. It has no rate or depth register and no way to stop it; the button picks whether a voice listens to it, and whether it waits first.',
     ),
     bus(
-      'address bus',
+      'addr bus',
       midOf(counter, rom),
       -BUS_LEAN,
       ['pcmAddrLine', 'pcmAddrFault', 'pcmBusCut'],

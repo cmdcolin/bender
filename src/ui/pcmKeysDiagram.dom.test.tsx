@@ -25,7 +25,7 @@ test('the keyboard opens on the ROM, and each box swaps in its own rows', () => 
   fireEvent.click(box('data bus'))
   expect(screen.getByText('Data line')).not.toBeNull()
   expect(screen.queryByText('Address line')).toBeNull()
-  fireEvent.click(box('address bus'))
+  fireEvent.click(box('addr bus'))
   expect(screen.getByText('Address line')).not.toBeNull()
 })
 
@@ -44,7 +44,7 @@ test('a box goes accent, frame and name, when a knob inside is off stock', () =>
   engine.writeBoard({ ...DEFAULT_CONTROLS, pcmDataLine: 3 })
   render(<PcmKeysDiagram verbs={() => null} />)
   expect(accent('data bus')).toEqual([true, true])
-  expect(accent('address bus')).toEqual([false, false])
+  expect(accent('addr bus')).toEqual([false, false])
 })
 
 const lit = (wire: Element) => wire.getAttribute('class')!.includes('wireOn')
