@@ -1975,6 +1975,7 @@ function cutRom(): DrumSlabs {
     step: new Float32Array(BLOCK),
     carrier: new Float32Array(BLOCK),
     toy: new Float32Array(BLOCK),
+    fm: new Float32Array(BLOCK),
     bright: new Float32Array(BLOCK),
     send: new Float32Array(BLOCK),
     heat: 0,

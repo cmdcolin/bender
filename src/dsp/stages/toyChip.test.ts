@@ -644,7 +644,7 @@ test('the envelope on the divider drops a note as it fades', () => {
     return [
       pitchHz(x.subarray(0, SR * 0.05)),
       pitchHz(x.subarray(SR * 0.4, SR * 0.5)),
-    ]
+    ] as const
   }
   const [stockStart, stockEnd] = pitches(0)
   expect(stockEnd).toBeCloseTo(stockStart, -1)
