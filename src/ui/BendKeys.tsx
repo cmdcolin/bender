@@ -247,90 +247,92 @@ export function BendKeys({ morphSeconds }: { morphSeconds: MorphSeconds }) {
     )
   }
 
+  if (!on) return null
   return (
     <div className={styles.board}>
       <div className={styles.bar}>
-        <Tip
-          text={
-            on
-              ? `The letter keys play the bend keys: hold one, shift pins it, ${octaveLetters.down} lets go of everything, ${octaveLetters.up} redeals. Press to hand them back to the toy keyboard.`
-              : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard.'
-          }
-        >
-          <button
-            className={on ? styles.letterSwitchOn : styles.letterSwitch}
-            aria-pressed={on}
-            onClick={() => setLetters(!on)}
+        <span className={styles.settings}>
+          {HEATS.map(h => (
+            <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
+              <button
+                className={heat === h ? styles.chipOn : styles.chip}
+                aria-pressed={heat === h}
+                onClick={() => setBendHeat(h)}
+              >
+                {h}
+              </button>
+            </Tip>
+          ))}
+          <Tip
+            text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
           >
-            bend keys
-          </button>
-        </Tip>
-        {on && (
-          <span className={styles.settings}>
-            {HEATS.map(h => (
-              <Tip key={h} text={`${HEAT_TIP[h]} — the next deal reads it`}>
-                <button
-                  className={heat === h ? styles.chipOn : styles.chip}
-                  aria-pressed={heat === h}
-                  onClick={() => setBendHeat(h)}
-                >
-                  {h}
-                </button>
-              </Tip>
-            ))}
-            <Tip
-              text={`a key swells in over the morph time and falls back over the same time — ${Math.max(morphSeconds, 1)}s as the picker stands`}
+            <button
+              className={swell ? styles.chipOn : styles.chip}
+              aria-pressed={swell}
+              onClick={() => setBendSwell(!swell)}
             >
-              <button
-                className={swell ? styles.chipOn : styles.chip}
-                aria-pressed={swell}
-                onClick={() => setBendSwell(!swell)}
-              >
-                swell
-              </button>
-            </Tip>
-            <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
-              <select
-                className={every === 0 ? styles.every : styles.everyOn}
-                value={every}
-                aria-label="redeal every"
-                onChange={e =>
-                  setRedealEvery(
-                    REDEAL_BARS.find(
-                      b => b === Number(e.currentTarget.value),
-                    ) ?? 0,
-                  )
-                }
-              >
-                {REDEAL_BARS.map(b => (
-                  <option key={b} value={b}>
-                    {b === 0
-                      ? 'keep the deal'
-                      : `redeal every ${b === 1 ? 'bar' : `${b} bars`}`}
-                  </option>
-                ))}
-              </select>
-            </Tip>
-            <Tip text="Choose which computer key plays each bend, throws, lets go and redeals.">
-              <button
-                className={styles.chip}
-                onClick={() => remapOpen.set(true)}
-              >
-                remap keys
-              </button>
-            </Tip>
-          </span>
+              swell
+            </button>
+          </Tip>
+          <Tip text="Deal a new hand every so many bars of the kit, for a set where you never want to know what the keys do. Counts only while the kit runs.">
+            <select
+              className={every === 0 ? styles.every : styles.everyOn}
+              value={every}
+              aria-label="redeal every"
+              onChange={e =>
+                setRedealEvery(
+                  REDEAL_BARS.find(b => b === Number(e.currentTarget.value)) ??
+                    0,
+                )
+              }
+            >
+              {REDEAL_BARS.map(b => (
+                <option key={b} value={b}>
+                  {b === 0
+                    ? 'keep the deal'
+                    : `redeal every ${b === 1 ? 'bar' : `${b} bars`}`}
+                </option>
+              ))}
+            </select>
+          </Tip>
+          <Tip text="Choose which computer key plays each bend, throws, lets go and redeals.">
+            <button className={styles.chip} onClick={() => remapOpen.set(true)}>
+              remap keys
+            </button>
+          </Tip>
+        </span>
+      </div>
+      <div className={styles.keys}>
+        {KEY_ROWS.map((letters, row) =>
+          letters
+            .split('')
+            .map((letter, i) => keyFor(letter, place(row, INDENTS[row]!, i))),
         )}
       </div>
-      {on && (
-        <div className={styles.keys}>
-          {KEY_ROWS.map((letters, row) =>
-            letters
-              .split('')
-              .map((letter, i) => keyFor(letter, place(row, INDENTS[row]!, i))),
-          )}
-        </div>
-      )}
     </div>
+  )
+}
+
+// The switch that sends the letters to the bend keys, and draws them under the
+// studio while it is on.
+export function BendKeysSwitch() {
+  const on = useStoreValue(letterKeys) === 'bends'
+  const octaveLetters = octaveKeys(useStoreValue(keymap))
+  return (
+    <Tip
+      text={
+        on
+          ? `The letter keys play the bend keys under the tape loop: hold one, shift pins it, ${octaveLetters.down} lets go of everything, ${octaveLetters.up} redeals. Press to hand them back to the toy keyboard.`
+          : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard. The bend keys appear under the tape loop.'
+      }
+    >
+      <button
+        className={on ? styles.letterSwitchOn : styles.letterSwitch}
+        aria-pressed={on}
+        onClick={() => setLetters(!on)}
+      >
+        bend keys
+      </button>
+    </Tip>
   )
 }

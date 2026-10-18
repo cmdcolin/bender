@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { bench, setBench } from './bench.ts'
+import { BendKeysSwitch } from './BendKeys.tsx'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
@@ -99,6 +100,7 @@ export function Instruments({
           all instruments
         </button>
         <PedalsMenu />
+        <BendKeysSwitch />
         {all &&
           [...TOY, ...LEVELLED]
             .filter(([stage]) => closed.has(stage))

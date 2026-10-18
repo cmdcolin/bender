@@ -12,19 +12,14 @@
   gap: var(--gap-ctl);
 }
 
-/* The deck's own cap, which lights in the deck's amber while the letters are
-   sent to the bend keys. */
-.letterSwitch,
-.letterSwitchOn {
-  --cap-lit: var(--accent2);
-}
-
+/* A toolbar chip beside "all instruments", lit while the letters go to the bend
+   keys. */
 .letterSwitch {
-  composes: action from './button.module.css';
+  composes: chipQuiet from './button.module.css';
 }
 
 .letterSwitchOn {
-  composes: actionOn from './button.module.css';
+  composes: chipOn from './button.module.css';
 }
 
 .settings {
