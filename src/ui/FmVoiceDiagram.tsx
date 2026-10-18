@@ -1,3 +1,4 @@
+import { PATCH_BYTES, REG, AM, VIB } from '../dsp/stages/fmVoices.ts'
 import { engine } from '../engine/engine.ts'
 import bus from './BusDiagram.module.css'
 import chip from './ChipLook.module.css'
@@ -15,6 +16,7 @@ const KEYS = [
   'fmCarRatio',
   'fmLfo',
   'fmEffect',
+  'fmVoice',
 ] as const
 
 const RATIOS = sliderFor('fmModRatio').choices!
@@ -93,8 +95,12 @@ export function FmVoiceDiagram() {
   const boosted = read('fmEffect') === 0
   const bright = r.value('fmBright')
   const feedback = read('fmFeedback')
-  const lfo = read('fmLfo')
-  const indexBoost = boosted && bright > 1 ? INDEX_BOOST ** (bright - 1) : 1
+  const patch = PATCH_BYTES[read('fmVoice')] ?? PATCH_BYTES[0]!
+  const flags = patch[REG.modFlags]! | patch[REG.carFlags]!
+  const lfo = read('fmLfo') | (flags & VIB ? 1 : 0) | (flags & AM ? 2 : 0)
+  const indexBoost = +(
+    boosted && bright > 1 ? INDEX_BOOST ** (bright - 1) : 1
+  ).toFixed(1)
   const feedbackBoost =
     boosted && feedback > FEEDBACK_MAX ? 2 ** (feedback - FEEDBACK_MAX) : 1
 
@@ -131,7 +137,7 @@ export function FmVoiceDiagram() {
     <div className={chip.chips}>
       <Diagram width={WIDTH} height={HEIGHT} label="FM operators">
         {arrow => (
-          <>
+          <g opacity={boosted ? 1 : 0.45}>
             <Wire arrow={arrow} d={`M0 ${MID} H${mod.x}`} />
             <Label x={2} y={MID - 5}>
               patch
@@ -147,7 +153,7 @@ export function FmVoiceDiagram() {
               anchor="middle"
               on={r.touched('fmBright')}
             >
-              {`index ${bright.toFixed(2)}`}
+              {`brightness ${bright.toFixed(2)}`}
             </Label>
             {indexBoost > 1 && (
               <text
@@ -156,7 +162,7 @@ export function FmVoiceDiagram() {
                 textAnchor="middle"
                 className={bus.knifed}
               >
-                {`booster ×${+indexBoost.toFixed(1)}`}
+                {`booster ×${indexBoost}`}
               </text>
             )}
             <Wire
@@ -196,7 +202,7 @@ export function FmVoiceDiagram() {
             ))}
             <g>
               <title>
-                LFO — The die’s one LFO, soldered to both operators for vibrato,
+                LFO — The die’s one LFO, soldered to the operators for vibrato,
                 tremolo or both.
               </title>
               <rect
@@ -218,7 +224,7 @@ export function FmVoiceDiagram() {
             </g>
             <OperatorChip op={mod} />
             <OperatorChip op={car} />
-          </>
+          </g>
         )}
       </Diagram>
     </div>
