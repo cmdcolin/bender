@@ -79,3 +79,25 @@ test('space over a touched mark still reaches the run line', () => {
   expect(run).toHaveBeenCalledTimes(1)
   run.mockRestore()
 })
+
+test('the supply bar reads the rail: amber as it sags, red on a reboot', () => {
+  vi.useFakeTimers()
+  render(<App />)
+  const rail = () => map().parentElement!.dataset.rail
+  const post = (m: Partial<ReturnType<typeof engine.meter.get>>) =>
+    act(() => engine.meter.set({ ...engine.meter.get(), ...m }))
+  expect(map().querySelector('[data-wire="rail"]')).not.toBeNull()
+  post({ rail: 1 })
+  expect(rail()).toBeUndefined()
+  post({ rail: 0.5 })
+  expect(rail()).toBe('low')
+  post({ reboots: engine.meter.get().reboots + 1 })
+  expect(rail()).toBe('reboot')
+  act(() => {
+    vi.advanceTimersByTime(400)
+  })
+  expect(rail()).toBe('low')
+  post({ rail: 1 })
+  expect(rail()).toBeUndefined()
+  vi.useRealTimers()
+})
