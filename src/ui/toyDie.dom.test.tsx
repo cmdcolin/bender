@@ -67,12 +67,12 @@ test('each pin bend shows up on the part it bends', () => {
     expect(lit(part), part).toBe(true)
 })
 
-test('the output pin lights for a short only while the scan is off', () => {
+test('a short lights the voices, the box that opens it', () => {
   open()
   set({ chipShort: 0.5 })
-  expect(lit('output pin')).toBe(true)
-  set({ chipScan: 0.3 })
+  expect(lit('voices')).toBe(true)
   expect(lit('output pin')).toBe(false)
+  set({ chipShort: 0 })
 })
 
 test('each feedback bend draws its wire, and the tune ROM lights when the output drives it', () => {
@@ -168,4 +168,29 @@ test('the bend spot opens from the boxes it solders to, and the pot opens its bo
   fireEvent.click(screen.getByRole('button', { name: 'bend pot controls' }))
   expect(screen.getByText('Envelope cap')).not.toBeNull()
   set({ chipBendSpot: 0, chipBendPot: 0 })
+})
+
+test('a box lights for any knob it opens', () => {
+  open()
+  expect(lit('voices')).toBe(false)
+  expect(lit('clock')).toBe(false)
+  set({ chipXor: 1, chipHardSync: 0.5 })
+  expect(lit('voices')).toBe(true)
+  expect(lit('clock')).toBe(true)
+  expect(lit('envelope')).toBe(false)
+  set({ chipXor: 0, chipHardSync: 0 })
+})
+
+test('a clk tag opens the clock, and a bent one opens the part it names', () => {
+  open()
+  const tags = screen.getAllByRole('button', { name: 'clock clk controls' })
+  expect(tags).toHaveLength(4)
+  fireEvent.click(tags[0]!)
+  expect(screen.getByText('Hard sync')).not.toBeNull()
+  set({ chipScan: 0.3 })
+  fireEvent.click(
+    screen.getByRole('button', { name: 'output pin scan controls' }),
+  )
+  expect(screen.getByText('Output hold')).not.toBeNull()
+  set({ chipScan: 0 })
 })

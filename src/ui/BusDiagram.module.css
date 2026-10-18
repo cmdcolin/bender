@@ -63,9 +63,14 @@
 }
 
 .stub,
+.stubOpen,
 .stubOn {
   stroke: var(--fg4);
   stroke-width: 1;
+}
+
+.stubOpen {
+  stroke: var(--fg);
 }
 
 .stubOn {
@@ -73,13 +78,26 @@
 }
 
 .tag,
+.tagOpen,
 .tagOn {
   font-size: 9px;
   fill: var(--fg3);
 }
 
+.tagOpen {
+  fill: var(--fg);
+}
+
 .tagOn {
   fill: var(--alarm);
+}
+
+.tagHit {
+  fill: transparent;
+}
+
+.tagPick:hover .tag {
+  fill: var(--fg2);
 }
 
 .bus,

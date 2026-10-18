@@ -138,12 +138,13 @@ keyboard box at its top left opens first and holds the playing rows: tune,
 level, tone, accompaniment, arpeggio and key lock. The key matrix and the tune
 ROM strike the voices, each voice's envelope sets its level, and the output pin
 carries every voice off the chip. A small _clk_ tag marks each part the clock
-reaches. The envelope's tag reads _PWM_ and the output pin's reads _scan_ while
-those bends are on, and crosstalk draws a red wire from the output up to the
-clock. A bend turns its part or wire red, and the drawing hangs the **Bend
-spot** pot off the part it is soldered to. The clock, tune ROM, envelope and
-output pin boxes each open **Bend spot** and **Bend pot**, and pressing the pot
-opens the box it hangs on.
+reaches; pressing a tag opens the clock, and the tags brighten while it is open.
+The envelope's tag reads _PWM_ and the output pin's reads _scan_ while those
+bends are on, and crosstalk draws a red wire from the output up to the clock. A
+bend turns its part or wire red, and the drawing hangs the **Bend spot** pot off
+the part it is soldered to. The clock, tune ROM, envelope and output pin boxes
+each open **Bend spot** and **Bend pot**, and pressing the pot opens the box it
+hangs on.
 
 The drawing gives each feedback bend a red wire of its own:
 

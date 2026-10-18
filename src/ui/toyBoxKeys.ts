@@ -3,7 +3,7 @@ import type { ControlKey } from '../controls.ts'
 // The knobs each box of a die drawing opens. The pot solders onto the clock,
 // the counter, the bias or the gate, so each of those boxes opens it.
 
-const POT: readonly ControlKey[] = ['chipBendSpot', 'chipBendPot']
+export const POT: readonly ControlKey[] = ['chipBendSpot', 'chipBendPot']
 
 export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
   'key matrix': ['chipGhost'],

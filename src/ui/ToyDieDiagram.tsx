@@ -15,7 +15,7 @@ import {
   type WireLook,
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
-import { NODE_KEYS } from './toyBoxKeys.ts'
+import { NODE_KEYS, POT } from './toyBoxKeys.ts'
 
 import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './foldDrawings.tsx'
@@ -23,18 +23,12 @@ import type { DrawingProps } from './foldDrawings.tsx'
 const KEYS = [
   'chipBendSpot',
   'chipBendPot',
-  'chipDrift',
   'chipCrosstalk',
   'chipScan',
   'chipPwm',
-  'chipEnvCap',
-  'chipShort',
-  'chipGhost',
   'chipStepTap',
   'chipEnvRelax',
   'chipEnvDiv',
-  'chipOutAddr',
-  'chipOutData',
   'chipPwmTap',
 ] as const
 
@@ -56,6 +50,15 @@ const PLAY_KEYS = [
   ...slidersFirst(GROUP.sliders.filter(d => d.part === 'arp and key lock')),
 ].map(d => d.key)
 const KEYBOARD_KEYS = [...LEAD_KEYS, ...PLAY_KEYS]
+
+// What lights each box: its own knobs, leaving the pot to the box it sits on.
+const OWN_KEYS = Object.fromEntries(
+  Object.entries(NODE_KEYS).map(([box, keys]) => [
+    box,
+    keys.filter(k => !POT.includes(k)),
+  ]),
+)
+const BOX_KEYS = [...new Set(Object.values(OWN_KEYS).flat())]
 
 const SPOTS = sliderFor('chipBendSpot').choices!
 
@@ -223,28 +226,41 @@ function Node({
 
 // A clock input drawn as a labelled stub on a box's top edge instead of a wire:
 // the clock reaches four parts, and wires to all of them crowd out the signal
-// path.
+// path. A plain tag opens the clock and lights while it is open; a bent one
+// opens the part whose bend it names.
 function ClockTag({
   x,
   y,
+  opens,
+  pick,
   say = 'clk',
-  on = false,
+  bent = false,
 }: {
   x: number
   y: number
+  opens: string
+  pick: ReturnType<typeof useSelectedBox>
   say?: string
-  on?: boolean
+  bent?: boolean
 }) {
+  const open = pick.selected === opens
+  const look = bent ? 'On' : open ? 'Open' : ''
   return (
-    <>
+    <Pressable
+      name={`${opens} ${say}`}
+      selected={open}
+      onSelect={() => pick.toggle(opens)}
+      className={styles.tagPick}
+    >
       <path
-        d={`M${x} ${y} V${y - STUB}`}
-        className={on ? styles.stubOn : styles.stub}
+        d={`M${x - 2} ${y} V${y - STUB - 3} H${x + 20} V${y} Z`}
+        className={styles.tagHit}
       />
-      <text x={x + 3} y={y - 1} className={on ? styles.tagOn : styles.tag}>
+      <path d={`M${x} ${y} V${y - STUB}`} className={styles[`stub${look}`]} />
+      <text x={x + 3} y={y - 1} className={styles[`tag${look}`]}>
         {say}
       </text>
-    </>
+    </Pressable>
   )
 }
 
@@ -273,6 +289,7 @@ function Say({
 // part, and the drawing gives each one its own red wire.
 export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
   const r = useReadings(KEYS)
+  const own = useReadings(BOX_KEYS)
   const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
   const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
   const pick = useSelectedBox(knifed ? 'bus' : KEYBOARD)
@@ -342,6 +359,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
   const spot = read('chipBendSpot')
   const spotBox = spot > 0 ? SPOT_BOX[SPOTS[spot]!] : undefined
   const potted = (name: string) => spotBox === name
+  const lit = (name: string) => own.touched(...OWN_KEYS[name]!) || potted(name)
   const scan = up('chipScan')
   const pwmTap = up('chipPwmTap')
   const stepTap = up('chipStepTap')
@@ -411,19 +429,28 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   </Say>
                 </>
               )}
-              <ClockTag x={rom.x + 10} y={TOP} />
-              <ClockTag x={voices.x + voices.w - 10} y={LOW} />
+              <ClockTag x={rom.x + 7} y={TOP} opens="clock" pick={pick} />
+              <ClockTag
+                x={voices.x + voices.w - 17}
+                y={LOW}
+                opens="clock"
+                pick={pick}
+              />
               <ClockTag
                 x={env.x + 12}
                 y={LOW}
+                opens={pwm ? 'envelope' : 'clock'}
+                pick={pick}
                 say={pwm ? 'PWM' : 'clk'}
-                on={pwm}
+                bent={pwm}
               />
               <ClockTag
                 x={pin.x + 12}
                 y={LOW}
+                opens={scan ? 'output pin' : 'clock'}
+                pick={pick}
                 say={scan ? 'scan' : 'clk'}
-                on={scan}
+                bent={scan}
               />
               {pwmTap && (
                 <>
@@ -484,38 +511,37 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               <Node
                 pick={pick}
                 box={rom}
-                lit={
-                  up('chipOutAddr') || up('chipOutData') || potted('tune ROM')
-                }
+                lit={lit('tune ROM')}
                 help="The counter that steps through the tune and the ROM that holds its notes. The output pin can be soldered onto one of its address or note-code wires."
               />
               <Node
                 pick={pick}
                 box={clock}
-                lit={up('chipDrift') || potted('clock')}
+                lit={lit('clock')}
                 help="The crystal and its divider. Pitch, tempo, the scan counter and the PWM carrier all count off it."
               />
               <Node
                 pick={pick}
                 box={keys}
-                lit={up('chipGhost')}
+                lit={lit('key matrix')}
                 help="The rows and columns the keys close. With the diodes lifted, holding two keys also closes the other two corners of their rectangle."
               />
               <Node
                 pick={pick}
                 box={voices}
+                lit={lit('voices')}
                 help="The tone generators, one a note, each with its own pitch divider."
               />
               <Node
                 pick={pick}
                 box={env}
-                lit={up('chipEnvCap') || potted('envelope')}
+                lit={lit('envelope')}
                 help="The capacitor each note’s level follows. The PWM carrier switches that level on and off."
               />
               <Node
                 pick={pick}
                 box={pin}
-                lit={(!scan && up('chipShort')) || potted('output pin')}
+                lit={lit('output pin')}
                 help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
               />
               <KeyboardNode box={keyboard} lit={played} pick={pick} />
