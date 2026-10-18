@@ -661,6 +661,49 @@ test('the output on an address line rewrites the tune', () => {
   expect(deviation(tune(1), tune(0))).toBeGreaterThan(0.3)
 })
 
+test('the output on a data line rewrites the tune', () => {
+  const tune = (chipOutData: number) =>
+    renderBender(
+      { ...CHIP_ONLY, chipOutData },
+      3,
+      b => (b.transport.tune = true),
+    )
+  expect(deviation(tune(3), tune(0))).toBeGreaterThan(0.3)
+})
+
+test('a PWM tap chops a fading note at a sub-octave of its pitch', () => {
+  const fading = (chipPwmTap: number) =>
+    renderBender(
+      { ...CHIP_ONLY, chipPwmTap },
+      0.3,
+      b => b.toyChip.noteOn(0),
+      undefined,
+      (b, secs) => {
+        if (secs > 0.02) b.toyChip.noteOff(0)
+      },
+    ).subarray(SR * 0.1)
+  const clean = fading(0)
+  const tapped = fading(0.01)
+  expect(bin(clean, 110)).toBeLessThan(0.01)
+  expect(bin(tapped, 110)).toBeGreaterThan(0.015)
+})
+
+test('a wire on the step tap lane runs the tune at audio rate', () => {
+  let moves = 0
+  let last = -1
+  renderBender(
+    { ...CHIP_ONLY, ...padWire(DEST.chipStepTap) },
+    2,
+    b => (b.transport.tune = true),
+    undefined,
+    b => {
+      if (b.toyChip.tunePos !== last) moves++
+      last = b.toyChip.tunePos
+    },
+  )
+  expect(moves).toBeGreaterThan(100)
+})
+
 test('a wire on the envelope cap lane swells a held key in', () => {
   const x = renderBender(
     { ...CHIP_ONLY, ...padWire(DEST.chipEnvCap, 0.34) },

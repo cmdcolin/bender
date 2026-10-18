@@ -154,6 +154,13 @@ const LANDINGS: Landing[] = [
   at('FM allocator', ['fmLevel']),
   at('FM cold boot', ['fmLevel']),
   at('FM log adder', ['fmLevel']),
+  at('toy step tap', ['chipLevel']),
+  at('toy env relax', ['chipLevel']),
+  at('toy env on divider', ['chipLevel']),
+  at('toy out on addr', ['chipLevel']),
+  at('toy out on data', ['chipLevel']),
+  at('toy PWM tap', ['chipLevel']),
+  at('FM toy on bus', ['fmLevel', 'chipLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

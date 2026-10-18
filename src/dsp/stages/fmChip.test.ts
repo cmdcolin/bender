@@ -1129,3 +1129,15 @@ test('a wire on the adder lane narrows the adder', () => {
   }
   expect(sine(wire)).toEqual(sine({ fmAdder: ADDER['8'] }))
 })
+
+test('the toy on the data bus rewrites the chip as the toy plays', () => {
+  const fm = (fmToyBus: number) =>
+    renderStems({ ...FM_ONLY, chipLevel: 0.6, fmToyBus }, 3).stems[
+      SOURCE_TAPS.indexOf('fmChip')
+    ]!
+  const clean = fm(0)
+  expect(deviation(fm(1), clean)).toBeGreaterThan(0.3)
+  expect(spectrum(fm(8), SR).flatness).toBeGreaterThan(
+    spectrum(clean, SR).flatness * 3,
+  )
+})

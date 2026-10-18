@@ -137,6 +137,13 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   fourPitch: 'Four-track',
   fourAux: 'Four-track',
   four1MidHz: 'Four-track',
+  chipStepTap: 'Toy keyboard',
+  chipEnvRelax: 'Toy keyboard',
+  chipEnvDiv: 'Toy keyboard',
+  chipOutAddr: 'Toy keyboard',
+  chipOutData: 'Toy keyboard',
+  chipPwmTap: 'Toy keyboard',
+  fmToyBus: 'FM chip',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

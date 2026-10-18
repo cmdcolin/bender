@@ -180,6 +180,13 @@ export const PATCH_GROUPS: Group[] = [
             'four-track pitch',
             'four-track aux',
             'track 1 mid',
+            'toy step tap',
+            'toy env relax',
+            'toy env on divider',
+            'toy out on addr',
+            'toy out on data',
+            'toy PWM tap',
+            'FM toy on bus',
           ],
           groups: [
             {
@@ -204,6 +211,12 @@ export const PATCH_GROUPS: Group[] = [
                 'toy song fault',
                 'toy divider line',
                 'toy divider fault',
+                'toy step tap',
+                'toy env relax',
+                'toy env on divider',
+                'toy out on addr',
+                'toy out on data',
+                'toy PWM tap',
               ],
             },
             {
@@ -251,6 +264,7 @@ export const PATCH_GROUPS: Group[] = [
                 'FM allocator',
                 'FM cold boot',
                 'FM log adder',
+                'FM toy on bus',
               ],
             },
             {

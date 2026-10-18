@@ -55,6 +55,8 @@ export const PARAM_DEFS = [
   ['chipEnvRelax', 'slew'],
   ['chipEnvDiv', 'slew'],
   ['chipOutAddr', 'step'],
+  ['chipOutData', 'step'],
+  ['chipPwmTap', 'slew'],
 
   ['chipLeadR', 'slew'],
   ['chipDecouple', 'slew'],
@@ -296,6 +298,7 @@ export const PARAM_DEFS = [
   ['fmAlloc', 'step'],
   ['fmColdBoot', 'step'],
   ['fmAdder', 'step'],
+  ['fmToyBus', 'step'],
 
   ['pcmLevel', 'slew'],
   ['pcmMute', 'ramp'],

@@ -27,6 +27,7 @@ const KNIFE = [
   'fmPatchDataFault',
   'fmBusCut',
   'fmStrobe',
+  'fmToyBus',
 ] as const
 
 const DIE = [

@@ -182,6 +182,10 @@ const attOf = (x: number) => Math.max(Math.round(-ATT_STEPS * Math.log2(x)), 0)
 /** The adder widths the control offers after linear, in bits. */
 const ADDER_BITS = [0, 11, 10, 9, 8, 7]
 
+// How far the toy's output swings the bus: a tune at its stock level spans most
+// of the byte.
+const TOY_BUS_GAIN = 2
+
 /** The table's word, and the count a full-scale magnitude comes out as. */
 const WAVE_DATA_BITS = 8
 const WAVE_DATA_FULL = (1 << WAVE_DATA_BITS) - 1
@@ -511,6 +515,13 @@ export class FmChip implements Stage {
     s: new Float64Array(4),
   }
 
+  // What the processor last drove onto the two buses, and the bits the toy's
+  // output pin is holding on the data side.
+  private busAddr: number = REG.keyBlock
+  private busData = 0
+  private toyBits = 0
+  private toyHeld = 0
+
   private readonly sr: number
   private readonly rail: ToyRail
 
@@ -528,6 +539,26 @@ export class FmChip implements Stage {
   // register and a fault on the data side files the wrong byte under the right
   // one — and either way it stays there.
   private write(addr: number, data: number) {
+    this.busAddr = addr
+    this.busData = data
+    this.commit(addr, data)
+  }
+
+  // The toy's output soldered onto the low bits of the data bus through a
+  // crude converter, its loudest bits on the bus's lowest wires. Each time one
+  // of those bits changes, the edge crosses onto the write strobe, and the latch
+  // commits the bus as it stands into whichever register the processor last
+  // addressed.
+  private toyOnBus(x: number) {
+    const mask = (1 << this.toyBits) - 1
+    const level =
+      Math.round(clamp01(0.5 + x * TOY_BUS_GAIN) * 0xff) >> (8 - this.toyBits)
+    if (level === this.toyHeld) return
+    this.toyHeld = level
+    this.commit(this.busAddr, (this.busData & ~mask) | level)
+  }
+
+  private commit(addr: number, data: number) {
     const a = this.addrBus.read(
       addr,
       this.addrLine,
@@ -1252,6 +1283,8 @@ export class FmChip implements Stage {
       bay.read(DEST.fmAdder),
     )
     this.adderMask = adder > 0 ? (1 << ADDER_BITS[adder]!) - 1 : 0
+    this.toyBits = hop(p[IDX.fmToyBus]!, 9, bay.read(DEST.fmToyBus))
+    const toy = ctx.toy
     const modSlip = bay.read(DEST.fmDacSlip)
     this.blob = baseBlob
     const rail = this.rail
@@ -1371,6 +1404,7 @@ export class FmChip implements Stage {
         ? cpuX * octaves(modCpuX[i]! * CLOCK_LANE_OCTAVES)
         : cpuX
       this.stepLfo(rail.clockFactor * xtal)
+      if (this.toyBits > 0) this.toyOnBus(toy[i]!)
       if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
       if (this.blob > 0 && !kit) this.stepNoise(rail.clockFactor * xtal)
 

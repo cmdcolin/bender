@@ -229,15 +229,29 @@ bends move the rate, and with Volume PWM each restrike sweeps the tone.
 
 **Envelope on divider** bridges the envelope's counter onto the divider word. A
 note's pitch falls as its envelope fades, by up to three octaves at the top of
-the knob, so every note becomes a zap. The bass, chords and keys fall with their
-own envelopes.
+the knob, so every note becomes a zap. The bass, chords and keys each fall as
+their envelopes fade.
 
 **Output on address** solders the output pin onto one ROM address line, A0 to
 A4. The pin drives the line high on the positive half of each cycle and low on
 the negative half, so the ROM serves one of two neighbouring steps from moment
 to moment. The melody's divider loads whichever note comes back without
 restriking it, and that note's pitch sets how fast the pin swings next. A rest
-on one side gates the note on and off at its own pitch.
+on one side gates the note on and off at the note's pitch.
+
+**Output on data** solders the output pin onto one wire of the note code, D0 to
+D5. Each wire is one bit of the note number, so the swing moves the note by a
+fixed interval: D0 a semitone, D2 a major third, D3 eight semitones, D5 about
+two and a half octaves. The melody flips between its note and the other one at
+audio rate, and the note the ROM returns sets how fast it flips back. A note
+whose other side codes a rest or a hold gates itself.
+
+**PWM tap** takes the volume PWM carrier off the melody's pitch divider in place
+of the master clock, so it runs a whole number of octaves under the note, one at
+the bottom of the knob and six at the top. A fading note grows a sub-octave
+growl whose tone changes as it fades, and the chords and keys are chopped at the
+melody's rate. A note at full level is on for the whole cycle, so a held key
+stays clean. The tap replaces the Volume PWM carrier while it is up.
 
 ## The FM chip's register bus
 
@@ -537,6 +551,22 @@ that path, with an adder of that many bits that wraps instead of saturating:
   folds it up into a harsh digital buzz at the note's own pitch.
 - The kit and the effect scripts go through the same adder; wind at 9 bits is
   close to white.
+
+**Toy on bus** solders the toy keyboard's output onto the low bits of this
+chip's data bus through a crude converter, the toy's loudest bit on the bus's
+lowest wire. Each time one of those bits changes, the edge fires the write
+strobe, and the latch commits the bus into whichever register the processor last
+addressed. That register holds the toy's level until the processor writes there
+again, so the damage builds up as the toy plays.
+
+- The processor's last write is usually a key register, whose low bits are the
+  top bit of the pitch, then the octave, then the key. One bit jumps the pitch
+  at the toy's own rate, four throw the note between octaves, and five key the
+  note on and off.
+- At eight bits the register follows the toy's waveform, and the FM chip comes
+  out close to noise.
+- The control counts bits, 1 to 8. The toy has to be sounding, since a silent
+  toy drives nothing onto the bus.
 
 ## Inside the drum voices
 
@@ -988,6 +1018,16 @@ a block, the way the other knife lanes do.
 - Drum hit onto scan chops a held chord into an arpeggio on every kick.
 - An LFO onto the envelope cap turns notes backwards and leaky in turn.
 - The ROM step onto the divider line retunes the melody in time with itself.
+
+Six more lanes reach the toy's feedback bends: **step tap**, **envelope relax**,
+**envelope on divider** and **PWM tap** move every sample, and the output's
+address and data lines step through their choices once a block. A seventh, **FM
+toy on bus**, steps through the bit counts.
+
+- Drum hit onto step tap throws the tune into a buzz on every kick.
+- An LFO onto envelope relax sweeps every note between a stutter and a buzz.
+- A sample-and-hold onto the output's data line moves the flip interval to a new
+  wire on every tick.
 
 Five lanes reach the kit: **tempo**, **swing**, **chance**, **decay** and
 **ring**. Drum hit onto chance makes every hit raise the odds of the next maybe

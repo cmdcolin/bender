@@ -45,6 +45,8 @@ export const DEFAULT_CONTROLS = {
   chipEnvRelax: 0,
   chipEnvDiv: 0,
   chipOutAddr: 0,
+  chipOutData: 0,
+  chipPwmTap: 0,
 
   // The parts on the toy board, as opposed to what you are doing to it. Every
   // default here is the number that used to be compiled in, so a board nobody
@@ -309,6 +311,7 @@ export const DEFAULT_CONTROLS = {
   fmAlloc: 0,
   fmColdBoot: 0,
   fmAdder: 0,
+  fmToyBus: 0,
 
   // The home keyboard. Its fader boots at the floor for the reason the FM
   // chip's does: it is soldered onto the toy's gate line, so a board that came

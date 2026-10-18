@@ -508,7 +508,8 @@ export class Chain {
     // is a thing only this loop has.
     const carFrom = RING_FROM_TAP[Math.round(p[IDX.ringFrom]!)] ?? -1
     let carRan = false
-    const toyRef = Math.round(p[IDX.drumRef]!) === DAC_REF_TOY
+    const toyRef =
+      Math.round(p[IDX.drumRef]!) === DAC_REF_TOY || p[IDX.fmToyBus]! > 0
     if (toyRef) ctx.toy.fill(0, 0, n)
     const prev = this.tapPrev
     const cap = this.capturing

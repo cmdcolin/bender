@@ -235,6 +235,12 @@ const RELAX_OCTAVES = 7
 // falls as it fades, by up to this many octaves.
 const ENV_DIV_OCTAVES = 3
 
+// The PWM carrier taken off the melody's pitch divider in place of the master
+// clock, so it sits a whole number of octaves under the note: one at the bottom
+// of the knob, six at the top.
+const PWM_TAP_LOW = 1
+const PWM_TAP_SPAN = 5
+
 export const ENV_CAPS = ['stock', 'reversed', 'leaky']
 const ENV_REVERSED = 1
 const ENV_LEAKY = 2
@@ -402,8 +408,10 @@ export class ToyChip implements Stage {
   // What the melody's divider is running at, kept through a rest: the divider
   // goes on counting the last word it loaded.
   private melodyHz = A3_HZ
-  // The output pin bridged onto an address line, and which way it last drove it.
+  // The output pin bridged onto an address or a data line, and which way it
+  // last drove them.
   private outAddr = -1
+  private outData = -1
   private outBit = 0
 
   private readonly sr: number
@@ -690,6 +698,8 @@ export class ToyChip implements Stage {
       if (this.loopTo !== LOOP_RESET && !this.counterHigh)
         word &= ~(1 << this.loopFrom)
     }
+    if (this.outData >= 0)
+      word = (word & ~(1 << this.outData)) | (this.outBit << this.outData)
     // Both banks come back in the memory's vocabulary, so nothing downstream
     // has to know which of the two it is reading. The ROM's own spelling — -1
     // for a rest, -2 for a hold — only works because its steps never go below
@@ -877,11 +887,20 @@ export class ToyChip implements Stage {
     const scanBase = p[IDX.chipScan]!
     const pwmBase = p[IDX.chipPwm]!
     const shortBase = p[IDX.chipShort]!
-    const stepTap = p[IDX.chipStepTap]!
-    const relax = p[IDX.chipEnvRelax]!
-    const drain = relax > 0 ? octaves(RELAX_OCTAVES * relax) : 1
-    const envDiv = p[IDX.chipEnvDiv]! * ENV_DIV_OCTAVES
-    this.outAddr = Math.round(p[IDX.chipOutAddr]!) - 1
+    const tapBase = p[IDX.chipStepTap]!
+    const relaxBase = p[IDX.chipEnvRelax]!
+    const envDivBase = p[IDX.chipEnvDiv]!
+    const pwmTapBase = p[IDX.chipPwmTap]!
+    const modTap = bay.read(DEST.chipStepTap)
+    const modRelax = bay.read(DEST.chipEnvRelax)
+    const modEnvDiv = bay.read(DEST.chipEnvDiv)
+    const modPwmTap = bay.read(DEST.chipPwmTap)
+    this.outAddr =
+      hop(p[IDX.chipOutAddr]!, ROM_ADDR_LINES + 1, bay.read(DEST.chipOutAddr)) -
+      1
+    this.outData =
+      hop(p[IDX.chipOutData]!, ROM_DATA_LINES + 1, bay.read(DEST.chipOutData)) -
+      1
     const modCross = bay.read(DEST.chipCrosstalk)
     const modScan = bay.read(DEST.chipScan)
     const modPwm = bay.read(DEST.chipPwm)
@@ -1022,6 +1041,15 @@ export class ToyChip implements Stage {
         modScan ? clamp01(scanBase + modScan[i]!) : scanBase,
       )
       const pwmHz = pwmRate(modPwm ? clamp01(pwmBase + modPwm[i]!) : pwmBase)
+      const stepTap = modTap ? clamp01(tapBase + modTap[i]!) : tapBase
+      const relax = modRelax ? clamp01(relaxBase + modRelax[i]!) : relaxBase
+      const drain = relax > 0 ? octaves(RELAX_OCTAVES * relax) : 1
+      const envDiv =
+        (modEnvDiv ? clamp01(envDivBase + modEnvDiv[i]!) : envDivBase) *
+        ENV_DIV_OCTAVES
+      const pwmTap = modPwmTap
+        ? clamp01(pwmTapBase + modPwmTap[i]!)
+        : pwmTapBase
       this.shortAmt = modShort ? clamp01(shortBase + modShort[i]!) : shortBase
       // clock bend: the pot shorts the RC — wildly fast and unstable
       let clock = clockX
@@ -1165,9 +1193,16 @@ export class ToyChip implements Stage {
       // and dives in pitch until there is no rail left to hold it.
       const amp = latched ? LATCH_AMP : rail.ampFactor
 
-      if (pwmHz > 0)
+      const pwmOn = pwmHz > 0 || pwmTap > 0
+      if (pwmTap > 0)
+        this.pwmPhase = wrap1(
+          this.pwmPhase +
+            (this.melodyHz * octaves(-PWM_TAP_LOW - PWM_TAP_SPAN * pwmTap)) /
+              this.sr,
+        )
+      else if (pwmHz > 0)
         this.pwmPhase = wrap1(this.pwmPhase + (pwmHz * timing) / this.sr)
-      const shaped = cap === ENV_REVERSED || pwmHz > 0
+      const shaped = cap === ENV_REVERSED || pwmOn
       const pinned = scanHz > 0 || this.shortAmt > 0
       if (this.loadedStamp !== this.divStamp) {
         this.loadedStamp = this.divStamp
@@ -1199,7 +1234,7 @@ export class ToyChip implements Stage {
           this.melodyHz = hz
           const inc = hz / this.sr
           this.phase = wrap1(this.phase + inc)
-          const env = shaped ? this.level(this.env, pwmHz) : this.env
+          const env = shaped ? this.level(this.env, pwmOn) : this.env
           const v = pulse(this.phase, duty, inc) * env * amp
           if (pinned) {
             val[0] = v
@@ -1223,7 +1258,7 @@ export class ToyChip implements Stage {
             )
             const inc = hz / this.sr
             this.bassPhase = wrap1(this.bassPhase + inc)
-            const env = shaped ? this.level(this.bassEnv, pwmHz) : this.bassEnv
+            const env = shaped ? this.level(this.bassEnv, pwmOn) : this.bassEnv
             const v =
               pulse(this.bassPhase, duty, inc) *
               env *
@@ -1241,7 +1276,7 @@ export class ToyChip implements Stage {
                 this.chordRatio[c] = this.divRatio(this.chord[c]!)
             }
             const env = shaped
-              ? this.level(this.chordEnv, pwmHz)
+              ? this.level(this.chordEnv, pwmOn)
               : this.chordEnv
             const fall = envDiv > 0 ? octaves(-envDiv * (1 - this.chordEnv)) : 1
             for (let c = 0; c < 3; c++) {
@@ -1287,7 +1322,7 @@ export class ToyChip implements Stage {
           )
           const inc = hz / this.sr
           v.phase = wrap1(v.phase + inc)
-          const env = shaped ? this.level(v.env, pwmHz) : v.env
+          const env = shaped ? this.level(v.env, pwmOn) : v.env
           const x = pulse(v.phase, duty, inc) * env * rail.ampFactorAt(trim)
           if (pinned) {
             val[5 + k] = x
@@ -1301,7 +1336,8 @@ export class ToyChip implements Stage {
       }
 
       this.lastOut = out
-      if (this.outAddr >= 0) this.driveAddr(tune, out > 0 ? 1 : 0)
+      if (this.outAddr >= 0 || this.outData >= 0)
+        this.driveBus(tune, out > 0 ? 1 : 0)
       out *= level * 0.4
       // A loop screaming in the top end draws on the same cells the toy runs
       // off, so a squeal that got away browns out the chip that started it.
@@ -1327,11 +1363,12 @@ export class ToyChip implements Stage {
     }
   }
 
-  // The output pin bridged onto an address line. Each time the pin swings the
-  // other way the ROM serves the neighbouring step, and the melody's divider
-  // loads that note without restriking it, so a note flips between two steps
-  // at a rate its own pitch sets.
-  private driveAddr(tune: number[], bit: number) {
+  // The output pin bridged onto an address or a data line. Each time the pin
+  // swings the other way the ROM serves the neighbouring step, or the note code
+  // comes back with one bit moved, and the melody's divider loads that note
+  // without restriking it. A note flips between two at a rate its own pitch
+  // sets.
+  private driveBus(tune: number[], bit: number) {
     if (bit === this.outBit) return
     this.outBit = bit
     const step = this.readRom(tune, this.pos)
@@ -1355,9 +1392,9 @@ export class ToyChip implements Stage {
 
   // The volume the output stage sees: the envelope, upside down on a reversed
   // cap, and compared against the PWM carrier when that is in earshot.
-  private level(env: number, pwmHz: number): number {
+  private level(env: number, pwm: boolean): number {
     const x = this.envCap === ENV_REVERSED ? 1 - env : env
-    return pwmHz > 0 ? (this.pwmPhase < x ? 1 : 0) : x
+    return pwm ? (this.pwmPhase < x ? 1 : 0) : x
   }
 
   // Every voice output shorted onto one node, where the lowest driver wins.

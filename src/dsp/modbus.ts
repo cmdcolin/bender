@@ -153,8 +153,16 @@ export const DEST = {
   fourPitch: 105,
   fourAux: 106,
   four1MidHz: 107,
+  // The toy chip's feedback bends, and its output on the FM chip's data bus.
+  chipStepTap: 108,
+  chipEnvRelax: 109,
+  chipEnvDiv: 110,
+  chipOutAddr: 111,
+  chipOutData: 112,
+  chipPwmTap: 113,
+  fmToyBus: 114,
 } as const
-export const N_DEST = 108
+export const N_DEST = 115
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
