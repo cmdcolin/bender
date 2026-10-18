@@ -35,12 +35,21 @@ export interface Feed {
   says: (value: number) => string
 }
 
+// A wire from off the chip soldered across the lowest `value` traces of the
+// link's first ribbon.
+export interface Inject {
+  key: ControlKey
+  link: number
+  says: (value: number) => string
+}
+
 export interface BusRow {
   /** A stack in a column puts one chip beside each ribbon of the link after it. */
   chips: (string | string[])[]
   links: Ribbon[][]
   taps?: Tap[]
   feeds?: Feed[]
+  injects?: Inject[]
 }
 
 export interface BusSpec {
@@ -168,6 +177,13 @@ export const BUS_SPECS: Record<string, BusSpec> = {
             from: { chip: 0 },
             always: true,
             says: v => (v > 0 ? 'strobe slips' : 'strobe'),
+          },
+        ],
+        injects: [
+          {
+            key: 'fmToyBus',
+            link: 0,
+            says: v => `toy out on D0–D${v - 1}`,
           },
         ],
       },

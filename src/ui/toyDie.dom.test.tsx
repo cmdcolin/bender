@@ -70,3 +70,27 @@ test('the output pin reads shorted only while the scan is off', () => {
   set({ chipScan: 0.3 })
   expect(words()).not.toContain('shorted')
 })
+
+test('each feedback bend draws its wire, and the tune ROM names the wires the output drives', () => {
+  open()
+  for (const bend of ['step tap', 'dive', 'relax', 'A2 D3 ← out'])
+    expect(words()).not.toContain(bend)
+  set({
+    chipStepTap: 0.4,
+    chipEnvDiv: 0.5,
+    chipEnvRelax: 0.4,
+    chipOutAddr: 3,
+    chipOutData: 4,
+  })
+  expect(words()).toEqual(
+    expect.arrayContaining(['step tap', 'dive', 'relax', 'A2 D3 ← out']),
+  )
+})
+
+test('the PWM tap takes the PWM carrier off the clock', () => {
+  open()
+  set({ chipPwm: 0.5 })
+  expect(words().filter(w => w === 'PWM')).toHaveLength(1)
+  set({ chipPwmTap: 0.5 })
+  expect(words().filter(w => w === 'PWM')).toHaveLength(1)
+})

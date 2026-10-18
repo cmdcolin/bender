@@ -44,6 +44,8 @@ bit with the lowest on top, and the drawing follows the rows under it:
 - The drawing adds a wire for the toy's loop wire, the drum kit's counter reset,
   the kit's clock and the FM chip's strobe, and turns each one red once its knob
   is up.
+- **Toy on bus** draws the toy's output soldered across the FM chip's lowest
+  data lines, with a dot on each line it reaches.
 
 ## The shared power rail
 
@@ -128,12 +130,21 @@ at once — see **Part spread** under [the parts rack](#the-parts-rack) below.
 ## The toy chip's pins
 
 The _inside the die_ fold draws the parts these bends reach. The key matrix and
-the tune's counter strike the voices, each voice's envelope sets its level, and
-the output pin carries every voice off the chip. Dashed wires carry the clock
-down to the voices, the PWM carrier and the scan counter, and a dashed wire from
-the output back to the clock marks the crosstalk path. A bend turns its part or
-wire red, and the drawing hangs the **Bend spot** pot off the part it is
-soldered to.
+the tune ROM strike the voices, each voice's envelope sets its level, and the
+output pin carries every voice off the chip. Dashed wires carry the clock down
+to the voices, the PWM carrier and the scan counter, and a dashed wire from the
+output back to the clock marks the crosstalk path. A bend turns its part or wire
+red, and the drawing hangs the **Bend spot** pot off the part it is soldered to.
+
+The feedback bends add red wires of their own:
+
+- **Step tap** runs from the voices up to the tune ROM.
+- **PWM tap** runs from the voices to the envelope, and the clock's PWM wire
+  goes back to dashed.
+- **Envelope on divider** runs from the envelope back to the voices.
+- **Envelope relax** loops over the envelope.
+- **Output on address** and **Output on data** name their wires on the tune ROM,
+  as in "A2 ← out".
 
 **Crosstalk** is the output trace running beside the timing pin. The chip's own
 sound frequency-modulates its clock at audio rate, and the clock also drives the

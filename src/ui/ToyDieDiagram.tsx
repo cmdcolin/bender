@@ -16,11 +16,19 @@ const KEYS = [
   'chipEnvCap',
   'chipShort',
   'chipGhost',
+  'chipStepTap',
+  'chipEnvRelax',
+  'chipEnvDiv',
+  'chipOutAddr',
+  'chipOutData',
+  'chipPwmTap',
 ] as const
 
 const SPOTS = sliderFor('chipBendSpot').choices!
 const CAPS = sliderFor('chipEnvCap').choices!
 const GHOSTS = sliderFor('chipGhost').choices!
+const OUT_ADDR = sliderFor('chipOutAddr').choices!
+const OUT_DATA = sliderFor('chipOutData').choices!
 
 const TOY_TAP = CHANNELS.find(c => c.name === 'Toy keyboard')!.tap
 
@@ -32,8 +40,11 @@ const TAIL = 44
 const TOP = ROOM
 const LOW = ROOM + BOX_H + ROW_GAP
 const HEIGHT = LOW + BOX_H + ROOM
+const VOICES_W = 64
+const SIDE = 8
 
 const widest = (...names: string[]) => Math.max(...names.map(boxWidth))
+const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 
 // A variable resistor from a spot on the die to ground, above or below its box.
 function Pot({
@@ -65,13 +76,33 @@ function Pot({
   )
 }
 
-// The parts of the toy chip the pin bends reach. The key matrix and the tune's
-// counter strike the voices, each voice's envelope sets its level, and the
-// output pin carries every voice off the chip. One clock times the voices, the
-// scan counter and the PWM carrier.
+function Say({
+  x,
+  y,
+  anchor,
+  children,
+}: {
+  x: number
+  y: number
+  anchor?: 'start' | 'middle' | 'end'
+  children: string
+}) {
+  return (
+    <text x={x} y={y} textAnchor={anchor} className={styles.knifed}>
+      {children}
+    </text>
+  )
+}
+
+// The parts of the toy chip the pin bends reach. The key matrix and the tune ROM
+// strike the voices, each voice's envelope sets its level, and the output pin
+// carries every voice off the chip. One clock times the voices, the scan counter
+// and the PWM carrier. The feedback bends solder one part's signal onto another
+// part, and each draws its own red wire.
 export function ToyDieDiagram() {
   const r = useReadings(KEYS)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
+  const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow: WireLook = useStoreSelect(
     engine.sounding,
     lit => lit & (1 << TOY_TAP),
@@ -82,7 +113,7 @@ export function ToyDieDiagram() {
   const names = ['key matrix', 'voices', 'envelope', 'output pin']
   const widths = [
     widest('key matrix', ...GHOSTS),
-    widest('voices'),
+    VOICES_W,
     widest('envelope', ...CAPS),
     widest('output pin', 'shorted'),
   ]
@@ -95,19 +126,23 @@ export function ToyDieDiagram() {
     h: BOX_H,
   }))
   const [keys, voices, env, pin] = [row[0]!, row[1]!, row[2]!, row[3]!]
-  const counter: ChipBox = {
-    name: 'counter',
+  const outOn = [
+    read('chipOutAddr') > 0 ? OUT_ADDR[read('chipOutAddr')] : '',
+    read('chipOutData') > 0 ? OUT_DATA[read('chipOutData')] : '',
+  ].filter(Boolean)
+  const rom: ChipBox = {
+    name: 'tune ROM',
     x: 0,
     y: TOP,
-    w: keys.w,
+    w: widest('tune ROM', 'A4 D5 ← out'),
     h: BOX_H,
   }
   const clockRight = pin.x + pin.w * 0.6
   const clock: ChipBox = {
     name: 'clock',
-    x: voices.x,
+    x: voices.x + 14,
     y: TOP,
-    w: clockRight - voices.x,
+    w: clockRight - voices.x - 14,
     h: BOX_H,
   }
   const mid = LOW + BOX_H / 2
@@ -115,25 +150,30 @@ export function ToyDieDiagram() {
   const pinRight = pin.x + pin.w
   const tap = pinRight + 12
   const route = LOW - 10
+  const tuneX = rom.x + rom.w * 0.75
+  const stepFrom = voices.x + 20
+  const stepTo = rom.x + rom.w * 0.3
   const spot = read('chipBendSpot')
-  const pot = r.value('chipBendPot') > 0
-  const scan = r.value('chipScan') > 0
-  const pwm = r.value('chipPwm') > 0
-  const cross = r.value('chipCrosstalk') > 0
+  const scan = up('chipScan')
+  const pwmTap = up('chipPwmTap')
+  const stepTap = up('chipStepTap')
+  const cross = up('chipCrosstalk')
   const ghost = read('chipGhost')
   const cap = read('chipEnvCap')
   const drops: [number, boolean, string][] = [
     [voices.x + voices.w / 2, false, ''],
-    [env.x + env.w / 2, pwm, 'PWM'],
+    [env.x + env.w / 2, up('chipPwm') && !pwmTap, 'PWM'],
     [pin.x + pin.w * 0.3, scan, 'scan'],
   ]
   const potAt: Record<string, [number, number, 1 | -1]> = {
     clock: [clock.x + 14, TOP, -1],
-    counter: [counter.x + counter.w / 2, TOP, -1],
+    counter: [rom.x + rom.w / 2, TOP, -1],
     bias: [pin.x + pin.w / 2, LOW + BOX_H, 1],
     gate: [env.x + env.w / 2, LOW + BOX_H, 1],
   }
   const placed = spot > 0 ? potAt[SPOTS[spot]!] : undefined
+  const loopL = env.x + env.w * 0.7
+  const loopR = env.x + env.w - 5
   return (
     <Diagram width={WIDTH} height={HEIGHT} label="toy chip die">
       {arrow => (
@@ -161,10 +201,11 @@ export function ToyDieDiagram() {
           </text>
           <Wire
             arrow={arrow}
-            d={`M${clock.x} ${clockMid} H${counter.x + counter.w}`}
+            d={`M${clock.x} ${clockMid} H${rom.x + rom.w}`}
+            look={stepTap ? 'dash' : 'plain'}
           />
           <text
-            x={(clock.x + counter.x + counter.w) / 2}
+            x={(clock.x + rom.x + rom.w) / 2}
             y={clockMid - 4}
             textAnchor="middle"
             className={styles.bus}
@@ -173,26 +214,81 @@ export function ToyDieDiagram() {
           </text>
           <Wire
             arrow={arrow}
-            d={`M${counter.x + counter.w * 0.75} ${TOP + BOX_H} V${route} H${voices.x + 10} V${LOW}`}
+            d={`M${tuneX} ${TOP + BOX_H} V${route} H${voices.x + 10} V${LOW}`}
           />
+          {stepTap && (
+            <>
+              <Wire
+                arrow={arrow}
+                d={`M${stepFrom} ${LOW} V${route - 10} H${stepTo} V${TOP + BOX_H}`}
+                look="alarm"
+              />
+              <Say x={tuneX + 4} y={route - 13}>
+                step tap
+              </Say>
+            </>
+          )}
           {drops.map(([x, on, say]) => (
             <g key={x}>
               <Wire
                 arrow={arrow}
                 d={`M${x} ${TOP + BOX_H} V${LOW}`}
-                look={on ? 'alarm' : 'dash'}
+                look={bent(on)}
               />
               {on && (
-                <text x={x + 4} y={TOP + BOX_H + 11} className={styles.knifed}>
+                <Say x={x + 4} y={TOP + BOX_H + 11}>
                   {say}
-                </text>
+                </Say>
               )}
             </g>
           ))}
+          {pwmTap && (
+            <>
+              <Wire
+                arrow={arrow}
+                d={`M${voices.x + voices.w} ${mid - SIDE} H${env.x}`}
+                look="alarm"
+              />
+              <Say
+                x={(voices.x + voices.w + env.x) / 2}
+                y={mid - SIDE - 4}
+                anchor="middle"
+              >
+                PWM
+              </Say>
+            </>
+          )}
+          {up('chipEnvDiv') && (
+            <>
+              <Wire
+                arrow={arrow}
+                d={`M${env.x} ${mid + SIDE} H${voices.x + voices.w}`}
+                look="alarm"
+              />
+              <Say
+                x={(voices.x + voices.w + env.x) / 2}
+                y={mid + SIDE + 11}
+                anchor="middle"
+              >
+                dive
+              </Say>
+            </>
+          )}
+          {up('chipEnvRelax') && (
+            <>
+              <Wire
+                d={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
+                look="alarm"
+              />
+              <Say x={env.x + env.w + 3} y={LOW - 2}>
+                relax
+              </Say>
+            </>
+          )}
           <Wire
             arrow={arrow}
             d={`M${tap} ${mid} V${clockMid} H${clockRight}`}
-            look={cross ? 'alarm' : 'dash'}
+            look={bent(cross)}
           />
           <circle
             cx={tap}
@@ -209,12 +305,13 @@ export function ToyDieDiagram() {
             crosstalk
           </text>
           <Chip
-            box={counter}
-            help="Steps through the tune and strikes its notes on the voices."
+            box={rom}
+            reading={outOn.length ? `${outOn.join(' ')} ← out` : undefined}
+            help="The counter that steps through the tune and the ROM that holds its notes. The output pin can be soldered onto one of its address or note-code wires."
           />
           <Chip
             box={clock}
-            reading={r.value('chipDrift') > 0 ? 'drifting' : undefined}
+            reading={up('chipDrift') ? 'drifting' : undefined}
             help="The crystal and its divider. Pitch, tempo, the scan counter and the PWM carrier all count off it."
           />
           <Chip
@@ -222,7 +319,10 @@ export function ToyDieDiagram() {
             reading={ghost > 0 ? GHOSTS[ghost] : undefined}
             help="The rows and columns the keys close. With the diodes lifted, holding two keys also closes the other two corners of their rectangle."
           />
-          <Chip box={voices} help="The tone generators, one a note." />
+          <Chip
+            box={voices}
+            help="The tone generators, one a note, each with its own pitch divider."
+          />
           <Chip
             box={env}
             reading={cap > 0 ? CAPS[cap] : undefined}
@@ -230,11 +330,16 @@ export function ToyDieDiagram() {
           />
           <Chip
             box={pin}
-            reading={!scan && r.value('chipShort') > 0 ? 'shorted' : undefined}
+            reading={!scan && up('chipShort') ? 'shorted' : undefined}
             help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
           />
           {placed && (
-            <Pot x={placed[0]} y={placed[1]} dir={placed[2]} on={pot} />
+            <Pot
+              x={placed[0]}
+              y={placed[1]}
+              dir={placed[2]}
+              on={up('chipBendPot')}
+            />
           )}
         </>
       )}

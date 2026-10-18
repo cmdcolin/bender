@@ -5,6 +5,7 @@ import {
   type BusRow,
   type BusSpec,
   type Feed,
+  type Inject,
   type Ribbon,
   type Tap,
 } from './busSpecs.ts'
@@ -24,6 +25,7 @@ const PAD = 8
 const GLYPH_AT = 0.6
 const TAP_AT = 0.9
 const LOOP_AT = 0.15
+const INJECT_AT = 0.3
 
 const widthOf = (r: Ribbon) => sliderFor(r.line).choices!.length - 1
 const ribbonH = (r: Ribbon) => (widthOf(r) - 1) * PITCH
@@ -317,6 +319,42 @@ function TapWire({
   )
 }
 
+function InjectWire({
+  inject,
+  value,
+  links,
+  rowTop,
+}: {
+  inject: Inject
+  value: number
+  links: Placed[][]
+  rowTop: number
+}) {
+  if (value <= 0) return null
+  const p = links[inject.link]![0]!
+  const x = along(p, INJECT_AT)
+  const lines = Array.from({ length: value }, (_, i) => lineY(p, i))
+  return (
+    <>
+      <path
+        d={`M${x} ${rowTop + 2} V${lines.at(-1)}`}
+        className={styles.jumper}
+      />
+      {lines.map(y => (
+        <circle key={y} cx={x} cy={y} r={1.6} className={styles.solder} />
+      ))}
+      <text
+        x={x - 4}
+        y={rowTop + 23}
+        textAnchor="end"
+        className={styles.knifed}
+      >
+        {inject.says(value)}
+      </text>
+    </>
+  )
+}
+
 function FeedWire({
   feed,
   value,
@@ -383,6 +421,7 @@ export function BusDiagram({ spec }: { spec: BusSpec }) {
       ...row.links.flat().flatMap(r => [r.line, r.fault]),
       ...(row.taps ?? []).flatMap(t => (t.also ? [t.key, t.also] : [t.key])),
       ...(row.feeds ?? []).map(f => f.key),
+      ...(row.injects ?? []).map(j => j.key),
     ]),
   ]
   const r = useReadings(keys)
@@ -417,6 +456,15 @@ export function BusDiagram({ spec }: { spec: BusSpec }) {
                 rowTop={rowTop}
                 boxTop={placed.boxTop}
                 arrow={arrow}
+              />
+            ))}
+            {row.injects?.map(inject => (
+              <InjectWire
+                key={inject.key}
+                inject={inject}
+                value={read(inject.key)}
+                links={placed.links}
+                rowTop={rowTop}
               />
             ))}
             {row.taps?.map(tap => (

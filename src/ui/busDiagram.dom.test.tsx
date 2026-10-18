@@ -82,3 +82,12 @@ test('the drum reset wire and the clock follow their knobs', () => {
   expect(texts(svg)).toContain('reset on the snare')
   expect(texts(svg)).toContain('clock slips')
 })
+
+test('the toy on the FM bus names the data lines it is soldered across', () => {
+  set({ fmToyBus: 3 })
+  open('FM chip')
+  fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
+  const svg = drawing('FM chip bus wiring')
+  expect(texts(svg)).toContain('toy out on D0–D2')
+  expect(svg.querySelectorAll('circle[class*="solder"]')).toHaveLength(3)
+})
