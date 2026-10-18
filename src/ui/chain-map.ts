@@ -645,8 +645,12 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     path.push(stage(name, active[name]!))
   }
 
+  // The stage's own run test: the drop rate alone does nothing with no sag.
   path.push(
-    stage('Brownout', c.brownAmt > 0 || c.brownRate > 0 || c.humLevel > 0),
+    stage(
+      'Brownout',
+      c.brownAmt > 0 || c.brownCrackle > 0 || c.humLevel > 0 || c.couple > 0,
+    ),
   )
   if (tapeAt === TAPE_AT_END) path.push(tape())
   path.push(stage('Output', true))
