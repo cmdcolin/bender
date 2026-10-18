@@ -1,9 +1,8 @@
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(5.7rem, 1fr) minmax(
-      4.6rem,
-      auto
-    );
+  grid-template-columns:
+    minmax(0, 1.1fr) minmax(5.7rem, 1fr)
+    minmax(var(--readout-col, 4.6rem), auto);
   align-items: center;
   gap: var(--space-sm);
   margin: var(--space-2xs) 0;

@@ -520,7 +520,14 @@ export function ControlSlider({
 
   return (
     <>
-      <div className={split?.names ? styles.rowSplit : styles.row}>
+      <div
+        className={split?.names ? styles.rowSplit : styles.row}
+        data-chips={
+          action || def.tap !== undefined || def.lane !== undefined
+            ? ''
+            : undefined
+        }
+      >
         <Tip ref={tip} text={helpWithNormal(def)}>
           <span
             className={touched ? styles.labelTouched : styles.label}

@@ -57,8 +57,15 @@
   color: var(--fg);
 }
 
+/* One reading column for every slider row, so tracks line up. It widens to fit
+   lock, tap and + mod when any row in the section has them. */
 .body {
+  --readout-col: 5rem;
   padding: 1px var(--space-2xs) var(--space-xs);
+}
+
+.body:has([data-chips]) {
+  --readout-col: 9.5rem;
 }
 
 /* The parts no wire reaches, under the drawing rather than in it. The label
