@@ -1008,6 +1008,12 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // which standing next to each other is what the shape of the thing has
   // become.
   const joint = (toys[0]!.x + toys[0]!.w + fm.x) / 2
+  const keyLabel: NonNullable<MapWire['label']> = {
+    text: 'key',
+    x: joint,
+    y: laneY + LABEL_H,
+    anchor: 'middle',
+  }
   wire(
     'key-line',
     toys[0]!,
@@ -1023,12 +1029,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       // boxes is twelve pixels and the word is twice that, so a label written
       // there lands on the count column of whichever box it overhangs — which
       // is a button, and a word sitting on a button reads as its name.
-      label: {
-        text: 'key',
-        x: joint,
-        y: laneY + LABEL_H,
-        anchor: 'middle',
-      },
+      label: keyLabel,
     },
   )
 
@@ -1112,10 +1113,30 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     return Math.min(hi - TRIG_H, Math.max(lo + TRIG_H, x))
   })
   const dropLabelX = Math.max(0, ...drops.map(x => x ?? 0)) + 5
+  const keyW = textWidth(keyLabel.text, SMALL)
   for (const [i, t] of trigs.entries()) {
     const [from, to] = [byId.get(nodeId(t.from))!, byId.get(nodeId(t.to))!]
     const y = trigY + i * TRIG_H
     const x = drops[i]
+    const label: NonNullable<MapWire['label']> =
+      x === undefined
+        ? {
+            text: t.label,
+            x: (midX(from) + midX(to)) / 2,
+            y: y - 3,
+            anchor: 'middle',
+          }
+        : { text: t.label, x: dropLabelX, y: y - 3, anchor: 'start' }
+    // The lane's top row also carries the key line's label, which steps right
+    // past a bridge label that runs under the joint.
+    const w = textWidth(label.text, SMALL)
+    const left = label.anchor === 'start' ? label.x : label.x - w / 2
+    if (
+      Math.abs(label.y - keyLabel.y) < LABEL_H &&
+      left < keyLabel.x + keyW / 2 + 3 &&
+      left + w > keyLabel.x - keyW / 2 - 3
+    )
+      keyLabel.x = left + w + 4 + keyW / 2
     wire(
       t.id,
       from,
@@ -1135,15 +1156,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         color: k.mod,
         dash: '4 3',
         door: 'Trigger patch',
-        label:
-          x === undefined
-            ? {
-                text: t.label,
-                x: (midX(from) + midX(to)) / 2,
-                y: y - 3,
-                anchor: 'middle',
-              }
-            : { text: t.label, x: dropLabelX, y: y - 3, anchor: 'start' },
+        label,
       },
     )
   }

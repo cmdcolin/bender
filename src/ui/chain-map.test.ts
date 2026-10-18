@@ -3,6 +3,7 @@ import { expect, test } from 'vitest'
 import { HEAVY } from '../../scripts/boards.ts'
 import { renderDiagrams } from '../../scripts/chain-svg.ts'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { VOICE_LABELS } from '../drums.ts'
 import { DEST, N_DEST } from '../dsp/modbus.ts'
 import { ANY_CHOICE, STEP_CHOICE } from '../dsp/trigbus.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
@@ -16,7 +17,7 @@ import {
   WIRE_TARGET,
 } from './chain-map.ts'
 import { BENDS, GROUPS } from './controls/index.ts'
-import { serialize } from './svg.ts'
+import { serialize, textWidth } from './svg.ts'
 
 import { readFileSync } from 'node:fs'
 
@@ -450,6 +451,34 @@ test.each(Object.entries(BOARDS))('every door is drawn: %s', (_, board) => {
     expect(svg).toContain(`#${groupAnchor(name)}`)
   }
   checkLayout(map)
+})
+
+const OPEN_HAT = VOICE_LABELS.indexOf('open hat') + 1
+
+test.each(
+  Object.entries({
+    ...BOARDS,
+    'one bridge down': { ...DEFAULT_CONTROLS, trigToDrum: OPEN_HAT },
+  }),
+)('no two wire labels overlap: %s', (_, board) => {
+  const map = buildMap(board, { wrap: true, loop: true })
+  const spans = map.wires.flatMap(w => {
+    if (!w.label) return []
+    const { text, x, y, anchor } = w.label
+    const width = textWidth(text, 10)
+    const left =
+      anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2
+    return [{ id: w.id, left, right: left + width, top: y - 10, bottom: y }]
+  })
+  for (const [i, a] of spans.entries())
+    for (const b of spans.slice(i + 1))
+      expect(
+        a.right <= b.left ||
+          b.right <= a.left ||
+          a.bottom <= b.top ||
+          b.bottom <= a.top,
+        `${a.id} and ${b.id}`,
+      ).toBe(true)
 })
 
 test.each(Object.entries(BOARDS))(
