@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 487 knobs and switches in 35 groups, seven bends competing for six slots,
+ruin. 489 knobs and switches in 35 groups, seven bends competing for six slots,
 18 ROM tunes, 125 presets, 23 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -509,7 +509,7 @@ contour caps, a mismatched ladder pair, a drooping pitch hold, a stuck bit on
 the key DAC and a weak regulator.
 
 <details>
-<summary>47 controls</summary>
+<summary>49 controls</summary>
 
 | control                         | range                                                             | what it does                                                                                                               |
 | ------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -520,6 +520,8 @@ the key DAC and a weak regulator.
 | Contour amount                  | 0 to 5 octaves                                                    | How many octaves the filter contour opens the cutoff at its peak                                                           |
 | Drive                           | 0.25× to 4×                                                       | Gain from the mixer into the ladder                                                                                        |
 | Glide                           | 0 to 1 s                                                          | Portamento between notes                                                                                                   |
+| Melody memory                   | off or on                                                         | Plays the steps on the piano roll through the mono synth while the song runs, whatever the toy plays                       |
+| Memory rate                     | 0.2 to 24 Hz                                                      | Steps a second                                                                                                             |
 | Osc 1 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 1’s waveform                                                                                                    |
 | Osc 1 range                     | 32′, 16′, 8′, 4′, 2′                                              | Oscillator 1’s footage                                                                                                     |
 | Osc 2 wave                      | triangle, saw, square, wide, narrow                               | Oscillator 2’s waveform                                                                                                    |

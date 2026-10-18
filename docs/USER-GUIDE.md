@@ -378,6 +378,22 @@ pitch or cutoff. **mixer** has the oscillator levels, noise and **Feedback**:
 the output patched back into the mixer, as players did with a cable from the
 headphone jack to the external input.
 
+The mono synth keeps a 32-step melody memory, one note a step, so it can
+play a line different from the toy's. **show piano roll** on the Mono synth
+panel draws it.
+
+- **Draw:** a click puts a note on a step, a drag draws a line, and a click on a
+  note takes it off. Shift-click holds the note before. A drawn note turns **Melody
+  memory** on.
+- **Play:** the memory plays while the song runs. **loop** on the roll sets its
+  length, and **Memory rate** under **melody** sets the steps a second.
+- **Supply:** the counter runs off the toy's rail. A sagging rail slows it, and
+  a reboot restarts it from step one.
+- **Alone:** cut the jumper to hear the synth without the toy's tune.
+
+The memory has no chords and no record button. It rides in the shared link and
+the undo history, and random rolls, mutate and morph leave it alone.
+
 For a drone, latch a key with **hold** on the bed and raise the loudness
 sustain, or turn up **Leaky VCA** under the **voice card** box, which sounds the
 synth with no key down at all. The _leaky drone_ preset starts there.
