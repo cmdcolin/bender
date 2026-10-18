@@ -1,3 +1,6 @@
+import { engine } from '../engine/engine.ts'
+import { CHANNELS } from './controls/index.ts'
+import { useStoreSelect } from './ControlsContext.ts'
 import {
   boxHeight,
   useReadings,
@@ -62,6 +65,8 @@ const PARTS: Record<string, string> = {
   die: 'die and driver',
 }
 
+const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
+
 const TOP = 6
 const ROW = 50
 const TWO = boxHeight(['', ''])
@@ -79,6 +84,10 @@ export function FmChipDiagram({
 }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('modulator')
+  // Off the meter on the chip's channel, as the map's glyph reads it.
+  const flow = useStoreSelect(engine.sounding, lit => lit & (1 << FM_TAP))
+    ? 'on'
+    : 'plain'
   const moved = (keys: readonly Key[]) => keys.filter(k => r.touched(k)).length
   const tally = (keys: readonly Key[]) => {
     const n = moved(keys)
@@ -201,10 +210,10 @@ export function FmChipDiagram({
         {arrow => (
           <>
             <Wire arrow={arrow} d={edge('key', 'processor')} />
-            <Wire arrow={arrow} d={edge('processor', 'bus')} look="on" />
-            <Wire arrow={arrow} d={edge('bus', 'modulator')} look="on" />
-            <Wire arrow={arrow} d={edge('modulator', 'carrier')} look="on" />
-            <Wire arrow={arrow} d={edge('carrier', 'output')} look="on" />
+            <Wire arrow={arrow} d={edge('processor', 'bus')} look={flow} />
+            <Wire arrow={arrow} d={edge('bus', 'modulator')} look={flow} />
+            <Wire arrow={arrow} d={edge('modulator', 'carrier')} look={flow} />
+            <Wire arrow={arrow} d={edge('carrier', 'output')} look={flow} />
             {[244, 328].map(x => (
               <Wire
                 key={x}

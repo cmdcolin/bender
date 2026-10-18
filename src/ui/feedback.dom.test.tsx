@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
@@ -31,4 +31,16 @@ test('cross is a button only once a second strip is up', () => {
   rerender(<FeedbackLoops />)
   fireEvent.click(box('cross'))
   expect(screen.getByText('Cross')).not.toBeNull()
+})
+
+test('the bus lights only while a strip sends into it', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  const { container } = render(<FeedbackLoops />)
+  const lit = () =>
+    [...container.querySelectorAll('path')].filter(p =>
+      p.getAttribute('class')?.includes('wireOn'),
+    )
+  expect(lit()).toHaveLength(0)
+  act(() => engine.writeBoard({ ...DEFAULT_CONTROLS, fb3Amt: 0.4 }))
+  expect(lit()).toHaveLength(3)
 })

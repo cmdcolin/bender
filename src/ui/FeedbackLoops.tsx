@@ -51,6 +51,7 @@ export function FeedbackLoops() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('strip 1')
   const crossed = r.value('fb2Amt') > 0 || r.value('fb3Amt') > 0
+  const flow = STRIPS.some(s => r.value(s.amt) > 0) ? 'on' : 'plain'
 
   const strips: BoxSpec[] = STRIPS.map((s, i) => ({
     id: `strip ${i + 1}`,
@@ -123,11 +124,11 @@ export function FeedbackLoops() {
             <Label x={TAP_X} y={rowMid(0) - 6} anchor="middle">
               tap
             </Label>
-            <Wire d={`M${BUS_X} ${MID} H${AMPS_X}`} arrow={arrow} look="on" />
+            <Wire d={`M${BUS_X} ${MID} H${AMPS_X}`} arrow={arrow} look={flow} />
             <Wire
               d={`M${AMPS_X + AMPS_W} ${MID} H${DEST_X}`}
               arrow={arrow}
-              look="on"
+              look={flow}
             />
             {boxes.map(b => (
               <BoxView

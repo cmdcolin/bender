@@ -134,9 +134,18 @@ export function AmpPathDiagram() {
         {arrow => (
           <>
             {[78, 186, 298].map(x => (
-              <Wire key={x} arrow={arrow} d={`M${x} ${MID} H${x + 12}`} />
+              <Wire
+                key={x}
+                arrow={arrow}
+                d={`M${x} ${MID} H${x + 12}`}
+                look={off ? 'plain' : 'on'}
+              />
             ))}
-            <Wire arrow={arrow} d={`M406 ${MID} H418`} />
+            <Wire
+              arrow={arrow}
+              d={`M406 ${MID} H418`}
+              look={off ? 'plain' : 'on'}
+            />
             <Wire
               arrow={arrow}
               d={`M358 ${top} V${RETURN_Y} H39 V${top}`}

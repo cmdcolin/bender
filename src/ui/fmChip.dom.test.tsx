@@ -1,11 +1,14 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { CHANNELS } from './controls/index.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import './testDom.ts'
+
+const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
 
 const box = (name: string) =>
   screen.getByRole('button', { name: `${name} controls` })
@@ -31,18 +34,30 @@ test('a box says how many of its knobs have moved', () => {
   expect(box('die').textContent).toMatch(/stock/)
 })
 
+const lit = (wire: Element) => wire.getAttribute('class')!.includes('wireOn')
+const wires = (container: HTMLElement) => [
+  ...container.querySelectorAll('path[marker-end]'),
+]
+
+test('the path lights only while the chip is sounding', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  act(() => engine.sounding.set(0))
+  const { container } = render(<FmChipDiagram verbs={() => null} />)
+  expect(wires(container).filter(lit)).toHaveLength(0)
+  act(() => engine.sounding.set(1 << FM_TAP))
+  expect(wires(container).filter(lit)).toHaveLength(4)
+  act(() => engine.sounding.set(0))
+})
+
 test('every wire points with a head drawn in its own look', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
+  act(() => engine.sounding.set(1 << FM_TAP))
   const { container } = render(<FmChipDiagram verbs={() => null} />)
-  const wires = [...container.querySelectorAll('path[marker-end]')]
-  expect(
-    wires.filter(w => w.getAttribute('class')!.includes('wireOn')).length,
-  ).toBeGreaterThan(0)
-  for (const wire of wires) {
+  for (const wire of wires(container)) {
     const id = wire.getAttribute('marker-end')!.slice('url(#'.length, -1)
     const head = container.querySelector(`marker[id="${id}"] path`)
     expect(head).not.toBeNull()
-    const lit = wire.getAttribute('class')!.includes('wireOn')
-    expect(head!.getAttribute('class')!.includes('headOn')).toBe(lit)
+    expect(head!.getAttribute('class')!.includes('headOn')).toBe(lit(wire))
   }
+  act(() => engine.sounding.set(0))
 })

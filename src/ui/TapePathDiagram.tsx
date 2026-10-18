@@ -125,6 +125,7 @@ export function TapePathDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
   const off = r.value('tapeMix') <= 0
+  const taped = off ? 'plain' : 'on'
   const format = Math.round(r.value('tapeFormat'))
   const deck = DECKS[format] ?? DECKS[0]
   const box = (
@@ -286,16 +287,29 @@ export function TapePathDiagram() {
               h={10}
               on={lit('tapeBump', 'tapeAzimuth')}
             />
-            <Wire arrow={arrow} d={`M${REC_MID} ${ROW_Y} V${TAPE_Y + 5}`} />
-            <Wire arrow={arrow} d={`M${PLAY_MID} ${TAPE_Y + 5} V${ROW_Y}`} />
+            <Wire
+              arrow={arrow}
+              d={`M${REC_MID} ${ROW_Y} V${TAPE_Y + 5}`}
+              look={taped}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${PLAY_MID} ${TAPE_Y + 5} V${ROW_Y}`}
+              look={taped}
+            />
             {[
               [BOARD_W, NR_IN_X],
               [NR_IN_X + NR_W, REC_X],
               [PLAY_X + PLAY_W, NR_OUT_X],
             ].map(([from, to]) => (
-              <Wire key={from} arrow={arrow} d={`M${from} ${ROW_MID} H${to}`} />
+              <Wire
+                key={from}
+                arrow={arrow}
+                d={`M${from} ${ROW_MID} H${to}`}
+                look={taped}
+              />
             ))}
-            <Wire d={`M${OUT_X} ${ROW_MID} H${JOIN_X}`} />
+            <Wire d={`M${OUT_X} ${ROW_MID} H${JOIN_X}`} look={taped} />
             <Wire arrow={arrow} d={`M${JOIN_X} ${ROW_MID} H${WIDTH - 4}`} />
             <Wire
               d={`M${BOARD_W / 2} ${ROW_Y + ROW_H} V${BYPASS_Y} H${JOIN_X} V${ROW_MID}`}
