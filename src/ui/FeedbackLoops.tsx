@@ -63,6 +63,7 @@ export function FeedbackLoops() {
     value: [`amt ${r.read(s.amt)}`, r.read(s.ms)],
     off: r.value(s.amt) <= 0,
     touched: r.touched(s.amt, s.ms, s.tone),
+    lit: [r.touched(s.amt), r.touched(s.ms)],
     help: 'One send off the tap, through its own delay, onto the bus.',
   }))
   const moved = AMPS.filter(k => r.touched(k)).length

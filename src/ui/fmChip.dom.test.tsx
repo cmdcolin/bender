@@ -61,3 +61,17 @@ test('every wire points with a head drawn in its own look', () => {
   }
   act(() => engine.sounding.set(0))
 })
+
+test('a box lights the reading that moved, or its name when no reading shows the knob', () => {
+  const classes = () =>
+    [...box('modulator').querySelectorAll('text')].map(t =>
+      /On/.test(t.getAttribute('class') ?? ''),
+    )
+  engine.writeBoard({ ...DEFAULT_CONTROLS, fmBright: 0.9 })
+  const { unmount } = render(<FmChipDiagram verbs={() => null} />)
+  expect(classes()).toEqual([false, true, false])
+  unmount()
+  engine.writeBoard({ ...DEFAULT_CONTROLS, fmModDecay: 2 })
+  render(<FmChipDiagram verbs={() => null} />)
+  expect(classes()).toEqual([true, false, false])
+})

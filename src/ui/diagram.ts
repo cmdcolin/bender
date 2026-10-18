@@ -22,6 +22,10 @@ export interface BoxSpec {
   value: string | string[]
   off?: boolean
   touched: boolean
+  /** Which value lines moved, one per line. Without it every line lights with
+      `touched`; with it the name lights when the box is touched and no line
+      is. */
+  lit?: boolean[]
   help: string
   /** What the box is called when it is pressed: it picks the box, and the
       rows under the drawing become its `keys`. A box with no keys is drawn and

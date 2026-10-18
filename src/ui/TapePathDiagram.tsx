@@ -136,6 +136,7 @@ export function TapePathDiagram() {
     help: string,
     touchedBy: (typeof KEYS)[number][],
     quiet = false,
+    lit?: boolean[],
   ): BoxSpec => ({
     x,
     y: ROW_Y,
@@ -145,6 +146,7 @@ export function TapePathDiagram() {
     value,
     off: off || quiet,
     touched: r.touched(...touchedBy),
+    lit,
     help,
     id: name,
     keys: touchedBy.filter(k => k !== 'tapeDrive'),
@@ -174,6 +176,8 @@ export function TapePathDiagram() {
       [r.read('tapeDrive'), `bias ${r.read('tapeBias')}`],
       'Record level, bias and hysteresis: how hard the signal hits the oxide.',
       ['tapeDrive', 'tapeBias', 'tapeHyst'],
+      false,
+      [r.touched('tapeDrive'), r.touched('tapeBias')],
     ),
     box(
       PLAY_X,
@@ -182,6 +186,8 @@ export function TapePathDiagram() {
       [`bump ${r.read('tapeBump')}`, `azim ${r.read('tapeAzimuth')}`],
       'Head bump and azimuth: what the playback head adds and misaligns.',
       ['tapeBump', 'tapeAzimuth'],
+      false,
+      [r.touched('tapeBump'), r.touched('tapeAzimuth')],
     ),
     box(
       NR_OUT_X,
@@ -196,6 +202,8 @@ export function TapePathDiagram() {
   const tapeKeys = [...TAPE_KEYS]
   const tapeTouched = r.touched(...tapeKeys)
   const tapeLines = [r.read('tapeFormat'), r.read('tapeSpeed')]
+  const tapeLit = [r.touched('tapeFormat'), r.touched('tapeSpeed')]
+  const tapeNameLit = tapeTouched && !tapeLit.some(Boolean)
   const captionTop = (DECK_H - LINE_H * (1 + tapeLines.length)) / 2
   const open =
     pick.selected === 'tape'
@@ -232,7 +240,7 @@ export function TapePathDiagram() {
                 x={CAPTION_X}
                 y={captionTop + LINE_H}
                 textAnchor="middle"
-                className={styles.name}
+                className={tapeNameLit ? styles.nameOn : styles.name}
               >
                 tape
               </text>
@@ -242,7 +250,7 @@ export function TapePathDiagram() {
                   x={CAPTION_X}
                   y={captionTop + LINE_H * (i + 2)}
                   textAnchor="middle"
-                  className={tapeTouched ? styles.valueOn : styles.value}
+                  className={tapeLit[i] ? styles.valueOn : styles.value}
                 >
                   {line}
                 </text>

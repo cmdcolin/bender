@@ -70,9 +70,11 @@ export function Plate({
   return <rect x={x} y={y} width={w} height={h} rx={3} className={look} />
 }
 
-// A stage drawn as a box that reads what its knobs say: accent when one is off
-// stock, grey when nothing passes through it. The title is the browser's own
-// tooltip, which is all a picture inside a fold needs.
+// A stage drawn as a box that reads what its knobs say: a reading goes accent
+// when its knob is off stock, and the name does when only knobs without a
+// reading have moved. The box goes grey when nothing passes through it. The
+// title is the browser's own tooltip, which is all a picture inside a fold
+// needs.
 export function BoxView({
   box,
   selected = false,
@@ -83,6 +85,8 @@ export function BoxView({
   onSelect?: (id: string) => void
 }) {
   const lines = Array.isArray(box.value) ? box.value : [box.value]
+  const moved = lines.map((_, i) => box.lit?.[i] ?? box.touched)
+  const nameLit = box.touched && !moved.some(Boolean)
   const pick = box.id !== undefined && box.keys?.length && onSelect
   const h = box.h ?? boxHeight(box.value)
   const top = box.y + (h - LINE_H * (1 + lines.length)) / 2
@@ -106,7 +110,7 @@ export function BoxView({
         x={box.x + box.w / 2}
         y={top + LINE_H}
         textAnchor="middle"
-        className={styles.name}
+        className={nameLit ? styles.nameOn : styles.name}
       >
         {box.name}
       </text>
@@ -116,7 +120,7 @@ export function BoxView({
           x={box.x + box.w / 2}
           y={top + LINE_H * (i + 2)}
           textAnchor="middle"
-          className={box.touched ? styles.valueOn : styles.value}
+          className={moved[i] ? styles.valueOn : styles.value}
         >
           {line}
         </text>

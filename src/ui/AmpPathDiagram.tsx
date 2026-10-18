@@ -67,6 +67,7 @@ export function AmpPathDiagram() {
     value: string | string[],
     help: string,
     keys: (typeof KEYS)[number][],
+    lit?: boolean[],
   ): BoxSpec => ({
     x,
     y: MID - boxHeight(value) / 2,
@@ -75,6 +76,7 @@ export function AmpPathDiagram() {
     value,
     off,
     touched: r.touched(...keys),
+    lit,
     help,
     id: name,
     keys,
@@ -87,6 +89,7 @@ export function AmpPathDiagram() {
       [r.read('ampVoice'), `gain ${r.read('ampGain')}`],
       'The gain stages. Each clips its two halves differently, and the Marshall cascades two ahead of the tone stack.',
       ['ampVoice', 'ampGain', 'ampCap', 'ampMicro'],
+      [r.touched('ampVoice'), r.touched('ampGain')],
     ),
     box(
       90,
@@ -98,6 +101,7 @@ export function AmpPathDiagram() {
       ],
       'The passive network between the stages: bass, mid and treble pots that load each other.',
       ['ampBass', 'ampMid', 'ampTreble'],
+      [false, r.touched('ampBass', 'ampMid', 'ampTreble')],
     ),
     box(
       198,
@@ -106,6 +110,7 @@ export function AmpPathDiagram() {
       [`master ${r.read('ampMaster')}`, `bias ${r.read('ampBias')}`],
       'The push-pull output pair, the supply it sags, and the presence lift in front of it.',
       ['ampMaster', 'ampPresence', 'ampBias', 'ampSag', 'ampTube'],
+      [r.touched('ampMaster'), r.touched('ampBias')],
     ),
     box(
       310,
@@ -114,6 +119,7 @@ export function AmpPathDiagram() {
       [r.read('ampCab'), r.read('ampLevel')],
       'The cabinet the output transformer drives, and the level that leaves the amp.',
       ['ampCab', 'ampLevel'],
+      [r.touched('ampCab'), r.touched('ampLevel')],
     ),
   ]
   const voice = Math.round(r.value('ampVoice'))

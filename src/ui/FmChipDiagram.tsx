@@ -101,7 +101,7 @@ export function FmChipDiagram({
     value: string | string[],
     keys: readonly Key[],
     help: string,
-    off = false,
+    lit?: boolean[],
   ): BoxSpec => ({
     id,
     keys,
@@ -110,8 +110,8 @@ export function FmChipDiagram({
     w,
     name: id,
     value,
-    off,
     touched: moved(keys) > 0,
+    lit,
     help,
   })
   const mid = TOP + ROW + TWO / 2
@@ -125,6 +125,7 @@ export function FmChipDiagram({
       [`chip ${r.read('fmClockX')}`, `cpu ${r.read('fmCpuClockX')}`],
       ['fmClockX', 'fmCpuClockX'],
       'The chip’s clock and the processor’s: pitch and every envelope count off the first, the driver’s timers off the second.',
+      [r.touched('fmClockX'), r.touched('fmCpuClockX')],
     ),
     box(
       'key',
@@ -161,6 +162,7 @@ export function FmChipDiagram({
       [`bright ${r.read('fmBright')}`, `fb ${r.read('fmFeedback')}`],
       ['fmBright', 'fmFeedback', 'fmModRatio', 'fmModDecay'],
       'The operator that bends the carrier: how loud it is into it, how much of it goes back into itself, its ratio and decay.',
+      [r.touched('fmBright'), r.touched('fmFeedback')],
     ),
     box(
       'carrier',
@@ -170,6 +172,7 @@ export function FmChipDiagram({
       [r.read('fmCarRatio'), `vib ${r.read('fmLfo')}`],
       ['fmCarRatio', 'fmLfo'],
       'The operator you hear: its ratio, and whether the die’s one LFO is soldered to it.',
+      [r.touched('fmCarRatio'), r.touched('fmLfo')],
     ),
     box(
       'output',
