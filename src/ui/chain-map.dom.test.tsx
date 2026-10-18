@@ -132,6 +132,20 @@ test('adding a stage opens it and puts it on the map', () => {
   expect(doorsOnMap().has('Ring mod')).toBe(true)
 })
 
+test('the add menu stays open for a second stage and shuts on a press elsewhere', () => {
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: '+ add a stage' }))
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Ring mod' }))
+  expect(screen.queryByRole('menuitem', { name: 'Ring mod' })).toBeNull()
+  const next = screen.getAllByRole('menuitem')[0]!
+  const name = next.textContent
+  fireEvent.click(next)
+  expect(doorsOnMap().has('Ring mod')).toBe(true)
+  expect(doorsOnMap().has(name)).toBe(true)
+  fireEvent.pointerDown(document.body)
+  expect(screen.queryByRole('menu', { name: 'add a stage' })).toBeNull()
+})
+
 test('take off turns the stage down and takes it off the map', async () => {
   render(<App />)
   act(() => {

@@ -184,7 +184,8 @@ export function ChainMap({
 }
 
 // What isn't on the board yet, under the place each stage sits in the chain.
-// Picking one opens it, which puts it on the map.
+// Picking one opens it, which puts it on the map; the menu stays up for the
+// next, and shuts on a press elsewhere.
 function AddStage({
   groups,
   onOpen,
@@ -230,7 +231,7 @@ function AddStage({
                     role="menuitem"
                     className={menuItem(false)}
                     onClick={() => {
-                      setMenu(false)
+                      if (groups.length === 1) setMenu(false)
                       onOpen(g.name)
                     }}
                   >
