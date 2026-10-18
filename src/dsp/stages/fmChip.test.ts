@@ -626,6 +626,22 @@ test('the chip runs off the toy’s rail, so starving the toy dives it too', () 
   expect(hz({ chipBattery: 1, chipStarve: 0.35 })).toBe(165)
 })
 
+test('a reboot on the rail power-cycles the chip and drops a held note', () => {
+  const organ = (reboot: boolean) =>
+    renderBender(
+      ORGAN_ONLY,
+      1,
+      built => built.fmChip.noteOn(0),
+      undefined,
+      (built, secs) => {
+        if (reboot && secs >= 0.5 && built.rail.rebootCount === 0)
+          built.rail.rebootCount++
+      },
+    )
+  expect(rms(tail(organ(false), 0.3))).toBeGreaterThan(0.02)
+  expect(rms(tail(organ(true), 0.3))).toBeLessThan(0.002)
+})
+
 // The percussion bank. Everything the button does it does through the register
 // file, so the same wires that carry a patch carry the mode bit and the keys —
 // and what the bank is for is that a chip which can only add sines suddenly has

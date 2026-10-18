@@ -476,6 +476,7 @@ export class FmChip implements Stage {
   /** the channel a stuck allocator hands every note, or -1 */
   private stuckCh = -1
   private cold = false
+  private lastReboot = 0
   /** the attenuation adder's mask, or 0 for the linear path */
   private adderMask = 0
   private bootRng = mulberry32(BOOT_SEED)
@@ -1274,6 +1275,11 @@ export class FmChip implements Stage {
       this.powerUp()
     }
     this.cold = cold
+    if (this.rail.rebootCount !== this.lastReboot) {
+      this.lastReboot = this.rail.rebootCount
+      this.queued.length = 0
+      this.powerUp()
+    }
 
     const effect = Math.round(p[IDX.fmEffect]!) - 1
     if (effect !== this.effect) this.setEffect(effect)
