@@ -56,7 +56,7 @@ const KEYS_MID = RIGHT_X + BOX_W / 2
 const CHIP_W = 156
 const CHIP_H = 34
 const CHIP_X = (WIDTH - CHIP_W) / 2
-const CHIP_TOP = TOP + BOX_H + 26
+const CHIP_TOP = TOP + BOX_H + 34
 const CHIP_PITCH = CHIP_H + 10
 const HEIGHT = CHIP_TOP + CHIPS.length * CHIP_PITCH - 10 + 6
 
@@ -230,7 +230,7 @@ export function TriggerPatch() {
 
         <text
           x={DRUM_MID + 5}
-          y={TOP + BOX_H + 12}
+          y={TOP + BOX_H + 22}
           className={styles.tag}
           fill="var(--fg3)"
         >
@@ -238,7 +238,7 @@ export function TriggerPatch() {
         </text>
         <text
           x={KEYS_MID - 5}
-          y={TOP + BOX_H + 12}
+          y={TOP + BOX_H + 22}
           textAnchor="end"
           className={styles.tag}
           fill="var(--fg3)"
@@ -258,6 +258,11 @@ export function TriggerPatch() {
         )}
         {machines.map(m => press(m.name, m.box.hit, m.box.drawn))}
       </svg>
+      {!pick.selected && (
+        <p className={styles.hint}>
+          Press a wire to set it, or a machine to set both of its wires.
+        </p>
+      )}
       <BoxRows keys={OPENS.get(pick.selected ?? '')} />
     </>
   )

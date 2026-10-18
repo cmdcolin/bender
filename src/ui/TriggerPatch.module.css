@@ -26,3 +26,9 @@
 .hitOn {
   stroke: var(--surface-raised);
 }
+
+.hint {
+  margin: 0 0 var(--space-md);
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}
