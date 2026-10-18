@@ -1,5 +1,5 @@
 import { HEAD_CHOICES } from '../dsp/stages/tapeDelay.ts'
-import { useReadings, useSelectedBox } from './diagram.ts'
+import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import {
   BoxRows,
   BoxView,
@@ -14,7 +14,6 @@ import {
 
 const KEYS = [
   'dlySend',
-  'delayMs',
   'dlyHeads',
   'dlyFb',
   'dlyToneHz',
@@ -82,8 +81,8 @@ const OUT_X = WIDTH - 8
 
 const headX = (n: number) => REC_X + HEAD_GAP * n
 
-const seconds = (ms: number) =>
-  ms >= 1000 ? `${(ms / 1000).toFixed(2)} s` : `${Math.round(ms)} ms`
+const SEND_W = boxWidth('send')
+const SEND_H = boxHeight('send')
 
 const LOOP = [
   `M${LOOP_LEFT} ${TAPE_Y}`,
@@ -95,12 +94,12 @@ const LOOP = [
 ].join(' ')
 
 // The delay as a loop of tape running left to right past the record head and
-// three play heads, spaced by the Time knob, with the lit ones switched up. The
-// wires are the electronics: send into the record head, the lit play heads onto
-// an echo bus, and feedback from the last lit head back to the record head.
-// A wire lights while what it carries reaches the output, which a bypass or a
-// closed send stops. Past unity the feedback wire goes red and dashed. Send,
-// heads, feedback and capstan each open their knobs under the drawing.
+// three play heads, with the lit ones switched up. The wires are the
+// electronics: send into the record head, the lit play heads onto an echo bus,
+// and feedback from the last lit head back to the record head. A wire lights
+// while what it carries reaches the output, which a bypass or a closed send
+// stops. Past unity the feedback wire goes red and dashed. Send, heads, the
+// feedback loop and the transport each open their knobs under the drawing.
 export function TapeLoopDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
@@ -109,7 +108,6 @@ export function TapeLoopDiagram() {
     selected: pick.selected === id,
     onSelect: pick.toggle,
   })
-  const ms = r.value('delayMs')
   const fb = r.value('dlyFb')
   const lit = [1, 2, 3].filter(n =>
     (HEAD_CHOICES[Math.round(r.value('dlyHeads'))] ?? '1').includes(String(n)),
@@ -119,12 +117,6 @@ export function TapeLoopDiagram() {
   const flowing = r.value('dlySend') > 0 && r.value('dlyMute') <= 0
   const flow = flowing ? 'on' : 'plain'
   const returning = fb > 1 ? 'alarm' : fb > 0 && flowing ? 'on' : 'dash'
-  const loopWords = [
-    `back round ${r.read('dlyFb')}`,
-    r.touched('dlyToneHz') && `tone ${r.read('dlyToneHz')}`,
-    r.touched('dlyLoopMode') && `filter ${r.read('dlyLoopMode')}`,
-    r.touched('dlyRing') && `ring ${r.read('dlyRing')}`,
-  ].filter(Boolean)
   return (
     <>
       <Diagram
@@ -146,10 +138,9 @@ export function TapeLoopDiagram() {
                 id: 'send',
                 keys: OPENS.send,
                 x: 0,
-                y: INPUT_Y - 14,
-                w: 60,
+                y: INPUT_Y - SEND_H / 2,
+                w: SEND_W,
                 name: 'send',
-                value: r.read('dlySend'),
                 off: !flowing,
                 touched: r.touched('dlySend'),
                 help: 'How much of the whole board goes onto the tape.',
@@ -157,7 +148,7 @@ export function TapeLoopDiagram() {
             />
             <Wire
               arrow={arrow}
-              d={`M60 ${INPUT_Y} H${REC_X - 3}`}
+              d={`M${SEND_W} ${INPUT_Y} H${REC_X - 3}`}
               look={flow}
             />
             <HeadBar x={REC_X} y={HEAD_TOP} h={HEAD_H} />
@@ -171,7 +162,7 @@ export function TapeLoopDiagram() {
               on={r.touched('dlyHeads')}
               pick={pickOf('heads')}
             >
-              {`heads ${r.read('dlyHeads')}`}
+              heads
             </Label>
             {[1, 2, 3].map(n => (
               <g key={n} opacity={lit.includes(n) ? 1 : 0.5}>
@@ -182,7 +173,7 @@ export function TapeLoopDiagram() {
                   on={lit.includes(n)}
                 />
                 <Label x={headX(n) + 5} y={TIME_Y} on={lit.includes(n)}>
-                  {seconds(ms * n)}
+                  {`play ${n}`}
                 </Label>
               </g>
             ))}
@@ -205,7 +196,7 @@ export function TapeLoopDiagram() {
               anchor="end"
               on={r.touched('dlyMix')}
             >
-              {`echo ${r.read('dlyMix')} → out`}
+              echo → out
             </Label>
             <Wire
               arrow={arrow}
@@ -218,7 +209,7 @@ export function TapeLoopDiagram() {
               on={r.touched('dlyFb', ...OPENS.loop)}
               pick={pickOf('loop')}
             >
-              {loopWords.join(' · ')}
+              feedback loop
             </Label>
             <Pressable
               name="transport"
@@ -231,9 +222,8 @@ export function TapeLoopDiagram() {
               </title>
               <Capstan x={CAPSTAN_X} y={LOOP_BOTTOM} />
               <Label
-                x={CAPSTAN_X - 10}
+                x={CAPSTAN_X + 10}
                 y={LOOP_BOTTOM - 5}
-                anchor="end"
                 on={r.touched(...OPENS.transport)}
               >
                 transport

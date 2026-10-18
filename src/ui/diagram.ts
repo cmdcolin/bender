@@ -7,10 +7,10 @@ import {
 } from '../controls.ts'
 import { sliderFor, TRACK_NUMBERS } from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
-import { formatValue } from './slider-scale.ts'
 
-export const LINE_H = 11
-const PAD = 6
+// CROSS_REPO_SYNC(diagram-boxes)
+export const LINE_H = 13
+const PAD = 7
 
 export interface BoxSpec {
   x: number
@@ -18,21 +18,15 @@ export interface BoxSpec {
   w: number
   /** Taller than its text needs, so a row of boxes shares one height. */
   h?: number
+  /** A `\n` breaks the name over two lines. */
   name: string
-  value: string | string[]
   off?: boolean
   touched: boolean
-  /** Which value lines moved, one per line. Without it every line lights with
-      `touched`; with it the name lights when the box is touched and no line
-      is. */
-  lit?: boolean[]
   help: string
-  /** What the box is called when it is pressed: it picks the box, and the
-      rows under the drawing become its `keys`. A box with no keys is drawn and
-      does nothing. */
+  /** Pressing the box picks it, and the rows under the drawing become its
+      `keys`. A box with no keys is drawn and does nothing. */
   id?: string
   keys?: readonly ControlKey[]
-  /** A line said above the rows, for the box whose knobs overwrite something. */
   note?: string
 }
 
@@ -45,6 +39,17 @@ export function useSelectedBox(initial: string | null = null) {
   }
 }
 
+export const CHAR_W = 5.8
+
+export const boxWidth = (name: string) =>
+  Math.ceil(
+    Math.max(...name.split('\n').map(line => line.length * CHAR_W)) + 2 * PAD,
+  )
+
+export const boxHeight = (name: string) =>
+  PAD + LINE_H * name.split('\n').length
+// CROSS_REPO_SYNC_END(diagram-boxes)
+
 // Whether a row has anything to act on yet: a fault waits for a wire to be cut,
 // and a row you have already moved stays whatever the switch beside it says.
 export const rowShown = (key: ControlKey, c: Controls) => {
@@ -52,31 +57,14 @@ export const rowShown = (key: ControlKey, c: Controls) => {
   return !needs || needs(c) || c[key] !== DEFAULT_CONTROLS[key]
 }
 
-export const CHAR_W = 4.6
-export const MONO_W = 6.02
-
-// Wide enough for the widest reading, so the box keeps its size as knobs move.
-export const boxWidth = (name: string, ...readings: string[]) =>
-  Math.ceil(
-    Math.max(
-      name.length * CHAR_W,
-      ...readings.map(reading => reading.length * MONO_W),
-    ) +
-      2 * PAD,
-  )
-
-export const boxHeight = (value: string | string[]) =>
-  PAD + LINE_H * (1 + (Array.isArray(value) ? value.length : 1))
-
-// The figures a drawing prints, read off the board as one string so the drawing
-// redraws only for a write that moved one of them.
+// The knobs a drawing reads, off the board as one string so the drawing redraws
+// only for a write that moved one of them.
 export function useReadings<K extends ControlKey>(keys: readonly K[]) {
   const joined = useBoardValue(c => keys.map(k => c[k]).join('|'))
   const values = joined.split('|').map(Number)
   const value = (key: K) => values[keys.indexOf(key)]!
   return {
     value,
-    read: (key: K) => formatValue(sliderFor(key), value(key)),
     touched: (...ks: K[]) => ks.some(k => value(k) !== DEFAULT_CONTROLS[k]),
   }
 }

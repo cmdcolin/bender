@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
-import { choiceValue, GROUPS } from './controls/index.ts'
+import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
@@ -31,15 +31,18 @@ test('the tape delay keeps Time, Feedback and the echo level as rows, and the re
   expect(screen.getAllByText('Loop filter')).toHaveLength(1)
 })
 
-test('the delay drawing puts a head at each multiple of the time', () => {
-  act(() => engine.set('delayMs', 300))
+test('the delay drawing lights the play heads the Heads switch picks', () => {
+  act(() => engine.set('dlyHeads', 2))
   open('Tape delay')
   const drawing = screen.getByRole('img', { name: 'tape delay signal path' })
-  expect(drawing.textContent).toContain('300 ms')
-  expect(drawing.textContent).toContain('900 ms')
-  act(() => engine.set('delayMs', 400))
-  expect(drawing.textContent).not.toContain('300 ms')
-  expect(drawing.textContent).toContain('1.20 s')
+  const lit = () =>
+    [...drawing.querySelectorAll('text')]
+      .filter(t => t.getAttribute('class')?.includes('noteOn'))
+      .map(t => t.textContent)
+      .filter(t => t?.startsWith('play'))
+  expect(lit()).toEqual(['play 1', 'play 3'])
+  act(() => engine.set('dlyHeads', 0))
+  expect(lit()).toEqual(['play 1'])
 })
 
 test('the tape machine keeps To tape, Tape at and Level as rows, and the heads and the tape behind its drawing', () => {
@@ -53,19 +56,6 @@ test('the tape machine keeps To tape, Tape at and Level as rows, and the heads a
   expect(screen.queryByText('Bias')).toBeNull()
   for (const label of ['Format', 'Speed', 'Hiss'])
     expect(screen.getAllByText(label), label).toHaveLength(1)
-})
-
-test('the machine drawing says where it sits and what noise reduction it runs', () => {
-  act(() => {
-    engine.set('tapeAt', choiceValue('tapeAt', 'the pedals'))
-    engine.set('tapeNrRec', choiceValue('tapeNrRec', 'dbx'))
-  })
-  open('Tape machine')
-  const text = screen.getByRole('img', {
-    name: 'tape machine signal path',
-  }).textContent
-  expect(text).toContain('sits ahead of the pedals')
-  expect(text).toContain('dbx')
 })
 
 test('the delay drawing goes dark when the pedal is bypassed', () => {

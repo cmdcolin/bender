@@ -8,6 +8,7 @@ import { ControlSlider } from './Slider.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
+// CROSS_REPO_SYNC(diagram-parts)
 // A group the pointer and keyboard press to pick a box.
 export function Pressable({
   name,
@@ -49,13 +50,14 @@ export function Pressable({
   )
 }
 
-// A frame round part of a drawing, filled when its rows are open. A moved knob
-// shows in the reading inside it, which turns the accent.
+// A frame round part of a drawing: accent when a knob inside is off stock,
+// filled when its rows are open.
 export function Plate({
   x,
   y,
   w,
   h,
+  touched = false,
   selected = false,
   inert = false,
 }: {
@@ -63,18 +65,16 @@ export function Plate({
   y: number
   w: number
   h: number
+  touched?: boolean
   selected?: boolean
   inert?: boolean
 }) {
-  const look = `${styles.box} ${selected ? styles.selected : ''} ${inert ? styles.inert : ''}`
+  const look = `${touched ? styles.boxOn : styles.box} ${selected ? styles.selected : ''} ${inert ? styles.inert : ''}`
   return <rect x={x} y={y} width={w} height={h} rx={3} className={look} />
 }
 
-// A stage drawn as a box that reads what its knobs say: a reading goes accent
-// when its knob is off stock, and the name does when only knobs without a
-// reading have moved. The box goes grey when nothing passes through it. The
-// title is the browser's own tooltip, which is all a picture inside a fold
-// needs.
+// A stage drawn as a box with its name: accent when a knob inside is off stock,
+// grey when nothing passes through it. The title is the browser's own tooltip.
 export function BoxView({
   box,
   selected = false,
@@ -84,141 +84,41 @@ export function BoxView({
   selected?: boolean
   onSelect?: (id: string) => void
 }) {
-  const lines = Array.isArray(box.value) ? box.value : [box.value]
-  const moved = lines.map((_, i) => box.lit?.[i] ?? box.touched)
-  const nameLit = box.touched && !moved.some(Boolean)
+  const lines = box.name.split('\n')
+  const label = lines.join(' ')
   const pick = box.id !== undefined && box.keys?.length && onSelect
-  const h = box.h ?? boxHeight(box.value)
-  const top = box.y + (h - LINE_H * (1 + lines.length)) / 2
+  const h = box.h ?? boxHeight(box.name)
+  const top = box.y + (h - LINE_H * lines.length) / 2
   return (
     <Pressable
-      name={box.name}
+      name={label}
       selected={selected}
       onSelect={pick ? () => onSelect(box.id!) : undefined}
       opacity={box.off ? 0.55 : 1}
     >
-      <title>{`${box.name} — ${box.help}`}</title>
+      <title>{`${label} — ${box.help}`}</title>
       <Plate
         x={box.x}
         y={box.y}
         w={box.w}
         h={h}
+        touched={box.touched}
         selected={selected}
         inert={!pick}
       />
-      <text
-        x={box.x + box.w / 2}
-        y={top + LINE_H}
-        textAnchor="middle"
-        className={nameLit ? styles.nameOn : styles.name}
-      >
-        {box.name}
-      </text>
       {lines.map((line, i) => (
         <text
           key={line + i}
           x={box.x + box.w / 2}
-          y={top + LINE_H * (i + 2)}
+          y={top + LINE_H * (i + 1) - 3}
           textAnchor="middle"
-          className={moved[i] ? styles.valueOn : styles.value}
+          className={box.touched ? styles.nameOn : styles.name}
         >
           {line}
         </text>
       ))}
     </Pressable>
   )
-}
-
-// A length of tape, and a head standing on it.
-export function Band({
-  x,
-  y,
-  w,
-  h,
-}: {
-  x: number
-  y: number
-  w: number
-  h: number
-}) {
-  return (
-    <rect x={x} y={y} width={w} height={h} rx={h / 2} className={styles.tape} />
-  )
-}
-
-export function HeadBar({
-  x,
-  y,
-  h,
-  on = false,
-}: {
-  x: number
-  y: number
-  h: number
-  on?: boolean
-}) {
-  return (
-    <rect
-      x={x - 2}
-      y={y}
-      width={4}
-      height={h}
-      className={on ? styles.gapOn : styles.gap}
-    />
-  )
-}
-
-// A reel seen from above; `full` is how much of the flange the tape fills.
-export function Reel({
-  cx,
-  cy,
-  r,
-  full,
-  spokes = true,
-}: {
-  cx: number
-  cy: number
-  r: number
-  full: number
-  spokes?: boolean
-}) {
-  const hub = r * 0.22
-  const at = (deg: number, radius: number) => ({
-    x: cx + Math.cos((deg * Math.PI) / 180) * radius,
-    y: cy + Math.sin((deg * Math.PI) / 180) * radius,
-  })
-  return (
-    <>
-      <circle cx={cx} cy={cy} r={r * full} className={styles.pack} />
-      <circle cx={cx} cy={cy} r={r} className={styles.reel} />
-      {spokes &&
-        [90, 210, 330].map(deg => (
-          <line
-            key={deg}
-            x1={at(deg, hub).x}
-            y1={at(deg, hub).y}
-            x2={at(deg, r * 0.92).x}
-            y2={at(deg, r * 0.92).y}
-            className={styles.reel}
-          />
-        ))}
-      <circle cx={cx} cy={cy} r={hub} className={styles.hub} />
-    </>
-  )
-}
-
-// The pinch roller above the tape and the capstan below it.
-export function Capstan({ x, y }: { x: number; y: number }) {
-  return (
-    <>
-      <circle cx={x} cy={y - 6} r={6} className={styles.reel} />
-      <circle cx={x} cy={y + 3} r={3} className={styles.hub} />
-    </>
-  )
-}
-
-export function TapeLine({ d }: { d: string }) {
-  return <path d={d} className={styles.tapeLine} />
 }
 
 export type WireLook = 'plain' | 'on' | 'dash' | 'alarm'
@@ -338,6 +238,7 @@ export function Diagram({
     </svg>
   )
 }
+// CROSS_REPO_SYNC_END(diagram-parts)
 
 // The rows of the box that is open: the same rows the panel draws anywhere
 // else, so a drag, a reset and a mod wire all work from here. A row still
@@ -367,4 +268,96 @@ export function BoxRows({
         ))}
     </div>
   )
+}
+
+// A length of tape, and a head standing on it.
+export function Band({
+  x,
+  y,
+  w,
+  h,
+}: {
+  x: number
+  y: number
+  w: number
+  h: number
+}) {
+  return (
+    <rect x={x} y={y} width={w} height={h} rx={h / 2} className={styles.tape} />
+  )
+}
+
+export function HeadBar({
+  x,
+  y,
+  h,
+  on = false,
+}: {
+  x: number
+  y: number
+  h: number
+  on?: boolean
+}) {
+  return (
+    <rect
+      x={x - 2}
+      y={y}
+      width={4}
+      height={h}
+      className={on ? styles.gapOn : styles.gap}
+    />
+  )
+}
+
+// A reel seen from above; `full` is how much of the flange the tape fills.
+export function Reel({
+  cx,
+  cy,
+  r,
+  full,
+  spokes = true,
+}: {
+  cx: number
+  cy: number
+  r: number
+  full: number
+  spokes?: boolean
+}) {
+  const hub = r * 0.22
+  const at = (deg: number, radius: number) => ({
+    x: cx + Math.cos((deg * Math.PI) / 180) * radius,
+    y: cy + Math.sin((deg * Math.PI) / 180) * radius,
+  })
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={r * full} className={styles.pack} />
+      <circle cx={cx} cy={cy} r={r} className={styles.reel} />
+      {spokes &&
+        [90, 210, 330].map(deg => (
+          <line
+            key={deg}
+            x1={at(deg, hub).x}
+            y1={at(deg, hub).y}
+            x2={at(deg, r * 0.92).x}
+            y2={at(deg, r * 0.92).y}
+            className={styles.reel}
+          />
+        ))}
+      <circle cx={cx} cy={cy} r={hub} className={styles.hub} />
+    </>
+  )
+}
+
+// The pinch roller above the tape and the capstan below it.
+export function Capstan({ x, y }: { x: number; y: number }) {
+  return (
+    <>
+      <circle cx={x} cy={y - 6} r={6} className={styles.reel} />
+      <circle cx={x} cy={y + 3} r={3} className={styles.hub} />
+    </>
+  )
+}
+
+export function TapeLine({ d }: { d: string }) {
+  return <path d={d} className={styles.tapeLine} />
 }

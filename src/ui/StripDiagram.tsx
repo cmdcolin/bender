@@ -1,11 +1,32 @@
 import { type Track } from './controls/index.ts'
-import { useReadings, useSelectedBox, type BoxSpec } from './diagram.ts'
+import {
+  boxHeight,
+  boxWidth,
+  useReadings,
+  useSelectedBox,
+  type BoxSpec,
+} from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 
-const BOX_H = 28
-const TOP = 26
-const BOTTOM = 84
+const BOX_H = boxHeight('')
+const TOP = 24
+const BOTTOM = 66
 const MID = TOP + BOX_H / 2
+const LOW_MID = BOTTOM + BOX_H / 2
+const RETURN_Y = BOTTOM + BOX_H + 12
+const W = 48
+const STEP = 68
+const BUS_W = boxWidth('stereo bus')
+const IN_X = 0
+const TRIM_X = STEP
+const EQ_X = STEP * 2
+const FADER_X = STEP * 3
+const PAN_X = STEP * 4
+const BUS_X = STEP * 5
+const LOOP_W = boxWidth('erase · loop')
+const LOOP_X = FADER_X
+const CUE_X = LOOP_X + LOOP_W + STEP - W
+const centre = (x: number) => x + W / 2
 
 const SUFFIXES = [
   'In',
@@ -24,44 +45,39 @@ const SUFFIXES = [
 ] as const
 type Suffix = (typeof SUFFIXES)[number]
 
-const signed = (n: number) => (n > 0 ? `+${n}` : String(n))
-
 const CAUTION =
   'record and erase write onto the loops themselves — what goes under the head stays there, worn or not'
 
-// One channel strip drawn as the circuit it is, with every box reading what its
-// knob says: the path along the top is the channel, the path along the bottom is
-// the tape. A box goes accent when its knob is off stock and grey when nothing
-// passes through it, and pressing one puts its knobs under the drawing — the
-// drawing is the index to the strip's rows.
+// One channel strip drawn as the circuit it is: the path along the top is the
+// channel, the path along the bottom is the tape. A box goes accent when its
+// knob is off stock and grey when nothing passes through it, and pressing one
+// puts its knobs under the drawing — the drawing is the index to the strip's
+// rows.
 export function StripDiagram({ track }: { track: Track }) {
   const key = (name: Suffix) => `four${track}${name}` as const
   const keys = SUFFIXES.map(key)
   const r = useReadings(keys)
   const pick = useSelectedBox()
   const val = (n: Suffix) => r.value(key(n))
-  const read = (n: Suffix) => r.read(key(n))
   const touched = (...ns: Suffix[]) => r.touched(...ns.map(key))
 
   const listens = Math.round(val('In'))
   const boxes: BoxSpec[] = [
     {
-      x: 0,
+      x: IN_X,
       y: TOP,
-      w: 54,
+      w: W,
       name: 'in',
-      value: read('In'),
       touched: touched('In'),
       help: 'What this channel hears. Pick it in the lane.',
     },
     {
       id: 'trim',
       keys: [key('Trim')],
-      x: 68,
+      x: TRIM_X,
       y: TOP,
-      w: 54,
+      w: W,
       name: 'trim',
-      value: read('Trim'),
       off: val('Trim') <= -20,
       touched: touched('Trim'),
       help: 'The preamp.',
@@ -69,20 +85,18 @@ export function StripDiagram({ track }: { track: Track }) {
     {
       id: 'eq',
       keys: [key('Low'), key('MidHz'), key('Mid'), key('High')],
-      x: 136,
+      x: EQ_X,
       y: TOP,
-      w: 72,
-      name: `EQ · mid ${Math.round(val('MidHz'))}`,
-      value: `${signed(val('Low'))}/${signed(val('Mid'))}/${signed(val('High'))}`,
+      w: W,
+      name: 'EQ',
       touched: touched('Low', 'MidHz', 'Mid', 'High'),
       help: 'Low shelf, sweepable mid and high shelf, in dB.',
     },
     {
-      x: 222,
+      x: FADER_X,
       y: TOP,
-      w: 54,
+      w: W,
       name: 'fader',
-      value: read('Fader'),
       off: val('Fader') <= 0,
       touched: touched('Fader'),
       help: 'The channel to the stereo bus and the aux send. It is in the lane.',
@@ -90,20 +104,18 @@ export function StripDiagram({ track }: { track: Track }) {
     {
       id: 'pan',
       keys: [key('Pan')],
-      x: 290,
+      x: PAN_X,
       y: TOP,
-      w: 54,
+      w: W,
       name: 'pan',
-      value: read('Pan'),
       touched: touched('Pan'),
       help: 'Where the channel and the loop’s cue sit across the stereo bus.',
     },
     {
-      x: 358,
+      x: BUS_X,
       y: TOP,
-      w: 62,
-      name: 'bus',
-      value: 'stereo',
+      w: BUS_W,
+      name: 'stereo bus',
       touched: false,
       help: 'The four-track’s stereo bus, onto the board’s mix bus.',
     },
@@ -111,11 +123,10 @@ export function StripDiagram({ track }: { track: Track }) {
       id: 'rec',
       keys: [key('Rec')],
       note: CAUTION,
-      x: 144,
+      x: EQ_X,
       y: BOTTOM,
-      w: 56,
+      w: W,
       name: 'rec',
-      value: read('Rec'),
       off: val('Rec') <= 0,
       touched: touched('Rec'),
       help: 'How much of the channel, after its EQ, the record head lays onto the loop.',
@@ -124,22 +135,20 @@ export function StripDiagram({ track }: { track: Track }) {
       id: 'loop',
       keys: [key('Erase'), key('Len')],
       note: CAUTION,
-      x: 214,
+      x: LOOP_X,
       y: BOTTOM,
-      w: 86,
+      w: LOOP_W,
       name: 'erase · loop',
-      value: `${read('Erase')} · ${val('Len').toFixed(2)}s`,
       touched: touched('Erase', 'Len'),
       help: 'How much of what is on the loop the erase head takes off while recording, and how long the loop is.',
     },
     {
       id: 'cue',
       keys: [key('Cue')],
-      x: 314,
+      x: CUE_X,
       y: BOTTOM,
-      w: 54,
+      w: W,
       name: 'cue',
-      value: read('Cue'),
       off: val('Cue') <= 0,
       touched: touched('Cue'),
       help: 'The loop’s playback straight to the stereo bus.',
@@ -152,42 +161,50 @@ export function StripDiagram({ track }: { track: Track }) {
     y: 0,
     w: 0,
     name: 'aux send',
-    value: read('Send'),
     touched: touched('Send'),
     help: 'How much of the channel, after its fader, goes to the aux bus.',
   }
   const open = [...boxes, sendBox].find(b => b.id === pick.selected)
+  const recording = val('Rec') > 0 ? 'on' : 'plain'
 
   return (
     <>
-      <Diagram width={420} height={126} label={`track ${track} signal path`}>
+      <Diagram
+        width={BUS_X + BUS_W + 2}
+        height={RETURN_Y + 4}
+        label={`track ${track} signal path`}
+      >
         {arrow => (
           <>
-            <Wire arrow={arrow} d={`M54 ${MID} H68`} />
-            <Wire arrow={arrow} d={`M122 ${MID} H136`} />
-            <Wire arrow={arrow} d={`M208 ${MID} H222`} />
-            <Wire arrow={arrow} d={`M276 ${MID} H290`} />
-            <Wire arrow={arrow} d={`M344 ${MID} H358`} />
+            {[IN_X, TRIM_X, EQ_X, FADER_X, PAN_X].map(x => (
+              <Wire key={x} arrow={arrow} d={`M${x + W} ${MID} H${x + STEP}`} />
+            ))}
             <Wire
               arrow={arrow}
-              d={`M172 ${TOP + BOX_H} V${BOTTOM}`}
-              look={val('Rec') > 0 ? 'on' : 'plain'}
+              d={`M${centre(EQ_X)} ${TOP + BOX_H} V${BOTTOM}`}
+              look={recording}
             />
             <Wire
               arrow={arrow}
-              d={`M200 ${BOTTOM + 14} H214`}
-              look={val('Rec') > 0 ? 'on' : 'plain'}
+              d={`M${EQ_X + W} ${LOW_MID} H${LOOP_X}`}
+              look={recording}
             />
-            <Wire arrow={arrow} d={`M300 ${BOTTOM + 14} H314`} />
-            <Wire arrow={arrow} d={`M341 ${BOTTOM} V69 H317 V${TOP + BOX_H}`} />
             <Wire
               arrow={arrow}
-              d={`M257 ${BOTTOM + BOX_H} V121 H27 V${TOP + BOX_H}`}
+              d={`M${LOOP_X + LOOP_W} ${LOW_MID} H${CUE_X}`}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${centre(CUE_X)} ${BOTTOM} V${(TOP + BOX_H + BOTTOM) / 2} H${centre(PAN_X)} V${TOP + BOX_H}`}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${LOOP_X + LOOP_W / 2} ${BOTTOM + BOX_H} V${RETURN_Y} H${centre(IN_X)} V${TOP + BOX_H}`}
               look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
             />
-            <Wire arrow={arrow} d={`M249 ${TOP} V10`} />
+            <Wire arrow={arrow} d={`M${centre(FADER_X)} ${TOP} V6`} />
             <Label
-              x={255}
+              x={centre(FADER_X) + 6}
               y={13}
               on={val('Send') > 0}
               pick={{
@@ -196,7 +213,7 @@ export function StripDiagram({ track }: { track: Track }) {
                 onSelect: pick.toggle,
               }}
             >
-              {`send ${read('Send')} → aux bus`}
+              aux send
             </Label>
             {boxes.map(b => (
               <BoxView

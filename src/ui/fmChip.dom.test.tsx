@@ -27,11 +27,16 @@ test('the chip opens on the modulator, and each box swaps in its own rows', () =
   expect(screen.getByText('Allocator')).not.toBeNull()
 })
 
-test('a box says how many of its knobs have moved', () => {
+const accent = (name: string) =>
+  [box(name).querySelector('rect')!, box(name).querySelector('text')!].map(e =>
+    /On/.test(e.getAttribute('class') ?? ''),
+  )
+
+test('a box goes accent, frame and name, when a knob inside it is off stock', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, fmDataFault: 1 })
   render(<FmChipDiagram verbs={() => null} />)
-  expect(box('bus').textContent).toMatch(/1 moved/)
-  expect(box('die').textContent).toMatch(/stock/)
+  expect(accent('bus')).toEqual([true, true])
+  expect(accent('die')).toEqual([false, false])
 })
 
 const lit = (wire: Element) => wire.getAttribute('class')!.includes('wireOn')
@@ -60,18 +65,4 @@ test('every wire points with a head drawn in its own look', () => {
     expect(head!.getAttribute('class')!.includes('headOn')).toBe(lit(wire))
   }
   act(() => engine.sounding.set(0))
-})
-
-test('a box lights the reading that moved, or its name when no reading shows the knob', () => {
-  const classes = () =>
-    [...box('modulator').querySelectorAll('text')].map(t =>
-      /On/.test(t.getAttribute('class') ?? ''),
-    )
-  engine.writeBoard({ ...DEFAULT_CONTROLS, fmBright: 0.9 })
-  const { unmount } = render(<FmChipDiagram verbs={() => null} />)
-  expect(classes()).toEqual([false, true, false])
-  unmount()
-  engine.writeBoard({ ...DEFAULT_CONTROLS, fmModDecay: 2 })
-  render(<FmChipDiagram verbs={() => null} />)
-  expect(classes()).toEqual([true, false, false])
 })

@@ -3,6 +3,7 @@ import { CHANNELS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import {
   boxHeight,
+  boxWidth,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -40,7 +41,6 @@ const KEYS = [
   'fmStruck',
   'fmKeyGate',
   'fmLength',
-  'fmVoice',
   'fmEffect',
   'fmRhythm',
   'fmNoiseBlob',
@@ -67,10 +67,10 @@ const PARTS: Record<string, string> = {
 
 const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
 
-const TOP = 6
-const ROW = 50
-const TWO = boxHeight(['', ''])
-const ONE = boxHeight('')
+const TOP = 4
+const ROW = 38
+const WIDTH = 420
+const BOX_H = boxHeight('')
 
 // The chip as the board wires it: a processor that decides the sound and writes
 // it as bytes down a bus into the register file, two operators the bytes
@@ -88,20 +88,41 @@ export function FmChipDiagram({
   const flow = useStoreSelect(engine.sounding, lit => lit & (1 << FM_TAP))
     ? 'on'
     : 'plain'
-  const moved = (keys: readonly Key[]) => keys.filter(k => r.touched(k)).length
-  const tally = (keys: readonly Key[]) => {
-    const n = moved(keys)
-    return n ? `${n} moved` : 'stock'
-  }
+  const path: [string, readonly Key[], string][] = [
+    [
+      'key',
+      ['fmStruck', 'fmKeyGate', 'fmLength'],
+      'What strikes a note, and how long the processor holds it when nothing else does.',
+    ],
+    [
+      'processor',
+      ['fmEffect', 'fmRhythm', 'fmNoiseBlob'],
+      'The driver: it sends the voice, runs the effect ROM and the rhythm bank.',
+    ],
+    [
+      'bus',
+      KNIFE,
+      'The eight data lines and six address lines the writes travel on: put a knife through one.',
+    ],
+    [
+      'modulator',
+      ['fmBright', 'fmFeedback', 'fmModRatio', 'fmModDecay'],
+      'The operator that bends the carrier: how loud it is into it, how much of it goes back into itself, its ratio and decay.',
+    ],
+    [
+      'carrier',
+      ['fmCarRatio', 'fmLfo'],
+      'The operator you hear: its ratio, and whether the die’s one LFO is soldered to it.',
+    ],
+    ['output', ['fmDrive'], 'The one output stage the four voices share.'],
+  ]
   const box = (
     id: string,
     x: number,
     y: number,
     w: number,
-    value: string | string[],
     keys: readonly Key[],
     help: string,
-    lit?: boolean[],
   ): BoxSpec => ({
     id,
     keys,
@@ -109,125 +130,73 @@ export function FmChipDiagram({
     y,
     w,
     name: id,
-    value,
-    touched: moved(keys) > 0,
-    lit,
+    touched: r.touched(...keys),
     help,
   })
-  const mid = TOP + ROW + TWO / 2
-  const centred = (value: string | string[]) => mid - boxHeight(value) / 2
+  const widths = path.map(([id]) => boxWidth(id))
+  const gap = (WIDTH - 2 - widths.reduce((a, b) => a + b)) / (widths.length - 1)
+  let x = 0
+  const row = path.map(([id, keys, help], i) => {
+    const spec = box(id, Math.round(x), TOP + ROW, widths[i]!, keys, help)
+    x += spec.w + gap
+    return spec
+  })
+  const at = (id: string) => row.find(b => b.id === id)!
+  const mod = at('modulator')
+  const car = at('carrier')
+  const span = car.x + car.w - mod.x
   const boxes = [
+    ...row,
     box(
       'clocks',
-      208,
+      mod.x,
       TOP,
-      156,
-      [`chip ${r.read('fmClockX')}`, `cpu ${r.read('fmCpuClockX')}`],
+      span,
       ['fmClockX', 'fmCpuClockX'],
       'The chip’s clock and the processor’s: pitch and every envelope count off the first, the driver’s timers off the second.',
-      [r.touched('fmClockX'), r.touched('fmCpuClockX')],
-    ),
-    box(
-      'key',
-      0,
-      centred(r.read('fmLength')),
-      50,
-      r.read('fmLength'),
-      ['fmStruck', 'fmKeyGate', 'fmLength'],
-      'What strikes a note, and how long the processor holds it when nothing else does.',
-    ),
-    box(
-      'processor',
-      62,
-      centred(r.read('fmVoice')),
-      72,
-      r.read('fmVoice'),
-      ['fmEffect', 'fmRhythm', 'fmNoiseBlob'],
-      'The driver: it sends the voice, runs the effect ROM and the rhythm bank.',
-    ),
-    box(
-      'bus',
-      146,
-      centred(tally(KNIFE)),
-      50,
-      tally(KNIFE),
-      KNIFE,
-      'The eight data lines and six address lines the writes travel on: put a knife through one.',
-    ),
-    box(
-      'modulator',
-      208,
-      TOP + ROW,
-      72,
-      [`bright ${r.read('fmBright')}`, `fb ${r.read('fmFeedback')}`],
-      ['fmBright', 'fmFeedback', 'fmModRatio', 'fmModDecay'],
-      'The operator that bends the carrier: how loud it is into it, how much of it goes back into itself, its ratio and decay.',
-      [r.touched('fmBright'), r.touched('fmFeedback')],
-    ),
-    box(
-      'carrier',
-      292,
-      TOP + ROW,
-      72,
-      [r.read('fmCarRatio'), `vib ${r.read('fmLfo')}`],
-      ['fmCarRatio', 'fmLfo'],
-      'The operator you hear: its ratio, and whether the die’s one LFO is soldered to it.',
-      [r.touched('fmCarRatio'), r.touched('fmLfo')],
-    ),
-    box(
-      'output',
-      376,
-      centred(r.read('fmDrive')),
-      50,
-      r.read('fmDrive'),
-      ['fmDrive'],
-      'The one output stage the four voices share.',
     ),
     box(
       'die',
-      262,
+      mod.x,
       TOP + ROW * 2,
-      102,
-      tally(DIE),
+      span,
       DIE,
       'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot and the log adder.',
     ),
   ]
   const open = boxes.find(b => b.id === pick.selected)
-  const y = (b: string) => {
-    const spec = boxes.find(x => x.id === b)!
-    return spec.y + boxHeight(spec.value) / 2
-  }
-  const edge = (a: string, to: string) => {
-    const from = boxes.find(b => b.id === a)!
-    const next = boxes.find(b => b.id === to)!
-    return `M${from.x + from.w} ${y(a)} H${next.x}`
-  }
+  const mid = TOP + ROW + BOX_H / 2
+  const edge = (from: BoxSpec, to: BoxSpec) =>
+    `M${from.x + from.w} ${mid} H${to.x}`
+  const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
   return (
     <>
       <Diagram
-        width={430}
-        height={TOP + ROW * 2 + ONE + 8}
+        width={WIDTH}
+        height={TOP + ROW * 2 + BOX_H + 4}
         label="FM chip signal path"
       >
         {arrow => (
           <>
-            <Wire arrow={arrow} d={edge('key', 'processor')} />
-            <Wire arrow={arrow} d={edge('processor', 'bus')} look={flow} />
-            <Wire arrow={arrow} d={edge('bus', 'modulator')} look={flow} />
-            <Wire arrow={arrow} d={edge('modulator', 'carrier')} look={flow} />
-            <Wire arrow={arrow} d={edge('carrier', 'output')} look={flow} />
-            {[244, 328].map(x => (
+            {row.slice(1).map((to, i) => (
               <Wire
-                key={x}
-                d={`M${x} ${y('clocks') + TWO / 2} V${TOP + ROW}`}
+                key={to.id}
+                arrow={arrow}
+                d={edge(row[i]!, to)}
+                look={i === 0 ? 'plain' : flow}
+              />
+            ))}
+            {drops.map(drop => (
+              <Wire
+                key={`clock${drop}`}
+                d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
                 look="dash"
               />
             ))}
-            {[280, 328].map(x => (
+            {drops.map(drop => (
               <Wire
-                key={x}
-                d={`M${x} ${TOP + ROW * 2} V${TOP + ROW + TWO}`}
+                key={`die${drop}`}
+                d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
                 look="dash"
               />
             ))}

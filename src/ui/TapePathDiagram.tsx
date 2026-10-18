@@ -41,34 +41,30 @@ const KEYS = [
   'tapeNrPlay',
 ] as const
 
-const SITS = ['at the end', 'ahead of the pedals', 'ahead of the bends']
-
 const WIDTH = 420
 const DECK_H = 58
 const TAPE_Y = 48
 const ROW_Y = 66
-const ROW_H = boxHeight(['', ''])
+const ROW_H = boxHeight('')
 const ROW_MID = ROW_Y + ROW_H / 2
 const BYPASS_Y = ROW_Y + ROW_H + 9
-const GAP = 10
-const TAPE_GAP = 26
-const NR_WORST = 'Dolby B'
-const BIAS_WORST = 'bias 1.00 under'
-const BUMP_WORST = 'bump 1.50'
+const GAP = 18
 
-const BOARD_W = boxWidth('board', 'bus')
-const NR_W = boxWidth('NR in', NR_WORST)
-const REC_W = boxWidth('rec head', '-12.0 dB', BIAS_WORST)
-const PLAY_W = boxWidth('replay head', BUMP_WORST)
+const BOARD_W = boxWidth('board')
+const NR_IN_W = boxWidth('NR in')
+const REC_W = boxWidth('rec head')
+const PLAY_W = boxWidth('replay head')
+const NR_OUT_W = boxWidth('NR out')
 
-const NR_IN_X = BOARD_W + GAP
-const REC_X = NR_IN_X + NR_W + GAP
-const PLAY_X = REC_X + REC_W + TAPE_GAP
+// The heads stand where the deck's tape run passes over them.
+const REC_MID = 162
+const PLAY_MID = 272
+const REC_X = REC_MID - REC_W / 2
+const PLAY_X = PLAY_MID - PLAY_W / 2
+const NR_IN_X = (BOARD_W + REC_X - NR_IN_W) / 2
 const NR_OUT_X = PLAY_X + PLAY_W + GAP
-const OUT_X = NR_OUT_X + NR_W
+const OUT_X = NR_OUT_X + NR_OUT_W
 const JOIN_X = OUT_X + 16
-const REC_MID = REC_X + REC_W / 2
-const PLAY_MID = PLAY_X + PLAY_W / 2
 const CAPSTAN_X = PLAY_MID + 34
 const CAPTION_X = 42
 
@@ -120,7 +116,7 @@ const tapeRun = (format: number) => {
 // The deck on top is the tape: two reels, the run past the record and replay
 // heads, the capstan. The row below is the signal: noise reduction, the record
 // head, and across the tape the replay head and decoder, with the dry board
-// running underneath. Each box reads the knobs of the fold it stands for.
+// running underneath. Each box opens the knobs of the fold it stands for.
 export function TapePathDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
@@ -132,21 +128,17 @@ export function TapePathDiagram() {
     x: number,
     w: number,
     name: string,
-    value: string | string[],
     help: string,
     touchedBy: (typeof KEYS)[number][],
     quiet = false,
-    lit?: boolean[],
   ): BoxSpec => ({
     x,
     y: ROW_Y,
     w,
     h: ROW_H,
     name,
-    value,
     off: off || quiet,
     touched: r.touched(...touchedBy),
-    lit,
     help,
     id: name,
     keys: touchedBy.filter(k => k !== 'tapeDrive'),
@@ -156,15 +148,13 @@ export function TapePathDiagram() {
       0,
       BOARD_W,
       'board',
-      'bus',
       'What the board is playing where the machine sits.',
       [],
     ),
     box(
       NR_IN_X,
-      NR_W,
+      NR_IN_W,
       'NR in',
-      r.read('tapeNrRec'),
       'The noise reduction that encodes the board on its way to the record head.',
       ['tapeNrRec'],
       r.value('tapeNrRec') === 0,
@@ -173,27 +163,20 @@ export function TapePathDiagram() {
       REC_X,
       REC_W,
       'rec head',
-      [r.read('tapeDrive'), `bias ${r.read('tapeBias')}`],
       'Record level, bias and hysteresis: how hard the signal hits the oxide.',
       ['tapeDrive', 'tapeBias', 'tapeHyst'],
-      false,
-      [r.touched('tapeDrive'), r.touched('tapeBias')],
     ),
     box(
       PLAY_X,
       PLAY_W,
       'replay head',
-      [`bump ${r.read('tapeBump')}`, `azim ${r.read('tapeAzimuth')}`],
       'Head bump and azimuth: what the playback head adds and misaligns.',
       ['tapeBump', 'tapeAzimuth'],
-      false,
-      [r.touched('tapeBump'), r.touched('tapeAzimuth')],
     ),
     box(
       NR_OUT_X,
-      NR_W,
+      NR_OUT_W,
       'NR out',
-      r.read('tapeNrPlay'),
       'The decoder after the replay head.',
       ['tapeNrPlay'],
       r.value('tapeNrPlay') === 0,
@@ -201,10 +184,7 @@ export function TapePathDiagram() {
   ]
   const tapeKeys = [...TAPE_KEYS]
   const tapeTouched = r.touched(...tapeKeys)
-  const tapeLines = [r.read('tapeFormat'), r.read('tapeSpeed')]
-  const tapeLit = [r.touched('tapeFormat'), r.touched('tapeSpeed')]
-  const tapeNameLit = tapeTouched && !tapeLit.some(Boolean)
-  const captionTop = (DECK_H - LINE_H * (1 + tapeLines.length)) / 2
+  const captionTop = (DECK_H - LINE_H) / 2
   const open =
     pick.selected === 'tape'
       ? tapeKeys
@@ -234,27 +214,17 @@ export function TapePathDiagram() {
                 y={0}
                 w={WIDTH - 4}
                 h={DECK_H}
+                touched={tapeTouched}
                 selected={pick.selected === 'tape'}
               />
               <text
                 x={CAPTION_X}
-                y={captionTop + LINE_H}
+                y={captionTop + LINE_H - 3}
                 textAnchor="middle"
-                className={tapeNameLit ? styles.nameOn : styles.name}
+                className={tapeTouched ? styles.nameOn : styles.name}
               >
                 tape
               </text>
-              {tapeLines.map((line, i) => (
-                <text
-                  key={line}
-                  x={CAPTION_X}
-                  y={captionTop + LINE_H * (i + 2)}
-                  textAnchor="middle"
-                  className={tapeLit[i] ? styles.valueOn : styles.value}
-                >
-                  {line}
-                </text>
-              ))}
               {deck.shell && (
                 <rect
                   x={deck.shell.x}
@@ -306,7 +276,7 @@ export function TapePathDiagram() {
             />
             {[
               [BOARD_W, NR_IN_X],
-              [NR_IN_X + NR_W, REC_X],
+              [NR_IN_X + NR_IN_W, REC_X],
               [PLAY_X + PLAY_W, NR_OUT_X],
             ].map(([from, to]) => (
               <Wire
@@ -329,7 +299,7 @@ export function TapePathDiagram() {
               anchor="middle"
               on={r.touched('tapeMix', 'tapeAt')}
             >
-              {`dry · to tape ${r.read('tapeMix')} · sits ${SITS[Math.round(r.value('tapeAt'))] ?? SITS[0]!}`}
+              dry
             </Label>
             {boxes.map(b => (
               <BoxView

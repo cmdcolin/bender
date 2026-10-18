@@ -1,14 +1,12 @@
-import { sliderFor } from './controls/index.ts'
 import {
   boxHeight,
+  boxWidth,
   useReadings,
   useSelectedBox,
   type BoxSpec,
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 import styles from './FeedbackLoops.module.css'
-
-const DEST = sliderFor('fbDest').choices!
 
 const STRIPS = [
   { amt: 'fbAmt', ms: 'fbDelayMs', tone: 'fbTone' },
@@ -25,18 +23,21 @@ const KEYS = [
   'fbCross',
 ] as const
 
+const BOX_H = boxHeight('')
 const BOX_X = 8
 const TAP_X = -16
-const BOX_W = 64
-const ROW_Y = [6, 52, 98]
+const BOX_W = boxWidth('strip 1')
+const ROW_Y = [6, 38, 70]
+const LEFT = 52
+const WIDTH = 420
 const BUS_X = 150
-const AMPS_X = 166
-const AMPS_W = 62
-const DEST_X = 248
-const DEST_W = 92
-const HEIGHT = 150
+const AMPS_W = boxWidth('return amps')
+const DEST_W = boxWidth('patched into')
+const DEST_X = WIDTH - LEFT - 2 - DEST_W
+const AMPS_X = (BUS_X + DEST_X - AMPS_W) / 2
+const HEIGHT = ROW_Y[2]! + BOX_H + 6
 
-const rowMid = (i: number) => ROW_Y[i]! + boxHeight(['', '']) / 2
+const rowMid = (i: number) => ROW_Y[i]! + BOX_H / 2
 const MID = rowMid(1)
 
 const bend = (from: number, to: number, reach: number) =>
@@ -44,9 +45,9 @@ const bend = (from: number, to: number, reach: number) =>
 
 // Three sends off one tap, each through its own delay, meeting on one bus that
 // runs through the return amps into wherever the return is patched. Each box
-// reads its knobs and opens them under the drawing; strip 1 starts open since
-// it carries the loop. Cross is drawn once a second strip is up, as the dashed
-// leads between neighbours.
+// opens its knobs under the drawing; strip 1 starts open since it carries the
+// loop. Cross is drawn once a second strip is up, as the dashed leads between
+// neighbours.
 export function FeedbackLoops() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('strip 1')
@@ -60,32 +61,27 @@ export function FeedbackLoops() {
     y: ROW_Y[i]!,
     w: BOX_W,
     name: `strip ${i + 1}`,
-    value: [`amt ${r.read(s.amt)}`, r.read(s.ms)],
     off: r.value(s.amt) <= 0,
     touched: r.touched(s.amt, s.ms, s.tone),
-    lit: [r.touched(s.amt), r.touched(s.ms)],
     help: 'One send off the tap, through its own delay, onto the bus.',
   }))
-  const moved = AMPS.filter(k => r.touched(k)).length
   const amps: BoxSpec = {
     id: 'return amps',
     keys: AMPS,
     x: AMPS_X,
-    y: MID - boxHeight('') / 2,
+    y: MID - BOX_H / 2,
     w: AMPS_W,
     name: 'return amps',
-    value: moved ? `${moved} moved` : 'stock',
-    touched: moved > 0,
+    touched: r.touched(...AMPS),
     help: 'The amps the bus runs through: how they clip, slow down, sag and block.',
   }
   const dest: BoxSpec = {
     id: 'patched into',
     keys: ['fbDest'],
     x: DEST_X,
-    y: MID - boxHeight('') / 2,
+    y: MID - BOX_H / 2,
     w: DEST_W,
     name: 'patched into',
-    value: DEST[Math.round(r.value('fbDest'))]!,
     touched: r.touched('fbDest'),
     help: 'Where the return wire is soldered.',
   }
@@ -101,8 +97,8 @@ export function FeedbackLoops() {
   return (
     <>
       <Diagram
-        left={52}
-        width={392}
+        left={LEFT}
+        width={WIDTH}
         height={HEIGHT}
         label="feedback bus signal path"
       >

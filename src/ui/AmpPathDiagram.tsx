@@ -2,6 +2,7 @@ import { cabDb, stackDb } from '../dsp/stages/amp.ts'
 import styles from './Diagram.module.css'
 import {
   boxHeight,
+  boxWidth,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -27,10 +28,11 @@ const KEYS = [
   'ampMute',
 ] as const
 
+const WIDTH = 420
 const MID = 36
-const RETURN_Y = 8
+const RETURN_Y = 11
 
-const PLOT = { left: 30, right: 414, top: 84, bottom: 152 }
+const PLOT = { left: 30, right: 414, top: 68, bottom: 136 }
 const DB = { top: 6, bottom: -36 }
 const HZ = { low: 40, high: 12000 }
 const POINTS = 64
@@ -53,75 +55,47 @@ function curve(at: (hz: number) => number): string {
 }
 
 // The amp as the path the board takes through it, with what the tone stack and
-// the speaker do to the spectrum drawn underneath. Each box reads the knobs it
-// stands for, so the knobs have a place on the drawing, and the microphonic
-// fault is the wire from the speaker back to the first tube.
+// the speaker do to the spectrum drawn underneath. The microphonic fault is the
+// wire from the speaker back to the first tube.
 export function AmpPathDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
   const off = r.value('ampMix') <= 0 || r.value('ampMute') > 0
-  const box = (
-    x: number,
-    w: number,
-    name: string,
-    value: string | string[],
-    help: string,
-    keys: (typeof KEYS)[number][],
-    lit?: boolean[],
-  ): BoxSpec => ({
-    x,
-    y: MID - boxHeight(value) / 2,
-    w,
+  const stages: [string, string, (typeof KEYS)[number][]][] = [
+    [
+      'preamp',
+      'The gain stages. Each clips its two halves differently, and the Marshall cascades two ahead of the tone stack.',
+      ['ampVoice', 'ampGain', 'ampCap', 'ampMicro'],
+    ],
+    [
+      'tone stack',
+      'The passive network between the stages: bass, mid and treble pots that load each other.',
+      ['ampBass', 'ampMid', 'ampTreble'],
+    ],
+    [
+      'power amp',
+      'The push-pull output pair, the supply it sags, and the presence lift in front of it.',
+      ['ampMaster', 'ampPresence', 'ampBias', 'ampSag', 'ampTube'],
+    ],
+    [
+      'speaker',
+      'The cabinet the output transformer drives, and the level that leaves the amp.',
+      ['ampCab', 'ampLevel'],
+    ],
+  ]
+  const boxW = Math.max(...stages.map(([name]) => boxWidth(name)))
+  const step = (WIDTH - 14 - boxW) / (stages.length - 1)
+  const boxes = stages.map(([name, help, keys], i): BoxSpec => ({
+    x: Math.round(i * step),
+    y: MID - boxHeight(name) / 2,
+    w: boxW,
     name,
-    value,
     off,
     touched: r.touched(...keys),
-    lit,
     help,
     id: name,
     keys,
-  })
-  const boxes = [
-    box(
-      0,
-      78,
-      'preamp',
-      [r.read('ampVoice'), `gain ${r.read('ampGain')}`],
-      'The gain stages. Each clips its two halves differently, and the Marshall cascades two ahead of the tone stack.',
-      ['ampVoice', 'ampGain', 'ampCap', 'ampMicro'],
-      [r.touched('ampVoice'), r.touched('ampGain')],
-    ),
-    box(
-      90,
-      96,
-      'tone stack',
-      [
-        'bass\u00a0mid\u00a0\u00a0treb',
-        `${r.read('ampBass')} ${r.read('ampMid')} ${r.read('ampTreble')}`,
-      ],
-      'The passive network between the stages: bass, mid and treble pots that load each other.',
-      ['ampBass', 'ampMid', 'ampTreble'],
-      [false, r.touched('ampBass', 'ampMid', 'ampTreble')],
-    ),
-    box(
-      198,
-      100,
-      'power amp',
-      [`master ${r.read('ampMaster')}`, `bias ${r.read('ampBias')}`],
-      'The push-pull output pair, the supply it sags, and the presence lift in front of it.',
-      ['ampMaster', 'ampPresence', 'ampBias', 'ampSag', 'ampTube'],
-      [r.touched('ampMaster'), r.touched('ampBias')],
-    ),
-    box(
-      310,
-      96,
-      'speaker',
-      [r.read('ampCab'), r.read('ampLevel')],
-      'The cabinet the output transformer drives, and the level that leaves the amp.',
-      ['ampCab', 'ampLevel'],
-      [r.touched('ampCab'), r.touched('ampLevel')],
-    ),
-  ]
+  }))
   const voice = Math.round(r.value('ampVoice'))
   const cab = Math.round(r.value('ampCab'))
   const stack = (hz: number) =>
@@ -137,32 +111,32 @@ export function AmpPathDiagram() {
     { length: POINTS },
     (_, i) => HZ.low * Math.pow(HZ.high / HZ.low, i / (POINTS - 1)),
   ).reduce((best, hz) => (cabDb(cab, hz) > cabDb(cab, best) ? hz : best))
-  const top = MID - boxHeight(boxes[0]!.value) / 2
+  const top = boxes[0]!.y
+  const speaker = boxes[3]!
   const howling = r.value('ampMicro') > 0
   return (
     <>
-      <Diagram width={420} height={176} label="tube amp signal path and tone">
+      <Diagram
+        width={WIDTH}
+        height={PLOT.bottom + 18}
+        label="tube amp signal path and tone"
+      >
         {arrow => (
           <>
-            {[78, 186, 298].map(x => (
+            {boxes.map((b, i) => (
               <Wire
-                key={x}
+                key={b.name}
                 arrow={arrow}
-                d={`M${x} ${MID} H${x + 12}`}
+                d={`M${b.x + b.w} ${MID} H${boxes[i + 1]?.x ?? WIDTH - 2}`}
                 look={off ? 'plain' : 'on'}
               />
             ))}
             <Wire
               arrow={arrow}
-              d={`M406 ${MID} H418`}
-              look={off ? 'plain' : 'on'}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M358 ${top} V${RETURN_Y} H39 V${top}`}
+              d={`M${speaker.x + speaker.w / 2} ${top} V${RETURN_Y} H${boxW / 2} V${top}`}
               look={howling ? 'alarm' : 'dash'}
             />
-            <Label x={208} y={RETURN_Y - 1} anchor="middle" on={howling}>
+            <Label x={WIDTH / 2} y={RETURN_Y - 1} anchor="middle" on={howling}>
               microphonic return
             </Label>
             {boxes.map(b => (
