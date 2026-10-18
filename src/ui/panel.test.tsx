@@ -23,8 +23,8 @@ const group = (name: string) => {
   return g
 }
 
-// The controls a fold is holding open: a knob is a slider, and a pick with more
-// than six choices is a list.
+// The controls a fold is holding open: a knob or an ordered pick is a slider,
+// and a long unordered pick is a list.
 const countRows = (head: HTMLElement) => {
   const fold = within(head.parentElement!)
   return (

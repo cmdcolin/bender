@@ -457,3 +457,15 @@ select.listOn {
   composes: readout;
   color: var(--accent);
 }
+
+/* One notch per choice on an ordered list, hanging under the trough like the
+   detents on a rotary switch. */
+.stop {
+  position: absolute;
+  top: 10px;
+  width: 1px;
+  height: 4px;
+  background: var(--fg3);
+  opacity: 0.6;
+  pointer-events: none;
+}

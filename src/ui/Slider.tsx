@@ -265,7 +265,10 @@ export function ReserveReadout({
 }) {
   const chars = useMemo(
     () =>
-      defs.reduce((w, d) => (d.choices ? w : Math.max(w, readoutChars(d))), 0),
+      defs.reduce(
+        (w, d) => (d.choices && !d.ordered ? w : Math.max(w, readoutChars(d))),
+        0,
+      ),
     [defs],
   )
   return <Reserved.Provider value={chars}>{children}</Reserved.Provider>
@@ -301,10 +304,12 @@ const along = (pos: number) =>
 function PlainTrack({
   def,
   pos,
+  stops,
   children,
 }: {
   def: SliderDef
   pos: number
+  stops?: number
   children: ReactNode
 }) {
   const stock = toPos(def, DEFAULT_CONTROLS[def.key])
@@ -327,16 +332,29 @@ function PlainTrack({
       {end < 1 && (
         <span className={styles.redline} style={{ left: along(end) }} />
       )}
+      {stops &&
+        Array.from({ length: stops + 1 }, (_, i) => (
+          <span
+            key={i}
+            className={styles.stop}
+            style={{ left: along(i / stops) }}
+          />
+        ))}
       {children}
     </span>
   )
 }
 
-// Where a row of picks stops being a row you can read. Up to this many, the
-// choices are all on screen and taking one is a single press; past it they wrap
-// into a paragraph of buttons and the panel turns into a wall — a sixteen-rate
-// decay table is a list to go down, not a keypad.
+// Where a row of picks stops being a row you can read. Up to six, or a longer
+// set of short names, the choices are all on screen and taking one is a single
+// press; past that they wrap into a paragraph of buttons and the panel turns
+// into a wall.
 const CHOICES_AS_BUTTONS = 6
+const BUTTON_ROW_CHARS = 36
+
+const fitsAsButtons = (choices: readonly string[]) =>
+  choices.length <= CHOICES_AS_BUTTONS ||
+  choices.join('').length <= BUTTON_ROW_CHARS
 
 // `label` overrides the name the row prints, for a control drawn somewhere its
 // own name says nothing: the mixer gathers seven faders and six of them are
@@ -369,7 +387,7 @@ export function ControlSlider({
   // pins it open until you click elsewhere or press Escape.
   const tip = useRef<TipHandle>(null)
 
-  if (def.choices) {
+  if (def.choices && !def.ordered) {
     const choices = def.choices
     const pick = (i: number) => write(def.key, def.min + i)
     const option = (i: number) => (
@@ -389,7 +407,7 @@ export function ControlSlider({
             </span>
           </Tip>
           <span className={styles.choices}>
-            {choices.length > CHOICES_AS_BUTTONS ? (
+            {!fitsAsButtons(choices) ? (
               <select
                 className={touched ? styles.listOn : styles.list}
                 aria-label={label}
@@ -439,6 +457,8 @@ export function ControlSlider({
 
   const split = def.split
   const pos = toPos(def, value)
+  const stops = def.ordered ? def.max - def.min : undefined
+  const resolution = stops ?? 1000
   const turn = split ? toPos(def, split.at) : 0
   // Which half of the travel the knob is standing in: below the turn, above it,
   // or on it. Everything the row draws about direction comes off this.
@@ -462,10 +482,10 @@ export function ControlSlider({
       className={split ? styles.splitTrack : styles.track}
       type="range"
       min={0}
-      max={1000}
-      value={Math.round(pos * 1000)}
-      // The track is a thousand positions along the travel, which is the
-      // wrong thing to read out: what the knob says is its value in its own
+      max={resolution}
+      value={Math.round(pos * resolution)}
+      // The track is a thousand positions along the travel, or one per
+      // choice on an ordered list, which is the wrong thing to read out: what the knob says is its value in its own
       // units, off the same formatter the readout beside it uses. The label
       // is a span rather than a <label> because it also takes a double-click
       // back to stock, so the name has to be given here.
@@ -488,7 +508,7 @@ export function ControlSlider({
         if (!e.repeat) engine.armStep()
       }}
       onChange={e => {
-        const at = Number(e.currentTarget.value) / 1000
+        const at = Number(e.currentTarget.value) / resolution
         engine.set(
           def.key,
           snapToStep(def, hand.current ? pull(def, at) : fromPos(def, at)),
@@ -580,7 +600,7 @@ export function ControlSlider({
             )}
           </span>
         ) : (
-          <PlainTrack def={def} pos={pos}>
+          <PlainTrack def={def} pos={pos} stops={stops}>
             {track}
           </PlainTrack>
         )}

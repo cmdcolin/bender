@@ -9,6 +9,9 @@ export interface SliderDef {
   unit: string
   help: string
   choices?: string[]
+  /** The choices run in order, D0 up to D7, so the panel draws them as a stepped
+      track you can sweep through. */
+  ordered?: true
   /** `log` spends even travel per decade; `symlog` is that, mirrored around a
       `split.at`, for a knob whose middle is a stop but whose ends are still
       wide. Naming a `split.normal` moves each half's own centre of gravity off
