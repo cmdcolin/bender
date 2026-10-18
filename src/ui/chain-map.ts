@@ -372,7 +372,7 @@ function nodeId(name: string): string {
 // text grows and the picture barely does.
 const FONT = 11
 const SMALL = 10
-const BOX_H = 22
+const BOX_H = 26
 const MIN_W = 100
 /** the width a lone column of stages draws at, when its names need less */
 const STAGE_W = 150
