@@ -529,6 +529,12 @@ test.each(
   Object.entries({
     ...BOARDS,
     'one bridge down': { ...DEFAULT_CONTROLS, trigToDrum: OPEN_HAT },
+    'chips keyed, nothing bridged': {
+      ...DEFAULT_CONTROLS,
+      fmLevel: 0.6,
+      pcmLevel: 0.5,
+      monoLevel: 0.5,
+    },
     'a wire into the middle of the row': {
       ...DEFAULT_CONTROLS,
       fmLevel: 0.6,
@@ -542,37 +548,39 @@ test.each(
     },
   }),
 )('no two labels overlap: %s', (_, board) => {
-  const map = buildMap(board, { wrap: true, loop: true, live: true })
-  const spans = [
-    ...map.wires.flatMap(w => {
-      if (!w.label) return []
-      const { text, x, y, anchor } = w.label
-      const left = leftOf(x, textWidth(text, 10), anchor)
-      const right = left + textWidth(text, 10)
-      return [{ id: w.id, left, right, top: y - 10, bottom: y }]
-    }),
-    ...map.nodes
-      .filter(n => n.kind === 'label')
-      .map(n => {
-        const left = leftOf(n.x, n.w, n.anchor)
-        return {
-          id: n.id,
-          left,
-          right: left + n.w,
-          top: n.y,
-          bottom: n.y + n.h,
-        }
+  for (const live of [true, false]) {
+    const map = buildMap(board, { wrap: true, loop: true, live })
+    const spans = [
+      ...map.wires.flatMap(w => {
+        if (!w.label) return []
+        const { text, x, y, anchor } = w.label
+        const left = leftOf(x, textWidth(text, 10), anchor)
+        const right = left + textWidth(text, 10)
+        return [{ id: w.id, left, right, top: y - 10, bottom: y }]
       }),
-  ]
-  for (const [i, a] of spans.entries())
-    for (const b of spans.slice(i + 1))
-      expect(
-        a.right <= b.left ||
-          b.right <= a.left ||
-          a.bottom <= b.top ||
-          b.bottom <= a.top,
-        `${a.id} and ${b.id}`,
-      ).toBe(true)
+      ...map.nodes
+        .filter(n => n.kind === 'label' || n.id === 'no_trig')
+        .map(n => {
+          const left = n.kind === 'label' ? leftOf(n.x, n.w, n.anchor) : n.x
+          return {
+            id: n.id,
+            left,
+            right: left + n.w,
+            top: n.y,
+            bottom: n.y + n.h,
+          }
+        }),
+    ]
+    for (const [i, a] of spans.entries())
+      for (const b of spans.slice(i + 1))
+        expect(
+          a.right <= b.left ||
+            b.right <= a.left ||
+            a.bottom <= b.top ||
+            b.bottom <= a.top,
+          `${a.id} and ${b.id}`,
+        ).toBe(true)
+  }
 })
 
 test.each(Object.entries(BOARDS))(

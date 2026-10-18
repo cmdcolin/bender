@@ -1242,6 +1242,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         h: CHIP_H - 2,
       }),
     )
+    const chip = notes[notes.length - 1]!
+    const keyHalf = textWidth(keyLabel.text, SMALL) / 2 + 3
+    if (
+      keyed.length &&
+      keyLabel.x - keyHalf < chip.x + chip.w &&
+      keyLabel.x + keyHalf > chip.x
+    )
+      keyLabel.x = chip.x + chip.w + keyHalf + 1
   }
 
   // The rail has a box of its own, in the lip over its bar: five machines run
