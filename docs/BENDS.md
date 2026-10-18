@@ -841,6 +841,11 @@ move together because on this part they are the same thing.
 The mono synth is a clean instrument with seven parts on its voice card that
 fail the way analog synth parts do.
 
+The drawing under the **voice card** box shows the card's signal path through
+the key DAC, pitch hold, exponential converter, oscillators, ladder and VCA. A
+regulator sits over the converter and the ladder, and the two contour generators
+sit under the ladder and the VCA. Each fault shows as a red reading on its part.
+
 **Hot converter** is the exponential converter's transistor pair with no heater.
 The pair turns a control voltage into a frequency, and its scale depends on
 temperature, so the three oscillators drift in different directions and the
