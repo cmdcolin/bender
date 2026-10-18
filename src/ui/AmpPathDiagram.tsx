@@ -24,6 +24,7 @@ const KEYS = [
   'ampCap',
   'ampTube',
   'ampMicro',
+  'ampMute',
 ] as const
 
 const MID = 36
@@ -58,7 +59,7 @@ function curve(at: (hz: number) => number): string {
 export function AmpPathDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
-  const off = r.value('ampMix') <= 0
+  const off = r.value('ampMix') <= 0 || r.value('ampMute') > 0
   const box = (
     x: number,
     w: number,

@@ -67,3 +67,23 @@ test('the machine drawing says where it sits and what noise reduction it runs', 
   expect(text).toContain('sits ahead of the pedals')
   expect(text).toContain('dbx')
 })
+
+test('the delay drawing goes dark when the pedal is bypassed', () => {
+  act(() => {
+    engine.set('dlyMute', 0)
+    engine.set('dlyMix', 0.5)
+  })
+  open('Tape delay')
+  const drawing = screen.getByRole('img', { name: 'tape delay signal path' })
+  const lit = () =>
+    [...drawing.querySelectorAll('path')].filter(p =>
+      p.getAttribute('class')?.includes('wireOn'),
+    ).length
+  expect(lit()).toBeGreaterThan(0)
+  act(() => engine.set('dlyMute', 1))
+  expect(lit()).toBe(0)
+  act(() => {
+    engine.set('dlyMute', 0)
+    engine.set('dlyMix', 0)
+  })
+})

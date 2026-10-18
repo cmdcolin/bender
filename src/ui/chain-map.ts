@@ -191,6 +191,14 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   'Four-track': ['fourLevel'],
 }
 
+const SOURCE_MUTE: Record<string, ControlKey> = {
+  'Toy keyboard': 'chipMute',
+  'Toy drums': 'drumMute',
+  'FM chip': 'fmMute',
+  'Home keyboard': 'pcmMute',
+  'Mono synth': 'monoMute',
+}
+
 // The two you play, side by side across the head of the toy board. They are the
 // pair: two machines with a run switch, a pattern and a set of keys each.
 const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
@@ -527,9 +535,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const playing = new Set(o.playing ?? [])
   const instrument = (name: string): MapNode => {
     const level = sourceLevel(name, c)
+    const mute = SOURCE_MUTE[name]
     return node(nodeId(name), 'inst', name, {
       count: live ? touchedCount(name, c) : 0,
-      active: level > 0,
+      active: level > 0 && !(mute && c[mute] > 0),
       open: o.open === name,
       door: name,
       level,
@@ -618,13 +627,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // nothing here is a door any more: both runs are Signal order's, off the foot
   // of the drawing, and the six pedal boxes need no header to say they are the
   // board's rather than the rack's.
+  // A bypassed pedal crossfades to dry, so it is idle whatever its mix says.
   const active: Record<string, boolean> = {
-    Stompbox: c.stompMix > 0,
-    'Tape delay': c.dlyMix > 0,
-    'Delay pedal': c.echoLevel > 0,
-    'Spring verb': c.revMix > 0 || c.revDry < 1,
-    Ensemble: c.ensMix > 0,
-    'Tube amp': c.ampMix > 0,
+    Stompbox: c.stompMix > 0 && !c.stompMute,
+    'Tape delay': c.dlyMix > 0 && !c.dlyMute,
+    'Delay pedal': c.echoLevel > 0 && !c.echoMute,
+    'Spring verb': (c.revMix > 0 || c.revDry < 1) && !c.revMute,
+    Ensemble: c.ensMix > 0 && !c.ensMute,
+    'Tube amp': c.ampMix > 0 && !c.ampMute,
   }
   for (const i of pedalOrderAt(c.pedalOrder)) {
     const name = PEDALS[i]!.group

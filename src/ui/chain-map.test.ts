@@ -779,3 +779,18 @@ test('the panel palette matches the tokens it copies', () => {
     raise: token('surface-raised'),
   })
 })
+
+test('a bypassed pedal and a muted source draw idle whatever their level', () => {
+  const on = buildMap({ ...DEFAULT_CONTROLS, dlyMix: 0.5, fmLevel: 1 })
+  expect(box(on, 'Tape_delay')!.active).toBe(true)
+  expect(box(on, 'FM_chip')!.active).toBe(true)
+  const off = buildMap({
+    ...DEFAULT_CONTROLS,
+    dlyMix: 0.5,
+    dlyMute: 1,
+    fmLevel: 1,
+    fmMute: 1,
+  })
+  expect(box(off, 'Tape_delay')!.active).toBe(false)
+  expect(box(off, 'FM_chip')!.active).toBe(false)
+})

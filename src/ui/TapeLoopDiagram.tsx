@@ -33,6 +33,7 @@ const KEYS = [
   'dlyLamp',
   'dlyLampS',
   'dlyRingHz',
+  'dlyMute',
 ] as const
 
 // What each part of the drawing opens onto. Time, Feedback and the echo level
@@ -97,8 +98,9 @@ const LOOP = [
 // three play heads, spaced by the Time knob, with the lit ones switched up. The
 // wires are the electronics: send into the record head, the lit play heads onto
 // an echo bus, and feedback from the last lit head back to the record head.
-// Past unity the feedback wire goes red and dashed. Send, heads, feedback and
-// capstan each open their knobs under the drawing.
+// A wire lights while what it carries reaches the output, which a bypass or a
+// closed send stops. Past unity the feedback wire goes red and dashed. Send,
+// heads, feedback and capstan each open their knobs under the drawing.
 export function TapeLoopDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
@@ -114,7 +116,9 @@ export function TapeLoopDiagram() {
   )
   const first = Math.min(...lit)
   const last = Math.max(...lit)
-  const returning = fb > 1 ? 'alarm' : fb > 0 ? 'on' : 'dash'
+  const flowing = r.value('dlySend') > 0 && r.value('dlyMute') <= 0
+  const flow = flowing ? 'on' : 'plain'
+  const returning = fb > 1 ? 'alarm' : fb > 0 && flowing ? 'on' : 'dash'
   const loopWords = [
     `back round ${r.read('dlyFb')}`,
     r.touched('dlyToneHz') && `tone ${r.read('dlyToneHz')}`,
@@ -146,12 +150,16 @@ export function TapeLoopDiagram() {
                 w: 60,
                 name: 'send',
                 value: r.read('dlySend'),
-                off: r.value('dlySend') <= 0,
+                off: !flowing,
                 touched: r.touched('dlySend'),
                 help: 'How much of the whole board goes onto the tape.',
               }}
             />
-            <Wire arrow={arrow} d={`M60 ${INPUT_Y} H${REC_X - 3}`} />
+            <Wire
+              arrow={arrow}
+              d={`M60 ${INPUT_Y} H${REC_X - 3}`}
+              look={flow}
+            />
             <HeadBar x={REC_X} y={HEAD_TOP} h={HEAD_H} />
             <Label x={REC_X + 9} y={TIME_Y}>
               rec
@@ -183,13 +191,13 @@ export function TapeLoopDiagram() {
                 key={n}
                 arrow={arrow}
                 d={`M${headX(n)} ${HEAD_TOP} V${BUS_Y + 2}`}
-                look="on"
+                look={flow}
               />
             ))}
             <Wire
               arrow={arrow}
               d={`M${headX(first)} ${BUS_Y} H${OUT_X}`}
-              look={r.value('dlyMix') > 0 ? 'on' : 'plain'}
+              look={flowing && r.value('dlyMix') > 0 ? 'on' : 'plain'}
             />
             <Label
               x={OUT_X}
