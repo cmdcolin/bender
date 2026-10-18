@@ -13,7 +13,7 @@ import './testDom.ts'
 
 beforeEach(() => {
   localStorage.clear()
-  bench.set({ all: false, closed: [], pedals: [] })
+  bench.set({ all: false, closed: [], pedals: [], roll: false, grid: false })
 })
 
 const group = (name: string) => screen.queryByRole('group', { name })
@@ -172,7 +172,13 @@ test('no pedal sits on the bench until it is switched in from the menu', () => {
 
 test('a pedal face bypasses its pedal, opens its panel and puts itself away', () => {
   const opened: string[] = []
-  bench.set({ all: false, closed: [], pedals: ['Spring verb'] })
+  bench.set({
+    all: false,
+    closed: [],
+    pedals: ['Spring verb'],
+    roll: false,
+    grid: false,
+  })
   render(<Instruments seconds={0} onOpen={s => opened.push(s)} />)
   expect(screen.getAllByRole('slider').length).toBeGreaterThan(2)
   const bypass = screen.getByRole('button', { name: 'bypass Spring verb' })
@@ -189,7 +195,13 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
 })
 
 test('a pedal slider moves its own control and goes back to stock on a double press', () => {
-  bench.set({ all: false, closed: [], pedals: ['Spring verb'] })
+  bench.set({
+    all: false,
+    closed: [],
+    pedals: ['Spring verb'],
+    roll: false,
+    grid: false,
+  })
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const mix = screen.getByRole('slider', { name: 'Reverb level' })
   fireEvent.change(mix, { target: { value: '1000' } })
@@ -200,7 +212,13 @@ test('a pedal slider moves its own control and goes back to stock on a double pr
 })
 
 test('a pedal selector switch goes to the next position on each press', () => {
-  bench.set({ all: false, closed: [], pedals: ['Stompbox'] })
+  bench.set({
+    all: false,
+    closed: [],
+    pedals: ['Stompbox'],
+    roll: false,
+    grid: false,
+  })
   render(<Instruments seconds={0} onOpen={() => {}} />)
   const before = engine.controls.get().stompCircuit
   fireEvent.click(screen.getByRole('button', { name: /^Circuit: / }))
@@ -232,16 +250,24 @@ test('the mode and what was closed are stored for the next load', () => {
     all: true,
     closed: ['FM chip'],
     pedals: [],
+    roll: false,
+    grid: false,
   })
 })
 
 test('a stored bench that is not one reads as the default', () => {
-  const stock = { all: false, closed: [], pedals: [] }
+  const stock = { all: false, closed: [], pedals: [], roll: false, grid: false }
   expect(parseBench('{')).toEqual(stock)
   expect(parseBench('7')).toEqual(stock)
   expect(
     parseBench('{"all":true,"closed":["FM chip",3],"pedals":["Tube amp",1]}'),
-  ).toEqual({ all: true, closed: ['FM chip'], pedals: ['Tube amp'] })
+  ).toEqual({
+    all: true,
+    closed: ['FM chip'],
+    pedals: ['Tube amp'],
+    roll: false,
+    grid: false,
+  })
   expect(parseBench('{"all":true,"closed":[]}').pedals).toEqual([])
 })
 
@@ -251,4 +277,36 @@ test('a machine on the bench in all-instruments mode has its box on the map', ()
   expect(shownOn(engine.controls.get()).has('Mono synth')).toBe(true)
   fireEvent.click(allMode())
   expect(shownOn(engine.controls.get()).has('Mono synth')).toBe(false)
+})
+
+test('the piano roll stays out of the toy keyboard panel until it is shown', () => {
+  const toy = GROUPS.find(g => g.name === 'Toy keyboard')!
+  render(<OpenGroup group={toy} onClose={() => {}} seconds={0} />)
+  expect(screen.queryByRole('application', { name: /roll/i })).toBeNull()
+  const before = document.body.innerHTML
+  const toggle = screen.getByRole('button', { name: 'show piano roll' })
+  fireEvent.click(toggle)
+  expect(bench.get().roll).toBe(true)
+  expect(bench.get().grid).toBe(false)
+  expect(toggle.getAttribute('aria-pressed')).toBe('true')
+  expect(document.body.innerHTML).not.toBe(before)
+  fireEvent.click(toggle)
+  expect(bench.get().roll).toBe(false)
+  expect(document.body.innerHTML).toBe(before)
+})
+
+test('the drum grid stays out of the toy drums panel until it is shown', () => {
+  const kit = GROUPS.find(g => g.name === 'Toy drums')!
+  render(<OpenGroup group={kit} onClose={() => {}} seconds={0} />)
+  const before = document.body.innerHTML
+  fireEvent.click(screen.getByRole('button', { name: 'show drum pattern' }))
+  expect(bench.get().grid).toBe(true)
+  expect(bench.get().roll).toBe(false)
+  expect(document.body.innerHTML).not.toBe(before)
+})
+
+test('the kit’s miniature pattern shows the grid it opens', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(screen.getByRole('button', { name: 'edit the drum pattern' }))
+  expect(bench.get().grid).toBe(true)
 })

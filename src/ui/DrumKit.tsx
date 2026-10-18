@@ -9,6 +9,7 @@ import {
   type DrumVoice,
 } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
+import { bench, setBench } from './bench.ts'
 import {
   useControlValue,
   useMeterValue,
@@ -89,7 +90,13 @@ export function DrumKit({
       </div>
       <Pattern
         playing={playing}
-        onOpen={onOpen && (() => onOpen('Toy drums'))}
+        onOpen={
+          onOpen &&
+          (() => {
+            setBench({ ...bench.get(), grid: true })
+            onOpen('Toy drums')
+          })
+        }
       />
       <Pads />
     </div>

@@ -1,15 +1,20 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { GRID_ROWS, hasStep } from '../drums.ts'
 import { ECHO_MODE } from '../dsp/stages/echo.ts'
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
+import { bench } from './bench.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
+
+beforeEach(() => {
+  bench.set({ ...bench.get(), roll: true, grid: true })
+})
 
 // What the panel does with a board. The suite reached everything under the
 // panel and nothing in it, which is how a heading that miscounted, a ROM you

@@ -53,7 +53,8 @@ rate** sets its speed, the auto bass-chord plays under it, the clock bend and a
 brownout affect it the same way, and **Kit voice that plays this…** can clock it
 from the drum machine instead of the crystal.
 
-The **piano roll** draws that memory: one row per pitch, one column per step.
+The **piano roll** draws that memory. It starts hidden; **show piano roll**
+on the Toy keyboard panel turns it on: one row per pitch, one column per step.
 Click a cell to place a note, drag to draw a run, click again to remove it,
 shift-click to hold the previous step's note. A held note draws as one bar
 across its steps. Two octaves show at a time, with arrows to move the window.

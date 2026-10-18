@@ -124,7 +124,13 @@ test('a stored list keeps the stage names the board still has', () => {
 })
 
 test('every instrument laid out on the bench has its box on the map', () => {
-  const all = { all: true, closed: ['Mono synth'], pedals: ['Stompbox'] }
+  const all = {
+    all: true,
+    closed: ['Mono synth'],
+    pedals: ['Stompbox'],
+    roll: false,
+    grid: false,
+  }
   const on = shownOn(stock(), all)
   for (const stage of ['FM chip', 'Home keyboard', 'Stompbox'])
     expect(on.has(stage), stage).toBe(true)
@@ -132,10 +138,16 @@ test('every instrument laid out on the bench has its box on the map', () => {
 })
 
 test('taking an instrument off puts its face away', () => {
-  bench.set({ all: true, closed: [], pedals: ['Stompbox'] })
+  bench.set({
+    all: true,
+    closed: [],
+    pedals: ['Stompbox'],
+    roll: false,
+    grid: false,
+  })
   takeOff(group('FM chip'), stock())
   takeOff(group('Stompbox'), stock())
   expect(bench.get().closed).toEqual(['FM chip'])
   expect(bench.get().pedals).toEqual([])
-  bench.set({ all: false, closed: [], pedals: [] })
+  bench.set({ all: false, closed: [], pedals: [], roll: false, grid: false })
 })

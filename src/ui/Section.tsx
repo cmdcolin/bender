@@ -4,6 +4,7 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
+import { bench, setBench } from './bench.ts'
 import { groupAnchor } from './chain-map.ts'
 import {
   groupKeys,
@@ -12,7 +13,7 @@ import {
   type Group,
   type SliderDef,
 } from './controls/index.ts'
-import { useBoardValue } from './ControlsContext.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { removable, takeOff } from './fitted.ts'
@@ -493,6 +494,36 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
+const EDITORS = {
+  roll: { label: 'piano roll', what: 'the piano roll' },
+  grid: { label: 'drum pattern', what: 'the drum pattern grid' },
+} as const
+
+// The piano roll and the drum grid are tall, and a player who never writes a
+// melody or a pattern would scroll past them to reach the knobs.
+function EditorToggle({ which }: { which: keyof typeof EDITORS }) {
+  const b = useStoreValue(bench)
+  const on = b[which]
+  const { label, what } = EDITORS[which]
+  return (
+    <Tip
+      text={
+        on
+          ? `Hide ${what}. The notes in it keep playing.`
+          : `Show ${what} under the stage's knobs.`
+      }
+    >
+      <button
+        className={on ? styles.editorOn : styles.editor}
+        aria-pressed={on}
+        onClick={() => setBench({ ...b, [which]: !on })}
+      >
+        {`show ${label}`}
+      </button>
+    </Tip>
+  )
+}
+
 // The one stage the map has open, with its controls already unfolded. The panel
 // used to stack all twenty groups as collapsed headers and scroll to whichever
 // the map pointed at; the map is the index now, so what is on screen is what
@@ -507,6 +538,7 @@ export function OpenGroup({
   seconds: number
 }) {
   const touched = useTouchedCount(group)
+  const shownEditors = useStoreValue(bench)
   const el = useRef<HTMLDivElement>(null)
   // A tall map can leave the stage it just opened below the fold, so the panel
   // comes to it — by as little as it takes, which is what scrollIntoPanel is for.
@@ -543,6 +575,8 @@ export function OpenGroup({
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}
+        {group.editor?.kind === 'roll' && <EditorToggle which="roll" />}
+        {group.editor?.kind === 'drums' && <EditorToggle which="grid" />}
         <Tip
           text={
             group.editor?.kind === 'drums'
@@ -593,8 +627,8 @@ export function OpenGroup({
         <ReserveReadout defs={panelRows(group)}>
           <Lead group={group} />
           {rigsFirst && rigs}
-          {group.editor?.kind === 'drums' && <DrumGrid />}
-          {group.editor?.kind === 'roll' && <TuneRoll />}
+          {group.editor?.kind === 'drums' && shownEditors.grid && <DrumGrid />}
+          {group.editor?.kind === 'roll' && shownEditors.roll && <TuneRoll />}
           {group.editor?.kind === 'mixer' && <Mixer />}
           {group.editor?.kind === 'feedback' && <FeedbackLoops />}
           {group.editor?.kind === 'order' && <OrderRack />}

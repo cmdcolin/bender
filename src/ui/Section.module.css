@@ -23,6 +23,14 @@
   composes: chipQuiet from './button.module.css';
 }
 
+.editor {
+  composes: chipQuiet from './button.module.css';
+}
+
+.editorOn {
+  composes: chipOn from './button.module.css';
+}
+
 .verbOff {
   composes: chipOff from './button.module.css';
 }
