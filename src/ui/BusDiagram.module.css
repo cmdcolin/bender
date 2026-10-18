@@ -41,3 +41,29 @@
 .knifed {
   fill: var(--alarm);
 }
+
+.joint {
+  fill: var(--fg4);
+}
+
+.pot,
+.potOn {
+  fill: none;
+  stroke: var(--fg4);
+  stroke-width: 1;
+}
+
+.potOn {
+  stroke: var(--alarm);
+}
+
+.pot text,
+.potOn text {
+  stroke: none;
+  font-size: 10px;
+  fill: var(--fg3);
+}
+
+.potOn text {
+  fill: var(--alarm);
+}

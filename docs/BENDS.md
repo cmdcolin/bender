@@ -127,6 +127,14 @@ at once — see **Part spread** under [the parts rack](#the-parts-rack) below.
 
 ## The toy chip's pins
 
+The _inside the die_ fold draws the parts these bends reach. The key matrix and
+the tune's counter strike the voices, each voice's envelope sets its level, and
+the output pin carries every voice off the chip. Dashed wires carry the clock
+down to the voices, the PWM carrier and the scan counter, and a dashed wire from
+the output back to the clock marks the crosstalk path. A bend turns its part or
+wire red, and the drawing hangs the **Bend spot** pot off the part it is
+soldered to.
+
 **Crosstalk** is the output trace running beside the timing pin. The chip's own
 sound frequency-modulates its clock at audio rate, and the clock also drives the
 tempo and envelopes, so all three shake together.

@@ -4,7 +4,6 @@ import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
-import { KnifeDrawing } from './BusDiagram.tsx'
 import { groupAnchor } from './chain-map.ts'
 import {
   groupKeys,
@@ -18,6 +17,7 @@ import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
+import { FoldDrawing } from './foldDrawings.tsx'
 import { FourTrack } from './FourTrack.tsx'
 import { MicPatch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
@@ -359,7 +359,7 @@ function PartFold({
         standing={standing}
         seconds={seconds}
       />
-      <KnifeDrawing group={group.name} part={name} />
+      <FoldDrawing group={group.name} part={name} />
       {rows.map(def => (
         <ControlSlider key={def.key} def={def} />
       ))}
@@ -401,7 +401,7 @@ function BoxVerbs({
         standing={standing}
         seconds={seconds}
       />
-      <KnifeDrawing group={group.name} part={part} />
+      <FoldDrawing group={group.name} part={part} />
     </>
   )
 }
