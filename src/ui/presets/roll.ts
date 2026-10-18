@@ -17,7 +17,7 @@ import {
 } from '../controls/index.ts'
 import { fromPos, ordinary, pastNormal, toPos } from '../slider-scale.ts'
 import { applyPreset } from './apply.ts'
-import { coherePatch, cohereTriggers } from './patch.ts'
+import { coherePatch, cohereTriggers, cohereVoices } from './patch.ts'
 import { inTime } from './quantize.ts'
 import { PRESETS } from './table.ts'
 import { CLOCK_KEYS, keepYours, PART_KEYS, YOURS } from './yours.ts'
@@ -169,7 +169,10 @@ export function randomLook(current: Controls, rand: () => number): Controls {
   // happening. It moves that end of the wire onto something the board is
   // running — and only that, since turning the stage back on would undo what
   // dried it.
-  return keepYours(coherePatch(rolled, rand, { wake: false }), current)
+  return keepYours(
+    cohereVoices(coherePatch(rolled, rand, { wake: false }), rand),
+    current,
+  )
 }
 
 // A roll, as against a nudge: the control takes a fresh value from anywhere on

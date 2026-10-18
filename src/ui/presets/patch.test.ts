@@ -12,6 +12,7 @@ import { applyPreset } from './apply.ts'
 import {
   bayFaults,
   cohereGates,
+  cohereVoices,
   coherePatch,
   cohereTriggers,
   solderBay,
@@ -302,6 +303,23 @@ test('rewire solders no wire the board has nothing at the end of', () => {
 
 test('an unpatched bay is no fault at all', () => {
   expect(bayFaults(DEFAULT_CONTROLS)).toEqual([])
+})
+
+test('a board whose only sound is a chip with no player gets the toy keyboard up', () => {
+  const chipOnly = {
+    ...DEFAULT_CONTROLS,
+    chipLevel: 0,
+    drumLevel: 0,
+    oscLevel: 0,
+    noiseLevel: 0,
+    fmLevel: 0.8,
+  }
+  expect(cohereVoices(chipOnly, mulberry32(1)).chipLevel).toBeGreaterThan(0)
+  const withKit = { ...chipOnly, drumLevel: 0.5 }
+  expect(cohereVoices(withKit, mulberry32(1)).chipLevel).toBe(0)
+  expect(cohereVoices(DEFAULT_CONTROLS, mulberry32(1))).toEqual(
+    DEFAULT_CONTROLS,
+  )
 })
 
 test('a played chip nothing strikes gets its gate jumper back', () => {

@@ -505,6 +505,27 @@ export function cohereGates(board: Controls): Controls {
   return next
 }
 
+// The sources that sound with nothing patched to them.
+const SELF_SOUNDING = [
+  'chipLevel',
+  'drumLevel',
+  'oscLevel',
+  'noiseLevel',
+] as const
+
+// A roll that turns a played chip up on a board with nothing else to sound
+// hands back silence: a chip with its jumper soldered plays what the toy
+// keyboard plays, and the toy keyboard is turned down. Turning the toy keyboard
+// up gives the chip a player, and is the only roll step that raises a source
+// after the thinning, so it acts only when the whole board would be quiet.
+export function cohereVoices(board: Controls, rand: () => number): Controls {
+  if (SELF_SOUNDING.some(key => isUp(board, key))) return board
+  if (!PLAYED.some(chip => isUp(board, chip.level))) return board
+  const next = { ...board }
+  turnUp(next, 'chipLevel', rand, new Set())
+  return next
+}
+
 // The board's other wires. Three controls rather than a bay, and the same two
 // ways of being nothing: soldered onto a machine that is turned down, or onto a
 // trigger line nothing ever strikes.
