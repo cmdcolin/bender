@@ -34,6 +34,8 @@ const HEIGHT = LOW_Y + BAR_H + 4
 const centre = (b: ChipBox) => b.x + b.w / 2
 
 const percent = (v: number) => `${Math.round(v * 100)}%`
+const perSecond = (v: number) => `${+v.toFixed(2)}/s`
+const fullPercent = (key: (typeof KEYS)[number]) => percent(sliderFor(key).max)
 
 function Bar({
   x,
@@ -104,22 +106,20 @@ export function MonoCardDiagram() {
     },
     {
       name: 'hold',
-      room: '2.0/s',
-      reading: on('monoDroop')
-        ? `${r.value('monoDroop').toFixed(1)}/s`
-        : undefined,
+      room: perSecond(sliderFor('monoDroop').max - 0.01),
+      reading: on('monoDroop') ? perSecond(r.value('monoDroop')) : undefined,
       help: 'The sample-and-hold capacitor that keeps the pitch voltage while the key is down. A leak makes a held note sink.',
     },
     {
       name: 'exp conv',
-      room: '100%',
+      room: fullPercent('monoHeat'),
       reading: on('monoHeat') ? percent(r.value('monoHeat')) : undefined,
-      help: 'The exponential converter that turns the pitch voltage into oscillator frequencies. Without its heater the three oscillators drift apart.',
+      help: 'The exponential converter that turns the pitch voltage into oscillator frequencies. Without its heater the three oscillators drift apart, and the board’s own heat adds to it.',
     },
     { name: 'oscs', room: '', help: 'The three oscillators.' },
     {
       name: 'ladder',
-      room: '100%',
+      room: fullPercent('monoMismatch'),
       reading: on('monoMismatch')
         ? percent(r.value('monoMismatch'))
         : undefined,
@@ -127,9 +127,9 @@ export function MonoCardDiagram() {
     },
     {
       name: 'VCA',
-      room: '100%',
+      room: fullPercent('monoLeak'),
       reading: on('monoLeak') ? percent(r.value('monoLeak')) : undefined,
-      help: 'The amplifier the loudness contour opens on every note. A leak lets the drone through with no key down.',
+      help: 'The amplifier the loudness contour opens on every note. With a leak, the drone sounds with no key down.',
     },
   ]
   const widths = parts.map(p => Math.max(boxWidth(p.name), boxWidth(p.room)))

@@ -38,6 +38,9 @@ const group = (title: string) =>
     g.querySelector('title')?.textContent?.startsWith(`${title} —`),
   )!
 
+const readings = (title: string) =>
+  [...group(title).querySelectorAll('text, tspan')].map(t => t.textContent)
+
 test('the stock card names its parts and reads no fault', () => {
   open()
   expect(words()).toEqual(
@@ -76,14 +79,48 @@ test('each fault reads on the part it bends', () => {
     ['contours', '×12'],
   ]
   for (const [part, reading] of reads)
-    expect(group(part).textContent, part).toContain(reading)
+    expect(readings(part), part).toContain(reading)
 })
 
-test('the pitch hold and converter keep their place when a reading appears', () => {
+const centre = (title: string) => {
+  const rect = group(title).querySelector('rect')!
+  return +rect.getAttribute('x')! + +rect.getAttribute('width')! / 2
+}
+
+const drops = () =>
+  [...card().querySelectorAll('path[class*="wireDash"]')].map(p => {
+    const [, x, y0, y1] = /M([\d.]+) ([\d.]+) V([\d.]+)/
+      .exec(p.getAttribute('d')!)!
+      .map(Number) as [number, number, number, number]
+    return { x, down: y0 < y1 }
+  })
+
+test('the regulator feeds the converter and ladder, the contours feed the ladder and VCA', () => {
   open()
-  const xs = () =>
-    [...card().querySelectorAll('rect')].map(r => r.getAttribute('x'))
-  const before = xs()
-  set({ monoHeat: 1, monoDroop: 2, monoDacBit: 7 })
-  expect(xs()).toEqual(before)
+  const xs = (down: boolean) =>
+    drops()
+      .filter(d => d.down === down)
+      .map(d => d.x)
+      .toSorted((a, b) => a - b)
+  expect(xs(true)).toEqual([centre('exp conv'), centre('ladder')])
+  expect(xs(false)).toEqual([centre('ladder'), centre('VCA')])
+})
+
+test('every reading fits the box it sits in', () => {
+  open()
+  set({
+    monoHeat: 1,
+    monoLeak: 1,
+    monoMismatch: 1,
+    monoDroop: 1.99,
+    monoDacBit: 7,
+  })
+  for (const part of ['key DAC', 'hold', 'exp conv', 'ladder', 'VCA']) {
+    const width = +group(part).querySelector('rect')!.getAttribute('width')!
+    const [, reading] = readings(part)
+    expect(
+      reading!.length * 5.5 + 14,
+      `${part} ${reading}`,
+    ).toBeLessThanOrEqual(width)
+  }
 })
