@@ -155,9 +155,7 @@ export function TriggerPatch() {
               className={styles.tag}
               fill={upOn ? 'var(--fg3)' : 'var(--fg4)'}
             >
-              {upOn
-                ? `${TO_KEYS[toKeys]} trig → ${NOTE[note]}`
-                : 'kit → keys off'}
+              kit → keys
             </text>
           </g>,
         )}
@@ -189,7 +187,7 @@ export function TriggerPatch() {
               className={styles.tag}
               fill={downOn ? 'var(--fg3)' : 'var(--fg4)'}
             >
-              {downOn ? `keys → ${TO_DRUM[toDrum]} trig` : 'keys → kit off'}
+              keys → kit
             </text>
           </g>,
         )}
@@ -249,7 +247,7 @@ export function TriggerPatch() {
               className={styles.tag}
               fill={struckOn ? 'var(--fg3)' : 'var(--fg4)'}
             >
-              {struckOn ? `${STRUCK[struck]} trig` : 'kit → FM off'}
+              kit → FM
             </text>
           </g>,
         )}

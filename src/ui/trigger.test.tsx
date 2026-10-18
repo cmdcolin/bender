@@ -41,7 +41,7 @@ test('each of the four trigger wires opens its own rows, drawn once', () => {
 test('the picture names the third box and both wires onto it', () => {
   openPatch()
   expect(screen.getByText('FM chip')).toBeTruthy()
-  expect(screen.getByText('kit → FM off')).toBeTruthy()
+  expect(screen.getByText('kit → FM')).toBeTruthy()
   expect(screen.getByText('gate')).toBeTruthy()
 })
 
