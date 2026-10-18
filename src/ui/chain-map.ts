@@ -1968,6 +1968,11 @@ function glyph(n: MapNode, k: Palette, y: number): El[] {
   return [el('g', { className: 'glyph' }, draw(n.x + PAD_X, y, c))]
 }
 
+// A box's edge says whether the stage is doing anything, and the touched dot
+// beside it says whether a control in it has moved.
+const edge = (n: MapNode, k: Palette) =>
+  n.open ? k.fg : n.active ? k.dim : k.border
+
 export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   if (n.kind === 'label') {
     const fill = n.active ? k.mod : k.dim
@@ -2059,7 +2064,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   // source is wired to is the point and only a box has edges for a wire to
   // land on.
   if (n.kind === 'inst') {
-    const lit = n.open ? k.fg : n.count > 0 ? k.accent : k.border
+    const lit = edge(n, k)
     const inner: El[] = [
       el('rect', {
         className: 'box',
@@ -2088,7 +2093,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
       ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, 20, k),
     ])
   }
-  const lit = n.open ? k.fg : n.count > 0 ? k.accent : k.border
+  const lit = edge(n, k)
   const lead = iconCol(n.label)
   const inner = [
     el('rect', {

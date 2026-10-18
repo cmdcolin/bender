@@ -279,6 +279,24 @@ test('each source box carries its own glyph, lit while it plays', () => {
   }
 })
 
+test('a box edge follows whether the stage is doing anything, and a moved stage only adds the dot', () => {
+  const map = buildMap(
+    { ...DEFAULT_CONTROLS, ampBass: 0.9, dlyMix: 0.5 },
+    { live: true },
+  )
+  const edgeOf = (id: string) =>
+    serialize(drawNode(box(map, id)!, PANEL, true)).match(
+      /class="box"[^>]*stroke="([^"]+)"/,
+    )?.[1]
+  const dotted = (id: string) =>
+    serialize(drawNode(box(map, id)!, PANEL, true)).includes('data-touched')
+  expect(edgeOf('Tube_amp')).toBe(PANEL.border)
+  expect(dotted('Tube_amp')).toBe(true)
+  expect(edgeOf('Tape_delay')).toBe(PANEL.dim)
+  expect(edgeOf('Output')).toBe(PANEL.dim)
+  expect(dotted('Output')).toBe(false)
+})
+
 // The mic is the one source that does not have to reach the mix: six of its
 // seven settings solder it into the middle of something else. Turned right
 // down it is still soldered there, so it stays on the map greyed rather than
