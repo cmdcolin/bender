@@ -12,6 +12,7 @@ import {
   drawMap,
   drawNode,
   groupAnchor,
+  onBoard,
   PANEL,
   type ChainMap,
   WIRE_TARGET,
@@ -269,6 +270,17 @@ test('the toy board makes one row, the FM chip against the keyboard', () => {
 
 // A bridge you patch runs across the lane under the row, and the frame has to
 // grow to hold it rather than draw over it.
+test.each([
+  ['stock', DEFAULT_CONTROLS],
+  ['with the four-track', { ...DEFAULT_CONTROLS, fourLevel: 0.5 }],
+])('the toy board drops onto the mix between its boxes: %s', (_, c) => {
+  const map = buildMap(c, { wrap: true, loop: true, shown: onBoard(c) })
+  const [kb, drums] = [box(map, 'Toy_keyboard')!, box(map, 'Toy_drums')!]
+  const x = Number(/^M ([\d.-]+)/.exec(hop(map, 'toy_board', 'mix')!.d)![1])
+  expect(x).toBeGreaterThan(kb.x + kb.w)
+  expect(x).toBeLessThan(drums.x)
+})
+
 test('a patched trigger bridge deepens the board rather than crossing it', () => {
   const plain = buildMap(DEFAULT_CONTROLS)
   const bridged = buildMap({ ...DEFAULT_CONTROLS, trigToKeys: 1 })

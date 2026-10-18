@@ -1340,15 +1340,21 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     row.length > 1 ? (row[0]!.x + row[0]!.w + row[1]!.x) / 2 : mix.x + mix.w / 2
   const channels = lineRows.map(gapX)
   const spineX = channels[0] ?? midX(mix)
+  const boardBottom = board.y + board.h
+  const lastRow = chipRows[chipRows.length - 1] ?? []
+  const inGap =
+    lastRow.length < 2 ||
+    (spineX > lastRow[0]!.x + lastRow[0]!.w && spineX < lastRow[1]!.x)
   if (hasBoard)
     bar(
       'board-out',
       board,
       mix,
-      [
-        [spineX, board.y + board.h],
+      elbowV(
+        [inGap ? spineX : gapX(lastRow), boardBottom],
         [spineX, collectY],
-      ],
+        boardBottom + Math.min(BAND_GAP, COLLECT_H) / 2,
+      ),
       { color: k.border },
     )
   if (spine) {
