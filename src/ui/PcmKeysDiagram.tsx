@@ -1,4 +1,5 @@
 import { engine } from '../engine/engine.ts'
+import chip from './ChipLook.module.css'
 import { CHANNELS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import {
@@ -43,11 +44,6 @@ const TOP = 4
 const ROW = 30
 const GAP = 18
 const BOX_H = boxHeight('')
-const CAPS_W = 7.4
-
-// The names draw in capitals, which run wider than the lowercase boxWidth sizes for.
-const capsWidth = (name: string) =>
-  boxWidth('') + Math.ceil(name.length * CAPS_W)
 
 // How far each bus box leans away from the other, so the two do not touch.
 const BUS_LEAN = 20
@@ -116,7 +112,7 @@ export function PcmKeysDiagram({
     help,
   })
   const names = [...path.map(([id]) => id), 'mix']
-  const widths = names.map(capsWidth)
+  const widths = names.map(boxWidth)
   let x = 0
   const placed = names.map((id, i) => {
     const at = x
@@ -146,7 +142,7 @@ export function PcmKeysDiagram({
     keys: readonly Key[],
     help: string,
   ) => {
-    const w = capsWidth(id)
+    const w = boxWidth(id)
     return box(id, mid + lean - Math.round(w / 2), busY, w, keys, help)
   }
   const boxes = [
@@ -188,36 +184,38 @@ export function PcmKeysDiagram({
   ]
   return (
     <>
-      <div className={styles.caps} style={{ maxWidth: width }}>
-        <Diagram
-          width={width}
-          height={busY + BOX_H + 4}
-          label="Home keyboard signal path"
-        >
-          {arrow => (
-            <>
-              {chain.slice(1).map((to, i) => (
-                <Wire
-                  key={to.id}
-                  arrow={arrow}
-                  d={edge(chain[i]!, to)}
-                  look={i < 2 ? 'plain' : flow}
-                />
-              ))}
-              {drops.map(d => (
-                <Wire key={d} d={d} look="dash" />
-              ))}
-              {boxes.map(b => (
-                <BoxView
-                  key={b.id}
-                  box={b}
-                  selected={b.id === pick.selected}
-                  onSelect={pick.toggle}
-                />
-              ))}
-            </>
-          )}
-        </Diagram>
+      <div className={chip.chips}>
+        <div className={styles.fit} style={{ maxWidth: width }}>
+          <Diagram
+            width={width}
+            height={busY + BOX_H + 4}
+            label="Home keyboard signal path"
+          >
+            {arrow => (
+              <>
+                {chain.slice(1).map((to, i) => (
+                  <Wire
+                    key={to.id}
+                    arrow={arrow}
+                    d={edge(chain[i]!, to)}
+                    look={i < 2 ? 'plain' : flow}
+                  />
+                ))}
+                {drops.map(d => (
+                  <Wire key={d} d={d} look="dash" />
+                ))}
+                {boxes.map(b => (
+                  <BoxView
+                    key={b.id}
+                    box={b}
+                    selected={b.id === pick.selected}
+                    onSelect={pick.toggle}
+                  />
+                ))}
+              </>
+            )}
+          </Diagram>
+        </div>
       </div>
       <BoxRows
         keys={open?.keys}

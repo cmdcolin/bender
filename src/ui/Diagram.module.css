@@ -17,7 +17,9 @@
 
 .name,
 .nameOn {
-  font-size: 11px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   fill: var(--fg2);
 }
 

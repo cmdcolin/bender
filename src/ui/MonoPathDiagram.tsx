@@ -282,7 +282,7 @@ export function MonoPathDiagram({
                     x={oscX + OSC_W / 2}
                     y={y + 14}
                     textAnchor="middle"
-                    className={styles.note}
+                    className={styles.name}
                   >
                     {`osc ${i + 1}`}
                   </text>
