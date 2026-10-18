@@ -59,6 +59,13 @@ export default defineConfig({
   vite: {
     plugins: [reloadForWorklet()],
     worker: { format: 'es' },
+    server: {
+      // Astro restarts on any changed file named `astro.config.*`, and agent
+      // worktrees under `.claude/` each hold a copy.
+      watch: {
+        ignored: [fileURLToPath(new URL('.claude/**', import.meta.url))],
+      },
+    },
     define: {
       __APP_VERSION__: JSON.stringify(pkg.version),
       __GIT_SHA__: JSON.stringify(gitSha()),
