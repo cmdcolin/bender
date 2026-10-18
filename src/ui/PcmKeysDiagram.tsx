@@ -9,6 +9,7 @@ import {
   type BoxSpec,
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
+import styles from './PcmKeysDiagram.module.css'
 
 import type { ReactNode } from 'react'
 
@@ -39,12 +40,17 @@ const PARTS: Record<string, string> = {
 const PCM_TAP = CHANNELS.find(c => c.name === 'Home keyboard')!.tap
 
 const TOP = 4
-const ROW = 38
-const WIDTH = 440
+const ROW = 30
+const GAP = 18
 const BOX_H = boxHeight('')
+const CAPS_W = 7.4
+
+// The names draw in capitals, which run wider than the lowercase boxWidth sizes for.
+const capsWidth = (name: string) =>
+  boxWidth('') + Math.ceil(name.length * CAPS_W)
 
 // How far each bus box leans away from the other, so the two do not touch.
-const BUS_LEAN = 14
+const BUS_LEAN = 20
 
 const midOf = (from: BoxSpec, to: BoxSpec) =>
   Math.round((from.x + from.w + to.x) / 2)
@@ -110,14 +116,14 @@ export function PcmKeysDiagram({
     help,
   })
   const names = [...path.map(([id]) => id), 'mix']
-  const widths = names.map(boxWidth)
-  const gap = (WIDTH - 2 - widths.reduce((a, b) => a + b)) / (names.length - 1)
+  const widths = names.map(capsWidth)
   let x = 0
   const placed = names.map((id, i) => {
-    const at = Math.round(x)
-    x += widths[i]! + gap
+    const at = x
+    x += widths[i]! + GAP
     return { id, x: at, w: widths[i]! }
   })
+  const width = x - GAP + 2
   const row = path.map(([id, keys, help], i) =>
     box(id, placed[i]!.x, TOP + ROW, placed[i]!.w, keys, help),
   )
@@ -140,7 +146,7 @@ export function PcmKeysDiagram({
     keys: readonly Key[],
     help: string,
   ) => {
-    const w = boxWidth(id)
+    const w = capsWidth(id)
     return box(id, mid + lean - Math.round(w / 2), busY, w, keys, help)
   }
   const boxes = [
@@ -182,35 +188,37 @@ export function PcmKeysDiagram({
   ]
   return (
     <>
-      <Diagram
-        width={WIDTH}
-        height={busY + BOX_H + 4}
-        label="Home keyboard signal path"
-      >
-        {arrow => (
-          <>
-            {chain.slice(1).map((to, i) => (
-              <Wire
-                key={to.id}
-                arrow={arrow}
-                d={edge(chain[i]!, to)}
-                look={i < 2 ? 'plain' : flow}
-              />
-            ))}
-            {drops.map(d => (
-              <Wire key={d} d={d} look="dash" />
-            ))}
-            {boxes.map(b => (
-              <BoxView
-                key={b.id}
-                box={b}
-                selected={b.id === pick.selected}
-                onSelect={pick.toggle}
-              />
-            ))}
-          </>
-        )}
-      </Diagram>
+      <div className={styles.caps} style={{ maxWidth: width }}>
+        <Diagram
+          width={width}
+          height={busY + BOX_H + 4}
+          label="Home keyboard signal path"
+        >
+          {arrow => (
+            <>
+              {chain.slice(1).map((to, i) => (
+                <Wire
+                  key={to.id}
+                  arrow={arrow}
+                  d={edge(chain[i]!, to)}
+                  look={i < 2 ? 'plain' : flow}
+                />
+              ))}
+              {drops.map(d => (
+                <Wire key={d} d={d} look="dash" />
+              ))}
+              {boxes.map(b => (
+                <BoxView
+                  key={b.id}
+                  box={b}
+                  selected={b.id === pick.selected}
+                  onSelect={pick.toggle}
+                />
+              ))}
+            </>
+          )}
+        </Diagram>
+      </div>
       <BoxRows
         keys={open?.keys}
         verbs={open && PARTS[open.id!] && verbs(PARTS[open.id!]!)}
