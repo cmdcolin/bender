@@ -17,7 +17,6 @@ import { useStoreValue } from './ControlsContext.ts'
 import { added, removable, shownOn, takeOff } from './fitted.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
-import { menuItem } from './menuItems.ts'
 import { watchRail } from './railWatch.ts'
 import { Shelf } from './Section.tsx'
 import { watchTriggers } from './triggerWatch.ts'
@@ -250,7 +249,7 @@ function StageMenu({
                   <button
                     key={g.name}
                     role="menuitem"
-                    className={menuItem(false)}
+                    className={styles.stage}
                     onClick={() => {
                       if (groups.length === 1) setMenu(false)
                       onPick(g.name)

@@ -17,7 +17,13 @@
 .placeGroup {
   display: flex;
   flex-wrap: wrap;
+  gap: var(--space-xs);
   max-width: 26rem;
+  padding-bottom: var(--space-xs);
+}
+
+.stage {
+  composes: action from './button.module.css';
 }
 
 .place {
