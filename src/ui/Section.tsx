@@ -345,18 +345,25 @@ function PartFold({
   const standing = useBoardValue(
     c => cuts.find(cut => cutStands(cut, c))?.name ?? '',
   )
+  const hostedCuts = hostedBy(group.name, name).flatMap(part =>
+    cutsFor(group.name, part),
+  )
+  const hostedStanding = useBoardValue(
+    c => hostedCuts.find(cut => cutStands(cut, c))?.name ?? '',
+  )
+  const badge = standing || hostedStanding
   const says =
-    standing === ''
+    badge === ''
       ? moved > 0
         ? `${moved} moved`
         : `${rows.length + hosted.length}`
-      : standing
+      : badge
   const caution = group.caution?.part === name ? group.caution.text : null
   return (
     <Fold
       name={name}
       badge={says}
-      moved={standing !== '' || moved > 0}
+      moved={badge !== '' || moved > 0}
       startOpen={startOpen}
     >
       {caution && <p className={styles.caution}>{caution}</p>}

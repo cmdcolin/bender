@@ -48,6 +48,8 @@ const isHostedBox = (name: string | null): name is keyof typeof HOSTED =>
 const keysOf = (part: string): ControlKey[] =>
   GROUP.sliders.filter(d => d.part === part).map(d => d.key)
 
+const BUS_KEYS = keysOf(HOSTED.bus)
+
 const SPOTS = sliderFor('chipBendSpot').choices!
 const CAPS = sliderFor('chipEnvCap').choices!
 const GHOSTS = sliderFor('chipGhost').choices!
@@ -152,7 +154,8 @@ function Say({
 // part, and the drawing gives each one its own red wire.
 export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
   const r = useReadings(KEYS)
-  const pick = useSelectedBox()
+  const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
+  const pick = useSelectedBox(knifed ? 'bus' : null)
   const hosted = isHostedBox(pick.selected) ? pick.selected : undefined
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
@@ -420,7 +423,7 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
               <Wire
                 arrow={arrow}
                 d={`M${bus.x + bus.w / 2} ${bus.y} V${voices.y + BOX_H}`}
-                look="dash"
+                look={bent(knifed)}
               />
               <Node
                 pick={pick}

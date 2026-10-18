@@ -34,8 +34,11 @@ so on those the wire is something you find rather than something to learn. The
 named cuts under _knife on the bus_ are the shortcut: each one is a wire and a
 fault somebody already found worth keeping.
 
-The panel draws the same buses inside each _knife on the bus_ fold, one trace a
-bit with the lowest on top, and the drawing follows the rows under it:
+The panel draws the same buses under each chip's bus box (the **pattern** box on
+the drum machine), one trace a bit with the lowest on top. The knife rows, named
+cuts and drawing show only while the box is open, and a board that arrives
+knifed opens it. The box's wire turns red while a wire is cut, and the heading
+above it names the standing cut. The drawing follows the rows:
 
 - The knifed trace turns red and shows its line name.
 - A slash marks a cut, dotted across the gap while **Cut depth** leaves it

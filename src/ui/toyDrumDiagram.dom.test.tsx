@@ -73,3 +73,9 @@ test('every knob in the voices fold sits in one of the boxes', () => {
     .map(d => d.key)
   expect(Object.values(VOICE_BOXES).flat().toSorted()).toEqual(fold.toSorted())
 })
+
+test('a kit that arrives knifed opens the pattern box', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, drumDataLine: 2 })
+  render(<ToyDrumDiagram />)
+  expect(screen.getByText('Data fault')).not.toBeNull()
+})

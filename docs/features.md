@@ -33,9 +33,9 @@ renders it with the same layout the app uses.
   address line — on the toy, the drum machine or the FM chip — and the wrong
   byte lands; on the FM chip it _stays_ wrong until the processor writes that
   register again. Which wire and what happened to it only mean anything
-  together, so each chip's _knife on the bus_ opens on a row of named cuts:
-  press **machine-gun** or **the note never ends** and the rows under it say
-  what that was. **Random knife** in the dice row draws from the same table.
+  together, so each chip's bus box opens on a row of named cuts: press
+  **machine-gun** or **the note never ends** and the rows under it say what that
+  was. **Random knife** in the dice row draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
@@ -98,8 +98,8 @@ bias and gate are each a place to solder a pot onto — _Bend spot_ picks which,
 _Bend pot_ how far. The battery rail it shares with four other machines has its
 own panel, _Power supply_.
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each after pressing the **bus** box, where the panel keeps
+them too — the knife goes on and the rows under it say which controls that was:
 
 - **rests fill in**: A note wire held high — the song keeps its rhythm and its
   silences become notes
@@ -187,8 +187,9 @@ carrying 16 steps and a length of its own, and a second 16-step mask on every
 voice for the steps that only sometimes fire. That is 28 more controls, and they
 ride in a link like the rest.
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each after pressing the **pattern** box, where the panel
+keeps them too — the knife goes on and the rows under it say which controls that
+was:
 
 - **machine-gun**: The hat’s trigger wire held high — it fires on every step the
   machine fetches, and everything soldered to the trigger bus hears it
@@ -322,8 +323,8 @@ became:
   script writes faster than the envelopes can follow, and the call turns to
   static over a chip still in tune
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each after pressing the **bus** box, where the panel keeps
+them too — the knife goes on and the rows under it say which controls that was:
 
 - **the note never ends**: The bit carrying the key coming back up cannot go
   low, so nothing the chip is told to play ever stops
@@ -451,8 +452,9 @@ voicing under one key and fills all four voices doing it, and _sampled_ plays
 whatever you dropped on the sampler across the keyboard, out of a second and a
 half of memory with the reel’s own loop markers as its loop.
 
-Named cuts, one press each under _knife on the bus_, where the panel keeps them
-too — the knife goes on and the rows under it say which controls that was:
+Named cuts, one press each after pressing an **addr bus** or **data bus** box,
+where the panel keeps them too — the knife goes on and the rows under it say
+which controls that was:
 
 - **the top bit sticks**: The top wire out of the sample ROM held high — the
   bottom half of every wave folds up onto the top of it, and the pad comes back

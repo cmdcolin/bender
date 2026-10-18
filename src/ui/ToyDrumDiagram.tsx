@@ -96,7 +96,9 @@ const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 // tanks reach into each other, and the drawing gives each reach its own wire.
 export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
   const r = useReadings(KEYS)
-  const pick = useSelectedBox()
+  const pick = useSelectedBox(
+    r.touched(...BOXES.pattern.keys) ? 'pattern' : null,
+  )
   const flow: WireLook = useStoreSelect(
     engine.sounding,
     lit => lit & (1 << DRUM_TAP),

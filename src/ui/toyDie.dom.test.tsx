@@ -126,6 +126,26 @@ test('the arp and the bus boxes open the folds they took over', () => {
   expect(screen.getByText('Data line')).not.toBeNull()
 })
 
+test('a board that arrives knifed opens the bus box', () => {
+  set({ chipDataLine: 2, chipDataFault: 1 })
+  open()
+  expect(screen.getByText('Data fault')).not.toBeNull()
+  set({ chipDataLine: 0, chipDataFault: 0 })
+})
+
+test('the die heading names the cut standing on its bus', () => {
+  set({ chipDataLine: 0, chipDataFault: 0 })
+  open()
+  const head = () =>
+    [...document.querySelectorAll('summary')].find(s =>
+      /inside the die/.test(s.textContent ?? ''),
+    )!
+  expect(head().textContent).not.toContain('rests fill in')
+  fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
+  fireEvent.click(screen.getByRole('button', { name: 'rests fill in' }))
+  expect(head().textContent).toContain('rests fill in')
+})
+
 test('the bend spot rows stay under the drawing with no part open', () => {
   open()
   expect(screen.getByText('Bend spot')).not.toBeNull()

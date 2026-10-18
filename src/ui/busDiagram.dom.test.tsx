@@ -69,7 +69,6 @@ test('the home keyboard draws its buses under either bus box', () => {
 test('the knifed trace carries its line name and fault in the drawing', () => {
   set({ chipAddrLine: 4, chipAddrFault: 1 })
   open('Toy keyboard')
-  press('bus')
   const svg = drawing('toy keyboard bus wiring')
   expect(texts(svg)).toContain('A3')
   const titles = [...svg.querySelectorAll('title')].map(t => t.textContent)
@@ -89,7 +88,6 @@ test('a bridge lights the knifed trace and its neighbour', () => {
 test('the loop wire names the pins it joins, a reset pin included', () => {
   set({ chipLoopFrom: 2, chipLoopTo: 1 })
   open('Toy keyboard')
-  press('bus')
   expect(texts(drawing('toy keyboard bus wiring'))).toContain(
     'loop wire D1 → A1',
   )
