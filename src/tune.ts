@@ -207,6 +207,42 @@ export type TuneStepKey =
   | (typeof TUNE_STACK_A_KEYS)[number]
   | (typeof TUNE_STACK_B_KEYS)[number]
 
+/** The mono synth's own melody: one lane of the same steps. */
+export const MONO_SEQ_STEP_KEYS = [
+  'monoSeqStep0',
+  'monoSeqStep1',
+  'monoSeqStep2',
+  'monoSeqStep3',
+  'monoSeqStep4',
+  'monoSeqStep5',
+  'monoSeqStep6',
+  'monoSeqStep7',
+  'monoSeqStep8',
+  'monoSeqStep9',
+  'monoSeqStep10',
+  'monoSeqStep11',
+  'monoSeqStep12',
+  'monoSeqStep13',
+  'monoSeqStep14',
+  'monoSeqStep15',
+  'monoSeqStep16',
+  'monoSeqStep17',
+  'monoSeqStep18',
+  'monoSeqStep19',
+  'monoSeqStep20',
+  'monoSeqStep21',
+  'monoSeqStep22',
+  'monoSeqStep23',
+  'monoSeqStep24',
+  'monoSeqStep25',
+  'monoSeqStep26',
+  'monoSeqStep27',
+  'monoSeqStep28',
+  'monoSeqStep29',
+  'monoSeqStep30',
+  'monoSeqStep31',
+] as const satisfies readonly ControlKey[]
+
 /** How many steps the memory plays before it comes round: a whole number of the
     steps it has. */
 export const asTuneLen = (v: number) =>

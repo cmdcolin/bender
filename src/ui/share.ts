@@ -6,11 +6,19 @@ import {
   type Controls,
 } from '../controls.ts'
 import { asLen, asMask, LEN_KEYS } from '../drums.ts'
-import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune.ts'
+import {
+  asTuneLen,
+  asTuneStep,
+  MONO_SEQ_STEP_KEYS,
+  TUNE_ALL_STEP_KEYS,
+} from '../tune.ts'
 import { EDITOR_KEYS, sliderFor, snapToStep } from './controls/index.ts'
 import { packControls, RENAMED, unpackControls } from './packed.ts'
 
-const TUNE_KEYS = new Set<ControlKey>(TUNE_ALL_STEP_KEYS)
+const TUNE_KEYS = new Set<ControlKey>([
+  ...TUNE_ALL_STEP_KEYS,
+  ...MONO_SEQ_STEP_KEYS,
+])
 
 // A board as a link, in two forms that say the same thing.
 //
@@ -88,7 +96,7 @@ export function coerceControl(key: ControlKey, v: number): number {
     ? asLen(v)
     : TUNE_KEYS.has(key)
       ? asTuneStep(v)
-      : key === 'tuneLen'
+      : key === 'tuneLen' || key === 'monoSeqLen'
         ? asTuneLen(v)
         : EDITOR_KEYS.has(key)
           ? asMask(v)

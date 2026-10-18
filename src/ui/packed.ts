@@ -4,7 +4,12 @@ import {
   type Controls,
 } from '../controls.ts'
 import { asLen, asMask, LEN_KEYS } from '../drums.ts'
-import { asTuneLen, asTuneStep, TUNE_ALL_STEP_KEYS } from '../tune.ts'
+import {
+  asTuneLen,
+  asTuneStep,
+  MONO_SEQ_STEP_KEYS,
+  TUNE_ALL_STEP_KEYS,
+} from '../tune.ts'
 import { SLIDER_BY_KEY, sliderFor, snapToStep } from './controls/index.ts'
 
 // The short form of a board: the same controls the long form names, written as
@@ -691,6 +696,43 @@ export const URL_KEY_ORDER: readonly (ControlKey | Retired)[] = [
   'fmToyBus',
   'chipFmClock',
   'chipHold',
+
+  // The mono synth's own melody.
+  'monoSeqOn',
+  'monoSeqRate',
+  'monoSeqLen',
+  'monoSeqStep0',
+  'monoSeqStep1',
+  'monoSeqStep2',
+  'monoSeqStep3',
+  'monoSeqStep4',
+  'monoSeqStep5',
+  'monoSeqStep6',
+  'monoSeqStep7',
+  'monoSeqStep8',
+  'monoSeqStep9',
+  'monoSeqStep10',
+  'monoSeqStep11',
+  'monoSeqStep12',
+  'monoSeqStep13',
+  'monoSeqStep14',
+  'monoSeqStep15',
+  'monoSeqStep16',
+  'monoSeqStep17',
+  'monoSeqStep18',
+  'monoSeqStep19',
+  'monoSeqStep20',
+  'monoSeqStep21',
+  'monoSeqStep22',
+  'monoSeqStep23',
+  'monoSeqStep24',
+  'monoSeqStep25',
+  'monoSeqStep26',
+  'monoSeqStep27',
+  'monoSeqStep28',
+  'monoSeqStep29',
+  'monoSeqStep30',
+  'monoSeqStep31',
 ]
 
 // Retired controls that old links still carry, each read into the control that
@@ -701,7 +743,7 @@ export const RENAMED = new Map<
 >([['revDryCut', { key: 'revDry', step: 0.01, value: v => 1 - v }]])
 
 const INDEX = new Map(URL_KEY_ORDER.map((k, i) => [k, i]))
-const TUNE = new Set<ControlKey>(TUNE_ALL_STEP_KEYS)
+const TUNE = new Set<ControlKey>([...TUNE_ALL_STEP_KEYS, ...MONO_SEQ_STEP_KEYS])
 
 const isLive = (key: ControlKey | Retired | undefined): key is ControlKey =>
   key !== undefined && !key.startsWith('gone:')
@@ -740,7 +782,7 @@ function fromInt(key: ControlKey, n: number): number {
   if (def) return snapToStep(def, n * def.step)
   if (TUNE.has(key)) return asTuneStep(n)
   if (LEN_KEYS.has(key)) return asLen(n)
-  if (key === 'tuneLen') return asTuneLen(n)
+  if (key === 'tuneLen' || key === 'monoSeqLen') return asTuneLen(n)
   return asMask(n)
 }
 

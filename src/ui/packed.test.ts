@@ -7,7 +7,7 @@ import {
   type Controls,
 } from '../controls.ts'
 import { LEN_KEYS } from '../drums.ts'
-import { TUNE_STEP_KEYS } from '../tune.ts'
+import { MONO_SEQ_STEP_KEYS, TUNE_STEP_KEYS } from '../tune.ts'
 import {
   ALL_SLIDERS,
   EDITOR_KEYS,
@@ -166,14 +166,15 @@ test('a short link with the retired Dry cut opens at the matching Dry level', ()
 })
 
 test('every control has a shape the wire knows how to carry', () => {
-  const tune = new Set<ControlKey>(TUNE_STEP_KEYS)
+  const tune = new Set<ControlKey>([...TUNE_STEP_KEYS, ...MONO_SEQ_STEP_KEYS])
   const unknown = CONTROL_KEYS.filter(
     k =>
       !SLIDER_BY_KEY.has(k) &&
       !EDITOR_KEYS.has(k) &&
       !LEN_KEYS.has(k) &&
       !tune.has(k) &&
-      k !== 'tuneLen',
+      k !== 'tuneLen' &&
+      k !== 'monoSeqLen',
   )
   expect(unknown).toEqual([])
 })

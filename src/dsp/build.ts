@@ -76,7 +76,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   const pcmKeys = new PcmKeys(sr, rail, sampler)
   // The fourth, a monosynth voice card. It draws no seed, so every stream
   // after it stays the one it was.
-  const monoSynth = new MonoSynth(sr, rail)
+  const monoSynth = new MonoSynth(sr, rail, transport)
   // In SOURCE_TAPS order, which is the order their meter taps come home in — a
   // test holds the two lists together, because the panel reads a channel off
   // its slot number and a source in the wrong one would meter as its neighbour.

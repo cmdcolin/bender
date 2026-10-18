@@ -1,5 +1,6 @@
 import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
+import { asTuneLen, HOLD, isNote } from '../../tune.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { KEY_BIAS, voiceMask } from '../trigbus.ts'
@@ -7,6 +8,7 @@ import { MonoVoice } from './monoVoice.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { ToyRail } from '../toyRail.ts'
+import type { Transport } from '../transport.ts'
 
 // The board counts semitones up from A3, the voice counts MIDI notes.
 const A3_MIDI = 57
@@ -15,10 +17,15 @@ const FALLBACK_STEP_S = 0.125
 const CUTOFF_LANE_OCTAVES = 4
 const QUEUE_MAX = 32
 
+const NO_STEP = -1000
+
 // The voice card of a three-oscillator monosynth, wired onto the toy's supply
 // and its gate line. Keys from its own bed and a controller arrive with their
 // key-ups; strikes off the gate line and the kit's trigger lines have none, so
 // the gate closes after a fraction of the toy's sequencer step.
+//
+// It also carries a memory of its own: a counter clocked off the same supply as
+// the toy's, so it sags and stalls with it, stepping through its own melody.
 export class MonoSynth implements Stage {
   label = 'monoSynth'
 
@@ -38,13 +45,22 @@ export class MonoSynth implements Stage {
   private from = 0
   private pitchLane: Float32Array | null = null
   private cutLane: Float32Array | null = null
+  private seqPos = 0
+  private seqClock = 0
+  private seqFresh = true
+  private seqSamples = 0
 
   private readonly sr: number
   private readonly rail: ToyRail
+  private readonly transport: Transport
 
-  constructor(sr: number, rail: ToyRail) {
+  /** Where the memory's counter is standing, for the roll's playhead. */
+  seqAt = 0
+
+  constructor(sr: number, rail: ToyRail, transport: Transport) {
     this.sr = sr
     this.rail = rail
+    this.transport = transport
     this.voice = new MonoVoice(sr)
     this.stepSamples = FALLBACK_STEP_S * sr
   }
@@ -147,7 +163,34 @@ export class MonoSynth implements Stage {
     v.sag = p[IDX.monoSag]!
   }
 
-  private strike(note: number, held: boolean, gain = 1) {
+  // The step the counter has just arrived on, or NO_STEP between steps.
+  private seqTick(rate: number, len: number, p: Float32Array): number {
+    this.seqClock += rate / this.sr
+    if (this.seqClock < 1) return NO_STEP
+    this.seqClock -= 1
+    this.seqPos = this.seqFresh ? 0 : (this.seqPos + 1) % len
+    this.seqFresh = false
+    this.seqAt = this.seqPos
+    this.seqSamples = this.sr / rate
+    return p[IDX.monoSeqStep0 + this.seqPos]!
+  }
+
+  // A held step carries the note across, so the gate stays open for the run.
+  private seqRun(len: number, p: Float32Array): number {
+    let n = 1
+    for (let k = this.seqPos + 1; k < len; k++) {
+      if (p[IDX.monoSeqStep0 + k] !== HOLD) break
+      n++
+    }
+    return n
+  }
+
+  private strike(
+    note: number,
+    held: boolean,
+    gain = 1,
+    length = this.gateLength,
+  ) {
     const voice = this.voice
     this.lastNote = note
     voice.noteOn(note, gain)
@@ -159,7 +202,7 @@ export class MonoSynth implements Stage {
       voice.noteOff(this.gateNote)
     }
     this.gateNote = note
-    this.gateLeft = this.gateLength
+    this.gateLeft = length
   }
 
   private run(to: number) {
@@ -184,6 +227,7 @@ export class MonoSynth implements Stage {
       this.gateNote = -1
       this.queued.length = 0
       this.gateHeld.length = 0
+      this.seqFresh = true
     }
     this.patch(p, ctx)
     voice.bend = 12 * Math.log2(rail.pitchFactor)
@@ -209,6 +253,19 @@ export class MonoSynth implements Stage {
     const gate = p[IDX.monoGate]!
     this.gateLength = Math.max(gate * this.stepSamples, 1)
 
+    const seqRunning =
+      p[IDX.monoSeqOn]! > 0.5 &&
+      this.transport.tune &&
+      !rail.booting &&
+      !rail.latched &&
+      !rail.dead
+    const seqLen = asTuneLen(p[IDX.monoSeqLen]!)
+    const seqRate = Math.max(p[IDX.monoSeqRate]!, 0.01) * rail.clockFactor
+    if (!seqRunning) {
+      this.seqFresh = true
+      this.seqClock = 1
+    }
+
     this.from = 0
     this.pitchLane = pitchLane
     this.cutLane = cutLane ? this.cutoffLane : null
@@ -225,12 +282,17 @@ export class MonoSynth implements Stage {
       const key = gateOn ? ctx.trig.key[i]! : 0
       const bits =
         drumMask !== 0 ? Math.round(ctx.trig.drumBits[i]!) & drumMask : 0
+      const step = seqRunning ? this.seqTick(seqRate, seqLen, p) : NO_STEP
+      const sung = step !== NO_STEP && isNote(step)
       const closing = this.gateNote >= 0 && --this.gateLeft <= 0
-      if (key === 0 && bits === 0 && !closing) continue
+      if (key === 0 && bits === 0 && !sung && !closing) continue
 
       this.run(i)
       if (key !== 0) {
         this.strike(key - KEY_BIAS + A3_MIDI, ctx.trig.keyHeld[i]! > 0)
+      } else if (sung) {
+        const length = gate * this.seqSamples * this.seqRun(seqLen, p)
+        this.strike(step + A3_MIDI, false, 1, Math.max(length, 1))
       } else if (bits !== 0) {
         const gain = Math.min(ctx.trig.drumGain[i]! / ACCENT_GAIN, 1)
         this.strike(this.lastNote, false, gain)
@@ -258,5 +320,6 @@ export class MonoSynth implements Stage {
     this.gateHeld.length = 0
     this.gateNote = -1
     this.gateLeft = 0
+    this.seqFresh = true
   }
 }
