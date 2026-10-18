@@ -2094,7 +2094,11 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
     ])
   }
   const lit = edge(n, k)
-  const lead = iconCol(n.label)
+  const countW = links ? COUNT_COL : 0
+  // Every box with room for a glyph column keeps one, so the names down a
+  // column share a centre whether or not their stage has a glyph.
+  const roomy = n.w >= PAD_X * 2 + ICON_COL + textWidth(n.label, FONT) + countW
+  const lead = iconCol(n.label) || (roomy ? ICON_COL : 0)
   const inner = [
     el('rect', {
       className: 'box',
@@ -2108,12 +2112,9 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
       strokeWidth: n.open ? 2 : 1,
     }),
     ...glyph(n, k, n.y + (n.h - ICON) / 2),
-    // Centred on what is left between the glyph and the marker's column, not on
-    // the box: both columns are there whether or not they hold anything, so a
-    // label centred on the box would sit off to one side of the space it has.
     words(
       n.label,
-      n.x + lead + (n.w - lead - (links ? COUNT_COL : 0)) / 2,
+      n.x + lead + (n.w - lead - countW) / 2,
       baseline(n.y, n.h, FONT),
       FONT,
       n.active || n.open ? k.fg : k.dim,
