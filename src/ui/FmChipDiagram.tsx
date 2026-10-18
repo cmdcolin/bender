@@ -10,6 +10,7 @@ import {
   type BoxSpec,
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
+import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
 
 import type { ReactNode } from 'react'
 
@@ -217,6 +218,9 @@ export function FmChipDiagram({
           )}
         </Diagram>
       </div>
+      {(open?.id === 'modulator' || open?.id === 'carrier') && (
+        <FmVoiceDiagram />
+      )}
       <BoxRows
         keys={open?.keys}
         verbs={open && PARTS[open.id!] && verbs(PARTS[open.id!]!)}

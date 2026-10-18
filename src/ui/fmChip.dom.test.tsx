@@ -43,14 +43,18 @@ const lit = (wire: Element) => wire.getAttribute('class')!.includes('wireOn')
 const wires = (container: HTMLElement) => [
   ...container.querySelectorAll('path[marker-end]'),
 ]
+const pathWires = (container: HTMLElement) =>
+  wires(container).filter(
+    w => w.closest('svg')!.getAttribute('aria-label') === 'FM chip signal path',
+  )
 
 test('the path lights only while the chip is sounding', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   act(() => engine.sounding.set(0))
   const { container } = render(<FmChipDiagram verbs={() => null} />)
-  expect(wires(container).filter(lit)).toHaveLength(0)
+  expect(pathWires(container).filter(lit)).toHaveLength(0)
   act(() => engine.sounding.set(1 << FM_TAP))
-  expect(wires(container).filter(lit)).toHaveLength(4)
+  expect(pathWires(container).filter(lit)).toHaveLength(4)
   act(() => engine.sounding.set(0))
 })
 
