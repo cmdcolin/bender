@@ -781,7 +781,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // --- down the drawing -----------------------------------------------------
 
   board.y = MARGIN
-  const railY = board.y + CAP_H + 6
+  const railY = board.y + CAP_H + 2
   const chipY = railY + RAIL_H
   for (const n of chipRows[0]!) n.y = chipY
   // The lane under the row, which carries everything written about the row
@@ -1990,27 +1990,13 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
       ),
     ])
   }
-  // The toy board: an outline round what is one piece of hardware, and the
-  // cheapest way on a drawing to say that four things share a supply. Dashed,
-  // because it is a boundary rather than anything signal travels along. The lip
-  // carries the door onto the parts the outline is round — the ones that are
-  // hardware rather than a stage, and so have no box of their own — and is
-  // named for them, because a lip reading anything else is a door lying about
-  // where it goes.
+  // The toy board draws no outline of its own: the supply rail already runs
+  // round the four machines on it. The frame keeps only its name, which is the
+  // door onto the board's parts that have no box.
   if (n.kind === 'frame') {
     return el('g', { className: 'node' }, [
-      el('rect', {
-        x: n.x,
-        y: n.y,
-        width: n.w,
-        height: n.h,
-        rx: 4,
-        fill: 'none',
-        stroke: k.border,
-        strokeDasharray: '3 2',
-      }),
       ...door(
-        [words(n.label, n.x + PAD_X, n.y + CAP_H - 4, SMALL, k.dim, 'start')],
+        [words(n.label, n.x + PAD_X, n.y + CAP_H - 2, SMALL, k.dim, 'start')],
         n.door,
         links,
       ),
