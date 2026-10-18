@@ -137,22 +137,22 @@ The Toy keyboard panel is one drawing of the parts these bends reach. The
 keyboard box at its top left opens first and holds the playing rows: tune,
 level, tone, accompaniment, arpeggio and key lock. The key matrix and the tune
 ROM strike the voices, each voice's envelope sets its level, and the output pin
-carries every voice off the chip. Dashed wires carry the clock down to the
-voices, the PWM carrier and the scan counter, and a dashed wire from the output
-back to the clock marks the crosstalk path. A bend turns its part or wire red,
-and the drawing hangs the **Bend spot** pot off the part it is soldered to. The
-clock, tune ROM, envelope and output pin boxes each open **Bend spot** and
-**Bend pot**, and pressing the pot opens the box it hangs on.
+carries every voice off the chip. A small _clk_ tag marks each part the clock
+reaches. The envelope's tag reads _PWM_ and the output pin's reads _scan_ while
+those bends are on, and crosstalk draws a red wire from the output up to the
+clock. A bend turns its part or wire red, and the drawing hangs the **Bend
+spot** pot off the part it is soldered to. The clock, tune ROM, envelope and
+output pin boxes each open **Bend spot** and **Bend pot**, and pressing the pot
+opens the box it hangs on.
 
 The drawing gives each feedback bend a red wire of its own:
 
 - **Step tap** runs from the voices up to the tune ROM.
-- **PWM tap** runs from the voices to the envelope, and the clock's PWM wire
-  goes back to dashed.
+- **PWM tap** runs from the voices to the envelope, and the envelope's tag goes
+  back to _clk_.
 - **Envelope on divider** runs from the envelope back to the voices.
 - **Envelope relax** loops over the envelope.
-- **Output on address** and **Output on data** name their wires on the tune ROM,
-  as in "A2 ← out".
+- **Output on address** and **Output on data** light the tune ROM.
 
 **Crosstalk** is the output trace running beside the timing pin. The chip's own
 sound frequency-modulates its clock at audio rate, and the clock also drives the

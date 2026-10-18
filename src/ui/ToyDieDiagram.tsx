@@ -69,7 +69,7 @@ const GAPS = [30, 38, 22]
 const TAIL = 34
 const TOP = ROOM
 const LOW = TOP + BOX_H + ROW_GAP
-const RAIL = LOW - 22
+const STUB = 7
 const BUS_Y = TOP + BOX_H + 12
 const HEIGHT = LOW + BOX_H + ROOM
 const VOICES_W = 64
@@ -88,7 +88,6 @@ const SPOT_BOX: Record<string, string> = {
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
 const middle = (b: ChipBox) => b.x + b.w / 2
-const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 
 // A variable resistor from a spot on the die to ground, above or below its box.
 function Pot({
@@ -217,6 +216,36 @@ function Node({
   )
 }
 
+// A clock input or output drawn as a labelled stub instead of a wire: the clock
+// reaches four parts, and wires to all of them crowd out the signal path.
+function ClockTag({
+  x,
+  y,
+  dir,
+  say = 'clk',
+  on = false,
+}: {
+  x: number
+  y: number
+  dir: 1 | -1
+  say?: string
+  on?: boolean
+}) {
+  const end = y + dir * STUB
+  return (
+    <>
+      <Wire d={`M${x} ${y} V${end}`} look={on ? 'alarm' : 'plain'} />
+      <text
+        x={x + 3}
+        y={dir < 0 ? y - 1 : end + 1}
+        className={on ? styles.tagOn : styles.tag}
+      >
+        {say}
+      </text>
+    </>
+  )
+}
+
 function Say({
   x,
   y,
@@ -267,38 +296,35 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
     boxWidth('envelope'),
     boxWidth('output pin'),
   ]
-  const width = widths.reduce((a, b) => a + b, TAIL + sum(GAPS))
+  const keyboardW = boxWidth(KEYBOARD) + GLYPH_W + GLYPH_GAP
+  const lead = Math.max(0, (keyboardW - widths[0]!) / 2)
+  const width = widths.reduce((a, b) => a + b, lead + TAIL + sum(GAPS))
   const row = names.map((name, i): ChipBox => ({
     name,
-    x: Math.round(sum(widths.slice(0, i)) + sum(GAPS.slice(0, i))),
+    x: Math.round(lead + sum(widths.slice(0, i)) + sum(GAPS.slice(0, i))),
     y: LOW,
     w: widths[i]!,
     h: BOX_H,
   }))
   const [keys, voices, env, pin] = [row[0]!, row[1]!, row[2]!, row[3]!]
-  const keyboard: ChipBox = {
-    name: KEYBOARD,
-    x: 0,
+  const over = (under: ChipBox, name: string, w = boxWidth(name)): ChipBox => ({
+    name,
+    x: Math.round(middle(under) - w / 2),
     y: TOP,
-    w: boxWidth(KEYBOARD) + GLYPH_W + GLYPH_GAP,
+    w,
     h: BOX_H,
-  }
-  const rom: ChipBox = {
-    name: 'tune ROM',
-    x: voices.x,
-    y: TOP,
-    w: boxWidth('tune ROM'),
-    h: BOX_H,
-  }
+  })
+  const keyboard = over(keys, KEYBOARD, keyboardW)
+  const rom = over(voices, 'tune ROM')
   const clockW = boxWidth('clock')
   const clock: ChipBox = {
     name: 'clock',
-    x: Math.round(middle(env) - clockW / 2),
+    x: width - clockW,
     y: TOP,
     w: clockW,
     h: BOX_H,
   }
-  const feed = voices.x + 19
+  const feed = middle(voices)
   const busW = boxWidth('bus')
   const bus: ChipBox = {
     name: 'bus',
@@ -308,11 +334,9 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
     h: BOX_H,
   }
   const mid = LOW + BOX_H / 2
-  const clockMid = TOP + BOX_H / 2
-  const clockX = middle(clock)
   const pinRight = pin.x + pin.w
-  const tap = pinRight + 12
-  const stepX = voices.x + 38
+  const tap = middle(clock)
+  const stepX = voices.x + 6
   const spot = read('chipBendSpot')
   const spotBox = spot > 0 ? SPOT_BOX[SPOTS[spot]!] : undefined
   const potted = (name: string) => spotBox === name
@@ -320,13 +344,9 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
   const pwmTap = up('chipPwmTap')
   const stepTap = up('chipStepTap')
   const cross = up('chipCrosstalk')
-  const drops: [number, boolean, string][] = [
-    [voices.x + voices.w - 8, false, ''],
-    [clockX, up('chipPwm') && !pwmTap, 'PWM'],
-    [pin.x + pin.w * 0.3, scan, 'scan'],
-  ]
+  const pwm = up('chipPwm') && !pwmTap
   const potAt: Record<string, [number, number, 1 | -1]> = {
-    clock: [clock.x + 14, TOP, -1],
+    clock: [clock.x + 12, TOP, -1],
     'tune ROM': [middle(rom), TOP, -1],
     'output pin': [middle(pin), LOW + BOX_H, 1],
     envelope: [middle(env), LOW + BOX_H, 1],
@@ -371,19 +391,6 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               >
                 out
               </text>
-              <Wire
-                arrow={arrow}
-                d={`M${clock.x} ${clockMid} H${rom.x + rom.w}`}
-                look={stepTap ? 'dash' : 'plain'}
-              />
-              <text
-                x={(clock.x + rom.x + rom.w) / 2}
-                y={clockMid - 4}
-                textAnchor="middle"
-                className={styles.bus}
-              >
-                tempo
-              </text>
               <Wire d={`M${feed} ${TOP + BOX_H} V${bus.y}`} />
               <Wire
                 arrow={arrow}
@@ -397,29 +404,28 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                     d={`M${stepX} ${LOW} V${TOP + BOX_H}`}
                     look="alarm"
                   />
-                  <Say x={stepX + 4} y={TOP + BOX_H + 11}>
+                  <Say x={stepX - 4} y={TOP + BOX_H + 22} anchor="end">
                     step tap
                   </Say>
                 </>
               )}
-              <Wire
-                d={`M${clockX} ${TOP + BOX_H} V${RAIL} M${drops[0]![0]} ${RAIL} H${drops[2]![0]}`}
-                look="dash"
+              <ClockTag x={clock.x + 10} y={TOP + BOX_H} dir={1} />
+              <ClockTag x={rom.x + 10} y={TOP} dir={-1} />
+              <ClockTag x={voices.x + voices.w - 10} y={LOW} dir={-1} />
+              <ClockTag
+                x={env.x + 12}
+                y={LOW}
+                dir={-1}
+                say={pwm ? 'PWM' : 'clk'}
+                on={pwm}
               />
-              {drops.map(([x, on, say]) => (
-                <g key={x}>
-                  <Wire
-                    arrow={arrow}
-                    d={`M${x} ${RAIL} V${LOW}`}
-                    look={bent(on)}
-                  />
-                  {on && (
-                    <Say x={x + 4} y={RAIL + 11}>
-                      {say}
-                    </Say>
-                  )}
-                </g>
-              ))}
+              <ClockTag
+                x={pin.x + 12}
+                y={LOW}
+                dir={-1}
+                say={scan ? 'scan' : 'clk'}
+                on={scan}
+              />
               {pwmTap && (
                 <>
                   <Wire
@@ -463,25 +469,19 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   </Say>
                 </>
               )}
-              <Wire
-                arrow={arrow}
-                d={`M${tap} ${mid} V${clockMid} H${clock.x + clock.w}`}
-                look={bent(cross)}
-              />
-              <circle
-                cx={tap}
-                cy={mid}
-                r={1.6}
-                className={cross ? styles.solder : styles.joint}
-              />
-              <text
-                x={width - 2}
-                y={clockMid - 4}
-                textAnchor="end"
-                className={cross ? styles.knifed : styles.bus}
-              >
-                crosstalk
-              </text>
+              {cross && (
+                <>
+                  <Wire
+                    arrow={arrow}
+                    d={`M${tap} ${mid} V${TOP + BOX_H}`}
+                    look="alarm"
+                  />
+                  <circle cx={tap} cy={mid} r={1.6} className={styles.solder} />
+                  <Say x={tap - 4} y={LOW - 18} anchor="end">
+                    crosstalk
+                  </Say>
+                </>
+              )}
               <Node
                 pick={pick}
                 box={rom}
