@@ -19,8 +19,9 @@ bender runs in the browser on one AudioWorklet, with nothing to install.
   instead and it only morphs part of the way there.
 - **Turn Starve up** while a chord is playing. The rail sags, the pitch dives,
   and past a point the watchdog reboots the chip mid-tune.
-- **Click a box on the signal path map** at the top of the panel. Every control
-  on the instrument is one click from there.
+- **Click a box on the signal path map** at the top of the panel to open its
+  controls. The map shows the stages on the board; **+ add a stage** under it
+  brings in the rest.
 - **Hit Share.** The whole board lives in the URL, so a link is a patch you can
   send someone.
 

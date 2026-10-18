@@ -473,6 +473,11 @@ of the way there, under your finger; drag back and it retraces. Random rolls,
 **mutate**, and **drift** never touch the demo song, the pattern, or the
 output/mic/sample levels.
 
+**random**, **hunt an edge**, **mutate** and **drift** change only the stages
+drawn on the signal path map. Put a stage there with **+ add a stage** under the
+map before rolling if you want the roll to reach it. A preset or a named roll
+such as **wreck it** or **dub** brings in the stages its description names.
+
 A roll moves only a handful of controls, and any control that counts in beats
 (delay time, glitch slice, drum retrigger) lands on a division of the beat. A
 control with red ticks has a normal range — rolls, **mutate** and **drift** stay

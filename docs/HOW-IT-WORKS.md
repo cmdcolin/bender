@@ -20,6 +20,19 @@ patch-bay wires ride over the top as dotted lines from source to destination.
 Click a node to open its controls. Click a wire for the patch bay, or a wire's
 label for whatever it's clipped onto.
 
+**The panel's map draws the stages on the board**, and the README's image draws
+every stage.
+
+- A stage is on the board when its level or mix is up, or, for a stage with
+  neither, once you move a control off stock. Mix bus and Output are always on
+  it, and so is anything a drawn wire lands on.
+- **+ add a stage** under the map lists the rest. Picking one opens it, and
+  opening a stage keeps it on the map.
+- **take off** in a stage's header turns its level or mix down and leaves its
+  other knobs alone. A stage with neither goes back to stock.
+- **random**, **hunt an edge**, **mutate** and **drift** change only the stages
+  on the map.
+
 **Six slots, seven bends.** You choose which six are on the board, and in what
 order. The one you didn't pick isn't gone — it's drawn riding loose in the rack
 at the head of the chain, dashed, soldered to nothing. Click the rack to reorder
