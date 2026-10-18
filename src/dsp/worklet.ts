@@ -84,6 +84,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       hits: 0,
       tunePos: 0,
       tuneFrac: 0,
+      monoSeqPos: 0,
       tuneStepMs: 0,
       duck: 0,
       rail: 1,
@@ -354,6 +355,7 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.hits = this.built.toyDrum.takeFired()
       m.tunePos = this.built.toyChip.tunePos
       m.tuneFrac = this.built.toyChip.tuneFrac
+      m.monoSeqPos = this.built.monoSynth.seqAt
       m.tuneStepMs = this.built.toyChip.tuneStepMs
       m.duck = this.duck
       m.rail = rail.v

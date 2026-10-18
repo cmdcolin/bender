@@ -31,19 +31,21 @@ import type { RefObject } from 'react'
 // melody stays inside of and what fits the panel without the grid becoming the
 // whole of it; the rest of the memory's reach is a press away on the octave
 // buttons, and the window opens on what you played.
-const ROWS = 24
+export const ROWS = 24
 const TOP_BASE = Math.max(NOTE_HI - ROWS + 1, NOTE_LO)
 
 // C, in the chip's counting — its zero note is A, so a C is three semitones up.
-const isC = (note: number) => ((note % 12) + 12) % 12 === 3
+export const isC = (note: number) => ((note % 12) + 12) % 12 === 3
 
 // The window's bottom, snapped to a C so the rows read as octaves rather than
 // as wherever the lowest note you played happened to land.
-const octaveFloor = (note: number) => Math.floor((note - 3) / 12) * 12 + 3
+export const octaveFloor = (note: number) =>
+  Math.floor((note - 3) / 12) * 12 + 3
 
-const clampBase = (note: number) => Math.min(Math.max(note, NOTE_LO), TOP_BASE)
+export const clampBase = (note: number) =>
+  Math.min(Math.max(note, NOTE_LO), TOP_BASE)
 
-const baseFor = (lanes: number[][]) => {
+export const baseFor = (lanes: number[][]) => {
   const notes = lanes.flat().filter(isNote)
   return clampBase(octaveFloor(notes.length === 0 ? -9 : Math.min(...notes)))
 }
@@ -365,7 +367,7 @@ const Cell = memo(function Cell(props: {
   )
 })
 
-function cellClass(s: {
+export function cellClass(s: {
   on: boolean
   head: boolean
   ghost: boolean

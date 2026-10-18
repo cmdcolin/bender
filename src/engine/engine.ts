@@ -121,6 +121,7 @@ export interface Meter {
       which is the clock a note played into the memory lands on. */
   tunePos: number
   tuneFrac: number
+  monoSeqPos: number
   tuneStepMs: number
   duck: number
   rail: number
@@ -317,6 +318,7 @@ export class Engine {
       hits: 0,
       tunePos: 0,
       tuneFrac: 0,
+      monoSeqPos: 0,
       tuneStepMs: 0,
       duck: 0,
       rail: 1,
@@ -557,6 +559,7 @@ export class Engine {
           hits: msg.hits,
           tunePos: msg.tunePos,
           tuneFrac: msg.tuneFrac,
+          monoSeqPos: msg.monoSeqPos,
           tuneStepMs: msg.tuneStepMs,
           duck: msg.duck,
           rail: msg.rail,

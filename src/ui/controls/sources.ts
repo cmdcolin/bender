@@ -62,7 +62,7 @@ import {
 } from '../../dsp/stages/toyDrum.ts'
 import { NOTE_NAMES } from '../../notes.ts'
 import { SCALE_NAMES } from '../../scale.ts'
-import { TUNE_ALL_STEP_KEYS } from '../../tune.ts'
+import { MONO_SEQ_STEP_KEYS, TUNE_ALL_STEP_KEYS } from '../../tune.ts'
 
 import type { Controls } from '../../controls.ts'
 
@@ -2113,6 +2113,7 @@ export const SOURCE_GROUPS: Group[] = [
     name: 'Mono synth',
     place: 'Sources',
     editor: { kind: 'monoPath' },
+    memory: { keys: [...MONO_SEQ_STEP_KEYS, 'monoSeqLen'] },
     handled: [
       'monoWave1',
       'monoRange1',
@@ -2227,6 +2228,29 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.005,
         unit: 's',
         help: 'Portamento between notes. A key played while another is still down slides to the new pitch without restarting the contours.',
+      },
+      {
+        key: 'monoSeqOn',
+        part: 'melody',
+        label: 'Melody memory',
+        min: 0,
+        max: 1,
+        step: 1,
+        unit: '',
+        choices: ['off', 'on'],
+        help: 'Plays the steps on the piano roll through the mono synth while the song runs, whatever the toy plays. Cut the toy’s jumper to hear the memory alone.',
+      },
+      {
+        key: 'monoSeqRate',
+        part: 'melody',
+        label: 'Memory rate',
+        min: 0.2,
+        max: 24,
+        step: 0.1,
+        unit: 'Hz',
+        curve: 'log',
+        needs: c => c.monoSeqOn > 0,
+        help: 'Steps a second. The counter runs off the toy’s supply, so a sagging rail slows it and a reboot sends it back to the first step.',
       },
       {
         key: 'monoWave1',

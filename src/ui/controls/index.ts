@@ -46,8 +46,12 @@ export const ALL_SLIDERS: SliderDef[] = GROUPS.flatMap(g => g.sliders)
 // bits and a step count on the kit, a note per step on the memory. The desk's
 // widget names no keys of its own — the faders on it belong to the machines
 // they came from.
-const editorKeys = (g: Group) =>
-  g.editor?.kind === 'drums' || g.editor?.kind === 'roll' ? g.editor.keys : []
+const editorKeys = (g: Group): ControlKey[] => [
+  ...(g.editor?.kind === 'drums' || g.editor?.kind === 'roll'
+    ? g.editor.keys
+    : []),
+  ...(g.memory?.keys ?? []),
+]
 
 export const EDITOR_KEYS = new Set<ControlKey>(GROUPS.flatMap(editorKeys))
 

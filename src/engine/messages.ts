@@ -126,6 +126,7 @@ export interface MeterMsg {
       The chip's own, because every bend that drags it is in there. */
   tunePos: number
   tuneFrac: number
+  monoSeqPos: number
   tuneStepMs: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number

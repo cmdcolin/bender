@@ -25,6 +25,7 @@ import { FourTrack } from './FourTrack.tsx'
 import { MicPatch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
 import { MonoPathDiagram } from './MonoPathDiagram.tsx'
+import { MonoRoll } from './MonoRoll.tsx'
 import { OrderRack } from './OrderRack.tsx'
 import { PatchBay } from './PatchBay.tsx'
 import { PcmKeysDiagram } from './PcmKeysDiagram.tsx'
@@ -595,7 +596,9 @@ export function OpenGroup({
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}
-        {group.editor?.kind === 'roll' && <EditorToggle which="roll" />}
+        {(group.editor?.kind === 'roll' || group.memory) && (
+          <EditorToggle which="roll" />
+        )}
         {group.editor?.kind === 'drums' && <EditorToggle which="grid" />}
         <Tip
           text={
@@ -681,6 +684,7 @@ export function OpenGroup({
               )}
             />
           )}
+          {group.memory && shownEditors.roll && <MonoRoll />}
           {!rigsFirst && rigs}
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>
