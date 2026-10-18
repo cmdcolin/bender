@@ -7,7 +7,7 @@
      shape of the box depending on that would be a loop. */
   aspect-ratio: 800 / 260;
   height: auto;
-  max-height: 16vh;
+  max-height: min(16vh, 96px);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
   background: #0a0a0c;
