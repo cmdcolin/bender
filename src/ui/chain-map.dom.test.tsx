@@ -23,6 +23,12 @@ test('every door on the map is a tab stop', () => {
   for (const door of doors) expect(door.getAttribute('href')).toBeTruthy()
 })
 
+test('the map is a named group holding its doors', () => {
+  render(<App />)
+  const group = screen.getByRole('group', { name: 'signal path' })
+  expect(group.querySelector('a[data-door]')).not.toBeNull()
+})
+
 test('a stage with nothing moved draws no touched mark', () => {
   render(<App />)
   expect(touched()).toHaveLength(0)

@@ -146,7 +146,13 @@ export function ChainMap({
           seconds={seconds}
         />
       )}
-      <div ref={graph} className={styles.graph} onClick={click}>
+      <div
+        ref={graph}
+        className={styles.graph}
+        role="group"
+        aria-label="signal path"
+        onClick={click}
+      >
         {mount(drawMap(map), 0)}
       </div>
       {!coarse && (
