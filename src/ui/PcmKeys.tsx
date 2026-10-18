@@ -2,6 +2,7 @@ import { engine } from '../engine/engine.ts'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
+import { SeqRec } from './SeqRec.tsx'
 
 // The home keyboard's bed: a grey moulded case with the model name on the deck,
 // a window over the sample memory, and the same jumper off the toy's gate the
@@ -29,6 +30,7 @@ export function PcmKeys({
       extras={
         <>
           <RailLamp onOpen={onOpen} />
+          <SeqRec dest="pcm" name="home keyboard" />
           <GateJumper
             control="pcmKeyGate"
             notes={engine.pcmNotes}

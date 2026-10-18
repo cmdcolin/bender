@@ -2,6 +2,7 @@ import { engine } from '../engine/engine.ts'
 import styles from './FmKeys.module.css'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import { RailLamp } from './RailLamp.tsx'
+import { SeqRec } from './SeqRec.tsx'
 
 // FmKeys draws the FM chip's keyboard as a green circuit board with the chip on
 // it and a row of piano keys. The switch on the deck cuts or solders
@@ -31,6 +32,7 @@ export function FmKeys({
       extras={
         <>
           <RailLamp onOpen={onOpen} />
+          <SeqRec dest="fm" name="FM chip" />
           <GateJumper
             control="fmKeyGate"
             notes={engine.fmNotes}

@@ -1017,3 +1017,69 @@ test('a dropped file calls off a roll still in the air', async () => {
   expect(engine.sampleName.get()).toBe('mine.wav')
   expect(engine.archiveStep.get()).toBeNull()
 })
+
+// The second melody: written from whichever bed it is aimed at, and only that
+// one. Its counter arrives with the meter the way the toy's does.
+const atSeqStep = (engine: Engine, monoSeqPos: number, monoSeqFrac = 0) =>
+  engine.meter.set({ ...engine.meter.get(), monoSeqPos, monoSeqFrac })
+
+test('a key on the memory’s machine writes the step its counter is on', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  atSeqStep(engine, 5)
+
+  engine.noteOn(7, 1, 'mono')
+  expect(engine.controls.get().monoSeqStep5).toBe(REST)
+
+  engine.armSeqRecord(true, 'mono')
+  engine.noteOn(7, 1, 'mono')
+  expect(engine.controls.get().monoSeqStep5).toBe(7)
+  expect(engine.controls.get().tuneStep5).toBe(REST)
+})
+
+test('keys on other beds play and write nothing', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  atSeqStep(engine, 5)
+  engine.armSeqRecord(true, 'mono')
+  engine.noteOn(7, 1, 'fm')
+  engine.noteOn(7, 1, 'toy')
+  expect(engine.controls.get().monoSeqStep5).toBe(REST)
+})
+
+test('arming from a bed aims the memory at it and turns it on', () => {
+  const engine = new Engine()
+  engine.armSeqRecord(true, 'fm')
+  expect(engine.controls.get()).toMatchObject({ monoSeqTo: 1, monoSeqOn: 1 })
+  expect(engine.songPlaying.get()).toBe(true)
+
+  engine.armSeqRecord(true, 'pcm')
+  expect(engine.controls.get().monoSeqTo).toBe(2)
+})
+
+test('a key held across steps writes holds under one entry', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.armSeqRecord(true, 'mono')
+  atSeqStep(engine, 2)
+  const before = engine.history.get().past.length
+  engine.noteOn(7, 1, 'mono')
+  atSeqStep(engine, 5)
+  engine.noteOff(7, 'mono')
+  const c = engine.controls.get()
+  expect(c.monoSeqStep2).toBe(7)
+  expect(c.monoSeqStep3).toBe(HOLD)
+  expect(c.monoSeqStep4).toBe(HOLD)
+  expect(c.monoSeqStep5).toBe(REST)
+  expect(engine.history.get().past.length - before).toBe(1)
+})
+
+test('a key let go on its own step is that step and no more', () => {
+  const engine = new Engine()
+  engine.setSongPlaying(true)
+  engine.armSeqRecord(true, 'mono')
+  atSeqStep(engine, 2)
+  engine.noteOn(7, 1, 'mono')
+  engine.noteOff(7, 'mono')
+  expect(engine.controls.get().monoSeqStep3).toBe(REST)
+})

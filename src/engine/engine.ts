@@ -33,6 +33,7 @@ import {
   asTuneLen,
   foldNote,
   HOLD,
+  MONO_SEQ_STEP_KEYS,
   REST,
   TUNE_LANE_KEYS,
   laneForNote,
@@ -47,6 +48,7 @@ import {
   type Rolled,
 } from './archive.ts'
 import { Glide } from './glide.ts'
+import { SEQ_DESTS } from './messages.ts'
 import {
   MAX_SOURCES,
   N_PARAMS,
@@ -62,6 +64,7 @@ import type {
   NoteDest,
   RecMsg,
   RetroMsg,
+  SeqDest,
   ToWorklet,
 } from './messages.ts'
 import type { Take, WavSink } from './takeSink.ts'
@@ -122,6 +125,8 @@ export interface Meter {
   tunePos: number
   tuneFrac: number
   monoSeqPos: number
+  monoSeqFrac: number
+  monoSeqStepMs: number
   tuneStepMs: number
   duck: number
   rail: number
@@ -319,6 +324,8 @@ export class Engine {
       tunePos: 0,
       tuneFrac: 0,
       monoSeqPos: 0,
+      monoSeqFrac: 0,
+      monoSeqStepMs: 0,
       tuneStepMs: 0,
       duck: 0,
       rail: 1,
@@ -352,6 +359,7 @@ export class Engine {
   /** And the same switch on the keyboard: what you play goes into the memory,
       on the step the chip is standing on. Off by default, for the same reason. */
   readonly tuneRecord = createStore(false)
+  readonly seqRecord = createStore(false)
   readonly running = createStore(false)
   readonly micOn = createStore(false)
   // The two run lines, separately. The drum machine is its own box: it runs
@@ -560,6 +568,8 @@ export class Engine {
           tunePos: msg.tunePos,
           tuneFrac: msg.tuneFrac,
           monoSeqPos: msg.monoSeqPos,
+          monoSeqFrac: msg.monoSeqFrac,
+          monoSeqStepMs: msg.monoSeqStepMs,
           tuneStepMs: msg.tuneStepMs,
           duck: msg.duck,
           rail: msg.rail,
@@ -1387,6 +1397,7 @@ export class Engine {
     this.hold(note, true, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
       this.writeNote(note)
+    if (this.recordsSeq(dest)) this.writeSeqNote(note)
   }
 
   noteOff(semitone: number, dest: NoteDest = 'toy') {
@@ -1397,6 +1408,7 @@ export class Engine {
     this.hold(note, false, dest)
     if (dest === 'toy' && this.tuneRecord.get() && this.songPlaying.get())
       this.writeHeld(note)
+    if (this.recordsSeq(dest)) this.writeSeqHeld(note)
   }
 
   /** Whether a key, as pressed rather than as the scale lock snapped it, is
@@ -1436,6 +1448,29 @@ export class Engine {
     if (on) this.setSongPlaying(true)
   }
 
+  /** Arming the second melody puts it on, and aims it at the bed whose rec cap
+      was pressed. Keys on any other bed play and are not written. */
+  armSeqRecord(on: boolean, dest?: SeqDest) {
+    if (on) {
+      const c = this.controls.get()
+      const to = dest === undefined ? c.monoSeqTo : SEQ_DESTS.indexOf(dest)
+      if (c.monoSeqOn !== 1 || c.monoSeqTo !== to) {
+        this.armStep()
+        this.patch({ monoSeqOn: 1, monoSeqTo: to })
+      }
+    }
+    this.seqRecord.set(on)
+    if (on) this.setSongPlaying(true)
+  }
+
+  private recordsSeq(dest: NoteDest) {
+    return (
+      this.seqRecord.get() &&
+      this.songPlaying.get() &&
+      dest === SEQ_DESTS[Math.round(this.controls.get().monoSeqTo)]
+    )
+  }
+
   // Arming runs the kit. Armed and stopped, every hit sounds and none is kept,
   // and nothing about playing says so.
   armDrumRecord(on: boolean) {
@@ -1469,6 +1504,50 @@ export class Engine {
       latencyMs: this.latencyMs(),
     })
     return quantizeStep(tick, phase, asTuneLen(this.controls.get().tuneLen))
+  }
+
+  private seqStruckAt = new Map<number, number>()
+
+  private seqStep(): number {
+    const m = this.meter.get()
+    const { tick, phase } = heardStep({
+      tick: m.monoSeqPos,
+      clock: m.monoSeqFrac,
+      stepMs: m.monoSeqStepMs,
+      ageMs: performance.now() - this.meterAt,
+      latencyMs: this.latencyMs(),
+    })
+    return quantizeStep(tick, phase, asTuneLen(this.controls.get().monoSeqLen))
+  }
+
+  private writeSeqNote(semitone: number) {
+    const step = this.seqStep()
+    const note = foldNote(semitone)
+    const key = MONO_SEQ_STEP_KEYS[step]!
+    this.seqStruckAt.set(semitone, step)
+    if (this.controls.get()[key] !== note) {
+      this.armStep()
+      this.set(key, note)
+    }
+  }
+
+  // Holds for a key let go of later, written under the same entry as its note.
+  private writeSeqHeld(semitone: number) {
+    const from = this.seqStruckAt.get(semitone)
+    if (from === undefined) return
+    this.seqStruckAt.delete(semitone)
+    const c = this.controls.get()
+    const len = asTuneLen(c.monoSeqLen)
+    const to = this.seqStep()
+    if (to === from) return
+    const held: Partial<Controls> = {}
+    for (let i = 1; i < len; i++) {
+      const at: number = (from + i) % len
+      const key = MONO_SEQ_STEP_KEYS[at]!
+      if (at === to || c[key] !== REST) break
+      held[key] = HOLD
+    }
+    if (Object.keys(held).length > 0) this.patch(held)
   }
 
   private stepKey(step: number, lane = 0): TuneStepKey {

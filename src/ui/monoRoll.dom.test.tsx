@@ -75,3 +75,14 @@ test('the loop select sets the memory’s own length', () => {
   expect(engine.controls.get().monoSeqLen).toBe(8)
   expect(engine.controls.get().tuneLen).toBe(32)
 })
+
+test('record on the roll arms the memory, turns it on and runs the song', () => {
+  act(() => engine.armSeqRecord(false))
+  openMono()
+  fireEvent.click(screen.getByRole('button', { name: 'record' }))
+  expect(engine.seqRecord.get()).toBe(true)
+  expect(engine.controls.get().monoSeqOn).toBe(1)
+  expect(engine.songPlaying.get()).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: 'record' }))
+  expect(engine.seqRecord.get()).toBe(false)
+})

@@ -44,6 +44,14 @@ export interface UndoTakeMsg {
     only to its own chip. */
 export type NoteDest = 'toy' | 'fm' | 'pcm' | 'mono'
 
+/** The machines the second melody can play, in the order of its Plays on choice. */
+export const SEQ_DESTS = [
+  'mono',
+  'fm',
+  'pcm',
+] as const satisfies readonly NoteDest[]
+export type SeqDest = (typeof SEQ_DESTS)[number]
+
 export interface NoteMsg {
   kind: 'noteOn' | 'noteOff'
   semitone: number
@@ -127,6 +135,8 @@ export interface MeterMsg {
   tunePos: number
   tuneFrac: number
   monoSeqPos: number
+  monoSeqFrac: number
+  monoSeqStepMs: number
   tuneStepMs: number
   /** How hard the limiter has been leaning since the last meter, 0 to 1. */
   duck: number

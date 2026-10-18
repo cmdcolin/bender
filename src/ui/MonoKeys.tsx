@@ -2,6 +2,7 @@ import { engine } from '../engine/engine.ts'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './MonoKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
+import { SeqRec } from './SeqRec.tsx'
 
 // The mono synth's bed: walnut cheeks, a black panel with three knob caps for
 // the oscillators, and the jumper off the toy's gate.
@@ -32,6 +33,7 @@ export function MonoKeys({
       extras={
         <>
           <RailLamp onOpen={onOpen} />
+          <SeqRec dest="mono" name="mono synth" />
           <GateJumper
             control="monoKeyGate"
             notes={engine.monoNotes}

@@ -65,6 +65,7 @@ export const YOURS = new Set<ControlKey>([
   'monoSeqOn',
   'monoSeqRate',
   'monoSeqLen',
+  'monoSeqTo',
   ...MONO_SEQ_STEP_KEYS,
 ])
 

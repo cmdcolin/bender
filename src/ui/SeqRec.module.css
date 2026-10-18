@@ -1,0 +1,17 @@
+.rec,
+.recOn,
+.recIdle {
+  --cap-lit: var(--accent2);
+}
+
+.rec {
+  composes: cap from './button.module.css';
+}
+
+.recOn {
+  composes: capOn from './button.module.css';
+}
+
+.recIdle {
+  composes: capIdle from './button.module.css';
+}
