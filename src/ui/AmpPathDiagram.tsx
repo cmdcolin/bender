@@ -91,7 +91,10 @@ export function AmpPathDiagram() {
       90,
       96,
       'tone stack',
-      `${r.read('ampBass')} ${r.read('ampMid')} ${r.read('ampTreble')}`,
+      [
+        'bass\u00a0mid\u00a0\u00a0treb',
+        `${r.read('ampBass')} ${r.read('ampMid')} ${r.read('ampTreble')}`,
+      ],
       'The passive network between the stages: bass, mid and treble pots that load each other.',
       ['ampBass', 'ampMid', 'ampTreble'],
     ),
@@ -160,7 +163,7 @@ export function AmpPathDiagram() {
                   className={styles.grid}
                 />
                 <Label x={PLOT.left - 4} y={plotY(db) + 3} anchor="end">
-                  {String(db)}
+                  {db === 0 ? '0 dB' : String(db)}
                 </Label>
               </g>
             ))}
@@ -171,7 +174,7 @@ export function AmpPathDiagram() {
                 y={PLOT.bottom + 12}
                 anchor="middle"
               >
-                {hz >= 1000 ? `${hz / 1000}k` : String(hz)}
+                {hz >= 1000 ? `${hz / 1000} kHz` : `${hz} Hz`}
               </Label>
             ))}
             <path

@@ -26,7 +26,8 @@ const KEYS = [
 ] as const
 
 const BOX_X = 8
-const BOX_W = 56
+const TAP_X = -16
+const BOX_W = 64
 const ROW_Y = [6, 52, 98]
 const BUS_X = 150
 const AMPS_X = 166
@@ -58,7 +59,7 @@ export function FeedbackLoops() {
     y: ROW_Y[i]!,
     w: BOX_W,
     name: `strip ${i + 1}`,
-    value: [r.read(s.amt), r.read(s.ms)],
+    value: [`amt ${r.read(s.amt)}`, r.read(s.ms)],
     off: r.value(s.amt) <= 0,
     touched: r.touched(s.amt, s.ms, s.tone),
     help: 'One send off the tap, through its own delay, onto the bus.',
@@ -109,7 +110,7 @@ export function FeedbackLoops() {
               const look = r.value(s.amt) > 0 ? 'on' : 'plain'
               return (
                 <g key={s.amt}>
-                  <Wire d={`M-16 ${rowMid(i)} H${BOX_X}`} arrow={arrow} />
+                  <Wire d={`M${TAP_X} ${rowMid(i)} H${BOX_X}`} arrow={arrow} />
                   <Wire
                     d={`M${BOX_X + BOX_W} ${rowMid(i)} H${BUS_X}`}
                     look={look}
@@ -118,6 +119,10 @@ export function FeedbackLoops() {
               )
             })}
             <Wire d={`M${BUS_X} ${rowMid(0)} V${rowMid(2)}`} />
+            <Wire d={`M${TAP_X} ${rowMid(0)} V${rowMid(2)}`} />
+            <Label x={TAP_X} y={rowMid(0) - 6} anchor="middle">
+              tap
+            </Label>
             <Wire d={`M${BUS_X} ${MID} H${AMPS_X}`} arrow={arrow} look="on" />
             <Wire
               d={`M${AMPS_X + AMPS_W} ${MID} H${DEST_X}`}
