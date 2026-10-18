@@ -446,6 +446,7 @@ export class Engine {
   private node: AudioWorkletNode | null = null
   private masterGain: GainNode | null = null
   private micStream: MediaStream | null = null
+  private micSource: MediaStreamAudioSourceNode | null = null
   private archiveRoll: AbortController | null = null
   private dirty = false
   private flushQueued = false
@@ -963,18 +964,25 @@ export class Engine {
       },
     })
     this.micStream = stream
-    const src = this.ctx.createMediaStreamSource(stream)
-    src.connect(this.node!)
+    this.micSource = this.ctx.createMediaStreamSource(stream)
+    this.micSource.connect(this.node!)
     this.micOn.set(true)
-    const ended = () => {
-      if (this.micStream !== stream) return
-      src.disconnect()
-      for (const track of stream.getTracks()) track.stop()
-      this.micStream = null
-      this.micOn.set(false)
-    }
     for (const track of stream.getAudioTracks())
-      track.addEventListener('ended', ended, { once: true })
+      track.addEventListener(
+        'ended',
+        () => {
+          if (this.micStream === stream) this.disableMic()
+        },
+        { once: true },
+      )
+  }
+
+  disableMic() {
+    this.micSource?.disconnect()
+    for (const track of this.micStream?.getTracks() ?? []) track.stop()
+    this.micSource = null
+    this.micStream = null
+    this.micOn.set(false)
   }
 
   async loadSample(file: File) {

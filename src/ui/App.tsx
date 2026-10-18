@@ -434,13 +434,21 @@ export function App(props: { openedFromLink?: boolean }) {
                         }
                       />
                     </Tip>
-                    <Tip text="Opens the microphone as an input to the board.">
+                    <Tip
+                      text={
+                        micOn
+                          ? 'Closes the microphone and takes it off the board.'
+                          : 'Opens the microphone as an input to the board.'
+                      }
+                    >
                       <DeckKey
                         glyph="mic"
                         legend="mic"
                         red
                         latched={micOn}
-                        onClick={() => engine.enableMic()}
+                        onClick={() =>
+                          micOn ? engine.disableMic() : engine.enableMic()
+                        }
                       />
                     </Tip>
                   </>
