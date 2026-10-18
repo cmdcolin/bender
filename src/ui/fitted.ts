@@ -1,6 +1,7 @@
 import { createStore } from '../listeners.ts'
 import { FIXED, GATES, gateOff, onBoard } from './chain-map.ts'
-import { OWNER_BY_KEY, type Group } from './controls/index.ts'
+import { GROUPS, OWNER_BY_KEY, type Group } from './controls/index.ts'
+import { readSession, writeSession } from './persist.ts'
 import { coherePatch, cohereVoices } from './presets/patch.ts'
 import { resetGroup } from './presets/roll.ts'
 
@@ -10,8 +11,27 @@ import type { Controls } from '../controls.ts'
 // you added or opened, which stay until you take them off. Rolls change only
 // those, so a roll never brings in an effect you didn't put there.
 
+// Kept for the tab, so a reload keeps them and a fresh tab or a shared link
+// starts with none.
+const KEY = 'bender.addedStages'
+const NAMES = new Set(GROUPS.map(g => g.name))
+
+export function parseAdded(raw: string | null): Set<string> {
+  try {
+    const names: unknown = JSON.parse(raw ?? '[]')
+    return Array.isArray(names)
+      ? new Set(names.filter((n): n is string => NAMES.has(n)))
+      : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
 /** Stages you added that the board would not otherwise show. */
-export const added = createStore<ReadonlySet<string>>(new Set())
+export const added = createStore<ReadonlySet<string>>(
+  parseAdded(readSession(KEY)),
+)
+added.subscribe(() => writeSession(KEY, JSON.stringify([...added.get()])))
 
 export const shownOn = (c: Controls): Set<string> =>
   new Set([...onBoard(c), ...added.get()])

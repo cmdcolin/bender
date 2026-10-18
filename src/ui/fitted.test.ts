@@ -3,7 +3,14 @@ import { afterEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { buildMap, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY } from './controls/index.ts'
-import { added, clearAdded, confine, shownOn, takeOff } from './fitted.ts'
+import {
+  added,
+  clearAdded,
+  confine,
+  parseAdded,
+  shownOn,
+  takeOff,
+} from './fitted.ts'
 import { mutate, randomLook } from './presets/index.ts'
 
 const stock = (): Controls => ({ ...DEFAULT_CONTROLS })
@@ -107,4 +114,10 @@ test('taking the toy keyboard off pulls its fader down', () => {
 test('taking an ungated group off puts it back where it booted', () => {
   const off = takeOff(group('Wear'), { ...stock(), heatAmt: 0.4 })
   expect(off.heatAmt).toBe(DEFAULT_CONTROLS.heatAmt)
+})
+
+test('a stored list keeps the stage names the board still has', () => {
+  expect([...parseAdded('["Ring mod","Gone pedal",3]')]).toEqual(['Ring mod'])
+  expect(parseAdded('{').size).toBe(0)
+  expect(parseAdded(null).size).toBe(0)
 })
