@@ -126,6 +126,10 @@ export function AmpPathDiagram() {
       hz,
     )
   const open = boxes.find(b => b.id === pick.selected)
+  const loudest = Array.from(
+    { length: POINTS },
+    (_, i) => HZ.low * Math.pow(HZ.high / HZ.low, i / (POINTS - 1)),
+  ).reduce((best, hz) => (cabDb(cab, hz) > cabDb(cab, best) ? hz : best))
   const top = MID - boxHeight(boxes[0]!.value) / 2
   const howling = r.value('ampMicro') > 0
   return (
@@ -199,8 +203,18 @@ export function AmpPathDiagram() {
               }
               opacity={off ? 0.55 : 1}
             />
-            <Label x={PLOT.left + 4} y={PLOT.top - 4}>
-              tone stack, solid · speaker, dashed
+            <Label x={PLOT.right} y={plotY(stack(HZ.high)) - 4} anchor="end">
+              tone stack
+            </Label>
+            <Label
+              x={Math.min(
+                Math.max(plotX(loudest), PLOT.left + 24),
+                PLOT.right - 90,
+              )}
+              y={plotY(cabDb(cab, loudest)) - 4}
+              anchor="middle"
+            >
+              speaker
             </Label>
           </>
         )}
