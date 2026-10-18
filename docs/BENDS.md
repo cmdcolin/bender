@@ -210,6 +210,35 @@ rows and columns close the other two corners of their rectangle, and those
 corners sound as held keys. The row width sets the intervals: four wide, A3 and
 F#4 add A#3 and F4. The arpeggiator walks the ghosts along with the real keys.
 
+**Step tap** clocks the tune's counter off a stage of the melody's pitch divider
+in place of the tempo divider.
+
+- Each note sets how long it lasts, so high notes rush and low ones linger. A
+  rest keeps the last note's rate, because the divider keeps counting the last
+  word it loaded.
+- The knob moves the wire from the ninth stage to the first. At the top the tune
+  steps at half the note's pitch, a hundred or more steps a second, and the song
+  plays as one buzzing tone.
+
+**Envelope relax** puts a leak and a trigger across the envelope cap. The leak
+drains each note up to seven octaves faster, and when the cap reaches a quarter
+the trigger charges it full again, so every note restrikes itself until a rest,
+a new note or a voice steal replaces it. Low on the knob the notes stutter, and
+at the top they buzz around 200 Hz. The drain runs off the chip clock, so clock
+bends move the rate, and with Volume PWM each restrike sweeps the tone.
+
+**Envelope on divider** bridges the envelope's counter onto the divider word. A
+note's pitch falls as its envelope fades, by up to three octaves at the top of
+the knob, so every note becomes a zap. The bass, chords and keys fall with their
+own envelopes.
+
+**Output on address** solders the output pin onto one ROM address line, A0 to
+A4. The pin drives the line high on the positive half of each cycle and low on
+the negative half, so the ROM serves one of two neighbouring steps from moment
+to moment. The melody's divider loads whichever note comes back without
+restriking it, and that note's pitch sets how fast the pin swings next. A rest
+on one side gates the note on and off at its own pitch.
+
 ## The FM chip's register bus
 
 The FM chip isn't played — it's configured, one byte at a time, by a processor

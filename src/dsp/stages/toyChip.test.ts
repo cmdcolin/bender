@@ -589,6 +589,78 @@ test('a wire on the scan lane arpeggiates a held chord with the knob at zero', (
   expect(new Set(picks).size).toBe(4)
 })
 
+test('a step tap runs the tune at a rate its own notes set', () => {
+  const steps = (chipStepTap: number) => {
+    let moves = 0
+    let last = -1
+    renderBender(
+      { ...CHIP_ONLY, chipStepTap },
+      2,
+      b => (b.transport.tune = true),
+      undefined,
+      b => {
+        if (b.toyChip.tunePos !== last) moves++
+        last = b.toyChip.tunePos
+      },
+    )
+    return moves
+  }
+  expect(steps(0)).toBeLessThan(12)
+  expect(steps(1)).toBeGreaterThan(100)
+})
+
+test('a relaxing envelope cap keeps a released key restriking', () => {
+  const take = (chipEnvRelax: number) =>
+    rms(
+      tail(
+        renderBender(
+          { ...CHIP_ONLY, chipEnvRelax },
+          3,
+          b => b.toyChip.noteOn(0),
+          undefined,
+          (b, secs) => {
+            if (secs > 0.2) b.toyChip.noteOff(0)
+          },
+        ),
+        0.5,
+      ),
+    )
+  expect(take(0)).toBeLessThan(0.001)
+  expect(take(0.5)).toBeGreaterThan(0.01)
+})
+
+test('the envelope on the divider drops a note as it fades', () => {
+  const pitches = (chipEnvDiv: number) => {
+    const x = renderBender(
+      { ...CHIP_ONLY, chipEnvDiv },
+      0.6,
+      b => b.toyChip.noteOn(0),
+      undefined,
+      (b, secs) => {
+        if (secs > 0.02) b.toyChip.noteOff(0)
+      },
+    )
+    return [
+      pitchHz(x.subarray(0, SR * 0.05)),
+      pitchHz(x.subarray(SR * 0.4, SR * 0.5)),
+    ]
+  }
+  const [stockStart, stockEnd] = pitches(0)
+  expect(stockEnd).toBeCloseTo(stockStart, -1)
+  const [start, end] = pitches(1)
+  expect(end).toBeLessThan(start * 0.7)
+})
+
+test('the output on an address line rewrites the tune', () => {
+  const tune = (chipOutAddr: number) =>
+    renderBender(
+      { ...CHIP_ONLY, chipOutAddr },
+      3,
+      b => (b.transport.tune = true),
+    )
+  expect(deviation(tune(1), tune(0))).toBeGreaterThan(0.3)
+})
+
 test('a wire on the envelope cap lane swells a held key in', () => {
   const x = renderBender(
     { ...CHIP_ONLY, ...padWire(DEST.chipEnvCap, 0.34) },

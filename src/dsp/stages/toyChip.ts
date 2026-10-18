@@ -217,6 +217,24 @@ const DIV_MAX = (1 << DIV_LINES) - 1
 export const GHOST_MODES = ['off', '4 wide', '6 wide', '8 wide']
 const GHOST_COLS = [0, 4, 6, 8]
 
+// The tune's counter clocked off a stage of the melody's own pitch divider
+// rather than the tempo divider, so each note sets how long it lasts. The knob
+// slides the wire from the ninth stage up to the first, where the tune steps at
+// half the note's pitch.
+const TAP_STAGES = 9
+const tapDivisor = (tap: number) => octaves(TAP_STAGES * (1 - tap))
+
+// The envelope cap with a trigger across it and a leak beside it: the leak
+// drains the cap up to seven octaves faster, and when it reaches a quarter the
+// trigger fires the hold switch and charges it full again. Every note keeps
+// restriking itself, from a stutter up to a buzz around 200 Hz.
+const RELAX_AT = 0.25
+const RELAX_OCTAVES = 7
+
+// The envelope's counter bridged onto the divider word, so a note's pitch
+// falls as it fades, by up to this many octaves.
+const ENV_DIV_OCTAVES = 3
+
 export const ENV_CAPS = ['stock', 'reversed', 'leaky']
 const ENV_REVERSED = 1
 const ENV_LEAKY = 2
@@ -381,6 +399,12 @@ export class ToyChip implements Stage {
   private ghostCols = 0
   private ghosts: number[] = []
   private nextGhosts: number[] = []
+  // What the melody's divider is running at, kept through a rest: the divider
+  // goes on counting the last word it loaded.
+  private melodyHz = A3_HZ
+  // The output pin bridged onto an address line, and which way it last drove it.
+  private outAddr = -1
+  private outBit = 0
 
   private readonly sr: number
   private readonly rail: ToyRail
@@ -612,6 +636,8 @@ export class ToyChip implements Stage {
       this.counterHigh = ((pos >> this.loopTo) & 1) === 1
       if (!((this.latch >> this.loopFrom) & 1)) addr &= ~(1 << this.loopTo)
     }
+    if (this.outAddr >= 0)
+      addr = (addr & ~(1 << this.outAddr)) | (this.outBit << this.outAddr)
     return (
       this.addrBus.read(addr, this.addrLine, this.addrFault, this.busCut) %
       this.len
@@ -851,6 +877,11 @@ export class ToyChip implements Stage {
     const scanBase = p[IDX.chipScan]!
     const pwmBase = p[IDX.chipPwm]!
     const shortBase = p[IDX.chipShort]!
+    const stepTap = p[IDX.chipStepTap]!
+    const relax = p[IDX.chipEnvRelax]!
+    const drain = relax > 0 ? octaves(RELAX_OCTAVES * relax) : 1
+    const envDiv = p[IDX.chipEnvDiv]! * ENV_DIV_OCTAVES
+    this.outAddr = Math.round(p[IDX.chipOutAddr]!) - 1
     const modCross = bay.read(DEST.chipCrosstalk)
     const modScan = bay.read(DEST.chipScan)
     const modPwm = bay.read(DEST.chipPwm)
@@ -1030,7 +1061,8 @@ export class ToyChip implements Stage {
       }
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
-      this.stepHzNow = stepHz * timing
+      this.stepHzNow =
+        stepTap > 0 ? this.melodyHz / tapDivisor(stepTap) : stepHz * timing
 
       // sequencer — the run/stop line freezes it where it stands, and so does a
       // latched die: the counter stops clocking and the note it was on stays on
@@ -1102,7 +1134,9 @@ export class ToyChip implements Stage {
       // One envelope generator, timed off the ROM's own step rate the way a
       // cheap chip ties decay to its tempo clock; a latch holds the envelope
       // where it stood along with everything else it froze.
-      const envDecay = latched ? 1 : expNeg((0.8 * stepHz * timing) / this.sr)
+      const envDecay = latched
+        ? 1
+        : expNeg((0.8 * stepHz * timing * drain) / this.sr)
       const cap = this.envCap
       if (cap === ENV_LEAKY) {
         this.env = leak(this.env, envDecay)
@@ -1117,6 +1151,13 @@ export class ToyChip implements Stage {
         // across the same cap.
         for (const v of this.voices)
           if (!v.held || cap === ENV_REVERSED) v.env = fade(v.env, envDecay)
+      }
+      if (relax > 0) {
+        if (this.env < RELAX_AT) this.env = 1
+        if (this.bassEnv < RELAX_AT) this.bassEnv = 1
+        if (this.chordEnv < RELAX_AT) this.chordEnv = 1
+        for (const v of this.voices)
+          if (v.env > ENV_FLOOR && v.env < RELAX_AT) v.env = 1
       }
 
       // A latched output stage is jammed on rather than fading with the supply,
@@ -1148,9 +1189,14 @@ export class ToyChip implements Stage {
             this.melodyRatio = this.divRatio(note)
           }
           const hz = Math.min(
-            A3_HZ * this.melodyRatio * clock * rail.pitchFactor,
+            A3_HZ *
+              this.melodyRatio *
+              clock *
+              rail.pitchFactor *
+              (envDiv > 0 ? octaves(-envDiv * (1 - this.env)) : 1),
             maxHz,
           )
+          this.melodyHz = hz
           const inc = hz / this.sr
           this.phase = wrap1(this.phase + inc)
           const env = shaped ? this.level(this.env, pwmHz) : this.env
@@ -1168,7 +1214,11 @@ export class ToyChip implements Stage {
               this.bassRatio = this.divRatio(this.bassNote)
             }
             const hz = Math.min(
-              A3_HZ * this.bassRatio * clock * rail.pitchFactorAt(BASS_TRIM),
+              A3_HZ *
+                this.bassRatio *
+                clock *
+                rail.pitchFactorAt(BASS_TRIM) *
+                (envDiv > 0 ? octaves(-envDiv * (1 - this.bassEnv)) : 1),
               maxHz,
             )
             const inc = hz / this.sr
@@ -1193,10 +1243,15 @@ export class ToyChip implements Stage {
             const env = shaped
               ? this.level(this.chordEnv, pwmHz)
               : this.chordEnv
+            const fall = envDiv > 0 ? octaves(-envDiv * (1 - this.chordEnv)) : 1
             for (let c = 0; c < 3; c++) {
               const trim = CHORD_TRIM[c]!
               const hz = Math.min(
-                A3_HZ * this.chordRatio[c]! * clock * rail.pitchFactorAt(trim),
+                A3_HZ *
+                  this.chordRatio[c]! *
+                  clock *
+                  rail.pitchFactorAt(trim) *
+                  fall,
                 maxHz,
               )
               const inc = hz / this.sr
@@ -1223,7 +1278,11 @@ export class ToyChip implements Stage {
           }
           const trim = trimAt(k, spread)
           const hz = Math.min(
-            A3_HZ * v.ratio * clock * rail.pitchFactorAt(trim),
+            A3_HZ *
+              v.ratio *
+              clock *
+              rail.pitchFactorAt(trim) *
+              (envDiv > 0 ? octaves(-envDiv * (1 - v.env)) : 1),
             maxHz,
           )
           const inc = hz / this.sr
@@ -1242,6 +1301,7 @@ export class ToyChip implements Stage {
       }
 
       this.lastOut = out
+      if (this.outAddr >= 0) this.driveAddr(tune, out > 0 ? 1 : 0)
       out *= level * 0.4
       // A loop screaming in the top end draws on the same cells the toy runs
       // off, so a squeal that got away browns out the chip that started it.
@@ -1265,6 +1325,18 @@ export class ToyChip implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
+  }
+
+  // The output pin bridged onto an address line. Each time the pin swings the
+  // other way the ROM serves the neighbouring step, and the melody's divider
+  // loads that note without restriking it, so a note flips between two steps
+  // at a rate its own pitch sets.
+  private driveAddr(tune: number[], bit: number) {
+    if (bit === this.outBit) return
+    this.outBit = bit
+    const step = this.readRom(tune, this.pos)
+    if (isNote(step)) this.note = step
+    else if (step === REST) this.note = REST
   }
 
   // The pin belongs to one slot at a time. The counter skips slots with nothing

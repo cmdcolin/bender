@@ -51,6 +51,10 @@ export const PARAM_DEFS = [
   ['chipBankFault', 'step'],
   ['chipDivLine', 'step'],
   ['chipDivFault', 'step'],
+  ['chipStepTap', 'slew'],
+  ['chipEnvRelax', 'slew'],
+  ['chipEnvDiv', 'slew'],
+  ['chipOutAddr', 'step'],
 
   ['chipLeadR', 'slew'],
   ['chipDecouple', 'slew'],
