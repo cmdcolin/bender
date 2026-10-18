@@ -8,6 +8,7 @@ import {
 
 import { engine } from '../engine/engine.ts'
 import { semitoneName } from '../notes.ts'
+import { snap } from '../scale.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { DeviceVerbs, DrawerLevel } from './DeviceVerbs.tsx'
 import { isTyping } from './isTyping.ts'
@@ -180,6 +181,10 @@ export function Keybed({
   const keysDown = useStoreValue(DECK[dest].down)
   const chipNotes = useStoreValue(DECK[dest].notes)
   const owns = useStoreValue(letterKeys) === dest
+  const keyScale = useControlValue('keyScale')
+  const keyRoot = useControlValue('keyRoot')
+  const outside = (semitone: number) =>
+    snap(semitone, keyScale, keyRoot) !== semitone
   // Whether there are letter keys worth telling anybody about. A phone has a
   // keyboard only when something asks it for text, so the letters printed on
   // the keys, the drawer that says which bed they play and the reminders in the
@@ -370,9 +375,10 @@ export function Keybed({
 
   const key = (note: number, black: boolean) => {
     const lit = litBy(note)
+    const off = lit === 'dark' && outside(at(note))
     return (
       <button
-        className={KEY_CLASS[black ? 'black' : 'white'][lit]}
+        className={`${KEY_CLASS[black ? 'black' : 'white'][lit]} ${off ? (black ? styles.outsideBlack : styles.outsideWhite) : ''}`}
         aria-label={`key ${semitoneName(at(note))}`}
         aria-pressed={lit !== 'dark'}
         onPointerDown={e => {

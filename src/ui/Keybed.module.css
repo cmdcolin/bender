@@ -201,6 +201,16 @@
   height: 2px;
 }
 
+.outsideWhite,
+.outsideWhite:hover {
+  filter: brightness(0.72) saturate(0.6);
+}
+
+.outsideBlack {
+  background: #000;
+  box-shadow: none;
+}
+
 /* A note sounding past either end of the drawn board. The keys stay where your
    hands are; this says the wire is playing somewhere else, and which way the
    octave switch has to go to meet it. */

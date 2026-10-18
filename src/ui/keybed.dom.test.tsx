@@ -83,3 +83,13 @@ test('a key off the scale lights under the finger as well as the key it closes',
   expect(key('C#3').getAttribute('aria-pressed')).toBe('false')
   expect(key('C3').getAttribute('aria-pressed')).toBe('false')
 })
+
+test('the keys a scale lock closes on a neighbour are marked, and none are with it off', () => {
+  engine.set('keyScale', SCALE_NAMES.indexOf('major'))
+  engine.set('keyRoot', 3)
+  bed()
+  expect(key('C#3').className).toContain('outside')
+  expect(key('C3').className).not.toContain('outside')
+  act(() => engine.set('keyScale', 0))
+  expect(key('C#3').className).not.toContain('outside')
+})
