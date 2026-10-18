@@ -378,21 +378,27 @@ pitch or cutoff. **mixer** has the oscillator levels, noise and **Feedback**:
 the output patched back into the mixer, as players did with a cable from the
 headphone jack to the external input.
 
-The mono synth keeps a 32-step melody memory, one note a step, so it can
-play a line different from the toy's. **show piano roll** on the Mono synth
-panel draws it.
+A second melody memory plays a line different from the toy's: 32 steps, one note
+a step. **show piano roll** on the Mono synth panel draws it, and **Plays on**
+under **melody** aims it at the mono synth, the FM chip or the home keyboard.
 
 - **Draw:** a click puts a note on a step, a drag draws a line, and a click on a
-  note takes it off. Shift-click holds the note before. A drawn note turns **Melody
-  memory** on.
+  note takes it off. Shift-click holds the note before. A drawn note turns
+  **Melody memory** on.
+- **Record:** **rec** on the mono, FM or home keyboard bed aims the memory at that
+  machine, turns it on and runs the song. Each key played on that bed then writes
+  the step the counter is on, and a key held across steps becomes one long note.
+  **record** on the roll does the same for the machine already chosen.
 - **Play:** the memory plays while the song runs. **loop** on the roll sets its
-  length, and **Memory rate** under **melody** sets the steps a second.
+  length, and **Memory rate** sets the steps a second.
 - **Supply:** the counter runs off the toy's rail. A sagging rail slows it, and
   a reboot restarts it from step one.
-- **Alone:** cut the jumper to hear the synth without the toy's tune.
+- **Alone:** the memory reaches its machine whatever that machine's jumper says,
+  and the toy's tune keeps playing the others. Cut the jumper on the target to
+  hear it without the toy's tune. The target's Level has to be up.
 
-The memory has no chords and no record button. It rides in the shared link and
-the undo history, and random rolls, mutate and morph leave it alone.
+The memory has no chords. It rides in the shared link and the undo history, and
+random rolls, mutate and morph leave it alone.
 
 For a drone, latch a key with **hold** on the bed and raise the loudness
 sustain, or turn up **Leaky VCA** under the **voice card** box, which sounds the
