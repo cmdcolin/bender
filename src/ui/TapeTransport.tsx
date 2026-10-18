@@ -107,9 +107,11 @@ export function TapeTransport({
           </Tip>
         ))}
       </DeckGroup>
-      <DeckGroup>
-        <FaceLevel control="sampleLevel" />
-      </DeckGroup>
+      {loaded && (
+        <DeckGroup>
+          <FaceLevel control="sampleLevel" />
+        </DeckGroup>
+      )}
     </DeckWell>
   )
 }

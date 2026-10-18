@@ -14,6 +14,7 @@ const speed = () => engine.controls.get().sampleSpeed
 test('with nothing on the tape every verb is dead', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<TapeTransport loaded={false} />)
+  expect(screen.queryByRole('slider', { name: 'Level' })).toBeNull()
   for (const name of ['play', 'reverse', '½×', '1×', '2×'])
     expect(
       screen.getByRole<HTMLButtonElement>('button', { name }).disabled,
