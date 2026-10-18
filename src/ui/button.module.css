@@ -16,7 +16,9 @@
    dropdown, so a select sits level with the buttons beside it.
 
    Every hover skips a disabled button: greyed-out undo lighting up under the
-   pointer would promise a step back that isn't there. */
+   pointer would promise a step back that isn't there. Every kind also drops to
+   40% opacity when disabled, since a colour step alone vanishes wherever a
+   module remaps the ink tiers, as the pedals do. */
 
 /* The panel's loud verbs — random, drift, panic. Filled and square, and the
    only kind at fs-sm, because these are what you came here to press. */
@@ -38,9 +40,10 @@
 }
 
 .action:disabled {
+  opacity: 0.4;
   color: var(--fg4);
   border-color: var(--border-quiet);
-  cursor: default;
+  cursor: not-allowed;
 }
 
 /* A verb that is still running: lit, and the ones that use it say so in the
@@ -103,7 +106,7 @@
 .actionOff {
   composes: action;
   color: var(--fg4);
-  cursor: default;
+  cursor: not-allowed;
 }
 
 /* The one that takes something away. Red at rest, and it deepens rather than
@@ -214,6 +217,11 @@
   border-color: var(--accent);
 }
 
+.chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .chipOn {
   composes: chip;
   color: var(--fg);
@@ -234,7 +242,7 @@
   composes: chip;
   color: var(--fg4);
   opacity: 0.4;
-  cursor: default;
+  cursor: not-allowed;
 }
 
 /* A chip that undoes an afternoon of turning. Lit the way panic is, not the way
@@ -277,8 +285,9 @@
 }
 
 .pick:disabled {
+  opacity: 0.4;
   color: var(--fg4);
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .pickOn {
@@ -376,8 +385,9 @@
    stays where it is and goes dead, because a board that is two octaves down
    should not have to grow a button back to come up again. */
 .cap:disabled {
+  opacity: 0.4;
   color: var(--fg4);
-  cursor: default;
+  cursor: not-allowed;
 }
 
 /* Thrown. Which colour it lights in belongs to the case rather than to the
@@ -420,8 +430,9 @@
 }
 
 .select:disabled {
+  opacity: 0.4;
   color: var(--fg4);
-  cursor: default;
+  cursor: not-allowed;
 }
 
 /* A dropdown in a row of chips or picks, outlined like a pick and at its
@@ -470,9 +481,10 @@
 }
 
 .deck:disabled {
+  opacity: 0.4;
   color: var(--fg4);
   border-color: var(--border-quiet);
-  cursor: default;
+  cursor: not-allowed;
 }
 
 /* Down, the way play stays in until stop pops it: ringed and lit in the
