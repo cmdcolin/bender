@@ -7,9 +7,11 @@ import { RailLamp } from './RailLamp.tsx'
 export function MonoKeys({
   seconds,
   onClose,
+  onOpen,
 }: {
   seconds?: number
   onClose?: () => void
+  onOpen?: (stage: string) => void
 }) {
   return (
     <Keybed
@@ -28,7 +30,7 @@ export function MonoKeys({
       }
       extras={
         <>
-          <RailLamp />
+          <RailLamp onOpen={onOpen} />
           <GateJumper
             control="monoKeyGate"
             cut={styles.cut}

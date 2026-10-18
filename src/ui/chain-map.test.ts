@@ -337,10 +337,16 @@ test('a mic on a bend that is in no slot lands on it in the rack', () => {
 // the path, on a source in the rack, and on a part on the shelf, which the
 // panel draws itself.
 test('a stage off stock draws a touched mark', () => {
-  const board = { ...DEFAULT_CONTROLS, ringMix: 0.5, chipStarve: 0.3 }
+  const board = {
+    ...DEFAULT_CONTROLS,
+    ringMix: 0.5,
+    chipShort: 0.3,
+    chipStarve: 0.3,
+  }
   const svg = serialize(drawMap(buildMap(board)))
   expect(svg).toContain('data-touched="Ring mod"')
   expect(svg).toContain('data-touched="Toy keyboard"')
+  expect(svg).toContain('data-touched="Power supply"')
   expect(svg).not.toContain('data-touched="Crusher"')
   // The README's copy takes no clicks at all, so it draws none of them.
   expect(serialize(drawMap(buildMap(board, { live: false })))).not.toContain(

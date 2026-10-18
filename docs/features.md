@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 475 knobs and switches in 34 groups, seven bends competing for six slots,
+ruin. 475 knobs and switches in 35 groups, seven bends competing for six slots,
 18 ROM tunes, 125 presets, 23 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -89,7 +89,8 @@ The instrument the whole thing is named after: a square-wave divider chip
 running a ROM, with a tone control that taps the divider at a different width,
 an auto bass-chord section and playable voices over the top. Its clock, counter,
 bias and gate are each a place to solder a pot onto — _Bend spot_ picks which,
-_Bend pot_ how far. Everything from _Starve_ down is the supply underneath it.
+_Bend pot_ how far. The battery rail it shares with four other machines has its
+own panel, _Power supply_.
 
 Named cuts, one press each under _knife on the bus_, where the panel keeps them
 too — the knife goes on and the rows under it say which controls that was:
@@ -110,7 +111,7 @@ too — the knife goes on and the rows under it say which controls that was:
   itself
 
 <details>
-<summary>42 controls</summary>
+<summary>35 controls</summary>
 
 | control         | range                                                                                                                          | what it does                                                                                                                           |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -138,13 +139,6 @@ too — the knife goes on and the rows under it say which controls that was:
 | Envelope cap    | stock, reversed, leaky                                                                                                         | The capacitor that shapes every note                                                                                                   |
 | Voice short     | off to full                                                                                                                    | Shorts every voice output onto one node, where the lowest driver wins                                                                  |
 | Ghost keys      | off, 4 wide, 6 wide, 8 wide                                                                                                    | Lifts the diodes off the key matrix                                                                                                    |
-| Starve †        | off to full                                                                                                                    | Sags the shared toy supply rail                                                                                                        |
-| Batteries †     | off to full                                                                                                                    | How flat the cells are                                                                                                                 |
-| Lead resistance | off to full                                                                                                                    | A resistor in series with the cells                                                                                                    |
-| Reservoir       | off to full                                                                                                                    | How much of the board’s capacitance sits behind whatever the starve is pulling on                                                      |
-| Clip chatter    | 0 to 40 Hz                                                                                                                     | Bare metal dragged across the pads, and how often it finds one                                                                         |
-| Clip on clock   | off to full                                                                                                                    | Whether the clip lands on the timing pin instead of the supply, which is the difference between a sag and a dive                       |
-| Latch-up †      | off to full                                                                                                                    | How often a brownout jams the chip instead of rebooting it                                                                             |
 | Data line †     | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the knife found                                                                             |
 | Data fault      | cut, to ground, to +V, bridged                                                                                                 | What happened to the wire                                                                                                              |
 | Address line †  | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the knife found                                                                     |
@@ -698,6 +692,38 @@ simply being loud.
 | --------- | ------------------------------------------------------------------ | ------------------------------------ |
 | Mic       | 0 to 4, normal 0 to 1                                              | Microphone gain into the patch point |
 | Mic patch | mix, chip rail, osc FM, delay fb, ring car, drum trig, glitch trig | Where the mic wire is soldered       |
+
+</details>
+
+### Power supply
+
+The battery rail the toy keyboard, drums, FM chip, home keyboard and mono synth
+all run off, so a sag here bends all five at once. _Starve_ pulls the rail down,
+_Batteries_ leaves it flat, _Lead resistance_ makes every note sag it on the
+attack, and _Reservoir_ sets how long it takes to get there. The reset chip
+decides where the board gives up: _Watchdog_ is the voltage that reboots the
+chips and _Latch-up_ how often a brownout jams one instead. The _Clip_ knobs are
+the paperclip: how often it touches, how hard it bites, how long it stays, and
+the charge and release that make a dive a dive rather than a warble.
+
+<details>
+<summary>13 controls</summary>
+
+| control         | range                | what it does                                                                                                                      |
+| --------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Starve †        | off to full          | Sags the shared toy supply rail                                                                                                   |
+| Batteries †     | off to full          | How flat the cells are                                                                                                            |
+| Lead resistance | off to full          | A resistor in series with the cells                                                                                               |
+| Reservoir       | off to full          | How much of the board’s capacitance sits behind whatever the starve is pulling on                                                 |
+| Watchdog        | 0.2 to 0.6 V         | Where the reset chip decides the supply has failed                                                                                |
+| Latch-up †      | off to full          | How often a brownout jams the chip instead of rebooting it                                                                        |
+| Latch hold      | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                                 |
+| Clip chatter    | 0 to 40 Hz           | Bare metal dragged across the pads, and how often it finds one                                                                    |
+| Clip on clock   | off to full          | Whether the clip lands on the timing pin instead of the supply, which is the difference between a sag and a dive                  |
+| Clip bite †     | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
+| Clip dwell      | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                                         |
+| Clip charge     | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down                |
+| Clip release    | 2 to 2000 per second | How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate |
 
 </details>
 
@@ -1256,29 +1282,19 @@ What the toy board is made of, rather than what you are doing to it. Every one
 of these was a number compiled into the model until somebody wanted the other
 value, and every default is the one that shipped, so a board nobody has been at
 here is the stock board. _Timing pin_ decides which sags the tempo notices.
-_Watchdog_ is where the reset chip gives up, and it cannot sit under the voltage
-the die gives up at. _Latch hold_ is what a jam sounds like. The four _Clip_
-knobs are the paperclip itself: how hard it bites, how long it stays, and the
-charge and release that make a dive a dive rather than a warble. _Clock drag_ is
-how deep the cap on the oscillator can divide. _Part spread_ is how far apart
-the four output stages came out of the bin — whether a chord collapses raggedly
-or all at once.
+_Clock drag_ is how deep the cap on the oscillator can divide. _Part spread_ is
+how far apart the four output stages came out of the bin — whether a chord
+collapses raggedly or all at once.
 
 <details>
-<summary>10 controls</summary>
+<summary>4 controls</summary>
 
-| control      | range                | what it does                                                                                                                      |
-| ------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Watchdog     | 0.2 to 0.6 V         | Where the reset chip decides the supply has failed                                                                                |
-| Latch hold   | 0.01 to 0.19 V       | Where a jammed die and its supply come to rest against each other                                                                 |
-| Clip bite †  | 0 to 4               | How hard bare metal chokes the supply when it lands                                                                               |
-| Clip dwell   | 3 to 800 ms          | How long one touch lasts on average, never twice the same                                                                         |
-| Clip charge  | 2 to 400 per second  | How fast the cap the clip found charges through the contact — the rate the clock leaves at while the metal is down                |
-| Clip release | 2 to 2000 per second | How fast the clock comes back when the metal lifts — a disconnection rather than a discharge, and stock ten times the charge rate |
-| Timing pin   | 0.2 ms to 2 s        | The decoupling cap on the oscillator, as the time it averages the rail over                                                       |
-| Clock drag   | 0 to 8 octaves       | How far the cap on the timing pin can divide the clock                                                                            |
-| Part spread  | 0× to 4×             | How far apart the four output stages came out of the bin                                                                          |
-| Mixer drive  | 0.02 to 3            | The headroom in the one small output stage every key voice runs through                                                           |
+| control     | range          | what it does                                                                |
+| ----------- | -------------- | --------------------------------------------------------------------------- |
+| Timing pin  | 0.2 ms to 2 s  | The decoupling cap on the oscillator, as the time it averages the rail over |
+| Clock drag  | 0 to 8 octaves | How far the cap on the timing pin can divide the clock                      |
+| Part spread | 0× to 4×       | How far apart the four output stages came out of the bin                    |
+| Mixer drive | 0.02 to 3      | The headroom in the one small output stage every key voice runs through     |
 
 </details>
 

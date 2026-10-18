@@ -8,9 +8,11 @@ import { RailLamp } from './RailLamp.tsx'
 export function FmKeys({
   seconds,
   onClose,
+  onOpen,
 }: {
   seconds?: number
   onClose?: () => void
+  onOpen?: (stage: string) => void
 }) {
   return (
     <Keybed
@@ -27,7 +29,7 @@ export function FmKeys({
       }
       extras={
         <>
-          <RailLamp />
+          <RailLamp onOpen={onOpen} />
           <GateJumper
             control="fmKeyGate"
             cut={styles.cut}

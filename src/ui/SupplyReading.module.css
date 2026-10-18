@@ -1,0 +1,12 @@
+.reading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: var(--space-2xs) 0 var(--space-md);
+}
+
+.feeds {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}

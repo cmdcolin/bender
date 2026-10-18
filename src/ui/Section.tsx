@@ -43,6 +43,7 @@ import { scrollIntoPanel } from './reveal.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider.tsx'
+import { SupplyReading } from './SupplyReading.tsx'
 import { TapeLoopDiagram } from './TapeLoopDiagram.tsx'
 import { TapePathDiagram } from './TapePathDiagram.tsx'
 import { Tip } from './Tip.tsx'
@@ -577,6 +578,7 @@ export function OpenGroup({
           {group.editor?.kind === 'order' && <OrderRack />}
           {group.editor?.kind === 'patch' && <PatchBay />}
           {group.editor?.kind === 'trigger' && <TriggerPatch />}
+          {group.editor?.kind === 'supply' && <SupplyReading />}
           {group.editor?.kind === 'mic' && <MicPatch />}
           {group.editor?.kind === 'loops' && <FourTrack />}
           {group.editor?.kind === 'tapeLoop' && <TapeLoopDiagram />}

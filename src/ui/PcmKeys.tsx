@@ -8,9 +8,11 @@ import { RailLamp } from './RailLamp.tsx'
 export function PcmKeys({
   seconds,
   onClose,
+  onOpen,
 }: {
   seconds?: number
   onClose?: () => void
+  onOpen?: (stage: string) => void
 }) {
   return (
     <Keybed
@@ -25,7 +27,7 @@ export function PcmKeys({
       }
       extras={
         <>
-          <RailLamp />
+          <RailLamp onOpen={onOpen} />
           <GateJumper
             control="pcmKeyGate"
             cut={styles.cut}

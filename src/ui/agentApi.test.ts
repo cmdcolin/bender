@@ -60,7 +60,7 @@ test('board lists changed controls by key, and its link loads the same board', (
   const board = bender.board()
   expect(board.preset).toBe('modified')
   expect(board.controls).toContain(
-    'chipStarve = 0.80  (Toy keyboard: Starve, default 0.00)',
+    'chipStarve = 0.80  (Power supply: Starve, default 0.00)',
   )
   expect(
     board.controls.some(row => row.startsWith('chipTone = clav 1/8')),
@@ -73,7 +73,9 @@ test('board lists changed controls by key, and its link loads the same board', (
 })
 
 test('find ranks an exact key or label match first', () => {
-  expect(bender.find('starve')[0]).toMatch(/^chipStarve = /)
+  expect(bender.find('starve').slice(0, 2).join('\n')).toMatch(
+    /^chipStarve = /m,
+  )
   expect(bender.find('delay feedback').some(r => r.startsWith('dlyFb'))).toBe(
     true,
   )

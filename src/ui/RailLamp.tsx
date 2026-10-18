@@ -10,7 +10,7 @@ const NOMINAL_V = 4.5
 // The shared supply rail, drawn on the deck of every machine that runs off it.
 // The lamp writes to the DOM off each meter post, because a React render every
 // 8 ms for one number drops frames.
-export function RailLamp() {
+export function RailLamp({ onOpen }: { onOpen?: (stage: string) => void }) {
   const dot = useRef<HTMLSpanElement>(null)
   const label = useRef<HTMLSpanElement>(null)
 
@@ -35,14 +35,29 @@ export function RailLamp() {
     })
   }, [])
 
-  return (
-    <Tip text="The battery rail the toy keyboard, drums, FM chip, home keyboard and mono synth share, 4.5 V on fresh cells. Pitch, tempo and level sag as it falls, and near one volt the watchdog reboots the chips, which the lamp shows as reboot.">
-      <span className={styles.lamp}>
-        <span ref={dot} className={styles.dot} />
-        <span ref={label} className={styles.volts}>
-          {NOMINAL_V.toFixed(2)} V
-        </span>
+  const lamp = (
+    <>
+      <span ref={dot} className={styles.dot} />
+      <span ref={label} className={styles.volts}>
+        {NOMINAL_V.toFixed(2)} V
       </span>
+    </>
+  )
+
+  return (
+    <Tip text="The battery rail the toy keyboard, drums, FM chip, home keyboard and mono synth share, 4.5 V on fresh cells. Pitch, tempo and level sag as it falls, and near one volt the watchdog reboots the chips, which the lamp shows as reboot. Press it for the power supply settings.">
+      {onOpen ? (
+        <button
+          type="button"
+          className={`${styles.lamp} ${styles.press}`}
+          aria-label="power supply settings"
+          onClick={() => onOpen('Power supply')}
+        >
+          {lamp}
+        </button>
+      ) : (
+        <span className={styles.lamp}>{lamp}</span>
+      )}
     </Tip>
   )
 }

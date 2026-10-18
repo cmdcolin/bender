@@ -48,7 +48,7 @@ export function DrumKit({
       <div className={styles.deck}>
         <span className={styles.brand}>drums</span>
         <div className={styles.switches}>
-          <RailLamp />
+          <RailLamp onOpen={onOpen} />
           <Tip
             text={
               playing

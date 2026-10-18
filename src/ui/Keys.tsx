@@ -11,9 +11,11 @@ import { Tip } from './Tip.tsx'
 export function Keys({
   seconds,
   onClose,
+  onOpen,
 }: {
   seconds?: number
   onClose?: () => void
+  onOpen?: (stage: string) => void
 }) {
   // The memory's own switch, on the deck rather than only on the roll: arming
   // it is something you do with your hands already on the keys, and the roll is
@@ -34,7 +36,7 @@ export function Keys({
       }
       extras={
         <>
-          <RailLamp />
+          <RailLamp onOpen={onOpen} />
           <Tip
             text={
               yourTune

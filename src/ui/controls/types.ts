@@ -118,6 +118,7 @@ export interface Group {
     | { kind: 'feedback' }
     | { kind: 'patch' }
     | { kind: 'trigger' }
+    | { kind: 'supply' }
     | { kind: 'mic' }
     | { kind: 'loops' }
     | { kind: 'tapeLoop' }

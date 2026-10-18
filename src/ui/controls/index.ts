@@ -11,6 +11,7 @@ import { ORDER_GROUPS } from './order.ts'
 import { PATCH_GROUPS } from './patch.ts'
 import { PEDAL_GROUPS } from './pedals.ts'
 import { SOURCE_GROUPS } from './sources.ts'
+import { SUPPLY_GROUPS } from './supply.ts'
 import { TAPE_GROUPS } from './tape.ts'
 
 import type { Group, SliderDef } from './types.ts'
@@ -29,6 +30,7 @@ export {
 // lays them out.
 export const GROUPS: Group[] = [
   ...SOURCE_GROUPS,
+  ...SUPPLY_GROUPS,
   ...MIX_GROUPS,
   ...BEND_GROUPS,
   ...PEDAL_GROUPS,

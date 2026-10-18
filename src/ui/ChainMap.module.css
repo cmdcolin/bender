@@ -45,11 +45,13 @@
   }
 }
 
-.graph[data-rail='low'] :global([data-wire^='rail']) {
+.graph[data-rail='low'] :global([data-wire^='rail']),
+.graph[data-rail='low'] :global(.rail-chip) {
   --rail-ink: var(--accent2);
 }
 
-.graph[data-rail='reboot'] :global([data-wire^='rail']) {
+.graph[data-rail='reboot'] :global([data-wire^='rail']),
+.graph[data-rail='reboot'] :global(.rail-chip) {
   --rail-ink: var(--alarm);
 }
 
@@ -58,8 +60,18 @@
   stroke-dasharray: none;
 }
 
-.graph[data-rail] :global([data-wire^='rail'] text) {
+.graph[data-rail] :global([data-wire^='rail'] text),
+.graph[data-rail] :global(.rail-chip text) {
   fill: var(--rail-ink);
+}
+
+.graph[data-rail] :global(.rail-chip .box) {
+  stroke: var(--rail-ink);
+}
+
+.graph[data-rail] :global(.rail-chip .glyph *) {
+  fill: var(--rail-ink);
+  stroke: var(--rail-ink);
 }
 
 .graph a {

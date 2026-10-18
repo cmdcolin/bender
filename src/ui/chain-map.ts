@@ -151,6 +151,9 @@ const SRC_LABEL = sliderFor('mod0Src').choices ?? []
 /** what the empty trigger lane calls itself, which is also its door */
 const NO_TRIG = 'no trig patched'
 
+/** the box on the supply rail, and its door */
+const SUPPLY = 'Power supply'
+
 // A wire's label names what it picks up, so it opens the thing it is clipped
 // onto rather than the bay — mod*Src order. The rest (the bay's own LFO, the
 // supply sag, the output envelope) belong to no one stage, so they open the bay.
@@ -296,7 +299,7 @@ const COL_GAP = 28
 const INST_H = 34
 const INST_GAP = 12
 /** the lip a frame carries its name on */
-const CAP_H = 12
+const CAP_H = 16
 /** the inset the chips sit at inside the toy board's frame */
 const FRAME_PAD = 6
 /** the supply bar over the chips, and the trigger cables under them */
@@ -987,12 +990,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     {
       color: k.dim,
       dash: '1 2',
-      label: {
-        text: 'shared supply',
-        x: board.x + board.w - FRAME_PAD,
-        y: railY - 4,
-        anchor: 'end',
-      },
+      door: SUPPLY,
     },
   )
   for (const toy of chips)
@@ -1103,6 +1101,23 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       }),
     )
   }
+
+  // The rail has a box of its own, in the lip over its bar: five machines run
+  // off it, and its knobs sat on the toy keyboard's panel until the map had
+  // somewhere to point at them.
+  doors.add(SUPPLY)
+  const supplyW = textWidth(SUPPLY, SMALL) + ICON_COL + CHIP_PAD * 2
+  notes.push(
+    node('supply', 'chip', SUPPLY, {
+      door: SUPPLY,
+      count: live ? touchedCount(SUPPLY, c) : 0,
+      open: o.open === SUPPLY,
+      x: board.x + board.w - FRAME_PAD - supplyW,
+      y: board.y,
+      w: supplyW,
+      h: CHIP_H - 2,
+    }),
+  )
 
   // The bridges you patch yourself, in the lane under the row and in the patch
   // colour, so nothing here reads like the soldered line above it.
@@ -1954,6 +1969,22 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       strokeWidth: 0.9,
     }),
   ],
+  // Two cells in a case: the rail the five machines on the board run off.
+  [SUPPLY]: (x, y, c) => [
+    el('rect', {
+      x,
+      y: y + 3,
+      width: 10,
+      height: 6,
+      rx: 1,
+      fill: 'none',
+      stroke: c,
+      strokeWidth: 0.9,
+    }),
+    el('rect', { x: x + 10, y: y + 5, width: 1.6, height: 2, fill: c }),
+    el('rect', { x: x + 2, y: y + 4.6, width: 2.2, height: 2.8, fill: c }),
+    el('rect', { x: x + 5.4, y: y + 4.6, width: 2.2, height: 2.8, fill: c }),
+  ],
   'Tape loop': (x, y, c) => [
     el('path', {
       d: [3.4, 8, 5, 10.4, 6, 2.8]
@@ -1971,11 +2002,11 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     left of the box is still centred on the box. */
 const iconCol = (label: string) => (GLYPH[label] ? ICON_COL : 0)
 
-function glyph(n: MapNode, k: Palette, y: number): El[] {
+function glyph(n: MapNode, k: Palette, y: number, pad = PAD_X): El[] {
   const draw = GLYPH[n.label]
   if (!draw) return []
   const c = n.playing ? k.accent2 : n.active || n.open ? k.fg : k.dim
-  return [el('g', { className: 'glyph' }, draw(n.x + PAD_X, y, c))]
+  return [el('g', { className: 'glyph' }, draw(n.x + pad, y, c))]
 }
 
 // A box's edge says whether the stage is doing anything, and the touched dot
@@ -2025,33 +2056,41 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
   // so is the door onto the solder those slots sit in, which lights the way a
   // stage does when what it names is doing something.
   if (n.kind === 'chip') {
+    const lead = iconCol(n.label)
+    const ink = n.active || n.open ? k.fg : k.dim
+    const [chipInk, chipEdge] =
+      n.label === SUPPLY ? [k.fg, k.dim] : [ink, k.border]
     return el(
       'g',
-      { className: 'node' },
-      door(
-        [
-          el('rect', {
-            className: 'box',
-            x: n.x,
-            y: n.y,
-            width: n.w,
-            height: n.h,
-            rx: 3,
-            fill: 'none',
-            stroke: n.open ? k.fg : k.border,
-            strokeDasharray: '2 2',
-          }),
-          words(
-            n.label,
-            n.x + n.w / 2,
-            baseline(n.y, n.h, SMALL),
-            SMALL,
-            n.active || n.open ? k.fg : k.dim,
-          ),
-        ],
-        n.door,
-        links,
-      ),
+      { className: n.label === SUPPLY ? 'node rail-chip' : 'node' },
+      [
+        ...door(
+          [
+            el('rect', {
+              className: 'box',
+              x: n.x,
+              y: n.y,
+              width: n.w,
+              height: n.h,
+              rx: 3,
+              fill: 'none',
+              stroke: n.open ? k.fg : chipEdge,
+              strokeDasharray: '2 2',
+            }),
+            ...(lead ? glyph(n, k, n.y + (n.h - ICON) / 2, CHIP_PAD) : []),
+            words(
+              n.label,
+              n.x + lead + (n.w - lead) / 2,
+              baseline(n.y, n.h, SMALL),
+              SMALL,
+              chipInk,
+            ),
+          ],
+          n.door,
+          links,
+        ),
+        ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
+      ],
     )
   }
 

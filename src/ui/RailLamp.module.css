@@ -39,3 +39,13 @@
     display: none;
   }
 }
+
+.press {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.press:hover {
+  border-color: var(--border-hover);
+}
