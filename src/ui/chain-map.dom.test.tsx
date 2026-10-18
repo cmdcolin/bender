@@ -132,7 +132,7 @@ test('adding a stage opens it and puts it on the map', () => {
   expect(doorsOnMap().has('Ring mod')).toBe(true)
 })
 
-test('take off turns the stage down and takes it off the map', () => {
+test('take off turns the stage down and takes it off the map', async () => {
   render(<App />)
   act(() => {
     cut()
@@ -144,6 +144,8 @@ test('take off turns the stage down and takes it off the map', () => {
   act(() => {
     fireEvent.click(screen.getByRole('button', { name: 'take off' }))
   })
+  // The map redraws on the trailing edge of a board that is still moving.
+  await act(() => new Promise(r => setTimeout(r, 150)))
   expect(engine.controls.get().ringMix).toBe(0)
   expect(doorsOnMap().has('Ring mod')).toBe(false)
 })
