@@ -91,7 +91,7 @@
 }
 
 .letter {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
   font-size: var(--fs-sm);
 }

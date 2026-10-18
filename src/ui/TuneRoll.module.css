@@ -49,7 +49,7 @@
 
 .octave {
   composes: chip from './button.module.css';
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   min-width: 1.4rem;
 }
 
@@ -83,7 +83,7 @@
    roll is read off its octaves anyway. */
 .name {
   font-size: var(--fs-xs);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--fg4);
 }
@@ -189,7 +189,7 @@
 .len,
 .lenShort {
   font-size: var(--fs-xs);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   padding: var(--space-xs) calc(var(--space-lg) + var(--space-sm))
     var(--space-xs) var(--space-md);
   background: var(--surface-raised);

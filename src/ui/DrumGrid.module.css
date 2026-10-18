@@ -78,7 +78,7 @@
 .nameOn,
 .nameHit {
   font-size: var(--fs-xs);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--fg4);
   padding: 0;
@@ -231,7 +231,6 @@
 /* The letter of the key the step fires, printed on the contact the way the bend
    board prints it on its keys. */
 .bendLetter {
-  font-family: var(--mono);
   font-size: 9px;
   line-height: 1;
   color: var(--fg4);
@@ -287,7 +286,7 @@
 .lenShort {
   width: 100%;
   font-size: var(--fs-xs);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   padding: var(--space-2xs) var(--space-lg) var(--space-2xs) var(--space-xs);
   background: var(--surface-raised);
   border: 1px solid var(--border);

@@ -43,12 +43,9 @@
 }
 
 .model {
-  font-family: var(--mono);
   font-size: var(--fs-md);
   font-weight: 800;
-  letter-spacing: 0.1em;
   color: #e8e9ee;
-  text-transform: uppercase;
 }
 
 .strip {
@@ -81,12 +78,10 @@
 
 .soldered {
   composes: cap from './button.module.css';
-  font-family: var(--mono);
 }
 
 .cut {
   composes: capIdle from './button.module.css';
-  font-family: var(--mono);
   --cap-lit: var(--accent2);
 }
 

@@ -48,7 +48,7 @@
 }
 
 .readout {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-xs);
   color: var(--fg3);
   text-align: right;
@@ -127,7 +127,7 @@
    sitting beside the readout, and only there at all once a controller is on. */
 .bind {
   composes: action;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .bindOn {
@@ -147,7 +147,7 @@
    leads in the bay's diagram are drawn in. */
 .modOn {
   composes: action;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   color: var(--accent);
   border-color: var(--accent);
 }

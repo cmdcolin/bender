@@ -327,7 +327,7 @@
   color: #000;
 }
 .chipStrength {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-sm);
   opacity: 0.6;
 }
@@ -468,7 +468,7 @@
   background: #ffffff14;
   color: #fff;
   font: inherit;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: 10px;
   line-height: 1.1;
   justify-content: center;
@@ -489,7 +489,7 @@
   background: transparent;
   color: #fff;
   font: inherit;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-sm);
   cursor: pointer;
 }
@@ -617,7 +617,7 @@
 }
 .faderValue {
   color: var(--fg3);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   text-align: right;
 }
 .verbs {

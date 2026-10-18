@@ -268,7 +268,6 @@
    is running, like the one on the front of every cassette deck. */
 .counter,
 .counterOn {
-  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-md);
   letter-spacing: 0.08em;
@@ -382,7 +381,7 @@
 }
 
 .kbd {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   background: var(--surface-raised);
   border: 1px solid var(--border);
   border-radius: var(--ctl-radius);

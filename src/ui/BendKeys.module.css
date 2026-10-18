@@ -90,7 +90,7 @@
 /* A letter with nothing on it, there so the rest sit where a hand expects. */
 .blank {
   padding: var(--space-xs) var(--space-sm);
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-xs);
   color: var(--fg4);
   border: 1px dashed var(--border-quiet);
@@ -100,7 +100,7 @@
 
 .letter,
 .letterOff {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
 

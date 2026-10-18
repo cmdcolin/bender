@@ -70,7 +70,7 @@
   position: absolute;
   left: 6px;
   bottom: 4px;
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-xs);
   color: var(--fg4);
   pointer-events: none;
@@ -85,7 +85,7 @@
 
 .ohms,
 .ohmsOn {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   color: var(--fg4);
   min-width: 64px;
 }
@@ -95,7 +95,7 @@
 }
 
 .wire {
-  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
   color: var(--fg3);
 }
 
