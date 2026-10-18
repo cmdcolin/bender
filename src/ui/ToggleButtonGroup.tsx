@@ -7,10 +7,17 @@ export function ToggleButtonGroup<T extends string>(props: {
   onChange: (value: T) => void
   disabled?: boolean
   large?: boolean
+  full?: boolean
 }) {
   return (
     <div
-      className={props.large ? `${styles.group} ${styles.large}` : styles.group}
+      className={[
+        styles.group,
+        props.large && styles.large,
+        props.full && styles.full,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       role="group"
       aria-label={props.label}
     >

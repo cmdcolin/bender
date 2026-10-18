@@ -375,7 +375,9 @@ function PartFold({
         verbs={part => <BoxVerbs group={group} part={part} seconds={seconds} />}
       />
       {!DRAWN_ROWS.has(`${group.name}|${name}`) &&
-        rows.map(def => <ControlSlider key={def.key} def={def} />)}
+        slidersFirst(rows).map(def => (
+          <ControlSlider key={def.key} def={def} />
+        ))}
     </Fold>
   )
 }
@@ -417,6 +419,20 @@ function BoxVerbs({
       <FoldDrawing group={group.name} part={part} />
     </>
   )
+}
+
+// The sliders together over the rows of buttons and dropdowns, each side in the
+// order the table gives it. A row that only shows while another is set stays
+// with the row before it, so a pot never ends up above the switch that
+// brings it in.
+function slidersFirst(rows: SliderDef[]): SliderDef[] {
+  const runs: SliderDef[][] = []
+  for (const def of rows) {
+    if (def.needs && runs.length > 0) runs[runs.length - 1]!.push(def)
+    else runs.push([def])
+  }
+  const track = (run: SliderDef[]) => !run[0]!.choices
+  return [...runs.filter(track), ...runs.filter(r => !track(r))].flat()
 }
 
 // The rows that sit over the widget rather than under it. Nothing decides
@@ -494,7 +510,9 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
       {blocks.map(({ name, sliders }) => {
         const rows = sliders.filter(d => visible.has(d.key))
         if (name === null)
-          return rows.map(def => <ControlSlider key={def.key} def={def} />)
+          return slidersFirst(rows).map(def => (
+            <ControlSlider key={def.key} def={def} />
+          ))
         if (isHosted(group.name, name)) return null
         // A heading over nothing is the same question about nothing the rows
         // themselves wait out.

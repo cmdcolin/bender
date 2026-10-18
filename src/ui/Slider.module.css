@@ -230,10 +230,12 @@
 
 .choice {
   composes: pick from './button.module.css';
+  flex: 1 1 auto;
 }
 
 .choiceOn {
   composes: pickOn from './button.module.css';
+  flex: 1 1 auto;
 }
 
 /* The same one-of-a-set as .choice, folded up into a list — for a set too long

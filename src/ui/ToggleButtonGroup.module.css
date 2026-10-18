@@ -3,6 +3,16 @@
   align-self: flex-start;
 }
 
+.full {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.full > button {
+  flex: 1 1 auto;
+}
+
 .off {
   composes: pickJoined from './button.module.css';
 }

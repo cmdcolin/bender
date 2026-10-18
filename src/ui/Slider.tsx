@@ -39,6 +39,7 @@ import {
 import styles from './Slider.module.css'
 import { tapRun, tapValue } from './tap.ts'
 import { Tip, type TipHandle } from './Tip.tsx'
+import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 
 import type { SliderDef } from './controls/index.ts'
 
@@ -356,6 +357,17 @@ const fitsAsButtons = (choices: readonly string[]) =>
   choices.length <= CHOICES_AS_BUTTONS ||
   choices.join('').length <= BUTTON_ROW_CHARS
 
+// Rough widths in px of a character and of a button's padding, and of the room a
+// docked panel leaves a row of picks. A set that fits joins up into one group;
+// one that does not wraps as separate buttons that each grow to fill their line.
+const PICK_CHAR_PX = 5
+const PICK_PAD_PX = 18
+const PICK_ROOM_PX = 245
+
+const fitsOneLine = (choices: readonly string[]) =>
+  choices.reduce((px, c) => px + c.length * PICK_CHAR_PX + PICK_PAD_PX, 0) <=
+  PICK_ROOM_PX
+
 // `label` overrides the name the row prints, for a control drawn somewhere its
 // own name says nothing: the mixer gathers seven faders and six of them are
 // called *Level*, so on the desk each one is called the machine it belongs to.
@@ -422,6 +434,14 @@ export function ControlSlider({
                     ))
                   : choices.map((_, i) => option(i))}
               </select>
+            ) : fitsOneLine(choices) ? (
+              <ToggleButtonGroup
+                full
+                label={label}
+                options={choices}
+                value={choices[Math.round(value) - def.min] ?? null}
+                onChange={c => pick(choices.indexOf(c))}
+              />
             ) : (
               choices.map((c, i) => (
                 <button
