@@ -194,7 +194,7 @@ export function FaceLevel({ control }: { control: ControlKey }) {
   )
 }
 
-export function DrawerLevel({ control }: { control: ControlKey }) {
+export function DrawerSlider({ control }: { control: ControlKey }) {
   return (
     <div className={styles.drawerLevel}>
       <ControlSlider def={deckSlider(control)} />

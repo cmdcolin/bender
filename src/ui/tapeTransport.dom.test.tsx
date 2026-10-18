@@ -16,7 +16,7 @@ test('with nothing on the tape every verb is dead', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<TapeTransport loaded={false} />)
   expect(screen.queryByRole('slider', { name: 'Level' })).toBeNull()
-  for (const name of ['play', 'reverse', 'tape speed 1×'])
+  for (const name of ['play', 'reverse', 'tape speed 1×', 'speed knob'])
     expect(
       screen.getByRole<HTMLButtonElement>('button', { name }).disabled,
     ).toBe(true)
@@ -37,6 +37,19 @@ test('the speed key steps half, normal, double and keeps the direction', () => {
   expect(speedKey().textContent).toBe('½×')
   press('reverse')
   expect(speed()).toBe(0.5)
+})
+
+test('the arrow beside the speed opens the Speed slider and Escape shuts it', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, sampleSpeed: 1 })
+  render(<TapeTransport loaded />)
+  expect(screen.queryByRole('slider', { name: 'Speed' })).toBeNull()
+  press('speed knob')
+  fireEvent.change(screen.getByRole('slider', { name: 'Speed' }), {
+    target: { value: '600' },
+  })
+  expect(speed()).not.toBe(1)
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(screen.queryByRole('slider', { name: 'Speed' })).toBeNull()
 })
 
 test('reverse on a frozen tape runs it backwards at normal speed', () => {

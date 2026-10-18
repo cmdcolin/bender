@@ -1,10 +1,11 @@
+import { useState, type ReactNode } from 'react'
+
 import { engine } from '../engine/engine.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { DeckGroup, DeckKey, DeckWell, DeckWord } from './DeckKey.tsx'
-import { FaceLevel } from './DeviceVerbs.tsx'
+import { DrawerSlider, FaceLevel } from './DeviceVerbs.tsx'
+import { Menu } from './Menu.tsx'
 import { Tip } from './Tip.tsx'
-
-import type { ReactNode } from 'react'
 
 const SPEED_LABELS = ['½×', '1×', '2×'] as const
 type Speed = (typeof SPEED_LABELS)[number]
@@ -25,7 +26,8 @@ function play() {
 // What you do to a tape loop with your hand on it: start it, stop it, turn it
 // round, step it through half, normal and double. The Speed knob in the panel
 // does all of it and more; these are the keys that come up every time, laid out
-// as on a deck: play stays down until stop pops it.
+// as on a deck: play stays down until stop pops it. The arrow beside the speed
+// opens the same knob in a popover, for a speed between the steps.
 export function TapeTransport({
   loaded,
   lead,
@@ -36,6 +38,8 @@ export function TapeTransport({
   const running = useBoardValue(c => c.sampleLevel > 0)
   const speed = useBoardValue(c => c.sampleSpeed)
   const reversed = speed < 0
+  const [open, setOpen] = useState(false)
+  const [arrow, setArrow] = useState<HTMLButtonElement | null>(null)
   const current =
     SPEED_LABELS.find(l => Math.abs(Math.abs(speed) - SPEEDS[l]) < 0.005) ??
     null
@@ -97,7 +101,7 @@ export function TapeTransport({
         <Tip
           text={
             loaded
-              ? `Tape speed, stepping through half, normal and double in whichever direction it is running — press for ${next}. The Speed knob in the panel goes anywhere between.`
+              ? `Tape speed, stepping through half, normal and double in whichever direction it is running — press for ${next}. The arrow beside it, or the Speed knob in the panel, goes anywhere between.`
               : NOTHING
           }
         >
@@ -111,6 +115,34 @@ export function TapeTransport({
             {shown}
           </DeckWord>
         </Tip>
+        <Tip
+          text={
+            loaded
+              ? 'Opens the speed knob, to set any speed between the steps while you listen.'
+              : NOTHING
+          }
+        >
+          <DeckWord
+            ref={setArrow}
+            name="speed knob"
+            aria-expanded={open}
+            disabled={!loaded}
+            onClick={() => setOpen(o => !o)}
+          >
+            ▾
+          </DeckWord>
+        </Tip>
+        {open && loaded && (
+          <Menu
+            anchor={arrow}
+            toggle={arrow}
+            role="group"
+            label="tape speed"
+            onClose={() => setOpen(false)}
+          >
+            <DrawerSlider control="sampleSpeed" />
+          </Menu>
+        )}
       </DeckGroup>
       {loaded && (
         <DeckGroup>

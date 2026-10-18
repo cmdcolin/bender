@@ -10,7 +10,7 @@ import { engine } from '../engine/engine.ts'
 import { NOTE_NAMES, semitoneName } from '../notes.ts'
 import { SCALE_NAMES, snap } from '../scale.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
-import { DeviceVerbs, DrawerLevel } from './DeviceVerbs.tsx'
+import { DeviceVerbs, DrawerSlider } from './DeviceVerbs.tsx'
 import { isTyping } from './isTyping.ts'
 import styles from './Keybed.module.css'
 import {
@@ -480,7 +480,7 @@ export function Keybed({
                   </Tip>
                 </>
               )}
-              {levelInDrawer && <DrawerLevel control={level} />}
+              {levelInDrawer && <DrawerSlider control={level} />}
             </Menu>
           )}
           {tail}
