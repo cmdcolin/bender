@@ -76,7 +76,7 @@
    that match nothing. */
 .graph a:hover :global(.box),
 .graph a:focus-visible :global(.box) {
-  stroke: var(--border-hover);
+  stroke: var(--fg3);
 }
 
 /* A wire's colour is what says where it lands, so hovering one thickens it

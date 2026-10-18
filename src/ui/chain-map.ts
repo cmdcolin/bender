@@ -249,16 +249,18 @@ export interface Palette {
   raise: string
 }
 
+// Literal copies of the panel's tokens. chain-map.test.ts checks them against
+// tokens.css and theme.css.
 export const PANEL: Palette = {
-  bg: '#1b1b1f',
-  fg: '#b9b9be',
-  dim: '#5c5c63',
-  border: '#2c2c31',
+  bg: '#16161a',
+  fg: '#e6e6ee',
+  dim: '#85859a',
+  border: '#63637a',
   accent: '#ff5d3b',
   accent2: '#ffb03b',
   mod: '#5ea9d8',
   open: '#332622',
-  raise: '#242429',
+  raise: '#26262e',
 }
 
 export function groupAnchor(name: string): string {
@@ -1688,7 +1690,7 @@ function levelBar(n: MapNode, k: Palette): El[] {
     width: w,
     height: 3,
     fill: k.border,
-    fillOpacity: 0.6,
+    fillOpacity: 0.3,
   })
   const level = n.level ?? 0
   if (level <= 0) return [track]

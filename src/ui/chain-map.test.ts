@@ -707,3 +707,28 @@ test('a pedal with its face on the bench says so on its box and the others do no
   expect(one.match(/on the bench/g)).toHaveLength(1)
   expect(one).toContain('class="benched"')
 })
+
+test('the panel palette matches the tokens it copies', () => {
+  const css = ['src/tokens.css', 'src/theme.css']
+    .map(f => readFileSync(f, 'utf8'))
+    .join('\n')
+  const token = (name: string) =>
+    css.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`))?.[1]
+  expect({
+    bg: PANEL.bg,
+    fg: PANEL.fg,
+    dim: PANEL.dim,
+    border: PANEL.border,
+    accent: PANEL.accent,
+    accent2: PANEL.accent2,
+    raise: PANEL.raise,
+  }).toEqual({
+    bg: token('surface'),
+    fg: token('fg'),
+    dim: token('fg4'),
+    border: token('border-hover'),
+    accent: token('accent'),
+    accent2: token('accent2'),
+    raise: token('surface-raised'),
+  })
+})
