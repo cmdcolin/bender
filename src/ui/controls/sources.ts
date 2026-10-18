@@ -1909,7 +1909,23 @@ export const SOURCE_GROUPS: Group[] = [
   {
     name: 'Home keyboard',
     place: 'Sources',
-    folded: ['clock and wires', 'knife on the bus'],
+    editor: { kind: 'pcm' },
+    handled: [
+      'pcmVoice',
+      'pcmEnv',
+      'pcmRelease',
+      'pcmTone',
+      'pcmVibrato',
+      'pcmChord',
+      'pcmClockX',
+      'pcmStruck',
+      'pcmKeyGate',
+      'pcmAddrLine',
+      'pcmAddrFault',
+      'pcmDataLine',
+      'pcmDataFault',
+      'pcmBusCut',
+    ],
     sliders: [
       {
         key: 'pcmLevel',

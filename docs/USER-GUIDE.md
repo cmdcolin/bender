@@ -306,6 +306,11 @@ Bring **Level** up and its bed appears under the toy's, in grey plastic, with
 the same **Plays the toy keyboard’s notes** jumper the FM chip has: soldered out
 of the box, so the demo song plays it.
 
+The panel draws the keyboard as its signal path: keys, counter, ROM, envelope,
+tone, then the mix. The vibrato LFO feeds the counter from above, and the
+address and data buses hang under the wires either side of the ROM. Press a box
+to open its knobs.
+
 **Voice** picks the recording and **Envelope** picks one of the four buttons
 down the side of the case — _piano_ falls away whether or not you are holding
 the key, _organ_ holds, _pad_ swells, _chime_ rings. **Release** is the one

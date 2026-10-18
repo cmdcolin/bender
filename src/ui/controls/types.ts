@@ -128,6 +128,7 @@ export interface Group {
     | { kind: 'tapeLoop' }
     | { kind: 'tapePath' }
     | { kind: 'fm' }
+    | { kind: 'pcm' }
     | { kind: 'ampPath' }
   /** Controls the group's own widget turns, so the panel draws no row for them.
       The definitions stay in `sliders` — they are what a roll, a reset, a rig

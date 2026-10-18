@@ -26,6 +26,7 @@ import { Mixer } from './Mixer.tsx'
 import { MonoPathDiagram } from './MonoPathDiagram.tsx'
 import { OrderRack } from './OrderRack.tsx'
 import { PatchBay } from './PatchBay.tsx'
+import { PcmKeysDiagram } from './PcmKeysDiagram.tsx'
 import { BenchToggle } from './Pedals.tsx'
 import {
   applyCut,
@@ -641,6 +642,13 @@ export function OpenGroup({
           {group.editor?.kind === 'tapePath' && <TapePathDiagram />}
           {group.editor?.kind === 'fm' && (
             <FmChipDiagram
+              verbs={part => (
+                <BoxVerbs group={group} part={part} seconds={seconds} />
+              )}
+            />
+          )}
+          {group.editor?.kind === 'pcm' && (
+            <PcmKeysDiagram
               verbs={part => (
                 <BoxVerbs group={group} part={part} seconds={seconds} />
               )}
