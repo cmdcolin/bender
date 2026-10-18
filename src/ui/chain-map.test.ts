@@ -81,6 +81,23 @@ test('the path is drawn, wired and inside its own box', () => {
   }
 })
 
+test('a short path hangs narrower than the mix bus, centred under it', () => {
+  const map = buildMap(DEFAULT_CONTROLS, {
+    wrap: true,
+    shown: new Set([
+      'Toy keyboard',
+      'Toy drums',
+      'FM chip',
+      'Tape delay',
+      'Output',
+    ]),
+  })
+  const [mix, out] = [box(map, 'mix')!, box(map, 'Output')!]
+  expect(mix.label).toBe('Mix bus')
+  expect(out.w).toBeLessThan(mix.w)
+  expect(out.x + out.w / 2).toBeCloseTo(mix.x + mix.w / 2)
+})
+
 test('the tape machine draws where Tape at puts it', () => {
   const at = (tapeAt: number) =>
     buildMap({ ...DEFAULT_CONTROLS, tapeMix: 1, tapeAt })

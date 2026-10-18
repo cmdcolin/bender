@@ -370,6 +370,8 @@ const FONT = 11
 const SMALL = 10
 const BOX_H = 22
 const MIN_W = 100
+/** the width a lone column of stages draws at, when its names need less */
+const STAGE_W = 150
 const PAD_X = 9
 const ROW_GAP = 7
 /** the channel the folded path's cable runs up, between the two columns */
@@ -683,7 +685,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // the board and was the one the panel had nowhere to show. Its id stays 'mix'
   // — the feedback return and the mic wire both name it by that.
   doors.add('Mix bus')
-  const mix = node('mix', 'stage', 'mix bus', {
+  const mix = node('mix', 'stage', 'Mix bus', {
     count: live ? touchedCount('Mix bus', c) : 0,
     // Only the first of the mic's seven solder points is the mix — the rest land
     // in the middle of something, and a shout browning the toy out is not a
@@ -848,6 +850,19 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // One content width for the whole drawing, wide enough for the source band
   // and for the folded path both, and whichever came out narrower stretches to
   // it. The band is the usual winner: seven boxes across beats two columns.
+  const stageNeed = Math.max(
+    MIN_W,
+    // Whatever the widest chip in the rack needs: a column cut to the names
+    // on the path would spill them out of it.
+    PAD_X * 2 + Math.max(0, ...chipW),
+    // The rack draws no box of its own, so its label costs no width — only
+    // the stages actually on the path do.
+    ...pathAndBus
+      .filter(n => n.kind !== 'rack')
+      .map(
+        n => PAD_X * 2 + iconCol(n.label) + textWidth(n.label, FONT) + countCol,
+      ),
+  )
   const content = Math.ceil(
     Math.max(
       ...chipRows.map(
@@ -855,29 +870,15 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       ),
       ...lineRows.map(row => sum(row) + INST_GAP * (row.length - 1)),
       sum(foot) + INST_GAP * (foot.length - 1),
-      cols *
-        Math.max(
-          MIN_W,
-          // Whatever the widest chip in the rack needs: a column cut to the
-          // names on the path would spill them out of it.
-          PAD_X * 2 + Math.max(0, ...chipW),
-          // The rack draws no box of its own, so its label costs no width —
-          // only the stages actually on the path do.
-          ...pathAndBus
-            .filter(n => n.kind !== 'rack')
-            .map(
-              n =>
-                PAD_X * 2 +
-                iconCol(n.label) +
-                textWidth(n.label, FONT) +
-                countCol,
-            ),
-        ) +
-        (cols - 1) * COL_GAP,
+      cols * stageNeed + (cols - 1) * COL_GAP,
     ),
   )
-  const boxW = (content - (cols - 1) * COL_GAP) / cols
+  const colW = (content - (cols - 1) * COL_GAP) / cols
+  // A single column hangs off the mix bus at the width its names need, rather
+  // than stretching to the source band above it.
+  const boxW = cols === 1 ? Math.min(colW, Math.max(stageNeed, STAGE_W)) : colW
   for (const n of pathAndBus) n.w = boxW
+  rack.w = colW
   mix.w = content
   board.w = content
   for (const n of foot) n.w = natural(n)
@@ -896,7 +897,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     let [x, row] = [0, 0]
     for (const [i, b] of loose.entries()) {
       const w = chipW[i]!
-      if (x > 0 && PAD_X + x + w > boxW - PAD_X) {
+      if (x > 0 && PAD_X + x + w > colW - PAD_X) {
         row++
         x = 0
       }
@@ -989,7 +990,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   }
   board.x = 0
   mix.x = 0
-  for (const n of down) n.x = 0
+  for (const n of down) n.x = n === rack ? 0 : (colW - boxW) / 2
   for (const n of upCol) n.x = boxW + COL_GAP
   if (!loop) bus.x = (content - boxW) / 2
   const footSpan =
