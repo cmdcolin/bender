@@ -37,8 +37,9 @@ fault somebody already found worth keeping.
 The panel draws the same buses under each chip's bus box (the **pattern** box on
 the drum machine), one trace a bit with the lowest on top. The knife rows, named
 cuts and drawing show only while the box is open, and a board that arrives
-knifed opens it. The box's wire turns red while a wire is cut, and the heading
-above it names the standing cut. The drawing follows the rows:
+knifed opens it. The box's wire turns red while a wire is cut, and on the drum
+machine the heading above it names the standing cut. The drawing follows the
+rows:
 
 - The knifed trace turns red and shows its line name.
 - A slash marks a cut, dotted across the gap while **Cut depth** leaves it
@@ -132,12 +133,14 @@ at once — see **Part spread** under [the parts rack](#the-parts-rack) below.
 
 ## The toy chip's pins
 
-The _inside the die_ fold draws the parts these bends reach. The key matrix and
-the tune ROM strike the voices, each voice's envelope sets its level, and the
-output pin carries every voice off the chip. Dashed wires carry the clock down
-to the voices, the PWM carrier and the scan counter, and a dashed wire from the
-output back to the clock marks the crosstalk path. A bend turns its part or wire
-red, and the drawing hangs the **Bend spot** pot off the part it is soldered to.
+The Toy keyboard panel is one drawing of the parts these bends reach. A keyboard
+box at its left opens first and holds the playing rows: tune, level, tone,
+accompaniment, arpeggio and key lock. The key matrix and the tune ROM strike the
+voices, each voice's envelope sets its level, and the output pin carries every
+voice off the chip. Dashed wires carry the clock down to the voices, the PWM
+carrier and the scan counter, and a dashed wire from the output back to the
+clock marks the crosstalk path. A bend turns its part or wire red, and the
+drawing hangs the **Bend spot** pot off the part it is soldered to.
 
 The drawing gives each feedback bend a red wire of its own:
 

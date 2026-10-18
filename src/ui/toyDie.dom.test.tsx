@@ -124,10 +124,10 @@ test('every knob in the die fold sits in one of the parts or under the bend spot
   )
 })
 
-test('the arp and the bus boxes open the folds they took over', () => {
+test('the keyboard box starts open on the playing rows, and the bus box swaps in its own', () => {
   open()
-  fireEvent.click(screen.getByRole('button', { name: 'arp/lock controls' }))
-  expect(screen.getByText('Arpeggio')).not.toBeNull()
+  for (const row of ['Tune', 'Level', 'Tone', 'Arpeggio'])
+    expect(screen.getByText(row)).not.toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
   expect(screen.queryByText('Arpeggio')).toBeNull()
   expect(screen.getByText('Data line')).not.toBeNull()
@@ -140,17 +140,21 @@ test('a board that arrives knifed opens the bus box', () => {
   set({ chipDataLine: 0, chipDataFault: 0 })
 })
 
-test('the die heading names the cut standing on its bus', () => {
-  set({ chipDataLine: 0, chipDataFault: 0 })
+test('the stage draws no folds and no rows outside the drawing', () => {
   open()
-  const head = () =>
-    [...document.querySelectorAll('summary')].find(s =>
-      /inside the die/.test(s.textContent ?? ''),
-    )!
-  expect(head().textContent).not.toContain('rests fill in')
-  fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
-  fireEvent.click(screen.getByRole('button', { name: 'rests fill in' }))
-  expect(head().textContent).toContain('rests fill in')
+  expect(document.querySelectorAll('summary')).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: 'keyboard controls' }))
+  expect(screen.queryByText('Tune')).toBeNull()
+  expect(screen.queryByText('Level')).toBeNull()
+})
+
+test('showing the piano roll opens the keyboard box', () => {
+  open()
+  fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
+  expect(screen.queryByText('Tune')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'show piano roll' }))
+  expect(screen.getByText('Tune')).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'show piano roll' }))
 })
 
 test('the bend spot rows stay under the drawing with no part open', () => {

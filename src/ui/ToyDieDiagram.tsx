@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
@@ -12,10 +14,11 @@ import {
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
+import { slidersFirst } from './slidersFirst.ts'
 import { BEND_KEYS, NODE_KEYS } from './toyBoxKeys.ts'
 
 import type { ControlKey } from '../controls.ts'
-import type { Verbs } from './foldHosting.ts'
+import type { DrawingProps } from './foldDrawings.tsx'
 
 const KEYS = [
   'chipBendSpot',
@@ -37,18 +40,22 @@ const KEYS = [
 
 const GROUP = GROUPS.find(g => g.name === 'Toy keyboard')!
 
-const HOSTED = {
-  'arp/lock': 'arp and key lock',
-  bus: 'knife on the bus',
-} as const
-
-const isHostedBox = (name: string | null): name is keyof typeof HOSTED =>
-  name !== null && name in HOSTED
+const BUS = 'knife on the bus'
+const KEYBOARD = 'keyboard'
 
 const keysOf = (part: string): ControlKey[] =>
   GROUP.sliders.filter(d => d.part === part).map(d => d.key)
 
-const BUS_KEYS = keysOf(HOSTED.bus)
+const BUS_KEYS = keysOf(BUS)
+
+const LEAD_KEYS = GROUP.lead ?? []
+const PLAY_KEYS = [
+  ...slidersFirst(
+    GROUP.sliders.filter(d => !d.part && !LEAD_KEYS.includes(d.key)),
+  ),
+  ...slidersFirst(GROUP.sliders.filter(d => d.part === 'arp and key lock')),
+].map(d => d.key)
+const KEYBOARD_KEYS = [...LEAD_KEYS, ...PLAY_KEYS]
 
 const SPOTS = sliderFor('chipBendSpot').choices!
 
@@ -67,6 +74,8 @@ const SMALL_GAP = 14
 const SMALL_Y = LOW + BOX_H + SMALL_GAP
 const HEIGHT = SMALL_Y + SMALL_H + 4
 const VOICES_W = 64
+const KEYBOARD_W = 30
+const KEYBOARD_GAP = 18
 const SIDE = 11
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
@@ -99,6 +108,65 @@ function Pot({
         pot
       </text>
     </g>
+  )
+}
+
+// The keys the player presses: the playing knobs live behind this box.
+function KeyboardNode({
+  box,
+  lit,
+  pick,
+}: {
+  box: ChipBox
+  lit: boolean
+  pick: ReturnType<typeof useSelectedBox>
+}) {
+  const x = box.x + (box.w - 18) / 2
+  const y = box.y + (box.h - 12) / 2
+  return (
+    <Pressable
+      name={KEYBOARD}
+      selected={pick.selected === KEYBOARD}
+      onSelect={() => pick.toggle(KEYBOARD)}
+    >
+      <title>
+        keyboard — the tune, level, tone, accompaniment, arpeggio and key lock
+      </title>
+      <rect
+        x={box.x}
+        y={box.y}
+        width={box.w}
+        height={box.h}
+        rx={3}
+        className={lit ? styles.chipOn : styles.chip}
+      />
+      <g className={lit ? styles.glyphOn : undefined}>
+        <rect
+          x={x}
+          y={y}
+          width={18}
+          height={12}
+          rx={1.5}
+          className={styles.glyph}
+        />
+        <path
+          d={[4.5, 9, 13.5]
+            .map(dx => `M${x + dx} ${y + 7} V${y + 12}`)
+            .join(' ')}
+          className={styles.glyph}
+        />
+        {[3.5, 8, 12.5].map(dx => (
+          <rect
+            key={dx}
+            x={x + dx}
+            y={y}
+            width={2}
+            height={7}
+            className={styles.glyphKey}
+          />
+        ))}
+      </g>
+    </Pressable>
   )
 }
 
@@ -147,11 +215,17 @@ function Say({
 // carries every voice off the chip. One clock times the voices, the scan counter
 // and the PWM carrier. Each feedback bend solders one part's signal onto another
 // part, and the drawing gives each one its own red wire.
-export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
+export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
   const r = useReadings(KEYS)
   const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
-  const pick = useSelectedBox(knifed ? 'bus' : null)
-  const hosted = isHostedBox(pick.selected) ? pick.selected : undefined
+  const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
+  const pick = useSelectedBox(knifed ? 'bus' : KEYBOARD)
+  const editing = Boolean(editor)
+  const [wasEditing, setWasEditing] = useState(editing)
+  if (editing !== wasEditing) {
+    setWasEditing(editing)
+    if (editing && pick.selected !== KEYBOARD) pick.toggle(KEYBOARD)
+  }
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow: WireLook = useStoreSelect(
@@ -168,31 +242,33 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
     boxWidth('envelope'),
     boxWidth('output pin'),
   ]
-  const width = widths.reduce((a, b) => a + b, TAIL + sum(GAPS))
+  const start = KEYBOARD_W + KEYBOARD_GAP
+  const width = widths.reduce((a, b) => a + b, start + TAIL + sum(GAPS))
   const row = names.map((name, i): ChipBox => ({
     name,
-    x: Math.round(sum(widths.slice(0, i)) + sum(GAPS.slice(0, i))),
+    x: Math.round(start + sum(widths.slice(0, i)) + sum(GAPS.slice(0, i))),
     y: LOW,
     w: widths[i]!,
     h: BOX_H,
   }))
   const [keys, voices, env, pin] = [row[0]!, row[1]!, row[2]!, row[3]!]
-  const small = (name: keyof typeof HOSTED, x: number, w: number): ChipBox => ({
-    name,
-    x,
+  const keyboard: ChipBox = {
+    name: KEYBOARD,
+    x: 0,
+    y: LOW,
+    w: KEYBOARD_W,
+    h: BOX_H,
+  }
+  const bus: ChipBox = {
+    name: 'bus',
+    x: voices.x + (voices.w - boxWidth('bus')) / 2,
     y: SMALL_Y,
-    w,
+    w: boxWidth('bus'),
     h: SMALL_H,
-  })
-  const arp = small('arp/lock', keys.x, boxWidth('arp/lock'))
-  const bus = small(
-    'bus',
-    voices.x + (voices.w - boxWidth('bus')) / 2,
-    boxWidth('bus'),
-  )
+  }
   const rom: ChipBox = {
     name: 'tune ROM',
-    x: 0,
+    x: start,
     y: TOP,
     w: boxWidth('tune ROM'),
     h: BOX_H,
@@ -236,13 +312,18 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
     <>
       <div className={chip.chips}>
         <Diagram
-          width={WIDTH}
-          left={(WIDTH - width) / 2}
+          width={Math.max(WIDTH, width)}
+          left={Math.max(0, (WIDTH - width) / 2)}
           height={HEIGHT}
           label="toy chip die"
         >
           {arrow => (
             <>
+              <Wire
+                arrow={arrow}
+                d={`M${keyboard.w} ${mid} H${keys.x}`}
+                look={flow}
+              />
               {row.slice(1).map((to, i) => (
                 <Wire
                   key={to.name}
@@ -406,19 +487,10 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
               />
               <Wire
                 arrow={arrow}
-                d={`M${arp.x + arp.w / 2} ${arp.y} V${keys.y + BOX_H}`}
-                look={flow}
-              />
-              <Wire
-                arrow={arrow}
                 d={`M${bus.x + bus.w / 2} ${bus.y} V${voices.y + BOX_H}`}
                 look={bent(knifed)}
               />
-              <Node
-                pick={pick}
-                box={arp}
-                help="The arpeggiator, the key lock and the scale the keys play in, ahead of the key matrix."
-              />
+              <KeyboardNode box={keyboard} lit={played} pick={pick} />
               <Node
                 pick={pick}
                 box={bus}
@@ -436,17 +508,27 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
           )}
         </Diagram>
       </div>
-      <BoxRows
-        hint="Press a box for its settings."
-        keys={
-          hosted
-            ? keysOf(HOSTED[hosted])
-            : pick.selected
-              ? NODE_KEYS[pick.selected]
-              : undefined
-        }
-        verbs={hosted && verbs?.(HOSTED[hosted])}
-      />
+      {pick.selected === KEYBOARD && editor ? (
+        <>
+          <BoxRows keys={LEAD_KEYS} />
+          {editor}
+          <BoxRows keys={PLAY_KEYS} />
+        </>
+      ) : pick.selected === KEYBOARD ? (
+        <BoxRows keys={KEYBOARD_KEYS} />
+      ) : (
+        <BoxRows
+          hint="Press a box for its settings."
+          keys={
+            pick.selected === 'bus'
+              ? BUS_KEYS
+              : pick.selected
+                ? NODE_KEYS[pick.selected]
+                : undefined
+          }
+          verbs={pick.selected === 'bus' && verbs?.(BUS)}
+        />
+      )}
       <BoxRows keys={BEND_KEYS} />
     </>
   )

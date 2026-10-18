@@ -3,6 +3,11 @@ import type { ReactNode } from 'react'
 /** Shows the verbs of another fold of the same group. */
 export type Verbs = (part: string) => ReactNode
 
+/** Stages drawn whole by one fold's drawing, which then holds every row. */
+export const STAGE_DRAWINGS: Record<string, string> = {
+  'Toy keyboard': 'inside the die',
+}
+
 /** Folds whose drawing opens the rows itself, one box at a time. */
 export const DRAWN_ROWS = new Set([
   'Toy keyboard|inside the die',

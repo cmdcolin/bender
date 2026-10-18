@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
@@ -20,7 +20,12 @@ import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
 import { FoldDrawing } from './foldDrawings.tsx'
-import { DRAWN_ROWS, hostedBy, isHosted } from './foldHosting.ts'
+import {
+  DRAWN_ROWS,
+  hostedBy,
+  isHosted,
+  STAGE_DRAWINGS,
+} from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
 import { MicPatch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
@@ -50,6 +55,7 @@ import { scrollIntoPanel } from './reveal.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider.tsx'
+import { slidersFirst } from './slidersFirst.ts'
 import { SupplyReading } from './SupplyReading.tsx'
 import { TapeLoopDiagram } from './TapeLoopDiagram.tsx'
 import { TapePathDiagram } from './TapePathDiagram.tsx'
@@ -428,21 +434,6 @@ function BoxVerbs({
   )
 }
 
-const isTrack = (run: SliderDef[]) => !run[0]!.choices
-
-// The sliders together over the rows of buttons and dropdowns, each side in the
-// order the table gives it. A row that only shows while another is set stays
-// with the row before it, so a pot never ends up above the switch that
-// brings it in.
-function slidersFirst(rows: SliderDef[]): SliderDef[] {
-  const runs: SliderDef[][] = []
-  for (const def of rows) {
-    if (def.needs && runs.length > 0) runs[runs.length - 1]!.push(def)
-    else runs.push([def])
-  }
-  return [...runs.filter(isTrack), ...runs.filter(r => !isTrack(r))].flat()
-}
-
 // The rows that sit over the widget rather than under it. Nothing decides
 // which ones except the group saying so — a piano roll is tall enough to push
 // the row naming the song being played off the bottom of the screen, and that
@@ -474,8 +465,17 @@ function Lead({ group }: { group: Group }) {
 // and the rest behind headings you press. Which headings start shut comes off
 // the group — and one holding a control you have moved starts open anyway, since
 // a panel that hides what you set is a panel lying about the board.
-function Rows({ group, seconds }: { group: Group; seconds: number }) {
+function Rows({
+  group,
+  seconds,
+  editor,
+}: {
+  group: Group
+  seconds: number
+  editor?: ReactNode
+}) {
   const blocks = parts(group)
+  const drawn = STAGE_DRAWINGS[group.name]
   // Which rows have anything to act on, as a string rather than the board they
   // are read off: a stage stands open through morphs and drags, and taking the
   // board would rebuild every row in it sixty times a second — where what the
@@ -517,6 +517,19 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
     <>
       {blocks.map(({ name, sliders }) => {
         const rows = sliders.filter(d => visible.has(d.key))
+        if (drawn && name === drawn)
+          return (
+            <FoldDrawing
+              key={name}
+              group={group.name}
+              part={name}
+              editor={editor}
+              verbs={part => (
+                <BoxVerbs group={group} part={part} seconds={seconds} />
+              )}
+            />
+          )
+        if (drawn && name === null) return null
         if (name === null)
           return slidersFirst(rows).map(def => (
             <ControlSlider key={def.key} def={def} />
@@ -613,6 +626,9 @@ export function OpenGroup({
   // that cannot see where to start, and four lanes of empty tape would push them
   // off the screen.
   const rigsFirst = group.editor?.kind === 'loops'
+  const drawn = group.name in STAGE_DRAWINGS
+  const tuneRoll =
+    group.editor?.kind === 'roll' && shownEditors.roll ? <TuneRoll /> : null
   const rigs = <Rigs group={group} seconds={seconds} />
   return (
     // The id every door on the map points at. The map draws its boxes as
@@ -674,10 +690,10 @@ export function OpenGroup({
       </div>
       <div className={styles.body}>
         <ReserveReadout defs={panelRows(group)}>
-          <Lead group={group} />
+          {!drawn && <Lead group={group} />}
           {rigsFirst && rigs}
           {group.editor?.kind === 'drums' && shownEditors.grid && <DrumGrid />}
-          {group.editor?.kind === 'roll' && shownEditors.roll && <TuneRoll />}
+          {!drawn && tuneRoll}
           {group.editor?.kind === 'mixer' && <Mixer />}
           {group.editor?.kind === 'feedback' && <FeedbackLoops />}
           {group.editor?.kind === 'order' && <OrderRack />}
@@ -712,7 +728,12 @@ export function OpenGroup({
           )}
           {group.memory && shownEditors.roll && <MonoRoll />}
           {!rigsFirst && rigs}
-          <Rows key={group.name} group={group} seconds={seconds} />
+          <Rows
+            key={group.name}
+            group={group}
+            seconds={seconds}
+            editor={drawn && tuneRoll}
+          />
         </ReserveReadout>
       </div>
     </div>

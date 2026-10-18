@@ -7,9 +7,15 @@ import { ToyDieDiagram } from './ToyDieDiagram.tsx'
 import { ToyDrumDiagram } from './ToyDrumDiagram.tsx'
 
 import type { Verbs } from './foldHosting.ts'
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
-const DRAWINGS: Record<string, ComponentType<{ verbs?: Verbs }>> = {
+export interface DrawingProps {
+  verbs?: Verbs
+  /** The stage's editor, for a drawing that holds the whole stage. */
+  editor?: ReactNode
+}
+
+const DRAWINGS: Record<string, ComponentType<DrawingProps>> = {
   'Toy drums|triggers and cross-patch': KitWiringDiagram,
   'Toy keyboard|inside the die': ToyDieDiagram,
   'Toy drums|inside the voices': ToyDrumDiagram,
@@ -22,14 +28,14 @@ export function FoldDrawing({
   group,
   part,
   verbs,
-}: {
+  editor,
+}: DrawingProps & {
   group: string
   part: string
-  verbs?: Verbs
 }) {
   const key = `${group}|${part}`
   const Drawing = DRAWINGS[key]
-  if (Drawing) return <Drawing verbs={verbs} />
+  if (Drawing) return <Drawing verbs={verbs} editor={editor} />
   const spec = BUS_SPECS[key]
   return spec ? <BusDiagram spec={spec} /> : null
 }
