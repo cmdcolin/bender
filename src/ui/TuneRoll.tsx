@@ -217,20 +217,25 @@ export function TuneRoll() {
         >
           <label className={styles.loop}>
             <span className={styles.loopLabel}>loop</span>
-            <select
-              className={len === TUNE_STEPS ? styles.len : styles.lenShort}
-              value={len}
-              onChange={e =>
-                engine.set('tuneLen', Number(e.currentTarget.value))
-              }
-              aria-label="loop length in steps"
-            >
-              {Array.from({ length: TUNE_STEPS }, (_, i) => (
-                <option key={i} value={i + 1}>
-                  {i + 1} {i === 0 ? 'step' : 'steps'}
-                </option>
-              ))}
-            </select>
+            <span className={styles.field}>
+              <select
+                className={len === TUNE_STEPS ? styles.len : styles.lenShort}
+                value={len}
+                onChange={e =>
+                  engine.set('tuneLen', Number(e.currentTarget.value))
+                }
+                aria-label="loop length in steps"
+              >
+                {Array.from({ length: TUNE_STEPS }, (_, i) => (
+                  <option key={i} value={i + 1}>
+                    {i + 1} {i === 0 ? 'step' : 'steps'}
+                  </option>
+                ))}
+              </select>
+              <span className={styles.chevron} aria-hidden="true">
+                ▾
+              </span>
+            </span>
           </label>
         </Tip>
       </div>
