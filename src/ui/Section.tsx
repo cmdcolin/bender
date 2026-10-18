@@ -718,8 +718,9 @@ export function PathHint() {
         the drawing is the path the sound takes: the sources sum onto the mix
         bus, run through the bends and then the pedals, in the order{' '}
         <em>Signal order</em> sets, then the tape and out. It shows only the
-        stages on the board; <em>+ add a stage</em> brings in another, and
-        random, mutate and drift change only what is drawn here
+        stages on the board; <em>+ add a stage</em> brings in another,{' '}
+        <em>− take off a stage</em> removes one, and random, mutate and drift
+        change only what is drawn here
       </p>
     </>
   )

@@ -14,7 +14,7 @@ import { buildMap, drawMap, onBoard } from './chain-map.ts'
 import styles from './ChainMap.module.css'
 import { CHANNELS, GROUPS, STAGE_ORDER } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { added } from './fitted.ts'
+import { added, removable, takeOff } from './fitted.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
@@ -178,40 +178,61 @@ export function ChainMap({
           seconds={seconds}
         />
       )}
-      <AddStage groups={offIt} onOpen={onOpen} />
+      <div className={styles.addRow}>
+        <StageMenu
+          groups={offIt}
+          button="+ add a stage"
+          label="add a stage"
+          onPick={onOpen}
+        />
+        <StageMenu
+          groups={onIt.filter(g => removable(g.name))}
+          button="− take off a stage"
+          label="take off a stage"
+          onPick={name => {
+            const group = GROUP_BY_NAME.get(name)!
+            engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+            if (open === name) onOpen(name)
+          }}
+        />
+      </div>
     </div>
   )
 }
 
-// What isn't on the board yet, under the place each stage sits in the chain.
-// Picking one opens it, which puts it on the map; the menu stays up for the
-// next, and shuts on a press elsewhere.
-function AddStage({
+// A button that opens a menu of stages under the place each sits in the chain.
+// The menu stays up for the next pick, and shuts on a press elsewhere or the
+// last pick.
+function StageMenu({
   groups,
-  onOpen,
+  button: text,
+  label,
+  onPick,
 }: {
   groups: { name: string; place: string }[]
-  onOpen: (name: string) => void
+  button: string
+  label: string
+  onPick: (name: string) => void
 }) {
   const [menu, setMenu] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   if (groups.length === 0) return null
   return (
-    <div className={styles.addRow}>
+    <>
       <button
         ref={setButton}
         className={styles.add}
         aria-expanded={menu}
         onClick={() => setMenu(m => !m)}
       >
-        + add a stage
+        {text}
       </button>
       {menu && (
         <Menu
           anchor={button}
           toggle={button}
           role="menu"
-          label="add a stage"
+          label={label}
           onClose={() => setMenu(false)}
         >
           {STAGE_ORDER.map(place => {
@@ -232,7 +253,7 @@ function AddStage({
                     className={menuItem(false)}
                     onClick={() => {
                       if (groups.length === 1) setMenu(false)
-                      onOpen(g.name)
+                      onPick(g.name)
                     }}
                   >
                     {g.name}
@@ -243,6 +264,6 @@ function AddStage({
           })}
         </Menu>
       )}
-    </div>
+    </>
   )
 }

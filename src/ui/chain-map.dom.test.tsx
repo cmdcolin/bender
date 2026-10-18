@@ -146,6 +146,23 @@ test('the add menu stays open for a second stage and shuts on a press elsewhere'
   expect(screen.queryByRole('menu', { name: 'add a stage' })).toBeNull()
 })
 
+test('the take-off menu lists the stages on the board and takes one off', async () => {
+  render(<App />)
+  act(() => {
+    cut()
+    engine.set('ringMix', 0.6)
+  })
+  await act(() => new Promise(r => setTimeout(r, 150)))
+  expect(doorsOnMap().has('Ring mod')).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: '− take off a stage' }))
+  expect(screen.queryByRole('menuitem', { name: 'Mix bus' })).toBeNull()
+  expect(screen.queryByRole('menuitem', { name: 'Output' })).toBeNull()
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Ring mod' }))
+  await act(() => new Promise(r => setTimeout(r, 150)))
+  expect(engine.controls.get().ringMix).toBe(0)
+  expect(doorsOnMap().has('Ring mod')).toBe(false)
+})
+
 test('take off turns the stage down and takes it off the map', async () => {
   render(<App />)
   act(() => {
