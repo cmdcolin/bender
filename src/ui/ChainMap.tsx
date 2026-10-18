@@ -10,11 +10,11 @@ import {
 import { engine } from '../engine/engine.ts'
 import { MAX_SOURCES } from '../engine/params.ts'
 import { bench } from './bench.ts'
-import { buildMap, drawMap, onBoard } from './chain-map.ts'
+import { buildMap, drawMap } from './chain-map.ts'
 import styles from './ChainMap.module.css'
 import { CHANNELS, GROUPS, STAGE_ORDER } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { added, removable, takeOff } from './fitted.ts'
+import { added, removable, shownOn, takeOff } from './fitted.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
@@ -100,7 +100,7 @@ export function ChainMap({
   // threaded, and a switch says nothing about the fader in front of it.
   const lit = useStoreValue(engine.sounding)
   const playing = SOUNDING.filter(c => lit & (1 << c.tap)).map(c => c.name)
-  const { pedals: benched } = useStoreValue(bench)
+  const benchNow = useStoreValue(bench)
   const graph = useRef<HTMLDivElement>(null)
   useEffect(() => {
     let shown = ''
@@ -116,15 +116,15 @@ export function ChainMap({
     () => (graph.current ? watchTriggers(graph.current) : undefined),
     [],
   )
-  const extra = useStoreValue(added)
-  const shown = new Set([...onBoard(controls), ...extra])
+  useStoreValue(added)
+  const shown = shownOn(controls, benchNow)
   if (open) shown.add(open)
   const map = buildMap(controls, {
     wrap: true,
     loop: true,
     open: open ?? undefined,
     playing,
-    benched,
+    benched: benchNow.pedals,
     shown,
   })
   const onIt = GROUPS.filter(g => shown.has(g.name))

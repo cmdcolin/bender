@@ -6,6 +6,7 @@ import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { bench, parseBench } from './bench.ts'
 import { GROUPS } from './controls/index.ts'
+import { shownOn } from './fitted.ts'
 import { Instruments } from './Instruments.tsx'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
@@ -242,4 +243,12 @@ test('a stored bench that is not one reads as the default', () => {
     parseBench('{"all":true,"closed":["FM chip",3],"pedals":["Tube amp",1]}'),
   ).toEqual({ all: true, closed: ['FM chip'], pedals: ['Tube amp'] })
   expect(parseBench('{"all":true,"closed":[]}').pedals).toEqual([])
+})
+
+test('a machine on the bench in all-instruments mode has its box on the map', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(allMode())
+  expect(shownOn(engine.controls.get()).has('Mono synth')).toBe(true)
+  fireEvent.click(allMode())
+  expect(shownOn(engine.controls.get()).has('Mono synth')).toBe(false)
 })

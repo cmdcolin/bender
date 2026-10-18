@@ -1,4 +1,5 @@
 import { createStore } from '../listeners.ts'
+import { bench, INSTRUMENTS, setBench, type Bench } from './bench.ts'
 import { FIXED, GATES, gateOff, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY, type Group } from './controls/index.ts'
 import { readSession, writeSession } from './persist.ts'
@@ -7,9 +8,10 @@ import { resetGroup } from './presets/roll.ts'
 
 import type { Controls } from '../controls.ts'
 
-// The stages on the map are the ones the board uses (`onBoard`) plus the ones
-// you added or opened, which stay until you take them off. Rolls change only
-// those, so a roll never brings in an effect you didn't put there.
+// The stages on the map are the ones the board uses (`onBoard`), the ones you
+// added or opened, which stay until you take them off, and the faces the bench
+// lays out. Rolls change only those, so a roll never brings in an effect you
+// didn't put there, and a face on screen always has its box on the map.
 
 // Kept for the tab, so a reload keeps them and a fresh tab or a shared link
 // starts with none.
@@ -33,8 +35,15 @@ export const added = createStore<ReadonlySet<string>>(
 )
 added.subscribe(() => writeSession(KEY, JSON.stringify([...added.get()])))
 
-export const shownOn = (c: Controls): Set<string> =>
-  new Set([...onBoard(c), ...added.get()])
+/** The faces the bench lays out whatever the board holds: every instrument not
+    put away in all-instruments mode, and the pedals brought up. */
+export const benchStages = (b: Bench): string[] => [
+  ...(b.all ? INSTRUMENTS.filter(s => !b.closed.includes(s)) : []),
+  ...b.pedals,
+]
+
+export const shownOn = (c: Controls, b: Bench = bench.get()): Set<string> =>
+  new Set([...onBoard(c), ...added.get(), ...benchStages(b)])
 
 export function add(names: Iterable<string>) {
   const next = new Set([...added.get(), ...names])
@@ -45,12 +54,25 @@ export const clearAdded = () => added.set(new Set())
 
 export const removable = (name: string) => !FIXED.has(name)
 
+function putAway(name: string) {
+  const b = bench.get()
+  const pedals = b.pedals.filter(p => p !== name)
+  const closed =
+    b.all && INSTRUMENTS.some(s => s === name) && !b.closed.includes(name)
+      ? [...b.closed, name]
+      : b.closed
+  if (pedals.length !== b.pedals.length || closed !== b.closed)
+    setBench({ ...b, pedals, closed })
+}
+
 /** The board with the stage closed off: a gated stage's level or mix down and
-    its other knobs left as you set them, any other group back to stock. */
+    its other knobs left as you set them, any other group back to stock. The
+    stage's face leaves the bench too. */
 export function takeOff(group: Group, c: Controls): Controls {
   const next = new Set(added.get())
   next.delete(group.name)
   added.set(next)
+  putAway(group.name)
   const gate = GATES[group.name]
   if (!gate) return resetGroup(group, c)
   const out = { ...c }

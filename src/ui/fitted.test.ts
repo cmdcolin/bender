@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { bench } from './bench.ts'
 import { buildMap, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY } from './controls/index.ts'
 import {
@@ -120,4 +121,21 @@ test('a stored list keeps the stage names the board still has', () => {
   expect([...parseAdded('["Ring mod","Gone pedal",3]')]).toEqual(['Ring mod'])
   expect(parseAdded('{').size).toBe(0)
   expect(parseAdded(null).size).toBe(0)
+})
+
+test('every instrument laid out on the bench has its box on the map', () => {
+  const all = { all: true, closed: ['Mono synth'], pedals: ['Stompbox'] }
+  const on = shownOn(stock(), all)
+  for (const stage of ['FM chip', 'Home keyboard', 'Stompbox'])
+    expect(on.has(stage), stage).toBe(true)
+  expect(on.has('Mono synth')).toBe(false)
+})
+
+test('taking an instrument off puts its face away', () => {
+  bench.set({ all: true, closed: [], pedals: ['Stompbox'] })
+  takeOff(group('FM chip'), stock())
+  takeOff(group('Stompbox'), stock())
+  expect(bench.get().closed).toEqual(['FM chip'])
+  expect(bench.get().pedals).toEqual([])
+  bench.set({ all: false, closed: [], pedals: [] })
 })

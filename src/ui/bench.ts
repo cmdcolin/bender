@@ -12,6 +12,14 @@ export interface Bench {
   pedals: readonly string[]
 }
 
+export const INSTRUMENTS = [
+  'Toy keyboard',
+  'Toy drums',
+  'FM chip',
+  'Home keyboard',
+  'Mono synth',
+] as const
+
 const EMPTY: Bench = { all: false, closed: [], pedals: [] }
 
 const strings = (value: unknown): string[] =>

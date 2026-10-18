@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 
-import { bench, setBench } from './bench.ts'
+import { bench, INSTRUMENTS, setBench } from './bench.ts'
 import { BendKeysSwitch } from './BendKeys.tsx'
+import { onBoard } from './chain-map.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
+import { add, added, shownOn } from './fitted.ts'
 import { FmKeys } from './FmKeys.tsx'
 import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
@@ -31,15 +33,15 @@ const LEVELLED: Row = [
   ['Mono synth', MonoKeys],
 ]
 
-// The keyboards and the kit. Normally the toy and the kit always show and the
-// other three come and go with their faders. The all-instruments mode lays out
-// every one whatever its fader says, each with a close cap, and a row of what
-// has been closed to bring it back. The mode and the closed set survive a
-// reload.
+// The keyboards and the kit. A machine shows while its stage is on the map: the
+// toy and the kit from the start, the other three once their faders come up.
+// The all-instruments mode lays out every one whatever its fader says, each
+// with a close cap, and a row of what has been closed to bring it back. The
+// mode and the closed set survive a reload.
 //
-// A machine that has come up stays until the page reloads or the all-instruments
-// mode goes on: the Level slider on its face runs down to zero, and a face that
-// left under the pointer would take the slider with it.
+// A machine that has come up goes on the map for good (`add`): the Level slider
+// on its face runs down to zero, and a face that left under the pointer would
+// take the slider with it. Taking its stage off the map is what puts it away.
 const keep = (all: boolean, closed: ReadonlySet<string>) =>
   setBench({ ...bench.get(), all, closed: [...closed] })
 
@@ -52,20 +54,18 @@ export function Instruments({
 }) {
   const { all, closed: closedList } = useStoreValue(bench)
   const closed = new Set(closedList)
-  const fmUp = useBoardValue(c => c.fmLevel > 0)
-  const pcmUp = useBoardValue(c => c.pcmLevel > 0)
-  const monoUp = useBoardValue(c => c.monoLevel > 0)
-  const [kept, setKept] = useState<ReadonlySet<string>>(new Set())
-  const up = new Map([
-    ['FM chip', fmUp],
-    ['Home keyboard', pcmUp],
-    ['Mono synth', monoUp],
-  ])
-  const risen = [...up].filter(([stage, on]) => on && !kept.has(stage))
-  if (risen.length > 0)
-    setKept(new Set([...kept, ...risen.map(([stage]) => stage)]))
+  useStoreValue(added)
+  const risen = useBoardValue(c =>
+    INSTRUMENTS.filter(stage => onBoard(c).has(stage)).join('|'),
+  )
+  useEffect(() => {
+    if (risen) add(risen.split('|'))
+  }, [risen])
+  const onMap = useBoardValue(c =>
+    INSTRUMENTS.filter(stage => shownOn(c).has(stage)).join('|'),
+  ).split('|')
   const shows = (stage: string) =>
-    all ? !closed.has(stage) : (up.get(stage) ?? true) || kept.has(stage)
+    all ? !closed.has(stage) : onMap.includes(stage)
 
   const close = (stage: string) => keep(all, new Set(closed).add(stage))
   const reopen = (stage: string) =>
