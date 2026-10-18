@@ -18,6 +18,8 @@ export const BEND_ENDS: Partial<
   chipEnvRelax: [1, -1],
   chipEnvDiv: [0, 0],
   chipPwmTap: [1, 1],
+  chipFmClock: [0, 0],
+  chipHold: [0, -1.5],
   drumLevel: [-1.5, 6.5],
   drumSwing: [null, null],
   drumChance: [null, null],
