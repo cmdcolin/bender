@@ -376,8 +376,6 @@ const PAD_X = 9
 const ROW_GAP = 7
 /** the channel the folded path's cable runs up, between the two columns */
 const COL_GAP = 28
-/** an instrument's own box: a name and a count over a fader */
-const INST_H = 34
 const INST_GAP = 12
 /** the lip a frame carries its name on */
 const CAP_H = 16
@@ -632,7 +630,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       door: name,
       level,
       playing: playing.has(name),
-      h: INST_H,
+      h: BOX_H,
     })
   }
   const has = (name: string) => !o.shown || o.shown.has(name)
@@ -924,13 +922,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // The lane under the row, which carries everything written about the row
   // rather than about one box in it: what the key line is, the bridges you have
   // patched across it, and — when you have patched none — that there are none.
-  const trackY = chipY + INST_H + TRACK / 2
-  const laneY = chipY + INST_H + (underRow.size ? TRACK : 0)
+  const trackY = chipY + BOX_H + TRACK / 2
+  const laneY = chipY + BOX_H + (underRow.size ? TRACK : 0)
   const trigY = laneY + TRIG_H
   const laneEnd =
     laneY + (laneUsed ? Math.max(CHIP_H, trigs.length * TRIG_H) + 4 : 0)
   const lowY = laneEnd + 4
-  const rail2Y = lowY + INST_H + RAIL_H / 2
+  const rail2Y = lowY + BOX_H + RAIL_H / 2
   for (const n of lower) n.y = lowY
   board.h = hasBoard
     ? (lower.size ? rail2Y + RAIL_H / 2 : laneEnd) - board.y
@@ -938,9 +936,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   const lineY = hasBoard ? board.y + board.h + BAND_GAP : MARGIN
   for (const [r, row] of lineRows.entries())
-    for (const n of row) n.y = lineY + r * (INST_H + BAND_GAP)
+    for (const n of row) n.y = lineY + r * (BOX_H + BAND_GAP)
   const bandBottom = lineRows.length
-    ? lineY + (lineRows.length - 1) * (INST_H + BAND_GAP) + INST_H
+    ? lineY + (lineRows.length - 1) * (BOX_H + BAND_GAP) + BOX_H
     : board.y + board.h
   const collectY = bandBottom + COLLECT_H
   mix.y = collectY + BAND_GAP
@@ -1204,8 +1202,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
             ]
           : elbowV([dropX, from.y + from.h], [midX(to), to.y], to.y - 4)
         : [
-            [from.x + from.w, chipY + INST_H / 2],
-            [to.x, chipY + INST_H / 2],
+            [from.x + from.w, chipY + BOX_H / 2],
+            [to.x, chipY + BOX_H / 2],
           ]
     wire(keyId.get(to)!, from, to, pts, {
       ...keyLine(i),
@@ -1897,14 +1895,14 @@ function levelBar(n: MapNode, k: Palette, meter: number): El[] {
   // long as the narrowest box's, so a wide box doesn't read as a loud one.
   const [x, y, w] = [
     n.x + PAD_X,
-    n.y + n.h - 11,
+    n.y + n.h - 4,
     Math.min(meter, n.w - PAD_X * 2),
   ]
   const track = el('rect', {
     x,
     y,
     width: w,
-    height: 3,
+    height: 2,
     fill: k.border,
     fillOpacity: 0.3,
   })
@@ -1916,7 +1914,7 @@ function levelBar(n: MapNode, k: Palette, meter: number): El[] {
       x,
       y,
       width: Math.max(2, w * Math.min(1, level)),
-      height: 3,
+      height: 2,
       fill: n.playing ? k.accent2 : k.fg,
       fillOpacity: n.playing ? 0.95 : 0.5,
     }),
@@ -2295,11 +2293,11 @@ export function drawNode(
         stroke: lit,
         strokeWidth: n.open ? 2 : 1,
       }),
-      ...glyph(n, k, n.y + (INST_H - ICON) / 2 - 4),
+      ...glyph(n, k, n.y + (n.h - ICON) / 2 - 1.5),
       words(
         n.label,
         n.x + PAD_X + ICON_COL,
-        n.y + 15.5,
+        baseline(n.y, n.h - 3, FONT),
         FONT,
         n.active || n.open ? k.fg : k.dim,
         'start',
@@ -2308,7 +2306,7 @@ export function drawNode(
     ]
     return el('g', { className: 'node' }, [
       ...door(inner, n.door, links),
-      ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, 20, k),
+      ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h - 3, k),
     ])
   }
   const lit = edge(n, k)

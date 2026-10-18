@@ -333,7 +333,7 @@ test('every source box draws its fader travel at one length', () => {
   expect(new Set(insts.map(n => n.w)).size).toBeGreaterThan(1)
   const tracks = [
     ...serialize(drawMap(map)).matchAll(
-      /<rect [^>]*width="([\d.]+)"[^>]*height="3"[^>]*fill-opacity="0.3"/g,
+      /<rect [^>]*width="([\d.]+)"[^>]*height="2"[^>]*fill-opacity="0.3"/g,
     ),
   ].map(m => m[1])
   expect(tracks.length).toBe(insts.length)
