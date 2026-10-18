@@ -7,15 +7,10 @@ import {
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chipLook from './ChipLook.module.css'
-import { sliderFor } from './controls/index.ts'
 import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import { BoxRows, Diagram, Pressable, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
-
-const CHOKES = sliderFor('drumChoke').choices!
-const RINGS = sliderFor('drumRingTrig').choices!
-const CROSSES = sliderFor('drumCross').choices!
 
 // What each box and each patch of the drawing opens.
 const OPENS: Record<string, { keys: readonly ControlKey[]; help: string }> = {
@@ -238,21 +233,11 @@ export function KitWiringDiagram() {
   }))
   const voiceRight = VOICE_X + VOICE_W
   const patches = [
-    { name: 'choke', say: choke > 0 ? CHOKES[choke] : undefined },
-    { name: 'ring trigger', say: ring > 0 ? RINGS[ring] : undefined },
-    { name: 'cross-patch', say: cross > 0 ? CROSSES[cross] : undefined },
+    { name: 'choke', lit: choke > 0 },
+    { name: 'ring trigger', lit: ring > 0 },
+    { name: 'cross-patch', lit: cross > 0 },
   ]
-  const widths = patches.map(p =>
-    Math.max(
-      boxWidth(p.name),
-      ...(p.name === 'choke'
-        ? CHOKES
-        : p.name === 'ring trigger'
-          ? RINGS
-          : CROSSES
-      ).map(boxWidth),
-    ),
-  )
+  const widths = patches.map(p => boxWidth(p.name))
   const spanW = widths.reduce((a, b) => a + b, 0) + CHIP_GAP * 2
   const patchBoxes = patches.map((p, i): ChipBox => ({
     name: p.name,
@@ -264,14 +249,14 @@ export function KitWiringDiagram() {
     h: CHIP_H,
   }))
   const open = pick.selected ? OPENS[pick.selected] : undefined
-  const node = (box: ChipBox, say?: string) => (
+  const node = (box: ChipBox, lit?: boolean) => (
     <Pressable
       key={box.name}
       name={box.name}
       selected={pick.selected === box.name}
       onSelect={() => pick.toggle(box.name)}
     >
-      <Chip box={box} reading={say} help={OPENS[box.name]!.help} />
+      <Chip box={box} lit={lit} help={OPENS[box.name]!.help} />
     </Pressable>
   )
   return (
@@ -337,7 +322,7 @@ export function KitWiringDiagram() {
                 <Chip key={b.name} box={b} />
               ))}
               {node(amps)}
-              {patchBoxes.map((b, i) => node(b, patches[i]!.say))}
+              {patchBoxes.map((b, i) => node(b, patches[i]!.lit))}
             </>
           )}
         </Diagram>

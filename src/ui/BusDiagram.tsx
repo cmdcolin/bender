@@ -101,19 +101,19 @@ function layout(spec: BusSpec) {
 
 export function Chip({
   box,
-  reading,
+  lit,
   help,
   className,
 }: {
   box: ChipBox
-  reading?: string | string[]
+  /** A knob inside is off stock: the frame and the name go accent. */
+  lit?: boolean
   help?: string
   className?: string
 }) {
   const lines = box.name.split('\n')
-  const says = [reading ?? []].flat()
-  const count = lines.length + says.length
-  const top = box.y + (box.h - LINE_H * count) / 2
+  const top = box.y + (box.h - LINE_H * lines.length) / 2
+  const frame = lit ? styles.chipOn : styles.chip
   return (
     <g>
       {help && <title>{`${box.name.replace('\n', ' ')} — ${help}`}</title>}
@@ -123,7 +123,7 @@ export function Chip({
         width={box.w}
         height={box.h}
         rx={3}
-        className={className ? `${styles.chip} ${className}` : styles.chip}
+        className={className ? `${frame} ${className}` : frame}
       />
       {lines.map((line, i) => (
         <text
@@ -131,20 +131,9 @@ export function Chip({
           x={box.x + box.w / 2}
           y={top + LINE_H * (i + 1) - 3}
           textAnchor="middle"
-          className={styles.chipName}
+          className={lit ? styles.chipNameOn : styles.chipName}
         >
           {line}
-        </text>
-      ))}
-      {says.map((say, i) => (
-        <text
-          key={say}
-          x={box.x + box.w / 2}
-          y={top + LINE_H * (lines.length + i + 1) - 3}
-          textAnchor="middle"
-          className={styles.knifed}
-        >
-          {say}
         </text>
       ))}
     </g>
@@ -298,7 +287,8 @@ function TapWire({
           return { x: along(to, TAP_AT), y: lineY(to, onto.line), pin: '' }
         })()
   return (
-    <>
+    <g>
+      <title>{tap.says(value, also)}</title>
       <path
         d={`M${fx} ${fy} V${routeY} H${end.x} V${end.y}`}
         className={styles.jumper}
@@ -317,9 +307,9 @@ function TapWire({
         textAnchor="middle"
         className={styles.knifed}
       >
-        {tap.says(value, also)}
+        {tap.name}
       </text>
-    </>
+    </g>
   )
 }
 
@@ -339,7 +329,8 @@ function InjectWire({
   const x = along(p, INJECT_AT)
   const lines = Array.from({ length: value }, (_, i) => lineY(p, i))
   return (
-    <>
+    <g>
+      <title>{inject.says(value)}</title>
       <path
         d={`M${x} ${rowTop + 2} V${lines.at(-1)}`}
         className={styles.jumper}
@@ -353,9 +344,9 @@ function InjectWire({
         textAnchor="end"
         className={styles.knifed}
       >
-        {inject.says(value)}
+        {inject.name}
       </text>
-    </>
+    </g>
   )
 }
 
@@ -387,15 +378,16 @@ function FeedWire({
       textAnchor={anchor}
       className={value > 0 ? styles.knifed : styles.bus}
     >
-      {feed.says(value)}
+      {feed.name}
     </text>
   )
   if (!feed.from)
     return (
-      <>
+      <g>
+        <title>{feed.says(value)}</title>
         <Wire arrow={arrow} d={`M${tx} ${rowTop + 2} V${to.y}`} look={look} />
         {say(tx + 4, rowTop + 12, 'start')}
-      </>
+      </g>
     )
   const sx =
     'chip' in feed.from
@@ -407,14 +399,15 @@ function FeedWire({
   const sy = 'chip' in feed.from ? boxTop : links[feed.from.link]![0]!.top
   const over = rowTop + 14
   return (
-    <>
+    <g>
+      <title>{feed.says(value)}</title>
       <Wire
         arrow={arrow}
         d={`M${sx} ${sy} V${over} H${tx} V${to.y}`}
         look={look}
       />
       {say((sx + tx) / 2, over - 3, 'middle')}
-    </>
+    </g>
   )
 }
 

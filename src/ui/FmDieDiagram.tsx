@@ -2,7 +2,7 @@ import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
-import { CHANNELS, sliderFor } from './controls/index.ts'
+import { CHANNELS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import {
@@ -32,11 +32,6 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   DAC: ['fmDacSlot', 'fmDacSlip'],
 }
 
-const ALLOC = sliderFor('fmAlloc').choices!
-const SLOTS = sliderFor('fmDacSlot').choices!
-const BOOT = sliderFor('fmColdBoot').choices!
-const ADDER = sliderFor('fmAdder').choices!
-
 const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
 
 const VOICES = 4
@@ -52,6 +47,7 @@ const HEIGHT = TOP + HEAD + STACK + FOOT + TOP
 const MID = TOP + HEAD + STACK / 2
 
 const widest = (...names: string[]) => Math.max(...names.map(boxWidth))
+const BOX_LINES = 'a'
 
 const voiceTop = (i: number) => TOP + HEAD + i * (VOICE_H + VOICE_GAP)
 const voiceMid = (i: number) => voiceTop(i) + VOICE_H / 2
@@ -80,12 +76,12 @@ export function FmDieDiagram() {
   const boot = read('fmColdBoot')
   const adder = read('fmAdder')
 
-  const frameW = widest('adder 11 bits')
+  const frameW = boxWidth('voice 4') + 16
   const widths = [
-    widest('allocator', ...ALLOC),
-    widest('registers', BOOT[1]!),
+    widest('allocator'),
+    widest('registers'),
     frameW,
-    widest('DAC', ...SLOTS),
+    widest('DAC'),
   ]
   const gap = (WIDTH - TAIL - widths.reduce((a, b) => a + b)) / 3
   const xs = widths.map((_, i) =>
@@ -98,9 +94,9 @@ export function FmDieDiagram() {
     w: widths[i]!,
     h: boxHeight(lines),
   })
-  const allocBox = { ...box(0, 'a\nb'), name: 'allocator' }
-  const regsBox = { ...box(1, 'a\nb'), name: 'registers' }
-  const dacBox = { ...box(3, 'a\nb\nc'), name: 'DAC' }
+  const allocBox = { ...box(0, BOX_LINES), name: 'allocator' }
+  const regsBox = { ...box(1, BOX_LINES), name: 'registers' }
+  const dacBox = { ...box(3, BOX_LINES), name: 'DAC' }
   const frameX = xs[2]!
   const frameRight = frameX + frameW
   const voiceW = boxWidth('voice 4')
@@ -137,13 +133,13 @@ export function FmDieDiagram() {
                     width={frameW}
                     height={HEAD + STACK + FOOT}
                     rx={3}
-                    className={styles.chip}
+                    className={adder ? styles.chipOn : styles.chip}
                   />
                   <text
                     x={frameX + frameW / 2}
                     y={TOP + 11}
                     textAnchor="middle"
-                    className={styles.chipName}
+                    className={adder ? styles.chipNameOn : styles.chipName}
                   >
                     voices
                   </text>
@@ -151,9 +147,9 @@ export function FmDieDiagram() {
                     x={frameX + frameW / 2}
                     y={TOP + HEAD + STACK + 11}
                     textAnchor="middle"
-                    className={adder ? styles.knifed : styles.bus}
+                    className={adder ? styles.chipNameOn : styles.bus}
                   >
-                    {`adder ${ADDER[adder]}`}
+                    adder
                   </text>
                 </g>,
               )}
@@ -211,7 +207,7 @@ export function FmDieDiagram() {
                 'allocator',
                 <Chip
                   box={allocBox}
-                  reading={alloc > 0 ? ALLOC[alloc] : undefined}
+                  lit={alloc > 0}
                   help="The driver’s note allocator. Stuck, it hands every note to one channel."
                 />,
               )}
@@ -219,7 +215,7 @@ export function FmDieDiagram() {
                 'registers',
                 <Chip
                   box={regsBox}
-                  reading={boot > 0 ? BOOT[boot] : undefined}
+                  lit={boot > 0}
                   help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
                 />,
               )}
@@ -227,12 +223,7 @@ export function FmDieDiagram() {
                 'DAC',
                 <Chip
                   box={dacBox}
-                  reading={[
-                    ...(slot > 0 ? [SLOTS[slot]!] : []),
-                    ...(slot === 0 && slip > 0
-                      ? [`slip ${Math.round(slip * 100)}%`]
-                      : []),
-                  ]}
+                  lit={slot > 0 || slip > 0}
                   help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
                 />,
               )}

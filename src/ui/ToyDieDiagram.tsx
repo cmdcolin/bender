@@ -51,10 +51,6 @@ const keysOf = (part: string): ControlKey[] =>
 const BUS_KEYS = keysOf(HOSTED.bus)
 
 const SPOTS = sliderFor('chipBendSpot').choices!
-const CAPS = sliderFor('chipEnvCap').choices!
-const GHOSTS = sliderFor('chipGhost').choices!
-const OUT_ADDR = sliderFor('chipOutAddr').choices!
-const OUT_DATA = sliderFor('chipOutData').choices!
 
 const TOY_TAP = CHANNELS.find(c => c.name === 'Toy keyboard')!.tap
 
@@ -74,7 +70,6 @@ const VOICES_W = 64
 const SIDE = 11
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
-const widest = (...names: string[]) => Math.max(...names.map(boxWidth))
 const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 
 // A variable resistor from a spot on the die to ground, above or below its box.
@@ -109,12 +104,12 @@ function Pot({
 
 function Node({
   box,
-  reading,
+  lit,
   help,
   pick,
 }: {
   box: ChipBox
-  reading?: string
+  lit?: boolean
   help: string
   pick: ReturnType<typeof useSelectedBox>
 }) {
@@ -124,7 +119,7 @@ function Node({
       selected={pick.selected === box.name}
       onSelect={() => pick.toggle(box.name)}
     >
-      <Chip box={box} reading={reading} help={help} />
+      <Chip box={box} lit={lit} help={help} />
     </Pressable>
   )
 }
@@ -168,10 +163,10 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
 
   const names = ['key matrix', 'voices', 'envelope', 'output pin']
   const widths = [
-    widest('key matrix', ...GHOSTS),
+    boxWidth('key matrix'),
     VOICES_W,
-    widest('envelope', ...CAPS),
-    widest('output pin', 'shorted'),
+    boxWidth('envelope'),
+    boxWidth('output pin'),
   ]
   const width = widths.reduce((a, b) => a + b, TAIL + sum(GAPS))
   const row = names.map((name, i): ChipBox => ({
@@ -195,15 +190,11 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
     voices.x + (voices.w - boxWidth('bus')) / 2,
     boxWidth('bus'),
   )
-  const outOn = [
-    read('chipOutAddr') > 0 ? OUT_ADDR[read('chipOutAddr')] : '',
-    read('chipOutData') > 0 ? OUT_DATA[read('chipOutData')] : '',
-  ].filter(Boolean)
   const rom: ChipBox = {
     name: 'tune ROM',
     x: 0,
     y: TOP,
-    w: widest('tune ROM', 'A4 D5 ← out'),
+    w: boxWidth('tune ROM'),
     h: BOX_H,
   }
   const clockRight = pin.x + pin.w * 0.6
@@ -227,8 +218,6 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
   const pwmTap = up('chipPwmTap')
   const stepTap = up('chipStepTap')
   const cross = up('chipCrosstalk')
-  const ghost = read('chipGhost')
-  const cap = read('chipEnvCap')
   const drops: [number, boolean, string][] = [
     [voices.x + voices.w / 2, false, ''],
     [env.x + env.w / 2, up('chipPwm') && !pwmTap, 'PWM'],
@@ -383,19 +372,19 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
               <Node
                 pick={pick}
                 box={rom}
-                reading={outOn.length ? `${outOn.join(' ')} ← out` : undefined}
+                lit={up('chipOutAddr') || up('chipOutData')}
                 help="The counter that steps through the tune and the ROM that holds its notes. The output pin can be soldered onto one of its address or note-code wires."
               />
               <Node
                 pick={pick}
                 box={clock}
-                reading={up('chipDrift') ? 'drifting' : undefined}
+                lit={up('chipDrift')}
                 help="The crystal and its divider. Pitch, tempo, the scan counter and the PWM carrier all count off it."
               />
               <Node
                 pick={pick}
                 box={keys}
-                reading={ghost > 0 ? GHOSTS[ghost] : undefined}
+                lit={up('chipGhost')}
                 help="The rows and columns the keys close. With the diodes lifted, holding two keys also closes the other two corners of their rectangle."
               />
               <Node
@@ -406,13 +395,13 @@ export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
               <Node
                 pick={pick}
                 box={env}
-                reading={cap > 0 ? CAPS[cap] : undefined}
+                lit={up('chipEnvCap')}
                 help="The capacitor each note’s level follows. The PWM carrier switches that level on and off."
               />
               <Node
                 pick={pick}
                 box={pin}
-                reading={!scan && up('chipShort') ? 'shorted' : undefined}
+                lit={!scan && up('chipShort')}
                 help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
               />
               <Wire

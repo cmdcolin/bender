@@ -34,12 +34,21 @@ test('the stock kit draws every voice, the hat pedal and nothing red', () => {
   expect(red()).toBe(0)
 })
 
-test('the choke, ring trigger and cross-patch each name the wire they moved', () => {
+const lit = (part: string) =>
+  screen
+    .getByRole('button', { name: `${part} controls` })
+    .querySelector('rect')!
+    .getAttribute('class')!
+    .includes('chipOn')
+
+test('the choke, ring trigger and cross-patch each light once moved and name no setting', () => {
   open()
+  for (const part of ['choke', 'ring trigger', 'cross-patch'])
+    expect(lit(part), part).toBe(false)
   set({ drumChoke: 2, drumRingTrig: 1, drumCross: 1 })
-  expect(words()).toEqual(
-    expect.arrayContaining(['kick cuts tom', 'kick fires hat', 'kick/snare']),
-  )
+  for (const part of ['choke', 'ring trigger', 'cross-patch'])
+    expect(lit(part), part).toBe(true)
+  expect(words().join()).not.toContain('kick cuts tom')
   expect(red()).toBeGreaterThan(0)
 })
 

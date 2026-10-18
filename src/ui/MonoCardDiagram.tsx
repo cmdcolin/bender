@@ -2,7 +2,7 @@ import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
-import { CHANNELS, sliderFor } from './controls/index.ts'
+import { CHANNELS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import {
@@ -37,15 +37,13 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   contours: ['monoCap'],
 }
 
-const DAC_BITS = sliderFor('monoDacBit').choices!
-
 const MONO_TAP = CHANNELS.find(c => c.name === 'Mono synth')!.tap
 
 const WIDTH = 420
 const TAIL = 30
 const TOP = 4
 const BAR_H = boxHeight('')
-const CHIP_H = boxHeight('a\nb')
+const CHIP_H = boxHeight('a')
 const CHIP_Y = TOP + BAR_H + 18
 const MID = CHIP_Y + CHIP_H / 2
 const LOW_Y = CHIP_Y + CHIP_H + 18
@@ -53,23 +51,19 @@ const HEIGHT = LOW_Y + BAR_H + 4
 
 const centre = (b: ChipBox) => b.x + b.w / 2
 
-const percent = (v: number) => `${Math.round(v * 100)}%`
-const perSecond = (v: number) => `${+v.toFixed(2)}/s`
-const fullPercent = (key: (typeof KEYS)[number]) => percent(sliderFor(key).max)
-
 function Bar({
   x,
   y,
   w,
   name,
-  reading,
+  lit,
   help,
 }: {
   x: number
   y: number
   w: number
   name: string
-  reading?: string
+  lit: boolean
   help: string
 }) {
   return (
@@ -81,20 +75,15 @@ function Bar({
         width={w}
         height={BAR_H}
         rx={3}
-        className={styles.chip}
+        className={lit ? styles.chipOn : styles.chip}
       />
       <text
         x={x + w / 2}
         y={y + BAR_H - 6}
         textAnchor="middle"
-        className={styles.chipName}
+        className={lit ? styles.chipNameOn : styles.chipName}
       >
         {name}
-        {reading && (
-          <tspan dx={6} className={styles.knifed}>
-            {reading}
-          </tspan>
-        )}
       </text>
     </g>
   )
@@ -110,50 +99,36 @@ export function MonoCardDiagram() {
   )
     ? 'on'
     : 'plain'
-  const bit = Math.round(r.value('monoDacBit'))
-  const cap = r.value('monoCap')
 
-  const parts: {
-    name: string
-    room: string
-    reading?: string
-    help: string
-  }[] = [
+  const parts: { name: string; lit: boolean; help: string }[] = [
     {
       name: 'key DAC',
-      room: DAC_BITS.at(-1)!,
-      reading: bit > 0 ? DAC_BITS[bit] : undefined,
+      lit: on('monoDacBit'),
       help: 'The converter that turns a key number into a pitch voltage. One bit stuck high displaces half the keys.',
     },
     {
       name: 'hold',
-      room: perSecond(sliderFor('monoDroop').max - 0.01),
-      reading: on('monoDroop') ? perSecond(r.value('monoDroop')) : undefined,
+      lit: on('monoDroop'),
       help: 'The sample-and-hold capacitor that keeps the pitch voltage while the key is down. A leak makes a held note sink.',
     },
     {
       name: 'exp conv',
-      room: fullPercent('monoHeat'),
-      reading: on('monoHeat') ? percent(r.value('monoHeat')) : undefined,
+      lit: on('monoHeat'),
       help: 'The exponential converter that turns the pitch voltage into oscillator frequencies. Without its heater the three oscillators drift apart, and the board’s own heat adds to it.',
     },
-    { name: 'oscs', room: '', help: 'The three oscillators.' },
+    { name: 'oscs', lit: false, help: 'The three oscillators.' },
     {
       name: 'ladder',
-      room: fullPercent('monoMismatch'),
-      reading: on('monoMismatch')
-        ? percent(r.value('monoMismatch'))
-        : undefined,
+      lit: on('monoMismatch'),
       help: 'The transistor ladder filter. One pair off its partners moves and widens the peak.',
     },
     {
       name: 'VCA',
-      room: fullPercent('monoLeak'),
-      reading: on('monoLeak') ? percent(r.value('monoLeak')) : undefined,
+      lit: on('monoLeak'),
       help: 'The amplifier the loudness contour opens on every note. With a leak, the drone sounds with no key down.',
     },
   ]
-  const widths = parts.map(p => Math.max(boxWidth(p.name), boxWidth(p.room)))
+  const widths = parts.map(p => boxWidth(p.name))
   const gap = (WIDTH - TAIL - widths.reduce((a, b) => a + b)) / 5
   const boxes = parts.map((p, i): ChipBox => ({
     name: p.name,
@@ -228,9 +203,7 @@ export function MonoCardDiagram() {
                   y={TOP}
                   w={regW}
                   name="regulator"
-                  reading={
-                    on('monoSag') ? percent(r.value('monoSag')) : undefined
-                  }
+                  lit={on('monoSag')}
                   help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
                 />,
               )}
@@ -241,7 +214,7 @@ export function MonoCardDiagram() {
                   y={LOW_Y}
                   w={lowW}
                   name="contours"
-                  reading={cap > 1 ? `×${+cap.toFixed(1)}` : undefined}
+                  lit={r.value('monoCap') > 1}
                   help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
                 />,
               )}
@@ -250,7 +223,7 @@ export function MonoCardDiagram() {
                   <Chip
                     key={box.name}
                     box={box}
-                    reading={parts[i]!.reading}
+                    lit={parts[i]!.lit}
                     help={parts[i]!.help}
                   />
                 )

@@ -51,19 +51,27 @@ test('pressing a machine opens both of its rows', () => {
   expect(screen.getAllByText('Plays the toy keyboard’s notes')).toHaveLength(1)
 })
 
-test('each machine says in words what plays it', () => {
-  render(<OpenGroup group={patch()} onClose={() => {}} seconds={0} />)
-  expect(screen.queryByText('nothing plays it')).toBeNull()
+test('a machine’s name goes grey once nothing plays it', () => {
+  const { container } = render(
+    <OpenGroup group={patch()} onClose={() => {}} seconds={0} />,
+  )
+  const ink = (name: string) =>
+    [...container.querySelectorAll('svg text')]
+      .find(t => t.textContent === name)!
+      .getAttribute('fill')
+  expect(ink('Mono synth')).toBe('var(--fg)')
   act(() => {
     engine.set('fmKeyGate', 1)
     engine.set('fmStruck', 1)
   })
-  expect(screen.getAllByText('kick hits')).toHaveLength(1)
+  expect(ink('FM chip')).toBe('var(--fg)')
   act(() => {
     engine.set('monoKeyGate', 1)
     engine.set('pcmKeyGate', 1)
   })
-  expect(screen.getAllByText('nothing plays it')).toHaveLength(2)
+  expect(ink('Mono synth')).toBe('var(--fg4)')
+  expect(ink('Home keyboard')).toBe('var(--fg4)')
+  expect(screen.queryByText('kick hits')).toBeNull()
 })
 
 test('the patch counts and rolls the chip’s two as its own', () => {

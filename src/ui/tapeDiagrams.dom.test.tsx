@@ -35,14 +35,11 @@ test('the delay drawing lights the play heads the Heads switch picks', () => {
   act(() => engine.set('dlyHeads', 2))
   open('Tape delay')
   const drawing = screen.getByRole('img', { name: 'tape delay signal path' })
-  const lit = () =>
-    [...drawing.querySelectorAll('text')]
-      .filter(t => t.getAttribute('class')?.includes('noteOn'))
-      .map(t => t.textContent)
-      .filter(t => t?.startsWith('play'))
-  expect(lit()).toEqual(['play 1', 'play 3'])
+  const litPlayHeads = () =>
+    drawing.querySelectorAll('rect[class*="gapOn"]').length - 1
+  expect(litPlayHeads()).toBe(2)
   act(() => engine.set('dlyHeads', 0))
-  expect(lit()).toEqual(['play 1'])
+  expect(litPlayHeads()).toBe(1)
 })
 
 test('the tape machine keeps To tape, Tape at and Level as rows, and the heads and the tape behind its drawing', () => {

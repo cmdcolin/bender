@@ -85,34 +85,41 @@ test('a bridge lights the knifed trace and its neighbour', () => {
   expect(svg.querySelectorAll('path[class*="traceCut"]')).toHaveLength(2)
 })
 
-test('the loop wire names the pins it joins, a reset pin included', () => {
+const titles = (svg: Element) =>
+  [...svg.querySelectorAll('title')].map(t => t.textContent)
+
+test('the loop wire is labelled the same whatever it joins, a reset pin included', () => {
   set({ chipLoopFrom: 2, chipLoopTo: 1 })
   open('Toy keyboard')
-  expect(texts(drawing('toy keyboard bus wiring'))).toContain(
-    'loop wire D1 → A1',
-  )
-  set({ chipLoopTo: 5 })
   const svg = drawing('toy keyboard bus wiring')
-  expect(texts(svg)).toContain('loop wire D1 → reset')
+  expect(texts(svg)).toContain('loop wire')
+  expect(texts(svg).some(t => t?.includes('→'))).toBe(false)
+  expect(titles(svg)).toContain('loop wire D1 → A1')
+  set({ chipLoopTo: 5 })
   expect(texts(svg)).toContain('reset')
+  expect(titles(svg)).toContain('loop wire D1 → reset')
 })
 
-test('the drum reset wire and the clock follow their knobs', () => {
+test('the drum reset wire and the clock keep their labels as the knobs move', () => {
   open('Toy drums')
   press('pattern')
   const svg = drawing('drum machine bus wiring')
   expect(texts(svg)).toContain('clock')
-  expect(texts(svg).some(t => t?.startsWith('reset'))).toBe(false)
+  expect(texts(svg)).not.toContain('reset')
   set({ drumReset: 2, drumSlip: 0.3 })
-  expect(texts(svg)).toContain('reset on the snare')
-  expect(texts(svg)).toContain('clock slips')
+  expect(texts(svg)).toContain('reset')
+  expect(texts(svg)).toContain('clock')
+  expect(texts(svg).some(t => t?.includes('snare'))).toBe(false)
+  expect(titles(svg)).toContain('reset on the snare')
+  expect(titles(svg)).toContain('clock slips')
 })
 
-test('the toy on the FM bus names the data lines it is soldered across', () => {
+test('the toy on the FM bus is labelled without its width', () => {
   set({ fmToyBus: 3 })
   open('FM chip')
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
   const svg = drawing('FM chip bus wiring')
-  expect(texts(svg)).toContain('toy out on D0–D2')
+  expect(texts(svg)).toContain('toy out')
+  expect(titles(svg)).toContain('toy out on D0–D2')
   expect(svg.querySelectorAll('circle[class*="solder"]')).toHaveLength(3)
 })

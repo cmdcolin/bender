@@ -32,13 +32,21 @@ const words = () =>
       .querySelectorAll('text'),
   ].map(t => t.textContent)
 
-test('the stock die names its parts and shows no bend', () => {
+const lit = (part: string) =>
+  screen
+    .getByRole('button', { name: `${part} controls` })
+    .querySelector('rect')!
+    .getAttribute('class')!
+    .includes('chipOn')
+
+test('the stock die names its parts, lights none and shows no bend', () => {
   open()
   expect(words()).toEqual(
     expect.arrayContaining(['clock', 'voices', 'envelope', 'output pin']),
   )
-  for (const bend of ['pot', 'drifting', 'PWM', 'scan', 'shorted'])
-    expect(words()).not.toContain(bend)
+  for (const bend of ['pot', 'PWM', 'scan']) expect(words()).not.toContain(bend)
+  for (const part of ['clock', 'key matrix', 'envelope', 'output pin'])
+    expect(lit(part), part).toBe(false)
 })
 
 test('each pin bend shows up on the part it bends', () => {
@@ -52,30 +60,24 @@ test('each pin bend shows up on the part it bends', () => {
     chipBendSpot: 4,
     chipBendPot: 0.5,
   })
-  expect(words()).toEqual(
-    expect.arrayContaining([
-      '6 wide',
-      'leaky',
-      'drifting',
-      'PWM',
-      'scan',
-      'pot',
-    ]),
-  )
+  expect(words()).toEqual(expect.arrayContaining(['PWM', 'scan', 'pot']))
+  for (const part of ['key matrix', 'envelope', 'clock'])
+    expect(lit(part), part).toBe(true)
 })
 
-test('the output pin reads shorted only while the scan is off', () => {
+test('the output pin lights for a short only while the scan is off', () => {
   open()
   set({ chipShort: 0.5 })
-  expect(words()).toContain('shorted')
+  expect(lit('output pin')).toBe(true)
   set({ chipScan: 0.3 })
-  expect(words()).not.toContain('shorted')
+  expect(lit('output pin')).toBe(false)
 })
 
-test('each feedback bend draws its wire, and the tune ROM names the wires the output drives', () => {
+test('each feedback bend draws its wire, and the tune ROM lights when the output drives it', () => {
   open()
-  for (const bend of ['step tap', 'dive', 'relax', 'A2 D3 ← out'])
+  for (const bend of ['step tap', 'dive', 'relax'])
     expect(words()).not.toContain(bend)
+  expect(lit('tune ROM')).toBe(false)
   set({
     chipStepTap: 0.4,
     chipEnvDiv: 0.5,
@@ -83,9 +85,14 @@ test('each feedback bend draws its wire, and the tune ROM names the wires the ou
     chipOutAddr: 3,
     chipOutData: 4,
   })
-  expect(words()).toEqual(
-    expect.arrayContaining(['step tap', 'dive', 'relax', 'A2 D3 ← out']),
-  )
+  expect(words()).toEqual(expect.arrayContaining(['step tap', 'dive', 'relax']))
+  expect(lit('tune ROM')).toBe(true)
+})
+
+test('no chip text carries a number or a percentage', () => {
+  open()
+  set({ chipGhost: 2, chipEnvCap: 2, chipOutAddr: 3, chipOutData: 4 })
+  expect(words().filter(w => /[\d%]/.test(w ?? ''))).toEqual([])
 })
 
 test('the PWM tap takes the PWM carrier off the clock', () => {

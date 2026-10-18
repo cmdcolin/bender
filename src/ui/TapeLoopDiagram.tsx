@@ -232,18 +232,6 @@ export function TapeLoopDiagram() {
             <Label x={REC_X} y={INSIDE_Y} anchor="middle">
               rec
             </Label>
-            {[1, 2, 3].map(n => (
-              <g key={n} opacity={lit.includes(n) ? 1 : 0.6}>
-                <Label
-                  x={headX(n)}
-                  y={INSIDE_Y}
-                  anchor="middle"
-                  on={lit.includes(n)}
-                >
-                  {`play ${n}`}
-                </Label>
-              </g>
-            ))}
             <Pressable {...pickOf('heads')}>
               <title>heads — Which play heads the echo comes off.</title>
               {[1, 2, 3].map(n => (
@@ -255,7 +243,7 @@ export function TapeLoopDiagram() {
                 anchor="middle"
                 on={r.touched('dlyHeads')}
               >
-                {`heads ${choice}`}
+                heads
               </Label>
               <rect
                 x={headX(1) - 15}

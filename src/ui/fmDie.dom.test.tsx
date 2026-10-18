@@ -34,7 +34,13 @@ const words = () => [...die().querySelectorAll('text')].map(t => t.textContent)
 
 const alarms = () => die().querySelectorAll('path[class*="wireAlarm"]').length
 
-test('the stock die names its parts and reads no fault', () => {
+const lit = (name: string) =>
+  [...die().querySelectorAll('text')]
+    .find(t => t.textContent === name)!
+    .getAttribute('class')!
+    .includes('On')
+
+test('the stock die names its parts, lights none and shows no value', () => {
   open()
   expect(words()).toEqual(
     expect.arrayContaining([
@@ -44,38 +50,35 @@ test('the stock die names its parts and reads no fault', () => {
       'voice 1',
       'voice 4',
       'DAC',
-      'adder linear',
+      'adder',
     ]),
   )
-  for (const fault of ['stuck on 2', 'garbage', 'slip 40%'])
-    expect(words()).not.toContain(fault)
+  expect(words().filter(w => /%|stuck|garbage|bits/.test(w ?? ''))).toEqual([])
+  for (const name of ['allocator', 'registers', 'voices', 'DAC'])
+    expect(lit(name), name).toBe(false)
   expect(alarms()).toBe(0)
 })
 
-test('each fault reads on the part it bends', () => {
+test('each fault lights the part it bends', () => {
   open()
-  set({
-    fmAlloc: 2,
-    fmDacSlot: 3,
-    fmColdBoot: 1,
-    fmAdder: 3,
-  })
-  expect(words()).toEqual(
-    expect.arrayContaining([
-      'stuck on 2',
-      'stuck on 3',
-      'garbage',
-      'adder 9 bits',
-    ]),
+  set({ fmAlloc: 2 })
+  expect(lit('allocator')).toBe(true)
+  set({ fmColdBoot: 1 })
+  expect(lit('registers')).toBe(true)
+  set({ fmAdder: 3 })
+  expect(lit('voices')).toBe(true)
+  set({ fmDacSlot: 3 })
+  expect(lit('DAC')).toBe(true)
+  expect(words().filter(w => /\d%|stuck|garbage|bits/.test(w ?? ''))).toEqual(
+    [],
   )
 })
 
-test('slip reads only while the slot counter runs', () => {
+test('slip lights the converter without a number', () => {
   open()
   set({ fmDacSlip: 0.4 })
-  expect(words()).toContain('slip 40%')
-  set({ fmDacSlot: 3 })
-  expect(words()).not.toContain('slip 40%')
+  expect(lit('DAC')).toBe(true)
+  expect(words().join()).not.toContain('%')
 })
 
 const alarmRow = () => {

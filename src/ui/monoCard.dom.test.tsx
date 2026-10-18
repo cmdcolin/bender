@@ -38,10 +38,10 @@ const group = (title: string) =>
     g.querySelector('title')?.textContent?.startsWith(`${title} —`),
   )!
 
-const readings = (title: string) =>
-  [...group(title).querySelectorAll('text, tspan')].map(t => t.textContent)
+const lit = (title: string) =>
+  group(title).querySelector('text')!.getAttribute('class')!.includes('On')
 
-test('the stock card names its parts and reads no fault', () => {
+test('the stock card names its parts, lights none and shows no value', () => {
   open()
   expect(words()).toEqual(
     expect.arrayContaining([
@@ -55,10 +55,12 @@ test('the stock card names its parts and reads no fault', () => {
       'contours',
     ]),
   )
-  expect(words().filter(w => /%|\/s|×|\+/.test(w ?? ''))).toEqual([])
+  expect(words().filter(w => /\d|%|\/s|×|\+/.test(w ?? ''))).toEqual([])
+  for (const part of words())
+    if (part !== 'out') expect(lit(part), part).toBe(false)
 })
 
-test('each fault reads on the part it bends', () => {
+test('each fault lights the part it bends and writes no number', () => {
   open()
   set({
     monoHeat: 0.5,
@@ -69,17 +71,18 @@ test('each fault reads on the part it bends', () => {
     monoDacBit: 4,
     monoSag: 0.4,
   })
-  const reads: [string, string][] = [
-    ['key DAC', 'b3 +8'],
-    ['hold', '1.5/s'],
-    ['exp conv', '50%'],
-    ['ladder', '75%'],
-    ['VCA', '25%'],
-    ['regulator', '40%'],
-    ['contours', '×12'],
-  ]
-  for (const [part, reading] of reads)
-    expect(readings(part), part).toContain(reading)
+  for (const part of [
+    'key DAC',
+    'hold',
+    'exp conv',
+    'ladder',
+    'VCA',
+    'regulator',
+    'contours',
+  ])
+    expect(lit(part), part).toBe(true)
+  expect(lit('oscs')).toBe(false)
+  expect(words().filter(w => /\d|%|\/s|×|\+/.test(w ?? ''))).toEqual([])
 })
 
 const centre = (title: string) => {
@@ -104,25 +107,6 @@ test('the regulator feeds the converter and ladder, the contours feed the ladder
       .toSorted((a, b) => a - b)
   expect(xs(true)).toEqual([centre('exp conv'), centre('ladder')])
   expect(xs(false)).toEqual([centre('ladder'), centre('VCA')])
-})
-
-test('every reading fits the box it sits in', () => {
-  open()
-  set({
-    monoHeat: 1,
-    monoLeak: 1,
-    monoMismatch: 1,
-    monoDroop: 1.99,
-    monoDacBit: 7,
-  })
-  for (const part of ['key DAC', 'hold', 'exp conv', 'ladder', 'VCA']) {
-    const width = +group(part).querySelector('rect')!.getAttribute('width')!
-    const [, reading] = readings(part)
-    expect(
-      reading!.length * 5.5 + 14,
-      `${part} ${reading}`,
-    ).toBeLessThanOrEqual(width)
-  }
 })
 
 test('each part of the card opens its own knob', () => {

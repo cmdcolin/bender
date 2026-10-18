@@ -22,6 +22,9 @@ export interface Tap {
   also?: ControlKey
   link: number
   onto: (also: number) => Pin
+  /** The label on the wire, whatever the knobs say. */
+  name: string
+  /** The wire's tooltip: what the knobs make it do. */
   says: (value: number, also: number) => string
 }
 
@@ -32,6 +35,7 @@ export interface Feed {
   chip: number
   from?: { chip: number } | { link: number }
   always?: boolean
+  name: string
   says: (value: number) => string
 }
 
@@ -40,6 +44,7 @@ export interface Feed {
 export interface Inject {
   key: ControlKey
   link: number
+  name: string
   says: (value: number) => string
 }
 
@@ -90,6 +95,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
               to < ROM_ADDR_LINES
                 ? { link: 0, line: to }
                 : { chip: 0, pin: 'reset' },
+            name: 'loop wire',
             says: (from, to) =>
               `loop wire ${choice('chipLoopFrom', from)} → ${choice('chipLoopTo', to)}`,
           },
@@ -112,6 +118,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
             key: 'drumReset',
             link: 1,
             onto: () => ({ chip: 0, pin: 'clear' }),
+            name: 'reset',
             says: v => `reset ${choice('drumReset', v)}`,
           },
         ],
@@ -120,12 +127,14 @@ export const BUS_SPECS: Record<string, BusSpec> = {
             key: 'drumSlip',
             chip: 0,
             always: true,
+            name: 'clock',
             says: v => (v > 0 ? 'clock slips' : 'clock'),
           },
           {
             key: 'drumLoop',
             chip: 1,
             from: { link: 1 },
+            name: 'loop',
             says: v => `loop ${choice('drumLoop', v)}`,
           },
         ],
@@ -176,6 +185,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
             chip: 1,
             from: { chip: 0 },
             always: true,
+            name: 'strobe',
             says: v => (v > 0 ? 'strobe slips' : 'strobe'),
           },
         ],
@@ -183,6 +193,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
           {
             key: 'fmToyBus',
             link: 0,
+            name: 'toy out',
             says: v => `toy out on D0–D${v - 1}`,
           },
         ],

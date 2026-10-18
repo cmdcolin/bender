@@ -283,15 +283,7 @@ function machineParts(chip: (typeof CHIPS)[number], top: number, code: string) {
   const struckOn = struck > 0
   const mid = top + CHIP_H / 2
 
-  const plays = [
-    struckOn
-      ? STRUCK[struck] === 'any hit'
-        ? 'any kit hit'
-        : `${STRUCK[struck]} hits`
-      : '',
-    gateCut ? '' : 'keyboard notes',
-  ].filter(Boolean)
-  const reading = plays.length > 0 ? plays.join(' + ') : 'nothing plays it'
+  const played = struckOn || !gateCut
 
   const struckTitle = struckOn
     ? `${STRUCK[struck]} on the kit plays a note on the ${chip.name}.`
@@ -356,21 +348,13 @@ function machineParts(chip: (typeof CHIPS)[number], top: number, code: string) {
           stroke="var(--border-hover)"
         />
         <text
-          x={CHIP_X + 8}
+          x={CHIP_X + CHIP_W / 2}
           y={mid + 4}
+          textAnchor="middle"
           className={styles.label}
-          fill="var(--fg)"
+          fill={played ? 'var(--fg)' : OFF}
         >
           {chip.name}
-        </text>
-        <text
-          x={CHIP_X + CHIP_W - 8}
-          y={mid + 4}
-          textAnchor="end"
-          className={styles.tag}
-          fill={plays.length > 0 ? 'var(--fg3)' : OFF}
-        >
-          {reading}
         </text>
       </>
     ),
