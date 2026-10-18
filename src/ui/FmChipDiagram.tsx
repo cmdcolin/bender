@@ -11,6 +11,8 @@ import {
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
+import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
+import { CONE_H, ZoomCone } from './ZoomCone.tsx'
 
 import type { ReactNode } from 'react'
 
@@ -167,60 +169,73 @@ export function FmChipDiagram({
       'The silicon’s own faults: the DAC slot, the voice allocator, the cold boot and the log adder.',
     ),
   ]
-  const open = boxes.find(b => b.id === pick.selected)
+  const open =
+    boxes.find(b => b.id === pick.selected) ??
+    VOICE_PICKS.find(p => p.id === pick.selected)
+  const zoomed = pick.selected !== null && VOICE_IDS.includes(pick.selected)
+  const feet = TOP + ROW * 2 + BOX_H + 4
   const mid = TOP + ROW + BOX_H / 2
   const edge = (from: BoxSpec, to: BoxSpec) =>
     `M${from.x + from.w} ${mid} H${to.x}`
   const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
   return (
     <>
-      <div className={chip.chips}>
-        <Diagram
-          width={WIDTH}
-          height={TOP + ROW * 2 + BOX_H + 4}
-          label="FM chip signal path"
-        >
-          {arrow => (
-            <>
-              {row.slice(1).map((to, i) => (
-                <Wire
-                  key={to.id}
-                  arrow={arrow}
-                  d={edge(row[i]!, to)}
-                  look={i === 0 ? 'plain' : flow}
-                />
-              ))}
-              {drops.map(drop => (
-                <Wire
-                  key={`clock${drop}`}
-                  arrow={arrow}
-                  d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
-                  look="dash"
-                />
-              ))}
-              {drops.map(drop => (
-                <Wire
-                  key={`die${drop}`}
-                  arrow={arrow}
-                  d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
-                  look="dash"
-                />
-              ))}
-              {boxes.map(b => (
-                <BoxView
-                  key={b.id}
-                  box={b}
-                  selected={b.id === pick.selected}
-                  onSelect={pick.toggle}
-                />
-              ))}
-            </>
-          )}
-        </Diagram>
+      <div className={zoomed ? chip.stack : undefined}>
+        <div className={chip.chips}>
+          <Diagram
+            width={WIDTH}
+            height={zoomed ? feet + CONE_H : feet}
+            label="FM chip signal path"
+          >
+            {arrow => (
+              <>
+                {zoomed && (
+                  <ZoomCone
+                    from={{ x: mod.x, w: span }}
+                    top={TOP + ROW + BOX_H}
+                    bottom={feet + CONE_H}
+                    width={WIDTH}
+                    title="zoom: operators"
+                  />
+                )}
+                {row.slice(1).map((to, i) => (
+                  <Wire
+                    key={to.id}
+                    arrow={arrow}
+                    d={edge(row[i]!, to)}
+                    look={i === 0 ? 'plain' : flow}
+                  />
+                ))}
+                {drops.map(drop => (
+                  <Wire
+                    key={`clock${drop}`}
+                    arrow={arrow}
+                    d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
+                    look="dash"
+                  />
+                ))}
+                {drops.map(drop => (
+                  <Wire
+                    key={`die${drop}`}
+                    arrow={arrow}
+                    d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
+                    look="dash"
+                  />
+                ))}
+                {boxes.map(b => (
+                  <BoxView
+                    key={b.id}
+                    box={b}
+                    selected={b.id === pick.selected}
+                    onSelect={pick.toggle}
+                  />
+                ))}
+              </>
+            )}
+          </Diagram>
+        </div>
+        {zoomed && <FmVoiceDiagram pick={pick} />}
       </div>
-      {(open?.id === 'modulator' || open?.id === 'carrier') && (
-        <FmVoiceDiagram />
-      )}
       <BoxRows
         keys={open?.keys}
         verbs={open && PARTS[open.id!] && verbs(PARTS[open.id!]!)}

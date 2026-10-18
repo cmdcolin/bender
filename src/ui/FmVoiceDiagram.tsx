@@ -2,11 +2,23 @@ import { PATCH_BYTES, REG, AM, VIB } from '../dsp/stages/fmVoices.ts'
 import { engine } from '../engine/engine.ts'
 import bus from './BusDiagram.module.css'
 import chip from './ChipLook.module.css'
-import { CHANNELS, sliderFor } from './controls/index.ts'
+import { CHANNELS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import styles from './Diagram.module.css'
-import { boxHeight, boxWidth, LINE_H, useReadings } from './diagram.ts'
-import { Diagram, Label, Wire, type WireLook } from './DiagramParts.tsx'
+import {
+  boxHeight,
+  boxWidth,
+  LINE_H,
+  useReadings,
+  type useSelectedBox,
+} from './diagram.ts'
+import {
+  Diagram,
+  Plate,
+  Pressable,
+  Wire,
+  type WireLook,
+} from './DiagramParts.tsx'
 
 const KEYS = [
   'fmBright',
@@ -19,9 +31,7 @@ const KEYS = [
   'fmVoice',
 ] as const
 
-const RATIOS = sliderFor('fmModRatio').choices!
-const DECAYS = sliderFor('fmModDecay').choices!
-const LFOS = sliderFor('fmLfo').choices!
+type Key = (typeof KEYS)[number]
 
 const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
 
@@ -43,28 +53,35 @@ interface Operator {
   x: number
   w: number
   notes: [text: string, moved: boolean][]
+  touched: boolean
   help: string
 }
 
-function OperatorChip({ op }: { op: Operator }) {
+type Pick = ReturnType<typeof useSelectedBox>
+
+function OperatorChip({ op, pick }: { op: Operator; pick: Pick }) {
   const top = CHIP_Y + (CHIP_H - LINE_H * (op.notes.length + 1)) / 2
   const line = (i: number) => top + LINE_H * (i + 1) - 3
   return (
-    <g>
+    <Pressable
+      name={`zoomed ${op.name}`}
+      selected={pick.selected === op.name}
+      onSelect={() => pick.toggle(op.name)}
+    >
       <title>{`${op.name} — ${op.help}`}</title>
-      <rect
+      <Plate
         x={op.x}
         y={CHIP_Y}
-        width={op.w}
-        height={CHIP_H}
-        rx={3}
-        className={bus.chip}
+        w={op.w}
+        h={CHIP_H}
+        touched={op.touched}
+        selected={pick.selected === op.name}
       />
       <text
         x={op.x + op.w / 2}
         y={line(0)}
         textAnchor="middle"
-        className={bus.chipName}
+        className={op.touched ? styles.nameOn : styles.name}
       >
         {op.name}
       </text>
@@ -79,13 +96,48 @@ function OperatorChip({ op }: { op: Operator }) {
           {text}
         </text>
       ))}
-    </g>
+    </Pressable>
   )
 }
 
-export function FmVoiceDiagram() {
+// A word on a wire that opens the knob behind it.
+function Tag({
+  id,
+  pick,
+  x,
+  y,
+  anchor,
+  className,
+  children,
+}: {
+  id: string
+  pick: Pick
+  x: number
+  y: number
+  anchor?: 'start' | 'middle' | 'end'
+  className: string
+  children: string
+}) {
+  return (
+    <Pressable
+      name={id}
+      selected={pick.selected === id}
+      onSelect={() => pick.toggle(id)}
+      className={chip.tag}
+    >
+      <text x={x} y={y} textAnchor={anchor ?? 'start'} className={className}>
+        {children}
+      </text>
+    </Pressable>
+  )
+}
+
+// The two operators, the feedback round the first, the brightness between them
+// and the LFO under both, drawn as the chip wires them and nothing more. Each
+// part opens its own knobs; the knobs' values stay in the rows.
+export function FmVoiceDiagram({ pick }: { pick: Pick }) {
   const r = useReadings(KEYS)
-  const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
+  const read = (key: Key) => Math.round(r.value(key))
   const flow: WireLook = useStoreSelect(
     engine.sounding,
     lit => lit & (1 << FM_TAP),
@@ -98,39 +150,36 @@ export function FmVoiceDiagram() {
   const patch = PATCH_BYTES[read('fmVoice')] ?? PATCH_BYTES[0]!
   const flags = patch[REG.modFlags]! | patch[REG.carFlags]!
   const lfo = read('fmLfo') | (flags & VIB ? 1 : 0) | (flags & AM ? 2 : 0)
-  const indexBoost = +(
-    boosted && bright > 1 ? INDEX_BOOST ** (bright - 1) : 1
-  ).toFixed(1)
-  const feedbackBoost =
-    boosted && feedback > FEEDBACK_MAX ? 2 ** (feedback - FEEDBACK_MAX) : 1
+  const indexBoost = boosted && +(INDEX_BOOST ** (bright - 1)).toFixed(1) > 1
+  const feedbackBoost = boosted && feedback > FEEDBACK_MAX
 
-  const w = boxWidth('ratio as patched')
+  const w = boxWidth('modulator')
   const gap = WIDTH - LEAD - TAIL - 2 * w
-  const note = (text: string, key: (typeof KEYS)[number]) =>
+  const note = (text: string, key: Key) =>
     [text, read(key) > 0] as [string, boolean]
   const mod: Operator = {
     name: 'modulator',
     x: LEAD,
     w,
-    notes: [
-      note(`ratio ${RATIOS[read('fmModRatio')]}`, 'fmModRatio'),
-      note(`decay ${DECAYS[read('fmModDecay')]}`, 'fmModDecay'),
-    ],
+    notes: [note('ratio', 'fmModRatio'), note('decay', 'fmModDecay')],
+    touched: r.touched('fmBright', 'fmFeedback', 'fmModRatio', 'fmModDecay'),
     help: 'The operator that bends the carrier. It can feed back into itself, and its ratio and decay set the tone.',
   }
   const car: Operator = {
     name: 'carrier',
     x: LEAD + w + gap,
     w,
-    notes: [note(`ratio ${RATIOS[read('fmCarRatio')]}`, 'fmCarRatio')],
+    notes: [note('ratio', 'fmCarRatio')],
+    touched: r.touched('fmCarRatio', 'fmLfo'),
     help: 'The operator you hear. Its ratio moves the note.',
   }
   const wireMid = (mod.x + mod.w + car.x) / 2
-  const loopLook: WireLook =
-    feedbackBoost > 1 ? 'alarm' : feedback > 0 ? 'on' : 'dash'
+  const loopLook: WireLook = feedbackBoost
+    ? 'alarm'
+    : feedback > 0
+      ? 'on'
+      : 'dash'
   const lfoLook: WireLook = lfo > 0 ? 'on' : 'dash'
-  const shown = boosted ? feedback : Math.min(feedback, FEEDBACK_MAX)
-  const loopSay = `feedback ${shown}${feedbackBoost > 1 ? ` ×${feedbackBoost}` : ''}`
   const span = car.x + car.w - mod.x
 
   return (
@@ -139,30 +188,32 @@ export function FmVoiceDiagram() {
         {arrow => (
           <g opacity={boosted ? 1 : 0.45}>
             <Wire arrow={arrow} d={`M0 ${MID} H${mod.x}`} />
-            <Label x={2} y={MID - 5}>
+            <text x={2} y={MID - 5} className={styles.note}>
               patch
-            </Label>
+            </text>
             <Wire
               arrow={arrow}
               d={`M${mod.x + mod.w} ${MID} H${car.x}`}
-              look={indexBoost > 1 ? 'alarm' : flow}
+              look={indexBoost ? 'alarm' : flow}
             />
-            <Label
+            <Tag
+              id="brightness"
+              pick={pick}
               x={wireMid}
               y={MID - 5}
               anchor="middle"
-              on={r.touched('fmBright')}
+              className={r.touched('fmBright') ? styles.noteOn! : styles.note!}
             >
-              {`brightness ${bright.toFixed(2)}`}
-            </Label>
-            {indexBoost > 1 && (
+              brightness
+            </Tag>
+            {indexBoost && (
               <text
                 x={wireMid}
                 y={MID + 14}
                 textAnchor="middle"
                 className={bus.knifed}
               >
-                {`booster ×${indexBoost}`}
+                booster
               </text>
             )}
             <Wire
@@ -170,28 +221,35 @@ export function FmVoiceDiagram() {
               d={`M${car.x + car.w} ${MID} H${WIDTH - 2}`}
               look={flow}
             />
-            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
+            <text
+              x={WIDTH - 2}
+              y={MID + 12}
+              textAnchor="end"
+              className={styles.note}
+            >
               out
-            </Label>
+            </text>
             <Wire
               arrow={arrow}
               d={`M${mod.x + mod.w - 12} ${CHIP_Y} V${LOOP_Y} H${mod.x + 12} V${CHIP_Y}`}
               look={loopLook}
             />
-            <text
+            <Tag
+              id="feedback"
+              pick={pick}
               x={mod.x + mod.w / 2}
               y={LOOP_Y - 3}
-              textAnchor="middle"
+              anchor="middle"
               className={
-                feedbackBoost > 1
-                  ? bus.knifed
+                feedbackBoost
+                  ? bus.knifed!
                   : feedback > 0
-                    ? styles.noteOn
-                    : styles.note
+                    ? styles.noteOn!
+                    : styles.note!
               }
             >
-              {loopSay}
-            </text>
+              feedback
+            </Tag>
             {[mod, car].map(op => (
               <Wire
                 key={op.name}
@@ -200,18 +258,22 @@ export function FmVoiceDiagram() {
                 look={lfoLook}
               />
             ))}
-            <g>
+            <Pressable
+              name="LFO"
+              selected={pick.selected === 'lfo'}
+              onSelect={() => pick.toggle('lfo')}
+            >
               <title>
                 LFO — The die’s one LFO, soldered to the operators for vibrato,
                 tremolo or both.
               </title>
-              <rect
+              <Plate
                 x={mod.x}
                 y={LFO_Y}
-                width={span}
-                height={LFO_H}
-                rx={3}
-                className={bus.chip}
+                w={span}
+                h={LFO_H}
+                touched={lfo > 0}
+                selected={pick.selected === 'lfo'}
               />
               <text
                 x={mod.x + span / 2}
@@ -219,11 +281,11 @@ export function FmVoiceDiagram() {
                 textAnchor="middle"
                 className={lfo > 0 ? styles.nameOn : styles.name}
               >
-                {`LFO ${LFOS[lfo]}`}
+                LFO
               </text>
-            </g>
-            <OperatorChip op={mod} />
-            <OperatorChip op={car} />
+            </Pressable>
+            <OperatorChip op={mod} pick={pick} />
+            <OperatorChip op={car} pick={pick} />
           </g>
         )}
       </Diagram>

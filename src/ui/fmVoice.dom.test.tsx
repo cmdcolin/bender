@@ -4,7 +4,6 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
-import { sliderFor } from './controls/index.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import './testDom.ts'
 
@@ -24,8 +23,6 @@ const set = (board: Partial<Controls>) =>
       engine.set(key as keyof Controls, value)
   })
 
-const ratios = sliderFor('fmModRatio').choices!
-
 const drawing = () => screen.queryByRole('img', { name: 'FM operators' })
 
 const words = () =>
@@ -33,6 +30,16 @@ const words = () =>
 
 const alarms = () =>
   drawing()!.querySelectorAll('path[class*="wireAlarm"]').length
+
+const ROWS = ['Brightness', 'Feedback', 'Car ratio', 'Vibrato']
+
+const rows = () => ROWS.filter(label => screen.queryByText(label))
+
+const lit = (word: string) =>
+  [...drawing()!.querySelectorAll('text')]
+    .find(t => t.textContent === word)!
+    .getAttribute('class')!
+    .includes('On')
 
 test('the operator drawing shows under the modulator and the carrier only', () => {
   open()
@@ -43,52 +50,43 @@ test('the operator drawing shows under the modulator and the carrier only', () =
   expect(drawing()).toBeNull()
 })
 
-test('the stock voice reads as patched and draws no bend', () => {
+test('the drawing names its parts and carries no value', () => {
   open()
   expect(words()).toEqual(
     expect.arrayContaining([
       'modulator',
       'carrier',
-      'feedback 0',
-      'brightness 0.50',
-      'ratio as patched',
-      'decay as patched',
-      'LFO off',
+      'feedback',
+      'brightness',
+      'ratio',
+      'decay',
+      'LFO',
     ]),
   )
+  expect(words().filter(t => /\d/.test(t))).toEqual([])
   expect(alarms()).toBe(0)
 })
 
-test('each knob reads on the operator it sets', () => {
+test('a knob off stock lights its word and a stock one leaves it grey', () => {
   open()
-  set({ fmFeedback: 3, fmModRatio: 3, fmCarRatio: 5, fmLfo: 2 })
-  const text = words()
-  expect(text.slice(text.indexOf('modulator'))).toEqual(
-    expect.arrayContaining([
-      `ratio ${ratios[3]}`,
-      `ratio ${ratios[5]}`,
-      'decay as patched',
-    ]),
-  )
-  expect(text).toEqual(expect.arrayContaining(['feedback 3', 'LFO tremolo']))
-  expect(text).not.toContain('ratio as patched')
+  expect(lit('feedback')).toBe(false)
+  expect(lit('brightness')).toBe(false)
+  set({ fmFeedback: 3, fmBright: 1 })
+  expect(lit('feedback')).toBe(true)
+  expect(lit('brightness')).toBe(true)
 })
 
-test('a voice with its own LFO reads it with the button off', () => {
+test('a voice with its own LFO lights it with the button off', () => {
   open()
-  expect(words()).toContain('LFO off')
+  expect(lit('LFO')).toBe(false)
   set({ fmVoice: 6 })
-  expect(words()).toContain('LFO vibrato')
-  set({ fmLfo: 2 })
-  expect(words()).toContain('LFO both')
+  expect(lit('LFO')).toBe(true)
 })
 
 test('the boosters past the register range draw red wires while no effect runs', () => {
   open()
   set({ fmFeedback: 9, fmBright: 2 })
-  expect(words()).toEqual(
-    expect.arrayContaining(['feedback 9 ×4', 'booster ×4']),
-  )
+  expect(words()).toContain('booster')
   expect(alarms()).toBe(2)
 })
 
@@ -102,8 +100,30 @@ test('a brightness just past 1 draws no booster', () => {
 test('an effect owns the patch: the boosters go and the drawing dims', () => {
   open()
   set({ fmFeedback: 9, fmBright: 2, fmEffect: 1 })
-  expect(words()).toContain('feedback 7')
   expect(words().join()).not.toContain('booster')
   expect(alarms()).toBe(0)
   expect(drawing()!.querySelector('g[opacity="0.45"]')).not.toBeNull()
+})
+
+test('the chip drawing names the close-up while it shows', () => {
+  open()
+  const title = () => screen.queryByText('zoom: operators')
+  expect(title()).not.toBeNull()
+  press('bus')
+  expect(title()).toBeNull()
+})
+
+test('each part of the close-up opens its own knobs', () => {
+  open()
+  press('zoomed carrier')
+  expect(rows()).toEqual(['Car ratio', 'Vibrato'])
+  press('feedback')
+  expect(rows()).toEqual(['Feedback'])
+  press('brightness')
+  expect(rows()).toEqual(['Brightness'])
+  press('LFO')
+  expect(rows()).toEqual(['Vibrato'])
+  expect(drawing()).not.toBeNull()
+  press('LFO')
+  expect(rows()).toEqual([])
 })
