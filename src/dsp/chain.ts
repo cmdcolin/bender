@@ -28,6 +28,8 @@ import { octaves } from './util/pitch.ts'
 import { mulberry32, type Rng } from './util/rng.ts'
 import { flushDenormal, softclip } from './util/softclip.ts'
 
+import type { MelodyMemory } from './melodyMemory.ts'
+
 const LIMIT_CEIL = 0.891 // −1 dBFS
 
 /** where the summing amp is lined up: the level a busy bus already peaks at,
@@ -225,6 +227,8 @@ class DeskLoop {
 // to — brownout, then the always-on safety tail: dc block → softclip →
 // feedback tap → limiter.
 export class Chain {
+  /** The second melody, ticked once a block right after the trigger bus clears. */
+  melody: MelodyMemory | null = null
   private readonly ctx: Ctx
   private readonly fbRetL = new Float32Array(BLOCK)
   private readonly fbRetR = new Float32Array(BLOCK)
@@ -452,6 +456,7 @@ export class Chain {
     }
     // Last block's kit hits become the ones a bridged trigger line can read.
     ctx.trig.swap(n)
+    this.melody?.process(n, p, ctx)
     ctx.mod.build(n, p, ctx)
     ctx.railV.fill(1, 0, n)
     ctx.sag.fill(0, 0, n)

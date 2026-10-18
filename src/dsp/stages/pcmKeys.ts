@@ -2,7 +2,7 @@ import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
 import { DEST, hop } from '../modbus.ts'
-import { KEY_BIAS, voiceMask } from '../trigbus.ts'
+import { KEY_BIAS, SEQ_TO_PCM, voiceMask } from '../trigbus.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import {
   buildPcmRom,
@@ -401,6 +401,7 @@ export class PcmKeys implements Stage {
     const chord = Math.round(p[IDX.pcmChord]!)
     const vibrato = Math.round(p[IDX.pcmVibrato]!)
     const gateOn = p[IDX.pcmKeyGate]! < 0.5
+    const sings = Math.round(p[IDX.monoSeqTo]!) === SEQ_TO_PCM
     const drumMask = voiceMask(Math.round(p[IDX.pcmStruck]!))
     const loaded = this.selectVoice(Math.round(p[IDX.pcmVoice]!), p)
 
@@ -439,6 +440,8 @@ export class PcmKeys implements Stage {
       if (struck !== 0) {
         this.strike(struck - KEY_BIAS, 1, ctx.trig.keyHeld[i]! > 0, chord, true)
       }
+      const sung = sings ? ctx.trig.seqKey[i]! : 0
+      if (sung !== 0) this.strike(sung - KEY_BIAS, 1, false, chord, true)
 
       // And the kit's own lines, for whoever clipped them on here. A trigger
       // carries a strike and nothing else, so the note is the one the keyboard

@@ -176,6 +176,7 @@ export const PARAM_DEFS = [
   ['monoSeqOn', 'step'],
   ['monoSeqRate', 'slew'],
   ['monoSeqLen', 'step'],
+  ['monoSeqTo', 'step'],
   ['monoSeqStep0', 'step'],
   ['monoSeqStep1', 'step'],
   ['monoSeqStep2', 'step'],

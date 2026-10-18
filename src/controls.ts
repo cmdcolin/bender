@@ -179,6 +179,7 @@ export const DEFAULT_CONTROLS = {
   monoSeqOn: 0,
   monoSeqRate: 4,
   monoSeqLen: 16,
+  monoSeqTo: 0,
   monoSeqStep0: -128,
   monoSeqStep1: -128,
   monoSeqStep2: -128,

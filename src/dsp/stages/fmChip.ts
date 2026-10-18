@@ -3,7 +3,7 @@ import { IDX } from '../../engine/params.ts'
 import { snap } from '../../scale.ts'
 import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
 import { DEST, hop } from '../modbus.ts'
-import { KEY_BIAS, N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
+import { KEY_BIAS, N_DRUM_VOICES, SEQ_TO_FM, voiceMask } from '../trigbus.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
 import { mulberry32 } from '../util/rng.ts'
 import { softclip } from '../util/softclip.ts'
@@ -1300,6 +1300,7 @@ export class FmChip implements Stage {
     // keyboard next door — its own keys, the kit's lines and the effect ROM are
     // all still soldered where they were.
     const gateOn = p[IDX.fmKeyGate]! < 0.5
+    const sings = Math.round(p[IDX.monoSeqTo]!) === SEQ_TO_FM
 
     const modCold = bay.read(DEST.fmColdBoot)
     const cold = p[IDX.fmColdBoot]! + (modCold ? modCold[0]! : 0) > 0.5
@@ -1432,6 +1433,8 @@ export class FmChip implements Stage {
       // comes off. Everything else on that wire — the ROM's tune, a drum hit
       // through the patch — is an edge and nothing more, and an edge is where
       // *Note length* comes in.
+      const sung = sings ? ctx.trig.seqKey[i]! : 0
+      if (sung !== 0) this.keyOn(sung - KEY_BIAS, lengthSamples, 0, true)
       const struck = gateOn ? ctx.trig.key[i]! : 0
       if (struck !== 0) {
         this.keyOn(

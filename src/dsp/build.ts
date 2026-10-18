@@ -1,4 +1,5 @@
 import { Chain } from './chain.ts'
+import { MelodyMemory } from './melodyMemory.ts'
 import { Amp } from './stages/amp.ts'
 import { Brownout } from './stages/brownout.ts'
 import { ChaosOsc } from './stages/chaosOsc.ts'
@@ -34,6 +35,7 @@ export interface BuiltChain {
   fmChip: FmChip
   pcmKeys: PcmKeys
   monoSynth: MonoSynth
+  melody: MelodyMemory
   sampler: Sampler
   fourTrack: FourTrack
   transport: Transport
@@ -76,7 +78,9 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
   const pcmKeys = new PcmKeys(sr, rail, sampler)
   // The fourth, a monosynth voice card. It draws no seed, so every stream
   // after it stays the one it was.
-  const monoSynth = new MonoSynth(sr, rail, transport)
+  const monoSynth = new MonoSynth(sr, rail)
+  const melody = new MelodyMemory(sr, rail, transport)
+  chain.melody = melody
   // In SOURCE_TAPS order, which is the order their meter taps come home in — a
   // test holds the two lists together, because the panel reads a channel off
   // its slot number and a source in the wrong one would meter as its neighbour.
@@ -124,6 +128,7 @@ export function buildBender(sr: number, seed = 1): BuiltChain {
     fmChip,
     pcmKeys,
     monoSynth,
+    melody,
     sampler,
     fourTrack,
     transport,

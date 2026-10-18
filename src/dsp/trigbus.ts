@@ -18,6 +18,12 @@ export const ANY_CHOICE = N_DRUM_VOICES + 1
 /** The choice past the voices and the whole kit: whatever the step names. */
 export const STEP_CHOICE = N_DRUM_VOICES + 2
 
+/** The choices of the control that says which machine has the melody memory's
+    line soldered to its key input. */
+export const SEQ_TO_MONO = 0
+export const SEQ_TO_FM = 1
+export const SEQ_TO_PCM = 2
+
 // A note rides the key line as semitone + this, so an empty sample stays 0
 // whatever the octave switch is doing to the numbers — the keys reach an octave
 // under the toy's own bottom, and semitone −1 is a note somebody pressed.
@@ -46,6 +52,12 @@ export class TriggerBus {
       a key and a drum hit, and what tells the chip on the other end of the wire
       whether to decide the length of the note itself. */
   readonly keyHeld = new Float32Array(BLOCK)
+  /** A note the melody memory struck this block, biased; 0 where it struck
+      nothing. Its own line, so the memory plays one machine while the toy's
+      tune plays the others. */
+  readonly seqKey = new Float32Array(BLOCK)
+  /** How many samples that step lasts, plus the holds that follow it. */
+  readonly seqSpan = new Float32Array(BLOCK)
 
   private pendBits = new Float32Array(BLOCK)
   private pendGain = new Float32Array(BLOCK)
@@ -58,6 +70,11 @@ export class TriggerBus {
   keyStruck(i: number, semitone: number, held = false) {
     this.key[i] = semitone + KEY_BIAS
     this.keyHeld[i] = held ? 1 : 0
+  }
+
+  seqStruck(i: number, semitone: number, span: number) {
+    this.seqKey[i] = semitone + KEY_BIAS
+    this.seqSpan[i] = span
   }
 
   // Once a block, from the chain: last block's kit hits become the readable
@@ -73,6 +90,8 @@ export class TriggerBus {
     this.pendGain.fill(0, 0, n)
     this.key.fill(0, 0, n)
     this.keyHeld.fill(0, 0, n)
+    this.seqKey.fill(0, 0, n)
+    this.seqSpan.fill(0, 0, n)
   }
 
   panic() {
@@ -82,5 +101,7 @@ export class TriggerBus {
     this.pendGain.fill(0)
     this.key.fill(0)
     this.keyHeld.fill(0)
+    this.seqKey.fill(0)
+    this.seqSpan.fill(0)
   }
 }
