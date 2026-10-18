@@ -399,7 +399,7 @@ A pedal face is the pedal's headline sliders in a painted enclosure.
 The keyboard and drum machine share a power rail by accident; the trigger patch
 is what you wire between them on purpose.
 
-![The trigger patch diagram: Toy drums, Toy keyboard and FM chip as three boxes with wires between them, plus dropdowns for Kit fires keys, Keys fire kit, Struck by and Toy gate.](img/guide-trigger.jpg)
+![The trigger patch diagram: Toy drums, Toy keyboard and FM chip as three boxes, with the wires kit → keys, keys → kit, gate and kit → FM between them.](img/guide-trigger.jpg)
 
 **Kit fires keys** bridges a drum hit onto the keyboard's gate: the note played
 is its own setting — the one already standing, the next step of the ROM tune, a
@@ -453,8 +453,8 @@ The rest is behind two things:
 
 - **channel strip** is a diagram of one channel. Press a lane's number, or a
   track tab, to pick the channel. Press a box in the diagram (trim, EQ, send,
-  pan, rec, erase and loop, cue) to open its knobs under it. Every box reads its
-  knob and goes accent when you have moved it.
+  pan, rec, erase and loop, cue) to open its knobs under it. A box is drawn in
+  the accent colour once you have moved one of its knobs.
 - **the transport** holds tape level, hiss, wow, flutter, wear and batteries.
 
 **Speed**, **Side** and **NR** share one row under the lanes: 1⅞ or 3¾ ips,
