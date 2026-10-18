@@ -510,21 +510,48 @@ test.each(Object.entries(BOARDS))('every door is drawn: %s', (_, board) => {
 
 const OPEN_HAT = VOICE_LABELS.indexOf('open hat') + 1
 
+const leftOf = (x: number, width: number, anchor?: string) =>
+  anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2
+
 test.each(
   Object.entries({
     ...BOARDS,
     'one bridge down': { ...DEFAULT_CONTROLS, trigToDrum: OPEN_HAT },
+    'a wire into the middle of the row': {
+      ...DEFAULT_CONTROLS,
+      fmLevel: 0.6,
+      pcmLevel: 0.5,
+      monoLevel: 0.5,
+      trigToKeys: 1,
+      mod0Src: 1,
+      mod0Dest: 27,
+      mod1Src: 3,
+      mod1Dest: 29,
+    },
   }),
-)('no two wire labels overlap: %s', (_, board) => {
-  const map = buildMap(board, { wrap: true, loop: true })
-  const spans = map.wires.flatMap(w => {
-    if (!w.label) return []
-    const { text, x, y, anchor } = w.label
-    const width = textWidth(text, 10)
-    const left =
-      anchor === 'start' ? x : anchor === 'end' ? x - width : x - width / 2
-    return [{ id: w.id, left, right: left + width, top: y - 10, bottom: y }]
-  })
+)('no two labels overlap: %s', (_, board) => {
+  const map = buildMap(board, { wrap: true, loop: true, live: true })
+  const spans = [
+    ...map.wires.flatMap(w => {
+      if (!w.label) return []
+      const { text, x, y, anchor } = w.label
+      const left = leftOf(x, textWidth(text, 10), anchor)
+      const right = left + textWidth(text, 10)
+      return [{ id: w.id, left, right, top: y - 10, bottom: y }]
+    }),
+    ...map.nodes
+      .filter(n => n.kind === 'label')
+      .map(n => {
+        const left = leftOf(n.x, n.w, n.anchor)
+        return {
+          id: n.id,
+          left,
+          right: left + n.w,
+          top: n.y,
+          bottom: n.y + n.h,
+        }
+      }),
+  ]
   for (const [i, a] of spans.entries())
     for (const b of spans.slice(i + 1))
       expect(
@@ -664,6 +691,27 @@ test("a wire onto another wire's depth draws onto the bay itself", () => {
     mod0Depth: 0.5,
   })
   expect(hop(map, 'wire0', 'Patch_bay')).toBeTruthy()
+})
+
+test.each([
+  ['the bay', { mod0Src: 1, mod0Dest: 18, mod0Depth: 0.5 }],
+  ['the middle of the top row', { fmLevel: 0.6, pcmLevel: 0.5, mod0Src: 3 }],
+])('a wire label onto %s hangs in the gutter, clear of every box', (_, set) => {
+  const map = buildMap(
+    { ...DEFAULT_CONTROLS, mod0Dest: 29, ...set },
+    { wrap: true, live: true },
+  )
+  const label = box(map, 'wire0')!
+  const left = label.anchor === 'end' ? label.x - label.w : label.x
+  const boxes = map.nodes.filter(b => b.kind === 'stage' || b.kind === 'inst')
+  for (const n of boxes)
+    expect(
+      left + label.w <= n.x ||
+        n.x + n.w <= left ||
+        label.y + label.h <= n.y ||
+        n.y + n.h <= label.y,
+      n.id,
+    ).toBe(true)
 })
 
 test('a wire off a trigger line opens the box it picks up from', () => {

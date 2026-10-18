@@ -384,6 +384,8 @@ const FRAME_PAD = 6
 /** the supply bar over the chips, and the trigger cables under them */
 const RAIL_H = 10
 const TRIG_H = 13
+/** under the top row, for a patch wire onto a box with a neighbour either side */
+const TRACK = 6
 /** from the foot of the source rows down to the bar that collects them */
 const COLLECT_H = 14
 /** from the collector to the mix bus, and from the mix bus to the fold */
@@ -823,6 +825,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const keyed = drawn(kb) ? [fm, pcm, mono].filter(drawn) : []
   const noTrig = hasBoard && has('Trigger patch') && trigs.length === 0
   const laneUsed = keyed.length > 0 || trigs.length > 0 || noTrig
+  const wiredInto = new Set(
+    patched.map(i => WIRE_TARGET[Math.round(c[`mod${i}Dest`])]),
+  )
+  const topRow = chipRows[0] ?? []
+  const underRow = new Set(
+    topRow.slice(1, -1).filter(n => wiredInto.has(n.label)),
+  )
 
   // A short path reads straight down; folding it leaves a column of one.
   const fold = !!o.wrap && path.length > 4
@@ -914,7 +923,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // The lane under the row, which carries everything written about the row
   // rather than about one box in it: what the key line is, the bridges you have
   // patched across it, and — when you have patched none — that there are none.
-  const laneY = chipY + INST_H
+  const trackY = chipY + INST_H + TRACK / 2
+  const laneY = chipY + INST_H + (underRow.size ? TRACK : 0)
   const trigY = laneY + TRIG_H
   const laneEnd =
     laneY + (laneUsed ? Math.max(CHIP_H, trigs.length * TRIG_H) + 4 : 0)
@@ -1017,7 +1027,19 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // Where the feedback lands, and so which side of the map it comes home on.
   const fbTarget =
     byId.get(nodeId(FB_TARGET[Math.round(c.fbDest)] ?? 'mix')) ?? mix
-  const taps = collectTaps(c, { byId, doors, live, loosePart, rack, foot, has })
+  const rowEdge = (row: MapNode[]): MapNode => ({
+    ...row[0]!,
+    w: row[row.length - 1]!.x + row[row.length - 1]!.w - row[0]!.x,
+  })
+  const taps = collectTaps(c, {
+    byId,
+    doors,
+    live,
+    loosePart,
+    rack,
+    foot,
+    has,
+  }).map(t => (underRow.has(t.target) ? { ...t, edge: rowEdge(topRow) } : t))
 
   // Which edge of the drawing a label on this box hangs off. A box in the right
   // column, or in the right-hand half of the band, reaches for the right — and
@@ -1026,6 +1048,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const fbSide = half(fbTarget)
   const sideOf = (target: MapNode): Side =>
     target === bus ? (fbSide === 'left' ? 'right' : 'left') : half(target)
+  const tapSideOf = (t: Tap) =>
+    underRow.has(t.target) ? half(t.target) : sideOf(t.edge)
 
   // How much gutter a tap needs: its label, its run onto the box, and back off
   // whatever the box already sits in from that edge.
@@ -1039,7 +1063,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       Math.max(
         laneSide === side ? LANE : 0,
         ...taps
-          .filter(t => sideOf(t.edge) === side)
+          .filter(t => tapSideOf(t) === side)
           .map(t => (laneSide === side ? LANE : 0) + reach(t, side)),
       ),
     )
@@ -1047,11 +1071,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // Which edge each tap reaches for, settled here and carried: sideOf reads an
   // x measured from zero, and the whole drawing is about to move right by the
   // gutter it just sized.
-  const tapSide = new Map(taps.map(t => [t, sideOf(t.edge)]))
+  const tapSide = new Map(taps.map(t => [t, tapSideOf(t)]))
 
   const colX = MARGIN + sideGutter
   for (const n of [...path, ...band, ...foot, ...parts, board, mix, bus])
     n.x += colX
+  for (const edge of new Set(taps.map(t => t.edge)))
+    if (!byId.has(edge.id) || byId.get(edge.id) !== edge) edge.x += colX
   fittings.x = foot[0]?.x ?? 0
 
   const width = MARGIN * 2 + sideGutter * 2 + content
@@ -1547,10 +1573,13 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     return y
   }
 
+  const riseX = (n: MapNode, side: Side) =>
+    side === 'left' ? n.x + PAD_X : n.x + n.w - PAD_X
   for (const tap of taps.toSorted((a, b) => tapY(a) - tapY(b))) {
     const side = tapSide.get(tap)!
     const h = tap.value ? LABEL_H * 2 : LABEL_H
-    const y = clear(side, tapY(tap) - LABEL_H / 2, h)
+    const under = underRow.has(tap.target)
+    const y = clear(side, (under ? trackY : tapY(tap)) - LABEL_H / 2, h)
     const edge = side === 'left' ? tap.edge.x : tap.edge.x + tap.edge.w
     const land = side === 'left' ? tap.target.x : tap.target.x + tap.target.w
     const anchorX = edge + (side === 'left' ? -STUB : STUB)
@@ -1569,11 +1598,20 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       `${tap.id}-wire`,
       label,
       tap.target,
-      elbowH(
-        [anchorX + (side === 'left' ? 3 : -3), y + LABEL_H / 2],
-        [land, tapY(tap)],
-        (anchorX + edge) / 2,
-      ),
+      under
+        ? [
+            ...elbowH(
+              [anchorX + (side === 'left' ? 3 : -3), y + LABEL_H / 2],
+              [riseX(tap.target, side), trackY],
+              (anchorX + edge) / 2,
+            ),
+            [riseX(tap.target, side), tap.target.y + tap.target.h],
+          ]
+        : elbowH(
+            [anchorX + (side === 'left' ? 3 : -3), y + LABEL_H / 2],
+            [land, tapY(tap)],
+            (anchorX + edge) / 2,
+          ),
       {
         color: tap.active ? k.mod : k.dim,
         dash: tap.dash,
