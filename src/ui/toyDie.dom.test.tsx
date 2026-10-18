@@ -44,7 +44,7 @@ test('the stock die names its parts, lights none and shows no bend', () => {
   expect(words()).toEqual(
     expect.arrayContaining(['clock', 'voices', 'envelope', 'output pin']),
   )
-  expect(words().filter(w => w === 'clk')).toHaveLength(5)
+  expect(words().filter(w => w === 'clk')).toHaveLength(4)
   for (const bend of ['pot', 'PWM', 'scan', 'crosstalk'])
     expect(words()).not.toContain(bend)
   for (const part of ['clock', 'key matrix', 'envelope', 'output pin'])

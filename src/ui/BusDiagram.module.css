@@ -62,9 +62,19 @@
   fill: var(--alarm);
 }
 
+.stub,
+.stubOn {
+  stroke: var(--fg4);
+  stroke-width: 1;
+}
+
+.stubOn {
+  stroke: var(--alarm);
+}
+
 .tag,
 .tagOn {
-  font-size: 8px;
+  font-size: 9px;
   fill: var(--fg3);
 }
 

@@ -89,7 +89,7 @@ const SPOT_BOX: Record<string, string> = {
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
 const middle = (b: ChipBox) => b.x + b.w / 2
 
-// A variable resistor from a spot on the die to ground, above or below its box.
+// A variable resistor soldered to a spot on the die, above or below its box.
 function Pot({
   x,
   y,
@@ -106,10 +106,6 @@ function Pot({
   pick: ReturnType<typeof useSelectedBox>
 }) {
   const at = (d: number) => y + dir * d
-  const zig = [3, 5, 7, 9, 11, 13]
-    .map((d, i) => `L${x + (i % 2 ? 3 : -3)} ${at(d)}`)
-    .join(' ')
-  const g = at(16)
   return (
     <Pressable
       name="bend pot"
@@ -118,10 +114,10 @@ function Pot({
       className={on ? styles.potOn : styles.pot}
     >
       <path
-        d={`M${x} ${y} V${at(3)} ${zig} L${x} ${at(14)} V${g} M${x - 5} ${g} H${x + 5} M${x - 3} ${g + dir * 2} H${x + 3} M${x - 1} ${g + dir * 4} H${x + 1}`}
+        d={`M${x} ${y} V${at(4)} M${x - 3} ${at(4)} H${x + 3} V${at(15)} H${x - 3} Z`}
       />
-      <path d={`M${x - 6} ${at(12)} L${x + 6} ${at(4)}`} />
-      <text x={x + 9} y={at(10) + 3}>
+      <path d={`M${x - 6} ${at(14)} L${x + 6} ${at(5)}`} />
+      <text x={x + 9} y={at(9.5) + 3}>
         pot
       </text>
     </Pressable>
@@ -216,30 +212,27 @@ function Node({
   )
 }
 
-// A clock input or output drawn as a labelled stub instead of a wire: the clock
-// reaches four parts, and wires to all of them crowd out the signal path.
+// A clock input drawn as a labelled stub on a box's top edge instead of a wire:
+// the clock reaches four parts, and wires to all of them crowd out the signal
+// path.
 function ClockTag({
   x,
   y,
-  dir,
   say = 'clk',
   on = false,
 }: {
   x: number
   y: number
-  dir: 1 | -1
   say?: string
   on?: boolean
 }) {
-  const end = y + dir * STUB
   return (
     <>
-      <Wire d={`M${x} ${y} V${end}`} look={on ? 'alarm' : 'plain'} />
-      <text
-        x={x + 3}
-        y={dir < 0 ? y - 1 : end + 1}
-        className={on ? styles.tagOn : styles.tag}
-      >
+      <path
+        d={`M${x} ${y} V${y - STUB}`}
+        className={on ? styles.stubOn : styles.stub}
+      />
+      <text x={x + 3} y={y - 1} className={on ? styles.tagOn : styles.tag}>
         {say}
       </text>
     </>
@@ -409,20 +402,17 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   </Say>
                 </>
               )}
-              <ClockTag x={clock.x + 10} y={TOP + BOX_H} dir={1} />
-              <ClockTag x={rom.x + 10} y={TOP} dir={-1} />
-              <ClockTag x={voices.x + voices.w - 10} y={LOW} dir={-1} />
+              <ClockTag x={rom.x + 10} y={TOP} />
+              <ClockTag x={voices.x + voices.w - 10} y={LOW} />
               <ClockTag
                 x={env.x + 12}
                 y={LOW}
-                dir={-1}
                 say={pwm ? 'PWM' : 'clk'}
                 on={pwm}
               />
               <ClockTag
                 x={pin.x + 12}
                 y={LOW}
-                dir={-1}
                 say={scan ? 'scan' : 'clk'}
                 on={scan}
               />
