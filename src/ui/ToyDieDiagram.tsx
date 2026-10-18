@@ -73,7 +73,15 @@ const STUB = 7
 const BUS_Y = TOP + BOX_H + 12
 const HEIGHT = LOW + BOX_H + ROOM
 const VOICES_W = 64
-const GLYPH_W = 18
+// Five white keys, C to G, with the black keys of C, D and F.
+const WHITE_W = 4
+const GLYPH_W = 5 * WHITE_W
+const GLYPH_H = 12
+const BLACK_AT = [1, 2, 4]
+const BLACK_W = 2.6
+const BLACK_H = 7
+const KNOB_LEAD = 3
+const KNOB_R = 5
 const GLYPH_GAP = 4
 const INSET = boxWidth('') / 2
 const SIDE = 6
@@ -89,7 +97,7 @@ const SPOT_BOX: Record<string, string> = {
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
 const middle = (b: ChipBox) => b.x + b.w / 2
 
-// A variable resistor soldered to a spot on the die, above or below its box.
+// A pot soldered to a spot on the die, drawn as its knob above or below its box.
 function Pot({
   x,
   y,
@@ -113,11 +121,12 @@ function Pot({
       onSelect={() => pick.toggle(box)}
       className={on ? styles.potOn : styles.pot}
     >
+      <path d={`M${x} ${y} V${at(KNOB_LEAD)}`} />
+      <circle cx={x} cy={at(KNOB_LEAD + KNOB_R)} r={KNOB_R} />
       <path
-        d={`M${x} ${y} V${at(4)} M${x - 3} ${at(4)} H${x + 3} V${at(15)} H${x - 3} Z`}
+        d={`M${x} ${at(KNOB_LEAD + KNOB_R)} l${KNOB_R * 0.6} ${-KNOB_R * 0.6}`}
       />
-      <path d={`M${x - 6} ${at(14)} L${x + 6} ${at(5)}`} />
-      <text x={x + 9} y={at(9.5) + 3}>
+      <text x={x + KNOB_R + 4} y={at(KNOB_LEAD + KNOB_R) + 3}>
         pot
       </text>
     </Pressable>
@@ -135,7 +144,7 @@ function KeyboardNode({
   pick: ReturnType<typeof useSelectedBox>
 }) {
   const x = box.x + INSET
-  const y = box.y + (box.h - 12) / 2
+  const y = box.y + (box.h - GLYPH_H) / 2
   return (
     <Pressable
       name={KEYBOARD}
@@ -158,26 +167,26 @@ function KeyboardNode({
           x={x}
           y={y}
           width={GLYPH_W}
-          height={12}
-          rx={1.5}
+          height={GLYPH_H}
+          rx={1}
           className={styles.glyph}
         />
         <path
-          d={[4.5, 9, 13.5]
-            .map(dx => `M${x + dx} ${y + 7} V${y + 12}`)
+          d={[1, 2, 3, 4]
+            .map(i => {
+              const top = BLACK_AT.includes(i) ? y + BLACK_H : y
+              return `M${x + i * WHITE_W} ${top} V${y + GLYPH_H}`
+            })
             .join(' ')}
           className={styles.glyph}
         />
-        {[3.5, 8, 12.5].map(dx => (
-          <rect
-            key={dx}
-            x={x + dx}
-            y={y}
-            width={2}
-            height={7}
-            className={styles.glyphKey}
-          />
-        ))}
+        <path
+          d={BLACK_AT.map(
+            i =>
+              `M${x + i * WHITE_W - BLACK_W / 2} ${y} h${BLACK_W} v${BLACK_H} h${-BLACK_W} Z`,
+          ).join(' ')}
+          className={styles.glyphKey}
+        />
       </g>
       <text
         x={x + GLYPH_W + GLYPH_GAP}
