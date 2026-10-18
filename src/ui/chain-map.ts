@@ -472,20 +472,21 @@ interface Bridge {
 // else would be a lane you have to click to find out about.
 function triggerBridges(c: Controls): Bridge[] {
   const bridges: Bridge[] = []
-  for (const [key, from, to] of [
-    ['trigToKeys', 'Toy drums', 'Toy keyboard'],
-    ['trigToDrum', 'Toy keyboard', 'Toy drums'],
-    ['fmStruck', 'Toy drums', FM_CHIP],
-    ['pcmStruck', 'Toy drums', PCM_KEYS],
-    ['monoStruck', 'Toy drums', MONO],
+  for (const [key, from, to, end] of [
+    ['trigToKeys', 'Toy drums', 'Toy keyboard', 'keys'],
+    ['trigToDrum', 'Toy keyboard', 'Toy drums', 'kit'],
+    ['fmStruck', 'Toy drums', FM_CHIP, 'FM'],
+    ['pcmStruck', 'Toy drums', PCM_KEYS, 'home keys'],
+    ['monoStruck', 'Toy drums', MONO, 'mono'],
   ] as const) {
     const choice = Math.round(c[key])
     if (choice <= 0) continue
+    const named = sliderFor(key).choices?.[choice] ?? 'trig'
     bridges.push({
       id: key,
       from,
       to,
-      label: `${sliderFor(key).choices?.[choice] ?? 'trig'} trig`,
+      label: key === 'trigToDrum' ? `keys → ${named}` : `${named} → ${end}`,
     })
   }
   return bridges
@@ -1016,8 +1017,16 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // which standing next to each other is what the shape of the thing has
   // become.
   const joint = (toys[0]!.x + toys[0]!.w + fm.x) / 2
+  // One line with three chips clipped onto it, each through its own jumper. A
+  // run is drawn live while any jumper beyond it is still soldered.
+  const soldered = [c.fmKeyGate, c.pcmKeyGate, c.monoKeyGate].map(v => v < 0.5)
+  const reaches = soldered.map((_, i) => soldered.slice(i).some(Boolean))
+  const keyLine = (i: number) =>
+    reaches[i]
+      ? { color: k.accent2, door: 'Trigger patch' }
+      : { color: k.dim, dash: '3 3', door: 'Trigger patch' }
   const keyLabel: NonNullable<MapWire['label']> = {
-    text: 'key',
+    text: reaches[0] ? 'keyboard notes' : 'notes cut',
     x: joint,
     y: laneY + LABEL_H,
     anchor: 'middle',
@@ -1031,8 +1040,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       [fm.x, chipY + INST_H / 2],
     ],
     {
-      color: k.accent2,
-      door: 'Toy keyboard',
+      ...keyLine(0),
       // In the lane under the joint rather than on it. The gap between two
       // boxes is twelve pixels and the word is twice that, so a label written
       // there lands on the count column of whichever box it overhangs — which
@@ -1052,7 +1060,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       [fm.x + fm.w, chipY + INST_H / 2],
       [pcm.x, chipY + INST_H / 2],
     ],
-    { color: k.accent2, door: 'Toy keyboard' },
+    keyLine(1),
   )
   // Snaked, the line drops off the end of the row onto the box under it, near
   // the right edge so it stays clear of a trigger landing on the middle.
@@ -1070,7 +1078,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           [pcm.x + pcm.w, chipY + INST_H / 2],
           [mono.x, chipY + INST_H / 2],
         ],
-    { color: k.accent2, door: 'Toy keyboard' },
+    keyLine(2),
   )
 
   // Notes the drawing writes on itself: a part that is on the board with

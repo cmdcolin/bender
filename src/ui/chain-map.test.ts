@@ -210,9 +210,40 @@ test('the toy board frames its boxes, and wires the key line', () => {
   const key = hop(map, 'Toy_keyboard', 'FM_chip')!
   expect(key.color).toBe(PANEL.accent2)
   expect(key.dash).toBeUndefined()
-  expect(key.label?.text).toBe('key')
+  expect(key.label?.text).toBe('keyboard notes')
+  expect(key.door).toBe('Trigger patch')
   // And on along the row to the third chip clipped onto the same gate.
   expect(hop(map, 'FM_chip', 'Home_keyboard')?.color).toBe(PANEL.accent2)
+})
+
+// The gate line is a bus with a jumper at each chip, so a run goes dashed only
+// once every jumper beyond it is cut.
+test('cutting the jumpers dims the key line from the far end in', () => {
+  const live = (c: Partial<typeof DEFAULT_CONTROLS>) => {
+    const map = buildMap({ ...DEFAULT_CONTROLS, ...c })
+    return [
+      hop(map, 'Toy_keyboard', 'FM_chip')!,
+      hop(map, 'FM_chip', 'Home_keyboard')!,
+      hop(map, 'Home_keyboard', 'Mono_synth')!,
+    ].map(w => w.dash === undefined)
+  }
+  expect(live({})).toEqual([true, true, true])
+  expect(live({ monoKeyGate: 1 })).toEqual([true, true, false])
+  expect(live({ monoKeyGate: 1, pcmKeyGate: 1 })).toEqual([true, false, false])
+  expect(live({ fmKeyGate: 1, pcmKeyGate: 1 })).toEqual([true, true, true])
+  const cut = buildMap({
+    ...DEFAULT_CONTROLS,
+    fmKeyGate: 1,
+    pcmKeyGate: 1,
+    monoKeyGate: 1,
+  })
+  expect(hop(cut, 'Toy_keyboard', 'FM_chip')?.label?.text).toBe('notes cut')
+})
+
+test('a bridge from the kit names the chip it strikes', () => {
+  const map = buildMap({ ...DEFAULT_CONTROLS, fmStruck: 1, monoStruck: 2 })
+  expect(hop(map, 'Toy_drums', 'FM_chip')?.label?.text).toBe('kick → FM')
+  expect(hop(map, 'Toy_drums', 'Mono_synth')?.label?.text).toBe('snare → mono')
 })
 
 // One row, and which one the chip stands next to is the whole of what
@@ -562,8 +593,8 @@ test('a bridged trigger line draws between the two boxes', () => {
   })
   const up = hop(both, 'Toy_drums', 'Toy_keyboard')!
   const down = hop(both, 'Toy_keyboard', 'Toy_drums')!
-  expect(up.label?.text).toBe('kick trig')
-  expect(down.label?.text).toBe('the step trig')
+  expect(up.label?.text).toBe('kick → keys')
+  expect(down.label?.text).toBe('keys → the step')
   // Patched rather than soldered, so it draws in the patch colour and dashed —
   // the key line beside it is neither.
   expect(up.color).toBe(PANEL.mod)
@@ -579,7 +610,7 @@ test('a bridged trigger line draws between the two boxes', () => {
 test('the kit’s line onto the FM chip is a bridge like the other two', () => {
   const struck = buildMap({ ...DEFAULT_CONTROLS, fmStruck: ANY_CHOICE })
   const trig = hop(struck, 'Toy_drums', 'FM_chip')!
-  expect(trig.label?.text).toBe('any hit trig')
+  expect(trig.label?.text).toBe('any hit → FM')
   expect(trig.color).toBe(PANEL.mod)
   expect(trig.dash).toBeTruthy()
   // It opens the trigger patch with the other two, which is where all four of
