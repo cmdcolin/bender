@@ -66,7 +66,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 4.4rem 1fr 1.3rem;
+  grid-template-columns: 4.4rem 1fr 2.6rem;
   align-items: center;
   gap: var(--space-sm);
 }
@@ -240,29 +240,50 @@
   opacity: 0.3;
 }
 
-/* How many steps the row plays. It reads as a number rather than as a control
-   because most rows never leave sixteen, and the one that has moved is the one
-   worth spotting. */
+/* How many steps the row plays. A bordered field with a chevron, so it reads
+   as a menu; the border takes the accent colour on the row that has moved off
+   sixteen. */
+.field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .len,
 .lenShort {
+  width: 100%;
   font-size: var(--fs-xs);
   font-family: var(--mono);
-  padding: 0;
-  background: none;
-  border: none;
-  color: var(--fg4);
+  padding: var(--space-2xs) var(--space-lg) var(--space-2xs) var(--space-xs);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+  color: var(--fg3);
   cursor: pointer;
   appearance: none;
-  text-align: right;
+}
+
+.chevron {
+  position: absolute;
+  right: var(--space-xs);
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  pointer-events: none;
 }
 
 .len:hover,
 .lenShort:hover {
   color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+.field:hover .chevron {
+  color: var(--fg);
 }
 
 .lenShort {
   color: var(--accent2);
+  border-color: var(--accent2);
 }
 
 /* The one press on the board that starts the kit, so it says so: at --fg4 the

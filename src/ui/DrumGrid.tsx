@@ -361,18 +361,23 @@ const Row = memo(function Row({
               : `the ${row.label} row comes round every ${len} steps, so it lands somewhere different against the others each bar`
           }
         >
-          <select
-            className={len === STEPS ? styles.len : styles.lenShort}
-            value={len}
-            onChange={e => engine.set(row.len, Number(e.currentTarget.value))}
-            aria-label={`${row.label} row length`}
-          >
-            {Array.from({ length: STEPS }, (_, i) => (
-              <option key={i} value={i + 1}>
-                {i + 1}
-              </option>
-            ))}
-          </select>
+          <span className={styles.field}>
+            <select
+              className={len === STEPS ? styles.len : styles.lenShort}
+              value={len}
+              onChange={e => engine.set(row.len, Number(e.currentTarget.value))}
+              aria-label={`${row.label} row length`}
+            >
+              {Array.from({ length: STEPS }, (_, i) => (
+                <option key={i} value={i + 1}>
+                  {i + 1}
+                </option>
+              ))}
+            </select>
+            <span className={styles.chevron} aria-hidden="true">
+              ▾
+            </span>
+          </span>
         </Tip>
       </div>
     </Tip>
