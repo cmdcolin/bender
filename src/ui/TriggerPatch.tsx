@@ -44,7 +44,7 @@ const OPENS = new Map<string, readonly ControlKey[]>([
 
 const BOX_W = 84
 const BOX_H = 26
-const WIDTH = 316
+const WIDTH = 420
 const LEFT_X = 4
 const RIGHT_X = WIDTH - 4 - BOX_W
 const TOP = 14
@@ -53,12 +53,13 @@ const UP_Y = Y0 - 6
 const DOWN_Y = Y0 + 6
 const DRUM_MID = LEFT_X + BOX_W / 2
 const KEYS_MID = RIGHT_X + BOX_W / 2
-const CHIP_W = 156
-const CHIP_H = 34
-const CHIP_X = (WIDTH - CHIP_W) / 2
-const CHIP_TOP = TOP + BOX_H + 34
-const CHIP_PITCH = CHIP_H + 10
-const HEIGHT = CHIP_TOP + CHIPS.length * CHIP_PITCH - 10 + 6
+const CHIP_INSET = 24
+const CHIP_X = DRUM_MID + CHIP_INSET
+const CHIP_W = KEYS_MID - CHIP_INSET - CHIP_X
+const CHIP_H = 24
+const CHIP_TOP = TOP + BOX_H + 20
+const CHIP_PITCH = CHIP_H + 6
+const HEIGHT = CHIP_TOP + CHIPS.length * CHIP_PITCH - 6 + 6
 
 const KIT = 'var(--cool)'
 const KEYS = 'var(--accent2)'
@@ -230,7 +231,7 @@ export function TriggerPatch() {
 
         <text
           x={DRUM_MID + 5}
-          y={TOP + BOX_H + 22}
+          y={TOP + BOX_H + 14}
           className={styles.tag}
           fill="var(--fg3)"
         >
@@ -238,7 +239,7 @@ export function TriggerPatch() {
         </text>
         <text
           x={KEYS_MID - 5}
-          y={TOP + BOX_H + 22}
+          y={TOP + BOX_H + 14}
           textAnchor="end"
           className={styles.tag}
           fill="var(--fg3)"
@@ -355,18 +356,17 @@ function machineParts(chip: (typeof CHIPS)[number], top: number, code: string) {
           stroke="var(--border-hover)"
         />
         <text
-          x={CHIP_X + CHIP_W / 2}
-          y={top + 14}
-          textAnchor="middle"
+          x={CHIP_X + 8}
+          y={mid + 4}
           className={styles.label}
           fill="var(--fg)"
         >
           {chip.name}
         </text>
         <text
-          x={CHIP_X + CHIP_W / 2}
-          y={top + 27}
-          textAnchor="middle"
+          x={CHIP_X + CHIP_W - 8}
+          y={mid + 4}
+          textAnchor="end"
           className={styles.tag}
           fill={plays.length > 0 ? 'var(--fg3)' : OFF}
         >
