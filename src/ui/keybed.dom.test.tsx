@@ -72,3 +72,14 @@ test('Enter and Space on a focused key hold it until they come up', () => {
     expect(engine.fmKeysDown.get().size).toBe(0)
   }
 })
+
+test('a key off the scale lights under the finger as well as the key it closes', () => {
+  engine.set('keyScale', SCALE_NAMES.indexOf('major'))
+  bed()
+  fireEvent.pointerDown(key('C#3'))
+  expect(key('C#3').getAttribute('aria-pressed')).toBe('true')
+  expect(key('C3').getAttribute('aria-pressed')).toBe('true')
+  fireEvent.pointerUp(key('C#3'))
+  expect(key('C#3').getAttribute('aria-pressed')).toBe('false')
+  expect(key('C3').getAttribute('aria-pressed')).toBe('false')
+})

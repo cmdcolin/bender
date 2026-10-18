@@ -188,6 +188,19 @@
   transform: translateY(2px);
 }
 
+/* Keeps the top two pixels under the pointer after the key drops two pixels. */
+.whiteOn::before,
+.whiteChip::before,
+.blackOn::before,
+.blackChip::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
 /* A note sounding past either end of the drawn board. The keys stay where your
    hands are; this says the wire is playing somewhere else, and which way the
    octave switch has to go to meet it. */

@@ -135,6 +135,12 @@ export function Keybed({
   // What was sent, not which key was pressed: the octave moves under your hand
   // and a note has to be let go at the pitch it went down at.
   const held = useRef(new Set<number>())
+  const [touching, setTouching] = useState<ReadonlySet<number>>(new Set())
+  const track = (semitone: number, down: boolean) => {
+    if (down) held.current.add(semitone)
+    else held.current.delete(semitone)
+    setTouching(new Set(held.current))
+  }
   // Notes alt-click has pinned down, one at a time. The hold switch latches
   // everything you touch after it; this holds a drone under both hands while the
   // rest of the board still plays and lets go the way keys normally do.
@@ -185,8 +191,14 @@ export function Keybed({
   const octaveLetters = octaveKeys(map)
   const other = NEXT_BED[dest]
   const isDown = (key: number) => held.current.has(at(key))
+  const touched = (semitone: number) =>
+    touching.has(semitone) && engine.isStruck(semitone, dest)
   const litBy = (key: number): Lit =>
-    keysDown.has(at(key)) ? 'hand' : chipNotes.has(at(key)) ? 'chip' : 'dark'
+    keysDown.has(at(key)) || touched(at(key))
+      ? 'hand'
+      : chipNotes.has(at(key))
+        ? 'chip'
+        : 'dark'
   // A keybed reaches further than three octaves, and so does the tune when the
   // clock bend drags it off the board. A note played past either end would
   // otherwise light nothing at all and read as a dead wire.
@@ -209,7 +221,7 @@ export function Keybed({
     }
     if (down && held.current.has(semitone)) return
     engine.noteOn(semitone, 1, dest)
-    held.current.add(semitone)
+    track(semitone, true)
     if (latch) latched.current.add(semitone)
   }
 
@@ -217,7 +229,7 @@ export function Keybed({
     const semitone = at(key)
     if (!force && sticky(semitone)) return
     engine.noteOff(semitone, dest)
-    held.current.delete(semitone)
+    track(semitone, false)
     latched.current.delete(semitone)
   }
 
@@ -225,6 +237,7 @@ export function Keybed({
     for (const semitone of held.current) engine.noteOff(semitone, dest)
     held.current.clear()
     latched.current.clear()
+    setTouching(new Set())
   }
 
   // What a hand was holding, when the hand goes away: the window loses focus
@@ -235,7 +248,7 @@ export function Keybed({
     for (const semitone of held.current) {
       if (sticky(semitone)) continue
       engine.noteOff(semitone, dest)
-      held.current.delete(semitone)
+      track(semitone, false)
     }
   }
 
