@@ -456,7 +456,8 @@ export function App(props: { openedFromLink?: boolean }) {
                 ? drop
                 : !sampleName && (
                     <p className={styles.emptyTape}>
-                      nothing on the tape: drop an audio file anywhere
+                      nothing on the tape: drop an audio file anywhere, or press
+                      rec for a blank reel
                     </p>
                   )}
               <SampleReel>

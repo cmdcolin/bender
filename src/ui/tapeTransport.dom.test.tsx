@@ -39,6 +39,35 @@ test('the speed key steps half, normal, double and keeps the direction', () => {
   expect(speed()).toBe(0.5)
 })
 
+test('rec works with nothing loaded and latches while the record head is armed', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, loopRec: 0 })
+  render(<TapeTransport loaded={false} />)
+  const rec = () => screen.getByRole('button', { name: 'record onto the tape' })
+  expect((rec() as HTMLButtonElement).disabled).toBe(false)
+  fireEvent.click(rec())
+  expect(engine.controls.get().loopRec).toBe(1)
+  expect(rec().ariaPressed).toBe('true')
+  fireEvent.click(rec())
+  expect(engine.controls.get().loopRec).toBe(0)
+})
+
+test('rec comes back on the level it was last set to', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, loopRec: 0.4 })
+  render(<TapeTransport loaded />)
+  const rec = () => screen.getByRole('button', { name: 'record onto the tape' })
+  fireEvent.click(rec())
+  fireEvent.click(rec())
+  expect(engine.controls.get().loopRec).toBe(0.4)
+})
+
+test('the arrow beside rec opens Record, Erase and Reel length', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS })
+  render(<TapeTransport loaded={false} />)
+  press('record knobs')
+  for (const name of ['Record', 'Erase', 'Reel length'])
+    expect(screen.getByRole('slider', { name })).toBeTruthy()
+})
+
 test('the arrow beside the speed opens the Speed slider and Escape shuts it', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, sampleSpeed: 1 })
   render(<TapeTransport loaded />)
