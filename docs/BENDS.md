@@ -529,6 +529,11 @@ bus:
 Both have bay lanes, **FM clock** and **FM CPU clock**, which move three octaves
 to a full push, as the toy's clock lane does.
 
+The **die** box on the FM chip card draws the parts these faults reach. The
+allocator feeds the register file, four voices run off it, and one converter
+takes a slot from each. A fault writes its reading in red on its part. A stuck
+allocator or slot counter also draws the one channel it leaves as a red wire.
+
 **DAC slot** and **Slot slip**, under **die and driver**, are the converter. The
 four channels share one, a slot each per sample, and a counter selects the slot:
 

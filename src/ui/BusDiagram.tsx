@@ -103,13 +103,16 @@ export function Chip({
   box,
   reading,
   help,
+  className,
 }: {
   box: ChipBox
-  reading?: string
+  reading?: string | string[]
   help?: string
+  className?: string
 }) {
   const lines = box.name.split('\n')
-  const count = lines.length + (reading ? 1 : 0)
+  const says = [reading ?? []].flat()
+  const count = lines.length + says.length
   const top = box.y + (box.h - LINE_H * count) / 2
   return (
     <g>
@@ -120,7 +123,7 @@ export function Chip({
         width={box.w}
         height={box.h}
         rx={3}
-        className={styles.chip}
+        className={className ? `${styles.chip} ${className}` : styles.chip}
       />
       {lines.map((line, i) => (
         <text
@@ -133,16 +136,17 @@ export function Chip({
           {line}
         </text>
       ))}
-      {reading && (
+      {says.map((say, i) => (
         <text
+          key={say}
           x={box.x + box.w / 2}
-          y={top + LINE_H * count - 3}
+          y={top + LINE_H * (lines.length + i + 1) - 3}
           textAnchor="middle"
           className={styles.knifed}
         >
-          {reading}
+          {say}
         </text>
-      )}
+      ))}
     </g>
   )
 }

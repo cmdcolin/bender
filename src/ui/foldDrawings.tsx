@@ -1,5 +1,6 @@
 import { BusDiagram } from './BusDiagram.tsx'
 import { BUS_SPECS } from './busSpecs.ts'
+import { FmDieDiagram } from './FmDieDiagram.tsx'
 import { KitWiringDiagram } from './KitWiringDiagram.tsx'
 import { ToyDieDiagram } from './ToyDieDiagram.tsx'
 
@@ -8,6 +9,7 @@ import type { ComponentType } from 'react'
 const DRAWINGS: Record<string, ComponentType> = {
   'Toy drums|triggers and cross-patch': KitWiringDiagram,
   'Toy keyboard|inside the die': ToyDieDiagram,
+  'FM chip|die and driver': FmDieDiagram,
 }
 
 /** The drawing for one fold of a group, if it has one. */
