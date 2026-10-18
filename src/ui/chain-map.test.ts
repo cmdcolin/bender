@@ -308,6 +308,20 @@ test('a source box carries how far up its fader is, on its own travel', () => {
   expect(level({ ...DEFAULT_CONTROLS, fmLevel: 3 }, 'FM_chip')).toBeCloseTo(3)
 })
 
+test('every source box draws its fader travel at one length', () => {
+  const c = { ...DEFAULT_CONTROLS, fmLevel: 0.6, pcmLevel: 0.5 }
+  const map = buildMap(c, { wrap: true, shown: onBoard(c) })
+  const insts = map.nodes.filter(n => n.kind === 'inst')
+  expect(new Set(insts.map(n => n.w)).size).toBeGreaterThan(1)
+  const tracks = [
+    ...serialize(drawMap(map)).matchAll(
+      /<rect [^>]*width="([\d.]+)"[^>]*height="3"[^>]*fill-opacity="0.3"/g,
+    ),
+  ].map(m => m[1])
+  expect(tracks.length).toBe(insts.length)
+  expect(new Set(tracks).size).toBe(1)
+})
+
 // Every source draws its own glyph, and the one that is running draws it in the
 // warm colour — which is the only thing on the box that says so since the run
 // lamp became the glyph itself.

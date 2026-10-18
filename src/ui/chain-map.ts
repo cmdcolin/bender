@@ -1890,10 +1890,15 @@ function benchedMark(n: MapNode, k: Palette): El[] {
 // something coming out of it lights the bar, which is the map saying that what
 // you are hearing starts here — the fader is where it is set to, and the colour
 // is whether that setting is doing anything.
-function levelBar(n: MapNode, k: Palette): El[] {
+function levelBar(n: MapNode, k: Palette, meter: number): El[] {
   // The empty part of the travel is drawn too: a bar that stops where the level
-  // does is a bar with nothing to read it against.
-  const [x, y, w] = [n.x + PAD_X, n.y + n.h - 11, n.w - PAD_X * 2]
+  // does is a bar with nothing to read it against. Every source's travel is as
+  // long as the narrowest box's, so a wide box doesn't read as a loud one.
+  const [x, y, w] = [
+    n.x + PAD_X,
+    n.y + n.h - 11,
+    Math.min(meter, n.w - PAD_X * 2),
+  ]
   const track = el('rect', {
     x,
     y,
@@ -2186,7 +2191,12 @@ function glyph(n: MapNode, k: Palette, y: number, pad = PAD_X): El[] {
 const edge = (n: MapNode, k: Palette) =>
   n.open ? k.fg : n.active ? k.dim : k.border
 
-export function drawNode(n: MapNode, k: Palette, links: boolean): El {
+export function drawNode(
+  n: MapNode,
+  k: Palette,
+  links: boolean,
+  meter = Infinity,
+): El {
   if (n.kind === 'label') {
     const fill = n.active ? k.mod : k.dim
     const top = baseline(n.y, LABEL_H, SMALL)
@@ -2293,7 +2303,7 @@ export function drawNode(n: MapNode, k: Palette, links: boolean): El {
         n.active || n.open ? k.fg : k.dim,
         'start',
       ),
-      ...levelBar(n, k),
+      ...levelBar(n, k, meter),
     ]
     return el('g', { className: 'node' }, [
       ...door(inner, n.door, links),
@@ -2380,6 +2390,9 @@ function drawWire(w: MapWire, links: boolean): El {
 }
 
 export function drawMap(map: ChainMap): El {
+  const meter = Math.min(
+    ...map.nodes.filter(n => n.kind === 'inst').map(n => n.w - PAD_X * 2),
+  )
   return el(
     'svg',
     {
@@ -2391,7 +2404,7 @@ export function drawMap(map: ChainMap): El {
     },
     [
       ...map.wires.map(w => drawWire(w, map.links)),
-      ...map.nodes.map(n => drawNode(n, map.palette, map.links)),
+      ...map.nodes.map(n => drawNode(n, map.palette, map.links, meter)),
     ],
   )
 }
