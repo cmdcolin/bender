@@ -163,6 +163,10 @@ const LANDINGS: Landing[] = [
   at('FM toy on bus', ['fmLevel', 'chipLevel']),
   at('toy FM on clock', ['chipLevel', 'fmLevel']),
   at('toy hold', ['chipLevel']),
+  at('toy hard sync', ['chipLevel']),
+  at('toy voice XOR', ['chipLevel']),
+  at('toy envelope bits', ['chipLevel']),
+  at('toy duty on envelope', ['chipLevel']),
 ]
 
 const LANDING_AT = new Map(LANDINGS.map(l => [l.dest, l]))

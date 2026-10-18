@@ -282,6 +282,33 @@ melody's divider, so Step tap, the clock pot and Crosstalk move it with the
 tune. Output on address and Output on data read the held pin, which slows their
 flips to the strobe rate.
 
+**Hard sync** runs a free oscillator on the die, 30 Hz at the bottom of the knob
+and four and a half octaves up at the top, and resets every voice's divider on
+each of its cycles.
+
+- A note above the oscillator is cut short each cycle, so the oscillator's pitch
+  sounds with a note-dependent edge on top.
+- Sweeping the knob across a held note is the classic hard-sync scream.
+- A note below the oscillator never finishes a cycle and falls silent, so the
+  bass drops out first as the knob rises.
+- The oscillator counts off the chip clock, so clock bends move it with the
+  tune.
+
+**Voice XOR** multiplies the voice mix by the sign of every sounding voice but
+the first, so each extra voice flips the mix whenever that voice is low. A lone
+note passes through. A chord turns into sum and difference tones, a
+ring-modulated clang that follows the keys. The knob crossfades the normal mix
+into the XOR.
+
+**Envelope bits** shortens the envelope counter, so a fade runs in steps: 32 at
+the bottom of the knob, one at the top, where a note is a gate that cuts at
+half. Held keys stay at full level. With Volume PWM up, each step is a different
+tone.
+
+**Duty on envelope** ties the pulse width to the envelope. A note strikes as a
+spike 4% wide and opens to the width the tone selector holds as it fades. Held
+keys stay thin.
+
 ## The FM chip's register bus
 
 The FM chip isn't played — it's configured, one byte at a time, by a processor

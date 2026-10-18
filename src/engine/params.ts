@@ -59,6 +59,10 @@ export const PARAM_DEFS = [
   ['chipPwmTap', 'slew'],
   ['chipFmClock', 'slew'],
   ['chipHold', 'slew'],
+  ['chipHardSync', 'slew'],
+  ['chipXor', 'slew'],
+  ['chipEnvBits', 'slew'],
+  ['chipDutyEnv', 'slew'],
 
   ['chipLeadR', 'slew'],
   ['chipDecouple', 'slew'],

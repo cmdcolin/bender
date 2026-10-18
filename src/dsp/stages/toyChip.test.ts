@@ -764,3 +764,48 @@ test('a wire on the divider line lane retunes a held note', () => {
     -1,
   )
 })
+
+test('hard sync puts the reset oscillator under a held note', () => {
+  const held = (chipHardSync: number) =>
+    tail(
+      renderBender({ ...CHIP_ONLY, chipHardSync }, 1, b => b.toyChip.noteOn(0)),
+    )
+  const synced = held(0.5)
+  const master = 30 * 2 ** 2.25
+  expect(bin(synced, master)).toBeGreaterThan(bin(held(0), master) * 5)
+})
+
+test('voice XOR leaves a lone key alone and ring-mods a chord', () => {
+  const keys = (chipXor: number, notes: number[]) =>
+    tail(
+      renderBender({ ...CHIP_ONLY, chipXor }, 1, b => {
+        for (const n of notes) b.toyChip.noteOn(n)
+      }),
+    )
+  expect(deviation(keys(1, [0]), keys(0, [0]))).toBeLessThan(0.01)
+  expect(deviation(keys(1, [0, 7]), keys(0, [0, 7]))).toBeGreaterThan(0.3)
+})
+
+test('envelope bits turn a fade into a gate and leave a held key alone', () => {
+  const tune = (chipEnvBits: number) =>
+    renderBender(
+      { ...CHIP_ONLY, chipEnvBits },
+      3,
+      b => (b.transport.tune = true),
+    )
+  const held = (chipEnvBits: number) =>
+    tail(
+      renderBender({ ...CHIP_ONLY, chipEnvBits }, 1, b => b.toyChip.noteOn(0)),
+    )
+  expect(deviation(tune(1), tune(0))).toBeGreaterThan(0.2)
+  expect(deviation(held(1), held(0))).toBeLessThan(1e-6)
+})
+
+test('duty on envelope thins a held key and opens a fading note', () => {
+  const held = (chipDutyEnv: number) =>
+    tail(
+      renderBender({ ...CHIP_ONLY, chipDutyEnv }, 1, b => b.toyChip.noteOn(0)),
+    )
+  expect(deviation(held(1), held(0))).toBeGreaterThan(0.3)
+  expect(deviation(held(0), held(0))).toBe(0)
+})

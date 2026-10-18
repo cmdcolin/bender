@@ -5,9 +5,21 @@ import type { ControlKey } from '../controls.ts'
 export const NODE_KEYS: Record<string, readonly ControlKey[]> = {
   'key matrix': ['chipGhost'],
   'tune ROM': ['chipOutAddr', 'chipOutData', 'chipStepTap'],
-  clock: ['chipClockX', 'chipDrift', 'chipCrosstalk', 'chipFmClock'],
-  voices: ['chipShort', 'chipPwmTap'],
-  envelope: ['chipEnvCap', 'chipEnvRelax', 'chipEnvDiv', 'chipPwm'],
+  clock: [
+    'chipClockX',
+    'chipDrift',
+    'chipCrosstalk',
+    'chipFmClock',
+    'chipHardSync',
+  ],
+  voices: ['chipShort', 'chipPwmTap', 'chipXor', 'chipDutyEnv'],
+  envelope: [
+    'chipEnvCap',
+    'chipEnvRelax',
+    'chipEnvDiv',
+    'chipPwm',
+    'chipEnvBits',
+  ],
   'output pin': ['chipScan', 'chipHold'],
 }
 

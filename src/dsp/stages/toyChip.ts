@@ -200,6 +200,20 @@ const FM_CLOCK_OCTAVES = 4
 const HOLD_TOP = 5
 const HOLD_SPAN = 8
 
+// A free-running oscillator whose wrap resets every voice's divider. The knob
+// sweeps it from 30 Hz up four and a half octaves. A note over it is cut short
+// each cycle; a note under it never finishes a cycle and falls silent.
+const SYNC_LOW_HZ = 30
+const SYNC_OCTAVES = 4.5
+
+// The envelope counter's width. The top of the knob leaves one step, a gate;
+// the bottom leaves 32.
+const BITS_OCTAVES = 5
+
+// The tone selector's narrowest tap, where a strike opens the pulse before the
+// envelope lets it close back to the selected width.
+const DUTY_STRIKE = 0.04
+
 export const LOOP_TARGETS = [
   ...Array.from({ length: ROM_ADDR_LINES }, (_, i) => `A${i}`),
   'reset',
@@ -275,6 +289,9 @@ const expNeg = (x: number) =>
 const addOnce = (out: number[], g: number, skip: number[]) => {
   if (!skip.includes(g) && !out.includes(g)) out.push(g)
 }
+
+const width = (duty: number, amount: number, env: number) =>
+  amount > 0 ? duty + (DUTY_STRIKE - duty) * amount * env : duty
 
 const pulse = (phase: number, duty: number, inc: number) => {
   const d = Math.max(duty, inc)
@@ -397,6 +414,9 @@ export class ToyChip implements Stage {
   private fmHp = 0
   private holdPhase = 0
   private held = 0
+  private syncPhase = 0
+  private xorAmt = 0
+  private envSteps = 0
   private crossLpA: number
   private crossHpA: number
   private pwmPhase = 0
@@ -909,6 +929,14 @@ export class ToyChip implements Stage {
     const pwmTapBase = p[IDX.chipPwmTap]!
     const fmClockBase = p[IDX.chipFmClock]!
     const holdBase = p[IDX.chipHold]!
+    const syncBase = p[IDX.chipHardSync]!
+    const xorBase = p[IDX.chipXor]!
+    const bitsBase = p[IDX.chipEnvBits]!
+    const dutyEnvBase = p[IDX.chipDutyEnv]!
+    const modSync = bay.read(DEST.chipHardSync)
+    const modXor = bay.read(DEST.chipXor)
+    const modBits = bay.read(DEST.chipEnvBits)
+    const modDutyEnv = bay.read(DEST.chipDutyEnv)
     const modFmClock = bay.read(DEST.chipFmClock)
     const modHold = bay.read(DEST.chipHold)
     const modTap = bay.read(DEST.chipStepTap)
@@ -1071,6 +1099,16 @@ export class ToyChip implements Stage {
         ? clamp01(pwmTapBase + modPwmTap[i]!)
         : pwmTapBase
       this.shortAmt = modShort ? clamp01(shortBase + modShort[i]!) : shortBase
+      this.xorAmt = modXor ? clamp01(xorBase + modXor[i]!) : xorBase
+      const bits = modBits ? clamp01(bitsBase + modBits[i]!) : bitsBase
+      this.envSteps =
+        bits > 0
+          ? Math.max(Math.round(octaves(BITS_OCTAVES * (1 - bits))), 1)
+          : 0
+      const dutyEnv = modDutyEnv
+        ? clamp01(dutyEnvBase + modDutyEnv[i]!)
+        : dutyEnvBase
+      const hardSync = modSync ? clamp01(syncBase + modSync[i]!) : syncBase
       // clock bend: the pot shorts the RC — wildly fast and unstable
       let clock = clockX
       if (spot === 1 && pot > 0) {
@@ -1235,8 +1273,19 @@ export class ToyChip implements Stage {
         )
       else if (pwmHz > 0)
         this.pwmPhase = wrap1(this.pwmPhase + (pwmHz * timing) / this.sr)
-      const shaped = cap === ENV_REVERSED || pwmOn
-      const pinned = scanHz > 0 || this.shortAmt > 0
+      const shaped = cap === ENV_REVERSED || pwmOn || this.envSteps > 0
+      const pinned = scanHz > 0 || this.shortAmt > 0 || this.xorAmt > 0
+      if (hardSync > 0) {
+        this.syncPhase +=
+          (SYNC_LOW_HZ * octaves(SYNC_OCTAVES * hardSync) * timing) / this.sr
+        if (this.syncPhase >= 1) {
+          this.syncPhase -= Math.floor(this.syncPhase)
+          this.phase = 0
+          this.bassPhase = 0
+          this.chordPhase.fill(0)
+          for (const v of this.voices) v.phase = 0
+        }
+      }
       if (this.loadedStamp !== this.divStamp) {
         this.loadedStamp = this.divStamp
         this.melodyLoaded = NaN
@@ -1268,7 +1317,8 @@ export class ToyChip implements Stage {
           const inc = hz / this.sr
           this.phase = wrap1(this.phase + inc)
           const env = shaped ? this.level(this.env, pwmOn) : this.env
-          const v = pulse(this.phase, duty, inc) * env * amp
+          const v =
+            pulse(this.phase, width(duty, dutyEnv, this.env), inc) * env * amp
           if (pinned) {
             val[0] = v
             live[0] = 1
@@ -1293,7 +1343,7 @@ export class ToyChip implements Stage {
             this.bassPhase = wrap1(this.bassPhase + inc)
             const env = shaped ? this.level(this.bassEnv, pwmOn) : this.bassEnv
             const v =
-              pulse(this.bassPhase, duty, inc) *
+              pulse(this.bassPhase, width(duty, dutyEnv, this.bassEnv), inc) *
               env *
               rail.ampFactorAt(BASS_TRIM) *
               accomp
@@ -1325,7 +1375,11 @@ export class ToyChip implements Stage {
               const inc = hz / this.sr
               this.chordPhase[c] = wrap1(this.chordPhase[c]! + inc)
               const v =
-                pulse(this.chordPhase[c]!, duty, inc) *
+                pulse(
+                  this.chordPhase[c]!,
+                  width(duty, dutyEnv, this.chordEnv),
+                  inc,
+                ) *
                 env *
                 rail.ampFactorAt(trim) *
                 CHORD_GAIN *
@@ -1356,14 +1410,17 @@ export class ToyChip implements Stage {
           const inc = hz / this.sr
           v.phase = wrap1(v.phase + inc)
           const env = shaped ? this.level(v.env, pwmOn) : v.env
-          const x = pulse(v.phase, duty, inc) * env * rail.ampFactorAt(trim)
+          const x =
+            pulse(v.phase, width(duty, dutyEnv, v.env), inc) *
+            env *
+            rail.ampFactorAt(trim)
           if (pinned) {
             val[5 + k] = x
             live[5 + k] = 1
           } else keys += x
         }
         if (scanHz > 0) out = this.scan((scanHz * timing) / this.sr)
-        else if (pinned) out = this.short(mixDrive)
+        else if (pinned) out = this.ring(this.short(mixDrive))
         out = (out + mixVoices(keys, mixDrive)) * this.gateState
         if (spot === 3) out += pot * 0.4
       }
@@ -1438,7 +1495,8 @@ export class ToyChip implements Stage {
   // The volume the output stage sees: the envelope, upside down on a reversed
   // cap, and compared against the PWM carrier when that is in earshot.
   private level(env: number, pwm: boolean): number {
-    const x = this.envCap === ENV_REVERSED ? 1 - env : env
+    let x = this.envCap === ENV_REVERSED ? 1 - env : env
+    if (this.envSteps > 0) x = Math.round(x * this.envSteps) / this.envSteps
     return pwm ? (this.pwmPhase < x ? 1 : 0) : x
   }
 
@@ -1460,6 +1518,23 @@ export class ToyChip implements Stage {
     return mix + (lo - mix) * this.shortAmt
   }
 
+  // The mix multiplied by the sign of every sounding voice but the first, so
+  // each extra voice flips it whenever that voice is low. A lone voice passes
+  // unchanged; a chord turns into sum and difference tones.
+  private ring(mix: number): number {
+    if (this.xorAmt <= 0) return mix
+    const live = this.slotLive
+    const val = this.slotVal
+    let flip = 1
+    let seen = false
+    for (let k = 0; k < SLOTS; k++) {
+      if (!live[k]) continue
+      if (seen && val[k]! < 0) flip = -flip
+      seen = true
+    }
+    return mix * (1 + (flip - 1) * this.xorAmt)
+  }
+
   panic() {
     this.dataBus.reset()
     this.addrBus.reset()
@@ -1476,6 +1551,7 @@ export class ToyChip implements Stage {
     this.fmLp = 0
     this.fmHp = 0
     this.held = 0
+    this.syncPhase = 0
     this.lastOut = 0
     for (const v of this.voices) {
       v.note = 0
