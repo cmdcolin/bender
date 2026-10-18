@@ -19,7 +19,8 @@ import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
-import { DRAWN_ROWS, FoldDrawing } from './foldDrawings.tsx'
+import { FoldDrawing } from './foldDrawings.tsx'
+import { DRAWN_ROWS, hostedBy, isHosted } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
 import { MicPatch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
@@ -322,16 +323,20 @@ function PartFold({
   name,
   rows,
   group,
+  hosted,
   seconds,
   startOpen,
 }: {
   name: string
   rows: SliderDef[]
+  /** The rows of the folds the drawing took over, counted as this fold's own. */
+  hosted: SliderDef[]
   group: Group
   seconds: number
   startOpen: boolean
 }) {
-  const moved = useBoardValue(c => movedIn(rows, c))
+  const own = useBoardValue(c => movedIn(rows, c))
+  const moved = useBoardValue(c => movedIn([...rows, ...hosted], c))
   const cuts = cutsFor(group.name, name)
   // A cut has a name, and a name says more than a count of the controls it
   // moved: a shut fold reading 'machine-gun' is the heading telling you which
@@ -343,7 +348,7 @@ function PartFold({
     standing === ''
       ? moved > 0
         ? `${moved} moved`
-        : `${rows.length}`
+        : `${rows.length + hosted.length}`
       : standing
   const caution = group.caution?.part === name ? group.caution.text : null
   return (
@@ -359,11 +364,15 @@ function PartFold({
         group={group}
         part={name}
         rows={rows}
-        moved={moved}
+        moved={own}
         standing={standing}
         seconds={seconds}
       />
-      <FoldDrawing group={group.name} part={name} />
+      <FoldDrawing
+        group={group.name}
+        part={name}
+        verbs={part => <BoxVerbs group={group} part={part} seconds={seconds} />}
+      />
       {!DRAWN_ROWS.has(`${group.name}|${name}`) &&
         rows.map(def => <ControlSlider key={def.key} def={def} />)}
     </Fold>
@@ -457,6 +466,12 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
   // Settled the once, on the way in: the fold itself belongs to the browser from
   // there, and a heading that reopened under a morph because the board had moved
   // would be the panel taking a hand off the knob you were turning.
+  const hostedRows = (name: string) =>
+    blocks
+      .filter(
+        b => b.name !== null && hostedBy(group.name, name).includes(b.name),
+      )
+      .flatMap(b => b.sliders.filter(d => visible.has(d.key)))
   const [startOpen] = useState(
     () =>
       new Set(
@@ -465,7 +480,10 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
             b =>
               b.name !== null &&
               (!(group.folded ?? []).includes(b.name) ||
-                movedIn(b.sliders, engine.controls.get()) > 0),
+                movedIn(
+                  [...b.sliders, ...hostedRows(b.name)],
+                  engine.controls.get(),
+                ) > 0),
           )
           .map(b => b.name),
       ),
@@ -476,6 +494,7 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
         const rows = sliders.filter(d => visible.has(d.key))
         if (name === null)
           return rows.map(def => <ControlSlider key={def.key} def={def} />)
+        if (isHosted(group.name, name)) return null
         // A heading over nothing is the same question about nothing the rows
         // themselves wait out.
         if (rows.length === 0) return null
@@ -484,6 +503,7 @@ function Rows({ group, seconds }: { group: Group; seconds: number }) {
             key={name}
             name={name}
             rows={rows}
+            hosted={hostedRows(name)}
             group={group}
             seconds={seconds}
             startOpen={startOpen.has(name)}

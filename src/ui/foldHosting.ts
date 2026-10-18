@@ -1,0 +1,23 @@
+import type { ReactNode } from 'react'
+
+/** Shows the verbs of another fold of the same group. */
+export type Verbs = (part: string) => ReactNode
+
+/** Folds whose drawing opens the rows itself, one box at a time. */
+export const DRAWN_ROWS = new Set([
+  'Toy keyboard|inside the die',
+  'Toy drums|inside the voices',
+])
+
+/** Folds the drawing of another fold has taken over, drawn as boxes in it. */
+const HOSTED: Record<string, readonly string[]> = {
+  'Toy drums|inside the voices': ['the converter', 'Sample ROM'],
+}
+
+export const hostedBy = (group: string, part: string) =>
+  HOSTED[`${group}|${part}`] ?? []
+
+export const isHosted = (group: string, part: string) =>
+  Object.entries(HOSTED).some(
+    ([host, parts]) => host.startsWith(`${group}|`) && parts.includes(part),
+  )

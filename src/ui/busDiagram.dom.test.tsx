@@ -29,10 +29,18 @@ const texts = (svg: Element) =>
 test.each([
   ['Toy keyboard', 'toy keyboard bus wiring'],
   ['Toy drums', 'drum machine bus wiring'],
-  ['Toy drums', 'drum sample ROM bus wiring'],
 ])('%s draws %s', (group, label) => {
   open(group)
   expect(drawing(label)).not.toBeNull()
+})
+
+test('the sample ROM box of the toy drums draws its buses', () => {
+  open('Toy drums')
+  expect(
+    screen.queryByRole('img', { name: 'drum sample ROM bus wiring' }),
+  ).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'sample ROM controls' }))
+  expect(drawing('drum sample ROM bus wiring')).not.toBeNull()
 })
 
 test('the FM chip draws its buses under the bus box', () => {

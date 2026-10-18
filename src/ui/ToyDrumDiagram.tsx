@@ -1,6 +1,6 @@
 import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
-import { CHANNELS } from './controls/index.ts'
+import { CHANNELS, GROUPS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import {
   boxHeight,
@@ -19,9 +19,26 @@ import {
 } from './DiagramParts.tsx'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
 
+import type { ControlKey } from '../controls.ts'
+import type { Verbs } from './foldHosting.ts'
+
 const DRUM_TAP = CHANNELS.find(c => c.name === 'Toy drums')!.tap
 
-type BoxId = keyof typeof VOICE_BOXES
+type BoxId = keyof typeof VOICE_BOXES | 'DAC' | 'sample ROM'
+
+const GROUP = GROUPS.find(g => g.name === 'Toy drums')!
+
+const keysOf = (part: string): ControlKey[] =>
+  GROUP.sliders.filter(d => d.part === part).map(d => d.key)
+
+const BOXES: Record<BoxId, { part: string; keys: readonly ControlKey[] }> = {
+  'one-shots': { part: 'inside the voices', keys: VOICE_BOXES['one-shots'] },
+  tanks: { part: 'inside the voices', keys: VOICE_BOXES.tanks },
+  'metal bank': { part: 'inside the voices', keys: VOICE_BOXES['metal bank'] },
+  noise: { part: 'inside the voices', keys: VOICE_BOXES.noise },
+  DAC: { part: 'the converter', keys: keysOf('the converter') },
+  'sample ROM': { part: 'Sample ROM', keys: keysOf('Sample ROM') },
+}
 
 const HELP: Record<BoxId, string> = {
   'one-shots':
@@ -32,16 +49,19 @@ const HELP: Record<BoxId, string> = {
     'Six oscillators behind one resistor chain and a squarer. The hats, the cowbell and the cymbal ring off it.',
   noise:
     'The one transistor run backwards until it avalanches. The snare, the clap and the dice all listen to it.',
+  DAC: 'The one converter every voice shares: its word length, its ladder, how it overflows and what its reference is wired to.',
+  'sample ROM':
+    'The kit sampled by itself. Switched on, the voices read their slabs from a ROM, and the address and data wires to it can take a knife.',
 }
 
-const KEYS = Object.values(VOICE_BOXES).flat()
+const KEYS = Object.values(BOXES).flatMap(b => b.keys)
 
 const WIDTH = 420
 const TOP = 6
 const BOX_H = boxHeight('a')
 const ROW_GAPS = [30, 16]
 const HEIGHT = TOP + 3 * BOX_H + ROW_GAPS[0]! + ROW_GAPS[1]! + TOP
-const GAP = 40
+const GAP = 34
 const TAIL = 30
 const FIRST = ['tanks', 'metal bank', 'noise'] as const
 
@@ -60,7 +80,7 @@ const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 // pulse, three kinds of source ring or hiss under it, and the amplifiers and the
 // converter that follow are the same for every voice. The metal bank and the
 // tanks reach into each other, and the drawing gives each reach its own wire.
-export function ToyDrumDiagram() {
+export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
   const flow: WireLook = useStoreSelect(
@@ -75,7 +95,7 @@ export function ToyDrumDiagram() {
     boxWidth('one-shots'),
     srcW,
     boxWidth('amps'),
-    boxWidth('DAC'),
+    Math.max(boxWidth('DAC'), boxWidth('sample ROM')),
   ]
   const xs = widths.map((_, i) =>
     Math.round(widths.slice(0, i).reduce((a, b) => a + b, 0) + GAP * i),
@@ -86,7 +106,7 @@ export function ToyDrumDiagram() {
   const mid = (i: number) => rowY(i) + BOX_H / 2
 
   const spec = (id: BoxId, x: number, y: number, w: number, h: number) => {
-    const keys = VOICE_BOXES[id]
+    const { keys } = BOXES[id]
     return {
       id,
       keys,
@@ -110,15 +130,10 @@ export function ToyDrumDiagram() {
     BOX_H,
     'One amplifier a voice, each opened by its own envelope. The accent cap and the cross-patch sit under triggers and cross-patch.',
   )
-  const dac = plain(
-    'DAC',
-    xs[3]!,
-    mid(1) - BOX_H / 2,
-    widths[3]!,
-    BOX_H,
-    'The one converter every voice shares. Its rows sit under the converter.',
-  )
-  const open = [shots, ...sources].find(b => b.id === pick.selected)
+  const dac = spec('DAC', xs[3]!, rowY(1), widths[3]!, BOX_H)
+  const rom = spec('sample ROM', xs[3]!, rowY(2), widths[3]!, BOX_H)
+  const picks = [shots, ...sources, dac, rom]
+  const open = picks.find(b => b.id === pick.selected)
   const fanL = shots.x + shots.w + GAP / 2
   const fanR = amps.x - GAP / 2
   const fmX = xs[1]! + srcW * 0.3
@@ -195,7 +210,12 @@ export function ToyDrumDiagram() {
               >
                 sync
               </Label>
-              {[shots, ...sources].map(b => (
+              <Wire
+                arrow={arrow}
+                d={`M${rom.x + rom.w / 2} ${rom.y} V${dac.y + BOX_H}`}
+                look={bent(r.value('drumRom') > 0)}
+              />
+              {picks.map(b => (
                 <BoxView
                   key={b.id}
                   box={b}
@@ -204,12 +224,11 @@ export function ToyDrumDiagram() {
                 />
               ))}
               <BoxView box={amps} />
-              <BoxView box={dac} />
             </>
           )}
         </Diagram>
       </div>
-      <BoxRows keys={open?.keys} />
+      <BoxRows keys={open?.keys} verbs={open && verbs?.(BOXES[open.id].part)} />
     </>
   )
 }

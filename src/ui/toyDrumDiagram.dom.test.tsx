@@ -26,11 +26,23 @@ test('each box opens its own rows and a second press puts them away', () => {
   expect(screen.queryByText('Snappy')).toBeNull()
 })
 
-test('the amps and the converter are drawn and open nothing', () => {
+test('the amps are drawn and open nothing', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<ToyDrumDiagram />)
   expect(screen.queryByRole('button', { name: 'amps controls' })).toBeNull()
-  expect(screen.queryByRole('button', { name: 'DAC controls' })).toBeNull()
+})
+
+test('the DAC opens the converter rows and the sample ROM opens the kit rows', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<ToyDrumDiagram verbs={part => <p>{`verbs for ${part}`}</p>} />)
+  expect(screen.queryByText('Bit depth')).toBeNull()
+  fireEvent.click(box('DAC'))
+  expect(screen.getByText('Bit depth')).not.toBeNull()
+  expect(screen.getByText('verbs for the converter')).not.toBeNull()
+  fireEvent.click(box('sample ROM'))
+  expect(screen.getByText('Kit')).not.toBeNull()
+  expect(screen.getByText('verbs for Sample ROM')).not.toBeNull()
+  expect(screen.queryByText('Bit depth')).toBeNull()
 })
 
 test('a box goes accent when a knob inside it is off stock', () => {

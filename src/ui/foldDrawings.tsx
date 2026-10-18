@@ -6,9 +6,10 @@ import { MonoCardDiagram } from './MonoCardDiagram.tsx'
 import { ToyDieDiagram } from './ToyDieDiagram.tsx'
 import { ToyDrumDiagram } from './ToyDrumDiagram.tsx'
 
+import type { Verbs } from './foldHosting.ts'
 import type { ComponentType } from 'react'
 
-const DRAWINGS: Record<string, ComponentType> = {
+const DRAWINGS: Record<string, ComponentType<{ verbs?: Verbs }>> = {
   'Toy drums|triggers and cross-patch': KitWiringDiagram,
   'Toy keyboard|inside the die': ToyDieDiagram,
   'Toy drums|inside the voices': ToyDrumDiagram,
@@ -16,17 +17,19 @@ const DRAWINGS: Record<string, ComponentType> = {
   'Mono synth|voice card faults': MonoCardDiagram,
 }
 
-/** Folds whose drawing opens the rows itself, one box at a time. */
-export const DRAWN_ROWS = new Set([
-  'Toy keyboard|inside the die',
-  'Toy drums|inside the voices',
-])
-
 /** The drawing for one fold of a group, if it has one. */
-export function FoldDrawing({ group, part }: { group: string; part: string }) {
+export function FoldDrawing({
+  group,
+  part,
+  verbs,
+}: {
+  group: string
+  part: string
+  verbs?: Verbs
+}) {
   const key = `${group}|${part}`
   const Drawing = DRAWINGS[key]
-  if (Drawing) return <Drawing />
+  if (Drawing) return <Drawing verbs={verbs} />
   const spec = BUS_SPECS[key]
   return spec ? <BusDiagram spec={spec} /> : null
 }
