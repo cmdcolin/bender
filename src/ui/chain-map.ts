@@ -1347,9 +1347,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const gapX = (row: MapNode[]) =>
     row.length > 1 ? (row[0]!.x + row[0]!.w + row[1]!.x) / 2 : mix.x + mix.w / 2
   const channels = lineRows.map(gapX)
-  const spineX = channels[0] ?? midX(mix)
-  const boardBottom = board.y + board.h
   const lastRow = chipRows[chipRows.length - 1] ?? []
+  const spineX = channels[0] ?? (hasBoard ? gapX(lastRow) : midX(mix))
+  const boardBottom = board.y + board.h
   const inGap =
     lastRow.length < 2 ||
     (spineX > lastRow[0]!.x + lastRow[0]!.w && spineX < lastRow[1]!.x)
@@ -1411,8 +1411,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     mix,
     mix,
     [
-      [midX(mix), collectY],
-      [midX(mix), mix.y],
+      [channels.length ? midX(mix) : spineX, collectY],
+      [channels.length ? midX(mix) : spineX, mix.y],
     ],
     { color: k.border },
   )
