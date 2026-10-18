@@ -229,6 +229,13 @@ const WIRE_CLASS: Record<WireLook, string> = {
   alarm: styles.wireAlarm!,
 }
 
+const HEAD_CLASS: Record<WireLook, string> = {
+  plain: styles.head!,
+  on: styles.headOn!,
+  dash: styles.head!,
+  alarm: styles.headAlarm!,
+}
+
 export function Wire({
   d,
   arrow,
@@ -242,7 +249,7 @@ export function Wire({
     <path
       d={d}
       className={WIRE_CLASS[look]}
-      markerEnd={arrow && `url(#${arrow})`}
+      markerEnd={arrow && `url(#${arrow}-${look})`}
     />
   )
 }
@@ -286,8 +293,8 @@ export function Label({
   )
 }
 
-// The drawing's frame: the arrowhead every wire in it points with, and the
-// width it scales from.
+// The drawing's frame: an arrowhead in each wire look's colour, and the width
+// the drawing scales from.
 export function Diagram({
   left = 0,
   width,
@@ -311,17 +318,20 @@ export function Diagram({
       aria-label={label}
     >
       <defs>
-        <marker
-          id={arrow}
-          viewBox="0 0 6 6"
-          refX="5"
-          refY="3"
-          markerWidth="6"
-          markerHeight="6"
-          orient="auto"
-        >
-          <path d="M0 0 L6 3 L0 6 z" className={styles.head} />
-        </marker>
+        {Object.entries(HEAD_CLASS).map(([look, className]) => (
+          <marker
+            key={look}
+            id={`${arrow}-${look}`}
+            viewBox="0 0 6 6"
+            refX="5"
+            refY="3"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto"
+          >
+            <path d="M0 0 L6 3 L0 6 z" className={className} />
+          </marker>
+        ))}
       </defs>
       {children(arrow)}
     </svg>

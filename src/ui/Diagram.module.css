@@ -62,6 +62,14 @@
   fill: var(--fg4);
 }
 
+.headOn {
+  fill: var(--accent);
+}
+
+.headAlarm {
+  fill: var(--alarm);
+}
+
 .tape {
   fill: var(--surface-raised);
   stroke: var(--border);

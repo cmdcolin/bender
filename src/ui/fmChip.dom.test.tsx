@@ -30,3 +30,19 @@ test('a box says how many of its knobs have moved', () => {
   expect(box('bus').textContent).toMatch(/1 moved/)
   expect(box('die').textContent).toMatch(/stock/)
 })
+
+test('every wire points with a head drawn in its own look', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  const { container } = render(<FmChipDiagram verbs={() => null} />)
+  const wires = [...container.querySelectorAll('path[marker-end]')]
+  expect(
+    wires.filter(w => w.getAttribute('class')!.includes('wireOn')).length,
+  ).toBeGreaterThan(0)
+  for (const wire of wires) {
+    const id = wire.getAttribute('marker-end')!.slice('url(#'.length, -1)
+    const head = container.querySelector(`marker[id="${id}"] path`)
+    expect(head).not.toBeNull()
+    const lit = wire.getAttribute('class')!.includes('wireOn')
+    expect(head!.getAttribute('class')!.includes('headOn')).toBe(lit)
+  }
+})
