@@ -10,6 +10,7 @@
   --rubber: #1a1a1f;
   --rubber-edge: #0b0b0e;
 
+  container-type: inline-size;
   position: relative;
   flex: 0 1 256px;
   min-width: 220px;

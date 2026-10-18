@@ -1,4 +1,3 @@
-import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './MonoKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -39,9 +38,9 @@ export function MonoKeys({
           />
         </>
       }
-      verbs={
-        <DeviceVerbs stage="Mono synth" seconds={seconds} onClose={onClose} />
-      }
+      stage="Mono synth"
+      seconds={seconds}
+      onClose={onClose}
       tail={<span className={styles.rocker} aria-hidden="true" />}
     />
   )

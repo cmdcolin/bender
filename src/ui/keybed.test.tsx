@@ -227,3 +227,32 @@ test('a finger is given fewer keys than a pointer in the same case', () => {
   expect(toy().queryByRole('button', { name: 'key C6' })).toBeNull()
   expect(toy().queryByRole('button', { name: 'key C5' })).not.toBeNull()
 })
+
+// On a narrow case the Level slider moves into the drawer, and a touch screen
+// draws the drawer too so a finger can reach the slider.
+test('a narrow case keeps its Level in the drawer', () => {
+  render(<Keys />)
+  const toy = () => bed('toy keyboard')
+  const level = () => toy().queryByRole('slider', { name: 'Level' })
+  expect(level()).not.toBeNull()
+
+  act(() => measure(300))
+  expect(level()).toBeNull()
+  press(bars('toy keyboard'))
+  expect(level()).not.toBeNull()
+  press(bars('toy keyboard'))
+
+  act(() => touch(true))
+  press(bars('toy keyboard'))
+  expect(level()).not.toBeNull()
+  expect(toy().queryByRole('checkbox')).toBeNull()
+})
+
+test('a touch screen with room on the deck draws no drawer', () => {
+  render(<Keys />)
+  act(() => measure(600))
+  act(() => touch(true))
+  expect(
+    bed('toy keyboard').queryByRole('button', { name: 'keyboard settings' }),
+  ).toBeNull()
+})

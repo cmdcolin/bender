@@ -1,7 +1,6 @@
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
-import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './Keys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -77,9 +76,9 @@ export function Keys({
           </Tip>
         </>
       }
-      verbs={
-        <DeviceVerbs stage="Toy keyboard" seconds={seconds} onClose={onClose} />
-      }
+      stage="Toy keyboard"
+      seconds={seconds}
+      onClose={onClose}
       tail={<span className={styles.grille} aria-hidden="true" />}
     />
   )

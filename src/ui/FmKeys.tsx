@@ -1,4 +1,3 @@
-import { DeviceVerbs } from './DeviceVerbs.tsx'
 import styles from './FmKeys.module.css'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import { RailLamp } from './RailLamp.tsx'
@@ -38,9 +37,9 @@ export function FmKeys({
           />
         </>
       }
-      verbs={
-        <DeviceVerbs stage="FM chip" seconds={seconds} onClose={onClose} />
-      }
+      stage="FM chip"
+      seconds={seconds}
+      onClose={onClose}
       tail={<span className={styles.header} aria-hidden="true" />}
     />
   )

@@ -1,4 +1,3 @@
-import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -36,13 +35,9 @@ export function PcmKeys({
           />
         </>
       }
-      verbs={
-        <DeviceVerbs
-          stage="Home keyboard"
-          seconds={seconds}
-          onClose={onClose}
-        />
-      }
+      stage="Home keyboard"
+      seconds={seconds}
+      onClose={onClose}
       tail={<span className={styles.window} aria-hidden="true" />}
     />
   )

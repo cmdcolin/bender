@@ -23,3 +23,19 @@
   color: var(--fg3);
   min-width: 6ch;
 }
+
+/* A narrow case keeps the dot, which dims as the rail falls and flashes on a
+   reboot. */
+@container (max-width: 600px) {
+  .lamp {
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--ctl-h);
+    height: var(--ctl-h);
+    padding: 0;
+  }
+
+  .volts {
+    display: none;
+  }
+}

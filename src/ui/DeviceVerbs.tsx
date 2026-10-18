@@ -10,6 +10,7 @@ import { menuItem } from './menuItems.ts'
 import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import { ControlSlider } from './Slider.tsx'
+import { levelOf } from './stageLevels.ts'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
@@ -28,14 +29,6 @@ const MUTE_OF: Record<string, ControlKey> = {
   'Spring verb': 'revMute',
   Ensemble: 'ensMute',
   'Tube amp': 'ampMute',
-}
-
-const LEVEL_OF: Record<string, ControlKey> = {
-  'Toy keyboard': 'chipLevel',
-  'Toy drums': 'drumLevel',
-  'FM chip': 'fmLevel',
-  'Home keyboard': 'pcmLevel',
-  'Mono synth': 'monoLevel',
 }
 
 const POWER = (
@@ -186,11 +179,26 @@ function Rolls({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
+// The bay wire's `+ mod` stays on the stage panel's Level row, out of the
+// deck's width.
+const deckSlider = (control: ControlKey) => ({
+  ...sliderFor(control),
+  lane: undefined,
+})
+
 export function FaceLevel({ control }: { control: ControlKey }) {
   return (
     <span className={styles.level}>
-      <ControlSlider def={sliderFor(control)} />
+      <ControlSlider def={deckSlider(control)} />
     </span>
+  )
+}
+
+export function DrawerLevel({ control }: { control: ControlKey }) {
+  return (
+    <div className={styles.drawerLevel}>
+      <ControlSlider def={deckSlider(control)} />
+    </div>
   )
 }
 
@@ -202,21 +210,24 @@ export function DeviceVerbs({
   seconds = 0,
   onClose,
   noMute,
+  noLevel,
 }: {
   stage: string
   seconds?: number
   onClose?: () => void
   /** For a face that draws its own switch for it. */
   noMute?: boolean
+  /** For a face that keeps its Level in a drawer. */
+  noLevel?: boolean
 }) {
   const group = GROUPS.find(g => g.name === stage)
   if (!group) throw new Error(`no stage named ${stage}`)
   const mute = MUTE_OF[stage]
-  const level = LEVEL_OF[stage]
+  const level = levelOf(stage)
   return (
     <>
       {mute && !noMute && <Mute stage={stage} control={mute} />}
-      {level && <FaceLevel control={level} />}
+      {level && !noLevel && <FaceLevel control={level} />}
       <Rolls group={group} seconds={seconds} />
       {onClose && (
         <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>

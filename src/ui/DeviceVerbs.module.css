@@ -69,3 +69,8 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.drawerLevel {
+  min-width: 15rem;
+  padding: 0 var(--space-sm);
+}
