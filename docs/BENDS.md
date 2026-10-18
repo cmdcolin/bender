@@ -264,6 +264,24 @@ growl whose tone changes as it fades, and the chords and keys are chopped at the
 melody's rate. A note at full level is on for the whole cycle, so a held key
 stays clean. The tap replaces the Volume PWM carrier while it is up.
 
+**FM on clock** wires the FM chip's output onto the toy's timing pin through the
+coupling Crosstalk uses, so the FM chip's sound bends the toy's pitch, tempo and
+envelopes together, by up to four octaves. The toy runs first in each block, so
+it hears the FM chip a block late, 2.7 ms. The FM chip plays the notes the toy
+strikes, so each chip's timing moves the other's notes. With **Toy on bus** up
+on the FM chip as well, the toy writes the FM chip's registers and the FM chip's
+sound bends what the toy writes next, a loop through both chips. FM on clock
+does nothing while the FM chip is down.
+
+**Output hold** puts a latch between the voices and the output pin and strobes
+it off the melody's pitch divider, so the pin holds each level until the next
+strobe. At the bottom of the knob the strobe runs five octaves over the note and
+the sound turns gritty. At the top it runs three octaves under, and every note
+becomes a coarse staircase locked to the melody's pitch. The strobe follows the
+melody's divider, so Step tap, the clock pot and Crosstalk move it with the
+tune. Output on address and Output on data read the held pin, which slows their
+flips to the strobe rate.
+
 ## The FM chip's register bus
 
 The FM chip isn't played — it's configured, one byte at a time, by a processor
@@ -1043,7 +1061,8 @@ a block, the way the other knife lanes do.
 Six more lanes reach the toy's feedback bends: **step tap**, **envelope relax**,
 **envelope on divider** and **PWM tap** move every sample, and the output's
 address and data lines step through their choices once a block. A seventh, **FM
-toy on bus**, steps through the bit counts.
+toy on bus**, steps through the bit counts. **FM on clock** and **hold** move
+every sample.
 
 - Drum hit onto step tap throws the tune into a buzz on every kick.
 - An LFO onto envelope relax sweeps every note between a stutter and a buzz.

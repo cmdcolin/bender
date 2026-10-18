@@ -38,6 +38,12 @@ export interface Ctx {
    * converter to use as its reference. Zeros unless the kit asks for it.
    */
   toy: Float32Array
+  /**
+   * The FM chip on its own, taken the same way, a block late: the toy runs
+   * first, so it hears what the FM chip played last block. Zeros unless the
+   * toy's timing pin asks for it.
+   */
+  fm: Float32Array
   /** Kit hits thrown to the tape delay this block, mono and dry. */
   send: Float32Array
   /**

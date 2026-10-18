@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
-import { packParams } from '../../engine/params.ts'
+import { packParams, SOURCE_TAPS } from '../../engine/params.ts'
 import { HOLD, REST, TUNE_LANE_KEYS, TUNE_STEP_KEYS } from '../../tune.ts'
 import { buildBender, buildChain, type BuiltChain } from '../build.ts'
 import { DEST } from '../modbus.ts'
@@ -15,6 +15,7 @@ import {
   playKeys,
   render,
   renderBender,
+  renderStems,
   rms,
   SR,
   tail,
@@ -702,6 +703,35 @@ test('a wire on the step tap lane runs the tune at audio rate', () => {
     },
   )
   expect(moves).toBeGreaterThan(100)
+})
+
+test('the FM chip on the timing pin bends the toy only while it sounds', () => {
+  const toy = (over: Partial<Controls>) =>
+    renderStems({ ...CHIP_ONLY, ...over }, 3).stems[
+      SOURCE_TAPS.indexOf('toyChip')
+    ]!
+  const fm = { fmLevel: 0.8 }
+  expect(deviation(toy({ ...fm, chipFmClock: 1 }), toy(fm))).toBeGreaterThan(
+    0.3,
+  )
+  expect(deviation(toy({ chipFmClock: 1 }), toy({}))).toBeLessThan(1e-6)
+})
+
+test('an output hold turns a held note into a staircase', () => {
+  const held = (chipHold: number) =>
+    tail(
+      renderStems({ ...CHIP_ONLY, chipHold }, 1, b => b.toyChip.noteOn(0))
+        .stems[SOURCE_TAPS.indexOf('toyChip')]!,
+      0.5,
+    )
+  const flat = (x: Float32Array) => {
+    let same = 0
+    for (let i = 1; i < x.length; i++) if (x[i] === x[i - 1]) same++
+    return same / x.length
+  }
+  const stair = held(1)
+  expect(deviation(stair, held(0))).toBeGreaterThan(0.3)
+  expect(flat(stair)).toBeGreaterThan(0.95)
 })
 
 test('a wire on the envelope cap lane swells a held key in', () => {

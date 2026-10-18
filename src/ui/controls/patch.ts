@@ -187,6 +187,8 @@ export const PATCH_GROUPS: Group[] = [
             'toy out on data',
             'toy PWM tap',
             'FM toy on bus',
+            'toy FM on clock',
+            'toy hold',
           ],
           groups: [
             {
@@ -217,6 +219,8 @@ export const PATCH_GROUPS: Group[] = [
                 'toy out on addr',
                 'toy out on data',
                 'toy PWM tap',
+                'toy FM on clock',
+                'toy hold',
               ],
             },
             {

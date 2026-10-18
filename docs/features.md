@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 485 knobs and switches in 35 groups, seven bends competing for six slots,
+ruin. 487 knobs and switches in 35 groups, seven bends competing for six slots,
 18 ROM tunes, 125 presets, 23 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -39,7 +39,7 @@ renders it with the same layout the app uses.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.
-- **A patch bay that modulates itself.** Four wires, 115 destinations — among
+- **A patch bay that modulates itself.** Four wires, 117 destinations — among
   them the supply rail, the tape loop's capstan, and the other wires' own
   depths.
 - **Feedback tight enough to squeal.** The whole chain runs inside one worklet
@@ -117,7 +117,7 @@ too — the knife goes on and the rows under it say which controls that was:
   itself
 
 <details>
-<summary>41 controls</summary>
+<summary>43 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -151,6 +151,8 @@ too — the knife goes on and the rows under it say which controls that was:
 | Output on address   | off, A0, A1, A2, A3, A4                                                                                                        | Solders the output pin onto one ROM address line                                                                                                                                              |
 | Output on data      | off, D0, D1, D2, D3, D4, D5                                                                                                    | Solders the output pin onto one wire of the note code                                                                                                                                         |
 | PWM tap             | off to full                                                                                                                    | Takes the volume PWM carrier off the melody’s pitch divider in place of the master clock, so it runs a whole number of octaves under each note: one at the bottom of the knob, six at the top |
+| FM on clock         | off to full                                                                                                                    | Wires the FM chip’s output onto this chip’s timing pin, so the FM chip’s sound bends the toy’s pitch, tempo and envelopes together, by up to four octaves                                     |
+| Output hold         | off to full                                                                                                                    | Puts a latch between the voices and the output pin and strobes it off the melody’s pitch divider, so the output holds each level until the next strobe                                        |
 | Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the knife found                                                                                                                                    |
 | Data fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the wire                                                                                                                                                                     |
 | Address line †      | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the knife found                                                                                                                            |
@@ -1130,7 +1132,7 @@ another wire’s depth — which is how the bay modulates itself.
 | LFO rate       | 0.02 to 400 Hz                                                                             | The bay’s own oscillator, free-running                                         |
 | LFO shape      | sine, ramp, square, S&H, chaos, drunk                                                      | Sine glides, ramp saws, square jumps, S&H holds a fresh random step each cycle |
 | Wire 1–4 from  | off, LFO, supply, envelope, mic, body X, body Y, fb bus, ROM step, drum hit, key hit, heat | What the wire picks up                                                         |
-| Wire 1–4 to    | 115 of them, filt cut through FM toy on bus                                                | Where the other end is soldered                                                |
+| Wire 1–4 to    | 117 of them, filt cut through toy hold                                                     | Where the other end is soldered                                                |
 | Wire 1–4 depth | 2.00 flipped to 2.00 straight, normal 1.00 flipped to 1.00 straight                        | How hard the wire pushes                                                       |
 
 </details>

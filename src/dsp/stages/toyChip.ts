@@ -188,6 +188,18 @@ const CROSS_LP_HZ = 2500
 const CROSS_HP_HZ = 30
 const CROSS_OCTAVES = 4.5
 
+// The FM chip's output wired onto the same timing pin through the same coupling,
+// a block late, since the toy runs first. Its output sits lower than the toy's,
+// so it goes in with more gain.
+const FM_CLOCK_GAIN = 4
+const FM_CLOCK_OCTAVES = 4
+
+// A latch between the voices and the output pin, strobed off the melody's pitch
+// divider: from five octaves over the note at the bottom of the knob to three
+// under it at the top.
+const HOLD_TOP = 5
+const HOLD_SPAN = 8
+
 export const LOOP_TARGETS = [
   ...Array.from({ length: ROM_ADDR_LINES }, (_, i) => `A${i}`),
   'reset',
@@ -381,6 +393,10 @@ export class ToyChip implements Stage {
   private lastOut = 0
   private crossLp = 0
   private crossHp = 0
+  private fmLp = 0
+  private fmHp = 0
+  private holdPhase = 0
+  private held = 0
   private crossLpA: number
   private crossHpA: number
   private pwmPhase = 0
@@ -891,6 +907,10 @@ export class ToyChip implements Stage {
     const relaxBase = p[IDX.chipEnvRelax]!
     const envDivBase = p[IDX.chipEnvDiv]!
     const pwmTapBase = p[IDX.chipPwmTap]!
+    const fmClockBase = p[IDX.chipFmClock]!
+    const holdBase = p[IDX.chipHold]!
+    const modFmClock = bay.read(DEST.chipFmClock)
+    const modHold = bay.read(DEST.chipHold)
     const modTap = bay.read(DEST.chipStepTap)
     const modRelax = bay.read(DEST.chipEnvRelax)
     const modEnvDiv = bay.read(DEST.chipEnvDiv)
@@ -1086,6 +1106,19 @@ export class ToyChip implements Stage {
           this.crossLp + this.crossHpA * (this.crossHp - this.crossLp),
         )
         clock *= octaves(cross * softclip(this.crossLp - this.crossHp))
+      }
+      const fmClock = modFmClock
+        ? clamp01(fmClockBase + modFmClock[i]!)
+        : fmClockBase
+      if (fmClock > 0) {
+        const x = ctx.fm[i]! * FM_CLOCK_GAIN
+        this.fmLp = flushDenormal(x + this.crossLpA * (this.fmLp - x))
+        this.fmHp = flushDenormal(
+          this.fmLp + this.crossHpA * (this.fmHp - this.fmLp),
+        )
+        clock *= octaves(
+          fmClock * FM_CLOCK_OCTAVES * softclip(this.fmLp - this.fmHp),
+        )
       }
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
@@ -1335,6 +1368,18 @@ export class ToyChip implements Stage {
         if (spot === 3) out += pot * 0.4
       }
 
+      const hold = modHold ? clamp01(holdBase + modHold[i]!) : holdBase
+      if (hold > 0) {
+        this.holdPhase += Math.min(
+          (this.melodyHz * octaves(HOLD_TOP - HOLD_SPAN * hold)) / this.sr,
+          1,
+        )
+        if (this.holdPhase >= 1) {
+          this.holdPhase -= Math.floor(this.holdPhase)
+          this.held = out
+        }
+        out = this.held
+      }
       this.lastOut = out
       if (this.outAddr >= 0 || this.outData >= 0)
         this.driveBus(tune, out > 0 ? 1 : 0)
@@ -1428,6 +1473,9 @@ export class ToyChip implements Stage {
     this.chordEnv = 0
     this.crossLp = 0
     this.crossHp = 0
+    this.fmLp = 0
+    this.fmHp = 0
+    this.held = 0
     this.lastOut = 0
     for (const v of this.voices) {
       v.note = 0

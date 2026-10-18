@@ -144,6 +144,8 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   chipOutData: 'Toy keyboard',
   chipPwmTap: 'Toy keyboard',
   fmToyBus: 'FM chip',
+  chipFmClock: 'Toy keyboard',
+  chipHold: 'Toy keyboard',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {

@@ -35,6 +35,7 @@ const LIMIT_CEIL = 0.891 // −1 dBFS
 const BUS_REF = 0.6
 
 const TOY_TAP = SOURCE_TAPS.indexOf('toyChip')
+const FM_TAP = SOURCE_TAPS.indexOf('fmChip')
 
 const SLOT_IDX = [
   IDX.bendSlot0,
@@ -351,6 +352,7 @@ export class Chain {
       step: new Float32Array(BLOCK),
       carrier: new Float32Array(BLOCK),
       toy: new Float32Array(BLOCK),
+      fm: new Float32Array(BLOCK),
       send: new Float32Array(BLOCK),
       bright: new Float32Array(BLOCK),
       heat: 0,
@@ -407,6 +409,7 @@ export class Chain {
     this.ctx.step.fill(0)
     this.ctx.carrier.fill(0)
     this.ctx.toy.fill(0)
+    this.ctx.fm.fill(0)
     this.ctx.send.fill(0)
     this.ctx.bright.fill(0)
     this.ctx.heat = 0
@@ -511,6 +514,8 @@ export class Chain {
     const toyRef =
       Math.round(p[IDX.drumRef]!) === DAC_REF_TOY || p[IDX.fmToyBus]! > 0
     if (toyRef) ctx.toy.fill(0, 0, n)
+    const fmTap = p[IDX.chipFmClock]! > 0
+    let fmRan = false
     const prev = this.tapPrev
     const cap = this.capturing
     const prevR = this.tapPrevR
@@ -557,6 +562,10 @@ export class Chain {
         }
         if (toyRef && k === TOY_TAP)
           for (let i = 0; i < n; i++) ctx.toy[i] = io.l[i]! - prev[i]!
+        if (fmTap && k === FM_TAP) {
+          for (let i = 0; i < n; i++) ctx.fm[i] = io.l[i]! - prev[i]!
+          fmRan = true
+        }
         let peak = 0
         if (cap && k < MAX_SOURCES) {
           const base = k * BLOCK
@@ -591,6 +600,7 @@ export class Chain {
     // A machine whose own `when` said no put nothing on the bus, so the carrier
     // is silence rather than last block's copy of it.
     if (carFrom >= 0 && !carRan) ctx.carrier.fill(0, 0, n)
+    if (fmTap && !fmRan) ctx.fm.fill(0, 0, n)
 
     // The summing amp the sources meet in. Every desk has one and it is
     // never a wire: at unity it is skipped outright, because a soft clipper

@@ -161,8 +161,10 @@ export const DEST = {
   chipOutData: 112,
   chipPwmTap: 113,
   fmToyBus: 114,
+  chipFmClock: 115,
+  chipHold: 116,
 } as const
-export const N_DEST = 115
+export const N_DEST = 117
 
 /** A selector moved by its lane, read once a block. A push of one is a lap of
     the list, and it wraps round, so an S&H lands anywhere on it and a sweep
