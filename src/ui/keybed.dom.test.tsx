@@ -93,3 +93,12 @@ test('the keys a scale lock closes on a neighbour are marked, and none are with 
   act(() => engine.set('keyScale', 0))
   expect(key('C#3').className).not.toContain('outside')
 })
+
+test('the deck names the scale lock while it is on and says nothing with it off', () => {
+  engine.set('keyScale', SCALE_NAMES.indexOf('minor'))
+  engine.set('keyRoot', 9)
+  bed()
+  expect(screen.getByText('A minor')).toBeTruthy()
+  act(() => engine.set('keyScale', 0))
+  expect(screen.queryByText('A minor')).toBeNull()
+})

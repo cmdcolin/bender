@@ -7,8 +7,8 @@ import {
 } from 'react'
 
 import { engine } from '../engine/engine.ts'
-import { semitoneName } from '../notes.ts'
-import { snap } from '../scale.ts'
+import { NOTE_NAMES, semitoneName } from '../notes.ts'
+import { SCALE_NAMES, snap } from '../scale.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { DeviceVerbs, DrawerLevel } from './DeviceVerbs.tsx'
 import { isTyping } from './isTyping.ts'
@@ -411,6 +411,14 @@ export function Keybed({
         <span className={styles.badge}>{badge}</span>
         <div className={styles.switches}>
           {extras}
+          {keyScale > 0 && (
+            <Tip text="Key lock is on: a key off the scale plays the nearest note of it, so the dimmed keys sound as their neighbours. The lock is under arp and key lock.">
+              <span className={styles.lock}>
+                {NOTE_NAMES[Math.round(keyRoot)]}{' '}
+                {SCALE_NAMES[Math.round(keyScale)]}
+              </span>
+            </Tip>
+          )}
           <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">
             <button
               className={hold ? styles.holdOn : styles.hold}
