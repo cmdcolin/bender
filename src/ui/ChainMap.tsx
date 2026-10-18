@@ -10,11 +10,14 @@ import {
 import { engine } from '../engine/engine.ts'
 import { MAX_SOURCES } from '../engine/params.ts'
 import { bench } from './bench.ts'
-import { buildMap, drawMap } from './chain-map.ts'
+import { buildMap, drawMap, onBoard } from './chain-map.ts'
 import styles from './ChainMap.module.css'
-import { CHANNELS, GROUPS } from './controls/index.ts'
+import { CHANNELS, GROUPS, STAGE_ORDER } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
+import { added } from './fitted.ts'
 import { useCoarse } from './measure.ts'
+import { Menu } from './Menu.tsx'
+import { menuItem } from './menuItems.ts'
 import { watchRail } from './railWatch.ts'
 import { Shelf } from './Section.tsx'
 import { watchTriggers } from './triggerWatch.ts'
@@ -113,13 +116,19 @@ export function ChainMap({
     () => (graph.current ? watchTriggers(graph.current) : undefined),
     [],
   )
+  const extra = useStoreValue(added)
+  const shown = new Set([...onBoard(controls), ...extra])
+  if (open) shown.add(open)
   const map = buildMap(controls, {
     wrap: true,
     loop: true,
     open: open ?? undefined,
     playing,
     benched,
+    shown,
   })
+  const onIt = GROUPS.filter(g => shown.has(g.name))
+  const offIt = GROUPS.filter(g => !shown.has(g.name))
 
   // Clicking a stage's door opens its panel. The touched dot beside a box is
   // signage rather than a control, so it takes no click of its own.
@@ -144,7 +153,7 @@ export function ChainMap({
           the height every other press on a phone gets. */}
       {coarse && (
         <Shelf
-          groups={GROUPS}
+          groups={onIt}
           label="stages"
           open={open}
           onOpen={onOpen}
@@ -162,12 +171,76 @@ export function ChainMap({
       </div>
       {!coarse && (
         <Shelf
-          groups={GROUPS.filter(g => !map.doors.has(g.name))}
-          label="off the board"
+          groups={onIt.filter(g => !map.doors.has(g.name))}
+          label="on the board"
           open={open}
           onOpen={onOpen}
           seconds={seconds}
         />
+      )}
+      <AddStage groups={offIt} onOpen={onOpen} />
+    </div>
+  )
+}
+
+// What isn't on the board yet, under the place each stage sits in the chain.
+// Picking one opens it, which puts it on the map.
+function AddStage({
+  groups,
+  onOpen,
+}: {
+  groups: { name: string; place: string }[]
+  onOpen: (name: string) => void
+}) {
+  const [menu, setMenu] = useState(false)
+  const [button, setButton] = useState<HTMLButtonElement | null>(null)
+  if (groups.length === 0) return null
+  return (
+    <div className={styles.addRow}>
+      <button
+        ref={setButton}
+        className={styles.add}
+        aria-expanded={menu}
+        onClick={() => setMenu(m => !m)}
+      >
+        + add a stage
+      </button>
+      {menu && (
+        <Menu
+          anchor={button}
+          toggle={button}
+          role="menu"
+          label="add a stage"
+          onClose={() => setMenu(false)}
+        >
+          {STAGE_ORDER.map(place => {
+            const here = groups.filter(g => g.place === place)
+            if (here.length === 0) return null
+            return (
+              <div
+                key={place}
+                role="group"
+                aria-label={place}
+                className={styles.placeGroup}
+              >
+                <div className={styles.place}>{place}</div>
+                {here.map(g => (
+                  <button
+                    key={g.name}
+                    role="menuitem"
+                    className={menuItem(false)}
+                    onClick={() => {
+                      setMenu(false)
+                      onOpen(g.name)
+                    }}
+                  >
+                    {g.name}
+                  </button>
+                ))}
+              </div>
+            )
+          })}
+        </Menu>
       )}
     </div>
   )

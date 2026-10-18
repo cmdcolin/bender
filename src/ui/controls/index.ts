@@ -67,6 +67,19 @@ export function groupKeys(group: Group | string): readonly ControlKey[] {
   return KEYS_BY_GROUP.get(typeof group === 'string' ? group : group.name) ?? []
 }
 
+const OWN_KEYS = new Map<string, readonly ControlKey[]>(
+  GROUPS.map(g => [g.name, [...g.sliders.map(s => s.key), ...editorKeys(g)]]),
+)
+
+/** The group whose own slider or widget turns the key; borrowers don't count. */
+export const OWNER_BY_KEY = new Map<ControlKey, string>(
+  [...OWN_KEYS].flatMap(([name, keys]) => keys.map(k => [k, name] as const)),
+)
+
+/** Whether a control the group owns sits off stock. */
+export const ownTouched = (group: string, c: Controls): boolean =>
+  (OWN_KEYS.get(group) ?? []).some(k => c[k] !== DEFAULT_CONTROLS[k])
+
 /** How far off stock a group is sitting, counted in controls. */
 export function touchedCount(group: Group | string, c: Controls): number {
   let n = 0

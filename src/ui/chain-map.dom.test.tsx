@@ -107,3 +107,43 @@ test('the supply bar reads the rail: amber as it sags, red on a reboot', () => {
   expect(rail()).toBeUndefined()
   vi.useRealTimers()
 })
+
+const doorsOnMap = () =>
+  new Set(
+    [...map().querySelectorAll('[data-door]')].map(d =>
+      d.getAttribute('data-door'),
+    ),
+  )
+
+test('a stock board draws the two toys and the path out, and lists the rest to add', () => {
+  render(<App />)
+  expect(doorsOnMap().has('Ring mod')).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: '+ add a stage' }))
+  expect(screen.getByRole('menuitem', { name: 'Ring mod' })).toBeTruthy()
+  expect(screen.queryByRole('menuitem', { name: 'Toy keyboard' })).toBeNull()
+})
+
+test('adding a stage opens it and puts it on the map', () => {
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: '+ add a stage' }))
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Ring mod' }))
+  expect(doorsOnMap().has('Ring mod')).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: 'close Ring mod' }))
+  expect(doorsOnMap().has('Ring mod')).toBe(true)
+})
+
+test('take off turns the stage down and takes it off the map', () => {
+  render(<App />)
+  act(() => {
+    cut()
+    engine.set('ringMix', 0.6)
+  })
+  act(() => {
+    fireEvent.click(map().querySelector('a[data-door="Ring mod"]')!)
+  })
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: 'take off' }))
+  })
+  expect(engine.controls.get().ringMix).toBe(0)
+  expect(doorsOnMap().has('Ring mod')).toBe(false)
+})

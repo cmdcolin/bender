@@ -23,6 +23,7 @@ import { useStoreValue } from './ControlsContext.ts'
 import { DeckGroup, DeckKey, DeckWell } from './DeckKey.tsx'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
+import { add, clearAdded, confine } from './fitted.ts'
 import { HuntDialog } from './HuntDialog.tsx'
 import { Instruments } from './Instruments.tsx'
 import { isTyping } from './isTyping.ts'
@@ -83,12 +84,17 @@ function clock(seconds: number): string {
 // place the next roll's duration is set — so a drift must not take it away for
 // as long as it runs. Drift's own button is what stops a drift.
 const MUTATE_HELP =
-  'Keeps this board and nudges every control a little way off where it sits. The tempo stays put and the timed things land back on the grid — shift for a wild nudge, alt for a gentle one.'
+  'Keeps this board and nudges the controls of the stages on it a little way off where they sit. The tempo stays put and the timed things land back on the grid — shift for a wild nudge, alt for a gentle one.'
 
 // Beside mutate, because that is what it is: the same nudge, gentle, on a
 // timer, forever. Nothing else on the board plays itself.
 const DRIFT_HELP =
-  'Lets the board nudge itself somewhere near where it stands, every fifteen seconds, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
+  'Lets the stages on the board nudge themselves somewhere near where they stand, every fifteen seconds, forever. None of it lands in the walk, so one undo puts back the board you set drifting.'
+
+const nudged = (amount: number) => {
+  const current = engine.controls.get()
+  return confine(mutate(current, amount, Math.random), current, Math.random)
+}
 
 // Save sits in the row of verbs, among the other things you do to the board on
 // screen. Beside the nameplate, `saved` holds the list and the avatar holds the
@@ -188,7 +194,12 @@ export function App(props: { openedFromLink?: boolean }) {
   // panel stays the map.
   const [open, setOpen] = useState<string | null>(null)
   const openGroup = GROUPS.find(g => g.name === open)
-  const toggle = (name: string) => setOpen(o => (o === name ? null : name))
+  // Opening a stage puts it on the map, so closing it again leaves it there.
+  const show = (name: string | null) => {
+    if (name) add([name])
+    setOpen(name)
+  }
+  const toggle = (name: string) => show(open === name ? null : name)
   const morphSeconds = useStoreValue(morphSetting)
   const walk = useStoreValue(engine.history)
   const drifting = useStoreValue(engine.drifting)
@@ -348,8 +359,8 @@ export function App(props: { openedFromLink?: boolean }) {
         <div className={styles.scope}>
           <Scope />
         </div>
-        <Instruments seconds={morphSeconds} onOpen={setOpen} />
-        <BodyPad onOpen={setOpen} />
+        <Instruments seconds={morphSeconds} onOpen={show} />
+        <BodyPad onOpen={show} />
         <div className={styles.studio}>
           <section className={styles.box} aria-label="recorder">
             <span className={styles.label}>recorder</span>
@@ -642,11 +653,7 @@ export function App(props: { openedFromLink?: boolean }) {
                 className={styles.btn}
                 onClick={e =>
                   engine.morphTo(
-                    mutate(
-                      engine.controls.get(),
-                      e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12,
-                      Math.random,
-                    ),
+                    nudged(e.shiftKey ? 0.3 : e.altKey ? 0.04 : 0.12),
                     morphSeconds,
                   )
                 }
@@ -668,9 +675,7 @@ export function App(props: { openedFromLink?: boolean }) {
                 onClick={() =>
                   drifting
                     ? engine.stopDrift()
-                    : engine.startDrift(() =>
-                        mutate(engine.controls.get(), 0.05, Math.random),
-                      )
+                    : engine.startDrift(() => nudged(0.05))
                 }
               >
                 <span className={styles.holdsWidest}>
@@ -693,12 +698,13 @@ export function App(props: { openedFromLink?: boolean }) {
                 </button>
               </Tip>
             )}
-            <Tip text="Back to the board the toy ships with. It lands in the walk, so undo brings back whatever you were on.">
+            <Tip text="Back to the board the toy ships with, and every stage you added off the map. It lands in the walk, so undo brings back the controls you were on.">
               <button
                 className={styles.btnQuiet}
-                onClick={() =>
+                onClick={() => {
+                  clearAdded()
                   engine.morphTo({ ...DEFAULT_CONTROLS }, morphSeconds)
-                }
+                }}
               >
                 reset
               </button>

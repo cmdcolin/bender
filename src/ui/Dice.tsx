@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import styles from './Dice.module.css'
+import { confine } from './fitted.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
 import {
@@ -12,7 +13,20 @@ import {
 } from './presets/index.ts'
 import { Tip } from './Tip.tsx'
 
+import type { Controls } from '../controls.ts'
 import type { MorphSeconds } from './morph.ts'
+
+// The plain roll and the edge hunt change only the stages on the map. A named
+// roll's blurb names the stages it brings, and those join the map.
+const confined = (roll: (c: Controls, rand: () => number) => Controls) => {
+  const current = engine.controls.get()
+  return confine(roll(current, Math.random), current, Math.random)
+}
+
+const confinedAll = (roll: (c: Controls, rand: () => number) => Controls[]) => {
+  const current = engine.controls.get()
+  return roll(current, Math.random).map(b => confine(b, current, Math.random))
+}
 
 // Every way the panel has of handing you a board you did not ask for, behind
 // one button.
@@ -42,9 +56,8 @@ const BLIND: Roll = {
   name: 'blind',
   label: 'random',
   blurb:
-    'A board you have not heard: a random preset, nudged off itself. It replaces the circuit — your song, pattern and levels stay put.',
-  run: seconds =>
-    engine.morphTo(randomLook(engine.controls.get(), Math.random), seconds),
+    'A random preset, nudged off itself, on the stages already on the board. Stages off the board stay off, and your song, pattern and levels stay put.',
+  run: seconds => engine.morphTo(confined(randomLook), seconds),
 }
 
 const HUNT: Roll = {
@@ -55,7 +68,7 @@ const HUNT: Roll = {
   run: (_seconds, onLanded) => {
     onLanded(false)
     void engine
-      .hunt(huntCandidates(engine.controls.get(), Math.random))
+      .hunt(confinedAll(huntCandidates))
       .then(best => onLanded(best !== null))
   },
 }

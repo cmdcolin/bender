@@ -3,6 +3,30 @@
   border-bottom: 1px solid var(--border-quiet);
 }
 
+.addRow {
+  display: flex;
+  padding: var(--space-xs) 0 var(--space-sm);
+}
+
+.add {
+  composes: actionQuiet from './button.module.css';
+}
+
+.placeGroup {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 26rem;
+}
+
+.place {
+  flex-basis: 100%;
+  padding: var(--space-xs) var(--space-md) 2px;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+
 /* The path draws at whatever height the layout came out and the panel scrolls
    it with everything else — a scroll box of its own only ever clipped the chain
    and trapped the wheel.

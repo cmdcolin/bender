@@ -15,6 +15,7 @@ import {
 import { useBoardValue } from './ControlsContext.ts'
 import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
+import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
 import { FoldDrawing } from './foldDrawings.tsx'
@@ -563,6 +564,21 @@ export function OpenGroup({
             {touched > 0 ? `reset ${touched}` : 'reset'}
           </button>
         </Tip>
+        {removable(group.name) && (
+          <Tip
+            text={`Take ${group.name} off the board and the map. A stage with a level or mix gets it turned off and keeps its other knobs; any other goes back to where it booted. Rolls leave it alone until you add it again.`}
+          >
+            <button
+              className={styles.verb}
+              onClick={() => {
+                engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+                onClose()
+              }}
+            >
+              take off
+            </button>
+          </Tip>
+        )}
         <Tip text={`Close ${group.name} — the path stays.`}>
           <button
             className={styles.close}
@@ -700,9 +716,10 @@ export function PathHint() {
       </p>
       <p className={styles.hintPath}>
         the drawing is the path the sound takes: the sources sum onto the mix
-        bus, walk the six sockets seven bends compete for, then the six pedals —
-        both yours to order from <em>Signal order</em>, and the order is most of
-        what either sounds like — then the tape and out
+        bus, run through the bends and then the pedals, in the order{' '}
+        <em>Signal order</em> sets, then the tape and out. It shows only the
+        stages on the board; <em>+ add a stage</em> brings in another, and
+        random, mutate and drift change only what is drawn here
       </p>
     </>
   )

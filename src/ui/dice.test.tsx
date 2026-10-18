@@ -4,6 +4,7 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, sameControls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { BENDS } from './controls/index.ts'
 import { Dice } from './Dice.tsx'
 import './testDom.ts'
 
@@ -22,6 +23,14 @@ test('the face rolls, and starts on the blind one', () => {
   expect(face().textContent).toBe('random')
   fireEvent.click(face())
   expect(moved()).toBe(true)
+})
+
+test('the plain roll leaves every bend off a stock board dry', () => {
+  render(<Dice seconds={0} onLanded={() => {}} />)
+  for (let i = 0; i < 12; i++) {
+    fireEvent.click(face())
+    for (const b of BENDS) expect(engine.controls.get()[b.mix], b.group).toBe(0)
+  }
 })
 
 test('picking out of the menu rolls it there and then', () => {

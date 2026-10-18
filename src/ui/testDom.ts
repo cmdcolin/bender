@@ -5,6 +5,7 @@ import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { EMPTY_HISTORY } from '../history.ts'
 import { bendRow, bendSwell, redealEvery } from './bendKeys.ts'
+import { clearAdded } from './fitted.ts'
 import { letterKeys } from './letters.ts'
 
 // What the panel needs under it that jsdom does not have, and a board back
@@ -202,6 +203,7 @@ function resetBoard() {
   bendRow.set(0)
   redealEvery.set(0)
   bendSwell.set(false)
+  clearAdded()
   onGlass = false
 }
 
