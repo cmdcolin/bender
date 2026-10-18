@@ -121,6 +121,7 @@ export interface Group {
     | { kind: 'supply' }
     | { kind: 'mic' }
     | { kind: 'loops' }
+    | { kind: 'monoPath' }
     | { kind: 'tapeLoop' }
     | { kind: 'tapePath' }
     | { kind: 'fm' }

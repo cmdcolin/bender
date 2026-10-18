@@ -344,33 +344,36 @@ bed appears under the toy's, with walnut cheeks and a **Plays the toy keyboardâ€
 notes** jumper. The jumper comes soldered, so the toy's tune plays the synth two
 octaves down.
 
-The top of the panel holds the knobs a bass line lives on. **Cutoff** sets the
+The rows under the drawing hold the knobs a bass line needs. **Cutoff** sets the
 four-pole filter, **Emphasis** is its resonance, and past about 0.95 the ladder
 oscillates by itself. **Contour amount** sets how far the filter contour opens
 the cutoff on each note, **Drive** pushes the mixer into the ladder's
 saturation, and **Glide** slides between notes.
 
 Notes off the toy's gate and the kit's trigger lines have no key-up, so **Gate**
-under _keys_ sets how long each stays down, as a fraction of the toy's sequencer
-step. At 1 each note is still down when the next one arrives, so the tune plays
-legato and glides. **Kit voice that plays this synth** clips a kit line onto the
-synth: with the kick on it, every kick restarts the last note played. With the
-jumper cut, notes reach the synth from its bed, the kit's lines and a
-controller. The MIDI panel's _bass split_ route puts the synth under the split
-point and the toy above it.
+under the **keys** box sets how long each stays down, as a fraction of the toy's
+sequencer step. At 1 each note is still down when the next one arrives, so the
+tune plays legato and glides. **Kit voice that plays this synth** clips a kit
+line onto the synth: with the kick on it, every kick restarts the last note
+played. With the jumper cut, notes reach the synth from its bed, the kit's lines
+and a controller. The MIDI panel's _bass split_ route puts the synth under the
+split point and the toy above it.
 
-The folded headings hold the rest of a Model D. _oscillators_ has the three
-waveforms and footages, osc 2 and osc 3 tuning, hard or soft sync and **Osc 2
-sweep**, which bends osc 2 with the filter contour for the tearing sync sound.
-**Lin FM** feeds osc 2 into osc 1's frequency, as the Alesis Andromeda does, for
-bell and clang tones that stay in tune. **Osc 3 control** on _lo_ turns osc 3
-into a slow LFO for _modulation_ to send to pitch or cutoff. _mixer_ has the
-oscillator levels, noise and **Feedback**: the output patched back into the
-mixer, as players did with a cable from the headphone jack to the external
-input.
+The drawing holds the rest of a Model D, wired as the voice card is. Press a box
+to open its knobs under the drawing. The wires for sync, FM, noise, feedback and
+modulation light once their knob is up.
+
+**oscillators** has the three waveforms and footages, osc 2 and osc 3 tuning,
+hard or soft sync and **Osc 2 sweep**, which bends osc 2 with the filter contour
+for the tearing sync sound. **Lin FM** feeds osc 2 into osc 1's frequency, as
+the Alesis Andromeda does, for bell and clang tones that stay in tune. **Osc 3
+control** on _lo_ turns osc 3 into a slow LFO for **modulation** to send to
+pitch or cutoff. **mixer** has the oscillator levels, noise and **Feedback**:
+the output patched back into the mixer, as players did with a cable from the
+headphone jack to the external input.
 
 For a drone, latch a key with **hold** on the bed and raise the loudness
-sustain, or turn up **Leaky VCA** under _voice card faults_, which sounds the
+sustain, or turn up **Leaky VCA** under the **voice card** box, which sounds the
 synth with no key down at all. The _leaky drone_ preset starts there.
 
 ## Pedals and levels on the bench

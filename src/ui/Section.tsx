@@ -21,6 +21,7 @@ import { FoldDrawing } from './foldDrawings.tsx'
 import { FourTrack } from './FourTrack.tsx'
 import { MicPatch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
+import { MonoPathDiagram } from './MonoPathDiagram.tsx'
 import { OrderRack } from './OrderRack.tsx'
 import { PatchBay } from './PatchBay.tsx'
 import { BenchToggle } from './Pedals.tsx'
@@ -596,6 +597,13 @@ export function OpenGroup({
             />
           )}
           {group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
+          {group.editor?.kind === 'monoPath' && (
+            <MonoPathDiagram
+              verbs={part => (
+                <BoxVerbs group={group} part={part} seconds={seconds} />
+              )}
+            />
+          )}
           {!rigsFirst && rigs}
           <Rows key={group.name} group={group} seconds={seconds} />
         </ReserveReadout>
