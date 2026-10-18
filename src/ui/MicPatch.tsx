@@ -30,9 +30,12 @@ const MIC_Y = TOP + LIST_H / 2 - MIC_H / 2
 const rowY = (i: number) => TOP + i * STEP
 const cy = (y: number, h: number) => y + h / 2
 
-// One wire, seven jacks to solder it to. Pressing a jack moves the wire there.
+// One wire, seven jacks to solder it to. Pressing a jack moves the wire there,
+// and the wire lights once the mic is turned up.
 export function MicPatch() {
   const patch = Math.round(useControlValue('micPatch'))
+  const soldered =
+    useControlValue('micLevel') > 0 ? 'var(--accent)' : 'var(--fg3)'
 
   return (
     <svg
@@ -47,7 +50,7 @@ export function MicPatch() {
         height={MIC_H}
         rx={4}
         fill="none"
-        stroke="var(--accent)"
+        stroke={soldered}
       />
       <text
         x={MIC_X + MIC_W / 2}
@@ -61,7 +64,7 @@ export function MicPatch() {
       {DEST.map((d, i) => {
         const y = rowY(i)
         const on = i === patch
-        const wire = on ? 'var(--accent)' : 'var(--fg4)'
+        const wire = on ? soldered : 'var(--fg4)'
         return (
           <g
             key={d}

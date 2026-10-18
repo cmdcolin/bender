@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
@@ -18,4 +18,13 @@ test('pressing a jack solders the mic there, and only that jack reads as pressed
   expect(engine.controls.get().micPatch).toBe(2)
   expect(jack('osc FM').getAttribute('aria-pressed')).toBe('true')
   expect(jack('mix').getAttribute('aria-pressed')).toBe('false')
+})
+
+test('the wire lights only once the mic is turned up', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  const { container } = render(<MicPatch />)
+  const wire = () => container.querySelector('line')!.getAttribute('stroke')
+  expect(wire()).toBe('var(--fg3)')
+  act(() => engine.set('micLevel', 0.5))
+  expect(wire()).toBe('var(--accent)')
 })
