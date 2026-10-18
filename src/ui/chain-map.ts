@@ -2144,7 +2144,11 @@ function drawWire(w: MapWire, links: boolean): El {
         strokeWidth: 8,
       }),
     )
-  return el('g', { className: 'wire' }, door(parts, w.door, links))
+  return el(
+    'g',
+    { className: 'wire', 'data-wire': w.id },
+    door(parts, w.door, links),
+  )
 }
 
 export function drawMap(map: ChainMap): El {

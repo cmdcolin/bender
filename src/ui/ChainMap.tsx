@@ -1,6 +1,7 @@
 import {
   createElement,
   useEffect,
+  useRef,
   useState,
   type MouseEvent,
   type ReactNode,
@@ -14,6 +15,7 @@ import styles from './ChainMap.module.css'
 import { CHANNELS, GROUPS } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { useCoarse } from './measure.ts'
+import { watchRail } from './railWatch.ts'
 import { Shelf } from './Section.tsx'
 
 import type { Controls } from '../controls.ts'
@@ -37,6 +39,9 @@ const SOUNDING = CHANNELS.filter(c => c.tap < MAX_SOURCES)
 // the board is moving. Which stage is open is not on this clock: that arrives
 // as a prop and lights up the moment it is clicked.
 const REDRAW_MS = 120
+
+// Below this share of a fresh rail the supply bar on the map turns amber.
+const SAGGING = 0.85
 
 function useSettledControls(): Controls {
   const [controls, setControls] = useState(engine.controls.get)
@@ -92,6 +97,17 @@ export function ChainMap({
   const lit = useStoreValue(engine.sounding)
   const playing = SOUNDING.filter(c => lit & (1 << c.tap)).map(c => c.name)
   const { pedals: benched } = useStoreValue(bench)
+  const graph = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    let shown = ''
+    return watchRail((rail, rebooting) => {
+      const state = rebooting ? 'reboot' : rail < SAGGING ? 'low' : ''
+      if (!graph.current || state === shown) return
+      shown = state
+      if (state) graph.current.dataset.rail = state
+      else delete graph.current.dataset.rail
+    })
+  }, [])
   const map = buildMap(controls, {
     wrap: true,
     loop: true,
@@ -130,7 +146,7 @@ export function ChainMap({
           seconds={seconds}
         />
       )}
-      <div className={styles.graph} onClick={click}>
+      <div ref={graph} className={styles.graph} onClick={click}>
         {mount(drawMap(map), 0)}
       </div>
       {!coarse && (
