@@ -1,4 +1,5 @@
 import { engine } from '../engine/engine.ts'
+import chip from './ChipLook.module.css'
 import { CHANNELS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import {
@@ -69,7 +70,7 @@ const PARTS: Record<string, string> = {
 const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
 
 const TOP = 4
-const ROW = 38
+const ROW = 34
 const WIDTH = 420
 const BOX_H = boxHeight('')
 
@@ -172,46 +173,50 @@ export function FmChipDiagram({
   const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
   return (
     <>
-      <Diagram
-        width={WIDTH}
-        height={TOP + ROW * 2 + BOX_H + 4}
-        label="FM chip signal path"
-      >
-        {arrow => (
-          <>
-            {row.slice(1).map((to, i) => (
-              <Wire
-                key={to.id}
-                arrow={arrow}
-                d={edge(row[i]!, to)}
-                look={i === 0 ? 'plain' : flow}
-              />
-            ))}
-            {drops.map(drop => (
-              <Wire
-                key={`clock${drop}`}
-                d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
-                look="dash"
-              />
-            ))}
-            {drops.map(drop => (
-              <Wire
-                key={`die${drop}`}
-                d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
-                look="dash"
-              />
-            ))}
-            {boxes.map(b => (
-              <BoxView
-                key={b.id}
-                box={b}
-                selected={b.id === pick.selected}
-                onSelect={pick.toggle}
-              />
-            ))}
-          </>
-        )}
-      </Diagram>
+      <div className={chip.chips}>
+        <Diagram
+          width={WIDTH}
+          height={TOP + ROW * 2 + BOX_H + 4}
+          label="FM chip signal path"
+        >
+          {arrow => (
+            <>
+              {row.slice(1).map((to, i) => (
+                <Wire
+                  key={to.id}
+                  arrow={arrow}
+                  d={edge(row[i]!, to)}
+                  look={i === 0 ? 'plain' : flow}
+                />
+              ))}
+              {drops.map(drop => (
+                <Wire
+                  key={`clock${drop}`}
+                  arrow={arrow}
+                  d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
+                  look="dash"
+                />
+              ))}
+              {drops.map(drop => (
+                <Wire
+                  key={`die${drop}`}
+                  arrow={arrow}
+                  d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
+                  look="dash"
+                />
+              ))}
+              {boxes.map(b => (
+                <BoxView
+                  key={b.id}
+                  box={b}
+                  selected={b.id === pick.selected}
+                  onSelect={pick.toggle}
+                />
+              ))}
+            </>
+          )}
+        </Diagram>
+      </div>
       <BoxRows
         keys={open?.keys}
         verbs={open && PARTS[open.id!] && verbs(PARTS[open.id!]!)}

@@ -1,0 +1,28 @@
+/* FM chip and mono synth cards: filled chips beside hairline wires. The rules
+   reach the shared drawing parts by element, so Diagram.module.css keeps the
+   stroke for each state. */
+.chips svg {
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.chips svg rect {
+  fill: var(--surface-raised);
+  pointer-events: all;
+}
+
+.chips svg [role='button']:hover rect {
+  fill: color-mix(in srgb, var(--fg) 8%, var(--surface-raised));
+}
+
+.chips svg [aria-pressed='true'] rect {
+  fill: color-mix(in srgb, var(--fg) 14%, var(--surface-raised));
+}
+
+.chips svg [role='button'] text {
+  text-decoration: none;
+}
+
+.chips svg .inner {
+  fill: var(--surface);
+}
