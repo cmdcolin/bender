@@ -5,6 +5,7 @@ import { expect, test } from 'vitest'
 import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
+import { BEND_KEYS, NODE_KEYS } from './toyBoxKeys.ts'
 import './testDom.ts'
 
 import type { Controls } from '../controls.ts'
@@ -105,6 +106,15 @@ test('pressing a part opens its rows, and a second press puts them away', () => 
   expect(screen.queryByText('Ghost keys')).toBeNull()
   fireEvent.click(envelope())
   expect(screen.queryByText('Envelope cap')).toBeNull()
+})
+
+test('every knob in the die fold sits in one of the parts or under the bend spot', () => {
+  const fold = GROUPS.find(g => g.name === 'Toy keyboard')!
+    .sliders.filter(d => d.part === 'inside the die')
+    .map(d => d.key)
+  expect([...Object.values(NODE_KEYS).flat(), ...BEND_KEYS].toSorted()).toEqual(
+    fold.toSorted(),
+  )
 })
 
 test('the bend spot rows stay under the drawing with no part open', () => {

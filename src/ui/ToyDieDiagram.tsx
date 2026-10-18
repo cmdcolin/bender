@@ -12,8 +12,7 @@ import {
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
-
-import type { ControlKey } from '../controls.ts'
+import { BEND_KEYS, NODE_KEYS } from './toyBoxKeys.ts'
 
 const KEYS = [
   'chipBendSpot',
@@ -32,17 +31,6 @@ const KEYS = [
   'chipOutData',
   'chipPwmTap',
 ] as const
-
-const NODE_KEYS: Record<string, readonly ControlKey[]> = {
-  'key matrix': ['chipGhost'],
-  'tune ROM': ['chipOutAddr', 'chipOutData', 'chipStepTap'],
-  clock: ['chipClockX', 'chipDrift', 'chipCrosstalk', 'chipFmClock'],
-  voices: ['chipShort', 'chipPwmTap'],
-  envelope: ['chipEnvCap', 'chipEnvRelax', 'chipEnvDiv', 'chipPwm'],
-  'output pin': ['chipScan', 'chipHold'],
-}
-
-const BEND_KEYS: readonly ControlKey[] = ['chipBendSpot', 'chipBendPot']
 
 const SPOTS = sliderFor('chipBendSpot').choices!
 const CAPS = sliderFor('chipEnvCap').choices!
