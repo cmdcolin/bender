@@ -135,12 +135,13 @@
   color: var(--alarm);
 }
 
-.pick text {
+/* The name says the box can be pressed; its readings stay bare. */
+.pick text:not(.value, .valueOn) {
   text-decoration: underline dotted;
   text-underline-offset: 2px;
 }
 
-.pick:hover text,
+.pick:hover text:not(.value, .valueOn),
 .pickedLabel text {
   text-decoration: underline solid;
 }
