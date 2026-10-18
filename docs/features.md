@@ -50,13 +50,14 @@ renders it with the same layout the app uses.
   dissipate, dry joints drop a bend out of the path mid-note, and _Re-solder_
   rewires the signal chain on its own.
 - **The tape loop re-records itself.** Drop an audio file anywhere on the page,
-  or roll one off archive.org, and it plays at any speed either way round. Arm
-  _Record_ and the board lays its own output back onto the reel where the play
-  head is reading: what comes past next lap has been through the mix bus, the
-  bends, the pedals and the tape machine, and goes through all of them again.
-  Nothing stands in for generation loss — the loop really is re-recorded every
-  lap, which is why a bend in the path makes it diverge rather than fade. The
-  reel under the keys is drawn off the tape as the head reads it: drag its two
+  or roll one off archive.org, and it plays at any speed either way round. Press
+  _rec_ on the deck, or raise _Record_, and the board lays its own output back
+  onto the reel where the play head is reading, on a blank reel if nothing is
+  loaded: what comes past next lap has been through the mix bus, the bends, the
+  pedals and the tape machine, and goes through all of them again. Nothing
+  stands in for generation loss — the loop really is re-recorded every lap,
+  which is why a bend in the path makes it diverge rather than fade. The reel
+  under the keys is drawn off the tape as the head reads it: drag its two
   markers to trim the loop, drag the tape itself to move the head.
 - **A microphone into the middle of the board.** _Mic patch_ is not a channel —
   on one setting the mic reaches the mix, on the other six it is soldered onto

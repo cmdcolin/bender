@@ -425,9 +425,9 @@ renders it with the same layout the app uses.
   dissipate, dry joints drop a bend out of the path mid-note, and *Re-solder*
   rewires the signal chain on its own.
 - **The tape loop re-records itself.** Drop an audio file anywhere on the page, or roll
-  one off archive.org, and it plays at any speed either way round. Arm *Record*
-  and the board lays its own output back onto the reel where the play head is
-  reading: what comes past next lap has been through the mix bus, the bends, the
+  one off archive.org, and it plays at any speed either way round. Press *rec*
+  on the deck, or raise *Record*, and the board lays its own output back onto the
+  reel where the play head is reading, on a blank reel if nothing is loaded: what comes past next lap has been through the mix bus, the bends, the
   pedals and the tape machine, and goes through all of them again. Nothing
   stands in for generation loss — the loop really is re-recorded every lap,
   which is why a bend in the path makes it diverge rather than fade. The reel
