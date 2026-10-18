@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
@@ -93,4 +93,21 @@ test('the PWM tap takes the PWM carrier off the clock', () => {
   expect(words().filter(w => w === 'PWM')).toHaveLength(1)
   set({ chipPwmTap: 0.5 })
   expect(words().filter(w => w === 'PWM')).toHaveLength(1)
+})
+
+test('pressing a part opens its rows, and a second press puts them away', () => {
+  open()
+  const envelope = () =>
+    screen.getByRole('button', { name: 'envelope controls' })
+  expect(screen.queryByText('Envelope cap')).toBeNull()
+  fireEvent.click(envelope())
+  expect(screen.getByText('Envelope cap')).not.toBeNull()
+  expect(screen.queryByText('Ghost keys')).toBeNull()
+  fireEvent.click(envelope())
+  expect(screen.queryByText('Envelope cap')).toBeNull()
+})
+
+test('the bend spot rows stay under the drawing with no part open', () => {
+  open()
+  expect(screen.getByText('Bend spot')).not.toBeNull()
 })

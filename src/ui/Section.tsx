@@ -19,7 +19,7 @@ import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
-import { FoldDrawing } from './foldDrawings.tsx'
+import { DRAWN_ROWS, FoldDrawing } from './foldDrawings.tsx'
 import { FourTrack } from './FourTrack.tsx'
 import { MicPatch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
@@ -364,9 +364,8 @@ function PartFold({
         seconds={seconds}
       />
       <FoldDrawing group={group.name} part={name} />
-      {rows.map(def => (
-        <ControlSlider key={def.key} def={def} />
-      ))}
+      {!DRAWN_ROWS.has(`${group.name}|${name}`) &&
+        rows.map(def => <ControlSlider key={def.key} def={def} />)}
     </Fold>
   )
 }

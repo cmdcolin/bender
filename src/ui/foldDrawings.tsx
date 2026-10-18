@@ -14,6 +14,9 @@ const DRAWINGS: Record<string, ComponentType> = {
   'Mono synth|voice card faults': MonoCardDiagram,
 }
 
+/** Folds whose drawing opens the rows itself, one box at a time. */
+export const DRAWN_ROWS = new Set(['Toy keyboard|inside the die'])
+
 /** The drawing for one fold of a group, if it has one. */
 export function FoldDrawing({ group, part }: { group: string; part: string }) {
   const key = `${group}|${part}`
