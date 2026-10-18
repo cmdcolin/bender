@@ -6,21 +6,48 @@ import {
 } from '../dsp/stages/toyDrum.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
+import chipLook from './ChipLook.module.css'
 import { sliderFor } from './controls/index.ts'
-import { boxWidth, useReadings } from './diagram.ts'
-import { Diagram, Wire } from './DiagramParts.tsx'
+import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
+import { BoxRows, Diagram, Pressable, Wire } from './DiagramParts.tsx'
 
-const KEYS = [
-  'drumChoke',
-  'drumRingTrig',
-  'drumCross',
-  'drumCrossAmt',
-  'drumRom',
-] as const
+import type { ControlKey } from '../controls.ts'
 
 const CHOKES = sliderFor('drumChoke').choices!
 const RINGS = sliderFor('drumRingTrig').choices!
 const CROSSES = sliderFor('drumCross').choices!
+
+// What each box and each patch of the drawing opens.
+const OPENS: Record<string, { keys: readonly ControlKey[]; help: string }> = {
+  'trigger lines': {
+    keys: ['drumRetrigHz', 'drumTrigFloor', 'drumScan'],
+    help: 'One trigger line a voice off the pattern memory. The rows set how fast a step retriggers, how far a voice must drain before it answers again and how slowly the chip scans its lines.',
+  },
+  amps: {
+    keys: ['drumAccentAmt', 'drumAccentSag'],
+    help: 'One amplifier a voice, each following its own voice’s envelope unless the cross-patch bridges it to another. The accent cap feeds all of them.',
+  },
+  choke: {
+    keys: ['drumChoke'],
+    help: 'The one choke resistor, and which voice’s trigger line it is soldered to.',
+  },
+  'ring trigger': {
+    keys: ['drumRingTrig'],
+    help: 'A comparator on one tank’s ring, soldered onto other voices’ trigger lines.',
+  },
+  'cross-patch': {
+    keys: ['drumCross', 'drumCrossAmt'],
+    help: 'Bridges two voices’ envelope pins so each amplifier hears the wrong envelope.',
+  },
+}
+
+const KEYS = [
+  ...new Set(Object.values(OPENS).flatMap(o => o.keys)),
+  'drumRom',
+] as const
+
+const CHIP_H = boxHeight('a\nb')
+const CHIP_GAP = 12
 
 const WIDTH = 420
 const TOP = 16
@@ -28,8 +55,9 @@ const ROW = 22
 const VOICE_H = 18
 const N = VOICE_LABELS.length
 const BOTTOM = TOP + N * ROW
-const HEIGHT = BOTTOM + 30
-const PATTERN_W = boxWidth('pattern')
+const CHIP_Y = BOTTOM + 14
+const HEIGHT = CHIP_Y + CHIP_H + 4
+const PATTERN_W = boxWidth('trigger lines')
 const VOICE_W = Math.max(...VOICE_LABELS.map(boxWidth))
 const AMPS_W = boxWidth('amps')
 const TAIL = 30
@@ -177,6 +205,7 @@ function RunWire({
 // amp another voice's envelope.
 export function KitWiringDiagram() {
   const r = useReadings(KEYS)
+  const pick = useSelectedBox()
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const choke = read('drumChoke')
   const ring = read('drumRingTrig')
@@ -187,7 +216,7 @@ export function KitWiringDiagram() {
   const all = runs(choke, ring)
   const laneOf = lanes(all)
   const pattern: ChipBox = {
-    name: 'pattern',
+    name: 'trigger lines',
     x: 0,
     y: TOP,
     w: PATTERN_W,
@@ -208,98 +237,115 @@ export function KitWiringDiagram() {
     h: VOICE_H,
   }))
   const voiceRight = VOICE_X + VOICE_W
-  const legend: [string, boolean][] = [
-    [choke > 0 ? CHOKES[choke]! : '', choke > 0],
-    [ring > 0 ? RINGS[ring]! : '', ring > 0],
+  const patches = [
+    { name: 'choke', say: choke > 0 ? CHOKES[choke] : undefined },
+    { name: 'ring trigger', say: ring > 0 ? RINGS[ring] : undefined },
+    { name: 'cross-patch', say: cross > 0 ? CROSSES[cross] : undefined },
   ]
+  const widths = patches.map(p =>
+    Math.max(
+      boxWidth(p.name),
+      ...(p.name === 'choke'
+        ? CHOKES
+        : p.name === 'ring trigger'
+          ? RINGS
+          : CROSSES
+      ).map(boxWidth),
+    ),
+  )
+  const spanW = widths.reduce((a, b) => a + b, 0) + CHIP_GAP * 2
+  const patchBoxes = patches.map((p, i): ChipBox => ({
+    name: p.name,
+    x:
+      (WIDTH - spanW) / 2 +
+      widths.slice(0, i).reduce((a, b) => a + b + CHIP_GAP, 0),
+    y: CHIP_Y,
+    w: widths[i]!,
+    h: CHIP_H,
+  }))
+  const open = pick.selected ? OPENS[pick.selected] : undefined
+  const node = (box: ChipBox, say?: string) => (
+    <Pressable
+      key={box.name}
+      name={box.name}
+      selected={pick.selected === box.name}
+      onSelect={() => pick.toggle(box.name)}
+    >
+      <Chip box={box} reading={say} help={OPENS[box.name]!.help} />
+    </Pressable>
+  )
   return (
-    <Diagram width={WIDTH} height={HEIGHT} label="drum kit wiring">
-      {arrow => (
-        <>
-          {voices.map((b, v) => (
-            <g key={b.name}>
-              <Wire arrow={arrow} d={`M${PATTERN_W} ${rowY(v)} H${VOICE_X}`} />
+    <>
+      <div className={chipLook.chips}>
+        <Diagram width={WIDTH} height={HEIGHT} label="drum kit wiring">
+          {arrow => (
+            <>
+              {voices.map((b, v) => (
+                <g key={b.name}>
+                  <Wire
+                    arrow={arrow}
+                    d={`M${PATTERN_W} ${rowY(v)} H${VOICE_X}`}
+                  />
+                  <Wire
+                    arrow={arrow}
+                    d={`M${voiceRight} ${rowY(v)} H${AMPS_X}`}
+                    look={crossing && wiring[v] !== v ? 'dash' : 'plain'}
+                  />
+                </g>
+              ))}
+              {crossing &&
+                wiring.map((from, v) =>
+                  from === v ? null : sampled ? (
+                    <Wire
+                      key={v}
+                      arrow={arrow}
+                      d={`M${voiceRight} ${rowY(from)} L${AMPS_X} ${rowY(v)}`}
+                      look="dash"
+                    />
+                  ) : (
+                    <Bodge
+                      key={v}
+                      x1={voiceRight}
+                      y1={rowY(from)}
+                      x2={AMPS_X}
+                      y2={rowY(v)}
+                    />
+                  ),
+                )}
+              {all.map((run, i) => (
+                <RunWire
+                  key={`${run.kind}${run.from}`}
+                  run={run}
+                  lane={laneOf[i]!}
+                  arrow={arrow}
+                />
+              ))}
               <Wire
                 arrow={arrow}
-                d={`M${voiceRight} ${rowY(v)} H${AMPS_X}`}
-                look={crossing && wiring[v] !== v ? 'dash' : 'plain'}
+                d={`M${AMPS_X + AMPS_W} ${TOP + (N * ROW) / 2} H${WIDTH - 2}`}
               />
-            </g>
-          ))}
-          {crossing &&
-            wiring.map((from, v) =>
-              from === v ? null : sampled ? (
-                <Wire
-                  key={v}
-                  arrow={arrow}
-                  d={`M${voiceRight} ${rowY(from)} L${AMPS_X} ${rowY(v)}`}
-                  look="dash"
-                />
-              ) : (
-                <Bodge
-                  key={v}
-                  x1={voiceRight}
-                  y1={rowY(from)}
-                  x2={AMPS_X}
-                  y2={rowY(v)}
-                />
-              ),
-            )}
-          {all.map((run, i) => (
-            <RunWire
-              key={`${run.kind}${run.from}`}
-              run={run}
-              lane={laneOf[i]!}
-              arrow={arrow}
-            />
-          ))}
-          <Wire
-            arrow={arrow}
-            d={`M${AMPS_X + AMPS_W} ${TOP + (N * ROW) / 2} H${WIDTH - 2}`}
-          />
-          <text
-            x={WIDTH - 2}
-            y={TOP + (N * ROW) / 2 - 4}
-            textAnchor="end"
-            className={styles.bus}
-          >
-            out
-          </text>
-          <Chip
-            box={pattern}
-            help="The pattern memory's word, one trigger line a voice."
-          />
-          {voices.map(b => (
-            <Chip key={b.name} box={b} />
-          ))}
-          <Chip
-            box={amps}
-            help="One amplifier a voice, each following its own voice's envelope unless the cross-patch bridges it to another."
-          />
-          {legend.map(([say, on], i) =>
-            on ? (
               <text
-                key={i}
-                x={PATTERN_W + 2}
-                y={BOTTOM + 12 + i * 12}
-                className={styles.knifed}
+                x={WIDTH - 2}
+                y={TOP + (N * ROW) / 2 - 4}
+                textAnchor="end"
+                className={styles.bus}
               >
-                {say}
+                out
               </text>
-            ) : null,
+              {node(pattern)}
+              {voices.map(b => (
+                <Chip key={b.name} box={b} />
+              ))}
+              {node(amps)}
+              {patchBoxes.map((b, i) => node(b, patches[i]!.say))}
+            </>
           )}
-          {crossing && (
-            <text
-              x={(voiceRight + AMPS_X) / 2}
-              y={BOTTOM + 12}
-              textAnchor="middle"
-              className={sampled ? styles.bus : styles.knifed}
-            >
-              {`cross-patch ${CROSSES[cross]}`}
-            </text>
-          )}
-        </>
-      )}
-    </Diagram>
+        </Diagram>
+      </div>
+      <BoxRows
+        keys={open?.keys}
+        hint="Press the trigger lines, the amps or a patch for its settings."
+      />
+    </>
   )
 }

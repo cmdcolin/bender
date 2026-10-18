@@ -247,16 +247,19 @@ export function BoxRows({
   keys,
   note,
   verbs,
+  hint,
 }: {
   keys: readonly ControlKey[] | undefined
   note?: string
   /** Controls drawn above the rows, for a box whose knobs have dice or cuts. */
   verbs?: ReactNode
+  /** Said while no box is open. */
+  hint?: string
 }) {
   const shown = useBoardValue(c =>
     (keys ?? []).filter(k => rowShown(k, c)).join(','),
   ).split(',')
-  if (!keys) return null
+  if (!keys) return hint ? <p className={styles.hint}>{hint}</p> : null
   return (
     <div className={styles.rows}>
       {note && <p className={styles.noteLine}>{note}</p>}

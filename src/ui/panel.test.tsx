@@ -5,6 +5,7 @@ import { beforeEach, expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { GRID_ROWS, hasStep } from '../drums.ts'
 import { ECHO_MODE } from '../dsp/stages/echo.ts'
+import { ENS_MODE } from '../dsp/stages/ensemble.ts'
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
 import { bench } from './bench.ts'
@@ -21,6 +22,8 @@ beforeEach(() => {
 // could not take back and a drop that navigated the page away all survived at
 // once — each of them is a sentence about what happens when you press
 // something, and none of them is a sentence about a signal path.
+
+const FLANGE = ENS_MODE.flange
 
 const group = (name: string) => {
   const g = GROUPS.find(each => each.name === name)
@@ -39,11 +42,11 @@ const countRows = (head: HTMLElement) => {
 }
 
 // A fold is a <details>, so its heading is the summary rather than a button.
-const knife = () => {
+const line = () => {
   const head = [...document.querySelectorAll('summary')].find(s =>
-    /knife on the bus/.test(s.textContent ?? ''),
+    /the line/.test(s.textContent ?? ''),
   )
-  if (!head) throw new Error('no knife fold')
+  if (!head) throw new Error('no line fold')
   return head
 }
 const said = (head: HTMLElement) => Number(head.textContent.replace(/\D/g, ''))
@@ -51,20 +54,18 @@ const said = (head: HTMLElement) => Number(head.textContent.replace(/\D/g, ''))
 const openFmChip = () =>
   render(<OpenGroup group={group('FM chip')} onClose={() => {}} seconds={0} />)
 
-const openToyKeys = () =>
-  render(
-    <OpenGroup group={group('Toy keyboard')} onClose={() => {}} seconds={0} />,
-  )
+const openEnsemble = () =>
+  render(<OpenGroup group={group('Ensemble')} onClose={() => {}} seconds={0} />)
 
 // The number on a fold is what it opens to. A fault picks what happened to a
 // wire nobody has cut, so the row waits for a wire — and a heading that counted
 // the ones still waiting promised controls that were not down there.
 test('a fold heading counts the rows it opens to', () => {
-  openToyKeys()
-  const before = said(knife())
-  fireEvent.click(knife())
+  openEnsemble()
+  const before = said(line())
+  fireEvent.click(line())
   expect(before).toBeGreaterThan(0)
-  expect(before).toBe(countRows(knife()))
+  expect(before).toBe(countRows(line()))
 })
 
 // Cut a line and the fault asking what happened to it arrives under the same
@@ -72,13 +73,14 @@ test('a fold heading counts the rows it opens to', () => {
 // instead of a count — a fold that hid what you set would be lying about the
 // board.
 test('a row arrives once it has something to act on', () => {
-  openToyKeys()
-  fireEvent.click(knife())
-  const before = countRows(knife())
+  openEnsemble()
+  fireEvent.click(line())
+  const before = countRows(line())
 
-  act(() => engine.set('chipDataLine', 1))
-  expect(countRows(knife())).toBe(before + 1)
-  expect(knife().textContent).toContain('1 moved')
+  act(() => engine.set('ensMode', FLANGE))
+  expect(countRows(line())).toBe(before + 1)
+  act(() => engine.set('ensFeedback', 0.4))
+  expect(line().textContent).toContain('1 moved')
 })
 
 // A knife on a bus is three controls that only mean anything together, and most
@@ -403,18 +405,18 @@ const inFold = (head: HTMLElement, name: RegExp) =>
 
 test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
-  openToyKeys()
-  fireEvent.click(knife())
-  const rows = group('Toy keyboard')
-    .sliders.filter(s => s.part === 'knife on the bus')
+  openEnsemble()
+  fireEvent.click(line())
+  const rows = group('Ensemble')
+    .sliders.filter(s => s.part === 'the line')
     .map(s => s.key)
-  const outside = group('Toy keyboard')
+  const outside = group('Ensemble')
     .sliders.filter(s => !rows.includes(s.key))
     .map(s => s.key)
   const was = { ...engine.controls.get() }
 
   act(() => {
-    fireEvent.click(inFold(knife(), /^roll$/))
+    fireEvent.click(inFold(line(), /^roll$/))
   })
   const now = engine.controls.get()
   expect(rows.some(k => now[k] !== was[k])).toBe(true)
@@ -423,33 +425,31 @@ test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
 
 // And its own way back, which is the count it is carrying.
 test('a fold puts back only what is under it', () => {
-  act(() =>
-    engine.patch({ ...DEFAULT_CONTROLS, chipDataLine: 3, chipLevel: 0.9 }),
-  )
-  openToyKeys()
-  fireEvent.click(knife())
+  act(() => engine.patch({ ...DEFAULT_CONTROLS, ensWidth: 0.4, ensMix: 0.9 }))
+  openEnsemble()
+  fireEvent.click(line())
   act(() => {
-    fireEvent.click(inFold(knife(), /^reset 1$/))
+    fireEvent.click(inFold(line(), /^reset 1$/))
   })
-  expect(engine.controls.get().chipDataLine).toBe(DEFAULT_CONTROLS.chipDataLine)
-  expect(engine.controls.get().chipLevel).toBe(0.9)
+  expect(engine.controls.get().ensWidth).toBe(DEFAULT_CONTROLS.ensWidth)
+  expect(engine.controls.get().ensMix).toBe(0.9)
 })
 
 test('undo on a fold takes back its roll and keeps a knob turned since', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
-  openToyKeys()
-  fireEvent.click(knife())
+  openEnsemble()
+  fireEvent.click(line())
   const was = { ...engine.controls.get() }
   act(() => {
-    fireEvent.click(inFold(knife(), /^roll$/))
+    fireEvent.click(inFold(line(), /^roll$/))
   })
-  act(() => engine.set('chipLevel', 0.9))
+  act(() => engine.set('ensMix', 0.9))
   act(() => {
-    fireEvent.click(inFold(knife(), /^undo$/))
+    fireEvent.click(inFold(line(), /^undo$/))
   })
-  expect({ ...engine.controls.get(), chipLevel: was.chipLevel }).toEqual(was)
-  expect(engine.controls.get().chipLevel).toBe(0.9)
-  expect((inFold(knife(), /^undo$/) as HTMLButtonElement).disabled).toBe(true)
+  expect({ ...engine.controls.get(), ensMix: was.ensMix }).toEqual(was)
+  expect(engine.controls.get().ensMix).toBe(0.9)
+  expect((inFold(line(), /^undo$/) as HTMLButtonElement).disabled).toBe(true)
 })
 
 test('undo on a stage walks back its rolls one at a time', () => {
@@ -480,9 +480,9 @@ test('undo on a stage walks back its rolls one at a time', () => {
 
 test('a fold with nothing moved under it offers no way back', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
-  openToyKeys()
-  fireEvent.click(knife())
-  expect((inFold(knife(), /^reset$/) as HTMLButtonElement).disabled).toBe(true)
+  openEnsemble()
+  fireEvent.click(line())
+  expect((inFold(line(), /^reset$/) as HTMLButtonElement).disabled).toBe(true)
 })
 
 // A travel whose middle is a stop and whose bottom half is backwards. The knob

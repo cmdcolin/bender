@@ -11,7 +11,13 @@ export const DRAWN_ROWS = new Set([
 
 /** Folds the drawing of another fold has taken over, drawn as boxes in it. */
 const HOSTED: Record<string, readonly string[]> = {
-  'Toy drums|inside the voices': ['the converter', 'Sample ROM'],
+  'Toy drums|inside the voices': [
+    'the converter',
+    'Sample ROM',
+    'triggers and cross-patch',
+    'knife on the bus',
+  ],
+  'Toy keyboard|inside the die': ['arp and key lock', 'knife on the bus'],
 }
 
 export const hostedBy = (group: string, part: string) =>

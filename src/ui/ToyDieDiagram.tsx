@@ -2,7 +2,7 @@ import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
-import { CHANNELS, sliderFor } from './controls/index.ts'
+import { CHANNELS, GROUPS, sliderFor } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import {
@@ -13,6 +13,9 @@ import {
   type WireLook,
 } from './DiagramParts.tsx'
 import { BEND_KEYS, NODE_KEYS } from './toyBoxKeys.ts'
+
+import type { ControlKey } from '../controls.ts'
+import type { Verbs } from './foldHosting.ts'
 
 const KEYS = [
   'chipBendSpot',
@@ -32,6 +35,19 @@ const KEYS = [
   'chipPwmTap',
 ] as const
 
+const GROUP = GROUPS.find(g => g.name === 'Toy keyboard')!
+
+const HOSTED = {
+  'arp/lock': 'arp and key lock',
+  bus: 'knife on the bus',
+} as const
+
+const isHostedBox = (name: string | null): name is keyof typeof HOSTED =>
+  name !== null && name in HOSTED
+
+const keysOf = (part: string): ControlKey[] =>
+  GROUP.sliders.filter(d => d.part === part).map(d => d.key)
+
 const SPOTS = sliderFor('chipBendSpot').choices!
 const CAPS = sliderFor('chipEnvCap').choices!
 const GHOSTS = sliderFor('chipGhost').choices!
@@ -48,7 +64,10 @@ const GAPS = [22, 38, 22]
 const TAIL = 34
 const TOP = ROOM
 const LOW = ROOM + BOX_H + ROW_GAP
-const HEIGHT = LOW + BOX_H + ROOM
+const SMALL_H = boxHeight('a')
+const SMALL_GAP = 14
+const SMALL_Y = LOW + BOX_H + SMALL_GAP
+const HEIGHT = SMALL_Y + SMALL_H + 4
 const VOICES_W = 64
 const SIDE = 11
 
@@ -131,9 +150,10 @@ function Say({
 // carries every voice off the chip. One clock times the voices, the scan counter
 // and the PWM carrier. Each feedback bend solders one part's signal onto another
 // part, and the drawing gives each one its own red wire.
-export function ToyDieDiagram() {
+export function ToyDieDiagram({ verbs }: { verbs?: Verbs }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
+  const hosted = isHostedBox(pick.selected) ? pick.selected : undefined
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow: WireLook = useStoreSelect(
@@ -159,6 +179,19 @@ export function ToyDieDiagram() {
     h: BOX_H,
   }))
   const [keys, voices, env, pin] = [row[0]!, row[1]!, row[2]!, row[3]!]
+  const small = (name: keyof typeof HOSTED, x: number, w: number): ChipBox => ({
+    name,
+    x,
+    y: SMALL_Y,
+    w,
+    h: SMALL_H,
+  })
+  const arp = small('arp/lock', keys.x, boxWidth('arp/lock'))
+  const bus = small(
+    'bus',
+    voices.x + (voices.w - boxWidth('bus')) / 2,
+    boxWidth('bus'),
+  )
   const outOn = [
     read('chipOutAddr') > 0 ? OUT_ADDR[read('chipOutAddr')] : '',
     read('chipOutData') > 0 ? OUT_DATA[read('chipOutData')] : '',
@@ -379,6 +412,26 @@ export function ToyDieDiagram() {
                 reading={!scan && up('chipShort') ? 'shorted' : undefined}
                 help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
               />
+              <Wire
+                arrow={arrow}
+                d={`M${arp.x + arp.w / 2} ${arp.y} V${keys.y + BOX_H}`}
+                look={flow}
+              />
+              <Wire
+                arrow={arrow}
+                d={`M${bus.x + bus.w / 2} ${bus.y} V${voices.y + BOX_H}`}
+                look="dash"
+              />
+              <Node
+                pick={pick}
+                box={arp}
+                help="The arpeggiator, the key lock and the scale the keys play in, ahead of the key matrix."
+              />
+              <Node
+                pick={pick}
+                box={bus}
+                help="The address and data wires between the counter, the tune ROM and the voices. The rows put a knife on them."
+              />
               {placed && (
                 <Pot
                   x={placed[0]}
@@ -391,7 +444,17 @@ export function ToyDieDiagram() {
           )}
         </Diagram>
       </div>
-      <BoxRows keys={pick.selected ? NODE_KEYS[pick.selected] : undefined} />
+      <BoxRows
+        hint="Press a box for its settings."
+        keys={
+          hosted
+            ? keysOf(HOSTED[hosted])
+            : pick.selected
+              ? NODE_KEYS[pick.selected]
+              : undefined
+        }
+        verbs={hosted && verbs?.(HOSTED[hosted])}
+      />
       <BoxRows keys={BEND_KEYS} />
     </>
   )

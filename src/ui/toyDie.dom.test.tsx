@@ -117,6 +117,15 @@ test('every knob in the die fold sits in one of the parts or under the bend spot
   )
 })
 
+test('the arp and the bus boxes open the folds they took over', () => {
+  open()
+  fireEvent.click(screen.getByRole('button', { name: 'arp/lock controls' }))
+  expect(screen.getByText('Arpeggio')).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
+  expect(screen.queryByText('Arpeggio')).toBeNull()
+  expect(screen.getByText('Data line')).not.toBeNull()
+})
+
 test('the bend spot rows stay under the drawing with no part open', () => {
   open()
   expect(screen.getByText('Bend spot')).not.toBeNull()

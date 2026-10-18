@@ -45,6 +45,16 @@ test('the DAC opens the converter rows and the sample ROM opens the kit rows', (
   expect(screen.queryByText('Bit depth')).toBeNull()
 })
 
+test('the pattern opens the bus rows, and the triggers leave their rows to their own drawing', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<ToyDrumDiagram verbs={part => <p>{`verbs for ${part}`}</p>} />)
+  fireEvent.click(box('pattern'))
+  expect(screen.getByText('Data line')).not.toBeNull()
+  fireEvent.click(box('triggers'))
+  expect(screen.getByText('verbs for triggers and cross-patch')).not.toBeNull()
+  expect(screen.queryByText('Retrigger')).toBeNull()
+})
+
 test('a box goes accent when a knob inside it is off stock', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, drumBankFm: 0.5 })
   render(<ToyDrumDiagram />)

@@ -15,6 +15,9 @@ const open = (name: string) => {
   return render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
 }
 
+const press = (name: string) =>
+  fireEvent.click(screen.getByRole('button', { name: `${name} controls` }))
+
 const set = (board: Partial<Controls>) =>
   act(() => {
     for (const [key, value] of Object.entries(board))
@@ -27,10 +30,12 @@ const texts = (svg: Element) =>
   [...svg.querySelectorAll('text')].map(t => t.textContent)
 
 test.each([
-  ['Toy keyboard', 'toy keyboard bus wiring'],
-  ['Toy drums', 'drum machine bus wiring'],
-])('%s draws %s', (group, label) => {
+  ['Toy keyboard', 'bus', 'toy keyboard bus wiring'],
+  ['Toy drums', 'pattern', 'drum machine bus wiring'],
+])('%s draws %s once its %s box is pressed', (group, box, label) => {
   open(group)
+  expect(screen.queryByRole('img', { name: label })).toBeNull()
+  press(box)
   expect(drawing(label)).not.toBeNull()
 })
 
@@ -64,6 +69,7 @@ test('the home keyboard draws its buses under either bus box', () => {
 test('the knifed trace carries its line name and fault in the drawing', () => {
   set({ chipAddrLine: 4, chipAddrFault: 1 })
   open('Toy keyboard')
+  press('bus')
   const svg = drawing('toy keyboard bus wiring')
   expect(texts(svg)).toContain('A3')
   const titles = [...svg.querySelectorAll('title')].map(t => t.textContent)
@@ -83,6 +89,7 @@ test('a bridge lights the knifed trace and its neighbour', () => {
 test('the loop wire names the pins it joins, a reset pin included', () => {
   set({ chipLoopFrom: 2, chipLoopTo: 1 })
   open('Toy keyboard')
+  press('bus')
   expect(texts(drawing('toy keyboard bus wiring'))).toContain(
     'loop wire D1 → A1',
   )
@@ -94,6 +101,7 @@ test('the loop wire names the pins it joins, a reset pin included', () => {
 
 test('the drum reset wire and the clock follow their knobs', () => {
   open('Toy drums')
+  press('pattern')
   const svg = drawing('drum machine bus wiring')
   expect(texts(svg)).toContain('clock')
   expect(texts(svg).some(t => t?.startsWith('reset'))).toBe(false)

@@ -24,7 +24,12 @@ import type { Verbs } from './foldHosting.ts'
 
 const DRUM_TAP = CHANNELS.find(c => c.name === 'Toy drums')!.tap
 
-type BoxId = keyof typeof VOICE_BOXES | 'DAC' | 'sample ROM'
+type BoxId =
+  | keyof typeof VOICE_BOXES
+  | 'DAC'
+  | 'sample ROM'
+  | 'triggers'
+  | 'pattern'
 
 const GROUP = GROUPS.find(g => g.name === 'Toy drums')!
 
@@ -38,6 +43,11 @@ const BOXES: Record<BoxId, { part: string; keys: readonly ControlKey[] }> = {
   noise: { part: 'inside the voices', keys: VOICE_BOXES.noise },
   DAC: { part: 'the converter', keys: keysOf('the converter') },
   'sample ROM': { part: 'Sample ROM', keys: keysOf('Sample ROM') },
+  triggers: {
+    part: 'triggers and cross-patch',
+    keys: keysOf('triggers and cross-patch'),
+  },
+  pattern: { part: 'knife on the bus', keys: keysOf('knife on the bus') },
 }
 
 const HELP: Record<BoxId, string> = {
@@ -50,6 +60,10 @@ const HELP: Record<BoxId, string> = {
   noise:
     'The one transistor run backwards until it avalanches. The snare, the clap and the dice all listen to it.',
   DAC: 'The one converter every voice shares: its word length, its ladder, how it overflows and what its reference is wired to.',
+  triggers:
+    'What the trigger lines do before a one-shot hears them: retriggers, the floor a voice must drain to, the scan, the accent bus, the choke and the cross-patches.',
+  pattern:
+    'The step counter and the pattern memory. The rows put a knife on the wires that clock it, address it and carry the word back.',
   'sample ROM':
     'The kit sampled by itself. Switched on, the voices read their slabs from a ROM, and the address and data wires to it can take a knife.',
 }
@@ -92,7 +106,7 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
 
   const srcW = Math.max(...FIRST.map(boxWidth))
   const widths = [
-    boxWidth('one-shots'),
+    Math.max(boxWidth('one-shots'), boxWidth('triggers'), boxWidth('pattern')),
     srcW,
     boxWidth('amps'),
     Math.max(boxWidth('DAC'), boxWidth('sample ROM')),
@@ -132,7 +146,9 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
   )
   const dac = spec('DAC', xs[3]!, rowY(1), widths[3]!, BOX_H)
   const rom = spec('sample ROM', xs[3]!, rowY(2), widths[3]!, BOX_H)
-  const picks = [shots, ...sources, dac, rom]
+  const triggers = spec('triggers', xs[0]!, rowY(0), widths[0]!, BOX_H)
+  const pattern = spec('pattern', xs[0]!, rowY(2), widths[0]!, BOX_H)
+  const picks = [triggers, shots, pattern, ...sources, dac, rom]
   const open = picks.find(b => b.id === pick.selected)
   const fanL = shots.x + shots.w + GAP / 2
   const fanR = amps.x - GAP / 2
@@ -215,6 +231,16 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
                 d={`M${rom.x + rom.w / 2} ${rom.y} V${dac.y + BOX_H}`}
                 look={bent(r.value('drumRom') > 0)}
               />
+              <Wire
+                arrow={arrow}
+                d={`M${shots.x + shots.w / 2} ${triggers.y + BOX_H} V${shots.y}`}
+                look={flow}
+              />
+              <Wire
+                arrow={arrow}
+                d={`M${shots.x + shots.w / 2} ${pattern.y} V${shots.y + BOX_H}`}
+                look={flow}
+              />
               {picks.map(b => (
                 <BoxView
                   key={b.id}
@@ -228,7 +254,11 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
           )}
         </Diagram>
       </div>
-      <BoxRows keys={open?.keys} verbs={open && verbs?.(BOXES[open.id].part)} />
+      <BoxRows
+        hint="Press a box for its settings."
+        keys={open?.id === 'triggers' ? [] : open?.keys}
+        verbs={open && verbs?.(BOXES[open.id].part)}
+      />
     </>
   )
 }
