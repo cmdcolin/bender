@@ -24,6 +24,9 @@
   width: clamp(470px, 30vw, 600px);
   flex: none;
   overflow-y: auto;
+  /* Opening a stage brings the scrollbar in, which would narrow the map under
+     the pointer that opened it. */
+  scrollbar-gutter: stable;
   padding: 0 var(--space-lg) var(--space-md);
   border-left: 1px solid var(--border);
   background: var(--surface);
