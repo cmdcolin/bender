@@ -6,12 +6,14 @@ import { engine } from '../engine/engine.ts'
 import {
   bendDeal,
   bendName,
+  bendRow,
   bendStepName,
   bendSwell,
   redealEvery,
   toggleBendStep,
 } from './bendKeys.ts'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
+import { DrumGrid } from './DrumGrid.tsx'
 import { letterKeys } from './letters.ts'
 import './testDom.ts'
 
@@ -183,6 +185,23 @@ test('a lit step of the bend row holds that step’s key for the step', () => {
   expect(heldNames()).toEqual([])
   tick(34)
   expect(heldNames()).toEqual([])
+})
+
+test('the bend row prints each step’s key letter on its cell', () => {
+  open()
+  render(<DrumGrid />)
+  const cell = screen.getByRole('button', { name: 'bend step 2' })
+  expect(cell.textContent).toBe(bendDeal.get()[1]!.letter)
+})
+
+test('shuffle lights some steps of the bend row, never none', () => {
+  open()
+  render(<DrumGrid />)
+  act(() => {
+    bendRow.set(0)
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'shuffle bend steps' }))
+  expect(bendRow.get()).not.toBe(0)
 })
 
 test('redeal every bar deals a new hand as the bar comes round', () => {

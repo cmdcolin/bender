@@ -23,12 +23,18 @@ import {
   type StepState,
 } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
-import { bendDeal, bendRow, toggleBendStep } from './bendKeys.ts'
+import {
+  bendDeal,
+  bendRow,
+  shuffleBendRow,
+  toggleBendStep,
+} from './bendKeys.ts'
 import {
   useBoardValue,
   useControlValue,
   useStoreValue,
 } from './ControlsContext.ts'
+import { SHUFFLE } from './DeviceVerbs.tsx'
 import styles from './DrumGrid.module.css'
 import { padKeyFor } from './drumKeys.ts'
 import { Tip } from './Tip.tsx'
@@ -509,12 +515,22 @@ function BendRow({ live }: { live: boolean }) {
                   aria-label={`bend step ${s + 1}`}
                   aria-pressed={on}
                   onClick={() => toggleBendStep(s)}
-                />
+                >
+                  {k && <span className={styles.bendLetter}>{k.letter}</span>}
+                </button>
               </Tip>
             )
           })}
         </div>
-        <span />
+        <Tip text="Light a new scatter of steps.">
+          <button
+            className={styles.shuffleRow}
+            aria-label="shuffle bend steps"
+            onClick={() => shuffleBendRow()}
+          >
+            {SHUFFLE}
+          </button>
+        </Tip>
       </div>
     </Tip>
   )

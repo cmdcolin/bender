@@ -574,8 +574,10 @@ The chips beside the toggle set how the next deal comes out:
 
 The kit's grid has a **bend** row under **echo**. A lit step fires the bend key
 with that step's number, held for the step, so the keys play as a sequence
-against the pattern. Redeal the keys and the same steps fire the new ones. The
-row is this session's, since the deal is, and rides in no link.
+against the pattern. Each cell prints its key's letter. Redeal the keys and the
+same steps fire the new ones. The shuffle button at the row's end lights a new
+scatter of about a third of the steps. The row is this session's, since the deal
+is, and rides in no link.
 
 A MIDI pad can hold a bend key the way it holds a throw; see [MIDI](MIDI.md).
 

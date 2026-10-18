@@ -215,10 +215,44 @@
   border-color: var(--cool);
 }
 
+.bend,
+.bendOn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* The bend row's lit step, in the colour of the key it fires. */
 .bendOn {
   background: var(--accent2);
   border-color: var(--accent2);
+}
+
+/* The letter of the key the step fires, printed on the contact the way the bend
+   board prints it on its keys. */
+.bendLetter {
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1;
+  color: var(--fg4);
+  pointer-events: none;
+}
+
+.bendOn .bendLetter {
+  color: var(--bg);
+}
+
+.shuffleRow {
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--fg4);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.shuffleRow:hover {
+  color: var(--fg2);
 }
 
 .accentOn {

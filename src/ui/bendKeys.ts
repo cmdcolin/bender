@@ -86,6 +86,15 @@ export const bendRowLit = (step: number) =>
 export const toggleBendStep = (step: number) =>
   bendRow.set(bendRow.get() ^ stepBit(step))
 
+/** A new row at random, about a third of the steps lit and never none. */
+export function shuffleBendRow(rand: () => number = Math.random) {
+  const lit = Array.from({ length: STEPS }, (_, s) => s).filter(
+    () => rand() < 1 / 3,
+  )
+  if (lit.length === 0) lit.push(Math.floor(rand() * STEPS))
+  bendRow.set(lit.reduce((mask, s) => mask | stepBit(s), 0))
+}
+
 // A push eased over `seconds` rather than dropped on the board: every control
 // in it walks its own travel from where the board stands to where the key
 // wants it, a frame at a time, and a choice control jumps at the start on the
