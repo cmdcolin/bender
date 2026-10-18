@@ -30,7 +30,6 @@ test.each([
   ['Toy keyboard', 'toy keyboard bus wiring'],
   ['Toy drums', 'drum machine bus wiring'],
   ['Toy drums', 'drum sample ROM bus wiring'],
-  ['Home keyboard', 'home keyboard bus wiring'],
 ])('%s draws %s', (group, label) => {
   open(group)
   expect(drawing(label)).not.toBeNull()
@@ -41,6 +40,17 @@ test('the FM chip draws its buses under the bus box', () => {
   expect(screen.queryByRole('img', { name: 'FM chip bus wiring' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
   expect(texts(drawing('FM chip bus wiring'))).toContain('D0–D7')
+})
+
+test('the home keyboard draws its buses under either bus box', () => {
+  open('Home keyboard')
+  expect(
+    screen.queryByRole('img', { name: 'home keyboard bus wiring' }),
+  ).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'address bus controls' }))
+  expect(texts(drawing('home keyboard bus wiring'))).toContain('A0–A13')
+  fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
+  expect(texts(drawing('home keyboard bus wiring'))).toContain('D0–D7')
 })
 
 test('the knifed trace carries its line name and fault in the drawing', () => {
@@ -57,6 +67,7 @@ test('the knifed trace carries its line name and fault in the drawing', () => {
 test('a bridge lights the knifed trace and its neighbour', () => {
   set({ pcmDataLine: 8, pcmDataFault: 3 })
   open('Home keyboard')
+  fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
   const svg = drawing('home keyboard bus wiring')
   expect(svg.querySelectorAll('path[class*="traceCut"]')).toHaveLength(2)
 })
