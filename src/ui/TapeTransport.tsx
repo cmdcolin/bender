@@ -1,6 +1,7 @@
 import { engine } from '../engine/engine.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import { DeckGroup, DeckKey, DeckWell, DeckWord } from './DeckKey.tsx'
+import { FaceLevel } from './DeviceVerbs.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { ReactNode } from 'react'
@@ -12,10 +13,12 @@ const SPEEDS: Record<Speed, number> = { '½×': 0.5, '1×': 1, '2×': 2 }
 const NOTHING =
   'Nothing on the tape yet. Load one, drop a file or open the mic.'
 
+let resumeLevel = 0.7
+
 function play() {
   const c = engine.controls.get()
   if (c.sampleLevel > 0) return
-  engine.set('sampleLevel', 0.7)
+  engine.set('sampleLevel', resumeLevel)
   if (c.sampleMode === 1) engine.seekSample(Math.min(c.loopIn, c.loopOut))
 }
 
@@ -81,7 +84,10 @@ export function TapeTransport({
             glyph="stop"
             legend="stop"
             disabled={!loaded || !running}
-            onClick={() => engine.set('sampleLevel', 0)}
+            onClick={() => {
+              resumeLevel = engine.controls.get().sampleLevel
+              engine.set('sampleLevel', 0)
+            }}
           />
         </Tip>
       </DeckGroup>
@@ -100,6 +106,9 @@ export function TapeTransport({
             </DeckWord>
           </Tip>
         ))}
+      </DeckGroup>
+      <DeckGroup>
+        <FaceLevel control="sampleLevel" />
       </DeckGroup>
     </DeckWell>
   )

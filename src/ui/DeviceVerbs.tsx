@@ -176,6 +176,14 @@ function Rolls({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
+export function FaceLevel({ control }: { control: ControlKey }) {
+  return (
+    <span className={styles.level}>
+      <ControlSlider def={sliderFor(control)} />
+    </span>
+  )
+}
+
 // The caps every instrument and pedal on the bench carries: an instrument's
 // level, mute or bypass, roll the stage somewhere new, and put the machine away
 // where it can be put away.
@@ -197,11 +205,7 @@ export function DeviceVerbs({
   const level = LEVEL_OF[stage]
   return (
     <>
-      {level && (
-        <span className={styles.level}>
-          <ControlSlider def={sliderFor(level)} />
-        </span>
-      )}
+      {level && <FaceLevel control={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} />}
       <Rolls group={group} seconds={seconds} />
       {onClose && (

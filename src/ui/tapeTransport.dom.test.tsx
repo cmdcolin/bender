@@ -72,3 +72,18 @@ test('play stays down until stop pops it, and stop is dead while stopped', () =>
   expect(screen.getByRole('button', { name: 'play' }).ariaPressed).toBe('true')
   expect(stop().disabled).toBe(false)
 })
+
+test('the Level slider sets the tape level and play after stop goes back to it', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, sampleLevel: 0 })
+  render(<TapeTransport loaded />)
+  press('play')
+  fireEvent.change(screen.getByRole('slider', { name: 'Level' }), {
+    target: { value: '900' },
+  })
+  const set = engine.controls.get().sampleLevel
+  expect(set).toBeGreaterThan(1)
+  press('stop')
+  expect(engine.controls.get().sampleLevel).toBe(0)
+  press('play')
+  expect(engine.controls.get().sampleLevel).toBe(set)
+})
