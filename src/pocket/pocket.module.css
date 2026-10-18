@@ -278,8 +278,6 @@
   font: inherit;
   font-size: var(--fs-sm);
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   cursor: pointer;
 }
 .tabOn {

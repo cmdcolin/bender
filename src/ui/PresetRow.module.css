@@ -23,8 +23,6 @@
   flex: none;
   width: 4.5em;
   font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--fg4);
 }
 

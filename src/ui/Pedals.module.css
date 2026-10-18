@@ -71,8 +71,6 @@
   flex: 1 1 auto;
   font-size: var(--fs-md);
   font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--ink);
 }
 
@@ -83,8 +81,6 @@
   padding: 0 var(--space-md);
   font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--ink);
   background: var(--edge);
   border: 1px solid var(--ink);
