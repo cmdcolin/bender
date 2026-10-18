@@ -141,6 +141,10 @@ export function MixSheet(props: { onClose: () => void }) {
 
   const mic = () => {
     setMicError('')
+    if (micOn) {
+      engine.disableMic()
+      return
+    }
     engine
       .enableMic()
       .then(() => {
@@ -175,7 +179,7 @@ export function MixSheet(props: { onClose: () => void }) {
       <div className={styles.verbs}>
         <button
           className={micOn ? styles.chipOn : styles.chip}
-          disabled={micOn}
+          aria-pressed={micOn}
           onClick={mic}
         >
           {micOn ? '● mic live' : 'mic'}

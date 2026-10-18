@@ -84,3 +84,12 @@ test('the bend switch steps through the modes and remembers the one it is on', (
   expect(localStorage.getItem('bender.pocket.touch')).toBe('starve')
   localStorage.removeItem('bender.pocket.touch')
 })
+
+test('the mic chip turns a live mic off', () => {
+  render(<PocketPage />)
+  fireEvent.click(screen.getByRole('button', { name: '☷mix' }))
+  act(() => engine.micOn.set(true))
+  fireEvent.click(screen.getByRole('button', { name: '● mic live' }))
+  expect(engine.micOn.get()).toBe(false)
+  expect(screen.getByRole('button', { name: 'mic' })).toBeTruthy()
+})
