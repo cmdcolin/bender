@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 
+import { IDX } from '../../engine/params.ts'
 import { buildBender } from '../build.ts'
 import { spectrum } from '../spectrum.ts'
 import {
@@ -135,10 +136,12 @@ test('switched off it stays silent', () => {
 })
 
 test('it waits for the song to run', () => {
-  const x = renderBender(sung({ 0: 0 }), 1, built => {
-    built.transport.tune = false
-  })
-  expect(rms(x)).toBe(0)
+  const song = (running: boolean) =>
+    renderBender(sung({ 0: 0 }), 1, built => {
+      built.transport.tune = running
+    })
+  expect(rms(song(true))).toBeGreaterThan(0.03)
+  expect(rms(song(false))).toBe(0)
 })
 
 test('notes land on their steps and the loop comes round', () => {
@@ -187,4 +190,20 @@ test('a sagging rail slows its counter', () => {
   const fed = gap(render(sung(steps), 2))
   const sagging = gap(render(sung(steps, { chipStarve: 0.5 }), 2))
   expect(sagging).toBeGreaterThan(fed * 1.15)
+})
+
+test('switching it off mid-song lets the last note go', () => {
+  const x = renderBender(
+    sung({ 0: 0, 1: 0, 2: 0, 3: 0 }),
+    3,
+    built => {
+      built.transport.tune = true
+    },
+    undefined,
+    (_built, secs, p) => {
+      if (secs >= 1) p[IDX.monoSeqOn] = 0
+    },
+  )
+  expect(rms(window(x, 0.5, 1))).toBeGreaterThan(0.03)
+  expect(rms(window(x, 2, 3))).toBeLessThan(1e-6)
 })
