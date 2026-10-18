@@ -41,7 +41,7 @@ const TOP = ROOM
 const LOW = ROOM + BOX_H + ROW_GAP
 const HEIGHT = LOW + BOX_H + ROOM
 const VOICES_W = 64
-const SIDE = 8
+const SIDE = 11
 
 const widest = (...names: string[]) => Math.max(...names.map(boxWidth))
 const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')

@@ -66,6 +66,7 @@ const REC_X = 152
 const HEAD_GAP = 68
 const LOOP_ROUND = 24
 const LOOP_LEFT = REC_X - 8
+const CAPSTAN_X = LOOP_LEFT - 2
 const LOOP_RIGHT = REC_X + HEAD_GAP * 3 + 24
 const TAPE_Y = 48
 const LOOP_BOTTOM = TAPE_Y + LOOP_ROUND * 2
@@ -76,7 +77,6 @@ const INPUT_Y = 40
 const BUS_Y = 14
 const RETURN_Y = LOOP_BOTTOM + 14
 const TIME_Y = TAPE_Y + 26
-const CAPSTAN_X = 206
 const OUT_X = WIDTH - 8
 
 const headX = (n: number) => REC_X + HEAD_GAP * n
@@ -222,8 +222,9 @@ export function TapeLoopDiagram() {
               </title>
               <Capstan x={CAPSTAN_X} y={LOOP_BOTTOM} />
               <Label
-                x={CAPSTAN_X + 10}
+                x={CAPSTAN_X - 26}
                 y={LOOP_BOTTOM - 5}
+                anchor="end"
                 on={r.touched(...OPENS.transport)}
               >
                 transport

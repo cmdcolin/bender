@@ -195,7 +195,7 @@ export function MonoPathDiagram({
               d={`M${loud.x + loud.w} ${MID} H${WIDTH - 2}`}
               look={flow}
             />
-            <Label x={WIDTH - 2} y={MID - 4} anchor="end">
+            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
               out
             </Label>
             <Wire
