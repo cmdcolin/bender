@@ -16,6 +16,7 @@
 /* Where the tape comes from, what the transport does, how fast it runs. */
 .group {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-xs);
 }
 

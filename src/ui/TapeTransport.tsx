@@ -23,9 +23,9 @@ function play() {
 }
 
 // What you do to a tape loop with your hand on it: start it, stop it, turn it
-// round, run it at half or double. The Speed knob in the panel does all of it
-// and more; these are the keys that come up every time, laid out as on a deck:
-// play stays down until stop pops it.
+// round, step it through half, normal and double. The Speed knob in the panel
+// does all of it and more; these are the keys that come up every time, laid out
+// as on a deck: play stays down until stop pops it.
 export function TapeTransport({
   loaded,
   lead,
@@ -40,9 +40,11 @@ export function TapeTransport({
     SPEED_LABELS.find(l => Math.abs(Math.abs(speed) - SPEEDS[l]) < 0.005) ??
     null
 
-  const speedTip = loaded
-    ? 'Tape speed: half, normal or double, in whichever direction it is running. The Speed knob in the panel goes anywhere between.'
-    : NOTHING
+  const shown = current ?? `${Math.abs(speed).toFixed(2)}×`
+  const next: Speed =
+    current === null
+      ? '1×'
+      : SPEED_LABELS[(SPEED_LABELS.indexOf(current) + 1) % SPEED_LABELS.length]!
 
   return (
     <DeckWell label="tape deck">
@@ -92,20 +94,23 @@ export function TapeTransport({
         </Tip>
       </DeckGroup>
       <DeckGroup>
-        {SPEED_LABELS.map(l => (
-          <Tip key={l} text={speedTip}>
-            <DeckWord
-              name={l}
-              latched={l === current}
-              disabled={!loaded}
-              onClick={() =>
-                engine.set('sampleSpeed', (reversed ? -1 : 1) * SPEEDS[l])
-              }
-            >
-              {l}
-            </DeckWord>
-          </Tip>
-        ))}
+        <Tip
+          text={
+            loaded
+              ? `Tape speed, stepping through half, normal and double in whichever direction it is running — press for ${next}. The Speed knob in the panel goes anywhere between.`
+              : NOTHING
+          }
+        >
+          <DeckWord
+            name={`tape speed ${shown}`}
+            disabled={!loaded}
+            onClick={() =>
+              engine.set('sampleSpeed', (reversed ? -1 : 1) * SPEEDS[next])
+            }
+          >
+            {shown}
+          </DeckWord>
+        </Tip>
       </DeckGroup>
       {loaded && (
         <DeckGroup>

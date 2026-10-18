@@ -10,29 +10,31 @@ import './testDom.ts'
 const press = (name: string) =>
   fireEvent.click(screen.getByRole('button', { name }))
 const speed = () => engine.controls.get().sampleSpeed
+const speedKey = () => screen.getByRole('button', { name: /^tape speed/ })
 
 test('with nothing on the tape every verb is dead', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<TapeTransport loaded={false} />)
   expect(screen.queryByRole('slider', { name: 'Level' })).toBeNull()
-  for (const name of ['play', 'reverse', '½×', '1×', '2×'])
+  for (const name of ['play', 'reverse', 'tape speed 1×'])
     expect(
       screen.getByRole<HTMLButtonElement>('button', { name }).disabled,
     ).toBe(true)
 })
 
-test('reverse turns the speed round and the speed picks keep the direction', () => {
+test('the speed key steps half, normal, double and keeps the direction', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, sampleSpeed: 1 })
   render(<TapeTransport loaded />)
-  press('2×')
+  fireEvent.click(speedKey())
   expect(speed()).toBe(2)
   press('reverse')
   expect(speed()).toBe(-2)
   expect(screen.getByRole('button', { name: 'reverse' }).ariaPressed).toBe(
     'true',
   )
-  press('½×')
+  fireEvent.click(speedKey())
   expect(speed()).toBe(-0.5)
+  expect(speedKey().textContent).toBe('½×')
   press('reverse')
   expect(speed()).toBe(0.5)
 })
@@ -44,11 +46,12 @@ test('reverse on a frozen tape runs it backwards at normal speed', () => {
   expect(speed()).toBe(-1)
 })
 
-test('a speed between the picks leaves all three unpressed', () => {
+test('a speed between the steps reads off the key and steps back to normal', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, sampleSpeed: 1.37 })
   render(<TapeTransport loaded />)
-  for (const name of ['½×', '1×', '2×'])
-    expect(screen.getByRole('button', { name }).ariaPressed).toBe('false')
+  expect(speedKey().textContent).toBe('1.37×')
+  fireEvent.click(speedKey())
+  expect(speed()).toBe(1)
 })
 
 test('play starts the tape and stop takes the level back to nothing', () => {

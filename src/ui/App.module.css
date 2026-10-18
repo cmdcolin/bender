@@ -195,6 +195,7 @@
 }
 
 .box {
+  container-type: inline-size;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -235,6 +236,14 @@
    shrinking to a sliver beside it. */
 .artRow > .controls {
   flex: 1 1 8rem;
+}
+
+/* A narrow recorder drops the cassette, so the counter and its keys share one
+   row. The counter and REC say a take is running without it. */
+@container (max-width: 420px) {
+  .artRow > svg {
+    display: none;
+  }
 }
 
 .controls {
@@ -289,17 +298,14 @@
   composes: actionLoudOn from './button.module.css';
 }
 
-/* The empty reel: the same dark strip the tape is drawn on, with a reel hub
-   at each end, so a tape loop with nothing on it is the same height as one with
-   a tape and the drop target looks like the thing it is feeding. */
-.emptyReel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
+.emptyTape {
+  margin: 0;
   font-size: var(--fs-xs);
+  color: var(--fg3);
 }
 
-.slot,
+/* The drop target while a file is over the app: the dark strip the tape is
+   drawn on, with a reel hub at each end. */
 .slotHot {
   position: relative;
   display: flex;
@@ -311,14 +317,12 @@
   font-size: var(--fs-xs);
   line-height: 1.2;
   text-align: center;
-  color: var(--fg4);
+  color: var(--accent);
   background: #0a0a0c;
-  border: 1px solid var(--border-quiet);
+  border: 1px solid var(--accent);
   border-radius: 4px;
 }
 
-.slot::before,
-.slot::after,
 .slotHot::before,
 .slotHot::after {
   content: '';
@@ -327,28 +331,16 @@
   width: 14px;
   height: 14px;
   margin-top: -7px;
-  border: 2px solid var(--border);
+  border: 2px solid var(--accent);
   border-radius: 50%;
 }
 
-.slot::before,
 .slotHot::before {
   left: var(--space-lg);
 }
 
-.slot::after,
 .slotHot::after {
   right: var(--space-lg);
-}
-
-.slotHot {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.slotHot::before,
-.slotHot::after {
-  border-color: var(--accent);
 }
 
 .tapeName {

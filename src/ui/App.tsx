@@ -318,11 +318,7 @@ export function App(props: { openedFromLink?: boolean }) {
     if (file) await engine.loadSample(file)
   }
 
-  const drop = (
-    <p className={dragging ? styles.slotHot : styles.slot}>
-      drop an audio file anywhere
-    </p>
-  )
+  const drop = <p className={styles.slotHot}>drop an audio file anywhere</p>
 
   return (
     // The whole window takes the drop, because the hint says anywhere and a
@@ -456,14 +452,13 @@ export function App(props: { openedFromLink?: boolean }) {
                   onDone={() => setShowShelf(false)}
                 />
               )}
-              {sampleName ? (
-                dragging && drop
-              ) : (
-                <div className={styles.emptyReel}>
-                  {drop}
-                  <span className={styles.tapeName}>nothing on the tape</span>
-                </div>
-              )}
+              {dragging
+                ? drop
+                : !sampleName && (
+                    <p className={styles.emptyTape}>
+                      nothing on the tape: drop an audio file anywhere
+                    </p>
+                  )}
               <SampleReel>
                 {sampleName && (
                   <span className={styles.tapeName} title={sampleName}>

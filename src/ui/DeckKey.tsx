@@ -133,7 +133,7 @@ export function DeckWord({
   name,
   latched,
   ...rest
-}: Rest & { children: ReactNode; name: string; latched: boolean }) {
+}: Rest & { children: ReactNode; name: string; latched?: boolean }) {
   return (
     <button
       {...rest}
@@ -155,8 +155,8 @@ export function DeckWell(props: { label: string; children: ReactNode }) {
   )
 }
 
-// Keys that belong together. A bar that runs out of width wraps between groups
-// rather than through one.
+// Keys that belong together. A bar that runs out of width wraps between groups,
+// and through one only when the group alone is wider than the bar.
 export function DeckGroup(props: { children: ReactNode }) {
   return <div className={styles.group}>{props.children}</div>
 }
