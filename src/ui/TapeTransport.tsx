@@ -20,9 +20,14 @@ let resumeLevel = 0.7
 let resumeRec = 1
 
 function arm() {
-  const rec = engine.controls.get().loopRec
-  if (rec > 0) resumeRec = rec
-  engine.set('loopRec', rec > 0 ? 0 : resumeRec)
+  const { loopRec, sampleLevel } = engine.controls.get()
+  if (loopRec > 0) {
+    resumeRec = loopRec
+    engine.set('loopRec', 0)
+    return
+  }
+  if (sampleLevel <= 0) engine.set('sampleLevel', resumeLevel)
+  engine.set('loopRec', resumeRec)
 }
 
 function play() {
@@ -156,7 +161,7 @@ export function TapeTransport({
           text={
             arming
               ? 'Stops laying the board’s output onto the tape.'
-              : 'Lays the board’s output onto the tape where the play head is reading, over whatever is there. With nothing loaded it threads a blank reel first. Press play to hear it come round.'
+              : 'Lays the board’s output onto the tape where the play head is reading, over whatever is there, and starts the tape playing so what is already on it comes round into the new take. With nothing loaded it threads a blank reel first.'
           }
         >
           <DeckKey

@@ -51,6 +51,21 @@ test('rec works with nothing loaded and latches while the record head is armed',
   expect(engine.controls.get().loopRec).toBe(0)
 })
 
+test('rec starts the tape playing, since playback is how old takes survive the erase head', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, sampleLevel: 0, loopRec: 0 })
+  render(<TapeTransport loaded />)
+  fireEvent.click(screen.getByRole('button', { name: 'record onto the tape' }))
+  expect(engine.controls.get().sampleLevel).toBeGreaterThan(0)
+  expect(engine.controls.get().loopRec).toBeGreaterThan(0)
+})
+
+test('rec leaves a tape that is already playing at its level', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, sampleLevel: 1.5, loopRec: 0 })
+  render(<TapeTransport loaded />)
+  fireEvent.click(screen.getByRole('button', { name: 'record onto the tape' }))
+  expect(engine.controls.get().sampleLevel).toBe(1.5)
+})
+
 test('rec comes back on the level it was last set to', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, loopRec: 0.4 })
   render(<TapeTransport loaded />)
