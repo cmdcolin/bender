@@ -59,6 +59,15 @@ const GLYPHS = {
   cancel: (
     <path d="M2 1 6 5 10 1 11 2 7 6 11 10 10 11 6 7 2 11 1 10 5 6 1 2Z" />
   ),
+  undo: (
+    <path d="M4.5 1 .5 4.5l4 3.5V5.6c2.7 0 4.4 1 5.2 4.4.3-4.2-2-6.8-5.2-6.8Z" />
+  ),
+  redo: (
+    <path
+      transform="matrix(-1 0 0 1 12 0)"
+      d="M4.5 1 .5 4.5l4 3.5V5.6c2.7 0 4.4 1 5.2 4.4.3-4.2-2-6.8-5.2-6.8Z"
+    />
+  ),
 } as const
 
 export type Glyph = keyof typeof GLYPHS

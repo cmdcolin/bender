@@ -140,6 +140,8 @@ export interface Meter {
   sampleSecs: number
   samplePos: number
   samplePlaying: boolean
+  sampleTaking: boolean
+  sampleUndo: number
   samplePeaks: Float32Array
   /** The stretch of reel that came round last block. The two knobs until a wire
       off the bay lands on the markers, and the wire's answer after that. */
@@ -325,6 +327,8 @@ export class Engine {
       sampleSecs: 0,
       samplePos: 0,
       samplePlaying: false,
+      sampleTaking: false,
+      sampleUndo: 0,
       samplePeaks: new Float32Array(PEAK_BINS),
       sampleIn: 0,
       sampleOut: 1,
@@ -563,6 +567,8 @@ export class Engine {
           sampleSecs: msg.sampleSecs,
           samplePos: msg.samplePos,
           samplePlaying: msg.samplePlaying,
+          sampleTaking: msg.sampleTaking,
+          sampleUndo: msg.sampleUndo,
           samplePeaks: msg.samplePeaks,
           sampleIn: msg.sampleIn,
           sampleOut: msg.sampleOut,
@@ -1029,6 +1035,18 @@ export class Engine {
   /** Drop the play head on the reel, 0..1 over the whole of it. */
   seekSample(frac: number) {
     this.post({ kind: 'seek', frac })
+  }
+
+  /** Ends the first take where the head stands, so the loop is as long as the
+      take was. */
+  closeTake() {
+    this.post({ kind: 'closeTake' })
+  }
+
+  /** Swaps the reel with the copy made when the record head was last armed,
+      which makes a second press a redo. */
+  undoTake() {
+    this.post({ kind: 'undoTake' })
   }
 
   /** A blank cassette in the four-track: every loop wiped, its wear gone. */

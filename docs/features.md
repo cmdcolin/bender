@@ -52,16 +52,19 @@ renders it with the same layout the app uses.
 - **The tape loop re-records itself.** Drop an audio file anywhere on the page,
   or roll one off archive.org, and it plays at any speed either way round. Press
   _rec_ on the deck, or raise _Record_, and the board lays its own output back
-  onto the reel where the play head is reading, on a blank reel if nothing is
-  loaded: what comes past next lap has been through the mix bus, the bends, the
-  pedals and the tape machine, and goes through all of them again. Nothing
-  stands in for generation loss — the loop really is re-recorded every lap,
-  which is why a bend in the path makes it diverge rather than fade. The reel
-  under the keys is drawn off the tape as the head reads it: drag its two
-  markers to trim the loop, drag the tape itself to move the head. _Wear_ and
-  _Hiss_ add the head's own cost to each lap. The top end goes a little more
-  every pass, and a layer of noise goes down under the last. _Hold_ turns the
-  write up by what a lap lost, so a loop stays at its level.
+  onto the reel where the play head is reading. With nothing loaded, _rec_
+  starts a first take on a blank reel, and a second press closes the loop at the
+  length you played and sets it going round. Each later press overdubs, and
+  _undo_ takes the last overdub off again. What comes past next lap has been
+  through the mix bus, the bends, the pedals and the tape machine, and goes
+  through all of them again. Nothing stands in for generation loss — the loop
+  really is re-recorded every lap, which is why a bend in the path makes it
+  diverge rather than fade. The reel under the keys is drawn off the tape as the
+  head reads it: drag its two markers to trim the loop, drag the tape itself to
+  move the head. _Wear_ and _Hiss_ add the head's own cost to each lap. The top
+  end goes a little more every pass, and a layer of noise goes down under the
+  last. _Hold_ turns the write up by what a lap lost, so a loop stays at its
+  level.
 - **A microphone into the middle of the board.** _Mic patch_ is not a channel —
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
@@ -607,7 +610,7 @@ while the head plays on.
 | Loop out             | 0.0% to 100.0%                                                              | Where the loop ends                                                                                                                                 |
 | Record               | off to full                                                                 | How much of the board’s own output the record head lays back down, on the spot the play head is reading                                             |
 | Erase                | off to full                                                                 | How much of what is already on the tape the erase head takes off on the way past, permanently, and only while Record above is doing anything at all |
-| Reel length          | 0.25 to 20 s                                                                | How long a blank reel to thread when you arm the record head with nothing loaded                                                                    |
+| Reel length          | 0.25 to 20 s                                                                | The longest first take                                                                                                                              |
 | Hold                 | off to full                                                                 | Makes up what each lap costs, up to double the level, so a loop locked into a jam stays where it is                                                 |
 | Wear                 | off to full                                                                 | The oxide takes the top off whatever the record head lays down, every time it does                                                                  |
 | Hiss                 | off to full                                                                 | Noise laid onto the tape itself, where it stays                                                                                                     |
@@ -1510,7 +1513,7 @@ board on it — a link never presses play, so it is loaded and waiting.
   — Bad power: hum, sag and a straining supply
 - [**fm howl**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,oscLevel:0.7,oscAHz:110,delayMs:260,dlyFb:0.6,dlyMix:0.4,fbAmt:1.2,fbDelayMs:40,fbDest:1)
   — The feedback bus soldered onto the FM input
-- [**the loop eats itself**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,sampleLevel:1,loopRec:1,loopErase:0.12,tapeMix:1,tapeSpeed:0,tapeDrive:5,tapeHiss:0.5,tapeWow:0.35,tapeDrop:0.45)
+- [**the loop eats itself**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,sampleLevel:1,loopRec:1,loopErase:0.12,loopSecs:4,tapeMix:1,tapeSpeed:0,tapeDrive:5,tapeHiss:0.5,tapeWow:0.35,tapeDrop:0.45)
   — Blank tape under the toy, coming round worse every lap — press play and
   watch the reel
 - [**four loops, no common length**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.5,keyScale:2,chipClockX:0.8,fourLevel:0.9,fourDbx:1,fourHiss:0.35,fourWow:0.4,fourFlutter:0.3,four1In:1,four1Rec:0.3,four1Erase:0.35,four2In:1,four2Rec:0.3,four2Erase:0.35,four3In:1,four3Rec:0.3,four3Erase:0.35,four4In:1,four4Rec:0.3,four4Erase:0.35,revDecayS:4,revMix:0.35)
@@ -1669,7 +1672,7 @@ board on it — a link never presses play, so it is loaded and waiting.
   — Every hit from the kit throws the springs against the housing
 - [**played backwards**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,echoMode:2,echoMs:500,echoLevel:0.75,revMix:0.25)
   — Half a second at a time, each one handed back the other way round
-- [**wandering loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.45,sampleLevel:1,loopRec:0.7,loopErase:0.3,loopOut:0.14,modLfoHz:0.06,mod0Src:1,mod0Dest:23,mod0Depth:0.9,tapeMix:0.6)
+- [**wandering loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.45,sampleLevel:1,loopRec:0.7,loopErase:0.3,loopSecs:4,loopOut:0.14,modLfoHz:0.06,mod0Src:1,mod0Dest:23,mod0Depth:0.9,tapeMix:0.6)
   — A blank reel, a short loop walking over what the toy put on it — press play
 - [**seasick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,echoMs:300,echoFb:0.55,echoLevel:0.6,modLfoHz:0.35,mod0Src:1,mod0Dest:21,mod0Depth:0.3)
   — A wire off the bay onto the pedal’s time — the repeats never settle

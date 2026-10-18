@@ -102,6 +102,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       sampleSecs: 0,
       samplePos: 0,
       samplePlaying: false,
+      sampleTaking: false,
+      sampleUndo: 0,
       samplePeaks: sampler.peaks,
       sampleIn: 0,
       sampleOut: 1,
@@ -122,6 +124,12 @@ class BenderProcessor extends AudioWorkletProcessor {
           break
         case 'seek':
           this.built.sampler.seek(msg.frac)
+          break
+        case 'closeTake':
+          this.built.sampler.closeTake()
+          break
+        case 'undoTake':
+          this.built.sampler.undo()
           break
         case 'fourBlank':
           this.built.fourTrack.blank()
@@ -358,6 +366,8 @@ class BenderProcessor extends AudioWorkletProcessor {
       m.sampleSecs = sampler.frames / sampleRate
       m.samplePos = sampler.head
       m.samplePlaying = sampler.rolling
+      m.sampleTaking = sampler.open
+      m.sampleUndo = sampler.undoState
       m.sampleIn = sampler.windowIn
       m.sampleOut = sampler.windowOut
       this.port.postMessage(m)

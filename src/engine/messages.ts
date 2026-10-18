@@ -26,6 +26,18 @@ export interface SeekMsg {
   frac: number
 }
 
+/** Close the first take where the head stands, so the loop is as long as the
+    take was. Where the head stands is the worklet's to say, so this travels as
+    a gesture and the cut lands on the block it arrives in. */
+export interface CloseTakeMsg {
+  kind: 'closeTake'
+}
+
+/** Swap the reel with the copy made when the record head was last armed. */
+export interface UndoTakeMsg {
+  kind: 'undoTake'
+}
+
 /** Which keybed a note came off. The toy's gate is the default and reaches the
     FM chip, the home keyboard and the mono synth too wherever those jumpers are
     still soldered on; the other three are the beds drawn under it, each wired
@@ -84,6 +96,8 @@ export type ToWorklet =
   | ParamsMsg
   | SampleMsg
   | SeekMsg
+  | CloseTakeMsg
+  | UndoTakeMsg
   | FourBlankMsg
   | NoteMsg
   | DrumHitMsg
@@ -162,6 +176,8 @@ export interface MeterMsg {
   sampleSecs: number
   samplePos: number
   samplePlaying: boolean
+  sampleTaking: boolean
+  sampleUndo: number
   samplePeaks: Float32Array
   /** The stretch of reel that came round last block, 0..1 over the whole of
       it. Not the two knobs: a wire off the bay onto the markers moves the

@@ -19,14 +19,20 @@ const NOTHING =
 let resumeLevel = 0.7
 let resumeRec = 1
 
+// Rec on an empty deck starts a first take with Hold up, so the loop keeps its
+// level. Pressed again it closes the loop at the length played and starts it
+// round; after that each press arms and disarms the record head for overdubs.
 function arm() {
-  const { loopRec, sampleLevel } = engine.controls.get()
+  const { loopRec, sampleLevel, loopHold } = engine.controls.get()
+  const { sampleSecs, sampleTaking } = engine.meter.get()
   if (loopRec > 0) {
+    if (sampleTaking) engine.closeTake()
     resumeRec = loopRec
     engine.set('loopRec', 0)
     return
   }
   if (sampleLevel < 1) engine.set('sampleLevel', 1)
+  if (sampleSecs === 0 && loopHold === 0) engine.set('loopHold', 1)
   engine.set('loopRec', resumeRec)
 }
 
@@ -100,6 +106,8 @@ export function TapeTransport({
   const reversed = speed < 0
   const arming = useBoardValue(c => c.loopRec > 0)
   const threaded = useMeterValue(m => m.sampleSecs > 0)
+  const taking = useMeterValue(m => m.sampleTaking)
+  const undoState = useMeterValue(m => m.sampleUndo)
   const on = loaded || threaded
   const current =
     SPEED_LABELS.find(l => Math.abs(Math.abs(speed) - SPEEDS[l]) < 0.005) ??
@@ -159,9 +167,11 @@ export function TapeTransport({
         </Tip>
         <Tip
           text={
-            arming
-              ? 'Stops laying the board’s output onto the tape.'
-              : 'Lays the board’s output onto the tape where the play head is reading, over whatever is there, and starts the tape playing at ×1 or louder, so what is already on it comes round into the new take. Every lap is multiplied by Level, so a quieter loop fades. With nothing loaded it threads a blank reel first.'
+            taking
+              ? 'Closes the loop where the tape has got to, so it is as long as the take, and starts it going round.'
+              : arming
+                ? 'Stops laying the board’s output onto the tape.'
+                : 'Lays the board’s output onto the tape where the play head is reading, over whatever is there, and starts the tape playing at ×1 or louder, so what is already on it comes round into the new take. Every lap is multiplied by Level, so a quieter loop fades. With nothing loaded it starts a first take with no end, with Hold up; press rec again to close the loop at that length.'
           }
         >
           <DeckKey
@@ -185,6 +195,24 @@ export function TapeTransport({
             'loopSecs',
           ]}
         />
+      </DeckGroup>
+      <DeckGroup>
+        <Tip
+          text={
+            undoState === 0
+              ? 'Nothing to undo. Arming the record head keeps a copy of the tape first, so the next overdub can be taken back.'
+              : undoState === 2
+                ? 'Puts back the overdub that was taken off.'
+                : 'Takes off the last overdub. Press again to put it back.'
+          }
+        >
+          <DeckKey
+            glyph={undoState === 2 ? 'redo' : 'undo'}
+            legend={undoState === 2 ? 'redo' : 'undo'}
+            disabled={undoState === 0}
+            onClick={() => engine.undoTake()}
+          />
+        </Tip>
       </DeckGroup>
       <DeckGroup>
         <Tip

@@ -429,8 +429,11 @@ renders it with the same layout the app uses.
 - **The tape loop re-records itself.** Drop an audio file anywhere on the page, or roll
   one off archive.org, and it plays at any speed either way round. Press *rec*
   on the deck, or raise *Record*, and the board lays its own output back onto the
-  reel where the play head is reading, on a blank reel if nothing is loaded: what comes past next lap has been through the mix bus, the bends, the
-  pedals and the tape machine, and goes through all of them again. Nothing
+  reel where the play head is reading. With nothing loaded, *rec* starts a first
+  take on a blank reel, and a second press closes the loop at the length you
+  played and sets it going round. Each later press overdubs, and *undo* takes the
+  last overdub off again. What comes past next lap has been through the mix bus,
+  the bends, the pedals and the tape machine, and goes through all of them again. Nothing
   stands in for generation loss — the loop really is re-recorded every lap,
   which is why a bend in the path makes it diverge rather than fade. The reel
   under the keys is drawn off the tape as the head reads it: drag its two

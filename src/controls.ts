@@ -397,7 +397,7 @@ export const DEFAULT_CONTROLS = {
   sampleMode: 0,
   loopRec: 0,
   loopErase: 1,
-  loopSecs: 4,
+  loopSecs: 20,
   loopWear: 0,
   loopHiss: 0,
   loopHold: 0,

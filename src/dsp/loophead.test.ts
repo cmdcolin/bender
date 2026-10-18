@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest'
 
+import { IDX } from '../engine/params.ts'
 import { SR, renderBender, rms, sine } from './testRender.ts'
 
 import type { Controls } from '../controls.ts'
@@ -171,4 +172,106 @@ test('Hold keeps a loop at its level across laps that would fade it', () => {
   expect(fade).toBeLessThan(0.3)
   expect(held).toBeGreaterThan(0.8)
   expect(held).toBeLessThan(1.25)
+})
+
+const TAKE: Partial<Controls> = {
+  chipLevel: 0,
+  drumLevel: 0,
+  sampleLevel: 1,
+  loopRec: 1,
+  loopSecs: 10,
+}
+
+test('closing a first take cuts the reel to what was played and starts it round', () => {
+  let frames = 0
+  let openBefore = false
+  let openAfter = true
+  renderBender(TAKE, 1.6, undefined, undefined, (built, secs) => {
+    if (secs < 1) openBefore = built.sampler.open
+    if (secs >= 1 && built.sampler.open) built.sampler.closeTake()
+    if (secs >= 1.5) openAfter = built.sampler.open
+    frames = built.sampler.frames
+  })
+  expect(openBefore).toBe(true)
+  expect(openAfter).toBe(false)
+  expect(Math.abs(frames - SR)).toBeLessThanOrEqual(256)
+})
+
+test('a take that runs out of reel closes itself at the end of it', () => {
+  let open = true
+  let frames = 0
+  renderBender({ ...TAKE, loopSecs: 0.5 }, 1.2, undefined, undefined, built => {
+    open = built.sampler.open
+    frames = built.sampler.frames
+  })
+  expect(open).toBe(false)
+  expect(frames).toBe(Math.round(0.5 * SR))
+})
+
+test('closing a take the instant it starts leaves a loop of a sane length', () => {
+  let frames = 0
+  renderBender(TAKE, 0.2, undefined, undefined, (built, secs) => {
+    if (secs > 0.01) built.sampler.closeTake()
+    frames = built.sampler.frames
+  })
+  expect(frames).toBeGreaterThanOrEqual(Math.round(0.05 * SR))
+})
+
+test('disarming the head ends the take where the head had got to', () => {
+  let frames = 0
+  renderBender(TAKE, 1.5, undefined, undefined, (built, secs, p) => {
+    if (secs >= 1) p[IDX.loopRec] = 0
+    frames = built.sampler.frames
+  })
+  expect(Math.abs(frames - SR)).toBeLessThanOrEqual(256)
+})
+
+test('undo takes off the last overdub and a second undo puts it back', () => {
+  const before = seeded()
+  let tape: Float32Array | null = null
+  let states: number[] = []
+  renderBender(
+    { ...PLAYING, loopRec: 0, loopErase: 1 },
+    2.5,
+    built => {
+      built.sampler.setBuffer(Float32Array.from(before))
+    },
+    undefined,
+    (built, secs, p) => {
+      tape = built.sampler.mono
+      if (secs === 0) states = [built.sampler.undoState]
+      if (secs >= 0.2 && p[IDX.loopRec] === 0 && secs < 0.3) p[IDX.loopRec] = 1
+      if (secs >= 1 && secs < 1.1) p[IDX.loopRec] = 0
+      if (secs >= 1.5 && states.length === 1) {
+        states.push(built.sampler.undoState)
+        built.sampler.undo()
+        states.push(built.sampler.undoState)
+        expect(Array.from(tape!)).toEqual(Array.from(before))
+      }
+      if (secs >= 2 && states.length === 3) {
+        built.sampler.undo()
+        states.push(built.sampler.undoState)
+        expect(Array.from(tape!)).not.toEqual(Array.from(before))
+      }
+    },
+  )
+  expect(states).toEqual([0, 1, 2, 1])
+})
+
+test('loading a file drops the undo copy', () => {
+  let state = -1
+  renderBender(
+    { ...PLAYING, loopRec: 1 },
+    0.3,
+    built => built.sampler.setBuffer(seeded()),
+    undefined,
+    (built, secs) => {
+      if (secs > 0.2 && state < 0) {
+        expect(built.sampler.undoState).toBe(1)
+        built.sampler.setBuffer(seeded())
+        state = built.sampler.undoState
+      }
+    },
+  )
+  expect(state).toBe(0)
 })

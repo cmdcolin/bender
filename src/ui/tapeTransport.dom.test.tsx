@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { act } from 'react'
+import { afterEach, expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
@@ -154,4 +155,63 @@ test('the Level slider sets the tape level and play after stop goes back to it',
   expect(engine.controls.get().sampleLevel).toBe(0)
   press('play')
   expect(engine.controls.get().sampleLevel).toBe(set)
+})
+
+const meterWith = (o: Partial<ReturnType<typeof engine.meter.get>>) =>
+  act(() => engine.meter.set({ ...engine.meter.get(), ...o }))
+
+afterEach(() =>
+  meterWith({ sampleSecs: 0, sampleTaking: false, sampleUndo: 0 }),
+)
+
+test('rec on an empty deck turns Hold up, and an overdub leaves Hold where it is', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, loopHold: 0 })
+  meterWith({ sampleSecs: 0, sampleTaking: false })
+  render(<TapeTransport loaded={false} />)
+  const rec = () => screen.getByRole('button', { name: 'record onto the tape' })
+  fireEvent.click(rec())
+  expect(engine.controls.get().loopHold).toBe(1)
+  fireEvent.click(rec())
+  engine.set('loopHold', 0)
+  meterWith({ sampleSecs: 2, sampleTaking: false })
+  fireEvent.click(rec())
+  expect(engine.controls.get().loopHold).toBe(0)
+})
+
+test('the second rec press closes an open take and stops the head', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, loopRec: 1 })
+  meterWith({ sampleSecs: 20, sampleTaking: true })
+  const close = vi.spyOn(engine, 'closeTake')
+  render(<TapeTransport loaded={false} />)
+  fireEvent.click(screen.getByRole('button', { name: 'record onto the tape' }))
+  expect(close).toHaveBeenCalledOnce()
+  expect(engine.controls.get().loopRec).toBe(0)
+  close.mockRestore()
+})
+
+test('disarming an overdub does not close anything', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, loopRec: 1 })
+  meterWith({ sampleSecs: 2, sampleTaking: false })
+  const close = vi.spyOn(engine, 'closeTake')
+  render(<TapeTransport loaded />)
+  fireEvent.click(screen.getByRole('button', { name: 'record onto the tape' }))
+  expect(close).not.toHaveBeenCalled()
+  close.mockRestore()
+})
+
+test('undo is dead until the record head has been armed, then undoes and redoes', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS })
+  meterWith({ sampleSecs: 2, sampleUndo: 0 })
+  const undo = vi.spyOn(engine, 'undoTake')
+  render(<TapeTransport loaded />)
+  const key = (name: string) =>
+    screen.getByRole<HTMLButtonElement>('button', { name })
+  expect(key('undo').disabled).toBe(true)
+  meterWith({ sampleUndo: 1 })
+  fireEvent.click(key('undo'))
+  expect(undo).toHaveBeenCalledOnce()
+  meterWith({ sampleUndo: 2 })
+  expect(key('redo').disabled).toBe(false)
+  expect(screen.queryByRole('button', { name: 'undo' })).toBeNull()
+  undo.mockRestore()
 })

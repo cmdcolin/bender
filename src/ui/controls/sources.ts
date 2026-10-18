@@ -2763,7 +2763,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 20,
         step: 0.25,
         unit: 's',
-        help: 'How long a blank reel to thread when you arm the record head with nothing loaded — the one setting here that never touches a recording that already exists. Read once, when the tape goes on: a reel you have already recorded on is the length it is, and a knob that resized it would be throwing the take away. Drop a file in and the file is the reel.',
+        help: 'The longest first take. Arming the record head with nothing loaded threads a blank reel this long and starts a take with no end. Closing the take cuts the reel to what was played, and a take that runs out of reel closes itself there. Read once, when the tape goes on: a reel you have already recorded on is the length it is, and a knob that resized it would be throwing the take away. Drop a file in and the file is the reel.',
       },
       {
         key: 'loopHold',

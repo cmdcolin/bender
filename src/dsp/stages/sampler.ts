@@ -46,6 +46,10 @@ const MIN_WINDOW = 2
 // The longest blank reel the Reel length knob threads.
 const MAX_REEL_S = 20
 
+// A take shorter than this is a stutter rather than a loop, and the key that
+// closes it is more likely a double press than a decision.
+const MIN_TAKE_S = 0.05
+
 // The two markers as frames. They round outward — the in point down, the out
 // point up — so a window is never narrower than the tape you asked for, and
 // only the in point is held back from the end: an out point clamped off the end
@@ -94,6 +98,16 @@ export class Sampler implements Stage {
   private readonly hissColor = new OnePoleLP()
   private envOld = 0
   private envLaid = 0
+  // A first take is open from the moment the head threads a blank reel until
+  // somebody closes it, and the loop is as long as the take was. A take that
+  // reaches the end of the reel closes itself there.
+  private taking = false
+  private armed = false
+  // One level of undo, held as the tape's other state: undoing swaps it with
+  // the reel, so undoing again is redo.
+  private undoBuf: Float32Array
+  private undoLen = 0
+  private undone = false
   private readonly hissRng: Rng = mulberry32(0x7a9e)
   // What the tape looks like, kept out here for the panel to draw. Written as
   // the head passes rather than rescanned: the record head rewrites the reel
@@ -115,6 +129,17 @@ export class Sampler implements Stage {
     this.sr = sr
     this.micTrig = new Transient(sr)
     this.blank = new Float32Array(Math.round(MAX_REEL_S * sr))
+    this.undoBuf = new Float32Array(this.blank.length)
+  }
+
+  /** Whether the reel is a first take still going on, with no end yet. */
+  get open(): boolean {
+    return this.taking
+  }
+
+  /** 0 with nothing to undo, 1 with a take to undo, 2 with one to redo. */
+  get undoState(): number {
+    return this.undoLen === 0 ? 0 : this.undone ? 2 : 1
   }
 
   /** The tape itself, for the one thing on the board that reads it rather
@@ -161,6 +186,8 @@ export class Sampler implements Stage {
     this.buf = mono
     this.pos = 0
     this.playing = true
+    this.taking = false
+    this.undoLen = 0
     this.binAt = -1
     if (peaks) this.peaks.set(peaks)
     else peaksOf(mono, this.peaks)
@@ -180,7 +207,12 @@ export class Sampler implements Stage {
   // counts too — a blank tape with the level down is what you thread before
   // there is anything to hear.
   when(p: Float32Array) {
-    return (p[IDX.sampleLevel]! > 0 && this.buf !== null) || p[IDX.loopRec]! > 0
+    return (
+      (p[IDX.sampleLevel]! > 0 && this.buf !== null) ||
+      p[IDX.loopRec]! > 0 ||
+      this.armed ||
+      this.taking
+    )
   }
 
   // Threading a blank tape, cut from the reel the constructor laid by so
@@ -195,8 +227,49 @@ export class Sampler implements Stage {
     this.buf = this.blank.subarray(0, n)
     this.pos = 0
     this.playing = true
+    this.taking = true
+    this.undoLen = 0
     this.binAt = -1
     this.peaks.fill(0)
+  }
+
+  /** Ends a first take where the head stands: the reel is cut to what has
+      been played and the head starts it round from the top. */
+  closeTake() {
+    const buf = this.buf
+    if (!this.taking || !buf) return
+    const len = Math.min(
+      Math.max(Math.floor(this.pos), Math.round(MIN_TAKE_S * this.sr)),
+      buf.length,
+    )
+    this.buf = buf.subarray(0, len)
+    this.pos = 0
+    this.taking = false
+    this.binAt = -1
+    peaksOf(this.buf, this.peaks)
+  }
+
+  /** Swaps the reel with the copy made when the record head was last armed. */
+  undo() {
+    const buf = this.buf
+    if (!buf || this.undoLen === 0 || buf.length !== this.undoLen) return
+    const other = this.undoBuf
+    for (let i = 0; i < buf.length; i++) {
+      const was = buf[i]!
+      buf[i] = other[i]!
+      other[i] = was
+    }
+    this.undone = !this.undone
+    this.binAt = -1
+    peaksOf(buf, this.peaks)
+  }
+
+  private snapshot(buf: Float32Array) {
+    if (this.undoBuf.length < buf.length)
+      this.undoBuf = new Float32Array(buf.length)
+    this.undoBuf.set(buf)
+    this.undoLen = buf.length
+    this.undone = false
   }
 
   private struck(trig: number, ctx: Ctx, i: number): boolean {
@@ -208,6 +281,10 @@ export class Sampler implements Stage {
   process(io: StereoBlock, p: Float32Array, ctx: Ctx) {
     const rec = p[IDX.loopRec]!
     if (rec > 0 && !this.buf) this.thread(p[IDX.loopSecs]!)
+    if (this.taking && rec <= 0) this.closeTake()
+    if (rec > 0 && !this.armed && !this.taking && this.buf)
+      this.snapshot(this.buf)
+    this.armed = rec > 0
     const buf = this.buf
     if (!buf || buf.length < 2) return
     const n = buf.length
@@ -321,6 +398,7 @@ export class Sampler implements Stage {
       // motor parked at the stop stays parked however hard anything pushes it.
       const next =
         this.pos + (modSpeed ? speed * octaves(modSpeed[i]! * 2) : speed)
+      if (this.taking && next >= to) this.taking = false
       if (oneShot && (next >= to || next < from)) this.playing = false
       this.pos = from + ((((next - from) % span) + span) % span)
 
