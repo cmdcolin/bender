@@ -355,3 +355,26 @@
     filter: brightness(1.07);
   }
 }
+
+/* The lamp in a gate jumper's button: hollow with the jumper cut, dim with it
+   soldered, lit while the toy's note is reaching the machine. */
+.gateLamp {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--space-xs);
+  border: 1px solid var(--fg4);
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.gateLamp[data-lamp='wired'] {
+  border-color: var(--accent2);
+  background: color-mix(in srgb, var(--accent2) 35%, transparent);
+}
+
+.gateLamp[data-lamp='sounding'] {
+  border-color: var(--accent2);
+  background: var(--accent2);
+  box-shadow: 0 0 5px var(--accent2);
+}

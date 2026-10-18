@@ -1,3 +1,4 @@
+import { engine } from '../engine/engine.ts'
 import styles from './FmKeys.module.css'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import { RailLamp } from './RailLamp.tsx'
@@ -32,6 +33,7 @@ export function FmKeys({
           <RailLamp onOpen={onOpen} />
           <GateJumper
             control="fmKeyGate"
+            notes={engine.fmNotes}
             cut={styles.cut}
             soldered={styles.soldered}
             cutTip="the jumper off the toy’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"

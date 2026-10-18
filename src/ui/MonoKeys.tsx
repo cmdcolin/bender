@@ -1,3 +1,4 @@
+import { engine } from '../engine/engine.ts'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './MonoKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -33,6 +34,7 @@ export function MonoKeys({
           <RailLamp onOpen={onOpen} />
           <GateJumper
             control="monoKeyGate"
+            notes={engine.monoNotes}
             cut={styles.cut}
             soldered={styles.soldered}
             cutTip="the jumper off the toy’s gate is cut, so notes reach the synth from these keys, the kit’s trigger lines and a controller. Press to solder it back on"

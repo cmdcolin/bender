@@ -130,11 +130,39 @@ test('moving the letters lets go of what they were holding', () => {
 
 test('the gate switch cuts the jumper, and the walk takes it back', () => {
   render(<FmKeys />)
-  fireEvent.click(screen.getByRole('button', { name: 'follows toy keys' }))
+  fireEvent.click(screen.getByRole('button', { name: 'toy keys on' }))
   expect(engine.controls.get().fmKeyGate).toBe(1)
-  expect(screen.getByRole('button', { name: 'toy keys cut' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'toy keys off' })).toBeTruthy()
   act(() => engine.undo(0))
   expect(engine.controls.get().fmKeyGate).toBe(0)
+})
+
+test('the jumper lamp says off, wired, and sounding', () => {
+  render(<MonoKeys />)
+  const lamp = () =>
+    screen
+      .getByRole('button', { name: /toy keys/ })
+      .querySelector('[data-lamp]')
+      ?.getAttribute('data-lamp')
+  act(() => engine.set('monoKeyGate', 0))
+  expect(lamp()).toBe('wired')
+  act(() => {
+    engine.chipNotes.set(new Set([60]))
+    engine.monoNotes.set(new Set([48]))
+  })
+  expect(lamp()).toBe('sounding')
+  act(() => engine.chipNotes.set(new Set()))
+  expect(lamp()).toBe('wired')
+  act(() => {
+    engine.chipNotes.set(new Set([60]))
+    engine.set('monoKeyGate', 1)
+  })
+  expect(lamp()).toBe('off')
+  act(() => {
+    engine.chipNotes.set(new Set())
+    engine.monoNotes.set(new Set())
+    engine.set('monoKeyGate', 0)
+  })
 })
 
 // The bed arrives with the chip it plays. A board with the FM chip down is the

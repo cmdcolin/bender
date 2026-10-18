@@ -34,6 +34,7 @@ import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { NoteDest } from '../engine/messages.ts'
+import type { Store } from '../listeners.ts'
 
 // The machines with keys on them, and the two stores each one reports through:
 // what a hand is holding down on that bed, and what the chip behind it is
@@ -62,32 +63,45 @@ const ROOMY_DECK = 560
 
 /** The jumper off the toy's gate line, which every bed but the toy's carries. Same
     switch, same two states, and the words are the caller's because the machine
-    on the other end of the wire is what they are about. */
+    on the other end of the wire is what they are about.
+
+    The lamp in the button has three states: hollow with the jumper cut, dim with
+    it soldered, and lit while the toy is sounding a note and this machine is
+    sounding one too. */
 export function GateJumper({
   control,
+  notes,
   cut: cutClass,
   soldered,
   cutTip,
   solderedTip,
 }: {
   control: ControlKey
+  /** What this machine is sounding, which includes the toy's notes with the jumper on. */
+  notes: Store<ReadonlySet<number>>
   cut?: string
   soldered?: string
   cutTip: string
   solderedTip: string
 }) {
   const cut = useControlValue(control) > 0.5
+  const toySounding = useStoreValue(engine.chipNotes).size > 0
+  const sounding = useStoreValue(notes).size > 0
+  const lamp = cut ? 'off' : toySounding && sounding ? 'sounding' : 'wired'
   return (
-    <Tip text={cut ? cutTip : solderedTip}>
+    <Tip
+      text={`${cut ? cutTip : solderedTip}. The lamp lights while the toy’s notes are reaching it.`}
+    >
       <button
         className={cut ? cutClass : soldered}
-        aria-pressed={cut}
+        aria-pressed={!cut}
         onClick={() => {
           engine.armStep()
           engine.set(control, cut ? 0 : 1)
         }}
       >
-        {cut ? 'toy keys cut' : 'follows toy keys'}
+        <span className={styles.gateLamp} data-lamp={lamp} aria-hidden="true" />
+        {cut ? 'toy keys off' : 'toy keys on'}
       </button>
     </Tip>
   )

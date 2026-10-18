@@ -1,3 +1,4 @@
+import { engine } from '../engine/engine.ts'
 import { GateJumper, Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -30,6 +31,7 @@ export function PcmKeys({
           <RailLamp onOpen={onOpen} />
           <GateJumper
             control="pcmKeyGate"
+            notes={engine.pcmNotes}
             cut={styles.cut}
             soldered={styles.soldered}
             cutTip="the jumper off the toy’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
