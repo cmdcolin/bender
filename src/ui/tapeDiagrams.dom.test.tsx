@@ -27,7 +27,7 @@ test('the tape delay keeps Time, Feedback and the echo level as rows, and the re
   press('transport controls')
   expect(screen.queryByText('Heads')).toBeNull()
   expect(screen.getAllByText('Splice')).toHaveLength(1)
-  press('loop controls')
+  press('tone controls')
   expect(screen.getAllByText('Loop filter')).toHaveLength(1)
 })
 

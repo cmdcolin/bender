@@ -106,6 +106,17 @@
   fill: var(--accent);
 }
 
+.headOff {
+  fill: none;
+  stroke: var(--fg4);
+}
+
+.tapeOn {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
 /* A box you can press: the pointer says so, a hair of fill says which one is
    open, and the focus ring is the browser's own on the group. */
 .pick {
@@ -116,6 +127,13 @@
 .pick:hover rect,
 .pick:focus-visible rect {
   stroke: var(--fg2);
+}
+
+.hit,
+.pick:hover .hit,
+.pick:focus-visible .hit {
+  fill: transparent;
+  stroke: none;
 }
 
 .selected {
