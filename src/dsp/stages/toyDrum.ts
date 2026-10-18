@@ -111,7 +111,7 @@ const ACCENT_ROW = GRID_ROWS.length - 1
 
 // Which envelope each amplifier leans across to, per drumCross choice. A voice
 // wired to itself is a voice nobody bridged.
-const CROSS_WIRING: readonly number[][] = [
+export const CROSS_WIRING: readonly number[][] = [
   [KICK, SNARE, HAT, CLAP, TOM, BELL, OHAT, CYM],
   [SNARE, KICK, HAT, CLAP, TOM, BELL, OHAT, CYM],
   [KICK, HAT, SNARE, CLAP, TOM, BELL, OHAT, CYM],
@@ -147,7 +147,7 @@ export const CHOKE_NAMES = [
   'kick cuts the kit',
 ]
 
-const CHOKE_WIRING: readonly Int8Array[] = [
+export const CHOKE_WIRING: readonly Int8Array[] = [
   chokeWiring(),
   chokeWiring([CYM, HAT]),
   chokeWiring([TOM, KICK]),
@@ -188,7 +188,7 @@ export const RING_TRIG_NAMES = [
 
 // Each entry is the voice the comparator listens to and the trigger lines it
 // strikes.
-const RING_TRIG_WIRING: readonly (readonly [number, number])[] = [
+export const RING_TRIG_WIRING: readonly (readonly [number, number])[] = [
   [-1, 0],
   [KICK, 1 << HAT],
   [KICK, 1 << SNARE],

@@ -97,8 +97,8 @@ function Say({
 // The parts of the toy chip the pin bends reach. The key matrix and the tune ROM
 // strike the voices, each voice's envelope sets its level, and the output pin
 // carries every voice off the chip. One clock times the voices, the scan counter
-// and the PWM carrier. The feedback bends solder one part's signal onto another
-// part, and each draws its own red wire.
+// and the PWM carrier. Each feedback bend solders one part's signal onto another
+// part, and the drawing gives each one its own red wire.
 export function ToyDieDiagram() {
   const r = useReadings(KEYS)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))

@@ -136,7 +136,7 @@ to the voices, the PWM carrier and the scan counter, and a dashed wire from the
 output back to the clock marks the crosstalk path. A bend turns its part or wire
 red, and the drawing hangs the **Bend spot** pot off the part it is soldered to.
 
-The feedback bends add red wires of their own:
+The drawing gives each feedback bend a red wire of its own:
 
 - **Step tap** runs from the voices up to the tune ROM.
 - **PWM tap** runs from the voices to the envelope, and the clock's PWM wire
@@ -994,6 +994,16 @@ ends up hearing another voice's envelope — a hit you can hear opens a channel
 nothing struck. **Rotate** cycles this through the original three voices;
 **Whole kit** extends it to every voice on the board, so a voice with no steps
 of its own can still fire off another voice's pattern.
+
+The _triggers and cross-patch_ fold draws these wires between the pattern, the
+eight voices and their amps:
+
+- A dashed red wire runs from the trigger line that chokes a voice to that
+  voice. The grey one is the hats' own pedal, which every choke keeps.
+- A solid red wire leaves a voice for a ring trigger and joins the trigger lines
+  it fires.
+- A cross-patch draws a red wire from a voice to the amp it now drives, and the
+  amp's own wire goes dashed. In the sampled kit those wires stay grey.
 
 **Mic patch** wires the mic past the mixer entirely, onto one of several points:
 the chip's supply rail, the oscillator's FM input, the delay's feedback path,

@@ -1,0 +1,305 @@
+import { VOICE_LABELS } from '../drums.ts'
+import {
+  CHOKE_WIRING,
+  CROSS_WIRING,
+  RING_TRIG_WIRING,
+} from '../dsp/stages/toyDrum.ts'
+import styles from './BusDiagram.module.css'
+import { Chip, type ChipBox } from './BusDiagram.tsx'
+import { sliderFor } from './controls/index.ts'
+import { boxWidth, useReadings } from './diagram.ts'
+import { Diagram, Wire } from './DiagramParts.tsx'
+
+const KEYS = [
+  'drumChoke',
+  'drumRingTrig',
+  'drumCross',
+  'drumCrossAmt',
+  'drumRom',
+] as const
+
+const CHOKES = sliderFor('drumChoke').choices!
+const RINGS = sliderFor('drumRingTrig').choices!
+const CROSSES = sliderFor('drumCross').choices!
+
+const WIDTH = 420
+const TOP = 16
+const ROW = 22
+const VOICE_H = 18
+const N = VOICE_LABELS.length
+const BOTTOM = TOP + N * ROW
+const HEIGHT = BOTTOM + 30
+const PATTERN_W = boxWidth('pattern')
+const VOICE_W = Math.max(...VOICE_LABELS.map(boxWidth))
+const AMPS_W = boxWidth('amps')
+const TAIL = 30
+const LANES_W = 110
+const VOICE_X = PATTERN_W + LANES_W
+const AMPS_X = WIDTH - TAIL - AMPS_W
+const LANE_STEP = 7
+const EDGE = 5
+
+const rowY = (v: number) => TOP + v * ROW + ROW / 2
+
+type Kind = 'pedal' | 'choke' | 'ring'
+
+// One wire in the lanes, from a trigger line (a choke) or a voice's tank (a ring
+// trigger) to one or more voices.
+interface Run {
+  kind: Kind
+  from: number
+  to: number[]
+}
+
+const PEDAL_CUT = CHOKE_WIRING[0]!.findIndex(by => by >= 0)
+const PEDAL_BY = CHOKE_WIRING[0]![PEDAL_CUT]!
+
+// A choke wire runs from the trigger line that drains a voice to that voice's
+// cap. The hats' pedal is wired in the metal, so every row of the table has it,
+// and the drawing keeps it grey.
+function runs(choke: number, ring: number): Run[] {
+  const out: Run[] = [{ kind: 'pedal', from: PEDAL_BY, to: [PEDAL_CUT] }]
+  const bySource = new Map<number, number[]>()
+  ;(CHOKE_WIRING[choke] ?? CHOKE_WIRING[0]!).forEach((by, cut) => {
+    if (by < 0 || cut === PEDAL_CUT) return
+    bySource.set(by, [...(bySource.get(by) ?? []), cut])
+  })
+  for (const [from, to] of bySource) out.push({ kind: 'choke', from, to })
+  const [tank, mask] = RING_TRIG_WIRING[ring] ?? RING_TRIG_WIRING[0]!
+  if (tank >= 0)
+    out.push({
+      kind: 'ring',
+      from: tank,
+      to: VOICE_LABELS.map((_, v) => v).filter(v => (mask >> v) & 1),
+    })
+  return out
+}
+
+// The lowest lane whose span no earlier run of a different net overlaps.
+function lanes(all: Run[]): number[] {
+  const taken: [number, number][][] = []
+  return all.map(run => {
+    const rows = [run.from, ...run.to]
+    const span: [number, number] = [Math.min(...rows), Math.max(...rows)]
+    let lane = 0
+    while ((taken[lane] ?? []).some(([a, b]) => span[0] <= b && a <= span[1]))
+      lane++
+    taken[lane] = [...(taken[lane] ?? []), span]
+    return lane
+  })
+}
+
+// A thin red wire with a small head, for a wire soldered where the board had none.
+function Bodge({
+  x1,
+  y1,
+  x2,
+  y2,
+  dashed,
+}: {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  dashed?: boolean
+}) {
+  const len = Math.hypot(x2 - x1, y2 - y1)
+  const [ux, uy] = [(x2 - x1) / len, (y2 - y1) / len]
+  const [bx, by] = [x2 - ux * 5, y2 - uy * 5]
+  return (
+    <>
+      <path
+        d={`M${x1} ${y1} L${bx} ${by}`}
+        className={styles.jumper}
+        strokeDasharray={dashed ? '3 2' : undefined}
+      />
+      <path
+        d={`M${x2} ${y2} L${bx - uy * 2.5} ${by + ux * 2.5} L${bx + uy * 2.5} ${by - ux * 2.5} Z`}
+        className={styles.solder}
+      />
+    </>
+  )
+}
+
+function RunWire({
+  run,
+  lane,
+  arrow,
+}: {
+  run: Run
+  lane: number
+  arrow: string
+}) {
+  const x = VOICE_X - 12 - lane * LANE_STEP
+  const ring = run.kind === 'ring'
+  const startY = rowY(run.from) - (ring ? EDGE : 0)
+  const ends = run.to.map(v => rowY(v) + (ring ? 0 : EDGE))
+  const ys = [startY, ...ends]
+  const pedal = run.kind === 'pedal'
+  const dot = pedal ? styles.joint : styles.solder
+  return (
+    <>
+      <path
+        d={`${ring ? `M${VOICE_X} ${startY} H${x} ` : ''}M${x} ${Math.min(...ys)} V${Math.max(...ys)}`}
+        className={pedal ? styles.trace : styles.jumper}
+        strokeDasharray={ring ? undefined : '3 2'}
+      />
+      <circle cx={ring ? VOICE_X : x} cy={startY} r={1.6} className={dot} />
+      {run.to.map((v, i) =>
+        ring ? (
+          <circle key={v} cx={x} cy={ends[i]} r={1.6} className={dot} />
+        ) : pedal ? (
+          <Wire
+            key={v}
+            arrow={arrow}
+            d={`M${x} ${ends[i]} H${VOICE_X}`}
+            look="dash"
+          />
+        ) : (
+          <Bodge
+            key={v}
+            x1={x}
+            y1={ends[i]!}
+            x2={VOICE_X}
+            y2={ends[i]!}
+            dashed
+          />
+        ),
+      )}
+    </>
+  )
+}
+
+// The kit's trigger side as the board wires it. The pattern's trigger lines run
+// into the eight voices, every voice runs into the amps, and three wires can
+// move. A choke wire drains a voice from another voice's trigger line, a ring
+// trigger fires trigger lines off one voice's tank, and the cross-patch hands an
+// amp another voice's envelope.
+export function KitWiringDiagram() {
+  const r = useReadings(KEYS)
+  const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
+  const choke = read('drumChoke')
+  const ring = read('drumRingTrig')
+  const cross = read('drumCross')
+  const sampled = read('drumRom') > 0
+  const crossing = cross > 0 && r.value('drumCrossAmt') > 0
+  const wiring = CROSS_WIRING[cross] ?? CROSS_WIRING[0]!
+  const all = runs(choke, ring)
+  const laneOf = lanes(all)
+  const pattern: ChipBox = {
+    name: 'pattern',
+    x: 0,
+    y: TOP,
+    w: PATTERN_W,
+    h: N * ROW,
+  }
+  const amps: ChipBox = {
+    name: 'amps',
+    x: AMPS_X,
+    y: TOP,
+    w: AMPS_W,
+    h: N * ROW,
+  }
+  const voices = VOICE_LABELS.map((name, v): ChipBox => ({
+    name,
+    x: VOICE_X,
+    y: rowY(v) - VOICE_H / 2,
+    w: VOICE_W,
+    h: VOICE_H,
+  }))
+  const voiceRight = VOICE_X + VOICE_W
+  const legend: [string, boolean][] = [
+    [choke > 0 ? CHOKES[choke]! : '', choke > 0],
+    [ring > 0 ? RINGS[ring]! : '', ring > 0],
+  ]
+  return (
+    <Diagram width={WIDTH} height={HEIGHT} label="drum kit wiring">
+      {arrow => (
+        <>
+          {voices.map((b, v) => (
+            <g key={b.name}>
+              <Wire arrow={arrow} d={`M${PATTERN_W} ${rowY(v)} H${VOICE_X}`} />
+              <Wire
+                arrow={arrow}
+                d={`M${voiceRight} ${rowY(v)} H${AMPS_X}`}
+                look={crossing && wiring[v] !== v ? 'dash' : 'plain'}
+              />
+            </g>
+          ))}
+          {crossing &&
+            wiring.map((from, v) =>
+              from === v ? null : sampled ? (
+                <Wire
+                  key={v}
+                  arrow={arrow}
+                  d={`M${voiceRight} ${rowY(from)} L${AMPS_X} ${rowY(v)}`}
+                  look="dash"
+                />
+              ) : (
+                <Bodge
+                  key={v}
+                  x1={voiceRight}
+                  y1={rowY(from)}
+                  x2={AMPS_X}
+                  y2={rowY(v)}
+                />
+              ),
+            )}
+          {all.map((run, i) => (
+            <RunWire
+              key={`${run.kind}${run.from}`}
+              run={run}
+              lane={laneOf[i]!}
+              arrow={arrow}
+            />
+          ))}
+          <Wire
+            arrow={arrow}
+            d={`M${AMPS_X + AMPS_W} ${TOP + (N * ROW) / 2} H${WIDTH - 2}`}
+          />
+          <text
+            x={WIDTH - 2}
+            y={TOP + (N * ROW) / 2 - 4}
+            textAnchor="end"
+            className={styles.bus}
+          >
+            out
+          </text>
+          <Chip
+            box={pattern}
+            help="The pattern memory's word, one trigger line a voice."
+          />
+          {voices.map(b => (
+            <Chip key={b.name} box={b} />
+          ))}
+          <Chip
+            box={amps}
+            help="One amplifier a voice, each following its own voice's envelope unless the cross-patch bridges it to another."
+          />
+          {legend.map(([say, on], i) =>
+            on ? (
+              <text
+                key={i}
+                x={PATTERN_W + 2}
+                y={BOTTOM + 12 + i * 12}
+                className={styles.knifed}
+              >
+                {say}
+              </text>
+            ) : null,
+          )}
+          {crossing && (
+            <text
+              x={(voiceRight + AMPS_X) / 2}
+              y={BOTTOM + 12}
+              textAnchor="middle"
+              className={sampled ? styles.bus : styles.knifed}
+            >
+              {`cross-patch ${CROSSES[cross]}`}
+            </text>
+          )}
+        </>
+      )}
+    </Diagram>
+  )
+}
