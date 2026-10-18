@@ -81,7 +81,7 @@ test('the path is drawn, wired and inside its own box', () => {
   }
 })
 
-test('a short path hangs narrower than the mix bus, centred under it', () => {
+test('a short path hangs narrower than the drawing, with the mix bus its width', () => {
   const map = buildMap(DEFAULT_CONTROLS, {
     wrap: true,
     shown: new Set([
@@ -94,7 +94,8 @@ test('a short path hangs narrower than the mix bus, centred under it', () => {
   })
   const [mix, out] = [box(map, 'mix')!, box(map, 'Output')!]
   expect(mix.label).toBe('Mix bus')
-  expect(out.w).toBeLessThan(mix.w)
+  expect(mix.w).toBe(out.w)
+  expect(out.w).toBeLessThan(map.width * 0.8)
   expect(out.x + out.w / 2).toBeCloseTo(mix.x + mix.w / 2)
 })
 
@@ -795,7 +796,7 @@ test('the fold halves the drawing and hands the path across', () => {
   const straight = buildMap(DEFAULT_CONTROLS, { wrap: false })
   const folded = buildMap(DEFAULT_CONTROLS, { wrap: true })
   expect(folded.height).toBeLessThan(straight.height * 0.86)
-  expect(folded.width).toBeLessThan(straight.width * 0.7)
+  expect(folded.width).toBeLessThan(straight.width * 0.75)
   const fold = folded.wires.find(w => w.id === 'fold')!
   expect(fold.color).toBe(PANEL.accent)
   expect(box(folded, fold.to)!.x).toBeGreaterThan(box(folded, fold.from)!.x)

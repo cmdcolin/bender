@@ -879,7 +879,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const boxW = cols === 1 ? Math.min(colW, Math.max(stageNeed, STAGE_W)) : colW
   for (const n of pathAndBus) n.w = boxW
   rack.w = colW
-  mix.w = content
+  mix.w = cols === 1 ? boxW : content
   board.w = content
   for (const n of foot) n.w = natural(n)
 
@@ -989,7 +989,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     )
   }
   board.x = 0
-  mix.x = 0
+  mix.x = cols === 1 ? (colW - boxW) / 2 : 0
   for (const n of down) n.x = n === rack ? 0 : (colW - boxW) / 2
   for (const n of upCol) n.x = boxW + COL_GAP
   if (!loop) bus.x = (content - boxW) / 2
