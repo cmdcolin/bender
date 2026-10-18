@@ -53,7 +53,9 @@ pitch and slows the kit's tempo with it.
 - **The key line:** the toy's gate line runs along the top row from the toy
   keyboard to the FM chip and the home keyboard, then drops onto the mono synth.
   All three play whatever note the toy strikes, from your keys, its tune or its
-  arpeggio. The line dashes from the far end in as you cut jumpers.
+  arpeggio. The line dashes from the far end in as you cut jumpers, and it
+  thickens while the toy and a machine on it are both sounding. A kit bridge
+  thickens for a moment after each hit on its voice.
 - **Jumpers:** each of the three has a **Plays the toy keyboard’s notes**
   jumper. With it cut, the chip answers only its own keybed and any trigger
   bridge you patch across from the drums. Each bridge on the map reads
