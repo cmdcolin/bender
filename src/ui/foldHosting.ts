@@ -6,6 +6,7 @@ export type Verbs = (part: string) => ReactNode
 /** Stages drawn whole by one fold's drawing, which then holds every row. */
 export const STAGE_DRAWINGS: Record<string, string> = {
   'Toy keyboard': 'inside the die',
+  'Toy drums': 'inside the voices',
 }
 
 /** Folds whose drawing opens the rows itself, one box at a time. */

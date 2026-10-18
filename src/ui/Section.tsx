@@ -515,10 +515,10 @@ function Rows({
   )
   return (
     <>
-      {blocks.map(({ name, sliders }) => {
+      {blocks.map(({ name, sliders }, i) => {
         const rows = sliders.filter(d => visible.has(d.key))
         if (drawn && name === drawn)
-          return (
+          return i !== blocks.findIndex(b => b.name === drawn) ? null : (
             <FoldDrawing
               key={name}
               group={group.name}
@@ -627,8 +627,12 @@ export function OpenGroup({
   // off the screen.
   const rigsFirst = group.editor?.kind === 'loops'
   const drawn = group.name in STAGE_DRAWINGS
-  const tuneRoll =
-    group.editor?.kind === 'roll' && shownEditors.roll ? <TuneRoll /> : null
+  const widget =
+    group.editor?.kind === 'roll' && shownEditors.roll ? (
+      <TuneRoll />
+    ) : group.editor?.kind === 'drums' && shownEditors.grid ? (
+      <DrumGrid />
+    ) : null
   const rigs = <Rigs group={group} seconds={seconds} />
   return (
     // The id every door on the map points at. The map draws its boxes as
@@ -692,8 +696,7 @@ export function OpenGroup({
         <ReserveReadout defs={panelRows(group)}>
           {!drawn && <Lead group={group} />}
           {rigsFirst && rigs}
-          {group.editor?.kind === 'drums' && shownEditors.grid && <DrumGrid />}
-          {!drawn && tuneRoll}
+          {!drawn && widget}
           {group.editor?.kind === 'mixer' && <Mixer />}
           {group.editor?.kind === 'feedback' && <FeedbackLoops />}
           {group.editor?.kind === 'order' && <OrderRack />}
@@ -732,7 +735,7 @@ export function OpenGroup({
             key={group.name}
             group={group}
             seconds={seconds}
-            editor={drawn && tuneRoll}
+            editor={drawn && widget}
           />
         </ReserveReadout>
       </div>

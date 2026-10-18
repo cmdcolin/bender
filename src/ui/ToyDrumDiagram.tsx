@@ -1,7 +1,11 @@
+import { useState } from 'react'
+
 import { engine } from '../engine/engine.ts'
+import bus from './BusDiagram.module.css'
 import chip from './ChipLook.module.css'
 import { CHANNELS, GROUPS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
+import diagram from './Diagram.module.css'
 import {
   boxHeight,
   boxWidth,
@@ -14,13 +18,16 @@ import {
   BoxView,
   Diagram,
   Label,
+  Plate,
+  Pressable,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
+import { slidersFirst } from './slidersFirst.ts'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
 
 import type { ControlKey } from '../controls.ts'
-import type { Verbs } from './foldHosting.ts'
+import type { DrawingProps } from './foldDrawings.tsx'
 
 const DRUM_TAP = CHANNELS.find(c => c.name === 'Toy drums')!.tap
 
@@ -36,11 +43,13 @@ const GROUP = GROUPS.find(g => g.name === 'Toy drums')!
 const keysOf = (part: string): ControlKey[] =>
   GROUP.sliders.filter(d => d.part === part).map(d => d.key)
 
+const HOST = 'inside the voices'
+
 const BOXES: Record<BoxId, { part: string; keys: readonly ControlKey[] }> = {
-  'one-shots': { part: 'inside the voices', keys: VOICE_BOXES['one-shots'] },
-  tanks: { part: 'inside the voices', keys: VOICE_BOXES.tanks },
-  'metal bank': { part: 'inside the voices', keys: VOICE_BOXES['metal bank'] },
-  noise: { part: 'inside the voices', keys: VOICE_BOXES.noise },
+  'one-shots': { part: HOST, keys: VOICE_BOXES['one-shots'] },
+  tanks: { part: HOST, keys: VOICE_BOXES.tanks },
+  'metal bank': { part: HOST, keys: VOICE_BOXES['metal bank'] },
+  noise: { part: HOST, keys: VOICE_BOXES.noise },
   DAC: { part: 'the converter', keys: keysOf('the converter') },
   'sample ROM': { part: 'Sample ROM', keys: keysOf('Sample ROM') },
   triggers: {
@@ -68,13 +77,22 @@ const HELP: Record<BoxId, string> = {
     'The kit sampled by itself. Switched on, the voices read their slabs from a ROM, and the address and data wires to it can take a knife.',
 }
 
-const KEYS = Object.values(BOXES).flatMap(b => b.keys)
+const PADS = 'pads'
+const PAD_KEYS = slidersFirst(GROUP.sliders.filter(d => !d.part)).map(
+  d => d.key,
+)
+
+const KEYS = [...Object.values(BOXES).flatMap(b => b.keys), ...PAD_KEYS]
 
 const WIDTH = 420
 const TOP = 6
 const BOX_H = boxHeight('a')
 const ROW_GAPS = [30, 16]
-const HEIGHT = TOP + 3 * BOX_H + ROW_GAPS[0]! + ROW_GAPS[1]! + TOP
+const HEAD = BOX_H + 16
+const HEIGHT = TOP + HEAD + 3 * BOX_H + ROW_GAPS[0]! + ROW_GAPS[1]! + TOP
+const GLYPH = 12
+const GLYPH_GAP = 4
+const PAD = 5
 const GAP = 34
 const TAIL = 30
 const FIRST = ['tanks', 'metal bank', 'noise'] as const
@@ -90,15 +108,68 @@ const plain = (
 
 const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 
+// The pads the player hits, drawn as four of them: the kit's everyday knobs
+// live behind this box.
+function PadsNode({
+  x,
+  y,
+  w,
+  lit,
+  selected,
+  onSelect,
+}: {
+  x: number
+  y: number
+  w: number
+  lit: boolean
+  selected: boolean
+  onSelect: () => void
+}) {
+  const gx = x + boxWidth('') / 2
+  const gy = y + (BOX_H - GLYPH) / 2
+  return (
+    <Pressable name={PADS} selected={selected} onSelect={onSelect}>
+      <title>
+        pads — the kit's level, tempo, swing, chance, tuning, decay and mute
+      </title>
+      <Plate x={x} y={y} w={w} h={BOX_H} touched={lit} selected={selected} />
+      <path
+        d={[0, 1]
+          .flatMap(row =>
+            [0, 1].map(
+              col =>
+                `M${gx + col * (PAD + 2)} ${gy + row * (PAD + 2)} h${PAD} v${PAD} h${-PAD} Z`,
+            ),
+          )
+          .join(' ')}
+        className={lit ? `${bus.glyph} ${bus.glyphOnStroke}` : bus.glyph}
+      />
+      <text
+        x={gx + GLYPH + GLYPH_GAP}
+        y={y + BOX_H / 2 + 3}
+        className={lit ? diagram.nameOn : diagram.name}
+      >
+        {PADS}
+      </text>
+    </Pressable>
+  )
+}
+
 // The kit's voices as the panel opens them. One-shots turn each trigger into a
 // pulse, three kinds of source ring or hiss under it, and the amplifiers and the
 // converter that follow are the same for every voice. The metal bank and the
 // tanks reach into each other, and the drawing gives each reach its own wire.
-export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
+export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox(
-    r.touched(...BOXES.pattern.keys) ? 'pattern' : null,
+    r.touched(...BOXES.pattern.keys) ? 'pattern' : PADS,
   )
+  const editing = Boolean(editor)
+  const [wasEditing, setWasEditing] = useState(editing)
+  if (editing !== wasEditing) {
+    setWasEditing(editing)
+    if (editing && pick.selected !== PADS) pick.toggle(PADS)
+  }
   const flow: WireLook = useStoreSelect(
     engine.sounding,
     lit => lit & (1 << DRUM_TAP),
@@ -118,7 +189,7 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
   )
   const width = widths.reduce((a, b) => a + b, 0) + GAP * 3 + TAIL
   const rowY = (i: number) =>
-    TOP + i * BOX_H + ROW_GAPS.slice(0, i).reduce((a, b) => a + b, 0)
+    TOP + HEAD + i * BOX_H + ROW_GAPS.slice(0, i).reduce((a, b) => a + b, 0)
   const mid = (i: number) => rowY(i) + BOX_H / 2
 
   const spec = (id: BoxId, x: number, y: number, w: number, h: number) => {
@@ -150,6 +221,8 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
   const rom = spec('sample ROM', xs[3]!, rowY(2), widths[3]!, BOX_H)
   const triggers = spec('triggers', xs[0]!, rowY(0), widths[0]!, BOX_H)
   const pattern = spec('pattern', xs[0]!, rowY(2), widths[0]!, BOX_H)
+  const padsW = boxWidth(PADS) + GLYPH + GLYPH_GAP
+  const padsX = Math.round(shots.x + (shots.w - padsW) / 2)
   const picks = [triggers, shots, pattern, ...sources, dac, rom]
   const open = picks.find(b => b.id === pick.selected)
   const fanL = shots.x + shots.w + GAP / 2
@@ -243,6 +316,19 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
                 d={`M${shots.x + shots.w / 2} ${pattern.y} V${shots.y + BOX_H}`}
                 look={flow}
               />
+              <Wire
+                arrow={arrow}
+                d={`M${shots.x + shots.w / 2} ${TOP + BOX_H} V${triggers.y}`}
+                look={flow}
+              />
+              <PadsNode
+                x={padsX}
+                y={TOP}
+                w={padsW}
+                lit={r.touched(...PAD_KEYS)}
+                selected={pick.selected === PADS}
+                onSelect={() => pick.toggle(PADS)}
+              />
               {picks.map(b => (
                 <BoxView
                   key={b.id}
@@ -256,11 +342,17 @@ export function ToyDrumDiagram({ verbs }: { verbs?: Verbs }) {
           )}
         </Diagram>
       </div>
-      <BoxRows
-        hint="Press a box for its settings."
-        keys={open?.id === 'triggers' ? [] : open?.keys}
-        verbs={open && verbs?.(BOXES[open.id].part)}
-      />
+      {pick.selected === PADS ? (
+        <BoxRows keys={PAD_KEYS} verbs={editor} />
+      ) : (
+        <BoxRows
+          hint="Press a box for its settings."
+          keys={open?.id === 'triggers' ? [] : open?.keys}
+          verbs={
+            open && BOXES[open.id].part !== HOST && verbs?.(BOXES[open.id].part)
+          }
+        />
+      )}
     </>
   )
 }

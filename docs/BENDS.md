@@ -37,9 +37,8 @@ fault somebody already found worth keeping.
 The panel draws the same buses under each chip's bus box (the **pattern** box on
 the drum machine), one trace a bit with the lowest on top. The knife rows, named
 cuts and drawing show only while the box is open, and a board that arrives
-knifed opens it. The box's wire turns red while a wire is cut, and on the drum
-machine the heading above it names the standing cut. The drawing follows the
-rows:
+knifed opens it. The box's wire turns red while a wire is cut. The drawing
+follows the rows:
 
 - The knifed trace turns red and shows its line name.
 - A slash marks a cut, dotted across the gap while **Cut depth** leaves it
@@ -639,6 +638,10 @@ again, so the damage builds up as the toy plays.
   toy drives nothing onto the bus.
 
 ## Inside the drum voices
+
+The Toy drums panel is one drawing of the kit's voices. The pads box at its top
+left opens first and holds level, tempo, swing, chance, tune, decay and mute,
+with the drum pattern above them when it is shown.
 
 The kit's pitched voices — kick, tom, and the body under the snare — aren't
 oscillators with envelopes on them. Each one is a bridged-T network: a handful

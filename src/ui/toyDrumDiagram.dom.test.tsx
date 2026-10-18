@@ -5,6 +5,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
+import { OpenGroup } from './Section.tsx'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
 import { ToyDrumDiagram } from './ToyDrumDiagram.tsx'
 import './testDom.ts'
@@ -78,4 +79,46 @@ test('a kit that arrives knifed opens the pattern box', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, drumDataLine: 2 })
   render(<ToyDrumDiagram />)
   expect(screen.getByText('Data fault')).not.toBeNull()
+})
+
+const openKit = () =>
+  render(
+    <OpenGroup
+      group={GROUPS.find(g => g.name === 'Toy drums')!}
+      onClose={() => {}}
+      seconds={0}
+    />,
+  )
+
+test('the pads box starts open on the kit rows, and the stage draws no folds', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  openKit()
+  for (const row of ['Level', 'Tempo', 'Swing', 'Mute'])
+    expect(screen.getByText(row)).not.toBeNull()
+  expect(document.querySelectorAll('summary')).toHaveLength(0)
+  fireEvent.click(box('tanks'))
+  expect(screen.queryByText('Tempo')).toBeNull()
+  expect(screen.getByText('Ring')).not.toBeNull()
+  expect(screen.getAllByRole('img', { name: 'toy drum voices' })).toHaveLength(
+    1,
+  )
+})
+
+test('showing the drum pattern opens the pads box', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  openKit()
+  fireEvent.click(box('noise'))
+  expect(screen.queryByText('Tempo')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'show drum pattern' }))
+  expect(screen.getByText('Tempo')).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'show drum pattern' }))
+})
+
+test('the pads box lights when a kit knob moves', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, drumSwing: 0.4 })
+  render(<ToyDrumDiagram />)
+  expect(box('pads').querySelector('rect')!.getAttribute('class')).toContain(
+    'boxOn',
+  )
+  engine.writeBoard(DEFAULT_CONTROLS)
 })
