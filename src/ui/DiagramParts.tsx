@@ -49,14 +49,13 @@ export function Pressable({
   )
 }
 
-// A frame round part of a drawing: accent when a knob inside is off stock,
-// filled when its rows are open.
+// A frame round part of a drawing, filled when its rows are open. A moved knob
+// shows in the reading inside it, which turns the accent.
 export function Plate({
   x,
   y,
   w,
   h,
-  touched = false,
   selected = false,
   inert = false,
 }: {
@@ -64,11 +63,10 @@ export function Plate({
   y: number
   w: number
   h: number
-  touched?: boolean
   selected?: boolean
   inert?: boolean
 }) {
-  const look = `${touched ? styles.boxOn : styles.box} ${selected ? styles.selected : ''} ${inert ? styles.inert : ''}`
+  const look = `${styles.box} ${selected ? styles.selected : ''} ${inert ? styles.inert : ''}`
   return <rect x={x} y={y} width={w} height={h} rx={3} className={look} />
 }
 
@@ -101,7 +99,6 @@ export function BoxView({
         y={box.y}
         w={box.w}
         h={h}
-        touched={box.touched}
         selected={selected}
         inert={!pick}
       />

@@ -226,7 +226,6 @@ export function TapePathDiagram() {
                 y={0}
                 w={WIDTH - 4}
                 h={DECK_H}
-                touched={tapeTouched}
                 selected={pick.selected === 'tape'}
               />
               <text

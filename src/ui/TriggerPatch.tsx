@@ -74,7 +74,7 @@ export function TriggerPatch() {
         height={BOX_H}
         rx={4}
         fill="none"
-        stroke="var(--fg3)"
+        stroke="var(--border-hover)"
       />
       <text
         x={x + BOX_W / 2}

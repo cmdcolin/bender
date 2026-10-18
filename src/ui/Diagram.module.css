@@ -7,12 +7,7 @@
 
 .box {
   fill: none;
-  stroke: var(--border);
-}
-
-.boxOn {
-  fill: none;
-  stroke: var(--accent);
+  stroke: var(--border-hover);
 }
 
 .name,
