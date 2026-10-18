@@ -101,7 +101,7 @@ export function GateJumper({
         }}
       >
         <span className={styles.gateLamp} data-lamp={lamp} aria-hidden="true" />
-        {cut ? 'toy keys off' : 'toy keys on'}
+        {cut ? 'own keys only' : 'follows toy'}
       </button>
     </Tip>
   )

@@ -292,19 +292,20 @@ too — the knife goes on and the rows under it say which controls that was:
 The other synthesiser on the board: two operators a voice, four voices, on the
 same rail. It has no sequencer — its key input is soldered onto the toy’s gate
 line, so out of the box it plays whatever strikes a note over there, _Struck by_
-clips the kit’s trigger lines on beside it, and _Toy gate_ cuts that jumper so
-it answers only the keybed screwed to its own board. That bed is drawn under the
-toy’s the moment the chip is up in the mix, with its own hold and octave, and
-the _keys_ switch on either deck says which of the two the computer’s letter
-keys are wired to. It is not played but _configured_, a byte at a time over a
-bus, which is what _Data line_ and _Address line_ are for: a byte that lands
-wrong stays wrong until the processor writes that register again, and if the
-wire carrying the key back up cannot go low, the note never ends. _Wave line_ is
-the other bus, the one the processor never touches — the sine is a table and a
-table is an address, so a knife there reshapes the wave under your hand and
-leaves nothing behind. _Effect_ is the ROM’s other job: a bird, surf, wind, a
-siren or crickets, each a program spraying register writes rather than a sample,
-and the busiest thing the bus ever carries.
+clips the kit’s trigger lines on beside it, and _Follows toy_ cuts that jumper
+(it then reads _own keys only_) so it answers only the keybed screwed to its own
+board. That bed is drawn under the toy’s the moment the chip is up in the mix,
+with its own hold and octave, and the _keys_ switch on either deck says which of
+the two the computer’s letter keys are wired to. It is not played but
+_configured_, a byte at a time over a bus, which is what _Data line_ and
+_Address line_ are for: a byte that lands wrong stays wrong until the processor
+writes that register again, and if the wire carrying the key back up cannot go
+low, the note never ends. _Wave line_ is the other bus, the one the processor
+never touches — the sine is a table and a table is an address, so a knife there
+reshapes the wave under your hand and leaves nothing behind. _Effect_ is the
+ROM’s other job: a bird, surf, wind, a siren or crickets, each a program
+spraying register writes rather than a sample, and the busiest thing the bus
+ever carries.
 
 Named settings, one press each at the head of the panel — the stage goes back to
 stock and the setting is written over it, so the rows underneath say what it
