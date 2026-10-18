@@ -4,8 +4,18 @@ import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
 import { CHANNELS, sliderFor } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
-import { boxHeight, boxWidth, useReadings } from './diagram.ts'
-import { Diagram, Label, Wire, type WireLook } from './DiagramParts.tsx'
+import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
+import {
+  BoxRows,
+  Diagram,
+  Label,
+  Pressable,
+  Wire,
+  type WireLook,
+} from './DiagramParts.tsx'
+
+import type { ControlKey } from '../controls.ts'
+import type { ReactNode } from 'react'
 
 const KEYS = [
   'monoHeat',
@@ -16,6 +26,16 @@ const KEYS = [
   'monoDacBit',
   'monoSag',
 ] as const
+
+const OPENS: Record<string, readonly ControlKey[]> = {
+  regulator: ['monoSag'],
+  'key DAC': ['monoDacBit'],
+  hold: ['monoDroop'],
+  'exp conv': ['monoHeat'],
+  ladder: ['monoMismatch'],
+  VCA: ['monoLeak'],
+  contours: ['monoCap'],
+}
 
 const DAC_BITS = sliderFor('monoDacBit').choices!
 
@@ -82,6 +102,7 @@ function Bar({
 
 export function MonoCardDiagram() {
   const r = useReadings(KEYS)
+  const pick = useSelectedBox()
   const on = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow: WireLook = useStoreSelect(
     engine.sounding,
@@ -148,74 +169,101 @@ export function MonoCardDiagram() {
   const lowX = ladder.x
   const lowW = vca.x + vca.w - lowX
 
+  const node = (name: string, child: ReactNode) => (
+    <Pressable
+      name={name}
+      selected={pick.selected === name}
+      onSelect={() => pick.toggle(name)}
+    >
+      {child}
+    </Pressable>
+  )
+
   return (
-    <div className={chip.chips}>
-      <Diagram
-        width={WIDTH}
-        height={HEIGHT}
-        label="mono synth voice card faults"
-      >
-        {arrow => (
-          <>
-            {boxes.slice(1).map((to, i) => (
+    <>
+      <div className={chip.chips}>
+        <Diagram
+          width={WIDTH}
+          height={HEIGHT}
+          label="mono synth voice card faults"
+        >
+          {arrow => (
+            <>
+              {boxes.slice(1).map((to, i) => (
+                <Wire
+                  key={to.name}
+                  arrow={arrow}
+                  d={`M${boxes[i]!.x + boxes[i]!.w} ${MID} H${to.x}`}
+                  look={flow}
+                />
+              ))}
               <Wire
-                key={to.name}
                 arrow={arrow}
-                d={`M${boxes[i]!.x + boxes[i]!.w} ${MID} H${to.x}`}
+                d={`M${vca.x + vca.w} ${MID} H${WIDTH - 2}`}
                 look={flow}
               />
-            ))}
-            <Wire
-              arrow={arrow}
-              d={`M${vca.x + vca.w} ${MID} H${WIDTH - 2}`}
-              look={flow}
-            />
-            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
-              out
-            </Label>
-            {[conv, ladder].map(b => (
-              <Wire
-                key={`sag${b.name}`}
-                arrow={arrow}
-                d={`M${centre(b)} ${TOP + BAR_H} V${CHIP_Y}`}
-                look="dash"
-              />
-            ))}
-            {[ladder, vca].map(b => (
-              <Wire
-                key={`cap${b.name}`}
-                arrow={arrow}
-                d={`M${centre(b)} ${LOW_Y} V${CHIP_Y + CHIP_H}`}
-                look="dash"
-              />
-            ))}
-            <Bar
-              x={regX}
-              y={TOP}
-              w={regW}
-              name="regulator"
-              reading={on('monoSag') ? percent(r.value('monoSag')) : undefined}
-              help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
-            />
-            <Bar
-              x={lowX}
-              y={LOW_Y}
-              w={lowW}
-              name="contours"
-              reading={cap > 1 ? `×${+cap.toFixed(1)}` : undefined}
-              help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
-            />
-            {boxes.map((box, i) => (
-              <Chip
-                key={box.name}
-                box={box}
-                reading={parts[i]!.reading}
-                help={parts[i]!.help}
-              />
-            ))}
-          </>
-        )}
-      </Diagram>
-    </div>
+              <Label x={WIDTH - 2} y={MID + 12} anchor="end">
+                out
+              </Label>
+              {[conv, ladder].map(b => (
+                <Wire
+                  key={`sag${b.name}`}
+                  arrow={arrow}
+                  d={`M${centre(b)} ${TOP + BAR_H} V${CHIP_Y}`}
+                  look="dash"
+                />
+              ))}
+              {[ladder, vca].map(b => (
+                <Wire
+                  key={`cap${b.name}`}
+                  arrow={arrow}
+                  d={`M${centre(b)} ${LOW_Y} V${CHIP_Y + CHIP_H}`}
+                  look="dash"
+                />
+              ))}
+              {node(
+                'regulator',
+                <Bar
+                  x={regX}
+                  y={TOP}
+                  w={regW}
+                  name="regulator"
+                  reading={
+                    on('monoSag') ? percent(r.value('monoSag')) : undefined
+                  }
+                  help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
+                />,
+              )}
+              {node(
+                'contours',
+                <Bar
+                  x={lowX}
+                  y={LOW_Y}
+                  w={lowW}
+                  name="contours"
+                  reading={cap > 1 ? `×${+cap.toFixed(1)}` : undefined}
+                  help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
+                />,
+              )}
+              {boxes.map((box, i) => {
+                const chipBox = (
+                  <Chip
+                    key={box.name}
+                    box={box}
+                    reading={parts[i]!.reading}
+                    help={parts[i]!.help}
+                  />
+                )
+                return OPENS[box.name] ? node(box.name, chipBox) : chipBox
+              })}
+            </>
+          )}
+        </Diagram>
+      </div>
+      <BoxRows
+        hint="Press a box for its settings."
+        keys={pick.selected ? OPENS[pick.selected] : undefined}
+      />
+    </>
   )
 }

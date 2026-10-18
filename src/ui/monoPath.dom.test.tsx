@@ -28,12 +28,14 @@ test('each box opens its fold’s rows, drawn once', () => {
     ['mixer', 'Feedback'],
     ['filter', 'Key tracking'],
     ['modulation', 'To pitch'],
-    ['voice card', 'Leaky VCA'],
   ]
   for (const [box, row] of boxes) {
     press(box)
     expect(screen.getAllByText(row), row).toHaveLength(1)
   }
+  press('voice card')
+  press('VCA')
+  expect(screen.getAllByText('Leaky VCA')).toHaveLength(1)
   expect(screen.getAllByText('Cutoff')).toHaveLength(1)
 })
 

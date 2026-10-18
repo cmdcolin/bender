@@ -24,6 +24,8 @@ test('the chip opens on the modulator, and each box swaps in its own rows', () =
   expect(screen.getByText('Data line')).not.toBeNull()
   expect(screen.queryByText('Data fault')).toBeNull()
   fireEvent.click(box('die'))
+  expect(screen.queryByText('Allocator')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'allocator controls' }))
   expect(screen.getByText('Allocator')).not.toBeNull()
 })
 

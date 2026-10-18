@@ -124,3 +124,13 @@ test('every reading fits the box it sits in', () => {
     ).toBeLessThanOrEqual(width)
   }
 })
+
+test('each part of the card opens its own knob', () => {
+  open()
+  expect(screen.queryByText('Sag')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'regulator controls' }))
+  expect(screen.getByText('Sag')).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'VCA controls' }))
+  expect(screen.queryByText('Sag')).toBeNull()
+  expect(screen.getByText('Leaky VCA')).not.toBeNull()
+})

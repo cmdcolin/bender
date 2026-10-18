@@ -108,3 +108,13 @@ test('a stuck slot draws its channel in red beside the allocator’s', () => {
   set({ fmAlloc: 0, fmDacSlot: 0 })
   expect(alarms()).toBe(0)
 })
+
+test('each part opens its own knobs, and only those', () => {
+  open()
+  expect(screen.queryByText('Allocator')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'allocator controls' }))
+  expect(screen.getByText('Allocator')).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'DAC controls' }))
+  expect(screen.queryByText('Allocator')).toBeNull()
+  expect(screen.getByText('DAC slot')).not.toBeNull()
+})

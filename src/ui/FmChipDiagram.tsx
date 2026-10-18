@@ -237,7 +237,7 @@ export function FmChipDiagram({
         {zoomed && <FmVoiceDiagram pick={pick} />}
       </div>
       <BoxRows
-        keys={open?.keys}
+        keys={open?.id === 'die' ? [] : open?.keys}
         verbs={open && PARTS[open.id!] && verbs(PARTS[open.id!]!)}
       />
     </>

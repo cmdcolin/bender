@@ -4,8 +4,18 @@ import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
 import { CHANNELS, sliderFor } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
-import { boxHeight, boxWidth, useReadings } from './diagram.ts'
-import { Diagram, Label, Wire, type WireLook } from './DiagramParts.tsx'
+import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
+import {
+  BoxRows,
+  Diagram,
+  Label,
+  Pressable,
+  Wire,
+  type WireLook,
+} from './DiagramParts.tsx'
+
+import type { ControlKey } from '../controls.ts'
+import type { ReactNode } from 'react'
 
 const KEYS = [
   'fmDacSlot',
@@ -14,6 +24,13 @@ const KEYS = [
   'fmColdBoot',
   'fmAdder',
 ] as const
+
+const OPENS: Record<string, readonly ControlKey[]> = {
+  allocator: ['fmAlloc'],
+  registers: ['fmColdBoot'],
+  voices: ['fmAdder'],
+  DAC: ['fmDacSlot', 'fmDacSlip'],
+}
 
 const ALLOC = sliderFor('fmAlloc').choices!
 const SLOTS = sliderFor('fmDacSlot').choices!
@@ -49,6 +66,7 @@ const stuckLast = (stuck: number) =>
 
 export function FmDieDiagram() {
   const r = useReadings(KEYS)
+  const pick = useSelectedBox()
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const flow: WireLook = useStoreSelect(
     engine.sounding,
@@ -90,111 +108,142 @@ export function FmDieDiagram() {
   const fanX = regsBox.x + regsBox.w + gap / 2
   const mergeX = frameRight + gap / 2
 
+  const node = (name: string, child: ReactNode) => (
+    <Pressable
+      name={name}
+      selected={pick.selected === name}
+      onSelect={() => pick.toggle(name)}
+    >
+      {child}
+    </Pressable>
+  )
+
   return (
-    <div className={chip.chips}>
-      <Diagram width={WIDTH} height={HEIGHT} label="FM die and driver">
-        {arrow => (
-          <>
-            <g>
-              <title>
-                voices — Four channels of two operators each. The log adder sets
-                the arithmetic every operator uses.
-              </title>
-              <rect
-                x={frameX}
-                y={TOP}
-                width={frameW}
-                height={HEAD + STACK + FOOT}
-                rx={3}
-                className={styles.chip}
-              />
-              <text
-                x={frameX + frameW / 2}
-                y={TOP + 11}
-                textAnchor="middle"
-                className={styles.chipName}
-              >
-                voices
-              </text>
-              <text
-                x={frameX + frameW / 2}
-                y={TOP + HEAD + STACK + 11}
-                textAnchor="middle"
-                className={adder ? styles.knifed : styles.bus}
-              >
-                {`adder ${ADDER[adder]}`}
-              </text>
-            </g>
-            <Wire
-              arrow={arrow}
-              d={`M${allocBox.x + allocBox.w} ${MID} H${regsBox.x}`}
-              look={flow}
-            />
-            <Wire d={`M${regsBox.x + regsBox.w} ${MID} H${fanX}`} look={flow} />
-            {stuckLast(alloc).map(i => (
+    <>
+      <div className={chip.chips}>
+        <Diagram width={WIDTH} height={HEIGHT} label="FM die and driver">
+          {arrow => (
+            <>
+              {node(
+                'voices',
+                <g>
+                  <title>
+                    voices — Four channels of two operators each. The log adder
+                    sets the arithmetic every operator uses.
+                  </title>
+                  <rect
+                    x={frameX}
+                    y={TOP}
+                    width={frameW}
+                    height={HEAD + STACK + FOOT}
+                    rx={3}
+                    className={styles.chip}
+                  />
+                  <text
+                    x={frameX + frameW / 2}
+                    y={TOP + 11}
+                    textAnchor="middle"
+                    className={styles.chipName}
+                  >
+                    voices
+                  </text>
+                  <text
+                    x={frameX + frameW / 2}
+                    y={TOP + HEAD + STACK + 11}
+                    textAnchor="middle"
+                    className={adder ? styles.knifed : styles.bus}
+                  >
+                    {`adder ${ADDER[adder]}`}
+                  </text>
+                </g>,
+              )}
               <Wire
-                key={`in${i}`}
                 arrow={arrow}
-                d={`M${fanX} ${MID} V${voiceMid(i)} H${voiceX}`}
-                look={stuckLook(alloc, flow, i)}
+                d={`M${allocBox.x + allocBox.w} ${MID} H${regsBox.x}`}
+                look={flow}
               />
-            ))}
-            {stuckLast(slot).map(i => (
               <Wire
-                key={`out${i}`}
-                d={`M${voiceX + voiceW} ${voiceMid(i)} H${mergeX} V${MID}`}
-                look={stuckLook(slot, flow, i)}
+                d={`M${regsBox.x + regsBox.w} ${MID} H${fanX}`}
+                look={flow}
               />
-            ))}
-            <Wire
-              arrow={arrow}
-              d={`M${mergeX} ${MID} H${dacBox.x}`}
-              look={flow}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${dacBox.x + dacBox.w} ${MID} H${WIDTH - 2}`}
-              look={flow}
-            />
-            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
-              out
-            </Label>
-            {Array.from({ length: VOICES }, (_, i) => (
-              <Chip
-                key={i}
-                box={{
-                  name: `voice ${i + 1}`,
-                  x: voiceX,
-                  y: voiceTop(i),
-                  w: voiceW,
-                  h: VOICE_H,
-                }}
-                className={chip.inner}
+              {stuckLast(alloc).map(i => (
+                <Wire
+                  key={`in${i}`}
+                  arrow={arrow}
+                  d={`M${fanX} ${MID} V${voiceMid(i)} H${voiceX}`}
+                  look={stuckLook(alloc, flow, i)}
+                />
+              ))}
+              {stuckLast(slot).map(i => (
+                <Wire
+                  key={`out${i}`}
+                  d={`M${voiceX + voiceW} ${voiceMid(i)} H${mergeX} V${MID}`}
+                  look={stuckLook(slot, flow, i)}
+                />
+              ))}
+              <Wire
+                arrow={arrow}
+                d={`M${mergeX} ${MID} H${dacBox.x}`}
+                look={flow}
               />
-            ))}
-            <Chip
-              box={allocBox}
-              reading={alloc > 0 ? ALLOC[alloc] : undefined}
-              help="The driver’s note allocator. Stuck, it hands every note to one channel."
-            />
-            <Chip
-              box={regsBox}
-              reading={boot > 0 ? BOOT[boot] : undefined}
-              help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
-            />
-            <Chip
-              box={dacBox}
-              reading={[
-                ...(slot > 0 ? [SLOTS[slot]!] : []),
-                ...(slot === 0 && slip > 0
-                  ? [`slip ${Math.round(slip * 100)}%`]
-                  : []),
-              ]}
-              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
-            />
-          </>
-        )}
-      </Diagram>
-    </div>
+              <Wire
+                arrow={arrow}
+                d={`M${dacBox.x + dacBox.w} ${MID} H${WIDTH - 2}`}
+                look={flow}
+              />
+              <Label x={WIDTH - 2} y={MID + 12} anchor="end">
+                out
+              </Label>
+              {Array.from({ length: VOICES }, (_, i) => (
+                <Chip
+                  key={i}
+                  box={{
+                    name: `voice ${i + 1}`,
+                    x: voiceX,
+                    y: voiceTop(i),
+                    w: voiceW,
+                    h: VOICE_H,
+                  }}
+                  className={chip.inner}
+                />
+              ))}
+              {node(
+                'allocator',
+                <Chip
+                  box={allocBox}
+                  reading={alloc > 0 ? ALLOC[alloc] : undefined}
+                  help="The driver’s note allocator. Stuck, it hands every note to one channel."
+                />,
+              )}
+              {node(
+                'registers',
+                <Chip
+                  box={regsBox}
+                  reading={boot > 0 ? BOOT[boot] : undefined}
+                  help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
+                />,
+              )}
+              {node(
+                'DAC',
+                <Chip
+                  box={dacBox}
+                  reading={[
+                    ...(slot > 0 ? [SLOTS[slot]!] : []),
+                    ...(slot === 0 && slip > 0
+                      ? [`slip ${Math.round(slip * 100)}%`]
+                      : []),
+                  ]}
+                  help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
+                />,
+              )}
+            </>
+          )}
+        </Diagram>
+      </div>
+      <BoxRows
+        hint="Press a box for its settings."
+        keys={pick.selected ? OPENS[pick.selected] : undefined}
+      />
+    </>
   )
 }
