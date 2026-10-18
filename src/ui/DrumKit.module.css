@@ -11,7 +11,7 @@
   --rubber-edge: #0b0b0e;
 
   position: relative;
-  flex: 0 1 250px;
+  flex: 0 1 256px;
   min-width: 220px;
   display: flex;
   flex-direction: column;
@@ -44,12 +44,14 @@
 .deck {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--gap-ctl);
   min-height: 22px;
 }
 
 .brand {
+  margin-right: auto;
   font-size: var(--fs-md);
   font-weight: 800;
   font-style: italic;
@@ -136,11 +138,7 @@
 }
 
 .switches {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--gap-ctl);
-  margin-left: auto;
+  display: contents;
 }
 
 .play {

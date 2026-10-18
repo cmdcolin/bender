@@ -308,10 +308,9 @@ export function Keybed({
   // No pointer-up follows any of them, so this is the last word on the note.
   const cancel = (note: number) => () => release(note)
 
-  // The octave switch on a deck with no room for five caps: one step at a time,
-  // with the note the bottom key plays standing in for the cap that would have
-  // been lit. A cap that is already the end of its travel goes dead rather than
-  // disappearing, so the switch keeps the same shape wherever the board stands.
+  // The octave switch steps one octave at a time, with the note the bottom key
+  // plays between its two caps. A cap at the end of its travel goes dead and
+  // stays put, so the switch keeps its shape wherever the board stands.
   const stepper = (delta: number, way: string, mark: string) => (
     <Tip
       text={`move the whole board one octave ${way}${letters ? ` — ${delta < 0 ? octaveLetters.down : octaveLetters.up} does the same` : ''}`}
@@ -376,7 +375,7 @@ export function Keybed({
       aria-label={label}
     >
       <div className={styles.deck}>
-        {badge}
+        <span className={styles.badge}>{badge}</span>
         <div className={styles.switches}>
           {extras}
           <Tip text="Latch keys on — press a held key again to let it go. Alt-click a single key to pin just that one down.">
@@ -391,38 +390,16 @@ export function Keybed({
               hold
             </button>
           </Tip>
-          {short ? (
-            /* The drawer travels with the octave switch on a short deck, so
-               the two wrap together rather than the bars going over alone. */
-            <span className={styles.octaves}>
-              {stepper(-1, 'down', '◂')}
-              <Tip text="where the board is standing: the note its bottom key plays. A short board reaches the rest of the keyboard through the two switches beside it rather than by being all of it at once.">
-                <span className={styles.standing}>{semitoneName(at(0))}</span>
-              </Tip>
-              {stepper(1, 'up', '▸')}
-              {settings}
-            </span>
-          ) : (
-            <>
-              <span className={styles.stamp}>octave</span>
-              <span className={styles.octaves}>
-                {OCTAVES.map(o => (
-                  <Tip
-                    key={o}
-                    text={`move the whole board ${o === 0 ? 'back where the toy has it' : `${Math.abs(o)} octave${Math.abs(o) === 1 ? '' : 's'} ${o < 0 ? 'down' : 'up'}`}${letters ? ` — ${octaveLetters.down} and ${octaveLetters.up} do the same` : ''}`}
-                  >
-                    <button
-                      className={o === octave ? styles.octaveOn : styles.octave}
-                      onClick={() => shiftTo(o)}
-                    >
-                      {o > 0 ? `+${o}` : o}
-                    </button>
-                  </Tip>
-                ))}
-              </span>
-              {settings}
-            </>
-          )}
+          {/* The drawer travels with the octave switch, so the two wrap
+              together. */}
+          <span className={styles.octaves}>
+            {stepper(-1, 'down', '◂')}
+            <Tip text="where the board is standing: the note its bottom key plays. The two switches beside it move the board an octave at a time.">
+              <span className={styles.standing}>{semitoneName(at(0))}</span>
+            </Tip>
+            {stepper(1, 'up', '▸')}
+            {settings}
+          </span>
           {open && (
             <Menu
               anchor={drawer}

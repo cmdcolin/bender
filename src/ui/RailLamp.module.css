@@ -21,5 +21,5 @@
   font-family: var(--mono);
   font-size: var(--fs-xs);
   color: var(--fg3);
-  min-width: 3.1rem;
+  min-width: 6ch;
 }

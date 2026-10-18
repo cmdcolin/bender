@@ -68,13 +68,13 @@
 
 /* A narrow case hides the speaker grille first and then the decal, so the
    switches stay on one line in a narrower case. */
-@container (max-width: 680px) {
+@container (max-width: 760px) {
   .grille {
     display: none;
   }
 }
 
-@container (max-width: 600px) {
+@container (max-width: 680px) {
   .stripe {
     display: none;
   }

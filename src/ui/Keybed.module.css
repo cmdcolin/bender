@@ -21,8 +21,6 @@
   container-type: inline-size;
   --case: #2b2b33;
   --case-edge: #14141a;
-  /* The ink every label on a toy's front panel is printed in. */
-  --stamp: #8c8c9a;
   --bed: #0a0a0d;
   --case-round: 13px 8px 6px 4px;
   --fixing: var(--case-edge);
@@ -78,19 +76,9 @@
    switch that was always how you reached past the drawn keys is how you reach
    the ones it stopped drawing. Fewer keys is also more room between them, so
    the black keys take some of it: a black key is the one a finger has to find
-   between two others.
-
-   The deck goes with it. A row of switches pushed to the speaker end of a case
-   this narrow is a row hanging off the end of it, so the switches start where
-   the badge finishes and wrap when they run out. */
+   between two others. */
 .short {
   --key-b-w: 46%;
-}
-
-.short .switches {
-  flex: 1 1 0;
-  min-width: 0;
-  margin-left: 0;
 }
 
 /* The front panel: badge, decal, switches, speaker. On a toy every one of them
@@ -98,8 +86,9 @@
 .deck {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--gap-ctl);
   min-height: 22px;
 }
 
@@ -247,21 +236,18 @@
   color: rgba(40, 10, 0, 0.6);
 }
 
-/* Pushed down to the speaker end of the deck, so the badge keeps the left and
-   the switches sit under the hand that reaches past the keys for them. */
-.switches {
+/* The badge keeps the left and the switches flow in the deck's own row, pushed
+   to the speaker end, so they sit under the hand that reaches past the keys
+   and a second row runs under the badge too. */
+.badge {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--gap-ctl);
-  margin-left: auto;
+  gap: 8px;
+  margin-right: auto;
 }
 
-.stamp {
-  font-size: var(--fs-xs);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--stamp);
+.switches {
+  display: contents;
 }
 
 .octaves {
@@ -270,10 +256,7 @@
   gap: var(--gap-ctl-sm);
 }
 
-/* Where a stepped board is standing: the note its bottom key plays, in the
-   place the lit cap held on a deck with room for five of them. It is the one
-   thing the caps never said — they named the switch's own travel, and what you
-   want to know with your hands on a short board is which octave is under them. */
+/* Where the board is standing: the note its bottom key plays. */
 .standing {
   min-width: 26px;
   text-align: center;
@@ -294,12 +277,6 @@
 
 .octave {
   composes: cap from './button.module.css';
-  font-variant-numeric: tabular-nums;
-}
-
-.octaveOn {
-  composes: capOn from './button.module.css';
-  font-variant-numeric: tabular-nums;
 }
 
 /* Everything about this keyboard that is not a switch on its front. A toy had

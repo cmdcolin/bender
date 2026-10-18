@@ -63,6 +63,12 @@ const SPEAKER = (muted: boolean) => (
   </svg>
 )
 
+const SHUFFLE = (
+  <svg className={styles.shuffle} viewBox="0 0 12 12" aria-hidden="true">
+    <path d="M1 3h2c3 0 3 6 6 6h2M1 9h2c3 0 3-6 6-6h2M9.5 1.5 11 3 9.5 4.5M9.5 7.5 11 9 9.5 10.5" />
+  </svg>
+)
+
 function Mute({ stage, control }: { stage: string; control: ControlKey }) {
   const muted = useControlValue(control) > 0.5
   const pedal = isPedal(stage)
@@ -95,7 +101,7 @@ function Mute({ stage, control }: { stage: string; control: ControlKey }) {
 
 // The roll cap and the kinds of roll behind its caret. Picking a kind rolls at
 // once and stays on the face, so going again on it is one press, the way the
-// board's dice work.
+// board's dice work. The first kind wears a shuffle mark, and the others their names.
 function Rolls({ group, seconds }: { group: Group; seconds: number }) {
   const kinds = stageRollsFor(group)
   const [held, setHeld] = useState(STAGE_ROLLS[0]!.name)
@@ -118,8 +124,12 @@ function Rolls({ group, seconds }: { group: Group; seconds: number }) {
   return (
     <span className={styles.split} ref={setSplit}>
       <Tip text={`${face.blurb} Leaves the rest of the board alone.`}>
-        <button className={styles.face} onClick={() => roll(face)}>
-          {face.label}
+        <button
+          className={styles.face}
+          aria-label={face.label}
+          onClick={() => roll(face)}
+        >
+          {face === kinds[0] ? SHUFFLE : face.label}
         </button>
       </Tip>
       <Tip
@@ -184,8 +194,8 @@ export function FaceLevel({ control }: { control: ControlKey }) {
   )
 }
 
-// The caps every instrument and pedal on the bench carries: an instrument's
-// level, mute or bypass, roll the stage somewhere new, and put the machine away
+// The caps on every instrument and pedal on the bench: mute or bypass, an
+// instrument's level, roll the stage somewhere new, and put the machine away
 // where it can be put away.
 export function DeviceVerbs({
   stage,
@@ -205,8 +215,8 @@ export function DeviceVerbs({
   const level = LEVEL_OF[stage]
   return (
     <>
-      {level && <FaceLevel control={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} />}
+      {level && <FaceLevel control={level} />}
       <Rolls group={group} seconds={seconds} />
       {onClose && (
         <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>
