@@ -435,6 +435,7 @@ renders it with the same layout the app uses.
   which is why a bend in the path makes it diverge rather than fade. The reel
   under the keys is drawn off the tape as the head reads it: drag its two
   markers to trim the loop, drag the tape itself to move the head.
+  *Wear* and *Hiss* add the head's own cost to each lap. The top end goes a little more every pass, and a layer of noise goes down under the last. *Hold* turns the write up by what a lap lost, so a loop stays at its level.
 - **A microphone into the middle of the board.** *Mic patch* is not a channel —
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body

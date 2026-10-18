@@ -398,6 +398,9 @@ export const DEFAULT_CONTROLS = {
   loopRec: 0,
   loopErase: 1,
   loopSecs: 4,
+  loopWear: 0,
+  loopHiss: 0,
+  loopHold: 0,
   loopIn: 0,
   loopOut: 1,
 

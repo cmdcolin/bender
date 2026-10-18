@@ -55,8 +55,15 @@ test('rec starts the tape playing, since playback is how old takes survive the e
   engine.writeBoard({ ...DEFAULT_CONTROLS, sampleLevel: 0, loopRec: 0 })
   render(<TapeTransport loaded />)
   fireEvent.click(screen.getByRole('button', { name: 'record onto the tape' }))
-  expect(engine.controls.get().sampleLevel).toBeGreaterThan(0)
+  expect(engine.controls.get().sampleLevel).toBe(1)
   expect(engine.controls.get().loopRec).toBeGreaterThan(0)
+})
+
+test('rec raises a quiet tape to unity, since every lap is multiplied by Level', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, sampleLevel: 0.7, loopRec: 0 })
+  render(<TapeTransport loaded />)
+  fireEvent.click(screen.getByRole('button', { name: 'record onto the tape' }))
+  expect(engine.controls.get().sampleLevel).toBe(1)
 })
 
 test('rec leaves a tape that is already playing at its level', () => {

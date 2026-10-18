@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine, run on a supply rail you are allowed to
-ruin. 475 knobs and switches in 35 groups, seven bends competing for six slots,
+ruin. 478 knobs and switches in 35 groups, seven bends competing for six slots,
 18 ROM tunes, 125 presets, 23 stage settings and 46 named cuts — and everything
 below comes off the control tables themselves, so the list cannot drift from the
 instrument.
@@ -58,7 +58,10 @@ renders it with the same layout the app uses.
   stands in for generation loss — the loop really is re-recorded every lap,
   which is why a bend in the path makes it diverge rather than fade. The reel
   under the keys is drawn off the tape as the head reads it: drag its two
-  markers to trim the loop, drag the tape itself to move the head.
+  markers to trim the loop, drag the tape itself to move the head. _Wear_ and
+  _Hiss_ add the head's own cost to each lap. The top end goes a little more
+  every pass, and a layer of noise goes down under the last. _Hold_ turns the
+  write up by what a lap lost, so a loop stays at its level.
 - **A microphone into the middle of the board.** _Mic patch_ is not a channel —
   on one setting the mic reaches the mix, on the other six it is soldered onto
   the chip's rail, an oscillator's FM input or the delay's feedback. The body
@@ -592,7 +595,7 @@ the way a starve drags the toy’s, or walks the loop window around the recordin
 while the head plays on.
 
 <details>
-<summary>9 controls</summary>
+<summary>12 controls</summary>
 
 | control              | range                                                                       | what it does                                                                                                                                        |
 | -------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -605,6 +608,9 @@ while the head plays on.
 | Record               | off to full                                                                 | How much of the board’s own output the record head lays back down, on the spot the play head is reading                                             |
 | Erase                | off to full                                                                 | How much of what is already on the tape the erase head takes off on the way past, permanently, and only while Record above is doing anything at all |
 | Reel length          | 0.25 to 20 s                                                                | How long a blank reel to thread when you arm the record head with nothing loaded                                                                    |
+| Hold                 | off to full                                                                 | Makes up what each lap costs, up to double the level, so a loop locked into a jam stays where it is                                                 |
+| Wear                 | off to full                                                                 | The oxide takes the top off whatever the record head lays down, every time it does                                                                  |
+| Hiss                 | off to full                                                                 | Noise laid onto the tape itself, where it stays                                                                                                     |
 
 </details>
 

@@ -2,7 +2,9 @@ import { IDX } from '../../engine/params.ts'
 import { DEST } from '../modbus.ts'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
 import { Transient } from '../util/follower.ts'
+import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
+import { mulberry32, type Rng } from '../util/rng.ts'
 import { softclip } from '../util/softclip.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
@@ -17,6 +19,24 @@ export const MIC_CHOICE = N_DRUM_VOICES + 3
 // resolution: the panel is a few hundred pixels wide however long the tape is,
 // so a bin is one column of it and 90 seconds and 4 seconds cost the same.
 export const PEAK_BINS = 256
+
+// What the record head does to a tape on the way down. The oxide takes the top
+// off whatever passes, so Wear is a low-pass the signal goes through each time
+// it is written, sweeping from nearly open to a telephone. Hiss is noise laid
+// onto the medium, coloured by the bias lowpass; it goes down with everything
+// else, so every lap re-records the last lap's hiss under a fresh one. The
+// square keeps the bottom of the knob quiet and full is -26 dBFS.
+const WORN_TOP_HZ = 18000
+const WORN_FLOOR = 0.05
+const HISS_FULL = 0.05
+const HISS_COLOR = 0.35
+
+// Hold turns the write up by how far it fell short of what was under the head,
+// measured as two slow envelopes. It only ever turns up, so a loud new layer
+// goes on untouched, and it stops at double so a loop faded on purpose is not
+// pulled back from the floor.
+const HOLD_HZ = 10
+const HOLD_MAX = 2
 
 // The smallest window the handles can pinch the loop down to. Two frames is a
 // tone rather than a loop, and this board is happy to make one — what it must
@@ -59,10 +79,10 @@ export function peaksOf(
 // board's own output back down on the spot the play head is reading, so what
 // comes round next pass has been through the mix bus, the bends, the pedals and
 // the tape machine — and then goes through all of them again. Nothing here
-// models generation loss: the loop is genuinely re-recorded every lap, so what
-// the board does to a signal is what a lap costs, and thirty laps of it is
-// thirty laps of the real thing rather than a decay coefficient standing in for
-// one. Which also means a bend in the path makes the loop diverge rather than
+// stands in for generation loss by default: the loop is genuinely re-recorded
+// every lap, so what the board does to a signal is what a lap costs, and thirty
+// laps of it is thirty laps of the real thing rather than a decay coefficient
+// standing in for one. Wear and Hiss add the head's own share to each lap. Which also means a bend in the path makes the loop diverge rather than
 // decay, and that is the difference between this and a delay.
 export class Sampler implements Stage {
   label = 'sampler'
@@ -70,6 +90,11 @@ export class Sampler implements Stage {
   private pos = 0
   private playing = true
   private micTrig: Transient
+  private readonly wear = new OnePoleLP()
+  private readonly hissColor = new OnePoleLP()
+  private envOld = 0
+  private envLaid = 0
+  private readonly hissRng: Rng = mulberry32(0x7a9e)
   // What the tape looks like, kept out here for the panel to draw. Written as
   // the head passes rather than rescanned: the record head rewrites the reel
   // under it every lap, and a loop you cannot watch going round is the one
@@ -191,6 +216,11 @@ export class Sampler implements Stage {
     const trig = Math.round(p[IDX.sampleTrig]!)
     const oneShot = Math.round(p[IDX.sampleMode]!) === 1
     const erase = p[IDX.loopErase]!
+    const wear = p[IDX.loopWear]!
+    const wearCoef = lpCoef(WORN_TOP_HZ * Math.pow(WORN_FLOOR, wear), this.sr)
+    const hiss = p[IDX.loopHiss]! * p[IDX.loopHiss]! * HISS_FULL
+    const hold = p[IDX.loopHold]!
+    const holdCoef = lpCoef(HOLD_HZ, this.sr)
 
     // The stretch of reel between the two markers, as fractions. Dragged past
     // each other they swap rather than collapse, which is what a pair of
@@ -255,7 +285,19 @@ export class Sampler implements Stage {
       // into distortion, which is what a loop left running is supposed to
       // become.
       if (rec > 0) {
-        buf[idx] = softclip(buf[idx]! * (1 - erase) + ctx.out[i]! * rec)
+        let laid = buf[idx]! * (1 - erase) + ctx.out[i]! * rec
+        if (wear > 0) laid = this.wear.process(laid, wearCoef)
+        if (hold > 0) {
+          this.envOld += holdCoef * (Math.abs(buf[idx]!) - this.envOld)
+          this.envLaid += holdCoef * (Math.abs(softclip(laid)) - this.envLaid)
+          const short = this.envOld / (this.envLaid + 1e-5)
+          laid *= Math.pow(Math.min(Math.max(short, 1), HOLD_MAX), hold)
+        }
+        if (hiss > 0) {
+          const white = this.hissRng() * 2 - 1
+          laid += hiss * this.hissColor.process(white, HISS_COLOR)
+        }
+        buf[idx] = softclip(laid)
       }
 
       // One column of the drawing per pass under the head, committed as the

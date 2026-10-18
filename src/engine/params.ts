@@ -379,6 +379,9 @@ export const PARAM_DEFS = [
   ['loopRec', 'slew'],
   ['loopErase', 'slew'],
   ['loopSecs', 'step'],
+  ['loopWear', 'slew'],
+  ['loopHiss', 'slew'],
+  ['loopHold', 'slew'],
   ['loopIn', 'slew'],
   ['loopOut', 'slew'],
 

@@ -110,3 +110,65 @@ test('a threaded tape has the board on it rather than silence', () => {
   )
   expect(rms(tape!)).toBeGreaterThan(0.005)
 })
+
+function reelFrom(
+  start: Float32Array,
+  o: Partial<Controls>,
+  seconds: number,
+): Float32Array {
+  const buf = Float32Array.from(start)
+  renderBender({ ...PLAYING, ...o }, seconds, built =>
+    built.sampler.setBuffer(buf),
+  )
+  return buf
+}
+
+test('Wear and Hiss do nothing while the head is disarmed', () => {
+  const after = reelAfter({ loopWear: 1, loopHiss: 1 }, 2)
+  expect(after).toEqual(seeded())
+})
+
+test('Wear takes the top off a tone a little more every lap', () => {
+  const bright = sine(6000, REEL_S, 0.5)
+  const level = (wear: number, laps: number) =>
+    rms(
+      reelFrom(
+        bright,
+        { loopRec: 1, loopErase: 1, loopWear: wear },
+        REEL_S * laps,
+      ),
+    )
+  expect(level(0.6, 2)).toBeLessThan(level(0, 2))
+  expect(level(0.6, 6)).toBeLessThan(level(0.6, 2) * 0.7)
+})
+
+test('Hiss laid on a silent reel climbs with every lap', () => {
+  const silent = new Float32Array(Math.round(REEL_S * SR))
+  const floor = (laps: number) =>
+    rms(
+      reelFrom(
+        silent,
+        { loopRec: 1, loopErase: 1, loopHiss: 1 },
+        REEL_S * laps,
+      ),
+    )
+  expect(floor(1)).toBeGreaterThan(0)
+  expect(floor(6)).toBeGreaterThan(floor(1) * 1.3)
+})
+
+test('Hold keeps a loop at its level across laps that would fade it', () => {
+  const tone = sine(220, REEL_S, 0.5)
+  const level = (hold: number, laps: number) =>
+    rms(
+      reelFrom(
+        tone,
+        { loopRec: 1, loopErase: 1, sampleLevel: 0.9, loopHold: hold },
+        REEL_S * laps,
+      ),
+    )
+  const fade = level(0, 16) / level(0, 1)
+  const held = level(1, 16) / level(1, 1)
+  expect(fade).toBeLessThan(0.3)
+  expect(held).toBeGreaterThan(0.8)
+  expect(held).toBeLessThan(1.25)
+})

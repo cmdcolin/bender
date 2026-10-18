@@ -26,7 +26,7 @@ function arm() {
     engine.set('loopRec', 0)
     return
   }
-  if (sampleLevel <= 0) engine.set('sampleLevel', resumeLevel)
+  if (sampleLevel < 1) engine.set('sampleLevel', 1)
   engine.set('loopRec', resumeRec)
 }
 
@@ -161,7 +161,7 @@ export function TapeTransport({
           text={
             arming
               ? 'Stops laying the board’s output onto the tape.'
-              : 'Lays the board’s output onto the tape where the play head is reading, over whatever is there, and starts the tape playing so what is already on it comes round into the new take. With nothing loaded it threads a blank reel first.'
+              : 'Lays the board’s output onto the tape where the play head is reading, over whatever is there, and starts the tape playing at ×1 or louder, so what is already on it comes round into the new take. Every lap is multiplied by Level, so a quieter loop fades. With nothing loaded it threads a blank reel first.'
           }
         >
           <DeckKey
@@ -175,8 +175,15 @@ export function TapeTransport({
         </Tip>
         <KnobArrow
           name="record knobs"
-          tip="Opens Record, Erase and the length of a blank reel."
-          controls={['loopRec', 'loopErase', 'loopSecs']}
+          tip="Opens Record, Erase, Hold, Wear, Hiss and the length of a blank reel."
+          controls={[
+            'loopRec',
+            'loopErase',
+            'loopHold',
+            'loopWear',
+            'loopHiss',
+            'loopSecs',
+          ]}
         />
       </DeckGroup>
       <DeckGroup>
