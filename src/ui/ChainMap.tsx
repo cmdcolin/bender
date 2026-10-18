@@ -17,6 +17,7 @@ import { useStoreValue } from './ControlsContext.ts'
 import { useCoarse } from './measure.ts'
 import { watchRail } from './railWatch.ts'
 import { Shelf } from './Section.tsx'
+import { watchTriggers } from './triggerWatch.ts'
 
 import type { Controls } from '../controls.ts'
 import type { El } from './svg.ts'
@@ -108,6 +109,10 @@ export function ChainMap({
       else delete graph.current.dataset.rail
     })
   }, [])
+  useEffect(
+    () => (graph.current ? watchTriggers(graph.current) : undefined),
+    [],
+  )
   const map = buildMap(controls, {
     wrap: true,
     loop: true,

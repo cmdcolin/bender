@@ -102,3 +102,9 @@
 .graph a:focus-visible {
   outline: none;
 }
+
+/* A wire carrying a trigger this instant: thicker, so a hit or a note can be
+   watched crossing the board. */
+.graph :global([data-wire][data-live] .line) {
+  stroke-width: 3;
+}
