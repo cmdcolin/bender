@@ -46,6 +46,9 @@ const REDRAW_MS = 120
 // Below this share of a fresh rail the supply bar on the map turns amber.
 const SAGGING = 0.85
 
+// Amber holds this long after the last dip, so a dip on every hit stays lit.
+const SAG_HOLD_MS = 1500
+
 function useSettledControls(): Controls {
   const [controls, setControls] = useState(engine.controls.get)
   useEffect(() => {
@@ -103,8 +106,11 @@ export function ChainMap({
   const graph = useRef<HTMLDivElement>(null)
   useEffect(() => {
     let shown = ''
+    let lowUntil = 0
     return watchRail((rail, rebooting) => {
-      const state = rebooting ? 'reboot' : rail < SAGGING ? 'low' : ''
+      const now = performance.now()
+      if (rail < SAGGING) lowUntil = now + SAG_HOLD_MS
+      const state = rebooting ? 'reboot' : now < lowUntil ? 'low' : ''
       if (!graph.current || state === shown) return
       shown = state
       if (state) graph.current.dataset.rail = state

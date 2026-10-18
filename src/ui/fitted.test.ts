@@ -54,7 +54,15 @@ test('the map draws only the stages it is given', () => {
   const shown = onBoard(stock())
   const map = buildMap(stock(), { wrap: true, loop: true, shown })
   const doors = new Set(map.nodes.flatMap(n => (n.door ? [n.door] : [])))
-  expect([...doors].toSorted()).toEqual([...shown].toSorted())
+  expect([...doors].toSorted()).toEqual([...shown, 'Power supply'].toSorted())
+})
+
+test('the power supply box and its loop show on a stock board', () => {
+  const map = buildMap(stock(), { shown: onBoard(stock()) })
+  expect(map.nodes.some(n => n.label === 'Power supply')).toBe(true)
+  const rail = map.wires.find(w => w.id === 'rail')!
+  expect(rail.door).toBe('Power supply')
+  expect(rail.d.match(/Q/g)).toHaveLength(4)
 })
 
 test('every stage on its own draws without a gap in its wires', () => {

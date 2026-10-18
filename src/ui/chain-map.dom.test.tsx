@@ -86,7 +86,7 @@ test('space over a touched mark still reaches the run line', () => {
   run.mockRestore()
 })
 
-test('the supply bar reads the rail: amber as it sags, red on a reboot', () => {
+test('the supply bar reads the rail: amber holds 1.5 s past a sag, red on a reboot', () => {
   vi.useFakeTimers()
   render(<App />)
   const rail = () => map().parentElement!.dataset.rail
@@ -103,6 +103,11 @@ test('the supply bar reads the rail: amber as it sags, red on a reboot', () => {
     vi.advanceTimersByTime(400)
   })
   expect(rail()).toBe('low')
+  post({ rail: 1 })
+  expect(rail()).toBe('low')
+  act(() => {
+    vi.advanceTimersByTime(1500)
+  })
   post({ rail: 1 })
   expect(rail()).toBeUndefined()
   vi.useRealTimers()

@@ -915,8 +915,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // --- down the drawing -----------------------------------------------------
 
   board.y = MARGIN
-  const lip = has('Board parts') || has(SUPPLY) ? CAP_H : 0
-  const railY = board.y + lip + 2
+  const railY = board.y + CAP_H + 2
   const chipY = railY + RAIL_H
   for (const n of chipRows[0] ?? []) n.y = chipY
   // The lane under the row, which carries everything written about the row
@@ -930,9 +929,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const lowY = laneEnd + 4
   const rail2Y = lowY + BOX_H + RAIL_H / 2
   for (const n of lower) n.y = lowY
-  board.h = hasBoard
-    ? (lower.size ? rail2Y + RAIL_H / 2 : laneEnd) - board.y
-    : 0
+  const boardFloor = lower.size
+    ? rail2Y + RAIL_H / 2
+    : Math.max(laneEnd, chipY + BOX_H + RAIL_H / 2)
+  board.h = hasBoard ? boardFloor - board.y : 0
 
   const lineY = hasBoard ? board.y + board.h + BAND_GAP : MARGIN
   for (const [r, row] of lineRows.entries())
@@ -1111,29 +1111,24 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // --- inside the toy board -------------------------------------------------
 
-  // The supply: one bar over all of them, because it is one rail. The starve
-  // knob that drags it sits on the keyboard's panel, and this is the only thing
-  // on the map that says the others go with it. In a snaked row the bar runs
-  // down the frame's left edge and back under the lower boxes, clear of the
-  // trigger lane.
-  const railLeft = board.x + (lower.size ? FRAME_PAD / 2 : FRAME_PAD)
-  const railRight = board.x + board.w - FRAME_PAD
+  // One dotted loop round every machine on the rail. It starts mid-top so the
+  // four corners round off and the seam falls on a straight run.
+  const railLeft = board.x + FRAME_PAD / 2
+  const railRight = board.x + board.w - FRAME_PAD / 2
+  const railBottom = board.y + board.h
   if (hasBoard)
     bar(
       'rail',
       board,
       board,
-      lower.size
-        ? [
-            [railRight, railY],
-            [railLeft, railY],
-            [railLeft, rail2Y],
-            [railRight, rail2Y],
-          ]
-        : [
-            [railLeft, railY],
-            [railRight, railY],
-          ],
+      [
+        [(railLeft + railRight) / 2, railY],
+        [railRight, railY],
+        [railRight, railBottom],
+        [railLeft, railBottom],
+        [railLeft, railY],
+        [(railLeft + railRight) / 2, railY],
+      ],
       {
         color: k.dim,
         dash: '1 2',
@@ -1256,7 +1251,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // somewhere to point at them.
   doors.add(SUPPLY)
   const supplyW = textWidth(SUPPLY, SMALL) + ICON_COL + CHIP_PAD * 2
-  if (hasBoard && has(SUPPLY))
+  if (hasBoard)
     notes.push(
       node('supply', 'chip', SUPPLY, {
         door: SUPPLY,
@@ -2212,8 +2207,7 @@ export function drawNode(
       ),
     ])
   }
-  // The toy board draws no outline of its own: the supply rail already runs
-  // round the four machines on it. The frame keeps only its name, which is the
+  // The supply loop is the board's outline; the frame draws only its name, the
   // door onto the board's parts that have no box.
   if (n.kind === 'frame') {
     return el('g', { className: 'node' }, [
