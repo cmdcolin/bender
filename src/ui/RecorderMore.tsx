@@ -1,9 +1,10 @@
 import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
-import { DeckKey, DeckRow } from './DeckKey.tsx'
+import { DeckRow } from './DeckKey.tsx'
 import { Menu } from './Menu.tsx'
 import styles from './RecorderMore.module.css'
+import { TabKey } from './TabKey.tsx'
 import { Tip } from './Tip.tsx'
 
 // What the recorder can do besides take a take. It opens over the panel rather
@@ -27,9 +28,8 @@ export function RecorderMore({
   return (
     <>
       <Tip text="Save what you just heard, send it to Spool, or record each machine on its own.">
-        <DeckKey
+        <TabKey
           ref={setAnchor}
-          glyph="more"
           legend="more"
           name="options"
           latched={open}

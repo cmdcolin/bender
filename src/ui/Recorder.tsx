@@ -1,9 +1,9 @@
 import { engine } from '../engine/engine.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { DeckKey } from './DeckKey.tsx'
 import styles from './Recorder.module.css'
 import { RecorderMore } from './RecorderMore.tsx'
 import { Cassette } from './StudioArt.tsx'
+import { TabKey } from './TabKey.tsx'
 import { Tip } from './Tip.tsx'
 
 function clock(seconds: number): string {
@@ -20,45 +20,50 @@ export function Recorder() {
 
   return (
     <section className={styles.box} aria-label="recorder">
-      <div className={styles.head}>
-        <span className={styles.name}>recorder</span>
-        <RecorderMore recording={recording} recStems={recStems} />
+      <div className={styles.deck}>
+        <div className={styles.top}>
+          <span className={styles.name}>recorder</span>
+          <div className={styles.tabs}>
+            <Tip
+              text={
+                recording
+                  ? 'Stops the take and saves it.'
+                  : recStems
+                    ? 'Records the output and every source that had something on it — stopping saves the lot.'
+                    : 'Records the output to a wav file — stopping saves it.'
+              }
+            >
+              <TabKey
+                legend={recording ? 'stop' : 'rec'}
+                name={
+                  recording
+                    ? 'stop and save'
+                    : recStems
+                      ? 'record stems'
+                      : 'record wav'
+                }
+                red
+                latched={recording}
+                onClick={() =>
+                  recording ? engine.stopRecording() : engine.startRecording()
+                }
+              />
+            </Tip>
+            <RecorderMore recording={recording} recStems={recStems} />
+          </div>
+        </div>
+        <div className={styles.body}>
+          <Cassette running={recording}>
+            <span
+              className={recording ? styles.counterOn : styles.counter}
+              role="timer"
+              aria-label="take time"
+            >
+              {clock(recSeconds)}
+            </span>
+          </Cassette>
+        </div>
       </div>
-      <Cassette running={recording}>
-        <span
-          className={recording ? styles.counterOn : styles.counter}
-          role="timer"
-          aria-label="take time"
-        >
-          {clock(recSeconds)}
-        </span>
-      </Cassette>
-      <Tip
-        text={
-          recording
-            ? 'Stops the take and saves it.'
-            : recStems
-              ? 'Records the output and every source that had something on it — stopping saves the lot.'
-              : 'Records the output to a wav file — stopping saves it.'
-        }
-      >
-        <DeckKey
-          glyph={recording ? 'stop' : 'rec'}
-          legend={recording ? 'stop' : 'rec'}
-          name={
-            recording
-              ? 'stop and save'
-              : recStems
-                ? 'record stems'
-                : 'record wav'
-          }
-          red
-          latched={recording}
-          onClick={() =>
-            recording ? engine.stopRecording() : engine.startRecording()
-          }
-        />
-      </Tip>
       {recError && (
         <p className={styles.error} role="alert">
           the take was not saved: {recError}
