@@ -103,7 +103,7 @@ const plain = (
   help: string,
 ): BoxSpec => ({ x, y, w, h, name, touched: false, help })
 
-const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
+const bent = (on: boolean): WireLook => (on ? 'on' : 'dash')
 
 // The pads the player hits, drawn as four of them.
 function padsGlyph(x: number, mid: number) {
