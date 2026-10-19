@@ -154,7 +154,12 @@ export function MonoPathDiagram({
   card.x = WIDTH - 2 - card.w
   const boxes = [keys, mixer, filter, loud, mod, card]
   const oscs = box('oscillators', frameX, FRAME_TOP)
-  const open = [...boxes, oscs].find(b => b.id === pick.selected)
+  const words = [
+    { id: 'sync', keys: ['monoSync'] as const },
+    { id: 'FM', keys: ['monoFm'] as const },
+  ]
+  const drawn = [...boxes, oscs].find(b => b.id === pick.selected)
+  const open = drawn ?? words.find(w => w.id === pick.selected)
   const part = open && PARTS.get(open.id!)
   const close = part ? zoom?.(part) : null
 
@@ -173,6 +178,16 @@ export function MonoPathDiagram({
   const noiseX = mixer.x + mixer.w / 2 - 8
   const loopX = mixer.x + mixer.w / 2 + 8
   const frameFrame = oscs.id === pick.selected
+  const toWord = (id: string, word: ReactNode) => (
+    <Pressable
+      name={id}
+      selected={pick.selected === id}
+      onSelect={() => pick.toggle(id)}
+      className={chip.tag}
+    >
+      {word}
+    </Pressable>
+  )
   const toMixer = (name: string, word: ReactNode) => (
     <Pressable
       name={name}
@@ -194,14 +209,14 @@ export function MonoPathDiagram({
           >
             {arrow => (
               <>
-                {close && open && (
+                {close && drawn && (
                   <ZoomCone
-                    from={open}
+                    from={drawn}
                     to={{ x: 0, w: WIDTH }}
-                    top={open.y + BOX_H}
+                    top={drawn.y + BOX_H}
                     knee={HEIGHT}
                     bottom={HEIGHT + CONE_H}
-                    title={`zoom: ${open.name}`}
+                    title={`zoom: ${drawn.name}`}
                   />
                 )}
                 <Wire
@@ -345,14 +360,20 @@ export function MonoPathDiagram({
                     d={`M${syncX} ${OSC_Y[0]! + OSC_H} V${OSC_Y[1]}`}
                     look={wire(up('monoSync'))}
                   />
-                  <Label x={syncX + 4} y={gapY + 3} on={up('monoSync')}>
-                    sync
-                  </Label>
                   <Wire
                     arrow={arrow}
                     d={`M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`}
                     look={wire(up('monoFm'))}
                   />
+                </g>
+                {toWord(
+                  'sync',
+                  <Label x={syncX + 4} y={gapY + 3} on={up('monoSync')}>
+                    sync
+                  </Label>,
+                )}
+                {toWord(
+                  'FM',
                   <Label
                     x={fmX - 4}
                     y={gapY + 3}
@@ -360,8 +381,8 @@ export function MonoPathDiagram({
                     on={up('monoFm')}
                   >
                     FM
-                  </Label>
-                </g>
+                  </Label>,
+                )}
                 {boxes.map(b => (
                   <BoxView
                     key={b.id}

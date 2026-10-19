@@ -48,6 +48,16 @@ test('the sync wire lights once Sync is on', () => {
   expect(sync().getAttribute('class')).toMatch(/noteOn/)
 })
 
+test('the sync and FM words open just their own knob', () => {
+  open()
+  press('sync')
+  expect(screen.getByText('Sync')).not.toBeNull()
+  expect(screen.queryByText('Osc 1 wave')).toBeNull()
+  press('FM')
+  expect(screen.queryByText('Sync')).toBeNull()
+  expect(screen.getByText('Lin FM')).not.toBeNull()
+})
+
 test('the noise and feedback words open the mixer', () => {
   open()
   press('noise')
