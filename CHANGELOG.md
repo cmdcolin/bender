@@ -2,6 +2,46 @@
 
 All notable changes to bender are documented here.
 
+## [1.13.0](https://github.com/cmdcolin/bender/compare/v1.12.0...v1.13.0) - 2026-10-19
+
+### Features
+- *(ui)* [`a58f8f7`](https://github.com/cmdcolin/bender/commit/a58f8f7648fb8764acb93ba5726d8b9466b5d044) fold the mix desk's off-board machines behind a toggle
+- *(ui)* [`7fda47a`](https://github.com/cmdcolin/bender/commit/7fda47a3e748b30f4bb0c0f59f021c3bb438c030) arrow keys, Home and End walk a menu; drop dead button and App styles
+- *(ui)* [`52f5304`](https://github.com/cmdcolin/bender/commit/52f53044399942d00596f9a2de385b87e9819a37) roll inside every open box, and an all-settings switch per stage
+- *(ui)* [`03d23f1`](https://github.com/cmdcolin/bender/commit/03d23f1359fd9539ee741983b1b768324cf4b080) about dialog links to the home page instead of four pages
+- *(ui)* [`1f172c3`](https://github.com/cmdcolin/bender/commit/1f172c37edd15ab064e3402241015cc24c481838) fit the panel header in two rows and shorten the map hint
+- *(ui)* [`845f52b`](https://github.com/cmdcolin/bender/commit/845f52b1a337b7182c9da012c0b83696e4afb37f) recorder floats top right beside the scope
+- [`e0a954a`](https://github.com/cmdcolin/bender/commit/e0a954a9e93e1052475e7bee7bccd455d1f4fadb) add test:changed and check scripts for the edit loop
+- *(ui)* [`ad5f9df`](https://github.com/cmdcolin/bender/commit/ad5f9df9780136bbd2280062cf48eaf1bb0b4d96) reset in each box card, and roll, undo and reset for the whole list
+- *(ui)* [`3f1b8f8`](https://github.com/cmdcolin/bender/commit/3f1b8f8443228f8c0e72d2b4ce5446a1ec8ca201) pedals flow in columns beside the keyboards
+- *(ui)* [`7fa1c67`](https://github.com/cmdcolin/bender/commit/7fa1c6701185757a6c446ece5e0b5edf51af0c36) drop the recorder caption and narrow the box
+- *(ui)* [`f979083`](https://github.com/cmdcolin/bender/commit/f979083e64d3bcfa28bd326082bf1df83efc5d18) draw no red bend wires, tags or pot on the toy keyboard die
+- [`f25b60e`](https://github.com/cmdcolin/bender/commit/f25b60e5a7c685dd6aa8426e21e965285354a1e6) run the sixteen slowest test files only under test:full
+- *(ui)* [`24fa62b`](https://github.com/cmdcolin/bender/commit/24fa62bbeda9951ea84ecf0260bafb9b2cbf9040) toy drum bend wires use the plain on look, not red
+- *(ui)* [`5844a21`](https://github.com/cmdcolin/bender/commit/5844a21a3628866903559150f26bf66c71391d72) drum kit and pedals share one column-flowing rack
+
+### Fixes
+- *(dsp)* [`d25ff6a`](https://github.com/cmdcolin/bender/commit/d25ff6a9342db623c060567c8d4199679c0b46c4) a NaN control no longer latches the smoother
+- *(engine)* [`a65810d`](https://github.com/cmdcolin/bender/commit/a65810d20d572652e022dcf00e51cd81bb52c32a) say so when audio will not start, the mic is refused or a file will not decode
+- *(dsp)* [`a71c27c`](https://github.com/cmdcolin/bender/commit/a71c27cb097fcaef912b068d17bf72171808de8c) recording on side B threads the loop under the head
+- *(engine)* [`a77eedb`](https://github.com/cmdcolin/bender/commit/a77eedb7b7a19c0300c6e34f60e06b882c765254) resume a suspended context on the next gesture, and close races in mic, take save and archive reads
+- *(midi)* [`8694a35`](https://github.com/cmdcolin/bender/commit/8694a353a8abe744f7c13db71718d7bc71d49132) reject out-of-range bindings, skip send errors and treat active sensing as a tick
+- *(ui)* [`eccf737`](https://github.com/cmdcolin/bender/commit/eccf73771ff8591c11c700d76c32f6da000c12a0) 44px touch targets on the phone page, focus and Escape in its sheets, a dark first paint for /app
+- *(dsp)* [`7cf5610`](https://github.com/cmdcolin/bender/commit/7cf56101ecf2898e0e32d03729eb426c233f4cd5) mono voice panic clears its oscillators, sag and drift
+- *(dsp)* [`bd983ea`](https://github.com/cmdcolin/bender/commit/bd983ea59685d3f0d86e13b70c134948d7f8ec69) sampler and toy chip panic clear their phases and filters
+- *(ui)* [`8a540cc`](https://github.com/cmdcolin/bender/commit/8a540cc3a43c1984a44ab1b18255f92fa6d221f0) a hold after trailing rests voices as a rest; the knob pickup tip follows a morph
+- *(ui)* [`642f01e`](https://github.com/cmdcolin/bender/commit/642f01e4a05fcbdce67b570c89a28c3a287b2494) enlarge the cassette label writing so it reads
+
+### Refactor
+- *(ui)* [`282d2ef`](https://github.com/cmdcolin/bender/commit/282d2ef28f41957a759cf6760fa7340ec0c18696) one ScopeVerbs row for the stage header and each part's fold
+- *(ui)* [`0d5ae01`](https://github.com/cmdcolin/bender/commit/0d5ae0132a11272533cfd8a99e1b879c634c87c2) pass the box title and list flag as props, not contexts
+- [`8d54c8f`](https://github.com/cmdcolin/bender/commit/8d54c8f730893669b54d27ffe0329d77b4125364) drop dead exports and an orphaned comment; one offValue for gates and shy rolls
+- *(ui)* [`87a9df6`](https://github.com/cmdcolin/bender/commit/87a9df600c7c7be4f9f0a54aa2f377eb70c5063e) the header's roll, undo and reset act on the whole stage
+
+### Documentation
+- [`74a6849`](https://github.com/cmdcolin/bender/commit/74a684928947b84476797978864457c48a05d8ca) shrink the user guide to a feature list
+- [`9a59e5a`](https://github.com/cmdcolin/bender/commit/9a59e5ac14c6f4d570471553823a8a7f84c3e8ea) format DEVELOPMENT.md
+
 ## [1.12.0](https://github.com/cmdcolin/bender/compare/v1.11.0...v1.12.0) - 2026-10-19
 
 ### Features
