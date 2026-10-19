@@ -28,6 +28,8 @@
   /* Between neighbouring controls in a row, by the same two tiers. */
   --gap-ctl: var(--space-sm);
   --gap-ctl-sm: var(--space-xs);
+  /* The narrowest a header verb gets, so the two rows of them tile evenly. */
+  --verb-w: 70px;
 }
 
 /* A fingertip covers a third of an inch, so both heights grow to 32px, and the

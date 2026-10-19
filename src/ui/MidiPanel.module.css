@@ -12,8 +12,10 @@
    failure this is here to prevent. */
 .tab {
   composes: action from './button.module.css';
+  min-width: var(--verb-w);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-xs);
 }
 

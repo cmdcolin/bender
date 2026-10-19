@@ -2,6 +2,7 @@
 
 .signIn {
   composes: action from './button.module.css';
+  min-width: var(--verb-w);
 }
 
 /* Round and photo-sized — once you are signed in the photo is the label. The

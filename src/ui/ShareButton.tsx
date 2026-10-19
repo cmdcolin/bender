@@ -6,7 +6,7 @@ import { Tip } from './Tip.tsx'
 const FLASH_MS = 1600
 
 export function ShareButton({ onCopy }: { onCopy: () => Promise<boolean> }) {
-  const [said, setSaid] = useState<'copied ✓' | 'copy failed' | null>(null)
+  const [said, setSaid] = useState<'copied ✓' | 'failed ✕' | null>(null)
   useEffect(() => {
     if (!said) return undefined
     const id = setTimeout(() => setSaid(null), FLASH_MS)
@@ -15,14 +15,14 @@ export function ShareButton({ onCopy }: { onCopy: () => Promise<boolean> }) {
   return (
     <Tip text="Copies a link to this board. Whoever opens it gets every knob as you have it now.">
       <button
-        className={said === 'copy failed' ? styles.btnBad : styles.btn}
+        className={said === 'failed ✕' ? styles.btnBad : styles.btn}
         onClick={() =>
-          void onCopy().then(ok => setSaid(ok ? 'copied ✓' : 'copy failed'))
+          void onCopy().then(ok => setSaid(ok ? 'copied ✓' : 'failed ✕'))
         }
       >
         <span className={styles.holdsWidest}>
           <span className={styles.widest} aria-hidden>
-            copy failed
+            copied ✓
           </span>
           <span>{said ?? 'share'}</span>
         </span>

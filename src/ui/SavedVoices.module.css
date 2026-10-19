@@ -2,12 +2,14 @@
 
 .trigger {
   composes: action from './button.module.css';
+  min-width: var(--verb-w);
 }
 
 /* A write that did not land. Red for as long as the ✕ is up, because two of the
    three ways to save happen with this menu shut. */
 .triggerBad {
   composes: actionDanger from './button.module.css';
+  min-width: var(--verb-w);
 }
 
 .body {

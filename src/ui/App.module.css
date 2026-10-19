@@ -157,6 +157,16 @@
   composes: actionOff from './button.module.css';
 }
 
+.btn,
+.btnBad,
+.btnQuiet,
+.btnOn,
+.btnOff,
+.morph,
+.flight {
+  min-width: var(--verb-w);
+}
+
 /* The duration picker opens the session buttons, right of the nameplate. */
 .morph {
   composes: btn;
@@ -173,7 +183,6 @@
   composes: actionOn from './button.module.css';
   position: relative;
   overflow: hidden;
-  min-width: 92px;
 }
 
 .flightFill {
