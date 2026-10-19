@@ -56,9 +56,9 @@ test.each([
     expect(texts(drawing(parent))).toContain(`zoom: ${box}`)
     const below = drawing(parent).compareDocumentPosition(drawing(close))
     expect(below & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    const verbs = screen.getAllByRole('button', { name: /^roll/ }).at(-1)!
+    const row = screen.getAllByRole('slider').at(-1)!
     expect(
-      drawing(close).compareDocumentPosition(verbs) &
+      drawing(close).compareDocumentPosition(row) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
   },

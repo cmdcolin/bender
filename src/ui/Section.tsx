@@ -27,13 +27,14 @@ import {
   type SliderDef,
 } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { zoomFor } from './drawingFor.tsx'
 import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { firstLook, markLooked } from './firstLook.ts'
 import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
-import { FoldDrawing, zoomFor } from './foldDrawings.tsx'
+import { FoldDrawing } from './foldDrawings.tsx'
 import {
   DRAWN_ROWS,
   hostedBy,

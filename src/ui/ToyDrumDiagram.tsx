@@ -27,7 +27,7 @@ import { VOICE_BOXES } from './toyBoxKeys.ts'
 import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 
 import type { ControlKey } from '../controls.ts'
-import type { DrawingProps } from './foldDrawings.tsx'
+import type { DrawingProps } from './drawingFor.tsx'
 
 const DRUM_TAP = CHANNELS.find(c => c.name === 'Toy drums')!.tap
 
