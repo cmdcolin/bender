@@ -201,15 +201,22 @@ test('the clock shows its clk tags while open, and a bent tag opens the part it 
   set({ chipScan: 0 })
 })
 
-test('hard sync, XOR, duty on envelope and envelope bits each name themselves on their part', () => {
+test('every soldered bend names itself on its part and opens its row', () => {
   open()
-  set({ chipHardSync: 0.5, chipXor: 0.5, chipDutyEnv: 0.5, chipEnvBits: 0.5 })
-  for (const [part, bend, row] of [
-    ['clock', 'sync', 'Hard sync'],
-    ['voices', 'xor', 'Voice XOR'],
-    ['voices', 'duty', 'Duty on envelope'],
-    ['envelope', 'bits', 'Envelope bits'],
-  ] as const) {
+  const bends = [
+    ['clock', 'sync', 'chipHardSync', 'Hard sync'],
+    ['clock', 'fm', 'chipFmClock', 'FM on clock'],
+    ['tune ROM', 'addr', 'chipOutAddr', 'Output on address'],
+    ['tune ROM', 'data', 'chipOutData', 'Output on data'],
+    ['key matrix', 'ghost', 'chipGhost', 'Ghost keys'],
+    ['voices', 'short', 'chipShort', 'Voice short'],
+    ['voices', 'xor', 'chipXor', 'Voice XOR'],
+    ['voices', 'duty', 'chipDutyEnv', 'Duty on envelope'],
+    ['envelope', 'bits', 'chipEnvBits', 'Envelope bits'],
+    ['output pin', 'hold', 'chipHold', 'Output hold'],
+  ] as const
+  set(Object.fromEntries(bends.map(([, , key]) => [key, 1])))
+  for (const [part, bend, , row] of bends) {
     expect(words()).toContain(bend)
     const tag = () =>
       screen.getByRole('button', { name: `${part} ${bend} controls` })
@@ -217,7 +224,7 @@ test('hard sync, XOR, duty on envelope and envelope bits each name themselves on
     expect(screen.getByText(row)).not.toBeNull()
     fireEvent.click(tag())
   }
-  set({ chipHardSync: 0, chipXor: 0, chipDutyEnv: 0, chipEnvBits: 0 })
+  set(Object.fromEntries(bends.map(([, , key]) => [key, 0])))
 })
 
 test('each bend wire and its name open the part it bends', () => {

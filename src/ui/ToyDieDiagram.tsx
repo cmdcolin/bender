@@ -42,6 +42,12 @@ const KEYS = [
   'chipXor',
   'chipDutyEnv',
   'chipEnvBits',
+  'chipGhost',
+  'chipShort',
+  'chipHold',
+  'chipFmClock',
+  'chipOutAddr',
+  'chipOutData',
 ] as const
 
 const GROUP = GROUPS.find(g => g.name === 'Toy keyboard')!
@@ -81,14 +87,14 @@ const WIDTH = 420
 const ROOM = 22
 const ROW_GAP = 44
 const BOX_H = boxHeight('a')
-const GAPS = [30, 38, 22]
-const TAIL = 34
+const GAPS = [26, 38, 22]
+const TAIL = 28
 const TOP = ROOM
 const LOW = TOP + BOX_H + ROW_GAP
 const STUB = 7
 const BUS_Y = TOP + BOX_H + 12
 const HEIGHT = LOW + BOX_H + ROOM
-const VOICES_W = 64
+const VOICES_W = 84
 // Five white keys, C to G, with the black keys of C, D and F.
 const WHITE_W = 4
 const GLYPH_W = 5 * WHITE_W
@@ -245,8 +251,8 @@ function ClockTag({
 }
 
 // A bend soldered onto a box, drawn as a red stub with its name beside it and
-// opening the knob that sets it. The stub leaves the bottom edge, or the left
-// edge when the box has no room beneath it.
+// opening the knob that sets it. The stub leaves the bottom edge, or a side
+// edge where the box has no room beneath it.
 function BendTag({
   x,
   y,
@@ -260,9 +266,10 @@ function BendTag({
   opens: string
   pick: ReturnType<typeof useSelectedBox>
   say: string
-  edge?: 'bottom' | 'left'
+  edge?: 'bottom' | 'left' | 'right'
 }) {
-  const left = edge === 'left'
+  const side = edge === 'left' ? -1 : 1
+  const down = edge === 'bottom'
   return (
     <Pressable
       name={`${opens} ${say}`}
@@ -272,20 +279,20 @@ function BendTag({
     >
       <path
         d={
-          left
-            ? `M${x} ${y - 6} H${x - STUB - 30} V${y + 6} H${x} Z`
-            : `M${x - 2} ${y} V${y + STUB + 10} H${x + 26} V${y} Z`
+          down
+            ? `M${x - 2} ${y} V${y + STUB + 10} H${x + 26} V${y} Z`
+            : `M${x} ${y - 6} H${x + side * (STUB + 30)} V${y + 6} H${x} Z`
         }
         className={styles.tagHit}
       />
       <path
-        d={left ? `M${x} ${y} H${x - STUB}` : `M${x} ${y} V${y + STUB}`}
+        d={down ? `M${x} ${y} V${y + STUB}` : `M${x} ${y} H${x + side * STUB}`}
         className={styles.stubOn}
       />
       <text
-        x={left ? x - STUB - 3 : x + 3}
-        y={left ? y + 3 : y + STUB + 8}
-        textAnchor={left ? 'end' : 'start'}
+        x={down ? x + 3 : x + side * (STUB + 3)}
+        y={down ? y + STUB + 8 : y + 3}
+        textAnchor={side < 0 ? 'end' : 'start'}
         className={styles.tagOn}
       >
         {say}
@@ -313,6 +320,7 @@ function Bend({
       name={`${opens} ${name}`}
       selected={pick.selected === opens}
       onSelect={() => pick.toggle(opens)}
+      className={styles.bendPick}
     >
       <path d={hit} className={styles.wireHit} />
       {children}
@@ -598,16 +606,64 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               {up('chipHardSync') && (
                 <BendTag
                   x={clock.x}
-                  y={TOP + BOX_H / 2}
+                  y={TOP + 5}
                   edge="left"
                   opens="clock"
                   pick={pick}
                   say="sync"
                 />
               )}
+              {up('chipFmClock') && (
+                <BendTag
+                  x={clock.x}
+                  y={TOP + BOX_H - 5}
+                  edge="left"
+                  opens="clock"
+                  pick={pick}
+                  say="fm"
+                />
+              )}
+              {up('chipOutAddr') && (
+                <BendTag
+                  x={rom.x + rom.w}
+                  y={TOP + 5}
+                  edge="right"
+                  opens="tune ROM"
+                  pick={pick}
+                  say="addr"
+                />
+              )}
+              {up('chipOutData') && (
+                <BendTag
+                  x={rom.x + rom.w}
+                  y={TOP + BOX_H - 5}
+                  edge="right"
+                  opens="tune ROM"
+                  pick={pick}
+                  say="data"
+                />
+              )}
+              {up('chipGhost') && (
+                <BendTag
+                  x={keys.x + 6}
+                  y={LOW + BOX_H}
+                  opens="key matrix"
+                  pick={pick}
+                  say="ghost"
+                />
+              )}
+              {up('chipShort') && (
+                <BendTag
+                  x={voices.x + 2}
+                  y={LOW + BOX_H}
+                  opens="voices"
+                  pick={pick}
+                  say="short"
+                />
+              )}
               {up('chipXor') && (
                 <BendTag
-                  x={voices.x + 4}
+                  x={voices.x + 38}
                   y={LOW + BOX_H}
                   opens="voices"
                   pick={pick}
@@ -616,7 +672,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               )}
               {up('chipDutyEnv') && (
                 <BendTag
-                  x={voices.x + 34}
+                  x={voices.x + 62}
                   y={LOW + BOX_H}
                   opens="voices"
                   pick={pick}
@@ -630,6 +686,15 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   opens="envelope"
                   pick={pick}
                   say="bits"
+                />
+              )}
+              {up('chipHold') && (
+                <BendTag
+                  x={pin.x + 2}
+                  y={LOW + BOX_H}
+                  opens="output pin"
+                  pick={pick}
+                  say="hold"
                 />
               )}
               <Node
