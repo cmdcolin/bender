@@ -7,6 +7,7 @@ import {
   useReadings,
   useSelectedBox,
   type BoxSpec,
+  card,
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 
@@ -208,7 +209,7 @@ export function AmpPathDiagram() {
           )}
         </Diagram>
       </div>
-      <BoxRows keys={open?.keys} />
+      <BoxRows card={card(pick)} keys={open?.keys} />
     </>
   )
 }

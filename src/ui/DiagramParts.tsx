@@ -404,6 +404,7 @@ export function BoxRows({
   hint,
   under,
   inOrder,
+  card,
 }: {
   keys: readonly ControlKey[] | undefined
   note?: string
@@ -415,6 +416,8 @@ export function BoxRows({
   under?: { keys: readonly ControlKey[]; node: ReactNode }
   /** Keep `keys` as given, for rows that read in sequence like from, to, depth. */
   inOrder?: boolean
+  /** Frames the rows in the open box's card, the way the drawings with a close-up do. */
+  card?: { name: string; onHide: () => void }
 }) {
   const shown = useBoardValue(c =>
     (keys ?? []).filter(k => rowShown(k, c)).join(','),
@@ -425,7 +428,7 @@ export function BoxRows({
     .map(d => d.key)
     .filter(key => shown.includes(key))
   const last = rows.findLast(key => under?.keys.includes(key))
-  return (
+  const list = (
     <div className={styles.rows}>
       {note && <p className={styles.noteLine}>{note}</p>}
       {verbs}
@@ -437,6 +440,7 @@ export function BoxRows({
       ))}
     </div>
   )
+  return card ? <OpenBox {...card}>{list}</OpenBox> : list
 }
 
 // A length of tape, and a head standing on it.

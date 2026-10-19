@@ -7,6 +7,7 @@ import {
   useFlow,
   useReadings,
   useSelectedBox,
+  card,
 } from './diagram.ts'
 import {
   BoxRows,
@@ -228,6 +229,7 @@ export function FmDieDiagram() {
         </Diagram>
       </div>
       <BoxRows
+        card={card(pick)}
         hint="Press a box for its settings."
         keys={pick.selected ? OPENS[pick.selected] : undefined}
       />

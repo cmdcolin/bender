@@ -6,6 +6,7 @@ import {
   useReadings,
   useSelectedBox,
   type BoxSpec,
+  card,
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
 import styles from './FeedbackLoops.module.css'
@@ -181,7 +182,7 @@ export function FeedbackLoops() {
           )}
         </Diagram>
       </div>
-      <BoxRows keys={open} />
+      <BoxRows card={card(pick)} keys={open} />
     </>
   )
 }

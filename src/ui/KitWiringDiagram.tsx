@@ -7,7 +7,13 @@ import {
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chipLook from './ChipLook.module.css'
-import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
+import {
+  boxHeight,
+  boxWidth,
+  useReadings,
+  useSelectedBox,
+  card,
+} from './diagram.ts'
 import { BoxRows, Diagram, Dot, Pressable, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
@@ -328,6 +334,7 @@ export function KitWiringDiagram() {
         </Diagram>
       </div>
       <BoxRows
+        card={card(pick)}
         keys={open?.keys}
         hint="Press the trigger lines, the amps or a patch for its settings."
       />

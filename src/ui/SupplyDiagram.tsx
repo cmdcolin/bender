@@ -9,6 +9,7 @@ import {
   useReadings,
   useSelectedBox,
   type BoxSpec,
+  card,
 } from './diagram.ts'
 import {
   BoxRows,
@@ -158,6 +159,7 @@ export function SupplyDiagram() {
         </Diagram>
       </div>
       <BoxRows
+        card={card(pick)}
         hint="Press a box for its settings."
         keys={isBox(pick.selected) ? BOX_KEYS[pick.selected] : undefined}
       />

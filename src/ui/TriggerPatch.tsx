@@ -2,7 +2,7 @@ import chipLook from './ChipLook.module.css'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import diagramStyles from './Diagram.module.css'
-import { useSelectedBox } from './diagram.ts'
+import { useSelectedBox, card } from './diagram.ts'
 import { BoxRows } from './DiagramParts.tsx'
 import styles from './TriggerPatch.module.css'
 
@@ -270,7 +270,7 @@ export function TriggerPatch() {
           Press a wire to set it, or a machine to set both of its wires.
         </p>
       )}
-      <BoxRows keys={OPENS.get(pick.selected ?? '')} />
+      <BoxRows card={card(pick)} keys={OPENS.get(pick.selected ?? '')} />
     </>
   )
 }

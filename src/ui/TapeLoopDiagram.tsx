@@ -1,7 +1,13 @@
 import { HEAD_CHOICES } from '../dsp/stages/tapeDelay.ts'
 import chip from './ChipLook.module.css'
 import styles from './Diagram.module.css'
-import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
+import {
+  boxHeight,
+  boxWidth,
+  useReadings,
+  useSelectedBox,
+  card,
+} from './diagram.ts'
 import {
   BoxRows,
   BoxView,
@@ -282,6 +288,7 @@ export function TapeLoopDiagram() {
         </Diagram>
       </div>
       <BoxRows
+        card={card(pick)}
         keys={Object.entries(OPENS).find(([id]) => id === pick.selected)?.[1]}
       />
     </>

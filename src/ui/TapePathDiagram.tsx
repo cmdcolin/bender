@@ -7,6 +7,7 @@ import {
   useReadings,
   useSelectedBox,
   type BoxSpec,
+  card,
 } from './diagram.ts'
 import {
   BoxRows,
@@ -320,7 +321,7 @@ export function TapePathDiagram() {
           )}
         </Diagram>
       </div>
-      <BoxRows keys={open} />
+      <BoxRows card={card(pick)} keys={open} />
     </>
   )
 }

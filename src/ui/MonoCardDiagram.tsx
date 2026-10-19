@@ -7,6 +7,7 @@ import {
   useFlow,
   useReadings,
   useSelectedBox,
+  card,
 } from './diagram.ts'
 import { BoxRows, Diagram, Label, Pressable, Wire } from './DiagramParts.tsx'
 
@@ -224,6 +225,7 @@ export function MonoCardDiagram() {
         </Diagram>
       </div>
       <BoxRows
+        card={card(pick)}
         hint="Press a box for its settings."
         keys={pick.selected ? OPENS[pick.selected] : undefined}
       />
