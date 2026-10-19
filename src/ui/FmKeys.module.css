@@ -40,39 +40,21 @@
   box-shadow: 0 0 0 2px var(--gold);
 }
 
-/* The badge is a silkscreened nameplate: the name, then two operator boxes
-   with the modulator wired into the carrier. */
+/* The badge is a silkscreened nameplate: the name and a frequency-modulated
+   sine. */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
 }
 
-.ops {
-  display: inline-flex;
-  align-items: center;
-}
-
-.ops span {
-  width: 10px;
-  height: 10px;
-  border: 1.5px solid var(--silk);
-  border-radius: 2px;
-}
-
-.ops span:first-child {
-  margin-right: 6px;
-  position: relative;
-}
-
-.ops span:first-child::after {
-  content: '';
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  width: 6px;
-  margin-top: -0.75px;
-  border-top: 1.5px solid var(--silk);
+.wave {
+  width: 30px;
+  height: 14px;
+  fill: none;
+  stroke: var(--silk);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
 }
 
 .part {
