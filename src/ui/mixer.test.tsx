@@ -80,11 +80,11 @@ test('rolling the desk rolls the balance', () => {
   const rand = () =>
     (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
   const rolled = rollGroup(mixBus(), DEFAULT_CONTROLS, rand)
-  // A level is what decides whether a stage is there at all, so a roll leaves
-  // every one of them somewhere you can hear.
+  // A level at the bottom is a stage that isn't there, so a roll brings it up
+  // somewhere you can hear; one that is up stays where it is.
   expect(rolled.fmLevel).toBeGreaterThan(0.3)
   expect(rolled.oscLevel).toBeGreaterThan(0.3)
-  expect(rolled.chipLevel).not.toBe(DEFAULT_CONTROLS.chipLevel)
+  expect(rolled.chipLevel).toBe(DEFAULT_CONTROLS.chipLevel)
   // What is yours it still leaves alone: the mic is your monitoring and the
   // sampler is the file you dropped.
   expect(rolled.micLevel).toBe(DEFAULT_CONTROLS.micLevel)
