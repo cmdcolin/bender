@@ -714,6 +714,11 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
           </>
         )}
       </ChipDrawing>
+      {r.touched(...KEYS) && (
+        <p className={diagram.key}>
+          grey wires carry the signal · red dashed wires are bends you turned on
+        </p>
+      )}
       {open === null ? (
         <BoxRows hint="Press a box for its settings." keys={undefined} />
       ) : (

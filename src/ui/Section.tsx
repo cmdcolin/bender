@@ -897,11 +897,11 @@ export function OpenGroup({
       </div>
       {boxAim && (
         <div className={styles.aim}>
-          <span>roll, undo and reset act on</span>
+          <span>roll, undo and reset change</span>
           <ToggleButtonGroup
             label="what roll, undo and reset act on"
-            options={[boxAim.what, WHOLE]}
-            value={aimed ? boxAim.what : WHOLE}
+            options={[`only ${boxAim.what}`, WHOLE]}
+            value={aimed ? `only ${boxAim.what}` : WHOLE}
             onChange={v => setWholeFor(v === WHOLE ? boxAim.scope : null)}
           />
         </div>

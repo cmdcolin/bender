@@ -301,3 +301,10 @@
   stroke-width: 1;
   stroke-dasharray: 3 2;
 }
+
+.key {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+  text-align: center;
+}
