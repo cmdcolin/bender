@@ -235,7 +235,7 @@ const resetTipFor = (what: string, moved: number) =>
 
 // Roll, undo and reset for one scope of the board. The stage header and each
 // part's fold draw it, the fold in its smaller look.
-function ScopeVerbs({
+export function ScopeVerbs({
   scope,
   what,
   seconds,

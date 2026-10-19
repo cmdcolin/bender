@@ -1,0 +1,13 @@
+.verbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0 var(--space-2xs) var(--space-sm);
+}
+
+.label {
+  flex: 1;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}

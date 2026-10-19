@@ -309,6 +309,23 @@ test('an open box rolls its own rows from inside its card', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
 })
 
+test('an open box resets its own rows from inside its card', () => {
+  act(() => {
+    setMorph(0)
+    engine.patch({ ...DEFAULT_CONTROLS })
+  })
+  open()
+  fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
+  const card = screen.getByRole('region', { name: 'envelope' })
+  const reset = () =>
+    within(card).getByRole('button', { name: 'reset envelope' })
+  expect(reset().hasAttribute('disabled')).toBe(true)
+  fireEvent.click(within(card).getByRole('button', { name: 'roll envelope' }))
+  fireEvent.click(reset())
+  for (const key of NODE_KEYS.envelope!)
+    expect(engine.controls.get()[key]).toBe(DEFAULT_CONTROLS[key])
+})
+
 test('all settings lists the stage’s rows in place of the die', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   open()

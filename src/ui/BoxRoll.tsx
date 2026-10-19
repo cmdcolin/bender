@@ -1,8 +1,9 @@
+import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import styles from './BoxRoll.module.css'
-import { useStoreValue } from './ControlsContext.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { morphSetting } from './morph.ts'
-import { rollKeys } from './presets/index.ts'
+import { resetKeys, rollKeys } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import { Tip } from './Tip.tsx'
 
@@ -18,6 +19,9 @@ export function BoxRoll({
   const seconds = useStoreValue(morphSetting)
   const scope = `box › ${keys.join()}`
   const canUndo = useCanUndoRoll(scope)
+  const moved = useBoardValue(
+    c => keys.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
+  )
   if (keys.length === 0) return null
   return (
     <div className={styles.verbs}>
@@ -52,6 +56,28 @@ export function BoxRoll({
           onClick={() => undoRoll(scope, seconds)}
         >
           undo
+        </button>
+      </Tip>
+      <Tip
+        text={
+          moved > 0
+            ? `put ${title}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
+            : `${title} is already where it booted`
+        }
+      >
+        <button
+          className={moved > 0 ? styles.reset : styles.off}
+          aria-label={`reset ${title}`}
+          disabled={moved === 0}
+          onClick={() =>
+            engine.morphTo(
+              resetKeys(engine.controls.get(), keys),
+              seconds,
+              new Set(keys),
+            )
+          }
+        >
+          {moved > 0 ? `reset ${moved}` : 'reset'}
         </button>
       </Tip>
     </div>
