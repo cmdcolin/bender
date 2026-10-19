@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { engine } from '../engine/engine.ts'
 import { INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
-import { BendKeysSwitch } from './BendKeys.tsx'
+import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
 import { onBoard } from './chain-map.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
@@ -20,6 +20,7 @@ import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
 import { Tip } from './Tip.tsx'
 
+import type { MorphSeconds } from './morph.ts'
 import type { ComponentType } from 'react'
 
 type Machine = ComponentType<{
@@ -70,7 +71,7 @@ export function Instruments({
   seconds,
   onOpen,
 }: {
-  seconds: number
+  seconds: MorphSeconds
   onOpen: (stage: string) => void
 }) {
   const { all, closed, shows, close, reopen, setAll } = useBenchFaces()
@@ -135,6 +136,7 @@ export function Instruments({
             </button>
           ))}
       </div>
+      <BendKeys morphSeconds={seconds} />
       {shelf(TOY)}
       {shelf(LEVELLED)}
       <PedalShelf seconds={seconds} onOpen={onOpen} />

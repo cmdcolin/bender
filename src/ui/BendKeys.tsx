@@ -322,8 +322,8 @@ export function BendKeysSwitch() {
     <Tip
       text={
         on
-          ? `The letter keys play the bend keys under the tape loop: hold one, shift pins it, ${octaveLetters.down} lets go of everything, ${octaveLetters.up} redeals. Press to hand them back to the toy keyboard.`
-          : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard. The bend keys appear under the tape loop.'
+          ? `The letter keys play the bend keys under this row: hold one, shift pins it, ${octaveLetters.down} lets go of everything, ${octaveLetters.up} redeals. Press to hand them back to the toy keyboard.`
+          : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard. The bend keys appear under this row.'
       }
     >
       <button

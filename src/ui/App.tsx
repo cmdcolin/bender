@@ -14,7 +14,6 @@ import { versionLabel } from '../version.ts'
 import { AboutDialog } from './AboutDialog.tsx'
 import { Account } from './Account.tsx'
 import styles from './App.module.css'
-import { BendKeys } from './BendKeys.tsx'
 import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
@@ -417,7 +416,6 @@ export function App(props: { openedFromLink?: boolean }) {
             </div>
           </section>
         </div>
-        <BendKeys morphSeconds={morphSeconds} />
       </main>
 
       <aside className={styles.panel} aria-label="the board">
