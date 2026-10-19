@@ -83,16 +83,18 @@ const PAD_KEYS = slidersFirst(GROUP.sliders.filter(d => !d.part)).map(
 
 const KEYS = [...Object.values(BOXES).flatMap(b => b.keys), ...PAD_KEYS]
 
-const WIDTH = 420
+const WIDTH = 430
 const TOP = 6
 const BOX_H = boxHeight('a')
 const ROW_GAPS = [30, 16]
 const HEAD = BOX_H + 16
-const HEIGHT = TOP + HEAD + 3 * BOX_H + ROW_GAPS[0]! + ROW_GAPS[1]! + TOP
+const BODY_H = 3 * BOX_H + ROW_GAPS[0]! + ROW_GAPS[1]!
+const HEIGHT = TOP + 2 * HEAD + BODY_H + TOP
 const GLYPH = 12
 const PAD = 5
-const GAP = 34
-const TAIL = 30
+const GAP = 28
+const TAIL = 28
+const HEAD_GAP = 6
 const FIRST = ['tanks', 'metal bank', 'noise'] as const
 
 const plain = (
@@ -124,10 +126,8 @@ function padsGlyph(x: number, mid: number) {
   )
 }
 
-// The kit's voices as the panel opens them. One-shots turn each trigger into a
-// pulse, three kinds of source ring or hiss under it, and the amplifiers and the
-// converter that follow are the same for every voice. The metal bank and the
-// tanks reach into each other, and the drawing gives each reach its own wire.
+// Pads and the pattern fire the triggers. One-shots and amps each span the three
+// voices, so every voice gets its own wire in and out; the sum happens in the DAC.
 export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox(
@@ -147,8 +147,14 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
     : 'plain'
 
   const srcW = Math.max(...FIRST.map(boxWidth))
+  const padsW = glyphBoxWidth(PADS, GLYPH)
+  const patternW = boxWidth('pattern')
   const widths = [
-    Math.max(boxWidth('one-shots'), boxWidth('triggers'), boxWidth('pattern')),
+    Math.max(
+      boxWidth('one-shots'),
+      boxWidth('triggers'),
+      padsW + HEAD_GAP + patternW,
+    ),
     srcW,
     boxWidth('amps'),
     Math.max(boxWidth('DAC'), boxWidth('sample ROM')),
@@ -157,8 +163,9 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
     Math.round(widths.slice(0, i).reduce((a, b) => a + b, 0) + GAP * i),
   )
   const width = widths.reduce((a, b) => a + b, 0) + GAP * 3 + TAIL
+  const triggersY = TOP + HEAD
   const rowY = (i: number) =>
-    TOP + HEAD + i * BOX_H + ROW_GAPS.slice(0, i).reduce((a, b) => a + b, 0)
+    TOP + 2 * HEAD + i * BOX_H + ROW_GAPS.slice(0, i).reduce((a, b) => a + b, 0)
   const mid = (i: number) => rowY(i) + BOX_H / 2
 
   const spec = (id: BoxId, x: number, y: number, w: number, h: number) => {
@@ -176,26 +183,31 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
     } satisfies BoxSpec
   }
 
-  const shots = spec('one-shots', xs[0]!, rowY(1), widths[0]!, BOX_H)
+  const shots = spec('one-shots', xs[0]!, rowY(0), widths[0]!, BODY_H)
   const sources = FIRST.map((id, i) => spec(id, xs[1]!, rowY(i), srcW, BOX_H))
   const amps = plain(
     'amps',
     xs[2]!,
-    rowY(1),
+    rowY(0),
     widths[2]!,
-    BOX_H,
+    BODY_H,
     'One amplifier a voice, each opened by its own envelope. The accent cap and the cross-patch sit under triggers and cross-patch.',
   )
   const dac = spec('DAC', xs[3]!, rowY(1), widths[3]!, BOX_H)
   const rom = spec('sample ROM', xs[3]!, rowY(2), widths[3]!, BOX_H)
-  const triggers = spec('triggers', xs[0]!, rowY(0), widths[0]!, BOX_H)
-  const pattern = spec('pattern', xs[0]!, rowY(2), widths[0]!, BOX_H)
-  const padsW = glyphBoxWidth(PADS, GLYPH)
-  const padsX = Math.round(shots.x + (shots.w - padsW) / 2)
-  const picks = [triggers, shots, pattern, ...sources, dac, rom]
+  const triggers = spec('triggers', xs[0]!, triggersY, widths[0]!, BOX_H)
+  const padsX = Math.round(
+    triggers.x + (triggers.w - padsW - HEAD_GAP - patternW) / 2,
+  )
+  const pattern = spec(
+    'pattern',
+    padsX + padsW + HEAD_GAP,
+    TOP,
+    patternW,
+    BOX_H,
+  )
+  const picks = [pattern, triggers, shots, ...sources, dac, rom]
   const open = picks.find(b => b.id === pick.selected)
-  const fanL = shots.x + shots.w + GAP / 2
-  const fanR = amps.x - GAP / 2
   const fmX = xs[1]! + srcW * 0.3
   const syncX = xs[1]! + srcW * 0.7
 
@@ -210,28 +222,20 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
         >
           {arrow => (
             <>
-              <Wire
-                d={`M${shots.x + shots.w} ${mid(1)} H${fanL}`}
-                look={flow}
-              />
               {sources.map((s, i) => (
                 <g key={s.name}>
                   <Wire
                     arrow={arrow}
-                    d={`M${fanL} ${mid(1)} V${mid(i)} H${s.x}`}
+                    d={`M${shots.x + shots.w} ${mid(i)} H${s.x}`}
                     look={flow}
                   />
                   <Wire
-                    d={`M${s.x + s.w} ${mid(i)} H${fanR} V${mid(1)}`}
+                    arrow={arrow}
+                    d={`M${s.x + s.w} ${mid(i)} H${amps.x}`}
                     look={flow}
                   />
                 </g>
               ))}
-              <Wire
-                arrow={arrow}
-                d={`M${fanR} ${mid(1)} H${amps.x}`}
-                look={flow}
-              />
               <Wire
                 arrow={arrow}
                 d={`M${amps.x + amps.w} ${mid(1)} H${dac.x}`}
@@ -280,16 +284,14 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
                 d={`M${shots.x + shots.w / 2} ${triggers.y + BOX_H} V${shots.y}`}
                 look={flow}
               />
-              <Wire
-                arrow={arrow}
-                d={`M${shots.x + shots.w / 2} ${pattern.y} V${shots.y + BOX_H}`}
-                look={flow}
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${shots.x + shots.w / 2} ${TOP + BOX_H} V${triggers.y}`}
-                look={flow}
-              />
+              {[padsX + padsW / 2, pattern.x + pattern.w / 2].map(x => (
+                <Wire
+                  key={x}
+                  arrow={arrow}
+                  d={`M${x} ${TOP + BOX_H} V${triggers.y}`}
+                  look={flow}
+                />
+              ))}
               <GlyphBox
                 x={padsX}
                 y={TOP}
