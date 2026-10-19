@@ -1,7 +1,7 @@
 .box {
   composes: box from './App.module.css';
   flex: none;
-  width: 240px;
+  width: 220px;
   align-items: center;
 }
 
@@ -60,18 +60,6 @@
 }
 
 .counterOn {
-  color: #ff5a3c;
-}
-
-.caption,
-.captionOn {
-  margin: 0;
-  font-size: var(--fs-sm);
-  text-align: center;
-  color: var(--fg2);
-}
-
-.captionOn {
   color: #ff5a3c;
 }
 

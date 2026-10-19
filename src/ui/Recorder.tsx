@@ -64,9 +64,6 @@ export function Recorder() {
           </Cassette>
         </div>
       </div>
-      <p className={recording ? styles.captionOn : styles.caption}>
-        {recording ? 'taping the whole session' : 'rec tapes the whole session'}
-      </p>
       {recError && (
         <p className={styles.error} role="alert">
           the take was not saved: {recError}
