@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
@@ -132,10 +132,21 @@ function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
   )
 }
 
-// The roll cap and the kinds of roll behind its caret. Picking a kind rolls at
-// once and stays on the face, so going again on it is one press, the way the
-// board's dice work. The first kind wears a shuffle mark, and the others their names.
-function Rolls({ group, seconds }: { group: Group; seconds: number }) {
+// The roll cap, and one ⋯ menu holding the kinds of roll, the face's own
+// settings and the way to put it away. Picking a kind rolls at once and stays on
+// the face, so going again on it is one press. The first kind wears a shuffle
+// mark, and the others their names.
+function Rolls({
+  group,
+  seconds,
+  more,
+  onClose,
+}: {
+  group: Group
+  seconds: number
+  more?: ReactNode
+  onClose?: () => void
+}) {
   const kinds = stageRollsFor(group)
   const [held, setHeld] = useState(STAGE_ROLLS[0]!.name)
   const [open, setOpen] = useState(false)
@@ -166,20 +177,26 @@ function Rolls({ group, seconds }: { group: Group; seconds: number }) {
         </button>
       </Tip>
       <Tip
-        text={`The other ways to roll ${group.name}. Picking one rolls it, and it stays on the button.`}
+        text={`Other ways to roll ${group.name} and undo the last roll${more ? ', this face’s settings' : ''}${onClose ? ', and putting it away' : ''}.`}
       >
         <button
           ref={setCaret}
           className={open ? styles.caretOn : styles.caret}
-          aria-label={`pick a kind of roll for ${group.name}`}
+          aria-label={`more for ${group.name}`}
           aria-expanded={open}
           onClick={() => setOpen(o => !o)}
         >
-          ▾
+          ⋯
         </button>
       </Tip>
       {open && (
-        <Menu anchor={split} toggle={caret} role="menu" onClose={close}>
+        <Menu
+          anchor={split}
+          toggle={caret}
+          role={more ? 'group' : 'menu'}
+          label={`${group.name} rolls and settings`}
+          onClose={close}
+        >
           {kinds.map(kind => (
             <Tip key={kind.name} text={kind.blurb}>
               <button
@@ -213,6 +230,24 @@ function Rolls({ group, seconds }: { group: Group; seconds: number }) {
               undo
             </button>
           </Tip>
+          {more && <div className={styles.more}>{more}</div>}
+          {onClose && (
+            <Tip
+              text={`Puts ${group.name} away. Its sound stays on the board.`}
+            >
+              <button
+                role="menuitem"
+                className={menuItem(false)}
+                aria-label={`close ${group.name}`}
+                onClick={() => {
+                  close()
+                  onClose()
+                }}
+              >
+                put away
+              </button>
+            </Tip>
+          )}
         </Menu>
       )}
     </span>
@@ -251,6 +286,7 @@ export function DeviceVerbs({
   onClose,
   noMute,
   noLevel,
+  more,
 }: {
   stage: string
   seconds?: number
@@ -259,6 +295,8 @@ export function DeviceVerbs({
   noMute?: boolean
   /** For a face that keeps its Level in a drawer. */
   noLevel?: boolean
+  /** The face's own settings, drawn in the ⋯ menu above put away. */
+  more?: ReactNode
 }) {
   const group = GROUPS.find(g => g.name === stage)
   if (!group) throw new Error(`no stage named ${stage}`)
@@ -269,18 +307,7 @@ export function DeviceVerbs({
       {level && <StillHeard stage={stage} level={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !noLevel && <FaceLevel control={level} />}
-      <Rolls group={group} seconds={seconds} />
-      {onClose && (
-        <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>
-          <button
-            className={styles.cap}
-            aria-label={`close ${stage}`}
-            onClick={onClose}
-          >
-            ×
-          </button>
-        </Tip>
-      )}
+      <Rolls group={group} seconds={seconds} more={more} onClose={onClose} />
     </>
   )
 }

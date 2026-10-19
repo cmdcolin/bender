@@ -372,6 +372,12 @@
   cursor: pointer;
 }
 
+/* A cap holding a single glyph, such as an octave arrow, on a crowded deck. */
+.capSnug {
+  composes: cap;
+  padding: 0 var(--space-xs);
+}
+
 .cap:hover:not(:disabled) {
   background: var(--switch-hover);
   color: var(--fg);

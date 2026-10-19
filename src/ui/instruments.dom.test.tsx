@@ -18,6 +18,10 @@ beforeEach(() => {
 
 const group = (name: string) => screen.queryByRole('group', { name })
 const allMode = () => screen.getByRole('button', { name: / instruments$/ })
+const putAway = (stage: string) => {
+  fireEvent.click(screen.getByRole('button', { name: `more for ${stage}` }))
+  fireEvent.click(screen.getByRole('menuitem', { name: `close ${stage}` }))
+}
 
 test('the toy and the kit show alone while the other three have no level', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
@@ -29,7 +33,7 @@ test('the toy and the kit show alone while the other three have no level', () =>
   expect(screen.queryByRole('button', { name: /^close / })).toBeNull()
 })
 
-test('all-instruments lays out every machine, each with a close cap', () => {
+test('all-instruments lays out every machine, each with a ⋯ menu', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
   for (const name of [
@@ -42,14 +46,14 @@ test('all-instruments lays out every machine, each with a close cap', () => {
     expect(group(name)).not.toBeNull()
   expect(screen.getByRole('region', { name: 'tape loop' })).toBeTruthy()
   expect(screen.getByRole('region', { name: 'four-track' })).toBeTruthy()
-  expect(screen.getAllByRole('button', { name: /^close / })).toHaveLength(7)
+  expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(7)
 })
 
 test('add all instruments reopens closed machines, then hides the unused ones', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   expect(allMode().textContent).toBe('+ add all instruments')
   fireEvent.click(allMode())
-  fireEvent.click(screen.getByRole('button', { name: 'close FM chip' }))
+  putAway('FM chip')
   expect(allMode().textContent).toBe('+ add all instruments')
   fireEvent.click(allMode())
   expect(group('fm keyboard')).not.toBeNull()
@@ -62,7 +66,7 @@ test('add all instruments reopens closed machines, then hides the unused ones', 
 test('closing a machine hides it and a chip brings it back', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  fireEvent.click(screen.getByRole('button', { name: 'close FM chip' }))
+  putAway('FM chip')
   expect(group('fm keyboard')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '+ fm chip' }))
   expect(group('fm keyboard')).not.toBeNull()
@@ -87,12 +91,10 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   expect(now.fmLevel).toBe(DEFAULT_CONTROLS.fmLevel)
 })
 
-test('the roll caret picks a kind, rolls it and keeps it on the face', () => {
+test('the ⋯ menu picks a kind of roll, rolls it and keeps it on the face', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  fireEvent.click(
-    screen.getByRole('button', { name: 'pick a kind of roll for Toy drums' }),
-  )
+  fireEvent.click(screen.getByRole('button', { name: 'more for Toy drums' }))
   const names = screen
     .getAllByRole('menuitem')
     .map(item => item.textContent ?? '')
@@ -104,6 +106,7 @@ test('the roll caret picks a kind, rolls it and keeps it on the face', () => {
     'pattern',
     'everything',
     'undo',
+    'put away',
   ])
   fireEvent.click(screen.getByRole('menuitem', { name: 'pattern' }))
   expect(
@@ -119,9 +122,7 @@ test('undo in the roll menu puts the stage back', () => {
   const before = engine.controls.get()
   fireEvent.click(screen.getAllByRole('button', { name: 'randomize' })[2]!)
   expect(sameControls(engine.controls.get(), before)).toBe(false)
-  fireEvent.click(
-    screen.getByRole('button', { name: 'pick a kind of roll for FM chip' }),
-  )
+  fireEvent.click(screen.getByRole('button', { name: 'more for FM chip' }))
   fireEvent.click(screen.getByRole('menuitem', { name: 'undo' }))
   expect(sameControls(engine.controls.get(), before)).toBe(true)
 })
@@ -237,7 +238,7 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
   expect(engine.controls.get().revMute).toBe(0)
   fireEvent.click(screen.getByRole('button', { name: 'all controls' }))
   expect(opened).toEqual(['Spring verb'])
-  fireEvent.click(screen.getByRole('button', { name: 'close Spring verb' }))
+  putAway('Spring verb')
   expect(group('spring verb')).toBeNull()
   expect(bench.get().pedals).toEqual([])
 })
@@ -313,7 +314,7 @@ test('an instrument stage panel has no bench toggle', () => {
 test('the mode and what was closed are stored for the next load', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  fireEvent.click(screen.getByRole('button', { name: 'close FM chip' }))
+  putAway('FM chip')
   expect(parseBench(localStorage.getItem('bender.bench'))).toEqual({
     all: true,
     closed: ['FM chip'],

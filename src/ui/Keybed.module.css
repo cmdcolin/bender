@@ -90,6 +90,22 @@
   flex-wrap: wrap;
   gap: var(--gap-ctl);
   min-height: 22px;
+  container-type: inline-size;
+}
+
+/* A narrow deck says only whose gate the jumper is on, so its caps fit one row. */
+.gateShort {
+  display: none;
+}
+
+@container (max-width: 520px) {
+  .gateLong {
+    display: none;
+  }
+
+  .gateShort {
+    display: inline;
+  }
 }
 
 /* The bed the keys are sunk into. touch-action keeps a finger dragged across it
@@ -286,7 +302,7 @@
 
 /* Where the board is standing: the note its bottom key plays. */
 .standing {
-  min-width: 26px;
+  min-width: 22px;
   text-align: center;
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
@@ -304,31 +320,7 @@
 }
 
 .octave {
-  composes: cap from './button.module.css';
-}
-
-/* Everything about this keyboard that is not a switch on its front. A toy had
-   no such drawer, but the letters wire is not the toy's — it says which of the
-   two beds the computer's keyboard plays, and a cap stamped "keys" on a thing
-   already made of keys named nothing. Three bars, which is the one mark that
-   promises a list rather than doing something on the spot. */
-.drawer {
-  composes: cap from './button.module.css';
-}
-
-.bars {
-  flex: none;
-  width: 13px;
-  height: 9px;
-  background-image:
-    linear-gradient(currentColor 0 0), linear-gradient(currentColor 0 0),
-    linear-gradient(currentColor 0 0);
-  background-size: 13px 1px;
-  background-position:
-    0 0,
-    0 4px,
-    0 8px;
-  background-repeat: no-repeat;
+  composes: capSnug from './button.module.css';
 }
 
 /* A finger on the glass rather than a pointer on a desk, and a phone's screen

@@ -35,7 +35,7 @@
 }
 
 .face {
-  composes: cap from './button.module.css';
+  composes: capSnug from './button.module.css';
 }
 
 .caret {
@@ -53,7 +53,7 @@
 
 .split > .caret,
 .split > .caretOn {
-  padding: 0 var(--space-sm);
+  padding: 0 var(--space-xs);
   margin-left: -1px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
@@ -86,4 +86,13 @@
 .drawerLevel {
   min-width: 15rem;
   padding: 0 var(--space-sm);
+}
+
+/* The face's own settings, set off from the rolls above them. */
+.more {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-2xs);
+  padding-top: var(--space-2xs);
+  border-top: 1px solid var(--border-quiet);
 }

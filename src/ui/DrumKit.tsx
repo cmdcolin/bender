@@ -15,11 +15,11 @@ import {
   useMeterValue,
   useStoreValue,
 } from './ControlsContext.ts'
-import { DeviceVerbs } from './DeviceVerbs.tsx'
+import { DeviceVerbs, DrawerSlider } from './DeviceVerbs.tsx'
 import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
 import { FaceBadge } from './FaceBadge.tsx'
-import { useCoarse } from './measure.ts'
+import { useCoarse, useWidth } from './measure.ts'
 import { RailLamp } from './RailLamp.tsx'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
@@ -33,6 +33,11 @@ const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 //
 // The pattern and the pads render as separate components, so a step redraws
 // only the pattern and a hit redraws only the pads that changed.
+//
+// Below this many pixels the kit's Level moves into its ⋯ menu, so the deck
+// keeps one row, as a narrow keybed does.
+const ROOMY_KIT = 360
+
 export function DrumKit({
   seconds,
   onClose,
@@ -44,9 +49,17 @@ export function DrumKit({
 }) {
   const playing = useStoreValue(engine.drumsPlaying)
   const armed = useStoreValue(engine.drumRecord)
+  const [kit, setKit] = useState<HTMLDivElement | null>(null)
+  const width = useWidth(kit)
+  const levelInMenu = width !== undefined && width < ROOMY_KIT
 
   return (
-    <div className={styles.kit} role="group" aria-label="toy drums">
+    <div
+      ref={setKit}
+      className={styles.kit}
+      role="group"
+      aria-label="toy drums"
+    >
       <div className={styles.deck}>
         <FaceBadge className={styles.brand} stage="Toy drums" onOpen={onOpen}>
           drums
@@ -88,7 +101,15 @@ export function DrumKit({
               rec
             </button>
           </Tip>
-          <DeviceVerbs stage="Toy drums" seconds={seconds} onClose={onClose} />
+          <DeviceVerbs
+            stage="Toy drums"
+            seconds={seconds}
+            onClose={onClose}
+            noLevel={levelInMenu}
+            more={
+              levelInMenu ? <DrawerSlider control="drumLevel" /> : undefined
+            }
+          />
         </div>
       </div>
       <Pattern
