@@ -1263,7 +1263,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // off it, and its knobs sat on the toy keyboard's panel until the map had
   // somewhere to point at them.
   doors.add(SUPPLY)
-  const supplyW = textWidth(SUPPLY, SMALL) + ICON_COL + CHIP_PAD * 2
+  const supplyW = textWidth(SUPPLY, FONT) + ICON_COL + CHIP_PAD * 2
   if (hasBoard)
     notes.push(
       node('supply', 'chip', SUPPLY, {
@@ -1271,9 +1271,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         count: live ? touchedCount(SUPPLY, c) : 0,
         open: o.open === SUPPLY,
         x: board.x + board.w - FRAME_PAD - supplyW,
-        y: board.y,
+        y: board.y - 2,
         w: supplyW,
-        h: CHIP_H - 2,
+        h: CHIP_H,
       }),
     )
 
@@ -2248,6 +2248,7 @@ export function drawNode(
     const ink = n.active || n.open ? k.fg : k.dim
     const [chipInk, chipEdge] =
       n.label === SUPPLY ? [k.fg, k.dim] : [ink, k.border]
+    const size = n.label === SUPPLY ? FONT : SMALL
     return el(
       'g',
       { className: n.label === SUPPLY ? 'node rail-chip' : 'node' },
@@ -2269,8 +2270,8 @@ export function drawNode(
             words(
               n.label,
               n.x + lead + (n.w - lead) / 2,
-              baseline(n.y, n.h, SMALL),
-              SMALL,
+              baseline(n.y, n.h, size),
+              size,
               chipInk,
             ),
           ],
