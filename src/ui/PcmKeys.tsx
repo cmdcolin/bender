@@ -1,5 +1,6 @@
 import { engine } from '../engine/engine.ts'
-import { GateJumper, Keybed } from './Keybed.tsx'
+import { GateJumper } from './GateCables.tsx'
+import { Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
 import { SeqRec } from './SeqRec.tsx'
@@ -27,18 +28,19 @@ export function PcmKeys({
           <span className={styles.strip} aria-hidden="true" />
         </span>
       }
+      jack={
+        <GateJumper
+          taker="pcm"
+          control="pcmKeyGate"
+          notes={engine.pcmNotes}
+          cutTip="the jumper off Plinky’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+          solderedTip="the keyboard’s key input is soldered onto Plinky’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
+        />
+      }
       extras={
         <>
           <RailLamp onOpen={onOpen} />
           <SeqRec dest="pcm" name="Parlor" />
-          <GateJumper
-            control="pcmKeyGate"
-            notes={engine.pcmNotes}
-            cut={styles.cut}
-            soldered={styles.soldered}
-            cutTip="the jumper off Plinky’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-            solderedTip="the keyboard’s key input is soldered onto Plinky’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
-          />
         </>
       }
       stage="Parlor"

@@ -12,6 +12,12 @@
   gap: var(--space-md);
 }
 
+.cabled {
+  composes: shelf;
+  gap: 36px var(--space-md);
+  margin-top: 30px;
+}
+
 .all {
   composes: action from './button.module.css';
 }

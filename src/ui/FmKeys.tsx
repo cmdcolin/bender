@@ -1,6 +1,7 @@
 import { engine } from '../engine/engine.ts'
 import styles from './FmKeys.module.css'
-import { GateJumper, Keybed } from './Keybed.tsx'
+import { GateJumper } from './GateCables.tsx'
+import { Keybed } from './Keybed.tsx'
 import { RailLamp } from './RailLamp.tsx'
 import { SeqRec } from './SeqRec.tsx'
 
@@ -33,18 +34,19 @@ export function FmKeys({
           <span className={styles.sub}>2-op</span>
         </span>
       }
+      jack={
+        <GateJumper
+          taker="fm"
+          control="fmKeyGate"
+          notes={engine.fmNotes}
+          cutTip="the jumper off Plinky’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+          solderedTip="the chip’s key input is soldered onto Plinky’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
+        />
+      }
       extras={
         <>
           <RailLamp onOpen={onOpen} />
           <SeqRec dest="fm" name="Glint" />
-          <GateJumper
-            control="fmKeyGate"
-            notes={engine.fmNotes}
-            cut={styles.cut}
-            soldered={styles.soldered}
-            cutTip="the jumper off Plinky’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-            solderedTip="the chip’s key input is soldered onto Plinky’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
-          />
         </>
       }
       stage="Glint"

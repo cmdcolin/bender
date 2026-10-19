@@ -11,6 +11,7 @@ import { Faceplate } from './Faceplate.tsx'
 import { add } from './fitted.ts'
 import { FmKeys } from './FmKeys.tsx'
 import { FourTrack } from './FourTrack.tsx'
+import { GateBench } from './GateCables.tsx'
 import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
@@ -88,11 +89,11 @@ export function Instruments({
   const face = (stage: string) =>
     shows(stage) || (stage === 'Spool' && tapeHeld)
 
-  const shelf = (machines: Row) => {
+  const shelf = (machines: Row, className = styles.shelf) => {
     const shown = machines.filter(([stage]) => face(stage))
     if (shown.length === 0) return null
     return (
-      <div className={styles.shelf}>
+      <div className={className}>
         {shown.map(([stage, Machine]) => (
           <Machine
             key={stage}
@@ -137,8 +138,10 @@ export function Instruments({
           ))}
       </div>
       <BendKeys morphSeconds={seconds} />
-      {shelf(TOY)}
-      {shelf(LEVELLED)}
+      <GateBench>
+        {shelf(TOY)}
+        {shelf(LEVELLED, styles.cabled)}
+      </GateBench>
       <PedalShelf seconds={seconds} onOpen={onOpen} />
     </>
   )

@@ -1,6 +1,7 @@
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { GateOut } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './Keys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -34,6 +35,7 @@ export function Keys({
           <span className={styles.stripe} aria-hidden="true" />
         </>
       }
+      jack={<GateOut />}
       extras={
         <>
           <RailLamp onOpen={onOpen} />

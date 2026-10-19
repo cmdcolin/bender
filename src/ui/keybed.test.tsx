@@ -5,6 +5,7 @@ import { expect, test } from 'vitest'
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
 import { FmKeys } from './FmKeys.tsx'
+import { GateBench } from './GateCables.tsx'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
@@ -282,4 +283,22 @@ test('a touch screen with room on the deck keeps no keyboard settings', () => {
   press(more('plinky'))
   expect(bed('plinky').queryByRole('checkbox')).toBeNull()
   expect(bed('plinky').queryByRole('slider', { name: 'Level' })).not.toBeNull()
+})
+
+test('a soldered jumper draws a cable from Plinky to the keyboard, and pulling the plug removes it', () => {
+  const { container } = render(
+    <>
+      <GateBench>
+        <Keys />
+        <FmKeys />
+      </GateBench>
+    </>,
+  )
+  act(() => engine.set('fmKeyGate', 0))
+  expect(container.querySelectorAll('[data-lamp="wired"]').length).toBe(1)
+  const cables = () => container.querySelectorAll('svg[aria-hidden] g > title')
+  expect(cables().length).toBe(1)
+  fireEvent.click(screen.getByRole('button', { name: 'with Plinky' }))
+  expect(cables().length).toBe(0)
+  expect(engine.controls.get().fmKeyGate).toBe(1)
 })
