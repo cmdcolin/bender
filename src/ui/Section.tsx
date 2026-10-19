@@ -1088,26 +1088,12 @@ function ShelfPart({
   )
 }
 
-// Two lines, because there are two things to say once. The first is how the
-// drawing is worked; the second is what it is a drawing of, which is the one
-// thing nothing else on screen says — Signal order sets the order of both runs
-// it names and can hardly be where you find out that the sound runs through
-// them in order, since you would have to know what it was to go and open it.
 export function PathHint() {
   return (
-    <>
-      <p className={styles.hint}>
-        click a stage for its controls — a dot on it means something in there
-        has moved
-      </p>
-      <p className={styles.hintPath}>
-        the drawing is the path the sound takes: the sources sum onto the mix
-        bus, run through the bends and then the pedals, in the order{' '}
-        <em>Signal order</em> sets, then the tape and out. It shows only the
-        stages on the board; <em>+ add a stage</em> brings in another,{' '}
-        <em>− take off a stage</em> removes one, and random, mutate and drift
-        change only what is drawn here
-      </p>
-    </>
+    <p className={styles.hint}>
+      click a stage for its controls — a dot on it means something in there has
+      moved. The drawing is the path the sound takes through the stages on the
+      board; random, mutate and drift change only those.
+    </p>
   )
 }

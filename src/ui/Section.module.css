@@ -272,14 +272,6 @@
   margin-right: var(--space-2xs);
 }
 
-/* The second line, under the first without a rule between them: they are one
-   note in two sentences, not two notes. */
-.hintPath {
-  composes: hint;
-  border-top: none;
-  padding-top: 0;
-}
-
 /* A finger's height for the shelf, the way button.module.css gives it to
    every other kind: on a phone the shelf is the map's doors laid out again at
    a size a finger can find, and a row of chips at a caption's height would be

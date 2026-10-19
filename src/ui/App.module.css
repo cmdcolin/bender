@@ -58,6 +58,7 @@
    top padding is this strip's rather than the panel's, so nothing scrolls up
    past the strip's top edge. */
 .chrome {
+  --verb-w: 56px;
   position: sticky;
   top: 0;
   z-index: 2;
