@@ -505,12 +505,30 @@ The rest is behind two things:
 turning the cassette over, and dbx. **Pitch** is the varispeed, and **blank
 cassette** wipes the loops and their wear.
 
+## Turning knobs
+
+- **Type a value:** click a row's reading, type, and press Enter. Units work:
+  `8k` on a frequency, `250ms` on a time. Escape cancels.
+- **Fine moves:** hold shift while dragging and the knob moves at a tenth of the
+  speed. The scroll wheel steps a knob under the pointer, finer with shift, but
+  only once the panel has stopped scrolling.
+- **Back to stock:** the ↺ beside a moved reading, or a double-click on the
+  track.
+- **Pin a knob:** pointing at a row shows a ☆ at its left edge. Press it, and
+  the knob appears on a **pinned** strip above the instruments, labelled with
+  its stage. Only this browser keeps the pins.
+- **Open a machine's panel:** click the name plate on its face, such as
+  **bender** on the toy keyboard or **drums** on the kit.
+- **Room for the knobs:** with a stage open, **▴ fold the map** shrinks the map
+  to a row of stage names. **▾ show the map** brings the drawing back.
+
 ## Presets and rolls
 
 Click a preset to load the whole board. Drag it sideways and it morphs only part
-of the way there, under your finger; drag back and it retraces. Random rolls,
-**mutate**, and **drift** never touch the demo song, the pattern, or the
-output/mic/sample levels.
+of the way there, under your finger; drag back and it retraces. Type in the
+**find** field to narrow the row: a word from a preset's name or description, or
+a stage it uses, such as `tape delay`. Random rolls, **mutate**, and **drift**
+never touch the demo song, the pattern, or the output/mic/sample levels.
 
 **random**, **hunt an edge**, **mutate** and **drift** change only the stages
 drawn on the signal path map. Put a stage there with **+ add a stage** under the
@@ -523,8 +541,9 @@ control with red ticks has a normal range — rolls, **mutate** and **drift** st
 inside it unless you've already set it past. **Wreck it**, **slam** and **on the
 edge** use the whole track.
 
-Every stage's panel has its own **roll** and **reset**; the signal path map's
-control count, pressed, does the same reset without opening the panel.
+Every stage's panel has its own **roll**, **undo** and **reset**. With a box in
+the stage's drawing open, they act on that box alone; the switch under the
+header aims them back at the whole stage. **Take off** is under **⋯**.
 
 Whole-board rolls sit above the presets: **rewire** shuffles the bend order
 without retuning, **one bend** clears the slots to one and rolls it hard,
@@ -560,7 +579,7 @@ One `ctrl+z` restores the board from before it started.
 
 While it drifts, **⟲ 10s** stops and goes back to where it was ten seconds ago.
 
-**Share** copies the current board into the page's URL.
+**share**, beside **midi**, copies a link to the current board.
 
 ## Demo songs
 
