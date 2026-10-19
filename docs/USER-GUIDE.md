@@ -605,7 +605,9 @@ when you let go. A throw never lands in the link or the undo walk.
 
 - **Top two rows:** sixteen bend keys the dice dealt. Each slams a control or
   three to an end of its travel, and the key shows the stages you'll hear. A
-  stage whose level is down comes up with the push.
+  stage whose level is down comes up with the push. A four-track channel's
+  **Trim**, **Low**, **Mid**, **High** and **Pan** are dealt only once its
+  **Fader** and the desk's **Level** are up.
 - **Bottom row:** six throws chosen by hand: **spin** (`c`), **dive** (`v`),
   **brake** (`b`), **crash** (`n`), **drop** (`m`) and **crush** (`,`). These
   always answer the keyboard.

@@ -3,8 +3,10 @@ import {
   type ControlKey,
   type Controls,
 } from '../src/controls.ts'
+import { INPUT_BOARD } from '../src/dsp/stages/fourTrack.ts'
 import { render, rms, SR } from '../src/dsp/testRender.ts'
-import { gateUp, HIGH_POS, LOW_POS } from '../src/ui/bendDeal.ts'
+import { faderOf, gateUp, HIGH_POS, LOW_POS } from '../src/ui/bendDeal.ts'
+import { BEND_ENDS, STAGE_DB } from '../src/ui/bendEnds.ts'
 import { groupFor, sliderFor, snapToStep } from '../src/ui/controls/index.ts'
 import { applyPreset } from '../src/ui/presets/apply.ts'
 import {
@@ -21,6 +23,8 @@ import { fromPos } from '../src/ui/slider-scale.ts'
 // control's stage brought up the way a key brings it up.
 //
 //   pnpm bend-ends          rewrite src/ui/bendEnds.ts
+//   pnpm bend-ends four     measure only the controls whose key starts with
+//                           `four`, and keep every other row as it stands
 //
 // A key that slams a control nobody can hear is a dead pad with a name on it,
 // and a key that only brings a silent stage up sounds like every other key on
@@ -143,11 +147,36 @@ const BOARDS: Controls[] = [
   ),
 ]
 
+const only = process.argv[2]
 const stageDb = new Map<ControlKey, number>()
 const ends = new Map<ControlKey, [number | null, number | null]>()
+if (only) {
+  for (const [key, [low, high]] of Object.entries(BEND_ENDS))
+    if (!key.startsWith(only)) ends.set(key as ControlKey, [low, high])
+  for (const [key, db] of Object.entries(STAGE_DB))
+    stageDb.set(key as ControlKey, db)
+}
+
+// A channel strip is heard only with the desk's level and its own fader up and
+// something on its input, so a strip control is measured on a desk at the gate
+// level with the channel taking the board at 0.7.
+const STRIP_FADER = 0.7
+const withChannel = (board: Controls, key: ControlKey): Controls => {
+  const fader = faderOf(key)
+  return fader
+    ? {
+        ...board,
+        fourLevel: gateUp('fourLevel'),
+        [fader]: STRIP_FADER,
+        [fader.replace('Fader', 'In')]: INPUT_BOARD,
+      }
+    : board
+}
 
 for (const [b, board] of BOARDS.entries()) {
-  const defs = drivable(board).filter(d => inChain(board, groupFor(d.key)))
+  const defs = drivable(board).filter(
+    d => inChain(board, groupFor(d.key)) && (!only || d.key.startsWith(only)),
+  )
   for (const [i, def] of defs.entries()) {
     const gate = gateOf(groupFor(def.key))
     const silent =
@@ -155,11 +184,12 @@ for (const [b, board] of BOARDS.entries()) {
       gate !== def.key &&
       !YOURS.has(gate) &&
       !heard(board, def.key)
-    const up: Controls = silent ? { ...board, [gate]: gateUp(gate) } : board
+    const gated: Controls = silent ? { ...board, [gate]: gateUp(gate) } : board
     if (silent && b === 0 && !stageDb.has(gate)) {
       const off = take({ ...board, [gate]: sliderFor(gate).min })
-      stageDb.set(gate, round(take(up).db - off.db))
+      stageDb.set(gate, round(take(gated).db - off.db))
     }
+    const up = withChannel(gated, def.key)
     const base = take(up)
     const had = ends.get(def.key) ?? [null, null]
     const measured = [LOW_POS, HIGH_POS].map((pos, end) => {

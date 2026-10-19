@@ -158,3 +158,26 @@ test('no key turns a level or mix up past what a bend is', () => {
       }
     }
 })
+
+const DESK = {
+  ...DEFAULT_CONTROLS,
+  fourLevel: 1,
+  four2Fader: 0.8,
+}
+
+const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8]
+
+const stripKeys = (c: typeof DESK) =>
+  SEEDS.flatMap(seed => dealBendKeys(c, seeded(seed)))
+    .flatMap(k => k.keys)
+    .filter(k => /^four\d(Low|Mid|High|Pan|Trim)$/.test(k))
+
+test('a desk with one fader up deals that channel’s strip and no other', () => {
+  const strips = stripKeys(DESK)
+  expect(strips.length).toBeGreaterThan(0)
+  for (const key of strips) expect(key.startsWith('four2'), key).toBe(true)
+})
+
+test('a desk with every fader down deals no strip control', () => {
+  expect(stripKeys({ ...DESK, four2Fader: 0 })).toEqual([])
+})

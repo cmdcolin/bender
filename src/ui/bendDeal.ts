@@ -53,6 +53,16 @@ export const HIGH_POS = 0.97
 // than a bend. Feedback slammed loud stays in the deal.
 const LOUDEST_DB = 6
 
+const STRIP_KEY = /^four[1-4](?:Trim|Low|MidHz|Mid|High|Pan)$/
+const FADERS = ['four1Fader', 'four2Fader', 'four3Fader', 'four4Fader'] as const
+
+/** The fader of the channel a strip control belongs to, which has to be up for
+    the strip to be heard. */
+export const faderOf = (key: ControlKey): ControlKey | undefined =>
+  STRIP_KEY.test(key)
+    ? FADERS.find(fader => fader.slice(0, 5) === key.slice(0, 5))
+    : undefined
+
 type Move = { def: SliderDef; pos: number }
 
 const nearEnd = (rand: () => number, top: boolean) =>
@@ -258,7 +268,9 @@ export function dealBendKeys(
   const pool = drivable(c).filter(d => {
     const group = groupFor(d.key)
     const gate = gateOf(group)
+    const fader = faderOf(d.key)
     return (
+      (!fader || c[fader] > sliderFor(fader).min) &&
       liveEnds(c, d.key).some(Boolean) &&
       inChain(c, group) &&
       (heard(c, d.key) || !gate || !YOURS.has(gate))
