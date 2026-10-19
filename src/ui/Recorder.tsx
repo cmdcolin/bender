@@ -1,6 +1,6 @@
 import { engine } from '../engine/engine.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { DeckGroup, DeckKey, DeckWell } from './DeckKey.tsx'
+import { MachineKey } from './MachineKey.tsx'
 import styles from './Recorder.module.css'
 import { RecorderMore } from './RecorderMore.tsx'
 import { Cassette } from './StudioArt.tsx'
@@ -20,54 +20,46 @@ export function Recorder() {
 
   return (
     <section className={styles.box} aria-label="recorder">
-      <span className={styles.name}>recorder</span>
+      <div className={styles.head}>
+        <span className={styles.name}>recorder</span>
+        <RecorderMore recording={recording} recStems={recStems} />
+      </div>
       <div className={styles.machine}>
-        <div className={styles.door}>
-          <Cassette running={recording}>
-            <span
-              className={recording ? styles.counterOn : styles.counter}
-              role="timer"
-              aria-label="take time"
-            >
-              {clock(recSeconds)}
-            </span>
-          </Cassette>
-        </div>
+        <Cassette running={recording}>
+          <span
+            className={recording ? styles.counterOn : styles.counter}
+            role="timer"
+            aria-label="take time"
+          >
+            {clock(recSeconds)}
+          </span>
+        </Cassette>
         <div className={styles.keys}>
-          <DeckWell label="recorder keys">
-            <DeckGroup>
-              <Tip
-                text={
-                  recStems
-                    ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                    : 'Records the output to a wav file — stopping saves it.'
-                }
-              >
-                <DeckKey
-                  glyph="rec"
-                  legend="rec"
-                  name={recStems ? 'record stems' : 'record wav'}
-                  red
-                  latched={recording}
-                  onClick={() => {
-                    if (!recording) engine.startRecording()
-                  }}
-                />
-              </Tip>
-              <Tip text="Stops the take and saves it.">
-                <DeckKey
-                  glyph="stop"
-                  legend="stop"
-                  name="stop and save"
-                  disabled={!recording}
-                  onClick={() => engine.stopRecording()}
-                />
-              </Tip>
-            </DeckGroup>
-            <DeckGroup>
-              <RecorderMore recording={recording} recStems={recStems} />
-            </DeckGroup>
-          </DeckWell>
+          <Tip
+            text={
+              recording
+                ? 'Stops the take and saves it.'
+                : recStems
+                  ? 'Records the output and every source that had something on it — stopping saves the lot.'
+                  : 'Records the output to a wav file — stopping saves it.'
+            }
+          >
+            <MachineKey
+              legend={recording ? 'stop' : 'rec'}
+              name={
+                recording
+                  ? 'stop and save'
+                  : recStems
+                    ? 'record stems'
+                    : 'record wav'
+              }
+              red
+              latched={recording}
+              onClick={() =>
+                recording ? engine.stopRecording() : engine.startRecording()
+              }
+            />
+          </Tip>
         </div>
       </div>
       {recError && (

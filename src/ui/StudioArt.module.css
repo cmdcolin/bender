@@ -3,7 +3,7 @@
   position: relative;
   container-type: inline-size;
   width: 100%;
-  max-width: 240px;
+  max-width: 200px;
   align-self: center;
 }
 
@@ -24,56 +24,56 @@
 }
 
 .shell {
-  fill: var(--surface);
-  stroke: var(--fg4);
+  fill: #17181b;
+  stroke: #3d3e45;
   stroke-width: 1.5;
 }
 
 .paper {
-  fill: var(--bg);
-  stroke: var(--border);
+  fill: #0f1012;
+  stroke: #2e2f35;
 }
 
 .stripe {
-  fill: var(--accent);
+  fill: #7a3a2a;
 }
 
 .stripeRec {
-  fill: var(--alarm);
+  fill: #ff5a3c;
 }
 
 .ruling {
-  stroke: var(--fg4);
+  stroke: #3d3e45;
   stroke-width: 1;
 }
 
 .window {
-  fill: var(--bg);
-  stroke: var(--fg4);
+  fill: #0f1012;
+  stroke: #3d3e45;
 }
 
 .tapePack {
-  fill: var(--border);
+  fill: #25262b;
 }
 
 .hub {
-  fill: var(--bg);
-  stroke: var(--fg3);
+  fill: #0f1012;
+  stroke: #55565e;
   stroke-width: 1.5;
 }
 
 .tooth {
-  stroke: var(--fg3);
+  stroke: #55565e;
   stroke-width: 1.5;
 }
 
 .hole {
-  fill: var(--bg);
-  stroke: var(--fg4);
+  fill: #0f1012;
+  stroke: #3d3e45;
 }
 
 .screw {
-  fill: var(--fg4);
+  fill: #3d3e45;
 }
 
 .still {

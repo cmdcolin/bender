@@ -1,46 +1,44 @@
 .box {
   composes: box from './App.module.css';
-  flex: 1 1 280px;
-  max-width: 320px;
+  flex: 1 1 240px;
+  max-width: 280px;
   align-items: center;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
 }
 
 .name {
   composes: label from './App.module.css';
-  align-self: flex-start;
 }
 
-/* The deck: the cassette behind its door, and the keys in a strip along the
-   bottom edge of the same body. */
+/* A cassette recorder seen from above: a dark body, the cassette behind
+   smoked glass, and the keys along the front edge. Flat colours and hard
+   edges only. */
 .machine {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
   width: 100%;
-  overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--fg4);
-  border-radius: 8px;
-}
-
-.door {
-  display: flex;
-  justify-content: center;
   padding: var(--space-md);
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
+  background: #1b1c20;
+  border: 1px solid #3c3d44;
+  border-radius: 10px;
 }
 
 .keys {
   display: flex;
-  padding: var(--space-xs) var(--space-md);
+  justify-content: center;
+  padding-bottom: 4px;
 }
 
-.keys > div {
-  width: 100%;
-  justify-content: space-between;
-  padding: 0;
-  background: none;
-  border: 0;
+.keys > button {
+  flex: 0 0 80px;
 }
 
 /* The take counter, written on the cassette's label: a red readout that lights
@@ -63,7 +61,6 @@
 
 .counterOn {
   color: #ff5a3c;
-  text-shadow: 0 0 6px rgb(255 90 60 / 0.6);
 }
 
 .error {
