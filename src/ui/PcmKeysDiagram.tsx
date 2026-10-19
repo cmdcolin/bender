@@ -190,7 +190,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
             <Diagram
               width={width}
               height={close ? feet + CONE_H : feet}
-              label="Parlor signal path"
+              label="parlor signal path"
             >
               {arrow => (
                 <>

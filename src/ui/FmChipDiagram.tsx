@@ -201,7 +201,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
           <Diagram
             width={WIDTH}
             height={cone ? feet + CONE_H : feet}
-            label="Glint signal path"
+            label="glint signal path"
           >
             {arrow => (
               <>

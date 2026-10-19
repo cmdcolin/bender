@@ -41,13 +41,8 @@ test.each([
 
 test.each([
   ['Plinky', 'bus', 'toy chip die', 'plinky bus wiring'],
-  ['Glint', 'die', 'Glint signal path', 'FM die and driver'],
-  [
-    'Growler',
-    'voice card',
-    'mono synth voice card',
-    'mono synth voice card faults',
-  ],
+  ['Glint', 'die', 'glint signal path', 'FM die and driver'],
+  ['Growler', 'voice card', 'growler voice card', 'growler voice card faults'],
 ])(
   '%s names the %s close-up and draws it straight under itself',
   (group, box, parent, close) => {
