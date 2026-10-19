@@ -236,15 +236,14 @@ test('each bend wire and its name open the part it bends', () => {
     chipEnvRelax: 0.5,
     chipCrosstalk: 0.5,
   })
-  for (const [part, bend, row] of [
-    ['tune ROM', 'step tap', 'Step tap'],
-    ['voices', 'pwm tap', 'PWM tap'],
-    ['envelope', 'dive', 'Envelope on divider'],
-    ['envelope', 'relax', 'Envelope relax'],
-    ['clock', 'crosstalk', 'Crosstalk'],
+  for (const [bend, row] of [
+    ['step tap', 'Step tap'],
+    ['pwm tap', 'PWM tap'],
+    ['dive', 'Envelope on divider'],
+    ['relax', 'Envelope relax'],
+    ['crosstalk', 'Crosstalk'],
   ] as const) {
-    const tag = () =>
-      screen.getByRole('button', { name: `${part} ${bend} controls` })
+    const tag = () => screen.getByRole('button', { name: `${bend} controls` })
     fireEvent.click(tag())
     expect(screen.getByText(row)).not.toBeNull()
     fireEvent.click(tag())

@@ -162,6 +162,18 @@
   stroke: none;
 }
 
+.wireHit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+}
+
+.bendPick:hover path:not(.wireHit),
+.bendPick:focus-visible path:not(.wireHit) {
+  stroke: var(--fg);
+}
+
 .selected {
   fill: var(--surface-raised);
   stroke-width: 1.5;

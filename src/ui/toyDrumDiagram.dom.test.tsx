@@ -56,6 +56,21 @@ test('the pattern opens the bus rows, and the triggers leave their rows to their
   expect(screen.queryByText('Retrigger')).toBeNull()
 })
 
+test('the FM, sync and ROM wires open the box whose knob they stand for', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<ToyDrumDiagram />)
+  for (const [wire, row] of [
+    ['FM', 'Bank FM'],
+    ['sync', 'Bank sync'],
+    ['ROM', 'Kit'],
+  ] as const) {
+    fireEvent.click(box(wire))
+    expect(screen.getByText(row), wire).not.toBeNull()
+    fireEvent.click(box(wire))
+    expect(screen.queryByText(row), wire).toBeNull()
+  }
+})
+
 test('a box goes accent when a knob inside it is off stock', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, drumBankFm: 0.5 })
   render(<ToyDrumDiagram />)

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
@@ -15,6 +15,7 @@ import {
   useSelectedBox,
 } from './diagram.ts'
 import {
+  Bend,
   BoxRows,
   Diagram,
   GlyphBox,
@@ -298,33 +299,6 @@ function BendTag({
       >
         {say}
       </text>
-    </Pressable>
-  )
-}
-
-// A bend's wire and name as one button that opens the part it bends.
-function Bend({
-  name,
-  opens,
-  pick,
-  hit,
-  children,
-}: {
-  name: string
-  opens: string
-  pick: ReturnType<typeof useSelectedBox>
-  hit: string
-  children: ReactNode
-}) {
-  return (
-    <Pressable
-      name={`${opens} ${name}`}
-      selected={pick.selected === opens}
-      onSelect={() => pick.toggle(opens)}
-      className={styles.bendPick}
-    >
-      <path d={hit} className={styles.wireHit} />
-      {children}
     </Pressable>
   )
 }

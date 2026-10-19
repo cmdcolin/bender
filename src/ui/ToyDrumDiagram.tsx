@@ -14,6 +14,7 @@ import {
   type BoxSpec,
 } from './diagram.ts'
 import {
+  Bend,
   BoxRows,
   BoxView,
   Diagram,
@@ -212,6 +213,9 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
   const close = open ? zoom?.(BOXES[open.id].part) : null
   const fmX = xs[1]! + srcW * 0.3
   const syncX = xs[1]! + srcW * 0.7
+  const fmWire = `M${fmX} ${rowY(1)} V${rowY(0) + BOX_H}`
+  const syncWire = `M${syncX} ${rowY(0) + BOX_H} V${rowY(1)}`
+  const romWire = `M${rom.x + rom.w / 2} ${rom.y} V${dac.y + BOX_H}`
 
   return (
     <>
@@ -262,36 +266,42 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
                 <Label x={width - 2} y={mid(1) - 4} anchor="end">
                   out
                 </Label>
-                <Wire
-                  arrow={arrow}
-                  d={`M${fmX} ${rowY(1)} V${rowY(0) + BOX_H}`}
-                  look={bent(r.value('drumBankFm') > 0)}
-                />
-                <Label
-                  x={fmX - 4}
-                  y={rowY(1) - 8}
-                  anchor="end"
-                  on={r.value('drumBankFm') > 0}
-                >
-                  FM
-                </Label>
-                <Wire
-                  arrow={arrow}
-                  d={`M${syncX} ${rowY(0) + BOX_H} V${rowY(1)}`}
-                  look={bent(r.value('drumBankSync') > 0)}
-                />
-                <Label
-                  x={syncX + 8}
-                  y={rowY(1) - 8}
-                  on={r.value('drumBankSync') > 0}
-                >
-                  sync
-                </Label>
-                <Wire
-                  arrow={arrow}
-                  d={`M${rom.x + rom.w / 2} ${rom.y} V${dac.y + BOX_H}`}
-                  look={bent(r.value('drumRom') > 0)}
-                />
+                <Bend name="FM" opens="metal bank" pick={pick} hit={fmWire}>
+                  <Wire
+                    arrow={arrow}
+                    d={fmWire}
+                    look={bent(r.value('drumBankFm') > 0)}
+                  />
+                  <Label
+                    x={fmX - 4}
+                    y={rowY(1) - 8}
+                    anchor="end"
+                    on={r.value('drumBankFm') > 0}
+                  >
+                    FM
+                  </Label>
+                </Bend>
+                <Bend name="sync" opens="tanks" pick={pick} hit={syncWire}>
+                  <Wire
+                    arrow={arrow}
+                    d={syncWire}
+                    look={bent(r.value('drumBankSync') > 0)}
+                  />
+                  <Label
+                    x={syncX + 8}
+                    y={rowY(1) - 8}
+                    on={r.value('drumBankSync') > 0}
+                  >
+                    sync
+                  </Label>
+                </Bend>
+                <Bend name="ROM" opens="sample ROM" pick={pick} hit={romWire}>
+                  <Wire
+                    arrow={arrow}
+                    d={romWire}
+                    look={bent(r.value('drumRom') > 0)}
+                  />
+                </Bend>
                 <Wire
                   arrow={arrow}
                   d={`M${shots.x + shots.w / 2} ${triggers.y + BOX_H} V${shots.y}`}

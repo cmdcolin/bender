@@ -10,6 +10,7 @@ import {
   LINE_H,
   rowShown,
   type BoxSpec,
+  type useSelectedBox,
 } from './diagram.ts'
 import { ControlSlider } from './Slider.tsx'
 
@@ -262,6 +263,35 @@ export function Diagram({
   )
 }
 // CROSS_REPO_SYNC_END(diagram-parts)
+
+// A wire and its name drawn as one button that opens the box holding the knob
+// the wire stands for. `hit` is the wire's path, drawn again as a wide
+// transparent stroke so a thin wire is easy to press.
+export function Bend({
+  name,
+  opens,
+  pick,
+  hit,
+  children,
+}: {
+  name: string
+  opens: string
+  pick: ReturnType<typeof useSelectedBox>
+  hit: string
+  children: ReactNode
+}) {
+  return (
+    <Pressable
+      name={name}
+      selected={pick.selected === opens}
+      onSelect={() => pick.toggle(opens)}
+      className={styles.bendPick}
+    >
+      <path d={hit} className={styles.wireHit} />
+      {children}
+    </Pressable>
+  )
+}
 
 // A box drawn with a small picture of its part beside the name, for a part a
 // player knows by sight: the keyboard, the pads, the batteries. The picture

@@ -65,3 +65,13 @@ test('the noise and feedback words open the mixer', () => {
   press('feedback')
   expect(screen.queryByText('Feedback')).toBeNull()
 })
+
+test('the modulation wires open the modulation rows', () => {
+  open()
+  for (const wire of ['pitch modulation', 'filter modulation']) {
+    press(wire)
+    expect(screen.getByText('To pitch'), wire).not.toBeNull()
+    press(wire)
+    expect(screen.queryByText('To pitch'), wire).toBeNull()
+  }
+})

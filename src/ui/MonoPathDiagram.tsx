@@ -11,6 +11,7 @@ import {
   type BoxSpec,
 } from './diagram.ts'
 import {
+  Bend,
   BoxRows,
   BoxView,
   Diagram,
@@ -24,7 +25,6 @@ import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { Verbs, Zoom } from './foldHosting.ts'
-import type { ReactNode } from 'react'
 
 const GROUP = GROUPS.find(g => g.name === 'Mono synth')!
 
@@ -178,26 +178,12 @@ export function MonoPathDiagram({
   const noiseX = mixer.x + mixer.w / 2 - 8
   const loopX = mixer.x + mixer.w / 2 + 8
   const frameFrame = oscs.id === pick.selected
-  const toWord = (id: string, word: ReactNode) => (
-    <Pressable
-      name={id}
-      selected={pick.selected === id}
-      onSelect={() => pick.toggle(id)}
-      className={chip.tag}
-    >
-      {word}
-    </Pressable>
-  )
-  const toMixer = (name: string, word: ReactNode) => (
-    <Pressable
-      name={name}
-      selected={pick.selected === 'mixer'}
-      onSelect={() => pick.toggle('mixer')}
-      className={chip.tag}
-    >
-      {word}
-    </Pressable>
-  )
+  const pitchWire = `M${mod.x + 12} ${ROW2} V${pitchY} H${frameX + FRAME_W / 2} V${FRAME_BOTTOM}`
+  const filterWire = `M${mod.x + mod.w} ${modMid} H${filter.x + filter.w / 2} V${top + BOX_H}`
+  const loopWire = `M${back} ${MID} V${over} H${loopX} V${top}`
+  const noiseWire = `M${noiseX} ${over - 12} V${top}`
+  const syncWire = `M${syncX} ${OSC_Y[0]! + OSC_H} V${OSC_Y[1]}`
+  const fmWire = `M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`
   return (
     <>
       <Zoomed close={close}>
@@ -253,14 +239,12 @@ export function MonoPathDiagram({
                 <Label x={WIDTH - 2} y={MID + 12} anchor="end">
                   out
                 </Label>
-                <Wire
-                  arrow={arrow}
-                  d={`M${back} ${MID} V${over} H${loopX} V${top}`}
-                  look={wire(up('monoLoop'))}
-                />
-                <circle cx={back} cy={MID} r={1.6} className={styles.head} />
-                {toMixer(
-                  'feedback',
+                <Bend name="feedback" opens="mixer" pick={pick} hit={loopWire}>
+                  <Wire
+                    arrow={arrow}
+                    d={loopWire}
+                    look={wire(up('monoLoop'))}
+                  />
                   <Label
                     x={(loopX + back) / 2}
                     y={over - 3}
@@ -268,15 +252,15 @@ export function MonoPathDiagram({
                     on={up('monoLoop')}
                   >
                     feedback
-                  </Label>,
-                )}
-                <Wire
-                  arrow={arrow}
-                  d={`M${noiseX} ${over - 12} V${top}`}
-                  look={wire(up('monoNoise'))}
-                />
-                {toMixer(
-                  'noise',
+                  </Label>
+                </Bend>
+                <circle cx={back} cy={MID} r={1.6} className={styles.head} />
+                <Bend name="noise" opens="mixer" pick={pick} hit={noiseWire}>
+                  <Wire
+                    arrow={arrow}
+                    d={noiseWire}
+                    look={wire(up('monoNoise'))}
+                  />
                   <Label
                     x={noiseX}
                     y={over - 15}
@@ -284,8 +268,8 @@ export function MonoPathDiagram({
                     on={up('monoNoise')}
                   >
                     noise
-                  </Label>,
-                )}
+                  </Label>
+                </Bend>
                 <Wire
                   arrow={arrow}
                   d={`M${tap} ${oscMid(2)} V${modMid} H${mod.x}`}
@@ -296,16 +280,30 @@ export function MonoPathDiagram({
                   r={1.6}
                   className={styles.head}
                 />
-                <Wire
-                  arrow={arrow}
-                  d={`M${mod.x + 12} ${ROW2} V${pitchY} H${frameX + FRAME_W / 2} V${FRAME_BOTTOM}`}
-                  look={wire(up('monoModPitch'))}
-                />
-                <Wire
-                  arrow={arrow}
-                  d={`M${mod.x + mod.w} ${modMid} H${filter.x + filter.w / 2} V${top + BOX_H}`}
-                  look={wire(up('monoModFilter'))}
-                />
+                <Bend
+                  name="pitch modulation"
+                  opens="modulation"
+                  pick={pick}
+                  hit={pitchWire}
+                >
+                  <Wire
+                    arrow={arrow}
+                    d={pitchWire}
+                    look={wire(up('monoModPitch'))}
+                  />
+                </Bend>
+                <Bend
+                  name="filter modulation"
+                  opens="modulation"
+                  pick={pick}
+                  hit={filterWire}
+                >
+                  <Wire
+                    arrow={arrow}
+                    d={filterWire}
+                    look={wire(up('monoModFilter'))}
+                  />
+                </Bend>
                 <Wire
                   arrow={arrow}
                   d={`M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`}
@@ -354,26 +352,18 @@ export function MonoPathDiagram({
                     </text>
                   </g>
                 ))}
-                <g pointerEvents="none">
+                <Bend name="sync" opens="sync" pick={pick} hit={syncWire}>
                   <Wire
                     arrow={arrow}
-                    d={`M${syncX} ${OSC_Y[0]! + OSC_H} V${OSC_Y[1]}`}
+                    d={syncWire}
                     look={wire(up('monoSync'))}
                   />
-                  <Wire
-                    arrow={arrow}
-                    d={`M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`}
-                    look={wire(up('monoFm'))}
-                  />
-                </g>
-                {toWord(
-                  'sync',
                   <Label x={syncX + 4} y={gapY + 3} on={up('monoSync')}>
                     sync
-                  </Label>,
-                )}
-                {toWord(
-                  'FM',
+                  </Label>
+                </Bend>
+                <Bend name="FM" opens="FM" pick={pick} hit={fmWire}>
+                  <Wire arrow={arrow} d={fmWire} look={wire(up('monoFm'))} />
                   <Label
                     x={fmX - 4}
                     y={gapY + 3}
@@ -381,8 +371,8 @@ export function MonoPathDiagram({
                     on={up('monoFm')}
                   >
                     FM
-                  </Label>,
-                )}
+                  </Label>
+                </Bend>
                 {boxes.map(b => (
                   <BoxView
                     key={b.id}
