@@ -23,9 +23,15 @@ rules for composing them.
 
 ## Testing
 
-`pnpm test` runs the DSP test suite, including a torture test that pins every
-feedback path past unity at once and asserts nothing non-finite, and nothing
-past the limiter, ever leaves the chain. It also runs the panel in jsdom, where
+- `pnpm test` skips the sixteen files that take fifteen seconds or more of audio
+  rendering (`SLOW` in `vitest.config.ts`). Naming one, as in
+  `pnpm test src/dsp/tape.test.ts`, runs it.
+- `pnpm test:full` runs all of them, as CI does. `pnpm test:changed` runs the
+  files that import something changed since `main`.
+
+The suite includes a torture test that pins every feedback path past unity at
+once and asserts nothing non-finite, and nothing past the limiter, ever leaves
+the chain. It runs two seconds locally and ten under `test:full`. It also runs the panel in jsdom, where
 what's under test is the sentences the panel generates rather than audio — that
 a fold counts the rows underneath it correctly, that loading a ROM lands in the
 undo history, that a drag anywhere on the window counts as a drag. The engine

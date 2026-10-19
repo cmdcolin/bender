@@ -16,7 +16,9 @@ function makeIo(): StereoBlock {
 
 // The safety contract: whatever the params do — every feedback pinned past
 // unity included — no NaN and nothing past the limiter ceiling ever leaves.
-test('never-NaN torture: random param slams for 10 s', () => {
+const TORTURE_SECONDS = process.env.BENDER_FULL ? 10 : 2
+
+test(`never-NaN torture: random param slams for ${TORTURE_SECONDS} s`, () => {
   const sr = 48000
   const chain = buildChain(sr)
   const smoother = new Smoother(sr, BLOCK)
@@ -25,7 +27,7 @@ test('never-NaN torture: random param slams for 10 s', () => {
   const mic = new Float32Array(BLOCK)
   const target = packParams(DEFAULT_CONTROLS)
 
-  const blocks = Math.ceil((10 * sr) / BLOCK)
+  const blocks = Math.ceil((TORTURE_SECONDS * sr) / BLOCK)
   for (let b = 0; b < blocks; b++) {
     if (b % 8 === 0) {
       for (const [name] of PARAM_DEFS) {

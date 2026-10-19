@@ -102,7 +102,9 @@ const BLURBS: Record<string, string> = {
 const SCRIPTS: Record<string, string> = {
   dev: 'the app',
   build: 'typecheck and bundle',
-  test: 'the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom',
+  test: 'the suite without the sixteen slowest files, with a two-second torture test that pins every feedback past unity at once, and the panel in jsdom',
+  'test:full':
+    'the suite plus the sixteen files that take fifteen seconds or more of audio rendering; CI runs this',
   'test:changed':
     'only the test files that import something changed since main',
   typecheck: 'types only',

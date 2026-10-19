@@ -32,6 +32,7 @@
     "spectrum": "node scripts/spectrum.ts",
     "preview": "astro preview",
     "test": "scripts/heavy-run-slot.sh vitest run",
+    "test:full": "BENDER_FULL=1 scripts/heavy-run-slot.sh vitest run",
     "test:changed": "scripts/heavy-run-slot.sh vitest run --changed main --passWithNoTests",
     "check": "pnpm lint && pnpm typecheck && pnpm test:changed",
     "denormal": "DENORMAL=1 scripts/heavy-run-slot.sh vitest run src/dsp/denormal.test.ts",

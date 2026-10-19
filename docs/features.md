@@ -1809,7 +1809,7 @@ same circuits and is playing the recording back.
 ## Scripts
 
 <details>
-<summary>42 commands</summary>
+<summary>43 commands</summary>
 
 | command              | what it does                                                                                                                                                                            |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1840,7 +1840,8 @@ same circuits and is playing the recording back.
 | `pnpm soak`          | whether any stage gets slower the longer it runs                                                                                                                                        |
 | `pnpm spectrum`      | sweeps the same space and reports what each fault sounds like, by frequency                                                                                                             |
 | `pnpm preview`       | serves the built bundle                                                                                                                                                                 |
-| `pnpm test`          | the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom                                                                                     |
+| `pnpm test`          | the suite without the sixteen slowest files, with a two-second torture test that pins every feedback past unity at once, and the panel in jsdom                                         |
+| `pnpm test:full`     | the suite plus the sixteen files that take fifteen seconds or more of audio rendering; CI runs this                                                                                     |
 | `pnpm test:changed`  | only the test files that import something changed since main                                                                                                                            |
 | `pnpm check`         | lint, typecheck and the changed tests, for the edit loop                                                                                                                                |
 | `pnpm denormal`      | the DSP sweep for denormals, run on demand rather than with the suite                                                                                                                   |
