@@ -142,3 +142,28 @@
 .potOn text {
   fill: var(--fg2);
 }
+
+.ribbon {
+  outline: none;
+}
+
+.ribbon:focus-visible .trace {
+  stroke: var(--fg3);
+}
+
+.line {
+  cursor: pointer;
+}
+
+.lineHit {
+  fill: transparent;
+}
+
+.line:hover .trace {
+  stroke: var(--fg);
+  stroke-width: 1.25;
+}
+
+.line:hover .traceCut {
+  stroke-width: 2;
+}

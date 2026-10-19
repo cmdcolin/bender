@@ -77,7 +77,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
     cut: 'chipBusCut',
     rows: [
       {
-        chips: [['song\nselect', 'counter'], 'ROM', 'note\ntable', 'divider'],
+        chips: [['song select', 'counter'], 'ROM', 'note table', 'divider'],
         links: [
           [
             ribbon('chipBankLine', 'chipBankFault'),
@@ -146,7 +146,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
     cut: 'drumBusCut',
     rows: [
       {
-        chips: ['voice\ncounters', 'sample\nROM', 'DAC'],
+        chips: ['voice counters', 'sample ROM', 'DAC'],
         links: [
           [ribbon('drumRomAddrLine', 'drumRomAddrFault')],
           [ribbon('drumRomDataLine', 'drumRomDataFault')],
@@ -159,7 +159,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
     cut: 'pcmBusCut',
     rows: [
       {
-        chips: ['counter', 'sample\nROM', 'DAC'],
+        chips: ['counter', 'sample ROM', 'DAC'],
         links: [
           [ribbon('pcmAddrLine', 'pcmAddrFault')],
           [ribbon('pcmDataLine', 'pcmDataFault')],
@@ -172,7 +172,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
     cut: 'fmBusCut',
     rows: [
       {
-        chips: ['processor', 'register\nfile'],
+        chips: ['processor', 'register file'],
         links: [
           [
             ribbon('fmDataLine', 'fmDataFault'),
@@ -199,14 +199,14 @@ export const BUS_SPECS: Record<string, BusSpec> = {
         ],
       },
       {
-        chips: ['instrument', 'patch\ntable', 'operators'],
+        chips: ['instrument', 'patch table', 'operators'],
         links: [
           [ribbon('fmPatchLine', 'fmPatchFault')],
           [ribbon('fmPatchDataLine', 'fmPatchDataFault')],
         ],
       },
       {
-        chips: ['phase', 'sine\ntable', 'output'],
+        chips: ['phase', 'sine table', 'output'],
         links: [
           [ribbon('fmWaveLine', 'fmWaveFault')],
           [ribbon('fmWaveDataLine', 'fmWaveDataFault')],

@@ -1,4 +1,5 @@
-import { FAULT } from '../dsp/bus.ts'
+import { FAULT, FAULT_NAMES } from '../dsp/bus.ts'
+import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import {
   choice,
@@ -19,6 +20,7 @@ const WIDTH = 420
 const PITCH = 4
 const STACK_GAP = 32
 const ABOVE = 24
+const ABOVE_BARE = 8
 const BELOW = 8
 const TAP_ROOM = 26
 const PAD = 8
@@ -56,7 +58,8 @@ function place(row: BusRow, rowTop: number, tapped: boolean) {
     ...row.links.map(stackH).map(h => h + 2 * PAD),
     ...row.chips.flat().map(boxHeight),
   )
-  const boxTop = rowTop + ABOVE
+  const above = row.feeds || row.injects ? ABOVE : ABOVE_BARE
+  const boxTop = rowTop + above
   const mid = boxTop + coreH / 2
   const widths = row.chips.map(c => Math.max(...[c].flat().map(boxWidth)))
   const gap =
@@ -83,7 +86,7 @@ function place(row: BusRow, rowTop: number, tapped: boolean) {
       return { name, x: xs[i]!, y, w: widths[i]!, h }
     })
   })
-  const height = ABOVE + coreH + BELOW + (tapped ? TAP_ROOM : 0)
+  const height = above + coreH + BELOW + (tapped ? TAP_ROOM : 0)
   return { links, chips, boxTop, coreH, height }
 }
 
@@ -140,6 +143,30 @@ export function Chip({
   )
 }
 
+// Pressing a trace moves the knife onto it; pressing the knifed trace tries
+// the next fault, and the last one lifts the knife.
+function knife(r: Ribbon, i: number) {
+  const board = engine.controls.get()
+  const on = Math.round(board[r.line]) - 1
+  const fault = Math.round(board[r.fault])
+  if (on !== i) {
+    engine.set(r.line, i + 1)
+    return
+  }
+  if (fault + 1 < FAULT_NAMES.length) {
+    engine.set(r.fault, fault + 1)
+    return
+  }
+  engine.set(r.line, 0)
+  engine.set(r.fault, FAULT.cut)
+}
+
+function nudge(r: Ribbon, by: number) {
+  const n = sliderFor(r.line).choices!.length - 1
+  const on = Math.round(engine.controls.get()[r.line])
+  engine.set(r.line, Math.min(n, Math.max(1, on + by)))
+}
+
 function Trace({
   p,
   line,
@@ -169,7 +196,13 @@ function Trace({
     knifed < 0
       ? `${what}: ${names[0]}–${names[n - 1]}, no knife`
       : `${what}: ${names[knifed]} ${choice(p.ribbon.fault, fault)}`
-  const traces = names.map((_, i) => {
+  const next = (i: number) =>
+    i !== knifed
+      ? 'press to knife it'
+      : fault + 1 < FAULT_NAMES.length
+        ? `press for ${FAULT_NAMES[fault + 1]}`
+        : 'press to lift the knife'
+  const traces = names.map((name, i) => {
     const at = lineY(p, i)
     const hit = i === knifed || i === pair
     const d =
@@ -177,7 +210,24 @@ function Trace({
         ? `M${p.x0} ${at} H${gx - 3} M${gx + 3} ${at} H${p.x1}`
         : `M${p.x0} ${at} H${p.x1}`
     return (
-      <path key={i} d={d} className={hit ? styles.traceCut : styles.trace} />
+      <g
+        key={i}
+        className={styles.line}
+        onClick={e => {
+          e.stopPropagation()
+          knife(p.ribbon, i)
+        }}
+      >
+        <title>{`${name}: ${next(i)}`}</title>
+        <rect
+          x={p.x0}
+          y={at - PITCH / 2}
+          width={p.x1 - p.x0}
+          height={PITCH}
+          className={styles.lineHit}
+        />
+        <path d={d} className={hit ? styles.traceCut : styles.trace} />
+      </g>
     )
   })
   const dot = <circle cx={gx} cy={y} r={1.6} className={styles.solder} />
@@ -227,7 +277,21 @@ function Trace({
       </>
     )
   return (
-    <g>
+    <g
+      className={styles.ribbon}
+      role="button"
+      tabIndex={0}
+      aria-label={`${what} knife`}
+      onKeyDown={e => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault()
+          nudge(p.ribbon, e.key === 'ArrowUp' ? -1 : 1)
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          knife(p.ribbon, Math.max(knifed, 0))
+        }
+      }}
+    >
       <title>{title}</title>
       {traces}
       {glyph}

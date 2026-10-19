@@ -123,3 +123,36 @@ test('the toy on the FM bus is labelled without its width', () => {
   expect(titles(svg)).toContain('toy out on D0–D2')
   expect(svg.querySelectorAll('circle[class*="solder"]')).toHaveLength(3)
 })
+
+test('pressing a trace knifes it, and pressing it again walks the faults', () => {
+  set({ chipAddrLine: 0, chipAddrFault: 0 })
+  open('Toy keyboard')
+  press('bus')
+  const svg = drawing('toy keyboard bus wiring')
+  const line = (name: string) =>
+    [...svg.querySelectorAll('title')].find(t =>
+      t.textContent?.startsWith(`${name}:`),
+    )!.parentElement!
+  fireEvent.click(line('A2'))
+  expect(engine.controls.get().chipAddrLine).toBe(3)
+  fireEvent.click(line('A2'))
+  expect(engine.controls.get().chipAddrFault).toBe(1)
+  fireEvent.click(line('A2'))
+  fireEvent.click(line('A2'))
+  fireEvent.click(line('A2'))
+  expect(engine.controls.get().chipAddrLine).toBe(0)
+  expect(engine.controls.get().chipAddrFault).toBe(0)
+})
+
+test('the arrow keys move the knife along a focused ribbon', () => {
+  set({ pcmDataLine: 2 })
+  open('Home keyboard')
+  fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
+  const ribbon = screen.getByRole('button', { name: 'data line knife' })
+  fireEvent.keyDown(ribbon, { key: 'ArrowDown' })
+  expect(engine.controls.get().pcmDataLine).toBe(3)
+  fireEvent.keyDown(ribbon, { key: 'ArrowUp' })
+  fireEvent.keyDown(ribbon, { key: 'ArrowUp' })
+  fireEvent.keyDown(ribbon, { key: 'ArrowUp' })
+  expect(engine.controls.get().pcmDataLine).toBe(1)
+})
