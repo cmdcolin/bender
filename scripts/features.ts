@@ -121,6 +121,8 @@ const SCRIPTS: Record<string, string> = {
     'renders each control at both ends of its travel and writes down the ends a bend key can be heard at',
   audible:
     'takes each branch of the kit out one at a time and reports whether the output moved — a path can cost a multiply a sample and still be inaudible',
+  denormal:
+    'the DSP sweep for denormals, run on demand rather than with the suite',
   soak: 'whether any stage gets slower the longer it runs',
   panel: 'what the panel costs the browser per frame, in a real Chrome',
   agent:
