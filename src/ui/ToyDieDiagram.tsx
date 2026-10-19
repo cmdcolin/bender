@@ -228,7 +228,7 @@ function ClockTag({
       className={styles.tagPick}
     >
       <path
-        d={`M${x - 2} ${y} V${y - STUB - 3} H${x + 20} V${y} Z`}
+        d={`M${x - 2} ${y} V${y - STUB - 3} H${x + 26} V${y} Z`}
         className={styles.tagHit}
       />
       <path d={`M${x} ${y} V${y - STUB}`} className={styles[`stub${look}`]} />

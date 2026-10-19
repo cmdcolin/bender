@@ -25,8 +25,15 @@
 
 .note,
 .noteOn {
-  font-size: 10px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   fill: var(--fg3);
+}
+
+/* MHz, not MHZ. */
+.unit {
+  text-transform: none;
 }
 
 .nameOn,

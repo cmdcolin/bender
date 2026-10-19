@@ -137,6 +137,8 @@ const SCRIPTS: Record<string, string> = {
   diagram: "re-renders the README's signal path",
   features: 'rewrites docs/features.md — this file',
   'guide-shots': 're-shoots the six pictures in docs/USER-GUIDE.md',
+  'diagram-shots':
+    'shoots every schematic in the panel to a directory, one png each',
   dash: "re-shoots the why-sign-in card's screenshot of the signed-in home page",
   knife:
     'sweeps every wire and fault on every bus and reports which you can hear',

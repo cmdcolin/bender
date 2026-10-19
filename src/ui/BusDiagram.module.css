@@ -63,6 +63,8 @@
 .tagOpen,
 .tagOn {
   font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   fill: var(--fg3);
 }
 
@@ -84,7 +86,9 @@
 
 .bus,
 .knifed {
-  font-size: 10px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   fill: var(--fg3);
 }
 
@@ -110,7 +114,9 @@
 .pot text,
 .potOn text {
   stroke: none;
-  font-size: 10px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   fill: var(--fg3);
 }
 

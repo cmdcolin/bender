@@ -238,7 +238,7 @@ export function MonoPathDiagram({ verbs }: { verbs: Verbs }) {
                 <Label
                   x={noiseX}
                   y={over - 15}
-                  anchor="end"
+                  anchor="middle"
                   on={up('monoNoise')}
                 >
                   noise

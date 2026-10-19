@@ -146,6 +146,7 @@ export function MonoCardDiagram() {
 
   const node = (name: string, child: ReactNode) => (
     <Pressable
+      key={name}
       name={name}
       selected={pick.selected === name}
       onSelect={() => pick.toggle(name)}

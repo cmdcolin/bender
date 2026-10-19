@@ -24,6 +24,7 @@
     "diagram": "node scripts/chain-svg.ts",
     "features": "node scripts/features.ts",
     "guide-shots": "node scripts/guide-shots.ts",
+    "diagram-shots": "node scripts/diagram-shots.ts",
     "ink": "node scripts/ink.ts",
     "knife": "node scripts/knife.ts",
     "panel": "node scripts/panel.ts",
