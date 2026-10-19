@@ -34,7 +34,7 @@ test('the tape delay keeps Time, Feedback and the echo level as rows, and the re
 test('the delay drawing lights the play heads the Heads switch picks', () => {
   act(() => engine.set('dlyHeads', 2))
   open('Wraith')
-  const drawing = screen.getByRole('img', { name: 'wraith signal path' })
+  const drawing = screen.getByRole('group', { name: 'wraith signal path' })
   const litPlayHeads = () =>
     drawing.querySelectorAll('rect[class*="gapOn"]').length - 1
   expect(litPlayHeads()).toBe(2)
@@ -61,7 +61,7 @@ test('the delay drawing goes dark when the pedal is bypassed', () => {
     engine.set('dlyMix', 0.5)
   })
   open('Wraith')
-  const drawing = screen.getByRole('img', { name: 'wraith signal path' })
+  const drawing = screen.getByRole('group', { name: 'wraith signal path' })
   const lit = () =>
     [...drawing.querySelectorAll('path')].filter(p =>
       p.getAttribute('class')?.includes('wireOn'),

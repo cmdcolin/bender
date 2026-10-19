@@ -28,7 +28,7 @@ const set = (board: Partial<Controls>) =>
       engine.set(key as keyof Controls, value)
   })
 
-const die = () => screen.getByRole('img', { name: 'FM die and driver' })
+const die = () => screen.getByRole('group', { name: 'FM die and driver' })
 
 const words = () => [...die().querySelectorAll('text')].map(t => t.textContent)
 

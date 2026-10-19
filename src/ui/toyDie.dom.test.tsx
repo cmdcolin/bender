@@ -30,7 +30,7 @@ const set = (board: Partial<Controls>) =>
 const words = () =>
   [
     ...screen
-      .getByRole('img', { name: 'toy chip die' })
+      .getByRole('group', { name: 'toy chip die' })
       .querySelectorAll('text'),
   ].map(t => t.textContent)
 
@@ -162,7 +162,7 @@ test('a board that arrives knifed still opens on the keyboard', () => {
   set({ chipDataLine: 2, chipDataFault: 1 })
   open()
   expect(screen.getByRole('region', { name: 'keyboard' })).not.toBeNull()
-  expect(screen.queryByRole('img', { name: 'plinky bus wiring' })).toBeNull()
+  expect(screen.queryByRole('group', { name: 'plinky bus wiring' })).toBeNull()
   set({ chipDataLine: 0, chipDataFault: 0 })
 })
 
@@ -278,13 +278,13 @@ test('an open box resets its own rows from inside its card', () => {
 test('all settings lists the stage’s rows in place of the die', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   open()
-  expect(screen.queryByRole('img', { name: 'toy chip die' })).not.toBeNull()
+  expect(screen.queryByRole('group', { name: 'toy chip die' })).not.toBeNull()
   const rowsBefore = screen.queryAllByRole('slider').length
   fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
-  expect(screen.queryByRole('img', { name: 'toy chip die' })).toBeNull()
+  expect(screen.queryByRole('group', { name: 'toy chip die' })).toBeNull()
   expect(screen.queryAllByRole('slider').length).toBeGreaterThan(rowsBefore)
   fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
-  expect(screen.queryByRole('img', { name: 'toy chip die' })).not.toBeNull()
+  expect(screen.queryByRole('group', { name: 'toy chip die' })).not.toBeNull()
 })
 
 test('a key under the die names each bend that is on, and opens its part', () => {

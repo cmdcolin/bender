@@ -24,7 +24,7 @@ const set = (board: Partial<Controls>) =>
       engine.set(key as keyof Controls, value)
   })
 
-const drawing = (label: string) => screen.getByRole('img', { name: label })
+const drawing = (label: string) => screen.getByRole('group', { name: label })
 
 const texts = (svg: Element) =>
   [...svg.querySelectorAll('text')].map(t => t.textContent)
@@ -34,7 +34,7 @@ test.each([
   ['Clatter', 'pattern', 'drum machine bus wiring'],
 ])('%s draws %s once its %s box is pressed', (group, box, label) => {
   open(group)
-  expect(screen.queryByRole('img', { name: label })).toBeNull()
+  expect(screen.queryByRole('group', { name: label })).toBeNull()
   press(box)
   expect(drawing(label)).not.toBeNull()
 })
@@ -58,14 +58,14 @@ test.each([
       ).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: `hide ${box}` }))
     expect(screen.queryByRole('region', { name: box })).toBeNull()
-    expect(screen.queryByRole('img', { name: close })).toBeNull()
+    expect(screen.queryByRole('group', { name: close })).toBeNull()
   },
 )
 
 test('the sample ROM box of the toy drums draws its buses', () => {
   open('Clatter')
   expect(
-    screen.queryByRole('img', { name: 'drum sample ROM bus wiring' }),
+    screen.queryByRole('group', { name: 'drum sample ROM bus wiring' }),
   ).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'sample ROM controls' }))
   expect(drawing('drum sample ROM bus wiring')).not.toBeNull()
@@ -73,14 +73,14 @@ test('the sample ROM box of the toy drums draws its buses', () => {
 
 test('the FM chip draws its buses under the bus box', () => {
   open('Glint')
-  expect(screen.queryByRole('img', { name: 'glint bus wiring' })).toBeNull()
+  expect(screen.queryByRole('group', { name: 'glint bus wiring' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
   expect(texts(drawing('glint bus wiring'))).toContain('D0–D7')
 })
 
 test('the home keyboard draws its buses under either bus box', () => {
   open('Parlor')
-  expect(screen.queryByRole('img', { name: 'parlor bus wiring' })).toBeNull()
+  expect(screen.queryByRole('group', { name: 'parlor bus wiring' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'addr bus controls' }))
   expect(texts(drawing('parlor bus wiring'))).toContain('A0–A13')
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))

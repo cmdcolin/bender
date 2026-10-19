@@ -115,9 +115,9 @@ test('the pads box starts open on the kit rows, and the stage draws no folds', (
   fireEvent.click(box('tanks'))
   expect(screen.queryByText('Tempo')).toBeNull()
   expect(screen.getByText('Ring')).not.toBeNull()
-  expect(screen.getAllByRole('img', { name: 'toy drum voices' })).toHaveLength(
-    1,
-  )
+  expect(
+    screen.getAllByRole('group', { name: 'toy drum voices' }),
+  ).toHaveLength(1)
 })
 
 test('showing the drum pattern opens the pads box', () => {

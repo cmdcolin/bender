@@ -103,7 +103,9 @@ test('a loop setting moved off stock opens the signal path on that track, and it
   act(() => engine.set('four2Erase', 0.5))
   openFourTrack()
   expect(fold('channel strip')?.open).toBe(true)
-  expect(screen.getByRole('img', { name: 'track 2 signal path' })).toBeTruthy()
+  expect(
+    screen.getByRole('group', { name: 'track 2 signal path' }),
+  ).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'erase · loop controls' }))
   expect(screen.getByRole('slider', { name: 'Erase' })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'erase · loop controls' }))
@@ -114,7 +116,9 @@ test('pressing a lane number brings that track’s strip up', () => {
   openFourTrack()
   fireEvent.click(screen.getByRole('button', { name: 'track 3 strip' }))
   expect(fold('channel strip')?.open).toBe(true)
-  expect(screen.getByRole('img', { name: 'track 3 signal path' })).toBeTruthy()
+  expect(
+    screen.getByRole('group', { name: 'track 3 signal path' }),
+  ).toBeTruthy()
 })
 
 test('the record box says what record and erase do to the tape', () => {
@@ -152,5 +156,7 @@ test('a loop setting moving from elsewhere opens the signal path on its channel,
   ).toBe('9')
   act(() => engine.set('four3Cue', 0.5))
   expect(fold('channel strip')?.open).toBe(true)
-  expect(screen.getByRole('img', { name: 'track 3 signal path' })).toBeTruthy()
+  expect(
+    screen.getByRole('group', { name: 'track 3 signal path' }),
+  ).toBeTruthy()
 })

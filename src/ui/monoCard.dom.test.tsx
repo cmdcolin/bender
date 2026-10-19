@@ -29,7 +29,7 @@ const set = (board: Partial<Controls>) =>
   })
 
 const card = () =>
-  screen.getByRole('img', { name: 'growler voice card faults' })
+  screen.getByRole('group', { name: 'growler voice card faults' })
 
 const words = () => [...card().querySelectorAll('text')].map(t => t.textContent)
 

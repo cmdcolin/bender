@@ -16,7 +16,7 @@ const set = (board: Partial<Controls>) =>
       engine.set(key as keyof Controls, value)
   })
 
-const svg = () => screen.getByRole('img', { name: 'drum kit wiring' })
+const svg = () => screen.getByRole('group', { name: 'drum kit wiring' })
 const words = () => [...svg().querySelectorAll('text')].map(t => t.textContent)
 const red = () => svg().querySelectorAll('[class*="jumper"]').length
 

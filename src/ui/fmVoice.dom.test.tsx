@@ -23,7 +23,7 @@ const set = (board: Partial<Controls>) =>
       engine.set(key as keyof Controls, value)
   })
 
-const drawing = () => screen.queryByRole('img', { name: 'FM operators' })
+const drawing = () => screen.queryByRole('group', { name: 'FM operators' })
 
 const words = () =>
   [...drawing()!.querySelectorAll('text')].map(t => t.textContent)
