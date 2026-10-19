@@ -9,6 +9,7 @@ import {
 
 import { engine } from '../engine/engine.ts'
 import { MAX_SOURCES } from '../engine/params.ts'
+import { createStore } from '../listeners.ts'
 import { bench } from './bench.ts'
 import { buildMap, drawMap } from './chain-map.ts'
 import styles from './ChainMap.module.css'
@@ -17,6 +18,7 @@ import { useStoreValue } from './ControlsContext.ts'
 import { added, removable, shownOn, takeOff } from './fitted.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
+import { read, write } from './persist.ts'
 import { watchRail } from './railWatch.ts'
 import { Shelf } from './Section.tsx'
 import { watchTriggers } from './triggerWatch.ts'
@@ -25,6 +27,13 @@ import type { Controls } from '../controls.ts'
 import type { El } from './svg.ts'
 
 const GROUP_BY_NAME = new Map(GROUPS.map(g => [g.name, g]))
+
+const FOLD_KEY = 'bender.mapFolded'
+const mapFolded = createStore(read(FOLD_KEY) === '1')
+const foldMap = (folded: boolean) => {
+  mapFolded.set(folded)
+  write(FOLD_KEY, folded ? '1' : '0')
+}
 
 // The channels the bus meters, by the name the map draws them under. The mic is
 // a wire rather than a machine and has no box of its own, so it is not here.
@@ -122,6 +131,7 @@ export function ChainMap({
     [],
   )
   useStoreValue(added)
+  const folded = useStoreValue(mapFolded) && open !== null
   const shown = shownOn(controls, benchNow)
   if (open) shown.add(open)
   const map = buildMap(controls, {
@@ -156,7 +166,7 @@ export function ChainMap({
           its doors at twenty pixels; nothing about the drawing can grow them
           without a sideways pan, so the doors are laid out again here, at
           the height every other press on a phone gets. */}
-      {coarse && (
+      {(coarse || folded) && (
         <Shelf
           groups={onIt}
           label="stages"
@@ -170,11 +180,12 @@ export function ChainMap({
         className={styles.graph}
         role="group"
         aria-label="signal path"
+        hidden={folded}
         onClick={click}
       >
         {mount(drawMap(map), 0)}
       </div>
-      {!coarse && (
+      {!coarse && !folded && (
         <Shelf
           groups={onIt.filter(g => !map.doors.has(g.name))}
           label="on the board"
@@ -184,6 +195,15 @@ export function ChainMap({
         />
       )}
       <div className={styles.addRow}>
+        {open !== null && !coarse && (
+          <button
+            className={styles.add}
+            aria-pressed={folded}
+            onClick={() => foldMap(!folded)}
+          >
+            {folded ? '▾ show the map' : '▴ fold the map'}
+          </button>
+        )}
         <StageMenu
           groups={offIt}
           button="+ add a stage"

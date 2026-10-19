@@ -600,3 +600,22 @@ test("a face's name plate opens its stage in the panel", () => {
   fireEvent.click(screen.getByRole('button', { name: 'Toy drums settings' }))
   expect(close()).not.toBeNull()
 })
+
+test('the map folds to a row of stages while one is open', () => {
+  render(<App />)
+  const map = () =>
+    document.querySelector<HTMLElement>('[aria-label="signal path"]')!
+  fireEvent.click(screen.getByRole('button', { name: 'Toy drums settings' }))
+  fireEvent.click(screen.getByRole('button', { name: '▴ fold the map' }))
+  expect(map().hidden).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: /^Toy keyboard$/ }))
+  expect(
+    screen.getByRole('button', { name: 'close Toy keyboard' }),
+  ).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'close Toy keyboard' }))
+  expect(map().hidden).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: 'Toy drums settings' }))
+  expect(map().hidden).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: '▾ show the map' }))
+  expect(map().hidden).toBe(false)
+})
