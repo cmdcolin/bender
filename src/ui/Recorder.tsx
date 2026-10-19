@@ -1,6 +1,6 @@
 import { engine } from '../engine/engine.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { MachineKey } from './MachineKey.tsx'
+import { DeckKey } from './DeckKey.tsx'
 import styles from './Recorder.module.css'
 import { RecorderMore } from './RecorderMore.tsx'
 import { Cassette } from './StudioArt.tsx'
@@ -24,44 +24,41 @@ export function Recorder() {
         <span className={styles.name}>recorder</span>
         <RecorderMore recording={recording} recStems={recStems} />
       </div>
-      <div className={styles.machine}>
-        <Cassette running={recording}>
-          <span
-            className={recording ? styles.counterOn : styles.counter}
-            role="timer"
-            aria-label="take time"
-          >
-            {clock(recSeconds)}
-          </span>
-        </Cassette>
-        <div className={styles.keys}>
-          <Tip
-            text={
-              recording
-                ? 'Stops the take and saves it.'
-                : recStems
-                  ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                  : 'Records the output to a wav file — stopping saves it.'
-            }
-          >
-            <MachineKey
-              legend={recording ? 'stop' : 'rec'}
-              name={
-                recording
-                  ? 'stop and save'
-                  : recStems
-                    ? 'record stems'
-                    : 'record wav'
-              }
-              red
-              latched={recording}
-              onClick={() =>
-                recording ? engine.stopRecording() : engine.startRecording()
-              }
-            />
-          </Tip>
-        </div>
-      </div>
+      <Cassette running={recording}>
+        <span
+          className={recording ? styles.counterOn : styles.counter}
+          role="timer"
+          aria-label="take time"
+        >
+          {clock(recSeconds)}
+        </span>
+      </Cassette>
+      <Tip
+        text={
+          recording
+            ? 'Stops the take and saves it.'
+            : recStems
+              ? 'Records the output and every source that had something on it — stopping saves the lot.'
+              : 'Records the output to a wav file — stopping saves it.'
+        }
+      >
+        <DeckKey
+          glyph={recording ? 'stop' : 'rec'}
+          legend={recording ? 'stop' : 'rec'}
+          name={
+            recording
+              ? 'stop and save'
+              : recStems
+                ? 'record stems'
+                : 'record wav'
+          }
+          red
+          latched={recording}
+          onClick={() =>
+            recording ? engine.stopRecording() : engine.startRecording()
+          }
+        />
+      </Tip>
       {recError && (
         <p className={styles.error} role="alert">
           the take was not saved: {recError}

@@ -2,6 +2,7 @@
   composes: box from './App.module.css';
   flex: 1 1 240px;
   max-width: 280px;
+  gap: var(--space-md);
   align-items: center;
 }
 
@@ -19,28 +20,6 @@
 /* A cassette recorder seen from above: a dark body, the cassette behind
    smoked glass, and the keys along the front edge. Flat colours and hard
    edges only. */
-.machine {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-  width: 100%;
-  padding: var(--space-md);
-  background: #1b1c20;
-  border: 1px solid #3c3d44;
-  border-radius: 10px;
-}
-
-.keys {
-  display: flex;
-  justify-content: center;
-  padding-bottom: 4px;
-}
-
-.keys > button {
-  flex: 0 0 80px;
-}
-
 /* The take counter, written on the cassette's label: a red readout that lights
    while a take runs, like the one on the front of a deck. */
 .counter,
