@@ -34,6 +34,25 @@
   fill: var(--accent);
 }
 
+.glyph,
+.glyphOn {
+  color: var(--fg2);
+}
+
+.glyphOn {
+  color: var(--accent);
+}
+
+.glyphLine {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.glyphFill {
+  fill: currentColor;
+}
+
 .wire,
 .wireOn,
 .wireDash,

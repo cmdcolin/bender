@@ -6,10 +6,13 @@ import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
 import { CHANNELS, GROUPS, sliderFor } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
+import diagram from './Diagram.module.css'
 import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import {
   BoxRows,
   Diagram,
+  GlyphBox,
+  glyphBoxWidth,
   Pressable,
   Wire,
   type WireLook,
@@ -85,8 +88,6 @@ const BLACK_W = 2.6
 const BLACK_H = 7
 const KNOB_LEAD = 3
 const KNOB_R = 5
-const GLYPH_GAP = 4
-const INSET = boxWidth('') / 2
 const SIDE = 6
 
 // Which box each bend spot solders the pot onto.
@@ -136,69 +137,37 @@ function Pot({
   )
 }
 
-// The keys the player presses: the playing knobs live behind this box.
-function KeyboardNode({
-  box,
-  lit,
-  pick,
-}: {
-  box: ChipBox
-  lit: boolean
-  pick: ReturnType<typeof useSelectedBox>
-}) {
-  const x = box.x + INSET
-  const y = box.y + (box.h - GLYPH_H) / 2
+// The keys the player presses, as five white keys from C with the black keys
+// of C, D and F.
+function keyboardGlyph(x: number, mid: number) {
+  const y = mid - GLYPH_H / 2
   return (
-    <Pressable
-      name={KEYBOARD}
-      selected={pick.selected === KEYBOARD}
-      onSelect={() => pick.toggle(KEYBOARD)}
-    >
-      <title>
-        keyboard — the tune, level, tone, accompaniment, arpeggio and key lock
-      </title>
+    <>
       <rect
-        x={box.x}
-        y={box.y}
-        width={box.w}
-        height={box.h}
-        rx={3}
-        className={lit ? styles.chipOn : styles.chip}
+        x={x}
+        y={y}
+        width={GLYPH_W}
+        height={GLYPH_H}
+        rx={1}
+        className={diagram.glyphLine}
       />
-      <g className={lit ? styles.glyphOn : undefined}>
-        <rect
-          x={x}
-          y={y}
-          width={GLYPH_W}
-          height={GLYPH_H}
-          rx={1}
-          className={styles.glyph}
-        />
-        <path
-          d={[1, 2, 3, 4]
-            .map(i => {
-              const top = BLACK_AT.includes(i) ? y + BLACK_H : y
-              return `M${x + i * WHITE_W} ${top} V${y + GLYPH_H}`
-            })
-            .join(' ')}
-          className={styles.glyph}
-        />
-        <path
-          d={BLACK_AT.map(
-            i =>
-              `M${x + i * WHITE_W - BLACK_W / 2} ${y} h${BLACK_W} v${BLACK_H} h${-BLACK_W} Z`,
-          ).join(' ')}
-          className={styles.glyphKey}
-        />
-      </g>
-      <text
-        x={x + GLYPH_W + GLYPH_GAP}
-        y={box.y + box.h / 2 + 3}
-        className={lit ? styles.chipNameOn : styles.chipName}
-      >
-        {KEYBOARD}
-      </text>
-    </Pressable>
+      <path
+        d={[1, 2, 3, 4]
+          .map(i => {
+            const top = BLACK_AT.includes(i) ? y + BLACK_H : y
+            return `M${x + i * WHITE_W} ${top} V${y + GLYPH_H}`
+          })
+          .join(' ')}
+        className={diagram.glyphLine}
+      />
+      <path
+        d={BLACK_AT.map(
+          i =>
+            `M${x + i * WHITE_W - BLACK_W / 2} ${y} h${BLACK_W} v${BLACK_H} h${-BLACK_W} Z`,
+        ).join(' ')}
+        className={diagram.glyphFill}
+      />
+    </>
   )
 }
 
@@ -315,7 +284,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
     boxWidth('envelope'),
     boxWidth('output pin'),
   ]
-  const keyboardW = boxWidth(KEYBOARD) + GLYPH_W + GLYPH_GAP
+  const keyboardW = glyphBoxWidth(KEYBOARD, GLYPH_W)
   const lead = Math.max(0, (keyboardW - widths[0]!) / 2)
   const width = widths.reduce((a, b) => a + b, lead + TAIL + sum(GAPS))
   const row = names.map((name, i): ChipBox => ({
@@ -544,7 +513,15 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                 lit={lit('output pin')}
                 help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
               />
-              <KeyboardNode box={keyboard} lit={played} pick={pick} />
+              <GlyphBox
+                {...keyboard}
+                help="the tune, level, tone, accompaniment, arpeggio and key lock"
+                lit={played}
+                selected={pick.selected === KEYBOARD}
+                onSelect={() => pick.toggle(KEYBOARD)}
+                glyphW={GLYPH_W}
+                glyph={keyboardGlyph}
+              />
               <Node
                 pick={pick}
                 box={bus}

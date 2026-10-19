@@ -52,6 +52,11 @@ follows the rows:
 
 ## The shared power rail
 
+The Power supply panel draws the rail as one wire from the cells to the
+machines, with the reset chip watching it and the clip biting it. The cells box
+opens first and holds starve, batteries, lead resistance and reservoir; the
+other two boxes open their own rows.
+
 **Starve** sags the supply the toy keyboard, the drum machine, and the FM chip
 all share. It's a resistor to ground, so it keeps drawing current even after the
 chip has gone quiet — a quarter of the way up, the toy runs flat and dives;

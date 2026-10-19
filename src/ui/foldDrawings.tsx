@@ -3,6 +3,7 @@ import { BUS_SPECS } from './busSpecs.ts'
 import { FmDieDiagram } from './FmDieDiagram.tsx'
 import { KitWiringDiagram } from './KitWiringDiagram.tsx'
 import { MonoCardDiagram } from './MonoCardDiagram.tsx'
+import { SupplyDiagram } from './SupplyDiagram.tsx'
 import { ToyDieDiagram } from './ToyDieDiagram.tsx'
 import { ToyDrumDiagram } from './ToyDrumDiagram.tsx'
 
@@ -21,6 +22,7 @@ const DRAWINGS: Record<string, ComponentType<DrawingProps>> = {
   'Toy drums|inside the voices': ToyDrumDiagram,
   'FM chip|die and driver': FmDieDiagram,
   'Mono synth|voice card faults': MonoCardDiagram,
+  'Power supply|the cells': SupplyDiagram,
 }
 
 /** The drawing for one fold of a group, if it has one. */

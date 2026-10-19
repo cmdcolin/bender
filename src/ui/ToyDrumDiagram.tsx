@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
-import bus from './BusDiagram.module.css'
 import chip from './ChipLook.module.css'
 import { CHANNELS, GROUPS } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
@@ -17,9 +16,9 @@ import {
   BoxRows,
   BoxView,
   Diagram,
+  GlyphBox,
+  glyphBoxWidth,
   Label,
-  Plate,
-  Pressable,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
@@ -91,7 +90,6 @@ const ROW_GAPS = [30, 16]
 const HEAD = BOX_H + 16
 const HEIGHT = TOP + HEAD + 3 * BOX_H + ROW_GAPS[0]! + ROW_GAPS[1]! + TOP
 const GLYPH = 12
-const GLYPH_GAP = 4
 const PAD = 5
 const GAP = 34
 const TAIL = 30
@@ -108,50 +106,21 @@ const plain = (
 
 const bent = (on: boolean): WireLook => (on ? 'alarm' : 'dash')
 
-// The pads the player hits, drawn as four of them: the kit's everyday knobs
-// live behind this box.
-function PadsNode({
-  x,
-  y,
-  w,
-  lit,
-  selected,
-  onSelect,
-}: {
-  x: number
-  y: number
-  w: number
-  lit: boolean
-  selected: boolean
-  onSelect: () => void
-}) {
-  const gx = x + boxWidth('') / 2
-  const gy = y + (BOX_H - GLYPH) / 2
+// The pads the player hits, drawn as four of them.
+function padsGlyph(x: number, mid: number) {
+  const y = mid - GLYPH / 2
   return (
-    <Pressable name={PADS} selected={selected} onSelect={onSelect}>
-      <title>
-        pads — the kit's level, tempo, swing, chance, tuning, decay and mute
-      </title>
-      <Plate x={x} y={y} w={w} h={BOX_H} touched={lit} selected={selected} />
-      <path
-        d={[0, 1]
-          .flatMap(row =>
-            [0, 1].map(
-              col =>
-                `M${gx + col * (PAD + 2)} ${gy + row * (PAD + 2)} h${PAD} v${PAD} h${-PAD} Z`,
-            ),
-          )
-          .join(' ')}
-        className={lit ? `${bus.glyph} ${bus.glyphOnStroke}` : bus.glyph}
-      />
-      <text
-        x={gx + GLYPH + GLYPH_GAP}
-        y={y + BOX_H / 2 + 3}
-        className={lit ? diagram.nameOn : diagram.name}
-      >
-        {PADS}
-      </text>
-    </Pressable>
+    <path
+      d={[0, 1]
+        .flatMap(row =>
+          [0, 1].map(
+            col =>
+              `M${x + col * (PAD + 2)} ${y + row * (PAD + 2)} h${PAD} v${PAD} h${-PAD} Z`,
+          ),
+        )
+        .join(' ')}
+      className={diagram.glyphLine}
+    />
   )
 }
 
@@ -221,7 +190,7 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
   const rom = spec('sample ROM', xs[3]!, rowY(2), widths[3]!, BOX_H)
   const triggers = spec('triggers', xs[0]!, rowY(0), widths[0]!, BOX_H)
   const pattern = spec('pattern', xs[0]!, rowY(2), widths[0]!, BOX_H)
-  const padsW = boxWidth(PADS) + GLYPH + GLYPH_GAP
+  const padsW = glyphBoxWidth(PADS, GLYPH)
   const padsX = Math.round(shots.x + (shots.w - padsW) / 2)
   const picks = [triggers, shots, pattern, ...sources, dac, rom]
   const open = picks.find(b => b.id === pick.selected)
@@ -321,13 +290,18 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
                 d={`M${shots.x + shots.w / 2} ${TOP + BOX_H} V${triggers.y}`}
                 look={flow}
               />
-              <PadsNode
+              <GlyphBox
                 x={padsX}
                 y={TOP}
                 w={padsW}
+                h={BOX_H}
+                name={PADS}
+                help="the kit's level, tempo, swing, chance, tuning, decay and mute"
                 lit={r.touched(...PAD_KEYS)}
                 selected={pick.selected === PADS}
                 onSelect={() => pick.toggle(PADS)}
+                glyphW={GLYPH}
+                glyph={padsGlyph}
               />
               {picks.map(b => (
                 <BoxView

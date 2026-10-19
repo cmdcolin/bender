@@ -3,7 +3,13 @@ import { Fragment, useId, type ReactNode } from 'react'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import styles from './Diagram.module.css'
-import { boxHeight, LINE_H, rowShown, type BoxSpec } from './diagram.ts'
+import {
+  boxHeight,
+  boxWidth,
+  LINE_H,
+  rowShown,
+  type BoxSpec,
+} from './diagram.ts'
 import { ControlSlider } from './Slider.tsx'
 
 import type { ControlKey } from '../controls.ts'
@@ -239,6 +245,59 @@ export function Diagram({
   )
 }
 // CROSS_REPO_SYNC_END(diagram-parts)
+
+export const GLYPH_GAP = 4
+
+/** The width of a box holding a glyph `glyphW` wide beside its name. */
+export const glyphBoxWidth = (name: string, glyphW: number) =>
+  boxWidth(name) + glyphW + GLYPH_GAP
+
+// A box drawn with a small picture of its part beside the name, for a part a
+// player knows by sight: the keyboard, the pads, the batteries. The picture
+// draws in `glyphLine` and `glyphFill` and takes the name's colour.
+export function GlyphBox({
+  x,
+  y,
+  w,
+  h,
+  name,
+  help,
+  lit,
+  selected,
+  onSelect,
+  glyphW,
+  glyph,
+}: {
+  x: number
+  y: number
+  w: number
+  h: number
+  name: string
+  help: string
+  lit: boolean
+  selected: boolean
+  onSelect: () => void
+  glyphW: number
+  glyph: (x: number, y: number) => ReactNode
+}) {
+  const gx = x + boxWidth('') / 2
+  return (
+    <Pressable name={name} selected={selected} onSelect={onSelect}>
+      <title>{`${name} — ${help}`}</title>
+      <Plate x={x} y={y} w={w} h={h} touched={lit} selected={selected} />
+      <g className={lit ? styles.glyphOn : styles.glyph}>
+        {glyph(gx, y + h / 2)}
+      </g>
+      <text
+        x={gx + glyphW + GLYPH_GAP}
+        y={y + h / 2 + 3}
+        className={lit ? styles.nameOn : styles.name}
+      >
+        {name}
+      </text>
+    </Pressable>
+  )
+}
 
 // The rows of the box that is open: the same rows the panel draws anywhere
 // else, so a drag, a reset and a mod wire all work from here. A row still

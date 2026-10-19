@@ -3,25 +3,6 @@
   stroke: var(--border-hover);
 }
 
-.glyph {
-  fill: none;
-  stroke: var(--fg2);
-  stroke-width: 1;
-}
-
-.glyphKey {
-  fill: var(--fg2);
-}
-
-.glyphOn .glyph,
-.glyphOnStroke {
-  stroke: var(--accent);
-}
-
-.glyphOn .glyphKey {
-  fill: var(--accent);
-}
-
 .chipName,
 .chipNameOn {
   font-size: 9px;
