@@ -110,10 +110,6 @@ const putBackTitle = (group: Group, touched: number) =>
     ? `put all ${touched} of ${group.name}'s moved controls back where they booted — ctrl+z brings them again`
     : `${group.name} is already where it booted`
 
-// A control the panel has a reason to draw: one with something to act on, or one
-// your hand has already moved. A fault picks what happened to a wire nobody has
-// cut, and that row is a question about nothing — but a value you set and then
-// unwired is yours, and never vanishes out from under you.
 // Every control a stage draws as a row, its own and the ones it borrows for a
 // widget of its own — kept by name, because the rows measure themselves against
 // each other and the panel is rebuilt as the board travels.
@@ -130,6 +126,10 @@ function panelRows(group: Group): SliderDef[] {
   return rows
 }
 
+// A control the panel has a reason to draw: one with something to act on, or one
+// your hand has already moved. A fault picks what happened to a wire nobody has
+// cut, and that row is a question about nothing — but a value you set and then
+// unwired is yours, and never vanishes out from under you.
 function shown(def: SliderDef, c: Controls): boolean {
   return !def.needs || def.needs(c) || c[def.key] !== DEFAULT_CONTROLS[def.key]
 }
@@ -206,37 +206,73 @@ function StageVerbs({
         )
       : putBack(group, seconds)
   return (
+    <ScopeVerbs
+      scope={aim?.scope ?? group.name}
+      what={what}
+      seconds={seconds}
+      moved={moved}
+      rollTip={
+        aim
+          ? rollTipFor(aim.keys.length, what, group.name)
+          : group.editor?.kind === 'drums'
+            ? 'roll this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
+            : `roll every control in ${group.name} somewhere new and leave the rest of the board alone`
+      }
+      resetTip={aim ? resetTipFor(what, moved) : putBackTitle(group, touched)}
+      onRoll={roll}
+      onReset={reset}
+    />
+  )
+}
+
+const rollTipFor = (count: number, what: string, stage: string) =>
+  `Roll the ${count} controls under ${what} somewhere new and leave the rest of ${stage} where it stands.`
+
+const resetTipFor = (what: string, moved: number) =>
+  moved > 0
+    ? `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
+    : `${what} is already where it booted`
+
+// Roll, undo and reset for one scope of the board. The stage header and each
+// part's fold draw it, the fold in its smaller look.
+function ScopeVerbs({
+  scope,
+  what,
+  seconds,
+  moved,
+  rollTip,
+  resetTip,
+  onRoll,
+  onReset,
+  fold = false,
+}: {
+  scope: string
+  what: string
+  seconds: number
+  moved: number
+  rollTip: string
+  resetTip: string
+  onRoll: () => void
+  onReset: () => void
+  fold?: boolean
+}) {
+  const on = fold ? styles.partVerbReset : styles.reset
+  const off = fold ? styles.partOff : styles.verbOff
+  return (
     <>
-      <Tip
-        text={
-          aim
-            ? `Roll the ${aim.keys.length} controls under ${what} somewhere new and leave the rest of ${group.name} where it stands.`
-            : group.editor?.kind === 'drums'
-              ? 'roll this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
-              : `roll every control in ${group.name} somewhere new and leave the rest of the board alone`
-        }
-      >
-        <button className={styles.verb} onClick={roll}>
+      <Tip text={rollTip}>
+        <button
+          className={fold ? styles.partVerb : styles.verb}
+          onClick={onRoll}
+        >
           roll
         </button>
       </Tip>
-      <UndoRoll
-        scope={aim?.scope ?? group.name}
-        what={what}
-        seconds={seconds}
-      />
-      <Tip
-        text={
-          aim
-            ? moved > 0
-              ? `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
-              : `${what} is already where it booted`
-            : putBackTitle(group, touched)
-        }
-      >
+      <UndoRoll scope={scope} what={what} seconds={seconds} fold={fold} />
+      <Tip text={resetTip}>
         <button
-          className={moved > 0 ? styles.reset : styles.verbOff}
-          onClick={reset}
+          className={moved > 0 ? on : off}
+          onClick={onReset}
           disabled={moved === 0}
         >
           {moved > 0 ? `reset ${moved}` : 'reset'}
@@ -379,46 +415,29 @@ function PartVerbs({
   return (
     <div className={styles.cuts}>
       {verbs && (
-        <>
-          <Tip
-            text={`Roll the ${rows.length} controls under ${what} somewhere new and leave the rest of ${group.name} where it stands.`}
-          >
-            <button
-              className={styles.partVerb}
-              onClick={() =>
-                rollIn(
-                  scope,
-                  rollKeys(engine.controls.get(), keys, Math.random, true),
-                  seconds,
-                )
-              }
-            >
-              roll
-            </button>
-          </Tip>
-          <UndoRoll scope={scope} what={what} seconds={seconds} fold />
-          <Tip
-            text={
-              moved > 0
-                ? `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
-                : `${what} is already where it booted`
-            }
-          >
-            <button
-              className={moved > 0 ? styles.partVerbReset : styles.partOff}
-              disabled={moved === 0}
-              onClick={() =>
-                engine.morphTo(
-                  resetKeys(engine.controls.get(), keys),
-                  seconds,
-                  new Set(keys),
-                )
-              }
-            >
-              {moved > 0 ? `reset ${moved}` : 'reset'}
-            </button>
-          </Tip>
-        </>
+        <ScopeVerbs
+          fold
+          scope={scope}
+          what={what}
+          seconds={seconds}
+          moved={moved}
+          rollTip={rollTipFor(rows.length, what, group.name)}
+          resetTip={resetTipFor(what, moved)}
+          onRoll={() =>
+            rollIn(
+              scope,
+              rollKeys(engine.controls.get(), keys, Math.random, true),
+              seconds,
+            )
+          }
+          onReset={() =>
+            engine.morphTo(
+              resetKeys(engine.controls.get(), keys),
+              seconds,
+              new Set(keys),
+            )
+          }
+        />
       )}
       {shownCuts.map(cut => (
         <Tip
