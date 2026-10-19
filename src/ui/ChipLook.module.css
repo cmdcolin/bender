@@ -3,15 +3,17 @@
   margin-inline: auto;
 }
 
-.chips svg rect {
+/* Box frames are the rects drawn with a 3px corner. Tape, heads, glyphs and
+   hit areas keep their own fill. */
+.chips svg rect[rx='3'] {
   fill: var(--surface-raised);
 }
 
-.chips svg [role='button']:not([aria-pressed='true']):hover rect {
+.chips svg [role='button']:not([aria-pressed='true']):hover rect[rx='3'] {
   fill: color-mix(in srgb, var(--fg) 8%, var(--surface-raised));
 }
 
-.chips svg [aria-pressed='true'] rect {
+.chips svg [aria-pressed='true'] rect[rx='3'] {
   fill: color-mix(in srgb, var(--fg) 14%, var(--surface-raised));
 }
 

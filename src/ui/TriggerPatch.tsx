@@ -1,3 +1,4 @@
+import chipLook from './ChipLook.module.css'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import diagramStyles from './Diagram.module.css'
@@ -43,7 +44,7 @@ const OPENS = new Map<string, readonly ControlKey[]>([
 ])
 
 const BOX_W = 84
-const BOX_H = 26
+const BOX_H = 20
 const WIDTH = 420
 const LEFT_X = 4
 const RIGHT_X = WIDTH - 4 - BOX_W
@@ -56,7 +57,7 @@ const KEYS_MID = RIGHT_X + BOX_W / 2
 const CHIP_INSET = 24
 const CHIP_X = DRUM_MID + CHIP_INSET
 const CHIP_W = KEYS_MID - CHIP_INSET - CHIP_X
-const CHIP_H = 24
+const CHIP_H = 20
 const CHIP_TOP = TOP + BOX_H + 20
 const CHIP_PITCH = CHIP_H + 6
 const HEIGHT = CHIP_TOP + CHIPS.length * CHIP_PITCH - 6 + 6
@@ -160,7 +161,11 @@ export function TriggerPatch() {
           d={hit}
           fill="none"
           strokeWidth={9}
-          className={selected ? styles.hitOn : styles.hit}
+          className={
+            selected && !CHIPS.some(c => c.name === id)
+              ? styles.hitOn
+              : styles.hit
+          }
         />
         {drawn}
       </g>
@@ -174,13 +179,12 @@ export function TriggerPatch() {
         y={TOP}
         width={BOX_W}
         height={BOX_H}
-        rx={4}
-        fill="none"
+        rx={3}
         stroke="var(--border-hover)"
       />
       <text
         x={x + BOX_W / 2}
-        y={TOP + BOX_H / 2 + 4}
+        y={TOP + BOX_H / 2 + 3}
         textAnchor="middle"
         className={styles.label}
         fill="var(--fg)"
@@ -192,73 +196,75 @@ export function TriggerPatch() {
 
   return (
     <>
-      <svg
-        className={styles.diagram}
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {box(LEFT_X, 'Toy drums')}
-        {box(RIGHT_X, 'Toy keyboard')}
-
-        {press(
-          'kit → keys',
-          `M ${LEFT_X + BOX_W} ${UP_Y} H ${RIGHT_X}`,
-          bridge(
-            upOn,
-            KIT,
-            upTitle,
-            LEFT_X + BOX_W,
-            RIGHT_X,
-            UP_Y,
-            'kit plays keys',
-            UP_Y - 4,
-          ),
-        )}
-        {press(
-          'keys → kit',
-          `M ${RIGHT_X} ${DOWN_Y} H ${LEFT_X + BOX_W}`,
-          bridge(
-            downOn,
-            KIT,
-            downTitle,
-            RIGHT_X,
-            LEFT_X + BOX_W,
-            DOWN_Y,
-            'keys play kit',
-            DOWN_Y + 12,
-          ),
-        )}
-
-        <text
-          x={DRUM_MID + 5}
-          y={TOP + BOX_H + 14}
-          className={styles.tag}
-          fill="var(--fg3)"
+      <div className={chipLook.chips}>
+        <svg
+          className={styles.diagram}
+          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+          preserveAspectRatio="xMidYMid meet"
         >
-          kit hits
-        </text>
-        <text
-          x={KEYS_MID - 5}
-          y={TOP + BOX_H + 14}
-          textAnchor="end"
-          className={styles.tag}
-          fill="var(--fg3)"
-        >
-          keyboard notes
-        </text>
+          {box(LEFT_X, 'Toy drums')}
+          {box(RIGHT_X, 'Toy keyboard')}
 
-        {[false, true].flatMap(live =>
-          machines
-            .filter(m => m.struckOn === live)
-            .map(m => press(`kit → ${m.name}`, m.strike.hit, m.strike.drawn)),
-        )}
-        {[false, true].flatMap(live =>
-          machines
-            .filter(m => !m.gateCut === live)
-            .map(m => press(`keys → ${m.name}`, m.gate.hit, m.gate.drawn)),
-        )}
-        {machines.map(m => press(m.name, m.box.hit, m.box.drawn))}
-      </svg>
+          {press(
+            'kit → keys',
+            `M ${LEFT_X + BOX_W} ${UP_Y} H ${RIGHT_X}`,
+            bridge(
+              upOn,
+              KIT,
+              upTitle,
+              LEFT_X + BOX_W,
+              RIGHT_X,
+              UP_Y,
+              'kit plays keys',
+              UP_Y - 4,
+            ),
+          )}
+          {press(
+            'keys → kit',
+            `M ${RIGHT_X} ${DOWN_Y} H ${LEFT_X + BOX_W}`,
+            bridge(
+              downOn,
+              KIT,
+              downTitle,
+              RIGHT_X,
+              LEFT_X + BOX_W,
+              DOWN_Y,
+              'keys play kit',
+              DOWN_Y + 12,
+            ),
+          )}
+
+          <text
+            x={DRUM_MID + 5}
+            y={TOP + BOX_H + 14}
+            className={styles.tag}
+            fill="var(--fg3)"
+          >
+            kit hits
+          </text>
+          <text
+            x={KEYS_MID - 5}
+            y={TOP + BOX_H + 14}
+            textAnchor="end"
+            className={styles.tag}
+            fill="var(--fg3)"
+          >
+            keyboard notes
+          </text>
+
+          {[false, true].flatMap(live =>
+            machines
+              .filter(m => m.struckOn === live)
+              .map(m => press(`kit → ${m.name}`, m.strike.hit, m.strike.drawn)),
+          )}
+          {[false, true].flatMap(live =>
+            machines
+              .filter(m => !m.gateCut === live)
+              .map(m => press(`keys → ${m.name}`, m.gate.hit, m.gate.drawn)),
+          )}
+          {machines.map(m => press(m.name, m.box.hit, m.box.drawn))}
+        </svg>
+      </div>
       {!pick.selected && (
         <p className={styles.hint}>
           Press a wire to set it, or a machine to set both of its wires.
@@ -343,13 +349,12 @@ function machineParts(chip: (typeof CHIPS)[number], top: number, code: string) {
           y={top}
           width={CHIP_W}
           height={CHIP_H}
-          rx={4}
-          fill="var(--bg)"
+          rx={3}
           stroke="var(--border-hover)"
         />
         <text
           x={CHIP_X + CHIP_W / 2}
-          y={mid + 4}
+          y={mid + 3}
           textAnchor="middle"
           className={styles.label}
           fill={played ? 'var(--fg)' : OFF}

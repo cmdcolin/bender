@@ -1,4 +1,5 @@
 import { cabDb, stackDb } from '../dsp/stages/amp.ts'
+import chip from './ChipLook.module.css'
 import styles from './Diagram.module.css'
 import {
   boxHeight,
@@ -116,90 +117,97 @@ export function AmpPathDiagram() {
   const howling = r.value('ampMicro') > 0
   return (
     <>
-      <Diagram
-        width={WIDTH}
-        height={PLOT.bottom + 18}
-        label="tube amp signal path and tone"
-      >
-        {arrow => (
-          <>
-            {boxes.map((b, i) => (
-              <Wire
-                key={b.name}
-                arrow={arrow}
-                d={`M${b.x + b.w} ${MID} H${boxes[i + 1]?.x ?? WIDTH - 2}`}
-                look={off ? 'plain' : 'on'}
-              />
-            ))}
-            <Wire
-              arrow={arrow}
-              d={`M${speaker.x + speaker.w / 2} ${top} V${RETURN_Y} H${boxW / 2} V${top}`}
-              look={howling ? 'alarm' : 'dash'}
-            />
-            <Label x={WIDTH / 2} y={RETURN_Y - 1} anchor="middle" on={howling}>
-              microphonic return
-            </Label>
-            {boxes.map(b => (
-              <BoxView
-                key={b.name}
-                box={b}
-                selected={b.id === pick.selected}
-                onSelect={pick.toggle}
-              />
-            ))}
-            {[0, -12, -24].map(db => (
-              <g key={db}>
-                <line
-                  x1={PLOT.left}
-                  x2={PLOT.right}
-                  y1={plotY(db)}
-                  y2={plotY(db)}
-                  className={styles.grid}
+      <div className={chip.chips}>
+        <Diagram
+          width={WIDTH}
+          height={PLOT.bottom + 18}
+          label="tube amp signal path and tone"
+        >
+          {arrow => (
+            <>
+              {boxes.map((b, i) => (
+                <Wire
+                  key={b.name}
+                  arrow={arrow}
+                  d={`M${b.x + b.w} ${MID} H${boxes[i + 1]?.x ?? WIDTH - 2}`}
+                  look={off ? 'plain' : 'on'}
                 />
-                <Label x={PLOT.left - 4} y={plotY(db) + 3} anchor="end">
-                  {db === 0 ? '0 dB' : String(db)}
-                </Label>
-              </g>
-            ))}
-            {[100, 1000, 10000].map(hz => (
+              ))}
+              <Wire
+                arrow={arrow}
+                d={`M${speaker.x + speaker.w / 2} ${top} V${RETURN_Y} H${boxW / 2} V${top}`}
+                look={howling ? 'alarm' : 'dash'}
+              />
               <Label
-                key={hz}
-                x={plotX(hz)}
-                y={PLOT.bottom + 12}
+                x={WIDTH / 2}
+                y={RETURN_Y - 1}
+                anchor="middle"
+                on={howling}
+              >
+                microphonic return
+              </Label>
+              {boxes.map(b => (
+                <BoxView
+                  key={b.name}
+                  box={b}
+                  selected={b.id === pick.selected}
+                  onSelect={pick.toggle}
+                />
+              ))}
+              {[0, -12, -24].map(db => (
+                <g key={db}>
+                  <line
+                    x1={PLOT.left}
+                    x2={PLOT.right}
+                    y1={plotY(db)}
+                    y2={plotY(db)}
+                    className={styles.grid}
+                  />
+                  <Label x={PLOT.left - 4} y={plotY(db) + 3} anchor="end">
+                    {db === 0 ? '0 dB' : String(db)}
+                  </Label>
+                </g>
+              ))}
+              {[100, 1000, 10000].map(hz => (
+                <Label
+                  key={hz}
+                  x={plotX(hz)}
+                  y={PLOT.bottom + 12}
+                  anchor="middle"
+                >
+                  {hz >= 1000 ? `${hz / 1000} kHz` : `${hz} Hz`}
+                </Label>
+              ))}
+              <path
+                d={curve(hz => cabDb(cab, hz))}
+                className={styles.curveQuiet}
+              />
+              <path
+                d={curve(stack)}
+                className={
+                  r.touched('ampBass', 'ampMid', 'ampTreble', 'ampVoice')
+                    ? styles.curveOn
+                    : styles.curve
+                }
+                opacity={off ? 0.55 : 1}
+              />
+              <Label x={PLOT.right} y={plotY(stack(HZ.high)) - 4} anchor="end">
+                tone stack
+              </Label>
+              <Label
+                x={Math.min(
+                  Math.max(plotX(loudest), PLOT.left + 24),
+                  PLOT.right - 90,
+                )}
+                y={plotY(cabDb(cab, loudest)) - 4}
                 anchor="middle"
               >
-                {hz >= 1000 ? `${hz / 1000} kHz` : `${hz} Hz`}
+                speaker
               </Label>
-            ))}
-            <path
-              d={curve(hz => cabDb(cab, hz))}
-              className={styles.curveQuiet}
-            />
-            <path
-              d={curve(stack)}
-              className={
-                r.touched('ampBass', 'ampMid', 'ampTreble', 'ampVoice')
-                  ? styles.curveOn
-                  : styles.curve
-              }
-              opacity={off ? 0.55 : 1}
-            />
-            <Label x={PLOT.right} y={plotY(stack(HZ.high)) - 4} anchor="end">
-              tone stack
-            </Label>
-            <Label
-              x={Math.min(
-                Math.max(plotX(loudest), PLOT.left + 24),
-                PLOT.right - 90,
-              )}
-              y={plotY(cabDb(cab, loudest)) - 4}
-              anchor="middle"
-            >
-              speaker
-            </Label>
-          </>
-        )}
-      </Diagram>
+            </>
+          )}
+        </Diagram>
+      </div>
       <BoxRows keys={open?.keys} />
     </>
   )

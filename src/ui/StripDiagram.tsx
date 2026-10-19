@@ -1,3 +1,4 @@
+import chip from './ChipLook.module.css'
 import { type Track } from './controls/index.ts'
 import {
   boxHeight,
@@ -169,63 +170,69 @@ export function StripDiagram({ track }: { track: Track }) {
 
   return (
     <>
-      <Diagram
-        width={BUS_X + BUS_W + 2}
-        height={RETURN_Y + 4}
-        label={`track ${track} signal path`}
-      >
-        {arrow => (
-          <>
-            {[IN_X, TRIM_X, EQ_X, FADER_X, PAN_X].map(x => (
-              <Wire key={x} arrow={arrow} d={`M${x + W} ${MID} H${x + STEP}`} />
-            ))}
-            <Wire
-              arrow={arrow}
-              d={`M${centre(EQ_X)} ${TOP + BOX_H} V${BOTTOM}`}
-              look={recording}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${EQ_X + W} ${LOW_MID} H${LOOP_X}`}
-              look={recording}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${LOOP_X + LOOP_W} ${LOW_MID} H${CUE_X}`}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${centre(CUE_X)} ${BOTTOM} V${(TOP + BOX_H + BOTTOM) / 2} H${centre(PAN_X)} V${TOP + BOX_H}`}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${LOOP_X + LOOP_W / 2} ${BOTTOM + BOX_H} V${RETURN_Y} H${centre(IN_X)} V${TOP + BOX_H}`}
-              look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
-            />
-            <Wire arrow={arrow} d={`M${centre(FADER_X)} ${TOP} V6`} />
-            <Label
-              x={centre(FADER_X) + 6}
-              y={13}
-              on={val('Send') > 0}
-              pick={{
-                id: 'send',
-                selected: pick.selected === 'send',
-                onSelect: pick.toggle,
-              }}
-            >
-              aux send
-            </Label>
-            {boxes.map(b => (
-              <BoxView
-                key={b.name}
-                box={b}
-                selected={b.id === pick.selected}
-                onSelect={pick.toggle}
+      <div className={chip.chips}>
+        <Diagram
+          width={BUS_X + BUS_W + 2}
+          height={RETURN_Y + 4}
+          label={`track ${track} signal path`}
+        >
+          {arrow => (
+            <>
+              {[IN_X, TRIM_X, EQ_X, FADER_X, PAN_X].map(x => (
+                <Wire
+                  key={x}
+                  arrow={arrow}
+                  d={`M${x + W} ${MID} H${x + STEP}`}
+                />
+              ))}
+              <Wire
+                arrow={arrow}
+                d={`M${centre(EQ_X)} ${TOP + BOX_H} V${BOTTOM}`}
+                look={recording}
               />
-            ))}
-          </>
-        )}
-      </Diagram>
+              <Wire
+                arrow={arrow}
+                d={`M${EQ_X + W} ${LOW_MID} H${LOOP_X}`}
+                look={recording}
+              />
+              <Wire
+                arrow={arrow}
+                d={`M${LOOP_X + LOOP_W} ${LOW_MID} H${CUE_X}`}
+              />
+              <Wire
+                arrow={arrow}
+                d={`M${centre(CUE_X)} ${BOTTOM} V${(TOP + BOX_H + BOTTOM) / 2} H${centre(PAN_X)} V${TOP + BOX_H}`}
+              />
+              <Wire
+                arrow={arrow}
+                d={`M${LOOP_X + LOOP_W / 2} ${BOTTOM + BOX_H} V${RETURN_Y} H${centre(IN_X)} V${TOP + BOX_H}`}
+                look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
+              />
+              <Wire arrow={arrow} d={`M${centre(FADER_X)} ${TOP} V6`} />
+              <Label
+                x={centre(FADER_X) + 6}
+                y={13}
+                on={val('Send') > 0}
+                pick={{
+                  id: 'send',
+                  selected: pick.selected === 'send',
+                  onSelect: pick.toggle,
+                }}
+              >
+                aux send
+              </Label>
+              {boxes.map(b => (
+                <BoxView
+                  key={b.name}
+                  box={b}
+                  selected={b.id === pick.selected}
+                  onSelect={pick.toggle}
+                />
+              ))}
+            </>
+          )}
+        </Diagram>
+      </div>
       <BoxRows keys={open?.keys} note={open?.note} />
     </>
   )

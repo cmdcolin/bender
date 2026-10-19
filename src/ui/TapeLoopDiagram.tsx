@@ -1,4 +1,5 @@
 import { HEAD_CHOICES } from '../dsp/stages/tapeDelay.ts'
+import chip from './ChipLook.module.css'
 import styles from './Diagram.module.css'
 import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import {
@@ -137,147 +138,149 @@ export function TapeLoopDiagram() {
   })
   return (
     <>
-      <Diagram width={WIDTH} height={HEIGHT} label="tape delay signal path">
-        {arrow => (
-          <>
-            <Wire
-              d={`M${TONE_MID} ${BOX_TOP} V${FEEDBACK_Y} H${FEEDBACK_MID + FEEDBACK_GAP / 2}`}
-              look={returning}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${FEEDBACK_MID - FEEDBACK_GAP / 2} ${FEEDBACK_Y} H${JOIN_X} V${AXIS_Y - 1}`}
-              look={returning}
-            />
-            <Label
-              x={FEEDBACK_MID}
-              y={FEEDBACK_Y + 3}
-              anchor="middle"
-              on={r.touched('dlyFb')}
-            >
-              feedback
-            </Label>
-            <BoxView
-              selected={pick.selected === 'send'}
-              onSelect={pick.toggle}
-              box={{
-                id: 'send',
-                keys: OPENS.send,
-                x: 4,
-                y: BOX_TOP,
-                w: SEND_W,
-                name: 'send',
-                off: !flowing,
-                touched: r.touched('dlySend'),
-                help: 'How much of the whole board goes onto the tape.',
-              }}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${4 + SEND_W} ${AXIS_Y} H${REC_X} V${TAPE_Y - HEAD - 1}`}
-              look={flow}
-            />
-            {lit.map(n => (
+      <div className={chip.chips}>
+        <Diagram width={WIDTH} height={HEIGHT} label="tape delay signal path">
+          {arrow => (
+            <>
               <Wire
-                key={n}
-                d={`M${headX(n)} ${TAPE_Y - HEAD} V${AXIS_Y}`}
+                d={`M${TONE_MID} ${BOX_TOP} V${FEEDBACK_Y} H${FEEDBACK_MID + FEEDBACK_GAP / 2}`}
+                look={returning}
+              />
+              <Wire
+                arrow={arrow}
+                d={`M${FEEDBACK_MID - FEEDBACK_GAP / 2} ${FEEDBACK_Y} H${JOIN_X} V${AXIS_Y - 1}`}
+                look={returning}
+              />
+              <Label
+                x={FEEDBACK_MID}
+                y={FEEDBACK_Y + 3}
+                anchor="middle"
+                on={r.touched('dlyFb')}
+              >
+                feedback
+              </Label>
+              <BoxView
+                selected={pick.selected === 'send'}
+                onSelect={pick.toggle}
+                box={{
+                  id: 'send',
+                  keys: OPENS.send,
+                  x: 4,
+                  y: BOX_TOP,
+                  w: SEND_W,
+                  name: 'send',
+                  off: !flowing,
+                  touched: r.touched('dlySend'),
+                  help: 'How much of the whole board goes onto the tape.',
+                }}
+              />
+              <Wire
+                arrow={arrow}
+                d={`M${4 + SEND_W} ${AXIS_Y} H${REC_X} V${TAPE_Y - HEAD - 1}`}
                 look={flow}
               />
-            ))}
-            <Wire
-              arrow={arrow}
-              d={`M${headX(first)} ${AXIS_Y} H${TONE_X - 1}`}
-              look={flow}
-            />
-            <BoxView
-              selected={pick.selected === 'loop'}
-              onSelect={pick.toggle}
-              box={{
-                id: 'loop',
-                keys: OPENS.loop,
-                x: TONE_X,
-                y: BOX_TOP,
-                w: TONE_W,
-                name: 'tone',
-                off: !flowing,
-                touched: r.touched(...OPENS.loop),
-                help: 'What every repeat passes through on its way out and back round: tone, the loop filter, the ring modulator and the lamp.',
-              }}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${TONE_X + TONE_W} ${AXIS_Y} H${OUT_X}`}
-              look={flowing && r.value('dlyMix') > 0 ? 'on' : 'plain'}
-            />
-            <Label
-              x={OUT_X}
-              y={AXIS_Y - 5}
-              anchor="end"
-              on={r.touched('dlyMix')}
-            >
-              echo
-            </Label>
-            <TapeLine d={LOOP} />
-            <path
-              d={`M${(LOOP_LEFT + LOOP_RIGHT) / 2 + 4} ${TAPE_BOTTOM - 3.5} l-8 3.5 l8 3.5 z`}
-              className={styles.head}
-            />
-            {flowing && (
-              <path
-                d={`M${REC_X} ${TAPE_Y} H${headX(last)}`}
-                className={styles.tapeOn}
-              />
-            )}
-            <Head x={REC_X} on={flowing} />
-            <Label x={REC_X} y={INSIDE_Y} anchor="middle">
-              rec
-            </Label>
-            <Pressable {...pickOf('heads')}>
-              <title>heads — Which play heads the echo comes off.</title>
-              {[1, 2, 3].map(n => (
-                <Head key={n} x={headX(n)} on={lit.includes(n)} />
+              {lit.map(n => (
+                <Wire
+                  key={n}
+                  d={`M${headX(n)} ${TAPE_Y - HEAD} V${AXIS_Y}`}
+                  look={flow}
+                />
               ))}
-              <Label
-                x={headX(2)}
-                y={PICKS_Y}
-                anchor="middle"
-                on={r.touched('dlyHeads')}
-              >
-                heads
-              </Label>
-              <rect
-                x={headX(1) - 15}
-                y={TAPE_Y - HEAD - 4}
-                width={HEAD_GAP * 2 + 30}
-                height={PICKS_Y - TAPE_Y + HEAD + 6}
-                className={styles.hit}
+              <Wire
+                arrow={arrow}
+                d={`M${headX(first)} ${AXIS_Y} H${TONE_X - 1}`}
+                look={flow}
               />
-            </Pressable>
-            <Pressable {...pickOf('transport')}>
-              <title>
-                transport — The motor and the splice: wow, flutter, brake, the
-                erase head and the join in the loop.
-              </title>
-              <Capstan x={CAPSTAN_X} y={TAPE_Y} />
-              <Label
-                x={CAPSTAN_X}
-                y={PICKS_Y}
-                anchor="middle"
-                on={r.touched(...OPENS.transport)}
-              >
-                transport
-              </Label>
-              <rect
-                x={CAPSTAN_X - 14}
-                y={TAPE_Y - 16}
-                width={28}
-                height={PICKS_Y - TAPE_Y + 18}
-                className={styles.hit}
+              <BoxView
+                selected={pick.selected === 'loop'}
+                onSelect={pick.toggle}
+                box={{
+                  id: 'loop',
+                  keys: OPENS.loop,
+                  x: TONE_X,
+                  y: BOX_TOP,
+                  w: TONE_W,
+                  name: 'tone',
+                  off: !flowing,
+                  touched: r.touched(...OPENS.loop),
+                  help: 'What every repeat passes through on its way out and back round: tone, the loop filter, the ring modulator and the lamp.',
+                }}
               />
-            </Pressable>
-          </>
-        )}
-      </Diagram>
+              <Wire
+                arrow={arrow}
+                d={`M${TONE_X + TONE_W} ${AXIS_Y} H${OUT_X}`}
+                look={flowing && r.value('dlyMix') > 0 ? 'on' : 'plain'}
+              />
+              <Label
+                x={OUT_X}
+                y={AXIS_Y - 5}
+                anchor="end"
+                on={r.touched('dlyMix')}
+              >
+                echo
+              </Label>
+              <TapeLine d={LOOP} />
+              <path
+                d={`M${(LOOP_LEFT + LOOP_RIGHT) / 2 + 4} ${TAPE_BOTTOM - 3.5} l-8 3.5 l8 3.5 z`}
+                className={styles.head}
+              />
+              {flowing && (
+                <path
+                  d={`M${REC_X} ${TAPE_Y} H${headX(last)}`}
+                  className={styles.tapeOn}
+                />
+              )}
+              <Head x={REC_X} on={flowing} />
+              <Label x={REC_X} y={INSIDE_Y} anchor="middle">
+                rec
+              </Label>
+              <Pressable {...pickOf('heads')}>
+                <title>heads — Which play heads the echo comes off.</title>
+                {[1, 2, 3].map(n => (
+                  <Head key={n} x={headX(n)} on={lit.includes(n)} />
+                ))}
+                <Label
+                  x={headX(2)}
+                  y={PICKS_Y}
+                  anchor="middle"
+                  on={r.touched('dlyHeads')}
+                >
+                  heads
+                </Label>
+                <rect
+                  x={headX(1) - 15}
+                  y={TAPE_Y - HEAD - 4}
+                  width={HEAD_GAP * 2 + 30}
+                  height={PICKS_Y - TAPE_Y + HEAD + 6}
+                  className={styles.hit}
+                />
+              </Pressable>
+              <Pressable {...pickOf('transport')}>
+                <title>
+                  transport — The motor and the splice: wow, flutter, brake, the
+                  erase head and the join in the loop.
+                </title>
+                <Capstan x={CAPSTAN_X} y={TAPE_Y} />
+                <Label
+                  x={CAPSTAN_X}
+                  y={PICKS_Y}
+                  anchor="middle"
+                  on={r.touched(...OPENS.transport)}
+                >
+                  transport
+                </Label>
+                <rect
+                  x={CAPSTAN_X - 14}
+                  y={TAPE_Y - 16}
+                  width={28}
+                  height={PICKS_Y - TAPE_Y + 18}
+                  className={styles.hit}
+                />
+              </Pressable>
+            </>
+          )}
+        </Diagram>
+      </div>
       <BoxRows
         keys={Object.entries(OPENS).find(([id]) => id === pick.selected)?.[1]}
       />

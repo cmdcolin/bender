@@ -1,3 +1,4 @@
+import chip from './ChipLook.module.css'
 import {
   boxHeight,
   boxWidth,
@@ -96,79 +97,88 @@ export function FeedbackLoops() {
 
   return (
     <>
-      <Diagram
-        left={LEFT}
-        width={WIDTH}
-        height={HEIGHT}
-        label="feedback bus signal path"
-      >
-        {arrow => (
-          <>
-            {STRIPS.map((s, i) => {
-              const look = r.value(s.amt) > 0 ? 'on' : 'plain'
-              return (
-                <g key={s.amt}>
-                  <Wire d={`M${TAP_X} ${rowMid(i)} H${BOX_X}`} arrow={arrow} />
-                  <Wire
-                    d={`M${BOX_X + BOX_W} ${rowMid(i)} H${BUS_X}`}
-                    look={look}
-                  />
-                </g>
-              )
-            })}
-            <Wire d={`M${BUS_X} ${rowMid(0)} V${rowMid(2)}`} />
-            <Wire d={`M${TAP_X} ${rowMid(0)} V${rowMid(2)}`} />
-            <Label x={TAP_X} y={rowMid(0) - 6} anchor="middle">
-              tap
-            </Label>
-            <Wire d={`M${BUS_X} ${MID} H${AMPS_X}`} arrow={arrow} look={flow} />
-            <Wire
-              d={`M${AMPS_X + AMPS_W} ${MID} H${DEST_X}`}
-              arrow={arrow}
-              look={flow}
-            />
-            {boxes.map(b => (
-              <BoxView
-                key={b.id}
-                box={b}
-                selected={b.id === pick.selected}
-                onSelect={pick.toggle}
+      <div className={chip.chips}>
+        <Diagram
+          left={LEFT}
+          width={WIDTH}
+          height={HEIGHT}
+          label="feedback bus signal path"
+        >
+          {arrow => (
+            <>
+              {STRIPS.map((s, i) => {
+                const look = r.value(s.amt) > 0 ? 'on' : 'plain'
+                return (
+                  <g key={s.amt}>
+                    <Wire
+                      d={`M${TAP_X} ${rowMid(i)} H${BOX_X}`}
+                      arrow={arrow}
+                    />
+                    <Wire
+                      d={`M${BOX_X + BOX_W} ${rowMid(i)} H${BUS_X}`}
+                      look={look}
+                    />
+                  </g>
+                )
+              })}
+              <Wire d={`M${BUS_X} ${rowMid(0)} V${rowMid(2)}`} />
+              <Wire d={`M${TAP_X} ${rowMid(0)} V${rowMid(2)}`} />
+              <Label x={TAP_X} y={rowMid(0) - 6} anchor="middle">
+                tap
+              </Label>
+              <Wire
+                d={`M${BUS_X} ${MID} H${AMPS_X}`}
+                arrow={arrow}
+                look={flow}
               />
-            ))}
-            {crossed && (
-              <>
-                <path
-                  d={bend(0, 1, 20)}
-                  className={styles.cross}
-                  style={arcStyle}
+              <Wire
+                d={`M${AMPS_X + AMPS_W} ${MID} H${DEST_X}`}
+                arrow={arrow}
+                look={flow}
+              />
+              {boxes.map(b => (
+                <BoxView
+                  key={b.id}
+                  box={b}
+                  selected={b.id === pick.selected}
+                  onSelect={pick.toggle}
                 />
-                <path
-                  d={bend(1, 2, 20)}
-                  className={styles.cross}
-                  style={arcStyle}
-                />
-                <path
-                  d={bend(2, 0, 34)}
-                  className={styles.cross}
-                  style={arcStyle}
-                />
-                <Label
-                  x={-50}
-                  y={MID + 3}
-                  on={r.touched('fbCross')}
-                  pick={{
-                    id: 'cross',
-                    selected: pick.selected === 'cross',
-                    onSelect: pick.toggle,
-                  }}
-                >
-                  cross
-                </Label>
-              </>
-            )}
-          </>
-        )}
-      </Diagram>
+              ))}
+              {crossed && (
+                <>
+                  <path
+                    d={bend(0, 1, 20)}
+                    className={styles.cross}
+                    style={arcStyle}
+                  />
+                  <path
+                    d={bend(1, 2, 20)}
+                    className={styles.cross}
+                    style={arcStyle}
+                  />
+                  <path
+                    d={bend(2, 0, 34)}
+                    className={styles.cross}
+                    style={arcStyle}
+                  />
+                  <Label
+                    x={-50}
+                    y={MID + 3}
+                    on={r.touched('fbCross')}
+                    pick={{
+                      id: 'cross',
+                      selected: pick.selected === 'cross',
+                      onSelect: pick.toggle,
+                    }}
+                  >
+                    cross
+                  </Label>
+                </>
+              )}
+            </>
+          )}
+        </Diagram>
+      </div>
       <BoxRows keys={open} />
     </>
   )
