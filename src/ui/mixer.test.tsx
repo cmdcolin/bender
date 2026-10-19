@@ -25,8 +25,16 @@ const mixBus = () => {
 const openDesk = () =>
   render(<OpenGroup group={mixBus()} onClose={() => {}} seconds={0} />)
 
+test('the desk folds away the machines that are not on the board', () => {
+  openDesk()
+  expect(screen.queryByRole('slider', { name: 'Glint' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: /off the board/ }))
+  expect(screen.getByRole('slider', { name: 'Glint' })).toBeTruthy()
+})
+
 test('every source fader is on the desk, under the name of its machine', () => {
   openDesk()
+  fireEvent.click(screen.getByRole('button', { name: /off the board/ }))
   for (const { name } of CHANNELS)
     expect(screen.getByRole('slider', { name })).toBeTruthy()
   // Not under the name it carries on its own panel: six rows reading *Level* is
@@ -37,6 +45,7 @@ test('every source fader is on the desk, under the name of its machine', () => {
 
 test('a fader moved on the desk is the machine’s own control', () => {
   openDesk()
+  fireEvent.click(screen.getByRole('button', { name: /off the board/ }))
   fireEvent.change(screen.getByRole('slider', { name: 'Glint' }), {
     target: { value: '800' },
   })

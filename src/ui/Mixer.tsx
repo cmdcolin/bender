@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { TAP_BUS } from '../engine/params.ts'
 import { CHANNELS, sliderFor } from './controls/index.ts'
+import { useBoardValue } from './ControlsContext.ts'
+import { shownOn } from './fitted.ts'
 import styles from './Mixer.module.css'
 import { ControlSlider } from './Slider.tsx'
 import { Tip } from './Tip.tsx'
@@ -46,6 +48,13 @@ const position = (v: number) =>
 export function Mixer() {
   const bars = useRef<(HTMLSpanElement | null)[]>([])
   const readout = useRef<HTMLSpanElement>(null)
+  const [all, setAll] = useState(false)
+  const onMap = useBoardValue(c =>
+    ROWS.filter(r => shownOn(c).has(r.name))
+      .map(r => r.name)
+      .join('|'),
+  ).split('|')
+  const away = ROWS.filter(r => !onMap.includes(r.name))
 
   useEffect(() => {
     let raf = 0
@@ -111,12 +120,24 @@ export function Mixer() {
 
   return (
     <>
-      {ROWS.map(({ def, name }, i) => (
-        <div key={def.key} className={styles.strip}>
-          <ControlSlider def={def} label={name} />
-          <span className={styles.track}>{bar(i)}</span>
-        </div>
-      ))}
+      {ROWS.map(({ def, name }, i) =>
+        all || onMap.includes(name) ? (
+          <div key={def.key} className={styles.strip}>
+            <ControlSlider def={def} label={name} />
+            <span className={styles.track}>{bar(i)}</span>
+          </div>
+        ) : null,
+      )}
+      {away.length > 0 && (
+        <button
+          type="button"
+          className={styles.more}
+          aria-expanded={all}
+          onClick={() => setAll(!all)}
+        >
+          {all ? '▴ hide' : '▾ show'} {away.length} off the board
+        </button>
+      )}
       <Tip text="What the channels above add up to, before a single bend — read where the faders meet rather than at the output, so it says which of them is eating the headroom rather than what the limiter did about it.">
         <div className={styles.bus}>
           <span className={styles.busName}>mix bus</span>

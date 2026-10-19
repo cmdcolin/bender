@@ -28,6 +28,11 @@
   transform-origin: left center;
 }
 
+.more {
+  composes: actionQuiet from './button.module.css';
+  margin: var(--space-xs) 0;
+}
+
 /* The sum of the strips above it, which has no fader of its own: what the bus
    is turned up to is the seven faders, and what it is doing is this. Its own
    knob is the row under it. */
