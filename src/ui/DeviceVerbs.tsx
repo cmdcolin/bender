@@ -97,13 +97,10 @@ function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
         ),
         `Turning ${players.join(' and ')} down silences them.`,
       ].join(' ')
-  const label = where.includes(stage)
-    ? 'still sounding'
-    : `heard on ${players[0]}${players.length > 1 ? ` +${players.length - 1}` : ''}`
   return (
     <Tip text={text}>
       <span className={styles.heard} role="status" tabIndex={0}>
-        {atZero ? 'level 0' : 'muted'} · {label}
+        still heard!
       </span>
     </Tip>
   )

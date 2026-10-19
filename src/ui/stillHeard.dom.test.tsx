@@ -69,9 +69,7 @@ test('the header names the machine that still plays the toy', () => {
     engine.sounding.set(FM)
     engine.chipNotes.set(new Set([60]))
   })
-  expect(screen.getByRole('status').textContent).toBe(
-    'level 0 · heard on FM chip',
-  )
+  expect(screen.getByRole('status').textContent).toBe('still heard!')
 })
 
 test('a toy pulled to zero mid-note stays unflagged while its needle falls', () => {
@@ -87,7 +85,5 @@ test('the header says so when the toy at zero still reads on its own meter', () 
   const taps = new Float32Array(engine.meter.get().taps.length)
   taps[CHANNELS.find(c => c.name === 'Toy keyboard')!.tap] = 0.2
   act(() => engine.meter.set({ ...engine.meter.get(), taps }))
-  expect(screen.getByRole('status').textContent).toBe(
-    'level 0 · still sounding',
-  )
+  expect(screen.getByRole('status').textContent).toBe('still heard!')
 })
