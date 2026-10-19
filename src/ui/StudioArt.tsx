@@ -81,7 +81,7 @@ export function Cassette({
         />
         <line x1="15" y1="30" x2="104" y2="30" className={styles.ruling} />
         <text x="15" y="29" className={styles.writing}>
-          side A: the whole session
+          the whole session
         </text>
         <rect
           x="18"
