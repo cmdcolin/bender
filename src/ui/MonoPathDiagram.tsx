@@ -200,7 +200,6 @@ export function MonoPathDiagram({
                     from={drawn}
                     to={{ x: 0, w: WIDTH }}
                     top={drawn.y + BOX_H}
-                    knee={HEIGHT}
                     bottom={HEIGHT + CONE_H}
                     title={`zoom: ${drawn.name}`}
                   />

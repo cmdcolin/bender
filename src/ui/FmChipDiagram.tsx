@@ -182,7 +182,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     ? {
         from: { x: mod.x, w: span },
         to: OPERATORS_SPAN,
-        top: TOP + ROW + BOX_H,
+        top: TOP + ROW * 2 + BOX_H,
         title: 'zoom: operators',
       }
     : close && nested
@@ -190,7 +190,6 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
           from: nested,
           to: { x: 0, w: WIDTH },
           top: nested.y + BOX_H,
-          knee: feet,
           title: `zoom: ${nested.name}`,
         }
       : null
