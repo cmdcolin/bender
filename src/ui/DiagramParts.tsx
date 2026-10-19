@@ -264,6 +264,28 @@ export function Diagram({
 }
 // CROSS_REPO_SYNC_END(diagram-parts)
 
+// A junction where wires meet, or a wire soldered on where the board had none.
+export function Dot({
+  x,
+  y,
+  r = 1.6,
+  look = 'plain',
+}: {
+  x: number
+  y: number
+  r?: number
+  look?: 'plain' | 'alarm'
+}) {
+  return (
+    <circle
+      cx={x}
+      cy={y}
+      r={r}
+      className={look === 'alarm' ? styles.dotAlarm : styles.dot}
+    />
+  )
+}
+
 // A wire and its name drawn as one button that opens the box holding the knob
 // the wire stands for. `hit` is the wire's path, drawn again as a wide
 // transparent stroke so a thin wire is easy to press.

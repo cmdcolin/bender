@@ -1,4 +1,3 @@
-import bus from './BusDiagram.module.css'
 import chip from './ChipLook.module.css'
 import { GROUPS } from './controls/index.ts'
 import diagram from './Diagram.module.css'
@@ -15,6 +14,7 @@ import {
   BoxRows,
   BoxView,
   Diagram,
+  Dot,
   GlyphBox,
   Label,
   Wire,
@@ -130,7 +130,7 @@ export function SupplyDiagram() {
               <Wire arrow={arrow} d={`M${watchX} ${mid} V${LOW}`} />
               <Wire arrow={arrow} d={`M${biteX} ${LOW} V${mid}`} />
               {[watchX, biteX].map(x => (
-                <circle key={x} cx={x} cy={mid} r={1.6} className={bus.joint} />
+                <Dot key={x} x={x} y={mid} />
               ))}
               <GlyphBox
                 x={0}

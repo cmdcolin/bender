@@ -8,7 +8,7 @@ import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chipLook from './ChipLook.module.css'
 import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
-import { BoxRows, Diagram, Pressable, Wire } from './DiagramParts.tsx'
+import { BoxRows, Diagram, Dot, Pressable, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -159,7 +159,7 @@ function RunWire({
   const ends = run.to.map(v => rowY(v) + (ring ? 0 : EDGE))
   const ys = [startY, ...ends]
   const pedal = run.kind === 'pedal'
-  const dot = pedal ? styles.joint : styles.solder
+  const look = pedal ? 'plain' : 'alarm'
   return (
     <>
       <path
@@ -167,10 +167,10 @@ function RunWire({
         className={pedal ? styles.trace : styles.jumper}
         strokeDasharray={ring ? undefined : '3 2'}
       />
-      <circle cx={ring ? VOICE_X : x} cy={startY} r={1.6} className={dot} />
+      <Dot x={ring ? VOICE_X : x} y={startY} look={look} />
       {run.to.map((v, i) =>
         ring ? (
-          <circle key={v} cx={x} cy={ends[i]} r={1.6} className={dot} />
+          <Dot key={v} x={x} y={ends[i]!} look={look} />
         ) : pedal ? (
           <Wire
             key={v}

@@ -1,4 +1,3 @@
-import chip from './ChipLook.module.css'
 import { GROUPS } from './controls/index.ts'
 import diagram from './Diagram.module.css'
 import {
@@ -16,7 +15,6 @@ import {
   Bend,
   BoxRows,
   BoxView,
-  Diagram,
   GlyphBox,
   Label,
   Wire,
@@ -24,7 +22,7 @@ import {
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
-import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
+import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './drawingFor.tsx'
@@ -205,129 +203,126 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
 
   return (
     <>
-      <Zoomed close={close}>
-        <div className={chip.chips}>
-          <Diagram
-            width={WIDTH}
-            left={(WIDTH - width) / 2}
-            height={close ? HEIGHT + CONE_H : HEIGHT}
-            label="toy drum voices"
-          >
-            {arrow => (
-              <>
-                {close && open && (
-                  <ZoomCone
-                    from={open === rom ? open : undefined}
-                    to={{ x: -(WIDTH - width) / 2, w: WIDTH }}
-                    top={open.y + BOX_H}
-                    knee={HEIGHT}
-                    bottom={HEIGHT + CONE_H}
-                    title={`zoom: ${open.name}`}
-                  />
-                )}
-                {sources.map((s, i) => (
-                  <g key={s.name}>
-                    <Wire
-                      arrow={arrow}
-                      d={`M${shots.x + shots.w} ${mid(i)} H${s.x}`}
-                      look={flow}
-                    />
-                    <Wire
-                      arrow={arrow}
-                      d={`M${s.x + s.w} ${mid(i)} H${amps.x}`}
-                      look={flow}
-                    />
-                  </g>
-                ))}
-                <Wire
-                  arrow={arrow}
-                  d={`M${amps.x + amps.w} ${mid(1)} H${dac.x}`}
-                  look={flow}
-                />
-                <Wire
-                  arrow={arrow}
-                  d={`M${dac.x + dac.w} ${mid(1)} H${width - 2}`}
-                  look={flow}
-                />
-                <Label x={width - 2} y={mid(1) - 4} anchor="end">
-                  out
-                </Label>
-                <Bend name="FM" opens="metal bank" pick={pick} hit={fmWire}>
-                  <Wire
-                    arrow={arrow}
-                    d={fmWire}
-                    look={bent(r.value('drumBankFm') > 0)}
-                  />
-                  <Label
-                    x={fmX - 4}
-                    y={rowY(1) - 8}
-                    anchor="end"
-                    on={r.value('drumBankFm') > 0}
-                  >
-                    FM
-                  </Label>
-                </Bend>
-                <Bend name="sync" opens="tanks" pick={pick} hit={syncWire}>
-                  <Wire
-                    arrow={arrow}
-                    d={syncWire}
-                    look={bent(r.value('drumBankSync') > 0)}
-                  />
-                  <Label
-                    x={syncX + 8}
-                    y={rowY(1) - 8}
-                    on={r.value('drumBankSync') > 0}
-                  >
-                    sync
-                  </Label>
-                </Bend>
-                <Bend name="ROM" opens="sample ROM" pick={pick} hit={romWire}>
-                  <Wire
-                    arrow={arrow}
-                    d={romWire}
-                    look={bent(r.value('drumRom') > 0)}
-                  />
-                </Bend>
-                <Wire
-                  arrow={arrow}
-                  d={`M${shots.x + shots.w / 2} ${triggers.y + BOX_H} V${shots.y}`}
-                  look={flow}
-                />
-                {[padsX + padsW / 2, pattern.x + pattern.w / 2].map(x => (
-                  <Wire
-                    key={x}
-                    arrow={arrow}
-                    d={`M${x} ${TOP + BOX_H} V${triggers.y}`}
-                    look={flow}
-                  />
-                ))}
-                <GlyphBox
-                  x={padsX}
-                  y={TOP}
-                  w={padsW}
-                  h={BOX_H}
-                  name={PADS}
-                  help="the kit's level, tempo, swing, chance, tuning, decay and mute"
-                  lit={r.touched(...PAD_KEYS)}
-                  selected={pick.selected === PADS}
-                  onSelect={() => pick.toggle(PADS)}
-                  glyphW={GLYPH}
-                  glyph={padsGlyph}
-                />
-                {picks.map(b => (
-                  <BoxView
-                    key={b.id}
-                    box={b}
-                    selected={b.id === pick.selected}
-                    onSelect={pick.toggle}
-                  />
-                ))}
-                <BoxView box={amps} />
-              </>
+      <ZoomFrame
+        close={close}
+        width={WIDTH}
+        left={(WIDTH - width) / 2}
+        height={HEIGHT}
+        label="toy drum voices"
+      >
+        {arrow => (
+          <>
+            {close && open && (
+              <ZoomCone
+                from={open === rom ? open : undefined}
+                to={{ x: -(WIDTH - width) / 2, w: WIDTH }}
+                top={open.y + BOX_H}
+                knee={HEIGHT}
+                bottom={HEIGHT + CONE_H}
+                title={`zoom: ${open.name}`}
+              />
             )}
-          </Diagram>
-        </div>
-      </Zoomed>
+            {sources.map((s, i) => (
+              <g key={s.name}>
+                <Wire
+                  arrow={arrow}
+                  d={`M${shots.x + shots.w} ${mid(i)} H${s.x}`}
+                  look={flow}
+                />
+                <Wire
+                  arrow={arrow}
+                  d={`M${s.x + s.w} ${mid(i)} H${amps.x}`}
+                  look={flow}
+                />
+              </g>
+            ))}
+            <Wire
+              arrow={arrow}
+              d={`M${amps.x + amps.w} ${mid(1)} H${dac.x}`}
+              look={flow}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${dac.x + dac.w} ${mid(1)} H${width - 2}`}
+              look={flow}
+            />
+            <Label x={width - 2} y={mid(1) - 4} anchor="end">
+              out
+            </Label>
+            <Bend name="FM" opens="metal bank" pick={pick} hit={fmWire}>
+              <Wire
+                arrow={arrow}
+                d={fmWire}
+                look={bent(r.value('drumBankFm') > 0)}
+              />
+              <Label
+                x={fmX - 4}
+                y={rowY(1) - 8}
+                anchor="end"
+                on={r.value('drumBankFm') > 0}
+              >
+                FM
+              </Label>
+            </Bend>
+            <Bend name="sync" opens="tanks" pick={pick} hit={syncWire}>
+              <Wire
+                arrow={arrow}
+                d={syncWire}
+                look={bent(r.value('drumBankSync') > 0)}
+              />
+              <Label
+                x={syncX + 8}
+                y={rowY(1) - 8}
+                on={r.value('drumBankSync') > 0}
+              >
+                sync
+              </Label>
+            </Bend>
+            <Bend name="ROM" opens="sample ROM" pick={pick} hit={romWire}>
+              <Wire
+                arrow={arrow}
+                d={romWire}
+                look={bent(r.value('drumRom') > 0)}
+              />
+            </Bend>
+            <Wire
+              arrow={arrow}
+              d={`M${shots.x + shots.w / 2} ${triggers.y + BOX_H} V${shots.y}`}
+              look={flow}
+            />
+            {[padsX + padsW / 2, pattern.x + pattern.w / 2].map(x => (
+              <Wire
+                key={x}
+                arrow={arrow}
+                d={`M${x} ${TOP + BOX_H} V${triggers.y}`}
+                look={flow}
+              />
+            ))}
+            <GlyphBox
+              x={padsX}
+              y={TOP}
+              w={padsW}
+              h={BOX_H}
+              name={PADS}
+              help="the kit's level, tempo, swing, chance, tuning, decay and mute"
+              lit={r.touched(...PAD_KEYS)}
+              selected={pick.selected === PADS}
+              onSelect={() => pick.toggle(PADS)}
+              glyphW={GLYPH}
+              glyph={padsGlyph}
+            />
+            {picks.map(b => (
+              <BoxView
+                key={b.id}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+            <BoxView box={amps} />
+          </>
+        )}
+      </ZoomFrame>
       {pick.selected === PADS ? (
         <BoxRows keys={PAD_KEYS} verbs={editor} />
       ) : (

@@ -115,10 +115,6 @@
   fill: var(--fg2);
 }
 
-.joint {
-  fill: var(--fg4);
-}
-
 .pot,
 .potOn {
   fill: none;

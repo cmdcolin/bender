@@ -96,6 +96,14 @@
   fill: var(--alarm);
 }
 
+.dot {
+  fill: var(--fg4);
+}
+
+.dotAlarm {
+  fill: var(--alarm);
+}
+
 .tape {
   fill: var(--surface-raised);
   stroke: var(--border);

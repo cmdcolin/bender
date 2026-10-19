@@ -1,4 +1,3 @@
-import chip from './ChipLook.module.css'
 import {
   boxWidth,
   ONE_LINE_H,
@@ -7,11 +6,11 @@ import {
   useSelectedBox,
   type BoxSpec,
 } from './diagram.ts'
-import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
+import { BoxRows, BoxView, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
 import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
 import { OPERATORS_SPAN } from './fmVoiceSpan.ts'
-import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
+import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { Verbs, Zoom } from './foldHosting.ts'
 
@@ -189,53 +188,51 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       : null
   return (
     <>
-      <Zoomed close={close}>
-        <div className={chip.chips}>
-          <Diagram
-            width={WIDTH}
-            height={cone ? feet + CONE_H : feet}
-            label="glint signal path"
-          >
-            {arrow => (
-              <>
-                {cone && <ZoomCone {...cone} bottom={feet + CONE_H} />}
-                {row.slice(1).map((to, i) => (
-                  <Wire
-                    key={to.id}
-                    arrow={arrow}
-                    d={edge(row[i]!, to)}
-                    look={i === 0 ? 'plain' : flow}
-                  />
-                ))}
-                {drops.map(drop => (
-                  <Wire
-                    key={`clock${drop}`}
-                    arrow={arrow}
-                    d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
-                    look="dash"
-                  />
-                ))}
-                {drops.map(drop => (
-                  <Wire
-                    key={`die${drop}`}
-                    arrow={arrow}
-                    d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
-                    look="dash"
-                  />
-                ))}
-                {boxes.map(b => (
-                  <BoxView
-                    key={b.id}
-                    box={b}
-                    selected={b.id === pick.selected}
-                    onSelect={pick.toggle}
-                  />
-                ))}
-              </>
-            )}
-          </Diagram>
-        </div>
-      </Zoomed>
+      <ZoomFrame
+        close={close}
+        cone={cone !== null}
+        width={WIDTH}
+        height={feet}
+        label="glint signal path"
+      >
+        {arrow => (
+          <>
+            {cone && <ZoomCone {...cone} bottom={feet + CONE_H} />}
+            {row.slice(1).map((to, i) => (
+              <Wire
+                key={to.id}
+                arrow={arrow}
+                d={edge(row[i]!, to)}
+                look={i === 0 ? 'plain' : flow}
+              />
+            ))}
+            {drops.map(drop => (
+              <Wire
+                key={`clock${drop}`}
+                arrow={arrow}
+                d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
+                look="dash"
+              />
+            ))}
+            {drops.map(drop => (
+              <Wire
+                key={`die${drop}`}
+                arrow={arrow}
+                d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
+                look="dash"
+              />
+            ))}
+            {boxes.map(b => (
+              <BoxView
+                key={b.id}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+          </>
+        )}
+      </ZoomFrame>
       <BoxRows
         keys={open?.id === 'die' ? [] : open?.keys}
         verbs={part && verbs(part)}

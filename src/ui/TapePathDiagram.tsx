@@ -13,6 +13,7 @@ import {
   BoxView,
   Capstan,
   Diagram,
+  Dot,
   HeadBar,
   Label,
   Plate,
@@ -298,7 +299,7 @@ export function TapePathDiagram() {
                 d={`M${BOARD_W / 2} ${ROW_Y + ROW_H} V${BYPASS_Y} H${JOIN_X} V${ROW_MID}`}
                 look={off ? 'plain' : 'dash'}
               />
-              <circle cx={JOIN_X} cy={ROW_MID} r={2} className={styles.hub} />
+              <Dot x={JOIN_X} y={ROW_MID} r={2} />
               <Label
                 x={WIDTH / 2}
                 y={BYPASS_Y + 12}

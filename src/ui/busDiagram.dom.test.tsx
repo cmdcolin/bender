@@ -139,7 +139,7 @@ test('the toy on the FM bus is labelled without its width', () => {
   const svg = drawing('glint bus wiring')
   expect(texts(svg)).toContain('toy out')
   expect(titles(svg)).toContain('toy out on D0–D2')
-  expect(svg.querySelectorAll('circle[class*="solder"]')).toHaveLength(3)
+  expect(svg.querySelectorAll('circle[class*="dotAlarm"]')).toHaveLength(3)
 })
 
 test('pressing a trace knifes it, and pressing it again walks the faults', () => {

@@ -1,7 +1,8 @@
 import chip from './ChipLook.module.css'
 import styles from './Diagram.module.css'
+import { Diagram } from './DiagramParts.tsx'
 
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
 /** Room the parent drawing adds under itself for the cone's title. */
 export const CONE_H = 20
@@ -66,5 +67,31 @@ export function Zoomed({
       {children}
       {close}
     </div>
+  )
+}
+
+// A drawing with room under it for the cone while a close-up is open.
+export function ZoomFrame({
+  close,
+  cone = Boolean(close),
+  height,
+  maxWidth,
+  ...diagram
+}: ComponentProps<typeof Diagram> & {
+  close: ReactNode
+  /** Whether the cone shows, where a close-up is not the only thing that draws it. */
+  cone?: boolean
+  /** Holds a drawing narrower than the column at its own size. */
+  maxWidth?: number
+}) {
+  return (
+    <Zoomed close={close}>
+      <div
+        className={chip.chips}
+        style={maxWidth ? { maxWidth, marginInline: 'auto' } : undefined}
+      >
+        <Diagram {...diagram} height={cone ? height + CONE_H : height} />
+      </div>
+    </Zoomed>
   )
 }

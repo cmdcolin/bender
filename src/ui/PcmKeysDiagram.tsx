@@ -1,4 +1,3 @@
-import chip from './ChipLook.module.css'
 import {
   boxWidth,
   ONE_LINE_H,
@@ -7,9 +6,8 @@ import {
   useSelectedBox,
   type BoxSpec,
 } from './diagram.ts'
-import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
-import styles from './PcmKeysDiagram.module.css'
-import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
+import { BoxRows, BoxView, Wire } from './DiagramParts.tsx'
+import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { Verbs, Zoom } from './foldHosting.ts'
 
@@ -178,51 +176,47 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   ]
   return (
     <>
-      <Zoomed close={close}>
-        <div className={chip.chips}>
-          <div className={styles.fit} style={{ maxWidth: width }}>
-            <Diagram
-              width={width}
-              height={close ? feet + CONE_H : feet}
-              label="parlor signal path"
-            >
-              {arrow => (
-                <>
-                  {close && open && (
-                    <ZoomCone
-                      from={open}
-                      to={{ x: 0, w: width }}
-                      top={open.y + BOX_H}
-                      knee={feet}
-                      bottom={feet + CONE_H}
-                      title={`zoom: ${open.name}`}
-                    />
-                  )}
-                  {chain.slice(1).map((to, i) => (
-                    <Wire
-                      key={to.id}
-                      arrow={arrow}
-                      d={edge(chain[i]!, to)}
-                      look={i < 2 ? 'plain' : flow}
-                    />
-                  ))}
-                  {drops.map(d => (
-                    <Wire key={d} d={d} look="dash" />
-                  ))}
-                  {boxes.map(b => (
-                    <BoxView
-                      key={b.id}
-                      box={b}
-                      selected={b.id === pick.selected}
-                      onSelect={pick.toggle}
-                    />
-                  ))}
-                </>
-              )}
-            </Diagram>
-          </div>
-        </div>
-      </Zoomed>
+      <ZoomFrame
+        close={close}
+        maxWidth={width}
+        width={width}
+        height={feet}
+        label="parlor signal path"
+      >
+        {arrow => (
+          <>
+            {close && open && (
+              <ZoomCone
+                from={open}
+                to={{ x: 0, w: width }}
+                top={open.y + BOX_H}
+                knee={feet}
+                bottom={feet + CONE_H}
+                title={`zoom: ${open.name}`}
+              />
+            )}
+            {chain.slice(1).map((to, i) => (
+              <Wire
+                key={to.id}
+                arrow={arrow}
+                d={edge(chain[i]!, to)}
+                look={i < 2 ? 'plain' : flow}
+              />
+            ))}
+            {drops.map(d => (
+              <Wire key={d} d={d} look="dash" />
+            ))}
+            {boxes.map(b => (
+              <BoxView
+                key={b.id}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+          </>
+        )}
+      </ZoomFrame>
       <BoxRows keys={open?.keys} verbs={part && verbs(part)} />
     </>
   )

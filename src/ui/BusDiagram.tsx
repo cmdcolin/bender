@@ -12,7 +12,7 @@ import {
 } from './busSpecs.ts'
 import { sliderFor } from './controls/index.ts'
 import { boxHeight, boxWidth, LINE_H, useReadings } from './diagram.ts'
-import { Diagram, Wire } from './DiagramParts.tsx'
+import { Diagram, Dot, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -230,7 +230,7 @@ function Trace({
       </g>
     )
   })
-  const dot = <circle cx={gx} cy={y} r={1.6} className={styles.solder} />
+  const dot = <Dot x={gx} y={y} look="alarm" />
   const glyph =
     knifed < 0 ? null : fault === FAULT.ground ? (
       <>
@@ -357,13 +357,13 @@ function TapWire({
         d={`M${fx} ${fy} V${routeY} H${end.x} V${end.y}`}
         className={styles.jumper}
       />
-      <circle cx={fx} cy={fy} r={1.6} className={styles.solder} />
+      <Dot x={fx} y={fy} look="alarm" />
       {end.pin ? (
         <text x={end.x + 4} y={end.y + 10} className={styles.knifed}>
           {end.pin}
         </text>
       ) : (
-        <circle cx={end.x} cy={end.y} r={1.6} className={styles.solder} />
+        <Dot x={end.x} y={end.y} look="alarm" />
       )}
       <text
         x={(fx + end.x) / 2}
@@ -400,7 +400,7 @@ function InjectWire({
         className={styles.jumper}
       />
       {lines.map(y => (
-        <circle key={y} cx={x} cy={y} r={1.6} className={styles.solder} />
+        <Dot key={y} x={x} y={y} look="alarm" />
       ))}
       <text
         x={x - 4}

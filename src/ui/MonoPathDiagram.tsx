@@ -13,14 +13,14 @@ import {
   Bend,
   BoxRows,
   BoxView,
-  Diagram,
+  Dot,
   Label,
   Plate,
   Pressable,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
-import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
+import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { Verbs, Zoom } from './foldHosting.ts'
@@ -175,206 +175,174 @@ export function MonoPathDiagram({
   const fmWire = `M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`
   return (
     <>
-      <Zoomed close={close}>
-        <div className={chip.chips}>
-          <Diagram
-            width={WIDTH}
-            height={close ? HEIGHT + CONE_H : HEIGHT}
-            label="growler voice card"
-          >
-            {arrow => (
-              <>
-                {close && drawn && (
-                  <ZoomCone
-                    from={drawn}
-                    to={{ x: 0, w: WIDTH }}
-                    top={drawn.y + BOX_H}
-                    knee={HEIGHT}
-                    bottom={HEIGHT + CONE_H}
-                    title={`zoom: ${drawn.name}`}
-                  />
-                )}
-                <Wire
-                  arrow={arrow}
-                  d={`M${keys.x + keys.w} ${MID} H${frameX}`}
-                />
-                {[0, 1, 2].map(i => (
-                  <Wire
-                    key={i}
-                    d={`M${oscRight} ${oscMid(i)} H${join} V${MID}`}
-                    look={flow}
-                  />
-                ))}
-                <Wire
-                  arrow={arrow}
-                  d={`M${join} ${MID} H${mixer.x}`}
-                  look={flow}
-                />
-                <Wire
-                  arrow={arrow}
-                  d={`M${mixer.x + mixer.w} ${MID} H${filter.x}`}
-                  look={flow}
-                />
-                <Wire
-                  arrow={arrow}
-                  d={`M${filter.x + filter.w} ${MID} H${loud.x}`}
-                  look={flow}
-                />
-                <Wire
-                  arrow={arrow}
-                  d={`M${loud.x + loud.w} ${MID} H${WIDTH - 2}`}
-                  look={flow}
-                />
-                <Label x={WIDTH - 2} y={MID + 12} anchor="end">
-                  out
-                </Label>
-                <Bend name="feedback" opens="mixer" pick={pick} hit={loopWire}>
-                  <Wire
-                    arrow={arrow}
-                    d={loopWire}
-                    look={wire(up('monoLoop'))}
-                  />
-                  <Label
-                    x={(loopX + back) / 2}
-                    y={over - 3}
-                    anchor="middle"
-                    on={up('monoLoop')}
-                  >
-                    feedback
-                  </Label>
-                </Bend>
-                <circle cx={back} cy={MID} r={1.6} className={styles.head} />
-                <Bend name="noise" opens="mixer" pick={pick} hit={noiseWire}>
-                  <Wire
-                    arrow={arrow}
-                    d={noiseWire}
-                    look={wire(up('monoNoise'))}
-                  />
-                  <Label
-                    x={noiseX}
-                    y={over - 15}
-                    anchor="middle"
-                    on={up('monoNoise')}
-                  >
-                    noise
-                  </Label>
-                </Bend>
-                <Wire
-                  arrow={arrow}
-                  d={`M${tap} ${oscMid(2)} V${modMid} H${mod.x}`}
-                />
-                <circle
-                  cx={tap}
-                  cy={oscMid(2)}
-                  r={1.6}
-                  className={styles.head}
-                />
-                <Bend
-                  name="pitch modulation"
-                  opens="modulation"
-                  pick={pick}
-                  hit={pitchWire}
-                >
-                  <Wire
-                    arrow={arrow}
-                    d={pitchWire}
-                    look={wire(up('monoModPitch'))}
-                  />
-                </Bend>
-                <Bend
-                  name="filter modulation"
-                  opens="modulation"
-                  pick={pick}
-                  hit={filterWire}
-                >
-                  <Wire
-                    arrow={arrow}
-                    d={filterWire}
-                    look={wire(up('monoModFilter'))}
-                  />
-                </Bend>
-                <Wire
-                  arrow={arrow}
-                  d={`M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`}
-                  look="dash"
-                />
-                <Pressable
-                  name="oscillators"
-                  selected={frameFrame}
-                  onSelect={() => pick.toggle('oscillators')}
-                >
-                  <title>{`oscillators — ${BOXES.oscillators.help}`}</title>
-                  <Plate
-                    x={frameX}
-                    y={FRAME_TOP}
-                    w={FRAME_W}
-                    h={FRAME_H}
-                    touched={oscs.touched}
-                    selected={frameFrame}
-                  />
-                  <text
-                    x={frameX + FRAME_W / 2}
-                    y={FRAME_TOP + 12}
-                    textAnchor="middle"
-                    className={oscs.touched ? styles.nameOn : styles.name}
-                  >
-                    oscillators
-                  </text>
-                </Pressable>
-                {OSC_Y.map((y, i) => (
-                  <g key={y} pointerEvents="none">
-                    <rect
-                      x={oscX}
-                      y={y}
-                      width={OSC_W}
-                      height={OSC_H}
-                      rx={2}
-                      className={`${styles.box} ${chip.inner}`}
-                    />
-                    <text
-                      x={oscX + OSC_W / 2}
-                      y={y + 14}
-                      textAnchor="middle"
-                      className={styles.name}
-                    >
-                      {`osc ${i + 1}`}
-                    </text>
-                  </g>
-                ))}
-                <Bend name="sync" opens="sync" pick={pick} hit={syncWire}>
-                  <Wire
-                    arrow={arrow}
-                    d={syncWire}
-                    look={wire(up('monoSync'))}
-                  />
-                  <Label x={syncX + 4} y={gapY + 3} on={up('monoSync')}>
-                    sync
-                  </Label>
-                </Bend>
-                <Bend name="FM" opens="FM" pick={pick} hit={fmWire}>
-                  <Wire arrow={arrow} d={fmWire} look={wire(up('monoFm'))} />
-                  <Label
-                    x={fmX - 4}
-                    y={gapY + 3}
-                    anchor="end"
-                    on={up('monoFm')}
-                  >
-                    FM
-                  </Label>
-                </Bend>
-                {boxes.map(b => (
-                  <BoxView
-                    key={b.id}
-                    box={b}
-                    selected={b.id === pick.selected}
-                    onSelect={pick.toggle}
-                  />
-                ))}
-              </>
+      <ZoomFrame
+        close={close}
+        width={WIDTH}
+        height={HEIGHT}
+        label="growler voice card"
+      >
+        {arrow => (
+          <>
+            {close && drawn && (
+              <ZoomCone
+                from={drawn}
+                to={{ x: 0, w: WIDTH }}
+                top={drawn.y + BOX_H}
+                knee={HEIGHT}
+                bottom={HEIGHT + CONE_H}
+                title={`zoom: ${drawn.name}`}
+              />
             )}
-          </Diagram>
-        </div>
-      </Zoomed>
+            <Wire arrow={arrow} d={`M${keys.x + keys.w} ${MID} H${frameX}`} />
+            {[0, 1, 2].map(i => (
+              <Wire
+                key={i}
+                d={`M${oscRight} ${oscMid(i)} H${join} V${MID}`}
+                look={flow}
+              />
+            ))}
+            <Wire arrow={arrow} d={`M${join} ${MID} H${mixer.x}`} look={flow} />
+            <Wire
+              arrow={arrow}
+              d={`M${mixer.x + mixer.w} ${MID} H${filter.x}`}
+              look={flow}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${filter.x + filter.w} ${MID} H${loud.x}`}
+              look={flow}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${loud.x + loud.w} ${MID} H${WIDTH - 2}`}
+              look={flow}
+            />
+            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
+              out
+            </Label>
+            <Bend name="feedback" opens="mixer" pick={pick} hit={loopWire}>
+              <Wire arrow={arrow} d={loopWire} look={wire(up('monoLoop'))} />
+              <Label
+                x={(loopX + back) / 2}
+                y={over - 3}
+                anchor="middle"
+                on={up('monoLoop')}
+              >
+                feedback
+              </Label>
+            </Bend>
+            <Dot x={back} y={MID} />
+            <Bend name="noise" opens="mixer" pick={pick} hit={noiseWire}>
+              <Wire arrow={arrow} d={noiseWire} look={wire(up('monoNoise'))} />
+              <Label
+                x={noiseX}
+                y={over - 15}
+                anchor="middle"
+                on={up('monoNoise')}
+              >
+                noise
+              </Label>
+            </Bend>
+            <Wire
+              arrow={arrow}
+              d={`M${tap} ${oscMid(2)} V${modMid} H${mod.x}`}
+            />
+            <Dot x={tap} y={oscMid(2)} />
+            <Bend
+              name="pitch modulation"
+              opens="modulation"
+              pick={pick}
+              hit={pitchWire}
+            >
+              <Wire
+                arrow={arrow}
+                d={pitchWire}
+                look={wire(up('monoModPitch'))}
+              />
+            </Bend>
+            <Bend
+              name="filter modulation"
+              opens="modulation"
+              pick={pick}
+              hit={filterWire}
+            >
+              <Wire
+                arrow={arrow}
+                d={filterWire}
+                look={wire(up('monoModFilter'))}
+              />
+            </Bend>
+            <Wire
+              arrow={arrow}
+              d={`M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`}
+              look="dash"
+            />
+            <Pressable
+              name="oscillators"
+              selected={frameFrame}
+              onSelect={() => pick.toggle('oscillators')}
+            >
+              <title>{`oscillators — ${BOXES.oscillators.help}`}</title>
+              <Plate
+                x={frameX}
+                y={FRAME_TOP}
+                w={FRAME_W}
+                h={FRAME_H}
+                touched={oscs.touched}
+                selected={frameFrame}
+              />
+              <text
+                x={frameX + FRAME_W / 2}
+                y={FRAME_TOP + 12}
+                textAnchor="middle"
+                className={oscs.touched ? styles.nameOn : styles.name}
+              >
+                oscillators
+              </text>
+            </Pressable>
+            {OSC_Y.map((y, i) => (
+              <g key={y} pointerEvents="none">
+                <rect
+                  x={oscX}
+                  y={y}
+                  width={OSC_W}
+                  height={OSC_H}
+                  rx={2}
+                  className={`${styles.box} ${chip.inner}`}
+                />
+                <text
+                  x={oscX + OSC_W / 2}
+                  y={y + 14}
+                  textAnchor="middle"
+                  className={styles.name}
+                >
+                  {`osc ${i + 1}`}
+                </text>
+              </g>
+            ))}
+            <Bend name="sync" opens="sync" pick={pick} hit={syncWire}>
+              <Wire arrow={arrow} d={syncWire} look={wire(up('monoSync'))} />
+              <Label x={syncX + 4} y={gapY + 3} on={up('monoSync')}>
+                sync
+              </Label>
+            </Bend>
+            <Bend name="FM" opens="FM" pick={pick} hit={fmWire}>
+              <Wire arrow={arrow} d={fmWire} look={wire(up('monoFm'))} />
+              <Label x={fmX - 4} y={gapY + 3} anchor="end" on={up('monoFm')}>
+                FM
+              </Label>
+            </Bend>
+            {boxes.map(b => (
+              <BoxView
+                key={b.id}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+          </>
+        )}
+      </ZoomFrame>
       <BoxRows
         keys={open?.id === 'voice card' ? [] : open?.keys}
         verbs={part && verbs(part)}
