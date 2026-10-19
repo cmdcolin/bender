@@ -19,8 +19,14 @@ test('the bus opens on strip 1, and pressing a box swaps in its rows', () => {
   expect(screen.getByText('Strip 2 time')).not.toBeNull()
   fireEvent.click(box('return amps'))
   expect(screen.getByText('Slew')).not.toBeNull()
-  fireEvent.click(box('patched into'))
+  fireEvent.click(box('into mix'))
   expect(screen.getByText('Patched into')).not.toBeNull()
+})
+
+test('the return box names where the bus is patched', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, fbDest: 2 })
+  render(<FeedbackLoops />)
+  expect(box('into chip rail')).not.toBeNull()
 })
 
 test('cross is a button only once a second strip is up', () => {

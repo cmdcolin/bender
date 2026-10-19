@@ -1,4 +1,5 @@
 import chip from './ChipLook.module.css'
+import { sliderFor } from './controls/index.ts'
 import {
   boxHeight,
   boxWidth,
@@ -33,7 +34,8 @@ const LEFT = 52
 const WIDTH = 420
 const BUS_X = 150
 const AMPS_W = boxWidth('return amps')
-const DEST_W = boxWidth('patched into')
+const INTO = sliderFor('fbDest').choices!.map(c => `into ${c}`)
+const DEST_W = Math.max(...INTO.map(boxWidth))
 const DEST_X = WIDTH - LEFT - 2 - DEST_W
 const AMPS_X = (BUS_X + DEST_X - AMPS_W) / 2
 const HEIGHT = ROW_Y[2]! + BOX_H + 6
@@ -82,7 +84,7 @@ export function FeedbackLoops() {
     x: DEST_X,
     y: MID - BOX_H / 2,
     w: DEST_W,
-    name: 'patched into',
+    name: INTO[Math.round(r.value('fbDest'))] ?? INTO[0]!,
     touched: r.touched('fbDest'),
     help: 'Where the return wire is soldered.',
   }
