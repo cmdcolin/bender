@@ -552,13 +552,13 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
                 name="relax"
                 opens="envelope"
                 pick={pick}
-                hit={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
+                hit={`M${loopL} ${LOW} V${LOW - 8} H${loopR} V${LOW}`}
               >
                 <Wire
-                  d={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
+                  d={`M${loopL} ${LOW} V${LOW - 8} H${loopR} V${LOW}`}
                   look="alarm"
                 />
-                <Say x={loopR} y={LOW - 10} anchor="end">
+                <Say x={loopR} y={LOW - 13} anchor="end">
                   relax
                 </Say>
               </Bend>
