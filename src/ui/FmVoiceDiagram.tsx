@@ -7,7 +7,6 @@ import { useStoreSelect } from './ControlsContext.ts'
 import styles from './Diagram.module.css'
 import {
   boxHeight,
-  boxWidth,
   LINE_H,
   useReadings,
   type useSelectedBox,
@@ -19,6 +18,7 @@ import {
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
+import { GAP, LEAD, OP_W, SPAN_W, WIDTH, X0 } from './fmVoiceSpan.ts'
 
 const KEYS = [
   'fmBright',
@@ -37,13 +37,6 @@ const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
 
 const FEEDBACK_MAX = 7
 const INDEX_BOOST = 4
-const WIDTH = 420
-const LEAD = 48
-const TAIL = 40
-const GAP = 90
-const OP_W = boxWidth('modulator')
-const SPAN_W = LEAD + 2 * OP_W + GAP + TAIL
-const X0 = Math.round((WIDTH - SPAN_W) / 2)
 const LOOP_Y = 14
 const CHIP_Y = 28
 const CHIP_H = boxHeight('')
@@ -51,9 +44,6 @@ const MID = CHIP_Y + CHIP_H / 2
 const LFO_Y = CHIP_Y + CHIP_H + 18
 const LFO_H = boxHeight('')
 const HEIGHT = LFO_Y + LFO_H + 4
-
-/** Where the operators sit across the drawing, for the cone that leads to them. */
-export const OPERATORS_SPAN = { x: X0, w: SPAN_W }
 
 interface Operator {
   name: string

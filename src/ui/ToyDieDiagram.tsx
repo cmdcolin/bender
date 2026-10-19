@@ -7,12 +7,17 @@ import chip from './ChipLook.module.css'
 import { CHANNELS, GROUPS, sliderFor } from './controls/index.ts'
 import { useStoreSelect } from './ControlsContext.ts'
 import diagram from './Diagram.module.css'
-import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
+import {
+  boxHeight,
+  boxWidth,
+  glyphBoxWidth,
+  useReadings,
+  useSelectedBox,
+} from './diagram.ts'
 import {
   BoxRows,
   Diagram,
   GlyphBox,
-  glyphBoxWidth,
   Pressable,
   Wire,
   type WireLook,

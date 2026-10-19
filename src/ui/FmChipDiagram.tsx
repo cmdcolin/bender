@@ -10,8 +10,9 @@ import {
   type BoxSpec,
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
-import { FmVoiceDiagram, OPERATORS_SPAN } from './FmVoiceDiagram.tsx'
+import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
 import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
+import { OPERATORS_SPAN } from './fmVoiceSpan.ts'
 import { CONE_H, ZoomCone } from './ZoomCone.tsx'
 
 import type { Verbs } from './foldHosting.ts'

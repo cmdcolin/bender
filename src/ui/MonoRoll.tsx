@@ -18,7 +18,7 @@ import {
 } from './ControlsContext.ts'
 import { Tip } from './Tip.tsx'
 import styles from './TuneRoll.module.css'
-import { baseFor, cellClass, clampBase, isC, ROWS } from './TuneRoll.tsx'
+import { baseFor, cellClass, clampBase, isC, ROWS } from './tuneRoll.ts'
 
 import type { RefObject } from 'react'
 

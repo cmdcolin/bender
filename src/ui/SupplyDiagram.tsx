@@ -7,6 +7,7 @@ import diagram from './Diagram.module.css'
 import {
   boxHeight,
   boxWidth,
+  glyphBoxWidth,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -16,7 +17,6 @@ import {
   BoxView,
   Diagram,
   GlyphBox,
-  glyphBoxWidth,
   Label,
   Wire,
   type WireLook,

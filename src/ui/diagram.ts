@@ -88,3 +88,9 @@ const STRIP_SUFFIXES = [
 export const STRIP_KEYS = TRACK_NUMBERS.flatMap(t =>
   STRIP_SUFFIXES.map(n => `four${t}${n}` as const),
 )
+
+export const GLYPH_GAP = 4
+
+/** The width of a box holding a glyph `glyphW` wide beside its name. */
+export const glyphBoxWidth = (name: string, glyphW: number) =>
+  boxWidth(name) + glyphW + GLYPH_GAP

@@ -6,6 +6,7 @@ import styles from './Diagram.module.css'
 import {
   boxHeight,
   boxWidth,
+  GLYPH_GAP,
   LINE_H,
   rowShown,
   type BoxSpec,
@@ -261,12 +262,6 @@ export function Diagram({
   )
 }
 // CROSS_REPO_SYNC_END(diagram-parts)
-
-export const GLYPH_GAP = 4
-
-/** The width of a box holding a glyph `glyphW` wide beside its name. */
-export const glyphBoxWidth = (name: string, glyphW: number) =>
-  boxWidth(name) + glyphW + GLYPH_GAP
 
 // A box drawn with a small picture of its part beside the name, for a part a
 // player knows by sight: the keyboard, the pads, the batteries. The picture
