@@ -79,8 +79,8 @@ export function Cassette({
           rx="2"
           className={running ? styles.stripeRec : styles.stripe}
         />
-        <line x1="15" y1="30" x2="104" y2="30" className={styles.ruling} />
-        <text x="15" y="29" className={styles.writing}>
+        <line x1="15" y1="33.5" x2="104" y2="33.5" className={styles.ruling} />
+        <text x="15" y="32" className={styles.writing}>
           the whole session
         </text>
         <rect
