@@ -168,9 +168,6 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
   const part = open && PARTS[open.id!]
   const close = zoomed ? <FmVoiceDiagram pick={pick} /> : part && zoom?.(part)
-  const title = zoomed
-    ? 'operators'
-    : boxes.find(b => b.id === pick.selected)?.name
   return (
     <>
       <ChipDrawing width={WIDTH} height={feet} label="glint signal path">
@@ -212,7 +209,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
         )}
       </ChipDrawing>
       {open && (
-        <OpenBox name={title ?? open.id!} onHide={() => pick.toggle(open.id!)}>
+        <OpenBox name={open.id!} onHide={() => pick.toggle(open.id!)}>
           {close}
           <BoxRows
             keys={open.id === 'die' ? [] : open.keys}

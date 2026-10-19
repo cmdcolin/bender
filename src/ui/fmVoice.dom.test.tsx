@@ -103,12 +103,16 @@ test('an effect owns the patch: the boosters go and the drawing dims', () => {
   expect(drawing()!.querySelector('g[opacity="0.45"]')).not.toBeNull()
 })
 
-test('the operators close-up sits in a card under its own name', () => {
+test('the close-up sits in a card named for the part pressed', () => {
   open()
-  const card = () => screen.queryByRole('region', { name: 'operators' })
-  expect(card()).not.toBeNull()
+  const card = (name: string) => screen.queryByRole('region', { name })
+  expect(card('modulator')).not.toBeNull()
+  press('zoomed carrier')
+  expect(card('carrier')).not.toBeNull()
+  press('brightness')
+  expect(card('brightness')).not.toBeNull()
   press('bus')
-  expect(card()).toBeNull()
+  expect(drawing()).toBeNull()
   expect(screen.getByRole('region', { name: 'bus' })).not.toBeNull()
 })
 
