@@ -25,6 +25,18 @@
   flex: none;
 }
 
+.rack {
+  flex: 1 1 40rem;
+  min-width: 0;
+  columns: 19rem;
+  column-gap: var(--space-md);
+}
+
+.rack > * {
+  margin-bottom: var(--space-md);
+  break-inside: avoid;
+}
+
 .add {
   composes: action from './button.module.css';
 }

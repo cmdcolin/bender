@@ -152,8 +152,12 @@ export function Instruments({
             {keyboards.length > 0 && (
               <div className={styles.lane}>{keyboards}</div>
             )}
-            {kit}
-            <PedalShelf seconds={seconds} onOpen={onOpen} />
+            {(kit.length > 0 || pedals.length > 0) && (
+              <div className={styles.rack}>
+                {kit}
+                <PedalShelf seconds={seconds} onOpen={onOpen} />
+              </div>
+            )}
           </div>
         )}
         {tapes.length > 0 && <div className={styles.shelf}>{tapes}</div>}

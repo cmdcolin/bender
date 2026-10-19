@@ -5,6 +5,7 @@ import { expect, test, vi } from 'vitest'
 import { voiceBit } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
+import { bench, setBench } from './bench.ts'
 import { DrumKit } from './DrumKit.tsx'
 import './testDom.ts'
 
@@ -15,7 +16,18 @@ test('the drum kit sits beside the lane of keyboards', () => {
   render(<App />)
   const keyboard = screen.getByRole('group', { name: 'plinky' })
   const kit = screen.getByRole('group', { name: 'clatter' })
-  expect(kit.parentElement).toBe(keyboard.parentElement?.parentElement)
+  expect(kit.parentElement?.parentElement).toBe(
+    keyboard.parentElement?.parentElement,
+  )
+})
+
+test('a pedal on the bench shares the rack with the drum kit', () => {
+  setBench({ ...bench.get(), pedals: ['Boing'] })
+  render(<App />)
+  const kit = screen.getByRole('group', { name: 'clatter' })
+  const pedal = screen.getByRole('group', { name: 'boing' })
+  expect(pedal.parentElement).toBe(kit.parentElement)
+  setBench({ ...bench.get(), pedals: [] })
 })
 
 test('pressing a pad sends a hit for its voice', () => {

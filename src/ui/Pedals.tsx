@@ -259,7 +259,7 @@ export function PedalShelf({
   const faces = usePedalStages()
   if (faces.length === 0) return null
   return (
-    <div className={styles.shelf}>
+    <>
       {faces.map(stage => (
         <PedalFace
           key={stage}
@@ -269,6 +269,6 @@ export function PedalShelf({
           onClose={() => hide(shown, stage)}
         />
       ))}
-    </div>
+    </>
   )
 }
