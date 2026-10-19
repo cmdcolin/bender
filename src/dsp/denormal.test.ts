@@ -104,7 +104,11 @@ const RINGING: Partial<Controls> = {
 // costs on its own.
 const SLOW = 150_000
 
-test(
+// Minutes of CPU, so `pnpm test` skips these and `pnpm denormal` runs them. CI
+// runs both.
+const slowTest = test.skipIf(!process.env.DENORMAL)
+
+slowTest(
   'a board left ringing itself out never settles into denormal range',
   () => {
     expect(ring(RINGING, {})).toEqual([])
@@ -140,7 +144,7 @@ const WOUND_UP: Partial<Controls> = {
   ensDepth: 0.6,
 }
 
-test(
+slowTest(
   'nor does one whose knobs were turned back down',
   () => {
     const cold = Object.fromEntries(

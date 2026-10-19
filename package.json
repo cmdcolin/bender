@@ -32,6 +32,7 @@
     "spectrum": "node scripts/spectrum.ts",
     "preview": "astro preview",
     "test": "scripts/heavy-run-slot.sh vitest run",
+    "denormal": "DENORMAL=1 scripts/heavy-run-slot.sh vitest run src/dsp/denormal.test.ts",
     "typecheck": "astro sync && scripts/heavy-run-slot.sh tsc -b",
     "sync:check": "node scripts/sync-check.mjs",
     "pat": "node scripts/push.mjs patch",
