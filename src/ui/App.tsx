@@ -46,6 +46,7 @@ import { SavedVoices } from './SavedVoices.tsx'
 import { Scope } from './Scope.tsx'
 import { OpenGroup, PathHint } from './Section.tsx'
 import { boardFrom, boardFromUrl, boardHash } from './share.ts'
+import { ShareButton } from './ShareButton.tsx'
 import { StartOverlay } from './StartOverlay.tsx'
 import { Cassette } from './StudioArt.tsx'
 import { dragging } from './tapeDrop.ts'
@@ -340,6 +341,14 @@ export function App(props: { openedFromLink?: boolean }) {
             nothing on it is the first screen of a phone otherwise. */}
         <div className={styles.scope}>
           <Scope />
+          {!running && (
+            <p className={styles.hint}>
+              <b className={styles.warn}>
+                click anywhere to power on — loud, harsh noise ahead, start with
+                your volume low.
+              </b>
+            </p>
+          )}
         </div>
         <Instruments seconds={morphSeconds} onOpen={show} />
         <BodyPad onOpen={show} />
@@ -407,14 +416,6 @@ export function App(props: { openedFromLink?: boolean }) {
           </section>
         </div>
         <BendKeys morphSeconds={morphSeconds} />
-        {!running && (
-          <p className={styles.hint}>
-            <b className={styles.warn}>
-              click anywhere to power on — loud, harsh noise ahead, start with
-              your volume low.
-            </b>
-          </p>
-        )}
       </main>
 
       <aside className={styles.panel} aria-label="the board">
@@ -639,6 +640,7 @@ export function App(props: { openedFromLink?: boolean }) {
                 </span>
               </button>
             </Tip>
+            <ShareButton />
             {/* Beside reset, because what undo has in common with it is what a
               hand reaching for either one wants: out of here. */}
             <Tip text="Steps back through the boards you have been through (ctrl+z).">

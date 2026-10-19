@@ -35,7 +35,7 @@ renders it with the same layout the app uses.
   register again. Which wire and what happened to it only mean anything
   together, so each chip's _knife on the bus_ opens on a row of named cuts:
   press **machine-gun** or **the note never ends** and the rows under it say
-  what that was. **Random knife** in the dice row draws from the same table.
+  what that was. **Random knife** under random ▾ draws from the same table.
 - **Seven bends, six slots.** You pick which are on the board and in what order,
   so one always sits out. A mix at zero takes the stage out of the path rather
   than merely silencing it.

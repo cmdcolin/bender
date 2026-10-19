@@ -17,14 +17,15 @@ path for a scope and a preset strip.
 - **Play it.** Click the on-screen keys, or use your keyboard — the letter keys
   are labelled on the keys themselves. Drag across the board to play a run, and
   `z`/`x` shift the whole thing two octaves.
-- **Click a preset**, or hit **random** in the dice row. Drag a preset sideways
-  instead and it only morphs part of the way there.
-- **Turn Starve up** while a chord is playing. The rail sags, the pitch dives,
-  and past a point the watchdog reboots the chip mid-tune.
+- **Click a preset**, or hit **random** in the row under the title. Drag a
+  preset sideways instead and it only morphs part of the way there.
+- **Turn Starve up** under **Power supply** while a chord is playing. The rail
+  sags, the pitch dives, and past a point the watchdog reboots the chip
+  mid-tune.
 - **Click a box on the signal path map** at the top of the panel to open its
   controls. The map shows the stages on the board; **+ add a stage** under it
   brings in the rest.
-- **Hit Share.** The whole board lives in the URL, so a link is a patch you can
+- **Hit share.** The whole board lives in the URL, so a link is a patch you can
   send someone.
 
 ## Where next

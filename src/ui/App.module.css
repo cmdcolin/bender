@@ -18,6 +18,17 @@
 
 .scope {
   flex: none;
+  position: relative;
+}
+
+.scope .hint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--space-lg);
+  text-align: center;
+  pointer-events: none;
 }
 
 .panel {
