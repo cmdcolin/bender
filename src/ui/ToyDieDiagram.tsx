@@ -24,6 +24,7 @@ import {
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { NODE_KEYS, POT } from './toyBoxKeys.ts'
+import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './foldDrawings.tsx'
@@ -351,7 +352,7 @@ function Say({
 // carries every voice off the chip. One clock times the voices, the scan counter
 // and the PWM carrier. Each feedback bend solders one part's signal onto another
 // part, and the drawing gives each one its own red wire.
-export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
+export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
   const own = useReadings(BOX_KEYS)
   const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
@@ -438,330 +439,348 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
   const placed = spotBox ? potAt[spotBox] : undefined
   const loopL = env.x + env.w * 0.7
   const loopR = env.x + env.w - 5
+  const close = pick.selected === 'bus' ? zoom?.(BUS) : null
+  const span = Math.max(WIDTH, width)
+  const left = Math.max(0, (WIDTH - width) / 2)
   return (
     <>
-      <div className={chip.chips}>
-        <Diagram
-          width={Math.max(WIDTH, width)}
-          left={Math.max(0, (WIDTH - width) / 2)}
-          height={HEIGHT}
-          label="toy chip die"
-        >
-          {arrow => (
-            <>
-              <Wire
-                arrow={arrow}
-                d={`M${middle(keys)} ${TOP + BOX_H} V${LOW}`}
-                look={flow}
-              />
-              {row.slice(1).map((to, i) => (
+      <Zoomed close={close}>
+        <div className={chip.chips}>
+          <Diagram
+            width={span}
+            left={left}
+            height={close ? HEIGHT + CONE_H : HEIGHT}
+            label="toy chip die"
+          >
+            {arrow => (
+              <>
+                {close && (
+                  <ZoomCone
+                    to={{ x: -left, w: span }}
+                    top={HEIGHT}
+                    bottom={HEIGHT + CONE_H}
+                    title="zoom: bus"
+                  />
+                )}
                 <Wire
-                  key={to.name}
                   arrow={arrow}
-                  d={`M${row[i]!.x + row[i]!.w} ${mid} H${to.x}`}
+                  d={`M${middle(keys)} ${TOP + BOX_H} V${LOW}`}
                   look={flow}
                 />
-              ))}
-              <Wire
-                arrow={arrow}
-                d={`M${pinRight} ${mid} H${width - 2}`}
-                look={flow}
-              />
-              <Pressable
-                name="output pin out"
-                selected={pick.selected === 'output pin'}
-                onSelect={() => pick.toggle('output pin')}
-              >
-                <text
-                  x={width - 2}
-                  y={mid + 11}
-                  textAnchor="end"
-                  className={styles.bus}
-                >
-                  out
-                </text>
-              </Pressable>
-              <Wire d={`M${feed} ${TOP + BOX_H} V${bus.y}`} />
-              <Wire
-                arrow={arrow}
-                d={`M${feed} ${bus.y + BOX_H} V${LOW}`}
-                look={knifed ? 'alarm' : 'plain'}
-              />
-              {stepTap && (
-                <Bend
-                  name="step tap"
-                  opens="tune ROM"
-                  pick={pick}
-                  hit={`M${stepX} ${LOW} V${TOP + BOX_H}`}
-                >
+                {row.slice(1).map((to, i) => (
                   <Wire
+                    key={to.name}
                     arrow={arrow}
-                    d={`M${stepX} ${LOW} V${TOP + BOX_H}`}
-                    look="alarm"
+                    d={`M${row[i]!.x + row[i]!.w} ${mid} H${to.x}`}
+                    look={flow}
                   />
-                  <Say x={stepX - 4} y={TOP + BOX_H + 22} anchor="end">
-                    step tap
-                  </Say>
-                </Bend>
-              )}
-              <ClockTag x={rom.x + 7} y={TOP} opens="clock" pick={pick} />
-              <ClockTag
-                x={voices.x + voices.w - 24}
-                y={LOW}
-                opens="clock"
-                pick={pick}
-              />
-              <ClockTag
-                x={env.x + 12}
-                y={LOW}
-                opens={pwm ? 'envelope' : 'clock'}
-                pick={pick}
-                say={pwm ? 'PWM' : 'clk'}
-                bent={pwm}
-              />
-              <ClockTag
-                x={pin.x + 12}
-                y={LOW}
-                opens={scan ? 'output pin' : 'clock'}
-                pick={pick}
-                say={scan ? 'scan' : 'clk'}
-                bent={scan}
-              />
-              {pwmTap && (
-                <Bend
-                  name="pwm tap"
-                  opens="voices"
-                  pick={pick}
-                  hit={`M${voices.x + voices.w} ${mid - SIDE} H${env.x}`}
+                ))}
+                <Wire
+                  arrow={arrow}
+                  d={`M${pinRight} ${mid} H${width - 2}`}
+                  look={flow}
+                />
+                <Pressable
+                  name="output pin out"
+                  selected={pick.selected === 'output pin'}
+                  onSelect={() => pick.toggle('output pin')}
                 >
-                  <Wire
-                    arrow={arrow}
-                    d={`M${voices.x + voices.w} ${mid - SIDE} H${env.x}`}
-                    look="alarm"
-                  />
-                  <Say
-                    x={(voices.x + voices.w + env.x) / 2}
-                    y={LOW - 4}
-                    anchor="middle"
+                  <text
+                    x={width - 2}
+                    y={mid + 11}
+                    textAnchor="end"
+                    className={styles.bus}
                   >
-                    PWM
-                  </Say>
-                </Bend>
-              )}
-              {up('chipEnvDiv') && (
-                <Bend
-                  name="dive"
-                  opens="envelope"
-                  pick={pick}
-                  hit={`M${env.x} ${mid + SIDE} H${voices.x + voices.w}`}
-                >
-                  <Wire
-                    arrow={arrow}
-                    d={`M${env.x} ${mid + SIDE} H${voices.x + voices.w}`}
-                    look="alarm"
-                  />
-                  <Say
-                    x={(voices.x + voices.w + env.x) / 2}
-                    y={LOW + BOX_H + 11}
-                    anchor="middle"
+                    out
+                  </text>
+                </Pressable>
+                <Wire d={`M${feed} ${TOP + BOX_H} V${bus.y}`} />
+                <Wire
+                  arrow={arrow}
+                  d={`M${feed} ${bus.y + BOX_H} V${LOW}`}
+                  look={knifed ? 'alarm' : 'plain'}
+                />
+                {stepTap && (
+                  <Bend
+                    name="step tap"
+                    opens="tune ROM"
+                    pick={pick}
+                    hit={`M${stepX} ${LOW} V${TOP + BOX_H}`}
                   >
-                    dive
-                  </Say>
-                </Bend>
-              )}
-              {up('chipEnvRelax') && (
-                <Bend
-                  name="relax"
-                  opens="envelope"
+                    <Wire
+                      arrow={arrow}
+                      d={`M${stepX} ${LOW} V${TOP + BOX_H}`}
+                      look="alarm"
+                    />
+                    <Say x={stepX - 4} y={TOP + BOX_H + 22} anchor="end">
+                      step tap
+                    </Say>
+                  </Bend>
+                )}
+                <ClockTag x={rom.x + 7} y={TOP} opens="clock" pick={pick} />
+                <ClockTag
+                  x={voices.x + voices.w - 24}
+                  y={LOW}
+                  opens="clock"
                   pick={pick}
-                  hit={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
-                >
-                  <Wire
-                    d={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
-                    look="alarm"
+                />
+                <ClockTag
+                  x={env.x + 12}
+                  y={LOW}
+                  opens={pwm ? 'envelope' : 'clock'}
+                  pick={pick}
+                  say={pwm ? 'PWM' : 'clk'}
+                  bent={pwm}
+                />
+                <ClockTag
+                  x={pin.x + 12}
+                  y={LOW}
+                  opens={scan ? 'output pin' : 'clock'}
+                  pick={pick}
+                  say={scan ? 'scan' : 'clk'}
+                  bent={scan}
+                />
+                {pwmTap && (
+                  <Bend
+                    name="pwm tap"
+                    opens="voices"
+                    pick={pick}
+                    hit={`M${voices.x + voices.w} ${mid - SIDE} H${env.x}`}
+                  >
+                    <Wire
+                      arrow={arrow}
+                      d={`M${voices.x + voices.w} ${mid - SIDE} H${env.x}`}
+                      look="alarm"
+                    />
+                    <Say
+                      x={(voices.x + voices.w + env.x) / 2}
+                      y={LOW - 4}
+                      anchor="middle"
+                    >
+                      PWM
+                    </Say>
+                  </Bend>
+                )}
+                {up('chipEnvDiv') && (
+                  <Bend
+                    name="dive"
+                    opens="envelope"
+                    pick={pick}
+                    hit={`M${env.x} ${mid + SIDE} H${voices.x + voices.w}`}
+                  >
+                    <Wire
+                      arrow={arrow}
+                      d={`M${env.x} ${mid + SIDE} H${voices.x + voices.w}`}
+                      look="alarm"
+                    />
+                    <Say
+                      x={(voices.x + voices.w + env.x) / 2}
+                      y={LOW + BOX_H + 11}
+                      anchor="middle"
+                    >
+                      dive
+                    </Say>
+                  </Bend>
+                )}
+                {up('chipEnvRelax') && (
+                  <Bend
+                    name="relax"
+                    opens="envelope"
+                    pick={pick}
+                    hit={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
+                  >
+                    <Wire
+                      d={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
+                      look="alarm"
+                    />
+                    <Say x={loopR} y={LOW - 10} anchor="end">
+                      relax
+                    </Say>
+                  </Bend>
+                )}
+                {cross && (
+                  <Bend
+                    name="crosstalk"
+                    opens="clock"
+                    pick={pick}
+                    hit={`M${tap} ${mid} V${TOP + BOX_H}`}
+                  >
+                    <Wire
+                      arrow={arrow}
+                      d={`M${tap} ${mid} V${TOP + BOX_H}`}
+                      look="alarm"
+                    />
+                    <circle
+                      cx={tap}
+                      cy={mid}
+                      r={1.6}
+                      className={styles.solder}
+                    />
+                    <Say x={tap - 4} y={LOW - 18} anchor="end">
+                      crosstalk
+                    </Say>
+                  </Bend>
+                )}
+                {up('chipHardSync') && (
+                  <BendTag
+                    x={clock.x}
+                    y={TOP + 5}
+                    edge="left"
+                    opens="clock"
+                    pick={pick}
+                    say="sync"
                   />
-                  <Say x={loopR} y={LOW - 10} anchor="end">
-                    relax
-                  </Say>
-                </Bend>
-              )}
-              {cross && (
-                <Bend
-                  name="crosstalk"
-                  opens="clock"
-                  pick={pick}
-                  hit={`M${tap} ${mid} V${TOP + BOX_H}`}
-                >
-                  <Wire
-                    arrow={arrow}
-                    d={`M${tap} ${mid} V${TOP + BOX_H}`}
-                    look="alarm"
+                )}
+                {up('chipFmClock') && (
+                  <BendTag
+                    x={clock.x}
+                    y={TOP + BOX_H - 5}
+                    edge="left"
+                    opens="clock"
+                    pick={pick}
+                    say="fm"
                   />
-                  <circle cx={tap} cy={mid} r={1.6} className={styles.solder} />
-                  <Say x={tap - 4} y={LOW - 18} anchor="end">
-                    crosstalk
-                  </Say>
-                </Bend>
-              )}
-              {up('chipHardSync') && (
-                <BendTag
-                  x={clock.x}
-                  y={TOP + 5}
-                  edge="left"
-                  opens="clock"
+                )}
+                {up('chipOutAddr') && (
+                  <BendTag
+                    x={rom.x + rom.w}
+                    y={TOP + 5}
+                    edge="right"
+                    opens="tune ROM"
+                    pick={pick}
+                    say="addr"
+                  />
+                )}
+                {up('chipOutData') && (
+                  <BendTag
+                    x={rom.x + rom.w}
+                    y={TOP + BOX_H - 5}
+                    edge="right"
+                    opens="tune ROM"
+                    pick={pick}
+                    say="data"
+                  />
+                )}
+                {up('chipGhost') && (
+                  <BendTag
+                    x={keys.x + 6}
+                    y={LOW + BOX_H}
+                    opens="key matrix"
+                    pick={pick}
+                    say="ghost"
+                  />
+                )}
+                {up('chipShort') && (
+                  <BendTag
+                    x={voices.x + 2}
+                    y={LOW + BOX_H}
+                    opens="voices"
+                    pick={pick}
+                    say="short"
+                  />
+                )}
+                {up('chipXor') && (
+                  <BendTag
+                    x={voices.x + 38}
+                    y={LOW + BOX_H}
+                    opens="voices"
+                    pick={pick}
+                    say="xor"
+                  />
+                )}
+                {up('chipDutyEnv') && (
+                  <BendTag
+                    x={voices.x + 62}
+                    y={LOW + BOX_H}
+                    opens="voices"
+                    pick={pick}
+                    say="duty"
+                  />
+                )}
+                {up('chipEnvBits') && (
+                  <BendTag
+                    x={env.x + 4}
+                    y={LOW + BOX_H}
+                    opens="envelope"
+                    pick={pick}
+                    say="bits"
+                  />
+                )}
+                {up('chipHold') && (
+                  <BendTag
+                    x={pin.x + 2}
+                    y={LOW + BOX_H}
+                    opens="output pin"
+                    pick={pick}
+                    say="hold"
+                  />
+                )}
+                <Node
                   pick={pick}
-                  say="sync"
+                  box={rom}
+                  lit={lit('tune ROM')}
+                  help="The counter that steps through the tune and the ROM that holds its notes. The output pin can be soldered onto one of its address or note-code wires."
                 />
-              )}
-              {up('chipFmClock') && (
-                <BendTag
-                  x={clock.x}
-                  y={TOP + BOX_H - 5}
-                  edge="left"
-                  opens="clock"
+                <Node
                   pick={pick}
-                  say="fm"
+                  box={clock}
+                  lit={lit('clock')}
+                  help="The crystal and its divider. Pitch, tempo, the scan counter and the PWM carrier all count off it."
                 />
-              )}
-              {up('chipOutAddr') && (
-                <BendTag
-                  x={rom.x + rom.w}
-                  y={TOP + 5}
-                  edge="right"
-                  opens="tune ROM"
+                <Node
                   pick={pick}
-                  say="addr"
+                  box={keys}
+                  lit={lit('key matrix')}
+                  help="The rows and columns the keys close. With the diodes lifted, holding two keys also closes the other two corners of their rectangle."
                 />
-              )}
-              {up('chipOutData') && (
-                <BendTag
-                  x={rom.x + rom.w}
-                  y={TOP + BOX_H - 5}
-                  edge="right"
-                  opens="tune ROM"
+                <Node
                   pick={pick}
-                  say="data"
+                  box={voices}
+                  lit={lit('voices')}
+                  help="The tone generators, one a note, each with its own pitch divider."
                 />
-              )}
-              {up('chipGhost') && (
-                <BendTag
-                  x={keys.x + 6}
-                  y={LOW + BOX_H}
-                  opens="key matrix"
+                <Node
                   pick={pick}
-                  say="ghost"
+                  box={env}
+                  lit={lit('envelope')}
+                  help="The capacitor each note’s level follows. The PWM carrier switches that level on and off."
                 />
-              )}
-              {up('chipShort') && (
-                <BendTag
-                  x={voices.x + 2}
-                  y={LOW + BOX_H}
-                  opens="voices"
+                <Node
                   pick={pick}
-                  say="short"
+                  box={pin}
+                  lit={lit('output pin')}
+                  help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
                 />
-              )}
-              {up('chipXor') && (
-                <BendTag
-                  x={voices.x + 38}
-                  y={LOW + BOX_H}
-                  opens="voices"
+                <GlyphBox
+                  {...keyboard}
+                  help="the tune, level, tone, accompaniment, arpeggio and key lock"
+                  lit={played}
+                  selected={pick.selected === KEYBOARD}
+                  onSelect={() => pick.toggle(KEYBOARD)}
+                  glyphW={GLYPH_W}
+                  glyph={keyboardGlyph}
+                />
+                <Node
                   pick={pick}
-                  say="xor"
+                  box={bus}
+                  lit={knifed}
+                  help="The address and data wires between the counter, the tune ROM and the voices. The rows put a knife on them."
                 />
-              )}
-              {up('chipDutyEnv') && (
-                <BendTag
-                  x={voices.x + 62}
-                  y={LOW + BOX_H}
-                  opens="voices"
-                  pick={pick}
-                  say="duty"
-                />
-              )}
-              {up('chipEnvBits') && (
-                <BendTag
-                  x={env.x + 4}
-                  y={LOW + BOX_H}
-                  opens="envelope"
-                  pick={pick}
-                  say="bits"
-                />
-              )}
-              {up('chipHold') && (
-                <BendTag
-                  x={pin.x + 2}
-                  y={LOW + BOX_H}
-                  opens="output pin"
-                  pick={pick}
-                  say="hold"
-                />
-              )}
-              <Node
-                pick={pick}
-                box={rom}
-                lit={lit('tune ROM')}
-                help="The counter that steps through the tune and the ROM that holds its notes. The output pin can be soldered onto one of its address or note-code wires."
-              />
-              <Node
-                pick={pick}
-                box={clock}
-                lit={lit('clock')}
-                help="The crystal and its divider. Pitch, tempo, the scan counter and the PWM carrier all count off it."
-              />
-              <Node
-                pick={pick}
-                box={keys}
-                lit={lit('key matrix')}
-                help="The rows and columns the keys close. With the diodes lifted, holding two keys also closes the other two corners of their rectangle."
-              />
-              <Node
-                pick={pick}
-                box={voices}
-                lit={lit('voices')}
-                help="The tone generators, one a note, each with its own pitch divider."
-              />
-              <Node
-                pick={pick}
-                box={env}
-                lit={lit('envelope')}
-                help="The capacitor each note’s level follows. The PWM carrier switches that level on and off."
-              />
-              <Node
-                pick={pick}
-                box={pin}
-                lit={lit('output pin')}
-                help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
-              />
-              <GlyphBox
-                {...keyboard}
-                help="the tune, level, tone, accompaniment, arpeggio and key lock"
-                lit={played}
-                selected={pick.selected === KEYBOARD}
-                onSelect={() => pick.toggle(KEYBOARD)}
-                glyphW={GLYPH_W}
-                glyph={keyboardGlyph}
-              />
-              <Node
-                pick={pick}
-                box={bus}
-                lit={knifed}
-                help="The address and data wires between the counter, the tune ROM and the voices. The rows put a knife on them."
-              />
-              {placed && (
-                <Pot
-                  x={placed[0]}
-                  y={placed[1]}
-                  dir={placed[2]}
-                  on={up('chipBendPot')}
-                  box={spotBox!}
-                  pick={pick}
-                />
-              )}
-            </>
-          )}
-        </Diagram>
-      </div>
+                {placed && (
+                  <Pot
+                    x={placed[0]}
+                    y={placed[1]}
+                    dir={placed[2]}
+                    on={up('chipBendPot')}
+                    box={spotBox!}
+                    pick={pick}
+                  />
+                )}
+              </>
+            )}
+          </Diagram>
+        </div>
+      </Zoomed>
       {pick.selected === KEYBOARD ? (
         <BoxRows
           keys={KEYBOARD_KEYS}

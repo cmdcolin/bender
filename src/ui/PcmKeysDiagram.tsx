@@ -11,8 +11,9 @@ import {
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
 import styles from './PcmKeysDiagram.module.css'
+import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 
-import type { Verbs } from './foldHosting.ts'
+import type { Verbs, Zoom } from './foldHosting.ts'
 
 const KEYS = [
   'pcmStruck',
@@ -57,7 +58,7 @@ const midOf = (from: BoxSpec, to: BoxSpec) =>
 // counter and the ROM talk over two buses a knife can reach, which hang under
 // the wires they sit on, and the die's one vibrato LFO feeds the counter from
 // above. Each box opens the knobs of the part it stands for.
-export function PcmKeysDiagram({ verbs }: { verbs: Verbs }) {
+export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('ROM')
   const flow = useStoreSelect(engine.sounding, lit => lit & (1 << PCM_TAP))
@@ -168,6 +169,9 @@ export function PcmKeysDiagram({ verbs }: { verbs: Verbs }) {
     ),
   ]
   const open = boxes.find(b => b.id === pick.selected)
+  const part = open && PARTS[open.id!]
+  const close = part ? zoom?.(part) : null
+  const feet = busY + BOX_H + 4
   const mid = TOP + ROW + BOX_H / 2
   const edge = (from: BoxSpec, to: BoxSpec) =>
     `M${from.x + from.w} ${mid} H${to.x}`
@@ -180,43 +184,52 @@ export function PcmKeysDiagram({ verbs }: { verbs: Verbs }) {
   ]
   return (
     <>
-      <div className={chip.chips}>
-        <div className={styles.fit} style={{ maxWidth: width }}>
-          <Diagram
-            width={width}
-            height={busY + BOX_H + 4}
-            label="Home keyboard signal path"
-          >
-            {arrow => (
-              <>
-                {chain.slice(1).map((to, i) => (
-                  <Wire
-                    key={to.id}
-                    arrow={arrow}
-                    d={edge(chain[i]!, to)}
-                    look={i < 2 ? 'plain' : flow}
-                  />
-                ))}
-                {drops.map(d => (
-                  <Wire key={d} d={d} look="dash" />
-                ))}
-                {boxes.map(b => (
-                  <BoxView
-                    key={b.id}
-                    box={b}
-                    selected={b.id === pick.selected}
-                    onSelect={pick.toggle}
-                  />
-                ))}
-              </>
-            )}
-          </Diagram>
+      <Zoomed close={close}>
+        <div className={chip.chips}>
+          <div className={styles.fit} style={{ maxWidth: width }}>
+            <Diagram
+              width={width}
+              height={close ? feet + CONE_H : feet}
+              label="Home keyboard signal path"
+            >
+              {arrow => (
+                <>
+                  {close && open && (
+                    <ZoomCone
+                      from={open}
+                      to={{ x: 0, w: width }}
+                      top={open.y + BOX_H}
+                      knee={feet}
+                      bottom={feet + CONE_H}
+                      title={`zoom: ${open.name}`}
+                    />
+                  )}
+                  {chain.slice(1).map((to, i) => (
+                    <Wire
+                      key={to.id}
+                      arrow={arrow}
+                      d={edge(chain[i]!, to)}
+                      look={i < 2 ? 'plain' : flow}
+                    />
+                  ))}
+                  {drops.map(d => (
+                    <Wire key={d} d={d} look="dash" />
+                  ))}
+                  {boxes.map(b => (
+                    <BoxView
+                      key={b.id}
+                      box={b}
+                      selected={b.id === pick.selected}
+                      onSelect={pick.toggle}
+                    />
+                  ))}
+                </>
+              )}
+            </Diagram>
+          </div>
         </div>
-      </div>
-      <BoxRows
-        keys={open?.keys}
-        verbs={open && PARTS[open.id!] && verbs(PARTS[open.id!]!)}
-      />
+      </Zoomed>
+      <BoxRows keys={open?.keys} verbs={part && verbs(part)} />
     </>
   )
 }

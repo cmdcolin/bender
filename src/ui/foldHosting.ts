@@ -8,6 +8,9 @@ export type Verbs = (
   box?: { name: string; keys: readonly ControlKey[] },
 ) => ReactNode
 
+/** Another fold's drawing, drawn under the box that holds its part, or null. */
+export type Zoom = (part: string) => ReactNode
+
 /** Stages drawn whole by one fold's drawing, which then holds every row. */
 export const STAGE_DRAWINGS: Record<string, string> = {
   'Toy keyboard': 'inside the die',

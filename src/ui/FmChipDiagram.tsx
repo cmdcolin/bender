@@ -13,9 +13,9 @@ import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
 import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
 import { OPERATORS_SPAN } from './fmVoiceSpan.ts'
-import { CONE_H, ZoomCone } from './ZoomCone.tsx'
+import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 
-import type { Verbs } from './foldHosting.ts'
+import type { Verbs, Zoom } from './foldHosting.ts'
 
 const KNIFE = [
   'fmDataLine',
@@ -83,7 +83,7 @@ const BOX_H = boxHeight('')
 // configure — the modulator feeding the carrier — and one output stage behind
 // them. The key and the clocks come in from above, and the die's own faults sit
 // under the operators. Each box opens the knobs of the part it stands for.
-export function FmChipDiagram({ verbs }: { verbs: Verbs }) {
+export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('modulator')
   // Off the meter on the chip's channel, as the map's glyph reads it.
@@ -175,26 +175,37 @@ export function FmChipDiagram({ verbs }: { verbs: Verbs }) {
   const edge = (from: BoxSpec, to: BoxSpec) =>
     `M${from.x + from.w} ${mid} H${to.x}`
   const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
+  const part = open && PARTS[open.id!]
+  const nested = boxes.find(b => b.id === pick.selected && PARTS[b.id])
+  const close = zoomed ? <FmVoiceDiagram pick={pick} /> : part && zoom?.(part)
+  const cone = zoomed
+    ? {
+        from: { x: mod.x, w: span },
+        to: OPERATORS_SPAN,
+        top: TOP + ROW + BOX_H,
+        title: 'zoom: operators',
+      }
+    : close && nested
+      ? {
+          from: nested,
+          to: { x: 0, w: WIDTH },
+          top: nested.y + BOX_H,
+          knee: feet,
+          title: `zoom: ${nested.name}`,
+        }
+      : null
   return (
     <>
-      <div className={zoomed ? chip.stack : undefined}>
+      <Zoomed close={close}>
         <div className={chip.chips}>
           <Diagram
             width={WIDTH}
-            height={zoomed ? feet + CONE_H : feet}
+            height={cone ? feet + CONE_H : feet}
             label="FM chip signal path"
           >
             {arrow => (
               <>
-                {zoomed && (
-                  <ZoomCone
-                    from={{ x: mod.x, w: span }}
-                    to={OPERATORS_SPAN}
-                    top={TOP + ROW + BOX_H}
-                    bottom={feet + CONE_H}
-                    title="zoom: operators"
-                  />
-                )}
+                {cone && <ZoomCone {...cone} bottom={feet + CONE_H} />}
                 {row.slice(1).map((to, i) => (
                   <Wire
                     key={to.id}
@@ -231,11 +242,10 @@ export function FmChipDiagram({ verbs }: { verbs: Verbs }) {
             )}
           </Diagram>
         </div>
-        {zoomed && <FmVoiceDiagram pick={pick} />}
-      </div>
+      </Zoomed>
       <BoxRows
         keys={open?.id === 'die' ? [] : open?.keys}
-        verbs={open && PARTS[open.id!] && verbs(PARTS[open.id!]!)}
+        verbs={part && verbs(part)}
       />
     </>
   )

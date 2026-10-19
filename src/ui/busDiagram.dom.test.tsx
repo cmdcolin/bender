@@ -39,6 +39,31 @@ test.each([
   expect(drawing(label)).not.toBeNull()
 })
 
+test.each([
+  ['Toy keyboard', 'bus', 'toy chip die', 'toy keyboard bus wiring'],
+  ['FM chip', 'die', 'FM chip signal path', 'FM die and driver'],
+  [
+    'Mono synth',
+    'voice card',
+    'mono synth voice card',
+    'mono synth voice card faults',
+  ],
+])(
+  '%s names the %s close-up and draws it straight under itself',
+  (group, box, parent, close) => {
+    open(group)
+    press(box)
+    expect(texts(drawing(parent))).toContain(`zoom: ${box}`)
+    const below = drawing(parent).compareDocumentPosition(drawing(close))
+    expect(below & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const verbs = screen.getAllByRole('button', { name: /^roll/ }).at(-1)!
+    expect(
+      drawing(close).compareDocumentPosition(verbs) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  },
+)
+
 test('the sample ROM box of the toy drums draws its buses', () => {
   open('Toy drums')
   expect(

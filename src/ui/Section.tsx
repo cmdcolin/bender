@@ -33,7 +33,7 @@ import { firstLook, markLooked } from './firstLook.ts'
 import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
-import { FoldDrawing } from './foldDrawings.tsx'
+import { FoldDrawing, zoomFor } from './foldDrawings.tsx'
 import {
   DRAWN_ROWS,
   hostedBy,
@@ -630,9 +630,6 @@ function BoxVerbs({
         seconds={seconds}
         verbs={false}
       />
-      {!DRAWN_ROWS.has(`${group.name}|${part}`) && (
-        <FoldDrawing group={group.name} part={part} />
-      )}
     </>
   )
 }
@@ -913,6 +910,7 @@ export function OpenGroup({
             {group.editor?.kind === 'tapePath' && <TapePathDiagram />}
             {group.editor?.kind === 'fm' && (
               <FmChipDiagram
+                zoom={zoomFor(group.name)}
                 verbs={(part, box) => (
                   <BoxVerbs
                     group={group}
@@ -925,6 +923,7 @@ export function OpenGroup({
             )}
             {group.editor?.kind === 'pcm' && (
               <PcmKeysDiagram
+                zoom={zoomFor(group.name)}
                 verbs={(part, box) => (
                   <BoxVerbs
                     group={group}
@@ -938,6 +937,7 @@ export function OpenGroup({
             {group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
             {group.editor?.kind === 'monoPath' && (
               <MonoPathDiagram
+                zoom={zoomFor(group.name)}
                 verbs={(part, box) => (
                   <BoxVerbs
                     group={group}
