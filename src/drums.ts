@@ -141,8 +141,6 @@ export const LEN_KEYS = new Set<ControlKey>([
   THROW_ROW.len,
 ])
 
-export const MAYBE_KEYS = DRUM_VOICES.map(v => v.maybe)
-
 /** Every mask a pattern is made of, voice masks and maybe masks together, in
     the order the grid draws them. A move that rewrites a pattern rewrites all
     of these or it hands back a bar with somebody else's maybes in it. */

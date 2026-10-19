@@ -1,8 +1,4 @@
-import {
-  DEFAULT_CONTROLS,
-  type ControlKey,
-  type Controls,
-} from '../controls.ts'
+import { type ControlKey, type Controls } from '../controls.ts'
 import { DEST } from '../dsp/modbus.ts'
 import {
   TAPE_AT_BENDS,
@@ -14,6 +10,7 @@ import {
   bendAt,
   BENDS,
   GROUPS,
+  offValue,
   ownTouched,
   sliderFor,
   touchedCount,
@@ -272,10 +269,7 @@ export const GATES: Record<string, readonly ControlKey[]> = {
   Mic: ['micLevel'],
 }
 
-export const gateOff = (key: ControlKey): number => {
-  const def = sliderFor(key)
-  return DEFAULT_CONTROLS[key] === def.max ? def.max : def.min
-}
+export const gateOff = (key: ControlKey): number => offValue(sliderFor(key))
 
 const gateOpen = (name: string, c: Controls) =>
   GATES[name]!.some(k => c[k] !== gateOff(k))

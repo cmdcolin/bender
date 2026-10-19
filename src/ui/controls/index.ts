@@ -130,6 +130,11 @@ export function sliderFor(key: ControlKey): SliderDef {
   return def
 }
 
+/** Where a control sits when it is off: the bottom of its travel, except on
+    one that boots at the top, such as the reverb's Dry level. */
+export const offValue = (def: SliderDef): number =>
+  DEFAULT_CONTROLS[def.key] === def.max ? def.max : def.min
+
 export const GROUP_BY_KEY = new Map<ControlKey, string>(
   GROUPS.flatMap(g => g.sliders.map(s => [s.key, g.name] as const)),
 )

@@ -113,10 +113,6 @@ const FEELS: Feel[] = [
 // hits, and the one figure that sounds deliberate on a cowbell.
 const CLAVE = bits([0, 3, 6, 10, 12])
 
-// Where an open hat goes when the roll reaches for one. Between the closed
-// hats, never on top of them: the two share a cap, so an open hat on a step the
-// closed one already has is an open hat nobody hears.
-
 // Which voices the machine is willing to wire through the dice. Not the kick or
 // the snare: a downbeat that is only sometimes there is not a bar with a loose
 // contact in it, it is a bar you cannot count. The trimmings are where a hand
@@ -181,7 +177,7 @@ interface Fill {
   write: (masks: DrumMasks, at: number, rand: Rng) => DrumMasks
 }
 
-export const FILLS: Fill[] = [
+const FILLS: Fill[] = [
   {
     name: 'tom roll',
     write: (masks, at, rand) => {

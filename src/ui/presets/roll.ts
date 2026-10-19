@@ -10,6 +10,7 @@ import {
   BENDS,
   type Group,
   groupKeys,
+  offValue,
   SLIDER_BY_KEY,
   type SliderDef,
   sliderFor,
@@ -57,11 +58,6 @@ const shakeShare = (amount: number) => 0.12 + 0.5 * amount
 const SHY_ODDS = 0.08
 const SHY_TOP = 0.3
 
-// Off is the bottom of the travel, except on a control that boots at the top,
-// such as the reverb's Dry level.
-const shyOff = (def: SliderDef) =>
-  DEFAULT_CONTROLS[def.key] === def.max ? def.max : def.min
-
 // The bottom of the travel only means anything on a control whose travel is an
 // amount. A list of choices is not ordered by how much of itself it is — a
 // cricket is not more effect than a bird, and D7 is not a deeper cut than D0 —
@@ -69,7 +65,7 @@ const shyOff = (def: SliderDef) =>
 // unreachable. A shy control with choices stays off exactly as often; when it
 // does come on it takes any of them.
 const shyValue = (def: SliderDef, rand: () => number) => {
-  const off = shyOff(def)
+  const off = offValue(def)
   if (rand() >= SHY_ODDS) return off
   if (def.choices)
     return def.min + 1 + Math.floor(rand() * (def.choices.length - 1))
@@ -109,7 +105,7 @@ export function nudgeSliders(
     // A shy control already off stays off: a nudge is a small move, and off to
     // faintly crackling is not a small move. One you turned up yourself is a
     // control like any other from here on.
-    if (def.shy && controls[def.key] === shyOff(def)) continue
+    if (def.shy && controls[def.key] === offValue(def)) continue
     next[def.key] = nudge(def, controls[def.key], amount, rand)
   }
   return next

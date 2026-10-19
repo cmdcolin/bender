@@ -8,7 +8,6 @@ import { flushDenormal } from '../util/softclip.ts'
 // or came back at the wrong level makes the decoder mistrack the way a real
 // deck does.
 
-export const NR_OFF = 0
 export const NR_DOLBY_B = 1
 export const NR_DBX = 2
 

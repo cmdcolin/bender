@@ -287,10 +287,6 @@ export function voicing(steps: readonly number[]) {
 export const laneSteps = (c: Controls, lane: number) =>
   TUNE_LANE_KEYS[lane]!.map(k => c[k])
 
-/** What all three lanes are sounding, step by step. */
-export const chordVoicing = (c: Controls) =>
-  TUNE_LANE_KEYS.map((_, lane) => voicing(laneSteps(c, lane)))
-
 /** Which lane is sounding a note on a step, or -1 for a note nothing is
     playing there. The melody lane answers first, so a note doubled across
     lanes is taken off the one the chip's own oscillator is on. */
@@ -321,11 +317,6 @@ export function laneForNote(
   }
   return 0
 }
-
-/** Every note the memory strikes anywhere, which is what the accompaniment
-    reads its key off and what the roll opens its window on. */
-export const tuneNotes = (c: Controls) =>
-  TUNE_LANE_KEYS.flatMap((_, lane) => laneSteps(c, lane)).filter(isNote)
 
 /** Formats a lane with one token per step: a note name, `.` for a rest or `~`
     for a hold. */
