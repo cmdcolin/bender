@@ -1,0 +1,49 @@
+.box {
+  composes: box from './App.module.css';
+  align-items: center;
+}
+
+.name {
+  composes: label from './App.module.css';
+  align-self: flex-start;
+}
+
+.keys {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+}
+
+/* The take counter, written on the cassette's label: a red readout that lights
+   while a take runs, like the one on the front of a deck. */
+.counter,
+.counterOn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 7cqw;
+  letter-spacing: 0.08em;
+  background: #0b0b0e;
+  border: 1px solid #000;
+  border-radius: 2px;
+  color: #4a2a22;
+}
+
+.counterOn {
+  color: #ff5a3c;
+  text-shadow: 0 0 6px rgb(255 90 60 / 0.6);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--alarm);
+}
+
+.note {
+  font-size: var(--fs-xs);
+  color: var(--accent);
+}

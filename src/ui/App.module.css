@@ -188,22 +188,6 @@
   position: relative;
 }
 
-/* Wrapping, and every label kept on one line. The row is six switches at their
-   own widths and it used to squeeze them instead: "play demo song" broke over
-   two lines, and a button whose label wraps reads as a button that is being
-   crowded rather than one that is where it wants to be. There is height under
-   this row and there was never width in it. */
-.ioRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--gap-ctl);
-}
-
-.ioRow > :not([role='tooltip']) {
-  white-space: nowrap;
-}
-
 /* The studio: the recorder's faceplate, half the width beside the bench, and
    the whole width on a phone. The tape loop's face composes `.box` too. */
 .studio {
@@ -244,27 +228,6 @@
   right: 5px;
 }
 
-.artRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-lg);
-}
-
-/* The keys drop under the picture in a box too narrow for both, rather than
-   shrinking to a sliver beside it. */
-.artRow > .controls {
-  flex: 1 1 8rem;
-}
-
-/* A narrow recorder drops the cassette, so the counter and its keys share one
-   row. The counter and REC say a take is running without it. */
-@container (max-width: 420px) {
-  .artRow > svg {
-    display: none;
-  }
-}
-
 .controls {
   display: flex;
   flex: 1;
@@ -282,28 +245,6 @@
   flex: none;
   font-size: var(--fs-xs);
   color: var(--fg4);
-}
-
-/* The take counter: a red seven-segment-ish readout that lights while a take
-   is running, like the one on the front of every cassette deck. */
-.counter,
-.counterOn {
-  font-variant-numeric: tabular-nums;
-  font-size: var(--fs-md);
-  letter-spacing: 0.08em;
-  padding: 0 var(--space-md);
-  min-height: var(--ctl-h);
-  display: inline-flex;
-  align-items: center;
-  background: #0b0b0e;
-  border: 1px solid #000;
-  border-radius: var(--ctl-radius);
-  color: #4a2a22;
-}
-
-.counterOn {
-  color: #ff5a3c;
-  text-shadow: 0 0 6px rgb(255 90 60 / 0.6);
 }
 
 /* The switches under the board: what plays, what listens, what is being
@@ -324,12 +265,6 @@
 .rolling {
   font-size: var(--fs-xs);
   color: var(--accent);
-}
-
-.recError {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--alarm);
 }
 
 .hint {

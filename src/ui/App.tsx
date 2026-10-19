@@ -18,7 +18,6 @@ import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
-import { DeckGroup, DeckKey, DeckWell } from './DeckKey.tsx'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
 import { add, clearAdded, confine } from './fitted.ts'
@@ -41,14 +40,13 @@ import {
 import { PinnedStrip } from './PinnedStrip.tsx'
 import { Presets } from './PresetRow.tsx'
 import { mutate, presetNameFor } from './presets/index.ts'
-import { RecorderMore } from './RecorderMore.tsx'
+import { Recorder } from './Recorder.tsx'
 import { SavedVoices } from './SavedVoices.tsx'
 import { Scope } from './Scope.tsx'
 import { OpenGroup, PathHint } from './Section.tsx'
 import { boardFrom, boardFromUrl, boardHash } from './share.ts'
 import { ShareButton } from './ShareButton.tsx'
 import { StartOverlay } from './StartOverlay.tsx'
-import { Cassette } from './StudioArt.tsx'
 import { dragging } from './tapeDrop.ts'
 import { Tip } from './Tip.tsx'
 import { useBoardUrl } from './useBoardUrl.ts'
@@ -57,11 +55,6 @@ import { useSavedVoices } from './useSavedVoices.ts'
 import { useSyncedPrefs } from './useSyncedPrefs.ts'
 import { suggestVoiceName, type SavedVoice } from './voiceModel.ts'
 import { WhySignInDialog } from './WhySignInDialog.tsx'
-
-function clock(seconds: number): string {
-  const s = Math.floor(seconds)
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}
 
 // One slot holding either the duration a new board *will* take to arrive or,
 // while one travels, how far along it is and the way to stop it. They are one
@@ -175,11 +168,6 @@ export function App(props: { openedFromLink?: boolean }) {
   const running = useStoreValue(engine.running)
   const remapping = useStoreValue(remapOpen)
   const coarse = useCoarse()
-  const recording = useStoreValue(engine.recording)
-  const recSeconds = useStoreValue(engine.recSeconds)
-  const recStems = useStoreValue(engine.recStems)
-  const recError = useStoreValue(engine.recError)
-  const recNote = useStoreValue(engine.recNote)
   // Which stage's controls the panel is showing. The map is the way in — every
   // group has a door on it, the stages along the path and the rest of the board
   // drawn where it sits — so one stage is open at a time and the rest of the
@@ -354,67 +342,7 @@ export function App(props: { openedFromLink?: boolean }) {
         <Instruments seconds={morphSeconds} onOpen={show} />
         <BodyPad onOpen={show} />
         <div className={styles.studio}>
-          <section className={styles.box} aria-label="recorder">
-            <span className={styles.label}>recorder</span>
-            <div className={styles.artRow}>
-              <Cassette running={recording} />
-              <div className={styles.controls}>
-                <div className={styles.ioRow}>
-                  <span
-                    className={recording ? styles.counterOn : styles.counter}
-                    role="timer"
-                    aria-label="take time"
-                  >
-                    {clock(recSeconds)}
-                  </span>
-                  <DeckWell label="recorder keys">
-                    <DeckGroup>
-                      <Tip
-                        text={
-                          recStems
-                            ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                            : 'Records the output to a wav file — stopping saves it.'
-                        }
-                      >
-                        <DeckKey
-                          glyph="rec"
-                          legend="rec"
-                          name={recStems ? 'record stems' : 'record wav'}
-                          red
-                          latched={recording}
-                          onClick={() => {
-                            if (!recording) engine.startRecording()
-                          }}
-                        />
-                      </Tip>
-                      <Tip text="Stops the take and saves it.">
-                        <DeckKey
-                          glyph="stop"
-                          legend="stop"
-                          name="stop and save"
-                          disabled={!recording}
-                          onClick={() => engine.stopRecording()}
-                        />
-                      </Tip>
-                    </DeckGroup>
-                    <DeckGroup>
-                      <RecorderMore recording={recording} recStems={recStems} />
-                    </DeckGroup>
-                  </DeckWell>
-                </div>
-                {recError && (
-                  <p className={styles.recError} role="alert">
-                    the take was not saved: {recError}
-                  </p>
-                )}
-                {recNote && (
-                  <p className={styles.rolling} role="status">
-                    {recNote}
-                  </p>
-                )}
-              </div>
-            </div>
-          </section>
+          <Recorder />
         </div>
       </main>
 

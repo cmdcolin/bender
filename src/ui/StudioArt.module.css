@@ -1,7 +1,26 @@
+/* A container, so the counter on the label scales with the cassette. */
+.deck {
+  position: relative;
+  container-type: inline-size;
+  width: 100%;
+  max-width: 240px;
+  align-self: center;
+}
+
 .cassette {
-  flex: none;
-  width: 120px;
+  display: block;
+  width: 100%;
   height: auto;
+}
+
+/* The label's writing line, in the cassette's own 120 x 76 units. */
+.label {
+  position: absolute;
+  left: 26.7%;
+  top: 14.5%;
+  width: 60%;
+  height: 18.4%;
+  display: flex;
 }
 
 .shell {
@@ -17,6 +36,10 @@
 
 .stripe {
   fill: var(--accent);
+}
+
+.stripeRec {
+  fill: var(--alarm);
 }
 
 .ruling {
