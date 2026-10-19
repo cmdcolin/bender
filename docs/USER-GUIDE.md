@@ -410,10 +410,13 @@ synth with no key down at all. The _leaky drone_ preset starts there.
 The bench is the main area under the scope, where the instruments sit.
 
 - Every instrument has a **Level** slider on its face. The FM chip, home
-  keyboard and mono synth appear when their level comes up, and stay once they
-  have, so a face you pull to zero is still there to bring back.
-- **+ add all instruments** lays out all five, each with a close cap. Once all
-  five are out, the same button reads **− hide unused instruments**.
+  keyboard, mono synth and tape loop appear when their level comes up, and stay
+  once they have, so a face you pull to zero is still there to bring back.
+- Loading a tape raises the tape loop's level, so its face appears. The face
+  also holds the mic switch, and shows while the mic is open or the Mic stage is
+  on the signal path.
+- **+ add all instruments** lays out all six, each with a close cap. Once all
+  six are out, the same button reads **− hide unused instruments**.
 - **+ add all pedals** puts all six pedal faces on the bench, and **− put all
   pedals away** clears them. A pedal stays silent until its mix comes up.
 - The **pedals** button lists the six pedals in signal order. Check one to put

@@ -15,15 +15,17 @@ import { versionLabel } from '../version.ts'
 import { AboutDialog } from './AboutDialog.tsx'
 import { Account } from './Account.tsx'
 import styles from './App.module.css'
+import { useBenchFaces } from './benchFaces.ts'
 import { BendKeys } from './BendKeys.tsx'
 import { BodyPad } from './BodyPad.tsx'
 import { ChainMap } from './ChainMap.tsx'
 import { GROUPS } from './controls/index.ts'
-import { useStoreValue } from './ControlsContext.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DeckGroup, DeckKey, DeckWell } from './DeckKey.tsx'
+import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { Dice } from './Dice.tsx'
 import { useDrumKeys } from './drumKeys.ts'
-import { add, clearAdded, confine } from './fitted.ts'
+import { add, clearAdded, confine, shownOn } from './fitted.ts'
 import { HuntDialog } from './HuntDialog.tsx'
 import { Instruments } from './Instruments.tsx'
 import { isTyping } from './isTyping.ts'
@@ -186,6 +188,10 @@ export function App(props: { openedFromLink?: boolean }) {
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
   const [dragging, setDragging] = useState(false)
+  // The tape loop's face also holds the mic switch, so it shows with the Mic.
+  const faces = useBenchFaces()
+  const micShown = useBoardValue(c => shownOn(c).has('Mic'))
+  const tapeShown = faces.shows('Tape loop') || micOn || micShown || dragging
   const [showShelf, setShowShelf] = useState(false)
   const [shelfBtn, setShelfBtn] = useState<HTMLButtonElement | null>(null)
   // Which stage's controls the panel is showing. The map is the way in — every
@@ -423,82 +429,93 @@ export function App(props: { openedFromLink?: boolean }) {
               </div>
             </div>
           </section>
-          <section className={styles.box} aria-label="tape loop">
-            <span className={styles.label}>tape loop</span>
-            <div className={styles.controls}>
-              <TapeTransport
-                loaded={!!sampleName}
-                lead={
-                  <>
-                    <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
-                      <DeckKey
-                        ref={setShelfBtn}
-                        glyph={archiveStep ? 'cancel' : 'eject'}
-                        legend={archiveStep ? 'abort' : 'load'}
-                        name={archiveStep ? 'cancel' : 'load a tape'}
-                        latched={showShelf && !archiveStep}
-                        aria-expanded={showShelf && !archiveStep}
-                        onClick={() =>
-                          archiveStep
-                            ? engine.cancelRoll()
-                            : setShowShelf(o => !o)
-                        }
-                      />
-                    </Tip>
-                    <Tip
-                      text={
-                        micOn
-                          ? 'Closes the microphone and takes it off the board.'
-                          : 'Opens the microphone as an input to the board.'
-                      }
-                    >
-                      <DeckKey
-                        glyph="mic"
-                        legend="mic"
-                        red
-                        latched={micOn}
-                        onClick={() =>
-                          micOn ? engine.disableMic() : engine.enableMic()
-                        }
-                      />
-                    </Tip>
-                  </>
-                }
-              />
-              {showShelf && !archiveStep && (
-                <TapeShelf
-                  anchor={shelfBtn}
-                  onDone={() => setShowShelf(false)}
+          {tapeShown && (
+            <section className={styles.box} aria-label="tape loop">
+              <div className={styles.boxHead}>
+                <span className={styles.label}>tape loop</span>
+                <DeviceVerbs
+                  stage="Tape loop"
+                  seconds={morphSeconds}
+                  onClose={
+                    faces.all ? () => faces.close('Tape loop') : undefined
+                  }
                 />
-              )}
-              {dragging
-                ? drop
-                : !sampleName && (
-                    <p className={styles.emptyTape}>
-                      nothing on the tape: drop an audio file anywhere, or press
-                      rec for a blank reel
-                    </p>
+              </div>
+              <div className={styles.controls}>
+                <TapeTransport
+                  loaded={!!sampleName}
+                  lead={
+                    <>
+                      <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
+                        <DeckKey
+                          ref={setShelfBtn}
+                          glyph={archiveStep ? 'cancel' : 'eject'}
+                          legend={archiveStep ? 'abort' : 'load'}
+                          name={archiveStep ? 'cancel' : 'load a tape'}
+                          latched={showShelf && !archiveStep}
+                          aria-expanded={showShelf && !archiveStep}
+                          onClick={() =>
+                            archiveStep
+                              ? engine.cancelRoll()
+                              : setShowShelf(o => !o)
+                          }
+                        />
+                      </Tip>
+                      <Tip
+                        text={
+                          micOn
+                            ? 'Closes the microphone and takes it off the board.'
+                            : 'Opens the microphone as an input to the board.'
+                        }
+                      >
+                        <DeckKey
+                          glyph="mic"
+                          legend="mic"
+                          red
+                          latched={micOn}
+                          onClick={() =>
+                            micOn ? engine.disableMic() : engine.enableMic()
+                          }
+                        />
+                      </Tip>
+                    </>
+                  }
+                />
+                {showShelf && !archiveStep && (
+                  <TapeShelf
+                    anchor={shelfBtn}
+                    onDone={() => setShowShelf(false)}
+                  />
+                )}
+                {dragging
+                  ? drop
+                  : !sampleName && (
+                      <p className={styles.emptyTape}>
+                        nothing on the tape: drop an audio file anywhere, or
+                        press rec for a blank reel
+                      </p>
+                    )}
+                <SampleReel>
+                  {sampleName && (
+                    <span className={styles.tapeName} title={sampleName}>
+                      {sampleName}
+                    </span>
                   )}
-              <SampleReel>
-                {sampleName && (
-                  <span className={styles.tapeName} title={sampleName}>
-                    {sampleName}
-                  </span>
-                )}
-                {!archiveStep && archiveSource && (
-                  <a
-                    className={styles.credit}
-                    href={detailsUrl(archiveSource.id)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    archive.org/{archiveSource.id}
-                  </a>
-                )}
-              </SampleReel>
-              {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
-            </div>
-          </section>
+                  {!archiveStep && archiveSource && (
+                    <a
+                      className={styles.credit}
+                      href={detailsUrl(archiveSource.id)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      archive.org/{archiveSource.id}
+                    </a>
+                  )}
+                </SampleReel>
+                {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
+              </div>
+            </section>
+          )}
         </div>
         <BendKeys morphSeconds={morphSeconds} />
         {!running && (

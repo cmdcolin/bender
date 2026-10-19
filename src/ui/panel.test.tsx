@@ -548,3 +548,22 @@ test('clicking an off-stock reading puts the control back to stock', () => {
   fireEvent.click(reset)
   expect(engine.controls.get().fmFeedback).toBe(DEFAULT_CONTROLS.fmFeedback)
 })
+
+test('the tape loop stays off the bench until it is added or its level comes up', () => {
+  bench.set({ ...bench.get(), all: false, closed: [] })
+  render(<App />)
+  const tape = () => screen.queryByRole('region', { name: 'tape loop' })
+  expect(tape()).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '+ add all instruments' }))
+  expect(tape()).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'close Tape loop' }))
+  expect(tape()).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '+ tape loop' }))
+  expect(tape()).not.toBeNull()
+  fireEvent.click(
+    screen.getByRole('button', { name: '− hide unused instruments' }),
+  )
+  expect(tape()).toBeNull()
+  act(() => engine.set('sampleLevel', 0.7))
+  expect(tape()).not.toBeNull()
+})

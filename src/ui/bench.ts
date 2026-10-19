@@ -22,6 +22,7 @@ export const INSTRUMENTS = [
   'FM chip',
   'Home keyboard',
   'Mono synth',
+  'Tape loop',
 ] as const
 
 const EMPTY: Bench = {
