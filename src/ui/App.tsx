@@ -26,6 +26,7 @@ import { Instruments } from './Instruments.tsx'
 import { isTyping } from './isTyping.ts'
 import { remapOpen } from './keymap.ts'
 import { KeysDialog } from './KeysDialog.tsx'
+import { listView } from './listView.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
@@ -46,6 +47,7 @@ import { Scope } from './Scope.tsx'
 import { OpenGroup, PathHint } from './Section.tsx'
 import { boardFrom, boardFromUrl, boardHash } from './share.ts'
 import { ShareButton } from './ShareButton.tsx'
+import { StageList } from './StageList.tsx'
 import { StartOverlay } from './StartOverlay.tsx'
 import { dragging } from './tapeDrop.ts'
 import { Tip } from './Tip.tsx'
@@ -180,6 +182,7 @@ export function App(props: { openedFromLink?: boolean }) {
     setOpen(name)
   }
   const toggle = (name: string) => show(open === name ? null : name)
+  const listed = useStoreValue(listView)
   const morphSeconds = useStoreValue(morphSetting)
   const walk = useStoreValue(engine.history)
   const drifting = useStoreValue(engine.drifting)
@@ -629,15 +632,21 @@ export function App(props: { openedFromLink?: boolean }) {
         )}
 
         <Presets morphSeconds={morphSeconds} folded />
-        <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
-        {openGroup ? (
-          <OpenGroup
-            group={openGroup}
-            onClose={() => setOpen(null)}
-            seconds={morphSeconds}
-          />
+        {listed ? (
+          <StageList seconds={morphSeconds} />
         ) : (
-          <PathHint />
+          <>
+            <ChainMap open={open} onOpen={toggle} seconds={morphSeconds} />
+            {openGroup ? (
+              <OpenGroup
+                group={openGroup}
+                onClose={() => setOpen(null)}
+                seconds={morphSeconds}
+              />
+            ) : (
+              <PathHint />
+            )}
+          </>
         )}
       </aside>
     </div>

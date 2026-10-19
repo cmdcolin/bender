@@ -13,9 +13,10 @@ import { createStore } from '../listeners.ts'
 import { bench } from './bench.ts'
 import { buildMap, drawMap } from './chain-map.ts'
 import styles from './ChainMap.module.css'
-import { CHANNELS, GROUPS, STAGE_ORDER } from './controls/index.ts'
+import { CHANNELS, GROUPS, STAGE_ORDER, type Group } from './controls/index.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { added, removable, shownOn, takeOff } from './fitted.ts'
+import { listView, setListView } from './listView.ts'
 import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
@@ -195,7 +196,13 @@ export function ChainMap({
           seconds={seconds}
         />
       )}
-      <div className={styles.addRow}>
+      <StageBar
+        on={onIt}
+        off={offIt}
+        open={open}
+        onOpen={onOpen}
+        seconds={seconds}
+      >
         {open !== null && !coarse && (
           <button
             className={styles.add}
@@ -205,24 +212,55 @@ export function ChainMap({
             {folded ? '▾ show the map' : '▴ fold the map'}
           </button>
         )}
-        <StageMenu
-          groups={offIt}
-          button="+ add a stage"
-          label="add a stage"
-          former
-          onPick={onOpen}
-        />
-        <StageMenu
-          groups={onIt.filter(g => removable(g.name))}
-          button="− take off a stage"
-          label="take off a stage"
-          onPick={name => {
-            const group = GROUP_BY_NAME.get(name)!
-            engine.morphTo(takeOff(group, engine.controls.get()), seconds)
-            if (open === name) onOpen(name)
-          }}
-        />
-      </div>
+      </StageBar>
+    </div>
+  )
+}
+
+/** The row under the panel's stages: the view switch, then add and take off. */
+export function StageBar({
+  on,
+  off,
+  open,
+  onOpen,
+  seconds,
+  children,
+}: {
+  on: Group[]
+  off: Group[]
+  open: string | null
+  onOpen: (name: string) => void
+  seconds: number
+  children?: ReactNode
+}) {
+  const listed = useStoreValue(listView)
+  return (
+    <div className={styles.addRow}>
+      <button
+        className={styles.add}
+        aria-pressed={listed}
+        onClick={() => setListView(!listed)}
+      >
+        {listed ? '◧ show the diagram' : '☰ show as a list'}
+      </button>
+      {children}
+      <StageMenu
+        groups={off}
+        button="+ add a stage"
+        label="add a stage"
+        former
+        onPick={onOpen}
+      />
+      <StageMenu
+        groups={on.filter(g => removable(g.name))}
+        button="− take off a stage"
+        label="take off a stage"
+        onPick={name => {
+          const group = GROUP_BY_NAME.get(name)!
+          engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+          if (open === name) onOpen(name)
+        }}
+      />
     </div>
   )
 }

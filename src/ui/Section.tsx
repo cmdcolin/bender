@@ -43,6 +43,7 @@ import {
   type Verbs,
 } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
+import { listView } from './listView.ts'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
 import { MicPatch, MicSwitch } from './MicPatch.tsx'
@@ -547,6 +548,7 @@ function PartFold({
         : `${rows.length + hosted.length}`
       : badge
   const caution = group.caution?.part === name ? group.caution.text : null
+  const listed = useStoreValue(listView)
   return (
     <Fold
       name={name}
@@ -564,12 +566,14 @@ function PartFold({
         standing={standing}
         seconds={seconds}
       />
-      <FoldDrawing
-        group={group.name}
-        part={name}
-        verbs={verbsFor(group, seconds)}
-      />
-      {!DRAWN_ROWS.has(`${group.name}|${name}`) &&
+      {!listed && (
+        <FoldDrawing
+          group={group.name}
+          part={name}
+          verbs={verbsFor(group, seconds)}
+        />
+      )}
+      {(listed || !DRAWN_ROWS.has(`${group.name}|${name}`)) &&
         slidersFirst(rows).map(def => (
           <ControlSlider key={def.key} def={def} />
         ))}
@@ -690,7 +694,8 @@ function Rows({
   editor?: ReactNode
 }) {
   const blocks = parts(group)
-  const drawn = STAGE_DRAWINGS[group.name]
+  const listed = useStoreValue(listView)
+  const drawn = listed ? undefined : STAGE_DRAWINGS[group.name]
   // Which rows have anything to act on, as a string rather than the board they
   // are read off: a stage stands open through morphs and drags, and taking the
   // board would rebuild every row in it sixty times a second — where what the
@@ -707,7 +712,7 @@ function Rows({
   // there, and a heading that reopened under a morph because the board had moved
   // would be the panel taking a hand off the knob you were turning.
   const hostedRows = (name: string) =>
-    blocks
+    (listed ? [] : blocks)
       .filter(
         b => b.name !== null && hostedBy(group.name, name).includes(b.name),
       )
@@ -747,7 +752,7 @@ function Rows({
           return slidersFirst(rows).map(def => (
             <ControlSlider key={def.key} def={def} />
           ))
-        if (isHosted(group.name, name)) return null
+        if (!listed && isHosted(group.name, name)) return null
         // A heading over nothing is the same question about nothing the rows
         // themselves wait out.
         if (rows.length === 0) return null
@@ -805,14 +810,21 @@ export function OpenGroup({
   group,
   onClose,
   seconds,
+  stacked = false,
 }: {
   group: Group
   onClose: () => void
   seconds: number
+  /** One of the list view's stack: no close cap, no scroll to it. */
+  stacked?: boolean
 }) {
   const shownEditors = useStoreValue(bench)
+  const listed = useStoreValue(listView)
   const el = useRef<HTMLDivElement>(null)
-  const fresh = useMemo(() => firstLook(group.name), [group.name])
+  const fresh = useMemo(
+    () => !stacked && firstLook(group.name),
+    [stacked, group.name],
+  )
   const former = formerName(group.name)
   useEffect(() => {
     if (fresh) markLooked(group.name)
@@ -827,12 +839,13 @@ export function OpenGroup({
   // render that built it; asking a frame later reads work the browser has done
   // anyway. The scroll is smooth and nobody can see the frame.
   useEffect(() => {
+    if (stacked) return undefined
     const raf = requestAnimationFrame(() => {
       if (el.current) scrollIntoPanel(el.current)
     })
     return () => cancelAnimationFrame(raf)
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- scrolls again each time a different stage opens
-  }, [group.name])
+  }, [group.name, stacked])
   const [aim, setAim] = useState<{ id: symbol; aim: Aim } | null>(null)
   const [wholeFor, setWholeFor] = useState<string | null>(null)
   const aimAt = useCallback(
@@ -853,9 +866,10 @@ export function OpenGroup({
   // that cannot see where to start, and four lanes of empty tape would push them
   // off the screen.
   const rigsFirst = group.editor?.kind === 'loops'
-  const drawn = group.name in STAGE_DRAWINGS
+  const drawn = !listed && group.name in STAGE_DRAWINGS
   const kind = group.editor?.kind
-  const PathDrawing = isPathKind(kind) ? PATH_DRAWINGS[kind] : undefined
+  const PathDrawing =
+    !listed && isPathKind(kind) ? PATH_DRAWINGS[kind] : undefined
   const widget =
     group.editor?.kind === 'roll' && shownEditors.roll ? (
       <TuneRoll />
@@ -885,15 +899,17 @@ export function OpenGroup({
         {group.editor?.kind === 'drums' && <EditorToggle which="grid" />}
         <StageVerbs group={group} aim={aimed} seconds={seconds} />
         <MoreMenu group={group} seconds={seconds} onClose={onClose} />
-        <Tip text={`Close ${group.name} — the path stays.`}>
-          <button
-            className={styles.close}
-            onClick={onClose}
-            aria-label={`close ${group.name}`}
-          >
-            ×
-          </button>
-        </Tip>
+        {!stacked && (
+          <Tip text={`Close ${group.name} — the path stays.`}>
+            <button
+              className={styles.close}
+              onClick={onClose}
+              aria-label={`close ${group.name}`}
+            >
+              ×
+            </button>
+          </Tip>
+        )}
       </div>
       {boxAim && (
         <div className={styles.aim}>
@@ -920,15 +936,19 @@ export function OpenGroup({
             {group.editor?.kind === 'supply' && <SupplyReading />}
             {group.editor?.kind === 'mic' && <MicPatch />}
             {group.editor?.kind === 'loops' && <FourTrack />}
-            {group.editor?.kind === 'tapeLoop' && <TapeLoopDiagram />}
-            {group.editor?.kind === 'tapePath' && <TapePathDiagram />}
+            {!listed && group.editor?.kind === 'tapeLoop' && (
+              <TapeLoopDiagram />
+            )}
+            {!listed && group.editor?.kind === 'tapePath' && (
+              <TapePathDiagram />
+            )}
             {PathDrawing && (
               <PathDrawing
                 zoom={zoomFor(group.name)}
                 verbs={verbsFor(group, seconds)}
               />
             )}
-            {group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
+            {!listed && group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
             {group.memory && shownEditors.roll && <MonoRoll />}
             {!rigsFirst && rigs}
             <Rows
