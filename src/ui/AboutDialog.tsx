@@ -1,13 +1,9 @@
-import { guideUrl, privacyUrl } from '../site/paths.ts'
+import { siteRoot } from '../site/paths.ts'
 import { gitSha, versionLabel } from '../version.ts'
 import styles from './AboutDialog.module.css'
 
-const REPO = 'https://github.com/cmdcolin/bender'
-
-// Three things, and no more: what the board is, where to read about it, and
-// which build you are looking at. The tour and the key list are in the docs,
-// and a second copy of them here would be a page nobody remembered to edit
-// against an app that keeps moving.
+// What the board is, one link to the home page, and which build you are
+// looking at. The home page carries the guide, blog, source and privacy links.
 export function AboutDialog(props: { onClose: () => void }) {
   const { onClose } = props
   return (
@@ -39,33 +35,11 @@ export function AboutDialog(props: { onClose: () => void }) {
       <p className={styles.line}>
         <a
           className={styles.link}
-          href={guideUrl}
+          href={siteRoot}
           target="_blank"
           rel="noreferrer"
         >
-          user guide ↗
-        </a>{' '}
-        ·{' '}
-        <a
-          className={styles.link}
-          href={`${REPO}/blob/main/docs/BENDS.md`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          what the bends do ↗
-        </a>{' '}
-        ·{' '}
-        <a className={styles.link} href={REPO} target="_blank" rel="noreferrer">
-          source on GitHub ↗
-        </a>{' '}
-        ·{' '}
-        <a
-          className={styles.link}
-          href={privacyUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          privacy ↗
+          bender home: guide, blog, source, privacy ↗
         </a>
       </p>
       {/* The sha as well as the tag: a bug report against "v0.17.2" cannot say
