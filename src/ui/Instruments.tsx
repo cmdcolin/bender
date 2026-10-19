@@ -46,15 +46,16 @@ function FourTrackFace({
   )
 }
 
-const TOY: Row = [
+const KEYBOARDS: Row = [
   ['Plinky', Keys],
-  ['Clatter', DrumKit],
-]
-
-const LEVELLED: Row = [
   ['Glint', FmKeys],
   ['Parlor', PcmKeys],
   ['Growler', MonoKeys],
+]
+
+const KIT: Row = [['Clatter', DrumKit]]
+
+const TAPES: Row = [
   ['Spool', TapeLoopFace],
   ['Layercake', FourTrackFace],
 ]
@@ -101,22 +102,21 @@ export function Instruments({
   const face = (stage: string) =>
     shows(stage) || (stage === 'Spool' && tapeHeld)
 
-  const shelf = (machines: Row) => {
-    const shown = machines.filter(([stage]) => face(stage))
-    if (shown.length === 0) return null
-    return (
-      <div className={styles.shelf}>
-        {shown.map(([stage, Machine]) => (
-          <Machine
-            key={stage}
-            seconds={seconds}
-            onClose={() => close(stage)}
-            onOpen={onOpen}
-          />
-        ))}
-      </div>
-    )
-  }
+  const faces = (machines: Row) =>
+    machines
+      .filter(([stage]) => face(stage))
+      .map(([stage, Machine]) => (
+        <Machine
+          key={stage}
+          seconds={seconds}
+          onClose={() => close(stage)}
+          onOpen={onOpen}
+        />
+      ))
+
+  const keyboards = faces(KEYBOARDS)
+  const kit = faces(KIT)
+  const tapes = faces(TAPES)
 
   const bringUp = (stage: string) => {
     bring(stage)
@@ -145,7 +145,17 @@ export function Instruments({
         <BendKeysSwitch />
       </div>
       <BendKeys morphSeconds={seconds} />
-      <GateBench>{shelf([...TOY, ...LEVELLED])}</GateBench>
+      <GateBench>
+        {(keyboards.length > 0 || kit.length > 0) && (
+          <div className={styles.shelf}>
+            {keyboards.length > 0 && (
+              <div className={styles.lane}>{keyboards}</div>
+            )}
+            {kit}
+          </div>
+        )}
+        {tapes.length > 0 && <div className={styles.shelf}>{tapes}</div>}
+      </GateBench>
       <PedalShelf seconds={seconds} onOpen={onOpen} />
     </>
   )
