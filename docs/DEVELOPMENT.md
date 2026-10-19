@@ -49,8 +49,8 @@ deadline once and a buffer goes out unfilled, which is an audible click.
   while it prints what each stage costs. The number to watch is whether any
   column climbs over time: an envelope that decays geometrically can arrive at a
   denormal number instead of zero, and once it does the stage can cost twenty
-  times what it did. `pnpm denormal` sweeps the whole graph for exactly that; it takes
-  minutes, so `pnpm test` skips it.
+  times what it did. `pnpm denormal` sweeps the whole graph for exactly that; it
+  takes minutes, so `pnpm test` skips it.
 - `pnpm ab <ref>` compares the working tree against a git ref as a paired run on
   the same machine, since two renders of identical code on a shared machine can
   otherwise report a double-digit percentage difference from nothing but

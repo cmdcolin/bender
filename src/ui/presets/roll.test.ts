@@ -290,6 +290,32 @@ test('rolling the kit writes a pattern, keeps the tempo and the song', () => {
   }
 })
 
+const LEVELS = ALL_SLIDERS.filter(s => s.role === 'level')
+
+test('no roll or shake turns a level you have up', () => {
+  const before = mine()
+  const up = LEVELS.filter(s => before[s.key] > s.min)
+  expect(up.length).toBeGreaterThan(3)
+  for (let seed = 1; seed <= 10; seed++) {
+    const rand = mulberry32(seed)
+    for (const after of [
+      mutate(before, 0.3, rand),
+      randomLook(before, rand),
+      rollKeys(before, groupKeys(groupNamed('Clatter')), rand, true),
+      rollGroup(groupNamed('Clatter'), before, rand),
+    ])
+      for (const s of up) expect(after[s.key], s.key).toBe(before[s.key])
+  }
+})
+
+test('rolling a stage brings up a level that was off', () => {
+  const before = { ...mine(), drumLevel: 0 }
+  for (let seed = 1; seed <= 10; seed++) {
+    const after = rollGroup(groupNamed('Clatter'), before, mulberry32(seed))
+    expect(after.drumLevel).toBeGreaterThan(0.3)
+  }
+})
+
 test('resetting a stage puts that stage back and nothing else', () => {
   const played = { ...mine(), revMix: 0.8, revDecayS: 6, dlyMix: 0.5 }
   const after = resetGroup(groupNamed('Boing'), played)

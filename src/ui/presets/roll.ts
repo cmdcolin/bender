@@ -98,6 +98,7 @@ export function nudgeSliders(
   for (const def of sliders) {
     if (YOURS.has(def.key) || CLOCK_KEYS.has(def.key) || PART_KEYS.has(def.key))
       continue
+    if (def.role === 'level') continue
     if (def.choices) {
       if (rand() < amount * 0.5) {
         next[def.key] = def.min + Math.floor(rand() * def.choices.length)
@@ -151,6 +152,12 @@ function thinOut(next: Controls, rand: () => number): Controls {
   return next
 }
 
+const keepLevels = (next: Controls, current: Controls): Controls => {
+  for (const def of ALL_SLIDERS)
+    if (keepsLevel(def, current)) next[def.key] = current[def.key]
+  return next
+}
+
 // A roll of the dice asks for a different circuit, not a different song: the
 // preset it lands on hands over its board and nothing else.
 export function randomLook(current: Controls, rand: () => number): Controls {
@@ -158,9 +165,12 @@ export function randomLook(current: Controls, rand: () => number): Controls {
   // A preset that names crackle names it loud, and a roll that landed on that
   // preset never asked for it. The shy controls get rolled shy whatever the
   // preset had to say about them.
-  const rolled = calmShy(
-    thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand),
-    rand,
+  const rolled = keepLevels(
+    calmShy(
+      thinOut(mutate(applyPreset(preset, current), 0.08, rand), rand),
+      rand,
+    ),
+    current,
   )
   // The bay, after the thinning and the calming rather than before them: a
   // preset can name a wire onto a bend this roll just took off the board, or
@@ -194,8 +204,6 @@ function rollValue(def: SliderDef, rand: () => number, named = false): number {
   // Ahead of everything below, including the levels: a shy control is one the
   // roll is allowed to leave off however loud its stage ends up.
   if (def.shy && !named) return shyValue(def, rand)
-  // A level is the whole of whether the stage is there at all, so rolling the
-  // stage always leaves it somewhere you can hear.
   if (def.role === 'level') return audible(def, rand)
   const offAtBoot = DEFAULT_CONTROLS[def.key] === def.min
   if (offAtBoot && rand() < 0.35) return def.min
@@ -205,6 +213,12 @@ function rollValue(def: SliderDef, rand: () => number, named = false): number {
   if (def.role === 'mix') return audible(def, rand)
   return at(offAtBoot && def.curve === 'log' ? rand() ** 2 : rand())
 }
+
+// A level you have up stays where it is: a roll that turned it down would make
+// the board quieter for no reason. A level at the bottom is a stage that isn't
+// there, and rolling the stage brings it up somewhere you can hear.
+const keepsLevel = (def: SliderDef, current: Controls) =>
+  def.role === 'level' && current[def.key] > def.min
 
 /** Somewhere in the top two thirds of the travel: on, and audibly so. */
 const audible = (def: SliderDef, rand: () => number) =>
@@ -241,7 +255,9 @@ export function rollKeys(
       if (YOURS.has(key) || CLOCK_KEYS.has(key)) continue
       const def = SLIDER_BY_KEY.get(key)
       if (!def) continue
-      next[key] = rollValue(def, rand, named)
+      next[key] = keepsLevel(def, current)
+        ? current[key]
+        : rollValue(def, rand, named)
       moved.add(key)
     }
     return { board: inTime(next, k => moved.has(k)), moved }
