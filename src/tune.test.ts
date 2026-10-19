@@ -109,9 +109,10 @@ test('holds carry the note they follow', () => {
 // The step before the first one is the last one, because the counter comes
 // round — so a memory that opens on a hold is a note wrapping past the end
 // rather than a hold with nothing to hold.
-test('a hold at the top carries the last note in the memory', () => {
+test('a hold at the top carries what the last step left sounding', () => {
   expect(voicing([HOLD, HOLD, 12]).map(b => b.note)).toEqual([12, 12, 12])
   expect(voicing([HOLD, REST]).map(b => b.note)).toEqual([REST, REST])
+  expect(voicing([HOLD, 5, REST]).map(b => b.note)).toEqual([REST, 5, REST])
 })
 
 // The accompaniment has no chord buttons — it reads the melody — so all it

@@ -269,10 +269,11 @@ export function keyOf(steps: readonly number[]) {
 
 /** What each step is actually sounding once the holds are resolved: the note,
     and whether the step struck it or is carrying the one before. A hold at the
-    top of the memory carries the last note in it, because that is what the step
-    before is when the counter comes round. */
+    top of the memory carries whatever the last step left sounding, a rest
+    included, because that is what the step before is when the counter comes
+    round. */
 export function voicing(steps: readonly number[]) {
-  const carried = steps.toReversed().find(isNote) ?? REST
+  const carried = steps.toReversed().find(step => step !== HOLD) ?? REST
   let note = carried
   return steps.map(step => {
     const head = isNote(step)

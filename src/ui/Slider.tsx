@@ -64,13 +64,14 @@ function Bind({ def }: { def: SliderDef }) {
   const armed = useStoreValue(midi.armed)
   const binding = useStoreSelect(midi.bindings, b => b[def.key])
   const waiting = useStoreSelect(midi.pickups, p => p[def.key])
+  const current = useControlValue(def.key)
   if (status !== 'ready') return null
   const mine = armed === def.key
   return (
     <>
       {waiting === undefined ? null : (
         <Tip
-          text={`Your knob is sitting at ${formatValue(def, waiting)} — sweep it through ${formatValue(def, engine.controls.get()[def.key])} to pick this control up.`}
+          text={`Your knob is sitting at ${formatValue(def, waiting)} — sweep it through ${formatValue(def, current)} to pick this control up.`}
         >
           <span className={styles.pickup}>{formatValue(def, waiting)}</span>
         </Tip>
