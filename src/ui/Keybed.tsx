@@ -61,9 +61,12 @@ const NEXT_BED: Record<NoteDest, NoteDest> = {
 // deck keeps two rows.
 const ROOMY_DECK = 560
 
+const GATE_SOURCE = 'Toy keyboard'
+
 /** The jumper off the toy's gate line, which every bed but the toy's carries. Same
     switch, same two states, and the words are the caller's because the machine
-    on the other end of the wire is what they are about.
+    on the other end of the wire is what they are about. The label names the
+    source by its stage name, Toy keyboard.
 
     The lamp in the button has three states: hollow with the jumper cut, dim with
     it soldered, and lit while the toy is sounding a note and this machine is
@@ -90,7 +93,7 @@ export function GateJumper({
   const lamp = cut ? 'off' : toySounding && sounding ? 'sounding' : 'wired'
   return (
     <Tip
-      text={`${cut ? cutTip : solderedTip}. The lamp lights while the toy’s notes are reaching it.`}
+      text={`${cut ? cutTip : solderedTip}. The lamp lights while ${GATE_SOURCE}’s notes are reaching it.`}
     >
       <button
         className={cut ? cutClass : soldered}
@@ -101,7 +104,7 @@ export function GateJumper({
         }}
       >
         <span className={styles.gateLamp} data-lamp={lamp} aria-hidden="true" />
-        {cut ? 'own keys only' : 'follows toy'}
+        {cut ? 'own keys only' : `with ${GATE_SOURCE}`}
       </button>
     </Tip>
   )

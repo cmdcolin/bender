@@ -39,8 +39,8 @@ export function MonoKeys({
             notes={engine.monoNotes}
             cut={styles.cut}
             soldered={styles.soldered}
-            cutTip="the jumper off the toy’s gate is cut, so notes reach the synth from these keys, the kit’s trigger lines and a controller. Press to solder it back on"
-            solderedTip="the synth’s key input is soldered onto the toy’s gate, so the tune next door plays it too, an octave or two down. Press to cut the jumper"
+            cutTip="the jumper off the Toy keyboard’s gate is cut, so notes reach the synth from these keys, the kit’s trigger lines and a controller. Press to solder it back on"
+            solderedTip="the synth’s key input is soldered onto the Toy keyboard’s gate, so the tune next door plays it too, an octave or two down. Press to cut the jumper"
           />
         </>
       }

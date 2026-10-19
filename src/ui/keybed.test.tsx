@@ -130,7 +130,7 @@ test('moving the letters lets go of what they were holding', () => {
 
 test('the gate switch cuts the jumper, and the walk takes it back', () => {
   render(<FmKeys />)
-  fireEvent.click(screen.getByRole('button', { name: 'follows toy' }))
+  fireEvent.click(screen.getByRole('button', { name: 'with Toy keyboard' }))
   expect(engine.controls.get().fmKeyGate).toBe(1)
   expect(screen.getByRole('button', { name: 'own keys only' })).toBeTruthy()
   act(() => engine.undo(0))
@@ -141,7 +141,7 @@ test('the jumper lamp says off, wired, and sounding', () => {
   render(<MonoKeys />)
   const lamp = () =>
     screen
-      .getByRole('button', { name: /follows toy|own keys only/ })
+      .getByRole('button', { name: /with Toy keyboard|own keys only/ })
       .querySelector('[data-lamp]')
       ?.getAttribute('data-lamp')
   act(() => engine.set('monoKeyGate', 0))

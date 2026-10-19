@@ -36,8 +36,8 @@ export function PcmKeys({
             notes={engine.pcmNotes}
             cut={styles.cut}
             soldered={styles.soldered}
-            cutTip="the jumper off the toy’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-            solderedTip="the keyboard’s key input is soldered onto the toy’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
+            cutTip="the jumper off the Toy keyboard’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+            solderedTip="the keyboard’s key input is soldered onto the Toy keyboard’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
           />
         </>
       }
