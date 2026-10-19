@@ -1,19 +1,6 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
-import {
-  DEFAULT_CONTROLS,
-  type ControlKey,
-  type Controls,
-} from '../controls.ts'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
@@ -80,7 +67,6 @@ import { SupplyReading } from './SupplyReading.tsx'
 import { TapeLoopDiagram } from './TapeLoopDiagram.tsx'
 import { TapePathDiagram } from './TapePathDiagram.tsx'
 import { Tip } from './Tip.tsx'
-import { ToggleButtonGroup } from './ToggleButtonGroup.tsx'
 import { TriggerPatch } from './TriggerPatch.tsx'
 import { TuneRoll } from './TuneRoll.tsx'
 
@@ -158,69 +144,28 @@ function parts(group: Group): Part[] {
 const movedIn = (sliders: SliderDef[], c: Controls) =>
   sliders.filter(d => c[d.key] !== DEFAULT_CONTROLS[d.key]).length
 
-/** The diagram box the stage header's roll, undo and reset act on. */
-interface Aim {
-  scope: string
-  what: string
-  keys: ControlKey[]
-}
-
-const AimVerbs = createContext<(id: symbol, aim: Aim | null) => void>(() => {})
-
-const WHOLE = 'whole stage'
-
-function StageVerbs({
-  group,
-  aim,
-  seconds,
-}: {
-  group: Group
-  aim: Aim | null
-  seconds: number
-}) {
+function StageVerbs({ group, seconds }: { group: Group; seconds: number }) {
   const touched = useTouchedCount(group)
-  const keys = aim?.keys ?? []
-  const boxMoved = useBoardValue(
-    c => keys.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
-  )
-  const moved = aim ? boxMoved : touched
-  const what = aim?.what ?? group.name
-  const roll = () =>
-    aim
-      ? rollIn(
-          aim.scope,
-          rollKeys(engine.controls.get(), aim.keys, Math.random, true),
-          seconds,
-        )
-      : rollIn(
+  return (
+    <ScopeVerbs
+      scope={group.name}
+      what={group.name}
+      seconds={seconds}
+      moved={touched}
+      rollTip={
+        group.editor?.kind === 'drums'
+          ? 'roll this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
+          : `roll every control in ${group.name} somewhere new and leave the rest of the board alone`
+      }
+      resetTip={putBackTitle(group, touched)}
+      onRoll={() =>
+        rollIn(
           group.name,
           rollGroup(group, engine.controls.get(), Math.random),
           seconds,
         )
-  const reset = () =>
-    aim
-      ? engine.morphTo(
-          resetKeys(engine.controls.get(), aim.keys),
-          seconds,
-          new Set(aim.keys),
-        )
-      : putBack(group, seconds)
-  return (
-    <ScopeVerbs
-      scope={aim?.scope ?? group.name}
-      what={what}
-      seconds={seconds}
-      moved={moved}
-      rollTip={
-        aim
-          ? rollTipFor(aim.keys.length, what, group.name)
-          : group.editor?.kind === 'drums'
-            ? 'roll this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
-            : `roll every control in ${group.name} somewhere new and leave the rest of the board alone`
       }
-      resetTip={aim ? resetTipFor(what, moved) : putBackTitle(group, touched)}
-      onRoll={roll}
-      onReset={reset}
+      onReset={() => putBack(group, seconds)}
     />
   )
 }
@@ -384,45 +329,37 @@ function PartVerbs({
   cuts,
   group,
   part,
-  what = part,
   rows,
   moved,
   standing,
   seconds,
-  verbs = true,
 }: {
   cuts: CutDef[]
   group: Group
   part: string
-  /** The box the verbs act for, when it holds only some of the part. */
-  what?: string
   rows: SliderDef[]
   moved: number
   standing: string
   seconds: number
-  /** False where the stage header carries roll, undo and reset for this box. */
-  verbs?: boolean
 }) {
-  const wired = useBoardValue(c => cutWired(group.name, part, c))
-  const [open, setOpen] = useState(false)
-  const shownCuts = open
-    ? cuts
-    : cuts.filter((cut, i) => i < CUTS_SHOWN || cut.name === standing)
-  const hidden = cuts.length - shownCuts.length
   const keys = rows.map(d => d.key)
-  const scope = `${group.name} › ${what}`
-  if (!verbs && cuts.length === 0) return null
+  const scope = `${group.name} › ${part}`
   return (
-    <div className={styles.cuts}>
-      {verbs && (
+    <CutRow
+      cuts={cuts}
+      group={group}
+      part={part}
+      standing={standing}
+      seconds={seconds}
+      lead={
         <ScopeVerbs
           fold
           scope={scope}
-          what={what}
+          what={part}
           seconds={seconds}
           moved={moved}
-          rollTip={rollTipFor(rows.length, what, group.name)}
-          resetTip={resetTipFor(what, moved)}
+          rollTip={rollTipFor(rows.length, part, group.name)}
+          resetTip={resetTipFor(part, moved)}
           onRoll={() =>
             rollIn(
               scope,
@@ -438,7 +375,37 @@ function PartVerbs({
             )
           }
         />
-      )}
+      }
+    />
+  )
+}
+
+// The named cuts for one heading, and the way back to no cut at all.
+function CutRow({
+  cuts,
+  group,
+  part,
+  standing,
+  seconds,
+  lead,
+}: {
+  cuts: CutDef[]
+  group: Group
+  part: string
+  standing: string
+  seconds: number
+  lead?: ReactNode
+}) {
+  const wired = useBoardValue(c => cutWired(group.name, part, c))
+  const [open, setOpen] = useState(false)
+  const shownCuts = open
+    ? cuts
+    : cuts.filter((cut, i) => i < CUTS_SHOWN || cut.name === standing)
+  const hidden = cuts.length - shownCuts.length
+  if (!lead && cuts.length === 0) return null
+  return (
+    <div className={styles.cuts}>
+      {lead}
       {shownCuts.map(cut => (
         <Tip
           key={cut.name}
@@ -603,9 +570,7 @@ function PartFold({
 
 const verbsFor =
   (group: Group, seconds: number): Verbs =>
-  (part, box) => (
-    <BoxVerbs group={group} part={part} box={box} seconds={seconds} />
-  )
+  part => <BoxVerbs group={group} part={part} seconds={seconds} />
 
 const PATH_DRAWINGS = {
   fm: FmChipDiagram,
@@ -616,60 +581,29 @@ const PATH_DRAWINGS = {
 const isPathKind = (kind?: string): kind is keyof typeof PATH_DRAWINGS =>
   kind !== undefined && kind in PATH_DRAWINGS
 
-// A fold's verbs for a drawing that has taken the fold's place: the same dice,
-// reset and named cuts, over the rows the fold would have shown.
+// A fold's cuts for a drawing that has taken the fold's place. The box card
+// carries the dice and the reset.
 function BoxVerbs({
   group,
   part,
-  box,
   seconds,
 }: {
   group: Group
   part: string
-  box?: Parameters<Verbs>[1]
   seconds: number
 }) {
-  const shownList = useBoardValue(c =>
-    group.sliders
-      .filter(
-        d =>
-          d.part === part && (!box || box.keys.includes(d.key)) && shown(d, c),
-      )
-      .map(d => d.key)
-      .join(','),
-  )
-  const shownKeys = shownList.split(',')
-  const rows = group.sliders.filter(d => shownKeys.includes(d.key))
   const cuts = cutsFor(group.name, part)
-  const moved = useBoardValue(c => movedIn(rows, c))
   const standing = useBoardValue(
     c => cuts.find(cut => cutStands(cut, c))?.name ?? '',
   )
-  const aim = useContext(AimVerbs)
-  const [id] = useState(() => Symbol('box'))
-  const what = box?.name ?? part
-  useEffect(() => {
-    const listed = shownList.split(',')
-    const keys = group.sliders
-      .filter(d => listed.includes(d.key))
-      .map(d => d.key)
-    aim(id, { scope: `${group.name} › ${what}`, what, keys })
-  }, [aim, id, group, what, shownList])
-  useEffect(() => () => aim(id, null), [aim, id])
   return (
-    <>
-      <PartVerbs
-        cuts={cuts}
-        group={group}
-        part={part}
-        what={box?.name}
-        rows={rows}
-        moved={moved}
-        standing={standing}
-        seconds={seconds}
-        verbs={false}
-      />
-    </>
+    <CutRow
+      cuts={cuts}
+      group={group}
+      part={part}
+      standing={standing}
+      seconds={seconds}
+    />
   )
 }
 
@@ -878,22 +812,6 @@ export function OpenGroup({
     return () => cancelAnimationFrame(raf)
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- scrolls again each time a different stage opens
   }, [group.name, stacked])
-  const [aim, setAim] = useState<{ id: symbol; aim: Aim } | null>(null)
-  const [wholeFor, setWholeFor] = useState<string | null>(null)
-  const aimAt = useCallback(
-    (id: symbol, next: Aim | null) =>
-      setAim(prev => {
-        if (next === null) return prev?.id === id ? null : prev
-        const same =
-          prev?.id === id &&
-          prev.aim.scope === next.scope &&
-          prev.aim.keys.join() === next.keys.join()
-        return same ? prev : { id, aim: next }
-      }),
-    [],
-  )
-  const boxAim = aim?.aim ?? null
-  const aimed = boxAim && wholeFor !== boxAim.scope ? boxAim : null
   // The four-track's settings go above its lanes: they are the way in for a hand
   // that cannot see where to start, and four lanes of empty tape would push them
   // off the screen.
@@ -946,7 +864,7 @@ export function OpenGroup({
             </button>
           </Tip>
         )}
-        <StageVerbs group={group} aim={aimed} seconds={seconds} />
+        <StageVerbs group={group} seconds={seconds} />
         <MoreMenu group={group} seconds={seconds} onClose={onClose} />
         {!stacked && (
           <Tip text={`Close ${group.name} — the path stays.`}>
@@ -960,55 +878,38 @@ export function OpenGroup({
           </Tip>
         )}
       </div>
-      {boxAim && (
-        <div className={styles.aim}>
-          <span>roll, undo and reset change</span>
-          <ToggleButtonGroup
-            label="what roll, undo and reset act on"
-            options={[`only ${boxAim.what}`, WHOLE]}
-            value={aimed ? `only ${boxAim.what}` : WHOLE}
-            onChange={v => setWholeFor(v === WHOLE ? boxAim.scope : null)}
-          />
-        </div>
-      )}
       <div className={styles.body}>
-        <AimVerbs.Provider value={aimAt}>
-          <ReserveReadout defs={panelRows(group)}>
-            {!drawn && <Lead group={group} />}
-            {rigsFirst && rigs}
-            {!drawn && widget}
-            {group.editor?.kind === 'mixer' && <Mixer />}
-            {group.editor?.kind === 'feedback' && <FeedbackLoops />}
-            {group.editor?.kind === 'order' && <OrderRack />}
-            {group.editor?.kind === 'patch' && <PatchBay />}
-            {group.editor?.kind === 'trigger' && <TriggerPatch />}
-            {group.editor?.kind === 'supply' && <SupplyReading />}
-            {group.editor?.kind === 'mic' && <MicPatch />}
-            {group.editor?.kind === 'loops' && <FourTrack />}
-            {!listed && group.editor?.kind === 'tapeLoop' && (
-              <TapeLoopDiagram />
-            )}
-            {!listed && group.editor?.kind === 'tapePath' && (
-              <TapePathDiagram />
-            )}
-            {PathDrawing && (
-              <PathDrawing
-                zoom={zoomFor(group.name)}
-                verbs={verbsFor(group, seconds)}
-              />
-            )}
-            {!listed && group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
-            {group.memory && shownEditors.roll && <MonoRoll />}
-            {!rigsFirst && rigs}
-            <Rows
-              key={group.name}
-              group={group}
-              seconds={seconds}
-              listed={listed}
-              editor={drawn && widget}
+        <ReserveReadout defs={panelRows(group)}>
+          {!drawn && <Lead group={group} />}
+          {rigsFirst && rigs}
+          {!drawn && widget}
+          {group.editor?.kind === 'mixer' && <Mixer />}
+          {group.editor?.kind === 'feedback' && <FeedbackLoops />}
+          {group.editor?.kind === 'order' && <OrderRack />}
+          {group.editor?.kind === 'patch' && <PatchBay />}
+          {group.editor?.kind === 'trigger' && <TriggerPatch />}
+          {group.editor?.kind === 'supply' && <SupplyReading />}
+          {group.editor?.kind === 'mic' && <MicPatch />}
+          {group.editor?.kind === 'loops' && <FourTrack />}
+          {!listed && group.editor?.kind === 'tapeLoop' && <TapeLoopDiagram />}
+          {!listed && group.editor?.kind === 'tapePath' && <TapePathDiagram />}
+          {PathDrawing && (
+            <PathDrawing
+              zoom={zoomFor(group.name)}
+              verbs={verbsFor(group, seconds)}
             />
-          </ReserveReadout>
-        </AimVerbs.Provider>
+          )}
+          {!listed && group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
+          {group.memory && shownEditors.roll && <MonoRoll />}
+          {!rigsFirst && rigs}
+          <Rows
+            key={group.name}
+            group={group}
+            seconds={seconds}
+            listed={listed}
+            editor={drawn && widget}
+          />
+        </ReserveReadout>
       </div>
     </div>
   )

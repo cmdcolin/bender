@@ -215,26 +215,23 @@ test('the clock shows its clk tags while open', () => {
   expect(screen.getByText('Hard sync')).not.toBeNull()
 })
 
-test('the header verbs act on the open box, or on the whole stage', () => {
-  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+test('the header verbs act on the whole stage with a box open', () => {
+  act(() => {
+    setMorph(0)
+    engine.patch({ ...DEFAULT_CONTROLS })
+  })
   open()
   fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
-  const aim = screen.getByRole('group', {
-    name: 'what roll, undo and reset act on',
-  })
-  expect(aim.textContent).toContain('envelope')
+  expect(
+    screen.queryByRole('group', { name: 'what roll, undo and reset act on' }),
+  ).toBeNull()
   const before = engine.controls.get()
   fireEvent.click(screen.getByRole('button', { name: 'roll' }))
   const after = engine.controls.get()
-  const changed = (Object.keys(after) as (keyof Controls)[]).filter(
-    k => after[k] !== before[k],
+  const outside = (Object.keys(after) as (keyof Controls)[]).filter(
+    k => after[k] !== before[k] && !NODE_KEYS.envelope?.includes(k),
   )
-  expect(changed.length).toBeGreaterThan(0)
-  for (const key of changed) expect(NODE_KEYS.envelope).toContain(key)
-  fireEvent.click(screen.getByRole('button', { name: 'whole stage' }))
-  expect(screen.getByRole('button', { name: 'whole stage' }).ariaPressed).toBe(
-    'true',
-  )
+  expect(outside.length).toBeGreaterThan(0)
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
 })
 

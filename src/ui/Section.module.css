@@ -192,20 +192,6 @@
 /* The knives one press of a chip wires, above the rows they move. Quiet, and
    inside the fold rather than on the heading: a row of named glitches on a
    heading you have not opened is a promise about controls you cannot see. */
-.aim {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: 0 var(--space-2xs) var(--space-xs);
-  font-size: var(--fs-xs);
-  color: var(--fg3);
-  white-space: nowrap;
-}
-
-.aim button {
-  white-space: nowrap;
-}
-
 .cuts {
   display: flex;
   flex-wrap: wrap;
