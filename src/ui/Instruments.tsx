@@ -89,11 +89,11 @@ export function Instruments({
   const face = (stage: string) =>
     shows(stage) || (stage === 'Spool' && tapeHeld)
 
-  const shelf = (machines: Row, className = styles.shelf) => {
+  const shelf = (machines: Row) => {
     const shown = machines.filter(([stage]) => face(stage))
     if (shown.length === 0) return null
     return (
-      <div className={className}>
+      <div className={styles.shelf}>
         {shown.map(([stage, Machine]) => (
           <Machine
             key={stage}
@@ -137,10 +137,7 @@ export function Instruments({
         ))}
       </div>
       <BendKeys morphSeconds={seconds} />
-      <GateBench>
-        {shelf(TOY)}
-        {shelf(LEVELLED, styles.cabled)}
-      </GateBench>
+      <GateBench>{shelf([...TOY, ...LEVELLED])}</GateBench>
       <PedalShelf seconds={seconds} onOpen={onOpen} />
     </>
   )

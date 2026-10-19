@@ -6,16 +6,15 @@
 }
 
 .shelf {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-md);
+  column-width: 440px;
+  column-gap: var(--space-md);
+  margin-top: 30px;
 }
 
-.cabled {
-  composes: shelf;
-  gap: 36px var(--space-md);
-  margin-top: 30px;
+.shelf > * {
+  break-inside: avoid;
+  max-width: none;
+  margin-bottom: 36px;
 }
 
 .all {
