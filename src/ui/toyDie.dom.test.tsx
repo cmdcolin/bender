@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
+import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
@@ -252,4 +253,27 @@ test('each bend wire and its name open the part it bends', () => {
     chipEnvRelax: 0,
     chipCrosstalk: 0,
   })
+})
+
+test('the header verbs act on the open box, or on the whole stage', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  open()
+  fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
+  const aim = screen.getByRole('group', {
+    name: 'what roll, undo and reset act on',
+  })
+  expect(aim.textContent).toContain('envelope')
+  const before = engine.controls.get()
+  fireEvent.click(screen.getByRole('button', { name: 'roll' }))
+  const after = engine.controls.get()
+  const changed = (Object.keys(after) as (keyof Controls)[]).filter(
+    k => after[k] !== before[k],
+  )
+  expect(changed.length).toBeGreaterThan(0)
+  for (const key of changed) expect(NODE_KEYS.envelope).toContain(key)
+  fireEvent.click(screen.getByRole('button', { name: 'whole stage' }))
+  expect(screen.getByRole('button', { name: 'whole stage' }).ariaPressed).toBe(
+    'true',
+  )
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
 })

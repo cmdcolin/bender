@@ -178,7 +178,10 @@ test('take off turns the stage down and takes it off the map', async () => {
     fireEvent.click(map().querySelector('a[data-door="Ring mod"]')!)
   })
   act(() => {
-    fireEvent.click(screen.getByRole('button', { name: 'take off' }))
+    fireEvent.click(screen.getByRole('button', { name: 'more for Ring mod' }))
+  })
+  act(() => {
+    fireEvent.click(screen.getByRole('menuitem', { name: 'take off' }))
   })
   // The map redraws on the trailing edge of a board that is still moving.
   await act(() => new Promise(r => setTimeout(r, 150)))
