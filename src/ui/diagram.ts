@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { createContext, use, useState } from 'react'
 
 import {
   DEFAULT_CONTROLS,
@@ -31,12 +31,24 @@ export interface BoxSpec {
   note?: string
 }
 
+// The group a drawing sits in, named so that the drawing reopens on the box it
+// left open after its group folds and unmounts it.
+export const BoxScope = createContext<string | null>(null)
+const leftOpen = new Map<string, string | null>()
+
 // Which box the drawing has open. A second press on it puts the rows away.
 export function useSelectedBox(initial: string | null = null) {
-  const [selected, setSelected] = useState<string | null>(initial)
+  const scope = use(BoxScope)
+  const [selected, setSelected] = useState<string | null>(() =>
+    scope !== null && leftOpen.has(scope) ? leftOpen.get(scope)! : initial,
+  )
   return {
     selected,
-    toggle: (id: string) => setSelected(now => (now === id ? null : id)),
+    toggle: (id: string) => {
+      const next = selected === id ? null : id
+      if (scope !== null) leftOpen.set(scope, next)
+      setSelected(next)
+    },
   }
 }
 
