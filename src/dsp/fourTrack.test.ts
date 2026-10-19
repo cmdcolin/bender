@@ -204,6 +204,30 @@ test('side B plays loop 1 backwards on channel 4', () => {
   expect(rms(at(x, 1.12, 1.2))).toBeGreaterThan(3 * rms(at(x, 1.42, 1.5)))
 })
 
+test('side B records onto the loop the head sits over, without loop 4 armed', () => {
+  const x = renderBender(
+    {
+      ...DECK,
+      four1Rec: 0,
+      four1Cue: 0,
+      four1Len: 0.5,
+      four4In: INPUT_MIC,
+      four4Rec: 1,
+      four4Erase: 1,
+      four4Cue: 1,
+      four4Pan: 0,
+      fourSide: 1,
+    },
+    1.6,
+    undefined,
+    burst(tone(500), 0, 0.5),
+    (_b, secs, p) => {
+      if (secs >= 0.5) p[IDX.four4Rec] = 0
+    },
+  )
+  expect(rms(at(x, 0.7, 1.5))).toBeGreaterThan(0.02)
+})
+
 test('panic clears a NaN off the tape', () => {
   const deck = new FourTrack(SR)
   const loop = deck.loops[0]!

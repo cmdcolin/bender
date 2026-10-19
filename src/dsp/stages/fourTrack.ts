@@ -709,10 +709,15 @@ export class FourTrack implements Stage {
           : 0
       const loop = this.loops[k]!
       const frames = Math.round(Math.min(p[t.len]!, MAX_LOOP_S) * sr)
-      if (b.rec[k]! > 0 && loop.threaded < frames)
-        loop.thread(
+      const under = flip ? TRACKS - 1 - k : k
+      const underFrames = Math.round(
+        Math.min(p[TRACK_IDX[under]!.len]!, MAX_LOOP_S) * sr,
+      )
+      const recording = this.loops[under]!
+      if (b.rec[k]! > 0 && recording.threaded < underFrames)
+        recording.thread(
           Math.min(
-            Math.ceil(frames / (GROW_S * sr)) * GROW_S * sr,
+            Math.ceil(underFrames / (GROW_S * sr)) * GROW_S * sr,
             MAX_LOOP_S * sr,
           ),
         )
