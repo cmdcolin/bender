@@ -47,3 +47,11 @@ test('the sync wire lights once Sync is on', () => {
   act(() => engine.set('monoSync', 1))
   expect(sync().getAttribute('class')).toMatch(/noteOn/)
 })
+
+test('the noise and feedback words open the mixer', () => {
+  open()
+  press('noise')
+  expect(screen.getByText('Feedback')).not.toBeNull()
+  press('feedback')
+  expect(screen.queryByText('Feedback')).toBeNull()
+})

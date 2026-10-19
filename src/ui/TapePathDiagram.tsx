@@ -43,9 +43,9 @@ const KEYS = [
 ] as const
 
 const WIDTH = 420
-const DECK_H = 58
-const TAPE_Y = 48
-const ROW_Y = 66
+const DECK_H = 50
+const TAPE_Y = 41
+const ROW_Y = 58
 const ROW_H = boxHeight('')
 const ROW_MID = ROW_Y + ROW_H / 2
 const BYPASS_Y = ROW_Y + ROW_H + 9
@@ -82,19 +82,19 @@ const TAPE_KEYS = [
 
 // Reel size and position per format: open reel, cassette, microcassette.
 const DECKS = [
-  { reel: 18, left: [122, 22], right: [328, 22], shell: null, spokes: true },
+  { reel: 15, left: [122, 19], right: [328, 19], shell: null, spokes: true },
   {
-    reel: 11,
-    left: [200, 22],
-    right: [262, 22],
-    shell: { x: 132, y: 3, w: 190, h: 50 },
+    reel: 10,
+    left: [200, 19],
+    right: [262, 19],
+    shell: { x: 132, y: 3, w: 190, h: 43 },
     spokes: true,
   },
   {
-    reel: 8,
-    left: [204, 24],
-    right: [258, 24],
-    shell: { x: 140, y: 10, w: 174, h: 43 },
+    reel: 7,
+    left: [204, 20],
+    right: [258, 20],
+    shell: { x: 140, y: 8, w: 174, h: 37 },
     spokes: false,
   },
 ] as const

@@ -23,6 +23,7 @@ import {
 
 import type { ControlKey } from '../controls.ts'
 import type { Verbs } from './foldHosting.ts'
+import type { ReactNode } from 'react'
 
 const GROUP = GROUPS.find(g => g.name === 'Mono synth')!
 
@@ -163,6 +164,16 @@ export function MonoPathDiagram({ verbs }: { verbs: Verbs }) {
   const noiseX = mixer.x + mixer.w / 2 - 8
   const loopX = mixer.x + mixer.w / 2 + 8
   const frameFrame = oscs.id === pick.selected
+  const toMixer = (name: string, word: ReactNode) => (
+    <Pressable
+      name={name}
+      selected={pick.selected === 'mixer'}
+      onSelect={() => pick.toggle('mixer')}
+      className={chip.tag}
+    >
+      {word}
+    </Pressable>
+  )
   return (
     <>
       <div className={chip.chips}>
@@ -205,22 +216,34 @@ export function MonoPathDiagram({ verbs }: { verbs: Verbs }) {
                 d={`M${back} ${MID} V${over} H${loopX} V${top}`}
                 look={wire(up('monoLoop'))}
               />
-              <Label
-                x={(loopX + back) / 2}
-                y={over - 3}
-                anchor="middle"
-                on={up('monoLoop')}
-              >
-                feedback
-              </Label>
+              <circle cx={back} cy={MID} r={1.6} className={styles.head} />
+              {toMixer(
+                'feedback',
+                <Label
+                  x={(loopX + back) / 2}
+                  y={over - 3}
+                  anchor="middle"
+                  on={up('monoLoop')}
+                >
+                  feedback
+                </Label>,
+              )}
               <Wire
                 arrow={arrow}
                 d={`M${noiseX} ${over - 12} V${top}`}
                 look={wire(up('monoNoise'))}
               />
-              <Label x={noiseX} y={over - 15} anchor="end" on={up('monoNoise')}>
-                noise
-              </Label>
+              {toMixer(
+                'noise',
+                <Label
+                  x={noiseX}
+                  y={over - 15}
+                  anchor="end"
+                  on={up('monoNoise')}
+                >
+                  noise
+                </Label>,
+              )}
               <Wire
                 arrow={arrow}
                 d={`M${tap} ${oscMid(2)} V${modMid} H${mod.x}`}

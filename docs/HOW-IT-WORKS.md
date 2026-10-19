@@ -27,8 +27,8 @@ every stage.
   neither, once you move a control off stock. Mix bus and Output are always on
   it, and so is anything a drawn wire lands on.
 - **+ add a stage** under the map lists the rest. Picking one opens it, and
-  opening a stage keeps it on the map. The tab keeps that list through a
-  reload, and a new tab starts without it.
+  opening a stage keeps it on the map. The tab keeps that list through a reload,
+  and a new tab starts without it.
 - **take off** in a stage's header turns its level or mix down and leaves its
   other knobs alone. A stage with neither goes back to stock.
 - **random**, **hunt an edge**, **mutate** and **drift** change only the stages
