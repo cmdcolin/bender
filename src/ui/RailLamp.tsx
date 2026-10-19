@@ -45,7 +45,7 @@ export function RailLamp({ onOpen }: { onOpen?: (stage: string) => void }) {
   )
 
   return (
-    <Tip text="The battery rail the toy keyboard, drums, FM chip, home keyboard and mono synth share, 4.5 V on fresh cells. Pitch, tempo and level sag as it falls, and near one volt the watchdog reboots the chips, which the lamp shows as reboot. Press it for the power supply settings.">
+    <Tip text="The battery rail Plinky, Clatter, Glint, Parlor and Growler share, 4.5 V on fresh cells. Pitch, tempo and level sag as it falls, and near one volt the watchdog reboots the chips, which the lamp shows as reboot. Press it for the power supply settings.">
       {onOpen ? (
         <button
           type="button"

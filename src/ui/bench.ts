@@ -17,13 +17,13 @@ export interface Bench {
 }
 
 export const INSTRUMENTS = [
-  'Toy keyboard',
-  'Toy drums',
-  'FM chip',
-  'Home keyboard',
-  'Mono synth',
-  'Tape loop',
-  'Four-track',
+  'Plinky',
+  'Clatter',
+  'Glint',
+  'Parlor',
+  'Growler',
+  'Spool',
+  'Layercake',
 ] as const
 
 const EMPTY: Bench = {
@@ -34,8 +34,26 @@ const EMPTY: Bench = {
   grid: false,
 }
 
+const RENAMED: Record<string, string> = {
+  'Toy keyboard': 'Plinky',
+  'Toy drums': 'Clatter',
+  'FM chip': 'Glint',
+  'Home keyboard': 'Parlor',
+  'Mono synth': 'Growler',
+  'Tape loop': 'Spool',
+  'Four-track': 'Layercake',
+  Stompbox: 'Gnash',
+  'Tape delay': 'Wraith',
+  'Delay pedal': 'Ricochet',
+  'Spring verb': 'Boing',
+  Ensemble: 'Chorale',
+  'Tube amp': 'Ember',
+}
+
 const strings = (value: unknown): string[] =>
-  Array.isArray(value) ? value.filter(s => typeof s === 'string') : []
+  Array.isArray(value)
+    ? value.filter(s => typeof s === 'string').map(s => RENAMED[s] ?? s)
+    : []
 
 export function sanitizeBench(value: unknown): Bench {
   if (typeof value !== 'object' || value === null) return EMPTY

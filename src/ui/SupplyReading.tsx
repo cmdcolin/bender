@@ -8,8 +8,8 @@ export function SupplyReading() {
     <div className={styles.reading}>
       <RailLamp />
       <p className={styles.feeds}>
-        Feeds the toy keyboard, toy drums, FM chip, home keyboard and mono
-        synth. Every knob here sags all five at once.
+        Feeds Plinky, Clatter, Glint, Parlor and Growler. Every knob here sags
+        all five at once.
       </p>
     </div>
   )

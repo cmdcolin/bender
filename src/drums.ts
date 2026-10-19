@@ -108,7 +108,7 @@ export const THROW_ROW = {
   maybe: null,
   len: 'drumThrowLen',
   label: 'echo',
-  help: 'Hits on these steps also go into the tape delay.',
+  help: 'Hits on these steps also go into Wraith.',
 } as const
 
 export type PanelRow = (typeof GRID_ROWS)[number] | typeof THROW_ROW

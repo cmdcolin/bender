@@ -253,7 +253,7 @@ test('a nudge on a control past its normal stretch can leave it there', () => {
 
 test('rolling a stage leaves every other stage alone', () => {
   const before = mine()
-  for (const name of ['Spring verb', 'Ring mod', 'Tape machine']) {
+  for (const name of ['Boing', 'Ring mod', 'Tape machine']) {
     const group = groupNamed(name)
     const own = new Set(groupKeys(group))
     for (let seed = 1; seed <= 12; seed++) {
@@ -267,7 +267,7 @@ test('rolling a stage leaves every other stage alone', () => {
 })
 
 test('rolling a stage moves it somewhere', () => {
-  const group = groupNamed('Spring verb')
+  const group = groupNamed('Boing')
   const boards = new Set<string>()
   for (let seed = 1; seed <= 20; seed++) {
     const after = rollGroup(group, mine(), mulberry32(seed))
@@ -278,7 +278,7 @@ test('rolling a stage moves it somewhere', () => {
 
 test('rolling the kit writes a pattern, keeps the tempo and the song', () => {
   const before = { ...mine(), drumBpm: 96 }
-  const kit = groupNamed('Toy drums')
+  const kit = groupNamed('Clatter')
   for (let seed = 1; seed <= 20; seed++) {
     const after = rollGroup(kit, before, mulberry32(seed))
     expect(after.drumBpm).toBe(96)
@@ -292,7 +292,7 @@ test('rolling the kit writes a pattern, keeps the tempo and the song', () => {
 
 test('resetting a stage puts that stage back and nothing else', () => {
   const played = { ...mine(), revMix: 0.8, revDecayS: 6, dlyMix: 0.5 }
-  const after = resetGroup(groupNamed('Spring verb'), played)
+  const after = resetGroup(groupNamed('Boing'), played)
   expect(after.revMix).toBe(DEFAULT_CONTROLS.revMix)
   expect(after.revDecayS).toBe(DEFAULT_CONTROLS.revDecayS)
   expect(after.dlyMix).toBe(played.dlyMix)
@@ -300,7 +300,7 @@ test('resetting a stage puts that stage back and nothing else', () => {
 })
 
 test('resetting the kit wipes the pattern it owns', () => {
-  const after = resetGroup(groupNamed('Toy drums'), mine())
+  const after = resetGroup(groupNamed('Clatter'), mine())
   expect(after.drumKick).toBe(DEFAULT_CONTROLS.drumKick)
   expect(after.drumClap).toBe(DEFAULT_CONTROLS.drumClap)
 })
@@ -312,7 +312,7 @@ test('resetting the kit wipes the pattern it owns', () => {
 // of them left the board exactly where it stood one press in thirty-seven: the
 // button pressed, the panel silent, nothing to say why.
 test('a roll you pointed at lands somewhere you were not', () => {
-  const rows = groupNamed('FM chip')
+  const rows = groupNamed('Glint')
     .sliders.filter(s => s.part === 'knife on the bus')
     .filter(s => !s.needs || s.needs(DEFAULT_CONTROLS))
     .map(s => s.key)

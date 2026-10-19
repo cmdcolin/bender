@@ -28,13 +28,13 @@ export function TapeLoopFace({
   const [shelfBtn, setShelfBtn] = useState<HTMLButtonElement | null>(null)
 
   return (
-    <Faceplate stage="Tape loop" seconds={seconds} onClose={onClose}>
+    <Faceplate stage="Spool" seconds={seconds} onClose={onClose}>
       <div className={styles.controls}>
         <TapeTransport
           loaded={!!sampleName}
           lead={
             <>
-              <Tip text="Puts a tape on the tape loop off archive.org: a random one from a shelf, or one you search for.">
+              <Tip text="Puts a tape on Spool off archive.org: a random one from a shelf, or one you search for.">
                 <DeckKey
                   ref={setShelfBtn}
                   glyph={archiveStep ? 'cancel' : 'eject'}

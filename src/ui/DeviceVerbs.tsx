@@ -113,7 +113,7 @@ function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
   if (where.length === 0) return null
   const players = where.filter(to => to !== stage)
   const down = atZero ? `${stage}’s Level is at 0.` : `${stage} is muted.`
-  const part = stage === 'Toy drums' ? 'hits' : 'notes'
+  const part = stage === 'Clatter' ? 'hits' : 'notes'
   const text = where.includes(stage)
     ? `${stage}’s Level is at 0 and its meter still reads sound.`
     : [

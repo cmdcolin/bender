@@ -7,7 +7,7 @@ import type { Group } from './types.ts'
 
 export const PEDAL_GROUPS: Group[] = [
   {
-    name: 'Stompbox',
+    name: 'Gnash',
     place: 'Pedals',
     sliders: [
       {
@@ -76,7 +76,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['on', 'bypassed'],
-        help: 'Takes the stompbox out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
+        help: 'Takes Gnash out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'stompMix',
@@ -91,7 +91,7 @@ export const PEDAL_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Tape delay',
+    name: 'Wraith',
     place: 'Pedals',
     editor: { kind: 'tapeLoop' },
     lead: ['delayMs', 'dlyFb', 'dlyMix'],
@@ -174,7 +174,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['on', 'bypassed'],
-        help: 'Takes the tape delay out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
+        help: 'Takes Wraith out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'dlyMix',
@@ -322,7 +322,7 @@ export const PEDAL_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Delay pedal',
+    name: 'Ricochet',
     place: 'Pedals',
     sliders: [
       {
@@ -395,7 +395,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['on', 'bypassed'],
-        help: 'Takes the delay pedal out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
+        help: 'Takes Ricochet out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'echoLevel',
@@ -410,7 +410,7 @@ export const PEDAL_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Spring verb',
+    name: 'Boing',
     place: 'Pedals',
     sliders: [
       {
@@ -470,7 +470,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['on', 'bypassed'],
-        help: 'Takes the spring verb out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
+        help: 'Takes Boing out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'revMix',
@@ -495,7 +495,7 @@ export const PEDAL_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Ensemble',
+    name: 'Chorale',
     place: 'Pedals',
     folded: ['the line'],
     sliders: [
@@ -538,7 +538,7 @@ export const PEDAL_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['on', 'bypassed'],
-        help: 'Takes the ensemble out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
+        help: 'Takes Chorale out of the path and leaves its knobs where you set them, so switching it back on brings the same sound. It keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'ensMix',
@@ -596,7 +596,7 @@ export const PEDAL_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Tube amp',
+    name: 'Ember',
     place: 'Pedals',
     editor: { kind: 'ampPath' },
     lead: ['ampMix'],

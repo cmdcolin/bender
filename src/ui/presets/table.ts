@@ -42,7 +42,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'mall strings',
     blurb:
-      'The home keyboard on strings with the toy’s gate still soldered on, so the demo song plays a pad through a long spring and a tape that wanders',
+      'Parlor on strings with the toy’s gate still soldered on, so the demo song plays a pad through a long spring and a tape that wanders',
     patch: {
       pcmLevel: 0.9,
       pcmVoice: keys('strings'),
@@ -184,7 +184,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'stuck key',
-    blurb: 'The FM chip never told the key came up, so nothing it plays ends',
+    blurb: 'Glint never told the key came up, so nothing it plays ends',
     patch: {
       chipLevel: 0,
       drumLevel: 0.5,
@@ -267,7 +267,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'never finishes booting',
     blurb:
-      'The FM chip cold-boots into garbage and the write that clears its test register lands next door, so it plays the song wide open, skewed and rectified',
+      'Glint cold-boots into garbage and the write that clears its test register lands next door, so it plays the song wide open, skewed and rectified',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -280,7 +280,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'reboot loop',
     blurb:
-      'A square wave on the FM chip’s cold boot: it power-cycles six times a second, each time into a different chord of garbage',
+      'A square wave on Glint’s cold boot: it power-cycles six times a second, each time into a different chord of garbage',
     patch: {
       chipLevel: 0,
       drumLevel: 0,
@@ -1642,7 +1642,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     name: 'two hands',
-    blurb: 'Gate jumper cut — the toy on one keybed, the FM chip on the other',
+    blurb: 'Gate jumper cut — the toy on one keybed, Glint on the other',
     patch: {
       chipLevel: 0.75,
       fmLevel: 0.7,
@@ -1974,7 +1974,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'basement organ',
     blurb:
-      'The home keyboard’s pipe organ with the ROM clock at 0.12×, three octaves down, playing the toy’s song in power chords',
+      'Parlor’s pipe organ with the ROM clock at 0.12×, three octaves down, playing the toy’s song in power chords',
     patch: {
       chipLevel: 0,
       drumLevel: 0.5,
@@ -1989,7 +1989,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'mono bass',
     blurb:
-      'The mono synth on the toy’s gate line: two saws and a square two octaves under the tune, with a short filter contour and a little glide',
+      'Growler on the toy’s gate line: two saws and a square two octaves under the tune, with a short filter contour and a little glide',
     patch: {
       monoLevel: 1,
       chipLevel: 0,
@@ -2034,7 +2034,7 @@ export const PRESETS: PresetDef[] = [
   {
     name: 'kick bass',
     blurb:
-      'The mono synth’s gate jumper cut and the kick’s trigger line clipped on, so every kick restarts the bass on the last key you played',
+      'Growler’s gate jumper cut and the kick’s trigger line clipped on, so every kick restarts the bass on the last key you played',
     patch: {
       monoLevel: 1,
       chipLevel: 0,

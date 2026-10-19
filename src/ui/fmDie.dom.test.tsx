@@ -14,7 +14,7 @@ const open = () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(
     <OpenGroup
-      group={GROUPS.find(g => g.name === 'FM chip')!}
+      group={GROUPS.find(g => g.name === 'Glint')!}
       onClose={() => {}}
       seconds={0}
     />,

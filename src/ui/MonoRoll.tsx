@@ -90,8 +90,8 @@ export function MonoRoll() {
         <Tip
           text={
             on
-              ? 'The memory plays through the mono synth while the song runs. Press to silence it; the steps stay.'
-              : 'The memory is off. Press to play it through the mono synth while the song runs. Drawing a note turns it on too.'
+              ? 'The memory plays through Growler while the song runs. Press to silence it; the steps stay.'
+              : 'The memory is off. Press to play it through Growler while the song runs. Drawing a note turns it on too.'
           }
         >
           <button

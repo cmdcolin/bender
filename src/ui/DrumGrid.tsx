@@ -238,7 +238,7 @@ export function DrumGrid() {
             </button>
           </Tip>
         ))}
-        <Tip text="Throw the bar's last snare into the tape delay. Shift-click clears the echo row.">
+        <Tip text="Throw the bar's last snare into Wraith. Shift-click clears the echo row.">
           <button className={styles.move} onClick={e => throwIt(e.shiftKey)}>
             throw
           </button>

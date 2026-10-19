@@ -121,7 +121,7 @@ export function AmpPathDiagram() {
         <Diagram
           width={WIDTH}
           height={PLOT.bottom + 18}
-          label="tube amp signal path and tone"
+          label="ember signal path and tone"
         >
           {arrow => (
             <>

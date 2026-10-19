@@ -8,7 +8,7 @@ import { CHANNELS } from './controls/index.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import './testDom.ts'
 
-const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
+const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
 
 const box = (name: string) =>
   screen.getByRole('button', { name: `${name} controls` })
@@ -46,7 +46,7 @@ const wires = (container: HTMLElement) => [
 ]
 const pathWires = (container: HTMLElement) =>
   wires(container).filter(
-    w => w.closest('svg')!.getAttribute('aria-label') === 'FM chip signal path',
+    w => w.closest('svg')!.getAttribute('aria-label') === 'glint signal path',
   )
 
 test('the path lights only while the chip is sounding', () => {

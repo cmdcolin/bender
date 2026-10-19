@@ -118,7 +118,7 @@ export function StripDiagram({ track }: { track: Track }) {
       w: BUS_W,
       name: 'stereo bus',
       touched: false,
-      help: 'The four-track’s stereo bus, onto the board’s mix bus.',
+      help: 'Layercake’s stereo bus, onto the board’s mix bus.',
     },
     {
       id: 'rec',

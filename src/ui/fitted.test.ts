@@ -26,10 +26,10 @@ afterEach(clearAdded)
 
 test('a stock board uses the two toys, the mix bus and the output', () => {
   expect([...onBoard(stock())].toSorted()).toEqual([
+    'Clatter',
     'Mix bus',
     'Output',
-    'Toy drums',
-    'Toy keyboard',
+    'Plinky',
   ])
 })
 
@@ -116,8 +116,8 @@ test('taking a gated stage off turns it down and keeps its other knobs', () => {
 })
 
 test('taking the toy keyboard off pulls its fader down', () => {
-  const off = takeOff(group('Toy keyboard'), stock())
-  expect(onBoard(off).has('Toy keyboard')).toBe(false)
+  const off = takeOff(group('Plinky'), stock())
+  expect(onBoard(off).has('Plinky')).toBe(false)
 })
 
 test('taking an ungated group off puts it back where it booted', () => {
@@ -134,28 +134,28 @@ test('a stored list keeps the stage names the board still has', () => {
 test('every instrument laid out on the bench has its box on the map', () => {
   const all = {
     all: true,
-    closed: ['Mono synth'],
-    pedals: ['Stompbox'],
+    closed: ['Growler'],
+    pedals: ['Gnash'],
     roll: false,
     grid: false,
   }
   const on = shownOn(stock(), all)
-  for (const stage of ['FM chip', 'Home keyboard', 'Stompbox'])
+  for (const stage of ['Glint', 'Parlor', 'Gnash'])
     expect(on.has(stage), stage).toBe(true)
-  expect(on.has('Mono synth')).toBe(false)
+  expect(on.has('Growler')).toBe(false)
 })
 
 test('taking an instrument off puts its face away', () => {
   bench.set({
     all: true,
     closed: [],
-    pedals: ['Stompbox'],
+    pedals: ['Gnash'],
     roll: false,
     grid: false,
   })
-  takeOff(group('FM chip'), stock())
-  takeOff(group('Stompbox'), stock())
-  expect(bench.get().closed).toEqual(['FM chip'])
+  takeOff(group('Glint'), stock())
+  takeOff(group('Gnash'), stock())
+  expect(bench.get().closed).toEqual(['Glint'])
   expect(bench.get().pedals).toEqual([])
   bench.set({ all: false, closed: [], pedals: [], roll: false, grid: false })
 })

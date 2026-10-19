@@ -71,7 +71,7 @@ const PARTS: Record<string, string> = {
   die: 'die and driver',
 }
 
-const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
+const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
 
 const TOP = 4
 const ROW = 34
@@ -201,7 +201,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
           <Diagram
             width={WIDTH}
             height={cone ? feet + CONE_H : feet}
-            label="FM chip signal path"
+            label="Glint signal path"
           >
             {arrow => (
               <>

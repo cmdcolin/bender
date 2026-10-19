@@ -18,11 +18,11 @@ export interface DrawingProps {
 }
 
 const DRAWINGS: Record<string, ComponentType<DrawingProps>> = {
-  'Toy drums|triggers and cross-patch': KitWiringDiagram,
-  'Toy keyboard|inside the die': ToyDieDiagram,
-  'Toy drums|inside the voices': ToyDrumDiagram,
-  'FM chip|die and driver': FmDieDiagram,
-  'Mono synth|voice card faults': MonoCardDiagram,
+  'Clatter|triggers and cross-patch': KitWiringDiagram,
+  'Plinky|inside the die': ToyDieDiagram,
+  'Clatter|inside the voices': ToyDrumDiagram,
+  'Glint|die and driver': FmDieDiagram,
+  'Growler|voice card faults': MonoCardDiagram,
   'Power supply|the cells': SupplyDiagram,
 }
 

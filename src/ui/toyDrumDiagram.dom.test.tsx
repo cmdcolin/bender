@@ -83,7 +83,7 @@ test('a box goes accent when a knob inside it is off stock', () => {
 })
 
 test('every knob in the voices fold sits in one of the boxes', () => {
-  const drums = GROUPS.find(g => g.name === 'Toy drums')!
+  const drums = GROUPS.find(g => g.name === 'Clatter')!
   const fold = drums.sliders
     .filter(d => d.part === 'inside the voices')
     .map(d => d.key)
@@ -99,7 +99,7 @@ test('a kit that arrives knifed opens the pattern box', () => {
 const openKit = () =>
   render(
     <OpenGroup
-      group={GROUPS.find(g => g.name === 'Toy drums')!}
+      group={GROUPS.find(g => g.name === 'Clatter')!}
       onClose={() => {}}
       seconds={0}
     />,

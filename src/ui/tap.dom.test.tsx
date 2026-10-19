@@ -11,7 +11,7 @@ import './testDom.ts'
 // The beat, and the two other speeds a hand keeps rather than reads: pressed in
 // time rather than dialled, and the whole run is one step in the walk.
 const openDrums = () => {
-  const group = GROUPS.find(g => g.name === 'Toy drums')
+  const group = GROUPS.find(g => g.name === 'Clatter')
   if (!group) throw new Error('no kit')
   render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
 }

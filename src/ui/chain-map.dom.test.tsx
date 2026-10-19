@@ -125,7 +125,7 @@ test('a stock board draws the two toys and the path out, and lists the rest to a
   expect(doorsOnMap().has('Ring mod')).toBe(false)
   fireEvent.click(screen.getByRole('button', { name: '+ add a stage' }))
   expect(screen.getByRole('menuitem', { name: 'Ring mod' })).toBeTruthy()
-  expect(screen.queryByRole('menuitem', { name: 'Toy keyboard' })).toBeNull()
+  expect(screen.queryByRole('menuitem', { name: 'Plinky' })).toBeNull()
 })
 
 test('adding a stage opens it and puts it on the map', () => {

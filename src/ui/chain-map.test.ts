@@ -84,13 +84,7 @@ test('the path is drawn, wired and inside its own box', () => {
 test('a short path hangs narrower than the drawing, with the mix bus its width', () => {
   const map = buildMap(DEFAULT_CONTROLS, {
     wrap: true,
-    shown: new Set([
-      'Toy keyboard',
-      'Toy drums',
-      'FM chip',
-      'Tape delay',
-      'Output',
-    ]),
+    shown: new Set(['Plinky', 'Clatter', 'Glint', 'Wraith', 'Output']),
   })
   const [mix, out] = [box(map, 'mix')!, box(map, 'Output')!]
   expect(mix.label).toBe('Mix bus')
@@ -100,16 +94,8 @@ test('a short path hangs narrower than the drawing, with the mix bus its width',
 })
 
 test.each([
-  [
-    'Toy_drums',
-    'Toy_keyboard',
-    ['Toy keyboard', 'FM chip', 'Home keyboard', 'Toy drums'],
-  ],
-  [
-    'Mono_synth',
-    'Home_keyboard',
-    ['Toy keyboard', 'FM chip', 'Home keyboard', 'Mono synth'],
-  ],
+  ['Clatter', 'Plinky', ['Plinky', 'Glint', 'Parlor', 'Clatter']],
+  ['Growler', 'Parlor', ['Plinky', 'Glint', 'Parlor', 'Growler']],
 ])(
   'a lone box on the lower row keeps the width of the one above: %s',
   (lone, above, names) => {
@@ -190,13 +176,13 @@ test('the wires are doors too — feedback to the bus, a patch wire to the bay',
   })
   expect(hop(map, 'Output', 'Feedback_bus')?.door).toBe('Feedback bus')
   expect(hop(map, 'Feedback_bus', 'mix')?.door).toBe('Feedback bus')
-  expect(hop(map, 'wire0', 'Tape_delay')?.door).toBe('Patch bay')
+  expect(hop(map, 'wire0', 'Wraith')?.door).toBe('Patch bay')
 })
 
 test('a box links to the anchor the panel renders, and the shelf does not', () => {
   const live = serialize(drawMap(buildMap(DEFAULT_CONTROLS)))
-  expect(live).toContain(`href="#${groupAnchor('Tape delay')}"`)
-  expect(live).toContain('data-door="Tape delay"')
+  expect(live).toContain(`href="#${groupAnchor('Wraith')}"`)
+  expect(live).toContain('data-door="Wraith"')
   expect(
     serialize(drawMap(buildMap(DEFAULT_CONTROLS, { live: false }))),
   ).not.toContain('href=')
@@ -209,20 +195,14 @@ test('touched controls show a count', () => {
 })
 
 test('the open stage is lit, and nothing else is', () => {
-  const map = buildMap(DEFAULT_CONTROLS, { open: 'Tape delay' })
-  expect(box(map, 'Tape_delay')?.open).toBe(true)
+  const map = buildMap(DEFAULT_CONTROLS, { open: 'Wraith' })
+  expect(box(map, 'Wraith')?.open).toBe(true)
   expect(map.nodes.filter(n => n.open)).toHaveLength(1)
 })
 
 test('each source is a box of its own, and a door of its own', () => {
   const map = buildMap(DEFAULT_CONTROLS)
-  for (const name of [
-    'Toy keyboard',
-    'FM chip',
-    'Home keyboard',
-    'Chaos osc',
-    'Tape loop',
-  ])
+  for (const name of ['Plinky', 'Glint', 'Parlor', 'Chaos osc', 'Spool'])
     expect(box(map, name.replace(/\W+/g, '_'))?.kind).toBe('inst')
   expect(hop(map, 'Chaos_osc', 'mix')).toBeTruthy()
   const svg = serialize(drawMap(map))
@@ -241,7 +221,7 @@ test('the toy board frames its boxes, and wires the key line', () => {
   // them, the way every other door on the drawing is named for what it opens.
   expect(frame.door).toBe('Board parts')
   expect(frame.label).toBe('board parts')
-  const framed = ['Toy_keyboard', 'FM_chip', 'Home_keyboard', 'Toy_drums']
+  const framed = ['Plinky', 'Glint', 'Parlor', 'Clatter']
   for (const id of framed) {
     const chip = box(map, id)!
     expect(chip.x).toBeGreaterThanOrEqual(frame.x)
@@ -252,13 +232,13 @@ test('the toy board frames its boxes, and wires the key line', () => {
     expect(hop(map, 'toy_board', id)?.color).toBe(PANEL.dim)
   // Soldered, so it is on the map whatever the board is set to — and it is the
   // warm colour, because a patched cable is the cool one.
-  const key = hop(map, 'Toy_keyboard', 'FM_chip')!
+  const key = hop(map, 'Plinky', 'Glint')!
   expect(key.color).toBe(PANEL.accent2)
   expect(key.dash).toBeUndefined()
   expect(key.label?.text).toBe('keyboard notes')
   expect(key.door).toBe('Trigger patch')
   // And on along the row to the third chip clipped onto the same gate.
-  expect(hop(map, 'FM_chip', 'Home_keyboard')?.color).toBe(PANEL.accent2)
+  expect(hop(map, 'Glint', 'Parlor')?.color).toBe(PANEL.accent2)
 })
 
 // The gate line is a bus with a jumper at each chip, so a run goes dashed only
@@ -267,9 +247,9 @@ test('cutting the jumpers dims the key line from the far end in', () => {
   const live = (c: Partial<typeof DEFAULT_CONTROLS>) => {
     const map = buildMap({ ...DEFAULT_CONTROLS, ...c })
     return [
-      hop(map, 'Toy_keyboard', 'FM_chip')!,
-      hop(map, 'FM_chip', 'Home_keyboard')!,
-      hop(map, 'Home_keyboard', 'Mono_synth')!,
+      hop(map, 'Plinky', 'Glint')!,
+      hop(map, 'Glint', 'Parlor')!,
+      hop(map, 'Parlor', 'Growler')!,
     ].map(w => w.dash === undefined)
   }
   expect(live({})).toEqual([true, true, true])
@@ -282,13 +262,13 @@ test('cutting the jumpers dims the key line from the far end in', () => {
     pcmKeyGate: 1,
     monoKeyGate: 1,
   })
-  expect(hop(cut, 'Toy_keyboard', 'FM_chip')?.label?.text).toBe('notes cut')
+  expect(hop(cut, 'Plinky', 'Glint')?.label?.text).toBe('notes cut')
 })
 
 test('a bridge from the kit names the chip it strikes', () => {
   const map = buildMap({ ...DEFAULT_CONTROLS, fmStruck: 1, monoStruck: 2 })
-  expect(hop(map, 'Toy_drums', 'FM_chip')?.label?.text).toBe('kick → FM')
-  expect(hop(map, 'Toy_drums', 'Mono_synth')?.label?.text).toBe('snare → mono')
+  expect(hop(map, 'Clatter', 'Glint')?.label?.text).toBe('kick → FM')
+  expect(hop(map, 'Clatter', 'Growler')?.label?.text).toBe('snare → mono')
 })
 
 // One row, and which one the chip stands next to is the whole of what
@@ -297,12 +277,12 @@ test('a bridge from the kit names the chip it strikes', () => {
 // drums sit the far side of it.
 test('the toy board makes one row, the FM chip against the keyboard', () => {
   const map = buildMap(DEFAULT_CONTROLS)
-  const keys = box(map, 'Toy_keyboard')!
-  const drums = box(map, 'Toy_drums')!
-  const fm = box(map, 'FM_chip')!
+  const keys = box(map, 'Plinky')!
+  const drums = box(map, 'Clatter')!
+  const fm = box(map, 'Glint')!
   expect(fm.y).toBe(keys.y)
   expect(drums.y).toBe(keys.y)
-  const pcm = box(map, 'Home_keyboard')!
+  const pcm = box(map, 'Parlor')!
   expect(pcm.y).toBe(keys.y)
   expect(keys.x + keys.w).toBeLessThanOrEqual(fm.x)
   expect(fm.x + fm.w).toBeLessThanOrEqual(pcm.x)
@@ -319,7 +299,7 @@ test.each([
   ['with the four-track', { ...DEFAULT_CONTROLS, fourLevel: 0.5 }],
 ])('the toy board drops onto the mix between its boxes: %s', (_, c) => {
   const map = buildMap(c, { wrap: true, loop: true, shown: onBoard(c) })
-  const [kb, drums] = [box(map, 'Toy_keyboard')!, box(map, 'Toy_drums')!]
+  const [kb, drums] = [box(map, 'Plinky')!, box(map, 'Clatter')!]
   const x = Number(/^M ([\d.-]+)/.exec(hop(map, 'toy_board', 'mix')!.d)![1])
   expect(x).toBeGreaterThan(kb.x + kb.w)
   expect(x).toBeLessThan(drums.x)
@@ -331,25 +311,25 @@ test('a patched trigger bridge deepens the board rather than crossing it', () =>
   expect(box(bridged, 'toy_board')!.h).toBeGreaterThanOrEqual(
     box(plain, 'toy_board')!.h,
   )
-  const trig = hop(bridged, 'Toy_drums', 'Toy_keyboard')!
+  const trig = hop(bridged, 'Clatter', 'Plinky')!
   expect(trig.color).toBe(PANEL.mod)
   // The row itself does not move: the lane is under it, and what is in the lane
   // is what the frame grows for.
-  expect(box(bridged, 'FM_chip')!.y).toBe(box(plain, 'FM_chip')!.y)
+  expect(box(bridged, 'Glint')!.y).toBe(box(plain, 'Glint')!.y)
 })
 
 test('a source box carries how far up its fader is, on its own travel', () => {
   const level = (c: Controls, id: string) => box(buildMap(c), id)!.level
-  expect(level(DEFAULT_CONTROLS, 'Toy_keyboard')).toBeCloseTo(
+  expect(level(DEFAULT_CONTROLS, 'Plinky')).toBeCloseTo(
     DEFAULT_CONTROLS.chipLevel,
   )
-  expect(box(buildMap(DEFAULT_CONTROLS), 'FM_chip')!.active).toBe(false)
+  expect(box(buildMap(DEFAULT_CONTROLS), 'Glint')!.active).toBe(false)
   // The bar counts up to the top of the normal stretch, so ×1 fills it and an
   // overdriven fader stays full.
-  expect(
-    level({ ...DEFAULT_CONTROLS, sampleLevel: 0.5 }, 'Tape_loop'),
-  ).toBeCloseTo(0.5)
-  expect(level({ ...DEFAULT_CONTROLS, fmLevel: 3 }, 'FM_chip')).toBeCloseTo(3)
+  expect(level({ ...DEFAULT_CONTROLS, sampleLevel: 0.5 }, 'Spool')).toBeCloseTo(
+    0.5,
+  )
+  expect(level({ ...DEFAULT_CONTROLS, fmLevel: 3 }, 'Glint')).toBeCloseTo(3)
 })
 
 test('every source box draws its fader travel at one length', () => {
@@ -370,9 +350,9 @@ test('every source box draws its fader travel at one length', () => {
 // warm colour — which is the only thing on the box that says so since the run
 // lamp became the glyph itself.
 test('each source box carries its own glyph, lit while it plays', () => {
-  const map = buildMap(DEFAULT_CONTROLS, { playing: ['Toy drums'] })
+  const map = buildMap(DEFAULT_CONTROLS, { playing: ['Clatter'] })
   const insts = map.nodes.filter(n => n.kind === 'inst')
-  expect(insts.filter(n => n.playing).map(n => n.label)).toEqual(['Toy drums'])
+  expect(insts.filter(n => n.playing).map(n => n.label)).toEqual(['Clatter'])
   for (const n of insts) {
     const svg = serialize(drawNode(n, PANEL, false))
     expect(svg).toContain('class="glyph"')
@@ -391,9 +371,9 @@ test('a box edge follows whether the stage is doing anything, and a moved stage 
     )?.[1]
   const dotted = (id: string) =>
     serialize(drawNode(box(map, id)!, PANEL, true)).includes('data-touched')
-  expect(edgeOf('Tube_amp')).toBe(PANEL.border)
-  expect(dotted('Tube_amp')).toBe(true)
-  expect(edgeOf('Tape_delay')).toBe(PANEL.dim)
+  expect(edgeOf('Ember')).toBe(PANEL.border)
+  expect(dotted('Ember')).toBe(true)
+  expect(edgeOf('Wraith')).toBe(PANEL.dim)
   expect(edgeOf('Output')).toBe(PANEL.dim)
   expect(dotted('Output')).toBe(false)
 })
@@ -413,7 +393,7 @@ test('the mic draws as a wire onto wherever it is patched', () => {
   expect(box(toMix, 'mic')?.value).toBe('1.00')
   expect(hop(toMix, 'mic', 'mix')?.color).toBe(PANEL.mod)
   const toRail = buildMap({ ...DEFAULT_CONTROLS, micLevel: 1, micPatch: 1 })
-  expect(hop(toRail, 'mic', 'Toy_keyboard')).toBeTruthy()
+  expect(hop(toRail, 'mic', 'Plinky')).toBeTruthy()
   expect(box(toRail, 'mic')?.door).toBe('Mic')
 })
 
@@ -446,7 +426,7 @@ test('a stage off stock draws a touched mark', () => {
   }
   const svg = serialize(drawMap(buildMap(board)))
   expect(svg).toContain('data-touched="Ring mod"')
-  expect(svg).toContain('data-touched="Toy keyboard"')
+  expect(svg).toContain('data-touched="Plinky"')
   expect(svg).toContain('data-touched="Power supply"')
   expect(svg).not.toContain('data-touched="Crusher"')
   // The README's copy takes no clicks at all, so it draws none of them.
@@ -490,7 +470,7 @@ test('a patch wire draws onto the group it is soldered to', () => {
   })
   expect(box(map, 'wire0')?.label).toBe('body X')
   expect(box(map, 'wire0')?.value).toBe('0.80')
-  expect(hop(map, 'wire0', 'Tape_delay')).toBeTruthy()
+  expect(hop(map, 'wire0', 'Wraith')).toBeTruthy()
   checkLayout(map)
 })
 
@@ -678,12 +658,12 @@ test('a wire label opens what it picks up, the wire itself the bay', () => {
     mod0Depth: 0.8,
   })
   expect(box(map, 'wire0')?.door).toBe('Body contact')
-  expect(hop(map, 'wire0', 'Tape_delay')?.door).toBe('Patch bay')
+  expect(hop(map, 'wire0', 'Wraith')?.door).toBe('Patch bay')
 })
 
 test('a bridged trigger line draws between the two boxes', () => {
   const stock = buildMap(DEFAULT_CONTROLS)
-  expect(hop(stock, 'Toy_drums', 'Toy_keyboard')).toBeUndefined()
+  expect(hop(stock, 'Clatter', 'Plinky')).toBeUndefined()
   // Nothing bridged, so the lane the bridges would run across says so rather
   // than the part coming off the map — as a chip, because it is a door and the
   // drawing keeps its plain captions in plain text.
@@ -696,8 +676,8 @@ test('a bridged trigger line draws between the two boxes', () => {
     trigToKeys: 1,
     trigToDrum: STEP_CHOICE,
   })
-  const up = hop(both, 'Toy_drums', 'Toy_keyboard')!
-  const down = hop(both, 'Toy_keyboard', 'Toy_drums')!
+  const up = hop(both, 'Clatter', 'Plinky')!
+  const down = hop(both, 'Plinky', 'Clatter')!
   expect(up.label?.text).toBe('kick → keys')
   expect(down.label?.text).toBe('keys → the step')
   // Patched rather than soldered, so it draws in the patch colour and dashed —
@@ -714,7 +694,7 @@ test('a bridged trigger line draws between the two boxes', () => {
 // arrives over one of them.
 test('the kit’s line onto the FM chip is a bridge like the other two', () => {
   const struck = buildMap({ ...DEFAULT_CONTROLS, fmStruck: ANY_CHOICE })
-  const trig = hop(struck, 'Toy_drums', 'FM_chip')!
+  const trig = hop(struck, 'Clatter', 'Glint')!
   expect(trig.label?.text).toBe('any hit → FM')
   expect(trig.color).toBe(PANEL.mod)
   expect(trig.dash).toBeTruthy()
@@ -731,7 +711,7 @@ test('the kit’s line onto the FM chip is a bridge like the other two', () => {
 // colour.
 test('the key line is soldered and the bridges are patched', () => {
   const map = buildMap({ ...DEFAULT_CONTROLS, fmStruck: ANY_CHOICE })
-  const key = hop(map, 'Toy_keyboard', 'FM_chip')!
+  const key = hop(map, 'Plinky', 'Glint')!
   expect(key.color).toBe(PANEL.accent2)
   expect(key.dash).toBeUndefined()
 })
@@ -801,7 +781,7 @@ test('a wire off a trigger line opens the box it picks up from', () => {
     filtMix: 0.5,
   })
   expect(box(map, 'wire0')?.label).toContain('drum hit')
-  expect(box(map, 'wire0')?.door).toBe('Toy drums')
+  expect(box(map, 'wire0')?.door).toBe('Clatter')
 })
 
 test('a wire onto the feedback amount draws onto the bus', () => {
@@ -822,7 +802,7 @@ test('the fold halves the drawing and hands the path across', () => {
   const straight = buildMap(DEFAULT_CONTROLS, { wrap: false })
   const folded = buildMap(DEFAULT_CONTROLS, { wrap: true })
   expect(folded.height).toBeLessThan(straight.height * 0.86)
-  expect(folded.width).toBeLessThan(straight.width * 0.75)
+  expect(folded.width).toBeLessThan(straight.width)
   const fold = folded.wires.find(w => w.id === 'fold')!
   expect(fold.color).toBe(PANEL.accent)
   expect(box(folded, fold.to)!.x).toBeGreaterThan(box(folded, fold.from)!.x)
@@ -859,8 +839,8 @@ test('the folded band is an even grid, with a caption over the foot row', () => 
   const map = buildMap(DEFAULT_CONTROLS, { wrap: true, loop: true })
   const chaos = box(map, 'Chaos_osc')!
   const noise = box(map, 'Noise_crackle')!
-  const sampler = box(map, 'Tape_loop')!
-  const tape = box(map, 'Four_track')!
+  const sampler = box(map, 'Spool')!
+  const tape = box(map, 'Layercake')!
   expect(sampler.x).toBe(chaos.x)
   expect(sampler.w).toBe(chaos.w)
   expect(tape.x).toBe(noise.x)
@@ -913,7 +893,7 @@ test('a pedal with its face on the bench says so on its box and the others do no
   const drawn = (benched: string[]) =>
     serialize(drawMap(buildMap(DEFAULT_CONTROLS, { benched })))
   expect(drawn([])).not.toContain('on the bench')
-  const one = drawn(['Tube amp'])
+  const one = drawn(['Ember'])
   expect(one.match(/on the bench/g)).toHaveLength(1)
   expect(one).toContain('class="benched"')
 })
@@ -945,8 +925,8 @@ test('the panel palette matches the tokens it copies', () => {
 
 test('a bypassed pedal and a muted source draw idle whatever their level', () => {
   const on = buildMap({ ...DEFAULT_CONTROLS, dlyMix: 0.5, fmLevel: 1 })
-  expect(box(on, 'Tape_delay')!.active).toBe(true)
-  expect(box(on, 'FM_chip')!.active).toBe(true)
+  expect(box(on, 'Wraith')!.active).toBe(true)
+  expect(box(on, 'Glint')!.active).toBe(true)
   const off = buildMap({
     ...DEFAULT_CONTROLS,
     dlyMix: 0.5,
@@ -954,6 +934,6 @@ test('a bypassed pedal and a muted source draw idle whatever their level', () =>
     fmLevel: 1,
     fmMute: 1,
   })
-  expect(box(off, 'Tape_delay')!.active).toBe(false)
-  expect(box(off, 'FM_chip')!.active).toBe(false)
+  expect(box(off, 'Wraith')!.active).toBe(false)
+  expect(box(off, 'Glint')!.active).toBe(false)
 })

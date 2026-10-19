@@ -52,10 +52,10 @@ const line = () => {
 const said = (head: HTMLElement) => Number(head.textContent.replace(/\D/g, ''))
 
 const openFmChip = () =>
-  render(<OpenGroup group={group('FM chip')} onClose={() => {}} seconds={0} />)
+  render(<OpenGroup group={group('Glint')} onClose={() => {}} seconds={0} />)
 
 const openEnsemble = () =>
-  render(<OpenGroup group={group('Ensemble')} onClose={() => {}} seconds={0} />)
+  render(<OpenGroup group={group('Chorale')} onClose={() => {}} seconds={0} />)
 
 // The number on a fold is what it opens to. A fault picks what happened to a
 // wire nobody has cut, so the row waits for a wire — and a heading that counted
@@ -109,9 +109,7 @@ test('a named cut wires itself, and the next one replaces it', () => {
 })
 
 test('the home keyboard’s data bus box carries the named cuts', () => {
-  render(
-    <OpenGroup group={group('Home keyboard')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Parlor')} onClose={() => {}} seconds={0} />)
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
   fireEvent.click(screen.getByRole('button', { name: 'the top bit sticks' }))
   expect(engine.controls.get().pcmDataLine).toBeGreaterThan(0)
@@ -122,9 +120,7 @@ test('the home keyboard’s data bus box carries the named cuts', () => {
 // until your hand has been on it, because a knob you have set is a knob you get
 // to see whatever the switch beside it says.
 test('the mod depth waits for the mode that uses it', () => {
-  render(
-    <OpenGroup group={group('Delay pedal')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Ricochet')} onClose={() => {}} seconds={0} />)
   expect(screen.queryByRole('slider', { name: 'Mod depth' })).toBeNull()
   act(() => engine.set('echoMode', ECHO_MODE.modulate))
   expect(screen.getByRole('slider', { name: 'Mod depth' })).toBeTruthy()
@@ -172,9 +168,7 @@ test('a number key strikes the kit, and writes it when record is armed', () => {
 
 // Every knob says what it is and where it stands, in its own units.
 test('a slider carries its name and its own units', () => {
-  render(
-    <OpenGroup group={group('Tape delay')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Wraith')} onClose={() => {}} seconds={0} />)
   const time = screen.getByRole('slider', { name: 'Time' })
   act(() => engine.set('delayMs', 1200))
   // The track underneath runs 0 to 1000 whatever the control is, and on a log
@@ -188,9 +182,7 @@ test('a slider carries its name and its own units', () => {
 // The kit's ROM buttons write over whatever you had drawn, so they land in the
 // walk like every other verb on the panel.
 test('a drum ROM lands in the walk, and ctrl+z takes it back', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   act(() => {
     engine.armStep()
     engine.set('drumKick', 0b1010101010101010)
@@ -208,9 +200,7 @@ test('a drum ROM lands in the walk, and ctrl+z takes it back', () => {
 // of steps by dragging across them, and the whole drag is one thing that
 // happened: one entry in the walk, however many steps it wrote.
 test('a drag across the grid draws a run of steps, and one undo takes it back', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   const cell = (step: number) =>
     screen.getByRole('button', { name: `tom step ${step + 1}` })
 
@@ -230,9 +220,7 @@ test('a drag across the grid draws a run of steps, and one undo takes it back', 
 // straight back in again. Three states, so a drag off a lit step wires the run
 // it crosses through the dice and one off a maybe wipes it.
 test('a drag writes whatever the step it started on became', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   const cell = (step: number) =>
     screen.getByRole('button', { name: `hat step ${step + 1}` })
   const run = [2, 3, 4, 5, 6]
@@ -261,9 +249,7 @@ test('a drag writes whatever the step it started on became', () => {
 // Three states on one contact, and one click each way round them. The two masks
 // never hold the same step, because what the grid draws is what the kit reads.
 test('a step cycles off, on, wired through the dice, off', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   const cell = screen.getByRole('button', { name: 'tom step 5' })
   const at = () => {
     const c = engine.controls.get()
@@ -294,9 +280,7 @@ test('a step cycles off, on, wired through the dice, off', () => {
 // The accent row has no maybe mask — it is a weight rather than a hit — so its
 // contact is the two-state contact it always was.
 test('the accent row has no dice on it', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   const cell = screen.getByRole('button', { name: 'accent step 5' })
   fireEvent.pointerDown(cell)
   expect(hasStep(engine.controls.get().drumAccent, 4)).toBe(true)
@@ -306,9 +290,7 @@ test('the accent row has no dice on it', () => {
 
 // A pointer crossing the grid on its way somewhere else is not a hand drawing.
 test('a pointer with nothing held down writes nothing', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   const before = engine.controls.get().drumTom
   fireEvent.pointerOver(screen.getByRole('button', { name: 'tom step 5' }), {
     buttons: 0,
@@ -320,9 +302,7 @@ test('a pointer with nothing held down writes nothing', () => {
 // outliving the gesture meant the next press anywhere on the page — a ROM
 // button a centimetre above the grid — carried on drawing the run before it.
 test('a drag that began off the grid draws nothing on it', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   const cell = (step: number) =>
     screen.getByRole('button', { name: `tom step ${step + 1}` })
 
@@ -340,9 +320,7 @@ test('a drag that began off the grid draws nothing on it', () => {
 // The moves rewrite the grid and nothing else about the kit, and they land in
 // the walk the way the ROM buttons do.
 test('a turnaround writes the end of the bar, keeps the tempo, and takes back', () => {
-  render(
-    <OpenGroup group={group('Toy drums')} onClose={() => {}} seconds={0} />,
-  )
+  render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   act(() => engine.set('drumBpm', 96))
   const before = engine.controls.get()
 
@@ -409,10 +387,10 @@ test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   openEnsemble()
   fireEvent.click(line())
-  const rows = group('Ensemble')
+  const rows = group('Chorale')
     .sliders.filter(s => s.part === 'the line')
     .map(s => s.key)
-  const outside = group('Ensemble')
+  const outside = group('Chorale')
     .sliders.filter(s => !rows.includes(s.key))
     .map(s => s.key)
   const was = { ...engine.controls.get() }
@@ -492,9 +470,7 @@ test('a fold with nothing moved under it offers no way back', () => {
 // going one way and a tape going the other, and landing on neither by dragging
 // past is the thing that made the change too quiet to notice.
 const speed = () => {
-  render(
-    <OpenGroup group={group('Tape loop')} onClose={() => {}} seconds={1} />,
-  )
+  render(<OpenGroup group={group('Spool')} onClose={() => {}} seconds={1} />)
   return screen.getByRole('slider', { name: 'Speed' })
 }
 
@@ -575,14 +551,14 @@ test('clicking a reading takes a typed value, and Escape leaves it be', () => {
 test('the tape loop stays off the bench until it is added or its level comes up', () => {
   bench.set({ ...bench.get(), all: false, closed: [] })
   render(<App />)
-  const tape = () => screen.queryByRole('region', { name: 'tape loop' })
+  const tape = () => screen.queryByRole('region', { name: 'spool' })
   expect(tape()).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: '+ add all instruments' }))
   expect(tape()).not.toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'more for Tape loop' }))
-  fireEvent.click(screen.getByRole('menuitem', { name: 'close Tape loop' }))
+  fireEvent.click(screen.getByRole('button', { name: 'more for Spool' }))
+  fireEvent.click(screen.getByRole('menuitem', { name: 'close Spool' }))
   expect(tape()).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: '+ tape loop' }))
+  fireEvent.click(screen.getByRole('button', { name: '+ spool' }))
   expect(tape()).not.toBeNull()
   fireEvent.click(
     screen.getByRole('button', { name: '− hide unused instruments' }),
@@ -596,9 +572,9 @@ test("a face's name plate opens its stage in the panel", () => {
   render(<App />)
   const panel = screen.getByRole('complementary', { name: 'the board' })
   const close = () =>
-    within(panel).queryByRole('button', { name: 'close Toy drums' })
+    within(panel).queryByRole('button', { name: 'close Clatter' })
   expect(close()).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'Toy drums settings' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Clatter settings' }))
   expect(close()).not.toBeNull()
 })
 
@@ -623,16 +599,14 @@ test('the map folds to a row of stages while one is open', () => {
   render(<App />)
   const map = () =>
     document.querySelector<HTMLElement>('[aria-label="signal path"]')!
-  fireEvent.click(screen.getByRole('button', { name: 'Toy drums settings' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Clatter settings' }))
   fireEvent.click(screen.getByRole('button', { name: '▴ fold the map' }))
   expect(map().hidden).toBe(true)
-  fireEvent.click(screen.getByRole('button', { name: /^Toy keyboard$/ }))
-  expect(
-    screen.getByRole('button', { name: 'close Toy keyboard' }),
-  ).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: 'close Toy keyboard' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Plinky$/ }))
+  expect(screen.getByRole('button', { name: 'close Plinky' })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'close Plinky' }))
   expect(map().hidden).toBe(false)
-  fireEvent.click(screen.getByRole('button', { name: 'Toy drums settings' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Clatter settings' }))
   expect(map().hidden).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: '▾ show the map' }))
   expect(map().hidden).toBe(false)

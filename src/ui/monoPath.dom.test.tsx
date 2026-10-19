@@ -10,7 +10,7 @@ import './testDom.ts'
 const open = () =>
   render(
     <OpenGroup
-      group={GROUPS.find(g => g.name === 'Mono synth')!}
+      group={GROUPS.find(g => g.name === 'Growler')!}
       onClose={() => {}}
       seconds={0}
     />,

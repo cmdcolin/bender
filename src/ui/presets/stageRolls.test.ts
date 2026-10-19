@@ -6,13 +6,7 @@ import { GROUPS, type Group } from '../controls/index.ts'
 import { STAGE_ROLLS, stageRollsFor } from './stageRolls.ts'
 import { mine } from './testBoard.ts'
 
-const MACHINES = [
-  'Toy keyboard',
-  'Toy drums',
-  'FM chip',
-  'Home keyboard',
-  'Mono synth',
-]
+const MACHINES = ['Plinky', 'Clatter', 'Glint', 'Parlor', 'Growler']
 
 const machine = (name: string): Group => GROUPS.find(g => g.name === name)!
 const kind = (name: string) => STAGE_ROLLS.find(r => r.name === name)!
@@ -117,7 +111,7 @@ test('a nudge touches fewer controls than a roll, and only sound controls', () =
 })
 
 test('the pattern roll writes the kit grid and leaves every slider alone', () => {
-  const group = machine('Toy drums')
+  const group = machine('Clatter')
   const sliders = new Set<ControlKey>(group.sliders.map(s => s.key))
   let grid = 0
   for (const seed of SEEDS) {
@@ -134,8 +128,8 @@ test('the pattern roll writes the kit grid and leaves every slider alone', () =>
 test('only the kit offers a pattern roll', () => {
   const offers = (name: string) =>
     stageRollsFor(machine(name)).some(r => r.name === 'pattern')
-  expect(offers('Toy drums')).toBe(true)
-  for (const name of MACHINES.filter(n => n !== 'Toy drums'))
+  expect(offers('Clatter')).toBe(true)
+  for (const name of MACHINES.filter(n => n !== 'Clatter'))
     expect(offers(name)).toBe(false)
 })
 

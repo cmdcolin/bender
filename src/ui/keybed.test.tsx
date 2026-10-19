@@ -49,16 +49,16 @@ const all = () => {
 
 test('a key on the FM bed plays the FM chip and not the toy', () => {
   both()
-  fireEvent.pointerDown(middleC('fm keyboard'))
+  fireEvent.pointerDown(middleC('glint'))
   expect(engine.fmKeysDown.get().size).toBe(1)
   expect(engine.keysDown.get().size).toBe(0)
-  fireEvent.pointerUp(middleC('fm keyboard'))
+  fireEvent.pointerUp(middleC('glint'))
   expect(engine.fmKeysDown.get().size).toBe(0)
 })
 
 test('a key on the toy bed still plays the toy', () => {
   both()
-  fireEvent.pointerDown(middleC('toy keyboard'))
+  fireEvent.pointerDown(middleC('plinky'))
   expect(engine.keysDown.get().size).toBe(1)
   expect(engine.fmKeysDown.get().size).toBe(0)
 })
@@ -67,22 +67,22 @@ test('a key on the toy bed still plays the toy', () => {
 // off it reaches the home keyboard and neither of the chips next door.
 test('a key on the home bed plays the home keyboard alone', () => {
   all()
-  fireEvent.pointerDown(middleC('home keyboard'))
+  fireEvent.pointerDown(middleC('parlor'))
   expect(engine.pcmKeysDown.get().size).toBe(1)
   expect(engine.keysDown.get().size).toBe(0)
   expect(engine.fmKeysDown.get().size).toBe(0)
-  fireEvent.pointerUp(middleC('home keyboard'))
+  fireEvent.pointerUp(middleC('parlor'))
   expect(engine.pcmKeysDown.get().size).toBe(0)
 })
 
 test('a key on the mono bed plays the mono synth alone', () => {
   all()
   render(<MonoKeys />)
-  fireEvent.pointerDown(middleC('mono synth'))
+  fireEvent.pointerDown(middleC('growler'))
   expect(engine.monoKeysDown.get().size).toBe(1)
   expect(engine.keysDown.get().size).toBe(0)
   expect(engine.pcmKeysDown.get().size).toBe(0)
-  fireEvent.pointerUp(middleC('mono synth'))
+  fireEvent.pointerUp(middleC('growler'))
   expect(engine.monoKeysDown.get().size).toBe(0)
 })
 
@@ -90,12 +90,12 @@ test('a key on the mono bed plays the mono synth alone', () => {
 // takes them off whichever had them, and the toy's own switch takes them back.
 test('the letters reach the home bed, and the toy can take them back', () => {
   all()
-  wireLetters('home keyboard')
+  wireLetters('parlor')
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.pcmKeysDown.get().size).toBe(1)
   expect(engine.keysDown.get().size).toBe(0)
   fireEvent.keyUp(window, { key: 'a' })
-  wireLetters('toy keyboard')
+  wireLetters('plinky')
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.keysDown.get().size).toBe(1)
   expect(engine.pcmKeysDown.get().size).toBe(0)
@@ -111,7 +111,7 @@ test('the letter keys play whichever bed they are wired to', () => {
   expect(engine.fmKeysDown.get().size).toBe(0)
   fireEvent.keyUp(window, { key: 'a' })
 
-  wireLetters('fm keyboard')
+  wireLetters('glint')
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.fmKeysDown.get().size).toBe(1)
   expect(engine.keysDown.get().size).toBe(0)
@@ -124,7 +124,7 @@ test('moving the letters lets go of what they were holding', () => {
   both()
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.keysDown.get().size).toBe(1)
-  wireLetters('fm keyboard')
+  wireLetters('glint')
   expect(engine.keysDown.get().size).toBe(0)
 })
 
@@ -169,9 +169,9 @@ test('the jumper lamp says off, wired, and sounding', () => {
 // board everyone had before there was a second keyboard, and it looks like it.
 test('the FM bed is drawn once the chip is in the mix', () => {
   render(<App />)
-  expect(screen.queryByRole('group', { name: 'fm keyboard' })).toBeNull()
+  expect(screen.queryByRole('group', { name: 'glint' })).toBeNull()
   act(() => engine.set('fmLevel', 0.8))
-  expect(screen.getByRole('group', { name: 'fm keyboard' })).toBeTruthy()
+  expect(screen.getByRole('group', { name: 'glint' })).toBeTruthy()
 })
 
 // One keyboard and two beds, so the box cannot just be empty: switching the
@@ -180,8 +180,8 @@ test('the FM bed is drawn once the chip is in the mix', () => {
 // commands.
 test('turning the letters off one bed hands them to the other', () => {
   both()
-  wireLetters('fm keyboard')
-  fireEvent.click(bed('fm keyboard').getByRole('checkbox'))
+  wireLetters('glint')
+  fireEvent.click(bed('glint').getByRole('checkbox'))
   fireEvent.keyDown(window, { key: 'a' })
   expect(engine.keysDown.get().size).toBe(1)
   expect(engine.fmKeysDown.get().size).toBe(0)
@@ -189,10 +189,10 @@ test('turning the letters off one bed hands them to the other', () => {
 
 test('a second press on ⋯ shuts the menu again', () => {
   both()
-  press(more('toy keyboard'))
-  expect(bed('toy keyboard').queryByRole('checkbox')).not.toBeNull()
-  press(more('toy keyboard'))
-  expect(bed('toy keyboard').queryByRole('checkbox')).toBeNull()
+  press(more('plinky'))
+  expect(bed('plinky').queryByRole('checkbox')).not.toBeNull()
+  press(more('plinky'))
+  expect(bed('plinky').queryByRole('checkbox')).toBeNull()
 })
 
 // Three octaves is twenty-two white keys, and a case narrow enough — a phone
@@ -202,7 +202,7 @@ test('a second press on ⋯ shuts the menu again', () => {
 // reached past the drawn keys is how you reach the ones it stopped drawing.
 test('a case with no room for three octaves draws one', () => {
   render(<Keys />)
-  const toy = () => bed('toy keyboard')
+  const toy = () => bed('plinky')
   expect(toy().queryByRole('button', { name: 'key C6' })).not.toBeNull()
 
   act(() => measure(300))
@@ -228,7 +228,7 @@ test('a case with no room for three octaves draws one', () => {
 // than the keys they were struck on.
 test('a note held past the end of a shortened board can still be let go', () => {
   render(<Keys />)
-  const toy = () => bed('toy keyboard')
+  const toy = () => bed('plinky')
   fireEvent.click(toy().getByRole('button', { name: 'hold' }))
   const top = toy().getByRole('button', { name: 'key C5' })
   fireEvent.pointerDown(top)
@@ -247,7 +247,7 @@ test('a note held past the end of a shortened board can still be let go', () => 
 // window says which is on it.
 test('a finger is given fewer keys than a pointer in the same case', () => {
   render(<Keys />)
-  const toy = () => bed('toy keyboard')
+  const toy = () => bed('plinky')
   act(() => measure(600))
   expect(toy().queryByRole('button', { name: 'key C6' })).not.toBeNull()
 
@@ -259,18 +259,18 @@ test('a finger is given fewer keys than a pointer in the same case', () => {
 // On a narrow case the Level slider moves into the ⋯ menu.
 test('a narrow case keeps its Level in the ⋯ menu', () => {
   render(<Keys />)
-  const toy = () => bed('toy keyboard')
+  const toy = () => bed('plinky')
   const level = () => toy().queryByRole('slider', { name: 'Level' })
   expect(level()).not.toBeNull()
 
   act(() => measure(300))
   expect(level()).toBeNull()
-  press(more('toy keyboard'))
+  press(more('plinky'))
   expect(level()).not.toBeNull()
-  press(more('toy keyboard'))
+  press(more('plinky'))
 
   act(() => touch(true))
-  press(more('toy keyboard'))
+  press(more('plinky'))
   expect(level()).not.toBeNull()
   expect(toy().queryByRole('checkbox')).toBeNull()
 })
@@ -279,9 +279,7 @@ test('a touch screen with room on the deck keeps no keyboard settings', () => {
   render(<Keys />)
   act(() => measure(600))
   act(() => touch(true))
-  press(more('toy keyboard'))
-  expect(bed('toy keyboard').queryByRole('checkbox')).toBeNull()
-  expect(
-    bed('toy keyboard').queryByRole('slider', { name: 'Level' }),
-  ).not.toBeNull()
+  press(more('plinky'))
+  expect(bed('plinky').queryByRole('checkbox')).toBeNull()
+  expect(bed('plinky').queryByRole('slider', { name: 'Level' })).not.toBeNull()
 })

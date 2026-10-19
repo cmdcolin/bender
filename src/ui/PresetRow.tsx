@@ -239,7 +239,7 @@ export function Presets(props: {
         className={styles.filter}
         type="search"
         aria-label="find a preset"
-        placeholder="find: a name, a word, or a stage like tape delay"
+        placeholder="find: a name, a word, or a stage like wraith"
         value={query}
         onChange={e => setQuery(e.currentTarget.value)}
         onKeyDown={e => {

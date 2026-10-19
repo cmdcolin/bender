@@ -558,7 +558,7 @@ export function Wired() {
             send the clock
           </button>
         </Tip>
-        <Tip text="Send what the two chips are sounding out as notes — the toy on channel 1, the FM chip on channel 2. That is the whole board, not just your hands: the ROM's tune, the backing under it, the arpeggio, and whatever the kit's trigger lines struck.">
+        <Tip text="Send what the two chips are sounding out as notes — the toy on channel 1, Glint on channel 2. That is the whole board, not just your hands: the ROM's tune, the backing under it, the arpeggio, and whatever the kit's trigger lines struck.">
           <button
             className={noteOut ? styles.toggleOn : styles.toggle}
             onClick={() => midi.setNoteOut(!noteOut)}
@@ -591,7 +591,7 @@ function KeyRouting() {
 
   return (
     <>
-      <Tip text="Which keybed the controller plays: the toy, the FM chip, the home keyboard, the mono synth, all of them at once, or the keybed cut in half. Split puts the toy below the split and the FM chip from it up; bass split puts the mono synth below and the toy from it up. Each chip has to be up in the mix to be heard.">
+      <Tip text="Which keybed the controller plays: the toy, Glint, Parlor, Growler, all of them at once, or the keybed cut in half. Split puts the toy below the split and Glint from it up; bass split puts Growler below and the toy from it up. Each chip has to be up in the mix to be heard.">
         <select
           className={styles.select}
           value={route}
@@ -600,7 +600,7 @@ function KeyRouting() {
           <option value="toy">→ toy keys</option>
           <option value="fm">→ fm keys</option>
           <option value="pcm">→ home keys</option>
-          <option value="mono">→ mono synth</option>
+          <option value="mono">→ Growler</option>
           <option value="layer">→ all</option>
           <option value="split">→ split</option>
           <option value="bassSplit">→ bass split</option>
@@ -612,8 +612,8 @@ function KeyRouting() {
             learning
               ? 'press the key to cut the board at — it sets the split rather than sounding'
               : route === 'bassSplit'
-                ? 'set the split by playing the key to cut the board at. Everything under it plays the mono synth; from that key up is the toy'
-                : 'set the split by playing the key to cut the board at. From that key up plays the FM chip; everything under it is the toy'
+                ? 'set the split by playing the key to cut the board at. Everything under it plays Growler; from that key up is the toy'
+                : 'set the split by playing the key to cut the board at. From that key up plays Glint; everything under it is the toy'
           }
         >
           <button

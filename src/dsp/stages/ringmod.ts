@@ -22,15 +22,15 @@ const CARRIERS = [
   ['knob', null, NOW],
   ['toy', 'toyChip', NOW],
   ['kit', 'toyDrum', NOW],
-  ['FM chip', 'fmChip', NOW],
+  ['glint', 'fmChip', NOW],
   ['chaos osc', 'chaosOsc', NOW],
   ['noise', 'noise', NOW],
   ['sampler', 'sampler', NOW],
   ['keys', 'pcmKeys', NOW],
-  ['mono synth', 'monoSynth', NOW],
+  ['growler', 'monoSynth', NOW],
   ['toy step late', 'toyChip', STEP_LATE],
   ['toy beat late', 'toyChip', BEAT_LATE],
-  ['four-track', 'fourTrack', NOW],
+  ['layercake', 'fourTrack', NOW],
 ] as const satisfies readonly (readonly [string, SourceTap | null, number])[]
 
 export const RING_FROM = CARRIERS.map(([label]) => label)

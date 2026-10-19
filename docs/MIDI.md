@@ -40,17 +40,17 @@ chip counts semitones from 220 Hz, so a controller's middle C arrives three
 semitones higher than you'd expect. Played notes strike and light the same
 on-screen keys your hand does.
 
-There are two keybeds on the panel once the FM chip is up in the mix, and the
-picker beside **notes play the keys** says which of them the wire plays: the
-toy, the FM chip, **both** — one key, two synthesisers — or **split**, which
-cuts the keybed in half with the toy below the split point and the FM chip from
-it up. Set the split by pressing **split at …** and then playing the key to cut
-at; that key sets the split rather than sounding. Moving the picker mid-note
-lets go of whatever the wire is holding, so nothing is left stuck on a bed the
-controller has stopped playing. The sustain pedal holds notes and releases them,
-and either spelling of "all notes off" clears the board. Velocity comes through
-too: the toy's own keys are switches and always strike at full velocity, but a
-MIDI note or the trigger patch can arrive at any level.
+There are two keybeds on the panel once Glint is up in the mix, and the picker
+beside **notes play the keys** says which of them the wire plays: the toy,
+Glint, **both** — one key, two synthesisers — or **split**, which cuts the
+keybed in half with the toy below the split point and Glint from it up. Set the
+split by pressing **split at …** and then playing the key to cut at; that key
+sets the split rather than sounding. Moving the picker mid-note lets go of
+whatever the wire is holding, so nothing is left stuck on a bed the controller
+has stopped playing. The sustain pedal holds notes and releases them, and either
+spelling of "all notes off" clears the board. Velocity comes through too: the
+toy's own keys are switches and always strike at full velocity, but a MIDI note
+or the trigger patch can arrive at any level.
 
 **Pads play the kit.** Channel 10 is where General MIDI puts percussion, so a
 pad bank sending there needs no setup — the standard GM map folds onto bender's
@@ -118,11 +118,11 @@ bender's own clock input included — reads the right tempo off it. Anything tha
 advances on single pulses gets them in sixes.
 
 **Send the notes** mirrors what the two chips are sounding as note-on and
-note-off, the toy on channel 1 and the FM chip on channel 2. That is the whole
-board and not just your hands: the ROM's tune, the backing under it, the
-arpeggio, and any note the kit's trigger lines struck all go out alongside
-anything played on the keys. Pitches leave in MIDI's numbering, so the chip's
-zero note goes out as 57 — the A3 the ROM counts up from. Notes leave at one
-fixed velocity, since the chips report what is sounding and never how hard it
-was struck. Switching the toggle off releases whatever is still held, so nothing
-is left ringing on the far end.
+note-off, the toy on channel 1 and Glint on channel 2. That is the whole board
+and not just your hands: the ROM's tune, the backing under it, the arpeggio, and
+any note the kit's trigger lines struck all go out alongside anything played on
+the keys. Pitches leave in MIDI's numbering, so the chip's zero note goes out as
+57 — the A3 the ROM counts up from. Notes leave at one fixed velocity, since the
+chips report what is sounding and never how hard it was struck. Switching the
+toggle off releases whatever is still held, so nothing is left ringing on the
+far end.

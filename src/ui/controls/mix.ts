@@ -39,22 +39,22 @@ export interface Channel {
 const sourceTap = (label: SourceTap) => SOURCE_TAPS.indexOf(label)
 
 export const CHANNELS: readonly Channel[] = [
-  { key: 'chipLevel', name: 'Toy keyboard', tap: sourceTap('toyChip') },
-  { key: 'drumLevel', name: 'Toy drums', tap: sourceTap('toyDrum') },
-  { key: 'fmLevel', name: 'FM chip', tap: sourceTap('fmChip') },
-  { key: 'pcmLevel', name: 'Home keyboard', tap: sourceTap('pcmKeys') },
-  { key: 'monoLevel', name: 'Mono synth', tap: sourceTap('monoSynth') },
+  { key: 'chipLevel', name: 'Plinky', tap: sourceTap('toyChip') },
+  { key: 'drumLevel', name: 'Clatter', tap: sourceTap('toyDrum') },
+  { key: 'fmLevel', name: 'Glint', tap: sourceTap('fmChip') },
+  { key: 'pcmLevel', name: 'Parlor', tap: sourceTap('pcmKeys') },
+  { key: 'monoLevel', name: 'Growler', tap: sourceTap('monoSynth') },
   { key: 'oscLevel', name: 'Chaos osc', tap: sourceTap('chaosOsc') },
   { key: 'noiseLevel', name: 'Noise & crackle', tap: sourceTap('noise') },
   {
     key: 'sampleLevel',
-    name: 'Tape loop',
+    name: 'Spool',
     tap: sourceTap('sampler'),
     yours: true,
   },
   {
     key: 'fourLevel',
-    name: 'Four-track',
+    name: 'Layercake',
     tap: sourceTap('fourTrack'),
     yours: true,
   },

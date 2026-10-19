@@ -13,8 +13,8 @@ const pad = (name: string) =>
 
 test('the drum kit shares a row with the toy keyboard', () => {
   render(<App />)
-  const keyboard = screen.getByRole('group', { name: 'toy keyboard' })
-  const kit = screen.getByRole('group', { name: 'toy drums' })
+  const keyboard = screen.getByRole('group', { name: 'plinky' })
+  const kit = screen.getByRole('group', { name: 'clatter' })
   expect(kit.parentElement).toBe(keyboard.parentElement)
 })
 
@@ -38,7 +38,7 @@ test('a pad lights when the meter reports a hit on its voice', () => {
 
 test('the kit record switch arms drum recording', () => {
   render(<DrumKit />)
-  const kit = within(screen.getByRole('group', { name: 'toy drums' }))
+  const kit = within(screen.getByRole('group', { name: 'clatter' }))
   fireEvent.click(kit.getByRole('button', { name: 'rec' }))
   expect(engine.drumRecord.get()).toBe(true)
   fireEvent.click(kit.getByRole('button', { name: 'rec' }))
@@ -62,5 +62,5 @@ test('the pattern opens the drum grid', () => {
   const open = vi.fn()
   render(<DrumKit onOpen={open} />)
   fireEvent.click(screen.getByRole('button', { name: 'edit the drum pattern' }))
-  expect(open).toHaveBeenCalledWith('Toy drums')
+  expect(open).toHaveBeenCalledWith('Clatter')
 })

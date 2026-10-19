@@ -156,7 +156,7 @@ function track(k: Track): SliderDef[] {
 }
 
 export const FOUR_TRACK_GROUP: Group = {
-  name: 'Four-track',
+  name: 'Layercake',
   place: 'Sources',
   editor: { kind: 'loops' },
   lead: ['fourLevel', 'fourAux', 'fourPitch'],

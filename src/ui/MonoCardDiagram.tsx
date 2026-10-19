@@ -37,7 +37,7 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   contours: ['monoCap'],
 }
 
-const MONO_TAP = CHANNELS.find(c => c.name === 'Mono synth')!.tap
+const MONO_TAP = CHANNELS.find(c => c.name === 'Growler')!.tap
 
 const WIDTH = 420
 const TAIL = 30
@@ -161,7 +161,7 @@ export function MonoCardDiagram() {
         <Diagram
           width={WIDTH}
           height={HEIGHT}
-          label="mono synth voice card faults"
+          label="growler voice card faults"
         >
           {arrow => (
             <>

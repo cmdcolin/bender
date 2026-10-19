@@ -20,19 +20,19 @@ the chip then plays it perfectly — the tempo never moves. A data bus carries t
 answer back, so a knife there mangles a fetch that was correct. That is why the
 two controls on one chip sound nothing alike.
 
-The FM chip is the exception, and the drawing is arranged to show it: both of
-its buses run the same way, into the register file, because the processor writes
+Glint is the exception, and the drawing is arranged to show it: both of its
+buses run the same way, into the register file, because the processor writes
 that bus rather than reading it. A register holds what it was last told, so a
 fault there does not pass through — it accumulates, and a byte that lands wrong
 stays wrong until the processor writes that register again.
 
 One wire is one voice on the drum data bus, in the order of the rows, and one
-wire is one bit of the sample word on the home keyboard's, so those two are the
-buses where a wire number means something fixed. A toy-chip data line carries a
-note code and an FM data line carries whichever byte the processor was sending,
-so on those the wire is something you find rather than something to learn. The
-named cuts under _knife on the bus_ are the shortcut: each one is a wire and a
-fault somebody already found worth keeping.
+wire is one bit of the sample word on Parlor's, so those two are the buses where
+a wire number means something fixed. A toy-chip data line carries a note code
+and an FM data line carries whichever byte the processor was sending, so on
+those the wire is something you find rather than something to learn. The named
+cuts under _knife on the bus_ are the shortcut: each one is a wire and a fault
+somebody already found worth keeping.
 
 The panel draws the same buses under each chip's bus box (the **pattern** box on
 the drum machine), one trace a bit with the lowest on top. The knife rows, named
@@ -45,10 +45,10 @@ follows the rows:
   conducting. A ground symbol or a +V bar marks a short to a rail, and a blob of
   solder joins a bridged pair.
 - The drawing adds a wire for the toy's loop wire, the drum kit's counter reset,
-  the kit's clock and the FM chip's strobe, and turns each one red once its knob
-  is up.
-- **Toy on bus** draws the toy's output soldered across the FM chip's lowest
-  data lines, with a dot on each line it reaches.
+  the kit's clock and Glint's strobe, and turns each one red once its knob is
+  up.
+- **Toy on bus** draws the toy's output soldered across Glint's lowest data
+  lines, with a dot on each line it reaches.
 
 ## The shared power rail
 
@@ -137,18 +137,18 @@ at once — see **Part spread** under [the parts rack](#the-parts-rack) below.
 
 ## The toy chip's pins
 
-The Toy keyboard panel is one drawing of the parts these bends reach. The
-keyboard box at its top left opens first and holds the playing rows: tune,
-level, tone, accompaniment, arpeggio and key lock. The key matrix and the tune
-ROM strike the voices, each voice's envelope sets its level, and the output pin
-carries every voice off the chip. A small _clk_ tag marks each part the clock
-reaches; pressing a tag opens the clock, and the tags brighten while it is open.
-The envelope's tag reads _PWM_ and the output pin's reads _scan_ while those
-bends are on, and crosstalk draws a red wire from the output up to the clock. A
-bend turns its part or wire red, and the drawing hangs the **Bend spot** pot off
-the part it is soldered to. The clock, tune ROM, envelope and output pin boxes
-each open **Bend spot** and **Bend pot**, and pressing the pot opens the box it
-hangs on.
+The Plinky panel is one drawing of the parts these bends reach. The keyboard box
+at its top left opens first and holds the playing rows: tune, level, tone,
+accompaniment, arpeggio and key lock. The key matrix and the tune ROM strike the
+voices, each voice's envelope sets its level, and the output pin carries every
+voice off the chip. A small _clk_ tag marks each part the clock reaches;
+pressing a tag opens the clock, and the tags brighten while it is open. The
+envelope's tag reads _PWM_ and the output pin's reads _scan_ while those bends
+are on, and crosstalk draws a red wire from the output up to the clock. A bend
+turns its part or wire red, and the drawing hangs the **Bend spot** pot off the
+part it is soldered to. The clock, tune ROM, envelope and output pin boxes each
+open **Bend spot** and **Bend pot**, and pressing the pot opens the box it hangs
+on.
 
 The drawing gives each feedback bend a red wire of its own:
 
@@ -278,13 +278,13 @@ melody's rate. A note at full level is on for the whole cycle, so a held key
 stays clean. The tap replaces the Volume PWM carrier while it is up.
 
 **FM on clock** wires the FM chip's output onto the toy's timing pin through the
-coupling Crosstalk uses, so the FM chip's sound bends the toy's pitch, tempo and
+coupling Crosstalk uses, so Glint's sound bends the toy's pitch, tempo and
 envelopes together, by up to four octaves. The toy runs first in each block, so
-it hears the FM chip a block late, 2.7 ms. The FM chip plays the notes the toy
-strikes, so each chip's timing moves the other's notes. With **Toy on bus** up
-on the FM chip as well, the toy writes the FM chip's registers and the FM chip's
-sound bends what the toy writes next, a loop through both chips. FM on clock
-does nothing while the FM chip is down.
+it hears Glint a block late, 2.7 ms. Glint plays the notes the toy strikes, so
+each chip's timing moves the other's notes. With **Toy on bus** up on Glint as
+well, the toy writes Glint's registers and Glint's sound bends what the toy
+writes next, a loop through both chips. FM on clock does nothing while Glint is
+down.
 
 **Output hold** puts a latch between the voices and the output pin and strobes
 it off the melody's pitch divider, so the pin holds each level until the next
@@ -322,14 +322,14 @@ tone.
 spike 4% wide and opens to the width the tone selector holds as it fades. Held
 keys stay thin.
 
-## The FM chip's register bus
+## Glint's register bus
 
-The FM chip isn't played — it's configured, one byte at a time, by a processor
-that decides what the sound should be and writes it. A register holds whatever
-it was last told until something writes it again, which makes these faults
-sticky in a way the rail faults aren't: a starved rail recovers the instant you
-let go of the knob, but a byte that landed wrong stays wrong until the next
-write happens to touch that register.
+Glint isn't played — it's configured, one byte at a time, by a processor that
+decides what the sound should be and writes it. A register holds whatever it was
+last told until something writes it again, which makes these faults sticky in a
+way the rail faults aren't: a starved rail recovers the instant you let go of
+the knob, but a byte that landed wrong stays wrong until the next write happens
+to touch that register.
 
 Four things can happen to any one of these wires: forced **to ground**, forced
 **to +V**, **bridged** to its neighbour, or **cut**. A bridged pair can no
@@ -637,14 +637,14 @@ again, so the damage builds up as the toy plays.
   top bit of the pitch, then the octave, then the key. One bit jumps the pitch
   at the toy's own rate, four throw the note between octaves, and five key the
   note on and off.
-- At eight bits the register follows the toy's waveform, and the FM chip comes
-  out close to noise.
+- At eight bits the register follows the toy's waveform, and Glint comes out
+  close to noise.
 - The control counts bits, 1 to 8. The toy has to be sounding, since a silent
   toy drives nothing onto the bus.
 
 ## Inside the drum voices
 
-The Toy drums panel is one drawing of the kit's voices. The pads box at its top
+The Clatter panel is one drawing of the kit's voices. The pads box at its top
 left opens first and holds level, tempo, swing, chance, tune, decay and mute,
 with the drum pattern above them when it is shown.
 
@@ -721,8 +721,8 @@ charge at the front of its hit, before the sound it starts:
   lets it back over about 60 ms; a kick, snare and hat together drag it nearly
   two.
 - The same spike reaches the board's shared rail a block later. On the measuring
-  board the rail dips to 0.35, so the toy keyboard goes flat under every busy
-  step, and the kit's own tuning sags with it.
+  board the rail dips to 0.35, so Plinky goes flat under every busy step, and
+  the kit's own tuning sags with it.
 - The tempo reads the rail through its own decoupling, so it only drifts with
   the average.
 
@@ -843,14 +843,13 @@ the full one. Wound up, a step stacking four voices hands each of them less than
 a step stacking one, and a second accent arriving before the cap has caught up
 lands softer than the first — so a roll comes out shaped without a knob moving.
 
-## The home keyboard's sample bus
+## Parlor's sample bus
 
-The home keyboard is the plainest machine on the board and the most bent one
-ever built, and those are the same fact. There is no oscillator in it: a ROM
-holds one short recording of each voice — an attack segment and then a loop —
-and a counter walks that ROM at the rate the note asks for. So the whole
-instrument is a counter, a memory and a DAC, and a knife reaches two of the
-three.
+Parlor is the plainest machine on the board and the most bent one ever built,
+and those are the same fact. There is no oscillator in it: a ROM holds one short
+recording of each voice — an attack segment and then a loop — and a counter
+walks that ROM at the rate the note asks for. So the whole instrument is a
+counter, a memory and a DAC, and a knife reaches two of the three.
 
 **Address line** is the counter's own wires, running into the memory, so it
 behaves the way the toy chips' address buses do: every word that comes back is a
@@ -880,10 +879,10 @@ cents sharp at the top, which is why one of these never quite sounded in tune
 with anything. _ROM clock_ drags that counter directly, and pitch and aliasing
 move together because on this part they are the same thing.
 
-## The mono synth's voice card
+## Growler's voice card
 
-The mono synth is a clean instrument with seven parts on its voice card that
-fail the way analog synth parts do.
+Growler is a clean instrument with seven parts on its voice card that fail the
+way analog synth parts do.
 
 The drawing under the **voice card** box shows the card's signal path through
 the key DAC, pitch hold, exponential converter, oscillators, ladder and VCA. A
@@ -1187,8 +1186,8 @@ oct+5th, two oct) puts the sidebands back on the note's own harmonics, so it
 stays in tune and only its timbre moved; a half one (sub, fifth) lands them an
 octave under and writes a new fundamental below what you played; the tritone
 lands on nothing, so the clang is still a clang but it follows the melody. The
-key line only carries what the toy strikes, so a board playing the FM chip or
-the sampler stays on the Carrier knob.
+key line only carries what the toy strikes, so a board playing Glint or the
+sampler stays on the Carrier knob.
 
 **Track**'s four step positions lock the carrier to the sequencer rather than to
 the note: one whole turn per ROM step, or four, sixteen, sixty-four of them. At
@@ -1209,7 +1208,7 @@ off the stage's own oscillator, which retires the Carrier knob and Track with
 it. The kit is a gate — the programme sounds only through the hits, and Mix
 hands the dry back underneath. The chaos oscillator never comes round again, so
 its sidebands never settle, and it is the furthest thing from a plain ring the
-board can make. The FM chip and the toy are pitched, so what comes out is
+board can make. Glint and the toy are pitched, so what comes out is
 intermodulation on a grid rather than a clang, and the noise source reads white.
 Whichever machine you pick has to be up in the mix to make a carrier at all, so
 it is also in the programme it is multiplying.
@@ -1437,7 +1436,7 @@ wearing thin from a simple power cut. **Print-through** is the layer of tape
 wound underneath bleeding through as a dull ghost one wrap behind. **Azimuth**
 lags the right channel and eats its top end, so the recording collapses badly if
 folded down to mono. **Wow** is slow drift plus capstan eccentricity that never
-lets pitch settle; **Flutter** is the faster wobble plus the scrape of tape
+lets pitch settle; **Wraith** is the faster wobble plus the scrape of tape
 dragging across the head.
 
 **Squeal** comes from that same free span of tape between the guides acting as a

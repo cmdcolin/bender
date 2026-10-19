@@ -24,13 +24,13 @@ test('the supply panel carries the rail’s knobs, not the toy keyboard', () => 
     GROUPS.find(g => g.name === name)!.sliders.map(s => s.key)
   expect(keys('Power supply')).toContain('chipStarve')
   expect(keys('Power supply')).toContain('chipWatchdog')
-  expect(keys('Toy keyboard')).not.toContain('chipStarve')
+  expect(keys('Plinky')).not.toContain('chipStarve')
   expect(keys('Board parts')).not.toContain('chipWatchdog')
 })
 
 test('the supply panel opens on a reading of the rail', () => {
   const group = GROUPS.find(g => g.name === 'Power supply')!
   render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
-  expect(screen.getByText(/Feeds the toy keyboard/)).toBeTruthy()
+  expect(screen.getByText(/Feeds Plinky/)).toBeTruthy()
   expect(screen.getByText('Starve')).toBeTruthy()
 })

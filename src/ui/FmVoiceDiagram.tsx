@@ -33,7 +33,7 @@ const KEYS = [
 
 type Key = (typeof KEYS)[number]
 
-const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
+const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
 
 const FEEDBACK_MAX = 7
 const INDEX_BOOST = 4

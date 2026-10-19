@@ -28,7 +28,7 @@ export const TOUCH_MODES: readonly TouchMode[] = [
   {
     name: 'dub',
     icon: '◎',
-    says: 'across sweeps the screech filter, up feeds the tape delay past 1',
+    says: 'across sweeps the screech filter, up feeds Wraith past 1',
     push: (x, y, c) => ({
       ...lend(c, 'Screech filter', 6),
       filtMix: 1,

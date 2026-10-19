@@ -8,7 +8,7 @@ box's controls.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../img/chain-dark.svg">
-  <img alt="Sources — the toy keyboard, the drum machine, the FM chip, the chaos oscillator, noise and the mic — sum into the mix bus, which runs into the slot rack, then through the bends themselves, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, with the feedback bus wired from output back to the mix" src="../img/chain-light.svg" width="420">
+  <img alt="Sources — Plinky, the drum machine, Glint, the chaos oscillator, noise and the mic — sum into the mix bus, which runs into the slot rack, then through the bends themselves, the stompbox, tape delay, delay pedal, spring verb, brownout, tape machine and output, with the feedback bus wired from output back to the mix" src="../img/chain-light.svg" width="420">
 </picture>
 
 `pnpm diagram` regenerates that image with the same layout code the panel draws
@@ -40,13 +40,12 @@ at the head of the chain, dashed, soldered to nothing. Click the rack to reorder
 the slots, or click the loose bend to open its own controls.
 
 Panels that would otherwise be one long, undifferentiated list of controls — the
-toy keyboard, the drum machine, the FM chip — group their advanced controls
-under headings you expand on demand. A heading shows how many controls are
-folded under it, or how many of those you've changed; if you've changed any, it
-opens automatically, since a fold that hides something you set would be lying
-about the board. Controls elsewhere on a panel appear only once they have
-something to act on — a fault picks what happened to a wire, so it waits for a
-wire to be cut.
+Plinky, the drum machine, Glint — group their advanced controls under headings
+you expand on demand. A heading shows how many controls are folded under it, or
+how many of those you've changed; if you've changed any, it opens automatically,
+since a fold that hides something you set would be lying about the board.
+Controls elsewhere on a panel appear only once they have something to act on — a
+fault picks what happened to a wire, so it waits for a wire to be cut.
 
 Three of the chips carry a row of **named cuts**: one-click presets for the
 three controls a bus fault needs set together — which wire, what happened to it,
@@ -57,26 +56,25 @@ much as a way of skipping to it.
 ## Sources on one rail
 
 Sources sit at the head of the path as boxes of their own. Five of them share
-one power supply: the toy keyboard, the drum machine, the FM chip, the home
-keyboard and the mono synth are dies on one rail. The map draws them inside a
-dashed frame with the dotted supply rail running past every box. A battery box
-on the rail opens **Power supply**, and so does the voltage lamp on each
-machine's deck. Its **Starve** knob drags the rail down, so it dives the chips'
-pitch and slows the kit's tempo with it.
+one power supply: Plinky, the drum machine, Glint, Parlor and Growler are dies
+on one rail. The map draws them inside a dashed frame with the dotted supply
+rail running past every box. A battery box on the rail opens **Power supply**,
+and so does the voltage lamp on each machine's deck. Its **Starve** knob drags
+the rail down, so it dives the chips' pitch and slows the kit's tempo with it.
 
 - **The key line:** the toy's gate line runs along the top row from the toy
-  keyboard to the FM chip and the home keyboard, then drops onto the mono synth.
-  All three play whatever note the toy strikes, from your keys, its tune or its
-  arpeggio. The line dashes from the far end in as you cut jumpers, and it
-  thickens while the toy and a machine on it are both sounding. A kit bridge
-  thickens for a moment after each hit on its voice.
-- **Jumpers:** each of the three has a **Plays the toy keyboard’s notes**
-  jumper. With it cut, the chip answers only its own keybed and any trigger
-  bridge you patch across from the drums. Each bridge on the map reads
-  `kick → FM`: the kit voice, then the machine it strikes. See
-  [the trigger patch](USER-GUIDE.md) in the user guide.
+  keyboard to Glint and Parlor, then drops onto Growler. All three play whatever
+  note the toy strikes, from your keys, its tune or its arpeggio. The line
+  dashes from the far end in as you cut jumpers, and it thickens while the toy
+  and a machine on it are both sounding. A kit bridge thickens for a moment
+  after each hit on its voice.
+- **Jumpers:** each of the three has a **Plays Plinky’s notes** jumper. With it
+  cut, the chip answers only its own keybed and any trigger bridge you patch
+  across from the drums. Each bridge on the map reads `kick → FM`: the kit
+  voice, then the machine it strikes. See [the trigger patch](USER-GUIDE.md) in
+  the user guide.
 - **In the panel:** the map puts the five on two rows, with the drums under the
-  toy keyboard. The README's diagram uses the same layout.
+  Plinky. The README's diagram uses the same layout.
 
 Three more sources start where they stand rather than sharing anything: the
 chaos oscillator, the noise generator and the sampler. The mic isn't a source
@@ -99,7 +97,7 @@ knob position. The bus's own meter, underneath, is read where the faders meet
 rather than at the final output, so it says which channel is eating the headroom
 rather than what the limiter did about it afterward.
 
-That's how you notice the FM chip sitting at three-quarters fader and completely
+That's how you notice Glint sitting at three-quarters fader and completely
 silent, because nothing on the toy has struck a note for it to play — and it is
 the same reading that leaves its box on the map unlit. **Bus drive** is the
 desk's own knob: the summing amp all six sources meet in, unity gain and the

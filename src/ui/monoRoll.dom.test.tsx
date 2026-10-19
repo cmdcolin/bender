@@ -15,7 +15,7 @@ beforeEach(() => {
 })
 
 const openMono = () => {
-  const group = GROUPS.find(g => g.name === 'Mono synth')
+  const group = GROUPS.find(g => g.name === 'Growler')
   if (!group) throw new Error('no Mono synth group')
   return render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
 }

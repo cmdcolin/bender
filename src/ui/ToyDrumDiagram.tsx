@@ -30,7 +30,7 @@ import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './drawingFor.tsx'
 
-const DRUM_TAP = CHANNELS.find(c => c.name === 'Toy drums')!.tap
+const DRUM_TAP = CHANNELS.find(c => c.name === 'Clatter')!.tap
 
 type BoxId =
   | keyof typeof VOICE_BOXES
@@ -39,7 +39,7 @@ type BoxId =
   | 'triggers'
   | 'pattern'
 
-const GROUP = GROUPS.find(g => g.name === 'Toy drums')!
+const GROUP = GROUPS.find(g => g.name === 'Clatter')!
 
 const keysOf = (part: string): ControlKey[] =>
   GROUP.sliders.filter(d => d.part === part).map(d => d.key)

@@ -26,7 +26,7 @@ export function RecorderMore({
 
   return (
     <>
-      <Tip text="Save what you just heard, send it to the tape loop, or record each machine on its own.">
+      <Tip text="Save what you just heard, send it to Spool, or record each machine on its own.">
         <DeckKey
           ref={setAnchor}
           glyph="more"
@@ -51,12 +51,12 @@ export function RecorderMore({
                 save the last 30 s
               </DeckRow>
             </Tip>
-            <Tip text="Puts the last 30 seconds you heard on the tape loop, to play back through the board.">
+            <Tip text="Puts the last 30 seconds you heard on Spool, to play back through the board.">
               <DeckRow
                 glyph="tape"
                 onClick={act(() => engine.keepLast('reel'))}
               >
-                last 30 s → tape loop
+                last 30 s → Spool
               </DeckRow>
             </Tip>
             <Tip text="Also saves each machine on its own, dry, one wav each — what you drag into a DAW. Locked while a take runs.">

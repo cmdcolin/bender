@@ -37,7 +37,7 @@ test('every source fader is on the desk, under the name of its machine', () => {
 
 test('a fader moved on the desk is the machine’s own control', () => {
   openDesk()
-  fireEvent.change(screen.getByRole('slider', { name: 'FM chip' }), {
+  fireEvent.change(screen.getByRole('slider', { name: 'Glint' }), {
     target: { value: '800' },
   })
   expect(engine.controls.get().fmLevel).toBeGreaterThan(0.5)

@@ -300,21 +300,21 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     name: 'below the keybed',
     blurb:
       'The chip’s crystal at a twentieth of its speed — the song drops four octaves into a sub-bass rumble, every envelope twenty times as long, with Drive fuzzing it',
     patch: { fmLevel: 0.8, fmClockX: 0.05, fmDrive: 18 },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     name: 'bird on fast-forward',
     blurb:
       'The processor’s crystal at sixteen times: the bird script writes faster than the envelopes can follow, and the call turns to static over a chip still in tune',
     patch: { fmLevel: 0.8, fmEffect: fmEffect('bird'), fmCpuClockX: 16 },
   },
   {
-    group: 'Four-track',
+    group: 'Layercake',
     name: 'no-input mixer',
     blurb:
       'Track 1 hears the desk’s own aux return and sends to it, with its mid boosted at 700 Hz: the loop squeals there. Sweep track 1’s Mid freq to retune it, and Aux master to bring it in',
@@ -329,7 +329,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Four-track',
+    group: 'Layercake',
     name: 'squeal through the echo',
     blurb:
       'The same squeal, with track 2 listening to the board: what the desk sends comes back through the delay pedal and onto the bus again, so the squeal leaves echoes and the echoes feed it. Brings the delay pedal up',
@@ -347,7 +347,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Tube amp',
+    group: 'Ember',
     name: 'dried-out cap',
     blurb:
       'The cathode caps have lost their value: thin, bright and a third of the gain, with the knobs turned up to make it back',
@@ -362,7 +362,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Tube amp',
+    group: 'Ember',
     name: 'dying output tube',
     blurb:
       'One output tube gone weak and arcing: lopsided, full of even harmonics, and frying between notes',
@@ -378,7 +378,7 @@ export const RIGS: RigDef[] = [
     },
   },
   {
-    group: 'Tube amp',
+    group: 'Ember',
     name: 'microphonic',
     blurb:
       'The first tube hears the cabinet through its own mechanical resonance, so every loud note leaves a howl behind it',

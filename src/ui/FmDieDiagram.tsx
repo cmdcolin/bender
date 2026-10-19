@@ -32,7 +32,7 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   DAC: ['fmDacSlot', 'fmDacSlip'],
 }
 
-const FM_TAP = CHANNELS.find(c => c.name === 'FM chip')!.tap
+const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
 
 const VOICES = 4
 const WIDTH = 420

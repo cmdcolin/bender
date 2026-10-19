@@ -18,7 +18,7 @@ export function MonoKeys({
   return (
     <Keybed
       dest="mono"
-      label="mono synth"
+      label="growler"
       caseClass={styles.case}
       badge={
         <span className={styles.badge}>
@@ -33,7 +33,7 @@ export function MonoKeys({
       extras={
         <>
           <RailLamp onOpen={onOpen} />
-          <SeqRec dest="mono" name="mono synth" />
+          <SeqRec dest="mono" name="Growler" />
           <GateJumper
             control="monoKeyGate"
             notes={engine.monoNotes}
@@ -44,7 +44,7 @@ export function MonoKeys({
           />
         </>
       }
-      stage="Mono synth"
+      stage="Growler"
       onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}

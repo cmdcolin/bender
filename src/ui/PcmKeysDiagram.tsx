@@ -39,7 +39,7 @@ const PARTS: Record<string, string> = {
   'data bus': 'knife on the bus',
 }
 
-const PCM_TAP = CHANNELS.find(c => c.name === 'Home keyboard')!.tap
+const PCM_TAP = CHANNELS.find(c => c.name === 'Parlor')!.tap
 
 const TOP = 4
 const ROW = 30
@@ -190,7 +190,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
             <Diagram
               width={width}
               height={close ? feet + CONE_H : feet}
-              label="Home keyboard signal path"
+              label="Parlor signal path"
             >
               {arrow => (
                 <>

@@ -47,7 +47,7 @@ test('every cut names controls that live under the heading it is offered from', 
 // One knife on a bus, not two: pressing a second cut on top of the first is
 // that second cut, rather than whichever wires the first one left wired.
 test('a cut is the whole of what the knife did to that chip', () => {
-  const [first, second] = CUTS.filter(c => c.group === 'Toy keyboard')
+  const [first, second] = CUTS.filter(c => c.group === 'Plinky')
   const board = applyCut(second!, applyCut(first!, mine()))
   expect(cutStands(second!, board)).toBe(true)
   expect(cutStands(first!, board)).toBe(false)
@@ -67,7 +67,7 @@ test('a cut leaves the rest of the board where your hand put it', () => {
 // The FM chip boots at zero and has no keyboard of its own, so wiring a knife
 // into it and hearing nothing is the one outcome that teaches nothing at all.
 test('a cut on a silent chip brings it up, and leaves a level you set alone', () => {
-  const cut = CUTS.find(c => c.group === 'FM chip')!
+  const cut = CUTS.find(c => c.group === 'Glint')!
   expect(DEFAULT_CONTROLS.fmLevel).toBe(0)
   expect(applyCut(cut, mine()).fmLevel).toBeGreaterThan(0)
   expect(applyCut(cut, { ...mine(), fmLevel: 0.2 }).fmLevel).toBe(0.2)
@@ -120,7 +120,7 @@ test.each([
   // under it, quietly, striking the notes it is measured on.
   const alone = {
     drumLevel: 0,
-    ...(cut.group === 'FM chip' ? { chipLevel: 0.2 } : { fmLevel: 0 }),
+    ...(cut.group === 'Glint' ? { chipLevel: 0.2 } : { fmLevel: 0 }),
   }
   const knife = { ...applyCut(cut, busy()), ...alone }
   const bare = cutOff(cut.group, cut.part, knife)

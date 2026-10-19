@@ -7,11 +7,11 @@ import { levelOf, muteOf } from './stageLevels.ts'
 import type { Controls } from '../controls.ts'
 
 const TAP_OF: Record<string, SourceTap> = {
-  'Toy keyboard': 'toyChip',
-  'Toy drums': 'toyDrum',
-  'FM chip': 'fmChip',
-  'Home keyboard': 'pcmKeys',
-  'Mono synth': 'monoSynth',
+  Plinky: 'toyChip',
+  Clatter: 'toyDrum',
+  Glint: 'fmChip',
+  Parlor: 'pcmKeys',
+  Growler: 'monoSynth',
 }
 
 const struck = (key: keyof Controls) => (c: Controls) => Math.round(c[key]) > 0
@@ -20,23 +20,23 @@ const soldered = (key: keyof Controls) => (c: Controls) => c[key] < 0.5
 // The machines that play a stage's part: the key line out of the toy keyboard,
 // and the trigger patch's bridges out of either toy.
 const PLAYED_ON: Record<string, [string, (c: Controls) => boolean][]> = {
-  'Toy keyboard': [
-    ['FM chip', soldered('fmKeyGate')],
-    ['Home keyboard', soldered('pcmKeyGate')],
-    ['Mono synth', soldered('monoKeyGate')],
-    ['Toy drums', struck('trigToDrum')],
+  Plinky: [
+    ['Glint', soldered('fmKeyGate')],
+    ['Parlor', soldered('pcmKeyGate')],
+    ['Growler', soldered('monoKeyGate')],
+    ['Clatter', struck('trigToDrum')],
   ],
-  'Toy drums': [
-    ['Toy keyboard', struck('trigToKeys')],
-    ['FM chip', struck('fmStruck')],
-    ['Home keyboard', struck('pcmStruck')],
-    ['Mono synth', struck('monoStruck')],
+  Clatter: [
+    ['Plinky', struck('trigToKeys')],
+    ['Glint', struck('fmStruck')],
+    ['Parlor', struck('pcmStruck')],
+    ['Growler', struck('monoStruck')],
   ],
 }
 
 /** The wire a player takes a stage's part over. */
 export const viaOf = (stage: string, to: string) =>
-  stage === 'Toy keyboard' && to !== 'Toy drums' ? 'key line' : 'trigger patch'
+  stage === 'Plinky' && to !== 'Clatter' ? 'key line' : 'trigger patch'
 
 const soundingOn = (stage: string, mask: number) => {
   const tap = TAP_OF[stage]
@@ -93,8 +93,8 @@ function watch() {
   const now = performance.now()
   const c = engine.controls.get()
   const { hits, taps } = engine.meter.get()
-  if (engine.chipNotes.get().size > 0) lastAt.set('struck:Toy keyboard', now)
-  if (hits !== 0) lastAt.set('struck:Toy drums', now)
+  if (engine.chipNotes.get().size > 0) lastAt.set('struck:Plinky', now)
+  if (hits !== 0) lastAt.set('struck:Clatter', now)
   for (const [stage, tap] of Object.entries(TAP_OF))
     if (down(stage, c) && (taps[SOURCE_TAPS.indexOf(tap)] ?? 0) > SOUND_FLOOR)
       lastAt.set(`loud:${stage}`, now)

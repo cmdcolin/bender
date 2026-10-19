@@ -76,22 +76,22 @@ test('find ranks an exact key or label match first', () => {
   expect(bender.find('starve').slice(0, 2).join('\n')).toMatch(
     /^chipStarve = /m,
   )
-  expect(bender.find('delay feedback').some(r => r.startsWith('dlyFb'))).toBe(
+  expect(bender.find('wraith feedback').some(r => r.startsWith('dlyFb'))).toBe(
     true,
   )
   expect(bender.find()[0]).toMatch(/^\S.* \(\d+ controls\)$/)
 })
 
 test('find ranks a group named as a phrase above controls matching its words', () => {
-  const rows = bender.find('tape delay', 20)
+  const rows = bender.find('wraith', 20)
   const at = (key: string) => rows.findIndex(r => r.startsWith(`${key} = `))
   expect(at('dlyMix')).toBeGreaterThanOrEqual(0)
   expect(at('dlyMix')).toBeLessThan(at('tapeMix') === -1 ? 99 : at('tapeMix'))
-  expect(rows[at('dlyMix')]).toContain('Tape delay: Echo level (mix)')
+  expect(rows[at('dlyMix')]).toContain('Wraith: Echo level (mix)')
 })
 
 test('find rows stay short enough that the default page of them fits in one result', () => {
-  for (const query of ['delay', 'tape delay', 'signal order', 'drum']) {
+  for (const query of ['delay', 'wraith', 'signal order', 'drum']) {
     const rows = bender.find(query)
     expect(rows.length).toBeLessThanOrEqual(8)
     expect(JSON.stringify(rows).length).toBeLessThanOrEqual(1600)
@@ -99,8 +99,8 @@ test('find rows stay short enough that the default page of them fits in one resu
 })
 
 test('describe names find for a group name', () => {
-  expect(() => bender.describe('tape delay')).toThrow(
-    "'tape delay' is a group; bender.find('Tape delay') lists its controls",
+  expect(() => bender.describe('wraith')).toThrow(
+    "'wraith' is a group; bender.find('Wraith') lists its controls",
   )
 })
 

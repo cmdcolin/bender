@@ -52,7 +52,7 @@ const KEYS = [
   'chipOutData',
 ] as const
 
-const GROUP = GROUPS.find(g => g.name === 'Toy keyboard')!
+const GROUP = GROUPS.find(g => g.name === 'Plinky')!
 
 const BUS = 'knife on the bus'
 const DIE = 'inside the die'
@@ -83,7 +83,7 @@ const BOX_KEYS = [...new Set(Object.values(OWN_KEYS).flat())]
 
 const SPOTS = sliderFor('chipBendSpot').choices!
 
-const TOY_TAP = CHANNELS.find(c => c.name === 'Toy keyboard')!.tap
+const TOY_TAP = CHANNELS.find(c => c.name === 'Plinky')!.tap
 
 const WIDTH = 420
 const ROOM = 22

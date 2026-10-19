@@ -17,9 +17,9 @@ const STRUCK = sliderFor('fmStruck').choices!
 // The machines with no sequencer of their own: each takes the toy keyboard's
 // notes through one jumper and the kit's hits through one strike selector.
 const CHIPS = [
-  { name: 'FM chip', struck: 'fmStruck', gate: 'fmKeyGate' },
-  { name: 'Home keyboard', struck: 'pcmStruck', gate: 'pcmKeyGate' },
-  { name: 'Mono synth', struck: 'monoStruck', gate: 'monoKeyGate' },
+  { name: 'Glint', struck: 'fmStruck', gate: 'fmKeyGate' },
+  { name: 'Parlor', struck: 'pcmStruck', gate: 'pcmKeyGate' },
+  { name: 'Growler', struck: 'monoStruck', gate: 'monoKeyGate' },
 ] as const satisfies readonly {
   name: string
   struck: ControlKey
@@ -125,10 +125,10 @@ export function TriggerPatch() {
   const downOn = toDrum > 0
   const upTitle = upOn
     ? `${TO_KEYS[toKeys]} on the kit strikes a key, playing ${NOTE[note]}.`
-    : 'The kit does not play the toy keyboard.'
+    : 'The kit does not play Plinky.'
   const downTitle = downOn
-    ? `Every key you strike on the toy keyboard fires ${TO_DRUM[toDrum]} on the kit.`
-    : 'The toy keyboard does not play the kit.'
+    ? `Every key you strike on Plinky fires ${TO_DRUM[toDrum]} on the kit.`
+    : 'Plinky does not play the kit.'
 
   const readout = useBoardValue(c =>
     CHIPS.map(
@@ -202,8 +202,8 @@ export function TriggerPatch() {
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           preserveAspectRatio="xMidYMid meet"
         >
-          {box(LEFT_X, 'Toy drums')}
-          {box(RIGHT_X, 'Toy keyboard')}
+          {box(LEFT_X, 'Clatter')}
+          {box(RIGHT_X, 'Plinky')}
 
           {press(
             'kit → keys',
@@ -295,8 +295,8 @@ function machineParts(chip: (typeof CHIPS)[number], top: number, code: string) {
     ? `${STRUCK[struck]} on the kit plays a note on the ${chip.name}.`
     : `The kit does not play the ${chip.name}.`
   const gateTitle = gateCut
-    ? `The jumper is cut, so the ${chip.name} ignores the toy keyboard.`
-    : `Soldered: every note the toy keyboard plays, the ${chip.name} plays too — your keys, its tune and its arpeggio.`
+    ? `The jumper is cut, so the ${chip.name} ignores Plinky.`
+    : `Soldered: every note Plinky plays, the ${chip.name} plays too — your keys, its tune and its arpeggio.`
 
   const strike: Part = {
     hit: `M ${DRUM_MID} ${mid} H ${CHIP_X}`,

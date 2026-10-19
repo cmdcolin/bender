@@ -39,7 +39,7 @@ export interface UndoTakeMsg {
 }
 
 /** Which keybed a note came off. The toy's gate is the default and reaches the
-    FM chip, the home keyboard and the mono synth too wherever those jumpers are
+    Glint, Parlor and Growler too wherever those jumpers are
     still soldered on; the other three are the beds drawn under it, each wired
     only to its own chip. */
 export type NoteDest = 'toy' | 'fm' | 'pcm' | 'mono'

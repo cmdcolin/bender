@@ -29,33 +29,33 @@ interface Face {
 }
 
 const FACE: Record<string, Face> = {
-  Stompbox: {
+  Gnash: {
     colour: '#2f7040',
     switch: 'stompCircuit',
     sliders: ['stompDrive', 'stompTone', 'stompMix'],
     bypass: 'stompMute',
   },
-  'Tape delay': {
+  Wraith: {
     colour: '#75592c',
     sliders: ['delayMs', 'dlyFb', 'dlyMix'],
     bypass: 'dlyMute',
   },
-  'Delay pedal': {
+  Ricochet: {
     colour: '#2f5c8f',
     sliders: ['echoMs', 'echoFb', 'echoLevel'],
     bypass: 'echoMute',
   },
-  'Spring verb': {
+  Boing: {
     colour: '#24706f',
     sliders: ['revDecayS', 'revToneHz', 'revMix'],
     bypass: 'revMute',
   },
-  Ensemble: {
+  Chorale: {
     colour: '#62408a',
     sliders: ['ensRate', 'ensDepth', 'ensMix'],
     bypass: 'ensMute',
   },
-  'Tube amp': {
+  Ember: {
     colour: '#8a2c2c',
     switch: 'ampVoice',
     sliders: ['ampGain', 'ampMaster', 'ampMix'],

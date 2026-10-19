@@ -27,7 +27,7 @@ export function Keys({
   return (
     <Keybed
       dest="toy"
-      label="toy keyboard"
+      label="plinky"
       badge={
         <>
           <span className={styles.brand}>plinky</span>
@@ -78,7 +78,7 @@ export function Keys({
           </Tip>
         </>
       }
-      stage="Toy keyboard"
+      stage="Plinky"
       onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}

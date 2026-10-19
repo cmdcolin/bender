@@ -142,7 +142,7 @@ test('a wire patched anywhere else shows up on the row', () => {
 })
 
 test('a selector row solders a wire onto its own lane too', () => {
-  const group = GROUPS.find(g => g.name === 'FM chip')
+  const group = GROUPS.find(g => g.name === 'Glint')
   if (!group) throw new Error('no FM chip')
   render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))

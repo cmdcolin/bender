@@ -36,7 +36,7 @@ test('a stored setup keeps the fields that are the right shape', () => {
   expect(
     readPrefs({
       at: 3,
-      bench: { all: true, closed: ['FM chip', 7] },
+      bench: { all: true, closed: ['Glint', 7] },
       morph: 4,
       keys: ['a', 'a'],
     }),
@@ -44,7 +44,7 @@ test('a stored setup keeps the fields that are the right shape', () => {
     at: 3,
     bench: {
       all: true,
-      closed: ['FM chip'],
+      closed: ['Glint'],
       pedals: [],
       roll: false,
       grid: false,
@@ -54,11 +54,26 @@ test('a stored setup keeps the fields that are the right shape', () => {
   expect(readPrefs({ at: 3, morph: 5 })).toEqual({ at: 3 })
 })
 
+test('a stored setup naming the old stages keeps them under the new names', () => {
+  expect(
+    readPrefs({
+      at: 3,
+      bench: { closed: ['FM chip'], pedals: ['Spring verb'] },
+    })?.bench,
+  ).toEqual({
+    all: false,
+    closed: ['Glint'],
+    pedals: ['Boing'],
+    roll: false,
+    grid: false,
+  })
+})
+
 test('applying a setup writes the stores and this machine keeps it', () => {
   applyPrefs({
     bench: {
       all: true,
-      closed: ['Mono synth'],
+      closed: ['Growler'],
       pedals: [],
       roll: false,
       grid: false,
@@ -67,7 +82,7 @@ test('applying a setup writes the stores and this machine keeps it', () => {
   })
   expect(bench.get()).toEqual({
     all: true,
-    closed: ['Mono synth'],
+    closed: ['Growler'],
     pedals: [],
     roll: false,
     grid: false,

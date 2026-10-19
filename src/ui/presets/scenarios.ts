@@ -137,7 +137,7 @@ const WRECK: [ControlKey, number, number][] = [
 const GATE_OF: Partial<Record<string, ControlKey>> = {
   'Feedback bus': 'fbAmt',
   'Tape machine': 'tapeMix',
-  Stompbox: 'stompMix',
+  Gnash: 'stompMix',
 }
 
 export const gateOf = (group: string): ControlKey | undefined => {

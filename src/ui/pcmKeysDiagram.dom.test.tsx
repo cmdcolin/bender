@@ -8,7 +8,7 @@ import { CHANNELS } from './controls/index.ts'
 import { PcmKeysDiagram } from './PcmKeysDiagram.tsx'
 import './testDom.ts'
 
-const PCM_TAP = CHANNELS.find(c => c.name === 'Home keyboard')!.tap
+const PCM_TAP = CHANNELS.find(c => c.name === 'Parlor')!.tap
 
 const box = (name: string) =>
   screen.getByRole('button', { name: `${name} controls` })

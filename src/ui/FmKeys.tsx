@@ -22,7 +22,7 @@ export function FmKeys({
   return (
     <Keybed
       dest="fm"
-      label="fm keyboard"
+      label="glint"
       caseClass={styles.board}
       badge={
         <span className={styles.badge}>
@@ -36,7 +36,7 @@ export function FmKeys({
       extras={
         <>
           <RailLamp onOpen={onOpen} />
-          <SeqRec dest="fm" name="FM chip" />
+          <SeqRec dest="fm" name="Glint" />
           <GateJumper
             control="fmKeyGate"
             notes={engine.fmNotes}
@@ -47,7 +47,7 @@ export function FmKeys({
           />
         </>
       }
-      stage="FM chip"
+      stage="Glint"
       onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}

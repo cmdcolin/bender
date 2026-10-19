@@ -196,7 +196,7 @@ export const PATCH_GROUPS: Group[] = [
           ],
           groups: [
             {
-              name: 'Toy keyboard',
+              name: 'Plinky',
               choices: [
                 'chip clock',
                 'starve',
@@ -232,7 +232,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
-              name: 'Toy drums',
+              name: 'Clatter',
               choices: [
                 'drum tune',
                 'kit tempo',
@@ -251,7 +251,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
-              name: 'FM chip',
+              name: 'Glint',
               choices: [
                 'FM level',
                 'FM clock',
@@ -280,7 +280,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
-              name: 'Home keyboard',
+              name: 'Parlor',
               choices: [
                 'keys level',
                 'keys addr line',
@@ -290,7 +290,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
-              name: 'Mono synth',
+              name: 'Growler',
               choices: [
                 'mono level',
                 'mono cutoff',
@@ -304,7 +304,7 @@ export const PATCH_GROUPS: Group[] = [
             },
             { name: 'Noise & crackle', choices: ['noise level'] },
             {
-              name: 'Tape loop',
+              name: 'Spool',
               choices: [
                 'tape loop level',
                 'tape loop speed',
@@ -313,7 +313,7 @@ export const PATCH_GROUPS: Group[] = [
               ],
             },
             {
-              name: 'Four-track',
+              name: 'Layercake',
               choices: [
                 'four-track level',
                 'four-track pitch',
@@ -412,7 +412,7 @@ export const PATCH_GROUPS: Group[] = [
     sliders: [
       {
         key: 'trigToKeys',
-        label: 'Kit voice that plays the toy keyboard',
+        label: 'Kit voice that plays Plinky',
         min: 0,
         max: VOICE_LABELS.length + 1,
         step: 1,
@@ -432,7 +432,7 @@ export const PATCH_GROUPS: Group[] = [
       },
       {
         key: 'trigToDrum',
-        label: 'Kit voice the toy keyboard plays',
+        label: 'Kit voice Plinky plays',
         min: 0,
         max: VOICE_LABELS.length + 2,
         step: 1,

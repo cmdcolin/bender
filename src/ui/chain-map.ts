@@ -29,7 +29,7 @@ import { arrowhead, el, route, textWidth, type El, type Point } from './svg.ts'
 // nothing in it needs a solver. It used to go through graphviz, which is a
 // megabyte of wasm to rank fifteen boxes nobody ever asked to be ranked.
 
-const FB_TARGET = ['mix', 'Chaos osc', 'Toy keyboard', 'Tape delay'] as const
+const FB_TARGET = ['mix', 'Chaos osc', 'Plinky', 'Wraith'] as const
 
 // Which group owns each patch-bay destination, in mod*Dest order.
 // The box a patch wire onto each destination draws to. Keyed by name, so a
@@ -39,117 +39,117 @@ const WIRE_BOX: Record<Exclude<keyof typeof DEST, `gone${number}`>, string> = {
   ringHz: 'Ring mod',
   combHz: 'Comb',
   crushHz: 'Crusher',
-  chipClock: 'Toy keyboard',
-  retrig: 'Toy drums',
-  tapeSpeed: 'Tape delay',
+  chipClock: 'Plinky',
+  retrig: 'Clatter',
+  tapeSpeed: 'Wraith',
   glitch: 'Glitch buffer',
   fbAmt: 'Feedback bus',
-  stompDrive: 'Stompbox',
+  stompDrive: 'Gnash',
   shiftHz: 'Freq shifter',
   bits: 'Crusher',
-  drumCross: 'Toy drums',
-  starve: 'Toy keyboard',
-  drumTune: 'Toy drums',
-  revDecay: 'Spring verb',
-  delayMs: 'Tape delay',
+  drumCross: 'Clatter',
+  starve: 'Plinky',
+  drumTune: 'Clatter',
+  revDecay: 'Boing',
+  delayMs: 'Wraith',
   // A wire onto another wire's depth draws onto the bay's box.
   wDepth0: 'Patch bay',
   wDepth1: 'Patch bay',
   wDepth2: 'Patch bay',
   wDepth3: 'Patch bay',
-  echoMs: 'Delay pedal',
-  ensRate: 'Ensemble',
-  sampleSpeed: 'Tape loop',
-  loopSlide: 'Tape loop',
-  loopSpan: 'Tape loop',
+  echoMs: 'Ricochet',
+  ensRate: 'Chorale',
+  sampleSpeed: 'Spool',
+  loopSlide: 'Spool',
+  loopSpan: 'Spool',
   oscStarve: 'Chaos osc',
   oscHz: 'Chaos osc',
-  chipLevel: 'Toy keyboard',
-  drumLevel: 'Toy drums',
-  fmLevel: 'FM chip',
+  chipLevel: 'Plinky',
+  drumLevel: 'Clatter',
+  fmLevel: 'Glint',
   oscLevel: 'Chaos osc',
   noiseLevel: 'Noise & crackle',
-  sampleLevel: 'Tape loop',
+  sampleLevel: 'Spool',
   filtRes: 'Screech filter',
-  fmBright: 'FM chip',
+  fmBright: 'Glint',
   fbMs: 'Feedback bus',
-  chipDataLine: 'Toy keyboard',
-  chipDataFault: 'Toy keyboard',
-  chipAddrLine: 'Toy keyboard',
-  chipAddrFault: 'Toy keyboard',
-  drumDataLine: 'Toy drums',
-  drumDataFault: 'Toy drums',
-  drumAddrLine: 'Toy drums',
-  drumAddrFault: 'Toy drums',
-  fmDataLine: 'FM chip',
-  fmDataFault: 'FM chip',
-  fmAddrLine: 'FM chip',
-  fmAddrFault: 'FM chip',
-  fmWaveLine: 'FM chip',
-  fmWaveFault: 'FM chip',
-  fmWaveDataLine: 'FM chip',
-  fmWaveDataFault: 'FM chip',
-  fmBusCut: 'FM chip',
-  fmNoiseBlob: 'FM chip',
+  chipDataLine: 'Plinky',
+  chipDataFault: 'Plinky',
+  chipAddrLine: 'Plinky',
+  chipAddrFault: 'Plinky',
+  drumDataLine: 'Clatter',
+  drumDataFault: 'Clatter',
+  drumAddrLine: 'Clatter',
+  drumAddrFault: 'Clatter',
+  fmDataLine: 'Glint',
+  fmDataFault: 'Glint',
+  fmAddrLine: 'Glint',
+  fmAddrFault: 'Glint',
+  fmWaveLine: 'Glint',
+  fmWaveFault: 'Glint',
+  fmWaveDataLine: 'Glint',
+  fmWaveDataFault: 'Glint',
+  fmBusCut: 'Glint',
+  fmNoiseBlob: 'Glint',
   ringMix: 'Ring mod',
-  drumBpm: 'Toy drums',
-  drumSwing: 'Toy drums',
-  drumChance: 'Toy drums',
-  drumDecay: 'Toy drums',
-  drumRing: 'Toy drums',
-  dlyLoopHz: 'Tape delay',
+  drumBpm: 'Clatter',
+  drumSwing: 'Clatter',
+  drumChance: 'Clatter',
+  drumDecay: 'Clatter',
+  drumRing: 'Clatter',
+  dlyLoopHz: 'Wraith',
   deckSpeed: 'Output',
-  pcmLevel: 'Home keyboard',
-  pcmAddrLine: 'Home keyboard',
-  pcmAddrFault: 'Home keyboard',
-  pcmDataLine: 'Home keyboard',
-  pcmDataFault: 'Home keyboard',
-  monoLevel: 'Mono synth',
-  monoCutoff: 'Mono synth',
-  monoEmph: 'Mono synth',
-  monoPitch: 'Mono synth',
-  chipCrosstalk: 'Toy keyboard',
-  chipScan: 'Toy keyboard',
-  chipPwm: 'Toy keyboard',
-  chipShort: 'Toy keyboard',
-  chipEnvCap: 'Toy keyboard',
-  chipGhost: 'Toy keyboard',
-  chipLoopFrom: 'Toy keyboard',
-  chipLoopTo: 'Toy keyboard',
-  chipBankLine: 'Toy keyboard',
-  chipBankFault: 'Toy keyboard',
-  chipDivLine: 'Toy keyboard',
-  chipDivFault: 'Toy keyboard',
-  fmPatchLine: 'FM chip',
-  fmPatchFault: 'FM chip',
-  fmPatchDataLine: 'FM chip',
-  fmPatchDataFault: 'FM chip',
-  fmClock: 'FM chip',
-  fmCpuClock: 'FM chip',
-  revWarble: 'Spring verb',
-  drumRefDepth: 'Toy drums',
-  fmDacSlot: 'FM chip',
-  fmDacSlip: 'FM chip',
-  fmAlloc: 'FM chip',
-  fmColdBoot: 'FM chip',
-  fmAdder: 'FM chip',
-  fourLevel: 'Four-track',
-  fourPitch: 'Four-track',
-  fourAux: 'Four-track',
-  four1MidHz: 'Four-track',
-  chipStepTap: 'Toy keyboard',
-  chipEnvRelax: 'Toy keyboard',
-  chipEnvDiv: 'Toy keyboard',
-  chipOutAddr: 'Toy keyboard',
-  chipOutData: 'Toy keyboard',
-  chipPwmTap: 'Toy keyboard',
-  fmToyBus: 'FM chip',
-  chipFmClock: 'Toy keyboard',
-  chipHold: 'Toy keyboard',
-  chipHardSync: 'Toy keyboard',
-  chipXor: 'Toy keyboard',
-  chipEnvBits: 'Toy keyboard',
-  chipDutyEnv: 'Toy keyboard',
+  pcmLevel: 'Parlor',
+  pcmAddrLine: 'Parlor',
+  pcmAddrFault: 'Parlor',
+  pcmDataLine: 'Parlor',
+  pcmDataFault: 'Parlor',
+  monoLevel: 'Growler',
+  monoCutoff: 'Growler',
+  monoEmph: 'Growler',
+  monoPitch: 'Growler',
+  chipCrosstalk: 'Plinky',
+  chipScan: 'Plinky',
+  chipPwm: 'Plinky',
+  chipShort: 'Plinky',
+  chipEnvCap: 'Plinky',
+  chipGhost: 'Plinky',
+  chipLoopFrom: 'Plinky',
+  chipLoopTo: 'Plinky',
+  chipBankLine: 'Plinky',
+  chipBankFault: 'Plinky',
+  chipDivLine: 'Plinky',
+  chipDivFault: 'Plinky',
+  fmPatchLine: 'Glint',
+  fmPatchFault: 'Glint',
+  fmPatchDataLine: 'Glint',
+  fmPatchDataFault: 'Glint',
+  fmClock: 'Glint',
+  fmCpuClock: 'Glint',
+  revWarble: 'Boing',
+  drumRefDepth: 'Clatter',
+  fmDacSlot: 'Glint',
+  fmDacSlip: 'Glint',
+  fmAlloc: 'Glint',
+  fmColdBoot: 'Glint',
+  fmAdder: 'Glint',
+  fourLevel: 'Layercake',
+  fourPitch: 'Layercake',
+  fourAux: 'Layercake',
+  four1MidHz: 'Layercake',
+  chipStepTap: 'Plinky',
+  chipEnvRelax: 'Plinky',
+  chipEnvDiv: 'Plinky',
+  chipOutAddr: 'Plinky',
+  chipOutData: 'Plinky',
+  chipPwmTap: 'Plinky',
+  fmToyBus: 'Glint',
+  chipFmClock: 'Plinky',
+  chipHold: 'Plinky',
+  chipHardSync: 'Plinky',
+  chipXor: 'Plinky',
+  chipEnvBits: 'Plinky',
+  chipDutyEnv: 'Plinky',
 }
 
 export const WIRE_TARGET: readonly string[] = (() => {
@@ -164,8 +164,8 @@ export const WIRE_TARGET: readonly string[] = (() => {
 // starve knob — and this is the only thing on the map that says how far its
 // reach goes past its own box.
 const RAIL_LINK = [
-  ['stompSag', 'Stompbox'],
-  ['tapeMotorRail', 'Tape delay'],
+  ['stompSag', 'Gnash'],
+  ['tapeMotorRail', 'Wraith'],
   ['fbSag', 'Feedback bus'],
 ] as const satisfies readonly (readonly [ControlKey, string])[]
 
@@ -185,9 +185,9 @@ const SRC_GROUP: Record<number, string> = {
   5: 'Body contact',
   6: 'Body contact',
   7: 'Feedback bus',
-  8: 'Toy keyboard',
-  9: 'Toy drums',
-  10: 'Toy keyboard',
+  8: 'Plinky',
+  9: 'Clatter',
+  10: 'Plinky',
 }
 
 // Where the mic wire is soldered, in micPatch order. Only the first of the
@@ -195,39 +195,39 @@ const SRC_GROUP: Record<number, string> = {
 const MIC_TARGET = [
   'mix',
   // The rail is the keyboard's to own — it holds the starve knob that moves it.
-  'Toy keyboard',
+  'Plinky',
   'Chaos osc',
-  'Tape delay',
+  'Wraith',
   'Ring mod',
-  'Toy drums',
+  'Clatter',
   'Glitch buffer',
 ] as const
 
 // What each source is turned up to, which is also whether it is in the mix at
 // all: the loudest of its levels, as a share of the top of its normal stretch.
 const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
-  'Toy keyboard': ['chipLevel'],
-  'FM chip': ['fmLevel'],
-  'Home keyboard': ['pcmLevel'],
-  'Mono synth': ['monoLevel'],
-  'Toy drums': ['drumLevel'],
+  Plinky: ['chipLevel'],
+  Glint: ['fmLevel'],
+  Parlor: ['pcmLevel'],
+  Growler: ['monoLevel'],
+  Clatter: ['drumLevel'],
   'Chaos osc': ['oscLevel'],
   'Noise & crackle': ['noiseLevel', 'crackleAmp'],
-  'Tape loop': ['sampleLevel'],
-  'Four-track': ['fourLevel'],
+  Spool: ['sampleLevel'],
+  Layercake: ['fourLevel'],
 }
 
 const SOURCE_MUTE: Record<string, ControlKey> = {
-  'Toy keyboard': 'chipMute',
-  'Toy drums': 'drumMute',
-  'FM chip': 'fmMute',
-  'Home keyboard': 'pcmMute',
-  'Mono synth': 'monoMute',
+  Plinky: 'chipMute',
+  Clatter: 'drumMute',
+  Glint: 'fmMute',
+  Parlor: 'pcmMute',
+  Growler: 'monoMute',
 }
 
 // The two you play, side by side across the head of the toy board. They are the
 // pair: two machines with a run switch, a pattern and a set of keys each.
-const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
+const TOY_ROW = ['Plinky', 'Clatter'] as const
 
 // And the one you don't. The FM chip has no keyboard and no sequencer of its
 // own — its key input is soldered onto the toy's gate line — so it stands next
@@ -240,25 +240,20 @@ const TOY_ROW = ['Toy keyboard', 'Toy drums'] as const
 // All of them are inside the frame because they are one piece of hardware on
 // one supply, which is what the frame and its rail are there to say; the starve
 // knob on the keyboard's panel bends every one of them.
-const FM_CHIP = 'FM chip'
+const FM_CHIP = 'Glint'
 
 // The third die hanging off that same gate line, and drawn the far side of the
 // FM chip for the same reason the FM chip is drawn beside the keyboard: the
 // wire runs along the row, and a box on the end of it belongs next to the box
 // it is soldered to.
-const PCM_KEYS = 'Home keyboard'
+const PCM_KEYS = 'Parlor'
 
 // The fourth on the gate line and the rail, next along from the home keyboard.
-const MONO = 'Mono synth'
+const MONO = 'Growler'
 
 // The four that take no supply and no trigger from anything: they start where
 // they stand, and they are the only sources on the board that do.
-const LINE_ROW = [
-  'Chaos osc',
-  'Noise & crackle',
-  'Tape loop',
-  'Four-track',
-] as const
+const LINE_ROW = ['Chaos osc', 'Noise & crackle', 'Spool', 'Layercake'] as const
 
 // The levels and mixes that decide whether a stage is in the sound at all. Off
 // is the bottom of the travel, or the top for a control that boots there, such
@@ -266,12 +261,12 @@ const LINE_ROW = [
 export const GATES: Record<string, readonly ControlKey[]> = {
   ...SOURCE_LEVELS,
   ...Object.fromEntries(BENDS.map(b => [b.group, [b.mix]])),
-  Stompbox: ['stompMix'],
-  'Tape delay': ['dlyMix'],
-  'Delay pedal': ['echoLevel'],
-  'Spring verb': ['revMix', 'revDry'],
-  Ensemble: ['ensMix'],
-  'Tube amp': ['ampMix'],
+  Gnash: ['stompMix'],
+  Wraith: ['dlyMix'],
+  Ricochet: ['echoLevel'],
+  Boing: ['revMix', 'revDry'],
+  Chorale: ['ensMix'],
+  Ember: ['ampMix'],
   'Tape machine': ['tapeMix'],
   'Feedback bus': ['fbAmt', 'fb2Amt', 'fb3Amt'],
   Mic: ['micLevel'],
@@ -560,11 +555,11 @@ interface Bridge {
 function triggerBridges(c: Controls): Bridge[] {
   const bridges: Bridge[] = []
   for (const [key, from, to, end] of [
-    ['trigToKeys', 'Toy drums', 'Toy keyboard', 'keys'],
-    ['trigToDrum', 'Toy keyboard', 'Toy drums', 'kit'],
-    ['fmStruck', 'Toy drums', FM_CHIP, 'FM'],
-    ['pcmStruck', 'Toy drums', PCM_KEYS, 'home keys'],
-    ['monoStruck', 'Toy drums', MONO, 'mono'],
+    ['trigToKeys', 'Clatter', 'Plinky', 'keys'],
+    ['trigToDrum', 'Plinky', 'Clatter', 'kit'],
+    ['fmStruck', 'Clatter', FM_CHIP, 'FM'],
+    ['pcmStruck', 'Clatter', PCM_KEYS, 'home keys'],
+    ['monoStruck', 'Clatter', MONO, 'mono'],
   ] as const) {
     const choice = Math.round(c[key])
     if (choice <= 0) continue
@@ -739,12 +734,12 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // board's rather than the rack's.
   // A bypassed pedal crossfades to dry, so it is idle whatever its mix says.
   const active: Record<string, boolean> = {
-    Stompbox: c.stompMix > 0 && !c.stompMute,
-    'Tape delay': c.dlyMix > 0 && !c.dlyMute,
-    'Delay pedal': c.echoLevel > 0 && !c.echoMute,
-    'Spring verb': (c.revMix > 0 || c.revDry < 1) && !c.revMute,
-    Ensemble: c.ensMix > 0 && !c.ensMute,
-    'Tube amp': c.ampMix > 0 && !c.ampMute,
+    Gnash: c.stompMix > 0 && !c.stompMute,
+    Wraith: c.dlyMix > 0 && !c.dlyMute,
+    Ricochet: c.echoLevel > 0 && !c.echoMute,
+    Boing: (c.revMix > 0 || c.revDry < 1) && !c.revMute,
+    Chorale: c.ensMix > 0 && !c.ensMute,
+    Ember: c.ampMix > 0 && !c.ampMute,
   }
   for (const i of pedalOrderAt(c.pedalOrder)) {
     const name = PEDALS[i]!.group
@@ -1932,7 +1927,7 @@ function levelBar(n: MapNode, k: Palette, meter: number): El[] {
 // carries the run state too — a machine lights its glyph while something is
 // coming out of it, which is one marker doing the work of two.
 const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
-  'Toy keyboard': (x, y, c) => [
+  Plinky: (x, y, c) => [
     el('rect', {
       x,
       y: y + 2,
@@ -1951,7 +1946,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     el('rect', { x: x + 3.1, y: y + 2, width: 1.8, height: 4.6, fill: c }),
     el('rect', { x: x + 7.1, y: y + 2, width: 1.8, height: 4.6, fill: c }),
   ],
-  'FM chip': (x, y, c) => [
+  Glint: (x, y, c) => [
     el('rect', {
       x: x + 2.5,
       y: y + 1.5,
@@ -1971,7 +1966,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     }),
     el('circle', { cx: x + 4.3, cy: y + 3.3, r: 0.7, fill: c }),
   ],
-  'Home keyboard': (x, y, c) => {
+  Parlor: (x, y, c) => {
     const h = [9, 5, 2, 3, 7, 10]
     const steps = h.map((v, i) => `M ${x + i * 2} ${y + v} h 2`)
     const risers = h
@@ -1987,7 +1982,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       }),
     ]
   },
-  'Mono synth': (x, y, c) => [
+  Growler: (x, y, c) => [
     el('path', {
       d: `M ${x} ${y + 10} L ${x + 4} ${y + 2} V ${y + 10} L ${x + 8} ${y + 2} V ${y + 10} L ${x + 12} ${y + 2}`,
       fill: 'none',
@@ -1996,7 +1991,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       strokeLinejoin: 'miter',
     }),
   ],
-  'Toy drums': (x, y, c) => [
+  Clatter: (x, y, c) => [
     el('circle', {
       cx: x + 5,
       cy: y + 7,
@@ -2043,7 +2038,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     }),
   ],
   // A cassette: the shell, its two hubs and the window between them.
-  'Four-track': (x, y, c) => [
+  Layercake: (x, y, c) => [
     el('rect', {
       x,
       y: y + 2,
@@ -2067,7 +2062,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
   // what each one does to the signal rather than as five more enclosures — at
   // 12px a row of alike outlines says only "pedal", which is what their place
   // on the path already says.
-  Stompbox: (x, y, c) => [
+  Gnash: (x, y, c) => [
     el('rect', {
       x: x + 1.5,
       y: y + 0.5,
@@ -2088,7 +2083,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     }),
     el('circle', { cx: x + 6, cy: y + 8.2, r: 1.5, fill: c }),
   ],
-  'Tape delay': (x, y, c) => [
+  Wraith: (x, y, c) => [
     ...[3.4, 8.6].flatMap(dx => [
       el('circle', {
         cx: x + dx,
@@ -2106,7 +2101,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       strokeWidth: 0.9,
     }),
   ],
-  'Delay pedal': (x, y, c) => [
+  Ricochet: (x, y, c) => [
     el('path', {
       d: [9, 6, 3.6, 2]
         .map((h, i) => `M ${x + 1.2 + i * 3} ${y + 10} v ${-h}`)
@@ -2116,7 +2111,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       strokeLinecap: 'round',
     }),
   ],
-  'Spring verb': (x, y, c) => [
+  Boing: (x, y, c) => [
     el('path', {
       d: `M ${x + 0.4} ${y + 9} h 0.8 ${[0, 1, 2]
         .map(() => 'q 1.7 -9.5 3.4 0')
@@ -2127,7 +2122,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     }),
   ],
   // One wave and the same wave a beat late, which is the whole of a chorus.
-  Ensemble: (x, y, c) =>
+  Chorale: (x, y, c) =>
     [0, 2.6].map(dy =>
       el('path', {
         d: `M ${x + 1} ${y + 4 + dy} q 2.5 -3 5 0 q 2.5 3 5 0`,
@@ -2137,7 +2132,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
       }),
     ),
   // A valve: the glass, with the plate and the grid standing inside it.
-  'Tube amp': (x, y, c) => [
+  Ember: (x, y, c) => [
     el('path', {
       d: `M ${x + 3} ${y + 10.5} V ${y + 4.6} a 3 3.6 0 0 1 6 0 V ${y + 10.5} z`,
       fill: 'none',
@@ -2167,7 +2162,7 @@ const GLYPH: Record<string, (x: number, y: number, c: string) => El[]> = {
     el('rect', { x: x + 2, y: y + 4.6, width: 2.2, height: 2.8, fill: c }),
     el('rect', { x: x + 5.4, y: y + 4.6, width: 2.2, height: 2.8, fill: c }),
   ],
-  'Tape loop': (x, y, c) => [
+  Spool: (x, y, c) => [
     el('path', {
       d: [3.4, 8, 5, 10.4, 6, 2.8]
         .map((h, i) => `M ${x + 1.2 + i * 2} ${y + 6 - h / 2} v ${h}`)

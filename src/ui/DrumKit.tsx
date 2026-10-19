@@ -54,14 +54,9 @@ export function DrumKit({
   const levelInMenu = width !== undefined && width < ROOMY_KIT
 
   return (
-    <div
-      ref={setKit}
-      className={styles.kit}
-      role="group"
-      aria-label="toy drums"
-    >
+    <div ref={setKit} className={styles.kit} role="group" aria-label="clatter">
       <div className={styles.deck}>
-        <FaceBadge className={styles.brand} stage="Toy drums" onOpen={onOpen}>
+        <FaceBadge className={styles.brand} stage="Clatter" onOpen={onOpen}>
           drums
         </FaceBadge>
         <div className={styles.switches}>
@@ -102,7 +97,7 @@ export function DrumKit({
             </button>
           </Tip>
           <DeviceVerbs
-            stage="Toy drums"
+            stage="Clatter"
             seconds={seconds}
             onClose={onClose}
             noLevel={levelInMenu}
@@ -118,7 +113,7 @@ export function DrumKit({
           onOpen &&
           (() => {
             setBench({ ...bench.get(), grid: true })
-            onOpen('Toy drums')
+            onOpen('Clatter')
           })
         }
       />

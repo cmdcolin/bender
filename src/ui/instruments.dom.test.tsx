@@ -25,27 +25,21 @@ const putAway = (stage: string) => {
 
 test('the toy and the kit show alone while the other three have no level', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  expect(group('toy keyboard')).not.toBeNull()
-  expect(group('toy drums')).not.toBeNull()
-  expect(group('fm keyboard')).toBeNull()
-  expect(group('home keyboard')).toBeNull()
-  expect(group('mono synth')).toBeNull()
+  expect(group('plinky')).not.toBeNull()
+  expect(group('clatter')).not.toBeNull()
+  expect(group('glint')).toBeNull()
+  expect(group('parlor')).toBeNull()
+  expect(group('growler')).toBeNull()
   expect(screen.queryByRole('button', { name: /^close / })).toBeNull()
 })
 
 test('all-instruments lays out every machine, each with a ⋯ menu', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  for (const name of [
-    'toy keyboard',
-    'toy drums',
-    'fm keyboard',
-    'home keyboard',
-    'mono synth',
-  ])
+  for (const name of ['plinky', 'clatter', 'glint', 'parlor', 'growler'])
     expect(group(name)).not.toBeNull()
-  expect(screen.getByRole('region', { name: 'tape loop' })).toBeTruthy()
-  expect(screen.getByRole('region', { name: 'four-track' })).toBeTruthy()
+  expect(screen.getByRole('region', { name: 'spool' })).toBeTruthy()
+  expect(screen.getByRole('region', { name: 'layercake' })).toBeTruthy()
   expect(screen.getAllByRole('button', { name: /^more for / })).toHaveLength(7)
 })
 
@@ -53,30 +47,30 @@ test('add all instruments reopens closed machines, then hides the unused ones', 
   render(<Instruments seconds={0} onOpen={() => {}} />)
   expect(allMode().textContent).toBe('+ add all instruments')
   fireEvent.click(allMode())
-  putAway('FM chip')
+  putAway('Glint')
   expect(allMode().textContent).toBe('+ add all instruments')
   fireEvent.click(allMode())
-  expect(group('fm keyboard')).not.toBeNull()
+  expect(group('glint')).not.toBeNull()
   expect(allMode().textContent).toBe('− hide unused instruments')
   fireEvent.click(allMode())
-  expect(group('fm keyboard')).toBeNull()
-  expect(group('toy keyboard')).not.toBeNull()
+  expect(group('glint')).toBeNull()
+  expect(group('plinky')).not.toBeNull()
 })
 
 test('closing a machine hides it and a chip brings it back', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  putAway('FM chip')
-  expect(group('fm keyboard')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: '+ fm chip' }))
-  expect(group('fm keyboard')).not.toBeNull()
+  putAway('Glint')
+  expect(group('glint')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '+ glint' }))
+  expect(group('glint')).not.toBeNull()
 })
 
 test('leaving the mode puts the faders back in charge', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
   fireEvent.click(allMode())
-  expect(group('fm keyboard')).toBeNull()
+  expect(group('glint')).toBeNull()
 })
 
 test('randomize rolls that machine and leaves the others where they were', () => {
@@ -94,7 +88,7 @@ test('randomize rolls that machine and leaves the others where they were', () =>
 test('the ⋯ menu picks a kind of roll, rolls it and keeps it on the face', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  fireEvent.click(screen.getByRole('button', { name: 'more for Toy drums' }))
+  fireEvent.click(screen.getByRole('button', { name: 'more for Clatter' }))
   const names = screen
     .getAllByRole('menuitem')
     .map(item => item.textContent ?? '')
@@ -122,7 +116,7 @@ test('undo in the roll menu puts the stage back', () => {
   const before = engine.controls.get()
   fireEvent.click(screen.getAllByRole('button', { name: 'randomize' })[2]!)
   expect(sameControls(engine.controls.get(), before)).toBe(false)
-  fireEvent.click(screen.getByRole('button', { name: 'more for FM chip' }))
+  fireEvent.click(screen.getByRole('button', { name: 'more for Glint' }))
   fireEvent.click(screen.getByRole('menuitem', { name: 'undo' }))
   expect(sameControls(engine.controls.get(), before)).toBe(true)
 })
@@ -130,7 +124,7 @@ test('undo in the roll menu puts the stage back', () => {
 test('mute silences one machine and keeps its level, and a roll leaves it muted', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  const mute = screen.getByRole('button', { name: 'mute Toy drums' })
+  const mute = screen.getByRole('button', { name: 'mute Clatter' })
   expect(mute.getAttribute('aria-pressed')).toBe('false')
   fireEvent.click(mute)
   expect(engine.controls.get().drumMute).toBe(1)
@@ -146,7 +140,7 @@ test('a Level at zero lights mute, and unmute brings the Level back', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
   const level = screen.getAllByRole('slider', { name: 'Level' })[1]!
-  const mute = screen.getByRole('button', { name: 'mute Toy drums' })
+  const mute = screen.getByRole('button', { name: 'mute Clatter' })
   fireEvent.change(level, { target: { value: '400' } })
   const up = engine.controls.get().drumLevel
   expect(up).not.toBe(DEFAULT_CONTROLS.drumLevel)
@@ -171,36 +165,30 @@ test('each machine has a Level slider that moves its own level', () => {
 test('every machine on the shared rail shows the rail lamp', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  for (const name of [
-    'toy keyboard',
-    'toy drums',
-    'fm keyboard',
-    'home keyboard',
-    'mono synth',
-  ])
+  for (const name of ['plinky', 'clatter', 'glint', 'parlor', 'growler'])
     expect(within(group(name)!).getByText('4.50 V')).toBeTruthy()
 })
 
 test('a machine pulled down to no level stays on the bench', () => {
   engine.set('fmLevel', 0.5)
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  expect(group('fm keyboard')).not.toBeNull()
+  expect(group('glint')).not.toBeNull()
   act(() => engine.set('fmLevel', 0))
-  expect(group('fm keyboard')).not.toBeNull()
+  expect(group('glint')).not.toBeNull()
 })
 
 const pedalsMenu = () => screen.getByRole('button', { name: /^pedals/ })
 
 test('no pedal sits on the bench until it is switched in from the menu', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  expect(group('stompbox')).toBeNull()
+  expect(group('gnash')).toBeNull()
   fireEvent.click(pedalsMenu())
-  fireEvent.click(screen.getByRole('checkbox', { name: 'stompbox' }))
-  expect(group('stompbox')).not.toBeNull()
-  expect(group('tube amp')).toBeNull()
+  fireEvent.click(screen.getByRole('checkbox', { name: 'gnash' }))
+  expect(group('gnash')).not.toBeNull()
+  expect(group('ember')).toBeNull()
   expect(pedalsMenu().textContent).toContain('1')
-  fireEvent.click(screen.getByRole('checkbox', { name: 'stompbox' }))
-  expect(group('stompbox')).toBeNull()
+  fireEvent.click(screen.getByRole('checkbox', { name: 'gnash' }))
+  expect(group('gnash')).toBeNull()
 })
 
 const allPedals = () => screen.getByRole('button', { name: / all pedals/ })
@@ -209,14 +197,14 @@ test('add all pedals benches all six and leaves their mixes alone', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allPedals())
   expect(bench.get().pedals).toHaveLength(6)
-  for (const name of ['stompbox', 'tube amp', 'spring verb'])
+  for (const name of ['gnash', 'ember', 'boing'])
     expect(group(name)).not.toBeNull()
-  expect(shownOn(engine.controls.get()).has('Tube amp')).toBe(true)
+  expect(shownOn(engine.controls.get()).has('Ember')).toBe(true)
   expect(engine.controls.get().ampMix).toBe(DEFAULT_CONTROLS.ampMix)
   expect(allPedals().textContent).toBe('− put all pedals away')
   fireEvent.click(allPedals())
   expect(bench.get().pedals).toEqual([])
-  expect(group('stompbox')).toBeNull()
+  expect(group('gnash')).toBeNull()
 })
 
 test('a pedal face bypasses its pedal, opens its panel and puts itself away', () => {
@@ -224,22 +212,22 @@ test('a pedal face bypasses its pedal, opens its panel and puts itself away', ()
   bench.set({
     all: false,
     closed: [],
-    pedals: ['Spring verb'],
+    pedals: ['Boing'],
     roll: false,
     grid: false,
   })
   render(<Instruments seconds={0} onOpen={s => opened.push(s)} />)
   expect(screen.getAllByRole('slider').length).toBeGreaterThan(2)
-  const bypass = screen.getByRole('button', { name: 'bypass Spring verb' })
+  const bypass = screen.getByRole('button', { name: 'bypass Boing' })
   fireEvent.click(bypass)
   expect(engine.controls.get().revMute).toBe(1)
   expect(bypass.getAttribute('aria-pressed')).toBe('true')
   fireEvent.click(bypass)
   expect(engine.controls.get().revMute).toBe(0)
   fireEvent.click(screen.getByRole('button', { name: 'all controls' }))
-  expect(opened).toEqual(['Spring verb'])
-  putAway('Spring verb')
-  expect(group('spring verb')).toBeNull()
+  expect(opened).toEqual(['Boing'])
+  putAway('Boing')
+  expect(group('boing')).toBeNull()
   expect(bench.get().pedals).toEqual([])
 })
 
@@ -247,7 +235,7 @@ test('a pedal slider moves its own control and goes back to stock on a double pr
   bench.set({
     all: false,
     closed: [],
-    pedals: ['Spring verb'],
+    pedals: ['Boing'],
     roll: false,
     grid: false,
   })
@@ -264,7 +252,7 @@ test('a pedal selector switch goes to the next position on each press', () => {
   bench.set({
     all: false,
     closed: [],
-    pedals: ['Stompbox'],
+    pedals: ['Gnash'],
     roll: false,
     grid: false,
   })
@@ -275,11 +263,11 @@ test('a pedal selector switch goes to the next position on each press', () => {
 })
 
 test('the stage panel of a pedal puts it on the bench and takes it off', () => {
-  const verb = GROUPS.find(g => g.name === 'Spring verb')!
+  const verb = GROUPS.find(g => g.name === 'Boing')!
   render(<OpenGroup group={verb} onClose={() => {}} seconds={0} />)
   const toggle = screen.getByRole('button', { name: 'bench' })
   fireEvent.click(toggle)
-  expect(bench.get().pedals).toEqual(['Spring verb'])
+  expect(bench.get().pedals).toEqual(['Boing'])
   expect(toggle.getAttribute('aria-pressed')).toBe('true')
   fireEvent.click(toggle)
   expect(bench.get().pedals).toEqual([])
@@ -297,7 +285,7 @@ test('the mic stage panel opens the mic from its header', () => {
 
 test('the tape loop face comes up while the mic is open', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
-  const tape = () => screen.queryByRole('region', { name: 'tape loop' })
+  const tape = () => screen.queryByRole('region', { name: 'spool' })
   expect(tape()).toBeNull()
   act(() => engine.micOn.set(true))
   expect(tape()).not.toBeNull()
@@ -306,7 +294,7 @@ test('the tape loop face comes up while the mic is open', () => {
 })
 
 test('an instrument stage panel has no bench toggle', () => {
-  const toy = GROUPS.find(g => g.name === 'Toy keyboard')!
+  const toy = GROUPS.find(g => g.name === 'Plinky')!
   render(<OpenGroup group={toy} onClose={() => {}} seconds={0} />)
   expect(screen.queryByRole('button', { name: 'bench' })).toBeNull()
 })
@@ -314,10 +302,10 @@ test('an instrument stage panel has no bench toggle', () => {
 test('the mode and what was closed are stored for the next load', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  putAway('FM chip')
+  putAway('Glint')
   expect(parseBench(localStorage.getItem('bender.bench'))).toEqual({
     all: true,
-    closed: ['FM chip'],
+    closed: ['Glint'],
     pedals: [],
     roll: false,
     grid: false,
@@ -329,11 +317,11 @@ test('a stored bench that is not one reads as the default', () => {
   expect(parseBench('{')).toEqual(stock)
   expect(parseBench('7')).toEqual(stock)
   expect(
-    parseBench('{"all":true,"closed":["FM chip",3],"pedals":["Tube amp",1]}'),
+    parseBench('{"all":true,"closed":["Glint",3],"pedals":["Ember",1]}'),
   ).toEqual({
     all: true,
-    closed: ['FM chip'],
-    pedals: ['Tube amp'],
+    closed: ['Glint'],
+    pedals: ['Ember'],
     roll: false,
     grid: false,
   })
@@ -343,13 +331,13 @@ test('a stored bench that is not one reads as the default', () => {
 test('a machine on the bench in all-instruments mode has its box on the map', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
-  expect(shownOn(engine.controls.get()).has('Mono synth')).toBe(true)
+  expect(shownOn(engine.controls.get()).has('Growler')).toBe(true)
   fireEvent.click(allMode())
-  expect(shownOn(engine.controls.get()).has('Mono synth')).toBe(false)
+  expect(shownOn(engine.controls.get()).has('Growler')).toBe(false)
 })
 
 test('the piano roll stays out of the toy keyboard panel until it is shown', () => {
-  const toy = GROUPS.find(g => g.name === 'Toy keyboard')!
+  const toy = GROUPS.find(g => g.name === 'Plinky')!
   render(<OpenGroup group={toy} onClose={() => {}} seconds={0} />)
   expect(screen.queryByRole('application', { name: /roll/i })).toBeNull()
   const before = document.body.innerHTML
@@ -365,7 +353,7 @@ test('the piano roll stays out of the toy keyboard panel until it is shown', () 
 })
 
 test('the drum grid stays out of the toy drums panel until it is shown', () => {
-  const kit = GROUPS.find(g => g.name === 'Toy drums')!
+  const kit = GROUPS.find(g => g.name === 'Clatter')!
   render(<OpenGroup group={kit} onClose={() => {}} seconds={0} />)
   const before = document.body.innerHTML
   fireEvent.click(screen.getByRole('button', { name: 'show drum pattern' }))

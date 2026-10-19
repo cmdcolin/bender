@@ -72,8 +72,8 @@ const ribbon = (line: ControlKey, fault: ControlKey): Ribbon => ({
 })
 
 export const BUS_SPECS: Record<string, BusSpec> = {
-  'Toy keyboard|knife on the bus': {
-    label: 'toy keyboard bus wiring',
+  'Plinky|knife on the bus': {
+    label: 'plinky bus wiring',
     cut: 'chipBusCut',
     rows: [
       {
@@ -103,7 +103,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'Toy drums|knife on the bus': {
+  'Clatter|knife on the bus': {
     label: 'drum machine bus wiring',
     cut: 'drumBusCut',
     rows: [
@@ -141,7 +141,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'Toy drums|Sample ROM': {
+  'Clatter|Sample ROM': {
     label: 'drum sample ROM bus wiring',
     cut: 'drumBusCut',
     rows: [
@@ -154,8 +154,8 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'Home keyboard|knife on the bus': {
-    label: 'home keyboard bus wiring',
+  'Parlor|knife on the bus': {
+    label: 'parlor bus wiring',
     cut: 'pcmBusCut',
     rows: [
       {
@@ -167,8 +167,8 @@ export const BUS_SPECS: Record<string, BusSpec> = {
       },
     ],
   },
-  'FM chip|knife on the bus': {
-    label: 'FM chip bus wiring',
+  'Glint|knife on the bus': {
+    label: 'glint bus wiring',
     cut: 'fmBusCut',
     rows: [
       {

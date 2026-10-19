@@ -17,7 +17,7 @@ const press = (name: string) =>
   fireEvent.click(screen.getByRole('button', { name }))
 
 test('the tape delay keeps Time, Feedback and the echo level as rows, and the rest behind its drawing', () => {
-  open('Tape delay')
+  open('Wraith')
   for (const label of ['Time', 'Feedback', 'Echo level'])
     expect(screen.getAllByText(label), label).toHaveLength(1)
   expect(screen.queryByText('Heads')).toBeNull()
@@ -33,8 +33,8 @@ test('the tape delay keeps Time, Feedback and the echo level as rows, and the re
 
 test('the delay drawing lights the play heads the Heads switch picks', () => {
   act(() => engine.set('dlyHeads', 2))
-  open('Tape delay')
-  const drawing = screen.getByRole('img', { name: 'tape delay signal path' })
+  open('Wraith')
+  const drawing = screen.getByRole('img', { name: 'wraith signal path' })
   const litPlayHeads = () =>
     drawing.querySelectorAll('rect[class*="gapOn"]').length - 1
   expect(litPlayHeads()).toBe(2)
@@ -60,8 +60,8 @@ test('the delay drawing goes dark when the pedal is bypassed', () => {
     engine.set('dlyMute', 0)
     engine.set('dlyMix', 0.5)
   })
-  open('Tape delay')
-  const drawing = screen.getByRole('img', { name: 'tape delay signal path' })
+  open('Wraith')
+  const drawing = screen.getByRole('img', { name: 'wraith signal path' })
   const lit = () =>
     [...drawing.querySelectorAll('path')].filter(p =>
       p.getAttribute('class')?.includes('wireOn'),

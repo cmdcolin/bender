@@ -30,8 +30,8 @@ const texts = (svg: Element) =>
   [...svg.querySelectorAll('text')].map(t => t.textContent)
 
 test.each([
-  ['Toy keyboard', 'bus', 'toy keyboard bus wiring'],
-  ['Toy drums', 'pattern', 'drum machine bus wiring'],
+  ['Plinky', 'bus', 'plinky bus wiring'],
+  ['Clatter', 'pattern', 'drum machine bus wiring'],
 ])('%s draws %s once its %s box is pressed', (group, box, label) => {
   open(group)
   expect(screen.queryByRole('img', { name: label })).toBeNull()
@@ -40,10 +40,10 @@ test.each([
 })
 
 test.each([
-  ['Toy keyboard', 'bus', 'toy chip die', 'toy keyboard bus wiring'],
-  ['FM chip', 'die', 'FM chip signal path', 'FM die and driver'],
+  ['Plinky', 'bus', 'toy chip die', 'plinky bus wiring'],
+  ['Glint', 'die', 'Glint signal path', 'FM die and driver'],
   [
-    'Mono synth',
+    'Growler',
     'voice card',
     'mono synth voice card',
     'mono synth voice card faults',
@@ -65,7 +65,7 @@ test.each([
 )
 
 test('the sample ROM box of the toy drums draws its buses', () => {
-  open('Toy drums')
+  open('Clatter')
   expect(
     screen.queryByRole('img', { name: 'drum sample ROM bus wiring' }),
   ).toBeNull()
@@ -74,27 +74,25 @@ test('the sample ROM box of the toy drums draws its buses', () => {
 })
 
 test('the FM chip draws its buses under the bus box', () => {
-  open('FM chip')
-  expect(screen.queryByRole('img', { name: 'FM chip bus wiring' })).toBeNull()
+  open('Glint')
+  expect(screen.queryByRole('img', { name: 'glint bus wiring' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
-  expect(texts(drawing('FM chip bus wiring'))).toContain('D0–D7')
+  expect(texts(drawing('glint bus wiring'))).toContain('D0–D7')
 })
 
 test('the home keyboard draws its buses under either bus box', () => {
-  open('Home keyboard')
-  expect(
-    screen.queryByRole('img', { name: 'home keyboard bus wiring' }),
-  ).toBeNull()
+  open('Parlor')
+  expect(screen.queryByRole('img', { name: 'parlor bus wiring' })).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'addr bus controls' }))
-  expect(texts(drawing('home keyboard bus wiring'))).toContain('A0–A13')
+  expect(texts(drawing('parlor bus wiring'))).toContain('A0–A13')
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
-  expect(texts(drawing('home keyboard bus wiring'))).toContain('D0–D7')
+  expect(texts(drawing('parlor bus wiring'))).toContain('D0–D7')
 })
 
 test('the knifed trace carries its line name and fault in the drawing', () => {
   set({ chipAddrLine: 4, chipAddrFault: 1 })
-  open('Toy keyboard')
-  const svg = drawing('toy keyboard bus wiring')
+  open('Plinky')
+  const svg = drawing('plinky bus wiring')
   expect(texts(svg)).toContain('A3')
   const titles = [...svg.querySelectorAll('title')].map(t => t.textContent)
   expect(titles).toContain('address line: A3 to ground')
@@ -104,9 +102,9 @@ test('the knifed trace carries its line name and fault in the drawing', () => {
 
 test('a bridge lights the knifed trace and its neighbour', () => {
   set({ pcmDataLine: 8, pcmDataFault: 3 })
-  open('Home keyboard')
+  open('Parlor')
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
-  const svg = drawing('home keyboard bus wiring')
+  const svg = drawing('parlor bus wiring')
   expect(svg.querySelectorAll('path[class*="traceCut"]')).toHaveLength(2)
 })
 
@@ -115,8 +113,8 @@ const titles = (svg: Element) =>
 
 test('the loop wire is labelled the same whatever it joins, a reset pin included', () => {
   set({ chipLoopFrom: 2, chipLoopTo: 1 })
-  open('Toy keyboard')
-  const svg = drawing('toy keyboard bus wiring')
+  open('Plinky')
+  const svg = drawing('plinky bus wiring')
   expect(texts(svg)).toContain('loop wire')
   expect(texts(svg).some(t => t?.includes('→'))).toBe(false)
   expect(titles(svg)).toContain('loop wire D1 → A1')
@@ -126,7 +124,7 @@ test('the loop wire is labelled the same whatever it joins, a reset pin included
 })
 
 test('the drum reset wire and the clock keep their labels as the knobs move', () => {
-  open('Toy drums')
+  open('Clatter')
   press('pattern')
   const svg = drawing('drum machine bus wiring')
   expect(texts(svg)).toContain('clock')
@@ -141,9 +139,9 @@ test('the drum reset wire and the clock keep their labels as the knobs move', ()
 
 test('the toy on the FM bus is labelled without its width', () => {
   set({ fmToyBus: 3 })
-  open('FM chip')
+  open('Glint')
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
-  const svg = drawing('FM chip bus wiring')
+  const svg = drawing('glint bus wiring')
   expect(texts(svg)).toContain('toy out')
   expect(titles(svg)).toContain('toy out on D0–D2')
   expect(svg.querySelectorAll('circle[class*="solder"]')).toHaveLength(3)
@@ -151,9 +149,9 @@ test('the toy on the FM bus is labelled without its width', () => {
 
 test('pressing a trace knifes it, and pressing it again walks the faults', () => {
   set({ chipAddrLine: 0, chipAddrFault: 0 })
-  open('Toy keyboard')
+  open('Plinky')
   press('bus')
-  const svg = drawing('toy keyboard bus wiring')
+  const svg = drawing('plinky bus wiring')
   const line = (name: string) =>
     [...svg.querySelectorAll('title')].find(t =>
       t.textContent?.startsWith(`${name}:`),
@@ -171,7 +169,7 @@ test('pressing a trace knifes it, and pressing it again walks the faults', () =>
 
 test('the arrow keys move the knife along a focused ribbon', () => {
   set({ pcmDataLine: 2 })
-  open('Home keyboard')
+  open('Parlor')
   fireEvent.click(screen.getByRole('button', { name: 'data bus controls' }))
   const ribbon = screen.getByRole('button', { name: 'data line knife' })
   fireEvent.keyDown(ribbon, { key: 'ArrowDown' })

@@ -26,7 +26,7 @@ import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 import type { ControlKey } from '../controls.ts'
 import type { Verbs, Zoom } from './foldHosting.ts'
 
-const GROUP = GROUPS.find(g => g.name === 'Mono synth')!
+const GROUP = GROUPS.find(g => g.name === 'Growler')!
 
 const keysOf = (part: string): ControlKey[] =>
   GROUP.sliders.filter(d => d.part === part).map(d => d.key)
@@ -73,7 +73,7 @@ const KEYS = [...new Set(Object.values(BOXES).flatMap(b => keysOf(b.part)))]
 
 const wire = (on: boolean): WireLook => (on ? 'on' : 'dash')
 
-const MONO_TAP = CHANNELS.find(c => c.name === 'Mono synth')!.tap
+const MONO_TAP = CHANNELS.find(c => c.name === 'Growler')!.tap
 
 const WIDTH = 420
 const TAIL = 30
@@ -191,7 +191,7 @@ export function MonoPathDiagram({
           <Diagram
             width={WIDTH}
             height={close ? HEIGHT + CONE_H : HEIGHT}
-            label="mono synth voice card"
+            label="growler voice card"
           >
             {arrow => (
               <>

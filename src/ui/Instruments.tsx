@@ -38,23 +38,23 @@ function FourTrackFace({
   onClose?: () => void
 }) {
   return (
-    <Faceplate stage="Four-track" seconds={seconds} onClose={onClose}>
+    <Faceplate stage="Layercake" seconds={seconds} onClose={onClose}>
       <FourTrack />
     </Faceplate>
   )
 }
 
 const TOY: Row = [
-  ['Toy keyboard', Keys],
-  ['Toy drums', DrumKit],
+  ['Plinky', Keys],
+  ['Clatter', DrumKit],
 ]
 
 const LEVELLED: Row = [
-  ['FM chip', FmKeys],
-  ['Home keyboard', PcmKeys],
-  ['Mono synth', MonoKeys],
-  ['Tape loop', TapeLoopFace],
-  ['Four-track', FourTrackFace],
+  ['Glint', FmKeys],
+  ['Parlor', PcmKeys],
+  ['Growler', MonoKeys],
+  ['Spool', TapeLoopFace],
+  ['Layercake', FourTrackFace],
 ]
 
 // The keyboards, the kit, the tape loop and the four-track. A machine shows while its stage is
@@ -86,7 +86,7 @@ export function Instruments({
   const over = useStoreValue(dragging)
   const tapeHeld = micOn || over
   const face = (stage: string) =>
-    shows(stage) || (stage === 'Tape loop' && tapeHeld)
+    shows(stage) || (stage === 'Spool' && tapeHeld)
 
   const shelf = (machines: Row) => {
     const shown = machines.filter(([stage]) => face(stage))

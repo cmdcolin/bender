@@ -17,7 +17,7 @@ beforeEach(() => {
 // The melody memory, as the panel draws it. An empty memory opens on the
 // keyboard's own bottom C, so these name their cells from there.
 const openKeyboard = () => {
-  const group = GROUPS.find(g => g.name === 'Toy keyboard')
+  const group = GROUPS.find(g => g.name === 'Plinky')
   if (!group) throw new Error('no Toy keyboard group')
   return render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
 }

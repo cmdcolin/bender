@@ -19,7 +19,7 @@ export function PcmKeys({
   return (
     <Keybed
       dest="pcm"
-      label="home keyboard"
+      label="parlor"
       caseClass={styles.case}
       badge={
         <span className={styles.badge}>
@@ -30,7 +30,7 @@ export function PcmKeys({
       extras={
         <>
           <RailLamp onOpen={onOpen} />
-          <SeqRec dest="pcm" name="home keyboard" />
+          <SeqRec dest="pcm" name="Parlor" />
           <GateJumper
             control="pcmKeyGate"
             notes={engine.pcmNotes}
@@ -41,7 +41,7 @@ export function PcmKeys({
           />
         </>
       }
-      stage="Home keyboard"
+      stage="Parlor"
       onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}

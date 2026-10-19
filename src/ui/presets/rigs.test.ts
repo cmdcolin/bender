@@ -111,7 +111,7 @@ test('an ordering pair is two different sounds', () => {
 // The desk feeding itself: the squeal is where the mid is boosted, not wherever
 // the loop happens to ring.
 test('the no-input mixer squeals at the pitch its mid is tuned to', () => {
-  const rig = rigsFor('Four-track').find(r => r.name === 'no-input mixer')!
+  const rig = rigsFor('Layercake').find(r => r.name === 'no-input mixer')!
   const hz = pitchHz(render(rig.patch, 3).subarray(SR))
   expect(hz / rig.patch.four1MidHz!).toBeGreaterThan(0.7)
   expect(hz / rig.patch.four1MidHz!).toBeLessThan(1.4)
@@ -121,14 +121,14 @@ test('the no-input mixer squeals at the pitch its mid is tuned to', () => {
 // track 2 listening to the board is a different sound from the squeal alone.
 test('the echo in the loop changes the squeal it is fed', () => {
   const [alone, echoed] = ['no-input mixer', 'squeal through the echo'].map(
-    name => render(rigsFor('Four-track').find(r => r.name === name)!.patch, 3),
+    name => render(rigsFor('Layercake').find(r => r.name === name)!.patch, 3),
   )
   expect(rms(diff(alone!, echoed!))).toBeGreaterThan(0.1 * rms(alone!))
 })
 
 test('the four-track rigs reach outside the stage only to bring a level or a mix up', () => {
-  const desk = new Set<ControlKey>(groupKeys('Four-track'))
-  for (const rig of rigsFor('Four-track'))
+  const desk = new Set<ControlKey>(groupKeys('Layercake'))
+  for (const rig of rigsFor('Layercake'))
     for (const key of Object.keys(rig.patch) as ControlKey[]) {
       if (desk.has(key)) continue
       expect(['level', 'mix'], `${rig.name}/${key}`).toContain(

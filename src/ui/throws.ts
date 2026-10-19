@@ -14,7 +14,7 @@ export const THROWS: ThrowDef[] = [
   {
     name: 'spin',
     key: 'c',
-    blurb: 'Tape delay feedback past 1',
+    blurb: 'Wraith feedback past 1',
     push: c => ({ dlyFb: 1.25, dlyMix: atLeast(c.dlyMix, 0.7), dlySend: 1 }),
   },
   {
@@ -26,7 +26,7 @@ export const THROWS: ThrowDef[] = [
   {
     name: 'brake',
     key: 'b',
-    blurb: 'Tape delay braked, toy clock dragged down',
+    blurb: 'Wraith braked, toy clock dragged down',
     push: c => ({
       tapeBrake: 1,
       dlyMix: atLeast(c.dlyMix, 0.6),

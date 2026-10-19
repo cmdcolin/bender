@@ -157,7 +157,7 @@ const sampledKit = (c: Controls) => c.drumRom === 1
 
 export const SOURCE_GROUPS: Group[] = [
   {
-    name: 'Toy keyboard',
+    name: 'Plinky',
     place: 'Sources',
     folded: [
       'arp and key lock',
@@ -190,7 +190,7 @@ export const SOURCE_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'How loud the toy keyboard chip is in the source mix.',
+        help: 'How loud Plinky is in the source mix.',
       },
       {
         key: 'chipMute',
@@ -200,7 +200,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['live', 'muted'],
-        help: 'Silences the toy keyboard on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
+        help: 'Silences Plinky on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'chipTune',
@@ -531,7 +531,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'Wires the FM chip’s output onto this chip’s timing pin, so the FM chip’s sound bends the toy’s pitch, tempo and envelopes together, by up to four octaves. The FM chip plays the notes the toy strikes, so the two chips bend each other’s timing, and with Toy on bus on the FM chip as well they form a loop. Needs the FM chip up.',
+        help: 'Wires Glint’s output onto this chip’s timing pin, so Glint’s sound bends the toy’s pitch, tempo and envelopes together, by up to four octaves. Glint plays the notes the toy strikes, so the two chips bend each other’s timing, and with Toy on bus on Glint as well they form a loop. Needs Glint up.',
       },
       {
         key: 'chipHold',
@@ -737,7 +737,7 @@ export const SOURCE_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Toy drums',
+    name: 'Clatter',
     place: 'Sources',
     folded: [
       'inside the voices',
@@ -776,7 +776,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['live', 'muted'],
-        help: 'Silences the toy drums on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
+        help: 'Silences Clatter on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'drumBpm',
@@ -923,7 +923,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 1,
         step: 0.01,
         unit: '',
-        help: 'How much the one-shots’ charge costs the supply. Every hit takes its spike off the metal bank’s local cap at once, so a ringing cowbell or cymbal dives up to an octave on each kick and swings back over the next few tens of milliseconds; a crowded step dives nearly two. The same spike reaches the board’s shared rail a moment later, so the toy keyboard goes flat under every busy step. The tempo sits behind its own decoupling and only drifts with the average.',
+        help: 'How much the one-shots’ charge costs the supply. Every hit takes its spike off the metal bank’s local cap at once, so a ringing cowbell or cymbal dives up to an octave on each kick and swings back over the next few tens of milliseconds; a crowded step dives nearly two. The same spike reaches the board’s shared rail a moment later, so Plinky goes flat under every busy step. The tempo sits behind its own decoupling and only drifts with the average.',
       },
       {
         key: 'drumSnappy',
@@ -1394,7 +1394,7 @@ export const SOURCE_GROUPS: Group[] = [
         choices: lineNames('D', DATA_LINES),
         ordered: true,
         shy: true,
-        help: 'Which of the wires carrying the word back the knife found — one wire a row, in the order of the grid, so D8 is the accent. To +V is that voice on every step, which is the machine-gun; to ground is a row you can see and cannot hear. On the accent wire it is every step accented, and with Accent sag up that is a kit weighted by how many voices each step strikes rather than a loud one. It is the trigger bus, so a bit forced high reaches the sampler, keyboard and FM chip too.',
+        help: 'Which of the wires carrying the word back the knife found — one wire a row, in the order of the grid, so D8 is the accent. To +V is that voice on every step, which is the machine-gun; to ground is a row you can see and cannot hear. On the accent wire it is every step accented, and with Accent sag up that is a kit weighted by how many voices each step strikes rather than a loud one. It is the trigger bus, so a bit forced high reaches the sampler, keyboard and Glint too.',
       },
       {
         key: 'drumDataFault',
@@ -1423,7 +1423,7 @@ export const SOURCE_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'FM chip',
+    name: 'Glint',
     place: 'Sources',
     editor: { kind: 'fm' },
     handled: [
@@ -1474,7 +1474,7 @@ export const SOURCE_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'How loud the FM chip is in the source mix. It has no sequencer of its own — somebody soldered its key input onto the toy’s gate line, so out of the box it plays whatever strikes a note over there. Cut that jumper and it answers only its own keybed. Same rail either way, so starving the toy dives its pitch.',
+        help: 'How loud Glint is in the source mix. It has no sequencer of its own — somebody soldered its key input onto the toy’s gate line, so out of the box it plays whatever strikes a note over there. Cut that jumper and it answers only its own keybed. Same rail either way, so starving the toy dives its pitch.',
       },
       {
         key: 'fmMute',
@@ -1484,7 +1484,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['live', 'muted'],
-        help: 'Silences the FM chip on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
+        help: 'Silences Glint on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'fmVoice',
@@ -1623,7 +1623,7 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'fmKeyGate',
-        label: 'Plays the toy keyboard’s notes',
+        label: 'Plays Plinky’s notes',
         part: 'clocks and wires',
         min: 0,
         max: 1,
@@ -1946,12 +1946,12 @@ export const SOURCE_GROUPS: Group[] = [
           '1 bit',
           ...[2, 3, 4, 5, 6, 7, 8].map(n => `${n} bits`),
         ],
-        help: 'Solders the toy keyboard’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire. Each time one of those bits changes, the edge fires the write strobe, and the toy’s level lands in whichever register the processor last wrote. The register holds it until the processor writes there again, so the toy’s tune rewrites this chip’s pitch, keys and patch as it plays. One bit flips at the toy’s pitch; eight follow its waveform.',
+        help: 'Solders Plinky’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire. Each time one of those bits changes, the edge fires the write strobe, and the toy’s level lands in whichever register the processor last wrote. The register holds it until the processor writes there again, so the toy’s tune rewrites this chip’s pitch, keys and patch as it plays. One bit flips at the toy’s pitch; eight follow its waveform.',
       },
     ],
   },
   {
-    name: 'Home keyboard',
+    name: 'Parlor',
     place: 'Sources',
     editor: { kind: 'pcm' },
     handled: [
@@ -1981,7 +1981,7 @@ export const SOURCE_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'How loud the home keyboard is in the source mix. Like the FM chip it boots at nothing and has no sequencer of its own — its key input is soldered onto the toy’s gate line, so out of the box the demo song plays it. Cut that jumper and it answers only the keybed drawn under the toy’s. Same rail as the other two, so starving the toy drags its pitch down with everything else.',
+        help: 'How loud Parlor is in the source mix. Like Glint it boots at nothing and has no sequencer of its own — its key input is soldered onto the toy’s gate line, so out of the box the demo song plays it. Cut that jumper and it answers only the keybed drawn under the toy’s. Same rail as the other two, so starving the toy drags its pitch down with everything else.',
       },
       {
         key: 'pcmMute',
@@ -1991,7 +1991,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['live', 'muted'],
-        help: 'Silences the home keyboard on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
+        help: 'Silences Parlor on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'pcmVoice',
@@ -2077,14 +2077,14 @@ export const SOURCE_GROUPS: Group[] = [
       },
       {
         key: 'pcmKeyGate',
-        label: 'Plays the toy keyboard’s notes',
+        label: 'Plays Plinky’s notes',
         part: 'clock and wires',
         min: 0,
         max: 1,
         step: 1,
         unit: '',
         choices: ['yes, soldered', 'no, cut'],
-        help: 'The same jumper the FM chip has, off the toy’s gate line onto this keyboard’s key input. Out of the box the demo song and the arpeggio play the strings. Cut it and the keyboard answers only its own bed, the kit’s trigger lines and a controller. Its own keybed plays either way.',
+        help: 'The same jumper Glint has, off the toy’s gate line onto this keyboard’s key input. Out of the box the demo song and the arpeggio play the strings. Cut it and the keyboard answers only its own bed, the kit’s trigger lines and a controller. Its own keybed plays either way.',
       },
       {
         key: 'pcmAddrLine',
@@ -2154,7 +2154,7 @@ export const SOURCE_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Mono synth',
+    name: 'Growler',
     place: 'Sources',
     editor: { kind: 'monoPath' },
     memory: { keys: [...MONO_SEQ_STEP_KEYS, 'monoSeqLen'] },
@@ -2211,7 +2211,7 @@ export const SOURCE_GROUPS: Group[] = [
         normal: [0, 1],
         step: 0.01,
         unit: '',
-        help: 'How loud the mono synth is in the source mix. A three-oscillator voice card with a transistor ladder filter, soldered onto the toy’s supply and its gate line: it boots at nothing, and once it is up the toy’s tune plays it two octaves down. Starving the toy drags its pitch with everything else on the rail.',
+        help: 'How loud Growler is in the source mix. A three-oscillator voice card with a transistor ladder filter, soldered onto the toy’s supply and its gate line: it boots at nothing, and once it is up the toy’s tune plays it two octaves down. Starving the toy drags its pitch with everything else on the rail.',
       },
       {
         key: 'monoMute',
@@ -2221,7 +2221,7 @@ export const SOURCE_GROUPS: Group[] = [
         step: 1,
         unit: '',
         choices: ['live', 'muted'],
-        help: 'Silences the mono synth on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
+        help: 'Silences Growler on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness. The machine keeps running underneath, and a roll leaves it alone.',
       },
       {
         key: 'monoCutoff',
@@ -2292,7 +2292,7 @@ export const SOURCE_GROUPS: Group[] = [
         max: 2,
         step: 1,
         unit: '',
-        choices: ['mono synth', 'FM chip', 'home keyboard'],
+        choices: ['Growler', 'Glint', 'Parlor'],
         help: 'Which machine has the memory’s line soldered to its key input. The toy’s tune keeps playing the others, so the two melodies sound together. The memory plays through its target whatever that machine’s own jumper says, and that machine’s Level has to be up.',
       },
       {
@@ -2645,7 +2645,7 @@ export const SOURCE_GROUPS: Group[] = [
       {
         key: 'monoKeyGate',
         part: 'keys',
-        label: 'Plays the toy keyboard’s notes',
+        label: 'Plays Plinky’s notes',
         min: 0,
         max: 1,
         step: 1,
@@ -2857,7 +2857,7 @@ export const SOURCE_GROUPS: Group[] = [
     ],
   },
   {
-    name: 'Tape loop',
+    name: 'Spool',
     place: 'Sources',
     // The reel itself lives beside the keys rather than in here, because it is
     // the one thing on this stage you watch rather than set: what is on the

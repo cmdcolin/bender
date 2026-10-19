@@ -14,7 +14,7 @@ const open = () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(
     <OpenGroup
-      group={GROUPS.find(g => g.name === 'Mono synth')!}
+      group={GROUPS.find(g => g.name === 'Growler')!}
       onClose={() => {}}
       seconds={0}
     />,
@@ -29,7 +29,7 @@ const set = (board: Partial<Controls>) =>
   })
 
 const card = () =>
-  screen.getByRole('img', { name: 'mono synth voice card faults' })
+  screen.getByRole('img', { name: 'growler voice card faults' })
 
 const words = () => [...card().querySelectorAll('text')].map(t => t.textContent)
 

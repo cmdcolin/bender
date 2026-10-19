@@ -8,7 +8,7 @@ import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
 const openFourTrack = () => {
-  const group = GROUPS.find(g => g.name === 'Four-track')
+  const group = GROUPS.find(g => g.name === 'Layercake')
   if (!group) throw new Error('no four-track')
   return render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
 }

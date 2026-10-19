@@ -13,12 +13,12 @@
 // changed: at zero it is on the board and out of the path.
 
 export const PEDALS = [
-  { group: 'Stompbox', label: 'stomp' },
-  { group: 'Tape delay', label: 'tape' },
-  { group: 'Delay pedal', label: 'echo' },
-  { group: 'Spring verb', label: 'verb' },
-  { group: 'Ensemble', label: 'ens' },
-  { group: 'Tube amp', label: 'amp' },
+  { group: 'Gnash', label: 'stomp' },
+  { group: 'Wraith', label: 'tape' },
+  { group: 'Ricochet', label: 'echo' },
+  { group: 'Boing', label: 'verb' },
+  { group: 'Chorale', label: 'ens' },
+  { group: 'Ember', label: 'amp' },
 ] as const
 
 export const isPedal = (stage: string) => PEDALS.some(p => p.group === stage)

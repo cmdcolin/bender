@@ -323,7 +323,7 @@ export function BendKeysSwitch() {
       text={
         on
           ? `The letter keys play the bend keys under this row: hold one, shift pins it, ${octaveLetters.down} lets go of everything, ${octaveLetters.up} redeals. Press to hand them back to the toy keyboard.`
-          : 'Send the computer’s letter keys to the bend keys instead of the toy keyboard. The bend keys appear under this row.'
+          : 'Send the computer’s letter keys to the bend keys instead of Plinky. The bend keys appear under this row.'
       }
     >
       <button

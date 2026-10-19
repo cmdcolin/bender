@@ -14,7 +14,7 @@ import type { Controls } from '../controls.ts'
 const open = () =>
   render(
     <OpenGroup
-      group={GROUPS.find(g => g.name === 'Toy keyboard')!}
+      group={GROUPS.find(g => g.name === 'Plinky')!}
       onClose={() => {}}
       seconds={0}
     />,
@@ -119,7 +119,7 @@ test('pressing a part opens its rows, and a second press puts them away', () => 
 })
 
 test('every knob in the die fold sits in one of the parts', () => {
-  const fold = GROUPS.find(g => g.name === 'Toy keyboard')!
+  const fold = GROUPS.find(g => g.name === 'Plinky')!
     .sliders.filter(d => d.part === 'inside the die')
     .map(d => d.key)
   expect(new Set(Object.values(NODE_KEYS).flat())).toEqual(new Set(fold))

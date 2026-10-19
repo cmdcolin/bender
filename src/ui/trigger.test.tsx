@@ -25,15 +25,12 @@ const openPatch = () =>
 test('each trigger wire opens its own rows, drawn once', () => {
   openPatch()
   const wires: [string, string[]][] = [
-    [
-      'kit → keys',
-      ['Kit voice that plays the toy keyboard', 'The note it plays'],
-    ],
-    ['keys → kit', ['Kit voice the toy keyboard plays']],
-    ['kit → FM chip', ['Kit voice that plays this chip']],
-    ['keys → FM chip', ['Plays the toy keyboard’s notes']],
-    ['kit → Home keyboard', ['Kit voice that plays this keyboard']],
-    ['keys → Mono synth', ['Plays the toy keyboard’s notes']],
+    ['kit → keys', ['Kit voice that plays Plinky', 'The note it plays']],
+    ['keys → kit', ['Kit voice Plinky plays']],
+    ['kit → Glint', ['Kit voice that plays this chip']],
+    ['keys → Glint', ['Plays Plinky’s notes']],
+    ['kit → Parlor', ['Kit voice that plays this keyboard']],
+    ['keys → Growler', ['Plays Plinky’s notes']],
   ]
   expect(screen.queryByText('Kit voice that plays this chip')).toBeNull()
   for (const [wire, rows] of wires) {
@@ -46,9 +43,9 @@ test('each trigger wire opens its own rows, drawn once', () => {
 
 test('pressing a machine opens both of its rows', () => {
   openPatch()
-  fireEvent.click(screen.getByRole('button', { name: 'Mono synth controls' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Growler controls' }))
   expect(screen.getAllByText('Kit voice that plays this synth')).toHaveLength(1)
-  expect(screen.getAllByText('Plays the toy keyboard’s notes')).toHaveLength(1)
+  expect(screen.getAllByText('Plays Plinky’s notes')).toHaveLength(1)
 })
 
 test('a machine’s name goes grey once nothing plays it', () => {
@@ -59,18 +56,18 @@ test('a machine’s name goes grey once nothing plays it', () => {
     [...container.querySelectorAll('svg text')]
       .find(t => t.textContent === name)!
       .getAttribute('fill')
-  expect(ink('Mono synth')).toBe('var(--fg)')
+  expect(ink('Growler')).toBe('var(--fg)')
   act(() => {
     engine.set('fmKeyGate', 1)
     engine.set('fmStruck', 1)
   })
-  expect(ink('FM chip')).toBe('var(--fg)')
+  expect(ink('Glint')).toBe('var(--fg)')
   act(() => {
     engine.set('monoKeyGate', 1)
     engine.set('pcmKeyGate', 1)
   })
-  expect(ink('Mono synth')).toBe('var(--fg4)')
-  expect(ink('Home keyboard')).toBe('var(--fg4)')
+  expect(ink('Growler')).toBe('var(--fg4)')
+  expect(ink('Parlor')).toBe('var(--fg4)')
   expect(screen.queryByText('kick hits')).toBeNull()
 })
 

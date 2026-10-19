@@ -28,7 +28,7 @@ const pick = choiceValue
 
 export const CUTS: CutDef[] = [
   {
-    group: 'Toy keyboard',
+    group: 'Plinky',
     part: KNIFE,
     name: 'rests fill in',
     blurb:
@@ -39,7 +39,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy keyboard',
+    group: 'Plinky',
     part: KNIFE,
     name: 'melody in clumps',
     blurb:
@@ -50,7 +50,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy keyboard',
+    group: 'Plinky',
     part: KNIFE,
     name: 'the tune in the bass',
     blurb:
@@ -61,7 +61,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy keyboard',
+    group: 'Plinky',
     part: KNIFE,
     name: 'half a tune',
     blurb:
@@ -72,7 +72,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy keyboard',
+    group: 'Plinky',
     part: KNIFE,
     name: 'every step twice',
     blurb:
@@ -83,7 +83,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy keyboard',
+    group: 'Plinky',
     part: KNIFE,
     name: 'two songs at once',
     blurb:
@@ -95,7 +95,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'machine-gun',
     blurb:
@@ -106,7 +106,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'kick on every step',
     blurb:
@@ -117,7 +117,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'what both rows agree on',
     blurb:
@@ -128,7 +128,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'accent on everything',
     blurb:
@@ -139,7 +139,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'every step twice',
     blurb:
@@ -150,7 +150,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'back half of the bar',
     blurb:
@@ -161,7 +161,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'coming apart',
     blurb:
@@ -173,7 +173,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'the bar walks',
     blurb:
@@ -181,7 +181,7 @@ export const CUTS: CutDef[] = [
     patch: { drumSlip: 0.16 },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'five-step bar',
     blurb:
@@ -189,7 +189,7 @@ export const CUTS: CutDef[] = [
     patch: { drumReset: pick('drumReset', 'on the snare') },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'writes its own pattern',
     blurb:
@@ -197,7 +197,7 @@ export const CUTS: CutDef[] = [
     patch: { drumLoop: pick('drumLoop', 'return through an XOR') },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: KNIFE,
     name: 'inside out every other bar',
     blurb:
@@ -205,7 +205,7 @@ export const CUTS: CutDef[] = [
     patch: { drumLoop: pick('drumLoop', 'return inverted') },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: SAMPLE_ROM,
     name: 'the kick plays the kit',
     blurb:
@@ -216,7 +216,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: SAMPLE_ROM,
     name: 'every hit backwards',
     blurb:
@@ -224,7 +224,7 @@ export const CUTS: CutDef[] = [
     patch: { drumRom: 1, drumRomCount: pick('drumRomCount', 'counts down') },
   },
   {
-    group: 'Toy drums',
+    group: 'Clatter',
     part: SAMPLE_ROM,
     name: 'folded blat',
     blurb:
@@ -236,7 +236,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'the note never ends',
     blurb:
@@ -247,7 +247,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'sub, not bells',
     blurb:
@@ -258,7 +258,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'the bottom of every octave',
     blurb:
@@ -269,7 +269,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'an instrument with no button',
     blurb:
@@ -280,7 +280,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'a patch nearly right',
     blurb:
@@ -292,7 +292,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'wrong register',
     blurb:
@@ -303,7 +303,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'octave up, with a cliff',
     blurb:
@@ -314,7 +314,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'sine into noise',
     blurb:
@@ -326,7 +326,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'no fundamental',
     blurb:
@@ -337,7 +337,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'nothing is ever quiet',
     blurb:
@@ -348,7 +348,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'the table goes stale',
     blurb:
@@ -359,7 +359,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'a patch that will not hold still',
     blurb:
@@ -371,7 +371,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'nine times the note',
     blurb:
@@ -382,7 +382,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Home keyboard',
+    group: 'Parlor',
     part: KNIFE,
     name: 'the top bit sticks',
     blurb:
@@ -393,7 +393,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Home keyboard',
+    group: 'Parlor',
     part: KNIFE,
     name: 'gravel',
     blurb:
@@ -404,7 +404,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Home keyboard',
+    group: 'Parlor',
     part: KNIFE,
     name: 'the voice in clumps',
     blurb:
@@ -415,7 +415,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Home keyboard',
+    group: 'Parlor',
     part: KNIFE,
     name: 'half the wave',
     blurb:
@@ -426,7 +426,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Home keyboard',
+    group: 'Parlor',
     part: KNIFE,
     name: 'a word in four',
     blurb:
@@ -437,7 +437,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'Home keyboard',
+    group: 'Parlor',
     part: KNIFE,
     name: 'the loop goes stale',
     blurb:
@@ -449,7 +449,7 @@ export const CUTS: CutDef[] = [
     },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: KNIFE,
     name: 'one write late',
     blurb:
@@ -457,7 +457,7 @@ export const CUTS: CutDef[] = [
     patch: { fmStrobe: 0.5 },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: DIE,
     name: 'one voice, four times over',
     blurb:
@@ -465,7 +465,7 @@ export const CUTS: CutDef[] = [
     patch: { fmDacSlot: pick('fmDacSlot', 'stuck on 1') },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: DIE,
     name: 'the song upside down',
     blurb:
@@ -473,7 +473,7 @@ export const CUTS: CutDef[] = [
     patch: { fmDacSlip: 0.82 },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: DIE,
     name: 'one finger',
     blurb:
@@ -481,7 +481,7 @@ export const CUTS: CutDef[] = [
     patch: { fmAlloc: pick('fmAlloc', 'stuck on 1') },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: DIE,
     name: 'garbage at power-on',
     blurb:
@@ -489,7 +489,7 @@ export const CUTS: CutDef[] = [
     patch: { fmColdBoot: pick('fmColdBoot', 'garbage') },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: DIE,
     name: 'fades that explode',
     blurb:
@@ -497,7 +497,7 @@ export const CUTS: CutDef[] = [
     patch: { fmAdder: pick('fmAdder', '10 bits') },
   },
   {
-    group: 'FM chip',
+    group: 'Glint',
     part: DIE,
     name: 'sines folded to grit',
     blurb:

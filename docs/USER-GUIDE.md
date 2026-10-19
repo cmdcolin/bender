@@ -4,7 +4,7 @@ How to play bender, once the board is in front of you.
 
 ## Playing the keyboard
 
-![The toy keyboard: the deck with REC, HOLD and the octave switches above three octaves of keys, letters printed on the sixteen keys under a typing hand.](img/guide-keyboard.jpg)
+![Plinky: the deck with REC, HOLD and the octave switches above three octaves of keys, letters printed on the sixteen keys under a typing hand.](img/guide-keyboard.jpg)
 
 The on-screen board draws three octaves starting at C3, fewer on a narrow window
 or phone. `z`/`x` shift the whole board two octaves either way. The sixteen keys
@@ -54,12 +54,12 @@ brownout affect it the same way, and **Kit voice that plays this…** can clock 
 from the drum machine instead of the crystal.
 
 The **piano roll** draws that memory. It starts hidden; **show piano roll** on
-the Toy keyboard panel turns it on: one row per pitch, one column per step.
-Click a cell to place a note, drag to draw a run, click again to remove it,
-shift-click to hold the previous step's note. A held note draws as one bar
-across its steps. Two octaves show at a time, with arrows to move the window.
-The memory is 32 steps and keeps its own length, so a four-step phrase loops
-eight times against a sixteen-step drum pattern.
+the Plinky panel turns it on: one row per pitch, one column per step. Click a
+cell to place a note, drag to draw a run, click again to remove it, shift-click
+to hold the previous step's note. A held note draws as one bar across its steps.
+Two octaves show at a time, with arrows to move the window. The memory is 32
+steps and keeps its own length, so a four-step phrase loops eight times against
+a sixteen-step drum pattern.
 
 A step is one of 64 codes: 62 pitches (a little over five octaves) plus rest and
 hold. The octave switch can move the keyboard further than those codes reach; a
@@ -225,13 +225,13 @@ headphones, which add a couple of hundred milliseconds, don't push hits late. A
 recorded hit sounds once, even when it rounds forward onto the step about to
 play.
 
-## Playing the FM chip
+## Playing Glint
 
-The FM chip has no sequencer of its own; its key input is wired onto the toy
+Glint has no sequencer of its own; its key input is wired onto the toy
 keyboard's gate line, so it plays whatever the toy strikes. **Kit voice that
 plays this chip** can wire a kit voice onto that line too.
 
-![The FM chip's keybed: a green circuit board with TOY GATE and HOLD switches, an octave switch, and rows of push-button keys.](img/guide-fm.jpg)
+![Glint's keybed: a green circuit board with TOY GATE and HOLD switches, an octave switch, and rows of push-button keys.](img/guide-fm.jpg)
 
 One computer keyboard, three keybeds: `a s d f` and the octave keys `z`/`x` play
 whichever bed has **computer keyboard plays this bed** ticked, in the drawer
@@ -296,15 +296,15 @@ channels. **Log adder** swaps the multiply for the part's log arithmetic with a
 narrow adder that wraps, so fades explode back to full and sines fold into a
 digital buzz.
 
-## Playing the home keyboard
+## Playing Parlor
 
 The third machine on the rail is the eight-bit sampling keyboard, and it is the
 only thing on the board that makes pads, strings, choirs and bells. There is no
 oscillator in it: a ROM holds one short recording of each voice — an attack and
 then a loop — and a counter walks that ROM at whatever rate the note asks for.
 Bring **Level** up and its bed appears under the toy's, in grey plastic, with
-the same **Plays the toy keyboard’s notes** jumper the FM chip has: soldered out
-of the box, so the demo song plays it.
+the same **Plays Plinky’s notes** jumper Glint has: soldered out of the box, so
+the demo song plays it.
 
 The panel draws the keyboard as its signal path: keys, counter, ROM, envelope,
 tone, then the mix. The vibrato LFO feeds the counter from above, and the
@@ -342,13 +342,13 @@ is the famous one — the top wire held high and the bottom half of every wave
 folds up onto the top of it. The named cuts under that heading are the six worth
 hearing first.
 
-## Playing the mono synth
+## Playing Growler
 
 The fourth machine on the rail is a three-oscillator monosynth voice card with a
 transistor ladder filter, built after the Model D. Bring **Level** up and its
-bed appears under the toy's, with walnut cheeks and a **Plays the toy keyboard’s
-notes** jumper. The jumper comes soldered, so the toy's tune plays the synth two
-octaves down.
+bed appears under the toy's, with walnut cheeks and a **Plays Plinky’s notes**
+jumper. The jumper comes soldered, so the toy's tune plays the synth two octaves
+down.
 
 The rows under the drawing hold the knobs a bass line needs. **Cutoff** sets the
 four-pole filter, **Emphasis** is its resonance, and past about 0.95 the ladder
@@ -379,13 +379,13 @@ the output patched back into the mixer, as players did with a cable from the
 headphone jack to the external input.
 
 A second melody memory plays a line different from the toy's: 32 steps, one note
-a step. **show piano roll** on the Mono synth panel draws it, and **Plays on**
-under **melody** aims it at the mono synth, the FM chip or the home keyboard.
+a step. **show piano roll** on the Growler panel draws it, and **Plays on**
+under **melody** aims it at Growler, Glint or Parlor.
 
 - **Draw:** a click puts a note on a step, a drag draws a line, and a click on a
   note takes it off. Shift-click holds the note before. A drawn note turns
   **Melody memory** on.
-- **Record:** **rec** on the mono, FM or home keyboard bed aims the memory at
+- **Record:** **rec** on the Growler, Glint or Parlor bed aims the memory at
   that machine, turns it on and runs the song. Each key played on that bed then
   writes the step the counter is on, and a key held across steps becomes one
   long note. **record** on the roll does the same for the machine already
@@ -409,10 +409,9 @@ synth with no key down at all. The _leaky drone_ preset starts there.
 
 The bench is the main area under the scope, where the instruments sit.
 
-- Every instrument has a **Level** slider on its face. The FM chip, home
-  keyboard, mono synth, tape loop and four-track appear when their level comes
-  up, and stay once they have, so a face you pull to zero is still there to
-  bring back.
+- Every instrument has a **Level** slider on its face. Glint, Parlor, Growler,
+  Spool and Layercake appear when their level comes up, and stay once they have,
+  so a face you pull to zero is still there to bring back.
 - Loading a tape raises the tape loop's level, so its face appears beside the
   keyboards. The face holds a mic key and stays up while the mic is open. To
   open the mic without the tape face, press **open mic** in the Mic stage's
@@ -443,7 +442,7 @@ A pedal face is the pedal's headline sliders in a painted enclosure.
 The keyboard and drum machine share a power rail by accident; the trigger patch
 is what you wire between them on purpose.
 
-![The trigger patch diagram: Toy drums, Toy keyboard and FM chip as three boxes, with the wires kit → keys, keys → kit, gate and kit → FM between them.](img/guide-trigger.jpg)
+![The trigger patch diagram: Clatter, Plinky and Glint as three boxes, with the wires kit → keys, keys → kit, gate and kit → FM between them.](img/guide-trigger.jpg)
 
 **Kit fires keys** bridges a drum hit onto the keyboard's gate: the note played
 is its own setting — the one already standing, the next step of the ROM tune, a
@@ -458,12 +457,12 @@ so a key fires whatever column the sequencer sits on.
 Bridge both directions and the two machines play each other — a rattle at the
 audio block rate, held in check by the safety tail.
 
-Two more wires land on the FM chip, the only way anything reaches it. **Plays
-the toy keyboard’s notes** is the factory jumper off the keyboard's gate line;
-cut it and the chip stops following the keyboard. **Kit voice that plays this
-chip** clips the kit's trigger lines onto the same input, one voice per
-pentatonic step, turning a drum pattern into a riff. Every wire here, and the
-shared rail, can also be bent — see [Bends](BENDS.md).
+Two more wires land on Glint, the only way anything reaches it. **Plays Plinky’s
+notes** is the factory jumper off the keyboard's gate line; cut it and the chip
+stops following the keyboard. **Kit voice that plays this chip** clips the kit's
+trigger lines onto the same input, one voice per pentatonic step, turning a drum
+pattern into a riff. Every wire here, and the shared rail, can also be bent —
+see [Bends](BENDS.md).
 
 ## The four-track
 
@@ -613,8 +612,8 @@ when you let go. A throw never lands in the link or the undo walk.
 - **`z` and `x`:** let go of every bend key, and deal sixteen new ones.
 
 The bend keys answer the letters once **bend keys** is lit; otherwise the
-letters play the toy keyboard. Shift pins a bend key down until you press it
-again. Every key also takes a click or a finger.
+letters play Plinky. Shift pins a bend key down until you press it again. Every
+key also takes a click or a finger.
 
 The dealer skips any end of a control that measured silent (`pnpm bend-ends`
 writes the table). No two keys share a control or bring up the same silent
@@ -626,8 +625,8 @@ stage, so a chord of them is a chord. The dealer also leaves out:
 - the end of a control's travel that it already sits at
 
 The **bend keys** toggle under the keyboards sends the computer's letter keys to
-the bend keys instead of the toy keyboard. The switch is remembered across a
-reload, and a link with `?bend` on it opens the same way.
+the bend keys instead of Plinky. The switch is remembered across a reload, and a
+link with `?bend` on it opens the same way.
 
 The chips beside the toggle set how the next deal comes out:
 
@@ -680,7 +679,7 @@ stems both, is what the deck played.
 
 The selector beside it sets what a take comes back as. **Master only** is one
 file. **Master + stems** adds one wav per source that had anything on it — toy
-keyboard, drums, FM chip, chaos oscillator, noise, tape loop — named
+keyboard, drums, Glint, chaos oscillator, noise, tape loop — named
 `bender-<stamp>-toy.wav`, `-drums`, `-fm`, `-chaos`, `-noise`, and `-tape-loop`,
 beside `bender-<stamp>-master.wav`.
 

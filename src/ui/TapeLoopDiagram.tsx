@@ -139,7 +139,7 @@ export function TapeLoopDiagram() {
   return (
     <>
       <div className={chip.chips}>
-        <Diagram width={WIDTH} height={HEIGHT} label="tape delay signal path">
+        <Diagram width={WIDTH} height={HEIGHT} label="wraith signal path">
           {arrow => (
             <>
               <Wire
