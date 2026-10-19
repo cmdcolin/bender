@@ -28,7 +28,7 @@ import {
   type Verbs,
 } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
-import { MicPatch } from './MicPatch.tsx'
+import { MicPatch, MicSwitch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
 import { MonoPathDiagram } from './MonoPathDiagram.tsx'
 import { MonoRoll } from './MonoRoll.tsx'
@@ -673,6 +673,7 @@ export function OpenGroup({
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}
+        {group.editor?.kind === 'mic' && <MicSwitch />}
         {(group.editor?.kind === 'roll' || group.memory) && (
           <EditorToggle which="roll" />
         )}

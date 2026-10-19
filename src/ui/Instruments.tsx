@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 
+import { engine } from '../engine/engine.ts'
 import { INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendKeysSwitch } from './BendKeys.tsx'
 import { onBoard } from './chain-map.ts'
-import { useBoardValue } from './ControlsContext.ts'
+import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
 import { add } from './fitted.ts'
 import { FmKeys } from './FmKeys.tsx'
@@ -13,6 +14,8 @@ import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AllPedals, PedalShelf, PedalsMenu } from './Pedals.tsx'
+import { dragging } from './tapeDrop.ts'
+import { TapeLoopFace } from './TapeLoopFace.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { ComponentType } from 'react'
@@ -33,12 +36,13 @@ const LEVELLED: Row = [
   ['FM chip', FmKeys],
   ['Home keyboard', PcmKeys],
   ['Mono synth', MonoKeys],
+  ['Tape loop', TapeLoopFace],
 ]
 
-// The keyboards and the kit. The tape loop is an instrument too, but App lays
-// out its face beside the recorder. A machine shows while its stage is on the
-// map: the toy and the kit from the start, the others once their faders come
-// up. Add all instruments lays out every one whatever its fader says, each with
+// The keyboards, the kit and the tape loop. A machine shows while its stage is
+// on the map: the toy and the kit from the start, the others once their faders
+// come up. The tape loop also shows while the mic is open, since its face holds
+// the mic key, and while a file is over the app, to take the drop. Add all instruments lays out every one whatever its fader says, each with
 // a close cap, and a row of what has been closed to bring it back. The mode and
 // the closed set survive a reload.
 //
@@ -60,9 +64,14 @@ export function Instruments({
     if (risen) add(risen.split('|'))
   }, [risen])
   const full = all && closed.size === 0
+  const micOn = useStoreValue(engine.micOn)
+  const over = useStoreValue(dragging)
+  const tapeHeld = micOn || over
+  const face = (stage: string) =>
+    shows(stage) || (stage === 'Tape loop' && tapeHeld)
 
   const shelf = (machines: Row) => {
-    const shown = machines.filter(([stage]) => shows(stage))
+    const shown = machines.filter(([stage]) => face(stage))
     if (shown.length === 0) return null
     return (
       <div className={styles.shelf}>

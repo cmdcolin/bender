@@ -187,9 +187,8 @@
   white-space: nowrap;
 }
 
-/* The studio: a recorder and a sampler side by side, each its own faceplate
-   with a name engraved on it, and a thinner strip of keyboard routing and
-   presets under them. On a phone the boxes stack. */
+/* The studio: the recorder's faceplate, half the width beside the bench, and
+   the whole width on a phone. The tape loop's face composes `.box` too. */
 .studio {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -258,15 +257,7 @@
   min-width: 0;
 }
 
-.boxHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--gap-ctl);
-}
-
-.boxHead > .label {
+.label {
   margin-right: auto;
 }
 
@@ -310,59 +301,6 @@
   composes: actionLoudOn from './button.module.css';
 }
 
-.emptyTape {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--fg3);
-}
-
-/* The drop target while a file is over the app: the dark strip the tape is
-   drawn on, with a reel hub at each end. */
-.slotHot {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  margin: 0;
-  padding: 0 36px;
-  font-size: var(--fs-xs);
-  line-height: 1.2;
-  text-align: center;
-  color: var(--accent);
-  background: #0a0a0c;
-  border: 1px solid var(--accent);
-  border-radius: 4px;
-}
-
-.slotHot::before,
-.slotHot::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 14px;
-  height: 14px;
-  margin-top: -7px;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-}
-
-.slotHot::before {
-  left: var(--space-lg);
-}
-
-.slotHot::after {
-  right: var(--space-lg);
-}
-
-.tapeName {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--fg3);
-}
-
 /* The roll's own line: what it is doing while it does it, and what it came back
    with once it has. Its own colour, so a wait reads as the app working rather
    than as the board saying something. */
@@ -375,11 +313,6 @@
   margin: 0;
   font-size: var(--fs-xs);
   color: var(--alarm);
-}
-
-.credit {
-  font-size: var(--fs-xs);
-  color: var(--fg3);
 }
 
 .hint {

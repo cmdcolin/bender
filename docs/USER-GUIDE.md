@@ -412,9 +412,10 @@ The bench is the main area under the scope, where the instruments sit.
 - Every instrument has a **Level** slider on its face. The FM chip, home
   keyboard, mono synth and tape loop appear when their level comes up, and stay
   once they have, so a face you pull to zero is still there to bring back.
-- Loading a tape raises the tape loop's level, so its face appears. The face
-  also holds the mic switch, and shows while the mic is open or the Mic stage is
-  on the signal path.
+- Loading a tape raises the tape loop's level, so its face appears beside the
+  keyboards. The face holds a mic key and stays up while the mic is open. To
+  open the mic without the tape face, press **open mic** in the Mic stage's
+  panel.
 - **+ add all instruments** lays out all six, each with a close cap. Once all
   six are out, the same button reads **− hide unused instruments**.
 - **+ add all pedals** puts all six pedal faces on the bench, and **− put all

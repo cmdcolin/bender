@@ -1,0 +1,85 @@
+/* The tape loop's faceplate, on the bench with the other instruments. */
+.face {
+  composes: box from './App.module.css';
+  flex: 1 1 380px;
+  max-width: 640px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gap-ctl);
+}
+
+.label {
+  composes: label from './App.module.css';
+  margin-right: auto;
+}
+
+.controls {
+  composes: controls from './App.module.css';
+}
+
+.rolling {
+  composes: rolling from './App.module.css';
+}
+
+.emptyTape {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}
+
+/* The drop target while a file is over the app: the dark strip the tape is
+   drawn on, with a reel hub at each end. */
+.slotHot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  margin: 0;
+  padding: 0 36px;
+  font-size: var(--fs-xs);
+  line-height: 1.2;
+  text-align: center;
+  color: var(--accent);
+  background: #0a0a0c;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+}
+
+.slotHot::before,
+.slotHot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+}
+
+.slotHot::before {
+  left: var(--space-lg);
+}
+
+.slotHot::after {
+  right: var(--space-lg);
+}
+
+.tapeName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg3);
+}
+
+.credit {
+  font-size: var(--fs-xs);
+  color: var(--fg3);
+}

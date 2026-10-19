@@ -40,7 +40,8 @@ test('all-instruments lays out every machine, each with a close cap', () => {
     'mono synth',
   ])
     expect(group(name)).not.toBeNull()
-  expect(screen.getAllByRole('button', { name: /^close / })).toHaveLength(5)
+  expect(screen.getByRole('region', { name: 'tape loop' })).toBeTruthy()
+  expect(screen.getAllByRole('button', { name: /^close / })).toHaveLength(6)
 })
 
 test('add all instruments reopens closed machines, then hides the unused ones', () => {
@@ -77,7 +78,7 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
   const roll = screen.getAllByRole('button', { name: 'randomize' })
-  expect(roll).toHaveLength(5)
+  expect(roll).toHaveLength(6)
   fireEvent.click(roll[0]!)
   const now = engine.controls.get()
   expect(sameControls(now, DEFAULT_CONTROLS)).toBe(false)
@@ -159,7 +160,7 @@ test('each machine has a Level slider that moves its own level', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
   const levels = screen.getAllByRole('slider', { name: 'Level' })
-  expect(levels).toHaveLength(5)
+  expect(levels).toHaveLength(6)
   fireEvent.change(levels[1]!, { target: { value: '0' } })
   expect(engine.controls.get().drumLevel).toBe(0)
   expect(engine.controls.get().chipLevel).toBe(DEFAULT_CONTROLS.chipLevel)
@@ -280,6 +281,26 @@ test('the stage panel of a pedal puts it on the bench and takes it off', () => {
   expect(toggle.getAttribute('aria-pressed')).toBe('true')
   fireEvent.click(toggle)
   expect(bench.get().pedals).toEqual([])
+})
+
+test('the mic stage panel opens the mic from its header', () => {
+  const mic = GROUPS.find(g => g.name === 'Mic')!
+  render(<OpenGroup group={mic} onClose={() => {}} seconds={0} />)
+  const toggle = screen.getByRole('button', { name: 'open mic' })
+  expect(toggle.getAttribute('aria-pressed')).toBe('false')
+  act(() => engine.micOn.set(true))
+  expect(toggle.getAttribute('aria-pressed')).toBe('true')
+  act(() => engine.micOn.set(false))
+})
+
+test('the tape loop face comes up while the mic is open', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  const tape = () => screen.queryByRole('region', { name: 'tape loop' })
+  expect(tape()).toBeNull()
+  act(() => engine.micOn.set(true))
+  expect(tape()).not.toBeNull()
+  act(() => engine.micOn.set(false))
+  expect(tape()).toBeNull()
 })
 
 test('an instrument stage panel has no bench toggle', () => {

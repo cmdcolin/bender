@@ -34,3 +34,11 @@
 .jack:focus-visible .jackOn {
   stroke: var(--fg2);
 }
+
+.switch {
+  composes: chipQuiet from './button.module.css';
+}
+
+.switchOn {
+  composes: chipOn from './button.module.css';
+}

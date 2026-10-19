@@ -1,7 +1,8 @@
 import { engine } from '../engine/engine.ts'
 import { sliderFor } from './controls/index.ts'
-import { useControlValue } from './ControlsContext.ts'
+import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import styles from './MicPatch.module.css'
+import { Tip } from './Tip.tsx'
 
 const DEST = sliderFor('micPatch').choices!
 
@@ -122,5 +123,27 @@ export function MicPatch() {
         )
       })}
     </svg>
+  )
+}
+
+/** Opens the microphone or closes it, from the Mic stage's own header. */
+export function MicSwitch() {
+  const on = useStoreValue(engine.micOn)
+  return (
+    <Tip
+      text={
+        on
+          ? 'Closes the microphone and takes it off the board.'
+          : 'Opens the microphone as an input to the board.'
+      }
+    >
+      <button
+        className={on ? styles.switchOn : styles.switch}
+        aria-pressed={on}
+        onClick={() => (on ? engine.disableMic() : engine.enableMic())}
+      >
+        open mic
+      </button>
+    </Tip>
   )
 }
