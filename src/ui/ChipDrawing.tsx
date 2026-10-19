@@ -3,7 +3,8 @@ import { Diagram } from './DiagramParts.tsx'
 
 import type { ComponentProps } from 'react'
 
-// A drawing in the chip look, held at its own width when narrower than the column.
+// Draws a diagram in the chip look. A `maxWidth` keeps a narrow drawing at its
+// own size.
 export function ChipDrawing({
   maxWidth,
   ...diagram

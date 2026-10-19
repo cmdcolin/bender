@@ -362,8 +362,8 @@ export function GlyphBox({
   )
 }
 
-// The open box, framed apart from the drawing above it: its name, a button to
-// hide it, then its close-up and rows.
+// A bordered card under the drawing that holds the open box's name, a button
+// that hides the box, and the box's close-up and rows.
 export function OpenBox({
   name,
   onHide,
