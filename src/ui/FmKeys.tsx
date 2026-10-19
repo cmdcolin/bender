@@ -4,8 +4,8 @@ import { GateJumper, Keybed } from './Keybed.tsx'
 import { RailLamp } from './RailLamp.tsx'
 import { SeqRec } from './SeqRec.tsx'
 
-// FmKeys draws the FM chip's keyboard as a green circuit board with the chip on
-// it and a row of piano keys. The switch on the deck cuts or solders
+// FmKeys draws the FM chip's keyboard as a green circuit board with a nameplate
+// and a row of piano keys. The switch on the deck cuts or solders
 // the jumper from the toy's gate.
 export function FmKeys({
   seconds,
@@ -22,11 +22,13 @@ export function FmKeys({
       label="fm keyboard"
       caseClass={styles.board}
       badge={
-        <span className={styles.chip}>
-          <span className={styles.package}>
-            <span className={styles.part}>fm2</span>
-            <span className={styles.sub}>2-op</span>
+        <span className={styles.badge}>
+          <span className={styles.part}>fm</span>
+          <span className={styles.ops} aria-hidden="true">
+            <span />
+            <span />
           </span>
+          <span className={styles.sub}>2-op</span>
         </span>
       }
       extras={

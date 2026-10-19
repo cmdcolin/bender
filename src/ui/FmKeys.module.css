@@ -1,5 +1,5 @@
 /* These rules draw the FM chip's case as a green circuit board with copper
-   traces, a DIP chip on the deck, gold mounting holes and a pin header. The
+   traces, a nameplate on the deck, gold mounting holes and a pin header. The
    keys are Keybed.module.css's piano keys, sunk into a dark green bed. */
 
 .board {
@@ -40,40 +40,39 @@
   box-shadow: 0 0 0 2px var(--gold);
 }
 
-/* The badge draws the chip as a black DIP package with a pin-1 notch, with the
-   legs showing above and below the package. */
-.chip {
+/* The badge is a silkscreened nameplate: the name, then two operator boxes
+   with the modulator wired into the carrier. */
+.badge {
   display: inline-flex;
-  padding: 3px 0;
-  transform: rotate(2deg);
-  background: repeating-linear-gradient(
-      90deg,
-      #b8bcc0 0 3px,
-      transparent 3px 7px
-    )
-    center / calc(100% - 12px) 100% no-repeat;
+  align-items: center;
+  gap: 7px;
 }
 
-.package {
-  position: relative;
+.ops {
   display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  padding: 2px 10px 2px 14px;
-  background: #121314;
+  align-items: center;
+}
+
+.ops span {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--silk);
   border-radius: 2px;
 }
 
-.package::before {
+.ops span:first-child {
+  margin-right: 6px;
+  position: relative;
+}
+
+.ops span:first-child::after {
   content: '';
   position: absolute;
-  left: -3px;
+  left: 100%;
   top: 50%;
-  width: 7px;
-  height: 7px;
-  margin-top: -3.5px;
-  border-radius: 50%;
-  background: var(--case);
+  width: 6px;
+  margin-top: -0.75px;
+  border-top: 1.5px solid var(--silk);
 }
 
 .part {
@@ -84,7 +83,8 @@
 
 .sub {
   font-size: var(--fs-xs);
-  color: #8d9690;
+  color: var(--silk);
+  opacity: 0.6;
 }
 
 /* A ribbon header sits where the toy keyboard has its speaker grille. */
