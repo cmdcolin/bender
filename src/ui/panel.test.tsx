@@ -540,15 +540,36 @@ test('a normal stretch draws its redline and reddens the readout past it', () =>
   expect(over()?.textContent).toMatch(/^11/)
 })
 
-test('clicking an off-stock reading puts the control back to stock', () => {
+test('the ↺ beside an off-stock reading puts the control back to stock', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   openFmChip()
   const knob = screen.getByRole('slider', { name: 'Feedback' })
   fireEvent.change(knob, { target: { value: '1000' } })
   const reset = screen.getByRole('button', { name: /^reset Feedback to / })
-  expect(reset.textContent).toMatch(/^11/)
+  expect(reset.textContent).toBe('↺')
   fireEvent.click(reset)
   expect(engine.controls.get().fmFeedback).toBe(DEFAULT_CONTROLS.fmFeedback)
+})
+
+test('clicking a reading takes a typed value, and Escape leaves it be', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  openFmChip()
+  const type = () =>
+    fireEvent.click(
+      screen.getByRole('button', { name: 'type a value for Feedback' }),
+    )
+  type()
+  const field = screen.getByRole('textbox', { name: 'type Feedback' })
+  fireEvent.change(field, { target: { value: '5' } })
+  fireEvent.keyDown(field, { key: 'Enter' })
+  fireEvent.blur(field)
+  expect(engine.controls.get().fmFeedback).toBe(5)
+  type()
+  const again = screen.getByRole('textbox', { name: 'type Feedback' })
+  fireEvent.change(again, { target: { value: '2' } })
+  fireEvent.keyDown(again, { key: 'Escape' })
+  fireEvent.blur(again)
+  expect(engine.controls.get().fmFeedback).toBe(5)
 })
 
 test('the tape loop stays off the bench until it is added or its level comes up', () => {

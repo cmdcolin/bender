@@ -27,11 +27,13 @@ import {
   useStoreSelect,
   useStoreValue,
 } from './ControlsContext.ts'
+import { useFineTrack } from './fineTrack.ts'
 import { midi } from './midi.ts'
 import {
   formatValue,
   fromPos,
   normalEdges,
+  parseTyped,
   pastNormal,
   readoutChars,
   toPos,
@@ -368,6 +370,56 @@ const fitsOneLine = (choices: readonly string[]) =>
   choices.reduce((px, c) => px + c.length * PICK_CHAR_PX + PICK_PAD_PX, 0) <=
   PICK_ROOM_PX
 
+// The readout is also a field: click it, type a value in the control's units,
+// Enter to take it, Escape to leave it be. Ordered choices have no number to
+// type, so their readout stays text.
+function Reading({
+  def,
+  label,
+  value,
+  children,
+}: {
+  def: SliderDef
+  label: string
+  value: number
+  children: ReactNode
+}) {
+  const [typing, setTyping] = useState(false)
+  if (def.choices) return children
+  if (typing)
+    return (
+      <input
+        className={styles.typed}
+        aria-label={`type ${label}`}
+        defaultValue={formatValue(def, value)}
+        autoFocus
+        onFocus={e => e.currentTarget.select()}
+        onKeyDown={e => {
+          if (e.key === 'Enter') e.currentTarget.blur()
+          if (e.key === 'Escape') {
+            e.currentTarget.value = ''
+            e.currentTarget.blur()
+          }
+          e.stopPropagation()
+        }}
+        onBlur={e => {
+          const typed = parseTyped(def, e.currentTarget.value)
+          if (typed !== undefined && typed !== value) write(def.key, typed)
+          setTyping(false)
+        }}
+      />
+    )
+  return (
+    <button
+      className={styles.typeable}
+      aria-label={`type a value for ${label}`}
+      onClick={() => setTyping(true)}
+    >
+      {children}
+    </button>
+  )
+}
+
 // `label` overrides the name the row prints, for a control drawn somewhere its
 // own name says nothing: the mixer gathers seven faders and six of them are
 // called *Level*, so on the desk each one is called the machine it belongs to.
@@ -398,6 +450,8 @@ export function ControlSlider({
   // it drifts away, so the label is also a button onto the same bubble: click
   // pins it open until you click elsewhere or press Escape.
   const tip = useRef<TipHandle>(null)
+  const input = useRef<HTMLInputElement>(null)
+  useFineTrack(input, def, def.ordered ? def.max - def.min : undefined)
 
   if (def.choices && !def.ordered) {
     const choices = def.choices
@@ -499,6 +553,7 @@ export function ControlSlider({
 
   const track = (
     <input
+      ref={input}
       className={split ? styles.splitTrack : styles.track}
       type="range"
       min={0}
@@ -644,6 +699,9 @@ export function ControlSlider({
                     : styles.readout
           }
         >
+          <Reading def={def} label={label} value={value}>
+            {reading}
+          </Reading>
           {touched ? (
             <Tip
               text={`Off stock — click to put it back to ${formatValue(def, stock)}, or double-click the track.`}
@@ -653,15 +711,11 @@ export function ControlSlider({
                 aria-label={`reset ${label} to ${formatValue(def, stock)}`}
                 onClick={() => write(def.key, stock)}
               >
-                {reading}
                 <span className={styles.mark}>↺</span>
               </button>
             </Tip>
           ) : (
-            <>
-              {reading}
-              <span className={styles.markIdle}>↺</span>
-            </>
+            <span className={styles.markIdle}>↺</span>
           )}
           {action && (
             <Tip text={action.title}>

@@ -201,3 +201,23 @@ export function readoutChars(def: SliderDef): number {
   readoutWidths.set(def, chars)
   return chars
 }
+
+const RESCALE: Record<string, Record<string, number>> = {
+  s: { ms: 1e-3 },
+  ms: { s: 1e3 },
+  hz: { k: 1e3, khz: 1e3 },
+  '': { k: 1e3 },
+}
+
+/** A value typed into the readout, in the control's own units: `8k` on a
+    control in Hz is 8000, `250ms` on one in seconds is 0.25. The result is
+    stepped and clamped; undefined when the text holds no number. */
+export function parseTyped(def: SliderDef, text: string): number | undefined {
+  const match = /^\s*([-+]?(?:\d+\.?\d*|\.\d+))\s*(\S*)/.exec(text)
+  if (!match) return undefined
+  const suffix = match[2]!.toLowerCase()
+  const value =
+    Number(match[1]) * (RESCALE[def.unit.toLowerCase()]?.[suffix] ?? 1)
+  const stepped = def.min + Math.round((value - def.min) / def.step) * def.step
+  return Math.min(def.max, Math.max(def.min, Number(stepped.toFixed(6))))
+}

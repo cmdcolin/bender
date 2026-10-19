@@ -10,6 +10,7 @@ import {
   formatValue,
   fromPos,
   ordinary,
+  parseTyped,
   readoutChars,
   toPos,
 } from './slider-scale.ts'
@@ -265,4 +266,18 @@ test('the reserved readout fits every reading a control can print', () => {
     }
   }
   expect([...new Set(over)]).toEqual([])
+})
+
+test('a typed value lands stepped and clamped, in the control units', () => {
+  const hz = def({ min: 20, max: 20000, step: 1, unit: 'Hz' })
+  expect(parseTyped(hz, '440')).toBe(440)
+  expect(parseTyped(hz, '8k')).toBe(8000)
+  expect(parseTyped(hz, '2.5 kHz')).toBe(2500)
+  expect(parseTyped(hz, '99999')).toBe(20000)
+  expect(parseTyped(hz, 'loud')).toBeUndefined()
+  const secs = def({ min: 0, max: 2, step: 0.01, unit: 's' })
+  expect(parseTyped(secs, '250ms')).toBe(0.25)
+  expect(parseTyped(secs, '0.5 s')).toBe(0.5)
+  expect(parseTyped(def(), '.333')).toBe(0.33)
+  expect(parseTyped(def({ min: -1 }), '-0.5')).toBe(-0.5)
 })
