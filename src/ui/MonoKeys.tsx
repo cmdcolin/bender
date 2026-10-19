@@ -22,7 +22,7 @@ export function MonoKeys({
       caseClass={styles.case}
       badge={
         <span className={styles.badge}>
-          <span className={styles.model}>mono</span>
+          <span className={styles.model}>growler</span>
           <span className={styles.knobs} aria-hidden="true">
             <span />
             <span />

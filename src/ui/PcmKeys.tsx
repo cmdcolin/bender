@@ -23,7 +23,7 @@ export function PcmKeys({
       caseClass={styles.case}
       badge={
         <span className={styles.badge}>
-          <span className={styles.model}>pcm-8</span>
+          <span className={styles.model}>parlor</span>
           <span className={styles.strip} aria-hidden="true" />
         </span>
       }

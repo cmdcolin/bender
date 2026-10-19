@@ -26,7 +26,7 @@ export function FmKeys({
       caseClass={styles.board}
       badge={
         <span className={styles.badge}>
-          <span className={styles.part}>fm</span>
+          <span className={styles.part}>glint</span>
           <svg className={styles.wave} viewBox="0 0 30 14" aria-hidden="true">
             <path d={FM_WAVE} />
           </svg>

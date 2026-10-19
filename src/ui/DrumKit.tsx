@@ -57,7 +57,7 @@ export function DrumKit({
     <div ref={setKit} className={styles.kit} role="group" aria-label="clatter">
       <div className={styles.deck}>
         <FaceBadge className={styles.brand} stage="Clatter" onOpen={onOpen}>
-          drums
+          clatter
         </FaceBadge>
         <div className={styles.switches}>
           <RailLamp onOpen={onOpen} />
