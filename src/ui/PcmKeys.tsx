@@ -42,6 +42,7 @@ export function PcmKeys({
         </>
       }
       stage="Home keyboard"
+      onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}
       tail={<span className={styles.window} aria-hidden="true" />}

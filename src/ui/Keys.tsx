@@ -79,6 +79,7 @@ export function Keys({
         </>
       }
       stage="Toy keyboard"
+      onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}
       tail={<span className={styles.grille} aria-hidden="true" />}

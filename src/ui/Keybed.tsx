@@ -11,6 +11,7 @@ import { NOTE_NAMES, semitoneName } from '../notes.ts'
 import { SCALE_NAMES, snap } from '../scale.ts'
 import { useControlValue, useStoreValue } from './ControlsContext.ts'
 import { DeviceVerbs, DrawerSlider } from './DeviceVerbs.tsx'
+import { FaceBadge } from './FaceBadge.tsx'
 import { isTyping } from './isTyping.ts'
 import styles from './Keybed.module.css'
 import {
@@ -135,6 +136,8 @@ interface Props {
   stage?: string
   seconds?: number
   onClose?: () => void
+  /** Opens the stage's panel; the badge becomes the button for it. */
+  onOpen?: (stage: string) => void
 }
 
 // A keybed: clickable, and the computer's letter keys wherever they are wired.
@@ -149,6 +152,7 @@ export function Keybed({
   stage,
   seconds,
   onClose,
+  onOpen,
 }: Props) {
   // What was sent, not which key was pressed: the octave moves under your hand
   // and a note has to be let go at the pitch it went down at.
@@ -425,7 +429,9 @@ export function Keybed({
       aria-label={label}
     >
       <div className={styles.deck}>
-        <span className={styles.badge}>{badge}</span>
+        <FaceBadge className={styles.badge} stage={stage} onOpen={onOpen}>
+          {badge}
+        </FaceBadge>
         <div className={styles.switches}>
           {extras}
           {keyScale > 0 && (

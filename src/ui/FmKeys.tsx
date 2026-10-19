@@ -48,6 +48,7 @@ export function FmKeys({
         </>
       }
       stage="FM chip"
+      onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}
       tail={<span className={styles.header} aria-hidden="true" />}

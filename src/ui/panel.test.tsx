@@ -590,3 +590,13 @@ test('the tape loop stays off the bench until it is added or its level comes up'
   act(() => engine.set('sampleLevel', 0.7))
   expect(tape()).not.toBeNull()
 })
+
+test("a face's name plate opens its stage in the panel", () => {
+  render(<App />)
+  const panel = screen.getByRole('complementary', { name: 'the board' })
+  const close = () =>
+    within(panel).queryByRole('button', { name: 'close Toy drums' })
+  expect(close()).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Toy drums settings' }))
+  expect(close()).not.toBeNull()
+})

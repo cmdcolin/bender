@@ -45,6 +45,7 @@ export function MonoKeys({
         </>
       }
       stage="Mono synth"
+      onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}
       tail={<span className={styles.rocker} aria-hidden="true" />}

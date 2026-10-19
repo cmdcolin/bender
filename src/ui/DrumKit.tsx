@@ -18,6 +18,7 @@ import {
 import { DeviceVerbs } from './DeviceVerbs.tsx'
 import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
+import { FaceBadge } from './FaceBadge.tsx'
 import { useCoarse } from './measure.ts'
 import { RailLamp } from './RailLamp.tsx'
 import { Tip } from './Tip.tsx'
@@ -47,7 +48,9 @@ export function DrumKit({
   return (
     <div className={styles.kit} role="group" aria-label="toy drums">
       <div className={styles.deck}>
-        <span className={styles.brand}>drums</span>
+        <FaceBadge className={styles.brand} stage="Toy drums" onOpen={onOpen}>
+          drums
+        </FaceBadge>
         <div className={styles.switches}>
           <RailLamp onOpen={onOpen} />
           <Tip
