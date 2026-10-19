@@ -234,6 +234,7 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
                     from={open === rom ? open : undefined}
                     to={{ x: -(WIDTH - width) / 2, w: WIDTH }}
                     top={open.y + BOX_H}
+                    knee={HEIGHT}
                     bottom={HEIGHT + CONE_H}
                     title={`zoom: ${open.name}`}
                   />

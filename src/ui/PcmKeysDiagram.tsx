@@ -199,6 +199,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
                       from={open}
                       to={{ x: 0, w: width }}
                       top={open.y + BOX_H}
+                      knee={feet}
                       bottom={feet + CONE_H}
                       title={`zoom: ${open.name}`}
                     />
