@@ -15,23 +15,30 @@ const SAYS = [
   'the glitch buffer’s trigger line — clap and it fires',
 ]
 
-const MIC_X = 4
+const DEST_W = 84
+const LEFT_X = 4
 const MIC_W = 46
 const MIC_H = 20
-const DEST_X = MIC_X + MIC_W + 34
-const DEST_W = 84
+const REACH = 26
+const MIC_X = LEFT_X + DEST_W + REACH
+const RIGHT_X = MIC_X + MIC_W + REACH
+const WIDTH = RIGHT_X + DEST_W + 4
 const ROW_H = 15
 const STEP = ROW_H + 3
 const TOP = 3
-const LIST_H = DEST.length * STEP - 3
+const LEFT_N = Math.ceil(DEST.length / 2)
+const LIST_H = LEFT_N * STEP - 3
 const HEIGHT = TOP * 2 + Math.max(LIST_H, MIC_H)
 const MIC_Y = TOP + LIST_H / 2 - MIC_H / 2
 
-const rowY = (i: number) => TOP + i * STEP
+const onLeft = (i: number) => i < LEFT_N
+const jackX = (i: number) => (onLeft(i) ? LEFT_X : RIGHT_X)
+const rowY = (i: number) =>
+  onLeft(i) ? TOP + i * STEP : TOP + STEP / 2 + (i - LEFT_N) * STEP
 const cy = (y: number, h: number) => y + h / 2
 
-// One wire, seven jacks to solder it to. Pressing a jack moves the wire there,
-// and the wire lights once the mic is turned up.
+// One wire, seven jacks either side of the mic to solder it to. Pressing a
+// jack moves the wire there, and the wire lights once the mic is turned up.
 export function MicPatch() {
   const patch = Math.round(useControlValue('micPatch'))
   const soldered =
@@ -40,7 +47,7 @@ export function MicPatch() {
   return (
     <svg
       className={styles.diagram}
-      viewBox={`0 0 ${DEST_X + DEST_W + 4} ${HEIGHT}`}
+      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       preserveAspectRatio="xMidYMid meet"
     >
       <rect
@@ -85,16 +92,16 @@ export function MicPatch() {
             <title>{`${d} — ${SAYS[i]}${on ? ' (soldered here now)' : ''}`}</title>
             {on && (
               <line
-                x1={MIC_X + MIC_W}
+                x1={onLeft(i) ? MIC_X : MIC_X + MIC_W}
                 y1={cy(MIC_Y, MIC_H)}
-                x2={DEST_X}
+                x2={onLeft(i) ? LEFT_X + DEST_W : RIGHT_X}
                 y2={cy(y, ROW_H)}
                 stroke={wire}
                 strokeWidth={1.5}
               />
             )}
             <rect
-              x={DEST_X}
+              x={jackX(i)}
               y={y}
               width={DEST_W}
               height={ROW_H}
@@ -103,7 +110,7 @@ export function MicPatch() {
               stroke={wire}
             />
             <text
-              x={DEST_X + DEST_W / 2}
+              x={jackX(i) + DEST_W / 2}
               y={cy(y, ROW_H) + 3.5}
               textAnchor="middle"
               className={styles.label}

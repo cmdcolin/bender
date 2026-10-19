@@ -3,7 +3,7 @@
 .diagram {
   display: block;
   width: 100%;
-  max-width: 200px;
+  max-width: 274px;
   height: auto;
   margin: var(--space-2xs) 0 var(--space-md);
 }

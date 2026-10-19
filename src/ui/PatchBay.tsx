@@ -35,6 +35,8 @@ const ROW_H = 20
 const STEP = ROW_H + 8
 const TOP = 6
 const LOOP_X = DEST_X + DEST_W + 12
+// With nothing soldered the four leads stand in one row, each a source box.
+const SLOT = SRC_X + SRC_W + 6
 
 const rowY = (i: number) => TOP + i * STEP
 const cy = (y: number) => y + ROW_H / 2
@@ -75,17 +77,19 @@ export function PatchBay() {
 
   const open =
     pick.selected === null ? undefined : MOD_KEYS[Number(pick.selected)]
-  const height = rowY(3) + ROW_H + 8
+  const bare = free === 4
+  const height = (bare ? TOP : rowY(3)) + ROW_H + 8
 
   return (
     <>
       <svg
         className={styles.diagram}
-        viewBox={`0 0 ${LOOP_X + 20} ${height}`}
+        style={bare ? { maxWidth: SLOT * 4 } : undefined}
+        viewBox={`0 0 ${bare ? SLOT * 4 : LOOP_X + 20} ${height}`}
         preserveAspectRatio="xMidYMid meet"
       >
         {wires.map((w, i) => {
-          const y = rowY(i)
+          const y = bare ? TOP : rowY(i)
           const y0 = cy(y)
           const patched = w.src > 0
           const live = patched && w.depth !== 0
@@ -117,6 +121,7 @@ export function PatchBay() {
           return (
             <g
               key={i}
+              transform={bare ? `translate(${i * SLOT} 0)` : undefined}
               className={styles.wire}
               role="button"
               tabIndex={0}
@@ -134,7 +139,7 @@ export function PatchBay() {
               <rect
                 x={NUM_X - 2}
                 y={y - 3}
-                width={LOOP_X - NUM_X}
+                width={(bare ? SLOT - 4 : LOOP_X) - NUM_X}
                 height={ROW_H + 6}
                 rx={5}
                 className={
