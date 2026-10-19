@@ -41,19 +41,17 @@ const lit = (part: string) =>
     .getAttribute('class')!
     .includes('chipOn')
 
-test('the stock die names its parts, lights none and shows no bend', () => {
+test('the stock die names its parts and lights none', () => {
   open()
   expect(words()).toEqual(
     expect.arrayContaining(['clock', 'voices', 'envelope', 'output pin']),
   )
   expect(words()).not.toContain('clk')
-  for (const bend of ['pot', 'PWM', 'scan', 'crosstalk', 'sync', 'xor'])
-    expect(words()).not.toContain(bend)
   for (const part of ['clock', 'key matrix', 'envelope', 'output pin'])
     expect(lit(part), part).toBe(false)
 })
 
-test('each pin bend shows up on the part it bends', () => {
+test('each pin bend lights the part it bends', () => {
   open()
   set({
     chipGhost: 2,
@@ -64,7 +62,6 @@ test('each pin bend shows up on the part it bends', () => {
     chipBendSpot: 4,
     chipBendPot: 0.5,
   })
-  expect(words()).toEqual(expect.arrayContaining(['PWM', 'scan', 'pot']))
   for (const part of ['key matrix', 'envelope', 'clock'])
     expect(lit(part), part).toBe(true)
 })
@@ -77,34 +74,60 @@ test('a short lights the voices, the box that opens it', () => {
   set({ chipShort: 0 })
 })
 
-test('each feedback bend draws its wire, and the tune ROM lights when the output drives it', () => {
+test('the tune ROM lights when the output drives it', () => {
   open()
-  for (const bend of ['step tap', 'dive', 'relax'])
-    expect(words()).not.toContain(bend)
   expect(lit('tune ROM')).toBe(false)
-  set({
-    chipStepTap: 0.4,
-    chipEnvDiv: 0.5,
-    chipEnvRelax: 0.4,
-    chipOutAddr: 3,
-    chipOutData: 4,
-  })
-  expect(words()).toEqual(expect.arrayContaining(['step tap', 'dive', 'relax']))
+  set({ chipOutAddr: 3, chipOutData: 4 })
   expect(lit('tune ROM')).toBe(true)
+  set({ chipOutAddr: 0, chipOutData: 0 })
+})
+
+test('a bend draws no wire, tag or pot on the die', () => {
+  open()
+  set({
+    chipStepTap: 1,
+    chipPwmTap: 0.5,
+    chipEnvDiv: 0.5,
+    chipEnvRelax: 0.5,
+    chipCrosstalk: 0.5,
+    chipHardSync: 1,
+    chipXor: 1,
+    chipPwm: 0.5,
+    chipScan: 0.3,
+    chipBendSpot: 4,
+    chipBendPot: 0.5,
+  })
+  for (const word of [
+    'step tap',
+    'dive',
+    'relax',
+    'crosstalk',
+    'sync',
+    'xor',
+    'PWM',
+    'scan',
+    'pot',
+  ])
+    expect(words()).not.toContain(word)
+  set({
+    chipStepTap: 0,
+    chipPwmTap: 0,
+    chipEnvDiv: 0,
+    chipEnvRelax: 0,
+    chipCrosstalk: 0,
+    chipHardSync: 0,
+    chipXor: 0,
+    chipPwm: 0,
+    chipScan: 0,
+    chipBendSpot: 0,
+    chipBendPot: 0,
+  })
 })
 
 test('no chip text carries a number or a percentage', () => {
   open()
   set({ chipGhost: 2, chipEnvCap: 2, chipOutAddr: 3, chipOutData: 4 })
   expect(words().filter(w => /[\d%]/.test(w ?? ''))).toEqual([])
-})
-
-test('the PWM tap takes the PWM carrier off the clock', () => {
-  open()
-  set({ chipPwm: 0.5 })
-  expect(words().filter(w => w === 'PWM')).toHaveLength(1)
-  set({ chipPwmTap: 0.5 })
-  expect(words().filter(w => w === 'PWM')).toHaveLength(1)
 })
 
 test('pressing a part opens its rows, and a second press puts them away', () => {
@@ -160,17 +183,13 @@ test('showing the piano roll opens the keyboard box', () => {
   fireEvent.click(screen.getByRole('button', { name: 'show piano roll' }))
 })
 
-test('the bend spot opens from the boxes it solders to, and the pot opens its box', () => {
+test('the bend spot row opens from the boxes it solders to', () => {
   open()
   expect(screen.queryByText('Bend spot')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'clock controls' }))
   expect(screen.getByText('Bend spot')).not.toBeNull()
-  set({ chipBendSpot: 4, chipBendPot: 0.5 })
   fireEvent.click(screen.getByRole('button', { name: 'keyboard controls' }))
   expect(screen.queryByText('Bend spot')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'bend pot controls' }))
-  expect(screen.getByText('Envelope cap')).not.toBeNull()
-  set({ chipBendSpot: 0, chipBendPot: 0 })
 })
 
 test('a box lights for any knob it opens', () => {
@@ -184,7 +203,7 @@ test('a box lights for any knob it opens', () => {
   set({ chipXor: 0, chipHardSync: 0 })
 })
 
-test('the clock shows its clk tags while open, and a bent tag opens the part it names', () => {
+test('the clock shows its clk tags while open', () => {
   open()
   expect(
     screen.queryAllByRole('button', { name: 'clock clk controls' }),
@@ -194,73 +213,6 @@ test('the clock shows its clk tags while open, and a bent tag opens the part it 
     screen.getAllByRole('button', { name: 'clock clk controls' }),
   ).toHaveLength(4)
   expect(screen.getByText('Hard sync')).not.toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'clock controls' }))
-  set({ chipScan: 0.3 })
-  fireEvent.click(
-    screen.getByRole('button', { name: 'output pin scan controls' }),
-  )
-  expect(screen.getByText('Output hold')).not.toBeNull()
-  set({ chipScan: 0 })
-})
-
-test('every soldered bend names itself on its part and opens its row', () => {
-  open()
-  const bends = [
-    ['clock', 'sync', 'chipHardSync', 'Hard sync'],
-    ['clock', 'fm', 'chipFmClock', 'FM on clock'],
-    ['tune ROM', 'addr', 'chipOutAddr', 'Output on address'],
-    ['tune ROM', 'data', 'chipOutData', 'Output on data'],
-    ['key matrix', 'ghost', 'chipGhost', 'Ghost keys'],
-    ['voices', 'short', 'chipShort', 'Voice short'],
-    ['voices', 'xor', 'chipXor', 'Voice XOR'],
-    ['voices', 'duty', 'chipDutyEnv', 'Duty on envelope'],
-    ['envelope', 'bits', 'chipEnvBits', 'Envelope bits'],
-    ['output pin', 'hold', 'chipHold', 'Output hold'],
-  ] as const
-  set(Object.fromEntries(bends.map(([, , key]) => [key, 1])))
-  for (const [part, bend, , row] of bends) {
-    expect(words()).toContain(bend)
-    const tag = () =>
-      screen.getByRole('button', { name: `${part} ${bend} controls` })
-    fireEvent.click(tag())
-    expect(screen.getByText(row, { selector: 'span' })).not.toBeNull()
-    fireEvent.click(tag())
-  }
-  set(Object.fromEntries(bends.map(([, , key]) => [key, 0])))
-})
-
-test('each bend wire and its name open the part it bends', () => {
-  open()
-  set({
-    chipStepTap: 1,
-    chipPwmTap: 0.5,
-    chipEnvDiv: 0.5,
-    chipEnvRelax: 0.5,
-    chipCrosstalk: 0.5,
-  })
-  for (const [bend, row] of [
-    ['step tap', 'Step tap'],
-    ['pwm tap', 'PWM tap'],
-    ['dive', 'Envelope on divider'],
-    ['relax', 'Envelope relax'],
-    ['crosstalk', 'Crosstalk'],
-  ] as const) {
-    const tag = () => screen.getByRole('button', { name: `${bend} controls` })
-    fireEvent.click(tag())
-    expect(screen.getByText(row, { selector: 'span' })).not.toBeNull()
-    fireEvent.click(tag())
-  }
-  fireEvent.click(
-    screen.getByRole('button', { name: 'output pin out controls' }),
-  )
-  expect(screen.getByText('Output hold')).not.toBeNull()
-  set({
-    chipStepTap: 0,
-    chipPwmTap: 0,
-    chipEnvDiv: 0,
-    chipEnvRelax: 0,
-    chipCrosstalk: 0,
-  })
 })
 
 test('the header verbs act on the open box, or on the whole stage', () => {

@@ -54,8 +54,7 @@
 }
 
 .stub,
-.stubOpen,
-.stubOn {
+.stubOpen {
   stroke: var(--fg4);
   stroke-width: 1;
 }
@@ -64,13 +63,8 @@
   stroke: var(--fg);
 }
 
-.stubOn {
-  stroke: var(--alarm);
-}
-
 .tag,
-.tagOpen,
-.tagOn {
+.tagOpen {
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -81,26 +75,12 @@
   fill: var(--fg);
 }
 
-.tagOn {
-  fill: var(--fg2);
-}
-
 .tagHit {
   fill: transparent;
 }
 
 .tagPick:hover .tag {
   fill: var(--fg2);
-}
-
-.tagPick:hover .tagOn,
-.tagPick:focus-visible .tagOn {
-  fill: var(--fg);
-}
-
-.tagPick:hover .stubOn,
-.tagPick:focus-visible .stubOn {
-  stroke: var(--fg);
 }
 
 .bus,
@@ -112,30 +92,6 @@
 }
 
 .knifed {
-  fill: var(--fg2);
-}
-
-.pot,
-.potOn {
-  fill: none;
-  stroke: var(--fg4);
-  stroke-width: 1;
-}
-
-.potOn {
-  stroke: var(--alarm);
-}
-
-.pot text,
-.potOn text {
-  stroke: none;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  fill: var(--fg3);
-}
-
-.potOn text {
   fill: var(--fg2);
 }
 
