@@ -289,7 +289,11 @@ export function TapePathDiagram() {
                 />
               ))}
               <Wire d={`M${OUT_X} ${ROW_MID} H${JOIN_X}`} look={taped} />
-              <Wire arrow={arrow} d={`M${JOIN_X} ${ROW_MID} H${WIDTH - 4}`} />
+              <Wire
+                arrow={arrow}
+                d={`M${JOIN_X} ${ROW_MID} H${WIDTH - 4}`}
+                look={taped}
+              />
               <Wire
                 d={`M${BOARD_W / 2} ${ROW_Y + ROW_H} V${BYPASS_Y} H${JOIN_X} V${ROW_MID}`}
                 look={off ? 'plain' : 'dash'}
