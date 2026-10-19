@@ -10,26 +10,13 @@ import { menuItem } from './menuItems.ts'
 import { STAGE_ROLLS, stageRollsFor } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import { ControlSlider } from './Slider.tsx'
-import { levelOf } from './stageLevels.ts'
+import { levelOf, muteOf } from './stageLevels.ts'
+import { useHeardThrough, viaOf } from './stillHeard.ts'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { Group } from './controls/types.ts'
 import type { StageRoll } from './presets/index.ts'
-
-const MUTE_OF: Record<string, ControlKey> = {
-  'Toy keyboard': 'chipMute',
-  'Toy drums': 'drumMute',
-  'FM chip': 'fmMute',
-  'Home keyboard': 'pcmMute',
-  'Mono synth': 'monoMute',
-  Stompbox: 'stompMute',
-  'Tape delay': 'dlyMute',
-  'Delay pedal': 'echoMute',
-  'Spring verb': 'revMute',
-  Ensemble: 'ensMute',
-  'Tube amp': 'ampMute',
-}
 
 const POWER = (
   <svg className={styles.speaker} viewBox="0 0 12 12" aria-hidden="true">
@@ -88,6 +75,36 @@ function Mute({ stage, control }: { stage: string; control: ControlKey }) {
       >
         {pedal ? POWER : SPEAKER(muted)}
       </button>
+    </Tip>
+  )
+}
+
+// A machine turned down and still in the mix: through a bend that reaches past
+// its fader, or through another machine playing its part.
+function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
+  const where = useHeardThrough(stage)
+  const atZero = useControlValue(level) <= 0
+  if (where.length === 0) return null
+  const players = where.filter(to => to !== stage)
+  const down = atZero ? `${stage}’s Level is at 0.` : `${stage} is muted.`
+  const part = stage === 'Toy drums' ? 'hits' : 'notes'
+  const text = where.includes(stage)
+    ? `${stage}’s Level is at 0 and its meter still reads sound. Mute silences it.`
+    : [
+        down,
+        ...players.map(
+          to => `${to} still plays its ${part} over the ${viaOf(stage, to)}.`,
+        ),
+        `Turning ${players.join(' and ')} down silences them.`,
+      ].join(' ')
+  const label = where.includes(stage)
+    ? 'still sounding'
+    : `heard on ${players[0]}${players.length > 1 ? ` +${players.length - 1}` : ''}`
+  return (
+    <Tip text={text}>
+      <span className={styles.heard} role="status" tabIndex={0}>
+        {atZero ? 'level 0' : 'muted'} · {label}
+      </span>
     </Tip>
   )
 }
@@ -222,10 +239,11 @@ export function DeviceVerbs({
 }) {
   const group = GROUPS.find(g => g.name === stage)
   if (!group) throw new Error(`no stage named ${stage}`)
-  const mute = MUTE_OF[stage]
+  const mute = muteOf(stage)
   const level = levelOf(stage)
   return (
     <>
+      {level && <StillHeard stage={stage} level={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} />}
       {level && !noLevel && <FaceLevel control={level} />}
       <Rolls group={group} seconds={seconds} />

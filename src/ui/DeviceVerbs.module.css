@@ -6,6 +6,19 @@
   composes: capOn from './button.module.css';
 }
 
+.heard {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ctl-h);
+  padding: 0 var(--space-sm);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  color: var(--alarm);
+  background: var(--alarm-wash);
+  border: 1px solid var(--alarm-edge);
+  border-radius: var(--ctl-radius);
+}
+
 .speaker {
   width: 1em;
   height: 1em;
