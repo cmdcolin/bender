@@ -10,8 +10,14 @@
   margin: var(--space-2xs) 0 var(--space-md);
 }
 
+.bay {
+  max-width: 260px;
+}
+
 .label {
-  font-size: var(--fs-xs);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .num {

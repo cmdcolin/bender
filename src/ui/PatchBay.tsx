@@ -1,4 +1,5 @@
 import { engine } from '../engine/engine.ts'
+import chip from './ChipLook.module.css'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { useSelectedBox } from './diagram.ts'
@@ -82,155 +83,161 @@ export function PatchBay() {
 
   return (
     <>
-      <svg
-        className={styles.diagram}
-        style={bare ? { maxWidth: SLOT * 4 } : undefined}
-        viewBox={`0 0 ${bare ? SLOT * 4 : LOOP_X + 20} ${height}`}
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {wires.map((w, i) => {
-          const y = bare ? TOP : rowY(i)
-          const y0 = cy(y)
-          const patched = w.src > 0
-          const live = patched && w.depth !== 0
-          const wire = !live
-            ? 'var(--fg4)'
-            : w.depth < 0
-              ? 'var(--cool)'
-              : 'var(--accent)'
-          const toWire =
-            patched && w.dest >= WIRE_DEPTH_AT && w.dest < WIRE_DEPTH_AT + 4
-          // What the wire is, then what is wrong with it: a lead that reads as
-          // patched and does nothing is the one thing four rows of choices can
-          // never tell you, and this is where somebody is already looking.
-          const waiting =
-            (w.src === WAITS_ON_KIT &&
-              !drums &&
-              ' The kit is stopped, so this carries only when something else hits it.') ||
-            (w.src === WAITS_ON_SONG &&
-              !song &&
-              ' The song is stopped, so the step counter is holding still.') ||
-            ''
-          const title = !patched
-            ? `Wire ${i + 1} — nothing plugged in.`
-            : `${SRC[w.src]} → ${DEST[w.dest]}, ${
-                w.depth === 0
-                  ? 'depth at 0'
-                  : `${Math.abs(w.depth).toFixed(2)} ${w.depth < 0 ? 'flipped' : 'straight'}`
-              }.${faults[i] ? ` This wire ${faults[i]}.` : ''}${waiting}`
-          return (
-            <g
-              key={i}
-              transform={bare ? `translate(${i * SLOT} 0)` : undefined}
-              className={styles.wire}
-              role="button"
-              tabIndex={0}
-              aria-pressed={pick.selected === String(i)}
-              aria-label={`wire ${i + 1} controls`}
-              onClick={() => pick.toggle(String(i))}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  pick.toggle(String(i))
-                }
-              }}
-            >
-              <title>{title}</title>
-              <rect
-                x={NUM_X - 2}
-                y={y - 3}
-                width={(bare ? SLOT - 4 : LOOP_X) - NUM_X}
-                height={ROW_H + 6}
-                rx={5}
-                className={
-                  pick.selected === String(i) ? styles.hitOn : styles.hit
-                }
-              />
-              <g opacity={live ? 1 : 0.55}>
-                <text x={NUM_X} y={y0 + 4} className={styles.num}>
-                  {i + 1}
-                </text>
+      <div className={`${chip.chips} ${styles.bay}`}>
+        <svg
+          className={styles.diagram}
+          style={bare ? { maxWidth: SLOT * 4 } : undefined}
+          viewBox={`0 0 ${bare ? SLOT * 4 : LOOP_X + 20} ${height}`}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {wires.map((w, i) => {
+            const y = bare ? TOP : rowY(i)
+            const y0 = cy(y)
+            const patched = w.src > 0
+            const live = patched && w.depth !== 0
+            const wire = !live
+              ? 'var(--fg4)'
+              : w.depth < 0
+                ? 'var(--cool)'
+                : 'var(--accent)'
+            const toWire =
+              patched && w.dest >= WIRE_DEPTH_AT && w.dest < WIRE_DEPTH_AT + 4
+            // What the wire is, then what is wrong with it: a lead that reads as
+            // patched and does nothing is the one thing four rows of choices can
+            // never tell you, and this is where somebody is already looking.
+            const waiting =
+              (w.src === WAITS_ON_KIT &&
+                !drums &&
+                ' The kit is stopped, so this carries only when something else hits it.') ||
+              (w.src === WAITS_ON_SONG &&
+                !song &&
+                ' The song is stopped, so the step counter is holding still.') ||
+              ''
+            const title = !patched
+              ? `Wire ${i + 1} — nothing plugged in.`
+              : `${SRC[w.src]} → ${DEST[w.dest]}, ${
+                  w.depth === 0
+                    ? 'depth at 0'
+                    : `${Math.abs(w.depth).toFixed(2)} ${w.depth < 0 ? 'flipped' : 'straight'}`
+                }.${faults[i] ? ` This wire ${faults[i]}.` : ''}${waiting}`
+            return (
+              <g
+                key={i}
+                transform={bare ? `translate(${i * SLOT} 0)` : undefined}
+                className={styles.wire}
+                role="button"
+                tabIndex={0}
+                aria-pressed={pick.selected === String(i)}
+                aria-label={`wire ${i + 1} controls`}
+                onClick={() => pick.toggle(String(i))}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    pick.toggle(String(i))
+                  }
+                }}
+              >
+                <title>{title}</title>
                 <rect
-                  x={SRC_X}
-                  y={y}
-                  width={SRC_W}
-                  height={ROW_H}
-                  rx={4}
-                  fill="none"
-                  stroke={patched ? wire : 'var(--fg4)'}
-                  strokeDasharray={patched ? undefined : '3 2'}
+                  x={NUM_X - 2}
+                  y={y - 3}
+                  width={(bare ? SLOT - 4 : LOOP_X) - NUM_X}
+                  height={ROW_H + 6}
+                  rx={5}
+                  className={
+                    pick.selected === String(i) ? styles.hitOn : styles.hit
+                  }
                 />
-                <text
-                  x={SRC_X + SRC_W / 2}
-                  y={y0 + 4}
-                  textAnchor="middle"
-                  className={styles.label}
-                  fill={patched ? 'var(--fg)' : 'var(--fg4)'}
-                >
-                  {patched ? SRC[w.src] : 'unwired'}
-                </text>
-                {patched && (
-                  <>
-                    <line
-                      x1={SRC_X + SRC_W}
-                      y1={y0}
-                      x2={DEST_X - 5}
-                      y2={y0}
-                      stroke={wire}
-                      strokeWidth={live ? 1.5 : 1}
-                      strokeDasharray={live ? undefined : '2 2'}
-                    />
-                    <path
-                      d={`M ${DEST_X - 5} ${y0 - 3} L ${DEST_X} ${y0} L ${DEST_X - 5} ${y0 + 3}`}
-                      fill="none"
-                      stroke={wire}
-                      strokeWidth={1.5}
-                    />
-                    <rect
-                      x={DEST_X}
-                      y={y}
-                      width={DEST_W}
-                      height={ROW_H}
-                      rx={4}
-                      fill="none"
-                      stroke={wire}
-                      strokeDasharray={toWire ? '3 2' : undefined}
-                    />
-                    <text
-                      x={DEST_X + DEST_W / 2}
-                      y={y0 + 4}
-                      textAnchor="middle"
-                      className={styles.label}
-                      fill={live ? 'var(--fg)' : 'var(--fg3)'}
-                    >
-                      {DEST[w.dest]}
-                    </text>
-                  </>
-                )}
+                <g opacity={live ? 1 : 0.55}>
+                  <text x={NUM_X} y={y0 + 4} className={styles.num}>
+                    {i + 1}
+                  </text>
+                  <rect
+                    x={SRC_X}
+                    y={y}
+                    width={SRC_W}
+                    height={ROW_H}
+                    rx={3}
+                    fill="none"
+                    stroke={patched ? wire : 'var(--fg4)'}
+                    strokeDasharray={patched ? undefined : '3 2'}
+                  />
+                  <text
+                    x={SRC_X + SRC_W / 2}
+                    y={y0 + 4}
+                    textAnchor="middle"
+                    className={styles.label}
+                    fill={patched ? 'var(--fg)' : 'var(--fg4)'}
+                  >
+                    {patched ? SRC[w.src] : 'unwired'}
+                  </text>
+                  {patched && (
+                    <>
+                      <line
+                        x1={SRC_X + SRC_W}
+                        y1={y0}
+                        x2={DEST_X - 5}
+                        y2={y0}
+                        stroke={wire}
+                        strokeWidth={live ? 1.5 : 1}
+                        strokeDasharray={live ? undefined : '2 2'}
+                      />
+                      <path
+                        d={`M ${DEST_X - 5} ${y0 - 3} L ${DEST_X} ${y0} L ${DEST_X - 5} ${y0 + 3}`}
+                        fill="none"
+                        stroke={wire}
+                        strokeWidth={1.5}
+                      />
+                      <rect
+                        x={DEST_X}
+                        y={y}
+                        width={DEST_W}
+                        height={ROW_H}
+                        rx={3}
+                        fill="none"
+                        stroke={wire}
+                        strokeDasharray={toWire ? '3 2' : undefined}
+                      />
+                      <text
+                        x={DEST_X + DEST_W / 2}
+                        y={y0 + 4}
+                        textAnchor="middle"
+                        className={styles.label}
+                        fill={live ? 'var(--fg)' : 'var(--fg3)'}
+                      >
+                        {DEST[w.dest]}
+                      </text>
+                    </>
+                  )}
+                </g>
               </g>
-            </g>
-          )
-        })}
+            )
+          })}
 
-        {wires.map((w, i) => {
-          const patched = w.src > 0
-          if (!patched || w.dest < WIRE_DEPTH_AT || w.dest >= WIRE_DEPTH_AT + 4)
-            return null
-          const target = w.dest - WIRE_DEPTH_AT
-          const y0 = cy(rowY(i))
-          const yT = cy(rowY(target))
-          return (
-            <path
-              key={`loop${i}`}
-              d={`M ${DEST_X + DEST_W} ${y0} C ${LOOP_X} ${y0} ${LOOP_X} ${yT} ${DEST_X + DEST_W} ${yT}`}
-              fill="none"
-              stroke="var(--cool)"
-              strokeWidth={1.3}
-              strokeDasharray="3 2"
-            />
-          )
-        })}
-      </svg>
+          {wires.map((w, i) => {
+            const patched = w.src > 0
+            if (
+              !patched ||
+              w.dest < WIRE_DEPTH_AT ||
+              w.dest >= WIRE_DEPTH_AT + 4
+            )
+              return null
+            const target = w.dest - WIRE_DEPTH_AT
+            const y0 = cy(rowY(i))
+            const yT = cy(rowY(target))
+            return (
+              <path
+                key={`loop${i}`}
+                d={`M ${DEST_X + DEST_W} ${y0} C ${LOOP_X} ${y0} ${LOOP_X} ${yT} ${DEST_X + DEST_W} ${yT}`}
+                fill="none"
+                stroke="var(--cool)"
+                strokeWidth={1.3}
+                strokeDasharray="3 2"
+              />
+            )
+          })}
+        </svg>
+      </div>
       <BoxRows keys={open && [open.src, open.dest, open.depth]} />
       {!open && (
         <span className={styles.spare}>
