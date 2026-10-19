@@ -45,7 +45,6 @@ const HELP: Record<Exclude<BoxId, typeof CELLS>, string> = {
   clip: 'A paperclip dragged across the supply pads, biting the rail a few times a second.',
 }
 
-const WIDTH = 420
 const TOP = 8
 const BOX_H = boxHeight('a')
 const DROP = 24
@@ -112,10 +111,13 @@ export function SupplyDiagram() {
 
   return (
     <>
-      <div className={chip.chips}>
+      <div
+        className={chip.chips}
+        style={{ maxWidth: width + 2, marginInline: 'auto' }}
+      >
         <Diagram
-          width={WIDTH}
-          left={(WIDTH - width) / 2}
+          width={width + 2}
+          left={1}
           height={HEIGHT}
           label="power supply"
         >
