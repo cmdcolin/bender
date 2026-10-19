@@ -13,7 +13,7 @@ import {
   BoxRows,
   Diagram,
   Label,
-  Pressable,
+  PickPart,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
@@ -102,13 +102,9 @@ export function FmDieDiagram() {
   const mergeX = frameRight + gap / 2
 
   const node = (name: string, child: ReactNode) => (
-    <Pressable
-      name={name}
-      selected={pick.selected === name}
-      onSelect={() => pick.toggle(name)}
-    >
+    <PickPart opens={name} pick={pick}>
       {child}
-    </Pressable>
+    </PickPart>
   )
 
   return (

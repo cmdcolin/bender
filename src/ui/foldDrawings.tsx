@@ -4,7 +4,7 @@ export function FoldDrawing({
   group,
   part,
   ...props
-}: DrawingProps & {
+}: Omit<DrawingProps, 'zoom'> & {
   group: string
   part: string
 }) {

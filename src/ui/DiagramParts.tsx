@@ -287,6 +287,33 @@ export function Dot({
   )
 }
 
+// A part of a drawing that opens the rows of the box `opens`. `name` is what a
+// screen reader hears, where the box's own name would not say which part it is.
+export function PickPart({
+  opens,
+  name = opens,
+  pick,
+  className,
+  children,
+}: {
+  opens: string
+  name?: string
+  pick: ReturnType<typeof useSelectedBox>
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <Pressable
+      name={name}
+      selected={pick.selected === opens}
+      onSelect={() => pick.toggle(opens)}
+      className={className}
+    >
+      {children}
+    </Pressable>
+  )
+}
+
 // A wire and its name drawn as one button that opens the box holding the knob
 // the wire stands for. `hit` is the wire's path, drawn again as a wide
 // transparent stroke so a thin wire is easy to press.

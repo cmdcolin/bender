@@ -12,7 +12,7 @@ import {
 import {
   Diagram,
   Plate,
-  Pressable,
+  PickPart,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
@@ -51,11 +51,7 @@ interface Operator {
 
 function OperatorChip({ op, pick }: { op: Operator; pick: BoxPick }) {
   return (
-    <Pressable
-      name={`zoomed ${op.name}`}
-      selected={pick.selected === op.name}
-      onSelect={() => pick.toggle(op.name)}
-    >
+    <PickPart name={`zoomed ${op.name}`} opens={op.name} pick={pick}>
       <title>{`${op.name} — ${op.help}`}</title>
       <Plate
         x={op.x}
@@ -73,7 +69,7 @@ function OperatorChip({ op, pick }: { op: Operator; pick: BoxPick }) {
       >
         {op.name}
       </text>
-    </Pressable>
+    </PickPart>
   )
 }
 
@@ -96,16 +92,11 @@ function Tag({
   children: string
 }) {
   return (
-    <Pressable
-      name={id}
-      selected={pick.selected === id}
-      onSelect={() => pick.toggle(id)}
-      className={chip.tag}
-    >
+    <PickPart opens={id} pick={pick} className={chip.tag}>
       <text x={x} y={y} textAnchor={anchor ?? 'start'} className={className}>
         {children}
       </text>
-    </Pressable>
+    </PickPart>
   )
 }
 
@@ -224,11 +215,7 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
                 look={lfoLook}
               />
             ))}
-            <Pressable
-              name="LFO"
-              selected={pick.selected === 'lfo'}
-              onSelect={() => pick.toggle('lfo')}
-            >
+            <PickPart name="LFO" opens="lfo" pick={pick}>
               <title>
                 LFO — The die’s one LFO, soldered to the operators for vibrato,
                 tremolo or both.
@@ -249,7 +236,7 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
               >
                 LFO
               </text>
-            </Pressable>
+            </PickPart>
             <OperatorChip op={mod} pick={pick} />
             <OperatorChip op={car} pick={pick} />
           </g>

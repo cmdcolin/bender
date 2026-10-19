@@ -20,6 +20,7 @@ import {
   Dot,
   GlyphBox,
   OpenBox,
+  PickPart,
   Pressable,
   Wire,
 } from './DiagramParts.tsx'
@@ -130,10 +131,10 @@ function Pot({
 }) {
   const at = (d: number) => y + dir * d
   return (
-    <Pressable
+    <PickPart
       name="bend pot"
-      selected={pick.selected === box}
-      onSelect={() => pick.toggle(box)}
+      opens={box}
+      pick={pick}
       className={on ? styles.potOn : styles.pot}
     >
       <path d={`M${x} ${y} V${at(KNOB_LEAD)}`} />
@@ -144,7 +145,7 @@ function Pot({
       <text x={x + KNOB_R + 4} y={at(KNOB_LEAD + KNOB_R) + 3}>
         pot
       </text>
-    </Pressable>
+    </PickPart>
   )
 }
 
@@ -194,13 +195,9 @@ function Node({
   pick: BoxPick
 }) {
   return (
-    <Pressable
-      name={box.name}
-      selected={pick.selected === box.name}
-      onSelect={() => pick.toggle(box.name)}
-    >
+    <PickPart opens={box.name} pick={pick}>
       <Chip box={box} lit={lit} help={help} />
-    </Pressable>
+    </PickPart>
   )
 }
 
@@ -227,10 +224,10 @@ function ClockTag({
   const look = bent ? 'On' : open ? 'Open' : ''
   if (!look) return null
   return (
-    <Pressable
+    <PickPart
       name={`${opens} ${say}`}
-      selected={open}
-      onSelect={() => pick.toggle(opens)}
+      opens={opens}
+      pick={pick}
       className={styles.tagPick}
     >
       <path
@@ -241,7 +238,7 @@ function ClockTag({
       <text x={x + 3} y={y - 1} className={styles[`tag${look}`]}>
         {say}
       </text>
-    </Pressable>
+    </PickPart>
   )
 }
 
@@ -427,11 +424,7 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
               d={`M${pinRight} ${mid} H${width - 2}`}
               look={flow}
             />
-            <Pressable
-              name="output pin out"
-              selected={pick.selected === 'output pin'}
-              onSelect={() => pick.toggle('output pin')}
-            >
+            <PickPart name="output pin out" opens="output pin" pick={pick}>
               <text
                 x={width - 2}
                 y={mid + 11}
@@ -440,7 +433,7 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
               >
                 out
               </text>
-            </Pressable>
+            </PickPart>
             <Wire d={`M${feed} ${TOP + BOX_H} V${bus.y}`} />
             <Wire
               arrow={arrow}

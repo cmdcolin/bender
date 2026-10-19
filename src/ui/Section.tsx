@@ -567,9 +567,7 @@ function PartFold({
       <FoldDrawing
         group={group.name}
         part={name}
-        verbs={(part, box) => (
-          <BoxVerbs group={group} part={part} box={box} seconds={seconds} />
-        )}
+        verbs={verbsFor(group, seconds)}
       />
       {!DRAWN_ROWS.has(`${group.name}|${name}`) &&
         slidersFirst(rows).map(def => (
@@ -578,6 +576,21 @@ function PartFold({
     </Fold>
   )
 }
+
+const verbsFor =
+  (group: Group, seconds: number): Verbs =>
+  (part, box) => (
+    <BoxVerbs group={group} part={part} box={box} seconds={seconds} />
+  )
+
+const PATH_DRAWINGS = {
+  fm: FmChipDiagram,
+  pcm: PcmKeysDiagram,
+  monoPath: MonoPathDiagram,
+} as const
+
+const isPathKind = (kind?: string): kind is keyof typeof PATH_DRAWINGS =>
+  kind !== undefined && kind in PATH_DRAWINGS
 
 // A fold's verbs for a drawing that has taken the fold's place: the same dice,
 // reset and named cuts, over the rows the fold would have shown.
@@ -726,14 +739,7 @@ function Rows({
               group={group.name}
               part={name}
               editor={editor}
-              verbs={(part, box) => (
-                <BoxVerbs
-                  group={group}
-                  part={part}
-                  box={box}
-                  seconds={seconds}
-                />
-              )}
+              verbs={verbsFor(group, seconds)}
             />
           )
         if (drawn && name === null) return null
@@ -848,6 +854,8 @@ export function OpenGroup({
   // off the screen.
   const rigsFirst = group.editor?.kind === 'loops'
   const drawn = group.name in STAGE_DRAWINGS
+  const kind = group.editor?.kind
+  const PathDrawing = isPathKind(kind) ? PATH_DRAWINGS[kind] : undefined
   const widget =
     group.editor?.kind === 'roll' && shownEditors.roll ? (
       <TuneRoll />
@@ -914,46 +922,13 @@ export function OpenGroup({
             {group.editor?.kind === 'loops' && <FourTrack />}
             {group.editor?.kind === 'tapeLoop' && <TapeLoopDiagram />}
             {group.editor?.kind === 'tapePath' && <TapePathDiagram />}
-            {group.editor?.kind === 'fm' && (
-              <FmChipDiagram
+            {PathDrawing && (
+              <PathDrawing
                 zoom={zoomFor(group.name)}
-                verbs={(part, box) => (
-                  <BoxVerbs
-                    group={group}
-                    part={part}
-                    box={box}
-                    seconds={seconds}
-                  />
-                )}
-              />
-            )}
-            {group.editor?.kind === 'pcm' && (
-              <PcmKeysDiagram
-                zoom={zoomFor(group.name)}
-                verbs={(part, box) => (
-                  <BoxVerbs
-                    group={group}
-                    part={part}
-                    box={box}
-                    seconds={seconds}
-                  />
-                )}
+                verbs={verbsFor(group, seconds)}
               />
             )}
             {group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
-            {group.editor?.kind === 'monoPath' && (
-              <MonoPathDiagram
-                zoom={zoomFor(group.name)}
-                verbs={(part, box) => (
-                  <BoxVerbs
-                    group={group}
-                    part={part}
-                    box={box}
-                    seconds={seconds}
-                  />
-                )}
-              />
-            )}
             {group.memory && shownEditors.roll && <MonoRoll />}
             {!rigsFirst && rigs}
             <Rows

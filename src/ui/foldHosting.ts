@@ -19,11 +19,9 @@ export const STAGE_DRAWINGS: Record<string, string> = {
 }
 
 /** Folds whose drawing opens the rows itself, one box at a time. */
-export const DRAWN_ROWS = new Set([
-  'Plinky|inside the die',
-  'Clatter|inside the voices',
-  'Power supply|the cells',
-])
+export const DRAWN_ROWS = new Set(
+  Object.entries(STAGE_DRAWINGS).map(([group, part]) => `${group}|${part}`),
+)
 
 /** Folds the drawing of another fold has taken over, drawn as boxes in it. */
 const HOSTED: Record<string, readonly string[]> = {

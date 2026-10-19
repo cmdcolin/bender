@@ -9,7 +9,7 @@ import {
   useSelectedBox,
   card,
 } from './diagram.ts'
-import { BoxRows, Diagram, Label, Pressable, Wire } from './DiagramParts.tsx'
+import { BoxRows, Diagram, Label, PickPart, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { ReactNode } from 'react'
@@ -135,14 +135,9 @@ export function MonoCardDiagram() {
   const lowW = vca.x + vca.w - lowX
 
   const node = (name: string, child: ReactNode) => (
-    <Pressable
-      key={name}
-      name={name}
-      selected={pick.selected === name}
-      onSelect={() => pick.toggle(name)}
-    >
+    <PickPart key={name} opens={name} pick={pick}>
       {child}
-    </Pressable>
+    </PickPart>
   )
 
   return (
