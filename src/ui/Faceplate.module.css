@@ -1,0 +1,18 @@
+.face {
+  composes: box from './App.module.css';
+  flex: 1 1 380px;
+  max-width: 640px;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gap-ctl);
+}
+
+.label {
+  composes: label from './App.module.css';
+  margin-right: auto;
+}

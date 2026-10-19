@@ -23,6 +23,7 @@ export const INSTRUMENTS = [
   'Home keyboard',
   'Mono synth',
   'Tape loop',
+  'Four-track',
 ] as const
 
 const EMPTY: Bench = {

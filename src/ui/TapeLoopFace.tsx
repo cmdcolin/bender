@@ -4,7 +4,7 @@ import { detailsUrl } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
 import { useStoreValue } from './ControlsContext.ts'
 import { DeckKey } from './DeckKey.tsx'
-import { DeviceVerbs } from './DeviceVerbs.tsx'
+import { Faceplate } from './Faceplate.tsx'
 import { SampleReel } from './SampleReel.tsx'
 import { dragging } from './tapeDrop.ts'
 import styles from './TapeLoopFace.module.css'
@@ -28,11 +28,7 @@ export function TapeLoopFace({
   const [shelfBtn, setShelfBtn] = useState<HTMLButtonElement | null>(null)
 
   return (
-    <section className={styles.face} aria-label="tape loop">
-      <div className={styles.head}>
-        <span className={styles.label}>tape loop</span>
-        <DeviceVerbs stage="Tape loop" seconds={seconds} onClose={onClose} />
-      </div>
+    <Faceplate stage="Tape loop" seconds={seconds} onClose={onClose}>
       <div className={styles.controls}>
         <TapeTransport
           loaded={!!sampleName}
@@ -103,6 +99,6 @@ export function TapeLoopFace({
         </SampleReel>
         {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
       </div>
-    </section>
+    </Faceplate>
   )
 }

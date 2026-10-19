@@ -7,6 +7,7 @@ const LEVEL_OF: Record<string, ControlKey> = {
   'Home keyboard': 'pcmLevel',
   'Mono synth': 'monoLevel',
   'Tape loop': 'sampleLevel',
+  'Four-track': 'fourLevel',
 }
 
 const MUTE_OF: Record<string, ControlKey> = {

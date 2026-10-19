@@ -7,8 +7,10 @@ import { BendKeysSwitch } from './BendKeys.tsx'
 import { onBoard } from './chain-map.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
+import { Faceplate } from './Faceplate.tsx'
 import { add } from './fitted.ts'
 import { FmKeys } from './FmKeys.tsx'
+import { FourTrack } from './FourTrack.tsx'
 import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
@@ -27,6 +29,20 @@ type Machine = ComponentType<{
 }>
 type Row = [stage: string, Machine: Machine][]
 
+function FourTrackFace({
+  seconds,
+  onClose,
+}: {
+  seconds?: number
+  onClose?: () => void
+}) {
+  return (
+    <Faceplate stage="Four-track" seconds={seconds} onClose={onClose}>
+      <FourTrack />
+    </Faceplate>
+  )
+}
+
 const TOY: Row = [
   ['Toy keyboard', Keys],
   ['Toy drums', DrumKit],
@@ -37,9 +53,10 @@ const LEVELLED: Row = [
   ['Home keyboard', PcmKeys],
   ['Mono synth', MonoKeys],
   ['Tape loop', TapeLoopFace],
+  ['Four-track', FourTrackFace],
 ]
 
-// The keyboards, the kit and the tape loop. A machine shows while its stage is
+// The keyboards, the kit, the tape loop and the four-track. A machine shows while its stage is
 // on the map: the toy and the kit from the start, the others once their faders
 // come up. The tape loop also shows while the mic is open, since its face holds
 // the mic key, and while a file is over the app, to take the drop. Add all instruments lays out every one whatever its fader says, each with
@@ -94,7 +111,7 @@ export function Instruments({
           text={
             full
               ? 'Put away the instruments whose level never came up.'
-              : 'Lay out all six instruments, each with its Level slider. One with its level down stays silent until you raise it.'
+              : 'Lay out every instrument, each with its Level slider. One with its level down stays silent until you raise it.'
           }
         >
           <button

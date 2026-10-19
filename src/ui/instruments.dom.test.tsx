@@ -41,7 +41,8 @@ test('all-instruments lays out every machine, each with a close cap', () => {
   ])
     expect(group(name)).not.toBeNull()
   expect(screen.getByRole('region', { name: 'tape loop' })).toBeTruthy()
-  expect(screen.getAllByRole('button', { name: /^close / })).toHaveLength(6)
+  expect(screen.getByRole('region', { name: 'four-track' })).toBeTruthy()
+  expect(screen.getAllByRole('button', { name: /^close / })).toHaveLength(7)
 })
 
 test('add all instruments reopens closed machines, then hides the unused ones', () => {
@@ -78,7 +79,7 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
   const roll = screen.getAllByRole('button', { name: 'randomize' })
-  expect(roll).toHaveLength(6)
+  expect(roll).toHaveLength(7)
   fireEvent.click(roll[0]!)
   const now = engine.controls.get()
   expect(sameControls(now, DEFAULT_CONTROLS)).toBe(false)
@@ -160,7 +161,7 @@ test('each machine has a Level slider that moves its own level', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
   const levels = screen.getAllByRole('slider', { name: 'Level' })
-  expect(levels).toHaveLength(6)
+  expect(levels).toHaveLength(7)
   fireEvent.change(levels[1]!, { target: { value: '0' } })
   expect(engine.controls.get().drumLevel).toBe(0)
   expect(engine.controls.get().chipLevel).toBe(DEFAULT_CONTROLS.chipLevel)
