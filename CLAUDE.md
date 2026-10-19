@@ -32,3 +32,10 @@ from `scripts/push.mjs` and stay out of the changelog.
 
 Scope is optional; when used, pick from `dsp`, `engine`, `ui`, `home`, `midi` or
 `docs`.
+
+## Tests and typecheck
+
+Agents run `pnpm test` and `pnpm typecheck`, never bare `vitest` or `tsc`. Both
+queue on `BENDER_HEAVY_SLOTS` machine-wide slots (default 2,
+`scripts/heavy-run-slot.sh`), so four agents at once do not slow the box to a
+crawl. `BENDER_HEAVY_SLOTS=0` turns the gate off.
