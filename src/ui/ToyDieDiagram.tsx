@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
@@ -38,6 +38,10 @@ const KEYS = [
   'chipEnvRelax',
   'chipEnvDiv',
   'chipPwmTap',
+  'chipHardSync',
+  'chipXor',
+  'chipDutyEnv',
+  'chipEnvBits',
 ] as const
 
 const GROUP = GROUPS.find(g => g.name === 'Toy keyboard')!
@@ -201,8 +205,8 @@ function Node({
 
 // A clock input drawn as a labelled stub on a box's top edge instead of a wire:
 // the clock reaches four parts, and wires to all of them crowd out the signal
-// path. A plain tag opens the clock and lights while it is open; a bent one
-// opens the part whose bend it names.
+// path. A plain tag shows only while the clock is open, to show where it
+// reaches; a bent one always shows and opens the part whose bend it names.
 function ClockTag({
   x,
   y,
@@ -220,6 +224,7 @@ function ClockTag({
 }) {
   const open = pick.selected === opens
   const look = bent ? 'On' : open ? 'Open' : ''
+  if (!look) return null
   return (
     <Pressable
       name={`${opens} ${say}`}
@@ -239,6 +244,82 @@ function ClockTag({
   )
 }
 
+// A bend soldered onto a box, drawn as a red stub with its name beside it and
+// opening the knob that sets it. The stub leaves the bottom edge, or the left
+// edge when the box has no room beneath it.
+function BendTag({
+  x,
+  y,
+  opens,
+  pick,
+  say,
+  edge = 'bottom',
+}: {
+  x: number
+  y: number
+  opens: string
+  pick: ReturnType<typeof useSelectedBox>
+  say: string
+  edge?: 'bottom' | 'left'
+}) {
+  const left = edge === 'left'
+  return (
+    <Pressable
+      name={`${opens} ${say}`}
+      selected={pick.selected === opens}
+      onSelect={() => pick.toggle(opens)}
+      className={styles.tagPick}
+    >
+      <path
+        d={
+          left
+            ? `M${x} ${y - 6} H${x - STUB - 30} V${y + 6} H${x} Z`
+            : `M${x - 2} ${y} V${y + STUB + 10} H${x + 26} V${y} Z`
+        }
+        className={styles.tagHit}
+      />
+      <path
+        d={left ? `M${x} ${y} H${x - STUB}` : `M${x} ${y} V${y + STUB}`}
+        className={styles.stubOn}
+      />
+      <text
+        x={left ? x - STUB - 3 : x + 3}
+        y={left ? y + 3 : y + STUB + 8}
+        textAnchor={left ? 'end' : 'start'}
+        className={styles.tagOn}
+      >
+        {say}
+      </text>
+    </Pressable>
+  )
+}
+
+// A bend's wire and name as one button that opens the part it bends.
+function Bend({
+  name,
+  opens,
+  pick,
+  hit,
+  children,
+}: {
+  name: string
+  opens: string
+  pick: ReturnType<typeof useSelectedBox>
+  hit: string
+  children: ReactNode
+}) {
+  return (
+    <Pressable
+      name={`${opens} ${name}`}
+      selected={pick.selected === opens}
+      onSelect={() => pick.toggle(opens)}
+    >
+      <path d={hit} className={styles.wireHit} />
+      {children}
+    </Pressable>
+  )
+}
+
 function Say({
   x,
   y,
@@ -251,7 +332,7 @@ function Say({
   children: string
 }) {
   return (
-    <text x={x} y={y} textAnchor={anchor} className={styles.bend}>
+    <text x={x} y={y} textAnchor={anchor} className={styles.knifed}>
       {children}
     </text>
   )
@@ -378,14 +459,20 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                 d={`M${pinRight} ${mid} H${width - 2}`}
                 look={flow}
               />
-              <text
-                x={width - 2}
-                y={mid + 11}
-                textAnchor="end"
-                className={styles.bus}
+              <Pressable
+                name="output pin out"
+                selected={pick.selected === 'output pin'}
+                onSelect={() => pick.toggle('output pin')}
               >
-                out
-              </text>
+                <text
+                  x={width - 2}
+                  y={mid + 11}
+                  textAnchor="end"
+                  className={styles.bus}
+                >
+                  out
+                </text>
+              </Pressable>
               <Wire d={`M${feed} ${TOP + BOX_H} V${bus.y}`} />
               <Wire
                 arrow={arrow}
@@ -393,7 +480,12 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                 look={knifed ? 'alarm' : 'plain'}
               />
               {stepTap && (
-                <>
+                <Bend
+                  name="step tap"
+                  opens="tune ROM"
+                  pick={pick}
+                  hit={`M${stepX} ${LOW} V${TOP + BOX_H}`}
+                >
                   <Wire
                     arrow={arrow}
                     d={`M${stepX} ${LOW} V${TOP + BOX_H}`}
@@ -402,7 +494,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   <Say x={stepX - 4} y={TOP + BOX_H + 22} anchor="end">
                     step tap
                   </Say>
-                </>
+                </Bend>
               )}
               <ClockTag x={rom.x + 7} y={TOP} opens="clock" pick={pick} />
               <ClockTag
@@ -428,7 +520,12 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                 bent={scan}
               />
               {pwmTap && (
-                <>
+                <Bend
+                  name="pwm tap"
+                  opens="voices"
+                  pick={pick}
+                  hit={`M${voices.x + voices.w} ${mid - SIDE} H${env.x}`}
+                >
                   <Wire
                     arrow={arrow}
                     d={`M${voices.x + voices.w} ${mid - SIDE} H${env.x}`}
@@ -441,10 +538,15 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   >
                     PWM
                   </Say>
-                </>
+                </Bend>
               )}
               {up('chipEnvDiv') && (
-                <>
+                <Bend
+                  name="dive"
+                  opens="envelope"
+                  pick={pick}
+                  hit={`M${env.x} ${mid + SIDE} H${voices.x + voices.w}`}
+                >
                   <Wire
                     arrow={arrow}
                     d={`M${env.x} ${mid + SIDE} H${voices.x + voices.w}`}
@@ -457,10 +559,15 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   >
                     dive
                   </Say>
-                </>
+                </Bend>
               )}
               {up('chipEnvRelax') && (
-                <>
+                <Bend
+                  name="relax"
+                  opens="envelope"
+                  pick={pick}
+                  hit={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
+                >
                   <Wire
                     d={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
                     look="alarm"
@@ -468,10 +575,15 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   <Say x={loopR} y={LOW - 10} anchor="end">
                     relax
                   </Say>
-                </>
+                </Bend>
               )}
               {cross && (
-                <>
+                <Bend
+                  name="crosstalk"
+                  opens="clock"
+                  pick={pick}
+                  hit={`M${tap} ${mid} V${TOP + BOX_H}`}
+                >
                   <Wire
                     arrow={arrow}
                     d={`M${tap} ${mid} V${TOP + BOX_H}`}
@@ -481,7 +593,44 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                   <Say x={tap - 4} y={LOW - 18} anchor="end">
                     crosstalk
                   </Say>
-                </>
+                </Bend>
+              )}
+              {up('chipHardSync') && (
+                <BendTag
+                  x={clock.x}
+                  y={TOP + BOX_H / 2}
+                  edge="left"
+                  opens="clock"
+                  pick={pick}
+                  say="sync"
+                />
+              )}
+              {up('chipXor') && (
+                <BendTag
+                  x={voices.x + 4}
+                  y={LOW + BOX_H}
+                  opens="voices"
+                  pick={pick}
+                  say="xor"
+                />
+              )}
+              {up('chipDutyEnv') && (
+                <BendTag
+                  x={voices.x + 34}
+                  y={LOW + BOX_H}
+                  opens="voices"
+                  pick={pick}
+                  say="duty"
+                />
+              )}
+              {up('chipEnvBits') && (
+                <BendTag
+                  x={env.x + 4}
+                  y={LOW + BOX_H}
+                  opens="envelope"
+                  pick={pick}
+                  say="bits"
+                />
               )}
               <Node
                 pick={pick}

@@ -44,8 +44,8 @@ test('the stock die names its parts, lights none and shows no bend', () => {
   expect(words()).toEqual(
     expect.arrayContaining(['clock', 'voices', 'envelope', 'output pin']),
   )
-  expect(words().filter(w => w === 'clk')).toHaveLength(4)
-  for (const bend of ['pot', 'PWM', 'scan', 'crosstalk'])
+  expect(words()).not.toContain('clk')
+  for (const bend of ['pot', 'PWM', 'scan', 'crosstalk', 'sync', 'xor'])
     expect(words()).not.toContain(bend)
   for (const part of ['clock', 'key matrix', 'envelope', 'output pin'])
     expect(lit(part), part).toBe(false)
@@ -181,16 +181,75 @@ test('a box lights for any knob it opens', () => {
   set({ chipXor: 0, chipHardSync: 0 })
 })
 
-test('a clk tag opens the clock, and a bent one opens the part it names', () => {
+test('the clock shows its clk tags while open, and a bent tag opens the part it names', () => {
   open()
-  const tags = screen.getAllByRole('button', { name: 'clock clk controls' })
-  expect(tags).toHaveLength(4)
-  fireEvent.click(tags[0]!)
+  expect(
+    screen.queryAllByRole('button', { name: 'clock clk controls' }),
+  ).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: 'clock controls' }))
+  expect(
+    screen.getAllByRole('button', { name: 'clock clk controls' }),
+  ).toHaveLength(4)
   expect(screen.getByText('Hard sync')).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'clock controls' }))
   set({ chipScan: 0.3 })
   fireEvent.click(
     screen.getByRole('button', { name: 'output pin scan controls' }),
   )
   expect(screen.getByText('Output hold')).not.toBeNull()
   set({ chipScan: 0 })
+})
+
+test('hard sync, XOR, duty on envelope and envelope bits each name themselves on their part', () => {
+  open()
+  set({ chipHardSync: 0.5, chipXor: 0.5, chipDutyEnv: 0.5, chipEnvBits: 0.5 })
+  for (const [part, bend, row] of [
+    ['clock', 'sync', 'Hard sync'],
+    ['voices', 'xor', 'Voice XOR'],
+    ['voices', 'duty', 'Duty on envelope'],
+    ['envelope', 'bits', 'Envelope bits'],
+  ] as const) {
+    expect(words()).toContain(bend)
+    const tag = () =>
+      screen.getByRole('button', { name: `${part} ${bend} controls` })
+    fireEvent.click(tag())
+    expect(screen.getByText(row)).not.toBeNull()
+    fireEvent.click(tag())
+  }
+  set({ chipHardSync: 0, chipXor: 0, chipDutyEnv: 0, chipEnvBits: 0 })
+})
+
+test('each bend wire and its name open the part it bends', () => {
+  open()
+  set({
+    chipStepTap: 1,
+    chipPwmTap: 0.5,
+    chipEnvDiv: 0.5,
+    chipEnvRelax: 0.5,
+    chipCrosstalk: 0.5,
+  })
+  for (const [part, bend, row] of [
+    ['tune ROM', 'step tap', 'Step tap'],
+    ['voices', 'pwm tap', 'PWM tap'],
+    ['envelope', 'dive', 'Envelope on divider'],
+    ['envelope', 'relax', 'Envelope relax'],
+    ['clock', 'crosstalk', 'Crosstalk'],
+  ] as const) {
+    const tag = () =>
+      screen.getByRole('button', { name: `${part} ${bend} controls` })
+    fireEvent.click(tag())
+    expect(screen.getByText(row)).not.toBeNull()
+    fireEvent.click(tag())
+  }
+  fireEvent.click(
+    screen.getByRole('button', { name: 'output pin out controls' }),
+  )
+  expect(screen.getByText('Output hold')).not.toBeNull()
+  set({
+    chipStepTap: 0,
+    chipPwmTap: 0,
+    chipEnvDiv: 0,
+    chipEnvRelax: 0,
+    chipCrosstalk: 0,
+  })
 })
