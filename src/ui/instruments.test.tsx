@@ -11,11 +11,11 @@ import './testDom.ts'
 const pad = (name: string) =>
   screen.getByRole('button', { name: `${name} pad` })
 
-test('the drum kit shares a row with the toy keyboard', () => {
+test('the drum kit sits beside the lane of keyboards', () => {
   render(<App />)
   const keyboard = screen.getByRole('group', { name: 'plinky' })
   const kit = screen.getByRole('group', { name: 'clatter' })
-  expect(kit.parentElement).toBe(keyboard.parentElement)
+  expect(kit.parentElement).toBe(keyboard.parentElement?.parentElement)
 })
 
 test('pressing a pad sends a hit for its voice', () => {

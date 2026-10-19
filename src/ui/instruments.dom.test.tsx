@@ -22,6 +22,7 @@ beforeEach(() => {
   })
 })
 
+const machine = (name: string) => screen.getByRole('group', { name })
 const group = (name: string) => screen.queryByRole('group', { name })
 const addInstrument = () =>
   screen.getByRole('button', { name: /^Add instrument/ })
@@ -146,7 +147,9 @@ test('undo in the roll menu puts the stage back', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
   const before = engine.controls.get()
-  fireEvent.click(screen.getAllByRole('button', { name: 'randomize' })[2]!)
+  fireEvent.click(
+    within(machine('glint')).getByRole('button', { name: 'randomize' }),
+  )
   expect(sameControls(engine.controls.get(), before)).toBe(false)
   fireEvent.click(screen.getByRole('button', { name: 'more for Glint' }))
   fireEvent.click(screen.getByRole('menuitem', { name: 'undo' }))
@@ -162,7 +165,9 @@ test('mute silences one machine and keeps its level, and a roll leaves it muted'
   expect(engine.controls.get().drumMute).toBe(1)
   expect(engine.controls.get().drumLevel).toBe(DEFAULT_CONTROLS.drumLevel)
   expect(mute.getAttribute('aria-pressed')).toBe('true')
-  fireEvent.click(screen.getAllByRole('button', { name: 'randomize' })[1]!)
+  fireEvent.click(
+    within(machine('clatter')).getByRole('button', { name: 'randomize' }),
+  )
   expect(engine.controls.get().drumMute).toBe(1)
   fireEvent.click(mute)
   expect(engine.controls.get().drumMute).toBe(0)
@@ -171,7 +176,9 @@ test('mute silences one machine and keeps its level, and a roll leaves it muted'
 test('a Level at zero lights mute, and unmute brings the Level back', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
-  const level = screen.getAllByRole('slider', { name: 'Level' })[1]!
+  const level = within(machine('clatter')).getByRole('slider', {
+    name: 'Level',
+  })
   const mute = screen.getByRole('button', { name: 'mute Clatter' })
   fireEvent.change(level, { target: { value: '400' } })
   const up = engine.controls.get().drumLevel
@@ -189,7 +196,10 @@ test('each machine has a Level slider that moves its own level', () => {
   addAll()
   const levels = screen.getAllByRole('slider', { name: 'Level' })
   expect(levels).toHaveLength(7)
-  fireEvent.change(levels[1]!, { target: { value: '0' } })
+  fireEvent.change(
+    within(machine('clatter')).getByRole('slider', { name: 'Level' }),
+    { target: { value: '0' } },
+  )
   expect(engine.controls.get().drumLevel).toBe(0)
   expect(engine.controls.get().chipLevel).toBe(DEFAULT_CONTROLS.chipLevel)
 })
