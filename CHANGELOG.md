@@ -2,6 +2,218 @@
 
 All notable changes to bender are documented here.
 
+## [1.11.0](https://github.com/cmdcolin/bender/compare/v1.10.0...v1.11.0) - 2026-10-19
+
+### Features
+- *(ui)* [`493d676`](https://github.com/cmdcolin/bender/commit/493d6762cc128a3eb26061c38861c37cbd7ca3bb) show the rail lamp on every machine on the shared supply
+- *(ui)* [`b98c149`](https://github.com/cmdcolin/bender/commit/b98c1490d1b7b7fd253dc7e03ece23531eab4ce0) add a Level slider to the tape loop deck
+- *(ui)* [`228c042`](https://github.com/cmdcolin/bender/commit/228c0423d5c090a4dd29519b31dea3e05608294d) fit the instrument decks on fewer rows
+- *(ui)* [`dc70078`](https://github.com/cmdcolin/bender/commit/dc700786d3453f2eb4e2482abc1e27f55599c7a5) light the map's shared supply bar as the rail sags and reboots
+- *(ui)* [`5f01948`](https://github.com/cmdcolin/bender/commit/5f0194884bfb1eccad502376846af2aa35be0c5d) move a narrow keyboard's Level into its drawer
+- *(ui)* [`1e194c1`](https://github.com/cmdcolin/bender/commit/1e194c1614f17ef144ae3f0be7105b50420d759a) cap the scope at 96px tall
+- *(ui)* [`3ac371a`](https://github.com/cmdcolin/bender/commit/3ac371a09ddaf8701d3f21d49accb3bfaa1c096e) put the bend keys switch in the instruments toolbar
+- *(ui)* [`9c02585`](https://github.com/cmdcolin/bender/commit/9c025859d796a3d702afe4fc8faef6cc6e69554b) shorten the recorder and tape loop row
+- *(ui)* [`0ed1dea`](https://github.com/cmdcolin/bender/commit/0ed1dea62c1ae14a4ea1895139bc555d3e4822bd) dim the keys a scale lock closes on a neighbour
+- *(ui)* [`0eb7152`](https://github.com/cmdcolin/bender/commit/0eb7152eb2a373f0e476f431e70087b09a0b2ccb) name the scale lock on the keybed deck while it is on
+- *(ui)* [`ce12409`](https://github.com/cmdcolin/bender/commit/ce1240957e7d42d4efa844f662046e17aa0c0ae5) name the signal path map for screen readers
+- *(ui)* [`af38c2f`](https://github.com/cmdcolin/bender/commit/af38c2f380a34fd550f2984602c3e590196e58b4) name the bare figures in the feedback and tube amp diagrams
+- *(ui)* [`0a6b264`](https://github.com/cmdcolin/bender/commit/0a6b2640f620a7d3462a6f08965493348108a5f5) let a map box's edge say whether the stage is doing anything
+- *(ui)* [`1346ba9`](https://github.com/cmdcolin/bender/commit/1346ba957c69d639afc8ef78f174a4ca2863d888) light a stage diagram's wires only while signal runs on them
+- *(ui)* [`6cbc063`](https://github.com/cmdcolin/bender/commit/6cbc06343e6ead97f351b81201516fb42de5cfdf) underline a diagram box's name and leave its readings bare
+- *(ui)* [`b8963e9`](https://github.com/cmdcolin/bender/commit/b8963e94af8fde8bd459d538f3baf648c72d42f3) line up the stage names down each column of the map
+- *(ui)* [`4987549`](https://github.com/cmdcolin/bender/commit/4987549d913c20a65486435b3dfa8ff985bc4541) drop the toy board's dashed outline from the map
+- *(ui)* [`4f16bcb`](https://github.com/cmdcolin/bender/commit/4f16bcbc7f0166dfcb1481722e21147e2f36023d) light the mic's wire only once the mic is turned up
+- *(ui)* [`4faf036`](https://github.com/cmdcolin/bender/commit/4faf0360d11770b075bf5728350d3907150ebe6a) name the tube amp's two curves on the curves themselves
+- *(ui)* [`e87615d`](https://github.com/cmdcolin/bender/commit/e87615d2bf25b5ecb5cf0d89cdefaa073afb1089) draw every stage diagram's boxes with one neutral edge
+- *(ui)* [`4f7d745`](https://github.com/cmdcolin/bender/commit/4f7d74566c90c6b3e13270afb468d295c1649bd0) light only the reading whose knob moved in a stage diagram box
+- *(ui)* [`57fe5c5`](https://github.com/cmdcolin/bender/commit/57fe5c503fbdd9d995594531c3d2b907a0567d3e) draw stage diagram boxes with their names only
+- *(ui)* [`832e1b8`](https://github.com/cmdcolin/bender/commit/832e1b80cb6d0051cc2dd972326cd5caa1c5712e) name the trigger patch's wires without their settings
+- *(ui)* [`14cbb6e`](https://github.com/cmdcolin/bender/commit/14cbb6ea18cb15751440af17dbae8a78d0eba437) open the tape speed knob in a popover beside the speed key
+- *(ui)* [`7ff71e2`](https://github.com/cmdcolin/bender/commit/7ff71e2609b7ce530bc6e8e939f04ba2846a61e8) add a rec key to the tape loop deck with Record, Erase and Reel length in a popover
+- *(ui)* [`002de86`](https://github.com/cmdcolin/bender/commit/002de8647235642d06ce467c1026ac0916b13234) give the shared battery rail its own panel and box on the map
+- *(ui)* [`ef7383d`](https://github.com/cmdcolin/bender/commit/ef7383d260e2a91bb9d42f6e21217afeefc7abb3) draw the key line dashed where its jumpers are cut, and name each trigger's target
+- *(ui)* [`233c4ae`](https://github.com/cmdcolin/bender/commit/233c4ae5d6518e0f8a51f9441415f95662e5bed8) show every machine the trigger patch reaches, in plain words
+- *(ui)* [`ddc2f5c`](https://github.com/cmdcolin/bender/commit/ddc2f5ceadb7df43625a9ee713c73c9a89da93e8) hint that trigger wires are pressable, and cover the lamp and supply panel with tests
+- *(ui)* [`868e81a`](https://github.com/cmdcolin/bender/commit/868e81aa81ef6204d1d0844fbd12d8aa7bd0a71d) draw each knife-on-the-bus fold as a bus schematic
+- *(ui)* [`9be59bf`](https://github.com/cmdcolin/bender/commit/9be59bf64a98065683bb6cd750efb24422317468) the tape deck's mic key turns the microphone off again
+- *(dsp)* [`fa6d7e8`](https://github.com/cmdcolin/bender/commit/fa6d7e8492cbe7d1833e7c5ee14fc1377aa0258e) Wear, Hiss and Hold on the tape loop's record head
+- *(ui)* [`5717d92`](https://github.com/cmdcolin/bender/commit/5717d92f9fa6a5e19fda1a79200d69ff3d0db71f) the pocket page's mic chip turns a live mic off
+- *(ui)* [`e96af13`](https://github.com/cmdcolin/bender/commit/e96af1380a3465d5f9f30fe8e6abd1466e9bcc56) thicken a map wire while it carries a trigger
+- *(ui)* [`1ced148`](https://github.com/cmdcolin/bender/commit/1ced148fceaac489a7cc16f4de0c31e1764825f4) show on each deck whether the toy's notes are reaching it
+- *(ui)* [`707d25b`](https://github.com/cmdcolin/bender/commit/707d25b716647545eb95ab68f73561108a7b21ad) draw the toy chip's die inside its pin-bend fold
+- *(ui)* [`02dead7`](https://github.com/cmdcolin/bender/commit/02dead70855faec2b8cc307b08fdce9f9ed0ab90) draw the mono synth's voice card at the top of its panel
+- *(dsp)* [`850c3ff`](https://github.com/cmdcolin/bender/commit/850c3ffa6184b1e7b58646ff89996e839531e0c0) a first take sets the loop's length, and the deck gets undo
+- *(ui)* [`384cb90`](https://github.com/cmdcolin/bender/commit/384cb909bcd3d74184d0b2bd952897ffd7f07de4) draw only the stages on the board, and hold rolls to them
+- *(dsp)* [`7069fa1`](https://github.com/cmdcolin/bender/commit/7069fa12ce69bd1279ef1b9690872e51ec397f7a) four toy chip feedback bends
+- *(dsp)* [`4df5521`](https://github.com/cmdcolin/bender/commit/4df5521555356f851ef2395505a52dcee25ad3ba) output on data, PWM tap, toy on the FM bus, and lanes
+- *(ui)* [`804f62a`](https://github.com/cmdcolin/bender/commit/804f62a391dc0f16c66fd330c49ecdd90ad0eebe) keep the stages you added through a reload of the tab
+- *(ui)* [`c43e66c`](https://github.com/cmdcolin/bender/commit/c43e66c14388ff608522a63593f803777dee35b9) draw the toy feedback bends on the die and the FM bus
+- *(ui)* [`56d949a`](https://github.com/cmdcolin/bender/commit/56d949af56792890c3c62f3696d7ce1d5a7237d0) draw the drum kit's wiring inside its cross-patch fold
+- *(dsp)* [`5c225ea`](https://github.com/cmdcolin/bender/commit/5c225ea66fff14c26d407c34c27f938544714baa) FM on the toy's clock, and an output hold
+- *(ui)* [`3b49c36`](https://github.com/cmdcolin/bender/commit/3b49c36cf05e75ecac3fd47ce96a0e542644c8db) name the gate jumper for what it does
+- *(ui)* [`77cd153`](https://github.com/cmdcolin/bender/commit/77cd153ece6c8d84a6cf3c6d1cde1de2ac5ed0cf) keep the add-a-stage menu open for the next pick
+- *(ui)* [`d48f1e7`](https://github.com/cmdcolin/bender/commit/d48f1e7c274a2d9b9852daf3ea577aee4ef201b7) take a stage off from a menu beside add
+- *(ui)* [`c22d895`](https://github.com/cmdcolin/bender/commit/c22d895a1078171ce519f7247c1213b46f9a8f49) draw every face on the bench as a box on the map
+- *(ui)* [`503a9bf`](https://github.com/cmdcolin/bender/commit/503a9bf7e38b7ea703b9517262ef913729ecac4f) draw the roll's loop length as a dropdown field
+- *(ui)* [`fc8c3fd`](https://github.com/cmdcolin/bender/commit/fc8c3fd23a65a5c4717bab81d56d9f68d26dc3a1) draw the drum rows' step count as a dropdown field
+- *(ui)* [`3e3d4f6`](https://github.com/cmdcolin/bender/commit/3e3d4f60dd633e10a09d2c49f9f9ad91471605b8) sweep ordered picks on a stepped track
+- *(ui)* [`135e92d`](https://github.com/cmdcolin/bender/commit/135e92d77646abde87c8ff5dc2a4926d03d12fe8) draw the FM chip and mono synth cards as filled chips
+- *(ui)* [`8d89d49`](https://github.com/cmdcolin/bender/commit/8d89d492733339539b52443464d3da7ea4b3529d) draw the FM die and driver as allocator, registers, voices and DAC
+- *(ui)* [`9d1bada`](https://github.com/cmdcolin/bender/commit/9d1badae638533b64b88c29450cd7c0ce7350cc2) print each bend step's key letter and add a shuffle for the row
+- *(ui)* [`9cad759`](https://github.com/cmdcolin/bender/commit/9cad759e5ff38de61d8cd8be38f994f5fefddc57) hide the piano roll and drum grid until the panel's toggle shows them
+- *(ui)* [`8c5f922`](https://github.com/cmdcolin/bender/commit/8c5f922dc165bebb704f5c88a8bd7b498e50b9b1) draw the home keyboard as its signal path
+- *(ui)* [`9cf5761`](https://github.com/cmdcolin/bender/commit/9cf57618a3a134a42765a1d57bdc7e7b77aeb6eb) draw the FM operators under the modulator and carrier boxes
+- *(ui)* [`7c107d0`](https://github.com/cmdcolin/bender/commit/7c107d0ed4c5c8216c4feac033177ada017b6397) set the home keyboard's path in capitals and pack it tighter
+- *(ui)* [`8065add`](https://github.com/cmdcolin/bender/commit/8065add5cc263aa43bb6834923dfc1efa9e7a20e) draw the mono voice card's signal path under its faults box
+- *(ui)* [`9b83d7d`](https://github.com/cmdcolin/bender/commit/9b83d7d0cad064ba3dede2bbc892f0f6d270bc6f) draw source boxes at the stage height with the level as a bar on the bottom edge
+- *(ui)* [`8497fda`](https://github.com/cmdcolin/bender/commit/8497fda23c786e24f2d6dc80f91f098d729c49b1) set every diagram's box names in capitals
+- *(ui)* [`346ea35`](https://github.com/cmdcolin/bender/commit/346ea35e7896bcd1465f841eac252b9b172edf26) redraw the tape delay as one signal line over the tape loop
+- *(ui)* [`61a10a4`](https://github.com/cmdcolin/bender/commit/61a10a4881ae40430c22569c5b3468022ed62138) shorten the home keyboard's address bus box to ADDR BUS
+- *(ui)* [`414d234`](https://github.com/cmdcolin/bender/commit/414d234174e122694c9340bfb5a3bcda85031dd3) tighten the toy die drawing and open each part's rows on press
+- *(ui)* [`3708c03`](https://github.com/cmdcolin/bender/commit/3708c03e0d277cb4417ed98598ee1a043cc5a2fe) draw the toy drums' voices as boxes that open their rows
+- *(ui)* [`a9a5160`](https://github.com/cmdcolin/bender/commit/a9a5160756c470ab4a0fd9dbd314624a17627d7d) fold the toy drums' converter and sample ROM into the voices drawing
+- *(dsp)* [`999ba39`](https://github.com/cmdcolin/bender/commit/999ba39cdb5eedd98e6194ad74450ce99677f1da) give the mono synth a melody memory of its own
+- *(ui)* [`68c3f6b`](https://github.com/cmdcolin/bender/commit/68c3f6b505a2fe04b0d26b2728f73dff0747bd72) draw the mono synth's melody memory as a piano roll
+- *(ui)* [`0a8631e`](https://github.com/cmdcolin/bender/commit/0a8631e7ac24c171399b8ab32af5792d831a985e) join short choice rows into full-width groups and put sliders before buttons
+- *(dsp)* [`8e71f3f`](https://github.com/cmdcolin/bender/commit/8e71f3f3c5d9de95594efbf1b4188e456a5ed08c) let the melody memory play the FM chip or home keyboard
+- *(ui)* [`39e503c`](https://github.com/cmdcolin/bender/commit/39e503c909eb8f29a3ee8678a21d62f2d68c6ba3) record the second melody from the keys of the machine it plays
+- *(ui)* [`dc8257b`](https://github.com/cmdcolin/bender/commit/dc8257bfe8a6defb1c4a8f30e5cdc2ec8788fe0f) make the trigger patch pressable and fold the arp, bus and trigger folds into the die drawings
+- *(dsp)* [`437a2de`](https://github.com/cmdcolin/bender/commit/437a2defd6f874fe1062b497cc3800a426a4cd98) hard sync, voice XOR, envelope bits and duty on envelope for the toy chip
+- *(ui)* [`ba01a02`](https://github.com/cmdcolin/bender/commit/ba01a025c839cb308b3ed318dbeba55c366db4e2) give the signal path map's boxes a little more height
+- *(ui)* [`229b47d`](https://github.com/cmdcolin/bender/commit/229b47d59b0975362f5e6d9b5cdb44c85d4c942a) zoom the operator close-up out of the chip drawing, drop its values and make its parts pressable
+- *(ui)* [`7206102`](https://github.com/cmdcolin/bender/commit/72061028ea640ca97a3875545f43d432321030b3) show a standing knife on the bus box and name the cut on the host heading
+- *(ui)* [`08dc980`](https://github.com/cmdcolin/bender/commit/08dc980b434ff201906afd61b415990ac416958a) open the FM die and the mono voice card one part at a time
+- *(ui)* [`a1a11e2`](https://github.com/cmdcolin/bender/commit/a1a11e2405e4b11ed8039735351fb0ef6b49b38e) draw the die, card, kit, tape and bus diagrams as names with lit parts, without values
+- *(ui)* [`daa5555`](https://github.com/cmdcolin/bender/commit/daa55554079d82d0ae9099d5c795afb8ab908ab9) draw the toy keyboard panel as one die drawing with a keyboard box
+- *(ui)* [`01fdb36`](https://github.com/cmdcolin/bender/commit/01fdb362c1c0855db999406a18c0468dffbac9db) calm the toy die drawing with a labelled keyboard box and a clock rail
+- *(ui)* [`9dc60e9`](https://github.com/cmdcolin/bender/commit/9dc60e9b43e69ba63f0b015cbc286a0294917f5c) mark the toy die's clock inputs with clk tags in place of wires
+- *(ui)* [`9bc0df5`](https://github.com/cmdcolin/bender/commit/9bc0df51461ae9477aadef8444a4da5b8d1715fb) draw the toy drums panel as one voices drawing with a pads box
+- *(ui)* [`606d8b7`](https://github.com/cmdcolin/bender/commit/606d8b75000242a0bd40952c8b09f141fb392d56) draw the power supply as one rail with cells, reset chip and clip boxes
+- *(ui)* [`b8961dd`](https://github.com/cmdcolin/bender/commit/b8961ddc320f6843e21254410a010e9c7a038d82) show + mod only on the row under the pointer or focus
+- *(ui)* [`2a80f62`](https://github.com/cmdcolin/bender/commit/2a80f628cd805aa7ff08b4cdb2c66fd0307da79a) give each toy drawing box roll, undo and reset for its own knobs
+- *(ui)* [`0833134`](https://github.com/cmdcolin/bender/commit/08331340e48492dc1fa15cbab49636e4428ac220) give every stage drawing the filled chip look
+- *(ui)* [`50686f8`](https://github.com/cmdcolin/bender/commit/50686f89f450ee9f40a15a24e2f62481d8d6ba60) pack the mic jacks either side of the mic and the empty bay in one row
+- *(ui)* [`6e5ca53`](https://github.com/cmdcolin/bender/commit/6e5ca53c6afc8dcd0841fe8c1c88b1a9b3123b0f) draw the FM operators as one-line boxes closer together
+- *(ui)* [`901c8a1`](https://github.com/cmdcolin/bender/commit/901c8a1e515b0883fac3cbb1a413ad06218048ba) open the mono mixer from its noise and feedback words, shrink the tape deck
+- *(ui)* [`51eb61d`](https://github.com/cmdcolin/bender/commit/51eb61d43bdb7baa1ee192b80ee2b2b23f3f80c6) keep a unit's case in diagram text
+- *(home)* [`7cf620b`](https://github.com/cmdcolin/bender/commit/7cf620b43c7ae6ad67d1e92a45031c34ed4322cb) call the pocket page the simple version
+- *(home)* [`cfb95ff`](https://github.com/cmdcolin/bender/commit/cfb95ffd5541b3efcf638940791c2aca3ed4d4f4) say what the simple version leaves out, and name the page after it
+- *(ui)* [`2c08304`](https://github.com/cmdcolin/bender/commit/2c08304e82c2dee1d9b4f6f00c693e6fcfd7d1c0) flag a machine at level 0 that is still heard
+- *(ui)* [`ee8bc1d`](https://github.com/cmdcolin/bender/commit/ee8bc1dfd4ec8361a3f68dfe9f97baf7b210a803) add all instruments and add all pedals buttons
+- *(ui)* [`0c1fd44`](https://github.com/cmdcolin/bender/commit/0c1fd44197845d1cbdedac5be310a50b25e39300) make the tape loop a bench instrument
+- *(ui)* [`956238f`](https://github.com/cmdcolin/bender/commit/956238f4dda87438ccd1bc02158832aa04a3f754) set diagram labels in caps to match the box names
+- *(ui)* [`27686e7`](https://github.com/cmdcolin/bender/commit/27686e77b7808976fda20266cd1a6a9e1c7e492e) shorten the still-heard chip to one phrase
+- *(ui)* [`76c10b5`](https://github.com/cmdcolin/bender/commit/76c10b510b2b6f65e3d40189681810be1c168807) redraw the favicon as a sine bending into a square wave
+- *(ui)* [`279fc3c`](https://github.com/cmdcolin/bender/commit/279fc3c03937447999817891a8cd47a34cbf86f9) draw the fm keyboard's badge as a nameplate, not a chip
+- *(ui)* [`637ffce`](https://github.com/cmdcolin/bender/commit/637ffcebbdf6732bc514cdd3997b61eefa7d929e) show four named cuts and fold the rest behind a count
+- *(ui)* [`bbed5af`](https://github.com/cmdcolin/bender/commit/bbed5af3921435619a8e0591d567380e99b9c0ae) draw an fm sine on the fm badge in place of the operator boxes
+- *(ui)* [`023f5f2`](https://github.com/cmdcolin/bender/commit/023f5f269bb4a1b5828af9d396fceb5b476a26ae) set the toy die's bend labels in grey and clear the label collisions
+- *(ui)* [`7ea1032`](https://github.com/cmdcolin/bender/commit/7ea1032d099a9c7943519fe8131e4c7a0b05ebe8) light mute while a machine's Level is at 0
+- *(ui)* [`d4ed938`](https://github.com/cmdcolin/bender/commit/d4ed938da963ed104fdaaec573fd30399b586c3f) leave room under a bus drawing only while a tap wire is drawn
+- *(ui)* [`6460605`](https://github.com/cmdcolin/bender/commit/64606058bbea4cd05daebbe88e6dd1c73357cca8) open the mic from its stage and lay the tape loop out with the instruments
+- *(ui)* [`8c24d26`](https://github.com/cmdcolin/bender/commit/8c24d261fae33a38d7778851a82c2fad78b72347) give the four-track a face on the bench
+- *(ui)* [`ae24ec1`](https://github.com/cmdcolin/bender/commit/ae24ec15f2eac7fb446eb53f5a0b8cce7541780c) redraw the favicon as a blue chip with a bent pin
+- *(ui)* [`de7133a`](https://github.com/cmdcolin/bender/commit/de7133a457d4226e1e6ba1c7d43d454a22e47df0) name lit boxes and knife labels in white and grey, not red
+- *(ui)* [`86ec9c0`](https://github.com/cmdcolin/bender/commit/86ec9c0d728117fb23d7fc0053c759cca0f1a2fe) make the toy die's bend wires and labels buttons, and draw four more bends
+- *(ui)* [`62a218a`](https://github.com/cmdcolin/bender/commit/62a218a78bca8348f4d40ef4e2a4e6e4ca28e9fd) name the Toy keyboard on the gate switches
+- *(ui)* [`38586f4`](https://github.com/cmdcolin/bender/commit/38586f46e86be3af1a606e36099cc1ca1ec31a38) type a value into a readout, shift-drag and wheel for fine moves
+- *(ui)* [`2d5cf66`](https://github.com/cmdcolin/bender/commit/2d5cf6650ee4aed0d48392f420ea539e30ed8e27) add a share button and put the power-on hint over the scope
+- *(ui)* [`5a7bfa3`](https://github.com/cmdcolin/bender/commit/5a7bfa3030fd461862a02bd877ebcd8f944871bb) find a preset by name, blurb or the stages it moves
+- *(ui)* [`854755d`](https://github.com/cmdcolin/bender/commit/854755d2fc90a2c1358082559f863844044d5a4b) open a face's stage from its name plate
+- *(ui)* [`f1c58f3`](https://github.com/cmdcolin/bender/commit/f1c58f39332a51b0f1063e5027563ed5c5282784) fold the map to a row of stages while one is open
+- *(ui)* [`112c0d9`](https://github.com/cmdcolin/bender/commit/112c0d941857cb19d70cfdd8d79a76f7b61eb7cb) pin any control to a strip beside the instruments
+- *(ui)* [`d1f0dfd`](https://github.com/cmdcolin/bender/commit/d1f0dfd56fff8053c76a58b7cc974c47df29ad20) open the bend keys under the bench bar
+- *(ui)* [`c3d8ee8`](https://github.com/cmdcolin/bender/commit/c3d8ee87e53060d62af7b424cfaa7d9e9b4528d0) one verb row per stage, aimed at the open box
+- *(ui)* [`1811785`](https://github.com/cmdcolin/bender/commit/1811785158d2bc3e7002d4fe9da2e4da067a73ce) pulse a stage's diagram boxes the first time it opens
+- *(ui)* [`0d9c493`](https://github.com/cmdcolin/bender/commit/0d9c4934d786098a329d966c3e63fa02fc6cb35c) call the toy keyboard Plinky
+- *(ui)* [`c06d087`](https://github.com/cmdcolin/bender/commit/c06d087dddd136bc1849583032479b7fc3b751f5) draw the Power supply box a size up
+- *(ui)* [`8754b69`](https://github.com/cmdcolin/bender/commit/8754b69bb48f123227e93c8af7816b8437452581) draw six more toy bends and brighten bend wires on hover
+- *(ui)* [`0df3563`](https://github.com/cmdcolin/bender/commit/0df35639379e26d0a9e1bcc5b7b80d586bd6de8e) lay the four-track out as a mixing desk
+- *(ui)* [`6b948a6`](https://github.com/cmdcolin/bender/commit/6b948a6710e04bedb80c16e82f94c3b712d2f1e0) give each toy drum voice its own wire through tall one-shots and amps
+- *(ui)* [`dcd6d72`](https://github.com/cmdcolin/bender/commit/dcd6d722dd8bfc964acf491214c487f05bddc786) draw the Power supply as a source box like the toy keyboard's
+- *(ui)* [`3db01d2`](https://github.com/cmdcolin/bender/commit/3db01d26057518385bce7b4c96fb50d154cb110b) knife a bus line by pressing its trace
+- *(ui)* [`5fc5ae1`](https://github.com/cmdcolin/bender/commit/5fc5ae1db5f03f4ff242416180411a703b4b9bd9) zoom every nested drawing out of the box that opens it
+- *(ui)* [`7d0ab3c`](https://github.com/cmdcolin/bender/commit/7d0ab3c78e6cfa82dc9006e9173644cbc6d34f8c) mark the open diagram box with a brighter frame and fill
+- *(ui)* [`bdce4bd`](https://github.com/cmdcolin/bender/commit/bdce4bdc3647cc75b24ff1de8e74f6a1206eaa22) draw the power supply at its own width
+- *(ui)* [`45c379f`](https://github.com/cmdcolin/bender/commit/45c379fd1d04500fdccb081e320072c663278515) set the patch bay in the diagram caps and chip look
+- *(ui)* [`9e68187`](https://github.com/cmdcolin/bender/commit/9e6818753a4e624deb71364246c0c663819f321e) open sync and lin FM from their words in the mono drawing
+- *(ui)* [`629f3a9`](https://github.com/cmdcolin/bender/commit/629f3a9998b6f1b1dcb40afc1a08469a4017e711) name the feedback return box after where it is patched
+- *(ui)* [`127a8ff`](https://github.com/cmdcolin/bender/commit/127a8ff934898ab374beeeab9592dfdb20483b5b) make the toy drum and mono synth bend wires buttons
+- *(ui)* [`45cc60a`](https://github.com/cmdcolin/bender/commit/45cc60a2f2ea50a8daa8fc9213b0fdb93bc662aa) fit every instrument face's header on one row
+- *(ui)* [`f0a90de`](https://github.com/cmdcolin/bender/commit/f0a90de0605faf50b566b2d98f32db3fdb154ac3) give every instrument and pedal a name of its own
+- *(ui)* [`ae0494c`](https://github.com/cmdcolin/bender/commit/ae0494c6519acb54539d7c5d579fcf415df80fd3) show a renamed stage's old name beside the new one
+
+### Fixes
+- *(dsp)* [`5524466`](https://github.com/cmdcolin/bender/commit/552446673a2f6fedad2f3332e4001317c7532db7) power-cycle the FM chip when the shared rail reboots
+- *(ui)* [`5294cef`](https://github.com/cmdcolin/bender/commit/5294cef9c9e99528dff2f7db68b2ac1ff96eb6a5) hide the tape Level slider until a tape is loaded
+- *(ui)* [`397c53f`](https://github.com/cmdcolin/bender/commit/397c53f14753021769620df9ea1216c98cbd2235) light the key under the finger when the scale lock moves the note
+- *(ui)* [`11a26fb`](https://github.com/cmdcolin/bender/commit/11a26fb84f720bb4ad165bb87b42eeac30bff559) draw the signal path map in the panel's own token colours
+- *(ui)* [`890042d`](https://github.com/cmdcolin/bender/commit/890042dbb3ce6b08b00e74e96c8b53c79e418d3b) keep the key line's label clear of a trigger bridge's label
+- *(ui)* [`6aa6c57`](https://github.com/cmdcolin/bender/commit/6aa6c57b0f724abf5c2c9267ad2ab61dba7b8cf5) colour a stage diagram's arrowheads to match their wires
+- *(ui)* [`8ec42e0`](https://github.com/cmdcolin/bender/commit/8ec42e0def7fc88df5e741c2e426bdde6b775d69) hold the panel's scrollbar gutter open
+- *(ui)* [`5b3dfb8`](https://github.com/cmdcolin/bender/commit/5b3dfb8b0c4c96913129b7ee38caa283a59c2fa8) draw a bypassed pedal and a muted source as idle
+- *(ui)* [`d85bb62`](https://github.com/cmdcolin/bender/commit/d85bb627a931eae36f92db6dc773a749bf24567e) let the React compiler memoize the diagram parts
+- *(ui)* [`39571b8`](https://github.com/cmdcolin/bender/commit/39571b8341f84de4f8761ffc2d556e72e6762867) start the tape playing when rec arms the record head
+- *(ui)* [`ba29844`](https://github.com/cmdcolin/bender/commit/ba29844c4176b9601fb403f686b47ea32e2661e5) never roll a board whose only sound is a chip with no player
+- *(ui)* [`527983e`](https://github.com/cmdcolin/bender/commit/527983e0155865ca9472ee0b4a38e4125f1c0231) astro dev ignores .claude, so a worktree's astro.config no longer restarts it
+- *(ui)* [`0cac09f`](https://github.com/cmdcolin/bender/commit/0cac09f7d61f35685f8ba3eec0bf9aebf75cbfd8) light Brownout on the map only when the stage runs
+- *(ui)* [`b87a7b7`](https://github.com/cmdcolin/bender/commit/b87a7b7f0ced03e6f4c6fc65b06afa5fa48692ad) keep map wire labels in the gutter, off boxes and the trigger lane
+- *(ui)* [`3ae9dd7`](https://github.com/cmdcolin/bender/commit/3ae9dd7167dadaf092520a1a1c24b03746e76cdf) drop the toy board onto the mix bus between its boxes
+- *(ui)* [`8aedbd1`](https://github.com/cmdcolin/bender/commit/8aedbd1ffb840bf4bca98a500f9cb104ef09e4b1) step the key line's label past the no-trigger chip
+- *(ui)* [`f756522`](https://github.com/cmdcolin/bender/commit/f75652272a2b6921a0d0d5676054c37c69836618) draw every source's fader travel at one length
+- *(ui)* [`28863fa`](https://github.com/cmdcolin/bender/commit/28863fa54b1df90a8cffc355c110117be7a05103) run the toy board's drop straight down when nothing sits below it
+- *(ui)* [`fea6e07`](https://github.com/cmdcolin/bender/commit/fea6e07624092e496340b0be3913182a60f92d7b) keep wires off labels in three stage drawings
+- *(ui)* [`2578dae`](https://github.com/cmdcolin/bender/commit/2578dae11f8f5cd1e78529909a77206c3f795b13) draw the add-a-stage menu's items as buttons
+- *(ui)* [`389b03d`](https://github.com/cmdcolin/bender/commit/389b03d97e44848c5cd46f6a5e1746f6d5a0ef2e) pack the trigger patch into one row per machine
+- *(ui)* [`aec744e`](https://github.com/cmdcolin/bender/commit/aec744e8cdf382c01caa8e3d0a923d07e72120c5) set labels and buttons in plain case without wide tracking
+- *(ui)* [`dbf4ca5`](https://github.com/cmdcolin/bender/commit/dbf4ca535864dec5c0911cc209f36993e779afe8) hang a short signal path narrower than the mix bus and capitalise its name
+- *(ui)* [`d62df8b`](https://github.com/cmdcolin/bender/commit/d62df8b91c3f8d49367f8fddcb7598c6980fa252) keep hit-testing and the open fill on the chip look, read slip only while counting
+- *(ui)* [`1c87b1e`](https://github.com/cmdcolin/bender/commit/1c87b1e5044ce010b337b083ce01172ca3f3e7e0) read the voice's own LFO, dim the operators while an effect runs
+- *(ui)* [`dcbf856`](https://github.com/cmdcolin/bender/commit/dcbf8564f128bdcf1f4ed7ec423c1d3ba1ae936f) draw the mix bus at the width of a lone column of stages
+- *(ui)* [`1e061d1`](https://github.com/cmdcolin/bender/commit/1e061d1cc9255aa6533b9afe328690ec15d30bd2) drop the monospace face, tracking and case on plates and readouts
+- *(ui)* [`de05336`](https://github.com/cmdcolin/bender/commit/de0533640ba2d9d3fb6e66a19c6b54c19a8aa9f3) show small droop values on the voice card, test its dashed wires
+- *(ui)* [`ab85dd4`](https://github.com/cmdcolin/bender/commit/ab85dd4d1fe9f5640bc2ad963d943e437775be55) dim disabled buttons to 40% and show the not-allowed cursor
+- *(ui)* [`13e717e`](https://github.com/cmdcolin/bender/commit/13e717e2c6e638417a48f6247f9660b63e792a7e) give every slider row in a section the same track width
+- *(ui)* [`005051a`](https://github.com/cmdcolin/bender/commit/005051a7db04470c45fff3e37d635d7267a06e50) wrap the supply rail round the machines, always show its box, hold amber on a sag
+- *(dsp)* [`094c948`](https://github.com/cmdcolin/bender/commit/094c948b8ded2f99a9a034e64d3a16d511a7537a) satisfy the type checker in the drum ROM context and the divider test
+- *(ui)* [`b8bbdc6`](https://github.com/cmdcolin/bender/commit/b8bbdc6477c00b0a99df60e395f514109f7adb67) keep the toy die's clk tags clear and draw the pot as a plain resistor
+- *(ui)* [`0281130`](https://github.com/cmdcolin/bender/commit/0281130665017c655c22e4174e14f581bae84196) draw the toy die's keyboard as a piano octave and the pot as a knob
+- *(ui)* [`3b8b86e`](https://github.com/cmdcolin/bender/commit/3b8b86e6a334998724519d0040c8269875f3aaef) light every toy die box off the knobs it opens, and make the clk tags pressable
+- *(ui)* [`0f6ac18`](https://github.com/cmdcolin/bender/commit/0f6ac1838e0eb12a14396e71badbc9d890f8bca6) put share beside midi and back the power-on hint
+- *(ui)* [`61fb98c`](https://github.com/cmdcolin/bender/commit/61fb98cd5a1897b313f161f4ab808c8eaecf5ca2) keep a lone box on the toy board's lower row the width of the box above
+- *(ui)* [`ece217a`](https://github.com/cmdcolin/bender/commit/ece217a9a99f12f8eda05bf6b9bd73f1cdce5a2f) light the tape machine's output wire with the tape
+- *(ui)* [`ac99e4e`](https://github.com/cmdcolin/bender/commit/ac99e4ed2a3d89dc727c4e6c1d14c55263c80bba) match the drawings' labels to the new stage names
+
+### Refactor
+- *(ui)* [`ebf86b6`](https://github.com/cmdcolin/bender/commit/ebf86b63466fc9b5592d9e1dbe95a0a0bfeb0e2e) hoist the slider test out of slidersFirst
+- *(ui)* [`8dea175`](https://github.com/cmdcolin/bender/commit/8dea175b9aada12e64f9f2592d44a0041625a2c3) move non-component exports out of component files
+- *(ui)* [`a574b38`](https://github.com/cmdcolin/bender/commit/a574b387e9066d26e75b58a6209f201b28c2c810) keep the fold drawing lookup out of the component file
+
+### Documentation
+- [`256ab0e`](https://github.com/cmdcolin/bender/commit/256ab0e81f86e8d0bc5f49f2dc3f07e211ad5fc2) describe the strip and trigger diagrams without their readings
+- [`e3e6a88`](https://github.com/cmdcolin/bender/commit/e3e6a88a5b3a7f3f67a8f0069f7d1f70de64ce68) say the deck's rec key arms the tape loop
+- [`11f72b3`](https://github.com/cmdcolin/bender/commit/11f72b3ec7b0c06fdb412a1ba1608f9aca3fb354) say what a thick wire on the map means
+- [`3d2de89`](https://github.com/cmdcolin/bender/commit/3d2de89da9d3ca6a54b6cd2f783cd91fac4e617e) describe the map's stages, + add a stage, take off and held rolls
+- [`d3c5691`](https://github.com/cmdcolin/bender/commit/d3c56917c0fff69ffeccaa527dfd401dd227aa4e) regenerate the feature list for the toy feedback bends
+- [`d817609`](https://github.com/cmdcolin/bender/commit/d817609fa1cc578d0e2eb798c4c28bb602e65c73) park three map-editing ideas
+- [`1d87718`](https://github.com/cmdcolin/bender/commit/1d87718762a5fd2071931903f2c73443af1a631a) describe the mono synth's melody memory
+- [`138ce28`](https://github.com/cmdcolin/bender/commit/138ce28ea331839b7eaba8239f380e1e152b8a23) describe recording and Plays on for the melody memory
+- [`8b4b884`](https://github.com/cmdcolin/bender/commit/8b4b884f07e5ddb54e96394e7718c1d8970c8348) regenerate features and README demos
+- [`00b0591`](https://github.com/cmdcolin/bender/commit/00b059138bb65b39ea9689c968320936bfc9a5a3) describe typed values, fine moves, pins and the map fold
+- [`7c854bd`](https://github.com/cmdcolin/bender/commit/7c854bd021ad0715fcf0987821539ae572607cc2) redraw the README signal path with the larger Power supply box
+
+### Tests
+- *(ui)* [`472ecf0`](https://github.com/cmdcolin/bender/commit/472ecf05083b4d71cca80da4b32ef035ae5d79f6) cover the map's supply bar reading the rail
+- *(ui)* [`39a3ce0`](https://github.com/cmdcolin/bender/commit/39a3ce00b424cfdb8c93db1d5370684b69624076) wait for the map's redraw before reading a taken-off stage
+- *(ui)* [`5d1c7eb`](https://github.com/cmdcolin/bender/commit/5d1c7ebe7c077806b8312262f7d016ab574b3722) open the home keyboard's bus drawing from its bus boxes
+- *(dsp)* [`8c19c07`](https://github.com/cmdcolin/bender/commit/8c19c0765aee5d72e65a907d20f26da03ad444e2) start the song transport in the mono memory tests
+- *(ui)* [`d260adc`](https://github.com/cmdcolin/bender/commit/d260adce25ee1d8e3d7c4c983f364c1ea09dde5c) the FM chip leaves the die's rows to the die drawing
+
+### Chores
+- *(ui)* [`0bbb911`](https://github.com/cmdcolin/bender/commit/0bbb911585a9541352ae54ea21c6397e115a5da8) remeasure the bend ends with the toy feedback bends
+- *(ui)* [`cc62502`](https://github.com/cmdcolin/bender/commit/cc625020258d0469034bd8b71c87f314da2f4e3c) remeasure the bend ends with FM on clock and output hold
+- *(ui)* [`6fbca96`](https://github.com/cmdcolin/bender/commit/6fbca9666ac1511fded6c77e53396e8502afdede) measure the bend ends for hard sync, voice XOR, envelope bits and duty on envelope
+
 ## [1.10.0](https://github.com/cmdcolin/bender/compare/v1.9.0...v1.10.0) - 2026-10-17
 
 ### Features
