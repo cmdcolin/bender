@@ -1,5 +1,7 @@
 .box {
   composes: box from './App.module.css';
+  flex: 1 1 280px;
+  max-width: 320px;
   align-items: center;
 }
 
@@ -8,10 +10,37 @@
   align-self: flex-start;
 }
 
-.keys {
+/* The deck: the cassette behind its door, and the keys in a strip along the
+   bottom edge of the same body. */
+.machine {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--fg4);
+  border-radius: 8px;
+}
+
+.door {
   display: flex;
   justify-content: center;
-  max-width: 100%;
+  padding: var(--space-md);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.keys {
+  display: flex;
+  padding: var(--space-xs) var(--space-md);
+}
+
+.keys > div {
+  width: 100%;
+  justify-content: space-between;
+  padding: 0;
+  background: none;
+  border: 0;
 }
 
 /* The take counter, written on the cassette's label: a red readout that lights

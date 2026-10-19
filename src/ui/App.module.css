@@ -188,13 +188,12 @@
   position: relative;
 }
 
-/* The studio: the recorder's faceplate, half the width beside the bench, and
-   the whole width on a phone. The tape loop's face composes `.box` too. */
+/* The studio: the recorder's faceplate. The tape loop's face composes `.box`
+   too. */
 .studio {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-md);
-  align-items: stretch;
 }
 
 .box {
@@ -333,9 +332,6 @@
   .left {
     overflow: visible;
     padding-top: 0;
-  }
-  .studio {
-    grid-template-columns: minmax(0, 1fr);
   }
   .scope {
     order: 1;
