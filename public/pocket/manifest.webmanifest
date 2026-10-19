@@ -1,5 +1,5 @@
 {
-  "name": "bender pocket",
+  "name": "bender simple version",
   "short_name": "bender",
   "description": "A simple version of bender, a circuit-bent toy keyboard and drum machine for your phone: swipe through presets, hold the scope to bend the sound, record a wav.",
   "start_url": "./",

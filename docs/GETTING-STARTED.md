@@ -8,7 +8,9 @@ real cheap toy do that.
 
 bender runs in the browser on one AudioWorklet, with nothing to install.
 
-**[Open the app →](https://cmdcolin.github.io/bender/app/)**
+**[Open the app →](https://cmdcolin.github.io/bender/app/)** · On a phone, the
+[simple version](https://cmdcolin.github.io/bender/pocket/) trades the signal
+path for a scope and a preset strip.
 
 ## Things to try
 
