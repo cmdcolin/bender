@@ -51,7 +51,7 @@ const along = (p: Placed, at: number) => p.x0 + (p.x1 - p.x0) * at
 const lineY = (p: Placed, i: number) => p.top + i * PITCH
 const bottom = (p: Placed) => p.top + ribbonH(p.ribbon)
 
-function place(row: BusRow, rowTop: number) {
+function place(row: BusRow, rowTop: number, tapped: boolean) {
   const coreH = Math.max(
     ...row.links.map(stackH).map(h => h + 2 * PAD),
     ...row.chips.flat().map(boxHeight),
@@ -83,16 +83,16 @@ function place(row: BusRow, rowTop: number) {
       return { name, x: xs[i]!, y, w: widths[i]!, h }
     })
   })
-  const height = ABOVE + coreH + BELOW + (row.taps ? TAP_ROOM : 0)
+  const height = ABOVE + coreH + BELOW + (tapped ? TAP_ROOM : 0)
   return { links, chips, boxTop, coreH, height }
 }
 
-function layout(spec: BusSpec) {
+function layout(spec: BusSpec, tapped: (row: BusRow) => boolean) {
   const rows: { row: BusRow; placed: ReturnType<typeof place>; top: number }[] =
     []
   let top = 0
   for (const row of spec.rows) {
-    const placed = place(row, top)
+    const placed = place(row, top, tapped(row))
     rows.push({ row, placed, top })
     top += placed.height
   }
@@ -423,7 +423,7 @@ export function BusDiagram({ spec }: { spec: BusSpec }) {
   ]
   const r = useReadings(keys)
   const read = (key: ControlKey) => Math.round(r.value(key))
-  const rows = layout(spec)
+  const rows = layout(spec, row => (row.taps ?? []).some(t => read(t.key) > 0))
   const last = rows.at(-1)!
   const top = last.top + last.placed.height
   return (
