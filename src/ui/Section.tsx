@@ -64,6 +64,8 @@ import { Tip } from './Tip.tsx'
 import { TriggerPatch } from './TriggerPatch.tsx'
 import { TuneRoll } from './TuneRoll.tsx'
 
+const CUTS_SHOWN = 4
+
 // A count rather than the board it is counted off, so the eight parts on the
 // shelf sit still through a morph instead of each recounting its group sixty
 // times a second to print the same number.
@@ -204,6 +206,11 @@ function PartVerbs({
   seconds: number
 }) {
   const wired = useBoardValue(c => cutWired(group.name, part, c))
+  const [open, setOpen] = useState(false)
+  const shownCuts = open
+    ? cuts
+    : cuts.filter((cut, i) => i < CUTS_SHOWN || cut.name === standing)
+  const hidden = cuts.length - shownCuts.length
   const keys = rows.map(d => d.key)
   const scope = `${group.name} › ${what}`
   return (
@@ -246,7 +253,7 @@ function PartVerbs({
           {moved > 0 ? `reset ${moved}` : 'reset'}
         </button>
       </Tip>
-      {cuts.map(cut => (
+      {shownCuts.map(cut => (
         <Tip
           key={cut.name}
           text={`${cut.blurb}. One press: ${cutSays(cut)} — which is where it lands in the rows under here.`}
@@ -261,7 +268,12 @@ function PartVerbs({
           </button>
         </Tip>
       ))}
-      {cuts.length > 0 && (
+      {hidden > 0 && (
+        <button className={styles.cutMore} onClick={() => setOpen(true)}>
+          {`${hidden} more`}
+        </button>
+      )}
+      {cuts.length > 0 && (wired || open) && (
         <Tip
           text={
             wired

@@ -108,7 +108,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
     cut: 'drumBusCut',
     rows: [
       {
-        chips: ['counter', 'pattern\nmemory', 'voices'],
+        chips: ['counter', 'pattern memory', 'voices'],
         links: [
           [ribbon('drumAddrLine', 'drumAddrFault')],
           [ribbon('drumDataLine', 'drumDataFault')],

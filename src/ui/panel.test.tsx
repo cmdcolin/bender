@@ -97,6 +97,8 @@ test('a named cut wires itself, and the next one replaces it', () => {
   // hear would be the whole of what the press did.
   expect(engine.controls.get().fmLevel).toBeGreaterThan(0)
 
+  expect(screen.queryByRole('button', { name: 'no fundamental' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: /^\d+ more$/ }))
   fireEvent.click(screen.getByRole('button', { name: 'no fundamental' }))
   expect(engine.controls.get().fmDataLine).toBe(DEFAULT_CONTROLS.fmDataLine)
   expect(engine.controls.get().fmWaveLine).toBeGreaterThan(0)
