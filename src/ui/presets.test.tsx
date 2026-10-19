@@ -244,3 +244,15 @@ test('a folded shelf shows one chip until opened', () => {
   fireEvent.click(screen.getByRole('button', { name: 'show' }))
   expect(screen.getAllByRole('button').length).toBeGreaterThan(12)
 })
+
+test('the find field narrows the row to matching presets', () => {
+  render(<Presets morphSeconds={0} />)
+  const last = PRESETS.at(-1)!
+  const field = screen.getByRole('searchbox', { name: 'find a preset' })
+  fireEvent.change(field, { target: { value: last.name } })
+  expect(
+    screen.getByRole('button', { name: new RegExp(last.name) }),
+  ).toBeTruthy()
+  fireEvent.change(field, { target: { value: 'zzzz no such board' } })
+  expect(screen.getByText('no preset matches')).toBeTruthy()
+})

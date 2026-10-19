@@ -6,6 +6,7 @@ import { useBoardValue } from './ControlsContext.ts'
 import { useCoarse } from './measure.ts'
 import styles from './PresetRow.module.css'
 import { PRESETS, presetPath, type PresetDef } from './presets/index.ts'
+import { presetMatches } from './presetSearch.ts'
 import { Tip } from './Tip.tsx'
 
 import type { Glide } from '../engine/glide.ts'
@@ -169,13 +170,18 @@ export function Presets(props: {
   const [scrub, setScrub] = useState<Scrub | null>(null)
   const [shelf, setShelf] = useState(!props.folded)
   const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
   const collapsed = useCoarse() ? COLLAPSED_COARSE : COLLAPSED
   const standing = useBoardValue(c =>
     scrub === null ? false : sameControls(c, scrub.produced),
   )
   const held = standing ? scrub : null
 
-  const shown = open ? PRESETS : PRESETS.slice(0, collapsed)
+  const shown = query.trim()
+    ? PRESETS.filter(p => presetMatches(p, query))
+    : open
+      ? PRESETS
+      : PRESETS.slice(0, collapsed)
   // The chip you are standing on stays on the row even when it lives past the
   // fold: its fill is the only thing saying which board this is, and folding it
   // away would leave the row claiming you are on none of them.
@@ -219,14 +225,28 @@ export function Presets(props: {
             ✕
           </button>
         )}
-        <button
-          className={styles.more}
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-        >
-          {open ? 'hide' : `show ${rest} more`}
-        </button>
+        {!query.trim() && (
+          <button
+            className={styles.more}
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? 'hide' : `show ${rest} more`}
+          </button>
+        )}
       </div>
+      <input
+        className={styles.filter}
+        type="search"
+        aria-label="find a preset"
+        placeholder="find: a name, a word, or a stage like tape delay"
+        value={query}
+        onChange={e => setQuery(e.currentTarget.value)}
+        onKeyDown={e => {
+          if (e.key === 'Escape') setQuery('')
+          e.stopPropagation()
+        }}
+      />
       <div className={styles.presets}>
         {[...shown, ...(stray ? [stray] : [])].map(p => (
           <PresetChip
@@ -237,6 +257,9 @@ export function Presets(props: {
             onScrub={setScrub}
           />
         ))}
+        {shown.length === 0 && (
+          <span className={styles.hint}>no preset matches</span>
+        )}
       </div>
     </section>
   )

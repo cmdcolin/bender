@@ -48,6 +48,23 @@
   color: var(--fg3);
 }
 
+.filter {
+  width: 100%;
+  margin-bottom: var(--space-xs);
+  padding: var(--space-2xs) var(--space-sm);
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--fg);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+}
+
+.filter:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
 .presets {
   display: flex;
   flex-wrap: wrap;
