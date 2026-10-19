@@ -1,5 +1,5 @@
 import { createStore } from '../listeners.ts'
-import { bench, INSTRUMENTS, setBench, type Bench } from './bench.ts'
+import { bench, setBench, type Bench } from './bench.ts'
 import { FIXED, GATES, gateOff, onBoard } from './chain-map.ts'
 import { GROUPS, OWNER_BY_KEY, type Group } from './controls/index.ts'
 import { readSession, writeSession } from './persist.ts'
@@ -35,10 +35,10 @@ export const added = createStore<ReadonlySet<string>>(
 )
 added.subscribe(() => writeSession(KEY, JSON.stringify([...added.get()])))
 
-/** The faces the bench lays out whatever the board holds: every instrument not
-    put away in all-instruments mode, and the pedals brought up. */
+/** The faces the bench lays out whatever the board holds: the instruments and
+    pedals brought up. */
 export const benchStages = (b: Bench): string[] => [
-  ...(b.all ? INSTRUMENTS.filter(s => !b.closed.includes(s)) : []),
+  ...b.instruments,
   ...b.pedals,
 ]
 
@@ -57,12 +57,12 @@ export const removable = (name: string) => !FIXED.has(name)
 function putAway(name: string) {
   const b = bench.get()
   const pedals = b.pedals.filter(p => p !== name)
-  const closed =
-    b.all && INSTRUMENTS.some(s => s === name) && !b.closed.includes(name)
-      ? [...b.closed, name]
-      : b.closed
-  if (pedals.length !== b.pedals.length || closed !== b.closed)
-    setBench({ ...b, pedals, closed })
+  const instruments = b.instruments.filter(s => s !== name)
+  if (
+    pedals.length !== b.pedals.length ||
+    instruments.length !== b.instruments.length
+  )
+    setBench({ ...b, pedals, instruments })
 }
 
 /** The board with the stage closed off: a gated stage's level or mix down and

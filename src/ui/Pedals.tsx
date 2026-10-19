@@ -1,7 +1,6 @@
-import { useCallback, useState, type CSSProperties } from 'react'
-
 import { engine } from '../engine/engine.ts'
 import { PEDALS, pedalOrderAt } from '../pedals.ts'
+import { AddMenu } from './AddMenu.tsx'
 import { bench, setBench } from './bench.ts'
 import { sliderFor } from './controls/index.ts'
 import {
@@ -10,13 +9,12 @@ import {
   useStoreValue,
 } from './ControlsContext.ts'
 import { DeviceVerbs } from './DeviceVerbs.tsx'
-import { Menu } from './Menu.tsx'
-import { menuCheck } from './menuItems.ts'
 import styles from './Pedals.module.css'
 import { ControlSlider } from './Slider.tsx'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
+import type { CSSProperties } from 'react'
 
 // What a pedal wears on the bench: its enclosure colour, an optional selector
 // switch, the sliders you reach for first with the mix last, and the control its
@@ -101,76 +99,27 @@ function useRunOrder() {
   return pedalOrderAt(at).map(i => PEDALS[i]!.group)
 }
 
-/** One press puts every pedal on the bench, and once all six are there the
-    next press puts them away. Their mixes stay where they are. */
-export function AllPedals() {
-  const { pedals: shown } = useStoreValue(bench)
-  const order = useRunOrder()
-  const full = order.every(pedal => shown.includes(pedal))
-  return (
-    <Tip
-      text={
-        full
-          ? 'Take every pedal face off the bench. The pedals stay on the board.'
-          : 'Put all six pedal faces on the bench and their boxes on the map. A pedal stays silent until its mix comes up.'
-      }
-    >
-      <button
-        className={full ? styles.allQuiet : styles.all}
-        onClick={() => setBench({ ...bench.get(), pedals: full ? [] : order })}
-      >
-        {full ? '− put all pedals away' : '+ add all pedals'}
-      </button>
-    </Tip>
-  )
+const KIND: Record<string, string> = {
+  Gnash: 'stompbox',
+  Wraith: 'tape delay',
+  Ricochet: 'delay pedal',
+  Boing: 'spring reverb',
+  Chorale: 'ensemble',
+  Ember: 'tube amp',
 }
 
-// One button that opens a checklist, so six pedals cost one chip of bar rather
-// than six, which is what a phone has room for.
-export function PedalsMenu() {
+export function AddPedal() {
   const { pedals: shown } = useStoreValue(bench)
-  const order = useRunOrder()
-  const [open, setOpen] = useState(false)
-  const [button, setButton] = useState<HTMLButtonElement | null>(null)
-  const close = useCallback(() => setOpen(false), [])
+  const choices = useRunOrder()
+    .filter(stage => !shown.includes(stage))
+    .map(stage => ({ stage, kind: KIND[stage]! }))
   return (
-    <>
-      <Tip text="Choose which pedals sit on the bench with the instruments. All six are always on the board whatever you pick here.">
-        <button
-          ref={setButton}
-          className={shown.length > 0 ? styles.menuOn : styles.menu}
-          aria-expanded={open}
-          onClick={() => setOpen(o => !o)}
-        >
-          pedals{shown.length > 0 ? ` · ${shown.length}` : ''} ▾
-        </button>
-      </Tip>
-      {open && (
-        <Menu
-          anchor={button}
-          toggle={button}
-          role="group"
-          label="pedals on the bench"
-          onClose={close}
-        >
-          {order.map(pedal => {
-            const on = shown.includes(pedal)
-            return (
-              <label key={pedal} className={menuCheck}>
-                <input
-                  type="checkbox"
-                  checked={on}
-                  onChange={() =>
-                    on ? hide(shown, pedal) : show(shown, pedal)
-                  }
-                />
-                {pedal.toLowerCase()}
-              </label>
-            )
-          })}
-        </Menu>
-      )}
-    </>
+    <AddMenu
+      className={styles.add}
+      text="Add pedal"
+      choices={choices}
+      onPick={stage => show(bench.get().pedals, stage)}
+    />
   )
 }
 

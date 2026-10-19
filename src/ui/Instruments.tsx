@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import { engine } from '../engine/engine.ts'
+import { AddMenu } from './AddMenu.tsx'
 import { INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
@@ -16,10 +17,9 @@ import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
-import { AllPedals, PedalShelf, PedalsMenu } from './Pedals.tsx'
+import { AddPedal, PedalShelf } from './Pedals.tsx'
 import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
-import { Tip } from './Tip.tsx'
 
 import type { MorphSeconds } from './morph.ts'
 import type { ComponentType } from 'react'
@@ -58,12 +58,22 @@ const LEVELLED: Row = [
   ['Layercake', FourTrackFace],
 ]
 
+const KIND: Record<string, string> = {
+  Plinky: 'toy keyboard',
+  Clatter: 'toy drums',
+  Glint: 'FM synth',
+  Parlor: 'home keyboard',
+  Growler: 'mono synth',
+  Spool: 'tape loop',
+  Layercake: 'four-track',
+}
+
 // The keyboards, the kit, the tape loop and the four-track. A machine shows while its stage is
 // on the map: the toy and the kit from the start, the others once their faders
-// come up. The tape loop also shows while the mic is open, since its face holds
-// the mic key, and while a file is over the app, to take the drop. Add all instruments lays out every one whatever its fader says, each with
-// a close cap. Every face wears one, and a row of what has been closed brings it
-// back. The mode and the closed set survive a reload.
+// come up or Add instrument brings them in. The tape loop also shows while the
+// mic is open, since its face holds the mic key, and while a file is over the
+// app, to take the drop. Every face wears a close cap, and Add instrument
+// brings a closed one back.
 //
 // A machine that has come up goes on the map for good (`add`): the Level slider
 // on its face runs down to zero, and a face that left under the pointer would
@@ -75,14 +85,13 @@ export function Instruments({
   seconds: MorphSeconds
   onOpen: (stage: string) => void
 }) {
-  const { all, closed, shows, close, reopen, setAll } = useBenchFaces()
+  const { shows, close, bring } = useBenchFaces()
   const risen = useBoardValue(c =>
     INSTRUMENTS.filter(stage => onBoard(c).has(stage)).join('|'),
   )
   useEffect(() => {
     if (risen) add(risen.split('|'))
   }, [risen])
-  const full = all && closed.size === 0
   const micOn = useStoreValue(engine.micOn)
   const over = useStoreValue(dragging)
   const tapeHeld = micOn || over
@@ -106,35 +115,22 @@ export function Instruments({
     )
   }
 
+  const choices = INSTRUMENTS.filter(stage => !face(stage)).map(stage => ({
+    stage,
+    kind: KIND[stage]!,
+  }))
+
   return (
     <>
       <div className={styles.bar}>
-        <Tip
-          text={
-            full
-              ? 'Put away the instruments whose level never came up.'
-              : 'Lay out every instrument, each with its Level slider. One with its level down stays silent until you raise it.'
-          }
-        >
-          <button
-            className={full ? styles.allQuiet : styles.all}
-            onClick={() => setAll(!full)}
-          >
-            {full ? '− hide unused instruments' : '+ add all instruments'}
-          </button>
-        </Tip>
-        <AllPedals />
-        <PedalsMenu />
+        <AddMenu
+          className={styles.add}
+          text="Add instrument"
+          choices={choices}
+          onPick={bring}
+        />
+        <AddPedal />
         <BendKeysSwitch />
-        {INSTRUMENTS.filter(stage => closed.has(stage)).map(stage => (
-          <button
-            key={stage}
-            className={styles.reopen}
-            onClick={() => reopen(stage)}
-          >
-            + {stage.toLowerCase()}
-          </button>
-        ))}
       </div>
       <BendKeys morphSeconds={seconds} />
       <GateBench>{shelf([...TOY, ...LEVELLED])}</GateBench>

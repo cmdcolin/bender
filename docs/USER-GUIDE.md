@@ -416,12 +416,11 @@ The bench is the main area under the scope, where the instruments sit.
   keyboards. The face holds a mic key and stays up while the mic is open. To
   open the mic without the tape face, press **open mic** in the Mic stage's
   panel.
-- **+ add all instruments** lays out all seven, each with a close cap. Once all
-  seven are out, the same button reads **− hide unused instruments**.
-- **+ add all pedals** puts all six pedal faces on the bench, and **− put all
-  pedals away** clears them. A pedal stays silent until its mix comes up.
-- The **pedals** button lists the six pedals in signal order. Check one to put
-  its face on the bench, which starts with none.
+- **Add instrument** lists the instruments not on the bench, each named with
+  what it is, such as "Glint (FM synth)". A pick puts its face on the bench. A
+  face's close cap takes its stage off the board.
+- **Add pedal** does the same for the six pedals, in signal order. The bench
+  starts with none, and a pedal stays silent until its mix comes up.
 - Instruments and pedals on the bench also get their boxes on the signal path.
 - A pedal's stage panel has a **bench** button that does the same, and a thin
   bar on the pedal's box in the signal path marks the ones on the bench.

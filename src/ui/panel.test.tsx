@@ -549,22 +549,26 @@ test('clicking a reading takes a typed value, and Escape leaves it be', () => {
 })
 
 test('the tape loop stays off the bench until it is added or its level comes up', () => {
-  bench.set({ ...bench.get(), all: false, closed: [] })
+  bench.set({ ...bench.get(), instruments: [], closed: [] })
   render(<App />)
   const tape = () => screen.queryByRole('region', { name: 'spool' })
   expect(tape()).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: '+ add all instruments' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Add instrument/ }))
+  fireEvent.click(screen.getByRole('menuitem', { name: /^Spool/ }))
   expect(tape()).not.toBeNull()
+  fireEvent.keyDown(document.body, { key: 'Escape' })
   fireEvent.click(screen.getByRole('button', { name: 'put away Spool' }))
   expect(tape()).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: '+ spool' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Add instrument/ }))
+  fireEvent.click(screen.getByRole('menuitem', { name: /^Spool/ }))
   expect(tape()).not.toBeNull()
-  fireEvent.click(
-    screen.getByRole('button', { name: '− hide unused instruments' }),
-  )
-  expect(tape()).toBeNull()
+})
+
+test('the tape loop face comes up when its level does', () => {
+  bench.set({ ...bench.get(), instruments: [], closed: [] })
+  render(<App />)
   act(() => engine.set('sampleLevel', 0.7))
-  expect(tape()).not.toBeNull()
+  expect(screen.queryByRole('region', { name: 'spool' })).not.toBeNull()
 })
 
 test("a face's name plate opens its stage in the panel", () => {

@@ -16,7 +16,13 @@ import {
 
 beforeEach(() => {
   localStorage.clear()
-  bench.set({ all: false, closed: [], pedals: [], roll: false, grid: false })
+  bench.set({
+    instruments: [],
+    closed: [],
+    pedals: [],
+    roll: false,
+    grid: false,
+  })
   morphSetting.set(1)
   keymap.set(DEFAULT_KEYMAP)
 })
@@ -36,15 +42,15 @@ test('a stored setup keeps the fields that are the right shape', () => {
   expect(
     readPrefs({
       at: 3,
-      bench: { all: true, closed: ['Glint', 7] },
+      bench: { instruments: ['Glint', 7] },
       morph: 4,
       keys: ['a', 'a'],
     }),
   ).toEqual({
     at: 3,
     bench: {
-      all: true,
-      closed: ['Glint'],
+      instruments: ['Glint'],
+      closed: [],
       pedals: [],
       roll: false,
       grid: false,
@@ -58,11 +64,11 @@ test('a stored setup naming the old stages keeps them under the new names', () =
   expect(
     readPrefs({
       at: 3,
-      bench: { closed: ['FM chip'], pedals: ['Spring verb'] },
+      bench: { instruments: ['FM chip'], pedals: ['Spring verb'] },
     })?.bench,
   ).toEqual({
-    all: false,
-    closed: ['Glint'],
+    instruments: ['Glint'],
+    closed: [],
     pedals: ['Boing'],
     roll: false,
     grid: false,
@@ -72,8 +78,8 @@ test('a stored setup naming the old stages keeps them under the new names', () =
 test('applying a setup writes the stores and this machine keeps it', () => {
   applyPrefs({
     bench: {
-      all: true,
-      closed: ['Growler'],
+      instruments: ['Growler'],
+      closed: [],
       pedals: [],
       roll: false,
       grid: false,
@@ -81,8 +87,8 @@ test('applying a setup writes the stores and this machine keeps it', () => {
     morph: 8,
   })
   expect(bench.get()).toEqual({
-    all: true,
-    closed: ['Growler'],
+    instruments: ['Growler'],
+    closed: [],
     pedals: [],
     roll: false,
     grid: false,

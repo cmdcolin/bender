@@ -2,26 +2,34 @@ import { bench, INSTRUMENTS, setBench } from './bench.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { added, shownOn } from './fitted.ts'
 
-const keep = (all: boolean, closed: ReadonlySet<string>) =>
-  setBench({ ...bench.get(), all, closed: [...closed] })
+const without = (list: readonly string[], stage: string) =>
+  list.filter(s => s !== stage)
 
 /** Which instrument faces the bench lays out: each one whose stage is on the
-    map, or in all-instruments mode every one, except those put away. */
+    map, except those put away. */
 export function useBenchFaces() {
-  const { all, closed: closedList } = useStoreValue(bench)
-  const closed = new Set(closedList)
+  const { closed } = useStoreValue(bench)
   useStoreValue(added)
   const onMap = useBoardValue(c =>
     INSTRUMENTS.filter(stage => shownOn(c).has(stage)).join('|'),
   ).split('|')
   return {
-    all,
-    closed,
-    shows: (stage: string) =>
-      !closed.has(stage) && (all || onMap.includes(stage)),
-    close: (stage: string) => keep(all, new Set(closed).add(stage)),
-    reopen: (stage: string) =>
-      keep(all, new Set([...closed].filter(s => s !== stage))),
-    setAll: (on: boolean) => keep(on, new Set()),
+    shows: (stage: string) => !closed.includes(stage) && onMap.includes(stage),
+    close: (stage: string) => {
+      const b = bench.get()
+      setBench({
+        ...b,
+        instruments: without(b.instruments, stage),
+        closed: [...without(b.closed, stage), stage],
+      })
+    },
+    bring: (stage: string) => {
+      const b = bench.get()
+      setBench({
+        ...b,
+        instruments: [...without(b.instruments, stage), stage],
+        closed: without(b.closed, stage),
+      })
+    },
   }
 }

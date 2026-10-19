@@ -17,14 +17,6 @@
   margin-bottom: 36px;
 }
 
-.all {
+.add {
   composes: action from './button.module.css';
-}
-
-.allQuiet {
-  composes: actionQuiet from './button.module.css';
-}
-
-.reopen {
-  composes: chipQuiet from './button.module.css';
 }

@@ -4,13 +4,12 @@ import { RENAMED } from './stageNames.ts'
 
 const KEY = 'bender.bench'
 
-// What the main area shows. `all` lays out every instrument whatever its fader
-// says; `closed` is the instruments the player has put away; `pedals` is the
-// pedals the player has brought up, none until asked for. `roll` and `grid`
-// are the piano roll and the drum pattern in the stage panels, which stay out
-// of the panel until asked for.
+// What the main area shows. `instruments` and `pedals` are the faces the player
+// has brought up, none until asked for; an instrument whose fader is up shows
+// without being asked, unless it is in `closed`, the ones put away. `roll` and `grid` are the piano roll and the drum
+// pattern in the stage panels, which stay out of the panel until asked for.
 export interface Bench {
-  all: boolean
+  instruments: readonly string[]
   closed: readonly string[]
   pedals: readonly string[]
   roll: boolean
@@ -28,7 +27,7 @@ export const INSTRUMENTS = [
 ] as const
 
 const EMPTY: Bench = {
-  all: false,
+  instruments: [],
   closed: [],
   pedals: [],
   roll: false,
@@ -42,13 +41,13 @@ const strings = (value: unknown): string[] =>
 
 export function sanitizeBench(value: unknown): Bench {
   if (typeof value !== 'object' || value === null) return EMPTY
-  const all = 'all' in value ? value.all : undefined
+  const instruments = 'instruments' in value ? value.instruments : undefined
   const closed = 'closed' in value ? value.closed : undefined
   const pedals = 'pedals' in value ? value.pedals : undefined
   const roll = 'roll' in value ? value.roll : undefined
   const grid = 'grid' in value ? value.grid : undefined
   return {
-    all: all === true,
+    instruments: strings(instruments),
     closed: strings(closed),
     pedals: strings(pedals),
     roll: roll === true,

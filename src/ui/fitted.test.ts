@@ -133,8 +133,8 @@ test('a stored list keeps the stage names the board still has', () => {
 
 test('every instrument laid out on the bench has its box on the map', () => {
   const all = {
-    all: true,
-    closed: ['Growler'],
+    instruments: ['Glint', 'Parlor'],
+    closed: [],
     pedals: ['Gnash'],
     roll: false,
     grid: false,
@@ -147,7 +147,7 @@ test('every instrument laid out on the bench has its box on the map', () => {
 
 test('taking an instrument off puts its face away', () => {
   bench.set({
-    all: true,
+    instruments: ['Glint'],
     closed: [],
     pedals: ['Gnash'],
     roll: false,
@@ -155,7 +155,13 @@ test('taking an instrument off puts its face away', () => {
   })
   takeOff(group('Glint'), stock())
   takeOff(group('Gnash'), stock())
-  expect(bench.get().closed).toEqual(['Glint'])
+  expect(bench.get().instruments).toEqual([])
   expect(bench.get().pedals).toEqual([])
-  bench.set({ all: false, closed: [], pedals: [], roll: false, grid: false })
+  bench.set({
+    instruments: [],
+    closed: [],
+    pedals: [],
+    roll: false,
+    grid: false,
+  })
 })
