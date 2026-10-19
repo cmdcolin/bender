@@ -209,7 +209,11 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       {open && (
         <OpenBox name={open.name} onHide={() => pick.toggle(open.id!)}>
           {close}
-          <BoxRows keys={open.keys} verbs={part && verbs(part)} />
+          <BoxRows
+            title={open.name}
+            keys={open.keys}
+            verbs={part && verbs(part)}
+          />
         </OpenBox>
       )}
     </>

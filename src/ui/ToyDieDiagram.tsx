@@ -764,11 +764,13 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
           {open === 'bus' && zoom?.(BUS)}
           {open === KEYBOARD ? (
             <BoxRows
+              title={open}
               keys={KEYBOARD_KEYS}
               under={editor ? { keys: LEAD_KEYS, node: editor } : undefined}
             />
           ) : (
             <BoxRows
+              title={open}
               keys={open === 'bus' ? BUS_KEYS : NODE_KEYS[open]}
               verbs={
                 open === 'bus'

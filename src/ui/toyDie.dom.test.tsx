@@ -5,6 +5,7 @@ import { expect, test } from 'vitest'
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { GROUPS } from './controls/index.ts'
+import { setMorph } from './morph.ts'
 import { OpenGroup } from './Section.tsx'
 import { NODE_KEYS } from './toyBoxKeys.ts'
 import './testDom.ts'
@@ -286,7 +287,10 @@ test('the header verbs act on the open box, or on the whole stage', () => {
 })
 
 test('an open box rolls its own rows from inside its card', () => {
-  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  act(() => {
+    setMorph(0)
+    engine.patch({ ...DEFAULT_CONTROLS })
+  })
   open()
   fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
   const card = screen.getByRole('region', { name: 'envelope' })

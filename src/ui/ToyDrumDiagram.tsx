@@ -320,9 +320,14 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
         >
           {close}
           {pick.selected === PADS ? (
-            <BoxRows keys={PAD_KEYS} verbs={editor} />
+            <BoxRows
+              title={open?.name ?? pick.selected}
+              keys={PAD_KEYS}
+              verbs={editor}
+            />
           ) : (
             <BoxRows
+              title={open?.name ?? pick.selected}
               keys={open?.id === 'triggers' ? [] : open?.keys}
               verbs={
                 open &&

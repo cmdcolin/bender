@@ -336,6 +336,7 @@ export function MonoPathDiagram({
         >
           {close}
           <BoxRows
+            title={drawn?.name ?? open.id!}
             keys={open.id === 'voice card' ? [] : open.keys}
             verbs={part && verbs(part)}
           />

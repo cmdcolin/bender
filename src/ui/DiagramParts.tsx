@@ -1,6 +1,5 @@
 import { Fragment, useId, type ReactNode } from 'react'
 
-import { BoxTitle } from './BoxContext.ts'
 import { BoxRoll } from './BoxRoll.tsx'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
@@ -418,7 +417,7 @@ export function OpenBox({
           ×
         </button>
       </header>
-      <BoxTitle.Provider value={title}>{children}</BoxTitle.Provider>
+      {children}
     </section>
   )
 }
@@ -434,8 +433,11 @@ export function BoxRows({
   under,
   inOrder,
   card,
+  title = card?.name,
 }: {
   keys: readonly ControlKey[] | undefined
+  /** The box the rows belong to, which names what the roll above them moves. */
+  title?: string
   note?: string
   /** Controls drawn above the rows, for a box whose knobs have dice or cuts. */
   verbs?: ReactNode
@@ -460,7 +462,7 @@ export function BoxRows({
   const list = (
     <div className={styles.rows}>
       {note && <p className={styles.noteLine}>{note}</p>}
-      <BoxRoll keys={rows} />
+      {title && <BoxRoll title={title.replaceAll('\n', ' ')} keys={rows} />}
       {verbs}
       {rows.map(key => (
         <Fragment key={key}>

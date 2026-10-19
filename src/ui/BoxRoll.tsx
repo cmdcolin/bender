@@ -1,24 +1,28 @@
-import { useContext } from 'react'
-
 import { engine } from '../engine/engine.ts'
-import { BoxStage, BoxTitle } from './BoxContext.ts'
 import styles from './BoxRoll.module.css'
+import { useStoreValue } from './ControlsContext.ts'
+import { morphSetting } from './morph.ts'
 import { rollKeys } from './presets/index.ts'
 import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
-export function BoxRoll({ keys }: { keys: readonly ControlKey[] }) {
-  const stage = useContext(BoxStage)
-  const title = useContext(BoxTitle)
-  const scope = `${stage?.stage} › ${title}`
+export function BoxRoll({
+  title,
+  keys,
+}: {
+  title: string
+  keys: readonly ControlKey[]
+}) {
+  const seconds = useStoreValue(morphSetting)
+  const scope = `box › ${keys.join()}`
   const canUndo = useCanUndoRoll(scope)
-  if (!stage || !title || keys.length === 0) return null
+  if (keys.length === 0) return null
   return (
     <div className={styles.verbs}>
       <Tip
-        text={`Roll the ${keys.length} controls under ${title} somewhere new and leave the rest of ${stage.stage} where it stands.`}
+        text={`Roll the ${keys.length} controls under ${title} somewhere new and leave the rest of the stage where it stands.`}
       >
         <button
           className={styles.roll}
@@ -27,7 +31,7 @@ export function BoxRoll({ keys }: { keys: readonly ControlKey[] }) {
             rollIn(
               scope,
               rollKeys(engine.controls.get(), keys, Math.random, true),
-              stage.seconds,
+              seconds,
             )
           }
         >
@@ -45,7 +49,7 @@ export function BoxRoll({ keys }: { keys: readonly ControlKey[] }) {
           className={canUndo ? styles.roll : styles.off}
           aria-label={`undo roll of ${title}`}
           disabled={!canUndo}
-          onClick={() => undoRoll(scope, stage.seconds)}
+          onClick={() => undoRoll(scope, seconds)}
         >
           undo
         </button>

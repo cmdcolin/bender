@@ -212,6 +212,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
         <OpenBox name={open.id!} onHide={() => pick.toggle(open.id!)}>
           {close}
           <BoxRows
+            title={open.id}
             keys={open.id === 'die' ? [] : open.keys}
             verbs={part && verbs(part)}
           />
