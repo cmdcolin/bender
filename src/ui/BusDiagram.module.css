@@ -17,7 +17,7 @@
 }
 
 .chipNameOn {
-  fill: var(--accent);
+  fill: var(--fg);
 }
 
 .trace,
@@ -76,6 +76,13 @@
   fill: var(--fg2);
 }
 
+.wireHit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+}
+
 .tagHit {
   fill: transparent;
 }
@@ -93,13 +100,6 @@
 }
 
 .knifed {
-  fill: var(--alarm);
-}
-
-.bend {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
   fill: var(--fg2);
 }
 
