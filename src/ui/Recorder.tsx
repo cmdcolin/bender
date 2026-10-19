@@ -29,8 +29,8 @@ export function Recorder() {
                 recording
                   ? 'Stops the take and saves it.'
                   : recStems
-                    ? 'Records the output and every source that had something on it — stopping saves the lot.'
-                    : 'Records the output to a wav file — stopping saves it.'
+                    ? 'Records everything you hear from now until you stop, plus every source on its own — stopping saves the lot.'
+                    : 'Records everything you hear, the whole session, from now until you stop — stopping saves it as a wav.'
               }
             >
               <TabKey

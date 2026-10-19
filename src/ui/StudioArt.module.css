@@ -42,6 +42,12 @@
   fill: #ff5a3c;
 }
 
+.writing {
+  font-family: var(--mono);
+  font-size: 4.4px;
+  fill: #8a8b94;
+}
+
 .ruling {
   stroke: #3d3e45;
   stroke-width: 1;
