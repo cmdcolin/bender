@@ -63,6 +63,18 @@
   color: #ff5a3c;
 }
 
+.caption,
+.captionOn {
+  margin: 0;
+  font-size: var(--fs-sm);
+  text-align: center;
+  color: var(--fg2);
+}
+
+.captionOn {
+  color: #ff5a3c;
+}
+
 .error {
   margin: 0;
   font-size: var(--fs-xs);
