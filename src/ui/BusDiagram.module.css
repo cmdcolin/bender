@@ -73,7 +73,7 @@
 }
 
 .tagOn {
-  fill: var(--alarm);
+  fill: var(--fg2);
 }
 
 .tagHit {
@@ -94,6 +94,13 @@
 
 .knifed {
   fill: var(--alarm);
+}
+
+.bend {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  fill: var(--fg2);
 }
 
 .joint {
@@ -121,5 +128,5 @@
 }
 
 .potOn text {
-  fill: var(--alarm);
+  fill: var(--fg2);
 }

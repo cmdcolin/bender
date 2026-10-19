@@ -251,7 +251,7 @@ function Say({
   children: string
 }) {
   return (
-    <text x={x} y={y} textAnchor={anchor} className={styles.knifed}>
+    <text x={x} y={y} textAnchor={anchor} className={styles.bend}>
       {children}
     </text>
   )
@@ -380,7 +380,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               />
               <text
                 x={width - 2}
-                y={mid - 4}
+                y={mid + 11}
                 textAnchor="end"
                 className={styles.bus}
               >
@@ -406,7 +406,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
               )}
               <ClockTag x={rom.x + 7} y={TOP} opens="clock" pick={pick} />
               <ClockTag
-                x={voices.x + voices.w - 17}
+                x={voices.x + voices.w - 24}
                 y={LOW}
                 opens="clock"
                 pick={pick}
@@ -465,7 +465,7 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                     d={`M${loopL} ${LOW} V${LOW - 6} H${loopR} V${LOW}`}
                     look="alarm"
                   />
-                  <Say x={env.x + env.w + 3} y={LOW - 2}>
+                  <Say x={loopR} y={LOW - 10} anchor="end">
                     relax
                   </Say>
                 </>
