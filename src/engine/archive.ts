@@ -239,27 +239,26 @@ export function pickFile(
   return best
 }
 
-// A read that cannot hang the roll behind it. Its own controller rather than
-// only the caller's, and the caller's aborts it too.
+// The caller's abort, or the clock running out, whichever comes first. A
+// signal that has already fired aborts the fetch at once.
+const within = (ms: number, signal: AbortSignal | undefined) =>
+  AbortSignal.any(
+    signal ? [signal, AbortSignal.timeout(ms)] : [AbortSignal.timeout(ms)],
+  )
+
+// A read that cannot hang the roll behind it.
 async function readJson(
   url: string,
   fetcher: typeof globalThis.fetch,
   signal: AbortSignal | undefined,
   ms: number,
 ): Promise<unknown> {
-  const ctl = new AbortController()
-  const timer = setTimeout(() => ctl.abort(), ms)
-  const onAbort = () => ctl.abort()
-  signal?.addEventListener('abort', onAbort)
   try {
-    const res = await fetcher(url, { signal: ctl.signal })
+    const res = await fetcher(url, { signal: within(ms, signal) })
     if (!res.ok) return null
     return await res.json()
   } catch {
     return null
-  } finally {
-    clearTimeout(timer)
-    signal?.removeEventListener('abort', onAbort)
   }
 }
 
@@ -327,21 +326,14 @@ export async function fetchItem(
   if (!take) return null
 
   step(`fetching ${title} (${Math.round(take.bytes / 100_000) / 10} MB)…`)
-  const ctl = new AbortController()
-  const timer = setTimeout(() => ctl.abort(), DOWNLOAD_TIMEOUT_MS)
-  const onAbort = () => ctl.abort()
-  opts.signal?.addEventListener('abort', onAbort)
   try {
     const res = await fetcher(corsUrl(take.id, take.file), {
-      signal: ctl.signal,
+      signal: within(DOWNLOAD_TIMEOUT_MS, opts.signal),
     })
     if (!res.ok) return null
     return { ...take, data: await readCapped(res, FETCH_CAP_BYTES) }
   } catch {
     return null
-  } finally {
-    clearTimeout(timer)
-    opts.signal?.removeEventListener('abort', onAbort)
   }
 }
 

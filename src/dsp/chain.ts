@@ -681,8 +681,10 @@ export class Chain {
         s.process(io, p, ctx)
         continue
       }
-      this.dryL.set(io.l.subarray(0, n))
-      this.dryR.set(io.r.subarray(0, n))
+      for (let k = 0; k < n; k++) {
+        this.dryL[k] = io.l[k]!
+        this.dryR[k] = io.r[k]!
+      }
       s.process(io, p, ctx)
       const step = (to - from) / n
       for (let k = 0; k < n; k++) {

@@ -612,13 +612,31 @@ export class Engine {
       this.running.set(false)
     }
     this.masterGain = masterGain
-    ctx.addEventListener('statechange', () =>
-      this.running.set(ctx.state === 'running'),
-    )
+    ctx.addEventListener('statechange', () => {
+      this.running.set(ctx.state === 'running')
+      if (ctx.state !== 'running' && ctx.state !== 'closed')
+        this.resumeOnGesture(ctx)
+    })
     this.ctx = ctx
     this.node = node
     this.post({ kind: 'params', pack: this.packLive() })
     this.postTransport()
+  }
+
+  private resumer: AbortController | undefined
+
+  // The browser suspends the context when the page is backgrounded or a call
+  // comes in, and only a gesture may bring it back.
+  private resumeOnGesture(ctx: AudioContext) {
+    this.resumer?.abort()
+    const ctl = new AbortController()
+    this.resumer = ctl
+    const go = () => {
+      ctl.abort()
+      ctx.resume().catch(noop)
+    }
+    window.addEventListener('pointerdown', go, { signal: ctl.signal })
+    window.addEventListener('keydown', go, { signal: ctl.signal })
   }
 
   private post(msg: ToWorklet, transfer?: Transferable[]) {
@@ -981,6 +999,7 @@ export class Engine {
   private micPending: Promise<void> | null = null
 
   enableMic(): Promise<void> {
+    this.micWanted = true
     this.micError.set('')
     this.micPending ??= this.openMic()
       .catch((e: unknown) => {
@@ -1007,6 +1026,10 @@ export class Engine {
         autoGainControl: false,
       },
     })
+    if (!this.micWanted) {
+      for (const track of stream.getTracks()) track.stop()
+      return
+    }
     this.micStream = stream
     this.micSource = this.ctx.createMediaStreamSource(stream)
     this.micSource.connect(this.node!)
@@ -1021,7 +1044,10 @@ export class Engine {
       )
   }
 
+  private micWanted = false
+
   disableMic() {
+    this.micWanted = false
     this.micError.set('')
     this.micSource?.disconnect()
     for (const track of this.micStream?.getTracks() ?? []) track.stop()
@@ -1234,15 +1260,21 @@ export class Engine {
     this.rec = null
     if (!rec) return
     const { take, master, stems, frames, live } = rec
+    const closed = new Set<WavSink>()
+    const shut = async (sink: WavSink) => {
+      const file = await sink.close()
+      closed.add(sink)
+      return file
+    }
     try {
       if (!frames) {
         master.discard()
         for (const stem of stems) stem.discard()
         return
       }
-      const files = [await master.close()]
+      const files = [await shut(master)]
       for (const [k, stem] of stems.entries()) {
-        if (live & (1 << k)) files.push(await stem.close())
+        if (live & (1 << k)) files.push(await shut(stem))
         else stem.discard()
       }
       for (const file of files) this.deliver(file)
@@ -1250,6 +1282,9 @@ export class Engine {
         rec.full ? `stopped early: out of ${LIMIT_NOUN[rec.full]}` : '',
       )
     } catch (e) {
+      for (const sink of [master, ...stems])
+        if (!closed.has(sink)) sink.discard()
+      this.recNote.set('')
       this.recError.set(errorText(e))
     } finally {
       take.end()
@@ -1495,6 +1530,7 @@ export class Engine {
       if (c.monoSeqOn !== 1 || c.monoSeqTo !== to) {
         this.armStep()
         this.patch({ monoSeqOn: 1, monoSeqTo: to })
+        this.commitStep()
       }
     }
     this.seqRecord.set(on)
