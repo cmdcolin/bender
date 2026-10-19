@@ -22,7 +22,7 @@ import {
 } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
-import type { ReactNode } from 'react'
+import type { Verbs } from './foldHosting.ts'
 
 const GROUP = GROUPS.find(g => g.name === 'Mono synth')!
 
@@ -99,11 +99,7 @@ const HEIGHT = ROW2 + BOX_H + 4
 // three oscillators, the mixer sums them with noise and the output fed back,
 // and the ladder filter and the VCA follow, each with its own contour. Osc 3 or
 // noise feeds the modulation bus, back to the oscillators and the cutoff.
-export function MonoPathDiagram({
-  verbs,
-}: {
-  verbs: (part: string) => ReactNode
-}) {
+export function MonoPathDiagram({ verbs }: { verbs: Verbs }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
   const flow: WireLook = useStoreSelect(

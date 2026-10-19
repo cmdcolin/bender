@@ -14,7 +14,7 @@ import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
 import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
 import { CONE_H, ZoomCone } from './ZoomCone.tsx'
 
-import type { ReactNode } from 'react'
+import type { Verbs } from './foldHosting.ts'
 
 const KNIFE = [
   'fmDataLine',
@@ -82,11 +82,7 @@ const BOX_H = boxHeight('')
 // configure — the modulator feeding the carrier — and one output stage behind
 // them. The key and the clocks come in from above, and the die's own faults sit
 // under the operators. Each box opens the knobs of the part it stands for.
-export function FmChipDiagram({
-  verbs,
-}: {
-  verbs: (part: string) => ReactNode
-}) {
+export function FmChipDiagram({ verbs }: { verbs: Verbs }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('modulator')
   // Off the meter on the chip's channel, as the map's glyph reads it.

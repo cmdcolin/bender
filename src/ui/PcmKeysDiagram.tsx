@@ -12,7 +12,7 @@ import {
 import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
 import styles from './PcmKeysDiagram.module.css'
 
-import type { ReactNode } from 'react'
+import type { Verbs } from './foldHosting.ts'
 
 const KEYS = [
   'pcmStruck',
@@ -57,11 +57,7 @@ const midOf = (from: BoxSpec, to: BoxSpec) =>
 // counter and the ROM talk over two buses a knife can reach, which hang under
 // the wires they sit on, and the die's one vibrato LFO feeds the counter from
 // above. Each box opens the knobs of the part it stands for.
-export function PcmKeysDiagram({
-  verbs,
-}: {
-  verbs: (part: string) => ReactNode
-}) {
+export function PcmKeysDiagram({ verbs }: { verbs: Verbs }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('ROM')
   const flow = useStoreSelect(engine.sounding, lit => lit & (1 << PCM_TAP))

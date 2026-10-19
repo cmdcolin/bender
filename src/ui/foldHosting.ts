@@ -1,7 +1,12 @@
+import type { ControlKey } from '../controls.ts'
 import type { ReactNode } from 'react'
 
-/** Shows the verbs of another fold of the same group. */
-export type Verbs = (part: string) => ReactNode
+/** Shows the verbs of another fold of the same group, or of one box's knobs
+    inside it. */
+export type Verbs = (
+  part: string,
+  box?: { name: string; keys: readonly ControlKey[] },
+) => ReactNode
 
 /** Stages drawn whole by one fold's drawing, which then holds every row. */
 export const STAGE_DRAWINGS: Record<string, string> = {

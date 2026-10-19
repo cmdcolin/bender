@@ -122,3 +122,10 @@ test('the pads box lights when a kit knob moves', () => {
   )
   engine.writeBoard(DEFAULT_CONTROLS)
 })
+
+test("a voice box's reset counts only that box's knobs", () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, drumRing: 0.5, drumSnappy: 0.5 })
+  openKit()
+  fireEvent.click(box('tanks'))
+  expect(screen.getByRole('button', { name: 'reset 1' })).not.toBeNull()
+})

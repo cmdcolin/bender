@@ -38,6 +38,7 @@ const KEYS = [
 const GROUP = GROUPS.find(g => g.name === 'Toy keyboard')!
 
 const BUS = 'knife on the bus'
+const DIE = 'inside the die'
 const KEYBOARD = 'keyboard'
 
 const keysOf = (part: string): ControlKey[] =>
@@ -557,7 +558,15 @@ export function ToyDieDiagram({ verbs, editor }: DrawingProps) {
                 ? NODE_KEYS[pick.selected]
                 : undefined
           }
-          verbs={pick.selected === 'bus' && verbs?.(BUS)}
+          verbs={
+            pick.selected === 'bus'
+              ? verbs?.(BUS)
+              : pick.selected &&
+                verbs?.(DIE, {
+                  name: pick.selected,
+                  keys: NODE_KEYS[pick.selected]!,
+                })
+          }
         />
       )}
     </>

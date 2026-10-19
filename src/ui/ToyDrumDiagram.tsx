@@ -323,7 +323,13 @@ export function ToyDrumDiagram({ verbs, editor }: DrawingProps) {
           hint="Press a box for its settings."
           keys={open?.id === 'triggers' ? [] : open?.keys}
           verbs={
-            open && BOXES[open.id].part !== HOST && verbs?.(BOXES[open.id].part)
+            open &&
+            verbs?.(
+              BOXES[open.id].part,
+              BOXES[open.id].part === HOST
+                ? { name: open.id, keys: open.keys }
+                : undefined,
+            )
           }
         />
       )}

@@ -25,6 +25,7 @@ import {
   hostedBy,
   isHosted,
   STAGE_DRAWINGS,
+  type Verbs,
 } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
 import { MicPatch } from './MicPatch.tsx'
@@ -186,6 +187,7 @@ function PartVerbs({
   cuts,
   group,
   part,
+  what = part,
   rows,
   moved,
   standing,
@@ -194,6 +196,8 @@ function PartVerbs({
   cuts: CutDef[]
   group: Group
   part: string
+  /** The box the verbs act for, when it holds only some of the part. */
+  what?: string
   rows: SliderDef[]
   moved: number
   standing: string
@@ -201,11 +205,11 @@ function PartVerbs({
 }) {
   const wired = useBoardValue(c => cutWired(group.name, part, c))
   const keys = rows.map(d => d.key)
-  const scope = `${group.name} › ${part}`
+  const scope = `${group.name} › ${what}`
   return (
     <div className={styles.cuts}>
       <Tip
-        text={`Roll the ${rows.length} controls under ${part} somewhere new and leave the rest of ${group.name} where it stands.`}
+        text={`Roll the ${rows.length} controls under ${what} somewhere new and leave the rest of ${group.name} where it stands.`}
       >
         <button
           className={styles.partVerb}
@@ -220,12 +224,12 @@ function PartVerbs({
           roll
         </button>
       </Tip>
-      <UndoRoll scope={scope} what={part} seconds={seconds} fold />
+      <UndoRoll scope={scope} what={what} seconds={seconds} fold />
       <Tip
         text={
           moved > 0
-            ? `put ${part}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
-            : `${part} is already where it booted`
+            ? `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
+            : `${what} is already where it booted`
         }
       >
         <button
@@ -385,7 +389,9 @@ function PartFold({
       <FoldDrawing
         group={group.name}
         part={name}
-        verbs={part => <BoxVerbs group={group} part={part} seconds={seconds} />}
+        verbs={(part, box) => (
+          <BoxVerbs group={group} part={part} box={box} seconds={seconds} />
+        )}
       />
       {!DRAWN_ROWS.has(`${group.name}|${name}`) &&
         slidersFirst(rows).map(def => (
@@ -400,15 +406,20 @@ function PartFold({
 function BoxVerbs({
   group,
   part,
+  box,
   seconds,
 }: {
   group: Group
   part: string
+  box?: Parameters<Verbs>[1]
   seconds: number
 }) {
   const shownKeys = useBoardValue(c =>
     group.sliders
-      .filter(d => d.part === part && shown(d, c))
+      .filter(
+        d =>
+          d.part === part && (!box || box.keys.includes(d.key)) && shown(d, c),
+      )
       .map(d => d.key)
       .join(','),
   ).split(',')
@@ -424,12 +435,15 @@ function BoxVerbs({
         cuts={cuts}
         group={group}
         part={part}
+        what={box?.name}
         rows={rows}
         moved={moved}
         standing={standing}
         seconds={seconds}
       />
-      <FoldDrawing group={group.name} part={part} />
+      {!DRAWN_ROWS.has(`${group.name}|${part}`) && (
+        <FoldDrawing group={group.name} part={part} />
+      )}
     </>
   )
 }
@@ -524,8 +538,13 @@ function Rows({
               group={group.name}
               part={name}
               editor={editor}
-              verbs={part => (
-                <BoxVerbs group={group} part={part} seconds={seconds} />
+              verbs={(part, box) => (
+                <BoxVerbs
+                  group={group}
+                  part={part}
+                  box={box}
+                  seconds={seconds}
+                />
               )}
             />
           )
@@ -709,23 +728,38 @@ export function OpenGroup({
           {group.editor?.kind === 'tapePath' && <TapePathDiagram />}
           {group.editor?.kind === 'fm' && (
             <FmChipDiagram
-              verbs={part => (
-                <BoxVerbs group={group} part={part} seconds={seconds} />
+              verbs={(part, box) => (
+                <BoxVerbs
+                  group={group}
+                  part={part}
+                  box={box}
+                  seconds={seconds}
+                />
               )}
             />
           )}
           {group.editor?.kind === 'pcm' && (
             <PcmKeysDiagram
-              verbs={part => (
-                <BoxVerbs group={group} part={part} seconds={seconds} />
+              verbs={(part, box) => (
+                <BoxVerbs
+                  group={group}
+                  part={part}
+                  box={box}
+                  seconds={seconds}
+                />
               )}
             />
           )}
           {group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
           {group.editor?.kind === 'monoPath' && (
             <MonoPathDiagram
-              verbs={part => (
-                <BoxVerbs group={group} part={part} seconds={seconds} />
+              verbs={(part, box) => (
+                <BoxVerbs
+                  group={group}
+                  part={part}
+                  box={box}
+                  seconds={seconds}
+                />
               )}
             />
           )}
