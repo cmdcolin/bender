@@ -80,6 +80,19 @@ test('Add instrument names each machine with what it is and lays out the pick', 
   expect(screen.queryByRole('menuitem', { name: /^Glint/ })).toBeNull()
 })
 
+test('adding a machine with its level down brings the level up to sound', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  expect(engine.controls.get().monoLevel).toBe(0)
+  fireEvent.click(addInstrument())
+  fireEvent.click(screen.getByRole('menuitem', { name: /^Growler/ }))
+  expect(engine.controls.get().monoLevel).toBe(0.6)
+  expect(
+    screen
+      .getByRole('button', { name: 'mute Growler' })
+      .getAttribute('aria-pressed'),
+  ).toBe('false')
+})
+
 test('closing a machine hides it and the menu offers it again', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   addAll()
@@ -97,11 +110,12 @@ test('randomize rolls that machine and leaves the others where they were', () =>
   addAll()
   const roll = screen.getAllByRole('button', { name: 'randomize' })
   expect(roll).toHaveLength(7)
+  const before = engine.controls.get()
   fireEvent.click(roll[0]!)
   const now = engine.controls.get()
-  expect(sameControls(now, DEFAULT_CONTROLS)).toBe(false)
-  expect(now.drumLevel).toBe(DEFAULT_CONTROLS.drumLevel)
-  expect(now.fmLevel).toBe(DEFAULT_CONTROLS.fmLevel)
+  expect(sameControls(now, before)).toBe(false)
+  expect(now.drumLevel).toBe(before.drumLevel)
+  expect(now.fmLevel).toBe(before.fmLevel)
 })
 
 test('the ⋯ menu picks a kind of roll, rolls it and keeps it on the face', () => {

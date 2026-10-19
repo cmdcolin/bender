@@ -18,6 +18,7 @@ import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
 import { AddPedal, PedalShelf } from './Pedals.tsx'
+import { levelOf } from './stageLevels.ts'
 import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
 
@@ -57,6 +58,8 @@ const LEVELLED: Row = [
   ['Spool', TapeLoopFace],
   ['Layercake', FourTrackFace],
 ]
+
+const ADDED_LEVEL = 0.6
 
 const KIND: Record<string, string> = {
   Plinky: 'toy keyboard',
@@ -115,6 +118,15 @@ export function Instruments({
     )
   }
 
+  const bringUp = (stage: string) => {
+    bring(stage)
+    const level = levelOf(stage)
+    if (level && engine.controls.get()[level] === 0) {
+      engine.armStep()
+      engine.set(level, ADDED_LEVEL)
+    }
+  }
+
   const choices = INSTRUMENTS.filter(stage => !face(stage)).map(stage => ({
     stage,
     kind: KIND[stage]!,
@@ -127,7 +139,7 @@ export function Instruments({
           className={styles.add}
           text="Add instrument"
           choices={choices}
-          onPick={bring}
+          onPick={bringUp}
         />
         <AddPedal />
         <BendKeysSwitch />
