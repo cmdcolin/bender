@@ -302,9 +302,22 @@
   stroke-dasharray: 3 2;
 }
 
+.bends {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap-ctl-sm);
+  padding-bottom: var(--space-xs);
+}
+
 .key {
-  margin: 0 0 var(--space-xs);
+  flex-basis: 100%;
+  margin: 0;
   font-size: var(--fs-xs);
   color: var(--fg3);
   text-align: center;
+}
+
+.bend {
+  composes: chip from './button.module.css';
 }

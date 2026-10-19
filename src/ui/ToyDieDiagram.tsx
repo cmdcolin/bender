@@ -110,6 +110,27 @@ const SPOT_BOX: Record<string, string> = {
   gate: 'envelope',
 }
 
+// Which box each bend's knob opens.
+const BEND_BOX: Partial<Record<(typeof KEYS)[number], string>> = {
+  chipCrosstalk: 'clock',
+  chipHardSync: 'clock',
+  chipFmClock: 'clock',
+  chipScan: 'output pin',
+  chipHold: 'output pin',
+  chipPwm: 'envelope',
+  chipEnvRelax: 'envelope',
+  chipEnvDiv: 'envelope',
+  chipEnvBits: 'envelope',
+  chipStepTap: 'tune ROM',
+  chipOutAddr: 'tune ROM',
+  chipOutData: 'tune ROM',
+  chipPwmTap: 'voices',
+  chipShort: 'voices',
+  chipXor: 'voices',
+  chipDutyEnv: 'voices',
+  chipGhost: 'key matrix',
+}
+
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
 const middle = (b: ChipBox) => b.x + b.w / 2
 
@@ -394,6 +415,10 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
   const loopL = env.x + env.w * 0.7
   const loopR = env.x + env.w - 5
   const open = pick.selected
+  const bends = KEYS.flatMap(key => {
+    const box = BEND_BOX[key]
+    return box && up(key) ? [[key, box] as const] : []
+  })
   const span = Math.max(WIDTH, width)
   const left = Math.max(0, (WIDTH - width) / 2)
   return (
@@ -714,10 +739,23 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
           </>
         )}
       </ChipDrawing>
-      {r.touched(...KEYS) && (
-        <p className={diagram.key}>
-          grey wires carry the signal · red dashed wires are bends you turned on
-        </p>
+      {bends.length > 0 && (
+        <div className={diagram.bends}>
+          <p className={diagram.key}>
+            grey wires carry the signal · red dashed wires are bends you turned
+            on
+          </p>
+          {bends.map(([key, box]) => (
+            <button
+              key={key}
+              className={diagram.bend}
+              aria-pressed={open === box}
+              onClick={() => pick.toggle(box)}
+            >
+              {sliderFor(key).label}
+            </button>
+          ))}
+        </div>
       )}
       {open === null ? (
         <BoxRows hint="Press a box for its settings." keys={undefined} />

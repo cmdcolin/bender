@@ -222,7 +222,7 @@ test('every soldered bend names itself on its part and opens its row', () => {
     const tag = () =>
       screen.getByRole('button', { name: `${part} ${bend} controls` })
     fireEvent.click(tag())
-    expect(screen.getByText(row)).not.toBeNull()
+    expect(screen.getByText(row, { selector: 'span' })).not.toBeNull()
     fireEvent.click(tag())
   }
   set(Object.fromEntries(bends.map(([, , key]) => [key, 0])))
@@ -246,7 +246,7 @@ test('each bend wire and its name open the part it bends', () => {
   ] as const) {
     const tag = () => screen.getByRole('button', { name: `${bend} controls` })
     fireEvent.click(tag())
-    expect(screen.getByText(row)).not.toBeNull()
+    expect(screen.getByText(row, { selector: 'span' })).not.toBeNull()
     fireEvent.click(tag())
   }
   fireEvent.click(
@@ -283,4 +283,18 @@ test('the header verbs act on the open box, or on the whole stage', () => {
     'true',
   )
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+})
+
+test('a key under the die names each bend that is on, and opens its part', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  open()
+  expect(screen.queryByRole('button', { name: 'Hard sync' })).toBeNull()
+  set({ chipHardSync: 1 })
+  const chip = screen.getByRole('button', { name: 'Hard sync' })
+  fireEvent.click(chip)
+  expect(chip.ariaPressed).toBe('true')
+  expect(
+    screen.getByRole('button', { name: 'clock controls' }).ariaPressed,
+  ).toBe('true')
+  set({ chipHardSync: 0 })
 })
