@@ -197,6 +197,59 @@
   border-top: 1px solid var(--border-quiet);
 }
 
+.openBox {
+  margin: var(--space-sm) 0 var(--space-xs);
+  padding: 0 var(--space-xs);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+  background: var(--surface);
+}
+
+.openBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: calc(-1 * var(--space-xs));
+  padding: var(--space-2xs) var(--space-xs);
+  border-bottom: 1px solid var(--border-quiet);
+}
+
+.openBar h4 {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg2);
+}
+
+.hide {
+  background: none;
+  border: none;
+  color: var(--fg3);
+  font-size: var(--fs-md);
+  line-height: 1;
+  padding: 0 var(--space-2xs);
+  cursor: pointer;
+}
+
+.hide:hover {
+  color: var(--fg);
+}
+
+.openBox svg {
+  margin-block: var(--space-xs);
+}
+
+.openBox .rows {
+  margin: 0;
+  padding-bottom: var(--space-xs);
+}
+
+.openBox > header + .rows {
+  border-top: none;
+}
+
 .hint {
   margin: 0 0 var(--space-xs);
   font-size: var(--fs-xs);

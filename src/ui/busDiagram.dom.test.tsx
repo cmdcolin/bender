@@ -44,18 +44,21 @@ test.each([
   ['Glint', 'die', 'glint signal path', 'FM die and driver'],
   ['Growler', 'voice card', 'growler voice card', 'growler voice card faults'],
 ])(
-  '%s names the %s close-up and draws it straight under itself',
+  '%s frames the %s close-up and its rows under the box name',
   (group, box, parent, close) => {
     open(group)
     press(box)
-    expect(texts(drawing(parent))).toContain(`zoom: ${box}`)
-    const below = drawing(parent).compareDocumentPosition(drawing(close))
-    expect(below & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    const row = screen.getAllByRole('slider').at(-1)!
-    expect(
-      drawing(close).compareDocumentPosition(row) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
+    const card = screen.getByRole('region', { name: box })
+    expect(card.contains(drawing(close))).toBe(true)
+    expect(card.contains(drawing(parent))).toBe(false)
+    for (const row of card.querySelectorAll('[role="slider"]'))
+      expect(
+        drawing(close).compareDocumentPosition(row) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: `hide ${box}` }))
+    expect(screen.queryByRole('region', { name: box })).toBeNull()
+    expect(screen.queryByRole('img', { name: close })).toBeNull()
   },
 )
 
@@ -87,6 +90,7 @@ test('the home keyboard draws its buses under either bus box', () => {
 test('the knifed trace carries its line name and fault in the drawing', () => {
   set({ chipAddrLine: 4, chipAddrFault: 1 })
   open('Plinky')
+  press('bus')
   const svg = drawing('plinky bus wiring')
   expect(texts(svg)).toContain('A3')
   const titles = [...svg.querySelectorAll('title')].map(t => t.textContent)
@@ -109,6 +113,7 @@ const titles = (svg: Element) =>
 test('the loop wire is labelled the same whatever it joins, a reset pin included', () => {
   set({ chipLoopFrom: 2, chipLoopTo: 1 })
   open('Plinky')
+  press('bus')
   const svg = drawing('plinky bus wiring')
   expect(texts(svg)).toContain('loop wire')
   expect(texts(svg).some(t => t?.includes('→'))).toBe(false)

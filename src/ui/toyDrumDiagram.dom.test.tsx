@@ -90,10 +90,11 @@ test('every knob in the voices fold sits in one of the boxes', () => {
   expect(Object.values(VOICE_BOXES).flat().toSorted()).toEqual(fold.toSorted())
 })
 
-test('a kit that arrives knifed opens the pattern box', () => {
+test('a kit that arrives knifed still opens on the pads', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, drumDataLine: 2 })
   render(<ToyDrumDiagram />)
-  expect(screen.getByText('Data fault')).not.toBeNull()
+  expect(screen.getByRole('region', { name: 'pads' })).not.toBeNull()
+  expect(screen.queryByText('Data fault')).toBeNull()
 })
 
 const openKit = () =>

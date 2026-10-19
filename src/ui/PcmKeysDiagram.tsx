@@ -1,3 +1,4 @@
+import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   boxWidth,
   ONE_LINE_H,
@@ -6,8 +7,7 @@ import {
   useSelectedBox,
   type BoxSpec,
 } from './diagram.ts'
-import { BoxRows, BoxView, Wire } from './DiagramParts.tsx'
-import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
+import { BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 
 import type { Verbs, Zoom } from './foldHosting.ts'
 
@@ -176,8 +176,7 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   ]
   return (
     <>
-      <ZoomFrame
-        close={close}
+      <ChipDrawing
         maxWidth={width}
         width={width}
         height={feet}
@@ -185,16 +184,6 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       >
         {arrow => (
           <>
-            {close && open && (
-              <ZoomCone
-                from={open}
-                to={{ x: 0, w: width }}
-                top={open.y + BOX_H}
-                knee={feet}
-                bottom={feet + CONE_H}
-                title={`zoom: ${open.name}`}
-              />
-            )}
             {chain.slice(1).map((to, i) => (
               <Wire
                 key={to.id}
@@ -216,8 +205,13 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
             ))}
           </>
         )}
-      </ZoomFrame>
-      <BoxRows keys={open?.keys} verbs={part && verbs(part)} />
+      </ChipDrawing>
+      {open && (
+        <OpenBox name={open.name} onHide={() => pick.toggle(open.id!)}>
+          {close}
+          <BoxRows keys={open.keys} verbs={part && verbs(part)} />
+        </OpenBox>
+      )}
     </>
   )
 }

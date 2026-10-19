@@ -1,3 +1,4 @@
+import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   boxWidth,
   ONE_LINE_H,
@@ -6,11 +7,9 @@ import {
   useSelectedBox,
   type BoxSpec,
 } from './diagram.ts'
-import { BoxRows, BoxView, Wire } from './DiagramParts.tsx'
+import { BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
 import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
-import { OPERATORS_SPAN } from './fmVoiceSpan.ts'
-import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { Verbs, Zoom } from './foldHosting.ts'
 
@@ -168,36 +167,15 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     `M${from.x + from.w} ${mid} H${to.x}`
   const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
   const part = open && PARTS[open.id!]
-  const nested = boxes.find(b => b.id === pick.selected && PARTS[b.id])
   const close = zoomed ? <FmVoiceDiagram pick={pick} /> : part && zoom?.(part)
-  const cone = zoomed
-    ? {
-        from: { x: mod.x, w: span },
-        to: OPERATORS_SPAN,
-        top: TOP + ROW + BOX_H,
-        title: 'zoom: operators',
-      }
-    : close && nested
-      ? {
-          from: nested,
-          to: { x: 0, w: WIDTH },
-          top: nested.y + BOX_H,
-          knee: feet,
-          title: `zoom: ${nested.name}`,
-        }
-      : null
+  const title = zoomed
+    ? 'operators'
+    : boxes.find(b => b.id === pick.selected)?.name
   return (
     <>
-      <ZoomFrame
-        close={close}
-        cone={cone !== null}
-        width={WIDTH}
-        height={feet}
-        label="glint signal path"
-      >
+      <ChipDrawing width={WIDTH} height={feet} label="glint signal path">
         {arrow => (
           <>
-            {cone && <ZoomCone {...cone} bottom={feet + CONE_H} />}
             {row.slice(1).map((to, i) => (
               <Wire
                 key={to.id}
@@ -232,11 +210,16 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
             ))}
           </>
         )}
-      </ZoomFrame>
-      <BoxRows
-        keys={open?.id === 'die' ? [] : open?.keys}
-        verbs={part && verbs(part)}
-      />
+      </ChipDrawing>
+      {open && (
+        <OpenBox name={title ?? open.id!} onHide={() => pick.toggle(open.id!)}>
+          {close}
+          <BoxRows
+            keys={open.id === 'die' ? [] : open.keys}
+            verbs={part && verbs(part)}
+          />
+        </OpenBox>
+      )}
     </>
   )
 }

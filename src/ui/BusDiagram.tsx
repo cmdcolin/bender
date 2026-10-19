@@ -189,6 +189,7 @@ function Trace({
       : -1
   const gx = along(p, GLYPH_AT)
   const beside = fault === FAULT.ground || fault === FAULT.supply
+  const under = !beside && knifed >= n / 2
   const y = lineY(p, knifed)
   const low = bottom(p)
   const what = sliderFor(p.ribbon.line).label.toLowerCase()
@@ -300,17 +301,17 @@ function Trace({
       </text>
       {knifed >= 0 && (
         <text
-          x={beside ? gx + 7 : gx}
+          x={beside ? gx + 7 : under ? p.x1 - 3 : gx}
           y={
             fault === FAULT.ground
               ? low + 10
               : fault === FAULT.supply
                 ? p.top - 3
-                : knifed < n / 2
-                  ? p.top - 4
-                  : low + 11
+                : under
+                  ? low + 11
+                  : p.top - 4
           }
-          textAnchor={beside ? 'start' : 'middle'}
+          textAnchor={beside ? 'start' : under ? 'end' : 'middle'}
           className={styles.knifed}
         >
           {names[knifed]!}

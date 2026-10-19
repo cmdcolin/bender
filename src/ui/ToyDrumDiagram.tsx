@@ -1,3 +1,4 @@
+import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS } from './controls/index.ts'
 import diagram from './Diagram.module.css'
 import {
@@ -17,12 +18,12 @@ import {
   BoxView,
   GlyphBox,
   Label,
+  OpenBox,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
-import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './drawingFor.tsx'
@@ -126,9 +127,7 @@ function padsGlyph(x: number, mid: number) {
 // voices, so every voice gets its own wire in and out; the sum happens in the DAC.
 export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
-  const pick = useSelectedBox(
-    r.touched(...BOXES.pattern.keys) ? 'pattern' : PADS,
-  )
+  const pick = useSelectedBox(PADS)
   useBoxWhileEditing(pick, Boolean(editor), PADS)
   const flow = useFlow('Clatter')
 
@@ -203,8 +202,7 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
 
   return (
     <>
-      <ZoomFrame
-        close={close}
+      <ChipDrawing
         width={WIDTH}
         left={(WIDTH - width) / 2}
         height={HEIGHT}
@@ -212,16 +210,6 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
       >
         {arrow => (
           <>
-            {close && open && (
-              <ZoomCone
-                from={open === rom ? open : undefined}
-                to={{ x: -(WIDTH - width) / 2, w: WIDTH }}
-                top={open.y + BOX_H}
-                knee={HEIGHT}
-                bottom={HEIGHT + CONE_H}
-                title={`zoom: ${open.name}`}
-              />
-            )}
             {sources.map((s, i) => (
               <g key={s.name}>
                 <Wire
@@ -322,23 +310,32 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
             <BoxView box={amps} />
           </>
         )}
-      </ZoomFrame>
-      {pick.selected === PADS ? (
-        <BoxRows keys={PAD_KEYS} verbs={editor} />
+      </ChipDrawing>
+      {pick.selected === null ? (
+        <BoxRows hint="Press a box for its settings." keys={undefined} />
       ) : (
-        <BoxRows
-          hint="Press a box for its settings."
-          keys={open?.id === 'triggers' ? [] : open?.keys}
-          verbs={
-            open &&
-            verbs?.(
-              BOXES[open.id].part,
-              BOXES[open.id].part === HOST
-                ? { name: open.id, keys: open.keys }
-                : undefined,
-            )
-          }
-        />
+        <OpenBox
+          name={open?.name ?? pick.selected}
+          onHide={() => pick.toggle(pick.selected!)}
+        >
+          {close}
+          {pick.selected === PADS ? (
+            <BoxRows keys={PAD_KEYS} verbs={editor} />
+          ) : (
+            <BoxRows
+              keys={open?.id === 'triggers' ? [] : open?.keys}
+              verbs={
+                open &&
+                verbs?.(
+                  BOXES[open.id].part,
+                  BOXES[open.id].part === HOST
+                    ? { name: open.id, keys: open.keys }
+                    : undefined,
+                )
+              }
+            />
+          )}
+        </OpenBox>
       )}
     </>
   )

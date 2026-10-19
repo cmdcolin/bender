@@ -103,12 +103,13 @@ test('an effect owns the patch: the boosters go and the drawing dims', () => {
   expect(drawing()!.querySelector('g[opacity="0.45"]')).not.toBeNull()
 })
 
-test('the chip drawing names the close-up while it shows', () => {
+test('the operators close-up sits in a card under its own name', () => {
   open()
-  const title = () => screen.queryByText('zoom: operators')
-  expect(title()).not.toBeNull()
+  const card = () => screen.queryByRole('region', { name: 'operators' })
+  expect(card()).not.toBeNull()
   press('bus')
-  expect(title()).toBeNull()
+  expect(card()).toBeNull()
+  expect(screen.getByRole('region', { name: 'bus' })).not.toBeNull()
 })
 
 test('each part of the close-up opens its own knobs', () => {

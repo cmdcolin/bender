@@ -1,5 +1,6 @@
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS, sliderFor } from './controls/index.ts'
 import diagram from './Diagram.module.css'
 import {
@@ -18,12 +19,12 @@ import {
   BoxRows,
   Dot,
   GlyphBox,
+  OpenBox,
   Pressable,
   Wire,
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { NODE_KEYS, POT } from './toyBoxKeys.ts'
-import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { DrawingProps } from './drawingFor.tsx'
 
@@ -323,7 +324,7 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
   const own = useReadings(BOX_KEYS)
   const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
   const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
-  const pick = useSelectedBox(knifed ? 'bus' : KEYBOARD)
+  const pick = useSelectedBox(KEYBOARD)
   useBoxWhileEditing(pick, Boolean(editor), KEYBOARD)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
@@ -395,13 +396,12 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
   const placed = spotBox ? potAt[spotBox] : undefined
   const loopL = env.x + env.w * 0.7
   const loopR = env.x + env.w - 5
-  const close = pick.selected === 'bus' ? zoom?.(BUS) : null
+  const open = pick.selected
   const span = Math.max(WIDTH, width)
   const left = Math.max(0, (WIDTH - width) / 2)
   return (
     <>
-      <ZoomFrame
-        close={close}
+      <ChipDrawing
         width={span}
         left={left}
         height={HEIGHT}
@@ -409,14 +409,6 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
       >
         {arrow => (
           <>
-            {close && (
-              <ZoomCone
-                to={{ x: -left, w: span }}
-                top={HEIGHT}
-                bottom={HEIGHT + CONE_H}
-                title="zoom: bus"
-              />
-            )}
             <Wire
               arrow={arrow}
               d={`M${middle(keys)} ${TOP + BOX_H} V${LOW}`}
@@ -728,32 +720,28 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
             )}
           </>
         )}
-      </ZoomFrame>
-      {pick.selected === KEYBOARD ? (
-        <BoxRows
-          keys={KEYBOARD_KEYS}
-          under={editor ? { keys: LEAD_KEYS, node: editor } : undefined}
-        />
+      </ChipDrawing>
+      {open === null ? (
+        <BoxRows hint="Press a box for its settings." keys={undefined} />
       ) : (
-        <BoxRows
-          hint="Press a box for its settings."
-          keys={
-            pick.selected === 'bus'
-              ? BUS_KEYS
-              : pick.selected
-                ? NODE_KEYS[pick.selected]
-                : undefined
-          }
-          verbs={
-            pick.selected === 'bus'
-              ? verbs?.(BUS)
-              : pick.selected &&
-                verbs?.(DIE, {
-                  name: pick.selected,
-                  keys: NODE_KEYS[pick.selected]!,
-                })
-          }
-        />
+        <OpenBox name={open} onHide={() => pick.toggle(open)}>
+          {open === 'bus' && zoom?.(BUS)}
+          {open === KEYBOARD ? (
+            <BoxRows
+              keys={KEYBOARD_KEYS}
+              under={editor ? { keys: LEAD_KEYS, node: editor } : undefined}
+            />
+          ) : (
+            <BoxRows
+              keys={open === 'bus' ? BUS_KEYS : NODE_KEYS[open]}
+              verbs={
+                open === 'bus'
+                  ? verbs?.(BUS)
+                  : verbs?.(DIE, { name: open, keys: NODE_KEYS[open]! })
+              }
+            />
+          )}
+        </OpenBox>
       )}
     </>
   )

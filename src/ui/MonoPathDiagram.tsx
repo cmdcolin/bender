@@ -1,3 +1,4 @@
+import { ChipDrawing } from './ChipDrawing.tsx'
 import chip from './ChipLook.module.css'
 import styles from './Diagram.module.css'
 import {
@@ -15,12 +16,12 @@ import {
   BoxView,
   Dot,
   Label,
+  OpenBox,
   Plate,
   Pressable,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
-import { CONE_H, ZoomCone, ZoomFrame } from './ZoomCone.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { Verbs, Zoom } from './foldHosting.ts'
@@ -175,24 +176,9 @@ export function MonoPathDiagram({
   const fmWire = `M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`
   return (
     <>
-      <ZoomFrame
-        close={close}
-        width={WIDTH}
-        height={HEIGHT}
-        label="growler voice card"
-      >
+      <ChipDrawing width={WIDTH} height={HEIGHT} label="growler voice card">
         {arrow => (
           <>
-            {close && drawn && (
-              <ZoomCone
-                from={drawn}
-                to={{ x: 0, w: WIDTH }}
-                top={drawn.y + BOX_H}
-                knee={HEIGHT}
-                bottom={HEIGHT + CONE_H}
-                title={`zoom: ${drawn.name}`}
-              />
-            )}
             <Wire arrow={arrow} d={`M${keys.x + keys.w} ${MID} H${frameX}`} />
             {[0, 1, 2].map(i => (
               <Wire
@@ -342,11 +328,19 @@ export function MonoPathDiagram({
             ))}
           </>
         )}
-      </ZoomFrame>
-      <BoxRows
-        keys={open?.id === 'voice card' ? [] : open?.keys}
-        verbs={part && verbs(part)}
-      />
+      </ChipDrawing>
+      {open && (
+        <OpenBox
+          name={drawn?.name ?? open.id!}
+          onHide={() => pick.toggle(open.id!)}
+        >
+          {close}
+          <BoxRows
+            keys={open.id === 'voice card' ? [] : open.keys}
+            verbs={part && verbs(part)}
+          />
+        </OpenBox>
+      )}
     </>
   )
 }

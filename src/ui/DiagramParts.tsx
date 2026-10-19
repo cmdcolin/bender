@@ -362,6 +362,37 @@ export function GlyphBox({
   )
 }
 
+// The open box, framed apart from the drawing above it: its name, a button to
+// hide it, then its close-up and rows.
+export function OpenBox({
+  name,
+  onHide,
+  children,
+}: {
+  name: string
+  onHide: () => void
+  children: ReactNode
+}) {
+  const title = name.replaceAll('\n', ' ')
+  return (
+    <section className={styles.openBox} aria-label={title}>
+      <header className={styles.openBar}>
+        <h4>{title}</h4>
+        <button
+          type="button"
+          className={styles.hide}
+          onClick={onHide}
+          aria-label={`hide ${title}`}
+          title={`Hide ${title}`}
+        >
+          ×
+        </button>
+      </header>
+      {children}
+    </section>
+  )
+}
+
 // The rows of the box that is open: the same rows the panel draws anywhere
 // else, so a drag, a reset and a mod wire all work from here. A row still
 // waiting on something stays off, as it does on the panel.
