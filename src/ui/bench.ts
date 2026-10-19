@@ -1,5 +1,6 @@
 import { createStore } from '../listeners.ts'
 import { read, write } from './persist.ts'
+import { RENAMED } from './stageNames.ts'
 
 const KEY = 'bender.bench'
 
@@ -32,22 +33,6 @@ const EMPTY: Bench = {
   pedals: [],
   roll: false,
   grid: false,
-}
-
-const RENAMED: Record<string, string> = {
-  'Toy keyboard': 'Plinky',
-  'Toy drums': 'Clatter',
-  'FM chip': 'Glint',
-  'Home keyboard': 'Parlor',
-  'Mono synth': 'Growler',
-  'Tape loop': 'Spool',
-  'Four-track': 'Layercake',
-  Stompbox: 'Gnash',
-  'Tape delay': 'Wraith',
-  'Delay pedal': 'Ricochet',
-  'Spring verb': 'Boing',
-  Ensemble: 'Chorale',
-  'Tube amp': 'Ember',
 }
 
 const strings = (value: unknown): string[] =>

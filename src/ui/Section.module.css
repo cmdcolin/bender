@@ -40,6 +40,11 @@
   font-weight: 600;
 }
 
+.was {
+  font-weight: 400;
+  color: var(--fg3);
+}
+
 /* The stage's own verbs: roll this stage, or put it back where it booted. */
 .verb {
   composes: chipQuiet from './button.module.css';

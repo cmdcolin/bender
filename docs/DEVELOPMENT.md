@@ -133,8 +133,8 @@ the main and audio threads is [dataflow.md](dataflow.md).
   one worth reading: how much of the spectrum that chip's whole bend space
   covers. A row of faults that all land in the same band is a chip whose bends
   differ from each other by less than the panel implies. A chip that can be more
-  than one machine gets a `reach` line per machine — Glint is swept again
-  with its percussion bank on and again with an effect running, because the same
+  than one machine gets a `reach` line per machine — Glint is swept again with
+  its percussion bank on and again with an effect running, because the same
   knife finds a different chip in each. `pnpm spectrum fm` does one chip and
   `pnpm spectrum cuts` the named cuts and the preset catalog. The whole sweep
   takes a few minutes.

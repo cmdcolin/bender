@@ -128,6 +128,15 @@ test('a stock board draws the two toys and the path out, and lists the rest to a
   expect(screen.queryByRole('menuitem', { name: 'Plinky' })).toBeNull()
 })
 
+test('the add menu names a renamed stage’s old name beside the new one', () => {
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: '+ add a stage' }))
+  const glint = screen.getByRole('menuitem', { name: /^Glint ?\(fm chip\)$/ })
+  expect(screen.getByRole('menuitem', { name: 'Ring mod' })).toBeTruthy()
+  fireEvent.click(glint)
+  expect(screen.getByText('(fm chip)')).toBeTruthy()
+})
+
 test('adding a stage opens it and puts it on the map', () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: '+ add a stage' }))
@@ -143,7 +152,7 @@ test('the add menu stays open for a second stage and shuts on a press elsewhere'
   fireEvent.click(screen.getByRole('menuitem', { name: 'Ring mod' }))
   expect(screen.queryByRole('menuitem', { name: 'Ring mod' })).toBeNull()
   const next = screen.getAllByRole('menuitem')[0]!
-  const name = next.textContent
+  const name = next.textContent.replace(/ \(.*\)$/, '')
   fireEvent.click(next)
   expect(doorsOnMap().has('Ring mod')).toBe(true)
   expect(doorsOnMap().has(name)).toBe(true)

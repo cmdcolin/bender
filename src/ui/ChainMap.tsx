@@ -21,6 +21,7 @@ import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
 import { watchRail } from './railWatch.ts'
 import { Shelf } from './Section.tsx'
+import { formerName } from './stageNames.ts'
 import { watchTriggers } from './triggerWatch.ts'
 
 import type { Controls } from '../controls.ts'
@@ -208,6 +209,7 @@ export function ChainMap({
           groups={offIt}
           button="+ add a stage"
           label="add a stage"
+          former
           onPick={onOpen}
         />
         <StageMenu
@@ -232,11 +234,14 @@ function StageMenu({
   groups,
   button: text,
   label,
+  former = false,
   onPick,
 }: {
   groups: { name: string; place: string }[]
   button: string
   label: string
+  /** Names each renamed stage's old name beside the new one. */
+  former?: boolean
   onPick: (name: string) => void
 }) {
   const [menu, setMenu] = useState(false)
@@ -282,6 +287,11 @@ function StageMenu({
                     }}
                   >
                     {g.name}
+                    {former && formerName(g.name) && (
+                      <span className={styles.was}>
+                        {` (${formerName(g.name)})`}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>

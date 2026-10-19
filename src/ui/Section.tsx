@@ -74,6 +74,7 @@ import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider.tsx'
 import { slidersFirst } from './slidersFirst.ts'
+import { formerName } from './stageNames.ts'
 import { SupplyReading } from './SupplyReading.tsx'
 import { TapeLoopDiagram } from './TapeLoopDiagram.tsx'
 import { TapePathDiagram } from './TapePathDiagram.tsx'
@@ -806,6 +807,7 @@ export function OpenGroup({
   const shownEditors = useStoreValue(bench)
   const el = useRef<HTMLDivElement>(null)
   const fresh = useMemo(() => firstLook(group.name), [group.name])
+  const former = formerName(group.name)
   useEffect(() => {
     if (fresh) markLooked(group.name)
   }, [fresh, group.name])
@@ -863,7 +865,10 @@ export function OpenGroup({
       id={groupAnchor(group.name)}
     >
       <div className={styles.header}>
-        <span className={styles.title}>{group.name}</span>
+        <span className={styles.title}>
+          {group.name}
+          {former && <span className={styles.was}> ({former})</span>}
+        </span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}
         {group.editor?.kind === 'mic' && <MicSwitch />}
         {(group.editor?.kind === 'roll' || group.memory) && (
