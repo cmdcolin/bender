@@ -17,7 +17,7 @@ import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
-import { AddPedal, PedalShelf } from './Pedals.tsx'
+import { AddPedal, PedalShelf, usePedalStages } from './Pedals.tsx'
 import { levelOf } from './stageLevels.ts'
 import { dragging } from './tapeDrop.ts'
 import { TapeLoopFace } from './TapeLoopFace.tsx'
@@ -117,6 +117,7 @@ export function Instruments({
   const keyboards = faces(KEYBOARDS)
   const kit = faces(KIT)
   const tapes = faces(TAPES)
+  const pedals = usePedalStages()
 
   const bringUp = (stage: string) => {
     bring(stage)
@@ -146,17 +147,17 @@ export function Instruments({
       </div>
       <BendKeys morphSeconds={seconds} />
       <GateBench>
-        {(keyboards.length > 0 || kit.length > 0) && (
+        {(keyboards.length > 0 || kit.length > 0 || pedals.length > 0) && (
           <div className={styles.shelf}>
             {keyboards.length > 0 && (
               <div className={styles.lane}>{keyboards}</div>
             )}
             {kit}
+            <PedalShelf seconds={seconds} onOpen={onOpen} />
           </div>
         )}
         {tapes.length > 0 && <div className={styles.shelf}>{tapes}</div>}
       </GateBench>
-      <PedalShelf seconds={seconds} onOpen={onOpen} />
     </>
   )
 }

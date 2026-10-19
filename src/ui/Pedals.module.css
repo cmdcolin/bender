@@ -11,17 +11,17 @@
 }
 
 .shelf {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: var(--space-md);
+  flex: 1 1 18rem;
+  min-width: 0;
+  columns: 17rem;
+  column-gap: var(--space-md);
 }
 
 /* A stompbox: a painted enclosure with the name silkscreened on it, the sliders
    below it, then the footswitch with its lamp over it. The colour is the
    pedal's own, set inline as --pedal; everything else is cut from it, flat. The
-   caps compose a file that reads the variables set here. One to a row on a
-   phone, and as many abreast as fit from there. */
+   caps compose a file that reads the variables set here. The shelf flows the
+   pedals down columns as wide as fit beside the keyboards, one on a phone. */
 .pedal {
   --ink: #f4f1e8;
   --edge: color-mix(in srgb, var(--pedal) 55%, black);
@@ -31,12 +31,11 @@
   --switch-hover: color-mix(in srgb, var(--pedal) 35%, black);
 
   position: relative;
-  flex: 1 1 17rem;
-  min-width: 0;
-  max-width: 22rem;
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+  break-inside: avoid;
   padding: var(--space-sm) var(--space-md) var(--space-md);
   background: var(--pedal);
   border: 2px solid var(--edge);
@@ -181,11 +180,4 @@
 .foot:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
-}
-
-@media (max-width: 40rem) {
-  .pedal {
-    flex-basis: 100%;
-    max-width: none;
-  }
 }

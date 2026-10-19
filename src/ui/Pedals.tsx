@@ -243,6 +243,11 @@ function PedalFace({
   )
 }
 
+export function usePedalStages() {
+  const { pedals: shown } = useStoreValue(bench)
+  return useRunOrder().filter(pedal => shown.includes(pedal))
+}
+
 export function PedalShelf({
   seconds,
   onOpen,
@@ -251,7 +256,7 @@ export function PedalShelf({
   onOpen: (stage: string) => void
 }) {
   const { pedals: shown } = useStoreValue(bench)
-  const faces = useRunOrder().filter(pedal => shown.includes(pedal))
+  const faces = usePedalStages()
   if (faces.length === 0) return null
   return (
     <div className={styles.shelf}>
