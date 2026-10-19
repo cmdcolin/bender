@@ -407,6 +407,11 @@
   color: var(--accent-ink);
 }
 
+.capOn:hover:not(:disabled) {
+  background: var(--cap-lit, var(--accent));
+  color: var(--accent-ink);
+}
+
 /* Thrown, and waiting on something else before it does anything: record armed
    with the tune stopped, a jumper cut. The same colour, outlined and dashed,
    which is the promise rather than the lamp. */
