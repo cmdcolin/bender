@@ -140,20 +140,18 @@ function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
   )
 }
 
-// The roll cap, and one ⋯ menu holding the kinds of roll, the face's own
-// settings and the way to put it away. Picking a kind rolls at once and stays on
+// The roll cap, and one ⋯ menu holding the kinds of roll and the face's own
+// settings. Picking a kind rolls at once and stays on
 // the face, so going again on it is one press. The first kind wears a shuffle
 // mark, and the others their names.
 function Rolls({
   group,
   seconds,
   more,
-  onClose,
 }: {
   group: Group
   seconds: number
   more?: ReactNode
-  onClose?: () => void
 }) {
   const kinds = stageRollsFor(group)
   const [held, setHeld] = useState(STAGE_ROLLS[0]!.name)
@@ -185,7 +183,7 @@ function Rolls({
         </button>
       </Tip>
       <Tip
-        text={`Other ways to roll ${group.name} and undo the last roll${more ? ', this face’s settings' : ''}${onClose ? ', and putting it away' : ''}.`}
+        text={`Other ways to roll ${group.name} and undo the last roll${more ? ', this face’s settings' : ''}.`}
       >
         <button
           ref={setCaret}
@@ -239,23 +237,6 @@ function Rolls({
             </button>
           </Tip>
           {more && <div className={styles.more}>{more}</div>}
-          {onClose && (
-            <Tip
-              text={`Puts ${group.name} away. Its sound stays on the board.`}
-            >
-              <button
-                role="menuitem"
-                className={menuItem(false)}
-                aria-label={`close ${group.name}`}
-                onClick={() => {
-                  close()
-                  onClose()
-                }}
-              >
-                put away
-              </button>
-            </Tip>
-          )}
         </Menu>
       )}
     </span>
@@ -286,8 +267,8 @@ export function DrawerSlider({ control }: { control: ControlKey }) {
 }
 
 // The caps on every instrument and pedal on the bench: mute or bypass, an
-// instrument's level, roll the stage somewhere new, and put the machine away
-// where it can be put away.
+// instrument's level, roll the stage somewhere new, and a close cap where the
+// machine can be put away.
 export function DeviceVerbs({
   stage,
   seconds = 0,
@@ -303,7 +284,7 @@ export function DeviceVerbs({
   noMute?: boolean
   /** For a face that keeps its Level in a drawer. */
   noLevel?: boolean
-  /** The face's own settings, drawn in the ⋯ menu above put away. */
+  /** The face's own settings, drawn in the ⋯ menu. */
   more?: ReactNode
 }) {
   const group = GROUPS.find(g => g.name === stage)
@@ -315,7 +296,18 @@ export function DeviceVerbs({
       {level && <StillHeard stage={stage} level={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !noLevel && <FaceLevel control={level} />}
-      <Rolls group={group} seconds={seconds} more={more} onClose={onClose} />
+      <Rolls group={group} seconds={seconds} more={more} />
+      {onClose && (
+        <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>
+          <button
+            className={styles.cap}
+            aria-label={`put away ${stage}`}
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </Tip>
+      )}
     </>
   )
 }

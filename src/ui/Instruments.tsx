@@ -62,8 +62,8 @@ const LEVELLED: Row = [
 // on the map: the toy and the kit from the start, the others once their faders
 // come up. The tape loop also shows while the mic is open, since its face holds
 // the mic key, and while a file is over the app, to take the drop. Add all instruments lays out every one whatever its fader says, each with
-// a close cap, and a row of what has been closed to bring it back. The mode and
-// the closed set survive a reload.
+// a close cap. Every face wears one, and a row of what has been closed brings it
+// back. The mode and the closed set survive a reload.
 //
 // A machine that has come up goes on the map for good (`add`): the Level slider
 // on its face runs down to zero, and a face that left under the pointer would
@@ -98,7 +98,7 @@ export function Instruments({
           <Machine
             key={stage}
             seconds={seconds}
-            onClose={all ? () => close(stage) : undefined}
+            onClose={() => close(stage)}
             onOpen={onOpen}
           />
         ))}
@@ -126,16 +126,15 @@ export function Instruments({
         <AllPedals />
         <PedalsMenu />
         <BendKeysSwitch />
-        {all &&
-          INSTRUMENTS.filter(stage => closed.has(stage)).map(stage => (
-            <button
-              key={stage}
-              className={styles.reopen}
-              onClick={() => reopen(stage)}
-            >
-              + {stage.toLowerCase()}
-            </button>
-          ))}
+        {INSTRUMENTS.filter(stage => closed.has(stage)).map(stage => (
+          <button
+            key={stage}
+            className={styles.reopen}
+            onClick={() => reopen(stage)}
+          >
+            + {stage.toLowerCase()}
+          </button>
+        ))}
       </div>
       <BendKeys morphSeconds={seconds} />
       <GateBench>

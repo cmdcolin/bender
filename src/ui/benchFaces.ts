@@ -6,7 +6,7 @@ const keep = (all: boolean, closed: ReadonlySet<string>) =>
   setBench({ ...bench.get(), all, closed: [...closed] })
 
 /** Which instrument faces the bench lays out: each one whose stage is on the
-    map, or in all-instruments mode each one not closed. */
+    map, or in all-instruments mode every one, except those put away. */
 export function useBenchFaces() {
   const { all, closed: closedList } = useStoreValue(bench)
   const closed = new Set(closedList)
@@ -18,7 +18,7 @@ export function useBenchFaces() {
     all,
     closed,
     shows: (stage: string) =>
-      all ? !closed.has(stage) : onMap.includes(stage),
+      !closed.has(stage) && (all || onMap.includes(stage)),
     close: (stage: string) => keep(all, new Set(closed).add(stage)),
     reopen: (stage: string) =>
       keep(all, new Set([...closed].filter(s => s !== stage))),

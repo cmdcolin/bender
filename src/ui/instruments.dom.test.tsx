@@ -18,10 +18,8 @@ beforeEach(() => {
 
 const group = (name: string) => screen.queryByRole('group', { name })
 const allMode = () => screen.getByRole('button', { name: / instruments$/ })
-const putAway = (stage: string) => {
-  fireEvent.click(screen.getByRole('button', { name: `more for ${stage}` }))
-  fireEvent.click(screen.getByRole('menuitem', { name: `close ${stage}` }))
-}
+const putAway = (stage: string) =>
+  fireEvent.click(screen.getByRole('button', { name: `put away ${stage}` }))
 
 test('the toy and the kit show alone while the other three have no level', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
@@ -30,7 +28,15 @@ test('the toy and the kit show alone while the other three have no level', () =>
   expect(group('glint')).toBeNull()
   expect(group('parlor')).toBeNull()
   expect(group('growler')).toBeNull()
-  expect(screen.queryByRole('button', { name: /^close / })).toBeNull()
+  expect(screen.getAllByRole('button', { name: /^put away / })).toHaveLength(2)
+})
+
+test('putting away the toy keyboard hides it and a chip brings it back', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  putAway('Plinky')
+  expect(group('plinky')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: '+ plinky' }))
+  expect(group('plinky')).not.toBeNull()
 })
 
 test('all-instruments lays out every machine, each with a ⋯ menu', () => {
@@ -100,7 +106,6 @@ test('the ⋯ menu picks a kind of roll, rolls it and keeps it on the face', () 
     'pattern',
     'everything',
     'undo',
-    'put away',
   ])
   fireEvent.click(screen.getByRole('menuitem', { name: 'pattern' }))
   expect(
