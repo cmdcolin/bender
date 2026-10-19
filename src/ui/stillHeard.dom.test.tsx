@@ -65,7 +65,9 @@ test('the header names the machine that still plays the toy', () => {
     engine.sounding.set(FM)
     engine.chipNotes.set(new Set([60]))
   })
-  expect(screen.getByRole('status').textContent).toBe('still heard!')
+  expect(screen.getByRole('status').textContent).toBe(
+    'Level 0, but Glint still plays it',
+  )
 })
 
 test('a toy pulled to zero mid-note stays unflagged while its needle falls', () => {
@@ -81,5 +83,7 @@ test('the header says so when the toy at zero still reads on its own meter', () 
   const taps = new Float32Array(engine.meter.get().taps.length)
   taps[CHANNELS.find(c => c.name === 'Plinky')!.tap] = 0.2
   act(() => engine.meter.set({ ...engine.meter.get(), taps }))
-  expect(screen.getByRole('status').textContent).toBe('still heard!')
+  expect(screen.getByRole('status').textContent).toBe(
+    'Level 0, but sound leaks through',
+  )
 })

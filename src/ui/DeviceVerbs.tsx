@@ -112,21 +112,29 @@ function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
   const atZero = useControlValue(level) <= 0
   if (where.length === 0) return null
   const players = where.filter(to => to !== stage)
-  const down = atZero ? `${stage}’s Level is at 0.` : `${stage} is muted.`
+  const cause = atZero ? 'Level' : 'mute'
   const part = stage === 'Clatter' ? 'hits' : 'notes'
-  const text = where.includes(stage)
-    ? `${stage}’s Level is at 0 and its meter still reads sound.`
-    : [
-        down,
-        ...players.map(
-          to => `${to} still plays its ${part} over the ${viaOf(stage, to)}.`,
-        ),
-        `Turning ${players.join(' and ')} down silences them.`,
-      ].join(' ')
+  const text = [
+    atZero ? `${stage}’s Level is at 0.` : `${stage} is muted.`,
+    ...(where.includes(stage)
+      ? [`Its meter still reads sound, so a bend leaks past the ${cause}.`]
+      : []),
+    ...players.map(
+      to => `${to} still plays its ${part} over the ${viaOf(stage, to)}.`,
+    ),
+    ...(players.length > 0
+      ? [`Turning ${players.join(' and ')} down silences them.`]
+      : []),
+  ].join(' ')
+  const down = atZero ? 'Level 0' : 'muted'
+  const label =
+    players.length > 0
+      ? `${down}, but ${players.join(' and ')} still plays it`
+      : `${down}, but sound leaks through`
   return (
     <Tip text={text}>
       <span className={styles.heard} role="status" tabIndex={0}>
-        still heard!
+        {label}
       </span>
     </Tip>
   )
