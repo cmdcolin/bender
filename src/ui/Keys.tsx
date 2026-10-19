@@ -30,7 +30,7 @@ export function Keys({
       label="toy keyboard"
       badge={
         <>
-          <span className={styles.brand}>bender</span>
+          <span className={styles.brand}>plinky</span>
           <span className={styles.stripe} aria-hidden="true" />
         </>
       }

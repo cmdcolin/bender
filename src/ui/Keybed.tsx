@@ -62,12 +62,12 @@ const NEXT_BED: Record<NoteDest, NoteDest> = {
 // deck keeps two rows.
 const ROOMY_DECK = 560
 
-const GATE_SOURCE = 'Toy keyboard'
+const GATE_SOURCE = 'Plinky'
 
 /** The jumper off the toy's gate line, which every bed but the toy's carries. Same
     switch, same two states, and the words are the caller's because the machine
     on the other end of the wire is what they are about. The label names the
-    source by its stage name, Toy keyboard.
+    source by the name printed on its badge, Plinky.
 
     The lamp in the button has three states: hollow with the jumper cut, dim with
     it soldered, and lit while the toy is sounding a note and this machine is

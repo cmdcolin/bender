@@ -42,8 +42,8 @@ export function FmKeys({
             notes={engine.fmNotes}
             cut={styles.cut}
             soldered={styles.soldered}
-            cutTip="the jumper off the Toy keyboard’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-            solderedTip="the chip’s key input is soldered onto the Toy keyboard’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
+            cutTip="the jumper off Plinky’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+            solderedTip="the chip’s key input is soldered onto Plinky’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
           />
         </>
       }
