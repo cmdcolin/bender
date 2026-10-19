@@ -11,7 +11,8 @@ import styles from './Instruments.module.css'
 import { Keys } from './Keys.tsx'
 import { MonoKeys } from './MonoKeys.tsx'
 import { PcmKeys } from './PcmKeys.tsx'
-import { PedalShelf, PedalsMenu } from './Pedals.tsx'
+import { AllPedals, PedalShelf, PedalsMenu } from './Pedals.tsx'
+import { Tip } from './Tip.tsx'
 
 import type { ComponentType } from 'react'
 
@@ -35,9 +36,9 @@ const LEVELLED: Row = [
 
 // The keyboards and the kit. A machine shows while its stage is on the map: the
 // toy and the kit from the start, the other three once their faders come up.
-// The all-instruments mode lays out every one whatever its fader says, each
-// with a close cap, and a row of what has been closed to bring it back. The
-// mode and the closed set survive a reload.
+// Add all instruments lays out every one whatever its fader says, each with a
+// close cap, and a row of what has been closed to bring it back. The mode and
+// the closed set survive a reload.
 //
 // A machine that has come up goes on the map for good (`add`): the Level slider
 // on its face runs down to zero, and a face that left under the pointer would
@@ -70,7 +71,7 @@ export function Instruments({
   const close = (stage: string) => keep(all, new Set(closed).add(stage))
   const reopen = (stage: string) =>
     keep(all, new Set([...closed].filter(s => s !== stage)))
-  const toggle = () => keep(!all, closed)
+  const full = all && closed.size === 0
 
   const shelf = (machines: Row) => {
     const shown = machines.filter(([stage]) => shows(stage))
@@ -92,13 +93,21 @@ export function Instruments({
   return (
     <>
       <div className={styles.bar}>
-        <button
-          className={all ? styles.modeOn : styles.mode}
-          aria-pressed={all}
-          onClick={toggle}
+        <Tip
+          text={
+            full
+              ? 'Put away the instruments whose level never came up.'
+              : 'Lay out all five instruments, each with its Level slider. One with its level down stays silent until you raise it.'
+          }
         >
-          all instruments
-        </button>
+          <button
+            className={full ? styles.allQuiet : styles.all}
+            onClick={() => keep(!full, new Set())}
+          >
+            {full ? '− hide unused instruments' : '+ add all instruments'}
+          </button>
+        </Tip>
+        <AllPedals />
         <PedalsMenu />
         <BendKeysSwitch />
         {all &&

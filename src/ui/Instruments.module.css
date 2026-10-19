@@ -12,12 +12,12 @@
   gap: var(--space-md);
 }
 
-.mode {
-  composes: chipQuiet from './button.module.css';
+.all {
+  composes: action from './button.module.css';
 }
 
-.modeOn {
-  composes: chipOn from './button.module.css';
+.allQuiet {
+  composes: actionQuiet from './button.module.css';
 }
 
 .reopen {

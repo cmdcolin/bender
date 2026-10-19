@@ -12,7 +12,7 @@
   gap: var(--gap-ctl);
 }
 
-/* A toolbar chip beside "all instruments", lit while the letters go to the bend
+/* A toolbar chip beside "add all instruments", lit while the letters go to the bend
    keys. */
 .letterSwitch {
   composes: chipQuiet from './button.module.css';

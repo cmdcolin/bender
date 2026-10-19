@@ -101,6 +101,30 @@ function useRunOrder() {
   return pedalOrderAt(at).map(i => PEDALS[i]!.group)
 }
 
+/** One press puts every pedal on the bench, and once all six are there the
+    next press puts them away. Their mixes stay where they are. */
+export function AllPedals() {
+  const { pedals: shown } = useStoreValue(bench)
+  const order = useRunOrder()
+  const full = order.every(pedal => shown.includes(pedal))
+  return (
+    <Tip
+      text={
+        full
+          ? 'Take every pedal face off the bench. The pedals stay on the board.'
+          : 'Put all six pedal faces on the bench and their boxes on the map. A pedal stays silent until its mix comes up.'
+      }
+    >
+      <button
+        className={full ? styles.allQuiet : styles.all}
+        onClick={() => setBench({ ...bench.get(), pedals: full ? [] : order })}
+      >
+        {full ? '− put all pedals away' : '+ add all pedals'}
+      </button>
+    </Tip>
+  )
+}
+
 // One button that opens a checklist, so six pedals cost one chip of bar rather
 // than six, which is what a phone has room for.
 export function PedalsMenu() {

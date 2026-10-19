@@ -8,6 +8,14 @@
   composes: chipOn from './button.module.css';
 }
 
+.all {
+  composes: action from './button.module.css';
+}
+
+.allQuiet {
+  composes: actionQuiet from './button.module.css';
+}
+
 .shelf {
   display: flex;
   flex-wrap: wrap;

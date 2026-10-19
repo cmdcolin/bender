@@ -17,7 +17,7 @@ beforeEach(() => {
 })
 
 const group = (name: string) => screen.queryByRole('group', { name })
-const allMode = () => screen.getByRole('button', { name: 'all instruments' })
+const allMode = () => screen.getByRole('button', { name: / instruments$/ })
 
 test('the toy and the kit show alone while the other three have no level', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
@@ -41,6 +41,20 @@ test('all-instruments lays out every machine, each with a close cap', () => {
   ])
     expect(group(name)).not.toBeNull()
   expect(screen.getAllByRole('button', { name: /^close / })).toHaveLength(5)
+})
+
+test('add all instruments reopens closed machines, then hides the unused ones', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  expect(allMode().textContent).toBe('+ add all instruments')
+  fireEvent.click(allMode())
+  fireEvent.click(screen.getByRole('button', { name: 'close FM chip' }))
+  expect(allMode().textContent).toBe('+ add all instruments')
+  fireEvent.click(allMode())
+  expect(group('fm keyboard')).not.toBeNull()
+  expect(allMode().textContent).toBe('− hide unused instruments')
+  fireEvent.click(allMode())
+  expect(group('fm keyboard')).toBeNull()
+  expect(group('toy keyboard')).not.toBeNull()
 })
 
 test('closing a machine hides it and a chip brings it back', () => {
@@ -167,6 +181,22 @@ test('no pedal sits on the bench until it is switched in from the menu', () => {
   expect(group('tube amp')).toBeNull()
   expect(pedalsMenu().textContent).toContain('1')
   fireEvent.click(screen.getByRole('checkbox', { name: 'stompbox' }))
+  expect(group('stompbox')).toBeNull()
+})
+
+const allPedals = () => screen.getByRole('button', { name: / all pedals/ })
+
+test('add all pedals benches all six and leaves their mixes alone', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(allPedals())
+  expect(bench.get().pedals).toHaveLength(6)
+  for (const name of ['stompbox', 'tube amp', 'spring verb'])
+    expect(group(name)).not.toBeNull()
+  expect(shownOn(engine.controls.get()).has('Tube amp')).toBe(true)
+  expect(engine.controls.get().ampMix).toBe(DEFAULT_CONTROLS.ampMix)
+  expect(allPedals().textContent).toBe('− put all pedals away')
+  fireEvent.click(allPedals())
+  expect(bench.get().pedals).toEqual([])
   expect(group('stompbox')).toBeNull()
 })
 

@@ -412,8 +412,13 @@ The bench is the main area under the scope, where the instruments sit.
 - Every instrument has a **Level** slider on its face. The FM chip, home
   keyboard and mono synth appear when their level comes up, and stay once they
   have, so a face you pull to zero is still there to bring back.
-- The **pedals** button beside _all instruments_ lists the six pedals in signal
-  order. Check one to put its face on the bench, which starts with none.
+- **+ add all instruments** lays out all five, each with a close cap. Once all
+  five are out, the same button reads **− hide unused instruments**.
+- **+ add all pedals** puts all six pedal faces on the bench, and **− put all
+  pedals away** clears them. A pedal stays silent until its mix comes up.
+- The **pedals** button lists the six pedals in signal order. Check one to put
+  its face on the bench, which starts with none.
+- Instruments and pedals on the bench also get their boxes on the signal path.
 - A pedal's stage panel has a **bench** button that does the same, and a thin
   bar on the pedal's box in the signal path marks the ones on the bench.
 
