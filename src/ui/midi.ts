@@ -80,6 +80,7 @@ export function describe(bytes: number[]): string {
   const head = bytes[0]
   if (head === undefined) return 'empty'
   if (head === 0xf8) return 'clock tick'
+  if (head === 0xfe) return 'active sensing'
   if (head === 0xfc) return 'clock stop'
   if (head === 0xfa) return 'clock start'
   const channel = (head & 0x0f) + 1
@@ -232,6 +233,9 @@ const ROUTE_KEY = 'bender.midi.route'
 const SPLIT_KEY = 'bender.midi.split'
 const DEBUG_KEY = 'bender.midi.debug'
 
+const inRange = (n: unknown, max: number): n is number =>
+  typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= max
+
 // A stored binding map read back. Anything that no longer names a control with
 // a slider — one renamed or dropped between versions — goes, the same way the
 // pad map drops a voice the kit no longer has.
@@ -241,8 +245,7 @@ export const parseBindings = (raw: string | null): BindingMap =>
     name => CONTROL_KEYS.find(k => k === name && SLIDER_BY_KEY.has(k)) ?? null,
     stored => {
       const { channel, controller, relative } = stored as Partial<Binding>
-      if (typeof channel !== 'number' || typeof controller !== 'number')
-        return null
+      if (!inRange(channel, 15) || !inRange(controller, 127)) return null
       return relative === true
         ? { channel, controller, relative }
         : { channel, controller }
@@ -724,12 +727,12 @@ class Midi {
       input.onmidimessage = e => this.onMessage(e, input.name ?? '')
   }
 
-  // Clock ticks arrive 24 times a beat and would bury everything else, so they
-  // count but only take the readout when nothing else is using it.
+  // Clock ticks arrive 24 times a beat and active sensing every 300 ms, and both
+  // would bury everything else, so they count but only take the readout when nothing else is using it.
   private record(bytes: number[], port: string, voice?: string) {
     this.seen += 1
     const now = performance.now()
-    const tick = bytes[0] === 0xf8
+    const tick = bytes[0] === 0xf8 || bytes[0] === 0xfe
     if (this.debug.get() && !tick)
       console.log(
         `[midi] ${port} ${bytes.map(b => b.toString(16).padStart(2, '0')).join(' ')} — ${describe(bytes)}`,
@@ -862,7 +865,11 @@ class Midi {
     if (this.access === null) return
     for (const port of this.access.outputs.values()) {
       if (isLoopback(port.name)) continue
-      port.send(bytes)
+      try {
+        port.send(bytes)
+      } catch {
+        continue
+      }
     }
   }
 

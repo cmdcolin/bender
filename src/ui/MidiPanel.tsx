@@ -6,7 +6,12 @@ import styles from './MidiPanel.module.css'
 import { Tip } from './Tip.tsx'
 
 const Wired = lazy(() =>
-  import('./MidiWired.tsx').then(m => ({ default: m.Wired })),
+  import('./MidiWired.tsx').then(
+    m => ({ default: m.Wired }),
+    () => ({
+      default: () => <p>The MIDI panel did not load. Reload the page.</p>,
+    }),
+  ),
 )
 
 // The wire, behind a button in the nameplate row. Everything it offers needs a

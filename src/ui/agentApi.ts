@@ -188,7 +188,11 @@ function land(
     k => patch[k] !== undefined && patch[k] !== board[k],
   )
   if (!changes) return
-  engine.morphTo({ ...board, ...patch }, Math.max(seconds, 0), force)
+  engine.morphTo(
+    { ...board, ...patch },
+    Number.isFinite(seconds) ? Math.max(seconds, 0) : 0,
+    force,
+  )
   engine.flush()
 }
 
@@ -263,7 +267,10 @@ function summary() {
 
 async function listen(ms = 1500) {
   if (!engine.running.get()) return { audio: audioState() }
-  const span = Math.min(Math.max(ms, 100), MAX_LISTEN_MS)
+  const span = Math.min(
+    Math.max(Number.isNaN(ms) ? 1500 : ms, 100),
+    MAX_LISTEN_MS,
+  )
   const start = engine.meter.get()
   const perSecond = engine.sampleRate() / BLOCK / METER_EVERY
   let meters = 0
@@ -422,6 +429,8 @@ export function createBenderApi() {
 
     load(name: string, seconds = 0) {
       const lower = name.toLowerCase()
+      if (lower === '')
+        throw new Error('name a preset; bender.presets() lists them')
       const preset =
         PRESETS.find(p => p.name.toLowerCase() === lower) ??
         PRESETS.find(p => p.name.toLowerCase().startsWith(lower))
