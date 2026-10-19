@@ -452,6 +452,7 @@ export function App(props: { openedFromLink?: boolean }) {
               onToggle={() => setShowMidi(o => !o)}
               onClose={() => setShowMidi(false)}
             />
+            <ShareButton onCopy={() => copyLink(boardQuery())} />
             {/* Beside the MIDI drawer for the same reason it is: a fact about
               the session rather than a verb over the board. */}
             <SavedVoices
@@ -640,7 +641,6 @@ export function App(props: { openedFromLink?: boolean }) {
                 </span>
               </button>
             </Tip>
-            <ShareButton />
             {/* Beside reset, because what undo has in common with it is what a
               hand reaching for either one wants: out of here. */}
             <Tip text="Steps back through the boards you have been through (ctrl+z).">

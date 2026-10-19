@@ -31,6 +31,12 @@
   pointer-events: none;
 }
 
+.scope .hint b {
+  padding: var(--space-2xs) var(--space-sm);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  border-radius: var(--ctl-radius);
+}
+
 .panel {
   width: clamp(470px, 30vw, 600px);
   flex: none;
