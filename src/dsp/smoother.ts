@@ -3,7 +3,8 @@ import { N_PARAMS, SMOOTH_SEC } from '../engine/params.ts'
 // Per-block parameter smoothing from the classes declared in PARAM_DEFS.
 // 'step' snaps, 'slew' eases over ~10 ms, 'ramp' over ~3 ms. A float32 one-pole
 // stalls one rounding step short of its target, so the last gap snaps shut and
-// an "off" check downstream sees exactly 0.
+// an "off" check downstream sees exactly 0. A non-finite target holds the
+// last value, and a non-finite current value snaps to the next finite target.
 
 const SNAP = 1e-6
 
@@ -30,9 +31,10 @@ export class Smoother {
     const coef = this.coef
     for (let i = 0; i < N_PARAMS; i++) {
       const t = target[i]!
+      if (!Number.isFinite(t)) continue
       const gap = t - cur[i]!
       cur[i] =
-        Math.abs(gap) < SNAP * Math.max(1, Math.abs(t))
+        !Number.isFinite(gap) || Math.abs(gap) < SNAP * Math.max(1, Math.abs(t))
           ? t
           : cur[i]! + coef[i]! * gap
     }

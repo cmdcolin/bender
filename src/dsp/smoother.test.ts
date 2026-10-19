@@ -24,4 +24,18 @@ describe('Smoother', () => {
   it('lands a slew param exactly on 1', () => {
     expect(settle(0, 1)).toBe(1)
   })
+
+  it('holds the last value for a NaN target and recovers on the next finite one', () => {
+    const s = new Smoother(48000, 128)
+    const target = new Float32Array(N_PARAMS)
+    target[slew] = 0.5
+    s.step(target)
+    target[slew] = NaN
+    s.step(target)
+    expect(s.cur[slew]).toBe(0.5)
+    s.cur[slew] = NaN
+    target[slew] = 0.25
+    s.step(target)
+    expect(s.cur[slew]).toBe(0.25)
+  })
 })
