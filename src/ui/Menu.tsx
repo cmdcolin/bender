@@ -5,9 +5,21 @@ import {
   shift,
   useFloating,
 } from '@floating-ui/react'
-import { useCallback, useEffect, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react'
 
 import styles from './Menu.module.css'
+
+const KEY_STEP: Record<string, 1 | -1 | 'first' | 'last'> = {
+  ArrowDown: 1,
+  ArrowUp: -1,
+  Home: 'first',
+  End: 'last',
+}
 
 // A popover, for the reason the tip is one: it opens over the signal path,
 // which scrolls and clips, and the top layer clears both without a portal to
@@ -82,9 +94,27 @@ export function Menu(props: {
     [toggle],
   )
 
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (props.role !== 'menu') return
+    const step = KEY_STEP[e.key]
+    if (step === undefined) return
+    const items = [
+      ...e.currentTarget.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), [role="menuitem"]',
+      ),
+    ]
+    if (items.length === 0) return
+    e.preventDefault()
+    const at = items.findIndex(el => el === document.activeElement)
+    const to =
+      step === 'first' ? 0 : step === 'last' ? items.length - 1 : at + step
+    items[(to + items.length) % items.length]?.focus()
+  }
+
   return (
     <div
       ref={setFloating}
+      onKeyDown={onKeyDown}
       popover="manual"
       role={props.role}
       aria-label={props.label}

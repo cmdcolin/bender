@@ -55,17 +55,6 @@
   border-color: var(--accent);
 }
 
-/* A verb under a hand: a throw pad held by a finger or a key is filled for as
-   long as the hand is there. The state sits here beside the others because a
-   module that wrote the fill itself lost to this file's rest rule whenever the
-   bundler emitted it later, and the pad never lit. */
-.actionHeld {
-  composes: action;
-  color: var(--accent-ink);
-  background: var(--cool);
-  border-color: var(--cool);
-}
-
 /* A key on the bend board's map of the letter keys: an action two rows tall,
    with the letter over what the key does. */
 .actionKey {
@@ -123,34 +112,11 @@
   border-color: var(--alarm-edge);
 }
 
-/* A take being written right now, ringed in the full alarm red. */
-.actionLive {
-  composes: actionDanger;
-  border-color: var(--alarm);
-}
-
-.actionLive:hover:not(:disabled) {
-  border-color: var(--alarm);
-}
-
 /* Chrome beside the verbs, such as the menu button, in the same shape with
    quieter ink. */
 .actionQuiet {
   composes: action;
   color: var(--fg3);
-}
-
-/* What plays, set in bold so the eye finds it first. */
-.actionLoud {
-  composes: action;
-  color: var(--fg);
-  font-weight: 600;
-}
-
-.actionLoudOn {
-  composes: actionOn;
-  color: var(--accent);
-  font-weight: 600;
 }
 
 /* Waiting on a knob or a key, in the amber a waiting control wears everywhere

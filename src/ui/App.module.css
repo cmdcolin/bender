@@ -255,18 +255,6 @@
   color: var(--fg4);
 }
 
-/* The switches under the board: what plays, what listens, what is being
-   written to disk. The panel's loud verbs, since that is what they are — and
-   composed rather than restated, so a finger gets them at the same height as
-   everything else it can press. */
-.playBtn {
-  composes: actionLoud from './button.module.css';
-}
-
-.playBtnOn {
-  composes: actionLoudOn from './button.module.css';
-}
-
 /* The roll's own line: what it is doing while it does it, and what it came back
    with once it has. Its own colour, so a wait reads as the app working rather
    than as the board saying something. */
@@ -283,14 +271,6 @@
 
 .hint b {
   color: var(--fg2);
-}
-
-.kbd {
-  font-variant-numeric: tabular-nums;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--ctl-radius);
-  padding: 0 var(--space-xs);
 }
 
 .warn {

@@ -43,3 +43,26 @@ test('a menu shut from the keyboard hands focus back to its toggle', () => {
   fireEvent.click(screen.getByRole('button', { name: 'item' }))
   expect(document.activeElement).toBe(toggle)
 })
+
+test('the arrow keys walk a menu and wrap at the ends', () => {
+  render(
+    <Menu anchor={null} toggle={null} role="menu" onClose={() => {}}>
+      <button role="menuitem">one</button>
+      <button role="menuitem">two</button>
+      <button role="menuitem">three</button>
+    </Menu>,
+  )
+  const menu = screen.getByRole('menu', { hidden: true })
+  const item = (name: string) => screen.getByRole('menuitem', { name })
+  expect(document.activeElement).toBe(item('one'))
+  fireEvent.keyDown(menu, { key: 'ArrowDown' })
+  expect(document.activeElement).toBe(item('two'))
+  fireEvent.keyDown(menu, { key: 'End' })
+  expect(document.activeElement).toBe(item('three'))
+  fireEvent.keyDown(menu, { key: 'ArrowDown' })
+  expect(document.activeElement).toBe(item('one'))
+  fireEvent.keyDown(menu, { key: 'ArrowUp' })
+  expect(document.activeElement).toBe(item('three'))
+  fireEvent.keyDown(menu, { key: 'Home' })
+  expect(document.activeElement).toBe(item('one'))
+})
