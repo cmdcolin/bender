@@ -103,7 +103,10 @@ const SCRIPTS: Record<string, string> = {
   dev: 'the app',
   build: 'typecheck and bundle',
   test: 'the suite: the DSP torture test that pins every feedback past unity at once, and the panel in jsdom',
+  'test:changed':
+    'only the test files that import something changed since main',
   typecheck: 'types only',
+  check: 'lint, typecheck and the changed tests, for the edit loop',
   'blog:draft': 'drafts a blog post from the feat commits since the last one',
   'sync:check': 'compare the regions shared with videoskillet',
   lint: 'oxlint, type-aware',
