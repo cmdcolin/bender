@@ -49,8 +49,8 @@
 .round {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 1px solid #ffffff50;
   border-radius: 50%;
@@ -270,6 +270,7 @@
 .tab,
 .tabOn {
   flex: none;
+  min-height: 44px;
   padding: var(--space-xs) var(--space-md);
   border: 0;
   border-bottom: 2px solid transparent;
@@ -585,8 +586,8 @@
   font-weight: 700;
 }
 .close {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   border-radius: 50%;

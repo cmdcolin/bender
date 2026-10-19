@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { POOLS } from '../engine/archive.ts'
 import { engine } from '../engine/engine.ts'
@@ -21,11 +21,34 @@ function Sheet(props: {
   onClose: () => void
   children: ReactNode
 }) {
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const onCloseRef = useRef(props.onClose)
+  useEffect(() => {
+    onCloseRef.current = props.onClose
+  })
+  useEffect(() => {
+    const before = document.activeElement
+    closeRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCloseRef.current()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      if (before instanceof HTMLElement) before.focus()
+    }
+  }, [])
   return (
-    <div className={styles.sheet} role="dialog" aria-label={props.title}>
+    <div
+      className={styles.sheet}
+      role="dialog"
+      aria-modal="true"
+      aria-label={props.title}
+    >
       <div className={styles.sheetHead}>
         <span className={styles.sheetTitle}>{props.title}</span>
         <button
+          ref={closeRef}
           className={styles.close}
           aria-label="close"
           onClick={props.onClose}

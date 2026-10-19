@@ -20,6 +20,19 @@ test('a tap puts a preset up, and a second tap opens how far toward it', () => {
   expect(screen.getByRole('dialog', { name: 'boom bap' })).toBeTruthy()
 })
 
+test('a sheet takes the focus, shuts on Escape and gives the focus back', () => {
+  render(<PocketPage />)
+  const mix = screen.getByRole('button', { name: /mix/ })
+  mix.focus()
+  fireEvent.click(mix)
+  expect(document.activeElement).toBe(
+    screen.getByRole('button', { name: 'close' }),
+  )
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(document.activeElement).toBe(mix)
+})
+
 test('a bend pad stays on after the tap, and a second tap lets it go', () => {
   render(<PocketPage />)
   fireEvent.click(tab('bends'))

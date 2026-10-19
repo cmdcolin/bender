@@ -42,6 +42,7 @@
 }
 
 .quiet {
+  padding: var(--space-md);
   background: none;
   border: none;
   color: var(--fg4);
