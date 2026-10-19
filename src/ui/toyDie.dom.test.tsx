@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
@@ -283,6 +283,38 @@ test('the header verbs act on the open box, or on the whole stage', () => {
     'true',
   )
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+})
+
+test('an open box rolls its own rows from inside its card', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  open()
+  fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
+  const card = screen.getByRole('region', { name: 'envelope' })
+  const before = engine.controls.get()
+  fireEvent.click(within(card).getByRole('button', { name: 'roll envelope' }))
+  const after = engine.controls.get()
+  const changed = (Object.keys(after) as (keyof Controls)[]).filter(
+    k => after[k] !== before[k],
+  )
+  expect(changed.length).toBeGreaterThan(0)
+  for (const key of changed) expect(NODE_KEYS.envelope).toContain(key)
+  fireEvent.click(
+    within(card).getByRole('button', { name: 'undo roll of envelope' }),
+  )
+  expect(engine.controls.get()).toEqual(before)
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+})
+
+test('all settings lists the stage’s rows in place of the die', () => {
+  act(() => engine.patch({ ...DEFAULT_CONTROLS }))
+  open()
+  expect(screen.queryByRole('img', { name: 'toy chip die' })).not.toBeNull()
+  const rowsBefore = screen.queryAllByRole('slider').length
+  fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
+  expect(screen.queryByRole('img', { name: 'toy chip die' })).toBeNull()
+  expect(screen.queryAllByRole('slider').length).toBeGreaterThan(rowsBefore)
+  fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
+  expect(screen.queryByRole('img', { name: 'toy chip die' })).not.toBeNull()
 })
 
 test('a key under the die names each bend that is on, and opens its part', () => {

@@ -18,6 +18,7 @@ import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { AmpPathDiagram } from './AmpPathDiagram.tsx'
 import { bench, setBench } from './bench.ts'
+import { BoxStage } from './BoxContext.ts'
 import { groupAnchor } from './chain-map.ts'
 import {
   groupKeys,
@@ -27,7 +28,7 @@ import {
   type SliderDef,
 } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
-import { zoomFor } from './drawingFor.tsx'
+import { foldDrawing, zoomFor } from './drawingFor.tsx'
 import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { firstLook, markLooked } from './firstLook.ts'
@@ -163,6 +164,14 @@ interface Aim {
   scope: string
   what: string
   keys: ControlKey[]
+}
+
+const ListedHere = createContext(false)
+
+function useListed(): boolean {
+  const everywhere = useStoreValue(listView)
+  const here = useContext(ListedHere)
+  return everywhere || here
 }
 
 const AimVerbs = createContext<(id: symbol, aim: Aim | null) => void>(() => {})
@@ -567,7 +576,7 @@ function PartFold({
         : `${rows.length + hosted.length}`
       : badge
   const caution = group.caution?.part === name ? group.caution.text : null
-  const listed = useStoreValue(listView)
+  const listed = useListed()
   return (
     <Fold
       name={name}
@@ -713,7 +722,7 @@ function Rows({
   editor?: ReactNode
 }) {
   const blocks = parts(group)
-  const listed = useStoreValue(listView)
+  const listed = useListed()
   const drawn = listed ? undefined : STAGE_DRAWINGS[group.name]
   // Which rows have anything to act on, as a string rather than the board they
   // are read off: a stage stands open through morphs and drags, and taking the
@@ -838,7 +847,17 @@ export function OpenGroup({
   stacked?: boolean
 }) {
   const shownEditors = useStoreValue(bench)
-  const listed = useStoreValue(listView)
+  const listedEverywhere = useStoreValue(listView)
+  const [listedHere, setListedHere] = useState(false)
+  const listed = listedEverywhere || listedHere
+  const drawable = useMemo(
+    () =>
+      group.name in STAGE_DRAWINGS ||
+      isPathKind(group.editor?.kind) ||
+      ['tapeLoop', 'tapePath', 'ampPath'].includes(group.editor?.kind ?? '') ||
+      group.sliders.some(d => d.part && foldDrawing(group.name, d.part)),
+    [group],
+  )
   const el = useRef<HTMLDivElement>(null)
   const fresh = useMemo(
     () => !stacked && firstLook(group.name),
@@ -916,6 +935,23 @@ export function OpenGroup({
           <EditorToggle which="roll" />
         )}
         {group.editor?.kind === 'drums' && <EditorToggle which="grid" />}
+        {drawable && !listedEverywhere && (
+          <Tip
+            text={
+              listedHere
+                ? `Back to ${group.name}’s drawing, with its settings behind the boxes.`
+                : `List every setting of ${group.name} in one column, with no drawing to press through.`
+            }
+          >
+            <button
+              className={listedHere ? styles.editorOn : styles.editor}
+              aria-pressed={listedHere}
+              onClick={() => setListedHere(!listedHere)}
+            >
+              all settings
+            </button>
+          </Tip>
+        )}
         <StageVerbs group={group} aim={aimed} seconds={seconds} />
         <MoreMenu group={group} seconds={seconds} onClose={onClose} />
         {!stacked && (
@@ -943,40 +979,46 @@ export function OpenGroup({
       )}
       <div className={styles.body}>
         <AimVerbs.Provider value={aimAt}>
-          <ReserveReadout defs={panelRows(group)}>
-            {!drawn && <Lead group={group} />}
-            {rigsFirst && rigs}
-            {!drawn && widget}
-            {group.editor?.kind === 'mixer' && <Mixer />}
-            {group.editor?.kind === 'feedback' && <FeedbackLoops />}
-            {group.editor?.kind === 'order' && <OrderRack />}
-            {group.editor?.kind === 'patch' && <PatchBay />}
-            {group.editor?.kind === 'trigger' && <TriggerPatch />}
-            {group.editor?.kind === 'supply' && <SupplyReading />}
-            {group.editor?.kind === 'mic' && <MicPatch />}
-            {group.editor?.kind === 'loops' && <FourTrack />}
-            {!listed && group.editor?.kind === 'tapeLoop' && (
-              <TapeLoopDiagram />
-            )}
-            {!listed && group.editor?.kind === 'tapePath' && (
-              <TapePathDiagram />
-            )}
-            {PathDrawing && (
-              <PathDrawing
-                zoom={zoomFor(group.name)}
-                verbs={verbsFor(group, seconds)}
-              />
-            )}
-            {!listed && group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
-            {group.memory && shownEditors.roll && <MonoRoll />}
-            {!rigsFirst && rigs}
-            <Rows
-              key={group.name}
-              group={group}
-              seconds={seconds}
-              editor={drawn && widget}
-            />
-          </ReserveReadout>
+          <ListedHere.Provider value={listedHere}>
+            <BoxStage.Provider value={{ stage: group.name, seconds }}>
+              <ReserveReadout defs={panelRows(group)}>
+                {!drawn && <Lead group={group} />}
+                {rigsFirst && rigs}
+                {!drawn && widget}
+                {group.editor?.kind === 'mixer' && <Mixer />}
+                {group.editor?.kind === 'feedback' && <FeedbackLoops />}
+                {group.editor?.kind === 'order' && <OrderRack />}
+                {group.editor?.kind === 'patch' && <PatchBay />}
+                {group.editor?.kind === 'trigger' && <TriggerPatch />}
+                {group.editor?.kind === 'supply' && <SupplyReading />}
+                {group.editor?.kind === 'mic' && <MicPatch />}
+                {group.editor?.kind === 'loops' && <FourTrack />}
+                {!listed && group.editor?.kind === 'tapeLoop' && (
+                  <TapeLoopDiagram />
+                )}
+                {!listed && group.editor?.kind === 'tapePath' && (
+                  <TapePathDiagram />
+                )}
+                {PathDrawing && (
+                  <PathDrawing
+                    zoom={zoomFor(group.name)}
+                    verbs={verbsFor(group, seconds)}
+                  />
+                )}
+                {!listed && group.editor?.kind === 'ampPath' && (
+                  <AmpPathDiagram />
+                )}
+                {group.memory && shownEditors.roll && <MonoRoll />}
+                {!rigsFirst && rigs}
+                <Rows
+                  key={group.name}
+                  group={group}
+                  seconds={seconds}
+                  editor={drawn && widget}
+                />
+              </ReserveReadout>
+            </BoxStage.Provider>
+          </ListedHere.Provider>
         </AimVerbs.Provider>
       </div>
     </div>

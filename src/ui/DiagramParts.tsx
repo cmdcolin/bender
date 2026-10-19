@@ -1,5 +1,7 @@
 import { Fragment, useId, type ReactNode } from 'react'
 
+import { BoxTitle } from './BoxContext.ts'
+import { BoxRoll } from './BoxRoll.tsx'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
 import styles from './Diagram.module.css'
@@ -416,7 +418,7 @@ export function OpenBox({
           ×
         </button>
       </header>
-      {children}
+      <BoxTitle.Provider value={title}>{children}</BoxTitle.Provider>
     </section>
   )
 }
@@ -458,6 +460,7 @@ export function BoxRows({
   const list = (
     <div className={styles.rows}>
       {note && <p className={styles.noteLine}>{note}</p>}
+      <BoxRoll keys={rows} />
       {verbs}
       {rows.map(key => (
         <Fragment key={key}>
