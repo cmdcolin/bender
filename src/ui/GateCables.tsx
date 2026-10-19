@@ -301,8 +301,22 @@ function Cable({
         3 * u * t * t * c2.y +
         t ** 3 * b.y,
     }
+    const at = 0.72
+    const w = 1 - at
+    const point = (p0: number, p1: number, p2: number, p3: number) =>
+      w ** 3 * p0 + 3 * w * w * at * p1 + 3 * w * at * at * p2 + at ** 3 * p3
+    const slope = (p0: number, p1: number, p2: number, p3: number) =>
+      3 * w * w * (p1 - p0) + 6 * w * at * (p2 - p1) + 3 * at * at * (p3 - p2)
+    const arrow = {
+      x: point(a.x, c1.x, c2.x, b.x),
+      y: point(a.y, c1.y, c2.y, b.y),
+      angle:
+        (Math.atan2(slope(a.y, c1.y, c2.y, b.y), slope(a.x, c1.x, c2.x, b.x)) *
+          180) /
+        Math.PI,
+    }
     const d = `M${a.x} ${a.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${b.x} ${b.y}`
-    return { d, mid }
+    return { d, mid, arrow }
   }, [spot])
   if (cut) return null
   return (
@@ -313,6 +327,18 @@ function Cable({
       <path className={styles.sheath} d={geometry.d} />
       <path className={styles.core} d={geometry.d} />
       <path className={styles.sheen} d={geometry.d} />
+      <path
+        className={styles.grab}
+        d={geometry.d}
+        onClick={() => setGate(socket.control, true)}
+      >
+        <title>Pull the plug: Plinky’s gate stops reaching this keyboard</title>
+      </path>
+      <polygon
+        className={styles.arrow}
+        points="-4.5,-4 4.5,0 -4.5,4"
+        transform={`translate(${geometry.arrow.x} ${geometry.arrow.y}) rotate(${geometry.arrow.angle})`}
+      />
       <Plug at={spot.from} up={false} colour={colour} />
       <Plug at={spot.to} up colour={colour} />
       <g
@@ -321,10 +347,10 @@ function Cable({
         onClick={() => setGate(socket.control, true)}
       >
         <title>Pull the plug: Plinky’s gate stops reaching this keyboard</title>
-        <rect x="-17" y="-7" width="34" height="14" rx="3" />
-        <circle cx="-12" cy="0" r="1.6" />
+        <rect x="-20" y="-7" width="40" height="14" rx="3" />
+        <circle cx="-15" cy="0" r="1.6" />
         <text x="3" y="3" textAnchor="middle">
-          GATE
+          GATE ↓
         </text>
       </g>
     </g>

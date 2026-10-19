@@ -298,7 +298,11 @@ test('a soldered jumper draws a cable from Plinky to the keyboard, and pulling t
   expect(container.querySelectorAll('[data-lamp="wired"]').length).toBe(1)
   const cables = () => container.querySelectorAll('svg[aria-hidden] g > title')
   expect(cables().length).toBe(1)
-  fireEvent.click(screen.getByRole('button', { name: 'with Plinky' }))
+  const grab = container.querySelector('path[class*=grab]')!
+  fireEvent.click(grab)
   expect(cables().length).toBe(0)
   expect(engine.controls.get().fmKeyGate).toBe(1)
+  fireEvent.click(screen.getByRole('button', { name: 'own keys only' }))
+  expect(cables().length).toBe(1)
+  expect(engine.controls.get().fmKeyGate).toBe(0)
 })

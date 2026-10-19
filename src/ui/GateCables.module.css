@@ -148,6 +148,31 @@
   stroke-width: 0.8;
 }
 
+/* A wide invisible stroke over the cable, so the whole length takes a press. */
+.grab {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  stroke-linecap: round;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.cable:hover .core,
+.cableOn:hover .core {
+  stroke-width: 4.4;
+}
+
+/* The arrowhead on the cable points from Plinky's plug to the keyboard's. */
+.arrow {
+  fill: #fff;
+  fill-opacity: 0.9;
+  stroke: var(--sheath);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 /* A paper tag tied on the cable, which is also the way to pull the plug. */
 .tag {
   pointer-events: auto;
