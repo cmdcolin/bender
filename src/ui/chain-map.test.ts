@@ -99,6 +99,32 @@ test('a short path hangs narrower than the drawing, with the mix bus its width',
   expect(out.x + out.w / 2).toBeCloseTo(mix.x + mix.w / 2)
 })
 
+test.each([
+  [
+    'Toy_drums',
+    'Toy_keyboard',
+    ['Toy keyboard', 'FM chip', 'Home keyboard', 'Toy drums'],
+  ],
+  [
+    'Mono_synth',
+    'Home_keyboard',
+    ['Toy keyboard', 'FM chip', 'Home keyboard', 'Mono synth'],
+  ],
+])(
+  'a lone box on the lower row keeps the width of the one above: %s',
+  (lone, above, names) => {
+    const map = buildMap(DEFAULT_CONTROLS, {
+      wrap: true,
+      shown: new Set([...names, 'Board parts', 'Mix bus', 'Output']),
+    })
+    checkLayout(map)
+    const [low, up] = [box(map, lone)!, box(map, above)!]
+    expect(low.w).toBe(up.w)
+    expect(low.x).toBe(up.x)
+    expect(low.w).toBeLessThan(map.width * 0.6)
+  },
+)
+
 test('the tape machine draws where Tape at puts it', () => {
   const at = (tapeAt: number) =>
     buildMap({ ...DEFAULT_CONTROLS, tapeMix: 1, tapeAt })

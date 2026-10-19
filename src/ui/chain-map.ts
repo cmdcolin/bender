@@ -968,7 +968,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   // By their labels rather than evenly: the chip is the one you do not play and
   // it should not come out the size of the two you do.
-  for (const row of chipRows)
+  for (const [r, row] of chipRows.entries()) {
+    if (r === 1 && row.length === 1) continue
     spread(
       row,
       FRAME_PAD,
@@ -976,6 +977,14 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       row.map(() => INST_GAP),
       natural,
     )
+  }
+  // A lone box on the lower row takes the width of the box it hangs under: the
+  // drums under the keyboard, the mono synth under the end of the gate line.
+  if (chipRows[1]?.length === 1) {
+    const [only] = chipRows[1]
+    const above = only === mono ? topRow[topRow.length - 1]! : topRow[0]!
+    ;[only!.w, only!.x] = [above.w, above.x]
+  }
   for (const row of lineRows) {
     if (spine) {
       const w = (content - lineGap) / 2
