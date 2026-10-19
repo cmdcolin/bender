@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
@@ -32,6 +32,37 @@ test('each track gets a lane with its input, record arm and fader, drawn once', 
   expect(screen.queryByText('Input')).toBeNull()
 })
 
+test('each channel of the desk has its preamp, three EQ bands, aux send and pan on the surface', () => {
+  openFourTrack()
+  for (const name of [
+    'Trim',
+    'High',
+    'Mid',
+    'Mid freq',
+    'Low',
+    'Aux send',
+    'Pan',
+  ])
+    expect(screen.getAllByRole('slider', { name })).toHaveLength(4)
+  expect(screen.getAllByRole('group', { name: /channel$/ })).toHaveLength(4)
+})
+
+test('a desk knob steps with the arrow keys and goes back to stock on a double-click', () => {
+  openFourTrack()
+  const mid = within(
+    screen.getByRole('group', { name: 'track 2 channel' }),
+  ).getByRole('slider', { name: 'Mid' })
+  fireEvent.keyDown(mid, { key: 'ArrowUp' })
+  expect(engine.controls.get().four2Mid).toBe(0.5)
+  fireEvent.keyDown(mid, { key: 'ArrowUp', shiftKey: true })
+  expect(engine.controls.get().four2Mid).toBe(5.5)
+  expect(mid.getAttribute('aria-valuetext')).toBe('5.5 dB')
+  fireEvent.doubleClick(mid)
+  expect(engine.controls.get().four2Mid).toBe(0)
+  fireEvent.keyDown(mid, { key: 'End' })
+  expect(engine.controls.get().four2Mid).toBe(15)
+})
+
 test('the record arm lays a channel onto its loop and lifts it off again', () => {
   openFourTrack()
   const arm = screen.getByRole('button', { name: 'record track 2' })
@@ -61,22 +92,22 @@ test('the deck switches share one row and write the same controls', () => {
   expect(engine.controls.get().fourDbx).toBe(1)
 })
 
-test('the strip and the transport start folded, with no strip row drawn until its box is pressed', () => {
+test('the signal path and the transport start folded, with no loop row drawn until its box is pressed', () => {
   openFourTrack()
   expect(fold('channel strip')?.open).toBe(false)
   expect(fold('the transport')?.open).toBe(false)
-  expect(screen.queryByRole('slider', { name: 'Trim' })).toBeNull()
+  expect(screen.queryByRole('slider', { name: 'Erase' })).toBeNull()
 })
 
-test('a strip with a moved knob opens on that track, and its boxes open their knobs', () => {
-  act(() => engine.set('four2Trim', 12))
+test('a loop setting moved off stock opens the signal path on that track, and its boxes open their knobs', () => {
+  act(() => engine.set('four2Erase', 0.5))
   openFourTrack()
   expect(fold('channel strip')?.open).toBe(true)
   expect(screen.getByRole('img', { name: 'track 2 signal path' })).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: 'trim controls' }))
-  expect(screen.getByRole('slider', { name: 'Trim' })).toBeTruthy()
-  fireEvent.click(screen.getByRole('button', { name: 'trim controls' }))
-  expect(screen.queryByRole('slider', { name: 'Trim' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'erase · loop controls' }))
+  expect(screen.getByRole('slider', { name: 'Erase' })).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'erase · loop controls' }))
+  expect(screen.queryByRole('slider', { name: 'Erase' })).toBeNull()
 })
 
 test('pressing a lane number brings that track’s strip up', () => {
@@ -108,11 +139,18 @@ test('arming leaves a channel that already hears something else alone', () => {
   expect(engine.controls.get().four1In).toBe(choiceValue('four1In', 'mic'))
 })
 
-test('a strip knob moving from elsewhere opens the strip on its channel, but the record arm does not', () => {
+test('a loop setting moving from elsewhere opens the signal path on its channel, but the record arm and the EQ do not', () => {
   openFourTrack()
   fireEvent.click(screen.getByRole('button', { name: 'record track 1' }))
   expect(fold('channel strip')?.open).toBe(false)
   act(() => engine.set('four3Mid', 9))
+  expect(fold('channel strip')?.open).toBe(false)
+  expect(
+    within(screen.getByRole('group', { name: 'track 3 channel' }))
+      .getByRole('slider', { name: 'Mid' })
+      .getAttribute('aria-valuenow'),
+  ).toBe('9')
+  act(() => engine.set('four3Cue', 0.5))
   expect(fold('channel strip')?.open).toBe(true)
   expect(screen.getByRole('img', { name: 'track 3 signal path' })).toBeTruthy()
 })

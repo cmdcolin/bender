@@ -636,15 +636,16 @@ while the head plays on.
 
 ### Four-track
 
-A cassette four-track: a desk of four channel strips in front of four tape
-loops, each cut to its own length and all on one capstan. A channel hears its
-own loop, the board, the mic or the desk’s aux return, through a trim preamp and
-three bands of EQ into a fader and an aux send, and records onto its loop over
-whatever the erase head left. Input on the board with a loop recording is a loop
-round the whole board, so each lap comes back through every bend again. Input on
-the aux with its send up is a mixer with nothing plugged in: the sweepable mid
-tunes the squeal and the op-amp rails clip it. _Wear_ sheds oxide at the same
-places every lap, and _Batteries_ drags the motor and the rails down together.
+A cassette four-track: a desk of four channel strips, with knobs and a fader
+down each strip, in front of four tape loops, each cut to its own length and all
+on one capstan. A channel hears its own loop, the board, the mic or the desk’s
+aux return, through a trim preamp and three bands of EQ into a fader and an aux
+send, and records onto its loop over whatever the erase head left. Input on the
+board with a loop recording is a loop round the whole board, so each lap comes
+back through every bend again. Input on the aux with its send up is a mixer with
+nothing plugged in: the sweepable mid tunes the squeal and the op-amp rails clip
+it. _Wear_ sheds oxide at the same places every lap, and _Batteries_ drags the
+motor and the rails down together.
 
 Named settings, one press each at the head of the panel — the stage goes back to
 stock and the setting is written over it, so the rows underneath say what it

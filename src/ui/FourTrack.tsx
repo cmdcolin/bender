@@ -11,9 +11,9 @@ import {
 } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import { STRIP_KEYS } from './diagram.ts'
+import { Dial } from './Dial.tsx'
 import { Fold } from './Fold.tsx'
 import styles from './FourTrack.module.css'
-import { ControlSlider } from './Slider.tsx'
 import { StripDiagram } from './StripDiagram.tsx'
 import { Tip } from './Tip.tsx'
 
@@ -32,6 +32,8 @@ const HEAD_REC = '#ff3355'
 const BG = '#0a0a0c'
 const EMPTY = '#55555c'
 const READOUT = '#a0a0a8'
+
+type StripKnob = 'Trim' | 'Send' | 'High' | 'Mid' | 'MidHz' | 'Low' | 'Pan'
 
 const cue = (n: Track) => `four${n}Cue` as const
 const fader = (n: Track) => `four${n}Fader` as const
@@ -151,10 +153,11 @@ function Reel({ track }: { track: Track }) {
   )
 }
 
-// A channel's lane: where it listens, whether it records, the loop it records
-// onto and the fader that brings it to the bus. Everything else on the channel
-// is behind its fold under the lanes, with a diagram of where it sits.
-function Lane({
+// One channel of the desk, top to bottom as a mixer lays it out: where it
+// listens, preamp and aux send, the three EQ bands with the sweepable mid's
+// frequency, pan and fader. The loop it records onto is in its lane under the
+// desk.
+function Strip({
   track,
   shown,
   onPick,
@@ -164,13 +167,19 @@ function Lane({
   onPick: (track: Track) => void
 }) {
   const source = sliderFor(input(track))
-  const armed = useControlValue(rec(track)) > 0
   const listens = Math.round(useControlValue(input(track)))
+  const dial = (name: StripKnob, short?: string) => (
+    <Dial def={sliderFor(`four${track}${name}` as const)} short={short} />
+  )
   return (
-    <div className={styles.lane}>
+    <div
+      className={styles.strip}
+      role="group"
+      aria-label={`track ${track} channel`}
+    >
       <div className={styles.head}>
         <Tip
-          text={`Open track ${track}’s channel strip: trim, EQ, aux send, pan, record, erase, cue and length.`}
+          text={`Open track ${track}’s signal path: trim, EQ, aux send, pan, record, erase, cue and length.`}
         >
           <button
             className={shown ? styles.numberOn : styles.number}
@@ -189,26 +198,47 @@ function Lane({
           >
             {source.choices!.map((name, i) => (
               <option key={name} value={i}>
-                {`in: ${name}`}
+                {name}
               </option>
             ))}
           </select>
         </Tip>
-        <Tip
-          text={`Lay the channel onto loop ${track}. The first press threads a blank loop as long as its Length, and on an empty loop that hears only itself it points the channel at the board. What goes under the head stays there, so a loop is recorded over by every pass it takes.`}
-        >
-          <button
-            className={armed ? styles.recOn : styles.rec}
-            aria-pressed={armed}
-            aria-label={`record track ${track}`}
-            onClick={() => arm(track, armed, listens)}
-          >
-            ● rec
-          </button>
-        </Tip>
-        <Reel track={track} />
       </div>
-      <ControlSlider def={sliderFor(fader(track))} label="Fader" />
+      <div className={styles.knobs}>
+        {dial('Trim')}
+        {dial('Send', 'Aux')}
+        {dial('High')}
+        {dial('Mid')}
+        {dial('MidHz')}
+        {dial('Low')}
+        {dial('Pan')}
+      </div>
+      <Dial def={sliderFor(fader(track))} fader />
+    </div>
+  )
+}
+
+// A channel's lane: the loop it records onto, the arm that lays the channel on
+// it, and the tape drawn between.
+function Lane({ track }: { track: Track }) {
+  const armed = useControlValue(rec(track)) > 0
+  const listens = Math.round(useControlValue(input(track)))
+  return (
+    <div className={styles.lane}>
+      <span className={styles.laneNumber}>{track}</span>
+      <Tip
+        text={`Lay the channel onto loop ${track}. The first press threads a blank loop as long as its Length, and on an empty loop that hears only itself it points the channel at the board. What goes under the head stays there, so a loop is recorded over by every pass it takes.`}
+      >
+        <button
+          className={armed ? styles.recOn : styles.rec}
+          aria-pressed={armed}
+          aria-label={`record track ${track}`}
+          onClick={() => arm(track, armed, listens)}
+        >
+          ● rec
+        </button>
+      </Tip>
+      <Reel track={track} />
     </div>
   )
 }
@@ -237,7 +267,7 @@ function Choice({ name }: { name: 'fourSpeed' | 'fourSide' | 'fourDbx' }) {
   )
 }
 
-const STRIP_OPENERS = STRIP_KEYS.filter(k => !k.endsWith('Rec'))
+const STRIP_OPENERS = STRIP_KEYS.filter(k => /(Erase|Cue|Len)$/.test(k))
 
 const firstMoved = (c: Controls): Track | undefined =>
   TRACK_NUMBERS.find(n =>
@@ -276,16 +306,21 @@ export function FourTrack() {
   }
   return (
     <div className={styles.wrap}>
+      <div className={styles.desk}>
+        {TRACK_NUMBERS.map(n => (
+          <Strip
+            key={n}
+            track={n}
+            shown={n === track && open}
+            onPick={t => {
+              setTrack(t)
+              setOpen(true)
+            }}
+          />
+        ))}
+      </div>
       {TRACK_NUMBERS.map(n => (
-        <Lane
-          key={n}
-          track={n}
-          shown={n === track && open}
-          onPick={t => {
-            setTrack(t)
-            setOpen(true)
-          }}
-        />
+        <Lane key={n} track={n} />
       ))}
       <div className={styles.deck}>
         <Choice name="fourSpeed" />

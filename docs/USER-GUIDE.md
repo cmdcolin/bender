@@ -470,21 +470,30 @@ shared rail, can also be bent — see [Bends](BENDS.md).
 A cassette four-track with four tape loops, each cut to its own length. It is
 silent until **Level** comes up.
 
-Each track has a lane:
+The desk is four channel strips side by side, top to bottom:
 
 - **in** picks what the channel hears: its own loop (**tape**), the whole
   **board**, the **mic**, or the desk's **aux** return.
+- **Trim** is the preamp gain and **Aux** the send to the aux bus.
+- **High**, **Mid**, **Mid freq** and **Low** are the EQ: two shelves and a
+  sweepable mid. The three bands click to zero as you drag through it.
+- **Pan** and **Fader** place the channel on the stereo bus.
+
+Drag a knob up or down, or step it with the arrow keys (shift for bigger steps).
+Double-click puts it back to stock.
+
+Under the desk, each track has a lane:
+
 - **rec** lays the channel onto the loop. The first press threads a blank loop
   as long as the track's **Length**. The loop under the head stays there, so
   every pass records over the last.
 - The drawing shows the loop, the head and, in rust, where the oxide has worn
   away. It lights the loop while a **Fader** or **Cue** lets you hear it.
-- **Fader** brings the channel to the stereo bus.
 
 To loop the board: set **in** to **board**, press **rec**, bring **Level** up.
 The loop plays back through **Cue** and goes round the board again each lap.
 
-For feedback, press a setting above the lanes:
+For feedback, press a setting above the desk:
 
 - **no-input mixer** puts track 1 on the desk's own aux return, so the desk
   feeds itself and squeals where track 1's mid is boosted. **Aux master** is how
@@ -495,10 +504,11 @@ For feedback, press a setting above the lanes:
 
 The rest is behind two things:
 
-- **channel strip** is a diagram of one channel. Press a lane's number, or a
-  track tab, to pick the channel. Press a box in the diagram (trim, EQ, send,
-  pan, rec, erase and loop, cue) to open its knobs under it. A box is drawn in
-  the accent colour once you have moved one of its knobs.
+- **channel strip** is a diagram of one channel's signal path. Press a strip's
+  number, or a track tab, to pick the channel. Press a box in the diagram (trim,
+  EQ, send, pan, rec, erase and loop, cue) to open its knobs under it. A box is
+  drawn in the accent colour once you have moved one of its knobs. It opens by
+  itself when erase, loop length or cue moves.
 - **the transport** holds tape level, hiss, wow, flutter, wear and batteries.
 
 **Speed**, **Side** and **NR** share one row under the lanes: 1⅞ or 3¾ ips,
