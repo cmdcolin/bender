@@ -20,6 +20,15 @@
   fill: var(--fg);
 }
 
+[aria-pressed='true'] > g > .chip,
+[aria-pressed='true'] > g > .chipOn {
+  stroke-width: 1.5;
+}
+
+[aria-pressed='true'] > g > .chip {
+  stroke: var(--fg2);
+}
+
 .trace,
 .traceCut,
 .jumper,

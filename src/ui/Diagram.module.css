@@ -167,6 +167,10 @@
   stroke-width: 1.5;
 }
 
+.box.selected {
+  stroke: var(--fg2);
+}
+
 .rows {
   margin: 0 0 var(--space-xs);
   padding-top: var(--space-2xs);

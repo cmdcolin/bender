@@ -14,7 +14,7 @@
 }
 
 .chips svg [aria-pressed='true'] rect[rx='3'] {
-  fill: color-mix(in srgb, var(--fg) 14%, var(--surface-raised));
+  fill: color-mix(in srgb, var(--fg) 20%, var(--surface-raised));
 }
 
 .chips svg [role='button'] text {
