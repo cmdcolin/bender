@@ -920,7 +920,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
 
   board.y = MARGIN
   const railY = board.y + CAP_H + 2
-  const chipY = railY + RAIL_H
+  const chipY = board.y + BOX_H + RAIL_H / 2 + 2
   for (const n of chipRows[0] ?? []) n.y = chipY
   // The lane under the row, which carries everything written about the row
   // rather than about one box in it: what the key line is, the bridges you have
@@ -1263,19 +1263,17 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // off it, and its knobs sat on the toy keyboard's panel until the map had
   // somewhere to point at them.
   doors.add(SUPPLY)
-  const supplyW = textWidth(SUPPLY, FONT) + ICON_COL + CHIP_PAD * 2
-  if (hasBoard)
-    notes.push(
-      node('supply', 'chip', SUPPLY, {
-        door: SUPPLY,
-        count: live ? touchedCount(SUPPLY, c) : 0,
-        open: o.open === SUPPLY,
-        x: board.x + board.w - FRAME_PAD - supplyW,
-        y: board.y - 2,
-        w: supplyW,
-        h: CHIP_H,
-      }),
-    )
+  if (hasBoard) {
+    const supply = node('supply', 'inst', SUPPLY, {
+      door: SUPPLY,
+      count: live ? touchedCount(SUPPLY, c) : 0,
+      open: o.open === SUPPLY,
+      y: board.y,
+    })
+    supply.w = natural(supply)
+    supply.x = board.x + board.w - FRAME_PAD - supply.w
+    notes.push(supply)
+  }
 
   // The bridges you patch yourself, in the lane under the row and in the patch
   // colour, so nothing here reads like the soldered line above it.
@@ -2246,41 +2244,34 @@ export function drawNode(
   if (n.kind === 'chip') {
     const lead = iconCol(n.label)
     const ink = n.active || n.open ? k.fg : k.dim
-    const [chipInk, chipEdge] =
-      n.label === SUPPLY ? [k.fg, k.dim] : [ink, k.border]
-    const size = n.label === SUPPLY ? FONT : SMALL
-    return el(
-      'g',
-      { className: n.label === SUPPLY ? 'node rail-chip' : 'node' },
-      [
-        ...door(
-          [
-            el('rect', {
-              className: 'box',
-              x: n.x,
-              y: n.y,
-              width: n.w,
-              height: n.h,
-              rx: 3,
-              fill: 'none',
-              stroke: n.open ? k.fg : chipEdge,
-              strokeDasharray: '2 2',
-            }),
-            ...(lead ? glyph(n, k, n.y + (n.h - ICON) / 2, CHIP_PAD) : []),
-            words(
-              n.label,
-              n.x + lead + (n.w - lead) / 2,
-              baseline(n.y, n.h, size),
-              size,
-              chipInk,
-            ),
-          ],
-          n.door,
-          links,
-        ),
-        ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
-      ],
-    )
+    return el('g', { className: 'node' }, [
+      ...door(
+        [
+          el('rect', {
+            className: 'box',
+            x: n.x,
+            y: n.y,
+            width: n.w,
+            height: n.h,
+            rx: 3,
+            fill: 'none',
+            stroke: n.open ? k.fg : k.border,
+            strokeDasharray: '2 2',
+          }),
+          ...(lead ? glyph(n, k, n.y + (n.h - ICON) / 2, CHIP_PAD) : []),
+          words(
+            n.label,
+            n.x + lead + (n.w - lead) / 2,
+            baseline(n.y, n.h, SMALL),
+            SMALL,
+            ink,
+          ),
+        ],
+        n.door,
+        links,
+      ),
+      ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
+    ])
   }
 
   // An instrument: a glyph of the machine it is, then a name and a count over
@@ -2289,6 +2280,7 @@ export function drawNode(
   // land on.
   if (n.kind === 'inst') {
     const lit = edge(n, k)
+    const bar = n.level !== undefined
     const inner: El[] = [
       el('rect', {
         className: 'box',
@@ -2301,21 +2293,32 @@ export function drawNode(
         stroke: lit,
         strokeWidth: n.open ? 2 : 1,
       }),
-      ...glyph(n, k, n.y + (n.h - ICON) / 2 - 1.5),
+      ...glyph(n, k, n.y + (n.h - ICON) / 2 - (bar ? 1.5 : 0)),
       words(
         n.label,
         n.x + PAD_X + ICON_COL,
-        baseline(n.y, n.h - 3, FONT),
+        baseline(n.y, n.h - (bar ? 3 : 0), FONT),
         FONT,
         n.active || n.open ? k.fg : k.dim,
         'start',
       ),
-      ...levelBar(n, k, meter),
+      ...(bar ? levelBar(n, k, meter) : []),
     ]
-    return el('g', { className: 'node' }, [
-      ...door(inner, n.door, links),
-      ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h - 3, k),
-    ])
+    return el(
+      'g',
+      { className: n.id === 'supply' ? 'node rail-chip' : 'node' },
+      [
+        ...door(inner, n.door, links),
+        ...touchedMark(
+          n.door ?? n.label,
+          n.count,
+          n.x + n.w,
+          n.y,
+          n.h - (bar ? 3 : 0),
+          k,
+        ),
+      ],
+    )
   }
   const lit = edge(n, k)
   const countW = links ? COUNT_COL : 0
@@ -2398,7 +2401,7 @@ function drawWire(w: MapWire, links: boolean): El {
 
 export function drawMap(map: ChainMap): El {
   const meter = Math.min(
-    ...map.nodes.filter(n => n.kind === 'inst').map(n => n.w - PAD_X * 2),
+    ...map.nodes.filter(n => n.level !== undefined).map(n => n.w - PAD_X * 2),
   )
   return el(
     'svg',

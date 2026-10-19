@@ -355,7 +355,7 @@ test('a source box carries how far up its fader is, on its own travel', () => {
 test('every source box draws its fader travel at one length', () => {
   const c = { ...DEFAULT_CONTROLS, fmLevel: 0.6, pcmLevel: 0.5 }
   const map = buildMap(c, { wrap: true, shown: onBoard(c) })
-  const insts = map.nodes.filter(n => n.kind === 'inst')
+  const insts = map.nodes.filter(n => n.level !== undefined)
   expect(new Set(insts.map(n => n.w)).size).toBeGreaterThan(1)
   const tracks = [
     ...serialize(drawMap(map)).matchAll(
