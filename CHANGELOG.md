@@ -2,6 +2,69 @@
 
 All notable changes to bender are documented here.
 
+## [1.12.0](https://github.com/cmdcolin/bender/compare/v1.11.0...v1.12.0) - 2026-10-19
+
+### Features
+- *(ui)* [`9f9d339`](https://github.com/cmdcolin/bender/commit/9f9d339d83601c7453590617ded1daca392bdf58) deal the four-track's strip controls to the bend keys
+- *(ui)* [`3b35d23`](https://github.com/cmdcolin/bender/commit/3b35d23b0a42f73348eb5239c9a59f37fc3f382d) put the take counter and keys on the recorder's cassette
+- *(ui)* [`bd8da59`](https://github.com/cmdcolin/bender/commit/bd8da599ddb126582e83938f16b56d5357acdb5c) build the recorder as one tape machine
+- *(ui)* [`c8281e1`](https://github.com/cmdcolin/bender/commit/c8281e11ae14d2d78d034875245c2de1356dfade) print each instrument's own name on its badge
+- *(ui)* [`4361507`](https://github.com/cmdcolin/bender/commit/4361507ba25c08ce82f14ec1aaebb3faac9524fe) draw the gate jumper as a cable tagged with its source
+- *(ui)* [`66011c8`](https://github.com/cmdcolin/bender/commit/66011c89c4c0e605c572c2fbcd17713d00920d1b) run the gate jumper as a patch cable across the bench
+- *(ui)* [`6ed3ae0`](https://github.com/cmdcolin/bender/commit/6ed3ae069492a68514ec1c189713a1dca1819f00) flatten the recorder to a muted cassette and one rec key
+- *(ui)* [`6cee9a1`](https://github.com/cmdcolin/bender/commit/6cee9a129260fc0f9ab6c08e80c2eeb5d0a93fd7) point the gate cable at the keyboard and make the whole cable pressable
+- *(ui)* [`ec1b163`](https://github.com/cmdcolin/bender/commit/ec1b1638a7f3f1f699ff3039a9380da0ffd34f80) drag the gate cable's end between its two jacks
+- *(ui)* [`1364921`](https://github.com/cmdcolin/bender/commit/1364921c6b203eed5622b2e232836dd6af695beb) put the recorder's keys on the top edge like a walkman
+- *(ui)* [`1aa9765`](https://github.com/cmdcolin/bender/commit/1aa976540a9fc692fe2215faaa70a129cbbe309e) label the cassette "side A: the whole session"
+- *(ui)* [`d3f2a23`](https://github.com/cmdcolin/bender/commit/d3f2a23566b62c2f9c166b6b87b2cc2fb0746a97) say "Level 0, but Glint still plays it" instead of "still heard!"
+- *(ui)* [`ab158e3`](https://github.com/cmdcolin/bender/commit/ab158e33289a921196d458b85099fe5a67cc7bfa) caption the recorder "rec tapes the whole session"
+- *(ui)* [`5f842be`](https://github.com/cmdcolin/bender/commit/5f842be3685b656466627130271b401fe29a5702) drop "side A" from the cassette label
+- *(ui)* [`468cdc4`](https://github.com/cmdcolin/bender/commit/468cdc438aa08d3695fa0614bd05316f49d8faf8) frame the open box in a card with its name and a hide button
+- *(ui)* [`a03737c`](https://github.com/cmdcolin/bender/commit/a03737c0f28cedcb40247c06e4341659bea39639) list an open box's sliders before its buttons and dropdowns
+- *(ui)* [`a6fd1a8`](https://github.com/cmdcolin/bender/commit/a6fd1a810e01a5b3f59571c34972a0b2a2987a5c) frame the open box's rows in a named card on every diagram
+- *(ui)* [`80f2e52`](https://github.com/cmdcolin/bender/commit/80f2e52123d5ff778d9b0e77fb610636922a7341) a × cap on every face puts it away, no ⋯ menu trip
+- *(ui)* [`76cecef`](https://github.com/cmdcolin/bender/commit/76cecefdb913aba31b5ccf66745e9a190bad6308) pack the instrument faces into masonry columns
+- *(ui)* [`eee41f1`](https://github.com/cmdcolin/bender/commit/eee41f1d342477be6277014203ff10f1a470ca6a) Add instrument and Add pedal menus replace the add-all buttons
+- *(ui)* [`41287d5`](https://github.com/cmdcolin/bender/commit/41287d594386debc13609e71834c8817733ded64) stack the keyboards in one lane beside the drum machine
+- *(ui)* [`7698214`](https://github.com/cmdcolin/bender/commit/7698214c3a04bab7dd32b54a13799ea743e8e5fc) say what the aim toggle covers and what the die's wire colours mean
+- *(ui)* [`eaf55e4`](https://github.com/cmdcolin/bender/commit/eaf55e4e10ae725ff3af8059c3cd5df798e5b502) list every stage's sliders in place of the diagram
+- *(ui)* [`1182833`](https://github.com/cmdcolin/bender/commit/1182833b9ccd9e49b4179b68539bd4cc3d3f00a7) list each toy die bend that is on under the drawing
+
+### Fixes
+- *(ui)* [`0973a01`](https://github.com/cmdcolin/bender/commit/0973a018a0bb0d10f1427dd98554e42abd8bbd7d) ellipsize the muted chip in a narrow header
+- *(ui)* [`5205700`](https://github.com/cmdcolin/bender/commit/520570005ea16ebcbf934ea8121e8bac59383fc1) keep the open box's pins inside its card
+- *(ui)* [`90dd9ed`](https://github.com/cmdcolin/bender/commit/90dd9edff696f5f76ce8e82c0691d656e88b0bd0) keep a thrown cap lit under the pointer
+- *(ui)* [`27c7ed5`](https://github.com/cmdcolin/bender/commit/27c7ed5c04b0d6e34593da50fb2e751001e1f6d2) keep a short machine face its own height beside a tall one
+- *(ui)* [`4442b49`](https://github.com/cmdcolin/bender/commit/4442b490a230e7283d926ef97c16aefa4dff3d1a) name the Glint close-up card for the part pressed, not 'operators'
+- *(ui)* [`c50cab2`](https://github.com/cmdcolin/bender/commit/c50cab235a57f89c155c93f485d255cf932f4ca3) give every header verb the same minimum width
+- *(ui)* [`1266e81`](https://github.com/cmdcolin/bender/commit/1266e81043e4d9a1119c0359807344a4efb9fb2c) Add instrument brings a zero level up to 0.6
+- *(ui)* [`c2b2742`](https://github.com/cmdcolin/bender/commit/c2b2742a78f76192275b275935ff0ac4d9f2d882) Add pedal brings a zero mix up to 0.5
+- *(ui)* [`9294c66`](https://github.com/cmdcolin/bender/commit/9294c66328d75fb939faa07a2aadf7acaf270d93) roll, shake and the dice keep a level that is up
+- *(ui)* [`41f5f4e`](https://github.com/cmdcolin/bender/commit/41f5f4e6caf7526f3874726f6d8bfc37cacec37e) lift the relax loop and its name clear of the PWM tag
+
+### Refactor
+- *(ui)* [`03fc0ac`](https://github.com/cmdcolin/bender/commit/03fc0acc6dd0949bc60713ace8a1c4cb5a516800) drop the recorder's custom key for the plain deck key
+- *(ui)* [`7831d0c`](https://github.com/cmdcolin/bender/commit/7831d0cb5197c7ef32d4b1e7ac96d8a15e9450f9) step the zoom cone in right angles and start it under the die box
+- *(ui)* [`e3d6b84`](https://github.com/cmdcolin/bender/commit/e3d6b84488167ac8decd518b55354667fef5226c) share the flow, part-keys and editing hooks across the drawings
+- *(ui)* [`6ec27a8`](https://github.com/cmdcolin/bender/commit/6ec27a8dacdffc89735b5a0fc2d07809f2d51593) draw the zoom frame and junction dots once
+- *(ui)* [`6fc6283`](https://github.com/cmdcolin/bender/commit/6fc628332f7d0c0d891ff1a315a8fb223250cc6c) share the box verbs and the pick wrapper across the drawings
+
+### Documentation
+- [`d34df11`](https://github.com/cmdcolin/bender/commit/d34df113c8f912dbe495061994e6caf29360039e) replace the blog posts with one of the stage signal diagrams
+- [`d4e4d9b`](https://github.com/cmdcolin/bender/commit/d4e4d9b0f79c0b96ada1a9d88702057eee985524) describe pnpm denormal in the command table
+- [`65e2628`](https://github.com/cmdcolin/bender/commit/65e262863a8e7736200f2ed775164392c1628e4d) cut the user guide to feature bullets
+- [`815bf94`](https://github.com/cmdcolin/bender/commit/815bf94015a4546b699b6eb7b4ae59ed0c0dbf29) keep only the highlights in the user guide
+
+### Tests
+- [`eef8222`](https://github.com/cmdcolin/bender/commit/eef8222392fbb7f8de23c8861ff9a36fbd7fe2a9) run the suite on half the cores
+- [`d8dd82a`](https://github.com/cmdcolin/bender/commit/d8dd82a941978c9c05cf3bb74eb1619132a0e6e2) queue agent test and typecheck runs on two machine-wide slots
+- [`263b8b9`](https://github.com/cmdcolin/bender/commit/263b8b9ef22e5b2cbd6c2c95d9ca84df7f453089) run the denormal sweep on demand with pnpm denormal
+- *(ui)* [`910a055`](https://github.com/cmdcolin/bender/commit/910a055dbdc22ce243c376ca3e023735af5a646a) find each machine by name, not by its place in the lane
+- *(ui)* [`8035903`](https://github.com/cmdcolin/bender/commit/8035903557f160c172ef27e27bcfbbfbfbd44097) expect a roll to keep a level that is up in the mixer desk
+
+### Reverts
+- *(ui)* [`1ceca40`](https://github.com/cmdcolin/bender/commit/1ceca4026580c44a0eb1dcd1bba7593174e04a87) restore the diagonal zoom cone
+
 ## [1.11.0](https://github.com/cmdcolin/bender/compare/v1.10.0...v1.11.0) - 2026-10-19
 
 ### Features
