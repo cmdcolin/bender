@@ -31,12 +31,12 @@ rules for composing them.
 
 The suite includes a torture test that pins every feedback path past unity at
 once and asserts nothing non-finite, and nothing past the limiter, ever leaves
-the chain. It runs two seconds locally and ten under `test:full`. It also runs the panel in jsdom, where
-what's under test is the sentences the panel generates rather than audio — that
-a fold counts the rows underneath it correctly, that loading a ROM lands in the
-undo history, that a drag anywhere on the window counts as a drag. The engine
-reaches for an `AudioContext` on the way up and gets a silent one back; see
-`src/ui/testDom.ts`.
+the chain. It runs two seconds locally and ten under `test:full`. It also runs
+the panel in jsdom, where what's under test is the sentences the panel generates
+rather than audio — that a fold counts the rows underneath it correctly, that
+loading a ROM lands in the undo history, that a drag anywhere on the window
+counts as a drag. The engine reaches for an `AudioContext` on the way up and
+gets a silent one back; see `src/ui/testDom.ts`.
 
 ## Performance
 
