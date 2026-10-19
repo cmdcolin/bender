@@ -1,11 +1,10 @@
-import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
-import { CHANNELS, GROUPS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
 import styles from './Diagram.module.css'
 import {
-  boxHeight,
   boxWidth,
+  ONE_LINE_H,
+  partKeys,
+  useFlow,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -26,10 +25,7 @@ import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 import type { ControlKey } from '../controls.ts'
 import type { Verbs, Zoom } from './foldHosting.ts'
 
-const GROUP = GROUPS.find(g => g.name === 'Growler')!
-
-const keysOf = (part: string): ControlKey[] =>
-  GROUP.sliders.filter(d => d.part === part).map(d => d.key)
+const keysOf = (part: string) => partKeys('Growler', part)
 
 // Each box opens one fold of the voice card, with that fold's dice and reset.
 const BOXES = {
@@ -73,8 +69,6 @@ const KEYS = [...new Set(Object.values(BOXES).flatMap(b => keysOf(b.part)))]
 
 const wire = (on: boolean): WireLook => (on ? 'on' : 'dash')
 
-const MONO_TAP = CHANNELS.find(c => c.name === 'Growler')!.tap
-
 const WIDTH = 420
 const TAIL = 30
 const MID = 76
@@ -94,7 +88,7 @@ const OSC_Y = [
 const FRAME_H = OSC_Y[2]! + OSC_H + 5 - FRAME_TOP
 const FRAME_BOTTOM = FRAME_TOP + FRAME_H
 const ROW2 = FRAME_BOTTOM + 20
-const BOX_H = boxHeight('')
+const BOX_H = ONE_LINE_H
 const HEIGHT = ROW2 + BOX_H + 4
 
 // The voice card as the Model D's panel lays it out. The keys set the pitch of
@@ -110,12 +104,7 @@ export function MonoPathDiagram({
 }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
-  const flow: WireLook = useStoreSelect(
-    engine.sounding,
-    lit => lit & (1 << MONO_TAP),
-  )
-    ? 'on'
-    : 'plain'
+  const flow = useFlow('Growler')
   const up = (key: ControlKey) => r.value(key) > 0
 
   const box = (id: BoxId, x: number, y: number): BoxSpec => {

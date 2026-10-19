@@ -1,10 +1,8 @@
-import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
-import { CHANNELS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
 import {
-  boxHeight,
   boxWidth,
+  ONE_LINE_H,
+  useFlow,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -71,12 +69,10 @@ const PARTS: Record<string, string> = {
   die: 'die and driver',
 }
 
-const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
-
 const TOP = 4
 const ROW = 34
 const WIDTH = 420
-const BOX_H = boxHeight('')
+const BOX_H = ONE_LINE_H
 
 // The chip as the board wires it: a processor that decides the sound and writes
 // it as bytes down a bus into the register file, two operators the bytes
@@ -86,10 +82,7 @@ const BOX_H = boxHeight('')
 export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('modulator')
-  // Off the meter on the chip's channel, as the map's glyph reads it.
-  const flow = useStoreSelect(engine.sounding, lit => lit & (1 << FM_TAP))
-    ? 'on'
-    : 'plain'
+  const flow = useFlow('Glint')
   const path: [string, readonly Key[], string][] = [
     [
       'key',

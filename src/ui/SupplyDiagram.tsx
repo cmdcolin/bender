@@ -1,13 +1,12 @@
-import { engine } from '../engine/engine.ts'
 import bus from './BusDiagram.module.css'
 import chip from './ChipLook.module.css'
 import { GROUPS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
 import diagram from './Diagram.module.css'
 import {
-  boxHeight,
   boxWidth,
   glyphBoxWidth,
+  ONE_LINE_H,
+  useFlow,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -19,7 +18,6 @@ import {
   GlyphBox,
   Label,
   Wire,
-  type WireLook,
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 
@@ -46,7 +44,7 @@ const HELP: Record<Exclude<BoxId, typeof CELLS>, string> = {
 }
 
 const TOP = 8
-const BOX_H = boxHeight('a')
+const BOX_H = ONE_LINE_H
 const DROP = 24
 const LOW = TOP + BOX_H + DROP
 const HEIGHT = LOW + BOX_H + TOP
@@ -86,9 +84,7 @@ function batteryGlyph(x: number, mid: number) {
 export function SupplyDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox(CELLS)
-  const flow: WireLook = useStoreSelect(engine.sounding, lit => lit !== 0)
-    ? 'on'
-    : 'plain'
+  const flow = useFlow()
 
   const cellsW = glyphBoxWidth(CELLS, GLYPH_W)
   const mid = TOP + BOX_H / 2

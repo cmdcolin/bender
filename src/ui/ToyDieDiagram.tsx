@@ -1,18 +1,18 @@
-import { useState } from 'react'
-
-import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
-import { CHANNELS, GROUPS, sliderFor } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
+import { GROUPS, sliderFor } from './controls/index.ts'
 import diagram from './Diagram.module.css'
 import {
-  boxHeight,
   boxWidth,
   glyphBoxWidth,
+  ONE_LINE_H,
+  partKeys,
+  useBoxWhileEditing,
+  useFlow,
   useReadings,
   useSelectedBox,
+  type BoxPick,
 } from './diagram.ts'
 import {
   Bend,
@@ -21,13 +21,11 @@ import {
   GlyphBox,
   Pressable,
   Wire,
-  type WireLook,
 } from './DiagramParts.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { NODE_KEYS, POT } from './toyBoxKeys.ts'
 import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 
-import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './drawingFor.tsx'
 
 const KEYS = [
@@ -58,10 +56,7 @@ const BUS = 'knife on the bus'
 const DIE = 'inside the die'
 const KEYBOARD = 'keyboard'
 
-const keysOf = (part: string): ControlKey[] =>
-  GROUP.sliders.filter(d => d.part === part).map(d => d.key)
-
-const BUS_KEYS = keysOf(BUS)
+const BUS_KEYS = partKeys('Plinky', BUS)
 
 const LEAD_KEYS = GROUP.lead ?? []
 const PLAY_KEYS = [
@@ -83,12 +78,10 @@ const BOX_KEYS = [...new Set(Object.values(OWN_KEYS).flat())]
 
 const SPOTS = sliderFor('chipBendSpot').choices!
 
-const TOY_TAP = CHANNELS.find(c => c.name === 'Plinky')!.tap
-
 const WIDTH = 420
 const ROOM = 22
 const ROW_GAP = 44
-const BOX_H = boxHeight('a')
+const BOX_H = ONE_LINE_H
 const GAPS = [26, 38, 22]
 const TAIL = 28
 const TOP = ROOM
@@ -133,7 +126,7 @@ function Pot({
   dir: 1 | -1
   on: boolean
   box: string
-  pick: ReturnType<typeof useSelectedBox>
+  pick: BoxPick
 }) {
   const at = (d: number) => y + dir * d
   return (
@@ -198,7 +191,7 @@ function Node({
   box: ChipBox
   lit?: boolean
   help: string
-  pick: ReturnType<typeof useSelectedBox>
+  pick: BoxPick
 }) {
   return (
     <Pressable
@@ -226,7 +219,7 @@ function ClockTag({
   x: number
   y: number
   opens: string
-  pick: ReturnType<typeof useSelectedBox>
+  pick: BoxPick
   say?: string
   bent?: boolean
 }) {
@@ -266,7 +259,7 @@ function BendTag({
   x: number
   y: number
   opens: string
-  pick: ReturnType<typeof useSelectedBox>
+  pick: BoxPick
   say: string
   edge?: 'bottom' | 'left' | 'right'
 }) {
@@ -332,20 +325,10 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
   const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
   const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
   const pick = useSelectedBox(knifed ? 'bus' : KEYBOARD)
-  const editing = Boolean(editor)
-  const [wasEditing, setWasEditing] = useState(editing)
-  if (editing !== wasEditing) {
-    setWasEditing(editing)
-    if (editing && pick.selected !== KEYBOARD) pick.toggle(KEYBOARD)
-  }
+  useBoxWhileEditing(pick, Boolean(editor), KEYBOARD)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
-  const flow: WireLook = useStoreSelect(
-    engine.sounding,
-    lit => lit & (1 << TOY_TAP),
-  )
-    ? 'on'
-    : 'plain'
+  const flow = useFlow('Plinky')
 
   const names = ['key matrix', 'voices', 'envelope', 'output pin']
   const widths = [

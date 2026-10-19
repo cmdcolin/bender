@@ -1,10 +1,8 @@
-import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
-import { CHANNELS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
 import {
-  boxHeight,
   boxWidth,
+  ONE_LINE_H,
+  useFlow,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -39,12 +37,10 @@ const PARTS: Record<string, string> = {
   'data bus': 'knife on the bus',
 }
 
-const PCM_TAP = CHANNELS.find(c => c.name === 'Parlor')!.tap
-
 const TOP = 4
 const ROW = 30
 const GAP = 18
-const BOX_H = boxHeight('')
+const BOX_H = ONE_LINE_H
 
 // How far each bus box leans away from the other, so the two do not touch.
 const BUS_LEAN = 14
@@ -61,9 +57,7 @@ const midOf = (from: BoxSpec, to: BoxSpec) =>
 export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const r = useReadings(KEYS)
   const pick = useSelectedBox('ROM')
-  const flow = useStoreSelect(engine.sounding, lit => lit & (1 << PCM_TAP))
-    ? 'on'
-    : 'plain'
+  const flow = useFlow('Parlor')
   const path: [string, readonly Key[], string][] = [
     [
       'keys',

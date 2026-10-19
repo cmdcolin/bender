@@ -1,15 +1,13 @@
 import { PATCH_BYTES, REG, AM, VIB } from '../dsp/stages/fmVoices.ts'
-import { engine } from '../engine/engine.ts'
 import bus from './BusDiagram.module.css'
 import chip from './ChipLook.module.css'
-import { CHANNELS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
 import styles from './Diagram.module.css'
 import {
-  boxHeight,
   LINE_H,
+  ONE_LINE_H,
+  useFlow,
   useReadings,
-  type useSelectedBox,
+  type BoxPick,
 } from './diagram.ts'
 import {
   Diagram,
@@ -33,16 +31,14 @@ const KEYS = [
 
 type Key = (typeof KEYS)[number]
 
-const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
-
 const FEEDBACK_MAX = 7
 const INDEX_BOOST = 4
 const LOOP_Y = 14
 const CHIP_Y = 28
-const CHIP_H = boxHeight('')
+const CHIP_H = ONE_LINE_H
 const MID = CHIP_Y + CHIP_H / 2
 const LFO_Y = CHIP_Y + CHIP_H + 18
-const LFO_H = boxHeight('')
+const LFO_H = ONE_LINE_H
 const HEIGHT = LFO_Y + LFO_H + 4
 
 interface Operator {
@@ -53,9 +49,7 @@ interface Operator {
   help: string
 }
 
-type Pick = ReturnType<typeof useSelectedBox>
-
-function OperatorChip({ op, pick }: { op: Operator; pick: Pick }) {
+function OperatorChip({ op, pick }: { op: Operator; pick: BoxPick }) {
   return (
     <Pressable
       name={`zoomed ${op.name}`}
@@ -94,7 +88,7 @@ function Tag({
   children,
 }: {
   id: string
-  pick: Pick
+  pick: BoxPick
   x: number
   y: number
   anchor?: 'start' | 'middle' | 'end'
@@ -118,15 +112,10 @@ function Tag({
 // The two operators, the feedback round the first, the brightness between them
 // and the LFO under both, drawn as the chip wires them and nothing more. Each
 // part opens its own knobs; the knobs' values stay in the rows.
-export function FmVoiceDiagram({ pick }: { pick: Pick }) {
+export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
   const r = useReadings(KEYS)
   const read = (key: Key) => Math.round(r.value(key))
-  const flow: WireLook = useStoreSelect(
-    engine.sounding,
-    lit => lit & (1 << FM_TAP),
-  )
-    ? 'on'
-    : 'plain'
+  const flow = useFlow('Glint')
   const boosted = read('fmEffect') === 0
   const bright = r.value('fmBright')
   const feedback = read('fmFeedback')

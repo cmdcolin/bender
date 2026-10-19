@@ -1,14 +1,13 @@
-import { useState } from 'react'
-
-import { engine } from '../engine/engine.ts'
 import chip from './ChipLook.module.css'
-import { CHANNELS, GROUPS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
+import { GROUPS } from './controls/index.ts'
 import diagram from './Diagram.module.css'
 import {
-  boxHeight,
   boxWidth,
   glyphBoxWidth,
+  ONE_LINE_H,
+  partKeys,
+  useBoxWhileEditing,
+  useFlow,
   useReadings,
   useSelectedBox,
   type BoxSpec,
@@ -30,8 +29,6 @@ import { CONE_H, ZoomCone, Zoomed } from './ZoomCone.tsx'
 import type { ControlKey } from '../controls.ts'
 import type { DrawingProps } from './drawingFor.tsx'
 
-const DRUM_TAP = CHANNELS.find(c => c.name === 'Clatter')!.tap
-
 type BoxId =
   | keyof typeof VOICE_BOXES
   | 'DAC'
@@ -41,8 +38,7 @@ type BoxId =
 
 const GROUP = GROUPS.find(g => g.name === 'Clatter')!
 
-const keysOf = (part: string): ControlKey[] =>
-  GROUP.sliders.filter(d => d.part === part).map(d => d.key)
+const keysOf = (part: string) => partKeys('Clatter', part)
 
 const HOST = 'inside the voices'
 
@@ -87,7 +83,7 @@ const KEYS = [...Object.values(BOXES).flatMap(b => b.keys), ...PAD_KEYS]
 
 const WIDTH = 430
 const TOP = 6
-const BOX_H = boxHeight('a')
+const BOX_H = ONE_LINE_H
 const ROW_GAPS = [30, 16]
 const HEAD = BOX_H + 16
 const BODY_H = 3 * BOX_H + ROW_GAPS[0]! + ROW_GAPS[1]!
@@ -135,18 +131,8 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
   const pick = useSelectedBox(
     r.touched(...BOXES.pattern.keys) ? 'pattern' : PADS,
   )
-  const editing = Boolean(editor)
-  const [wasEditing, setWasEditing] = useState(editing)
-  if (editing !== wasEditing) {
-    setWasEditing(editing)
-    if (editing && pick.selected !== PADS) pick.toggle(PADS)
-  }
-  const flow: WireLook = useStoreSelect(
-    engine.sounding,
-    lit => lit & (1 << DRUM_TAP),
-  )
-    ? 'on'
-    : 'plain'
+  useBoxWhileEditing(pick, Boolean(editor), PADS)
+  const flow = useFlow('Clatter')
 
   const srcW = Math.max(...FIRST.map(boxWidth))
   const padsW = glyphBoxWidth(PADS, GLYPH)

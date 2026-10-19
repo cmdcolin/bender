@@ -1,10 +1,13 @@
-import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
-import { CHANNELS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
-import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
+import {
+  boxHeight,
+  boxWidth,
+  useFlow,
+  useReadings,
+  useSelectedBox,
+} from './diagram.ts'
 import {
   BoxRows,
   Diagram,
@@ -31,8 +34,6 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   voices: ['fmAdder'],
   DAC: ['fmDacSlot', 'fmDacSlip'],
 }
-
-const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
 
 const VOICES = 4
 const WIDTH = 420
@@ -64,12 +65,7 @@ export function FmDieDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
-  const flow: WireLook = useStoreSelect(
-    engine.sounding,
-    lit => lit & (1 << FM_TAP),
-  )
-    ? 'on'
-    : 'plain'
+  const flow = useFlow('Glint')
   const alloc = read('fmAlloc')
   const slot = read('fmDacSlot')
   const slip = r.value('fmDacSlip')

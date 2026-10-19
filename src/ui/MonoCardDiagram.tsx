@@ -1,18 +1,14 @@
-import { engine } from '../engine/engine.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
-import { CHANNELS } from './controls/index.ts'
-import { useStoreSelect } from './ControlsContext.ts'
-import { boxHeight, boxWidth, useReadings, useSelectedBox } from './diagram.ts'
 import {
-  BoxRows,
-  Diagram,
-  Label,
-  Pressable,
-  Wire,
-  type WireLook,
-} from './DiagramParts.tsx'
+  boxHeight,
+  boxWidth,
+  useFlow,
+  useReadings,
+  useSelectedBox,
+} from './diagram.ts'
+import { BoxRows, Diagram, Label, Pressable, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { ReactNode } from 'react'
@@ -36,8 +32,6 @@ const OPENS: Record<string, readonly ControlKey[]> = {
   VCA: ['monoLeak'],
   contours: ['monoCap'],
 }
-
-const MONO_TAP = CHANNELS.find(c => c.name === 'Growler')!.tap
 
 const WIDTH = 420
 const TAIL = 30
@@ -93,12 +87,7 @@ export function MonoCardDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
   const on = (key: (typeof KEYS)[number]) => r.value(key) > 0
-  const flow: WireLook = useStoreSelect(
-    engine.sounding,
-    lit => lit & (1 << MONO_TAP),
-  )
-    ? 'on'
-    : 'plain'
+  const flow = useFlow('Growler')
 
   const parts: { name: string; lit: boolean; help: string }[] = [
     {
