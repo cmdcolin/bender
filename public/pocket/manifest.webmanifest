@@ -1,7 +1,7 @@
 {
   "name": "bender pocket",
   "short_name": "bender",
-  "description": "A circuit-bent toy keyboard and drum machine for your phone: swipe through presets, hold the scope to bend the sound, record a wav.",
+  "description": "A simple version of bender, a circuit-bent toy keyboard and drum machine for your phone: swipe through presets, hold the scope to bend the sound, record a wav.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

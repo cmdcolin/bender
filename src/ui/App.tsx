@@ -621,7 +621,7 @@ export function App(props: { openedFromLink?: boolean }) {
                     window.location.href = `${pocketUrl}${window.location.hash}`
                   }}
                 >
-                  phone version
+                  simple version
                 </button>
                 {coarse || (
                   <button

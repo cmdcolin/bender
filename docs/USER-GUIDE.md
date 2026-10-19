@@ -662,11 +662,13 @@ memory and stops it at about 11 minutes of master, or 2½ minutes with stems.
 There's no zip, so stopping a stem take fires up to nine downloads at once; your
 browser may ask permission for multiple files.
 
-## On a phone
+## Simple version
 
-[`/pocket/`](https://cmdcolin.github.io/bender/pocket/) is bender laid out for a
-phone held upright. The app's ☰ menu opens it on the same board, and its **full
-app ↗** goes back the other way.
+[`/pocket/`](https://cmdcolin.github.io/bender/pocket/) is a simplified bender
+laid out for a phone held upright. The full app has its own phone layout and
+runs the whole instrument; the simple version has a scope, a preset strip and a
+few bends in place of the signal path. The app's ☰ menu opens it on the same
+board, and its **full app ↗** goes back the other way.
 
 - **▶** runs the toy's tune and the drum machine, with the kit brought up if the
   board has it down. The screen stays awake while either runs.
