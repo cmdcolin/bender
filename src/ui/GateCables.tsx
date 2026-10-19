@@ -3,12 +3,17 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react'
 
 import { engine } from '../engine/engine.ts'
 import { createStore, type Store } from '../listeners.ts'
-import { useControlValue, useStoreValue } from './ControlsContext.ts'
+import {
+  useControlValue,
+  useStoreSelect,
+  useStoreValue,
+} from './ControlsContext.ts'
 import styles from './GateCables.module.css'
 import { Tip } from './Tip.tsx'
 
@@ -19,7 +24,10 @@ import type { NoteDest } from '../engine/messages.ts'
 // Each keyboard that can take Plinky's gate has an input jack on the top edge
 // of its case, Plinky has an output jack per keyboard on its bottom edge, and
 // while the jumper is soldered a cable runs between the two across the bench,
-// tagged GATE. Pressing the input jack or the tag pulls the plug.
+// tagged GATE. Pressing the input jack, the tag or the cable pulls the plug.
+// Dragging from either jack of a pair carries the cable's end with the pointer:
+// letting go over the other jack of that colour plugs it in, and letting go
+// anywhere else pulls it out.
 
 type Taker = Exclude<NoteDest, 'toy'>
 
@@ -65,6 +73,69 @@ function keep<V>(
   store.set(next)
 }
 
+type End = 'out' | 'in'
+
+interface Drag {
+  taker: Taker
+  end: End
+  x: number
+  y: number
+}
+
+const dragging = createStore<Drag | null>(null)
+
+// A drag that ends on the jack it started from still ends in a click.
+let swallow = false
+
+const DRAG_FROM = 5
+
+function grab(taker: Taker, end: End, e: ReactPointerEvent) {
+  if (e.button !== 0) return
+  const x0 = e.clientX
+  const y0 = e.clientY
+  let moved = false
+  const move = (m: PointerEvent) => {
+    if (!moved && Math.hypot(m.clientX - x0, m.clientY - y0) < DRAG_FROM) return
+    const origin = document
+      .querySelector('[data-gate-bench]')
+      ?.getBoundingClientRect()
+    if (!origin) return
+    moved = true
+    dragging.set({
+      taker,
+      end,
+      x: m.clientX - origin.left,
+      y: m.clientY - origin.top,
+    })
+  }
+  const stop = () => {
+    window.removeEventListener('pointermove', move)
+    window.removeEventListener('pointerup', up)
+    window.removeEventListener('pointercancel', stop)
+  }
+  const up = (m: PointerEvent) => {
+    stop()
+    if (!moved) return
+    swallow = true
+    setTimeout(() => {
+      swallow = false
+    }, 0)
+    dragging.set(null)
+    const socket = inputs.get().get(taker)
+    if (!socket) return
+    const over = document
+      .elementFromPoint(m.clientX, m.clientY)
+      ?.closest<HTMLElement>('[data-gate-jack]')
+    const landed =
+      over?.dataset.gateTaker === taker && over.dataset.gateEnd !== end
+    const plugged = engine.controls.get()[socket.control] < 0.5
+    if (landed !== plugged) setGate(socket.control, !landed)
+  }
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', up)
+  window.addEventListener('pointercancel', stop)
+}
+
 const setGate = (control: ControlKey, cut: boolean) => {
   engine.armStep()
   engine.set(control, cut ? 1 : 0)
@@ -106,15 +177,33 @@ export function GateJumper({
         className={styles.jack}
         aria-pressed={!cut}
         aria-label={cut ? 'own keys only' : 'with Plinky'}
-        onClick={() => setGate(control, !cut)}
+        data-gate-jack=""
+        data-gate-taker={taker}
+        data-gate-end="in"
+        onPointerDown={e => grab(taker, 'in', e)}
+        onClick={() => {
+          if (!swallow) setGate(control, !cut)
+        }}
       >
-        <Socket lamp={lamp} />
+        <Socket taker={taker} end="in" lamp={lamp} />
       </button>
     </Tip>
   )
 }
 
-function Socket({ lamp }: { lamp?: string }) {
+function Socket({
+  taker,
+  end,
+  lamp,
+}: {
+  taker: Taker
+  end: End
+  lamp?: string
+}) {
+  const target = useStoreSelect(
+    dragging,
+    d => d !== null && d.taker === taker && d.end !== end,
+  )
   return (
     <svg
       className={styles.socket}
@@ -122,9 +211,15 @@ function Socket({ lamp }: { lamp?: string }) {
       width="20"
       height="20"
       data-lamp={lamp}
+      data-target={target}
       aria-hidden="true"
     >
-      <circle className={styles.nut} r="9" />
+      <circle
+        className={styles.ring}
+        r="9.6"
+        style={{ stroke: CABLE_COLOUR[taker] }}
+      />
+      <circle className={styles.nut} r="8.4" />
       <circle className={styles.collar} r="6.4" />
       <circle className={styles.hole} r="3.6" />
       <path className={styles.glint} d="M-5 -2.6 A5.6 5.6 0 0 1 -1.6 -5.2" />
@@ -138,8 +233,15 @@ function OutputSocket({ taker }: { taker: Taker }) {
     [taker],
   )
   return (
-    <span ref={place} className={styles.out}>
-      <Socket />
+    <span
+      ref={place}
+      className={styles.out}
+      data-gate-jack=""
+      data-gate-taker={taker}
+      data-gate-end="out"
+      onPointerDown={e => grab(taker, 'out', e)}
+    >
+      <Socket taker={taker} end="out" />
     </span>
   )
 }
@@ -188,6 +290,7 @@ export function GateBench({ children }: { children: ReactNode }) {
   const ins = useStoreValue(inputs)
   const outs = useStoreValue(outputs)
   const wired = useStoreValue(spots)
+  const drag = useStoreValue(dragging)
 
   useLayoutEffect(() => {
     const root = bench.current
@@ -224,13 +327,29 @@ export function GateBench({ children }: { children: ReactNode }) {
     }
   }, [ins, outs])
 
+  const held = drag ? wired.get(drag.taker) : undefined
+
   return (
-    <div ref={bench} className={styles.bench}>
+    <div
+      ref={bench}
+      className={styles.bench}
+      data-gate-bench=""
+      data-dragging={drag !== null}
+    >
       {children}
       <svg className={styles.cables} aria-hidden="true">
-        {TAKERS.filter(t => ins.has(t) && wired.has(t)).map(t => (
+        {TAKERS.filter(
+          t => ins.has(t) && wired.has(t) && drag?.taker !== t,
+        ).map(t => (
           <Cable key={t} taker={t} socket={ins.get(t)!} spot={wired.get(t)!} />
         ))}
+        {drag && held && (
+          <Wire
+            from={drag.end === 'out' ? drag : held.from}
+            to={drag.end === 'in' ? drag : held.to}
+            colour={CABLE_COLOUR[drag.taker]}
+          />
+        )}
       </svg>
     </div>
   )
@@ -268,6 +387,114 @@ function Plug({ at, up, colour }: { at: Point; up: boolean; colour: string }) {
   )
 }
 
+const bezier = (t: number, p0: number, p1: number, p2: number, p3: number) =>
+  (1 - t) ** 3 * p0 +
+  3 * (1 - t) ** 2 * t * p1 +
+  3 * (1 - t) * t * t * p2 +
+  t ** 3 * p3
+
+const slope = (t: number, p0: number, p1: number, p2: number, p3: number) =>
+  3 * (1 - t) ** 2 * (p1 - p0) +
+  6 * (1 - t) * t * (p2 - p1) +
+  3 * t * t * (p3 - p2)
+
+/** One cable from a plug that hangs down off `from` to a plug that comes up
+    out of `to`, with an arrowhead pointing the way the gate runs. A cable
+    with a `pull` also takes a press anywhere along it, and wears the tag. */
+function Wire({
+  from,
+  to,
+  colour,
+  sounding = false,
+  pull,
+  onGrab,
+}: {
+  from: Point
+  to: Point
+  colour: string
+  sounding?: boolean
+  pull?: () => void
+  onGrab?: (e: ReactPointerEvent) => void
+}) {
+  const geometry = useMemo(() => {
+    const a = { x: from.x, y: from.y + PLUG }
+    const b = { x: to.x, y: to.y - PLUG }
+    const reach = SLACK + Math.min(Math.abs(a.x - b.x), 220) * 0.14
+    const c1 = { x: a.x, y: a.y + reach }
+    const c2 = { x: b.x, y: b.y - reach }
+    const at = (t: number) => ({
+      x: bezier(t, a.x, c1.x, c2.x, b.x),
+      y: bezier(t, a.y, c1.y, c2.y, b.y),
+    })
+    const heading = Math.atan2(
+      slope(0.72, a.y, c1.y, c2.y, b.y),
+      slope(0.72, a.x, c1.x, c2.x, b.x),
+    )
+    return {
+      d: `M${a.x} ${a.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${b.x} ${b.y}`,
+      tag: at(0.9),
+      arrow: { ...at(0.72), angle: (heading * 180) / Math.PI },
+    }
+  }, [from, to])
+  return (
+    <g
+      className={sounding ? styles.cableOn : styles.cable}
+      style={{ ['--cable' as string]: colour }}
+    >
+      <path className={styles.sheath} d={geometry.d} />
+      <path className={styles.core} d={geometry.d} />
+      <path className={styles.sheen} d={geometry.d} />
+      {pull && (
+        <path
+          className={styles.grab}
+          d={geometry.d}
+          onPointerDown={onGrab}
+          onClick={() => {
+            if (!swallow) pull()
+          }}
+        >
+          <title>
+            Pull the plug, or drag the end off: Plinky’s gate stops reaching
+            this keyboard
+          </title>
+        </path>
+      )}
+      <polygon
+        className={styles.arrow}
+        points="-8,-7 8,0 -8,7"
+        transform={`translate(${geometry.arrow.x} ${geometry.arrow.y}) rotate(${geometry.arrow.angle})`}
+      />
+      <Plug at={from} up={false} colour={colour} />
+      <Plug at={to} up colour={colour} />
+      {pull && (
+        <g
+          className={styles.tag}
+          transform={`translate(${geometry.tag.x} ${geometry.tag.y}) rotate(-4)`}
+          onPointerDown={onGrab}
+          onClick={() => {
+            if (!swallow) pull()
+          }}
+        >
+          <title>
+            Pull the plug, or drag the end off: Plinky’s gate stops reaching
+            this keyboard
+          </title>
+          <rect x="-21" y="-8" width="45" height="16" rx="3" />
+          <circle cx="-16" cy="0" r="1.6" />
+          <text x="-2" y="3" textAnchor="middle">
+            GATE
+          </text>
+          <polygon
+            className={styles.drop}
+            points="-4.5,-3.5 4.5,-3.5 0,4.5"
+            transform="translate(15 0)"
+          />
+        </g>
+      )}
+    </g>
+  )
+}
+
 function Cable({
   taker,
   socket,
@@ -280,79 +507,15 @@ function Cable({
   const cut = useControlValue(socket.control) > 0.5
   const toySounding = useStoreValue(engine.chipNotes).size > 0
   const sounding = useStoreValue(socket.notes).size > 0 && toySounding
-  const colour = CABLE_COLOUR[taker]
-  const geometry = useMemo(() => {
-    const a = { x: spot.from.x, y: spot.from.y + PLUG }
-    const b = { x: spot.to.x, y: spot.to.y - PLUG }
-    const reach = SLACK + Math.min(Math.abs(a.x - b.x), 220) * 0.14
-    const c1 = { x: a.x, y: a.y + reach }
-    const c2 = { x: b.x, y: b.y - reach }
-    const t = 0.9
-    const u = 1 - t
-    const mid = {
-      x:
-        u ** 3 * a.x +
-        3 * u * u * t * c1.x +
-        3 * u * t * t * c2.x +
-        t ** 3 * b.x,
-      y:
-        u ** 3 * a.y +
-        3 * u * u * t * c1.y +
-        3 * u * t * t * c2.y +
-        t ** 3 * b.y,
-    }
-    const at = 0.72
-    const w = 1 - at
-    const point = (p0: number, p1: number, p2: number, p3: number) =>
-      w ** 3 * p0 + 3 * w * w * at * p1 + 3 * w * at * at * p2 + at ** 3 * p3
-    const slope = (p0: number, p1: number, p2: number, p3: number) =>
-      3 * w * w * (p1 - p0) + 6 * w * at * (p2 - p1) + 3 * at * at * (p3 - p2)
-    const arrow = {
-      x: point(a.x, c1.x, c2.x, b.x),
-      y: point(a.y, c1.y, c2.y, b.y),
-      angle:
-        (Math.atan2(slope(a.y, c1.y, c2.y, b.y), slope(a.x, c1.x, c2.x, b.x)) *
-          180) /
-        Math.PI,
-    }
-    const d = `M${a.x} ${a.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${b.x} ${b.y}`
-    return { d, mid, arrow }
-  }, [spot])
   if (cut) return null
   return (
-    <g
-      className={sounding ? styles.cableOn : styles.cable}
-      style={{ ['--cable' as string]: colour }}
-    >
-      <path className={styles.sheath} d={geometry.d} />
-      <path className={styles.core} d={geometry.d} />
-      <path className={styles.sheen} d={geometry.d} />
-      <path
-        className={styles.grab}
-        d={geometry.d}
-        onClick={() => setGate(socket.control, true)}
-      >
-        <title>Pull the plug: Plinky’s gate stops reaching this keyboard</title>
-      </path>
-      <polygon
-        className={styles.arrow}
-        points="-4.5,-4 4.5,0 -4.5,4"
-        transform={`translate(${geometry.arrow.x} ${geometry.arrow.y}) rotate(${geometry.arrow.angle})`}
-      />
-      <Plug at={spot.from} up={false} colour={colour} />
-      <Plug at={spot.to} up colour={colour} />
-      <g
-        className={styles.tag}
-        transform={`translate(${geometry.mid.x} ${geometry.mid.y}) rotate(-4)`}
-        onClick={() => setGate(socket.control, true)}
-      >
-        <title>Pull the plug: Plinky’s gate stops reaching this keyboard</title>
-        <rect x="-20" y="-7" width="40" height="14" rx="3" />
-        <circle cx="-15" cy="0" r="1.6" />
-        <text x="3" y="3" textAnchor="middle">
-          GATE ↓
-        </text>
-      </g>
-    </g>
+    <Wire
+      from={spot.from}
+      to={spot.to}
+      colour={CABLE_COLOUR[taker]}
+      sounding={sounding}
+      pull={() => setGate(socket.control, true)}
+      onGrab={e => grab(taker, 'in', e)}
+    />
   )
 }

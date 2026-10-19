@@ -306,3 +306,30 @@ test('a soldered jumper draws a cable from Plinky to the keyboard, and pulling t
   expect(cables().length).toBe(1)
   expect(engine.controls.get().fmKeyGate).toBe(0)
 })
+
+test('dragging a cable end off its jack pulls the plug, and dragging a jack to its partner plugs it', () => {
+  const { container } = render(
+    <GateBench>
+      <Keys />
+      <FmKeys />
+    </GateBench>,
+  )
+  act(() => engine.set('fmKeyGate', 0))
+  const input = screen.getByRole('button', { name: 'with Plinky' })
+  const output = container.querySelector<HTMLElement>('[data-gate-end=out]')!
+  const over = (el: Element | null) => {
+    document.elementFromPoint = () => el
+  }
+  const drag = (from: Element, to: Element | null) => {
+    fireEvent.pointerDown(from, { button: 0, clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
+    over(to)
+    fireEvent.pointerUp(window, { clientX: 40, clientY: 40 })
+  }
+  drag(input, document.body)
+  expect(engine.controls.get().fmKeyGate).toBe(1)
+  drag(output, screen.getByRole('button', { name: 'own keys only' }))
+  expect(engine.controls.get().fmKeyGate).toBe(0)
+  drag(output, document.body)
+  expect(engine.controls.get().fmKeyGate).toBe(1)
+})
