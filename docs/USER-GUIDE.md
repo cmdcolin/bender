@@ -1,803 +1,307 @@
 # User guide
 
-How to play bender, once the board is in front of you.
-
 ## Playing the keyboard
 
 ![Plinky: the deck with REC, HOLD and the octave switches above three octaves of keys, letters printed on the sixteen keys under a typing hand.](img/guide-keyboard.jpg)
 
-The on-screen board draws three octaves starting at C3, fewer on a narrow window
-or phone. `z`/`x` shift the whole board two octaves either way. The sixteen keys
-under your typing hand carry their letter, printed the way the toy printed note
-names on its own keys.
+- Three octaves from C3 on the on-screen board; `z`/`x` shift two octaves.
+- Letters print on the sixteen keys under your typing hand.
+- **Remap keys** from ☰ → **computer keys**, a keybed's drawer or the bend
+  board.
+- **Hold** latches every key you touch; alt-click pins one key.
+- Keys light accent for your hand and amber for the toy playing itself.
+- **Tone** picks 1/2, 1/4, 1/8 or 1/16 pulse width.
 
-### Remapping the computer keys
+## Melody memory
 
-Open **computer keys** in the ☰ menu, or **remap keys** in a keybed's drawer or
-the bend board's bar.
-
-- Click a key, then press or click where it should go. A key already there takes
-  the vacated place, so nothing ends up unbound or doubled.
-- Notes, the two octave keys and the six throws all move. The bend keys sit on
-  the sixteen note keys and follow them.
-- **reset** restores the stock layout.
-- The layout stays in this browser, outside the link and any saved board.
-
-**Hold** latches every key you touch until you press it again. Alt-click pins
-down a single key on its own, for a drone under both hands. A key that loses its
-release — the window loses focus, a controller unplugs mid-press — releases
-itself, so the note doesn't ring forever.
-
-Keys light for whatever is actually playing them: your hand in the accent
-colour, the toy playing itself (the ROM tune, the auto bass-chord, the trigger
-patch) in amber. A note fades from the light as it fades from the mix, and a
-note cut short by a brownout goes dark early. A note played past either end of
-the drawn board marks that end instead.
-
-**Tone** taps the divider chain at 1/2, 1/4, 1/8 or 1/16 pulse width. The
-narrower taps thin the sound by nulling different harmonics, uncorrected, same
-as the original chips. Near the top of the keyboard's range a counter can't
-strike a pulse that narrow, so the narrow settings widen back toward a plain
-square.
-
-## The melody memory
-
-**Rec** on the deck, or **record** on the piano roll, arms recording and runs
-the tune — even with the chip silent. Every key you press after that, on-screen,
-on the letter keys, or from a controller, writes to the step you heard when you
-played it.
-
-What you record isn't a separate sequencer: it's the 19th entry on **Tune**, one
-past the 18 ROM songs, and the chip treats it the same as any of them — **Memory
-rate** sets its speed, the auto bass-chord plays under it, the clock bend and a
-brownout affect it the same way, and **Kit voice that plays this…** can clock it
-from the drum machine instead of the crystal.
-
-The **piano roll** draws that memory. It starts hidden; **show piano roll** on
-the Plinky panel turns it on: one row per pitch, one column per step. Click a
-cell to place a note, drag to draw a run, click again to remove it, shift-click
-to hold the previous step's note. A held note draws as one bar across its steps.
-Two octaves show at a time, with arrows to move the window. The memory is 32
-steps and keeps its own length, so a four-step phrase loops eight times against
-a sixteen-step drum pattern.
-
-A step is one of 64 codes: 62 pitches (a little over five octaves) plus rest and
-hold. The octave switch can move the keyboard further than those codes reach; a
-note at the far end wraps to the nearest octave that fits. The accompaniment
-takes the melody's lowest note as its tonic and checks for a flat third to pick
-major or minor.
-
-The memory is undo-tracked like the drum pattern — random rolls, mutate and
-morph never touch it, it rides in the shared link, and every note or hold you
-play is its own step in the undo history.
+- **Rec** on the deck, or **record** on the piano roll, writes every key you
+  play to the step you heard.
+- The memory is the 19th entry on **Tune**, after the 18 ROM songs.
+- **Memory rate** sets its speed.
+- **Show piano roll** draws it: click to place, drag to draw a run, shift-click
+  to hold.
+- 32 steps, with its own loop length.
+- Undo tracks it, the shared link carries it, and random rolls leave it alone.
 
 ## Auto bass-chord
 
-Auto bass-chord is the accompaniment section: bass on the beat, a chord stab on
-the offbeat, the bass alternating root and fifth. It runs off the melody's own
-step clock, reads its chord from the tune currently playing, and runs on the
-same divider and rail as everything else — starving the chip or dragging its
-clock takes the backing band down with the tune.
+- Bass on the beat, chord stab on the offbeat.
+- Follows the melody's step clock and the tune's chord.
+- Starving or dragging the chip's clock takes the backing band with it.
 
-## The arpeggiator
+## Arpeggiator
 
-**Arpeggio** takes the keys you're holding and plays them one at a time: **up**,
-**down**, **up-down**, **random**, or **as played** (the order your fingers went
-down). Hold a chord, or throw the **hold** switch and let go — latched keys
-arpeggiate the same as held ones.
-
-**Arp rate** is notes a second; **Arp range** is how many octaves the figure
-climbs before repeating. Neither is its own clock — the arpeggiator runs off the
-chip's divider, so **Clock**, a pot on the timing pin and a flat rail all drag
-the figure with the tune.
-
-**Arp sync** is Kit sync for the figure: it counts off the kit's beat instead of
-Arp rate, from **quarters** through the triplets to **sixty-fourths**. The bends
-above still drag it off the beat, and on a fast kit the top divisions blur into
-a buzz.
-
-The figure goes out on the gate line like any other note, so it plays the FM
-chip too wherever that jumper is soldered on, and **Keys fire kit** turns it
-into a drum pattern.
+- **Arpeggio** modes: **up**, **down**, **up-down**, **random**, **as played**.
+- **Hold** latches the chord.
+- **Arp rate** sets notes a second; **Arp range** sets the octaves.
+- **Arp sync** counts off the kit, from quarters to sixty-fourths.
+- Plays Glint through the gate line.
+- **Keys fire kit** turns it into a drum pattern.
 
 ## Kit sync
 
-**Kit sync** brings the drum machine's step clock to the toy's timing chain, so
-the tune counts off the kit's tempo instead of its own crystal. Pick how much of
-a beat one step of the tune is worth: **sixteenths**, **eighths**, or
-**quarters**. It reaches the melody, both memory lanes, and the auto bass-chord
-— not the arpeggiator, which has its own, **Arp sync**.
+- **Kit sync** locks the tune's step to the drum machine's clock.
+- Pick **sixteenths**, **eighths** or **quarters** per step.
+- Reaches the melody, both memory lanes and the auto bass-chord.
+- **Lock** beside **Clock** matches the crystal to the kit once.
 
-It replaces the rate the song was written at, nothing else: **Clock**, a pot on
-the timing pin, **Crystal drift** and a flat rail still move a locked toy the
-same as a free one. It's a wire on the timing pin, not a phase detector — both
-machines hang off the one divider, so a sag lands on both sides at once.
+## Key lock
 
-Off is the crystal, and off is the default. **lock**, beside **Clock**, is the
-older way to the same place: it sets the crystal to the nearest speed at which
-this song's steps divide into the kit's, once, then holds nothing.
-
-## The key lock
-
-**Key lock** closes a key off the scale onto the one under it. Pick a scale
-(**major**, **minor**, **dorian**, **mixolydian**, either **pentatonic**,
-**blues**, **whole tone**) and a **Key**, and everything played into the board
-comes out in that key: both keybeds, a MIDI controller, the arpeggiator, and the
-trigger patch's **any step**. It moves a note by a semitone or two, never an
-octave.
-
-It sits on the key line: the demo songs and your melody memory always play in
-whatever key they were written in. Off is the default.
+- **Key lock** snaps every played note to a scale: **major**, **minor**,
+  **dorian**, **mixolydian**, both **pentatonic**s, **blues**, **whole tone**.
+- Applies to both keybeds, MIDI, the arpeggiator and the trigger patch's **any
+  step**.
+- Demo songs and the melody memory ignore it.
 
 ## The drum machine
 
-The kit is a sixteen-step grid. Eight voices — **kick**, **snare**, **hat**,
-**clap**, **tom**, **cowbell**, **open hat**, **cymbal** — each get a row of
-steps, with an accent row underneath. Ten factory patterns sit as buttons above
-the grid, each an editable starting point.
-
-**Tempo** carries a **tap** button: press it in time and the kit takes the speed
-off your hand. The same button sits on both delay times and the patch bay's
-oscillator.
-
-**Swing** holds every offbeat step back and gives the next step less time.
-**Tune** and **Decay** move the whole kit; **Ring** is the one to reach for
-after those — the kick, tom and snare body are resonant networks, and winding
-Ring past nine tenths latches them into notes that ring until you wind it back.
-See [Bends](BENDS.md) for what **Ring**, **Trigger pulse**, **Snappy**, **Accent
-sag**, **Bit depth**, **Ladder**, **Voice slot** and **Overflow** do to the
-kit's cheap-DAC quirks. **Voice slot** ties the kit together: one converter
-serves eight voices, so a step that stacks the kit comes out coarser than the
-same voice alone. **Clap gap** and **Clap bursts** retune the clap's burst
-oscillator, from a buzz at the fast end to separate claps at the slow end.
-**Pulse sharing** thins every voice on a crowded step and leaves lone hits
-alone. **Trigger load** makes every hit dip the supply: the metal voices dive on
-each kick and the toy goes flat under busy steps. **DAC reference** multiplies
-the kit by another signal: the toy chip (a ring mod), the kit itself (squared,
-an octave up), the mic or the whole bus.
-
-**Kit** switches the box between two of them. Nothing here is a sample, so the
-sampled kit is this kit sampled by itself: on its way up the machine strikes all
-eight voices through the ordinary circuits and files them as twelve-bit slabs,
-and a hit plays the slab back instead of ringing the network. Pattern, accent,
-trigger floor, retrigger, choke and every knife on the bus work as before. What
-goes quiet is what shapes a voice, since the ROM was cut with those knobs where
-they were: **Snappy**, **Noise bias**, **Metal**, **Bank spread**, **Squarer
-bias**, **Cymbal tone** and **Ring** reach nothing, and the cross-patch bridges
-pins a recording does not have. In their place, **ROM clock** is how fast the
-slabs are read: cut at 26,040 Hz, read at half that they land an octave down and
-half as bright, which is the trick every record made on one of those boxes is
-built from. **Decay** becomes truncation under 1×. The ROM's own wires can be
-knifed too: a kick can run on through the whole kit, play backwards, or read
-another voice's slab; see [BENDS.md](BENDS.md#the-drum-machines-sample-rom).
-
-Four voices are one part: the cowbell, both hats and the cymbal come off a
-single bank of six square oscillators. **Bank spread** widens the bank, detuning
-the cowbell and roughening the hats together. **Bank starve** drops that bank
-without the drums, and **Bank gate** runs it only while a chosen voice sounds.
-**Metal** blends between that bank and the noise transistor the hat used to be
-made of; **Cymbal tone** slides the cymbal between a crash and a splash. The two
-hats share a cap — writing a hat step under a ringing open hat cuts it short,
-the way a foot does — and **Choke** moves that resistor to any pair of voices.
-**Sweep** turns the kick's swoop into a zap or runs it backwards into a rise,
-**Bank FM** shakes the drums' tuning with the metal bank until the kick clangs,
-**Bank sync** locks the metal voices to the kick's pitch while it rings, and
-**Tank coupling** rings the tom off every kick. **Ring trigger** lets a ringing
-kick, tom or snare strike other voices once a cycle, **Counter reset** sends the
-bar back to step one whenever a chosen voice strikes, and **Pattern loop** lets
-the bar rewrite itself a lap at a time; see
-[BENDS.md](BENDS.md#the-counters-own-clock).
-
-Press a step and drag across the grid to draw a run. Each row has its own
-length: shift-click a step to loop the row back from there, with a badge showing
-where it ends (press the badge to give it all sixteen back). A five-step hat
-against a sixteen-step kick is polymeter — the two line up again only every
-eighty steps.
-
-Click a step past lit and it wires through the kit's dice instead: drawn as a
-ring with a dot, it fires as often as **Chance** says. A third click turns it
-off. Chance at zero silences those steps; Chance at max makes them ordinary.
-**Dice** ties those rolls to the noise transistor, so they freeze as **Noise
-bias** nears its knee. An accent is a weight on whatever step already fires, so
-the accent row carries no dice.
-
-**Roll**, **Vary**, **Turnaround**, **Shift**, and **Half**/**Double** rewrite
-the grid without touching tempo or tone: a new pattern, a couple of small
-changes, a fill over the end of the bar, every row moved one step later
-(shift-click to move back), and the bar stretched or compressed.
-
-The **echo** row under the accents throws hits into the tape delay. **Throw**
-lights the bar's last snare. The first throw on a silent delay brings it up with
-**Bus send** at zero, so only the throws echo.
+- Sixteen steps, eight voices: **kick**, **snare**, **hat**, **clap**, **tom**,
+  **cowbell**, **open hat**, **cymbal**.
+- An accent row under the grid.
+- Ten factory patterns.
+- **Tempo** with a **tap** button; **Swing**.
+- **Tune**, **Decay** and **Ring** shape the whole kit.
+- **Kit** switches to the sampled kit: the kit recorded through its own
+  circuits, with **ROM clock** setting the read speed.
+- Metal voices share one oscillator bank: **Bank spread**, **Bank starve**,
+  **Bank gate**, **Bank FM**, **Bank sync**, **Metal**, **Cymbal tone**.
+- More bends: **Sweep**, **Choke**, **Tank coupling**, **Ring trigger**,
+  **Counter reset**, **Pattern loop**, **Voice slot**, **Pulse sharing**,
+  **Trigger load**, **DAC reference**, **Clap gap**, **Clap bursts**. See
+  [Bends](BENDS.md).
+- Drag across the grid to draw a run.
+- Shift-click a step to set a row's own length, for polymeter.
+- A second click makes a step a dice step that fires at **Chance**.
+- **Roll**, **Vary**, **Turnaround**, **Shift** and **Half**/**Double** rewrite
+  the grid.
+- The **echo** row throws hits into the tape delay; **Throw** lights the last
+  snare.
+- Row names preview the voice.
+- Number keys `1`–`8` play the kit.
 
 ![The toy drum machine's pad deck: eight numbered rubber pads, kick through cymbal, under the play and REC switches and a small copy of the drum pattern.](img/guide-drums.jpg)
 
-A row's name is also a preview button. The kit plays on the number row too: `1`
-is the kick through `8` the cymbal. The toy drum machine's rubber pads play the
-same voices. Above them sit the kit's own **▶** and **rec** switches and a small
-copy of the pattern, with a row of lights per voice and each row's playhead in
-red. Press the copy to open the grid.
+- Eight rubber pads, **▶**, **rec** and a small copy of the pattern.
+- **Rec** writes hits to the nearest step and allows for output latency.
 
-**Rec** on the kit, or **record** on the grid, arms the kit and runs it. Each
-hit you play writes to the nearest step, and that step flashes on the kit's
-copy. The kit allows for output latency when it places a hit, so Bluetooth
-headphones, which add a couple of hundred milliseconds, don't push hits late. A
-recorded hit sounds once, even when it rounds forward onto the step about to
-play.
-
-## Playing Glint
-
-Glint has no sequencer of its own; its key input is wired onto the toy
-keyboard's gate line, so it plays whatever the toy strikes. **Kit voice that
-plays this chip** can wire a kit voice onto that line too.
+## Glint
 
 ![Glint's keybed: a green circuit board with TOY GATE and HOLD switches, an octave switch, and rows of push-button keys.](img/guide-fm.jpg)
 
-One computer keyboard, three keybeds: `a s d f` and the octave keys `z`/`x` play
-whichever bed has **computer keyboard plays this bed** ticked, in the drawer
-behind the three bars on its deck, and the letters are printed on that bed's
-keys so you can see where they went. Turning it off on a bed hands the letters
-back to the toy's, which is the one bed always on the page. Every bed takes the
-mouse either way, and a MIDI controller plays the toy's unless you point it
-somewhere else or split the keybed — see [MIDI](MIDI.md).
+- FM chip with no sequencer; plays whatever the toy's gate line strikes.
+- **Kit voice that plays this chip** wires a kit voice onto the gate line.
+- One computer keyboard, three keybeds: tick **computer keyboard plays this
+  bed**.
+- A MIDI controller plays the toy unless you aim it elsewhere. See
+  [MIDI](MIDI.md).
+- **Voice** picks one of eight patches.
+- **Brightness** and **Feedback** shape the modulator.
+- **Note length** decides when triggered notes stop.
+- **Level**, **Brightness** and **Feedback** run past the chip's range; a red
+  tick marks it.
+- **Drive** pushes the output stage up to 36 dB.
+- **Clock** drags the chip's crystal; **lock** matches the toy's.
+- **CPU clock** drags the processor's.
+- **Vibrato**: **tremolo**, **vibrato** or **both**.
+- **Rhythm** re-taps two channels onto a ROM kit; **Noise blob** wires the shift
+  register onto the sine table.
+- **Mod ratio**, **Car ratio**, **Mod decay**.
+- Knife bends: **FM cut depth**, **FM noise blob**, **FM bright**, **Patch
+  line**, **Patch data line**, **DAC slot**, **Slot slip**, **Allocator**,
+  **Cold boot**, **Log adder**.
 
-**Voice** picks one of eight patches, **Brightness** sets how much modulator
-reaches the carrier, **Feedback** sets how much modulator feeds back into
-itself. A key held under your hand stays on for as long as you hold it; anything
-else that triggers the chip — the demo song, a drum hit, a trigger line — sends
-only an edge, so **Note length** decides when it stops. Four voices (e.piano,
-bell, bass, marimba) decay on their own regardless of key state; the other four
-wait for release.
+## Parlor
 
-**Level**, **Brightness** and **Feedback** run past the chip's normal range — a
-red tick marks it, and the readout turns red past it. Level goes to ×4; past 1
-on Brightness and past 7 on Feedback a booster takes over from the register,
-multiplying modulation and feedback further. **Drive** pushes the four voices
-into the output stage, up to 36 dB, squaring notes into fuzz.
+- Eight-bit sampling keyboard: pads, strings, choirs, bells.
+- **Level** brings up its bed; **Plays Plinky's notes** jumper is out by
+  default.
+- Signal-path drawing; press a box to open its knobs.
+- **Voice** picks the recording.
+- **Envelope**: _piano_, _organ_, _pad_, _chime_.
+- **Release**, **Chord memory**.
+- **Tone** sets the reconstruction filter's grit.
+- **ROM clock** drags pitch and aliasing together.
+- **Sampled** plays the tape loop across the keys.
+- Knife bends: **Address line** and **Data line**.
 
-**Clock** drags the chip's own crystal, so pitch, envelopes and the LFO move
-together; **lock** sets it to the toy's crystal so the two play in tune. **CPU
-clock** drags the processor's, which times Note length and the effect scripts.
+## Growler
 
-**Vibrato** switches on the die's one LFO — no rate or depth register, just two
-bits wiring the operators to a wobble that's been running since the board came
-up. **tremolo** takes about a decibel off the level, **vibrato** moves pitch
-about seven cents, **both** does both. Tremolo reads quieter than expected
-because a modulator moving up and down moves brightness the opposite way from
-the carrier's level — wind **Brightness** down and it's obvious.
+- Three-oscillator monosynth with a transistor ladder filter.
+- **Level** brings up its bed; the jumper plays the toy's tune two octaves down.
+- **Cutoff**, **Emphasis** (self-oscillates past 0.95), **Contour amount**,
+  **Drive**, **Glide**.
+- **Gate** sets note length for the toy and kit lines.
+- **Kit voice that plays this synth** restarts the last note on a kit hit.
+- **Oscillators**: waveforms, footages, tuning, hard or soft sync, **Osc 2
+  sweep**, **Lin FM**, **Osc 3 control** as LFO.
+- **Mixer**: levels, noise and **Feedback**.
+- **Leaky VCA** drones with no key down.
+- MIDI _bass split_ puts the synth under the split point.
 
-**Rhythm** re-taps the top two channels onto a ROM kit instead of the keyboard:
-a bass drum, and a snare and hi-hat fed by the chip's one noise source, a shift
-register. It costs two of the four voices, the same two an effect wants. **Noise
-blob** solders that shift register onto the sine table with the rhythm bank
-switched over — a touch is dirt on the note, wound across it gates the carrier
-by the register instead.
+### Second melody memory
 
-**Mod ratio**, **Car ratio** and **Mod decay** shape the patch further; see
-[Bends](BENDS.md) for what a fault actually does at the register level. The
-patch bay reaches every knob that matters, knife included: **FM cut depth**,
-**FM noise blob**, **FM bright** — and **FM bright** is worth trying first,
-since the processor only re-sends a patch when a knob moves, so a wire there
-writes the register every block instead of four times a note.
-
-**Patch line** and **Patch data line** put the knife on the table the chip reads
-every patch from, the processor's and the die's own fifteen. The chip fetches
-the patch afresh every few milliseconds, so it comes back the moment the knife
-comes off.
-
-**DAC slot** sticks the converter's slot counter on one channel, which plays
-four times as loud while the others drop out. **Slot slip** lets the counter
-drift, from a flutter through a buzz to a fold into high images. **Allocator**
-stuck sends every note to one channel, so the chip plays one note at a time;
-stuck on a channel the rhythm bank or an effect owns, the tune plays the drums
-or fights the effect. **Cold boot** on **garbage** power-cycles the chip into
-random registers, so it drones at random pitches until notes land on its
-channels. **Log adder** swaps the multiply for the part's log arithmetic with a
-narrow adder that wraps, so fades explode back to full and sines fold into a
-digital buzz.
-
-## Playing Parlor
-
-The third machine on the rail is the eight-bit sampling keyboard, and it is the
-only thing on the board that makes pads, strings, choirs and bells. There is no
-oscillator in it: a ROM holds one short recording of each voice — an attack and
-then a loop — and a counter walks that ROM at whatever rate the note asks for.
-Bring **Level** up and its bed appears under the toy's, in grey plastic, with
-the same **Plays Plinky’s notes** jumper Glint has: soldered out of the box, so
-the demo song plays it.
-
-The panel draws the keyboard as its signal path: keys, counter, ROM, envelope,
-tone, then the mix. The vibrato LFO feeds the counter from above, and the
-address and data buses hang under the wires either side of the ROM. Press a box
-to open its knobs.
-
-**Voice** picks the recording and **Envelope** picks one of the four buttons
-down the side of the case — _piano_ falls away whether or not you are holding
-the key, _organ_ holds, _pad_ swells, _chime_ rings. **Release** is the one
-capacitor the buttons do not choose, and it is also what decides how long a
-strike off the toy's gate or the kit's trigger lines lasts, since neither of
-those has a hand on it. **Chord memory** puts a whole voicing under one key,
-which fills all four voices doing it — press a second key and the first is
-stolen, exactly as one of these always did.
-
-Two knobs are the part rather than the sound. The ROM was cut at 9.9 kHz with
-nothing interpolating on the way out, so every voice comes back with its own
-images sitting over it, and **Tone** is the two-pole reconstruction filter
-deciding how much of that you hear: up is the grit, down is the underwater
-version the same chip sounds like through a plastic speaker. **ROM clock** drags
-the counter itself, which is the classic bend on a keyboard like this — pitch
-and aliasing move together, because on this part they are the same thing.
-
-**sampled** is the voice the machine is famous for. It plays whatever you
-dropped on the tape loop across the keys, out of a second and a half of memory
-at the ROM's own rate, with the reel's own loop markers as its loop — so a file
-on the page and a chord button is a vaporwave part. Turn the tape loop's own
-fader down and the keyed copy is the only one you hear. With nothing threaded it
-is silent.
-
-The knife reaches both of the chip's buses. **Address line** is the counter's
-own wires: every word that comes back is a real word from the wrong place, so a
-voice folds onto its own first half or reads every sample twice. **Data line**
-is the famous one — the top wire held high and the bottom half of every wave
-folds up onto the top of it. The named cuts under that heading are the six worth
-hearing first.
-
-## Playing Growler
-
-The fourth machine on the rail is a three-oscillator monosynth voice card with a
-transistor ladder filter, built after the Model D. Bring **Level** up and its
-bed appears under the toy's, with walnut cheeks and a **Plays Plinky’s notes**
-jumper. The jumper comes soldered, so the toy's tune plays the synth two octaves
-down.
-
-The rows under the drawing hold the knobs a bass line needs. **Cutoff** sets the
-four-pole filter, **Emphasis** is its resonance, and past about 0.95 the ladder
-oscillates by itself. **Contour amount** sets how far the filter contour opens
-the cutoff on each note, **Drive** pushes the mixer into the ladder's
-saturation, and **Glide** slides between notes.
-
-Notes off the toy's gate and the kit's trigger lines have no key-up, so **Gate**
-under the **keys** box sets how long each stays down, as a fraction of the toy's
-sequencer step. At 1 each note is still down when the next one arrives, so the
-tune plays legato and glides. **Kit voice that plays this synth** clips a kit
-line onto the synth: with the kick on it, every kick restarts the last note
-played. With the jumper cut, notes reach the synth from its bed, the kit's lines
-and a controller. The MIDI panel's _bass split_ route puts the synth under the
-split point and the toy above it.
-
-The drawing holds the rest of a Model D, wired as the voice card is. Press a box
-to open its knobs under the drawing. The wires for sync, FM, noise, feedback and
-modulation light once their knob is up.
-
-**oscillators** has the three waveforms and footages, osc 2 and osc 3 tuning,
-hard or soft sync and **Osc 2 sweep**, which bends osc 2 with the filter contour
-for the tearing sync sound. **Lin FM** feeds osc 2 into osc 1's frequency, as
-the Alesis Andromeda does, for bell and clang tones that stay in tune. **Osc 3
-control** on _lo_ turns osc 3 into a slow LFO for **modulation** to send to
-pitch or cutoff. **mixer** has the oscillator levels, noise and **Feedback**:
-the output patched back into the mixer, as players did with a cable from the
-headphone jack to the external input.
-
-A second melody memory plays a line different from the toy's: 32 steps, one note
-a step. **show piano roll** on the Growler panel draws it, and **Plays on**
-under **melody** aims it at Growler, Glint or Parlor.
-
-- **Draw:** a click puts a note on a step, a drag draws a line, and a click on a
-  note takes it off. Shift-click holds the note before. A drawn note turns
-  **Melody memory** on.
-- **Record:** **rec** on the Growler, Glint or Parlor bed aims the memory at
-  that machine, turns it on and runs the song. Each key played on that bed then
-  writes the step the counter is on, and a key held across steps becomes one
-  long note. **record** on the roll does the same for the machine already
-  chosen.
-- **Play:** the memory plays while the song runs. **loop** on the roll sets its
-  length, and **Memory rate** sets the steps a second.
-- **Supply:** the counter runs off the toy's rail. A sagging rail slows it, and
-  a reboot restarts it from step one.
-- **Alone:** the memory reaches its machine whatever that machine's jumper says,
-  and the toy's tune keeps playing the others. Cut the jumper on the target to
-  hear it without the toy's tune. The target's Level has to be up.
-
-The memory has no chords. It rides in the shared link and the undo history, and
-random rolls, mutate and morph leave it alone.
-
-For a drone, latch a key with **hold** on the bed and raise the loudness
-sustain, or turn up **Leaky VCA** under the **voice card** box, which sounds the
-synth with no key down at all. The _leaky drone_ preset starts there.
+- 32 steps, one note a step, no chords.
+- **Show piano roll** draws it; **Plays on** aims it at Growler, Glint or
+  Parlor.
+- **Draw:** click a step, drag a line, shift-click to hold.
+- **Record:** **rec** on a bed aims the memory there and runs the song.
+- **Play:** **loop** sets its length; **Memory rate** sets its speed.
+- **Supply:** the toy's rail slows it, and a reboot restarts it.
+- Rides in the link and undo; random rolls leave it alone.
 
 ## Pedals and levels on the bench
 
-The bench is the main area under the scope, where the instruments sit.
-
-- Every instrument has a **Level** slider on its face. Glint, Parlor, Growler,
-  Spool and Layercake appear when their level comes up, and stay once they have,
-  so a face you pull to zero is still there to bring back.
-- Loading a tape raises the tape loop's level, so its face appears beside the
-  keyboards. The face holds a mic key and stays up while the mic is open. To
-  open the mic without the tape face, press **open mic** in the Mic stage's
-  panel.
-- **Add instrument** lists the instruments not on the bench, each named with
-  what it is, such as "Glint (FM synth)". A pick puts its face on the bench. A
-  face's close cap takes its stage off the board.
-- **Add pedal** does the same for the six pedals, in signal order. The bench
-  starts with none, and a pedal stays silent until its mix comes up.
-- Instruments and pedals on the bench also get their boxes on the signal path.
-- A pedal's stage panel has a **bench** button that does the same, and a thin
-  bar on the pedal's box in the signal path marks the ones on the bench.
-
-A pedal face is the pedal's headline sliders in a painted enclosure.
-
-- The round footswitch is **bypass**, and its lamp is lit while the pedal is in
-  the path.
-- A bypassed pedal keeps its settings and keeps running, so switching it back on
-  picks up where it was.
-- The **⋯** button under the footswitch opens the pedal's full panel, which has
-  the same switch as a **Bypass** row that rolls, morphs and presets leave
-  alone.
-- Faces go one to a row on a phone.
+- **Level** on every instrument's face; Glint, Parlor, Growler, Spool and
+  Layercake appear when raised.
+- Loading a tape brings up the tape loop's face.
+- **Open mic** is in the Mic stage's panel.
+- **Add instrument** lists instruments not on the bench, such as "Glint (FM
+  synth)".
+- A face's close cap takes its stage off the board.
+- **Add pedal** lists the six pedals in signal order.
+- Each pedal face has a **bypass** footswitch and its headline sliders.
+- **⋯** opens the pedal's full panel.
+- A bypassed pedal keeps its settings.
 
 ## The trigger patch
 
-The keyboard and drum machine share a power rail by accident; the trigger patch
-is what you wire between them on purpose.
-
 ![The trigger patch diagram: Clatter, Plinky and Glint as three boxes, with the wires kit → keys, keys → kit, gate and kit → FM between them.](img/guide-trigger.jpg)
 
-**Kit fires keys** bridges a drum hit onto the keyboard's gate: the note played
-is its own setting — the one already standing, the next step of the ROM tune, a
-random step, or a tone from the current chord. **Next step** is the one to try
-first, since it clocks the whole board, bass and chord stabs included, off one
-drum hit.
-
-**Keys fire kit** is the wire back: every note the chip plays also fires a drum
-voice, pattern running or not. **The step** option hands it to the grid instead,
-so a key fires whatever column the sequencer sits on.
-
-Bridge both directions and the two machines play each other — a rattle at the
-audio block rate, held in check by the safety tail.
-
-Two more wires land on Glint, the only way anything reaches it. **Plays Plinky’s
-notes** is the factory jumper off the keyboard's gate line; cut it and the chip
-stops following the keyboard. **Kit voice that plays this chip** clips the kit's
-trigger lines onto the same input, one voice per pentatonic step, turning a drum
-pattern into a riff. Every wire here, and the shared rail, can also be bent —
-see [Bends](BENDS.md).
+- **Kit fires keys:** a drum hit plays the keyboard. Notes: standing, **next
+  step**, random step or chord tone.
+- **Keys fire kit:** every note fires a drum voice. **The step** fires the
+  sequencer's column.
+- Both ways together make the machines play each other.
+- **Plays Plinky's notes** is Glint's keyboard jumper.
+- **Kit voice that plays this chip** turns a drum pattern into a riff.
+- Every wire and the shared rail can be bent. See [Bends](BENDS.md).
 
 ## The four-track
 
-A cassette four-track with four tape loops, each cut to its own length. It is
-silent until **Level** comes up.
-
-The desk is four channel strips side by side, top to bottom:
-
-- **in** picks what the channel hears: its own loop (**tape**), the whole
-  **board**, the **mic**, or the desk's **aux** return.
-- **Trim** is the preamp gain and **Aux** the send to the aux bus.
-- **High**, **Mid**, **Mid freq** and **Low** are the EQ: two shelves and a
-  sweepable mid. The three bands click to zero as you drag through it.
-- **Pan** and **Fader** place the channel on the stereo bus.
-
-Drag a knob up or down, or step it with the arrow keys (shift for bigger steps).
-Double-click puts it back to stock.
-
-Under the desk, each track has a lane:
-
-- **rec** lays the channel onto the loop. The first press threads a blank loop
-  as long as the track's **Length**. The loop under the head stays there, so
-  every pass records over the last.
-- The drawing shows the loop, the head and, in rust, where the oxide has worn
-  away. It lights the loop while a **Fader** or **Cue** lets you hear it.
-
-To loop the board: set **in** to **board**, press **rec**, bring **Level** up.
-The loop plays back through **Cue** and goes round the board again each lap.
-
-For feedback, press a setting above the desk:
-
-- **no-input mixer** puts track 1 on the desk's own aux return, so the desk
-  feeds itself and squeals where track 1's mid is boosted. **Aux master** is how
-  much of it comes back; track 1's **Mid freq** tunes the pitch.
-- **squeal through the echo** adds track 2 listening to the board, so the squeal
-  goes round through the delay pedal and onto the bus again. Any pedal or bend
-  on the board sits in that loop.
-
-The rest is behind two things:
-
-- **channel strip** is a diagram of one channel's signal path. Press a strip's
-  number, or a track tab, to pick the channel. Press a box in the diagram (trim,
-  EQ, send, pan, rec, erase and loop, cue) to open its knobs under it. A box is
-  drawn in the accent colour once you have moved one of its knobs. It opens by
-  itself when erase, loop length or cue moves.
-- **the transport** holds tape level, hiss, wow, flutter, wear and batteries.
-
-**Speed**, **Side** and **NR** share one row under the lanes: 1⅞ or 3¾ ips,
-turning the cassette over, and dbx. **Pitch** is the varispeed, and **blank
-cassette** wipes the loops and their wear.
+- Four tape loops, each with its own length; silent until **Level** comes up.
+- Per channel: **in** (**tape**, **board**, **mic**, **aux**), **Trim**,
+  **Aux**, **High**, **Mid**, **Mid freq**, **Low**, **Pan**, **Fader**.
+- Drag a knob or use arrow keys; double-click resets.
+- **Rec** lays a channel onto its loop; each pass records over the last.
+- Loop the board: **in** to **board**, **rec**, raise **Level**.
+- **No-input mixer:** the desk feeds itself through the aux return.
+- **Squeal through the echo:** adds the delay pedal to the loop.
+- **Channel strip** diagram: press a box to open its knobs.
+- **The transport:** tape level, hiss, wow, flutter, wear, batteries.
+- **Speed**, **Side**, **NR**, **Pitch**, **blank cassette**.
 
 ## Turning knobs
 
-- **Type a value:** click a row's reading, type, and press Enter. Units work:
-  `8k` on a frequency, `250ms` on a time. Escape cancels.
-- **Fine moves:** hold shift while dragging and the knob moves at a tenth of the
-  speed. The scroll wheel steps a knob under the pointer, finer with shift, but
-  only once the panel has stopped scrolling.
-- **Back to stock:** the ↺ beside a moved reading, or a double-click on the
-  track.
-- **Pin a knob:** pointing at a row shows a ☆ at its left edge. Press it, and
-  the knob appears on a **pinned** strip above the instruments, labelled with
-  its stage. Only this browser keeps the pins.
-- **Open a machine's panel:** click the name plate on its face, such as
-  **bender** on the toy keyboard or **drums** on the kit.
-- **Room for the knobs:** with a stage open, **▴ fold the map** shrinks the map
-  to a row of stage names. **▾ show the map** brings the drawing back.
+- **Type a value:** click the reading; `8k` and `250ms` work.
+- **Fine moves:** shift-drag at a tenth of the speed; scroll wheel steps.
+- **Back to stock:** ↺ or double-click the track.
+- **Pin a knob:** ☆ puts it on the **pinned** strip.
+- **Open a machine's panel:** click its name plate.
+- **▴ fold the map** gives the knobs room.
 
 ## Presets and rolls
 
-Click a preset to load the whole board. Drag it sideways and it morphs only part
-of the way there, under your finger; drag back and it retraces. Type in the
-**find** field to narrow the row: a word from a preset's name or description, or
-a stage it uses, such as `tape delay`. Random rolls, **mutate**, and **drift**
-never touch the demo song, the pattern, or the output/mic/sample levels.
-
-**random**, **hunt an edge**, **mutate** and **drift** change only the stages
-drawn on the signal path map. Put a stage there with **+ add a stage** under the
-map before rolling if you want the roll to reach it. A preset or a named roll
-such as **wreck it** or **dub** brings in the stages its description names.
-
-A roll moves only a handful of controls, and any control that counts in beats
-(delay time, glitch slice, drum retrigger) lands on a division of the beat. A
-control with red ticks has a normal range — rolls, **mutate** and **drift** stay
-inside it unless you've already set it past. **Wreck it**, **slam** and **on the
-edge** use the whole track.
-
-Every stage's panel has its own **roll**, **undo** and **reset**. With a box in
-the stage's drawing open, they act on that box alone; the switch under the
-header aims them back at the whole stage. **Take off** is under **⋯**.
-
-Whole-board rolls sit above the presets: **rewire** shuffles the bend order
-without retuning, **one bend** clears the slots to one and rolls it hard,
-**wreck it** pushes feedback, supply and bit depth all at once (the safety tail
-holds it), **slam** drives one to three controls to an extreme, **on the edge**
-drives two opposing controls to opposite extremes, **let it age** turns all five
-ageing controls up together, **patch** solders two or three wires from a moving
-source onto a stage that's actually running, and **cascade** solders one wire
-onto another wire's own depth.
-
-**Dub** builds a dub desk around what is playing: a dark tape echo in time, a
-filter in its loop, a spring and a crackling filter.
+- Click a preset to load the board.
+- Drag a preset sideways to morph part of the way.
+- **Find** narrows presets by name, description or stage.
+- **Random**, **hunt an edge**, **mutate** and **drift** change only stages on
+  the map.
+- **+ add a stage** puts a stage on the map.
+- Rolls land delay and glitch times on beat divisions.
+- Rolls stay inside a control's red-tick range; **wreck it**, **slam** and **on
+  the edge** use the whole track.
+- Every stage has its own **roll**, **undo** and **reset**.
+- Whole-board rolls: **rewire**, **one bend**, **wreck it**, **slam**, **on the
+  edge**, **let it age**, **patch**, **cascade**.
+- **Dub** builds a dub desk around what is playing.
+- **Hunt** tries six boards and keeps the loudest that doesn't bury the limiter.
+- **Hunt a tail** keeps the dub board that rings longest.
+- **Drift** moves toward a new setting every fifteen seconds; **⟲ 10s** goes
+  back.
+- **Share** copies a link to the board.
 
 ![The patch bay: three of four LFO wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](img/guide-patchbay.jpg)
 
-Every control a wire can land on shows a **+ mod** button beside its readout
-while you point at its row, and always on a touch screen. The press solders the
-first spare LFO wire onto that control and folds the wire out under the row,
-tagged with what's driving it and how fast (`∿ LFO 1.0Hz`). Press the chip to
-fold it back, **× unplug** to remove it — the next **+ mod** restores the same
-patch. It's an ordinary bay wire throughout, saved and shared like the rest.
-
-**Hunt** tries six boards, plays each a second and a half, and keeps whichever
-rides closest to the limiter without burying it. None of the candidates it
-passed through land in the undo history — the whole hunt is a single step.
-
-**Hunt a tail** plays six dub boards and keeps whichever rings on most between
-the kit's hits. After either hunt, the numbered row picks any of the six.
-
-**Drift** is mutate on a timer: roughly every fifteen seconds the board sets off
-toward a new nearby setting, so the sound never cuts and never quite arrives.
-One `ctrl+z` restores the board from before it started.
-
-While it drifts, **⟲ 10s** stops and goes back to where it was ten seconds ago.
-
-**share**, beside **midi**, copies a link to the current board.
+- **+ mod** beside any control solders an LFO wire onto it.
+- The wire folds out under the row; **× unplug** removes it.
 
 ## Demo songs
 
-The ROM bank holds 18 tunes: four factory demos, eight public-domain pieces (Für
-Elise, Ode to Joy, Rondo alla Turca, William Tell, and others), and six slower
-ones in minor and modal keys. Once you've played something into the melody
-memory, it's the 19th entry on the same selector.
+- 18 ROM tunes: four factory demos, eight public-domain pieces, six slower minor
+  and modal ones.
+- Your melody memory is the 19th.
 
 ## Throws
 
-The bend board under the run buttons draws the letter keys where they sit on a
-keyboard. A key pushes the board somewhere while you hold it and springs back
-when you let go. A throw never lands in the link or the undo walk.
-
-- **Top two rows:** sixteen bend keys the dice dealt. Each slams a control or
-  three to an end of its travel, and the key shows the stages you'll hear. A
-  stage whose level is down comes up with the push. A four-track channel's
-  **Trim**, **Low**, **Mid**, **High** and **Pan** are dealt only once its
-  **Fader** and the desk's **Level** are up.
-- **Bottom row:** six throws chosen by hand: **spin** (`c`), **dive** (`v`),
-  **brake** (`b`), **crash** (`n`), **drop** (`m`) and **crush** (`,`). These
-  always answer the keyboard.
-- **`z` and `x`:** let go of every bend key, and deal sixteen new ones.
-
-The bend keys answer the letters once **bend keys** is lit; otherwise the
-letters play Plinky. Shift pins a bend key down until you press it again. Every
-key also takes a click or a finger.
-
-The dealer skips any end of a control that measured silent (`pnpm bend-ends`
-writes the table). No two keys share a control or bring up the same silent
-stage, so a chord of them is a chord. The dealer also leaves out:
-
-- a silent stage that would come up more than 6 dB over the board, such as the
-  feedback bus
-- a level or mix that would turn the board up by more than 6 dB
-- the end of a control's travel that it already sits at
-
-The **bend keys** toggle under the keyboards sends the computer's letter keys to
-the bend keys instead of Plinky. The switch is remembered across a reload, and a
-link with `?bend` on it opens the same way.
-
-The chips beside the toggle set how the next deal comes out:
-
-- **tame** moves one control a key
-- **wild** moves one to three, with a fighting pair now and then
-- **wreck** always moves three, and a third of the keys solder a bay wire or a
-  bend into the chain on top
-- **swell** ramps a key in over the morph time and lets it fall back over the
-  same time, for a drone
-- **redeal every** deals a new hand every bar, four or eight, counted while the
-  kit runs
-
-The kit's grid has a **bend** row under **echo**. A lit step fires the bend key
-with that step's number, held for the step, so the keys play as a sequence
-against the pattern. Each cell prints its key's letter. Redeal the keys and the
-same steps fire the new ones. The shuffle button at the row's end lights a new
-scatter of about a third of the steps. The row is this session's, since the deal
-is, and rides in no link.
-
-A MIDI pad can hold a bend key the way it holds a throw; see [MIDI](MIDI.md).
+- The bend board draws the letter keys; a key pushes the board while held.
+- Throws stay out of the link and undo.
+- **Top two rows:** sixteen dealt bend keys.
+- A four-track channel's **Trim**, **Low**, **Mid**, **High** and **Pan** deal
+  only once its **Fader** and the desk's **Level** are up.
+- **Bottom row:** **spin** (`c`), **dive** (`v`), **brake** (`b`), **crash**
+  (`n`), **drop** (`m`), **crush** (`,`).
+- `z`/`x` release every key and deal sixteen new ones.
+- **Bend keys** toggle sends the letters to the bend board; a `?bend` link opens
+  it on.
+- Shift pins a key.
+- Dealer modes: **tame**, **wild**, **wreck**, **swell**, **redeal every**.
+- The kit's **bend** row fires the key with each step's number.
+- A MIDI pad can hold a bend key. See [MIDI](MIDI.md).
 
 ## Playback and recording
 
-**play demo song** and **play drums** are independent run switches. `space`
-toggles both at once and restores whatever was actually running before.
-
-**Record wav** captures the actual audio output as a 16-bit stereo wav file —
-different from the keyboard's **Rec** and the drum machine's **Record**, which
-capture what you played rather than what comes out of the speakers.
-
-**⟲ last 30s** saves the last half minute of output even if nothing was
-recording, and **⟲ → reel** puts it on the tape loop instead.
-
-### Varispeed
-
-**Varispeed**, in the Output panel, is the deck the whole instrument is printed
-to. Everything else on the board — the tape machine and the limiter included —
-is upstream of it, so turning it down slows the pitch, the tempo, every envelope
-and every delay and reverb tail together, and nothing upstream knows. **Motor
-weight** beside it is how long the platter takes to get where the knob is: wind
-it up and dragging Varispeed to the stop is a tape stop that runs down, and
-letting it back up is a spin-up.
-
-A wire from the patch bay lands on `deck speed` like any other lane, so one LFO
-wobbles the whole board. The mic is resampled on the way in, so a voice through
-a slowed board still comes out at the pitch you sang it. A take, master and
-stems both, is what the deck played.
-
-### Stems
-
-The selector beside it sets what a take comes back as. **Master only** is one
-file. **Master + stems** adds one wav per source that had anything on it — toy
-keyboard, drums, Glint, chaos oscillator, noise, tape loop — named
-`bender-<stamp>-toy.wav`, `-drums`, `-fm`, `-chaos`, `-noise`, and `-tape-loop`,
-beside `bender-<stamp>-master.wav`.
-
-A stem is the dry source, taken where it sums into the mix bus — before the bus
-drive, bends, pedals, brownout, tape and limiter, all of which apply only to the
-sum. Stems won't add up to the master in a DAW; the master is the instrument,
-the stems are what went into it. The mic and the feedback return aren't stems —
-the mic lands on the bus, the return feeds the desk back into itself — both are
-in the master only.
-
-Stems are mono: five of the six sources put the same sample on both channels,
-and noise takes the middle of its two streams. A take streams to disk as it
-records, and the storage your browser grants the site sets its length. A master
-takes about 11 MB a minute and a stem 5.5 MB. With under ten minutes of room
-left, the page says how much; a take that fills the storage stops and saves what
-it has. A browser with no streaming file API (older Safari) holds the take in
-memory and stops it at about 11 minutes of master, or 2½ minutes with stems.
-There's no zip, so stopping a stem take fires up to nine downloads at once; your
-browser may ask permission for multiple files.
+- **Play demo song** and **play drums** run independently; `space` toggles both.
+- **Record wav** captures the output as a 16-bit stereo file.
+- **⟲ last 30s** saves the last half minute; **⟲ → reel** puts it on the tape
+  loop.
+- **Varispeed** (Output panel) slows pitch, tempo and tails together; **Motor
+  weight** makes tape stops and spin-ups.
+- A patch-bay wire can land on `deck speed`.
+- **Master only** or **Master + stems**: toy, drums, Glint, chaos, noise, tape
+  loop.
+- Stems are dry, mono and taken at the mix bus; the master carries the mic and
+  feedback return.
+- Takes stream to disk: about 11 MB a minute for a master, 5.5 MB for a stem.
 
 ## Simple version
 
-[`/pocket/`](https://cmdcolin.github.io/bender/pocket/) is a simplified bender
-laid out for a phone held upright. The full app has its own phone layout and
-runs the whole instrument; the simple version has a scope, a preset strip and a
-few bends in place of the signal path. The app's ☰ menu opens it on the same
-board, and its **full app ↗** goes back the other way.
-
-- **▶** runs the toy's tune and the drum machine, with the kit brought up if the
-  board has it down. The screen stays awake while either runs.
-- **● rec** records what you hear. The chip that appears beside it opens the
-  share sheet, which is how a phone saves the wav. **↶** is undo.
-- Swipe the scope sideways for the next preset. The tabs under it sort the
-  presets by the machine each turns up loudest, and the scope's foot names the
-  board that is up.
-- Hold the scope and drag to bend. Lifting the finger puts the board back. The
-  switch at the scope's top left picks what bends:
-
-  | mode   | across               | up                          |
-  | ------ | -------------------- | --------------------------- |
-  | dub    | screech filter sweep | tape delay feedback, past 1 |
-  | starve | toy clock speed      | the toy's supply sags       |
-  | crush  | sample rate          | fewer bits                  |
-  | glitch | slice length         | more stutter, more repeats  |
-
-- **tilt** bends the same way from how the phone leans, measured from where it
-  sat when tilt came on. An iPhone asks for motion access the first time.
+- [`/pocket/`](https://cmdcolin.github.io/bender/pocket/) is a phone-upright
+  bender; ☰ opens it on the same board, **full app ↗** goes back.
+- **▶** runs the tune and the kit.
+- **● rec** records; the chip beside it shares the wav; **↶** undoes.
+- Swipe the scope for the next preset; tabs sort presets by machine.
+- Hold and drag the scope to bend; release puts the board back.
+- Bend modes: **dub**, **starve**, **crush**, **glitch**.
+- **Tilt** bends from the phone's lean.
 - Tap a preset twice to set how far toward it the board goes.
-- **bends** lays out the sixteen dealt bend keys as switches. A tap pins one on,
-  and a second tap lets it go. The six throws under them hold only while
-  pressed.
-- **mix** sets each machine's level and brings in the mic or a sample.
-- The page plays with an iPhone's ring switch on silent, and adding it to the
-  home screen installs it as an app.
+- **Bends** lays out the sixteen bend keys as switches, with six throws.
+- **Mix** sets machine levels and brings in the mic or a sample.
+- Plays with an iPhone's ring switch on silent; installs from the home screen.
 
 ## The link is the board
 
-The address bar carries the whole board — every control off stock, the drum
-pattern, the melody — in the `#`, with no server involved. It comes out short by
-default:
-
-```
-https://cmdcolin.github.io/bender/app/#p=AJYBL1p-AgDABwCQAQDoBwF4
-```
-
-The long form spells the same board out, and the app reads and writes both:
-
-```
-https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6
-```
-
-The long form is four times the characters, which is why the bar carries the
-short one, but it's what lets you program a board by hand: a control name from
-[features.md](features.md), a colon, a number, commas between.
-
-```
-#set=chipStarve:0.8,dlyFb:0.6,drumKick:33825
-```
-
-Anything left out is stock, anything out of range is pulled back, and an unknown
-name is dropped. A bar already carrying `#set=` keeps carrying it; type a bare
-`#set=` to switch a tab over. Every preset link in [features.md](features.md) is
-written this way.
+- The `#` in the address carries every control off stock, the drum pattern and
+  the melody. No server is involved.
+- Short form: `#p=AJYBL1p-AgDABwCQAQDoBwF4`
+- Long form, writable by hand, with control names from
+  [features.md](features.md): `#set=chipStarve:0.8,dlyFb:0.6,drumKick:33825`
+- Anything left out is stock, out-of-range values clamp and unknown names drop.
+- Type a bare `#set=` to switch a tab to the long form.
 
 ## Signing in and saved voices
 
-A voice is a whole board under a name. Three things save one, all saving the
-same thing: **save** in the panel's row of verbs, **ctrl+S** (**⌘S** on a Mac),
-and the **saved** popover's name box.
-
-A press saves under the name the popover is already showing — the preset the
-board is standing on, or the voice you last saved or recalled. A name already in
-the list overwrites that voice in place.
+- A voice is a whole board under a name.
+- Save with **save**, **ctrl+S** (**⌘S**) or the **saved** popover.
+- Saving under a name already in the list overwrites that voice.
 
 ![The saved popover, signed out: "Sign in to keep voices under a name — they live on your Google account, so they follow you to another machine. Everything else here works signed out," with a "sign in with Google" button.](img/guide-saved.jpg)
 
-Pressing save with nobody signed in opens **why sign in?**. Sign in from there
-and the board you were looking at saves under the name you gave it; a name your
-account already holds gets a number appended (_dying toy 2_).
-
-Each row in the list: press the name to **recall** it (shift+click to overwrite
-it with the current board); **↗** opens it whole and at once; **⧉** copies a
-link to it, playable signed out; **×** deletes it.
-
-The list lives on your Google account, so a voice named on the laptop is there
-on the phone, and clearing site data doesn't lose it. **sign in** becomes your
-account photo once you're in; press it to sign out. Nothing else in bender needs
-an account — presets, rolls, MIDI, recording and every link work signed out. The
-[privacy page](https://cmdcolin.github.io/bender/privacy/) lists what the
-account holds.
-
-Signed in, the app also mirrors the board you have open onto your account; the
-[home page](https://cmdcolin.github.io/bender/) offers it back under **Continue
-where you left off**. A recording on the tape loop and the mic don't travel with
-it. Opening the app, a demo, or a shared link doesn't touch the mirror until you
-change something.
-
-The home page lists your voices, newest first. **Copy link**, **Rename**
-(refuses a name another voice already has), and **Delete** (asks once) sit under
-each card.
+- Per voice: name to **recall** (shift-click overwrites), **↗** opens it, **⧉**
+  copies a link, **×** deletes.
+- Voices live on your Google account and follow you across machines.
+- Only voices need an account.
+- The [privacy page](https://cmdcolin.github.io/bender/privacy/) lists what the
+  account holds.
+- Signed in, the app mirrors the open board; **Continue where you left off** on
+  the [home page](https://cmdcolin.github.io/bender/) offers it back.
+- The home page lists voices with **Copy link**, **Rename** and **Delete**.
