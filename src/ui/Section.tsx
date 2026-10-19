@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -28,6 +29,7 @@ import {
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
+import { firstLook, markLooked } from './firstLook.ts'
 import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
@@ -805,6 +807,10 @@ export function OpenGroup({
 }) {
   const shownEditors = useStoreValue(bench)
   const el = useRef<HTMLDivElement>(null)
+  const fresh = useMemo(() => firstLook(group.name), [group.name])
+  useEffect(() => {
+    if (fresh) markLooked(group.name)
+  }, [fresh, group.name])
   // A tall map can leave the stage it just opened below the fold, so the panel
   // comes to it — by as little as it takes, which is what scrollIntoPanel is for.
   //
@@ -853,7 +859,11 @@ export function OpenGroup({
     // The id every door on the map points at. The map draws its boxes as
     // links so a keyboard reaches them at all, and a link wants somewhere to
     // land.
-    <div className={styles.section} ref={el} id={groupAnchor(group.name)}>
+    <div
+      className={fresh ? styles.firstLook : styles.section}
+      ref={el}
+      id={groupAnchor(group.name)}
+    >
       <div className={styles.header}>
         <span className={styles.title}>{group.name}</span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}

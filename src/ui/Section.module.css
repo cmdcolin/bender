@@ -3,6 +3,28 @@
   padding-top: var(--space-xs);
 }
 
+/* The first time a browser opens a stage, its drawing's boxes pulse a few
+   times to say they are buttons. */
+.firstLook {
+  composes: section;
+}
+
+.firstLook :global(g[role='button'][aria-pressed='false']) rect[rx='3'] {
+  animation: boxHint 0.9s ease-in-out 0.3s 3;
+}
+
+@keyframes boxHint {
+  50% {
+    stroke: var(--accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .firstLook :global(g[role='button'][aria-pressed='false']) rect[rx='3'] {
+    animation: none;
+  }
+}
+
 .header {
   display: flex;
   align-items: center;
