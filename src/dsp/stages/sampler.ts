@@ -415,5 +415,9 @@ export class Sampler implements Stage {
     this.playing = true
     this.binAt = -1
     this.micTrig.reset()
+    this.wear.reset()
+    this.hissColor.reset()
+    this.envOld = 0
+    this.envLaid = 0
   }
 }

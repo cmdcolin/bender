@@ -1555,9 +1555,16 @@ export class ToyChip implements Stage {
     this.lastOut = 0
     for (const v of this.voices) {
       v.note = 0
+      v.phase = 0
       v.env = 0
       v.held = false
     }
+    this.bassPhase = 0
+    this.chordPhase.fill(0)
+    this.holdPhase = 0
+    this.pwmPhase = 0
+    this.drift.reset()
+    this.slotVal.fill(0)
     this.heldKeys.length = 0
     this.arpUp.length = 0
     this.arpStep = 0
