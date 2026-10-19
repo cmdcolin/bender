@@ -11,6 +11,7 @@
 // close. `createWritable` commits nothing until `close`, so a tab that dies
 // mid-take loses it; `sweepTakes` clears what it leaves.
 
+import { errorText } from '../errorText.ts'
 import { wavHeader } from './wav.ts'
 
 export interface WavSink {
@@ -109,7 +110,7 @@ export function openTake(sr: number): Take {
   let failure = ''
 
   const fail = (e: unknown) => {
-    if (failure === '') failure = e instanceof Error ? e.message : String(e)
+    if (failure === '') failure = errorText(e)
   }
 
   const recheck = () => {

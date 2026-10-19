@@ -851,6 +851,7 @@ test('a boot that fails closes its context and lets the next start retry', async
     await expect(engine.start()).rejects.toThrow('no worklet')
     expect(built).toBe(2)
     expect(closed).toEqual([1, 2])
+    expect(engine.fault.get()).toBe('audio did not start: no worklet')
   } finally {
     vi.unstubAllGlobals()
   }

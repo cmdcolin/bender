@@ -129,21 +129,29 @@ export function MicPatch() {
 /** Opens the microphone or closes it, from the Mic stage's own header. */
 export function MicSwitch() {
   const on = useStoreValue(engine.micOn)
+  const error = useStoreValue(engine.micError)
   return (
-    <Tip
-      text={
-        on
-          ? 'Closes the microphone and takes it off the board.'
-          : 'Opens the microphone as an input to the board.'
-      }
-    >
-      <button
-        className={on ? styles.switchOn : styles.switch}
-        aria-pressed={on}
-        onClick={() => (on ? engine.disableMic() : engine.enableMic())}
+    <>
+      <Tip
+        text={
+          on
+            ? 'Closes the microphone and takes it off the board.'
+            : 'Opens the microphone as an input to the board.'
+        }
       >
-        open mic
-      </button>
-    </Tip>
+        <button
+          className={on ? styles.switchOn : styles.switch}
+          aria-pressed={on}
+          onClick={() => engine.toggleMic()}
+        >
+          open mic
+        </button>
+      </Tip>
+      {error !== '' && (
+        <span className={styles.micError} role="alert">
+          {error}
+        </span>
+      )}
+    </>
   )
 }

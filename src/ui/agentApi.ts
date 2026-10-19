@@ -10,6 +10,7 @@ import { BLOCK, METER_EVERY } from '../dsp/stage.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine, SOUND_FLOOR } from '../engine/engine.ts'
 import { STEM_FILES } from '../engine/params.ts'
+import { errorText } from '../errorText.ts'
 import { semitoneName } from '../notes.ts'
 import {
   asTuneLen,
@@ -77,8 +78,6 @@ function firstSentence(text: string) {
     ? `${sentence.slice(0, ROW_HELP_CHARS).replace(/\s+\S*$/, '')}…`
     : sentence
 }
-
-const message = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 function range(def: SliderDef) {
   if (def.choices) {
@@ -405,7 +404,7 @@ export function createBenderApi() {
           named.add(name)
           applied[name] = show(name, got)
         } catch (e) {
-          failed.push(`${name}: ${message(e)}`)
+          failed.push(`${name}: ${errorText(e)}`)
         }
       }
       land(patch, seconds, named)
@@ -459,7 +458,7 @@ export function createBenderApi() {
         try {
           return parseLane(text)
         } catch (e) {
-          throw new Error(`lane ${lane + 1}: ${message(e)}`, { cause: e })
+          throw new Error(`lane ${lane + 1}: ${errorText(e)}`, { cause: e })
         }
       })
       const len = Math.max(...parsed.map(steps => steps.length))

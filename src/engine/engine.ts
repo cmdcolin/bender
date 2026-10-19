@@ -20,6 +20,7 @@ import { TRACKS } from '../dsp/stages/fourTrack.ts'
 import { YOURS } from '../dsp/stages/roms.ts'
 import { PEAK_BINS, peaksOf } from '../dsp/stages/sampler.ts'
 import workletUrl from '../dsp/worklet.ts?worker&url'
+import { errorText } from '../errorText.ts'
 import {
   EMPTY_HISTORY,
   record,
@@ -70,6 +71,7 @@ import type {
 import type { Take, WavSink } from './takeSink.ts'
 
 export const RETRO_S = 30
+const noop = () => {}
 const DRIFT_TAP_S = 2.5
 const DRIFT_TRAIL = 12
 // Below this a stem is silence, and silence gets no file: a fader left down is
@@ -361,7 +363,14 @@ export class Engine {
   readonly tuneRecord = createStore(false)
   readonly seqRecord = createStore(false)
   readonly running = createStore(false)
+  /** Why the audio engine cannot play: the worklet would not load, or its
+      processor threw. '' while it is fine. */
+  readonly fault = createStore('')
   readonly micOn = createStore(false)
+  /** Why the microphone would not open, or '' while it has not failed. */
+  readonly micError = createStore('')
+  /** Why the last dropped file did not load, or '' when it did. */
+  readonly sampleError = createStore('')
   // The two run lines, separately. The drum machine is its own box: it runs
   // without the demo song, which is what anybody who wanted to write a pattern
   // and hear it always expected of it.
@@ -490,6 +499,7 @@ export class Engine {
   async start() {
     this.booting ??= this.boot().catch((e: unknown) => {
       this.booting = undefined
+      this.fault.set(`audio did not start: ${errorText(e)}`)
       throw e
     })
     await this.booting
@@ -509,11 +519,11 @@ export class Engine {
       window.removeEventListener('keydown', go)
     }
     const go = () => {
-      void this.start().then(() => {
+      this.start().then(() => {
         if (this.running.get()) stop()
-      })
+      }, noop)
     }
-    void this.start()
+    this.start().catch(noop)
     window.addEventListener('pointerdown', go)
     window.addEventListener('keydown', go)
     return stop
@@ -597,6 +607,10 @@ export class Engine {
     }
     const masterGain = ctx.createGain()
     node.connect(masterGain).connect(ctx.destination)
+    node.onprocessorerror = () => {
+      this.fault.set('the audio engine stopped: reload the page')
+      this.running.set(false)
+    }
     this.masterGain = masterGain
     ctx.addEventListener('statechange', () =>
       this.running.set(ctx.state === 'running'),
@@ -967,10 +981,21 @@ export class Engine {
   private micPending: Promise<void> | null = null
 
   enableMic(): Promise<void> {
-    this.micPending ??= this.openMic().finally(() => {
-      this.micPending = null
-    })
+    this.micError.set('')
+    this.micPending ??= this.openMic()
+      .catch((e: unknown) => {
+        this.micError.set(`microphone: ${errorText(e)}`)
+        throw e
+      })
+      .finally(() => {
+        this.micPending = null
+      })
     return this.micPending
+  }
+
+  toggleMic() {
+    if (this.micOn.get()) this.disableMic()
+    else this.enableMic().catch(noop)
   }
 
   private async openMic() {
@@ -997,6 +1022,7 @@ export class Engine {
   }
 
   disableMic() {
+    this.micError.set('')
     this.micSource?.disconnect()
     for (const track of this.micStream?.getTracks() ?? []) track.stop()
     this.micSource = null
@@ -1005,9 +1031,21 @@ export class Engine {
   }
 
   async loadSample(file: File) {
+    this.sampleError.set('')
+    if (!this.ctx) {
+      try {
+        await this.start()
+      } catch {
+        return
+      }
+    }
     this.cancelRoll()
     this.archiveSource.set(null)
-    await this.decodeOnto(await file.arrayBuffer(), file.name)
+    try {
+      await this.decodeOnto(await file.arrayBuffer(), file.name)
+    } catch {
+      this.sampleError.set(`${file.name} would not decode as audio`)
+    }
   }
 
   // Whatever the bytes came from, the tape takes them the same way: folded to
@@ -1212,7 +1250,7 @@ export class Engine {
         rec.full ? `stopped early: out of ${LIMIT_NOUN[rec.full]}` : '',
       )
     } catch (e) {
-      this.recError.set(e instanceof Error ? e.message : String(e))
+      this.recError.set(errorText(e))
     } finally {
       take.end()
     }

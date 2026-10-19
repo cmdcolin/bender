@@ -1,4 +1,5 @@
 import { engine } from '../engine/engine.ts'
+import { useStoreValue } from './ControlsContext.ts'
 import styles from './StartOverlay.module.css'
 
 // What a shared link opens onto: a board already patched and waiting, with
@@ -10,8 +11,14 @@ import styles from './StartOverlay.module.css'
 export function StartOverlay(props: { onClose: () => void }) {
   const { onClose } = props
 
+  const fault = useStoreValue(engine.fault)
+
   const start = async () => {
-    await engine.start()
+    try {
+      await engine.start()
+    } catch {
+      return
+    }
     engine.fadeIn()
     engine.runAll()
     onClose()
@@ -32,6 +39,11 @@ export function StartOverlay(props: { onClose: () => void }) {
       <button className={styles.start} autoFocus onClick={start}>
         ▶ click to start
       </button>
+      {fault !== '' && (
+        <p className={styles.line} role="alert">
+          {fault}
+        </p>
+      )}
       <p className={styles.line}>
         Somebody sent you this board. Nothing plays until you press it — the
         sound comes up over a couple of seconds rather than landing at full

@@ -48,7 +48,7 @@ const play = () => {
     engine.toggleRun()
     return
   }
-  void engine.start()
+  engine.start().catch(() => {})
   if (engine.controls.get().drumLevel === 0) {
     engine.armStep()
     engine.set('drumLevel', 0.8)
@@ -69,6 +69,7 @@ function useFlash() {
 
 export function PocketPage() {
   const running = useStoreValue(engine.running)
+  const fault = useStoreValue(engine.fault)
   const song = useStoreValue(engine.songPlaying)
   const drums = useStoreValue(engine.drumsPlaying)
   const [mode, setMode] = useState(() => touchMode(read(MODE_STORE)))
@@ -292,8 +293,17 @@ export function PocketPage() {
             mix
           </button>
         </div>
-        {flash === '' ? null : <span className={styles.flash}>{flash}</span>}
-        {!running ? (
+        <span
+          aria-live="polite"
+          className={flash === '' ? undefined : styles.flash}
+        >
+          {flash}
+        </span>
+        {fault !== '' ? (
+          <span className={styles.notice} role="alert">
+            {fault}
+          </span>
+        ) : !running ? (
           <span className={styles.notice}>
             tap anywhere to power on. It gets loud, so start with the volume
             low.

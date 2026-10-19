@@ -168,6 +168,8 @@ async function onDrop(e: DragEvent) {
 
 export function App(props: { openedFromLink?: boolean }) {
   const running = useStoreValue(engine.running)
+  const fault = useStoreValue(engine.fault)
+  const sampleError = useStoreValue(engine.sampleError)
   const remapping = useStoreValue(remapOpen)
   const coarse = useCoarse()
   // Which stage's controls the panel is showing. The map is the way in — every
@@ -332,14 +334,22 @@ export function App(props: { openedFromLink?: boolean }) {
             nothing on it is the first screen of a phone otherwise. */}
         <div className={styles.scope}>
           <Scope />
-          {!running && (
+          {fault !== '' ? (
+            <p className={styles.hint} role="alert">
+              <b className={styles.warn}>{fault}</b>
+            </p>
+          ) : !running ? (
             <p className={styles.hint}>
               <b className={styles.warn}>
                 click anywhere to power on — loud, harsh noise ahead, start with
                 your volume low.
               </b>
             </p>
-          )}
+          ) : sampleError !== '' ? (
+            <p className={styles.hint} role="alert">
+              <b className={styles.warn}>{sampleError}</b>
+            </p>
+          ) : null}
         </div>
         <PinnedStrip />
         <Instruments seconds={morphSeconds} onOpen={show} />

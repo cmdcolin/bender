@@ -42,3 +42,8 @@
 .switchOn {
   composes: chipOn from './button.module.css';
 }
+
+.micError {
+  font-size: var(--fs-xs);
+  color: var(--accent2);
+}

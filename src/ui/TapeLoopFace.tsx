@@ -20,6 +20,8 @@ export function TapeLoopFace({
   onClose?: () => void
 }) {
   const micOn = useStoreValue(engine.micOn)
+  const micError = useStoreValue(engine.micError)
+  const sampleError = useStoreValue(engine.sampleError)
   const sampleName = useStoreValue(engine.sampleName)
   const archiveStep = useStoreValue(engine.archiveStep)
   const archiveSource = useStoreValue(engine.archiveSource)
@@ -59,9 +61,7 @@ export function TapeLoopFace({
                   legend="mic"
                   red
                   latched={micOn}
-                  onClick={() =>
-                    micOn ? engine.disableMic() : engine.enableMic()
-                  }
+                  onClick={() => engine.toggleMic()}
                 />
               </Tip>
             </>
@@ -98,6 +98,11 @@ export function TapeLoopFace({
           )}
         </SampleReel>
         {archiveStep && <p className={styles.rolling}>{archiveStep}</p>}
+        {(micError || sampleError) && (
+          <p className={styles.rolling} role="alert">
+            {micError || sampleError}
+          </p>
+        )}
       </div>
     </Faceplate>
   )
