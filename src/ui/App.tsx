@@ -331,32 +331,34 @@ export function App(props: { openedFromLink?: boolean }) {
     >
       <main className={styles.left}>
         {/* Wrapped so the narrow layout can send it to the end: a trace with
-            nothing on it is the first screen of a phone otherwise. */}
-        <div className={styles.scope}>
-          <Scope />
-          {fault !== '' ? (
-            <p className={styles.hint} role="alert">
-              <b className={styles.warn}>{fault}</b>
-            </p>
-          ) : !running ? (
-            <p className={styles.hint}>
-              <b className={styles.warn}>
-                click anywhere to power on — loud, harsh noise ahead, start with
-                your volume low.
-              </b>
-            </p>
-          ) : sampleError !== '' ? (
-            <p className={styles.hint} role="alert">
-              <b className={styles.warn}>{sampleError}</b>
-            </p>
-          ) : null}
+            nothing on it is the first screen of a phone otherwise. The
+            recorder sits beside it: it taps the session rather than playing in
+            it, so it has no place among the instruments. */}
+        <div className={styles.top}>
+          <div className={styles.scope}>
+            <Scope />
+            {fault !== '' ? (
+              <p className={styles.hint} role="alert">
+                <b className={styles.warn}>{fault}</b>
+              </p>
+            ) : !running ? (
+              <p className={styles.hint}>
+                <b className={styles.warn}>
+                  click anywhere to power on — loud, harsh noise ahead, start
+                  with your volume low.
+                </b>
+              </p>
+            ) : sampleError !== '' ? (
+              <p className={styles.hint} role="alert">
+                <b className={styles.warn}>{sampleError}</b>
+              </p>
+            ) : null}
+          </div>
+          <Recorder />
         </div>
         <PinnedStrip />
         <Instruments seconds={morphSeconds} onOpen={show} />
         <BodyPad onOpen={show} />
-        <div className={styles.studio}>
-          <Recorder />
-        </div>
       </main>
 
       <aside className={styles.panel} aria-label="the board">

@@ -1,7 +1,7 @@
 .box {
   composes: box from './App.module.css';
-  flex: 1 1 240px;
-  max-width: 280px;
+  flex: none;
+  width: 240px;
   align-items: center;
 }
 

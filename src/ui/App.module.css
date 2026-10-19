@@ -16,8 +16,28 @@
   overflow-y: auto;
 }
 
-.scope {
+.top {
   flex: none;
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-md);
+}
+
+/* The trace fills the row the recorder sets, rather than sitting at its own
+   height beside it. */
+@media (min-width: 761px) {
+  .top .scope canvas {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+  }
+}
+
+.scope {
+  flex: 1;
+  min-width: 0;
   position: relative;
 }
 
@@ -198,14 +218,7 @@
   position: relative;
 }
 
-/* The studio: the recorder's faceplate. The tape loop's face composes `.box`
-   too. */
-.studio {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-}
-
+/* The recorder's faceplate. The tape loop's face composes `.box` too. */
 .box {
   container-type: inline-size;
   position: relative;
@@ -323,8 +336,10 @@
     overflow: visible;
     padding-top: 0;
   }
-  .scope {
+  .top {
     order: 1;
+    flex-direction: column-reverse;
+    align-items: stretch;
   }
   /* overflow back to visible on both columns, or each would be its own scroll
      container and the strips would stick to a box that never moves. */
