@@ -93,19 +93,27 @@
   container-type: inline-size;
 }
 
-/* A narrow deck says only whose gate the jumper is on, so its caps fit one row. */
-.gateShort {
-  display: none;
+/* The jumper's cable: wire in the button's text colour, the name set on it. */
+.gateCable {
+  flex: none;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
 }
 
-@container (max-width: 520px) {
-  .gateLong {
-    display: none;
-  }
+.gateCable rect,
+.gateCable text {
+  stroke: none;
+}
 
-  .gateShort {
-    display: inline;
-  }
+.gateCable path {
+  fill: none;
+}
+
+.gateCable text {
+  font-size: 9px;
+  font-weight: 700;
 }
 
 /* The bed the keys are sunk into. touch-action keeps a finger dragged across it

@@ -63,6 +63,44 @@ const ROOMY_DECK = 560
 
 const GATE_SOURCE = 'Plinky'
 
+const CABLE_W = 76
+
+/** The jumper as a patch cable tagged with where it comes from: plug, wire,
+    the source's name, wire, plug. Cut, the far plug hangs free of its wire. */
+function GateCable({ cut }: { cut: boolean }) {
+  const mid = CABLE_W / 2
+  return (
+    <svg
+      className={styles.gateCable}
+      viewBox={`0 0 ${CABLE_W} 14`}
+      width={CABLE_W}
+      height={14}
+      aria-hidden="true"
+    >
+      <rect x="0" y="4" width="4" height="6" rx="1" />
+      <path d={`M4 7 H${mid - 21}`} />
+      <text x={mid} y="10" textAnchor="middle">
+        {cut ? 'own keys' : GATE_SOURCE.toLowerCase()}
+      </text>
+      <path
+        d={
+          cut
+            ? `M${mid + 21} 7 Q${CABLE_W - 12} 7 ${CABLE_W - 9} 3`
+            : `M${mid + 21} 7 H${CABLE_W - 4}`
+        }
+      />
+      <rect
+        x={CABLE_W - 4}
+        y={cut ? 0 : 4}
+        width="4"
+        height="6"
+        rx="1"
+        transform={cut ? `rotate(-25 ${CABLE_W - 2} 3)` : undefined}
+      />
+    </svg>
+  )
+}
+
 /** The jumper off the toy's gate line, which every bed but the toy's carries. Same
     switch, same two states, and the words are the caller's because the machine
     on the other end of the wire is what they are about. The label names the
@@ -105,10 +143,7 @@ export function GateJumper({
         }}
       >
         <span className={styles.gateLamp} data-lamp={lamp} aria-hidden="true" />
-        <span className={styles.gateLong}>
-          {cut ? 'own keys only' : `with ${GATE_SOURCE}`}
-        </span>
-        <span className={styles.gateShort}>{cut ? 'own' : 'toy'}</span>
+        <GateCable cut={cut} />
       </button>
     </Tip>
   )
