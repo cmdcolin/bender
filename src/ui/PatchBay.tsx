@@ -238,7 +238,7 @@ export function PatchBay() {
           })}
         </svg>
       </div>
-      <BoxRows keys={open && [open.src, open.dest, open.depth]} />
+      <BoxRows inOrder keys={open && [open.src, open.dest, open.depth]} />
       {!open && (
         <span className={styles.spare}>
           Press a wire to open its from, to and depth.

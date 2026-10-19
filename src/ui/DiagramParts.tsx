@@ -13,6 +13,7 @@ import {
   type useSelectedBox,
 } from './diagram.ts'
 import { ControlSlider } from './Slider.tsx'
+import { slidersFirst } from './slidersFirst.ts'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -402,6 +403,7 @@ export function BoxRows({
   verbs,
   hint,
   under,
+  inOrder,
 }: {
   keys: readonly ControlKey[] | undefined
   note?: string
@@ -411,12 +413,17 @@ export function BoxRows({
   hint?: string
   /** An editor drawn after the last shown row of `keys`. */
   under?: { keys: readonly ControlKey[]; node: ReactNode }
+  /** Keep `keys` as given, for rows that read in sequence like from, to, depth. */
+  inOrder?: boolean
 }) {
   const shown = useBoardValue(c =>
     (keys ?? []).filter(k => rowShown(k, c)).join(','),
   ).split(',')
   if (!keys) return hint ? <p className={styles.hint}>{hint}</p> : null
-  const rows = keys.filter(key => shown.includes(key))
+  const defs = keys.map(sliderFor)
+  const rows = (inOrder ? defs : slidersFirst(defs))
+    .map(d => d.key)
+    .filter(key => shown.includes(key))
   const last = rows.findLast(key => under?.keys.includes(key))
   return (
     <div className={styles.rows}>

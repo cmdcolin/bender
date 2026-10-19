@@ -28,6 +28,16 @@ test('the chip opens on the modulator, and each box swaps in its own rows', () =
   expect(screen.queryByText('Data line')).toBeNull()
 })
 
+test('a box lists its sliders before its buttons and dropdowns', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<FmChipDiagram verbs={() => null} />)
+  fireEvent.click(box('key'))
+  const before = (a: string, b: string) =>
+    screen.getByText(a).compareDocumentPosition(screen.getByText(b)) &
+    Node.DOCUMENT_POSITION_FOLLOWING
+  expect(before('Note length', 'Kit voice that plays this chip')).toBeTruthy()
+})
+
 const accent = (name: string) =>
   [box(name).querySelector('rect')!, box(name).querySelector('text')!].map(e =>
     /On/.test(e.getAttribute('class') ?? ''),
