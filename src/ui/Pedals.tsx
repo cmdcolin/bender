@@ -63,6 +63,8 @@ const FACE: Record<string, Face> = {
 
 const cssVars = (vars: Record<`--${string}`, string>): CSSProperties => vars
 
+const ADDED_MIX = 0.5
+
 const show = (shown: readonly string[], pedal: string) =>
   setBench({ ...bench.get(), pedals: [...shown, pedal] })
 
@@ -108,6 +110,17 @@ const KIND: Record<string, string> = {
   Ember: 'tube amp',
 }
 
+// The mix is the last slider on a pedal's face. A pedal added with its mix at 0
+// would sit on the bench bypassed.
+function bringUp(stage: string) {
+  show(bench.get().pedals, stage)
+  const mix = FACE[stage]!.sliders.at(-1)!
+  if (engine.controls.get()[mix] === 0) {
+    engine.armStep()
+    engine.set(mix, ADDED_MIX)
+  }
+}
+
 export function AddPedal() {
   const { pedals: shown } = useStoreValue(bench)
   const choices = useRunOrder()
@@ -118,7 +131,7 @@ export function AddPedal() {
       className={styles.add}
       text="Add pedal"
       choices={choices}
-      onPick={stage => show(bench.get().pedals, stage)}
+      onPick={bringUp}
     />
   )
 }

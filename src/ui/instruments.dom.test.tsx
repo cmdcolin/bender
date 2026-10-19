@@ -228,7 +228,7 @@ test('no pedal sits on the bench until it is added from the menu', () => {
   expect(group('ember')).toBeNull()
 })
 
-test('Add pedal names each pedal with what it is and benches the pick', () => {
+test('Add pedal names each pedal with what it is, benches the pick and brings its mix up', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(screen.getByRole('button', { name: /^Add pedal/ }))
   expect(screen.getAllByRole('menuitem').map(item => item.textContent)).toEqual(
@@ -245,7 +245,7 @@ test('Add pedal names each pedal with what it is and benches the pick', () => {
   expect(bench.get().pedals).toEqual(['Ember'])
   expect(group('ember')).not.toBeNull()
   expect(shownOn(engine.controls.get()).has('Ember')).toBe(true)
-  expect(engine.controls.get().ampMix).toBe(DEFAULT_CONTROLS.ampMix)
+  expect(engine.controls.get().ampMix).toBe(0.5)
   expect(screen.queryByRole('menuitem', { name: /^Ember/ })).toBeNull()
 })
 
