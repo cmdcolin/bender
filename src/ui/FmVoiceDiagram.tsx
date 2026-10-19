@@ -40,19 +40,25 @@ const INDEX_BOOST = 4
 const WIDTH = 420
 const LEAD = 48
 const TAIL = 40
+const GAP = 90
+const OP_W = boxWidth('modulator')
+const SPAN_W = LEAD + 2 * OP_W + GAP + TAIL
+const X0 = Math.round((WIDTH - SPAN_W) / 2)
 const LOOP_Y = 14
 const CHIP_Y = 28
-const CHIP_H = boxHeight('a\nb\nc')
+const CHIP_H = boxHeight('')
 const MID = CHIP_Y + CHIP_H / 2
 const LFO_Y = CHIP_Y + CHIP_H + 18
 const LFO_H = boxHeight('')
 const HEIGHT = LFO_Y + LFO_H + 4
 
+/** Where the operators sit across the drawing, for the cone that leads to them. */
+export const OPERATORS_SPAN = { x: X0, w: SPAN_W }
+
 interface Operator {
   name: string
   x: number
   w: number
-  notes: [text: string, moved: boolean][]
   touched: boolean
   help: string
 }
@@ -60,8 +66,6 @@ interface Operator {
 type Pick = ReturnType<typeof useSelectedBox>
 
 function OperatorChip({ op, pick }: { op: Operator; pick: Pick }) {
-  const top = CHIP_Y + (CHIP_H - LINE_H * (op.notes.length + 1)) / 2
-  const line = (i: number) => top + LINE_H * (i + 1) - 3
   return (
     <Pressable
       name={`zoomed ${op.name}`}
@@ -79,23 +83,12 @@ function OperatorChip({ op, pick }: { op: Operator; pick: Pick }) {
       />
       <text
         x={op.x + op.w / 2}
-        y={line(0)}
+        y={CHIP_Y + (CHIP_H + LINE_H) / 2 - 3}
         textAnchor="middle"
         className={op.touched ? styles.nameOn : styles.name}
       >
         {op.name}
       </text>
-      {op.notes.map(([text, moved], i) => (
-        <text
-          key={text}
-          x={op.x + op.w / 2}
-          y={line(i + 1)}
-          textAnchor="middle"
-          className={moved ? styles.noteOn : styles.note}
-        >
-          {text}
-        </text>
-      ))}
     </Pressable>
   )
 }
@@ -153,23 +146,17 @@ export function FmVoiceDiagram({ pick }: { pick: Pick }) {
   const indexBoost = boosted && +(INDEX_BOOST ** (bright - 1)).toFixed(1) > 1
   const feedbackBoost = boosted && feedback > FEEDBACK_MAX
 
-  const w = boxWidth('modulator')
-  const gap = WIDTH - LEAD - TAIL - 2 * w
-  const note = (text: string, key: Key) =>
-    [text, read(key) > 0] as [string, boolean]
   const mod: Operator = {
     name: 'modulator',
-    x: LEAD,
-    w,
-    notes: [note('ratio', 'fmModRatio'), note('decay', 'fmModDecay')],
+    x: X0 + LEAD,
+    w: OP_W,
     touched: r.touched('fmBright', 'fmFeedback', 'fmModRatio', 'fmModDecay'),
     help: 'The operator that bends the carrier. It can feed back into itself, and its ratio and decay set the tone.',
   }
   const car: Operator = {
     name: 'carrier',
-    x: LEAD + w + gap,
-    w,
-    notes: [note('ratio', 'fmCarRatio')],
+    x: mod.x + OP_W + GAP,
+    w: OP_W,
     touched: r.touched('fmCarRatio', 'fmLfo'),
     help: 'The operator you hear. Its ratio moves the note.',
   }
@@ -187,8 +174,8 @@ export function FmVoiceDiagram({ pick }: { pick: Pick }) {
       <Diagram width={WIDTH} height={HEIGHT} label="FM operators">
         {arrow => (
           <g opacity={boosted ? 1 : 0.45}>
-            <Wire arrow={arrow} d={`M0 ${MID} H${mod.x}`} />
-            <text x={2} y={MID - 5} className={styles.note}>
+            <Wire arrow={arrow} d={`M${X0} ${MID} H${mod.x}`} />
+            <text x={X0 + 2} y={MID - 5} className={styles.note}>
               patch
             </text>
             <Wire
@@ -218,11 +205,11 @@ export function FmVoiceDiagram({ pick }: { pick: Pick }) {
             )}
             <Wire
               arrow={arrow}
-              d={`M${car.x + car.w} ${MID} H${WIDTH - 2}`}
+              d={`M${car.x + car.w} ${MID} H${X0 + SPAN_W - 2}`}
               look={flow}
             />
             <text
-              x={WIDTH - 2}
+              x={X0 + SPAN_W - 2}
               y={MID + 12}
               textAnchor="end"
               className={styles.note}

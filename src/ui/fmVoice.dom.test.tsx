@@ -58,8 +58,6 @@ test('the drawing names its parts and carries no value', () => {
       'carrier',
       'feedback',
       'brightness',
-      'ratio',
-      'decay',
       'LFO',
     ]),
   )

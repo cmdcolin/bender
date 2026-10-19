@@ -10,7 +10,7 @@ import {
   type BoxSpec,
 } from './diagram.ts'
 import { BoxRows, BoxView, Diagram, Wire } from './DiagramParts.tsx'
-import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
+import { FmVoiceDiagram, OPERATORS_SPAN } from './FmVoiceDiagram.tsx'
 import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
 import { CONE_H, ZoomCone } from './ZoomCone.tsx'
 
@@ -188,9 +188,9 @@ export function FmChipDiagram({ verbs }: { verbs: Verbs }) {
                 {zoomed && (
                   <ZoomCone
                     from={{ x: mod.x, w: span }}
+                    to={OPERATORS_SPAN}
                     top={TOP + ROW + BOX_H}
                     bottom={feet + CONE_H}
-                    width={WIDTH}
                     title="zoom: operators"
                   />
                 )}
