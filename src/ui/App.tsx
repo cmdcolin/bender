@@ -39,6 +39,7 @@ import {
   setMorph,
   type MorphSeconds,
 } from './morph.ts'
+import { PinnedStrip } from './PinnedStrip.tsx'
 import { Presets } from './PresetRow.tsx'
 import { mutate, presetNameFor } from './presets/index.ts'
 import { RecorderMore } from './RecorderMore.tsx'
@@ -350,6 +351,7 @@ export function App(props: { openedFromLink?: boolean }) {
             </p>
           )}
         </div>
+        <PinnedStrip />
         <Instruments seconds={morphSeconds} onOpen={show} />
         <BodyPad onOpen={show} />
         <div className={styles.studio}>

@@ -6,6 +6,47 @@
   align-items: center;
   gap: var(--space-sm);
   margin: var(--space-2xs) 0;
+  position: relative;
+}
+
+/* In the gutter left of the label, so it costs the track no width. */
+.pin {
+  position: absolute;
+  left: calc(-1 * var(--space-lg));
+  top: 0;
+  width: var(--space-lg);
+  height: 100%;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--fg4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  visibility: hidden;
+}
+
+.pin:hover {
+  color: var(--accent);
+}
+
+.pinOn {
+  composes: pin;
+  color: var(--accent);
+  visibility: visible;
+}
+
+.row:hover .pin,
+.row:focus-within .pin,
+.rowSplit:hover .pin,
+.rowSplit:focus-within .pin {
+  visibility: visible;
+}
+
+@media (hover: none) {
+  .pin {
+    visibility: visible;
+  }
 }
 
 /* The name is also the door to the row's help: a click pins the bubble open,

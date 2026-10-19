@@ -29,6 +29,7 @@ import {
 } from './ControlsContext.ts'
 import { useFineTrack } from './fineTrack.ts'
 import { midi } from './midi.ts'
+import { pins, togglePin } from './pins.ts'
 import {
   formatValue,
   fromPos,
@@ -91,6 +92,28 @@ function Bind({ def }: { def: SliderDef }) {
         </button>
       </Tip>
     </>
+  )
+}
+
+function Pin({ def, label }: { def: SliderDef; label: string }) {
+  const pinned = useStoreSelect(pins, p => p.includes(def.key))
+  return (
+    <Tip
+      text={
+        pinned
+          ? 'Pinned beside the instruments. Press to take it off the strip.'
+          : 'Pins this control to a strip beside the instruments, so it stays in reach while you play.'
+      }
+    >
+      <button
+        className={pinned ? styles.pinOn : styles.pin}
+        aria-label={pinned ? `unpin ${label}` : `pin ${label}`}
+        aria-pressed={pinned}
+        onClick={() => togglePin(def.key)}
+      >
+        {pinned ? '★' : '☆'}
+      </button>
+    </Tip>
   )
 }
 
@@ -520,6 +543,7 @@ export function ControlSlider({
               />
             )}
             <Bind def={def} />
+            <Pin def={def} label={label} />
           </span>
         </div>
         {def.lane === undefined || !wireOpen ? null : (
@@ -742,6 +766,7 @@ export function ControlSlider({
             />
           )}
           <Bind def={def} />
+          <Pin def={def} label={label} />
         </span>
       </div>
       {def.lane === undefined || !wireOpen ? null : (

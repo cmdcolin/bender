@@ -601,6 +601,23 @@ test("a face's name plate opens its stage in the panel", () => {
   expect(close()).not.toBeNull()
 })
 
+test('a pinned control plays from the strip beside the instruments', () => {
+  render(<App />)
+  fireEvent.click(document.querySelector('a[data-door="Mix bus"]')!)
+  const strip = () => screen.queryByRole('region', { name: 'pinned controls' })
+  expect(strip()).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'pin Bus drive' }))
+  const knob = within(strip()!).getByRole('slider', {
+    name: 'Mix bus · Bus drive',
+  })
+  fireEvent.change(knob, { target: { value: '1000' } })
+  expect(engine.controls.get().mixDrive).not.toBe(DEFAULT_CONTROLS.mixDrive)
+  fireEvent.click(
+    within(strip()!).getByRole('button', { name: 'unpin Mix bus · Bus drive' }),
+  )
+  expect(strip()).toBeNull()
+})
+
 test('the map folds to a row of stages while one is open', () => {
   render(<App />)
   const map = () =>

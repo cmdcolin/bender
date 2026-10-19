@@ -1,0 +1,20 @@
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--surface-raised);
+  border: 1px solid var(--case-edge);
+  border-radius: var(--ctl-radius);
+}
+
+.title {
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+}
+
+.rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  column-gap: calc(var(--space-xl) + var(--space-lg));
+}
