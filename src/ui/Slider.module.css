@@ -161,6 +161,32 @@
   cursor: default;
 }
 
+/* The offer keeps its place but shows only on the row a pointer or the focus
+   is on, so a panel of laned rows is not a column of identical buttons. A
+   patched row's chip always shows, and a screen with no hover shows them all. */
+.mod,
+.modFull {
+  visibility: hidden;
+}
+
+.row:hover .mod,
+.row:hover .modFull,
+.row:focus-within .mod,
+.row:focus-within .modFull,
+.rowSplit:hover .mod,
+.rowSplit:hover .modFull,
+.rowSplit:focus-within .mod,
+.rowSplit:focus-within .modFull {
+  visibility: visible;
+}
+
+@media (hover: none) {
+  .mod,
+  .modFull {
+    visibility: visible;
+  }
+}
+
 /* How many presses the reading is off, while a count is going. It only appears
    from the second press — the one that first says a speed — so the button's own
    word never moves, and the number beside it is the answer to "did that press

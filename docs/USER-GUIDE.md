@@ -53,8 +53,8 @@ rate** sets its speed, the auto bass-chord plays under it, the clock bend and a
 brownout affect it the same way, and **Kit voice that plays this…** can clock it
 from the drum machine instead of the crystal.
 
-The **piano roll** draws that memory. It starts hidden; **show piano roll**
-on the Toy keyboard panel turns it on: one row per pitch, one column per step.
+The **piano roll** draws that memory. It starts hidden; **show piano roll** on
+the Toy keyboard panel turns it on: one row per pitch, one column per step.
 Click a cell to place a note, drag to draw a run, click again to remove it,
 shift-click to hold the previous step's note. A held note draws as one bar
 across its steps. Two octaves show at a time, with arrows to move the window.
@@ -385,10 +385,11 @@ under **melody** aims it at the mono synth, the FM chip or the home keyboard.
 - **Draw:** a click puts a note on a step, a drag draws a line, and a click on a
   note takes it off. Shift-click holds the note before. A drawn note turns
   **Melody memory** on.
-- **Record:** **rec** on the mono, FM or home keyboard bed aims the memory at that
-  machine, turns it on and runs the song. Each key played on that bed then writes
-  the step the counter is on, and a key held across steps becomes one long note.
-  **record** on the roll does the same for the machine already chosen.
+- **Record:** **rec** on the mono, FM or home keyboard bed aims the memory at
+  that machine, turns it on and runs the song. Each key played on that bed then
+  writes the step the counter is on, and a key held across steps becomes one
+  long note. **record** on the roll does the same for the machine already
+  chosen.
 - **Play:** the memory plays while the song runs. **loop** on the roll sets its
   length, and **Memory rate** sets the steps a second.
 - **Supply:** the counter runs off the toy's rail. A sagging rail slows it, and
@@ -529,12 +530,12 @@ filter in its loop, a spring and a crackling filter.
 
 ![The patch bay: three of four LFO wires patched (LFO to toy level, envelope to FM level, drum hit to comb pitch), each with a depth slider and a + mod button.](img/guide-patchbay.jpg)
 
-Every control a wire can land on carries a **+ mod** button beside its readout:
-the press solders the first spare LFO wire onto that control and folds the wire
-out under the row, tagged with what's driving it and how fast (`∿ LFO 1.0Hz`).
-Press the chip to fold it back, **× unplug** to remove it — the next **+ mod**
-restores the same patch. It's an ordinary bay wire throughout, saved and shared
-like the rest.
+Every control a wire can land on shows a **+ mod** button beside its readout
+while you point at its row, and always on a touch screen. The press solders the
+first spare LFO wire onto that control and folds the wire out under the row,
+tagged with what's driving it and how fast (`∿ LFO 1.0Hz`). Press the chip to
+fold it back, **× unplug** to remove it — the next **+ mod** restores the same
+patch. It's an ordinary bay wire throughout, saved and shared like the rest.
 
 **Hunt** tries six boards, plays each a second and a half, and keeps whichever
 rides closest to the limiter without burying it. None of the candidates it
