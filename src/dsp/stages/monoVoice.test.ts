@@ -186,4 +186,18 @@ describe('MonoVoice', () => {
       expect(x.every(v => Number.isFinite(v) && Math.abs(v) <= 1)).toBe(true)
     }
   })
+
+  it('plays again after panic clears a NaN out of its oscillator and sag state', () => {
+    const v = new MonoVoice(SR)
+    Object.assign(v.patch, OPEN)
+    for (const field of ['sagEnv', 'v1', 'v2', 'pinkish'])
+      Reflect.set(v, field, NaN)
+    Reflect.set(Reflect.get(v, 'osc0'), 'phase', NaN)
+    v.panic()
+    v.noteOn(45)
+    const out = new Float32Array(SR / 4)
+    v.render(out, 0, out.length)
+    expect(out.every(Number.isFinite)).toBe(true)
+    expect(out.some(x => Math.abs(x) > 0.01)).toBe(true)
+  })
 })

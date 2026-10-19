@@ -175,6 +175,14 @@ class Osc {
   since = 0
   private held = 0
 
+  reset() {
+    this.phase = 0
+    this.dt = 0
+    this.wrapped = false
+    this.since = 0
+    this.held = 0
+  }
+
   advance(dt: number) {
     this.dt = dt
     this.phase += dt
@@ -594,5 +602,11 @@ export class MonoVoice {
     this.down.reset()
     this.dc.reset()
     this.last = 0
+    this.pinkish = 0
+    this.sagEnv = 0
+    this.v1 = 0
+    this.v2 = 0
+    for (const osc of [this.osc0, this.osc1, this.osc2]) osc.reset()
+    for (const walk of [...this.drunk, ...this.heatWalk]) walk.reset()
   }
 }
