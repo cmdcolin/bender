@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { engine } from '../engine/engine.ts'
 import { isPedal } from '../pedals.ts'
 import { GROUPS, sliderFor } from './controls/index.ts'
-import { useControlValue } from './ControlsContext.ts'
+import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import styles from './DeviceVerbs.module.css'
 import { Menu } from './Menu.tsx'
 import { menuItem } from './menuItems.ts'
@@ -49,8 +49,28 @@ export const SHUFFLE = (
   </svg>
 )
 
-function Mute({ stage, control }: { stage: string; control: ControlKey }) {
-  const muted = useControlValue(control) > 0.5
+// A Level dragged this close to zero on its way down is no Level to come back to.
+const AUDIBLE_LEVEL = 0.05
+
+function Mute({
+  stage,
+  control,
+  level,
+}: {
+  stage: string
+  control: ControlKey
+  level?: ControlKey
+}) {
+  const switched = useControlValue(control) > 0.5
+  const levelAt = useBoardValue(c => (level ? c[level] : 1))
+  const [lastUp, setLastUp] = useState(
+    levelAt > AUDIBLE_LEVEL
+      ? levelAt
+      : (level && sliderFor(level).normal?.[1]) || 1,
+  )
+  if (levelAt > AUDIBLE_LEVEL && levelAt !== lastUp) setLastUp(levelAt)
+  const atZero = levelAt <= 0
+  const muted = switched || atZero
   const pedal = isPedal(stage)
   return (
     <Tip
@@ -59,9 +79,11 @@ function Mute({ stage, control }: { stage: string; control: ControlKey }) {
           ? muted
             ? `${stage} is bypassed. Switching it back on brings the sound you left.`
             : `Takes ${stage} out of the path and leaves its knobs where they are.`
-          : muted
-            ? `${stage} is muted. Unmute brings it back at the Level you left.`
-            : `Silences ${stage} and leaves its Level where it is.`
+          : atZero
+            ? `${stage}’s Level is at 0. Unmute brings it back up.`
+            : muted
+              ? `${stage} is muted. Unmute brings it back at the Level you left.`
+              : `Silences ${stage} and leaves its Level where it is.`
       }
     >
       <button
@@ -70,7 +92,11 @@ function Mute({ stage, control }: { stage: string; control: ControlKey }) {
         aria-pressed={muted}
         onClick={() => {
           engine.armStep()
-          engine.set(control, muted ? 0 : 1)
+          if (!muted) engine.set(control, 1)
+          else {
+            if (switched) engine.set(control, 0)
+            if (atZero && level) engine.set(level, lastUp)
+          }
         }}
       >
         {pedal ? POWER : SPEAKER(muted)}
@@ -89,7 +115,7 @@ function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
   const down = atZero ? `${stage}’s Level is at 0.` : `${stage} is muted.`
   const part = stage === 'Toy drums' ? 'hits' : 'notes'
   const text = where.includes(stage)
-    ? `${stage}’s Level is at 0 and its meter still reads sound. Mute silences it.`
+    ? `${stage}’s Level is at 0 and its meter still reads sound.`
     : [
         down,
         ...players.map(
@@ -241,7 +267,7 @@ export function DeviceVerbs({
   return (
     <>
       {level && <StillHeard stage={stage} level={level} />}
-      {mute && !noMute && <Mute stage={stage} control={mute} />}
+      {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !noLevel && <FaceLevel control={level} />}
       <Rolls group={group} seconds={seconds} />
       {onClose && (

@@ -139,6 +139,22 @@ test('mute silences one machine and keeps its level, and a roll leaves it muted'
   expect(engine.controls.get().drumMute).toBe(0)
 })
 
+test('a Level at zero lights mute, and unmute brings the Level back', () => {
+  render(<Instruments seconds={0} onOpen={() => {}} />)
+  fireEvent.click(allMode())
+  const level = screen.getAllByRole('slider', { name: 'Level' })[1]!
+  const mute = screen.getByRole('button', { name: 'mute Toy drums' })
+  fireEvent.change(level, { target: { value: '400' } })
+  const up = engine.controls.get().drumLevel
+  expect(up).not.toBe(DEFAULT_CONTROLS.drumLevel)
+  fireEvent.change(level, { target: { value: '0' } })
+  expect(mute.getAttribute('aria-pressed')).toBe('true')
+  expect(engine.controls.get().drumMute).toBe(0)
+  fireEvent.click(mute)
+  expect(engine.controls.get().drumLevel).toBe(up)
+  expect(mute.getAttribute('aria-pressed')).toBe('false')
+})
+
 test('each machine has a Level slider that moves its own level', () => {
   render(<Instruments seconds={0} onOpen={() => {}} />)
   fireEvent.click(allMode())
