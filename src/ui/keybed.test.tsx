@@ -4,6 +4,7 @@ import { expect, test, vi } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
+import { DrumKit } from './DrumKit.tsx'
 import { FmKeys } from './FmKeys.tsx'
 import { GateBench } from './GateCables.tsx'
 import { Keys } from './Keys.tsx'
@@ -332,6 +333,46 @@ test('dragging a cable end off its jack pulls the plug, and dragging a jack to i
   expect(engine.controls.get().fmKeyGate).toBe(0)
   drag(output, document.body)
   expect(engine.controls.get().fmKeyGate).toBe(1)
+})
+
+test('a TRIG cable patches a kit voice into a keyboard, and moves or pulls with a drag', async () => {
+  await new Promise(r => setTimeout(r, 0))
+  const { container } = render(
+    <GateBench>
+      <Keys />
+      <FmKeys />
+      <DrumKit />
+    </GateBench>,
+  )
+  act(() => {
+    engine.set('fmStruck', 0)
+    engine.set('trigToKeys', 0)
+  })
+  const trig = (name: string) =>
+    bed(name).getByRole('button', { name: 'kit trigger' })
+  const voice = (n: number) =>
+    container.querySelector<HTMLElement>(`[data-trig-voice="${n}"]`)!
+  const drag = (from: Element, to: Element) => {
+    fireEvent.pointerDown(from, { button: 0, clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
+    document.elementFromPoint = () => to
+    fireEvent.pointerUp(window, { clientX: 40, clientY: 40 })
+  }
+
+  fireEvent.click(trig('glint'))
+  expect(engine.controls.get().fmStruck).toBe(9)
+  fireEvent.click(trig('glint'))
+  expect(engine.controls.get().fmStruck).toBe(0)
+
+  drag(voice(2), trig('glint'))
+  expect(engine.controls.get().fmStruck).toBe(2)
+  drag(trig('glint'), trig('plinky'))
+  expect(engine.controls.get().fmStruck).toBe(0)
+  expect(engine.controls.get().trigToKeys).toBe(2)
+  drag(trig('plinky'), document.body)
+  expect(engine.controls.get().trigToKeys).toBe(0)
+  drag(trig('glint'), voice(1))
+  expect(engine.controls.get().fmStruck).toBe(1)
 })
 
 test('an effect button on the toy runs while held and lets go on release', () => {

@@ -1,5 +1,5 @@
 import { engine } from '../engine/engine.ts'
-import { GateJumper } from './GateCables.tsx'
+import { GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './PcmKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -29,13 +29,16 @@ export function PcmKeys({
         </span>
       }
       jack={
-        <GateJumper
-          taker="pcm"
-          control="pcmKeyGate"
-          notes={engine.pcmNotes}
-          cutTip="the jumper off Plinky’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-          solderedTip="the keyboard’s key input is soldered onto Plinky’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
-        />
+        <>
+          <GateJumper
+            taker="pcm"
+            control="pcmKeyGate"
+            notes={engine.pcmNotes}
+            cutTip="the jumper off Plinky’s gate is cut: the keyboard answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+            solderedTip="the keyboard’s key input is soldered onto Plinky’s gate, so the demo song next door plays it as well as what you play here. Press to cut the jumper"
+          />
+          <TrigJack taker="pcm" />
+        </>
       }
       extras={
         <>

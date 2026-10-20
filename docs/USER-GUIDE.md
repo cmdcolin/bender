@@ -85,6 +85,13 @@ are bare traces, and a jumper bridges one onto another machine's key input. Drum
 hits play the keys, keys fire the drums, and the FM chip, Parlor and Growler
 listen to both.
 
+The bench draws the same wires as patch cables down a gutter beside the
+keyboards:
+
+- **GATE** runs from a jack on Plinky's right edge to each keyboard's top jack
+- **TRIG** runs from a voice's jack on top of Clatter to a keyboard's lower jack
+- Press a jack to plug it in or pull it out; drag a cable's end to repatch it
+
 ## Power supply
 
 ![The battery rail: cells, reset chip and clip, feeding the machines.](../public/guide/guide-power.jpg)

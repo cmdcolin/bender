@@ -3,7 +3,7 @@ import { SFX_NAMES } from '../dsp/stages/toySfx.ts'
 import { engine } from '../engine/engine.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { EffectPads } from './EffectPads.tsx'
-import { GateOut } from './GateCables.tsx'
+import { GateOut, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './Keys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -37,7 +37,12 @@ export function Keys({
           <span className={styles.stripe} aria-hidden="true" />
         </>
       }
-      jack={<GateOut />}
+      jack={
+        <>
+          <GateOut />
+          <TrigJack taker="toy" />
+        </>
+      }
       extras={
         <>
           <RailLamp onOpen={onOpen} />

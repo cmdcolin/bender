@@ -19,6 +19,7 @@ import { DeviceVerbs, DrawerSlider } from './DeviceVerbs.tsx'
 import { padKeyFor } from './drumKeys.ts'
 import styles from './DrumKit.module.css'
 import { FaceBadge } from './FaceBadge.tsx'
+import { TrigPlate } from './GateCables.tsx'
 import { useCoarse, useWidth } from './measure.ts'
 import { RailLamp } from './RailLamp.tsx'
 import { Tip } from './Tip.tsx'
@@ -55,6 +56,7 @@ export function DrumKit({
 
   return (
     <div ref={setKit} className={styles.kit} role="group" aria-label="clatter">
+      <TrigPlate />
       <div className={styles.deck}>
         <FaceBadge className={styles.brand} stage="Clatter" onOpen={onOpen}>
           clatter

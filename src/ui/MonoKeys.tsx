@@ -1,5 +1,5 @@
 import { engine } from '../engine/engine.ts'
-import { GateJumper } from './GateCables.tsx'
+import { GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import styles from './MonoKeys.module.css'
 import { RailLamp } from './RailLamp.tsx'
@@ -32,13 +32,16 @@ export function MonoKeys({
         </span>
       }
       jack={
-        <GateJumper
-          taker="mono"
-          control="monoKeyGate"
-          notes={engine.monoNotes}
-          cutTip="the jumper off Plinky’s gate is cut, so notes reach the synth from these keys, the kit’s trigger lines and a controller. Press to solder it back on"
-          solderedTip="the synth’s key input is soldered onto Plinky’s gate, so the tune next door plays it too, an octave or two down. Press to cut the jumper"
-        />
+        <>
+          <GateJumper
+            taker="mono"
+            control="monoKeyGate"
+            notes={engine.monoNotes}
+            cutTip="the jumper off Plinky’s gate is cut, so notes reach the synth from these keys, the kit’s trigger lines and a controller. Press to solder it back on"
+            solderedTip="the synth’s key input is soldered onto Plinky’s gate, so the tune next door plays it too, an octave or two down. Press to cut the jumper"
+          />
+          <TrigJack taker="mono" />
+        </>
       }
       extras={
         <>

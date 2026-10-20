@@ -2,7 +2,7 @@ import { EFFECTS } from '../dsp/stages/fmEffects.ts'
 import { engine } from '../engine/engine.ts'
 import { EffectPads } from './EffectPads.tsx'
 import styles from './FmKeys.module.css'
-import { GateJumper } from './GateCables.tsx'
+import { GateJumper, TrigJack } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
 import { RailLamp } from './RailLamp.tsx'
 import { SeqRec } from './SeqRec.tsx'
@@ -43,13 +43,16 @@ export function FmKeys({
         </span>
       }
       jack={
-        <GateJumper
-          taker="fm"
-          control="fmKeyGate"
-          notes={engine.fmNotes}
-          cutTip="the jumper off Plinky’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
-          solderedTip="the chip’s key input is soldered onto Plinky’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
-        />
+        <>
+          <GateJumper
+            taker="fm"
+            control="fmKeyGate"
+            notes={engine.fmNotes}
+            cutTip="the jumper off Plinky’s gate is cut: the chip answers these keys, the kit’s trigger lines and nothing else. Press to solder it back on"
+            solderedTip="the chip’s key input is soldered onto Plinky’s gate, so it plays whatever the keyboard next door strikes as well as what you play here. Press to cut the jumper"
+          />
+          <TrigJack taker="fm" />
+        </>
       }
       extras={
         <>

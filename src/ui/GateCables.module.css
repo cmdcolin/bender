@@ -226,3 +226,48 @@
 .tag:hover rect {
   fill: #f7efd6;
 }
+
+/* The TRIG input, under the gate jack on a keyboard's right edge. Plinky's
+   sits at the top, clear of its gate outputs. */
+.trig {
+  composes: jack;
+  top: 40px;
+}
+
+.trigTop {
+  composes: jack;
+}
+
+/* The jack plate bolted on top of the kit, a trigger output per voice. */
+.plate {
+  position: absolute;
+  bottom: 100%;
+  left: 14px;
+  display: flex;
+  gap: 2px;
+  padding: 0 5px 3px;
+  background: var(--case);
+  border: 1px solid var(--case-edge);
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.trigOut {
+  touch-action: none;
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+  margin-top: -10px;
+}
+
+.plateName {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--fg3);
+  margin-top: 2px;
+}
