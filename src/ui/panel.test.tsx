@@ -321,6 +321,7 @@ test('a drag that began off the grid draws nothing on it', () => {
 // The moves rewrite the grid and nothing else about the kit, and they land in
 // the walk the way the ROM buttons do.
 test('a turnaround writes the end of the bar, keeps the tempo, and takes back', () => {
+  engine.patch({ ...engine.controls.get(), ...ROCK })
   render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   act(() => engine.set('drumBpm', 96))
   const before = engine.controls.get()
