@@ -108,6 +108,7 @@ test('a loop setting moved off stock opens the signal path on that track, and it
   ).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'erase · loop controls' }))
   expect(screen.getByRole('slider', { name: 'Erase' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'hide erase · loop' })).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'erase · loop controls' }))
   expect(screen.queryByRole('slider', { name: 'Erase' })).toBeNull()
 })

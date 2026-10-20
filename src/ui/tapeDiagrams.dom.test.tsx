@@ -29,6 +29,7 @@ test('the tape delay keeps Time, Feedback and the echo level as rows, and the re
   expect(screen.getAllByText('Splice')).toHaveLength(1)
   press('tone controls')
   expect(screen.getAllByText('Loop filter')).toHaveLength(1)
+  expect(screen.getByRole('button', { name: 'hide tone' })).toBeTruthy()
 })
 
 test('the delay drawing lights the play heads the Heads switch picks', () => {

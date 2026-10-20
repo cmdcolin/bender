@@ -241,7 +241,11 @@ export function StripDiagram({ track }: { track: Track }) {
           </>
         )}
       </ChipDrawing>
-      <BoxRows card={card(pick)} keys={open?.keys} note={open?.note} />
+      <BoxRows
+        card={card(pick, open?.name)}
+        keys={open?.keys}
+        note={open?.note}
+      />
     </>
   )
 }

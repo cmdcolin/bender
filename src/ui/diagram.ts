@@ -68,11 +68,10 @@ export const ONE_LINE_H = boxHeight('')
 
 export type BoxPick = ReturnType<typeof useSelectedBox>
 
-/** The open box's card, or nothing while no box is open. */
-export const card = (pick: BoxPick) =>
-  pick.selected === null
+export const card = (pick: BoxPick, name = pick.selected) =>
+  pick.selected === null || name === null
     ? undefined
-    : { name: pick.selected, onHide: () => pick.toggle(pick.selected!) }
+    : { name, onHide: () => pick.toggle(pick.selected!) }
 
 /** The knobs a group files under one heading. */
 export const partKeys = (group: string, part: string): ControlKey[] =>

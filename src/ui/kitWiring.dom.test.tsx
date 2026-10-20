@@ -52,6 +52,15 @@ test('the choke, ring trigger and cross-patch each light once moved and name no 
   expect(red()).toBeGreaterThan(0)
 })
 
+test('the trigger lines and amps light once one of their settings moves', () => {
+  open()
+  for (const part of ['trigger lines', 'amps'])
+    expect(lit(part), part).toBe(false)
+  set({ drumScan: 0.5, drumAccentSag: 0.5 })
+  for (const part of ['trigger lines', 'amps'])
+    expect(lit(part), part).toBe(true)
+})
+
 test('the sampled kit draws the cross-patch dashed rather than red', () => {
   open()
   set({ drumCross: 1, drumRom: 1 })

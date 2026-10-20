@@ -275,7 +275,7 @@ export function KitWiringDiagram() {
     <Chip
       key={box.name}
       box={box}
-      lit={lit}
+      lit={lit ?? r.touched(...OPENS[box.name]!.keys)}
       help={OPENS[box.name]!.help}
       pick={pick}
       keys={OPENS[box.name]!.keys}

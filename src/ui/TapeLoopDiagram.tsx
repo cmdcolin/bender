@@ -46,7 +46,7 @@ const KEYS = [
 const OPENS = {
   send: ['dlySend'],
   heads: ['dlyHeads'],
-  loop: [
+  tone: [
     'dlyToneHz',
     'dlyLoopMode',
     'dlyLoopHz',
@@ -196,17 +196,17 @@ export function TapeLoopDiagram() {
               look={flow}
             />
             <BoxView
-              selected={pick.selected === 'loop'}
+              selected={pick.selected === 'tone'}
               onSelect={pick.toggle}
               box={{
-                id: 'loop',
-                keys: OPENS.loop,
+                id: 'tone',
+                keys: OPENS.tone,
                 x: TONE_X,
                 y: BOX_TOP,
                 w: TONE_W,
                 name: 'tone',
                 off: !flowing,
-                touched: r.touched(...OPENS.loop),
+                touched: r.touched(...OPENS.tone),
                 help: 'What every repeat passes through on its way out and back round: tone, the loop filter, the ring modulator and the lamp.',
               }}
             />
