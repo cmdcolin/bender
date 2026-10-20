@@ -1473,6 +1473,10 @@ export class Engine {
     if (this.recordsSeq(dest)) this.writeSeqNote(note)
   }
 
+  toySfx(sfx: number, on: boolean) {
+    this.post({ kind: 'sfx', sfx, on })
+  }
+
   noteOff(semitone: number, dest: NoteDest = 'toy') {
     const struck = this.struck[dest]
     const note = struck.get(semitone) ?? this.locked(semitone)

@@ -22,6 +22,7 @@ import {
 } from '../testRender.ts'
 import { YOURS } from './roms.ts'
 import { ToyChip } from './toyChip.ts'
+import { SFX_NAMES, sfxLength } from './toySfx.ts'
 
 // A memory written out as the controls that carry it. Anything not named is a
 // step with nothing on it.
@@ -808,4 +809,42 @@ test('duty on envelope thins a held key and opens a fading note', () => {
     )
   expect(deviation(held(1), held(0))).toBeGreaterThan(0.3)
   expect(deviation(held(0), held(0))).toBe(0)
+})
+
+// A tap on an effect button: down on the first block, up on the next.
+const tapSfx = (sfx: number, seconds: number, overrides = {}) =>
+  renderBender(
+    { ...CHIP_ONLY, ...overrides },
+    seconds,
+    b => b.toyChip.sfxOn(sfx),
+    undefined,
+    (b, secs) => {
+      if (secs > 0) b.toyChip.sfxOff(sfx)
+    },
+  )
+
+test('every effect button sounds one pass and stops', () => {
+  SFX_NAMES.forEach((_, sfx) => {
+    const len = sfxLength(sfx)
+    const out = tapSfx(sfx, len + 0.3)
+    expect(rms(out.subarray(0, Math.floor(len * 0.5 * SR)))).toBeGreaterThan(
+      0.01,
+    )
+    expect(rms(tail(out, 0.2))).toBeLessThan(1e-4)
+  })
+})
+
+test('a held effect button runs its program again', () => {
+  const gun = SFX_NAMES.indexOf('gun')
+  const held = renderBender(CHIP_ONLY, 1, b => b.toyChip.sfxOn(gun))
+  expect(rms(tail(held, 0.3))).toBeGreaterThan(0.01)
+})
+
+test('the clock drags a siren down and slows it', () => {
+  const siren = SFX_NAMES.indexOf('siren')
+  const at = (chipClockX: number) =>
+    renderBender({ ...CHIP_ONLY, chipClockX }, 0.2, b => b.toyChip.sfxOn(siren))
+  const ratio = pitchHz(at(1)) / pitchHz(at(0.5))
+  expect(ratio).toBeGreaterThan(1.8)
+  expect(ratio).toBeLessThan(2.4)
 })

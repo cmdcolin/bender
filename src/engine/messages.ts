@@ -74,6 +74,13 @@ export interface DrumHitMsg {
   skipTick?: number
 }
 
+/** An effect button on the toy's deck going down or coming up. */
+export interface SfxMsg {
+  kind: 'sfx'
+  sfx: number
+  on: boolean
+}
+
 // Both run lines in one message: they are two switches on one desk, and the
 // worklet has no use for knowing which of them the hand moved.
 export interface TransportMsg {
@@ -109,6 +116,7 @@ export type ToWorklet =
   | FourBlankMsg
   | NoteMsg
   | DrumHitMsg
+  | SfxMsg
   | TransportMsg
   | RecordMsg
   | PanicMsg

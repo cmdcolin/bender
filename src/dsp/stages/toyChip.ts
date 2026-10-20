@@ -28,6 +28,7 @@ import {
   YOURS,
   type Rom,
 } from './roms.ts'
+import { sfxAt, sfxLength, type SfxFrame } from './toySfx.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { ToyRail } from '../toyRail.ts'
@@ -173,10 +174,11 @@ const dragDivisor = (depth: number) => Math.pow(2, depth) - 1
 const mixVoices = (sum: number, drive: number) => softclip(sum * drive) / drive
 
 // One output pin and a scan counter handing it to each sounding voice in turn:
-// the melody, the bass, the three chord notes and the four keys. The counter
-// runs off the chip's clock, so Scan sets how many clock ticks it waits per slot
-// and a clock bend drags the scan with it.
-const SLOTS = 9
+// the melody, the bass, the three chord notes, the four keys and the effect
+// buttons. The counter runs off the chip's clock, so Scan sets how many clock
+// ticks it waits per slot and a clock bend drags the scan with it.
+const SLOTS = 10
+const SFX_SLOT = 9
 const SCAN_TOP_HZ = 6000
 const SCAN_OCTAVES = 10
 const scanRate = (scan: number) =>
@@ -214,6 +216,11 @@ const BITS_OCTAVES = 5
 // envelope lets it close back to the selected width.
 const DUTY_STRIKE = 0.04
 
+// The noise register under the effect buttons: fifteen bits, feedback off the
+// bottom two.
+const SFX_GAIN = 0.8
+const LFSR_SEED = 1
+
 export const LOOP_TARGETS = [
   ...Array.from({ length: ROM_ADDR_LINES }, (_, i) => `A${i}`),
   'reset',
@@ -237,6 +244,9 @@ export const BANK_LINES = 5
 export const DIV_LINES = 12
 const DIV_A3 = 512
 const DIV_MAX = (1 << DIV_LINES) - 1
+// The effect voice loads whole words off this clock, so a fast sweep climbs in
+// audible steps near the top.
+const MASTER_HZ = A3_HZ * DIV_A3
 
 // How many keys share a row of the key matrix. With the diodes lifted, holding
 // two keys in different rows and columns also closes the other two corners.
@@ -449,6 +459,18 @@ export class ToyChip implements Stage {
   private outAddr = -1
   private outData = -1
   private outBit = 0
+  // The effect button sounding, or -1, and whether a finger is still on it: a
+  // held button runs its program again each time it ends.
+  private sfx = -1
+  private sfxHeld = false
+  private sfxT = 0
+  private sfxPhase = 0
+  private sfxWord = 0
+  private sfxRatio = 1
+  private sfxStamp = -1
+  private noiseClock = 0
+  private lfsr = LFSR_SEED
+  private frame: SfxFrame = { oct: 0, tone: 0, noiseOct: 0, noise: 0 }
 
   private readonly sr: number
   private readonly rail: ToyRail
@@ -554,6 +576,20 @@ export class ToyChip implements Stage {
     this.keyPending = true
     this.keyHeldPending = false
     return v
+  }
+
+  /** An effect button going down cuts whatever effect was sounding and starts
+      its own program from the top. */
+  sfxOn(sfx: number) {
+    if (sfxLength(sfx) <= 0) return
+    this.sfx = sfx
+    this.sfxHeld = true
+    this.sfxT = 0
+  }
+
+  /** Letting go lets the pass run to its end. */
+  sfxOff(sfx: number) {
+    if (sfx === this.sfx) this.sfxHeld = false
   }
 
   noteOff(semitone: number) {
@@ -1283,6 +1319,7 @@ export class ToyChip implements Stage {
           this.phase = 0
           this.bassPhase = 0
           this.chordPhase.fill(0)
+          this.sfxPhase = 0
           for (const v of this.voices) v.phase = 0
         }
       }
@@ -1419,6 +1456,21 @@ export class ToyChip implements Stage {
             live[5 + k] = 1
           } else keys += x
         }
+        if (this.sfx >= 0) {
+          const x = this.sfxSample(
+            latched ? 0 : timing,
+            clock * rail.pitchFactor,
+            maxHz,
+            duty,
+            dutyEnv,
+            shaped,
+            pwmOn,
+          )
+          if (pinned) {
+            val[SFX_SLOT] = x * amp
+            live[SFX_SLOT] = 1
+          } else keys += x * amp
+        }
         if (scanHz > 0) out = this.scan((scanHz * timing) / this.sr)
         else if (pinned) out = this.ring(this.short(mixDrive))
         out = (out + mixVoices(keys, mixDrive)) * this.gateState
@@ -1463,6 +1515,62 @@ export class ToyChip implements Stage {
       io.l[i]! += out
       io.r[i]! += out
     }
+  }
+
+  // One sample of the effect button, at `timing` seconds of program per real
+  // second. Past the end of a pass, a held button starts again and a released
+  // one falls silent.
+  private sfxSample(
+    timing: number,
+    pitch: number,
+    maxHz: number,
+    duty: number,
+    dutyEnv: number,
+    shaped: boolean,
+    pwmOn: boolean,
+  ): number {
+    this.sfxT += timing / this.sr
+    const len = sfxLength(this.sfx)
+    if (this.sfxT >= len) {
+      if (!this.sfxHeld) {
+        this.sfx = -1
+        return 0
+      }
+      this.sfxT -= len * Math.floor(this.sfxT / len)
+    }
+    const f = this.frame
+    sfxAt(this.sfx, this.sfxT, f)
+    let x = 0
+    if (f.tone > 0) {
+      const word = Math.min(
+        Math.max(Math.round(DIV_A3 / octaves(f.oct)), 1),
+        DIV_MAX,
+      )
+      if (word !== this.sfxWord || this.sfxStamp !== this.divStamp) {
+        this.sfxWord = word
+        this.sfxStamp = this.divStamp
+        const read =
+          this.divLine < 0
+            ? word
+            : this.divBus.read(word, this.divLine, this.divFault, this.busCut)
+        this.sfxRatio = 1 / Math.max(read, 1)
+      }
+      const hz = Math.min(MASTER_HZ * this.sfxRatio * pitch, maxHz)
+      const inc = hz / this.sr
+      this.sfxPhase = wrap1(this.sfxPhase + inc)
+      const env = shaped ? this.level(f.tone, pwmOn) : f.tone
+      x += pulse(this.sfxPhase, width(duty, dutyEnv, f.tone), inc) * env
+    }
+    if (f.noise > 0) {
+      this.noiseClock += (A3_HZ * octaves(f.noiseOct) * pitch) / this.sr
+      while (this.noiseClock >= 1) {
+        this.noiseClock -= 1
+        const bit = (this.lfsr ^ (this.lfsr >> 1)) & 1
+        this.lfsr = (this.lfsr >> 1) | (bit << 14)
+      }
+      x += (this.lfsr & 1 ? 1 : -1) * f.noise
+    }
+    return x * SFX_GAIN
   }
 
   // The output pin bridged onto an address or a data line. Each time the pin
@@ -1553,6 +1661,11 @@ export class ToyChip implements Stage {
     this.held = 0
     this.syncPhase = 0
     this.lastOut = 0
+    this.sfx = -1
+    this.sfxHeld = false
+    this.sfxPhase = 0
+    this.noiseClock = 0
+    this.lfsr = LFSR_SEED
     for (const v of this.voices) {
       v.note = 0
       v.phase = 0

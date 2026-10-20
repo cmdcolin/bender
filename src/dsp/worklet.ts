@@ -158,6 +158,10 @@ class BenderProcessor extends AudioWorkletProcessor {
           if (msg.skipTick !== undefined)
             this.built.toyDrum.skip(msg.bits, msg.skipTick)
           break
+        case 'sfx':
+          if (msg.on) this.built.toyChip.sfxOn(msg.sfx)
+          else this.built.toyChip.sfxOff(msg.sfx)
+          break
         case 'record':
           if (msg.on) {
             this.recFill = 0

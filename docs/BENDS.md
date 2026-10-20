@@ -110,9 +110,9 @@ Bends:
   - A lone note stays periodic, brightens and climbs in pitch.
   - A chord cross-modulates, and past halfway it measures as noise.
   - A decaying note sweeps its timbre.
-- **Scan:** all nine voices (melody, bass, three chord notes, four keys) share
-  one output pin, and a scan counter connects each sounding voice in turn at the
-  chip clock rate.
+- **Scan:** all ten voices (melody, bass, three chord notes, four keys, effect
+  button) share one output pin, and a scan counter connects each sounding voice
+  in turn at the chip clock rate.
   - A lone note holds the pin.
   - Low on the knob, a chord buzzes at the scan rate.
   - Around three quarters, a chord flutters.
@@ -198,6 +198,14 @@ Bends:
   step is a different tone.
 - **Duty on envelope:** a note strikes as a 4% spike and opens to the tone
   selector's width as it fades.
+- **Effect buttons:** six programs for a sweep counter that loads the melody's
+  divider, plus a noise register for bomb and gun.
+  - Clock, a flat battery and a pot on the timing pin lower and stretch each
+    effect together.
+  - The divider knife, tone selector, Volume PWM, envelope bits and duty on
+    envelope reach the effect voice too.
+  - The sweep loads whole divider words, so laser and bird climb in steps near
+    the top.
 
 ## Glint's register bus
 
