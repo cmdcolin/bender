@@ -36,8 +36,10 @@ const hit = (voice: number) => engine.drumHit(voiceBit(voice))
 // only the pattern and a hit redraws only the pads that changed.
 //
 // Below this many pixels the kit's Level moves into its ⋯ menu, so the deck
-// keeps one row, as a narrow keybed does.
-const ROOMY_KIT = 360
+// keeps one row, as a narrow keybed does. Between the two the row has no room
+// for the mic cap, and Mic into on the bench bar still lists the kit's jack.
+const ROOMY_KIT = 390
+const ROOMY_FOR_MIC = 420
 
 export function DrumKit({
   seconds,
@@ -53,6 +55,8 @@ export function DrumKit({
   const [kit, setKit] = useState<HTMLDivElement | null>(null)
   const width = useWidth(kit)
   const levelInMenu = width !== undefined && width < ROOMY_KIT
+  const micCramped =
+    width !== undefined && width >= ROOMY_KIT && width < ROOMY_FOR_MIC
 
   return (
     <div ref={setKit} className={styles.kit} role="group" aria-label="clatter">
@@ -103,6 +107,7 @@ export function DrumKit({
             seconds={seconds}
             onClose={onClose}
             noLevel={levelInMenu}
+            noMic={micCramped}
             more={
               levelInMenu ? <DrawerSlider control="drumLevel" /> : undefined
             }

@@ -1,12 +1,17 @@
 import { useEffect } from 'react'
 
+import { MIC } from '../dsp/micJacks.ts'
 import { engine } from '../engine/engine.ts'
 import { AddMenu } from './AddMenu.tsx'
 import { INSTRUMENTS } from './bench.ts'
 import { useBenchFaces } from './benchFaces.ts'
 import { BendKeys, BendKeysSwitch } from './BendKeys.tsx'
 import { onBoard } from './chain-map.ts'
-import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import {
+  useBoardValue,
+  useControlValue,
+  useStoreValue,
+} from './ControlsContext.ts'
 import { DrumKit } from './DrumKit.tsx'
 import { Faceplate } from './Faceplate.tsx'
 import { add } from './fitted.ts'
@@ -76,8 +81,8 @@ const KIND: Record<string, string> = {
 // The keyboards, the kit, the tape loop and the four-track. A machine shows while its stage is
 // on the map: the toy and the kit from the start, the others once their faders
 // come up or Add instrument brings them in. The tape loop also shows while the
-// mic is open, since its face holds the mic key, and while a file is over the
-// app, to take the drop. Every face wears a close cap, and Add instrument
+// open mic goes to the mix or its motor, since its face holds the mic key, and
+// while a file is over the app, to take the drop. Every face wears a close cap, and Add instrument
 // brings a closed one back.
 //
 // A machine that has come up goes on the map for good (`add`): the Level slider
@@ -98,8 +103,10 @@ export function Instruments({
     if (risen) add(risen.split('|'))
   }, [risen])
   const micOn = useStoreValue(engine.micOn)
+  const micJack = Math.round(useControlValue('micPatch'))
   const over = useStoreValue(dragging)
-  const tapeHeld = micOn || over
+  const tapeHeld =
+    (micOn && (micJack === MIC.mix || micJack === MIC.tapeMotor)) || over
   const face = (stage: string) =>
     shows(stage) || (stage === 'Spool' && tapeHeld)
 

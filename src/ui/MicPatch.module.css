@@ -1,11 +1,19 @@
-/* One wire out of a mic and the seven jacks it can be soldered to; pressing a
-   jack moves it. */
+/* One wire out of a mic and the jacks it can be soldered to; pressing a jack
+   moves it. */
 .diagram {
   display: block;
   width: 100%;
   max-width: 274px;
   height: auto;
-  margin: var(--space-2xs) 0 var(--space-md);
+  margin: var(--space-2xs) 0 var(--space-xs);
+}
+
+.caption {
+  max-width: 274px;
+  margin: 0 0 var(--space-md);
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+  color: var(--fg3);
 }
 
 .label {

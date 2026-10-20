@@ -276,6 +276,7 @@ export function DeviceVerbs({
   onClose,
   noMute,
   noLevel,
+  noMic,
   more,
 }: {
   stage: string
@@ -285,6 +286,8 @@ export function DeviceVerbs({
   noMute?: boolean
   /** For a face that keeps its Level in a drawer. */
   noLevel?: boolean
+  /** For a face too narrow for the mic cap; Mic into still lists its jacks. */
+  noMic?: boolean
   /** The face's own settings, drawn in the ⋯ menu. */
   more?: ReactNode
 }) {
@@ -297,7 +300,7 @@ export function DeviceVerbs({
       {level && <StillHeard stage={stage} level={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !noLevel && <FaceLevel control={level} />}
-      <MicCap stage={stage} />
+      {!noMic && <MicCap stage={stage} />}
       <Rolls group={group} seconds={seconds} more={more} />
       {onClose && (
         <Tip text={`Puts ${stage} away. Its sound stays on the board.`}>

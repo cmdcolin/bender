@@ -378,6 +378,11 @@
   color: var(--accent-ink);
 }
 
+.capSnugOn {
+  composes: capOn;
+  padding: 0 var(--space-xs);
+}
+
 /* Thrown, and waiting on something else before it does anything: record armed
    with the tune stopped, a jumper cut. The same colour, outlined and dashed,
    which is the promise rather than the lamp. */
