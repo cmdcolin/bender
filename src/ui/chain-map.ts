@@ -665,8 +665,8 @@ function pickParts(c: Controls, o: Options) {
       id,
       from: from.id,
       to: to.id,
-      d: route(pts),
-      arrow: arrowhead(pts),
+      d: route(pts, 6),
+      arrow: arrowhead(pts, 4, 2),
       ...rest,
     })
   }

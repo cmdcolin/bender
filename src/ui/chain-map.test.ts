@@ -69,7 +69,7 @@ function checkLayout(map: ChainMap) {
   for (const w of map.wires) {
     expect(ids).toContain(w.from)
     expect(ids).toContain(w.to)
-    expect(w.d).toMatch(/^M [\d.-]+ [\d.-]+/)
+    expect(w.d).toMatch(/^M[\d.-]+ [\d.-]+/)
   }
 }
 
@@ -310,7 +310,7 @@ test.each([
 ])('the toy board drops onto the mix between its boxes: %s', (_, c) => {
   const map = buildMap(c, { wrap: true, loop: true, shown: onBoard(c) })
   const [kb, drums] = [box(map, 'Plinky')!, box(map, 'Clatter')!]
-  const x = Number(/^M ([\d.-]+)/.exec(hop(map, 'toy_board', 'mix')!.d)![1])
+  const x = Number(/^M([\d.-]+)/.exec(hop(map, 'toy_board', 'mix')!.d)![1])
   expect(x).toBeGreaterThan(kb.x + kb.w)
   expect(x).toBeLessThan(drums.x)
 })
