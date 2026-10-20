@@ -23,12 +23,12 @@
   z-index: -1;
 }
 
-/* The input jack, half over the top edge of a keyboard's case. */
+/* The input jack, half over the right edge of a keyboard's case. */
 .jack {
   touch-action: none;
   position: absolute;
-  top: -11px;
-  right: 36px;
+  top: 12px;
+  right: -11px;
   z-index: 1;
   display: grid;
   place-items: center;
@@ -48,11 +48,12 @@
 
 .outs {
   position: absolute;
-  bottom: -10px;
-  right: 36px;
+  bottom: 16px;
+  right: -10px;
   z-index: 1;
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .out {

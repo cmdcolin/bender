@@ -21,10 +21,12 @@ import type { ControlKey } from '../controls.ts'
 import type { NoteDest } from '../engine/messages.ts'
 
 // The jumper off Plinky's gate line, drawn as the patch cord it stands for.
-// Each keyboard that can take Plinky's gate has an input jack on the top edge
-// of its case, Plinky has an output jack per keyboard on its bottom edge, and
-// while the jumper is soldered a cable runs between the two across the bench,
-// tagged GATE. Pressing the input jack, the tag or the cable pulls the plug.
+// Each keyboard that can take Plinky's gate has an input jack on the right edge
+// of its case, Plinky has an output jack per keyboard on its right edge, and
+// while the jumper is soldered a cable runs between the two down a gutter beside
+// the stack, tagged GATE. Each cable keeps a lane of its own in the gutter, so
+// none passes behind a case. Pressing the input jack, the tag or the cable
+// pulls the plug.
 // Dragging from either jack of a pair carries the cable's end with the pointer:
 // letting go over the other jack of that colour plugs it in, and letting go
 // anywhere else pulls it out.
@@ -41,6 +43,10 @@ const CABLE_COLOUR: Record<Taker, string> = {
 
 const PLUG = 18
 const SLACK = 18
+const LANE_IN = 8
+const LANE_PITCH = 8
+const CORNER = 10
+const ARROW_LIFT = 14
 
 interface Socket {
   el: HTMLElement
@@ -56,9 +62,16 @@ interface Point {
   y: number
 }
 
-const spots = createStore<ReadonlyMap<Taker, { from: Point; to: Point }>>(
-  new Map(),
-)
+interface Route {
+  from: Point
+  to: Point
+  /** The x of this cable's lane in the gutter. */
+  lane: number
+  /** The top edge of the keyboard the cable runs to. */
+  top: number
+}
+
+const spots = createStore<ReadonlyMap<Taker, Route>>(new Map())
 
 function keep<V>(
   store: Store<ReadonlyMap<Taker, V>> & {
@@ -141,7 +154,7 @@ const setGate = (control: ControlKey, cut: boolean) => {
   engine.set(control, cut ? 1 : 0)
 }
 
-/** The input jack on a keyboard's top edge. Pressing it plugs the cable in or
+/** The input jack on a keyboard's right edge. Pressing it plugs the cable in or
     pulls it out. */
 export function GateJumper({
   taker,
@@ -246,33 +259,23 @@ function OutputSocket({ taker }: { taker: Taker }) {
   )
 }
 
-/** Plinky's bottom edge: one output jack for each keyboard on the bench. */
+/** Plinky's right edge: one output jack for each keyboard on the bench, the
+    nearest keyboard's lowest, so the cables nest in the gutter. */
 export function GateOut() {
   const present = useStoreValue(inputs)
   return (
     <span className={styles.outs}>
-      {TAKERS.filter(t => present.has(t)).map(t => (
-        <OutputSocket key={t} taker={t} />
-      ))}
+      {TAKERS.filter(t => present.has(t))
+        .toReversed()
+        .map(t => (
+          <OutputSocket key={t} taker={t} />
+        ))}
     </span>
   )
 }
 
-const same = (
-  a: ReadonlyMap<Taker, { from: Point; to: Point }>,
-  b: ReadonlyMap<Taker, { from: Point; to: Point }>,
-) =>
-  a.size === b.size &&
-  [...a].every(([k, v]) => {
-    const w = b.get(k)
-    return (
-      w !== undefined &&
-      v.from.x === w.from.x &&
-      v.from.y === w.from.y &&
-      v.to.x === w.to.x &&
-      v.to.y === w.to.y
-    )
-  })
+const same = (a: ReadonlyMap<Taker, Route>, b: ReadonlyMap<Taker, Route>) =>
+  JSON.stringify([...a]) === JSON.stringify([...b])
 
 const centre = (el: HTMLElement, origin: DOMRect): Point => {
   const r = el.getBoundingClientRect()
@@ -282,9 +285,41 @@ const centre = (el: HTMLElement, origin: DOMRect): Point => {
   }
 }
 
-/** The bench the keyboards sit on, with the cables laid across it. The cables
-    measure their own jacks, so a face that wraps onto another row takes its
-    cable with it. */
+const caseOf = (el: HTMLElement) =>
+  el.closest<HTMLElement>('[role=group]') ?? el
+
+/** Every cable's lane in the gutter past the widest case, the nearest
+    keyboard's innermost. */
+function route(
+  ins: ReadonlyMap<Taker, Socket>,
+  outs: ReadonlyMap<Taker, HTMLElement>,
+  origin: DOMRect,
+): Map<Taker, Route> {
+  const ends = TAKERS.flatMap(taker => {
+    const socket = ins.get(taker)
+    const out = outs.get(taker)
+    if (!socket || !out) return []
+    const top = caseOf(socket.el).getBoundingClientRect().top - origin.top
+    return [
+      {
+        taker,
+        from: centre(out, origin),
+        to: centre(socket.el, origin),
+        top: Math.round(top),
+      },
+    ]
+  }).toSorted((a, b) => a.to.y - b.to.y)
+  const edge = Math.max(...ends.flatMap(e => [e.from.x, e.to.x]))
+  return new Map(
+    ends.map(({ taker, ...e }, i) => [
+      taker,
+      { ...e, lane: edge + PLUG + LANE_IN + i * LANE_PITCH },
+    ]),
+  )
+}
+
+/** The bench the keyboards sit on, with the cables laid down its gutter. The
+    cables measure their own jacks, so they follow a case that grows or goes. */
 export function GateBench({ children }: { children: ReactNode }) {
   const bench = useRef<HTMLDivElement>(null)
   const ins = useStoreValue(inputs)
@@ -297,17 +332,7 @@ export function GateBench({ children }: { children: ReactNode }) {
     if (!root) return undefined
     let frame = 0
     const measure = () => {
-      const origin = root.getBoundingClientRect()
-      const next = new Map<Taker, { from: Point; to: Point }>()
-      for (const [taker, socket] of ins) {
-        const out = outs.get(taker)
-        if (out) {
-          next.set(taker, {
-            from: centre(out, origin),
-            to: centre(socket.el, origin),
-          })
-        }
-      }
+      const next = route(ins, outs, root.getBoundingClientRect())
       if (!same(spots.get(), next)) spots.set(next)
     }
     const later = () => {
@@ -317,8 +342,7 @@ export function GateBench({ children }: { children: ReactNode }) {
     measure()
     const watch = new ResizeObserver(later)
     watch.observe(root)
-    for (const { el } of ins.values())
-      watch.observe(el.closest('[role=group]') ?? el)
+    for (const { el } of ins.values()) watch.observe(caseOf(el))
     window.addEventListener('resize', later)
     return () => {
       cancelAnimationFrame(frame)
@@ -328,6 +352,8 @@ export function GateBench({ children }: { children: ReactNode }) {
   }, [ins, outs])
 
   const held = drag ? wired.get(drag.taker) : undefined
+  const from = drag?.end === 'out' ? drag : held?.from
+  const to = drag?.end === 'in' ? drag : held?.to
 
   return (
     <div
@@ -343,10 +369,11 @@ export function GateBench({ children }: { children: ReactNode }) {
         ).map(t => (
           <Cable key={t} taker={t} socket={ins.get(t)!} spot={wired.get(t)!} />
         ))}
-        {drag && held && (
+        {drag && from && to && (
           <Wire
-            from={drag.end === 'out' ? drag : held.from}
-            to={drag.end === 'in' ? drag : held.to}
+            path={hanging(from, to)}
+            from={from}
+            to={to}
             colour={CABLE_COLOUR[drag.taker]}
           />
         )}
@@ -355,9 +382,10 @@ export function GateBench({ children }: { children: ReactNode }) {
   )
 }
 
-function Plug({ at, up, colour }: { at: Point; up: boolean; colour: string }) {
+/** A plug pushed into the jack at `at`, its boot pointing out to the right. */
+function Plug({ at, colour }: { at: Point; colour: string }) {
   return (
-    <g transform={`translate(${at.x} ${at.y}) rotate(${up ? 180 : 0})`}>
+    <g transform={`translate(${at.x} ${at.y}) rotate(-90)`}>
       <rect
         className={styles.tip}
         x="-2.4"
@@ -387,6 +415,33 @@ function Plug({ at, up, colour }: { at: Point; up: boolean; colour: string }) {
   )
 }
 
+interface Path {
+  d: string
+  arrow: Point & { angle: number }
+  tag?: Point
+}
+
+/** Out of one plug, down the cable's gutter lane, and into the other. The tag
+    hangs in the gap over the keyboard the cable feeds. */
+function laid({ from, to, lane, top }: Route): Path {
+  const a = { x: from.x + PLUG, y: from.y }
+  const b = { x: to.x + PLUG, y: to.y }
+  const dir = b.y >= a.y ? 1 : -1
+  const r = Math.max(
+    0,
+    Math.min(CORNER, lane - Math.max(a.x, b.x), Math.abs(b.y - a.y) / 2),
+  )
+  return {
+    d: `M${a.x} ${a.y} H${lane - r} Q${lane} ${a.y} ${lane} ${a.y + dir * r} V${b.y - dir * r} Q${lane} ${b.y} ${lane - r} ${b.y} H${b.x}`,
+    arrow: {
+      x: lane,
+      y: b.y - dir * Math.min(r + ARROW_LIFT, Math.abs(b.y - a.y) / 2),
+      angle: dir * 90,
+    },
+    tag: { x: lane - 34, y: top - 18 },
+  }
+}
+
 const bezier = (t: number, p0: number, p1: number, p2: number, p3: number) =>
   (1 - t) ** 3 * p0 +
   3 * (1 - t) ** 2 * t * p1 +
@@ -398,10 +453,32 @@ const slope = (t: number, p0: number, p1: number, p2: number, p3: number) =>
   6 * (1 - t) * t * (p2 - p1) +
   3 * t * t * (p3 - p2)
 
-/** One cable from a plug that hangs down off `from` to a plug that comes up
-    out of `to`, with an arrowhead pointing the way the gate runs. A cable
-    with a `pull` also takes a press anywhere along it, and wears the tag. */
+/** A cable with one end in the hand, sagging out to the right of both plugs. */
+function hanging(from: Point, to: Point): Path {
+  const a = { x: from.x + PLUG, y: from.y }
+  const b = { x: to.x + PLUG, y: to.y }
+  const reach = SLACK + Math.min(Math.abs(a.y - b.y), 220) * 0.14
+  const c1 = { x: a.x + reach, y: a.y }
+  const c2 = { x: b.x + reach, y: b.y }
+  const heading = Math.atan2(
+    slope(0.5, a.y, c1.y, c2.y, b.y),
+    slope(0.5, a.x, c1.x, c2.x, b.x),
+  )
+  return {
+    d: `M${a.x} ${a.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${b.x} ${b.y}`,
+    arrow: {
+      x: bezier(0.5, a.x, c1.x, c2.x, b.x),
+      y: bezier(0.5, a.y, c1.y, c2.y, b.y),
+      angle: (heading * 180) / Math.PI,
+    },
+  }
+}
+
+/** One cable between two plugs, with an arrowhead pointing the way the gate
+    runs. A cable with a `pull` also takes a press anywhere along it, and wears
+    the tag. */
 function Wire({
+  path,
   from,
   to,
   colour,
@@ -409,6 +486,7 @@ function Wire({
   pull,
   onGrab,
 }: {
+  path: Path
   from: Point
   to: Point
   colour: string
@@ -416,38 +494,18 @@ function Wire({
   pull?: () => void
   onGrab?: (e: ReactPointerEvent) => void
 }) {
-  const geometry = useMemo(() => {
-    const a = { x: from.x, y: from.y + PLUG }
-    const b = { x: to.x, y: to.y - PLUG }
-    const reach = SLACK + Math.min(Math.abs(a.x - b.x), 220) * 0.14
-    const c1 = { x: a.x, y: a.y + reach }
-    const c2 = { x: b.x, y: b.y - reach }
-    const at = (t: number) => ({
-      x: bezier(t, a.x, c1.x, c2.x, b.x),
-      y: bezier(t, a.y, c1.y, c2.y, b.y),
-    })
-    const heading = Math.atan2(
-      slope(0.72, a.y, c1.y, c2.y, b.y),
-      slope(0.72, a.x, c1.x, c2.x, b.x),
-    )
-    return {
-      d: `M${a.x} ${a.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${b.x} ${b.y}`,
-      tag: at(0.9),
-      arrow: { ...at(0.72), angle: (heading * 180) / Math.PI },
-    }
-  }, [from, to])
   return (
     <g
       className={sounding ? styles.cableOn : styles.cable}
       style={{ ['--cable' as string]: colour }}
     >
-      <path className={styles.sheath} d={geometry.d} />
-      <path className={styles.core} d={geometry.d} />
-      <path className={styles.sheen} d={geometry.d} />
+      <path className={styles.sheath} d={path.d} />
+      <path className={styles.core} d={path.d} />
+      <path className={styles.sheen} d={path.d} />
       {pull && (
         <path
           className={styles.grab}
-          d={geometry.d}
+          d={path.d}
           onPointerDown={onGrab}
           onClick={() => {
             if (!swallow) pull()
@@ -461,15 +519,15 @@ function Wire({
       )}
       <polygon
         className={styles.arrow}
-        points="-8,-7 8,0 -8,7"
-        transform={`translate(${geometry.arrow.x} ${geometry.arrow.y}) rotate(${geometry.arrow.angle})`}
+        points="-6,-5 6,0 -6,5"
+        transform={`translate(${path.arrow.x} ${path.arrow.y}) rotate(${path.arrow.angle})`}
       />
-      <Plug at={from} up={false} colour={colour} />
-      <Plug at={to} up colour={colour} />
-      {pull && (
+      <Plug at={from} colour={colour} />
+      <Plug at={to} colour={colour} />
+      {pull && path.tag && (
         <g
           className={styles.tag}
-          transform={`translate(${geometry.tag.x} ${geometry.tag.y}) rotate(-4)`}
+          transform={`translate(${path.tag.x} ${path.tag.y}) rotate(-4)`}
           onPointerDown={onGrab}
           onClick={() => {
             if (!swallow) pull()
@@ -502,14 +560,16 @@ function Cable({
 }: {
   taker: Taker
   socket: Socket
-  spot: { from: Point; to: Point }
+  spot: Route
 }) {
   const cut = useControlValue(socket.control) > 0.5
   const toySounding = useStoreValue(engine.chipNotes).size > 0
   const sounding = useStoreValue(socket.notes).size > 0 && toySounding
+  const path = useMemo(() => laid(spot), [spot])
   if (cut) return null
   return (
     <Wire
+      path={path}
       from={spot.from}
       to={spot.to}
       colour={CABLE_COLOUR[taker]}

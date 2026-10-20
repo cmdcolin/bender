@@ -21,6 +21,10 @@
   gap: 36px;
 }
 
+.lane:has([data-gate-end='out']) {
+  padding-right: 48px;
+}
+
 .shelf .lane > * {
   flex: none;
 }
