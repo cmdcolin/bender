@@ -1,6 +1,7 @@
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import styles from './BoxRoll.module.css'
+import { groupFor } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { morphSetting } from './morph.ts'
 import { resetKeys, rollKeys } from './presets/index.ts'
@@ -17,7 +18,7 @@ export function BoxRoll({
   keys: readonly ControlKey[]
 }) {
   const seconds = useStoreValue(morphSetting)
-  const scope = `box › ${keys.join()}`
+  const scope = `box › ${keys[0] ? groupFor(keys[0]) : ''} › ${title}`
   const canUndo = useCanUndoRoll(scope)
   const moved = useBoardValue(
     c => keys.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,

@@ -22,4 +22,3 @@ remove a row here when you add or remove an entry.
 | [Layout helpers](todo/diagram-layout-helpers.md)                      | diagrams             | write spreadRow(widths, span) and port BusDiagram and FmDie       |
 | [Patch drawings on shared parts](todo/patch-drawings-shared-parts.md) | diagrams             | swap TriggerPatch's raw svg and press() for Diagram and Pressable |
 | [Inert diagram parts](todo/inert-diagram-parts.md)                    | diagrams             | make BusDiagram's tap, inject and feed wires Bends                |
-| [Toy die roll test](todo/toy-die-roll-test.md)                        | tests                | run the test alone and reset the board at its start               |
