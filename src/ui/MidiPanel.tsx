@@ -92,7 +92,7 @@ export function MidiMenuItem(props: {
   )
 }
 
-// CROSS_REPO_SYNC(midi-dialog)
+// CROSS_REPO_SYNC(midi-tab-note)
 function midiTabNote(status: MidiStatus, stranded: number): string | null {
   if (status === 'ready') return stranded > 0 ? `${stranded} waiting` : null
   if (status === 'unsupported') return 'n/a'
@@ -100,10 +100,13 @@ function midiTabNote(status: MidiStatus, stranded: number): string | null {
   if (status === 'requesting') return 'asking…'
   return null
 }
+// CROSS_REPO_SYNC_END(midi-tab-note)
 
 // Non-modal: every control binds from its own ⚟, in the panel behind this card,
 // so the panel has to stay reachable with the card up. A shown dialog gets no
-// `cancel` event, so Escape is bound by hand.
+// `cancel` event, so Escape is bound by hand. If a control is armed, the first
+// Escape cancels the binding (handled by Wired); only the second Escape closes
+// the dialog.
 function MidiDialog(props: {
   status: MidiStatus
   onEnable: () => void
@@ -114,7 +117,7 @@ function MidiDialog(props: {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape' && !midi.waiting()) onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -161,4 +164,3 @@ function MidiDialog(props: {
     </dialog>
   )
 }
-// CROSS_REPO_SYNC_END(midi-dialog)
