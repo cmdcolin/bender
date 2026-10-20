@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
 import { App } from './App.tsx'
@@ -332,4 +332,17 @@ test('dragging a cable end off its jack pulls the plug, and dragging a jack to i
   expect(engine.controls.get().fmKeyGate).toBe(0)
   drag(output, document.body)
   expect(engine.controls.get().fmKeyGate).toBe(1)
+})
+
+test('an effect button on the toy runs while held and lets go on release', () => {
+  const sfx = vi.spyOn(engine, 'toySfx')
+  render(<Keys />)
+  const laser = bed('effect buttons').getByRole('button', { name: 'laser' })
+  fireEvent.pointerDown(laser)
+  expect(sfx).toHaveBeenLastCalledWith(0, true)
+  expect(laser.getAttribute('aria-pressed')).toBe('true')
+  fireEvent.pointerUp(laser)
+  expect(sfx).toHaveBeenLastCalledWith(0, false)
+  expect(laser.getAttribute('aria-pressed')).toBe('false')
+  sfx.mockRestore()
 })

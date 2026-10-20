@@ -81,6 +81,8 @@ interface Props {
   jack?: ReactNode
   /** Switches that belong to this machine, ahead of the ones every bed has. */
   extras?: ReactNode
+  /** A row of buttons between the deck and the keys. */
+  pads?: ReactNode
   tail?: ReactNode
   /** The stage whose mute, level, roll and close caps end the deck. */
   stage?: string
@@ -99,6 +101,7 @@ export function Keybed({
   badge,
   jack,
   extras,
+  pads,
   tail,
   stage,
   seconds,
@@ -438,6 +441,7 @@ export function Keybed({
           )}
         </div>
       </div>
+      {pads}
       <div className={styles.keys} ref={setBed}>
         {below && <span className={styles.offLow}>◂</span>}
         {above && <span className={styles.offHigh}>▸</span>}

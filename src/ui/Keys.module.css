@@ -87,3 +87,33 @@
 .playOn {
   composes: capOn from './button.module.css';
 }
+
+/* The effect buttons: one row of caps over the keys, each lit in a decal
+   colour while a finger is on it. */
+.pads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-ctl-sm);
+}
+
+.pads > :nth-child(3n + 1) {
+  --cap-lit: var(--decal-pink, #ff3d8b);
+}
+
+.pads > :nth-child(3n + 2) {
+  --cap-lit: var(--decal-yellow, #ffd23b);
+}
+
+.pads > :nth-child(3n) {
+  --cap-lit: var(--decal-cyan, #2fd3d3);
+}
+
+.pad {
+  composes: cap from './button.module.css';
+  touch-action: none;
+}
+
+.padOn {
+  composes: capOn from './button.module.css';
+  touch-action: none;
+}

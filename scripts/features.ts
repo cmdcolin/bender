@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 
 const BLURBS: Record<string, string> = {
   Plinky:
-    'A square-wave divider chip running a ROM, with a tone control that taps the divider at a different width, an auto bass-chord section and playable voices over the top. Its clock, counter, bias and gate are each a place to solder a pot onto: *Bend spot* picks which and *Bend pot* sets how far. The panel *Power supply* holds the battery rail that Plinky shares with four other machines.',
+    'A square-wave divider chip running a ROM, with a tone control that taps the divider at a different width, an auto bass-chord section, playable voices over the top and six effect buttons that sweep the divider. Its clock, counter, bias and gate are each a place to solder a pot onto: *Bend spot* picks which and *Bend pot* sets how far. The panel *Power supply* holds the battery rail that Plinky shares with four other machines.',
   'Power supply':
     'Plinky, drums, Glint, Parlor and Growler all run off this battery rail, so a sag here bends all five at once. *Starve* pulls the rail down, *Batteries* keeps it below full, *Lead resistance* makes every note sag it on the attack, and *Reservoir* sets how long the rail takes to get there. *Watchdog* is the voltage at which the reset chip reboots the chips, and *Latch-up* is how often a brownout jams one instead. The *Clip* knobs set the paperclip: how often it touches, how hard it bites, how long it stays, and the charge and release rates. A release faster than the charge makes the touch a dive.',
   Clatter:

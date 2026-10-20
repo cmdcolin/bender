@@ -91,10 +91,11 @@ whole board.
 ### Plinky
 
 A square-wave divider chip running a ROM, with a tone control that taps the
-divider at a different width, an auto bass-chord section and playable voices
-over the top. Its clock, counter, bias and gate are each a place to solder a pot
-onto: _Bend spot_ picks which and _Bend pot_ sets how far. The panel _Power
-supply_ holds the battery rail that Plinky shares with four other machines.
+divider at a different width, an auto bass-chord section, playable voices over
+the top and six effect buttons that sweep the divider. Its clock, counter, bias
+and gate are each a place to solder a pot onto: _Bend spot_ picks which and
+_Bend pot_ sets how far. The panel _Power supply_ holds the battery rail that
+Plinky shares with four other machines.
 
 Named cuts, one press each under _knife on the bus_, as in the panel. A press
 puts the knife on, and the rows under it show the controls it set:

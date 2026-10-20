@@ -17,7 +17,8 @@ to open that part's controls.
 
 A toy keyboard chip on a battery that sags. One RC oscillator clocks a divider,
 a ROM of tunes and the envelopes. Record a melody, hold a chord, turn on the
-arpeggiator.
+arpeggiator. The six effect buttons over the keys (laser, siren, ufo, bomb, gun,
+bird) play one pass per press and repeat while held.
 
 ![The toy chip's blocks: keyboard, key matrix, voices, tune ROM, bus, envelope, output pin and clock.](../public/guide/guide-die.jpg)
 
