@@ -689,6 +689,26 @@ test('a wire label opens what it picks up, the wire itself the bay', () => {
   expect(hop(map, 'wire0', 'Wraith')?.door).toBe('Patch bay')
 })
 
+test('a wire aims at the knob it sets, and so does a depth reading', () => {
+  const map = buildMap({
+    ...DEFAULT_CONTROLS,
+    mod0Src: 5,
+    mod0Dest: 6,
+    mod0Depth: 0.8,
+    fbAmt: 0.4,
+  })
+  expect(hop(map, 'wire0', 'Wraith')?.key).toBe('mod0Depth')
+  expect(box(map, 'wire0')).toMatchObject({
+    valueDoor: 'Patch bay',
+    valueKey: 'mod0Depth',
+  })
+  expect(hop(map, 'Output', 'Feedback_bus')?.key).toBe('fbAmt')
+  const svg = serialize(drawMap(map))
+  expect(svg).toMatch(
+    /data-door="Patch bay" data-key="mod0Depth"[^>]*>\s*<text[^>]*>0\.80/,
+  )
+})
+
 test('a bridged trigger line draws between the two boxes', () => {
   const stock = buildMap(DEFAULT_CONTROLS)
   expect(hop(stock, 'Clatter', 'Plinky')).toBeUndefined()

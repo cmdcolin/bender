@@ -204,6 +204,8 @@ const SOURCE_LEVELS: Record<string, readonly ControlKey[]> = {
   Layercake: ['fourLevel'],
 }
 
+const levelKey = (n: MapNode) => SOURCE_LEVELS[n.label]?.[0]
+
 const SOURCE_MUTE: Record<string, ControlKey> = {
   Plinky: 'chipMute',
   Clatter: 'drumMute',
@@ -419,6 +421,11 @@ export interface MapNode {
   playing?: boolean
   /** 'stage' only: the stage has its face on the bench in the main area */
   benched?: boolean
+  /** the control the door aims at inside its stage */
+  key?: ControlKey
+  /** 'label' only: a reading that opens somewhere of its own */
+  valueDoor?: string
+  valueKey?: ControlKey
 }
 
 export interface MapWire {
@@ -430,6 +437,7 @@ export interface MapWire {
   color: string
   dash?: string
   door?: string
+  key?: ControlKey
   label?: {
     text: string
     x: number
@@ -528,7 +536,7 @@ function spread(
 }
 
 interface Bridge {
-  id: string
+  id: ControlKey
   from: string
   to: string
   label: string
@@ -1158,11 +1166,17 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     [pcm, c.pcmKeyGate],
     [mono, c.monoKeyGate],
   ])
+  const jumperKey = new Map<MapNode, ControlKey>([
+    [fm, 'fmKeyGate'],
+    [pcm, 'pcmKeyGate'],
+    [mono, 'monoKeyGate'],
+  ])
   const reaches = (i: number) => keyed.slice(i).some(n => jumper.get(n)! < 0.5)
-  const keyLine = (i: number) =>
-    reaches(i)
-      ? { color: k.accent2, door: 'Trigger patch' }
-      : { color: k.dim, dash: '3 3', door: 'Trigger patch' }
+  const keyLine = (i: number) => ({
+    door: 'Trigger patch',
+    key: jumperKey.get(keyed[i]!),
+    ...(reaches(i) ? { color: k.accent2 } : { color: k.dim, dash: '3 3' }),
+  })
   // In the lane under the joint rather than on it. The gap between two boxes
   // is twelve pixels and the word is twice that, so a label written there lands
   // on the count column of whichever box it overhangs — which is a button, and
@@ -1319,6 +1333,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         color: k.mod,
         dash: '4 3',
         door: 'Trigger patch',
+        key: t.id,
         label,
       },
     )
@@ -1363,7 +1378,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
             [i === 0 ? src.x + src.w : src.x, midY(src)],
             [spineX, midY(src)],
           ],
-          { color: k.border, door: src.door },
+          { color: k.border, door: src.door, key: levelKey(src) },
         )
   }
   const leads: number[] = []
@@ -1379,7 +1394,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           [x, src.y + src.h],
           [x, collectY],
         ],
-        { color: k.border, door: src.door },
+        { color: k.border, door: src.door, key: levelKey(src) },
       )
     }
   if (!spine)
@@ -1488,7 +1503,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
             [midX(bus), bus.y + bus.h],
           ]
         : elbowV([midX(tail), tail.y + tail.h], [midX(bus), bus.y], bus.y - 10),
-      { color: fbColor, dash: '4 3', door: 'Feedback bus' },
+      { color: fbColor, dash: '4 3', door: 'Feedback bus', key: 'fbAmt' },
     )
     // Home the long way, round the outside of the rack. The wire carries the
     // bus's own door, so clicking the line that runs off the output opens the
@@ -1507,6 +1522,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           color: fbColor,
           dash: '4 3',
           door: 'Feedback bus',
+          key: 'fbAmt',
           label: {
             text: fbLabel,
             x: midX(bus) + 5,
@@ -1535,6 +1551,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           color: fbColor,
           dash: '4 3',
           door: 'Feedback bus',
+          key: 'fbAmt',
           label: {
             text: fbLabel,
             x: lane + (fbSide === 'left' ? 4 : -4),
@@ -1587,6 +1604,8 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     const anchorX = edge + (side === 'left' ? -STUB : STUB)
     const label = node(tap.id, 'label', tap.label, {
       door: tap.door,
+      key: tap.labelKey,
+      ...(tap.valueDoor && { valueDoor: tap.valueDoor, valueKey: tap.key }),
       active: tap.active,
       x: anchorX,
       y,
@@ -1618,6 +1637,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         color: tap.active ? k.mod : k.dim,
         dash: tap.dash,
         door: tap.wireDoor,
+        key: tap.key,
       },
     )
   }
@@ -1658,6 +1678,11 @@ interface Tap {
   door: string
   /** what the wire opens: the bay it is patched at */
   wireDoor: string
+  /** the control the wire sets, which a reading on the label sets too */
+  key: ControlKey
+  labelKey?: ControlKey
+  /** where the reading opens, when that is not where the label does */
+  valueDoor?: string
   target: MapNode
   /** the box the wire enters through, which is the box it lands on unless what
       it lands on is riding inside another one */
@@ -1724,6 +1749,8 @@ function collectTaps(
       value: ctx.live && mic.active ? c.micLevel.toFixed(2) : undefined,
       door: 'Mic',
       wireDoor: 'Mic',
+      key: 'micLevel',
+      labelKey: 'micLevel',
       dash: '1 3',
       ...mic,
     })
@@ -1746,6 +1773,8 @@ function collectTaps(
       label: 'supply',
       door: 'Brownout',
       wireDoor: 'Brownout',
+      key,
+      labelKey: key,
       target,
       edge: footEdge(target),
       dash: '1 2',
@@ -1770,6 +1799,8 @@ function collectTaps(
       value: ctx.live ? depth.toFixed(2) : undefined,
       door: pickup,
       wireDoor: 'Patch bay',
+      key: `mod${i}Depth`,
+      valueDoor: 'Patch bay',
       target,
       edge: footEdge(target),
       dash: '1 3',
@@ -1813,6 +1844,7 @@ function door(
   name: string | undefined,
   links: boolean,
   current = false,
+  key?: ControlKey,
 ): El[] {
   if (!name || !links) return inner
   return [
@@ -1821,6 +1853,7 @@ function door(
       {
         href: `#${groupAnchor(name)}`,
         'data-door': name,
+        ...(key && { 'data-key': key }),
         'aria-label': `${name} controls`,
         ...(current && { 'aria-current': 'true' }),
       },
@@ -2205,19 +2238,20 @@ export function drawNode(
   if (n.kind === 'label') {
     const fill = n.active ? k.mod : k.dim
     const top = baseline(n.y, LABEL_H, SMALL)
-    return el('g', { className: 'tap' }, [
-      ...door(
-        [
-          words(n.label, n.x, top, SMALL, fill, n.anchor),
-          ...(n.value
-            ? [words(n.value, n.x, top + LABEL_H, SMALL, fill, n.anchor)]
-            : []),
-        ],
-        n.door,
-        links,
-        n.open,
-      ),
-    ])
+    const name = words(n.label, n.x, top, SMALL, fill, n.anchor)
+    const value = n.value
+      ? [words(n.value, n.x, top + LABEL_H, SMALL, fill, n.anchor)]
+      : []
+    return el(
+      'g',
+      { className: 'tap' },
+      n.valueDoor && value.length
+        ? [
+            ...door([name], n.door, links, n.open, n.key),
+            ...door(value, n.valueDoor, links, false, n.valueKey),
+          ]
+        : door([name, ...value], n.door, links, n.open, n.key),
+    )
   }
   // The supply loop is the board's outline; the frame draws only its name, the
   // door onto the board's parts that have no box.
@@ -2399,7 +2433,7 @@ function drawWire(w: MapWire, links: boolean, open?: string): El {
   return el(
     'g',
     { className: 'wire', 'data-wire': w.id },
-    door(parts, w.door, links, w.door === open),
+    door(parts, w.door, links, w.door === open, w.key),
   )
 }
 

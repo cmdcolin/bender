@@ -21,6 +21,7 @@ import { useCoarse } from './measure.ts'
 import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
 import { watchRail } from './railWatch.ts'
+import { scrollIntoPanel } from './reveal.ts'
 import { Shelf } from './Section.tsx'
 import { formerName } from './stageNames.ts'
 import { watchTriggers } from './triggerWatch.ts'
@@ -82,6 +83,23 @@ function useSettledControls(): Controls {
     }
   }, [])
   return controls
+}
+
+const AIM_MS = 1200
+
+// Two frames on, after the stage has mounted and scrolled itself into view.
+function aimAt(key: string, from: Element | null) {
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      const row = (
+        from?.closest('aside') ?? document
+      ).querySelector<HTMLElement>(`[data-control="${key}"]`)
+      if (!row) return
+      scrollIntoPanel(row)
+      row.dataset.aimed = ''
+      setTimeout(() => delete row.dataset.aimed, AIM_MS)
+    }),
+  )
 }
 
 function mount(node: El | string, key: number): ReactNode {
@@ -148,12 +166,15 @@ export function ChainMap({
   const offIt = GROUPS.filter(g => !shown.has(g.name))
 
   // Clicking a stage's door opens its panel. The touched dot beside a box is
-  // signage rather than a control, so it takes no click of its own.
+  // signage rather than a control, so it takes no click of its own. A wire
+  // that sets one knob also brings that knob's row into view.
   const press = (target: Element): boolean => {
-    const door = target.closest('[data-door]')?.getAttribute('data-door')
-    const group = GROUP_BY_NAME.get(door ?? '')
+    const door = target.closest('[data-door]')
+    const group = GROUP_BY_NAME.get(door?.getAttribute('data-door') ?? '')
     if (!group) return false
-    onOpen(group.name)
+    const key = door!.getAttribute('data-key')
+    if (!key || open !== group.name) onOpen(group.name)
+    if (key) aimAt(key, graph.current)
     return true
   }
 

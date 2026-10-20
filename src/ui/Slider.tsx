@@ -487,7 +487,7 @@ export function ControlSlider({
     )
     return (
       <>
-        <div className={styles.row}>
+        <div className={styles.row} data-control={def.key}>
           <Tip ref={tip} text={def.help}>
             <span
               className={touched ? styles.labelTouched : styles.label}
@@ -622,6 +622,7 @@ export function ControlSlider({
     <>
       <div
         className={split?.names ? styles.rowSplit : styles.row}
+        data-control={def.key}
         data-chips={
           action || def.tap !== undefined || def.lane !== undefined
             ? ''

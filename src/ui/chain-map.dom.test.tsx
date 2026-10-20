@@ -137,6 +137,23 @@ test('the add menu names a renamed stage’s old name beside the new one', () =>
   expect(screen.getByText('(fm chip)')).toBeTruthy()
 })
 
+test('a wire that sets one knob opens its stage and lights that row', async () => {
+  act(() => engine.set('fbAmt', 0.4))
+  render(<App />)
+  const wire = map().querySelector('a[data-key="fbAmt"]')!
+  expect(wire.getAttribute('data-door')).toBe('Feedback bus')
+  fireEvent.click(wire)
+  const row = await vi.waitFor(() => {
+    const at = document.querySelector<HTMLElement>(
+      'aside [data-control="fbAmt"][data-aimed]',
+    )
+    expect(at).not.toBeNull()
+    return at!
+  })
+  fireEvent.click(map().querySelector('a[data-key="fbAmt"]')!)
+  expect(row.isConnected).toBe(true)
+})
+
 test('adding a stage opens it and puts it on the map', () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: '+ add a stage' }))

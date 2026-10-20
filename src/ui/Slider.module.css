@@ -9,6 +9,18 @@
   position: relative;
 }
 
+/* A wire on the map pressed to reach this knob. */
+.row[data-aimed],
+.rowSplit[data-aimed] {
+  animation: aimed 1.2s ease-out;
+}
+
+@keyframes aimed {
+  from {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+}
+
 /* In the gutter left of the label, so it costs the track no width. */
 .pin {
   position: absolute;
