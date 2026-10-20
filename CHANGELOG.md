@@ -2,6 +2,71 @@
 
 All notable changes to bender are documented here.
 
+## [1.14.0](https://github.com/cmdcolin/bender/compare/v1.13.0...v1.14.0) - 2026-10-20
+
+### Features
+- *(ui)* [`38936d5`](https://github.com/cmdcolin/bender/commit/38936d5425d31482c80a235db49d2f48bb737b9f) let a drawing keep its open box across mounts
+- *(ui)* [`a39dd03`](https://github.com/cmdcolin/bender/commit/a39dd036c550caf7401da628a7545930710ba5f4) give a schematic box a 24px touch target
+- *(ui)* [`b3b54de`](https://github.com/cmdcolin/bender/commit/b3b54de5723963cac9eb0913c6d18cd1299a1f38) draw four-track knobs and faders like hardware
+- *(dsp)* [`750e5c1`](https://github.com/cmdcolin/bender/commit/750e5c1af86c913ae1be5f2307a7859536b770ec) effect voice on the toy chip
+- *(ui)* [`36b912b`](https://github.com/cmdcolin/bender/commit/36b912b4791bf5c69ab42a7f106991c091c6d928) effect buttons over Plinky's keys
+- *(ui)* [`193efe8`](https://github.com/cmdcolin/bender/commit/193efe8788d1602178e639ba58e4044d5249b7f1) slow the tape loop evenly from ×1 to frozen
+- *(ui)* [`f34d3d0`](https://github.com/cmdcolin/bender/commit/f34d3d070052195665d3654c4bb876e8057e2c85) piano roll opens from a memory box in the drawing
+- *(dsp)* [`a99ea34`](https://github.com/cmdcolin/bender/commit/a99ea34d35a61303d7dfd5da5df5e28279739d11) effect wire onto the toy's effect buttons
+- *(ui)* [`3fe27ae`](https://github.com/cmdcolin/bender/commit/3fe27ae6e832aaa215bace5d449e90ac8099df92) name the memory box piano roll
+- *(ui)* [`6c00de8`](https://github.com/cmdcolin/bender/commit/6c00de884c71feb906ea92ef94217a461f4ffc9f) effect buttons over Glint's keys
+- *(ui)* [`c514ea2`](https://github.com/cmdcolin/bender/commit/c514ea2cb30987deb5aadf453ada1d5fde843886) run Plinky's gate cables down a gutter beside the keyboards
+- *(ui)* [`ad3eec0`](https://github.com/cmdcolin/bender/commit/ad3eec005f25d9465b79cc1aa784119810c8f698) patch the kit's trigger lines with TRIG cables on the bench
+- [`124e0e2`](https://github.com/cmdcolin/bender/commit/124e0e23c4b8eac6dc4a4f3f2811a029eb1ac4fb) start the drum kit on a blank pattern
+- *(ui)* [`8b3cea9`](https://github.com/cmdcolin/bender/commit/8b3cea9d8865b29c00de415d66e5ddb9bd96c796) put Clatter's grid in the pattern box and tidy its toolbar
+- *(ui)* [`5876bf8`](https://github.com/cmdcolin/bender/commit/5876bf87a14de81f8ea6c7bee1e17982f4231fbe) mute a Clatter voice's pattern from the grid or shift+number
+- *(dsp)* [`a50aa88`](https://github.com/cmdcolin/bender/commit/a50aa88dc3d1281533281c898e4868fbab132e9e) effect wire onto Glint's effect buttons
+- *(dsp)* [`c5e6b64`](https://github.com/cmdcolin/bender/commit/c5e6b64df152321270fbd56123377da9f549f2da) seven new mic jacks into the circuit
+- *(ui)* [`22d59fe`](https://github.com/cmdcolin/bender/commit/22d59fe74fe1667157c3bb0d889946b6f7c1270a) mic into menu and a mic cap on every stage with a jack
+- *(ui)* [`abbe516`](https://github.com/cmdcolin/bender/commit/abbe516096564d53cdc05e07453c27341333ad38) wires in the stage drawings open the box they belong to
+- *(ui)* [`a2436fe`](https://github.com/cmdcolin/bender/commit/a2436fed1df96f207c3579599c5a5195fb31a9a4) map box names in 9px capitals like the stage diagrams
+- *(ui)* [`4e28e12`](https://github.com/cmdcolin/bender/commit/4e28e12c1eda85f8ba48a54fa3065eec3964088d) every wire on the map opens a stage
+- *(ui)* [`03d0685`](https://github.com/cmdcolin/bender/commit/03d06851bba81916b414ce4f19b24c28dff89298) map doors name their stage and Tab reaches boxes first
+- *(ui)* [`8521296`](https://github.com/cmdcolin/bender/commit/85212967fa3c9f32c1280d9d384dd2bb894033bf) a wire on the map brings up the knob it sets
+- *(ui)* [`67ba8ab`](https://github.com/cmdcolin/bender/commit/67ba8ab486a93216cb9ebc167f057d1cf043b7bc) clearer mic jack menus and patch drawing
+- *(ui)* [`84c45f4`](https://github.com/cmdcolin/bender/commit/84c45f43e90c72df8a265ee2d78a6469da2930b4) map touched dot sits on the box corner
+- *(ui)* [`cd96d84`](https://github.com/cmdcolin/bender/commit/cd96d8421802266cc967eac914b142fbab981528) soldered bus wires and the last loose labels press
+
+### Fixes
+- *(ui)* [`aacc210`](https://github.com/cmdcolin/bender/commit/aacc210a5ce177a72595b7642607492563aab3ba) label a drawing as a group so its boxes reach screen readers
+- *(ui)* [`b9242e1`](https://github.com/cmdcolin/bender/commit/b9242e1f92d08da7ff1f4854903c4d6cc8b88c41) voice rows on the FM die open the voices box
+- *(ui)* [`d61b04d`](https://github.com/cmdcolin/bender/commit/d61b04dc5d93ec1dd97b6d890b1c0bc815473118) one look for out labels and wire tags across the drawings
+- *(ui)* [`9433ff0`](https://github.com/cmdcolin/bender/commit/9433ff079a1797672238ded698863f3b7b96cf82) Glint's bus drawing names the registers as its die drawing does
+- *(ui)* [`5acbeb4`](https://github.com/cmdcolin/bender/commit/5acbeb4aceca40027fe0b22c3dc7b958a893901f) a box's undo keeps its roll when the roll shows more rows
+
+### Refactor
+- *(ui)* [`8715568`](https://github.com/cmdcolin/bender/commit/87155687096f640b1c9d856522c99379b3cd0273) draw bus-drawing chips with the shared BoxView
+- *(ui)* [`53857d6`](https://github.com/cmdcolin/bender/commit/53857d644a87dbe771c5b1fcf5e0e0a5ebf44698) drop the box argument Verbs never read
+- *(ui)* [`0fbd878`](https://github.com/cmdcolin/bender/commit/0fbd8783b9ef24540e377966c11096f91b963986) drop the rack's name, which the map never drew
+- *(ui)* [`0441c7d`](https://github.com/cmdcolin/bender/commit/0441c7dafe9f614e879d27b88e96ac1e40d04f39) share the diagram core CSS, PickPart and Bend with videoskillet
+- *(ui)* [`fe04f68`](https://github.com/cmdcolin/bender/commit/fe04f687c44d6291ee64e581ac8bdcaddd38d8fb) split buildMap into layout and wiring passes
+- *(ui)* [`7ccfdd4`](https://github.com/cmdcolin/bender/commit/7ccfdd45bee93f00188ee50a9c6949c9f8bca922) share wire routing with videoskillet
+- *(ui)* [`0916935`](https://github.com/cmdcolin/bender/commit/09169353a33a5a1a1ea8c895c37c0aee4c71093f) trigger and mic patches draw with the shared parts
+- *(ui)* [`8316656`](https://github.com/cmdcolin/bender/commit/831665624f8184a13f48e5199de2c3f7edd433f0) shared row layout for the stage drawings
+
+### Documentation
+- [`b37ea94`](https://github.com/cmdcolin/bender/commit/b37ea9417fb2c5fed05bcaa56328f3f8d75b3282) reshoot the guide screenshots and say what each machine models
+- [`616ca87`](https://github.com/cmdcolin/bender/commit/616ca87911bf4275d62a150109710843fe5488f3) drop the GitHub getting-started link and shrink the user guide
+- [`c1bfe5d`](https://github.com/cmdcolin/bender/commit/c1bfe5df4dde66a2b964751454909bea9ad7d3f7) add Parlor, Growler and four-track shots and the circuit drawings to the guide
+- [`5c79bc9`](https://github.com/cmdcolin/bender/commit/5c79bc993c5a5ec5e1607bdee3775dcf7daf5185) give each sentence an actor that can do its verb
+- [`2e3c088`](https://github.com/cmdcolin/bender/commit/2e3c088991fe7e524361a735ab09cc172f27cc8c) apply the same pass to the sources that generate features.md
+- [`1350476`](https://github.com/cmdcolin/bender/commit/135047679b20b9a00baa1890af1ee6b0cb0af575) reshoot the guide pictures on current main and name the circuit in each caption
+- *(docs)* [`8b6b810`](https://github.com/cmdcolin/bender/commit/8b6b8102df6a0932372e21575ce7972d9ba14c1b) cut BENDS.md to bullets, half the words
+- *(ui)* [`ab3fd50`](https://github.com/cmdcolin/bender/commit/ab3fd50def037a9ab31668218d5f334a083e25a9) drop the map's stale label-size figures
+- *(ui)* [`d8d625c`](https://github.com/cmdcolin/bender/commit/d8d625c14672506a4c8f026427c8b2e672e11073) plainer comments on map aiming and the rack
+- *(docs)* [`452e2b3`](https://github.com/cmdcolin/bender/commit/452e2b3a2ebaf845aaacbcc0caa86b9eddbaec9a) file the diagram follow-ups as todo items
+- *(docs)* [`0809488`](https://github.com/cmdcolin/bender/commit/08094888dc16242a5673d42f48daed1be0be8a60) close the diagram CSS sync todo and narrow the OpenBox one
+
+### Tests
+- [`0705d2f`](https://github.com/cmdcolin/bender/commit/0705d2f817efc297c26ebb53f791652633fffa2f) pin the rock pattern in slow tests that measured the stock beat
+- [`b8e835b`](https://github.com/cmdcolin/bender/commit/b8e835b71272c65ed87e5725dc159c0b03125e0f) start the turnaround test from the rock pattern
+- *(ui)* [`a16bcfb`](https://github.com/cmdcolin/bender/commit/a16bcfbacc545678ac57b03069eed8b1328d8b76) walk every drawing's boxes for the knobs they open
+
 ## [1.13.0](https://github.com/cmdcolin/bender/compare/v1.12.0...v1.13.0) - 2026-10-19
 
 ### Features
