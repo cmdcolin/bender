@@ -706,15 +706,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const loose = BENDS.filter(b => !slotted.includes(b.group) && has(b.group))
   const chipW = loose.map(b => nameWidth(b.label) + CHIP_PAD * 2)
   for (const b of loose) doors.add(b.group)
-  // No box of its own, and no door: which bend runs where is Signal order's to
-  // open, off the foot of the drawing. What's left of the rack is a place to
-  // anchor the loose chips and the run down to the first bend — nothing worth
-  // drawing a frame around.
-  const rack = node(
-    'rack',
-    'rack',
-    bends.length ? 'signal chain' : 'no bends patched',
-  )
+  // No box, name or door: the rack only anchors the loose chips and the run
+  // down to the first bend.
+  const rack = node('rack', 'rack', '')
   const tapeAt = Math.round(c.tapeAt)
   const tape = () => stage('Tape machine', c.tapeMix > 0)
   if (tapeAt === TAPE_AT_BENDS) lay(tape())
@@ -2266,11 +2260,6 @@ export function drawNode(
     ])
   }
 
-  // The rack the bends sit in: no box of its own any more — ordering used to
-  // open here and now opens off Signal order at the foot of the drawing, so
-  // there is nothing left on this node worth a frame or a name. What it
-  // carries — the bends in none of its slots — draws as its own chips,
-  // positioned off this node's now-invisible bounds.
   if (n.kind === 'rack') return el('g', { className: 'node' }, [])
 
   // A chip riding in the rack: a short name in a dashed outline, because there

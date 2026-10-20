@@ -666,12 +666,9 @@ test('a bend is a stage of the path or a chip in the rack, never neither', () =>
   }
 })
 
-test('an empty rack says so in the path, and every bend rides in it', () => {
+test('every bend rides in an empty rack', () => {
   const map = buildMap(BOARDS.bare!)
-  const rack = box(map, 'rack')!
-  expect(rack.label).toBe('no bends patched')
-  expect(rack.door).toBeUndefined()
-  // Every bend, and only the bends: the rack's own doors are chips too.
+  expect(box(map, 'rack')!.door).toBeUndefined()
   const bends = new Set<string>(BENDS.map(b => b.group))
   expect(
     map.nodes.filter(n => n.kind === 'chip' && bends.has(n.door ?? '')),
