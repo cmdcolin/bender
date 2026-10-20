@@ -282,10 +282,16 @@ test('all settings lists the stage’s rows in place of the die', () => {
   open()
   expect(screen.queryByRole('group', { name: 'toy chip die' })).not.toBeNull()
   const rowsBefore = screen.queryAllByRole('slider').length
-  fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
+  const listAll = () => {
+    fireEvent.click(screen.getByRole('button', { name: 'more for Plinky' }))
+    fireEvent.click(
+      screen.getByRole('menuitemcheckbox', { name: 'all settings' }),
+    )
+  }
+  listAll()
   expect(screen.queryByRole('group', { name: 'toy chip die' })).toBeNull()
   expect(screen.queryAllByRole('slider').length).toBeGreaterThan(rowsBefore)
-  fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
+  listAll()
   expect(screen.queryByRole('group', { name: 'toy chip die' })).not.toBeNull()
 })
 

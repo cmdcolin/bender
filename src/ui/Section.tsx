@@ -226,14 +226,20 @@ function MoreMenu({
   group,
   seconds,
   onClose,
+  listed,
+  onList,
 }: {
   group: Group
   seconds: number
   onClose: () => void
+  /** Whether the stage lists its rows in place of its drawing; absent when it has no drawing to swap. */
+  listed?: boolean
+  onList: (listed: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
-  if (!removable(group.name)) return null
+  const canTakeOff = removable(group.name)
+  if (!canTakeOff && listed === undefined) return null
   return (
     <>
       <button
@@ -252,21 +258,44 @@ function MoreMenu({
           role="menu"
           onClose={() => setOpen(false)}
         >
-          <Tip
-            text={`Take ${group.name} off the board and the map. A stage with a level or mix gets it turned off and keeps its other knobs; any other goes back to where it booted. Rolls leave it alone until you add it again.`}
-          >
-            <button
-              role="menuitem"
-              className={menuItem(false)}
-              onClick={() => {
-                setOpen(false)
-                engine.morphTo(takeOff(group, engine.controls.get()), seconds)
-                onClose()
-              }}
+          {listed !== undefined && (
+            <Tip
+              text={
+                listed
+                  ? `Back to ${group.name}’s drawing, with its settings behind the boxes.`
+                  : `List every setting of ${group.name} in one column, with no drawing to press through.`
+              }
             >
-              take off
-            </button>
-          </Tip>
+              <button
+                role="menuitemcheckbox"
+                aria-checked={listed}
+                className={menuItem(listed)}
+                onClick={() => {
+                  setOpen(false)
+                  onList(!listed)
+                }}
+              >
+                all settings
+              </button>
+            </Tip>
+          )}
+          {canTakeOff && (
+            <Tip
+              text={`Take ${group.name} off the board and the map. A stage with a level or mix gets it turned off and keeps its other knobs; any other goes back to where it booted. Rolls leave it alone until you add it again.`}
+            >
+              <button
+                role="menuitem"
+                className={menuItem(false)}
+                onClick={() => {
+                  setOpen(false)
+                  engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+                  onClose()
+                }}
+              >
+                take off
+              </button>
+            </Tip>
+          )}
         </Menu>
       )}
     </>
@@ -806,25 +835,14 @@ export function OpenGroup({
           <EditorToggle which="roll" />
         )}
         {group.editor?.kind === 'drums' && <EditorToggle which="grid" />}
-        {drawable && !listedEverywhere && (
-          <Tip
-            text={
-              listedHere
-                ? `Back to ${group.name}’s drawing, with its settings behind the boxes.`
-                : `List every setting of ${group.name} in one column, with no drawing to press through.`
-            }
-          >
-            <button
-              className={listedHere ? styles.editorOn : styles.editor}
-              aria-pressed={listedHere}
-              onClick={() => setListedHere(!listedHere)}
-            >
-              all settings
-            </button>
-          </Tip>
-        )}
         <StageVerbs group={group} seconds={seconds} />
-        <MoreMenu group={group} seconds={seconds} onClose={onClose} />
+        <MoreMenu
+          group={group}
+          seconds={seconds}
+          onClose={onClose}
+          listed={drawable && !listedEverywhere ? listedHere : undefined}
+          onList={setListedHere}
+        />
         {!stacked && (
           <Tip text={`Close ${group.name} — the path stays.`}>
             <button
