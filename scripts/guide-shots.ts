@@ -15,7 +15,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// The five pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
+// The pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
 // public/guide/guide-*.jpg from the app as it is now. Each shot is a board, a thing to click once the page
 // is up, and the element (or elements) to crop to — read off the page rather
 // than hand-picked pixels, so a layout change breaks the shot instead of
@@ -53,6 +53,45 @@ const SHOTS: Shot[] = [
     board: { fmLevel: 0.6, fmVoice: 1 },
     select: ['[aria-label="glint"]'],
   },
+  {
+    file: 'guide-parlor.jpg',
+    board: { pcmLevel: 0.6 },
+    select: ['[aria-label="parlor"]'],
+  },
+  {
+    file: 'guide-growler.jpg',
+    board: { monoLevel: 0.6 },
+    select: ['[aria-label="growler"]'],
+  },
+  {
+    file: 'guide-fourtrack.jpg',
+    board: { fourLevel: 0.6 },
+    select: ['[aria-label="layercake"]'],
+  },
+  ...[
+    ['guide-die.jpg', 'Plinky', 'toy chip die', {}],
+    ['guide-drum-voices.jpg', 'Clatter', 'toy drum voices', {}],
+    ['guide-glint-path.jpg', 'Glint', 'glint signal path', { fmLevel: 0.6 }],
+    [
+      'guide-parlor-path.jpg',
+      'Parlor',
+      'parlor signal path',
+      { pcmLevel: 0.6 },
+    ],
+    [
+      'guide-growler-card.jpg',
+      'Growler',
+      'growler voice card',
+      { monoLevel: 0.6 },
+    ],
+    ['guide-power.jpg', 'Power supply', 'power supply', {}],
+  ].map(([file, door, drawing, board]): Shot => ({
+    file: file as string,
+    board: board as Partial<Controls>,
+    act: page => click(page, `[data-door="${door}"]`),
+    select: [`aside svg[aria-label="${drawing}" i]`],
+    pad: 10,
+  })),
   {
     file: 'guide-trigger.jpg',
     board: {

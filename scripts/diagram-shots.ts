@@ -104,14 +104,14 @@ async function main() {
     const collect = async (door: string) => {
       const n = (await ask(
         page,
-        `document.querySelectorAll('aside svg[role="img"]').length`,
+        `document.querySelectorAll('aside svg[aria-label]').length`,
       )) as number
       for (let i = 0; i < n; i++) {
         const f = JSON.parse(
           (await ask(
             page,
             `(() => {
-              const e = document.querySelectorAll('aside svg[role="img"]')[${i}]
+              const e = document.querySelectorAll('aside svg[aria-label]')[${i}]
               e.scrollIntoView({ block: 'center' })
               const r = e.getBoundingClientRect()
               return JSON.stringify({ label: e.getAttribute('aria-label') ?? '', x: r.x, y: r.y + scrollY, width: r.width, height: r.height })
