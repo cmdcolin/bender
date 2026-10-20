@@ -421,11 +421,7 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
             <BoxRows
               title={open}
               keys={open === 'bus' ? BUS_KEYS : NODE_KEYS[open]}
-              verbs={
-                open === 'bus'
-                  ? verbs?.(BUS)
-                  : verbs?.(DIE, { name: open, keys: NODE_KEYS[open]! })
-              }
+              verbs={open === 'bus' ? verbs?.(BUS) : verbs?.(DIE)}
             />
           )}
         </OpenBox>

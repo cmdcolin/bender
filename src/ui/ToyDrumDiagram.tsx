@@ -352,15 +352,7 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
             <BoxRows
               title={open?.name ?? pick.selected}
               keys={open?.id === 'triggers' ? [] : open?.keys}
-              verbs={
-                open &&
-                verbs?.(
-                  BOXES[open.id].part,
-                  BOXES[open.id].part === HOST
-                    ? { name: open.id, keys: open.keys }
-                    : undefined,
-                )
-              }
+              verbs={open && verbs?.(BOXES[open.id].part)}
             />
           )}
         </OpenBox>

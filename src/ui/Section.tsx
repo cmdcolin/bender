@@ -582,8 +582,7 @@ const PATH_DRAWINGS = {
 const isPathKind = (kind?: string): kind is keyof typeof PATH_DRAWINGS =>
   kind !== undefined && kind in PATH_DRAWINGS
 
-// A fold's cuts for a drawing that has taken the fold's place. The box card
-// carries the dice and the reset.
+// A fold's cuts for a drawing that has taken the fold's place.
 function BoxVerbs({
   group,
   part,
