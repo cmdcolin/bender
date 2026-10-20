@@ -3,8 +3,6 @@
   padding-top: var(--space-xs);
 }
 
-/* The first time a browser opens a stage, its drawing's boxes pulse a few
-   times to say they are buttons. */
 .firstLook {
   composes: section;
 }
@@ -45,25 +43,12 @@
   color: var(--fg3);
 }
 
-/* The stage's own verbs: roll this stage, or put it back where it booted. */
-.verb {
-  composes: chipQuiet from './button.module.css';
-}
-
 .editor {
   composes: chipQuiet from './button.module.css';
 }
 
 .editorOn {
   composes: chipOn from './button.module.css';
-}
-
-/* Carrying the count it is about to take back to zero. It lights the way panic
-   does, not the way a roll does: what it undoes is an afternoon of turning,
-   recoverable off ctrl+z and still not a thing to press by accident. */
-.reset {
-  composes: chipDanger from './button.module.css';
-  font-variant-numeric: tabular-nums;
 }
 
 .close {
@@ -80,8 +65,6 @@
   color: var(--fg);
 }
 
-/* One reading column for every slider row, so tracks line up. It widens to fit
-   lock, tap and + mod when any row in the section has them. */
 .body {
   --readout-col: 5rem;
   padding: 1px var(--space-2xs) var(--space-xs);
@@ -91,173 +74,7 @@
   --readout-col: 9.5rem;
 }
 
-/* The parts no wire reaches, under the drawing rather than in it. The label
-   leads the row rather than taking one of its own: a whole line of panel height
-   for two words is a line the parts themselves wanted. */
-.shelf {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--gap-ctl-sm);
-  padding: var(--space-xs) 0 var(--space-xs);
-}
-
-.shelfLabel {
-  font-size: var(--fs-xs);
-  color: var(--fg4);
-}
-
-/* Not a pick but a shell holding two of them, one that opens the part and one
-   that resets it, so the padding belongs to the halves rather than to the frame
-   around them — which is why it wears the look rather than composing it. */
-.part,
-.partOn {
-  display: inline-flex;
-  align-items: stretch;
-  min-height: var(--ctl-h-sm);
-  font-size: var(--fs-xs);
-  line-height: 1.2;
-  background: var(--surface-raised);
-  color: var(--fg3);
-  border: 1px solid var(--border-quiet);
-  border-radius: var(--ctl-radius);
-}
-
-.part:hover {
-  color: var(--fg);
-  border-color: var(--border-hover);
-}
-
-.partOn {
-  color: var(--fg);
-  border-color: var(--fg4);
-}
-
-.partName {
-  padding: 0 var(--space-sm);
-  background: none;
-  border: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-/* The same count the map draws on the boxes, doing the same thing: pressing it
-   puts the part back where it booted. Split off the name by a rule, because a
-   pill that opens on one end and resets on the other has to say where the line
-   between the two is. */
-.partReset {
-  padding: 0 var(--space-sm);
-  background: none;
-  border: none;
-  border-left: 1px solid var(--border);
-  color: var(--accent);
-  font: inherit;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-}
-
-.partReset:hover {
-  background: color-mix(in srgb, var(--alarm) 18%, transparent);
-  color: var(--alarm);
-}
-
-/* The panel's own instructions — "click a stage for its controls" is the first
-   sentence anybody reads here. --fg3, not --fg4: the fourth tier is 2.6:1 on
-   this ground and is for things whose message is that they are dim. A sentence
-   somebody has to read is measured against what it says, not against where it
-   sits in the stack. */
-.hint {
-  margin: 0;
-  padding: var(--space-xs) var(--space-2xs);
-  border-top: 1px solid var(--border-quiet);
-  font-size: var(--fs-sm);
-  color: var(--fg3);
-}
-
-/* Said once, in the open fold, for the one part on a stage whose knobs
-   overwrite something rather than merely change it — --alarm rather than
-   --fg3, the same red the reset-to-stock button turns under a hovering hand,
-   so a line about a knob that cannot be put back reads like one before a hand
-   is anywhere near the knob. */
 .caution {
   composes: hint;
   color: var(--alarm);
-}
-
-/* The knives one press of a chip wires, above the rows they move. Quiet, and
-   inside the fold rather than on the heading: a row of named glitches on a
-   heading you have not opened is a promise about controls you cannot see. */
-.cuts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap-ctl-sm);
-  padding: var(--space-2xs) 0 var(--space-sm);
-}
-
-.cut {
-  composes: chip from './button.module.css';
-}
-
-/* The verbs at the head of the row, square where the cuts beside them are
-   pills: a cut is a board with a name, and these are things you do to
-   whatever board is there. A row where both look alike is a row where 'roll'
-   reads as one more named glitch. */
-.partVerbs {
-  display: flex;
-  gap: var(--gap-ctl-sm);
-  margin-right: var(--space-xs);
-}
-
-.partVerb {
-  composes: chipQuiet square from './button.module.css';
-}
-
-.partVerbReset {
-  composes: chipDanger square from './button.module.css';
-  font-variant-numeric: tabular-nums;
-}
-
-/* Lit while the board is standing on this one, so the row says which knife is
-   on the bus as well as which are on offer. */
-.cutOn {
-  composes: cut;
-  composes: chipOn from './button.module.css';
-}
-
-.cutOff {
-  composes: chipOff from './button.module.css';
-}
-
-.cutMore {
-  composes: chipQuiet from './button.module.css';
-}
-
-/* A stage's own settings, over the rows they move. Same pills as the cuts,
-   since they are the same promise at stage scale, with the word in front of
-   them that a heading gives the cuts for free. */
-.rigs {
-  composes: cuts;
-  align-items: baseline;
-}
-
-.rigsLabel {
-  color: var(--fg4);
-  font-size: var(--fs-xs);
-  margin-right: var(--space-2xs);
-}
-
-/* A finger's height for the shelf, the way button.module.css gives it to
-   every other kind: on a phone the shelf is the map's doors laid out again at
-   a size a finger can find, and a row of chips at a caption's height would be
-   the same problem it is there to fix. */
-@media (pointer: coarse) {
-  .part,
-  .partOn {
-    font-size: var(--fs-sm);
-  }
-  .partName,
-  .partReset {
-    padding: 0 var(--space-md);
-  }
 }

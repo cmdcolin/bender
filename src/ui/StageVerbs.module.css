@@ -1,0 +1,58 @@
+.verb {
+  composes: chipQuiet from './button.module.css';
+}
+
+.reset {
+  composes: chipDanger from './button.module.css';
+  font-variant-numeric: tabular-nums;
+}
+
+.cuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-ctl-sm);
+  padding: var(--space-2xs) 0 var(--space-sm);
+}
+
+.cut {
+  composes: chip from './button.module.css';
+}
+
+.partVerbs {
+  display: flex;
+  gap: var(--gap-ctl-sm);
+  margin-right: var(--space-xs);
+}
+
+.partVerb {
+  composes: chipQuiet square from './button.module.css';
+}
+
+.partVerbReset {
+  composes: chipDanger square from './button.module.css';
+  font-variant-numeric: tabular-nums;
+}
+
+.cutOn {
+  composes: cut;
+  composes: chipOn from './button.module.css';
+}
+
+.cutOff {
+  composes: chipOff from './button.module.css';
+}
+
+.cutMore {
+  composes: chipQuiet from './button.module.css';
+}
+
+.rigs {
+  composes: cuts;
+  align-items: baseline;
+}
+
+.rigsLabel {
+  color: var(--fg4);
+  font-size: var(--fs-xs);
+  margin-right: var(--space-2xs);
+}

@@ -6,8 +6,9 @@ import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { add, added, shownOn } from './fitted.ts'
 import { rollGroup } from './presets/index.ts'
 import { resetIn, rollIn, useMovedCount } from './rollBack.ts'
-import { OpenGroup, ScopeVerbs } from './Section.tsx'
+import { OpenGroup } from './Section.tsx'
 import styles from './StageList.module.css'
+import { ScopeVerbs } from './StageVerbs.tsx'
 
 import type { Group } from './controls/index.ts'
 

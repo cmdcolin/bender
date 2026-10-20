@@ -8,9 +8,14 @@ import {
 } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
-import { HOLD_KEYS } from './controls/index.ts'
+import {
+  groupKeys,
+  HOLD_KEYS,
+  touchedCount,
+  type Group,
+} from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
-import { resetKeys } from './presets/index.ts'
+import { cutStands, resetKeys, type CutDef } from './presets/index.ts'
 
 // For each stage and fold, the values its rolls overwrote. Undo there puts the
 // last roll's controls back and leaves every other control where it stands.
@@ -70,3 +75,17 @@ export function resetIn(keys: readonly ControlKey[], seconds: number) {
 
 export const useMovedCount = (keys: readonly ControlKey[]): number =>
   useBoardValue(c => keys.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length)
+
+export function useTouchedCount(group: Group): number {
+  return useBoardValue(c => touchedCount(group, c))
+}
+
+export function putBack(group: Group, seconds: number) {
+  resetIn(groupKeys(group), seconds)
+}
+
+export const putBackTitle = (group: Group, touched: number) =>
+  `put all ${touched} of ${group.name}'s moved controls back where they booted — ctrl+z brings them again`
+
+export const useStanding = (cuts: CutDef[]) =>
+  useBoardValue(c => cuts.find(cut => cutStands(cut, c))?.name ?? '')

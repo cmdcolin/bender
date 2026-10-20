@@ -22,7 +22,7 @@ import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
 import { watchRail } from './railWatch.ts'
 import { scrollIntoPanel } from './reveal.ts'
-import { Shelf } from './Section.tsx'
+import { Shelf } from './Shelf.tsx'
 import { formerName } from './stageNames.ts'
 import { watchTriggers } from './triggerWatch.ts'
 

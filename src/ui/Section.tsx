@@ -15,7 +15,6 @@ import { bench, setBench } from './bench.ts'
 import { groupAnchor } from './chain-map.ts'
 import {
   groupKeys,
-  touchedCount,
   SLIDER_BY_KEY,
   type Group,
   type SliderDef,
@@ -25,7 +24,6 @@ import { foldDrawing, zoomFor } from './drawingFor.tsx'
 import { DrumGrid } from './DrumGrid.tsx'
 import { FeedbackLoops } from './FeedbackLoops.tsx'
 import { firstLook, markLooked } from './firstLook.ts'
-import { removable, takeOff } from './fitted.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
 import { Fold } from './Fold.tsx'
 import { FoldDrawing } from './foldDrawings.tsx'
@@ -38,8 +36,6 @@ import {
 } from './foldHosting.ts'
 import { FourTrack } from './FourTrack.tsx'
 import { listView } from './listView.ts'
-import { Menu } from './Menu.tsx'
-import { menuItem } from './menuItems.ts'
 import { MicCap } from './MicJacks.tsx'
 import { MicPatch, MicSwitch } from './MicPatch.tsx'
 import { Mixer } from './Mixer.tsx'
@@ -49,26 +45,20 @@ import { OrderRack } from './OrderRack.tsx'
 import { PatchBay } from './PatchBay.tsx'
 import { PcmKeysDiagram } from './PcmKeysDiagram.tsx'
 import { BenchToggle } from './Pedals.tsx'
-import {
-  applyCut,
-  applyRig,
-  cutOff,
-  cutSays,
-  cutsFor,
-  cutStands,
-  cutWired,
-  type CutDef,
-  rigsFor,
-  rigStands,
-  rollGroup,
-  rollKeys,
-} from './presets/index.ts'
+import { cutsFor } from './presets/index.ts'
 import { scrollIntoPanel } from './reveal.ts'
-import { resetIn, rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
+import { useStanding } from './rollBack.ts'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { formerName } from './stageNames.ts'
+import {
+  BoxVerbs,
+  MoreMenu,
+  PartVerbs,
+  Rigs,
+  StageVerbs,
+} from './StageVerbs.tsx'
 import { SupplyReading } from './SupplyReading.tsx'
 import { TapeLoopDiagram } from './TapeLoopDiagram.tsx'
 import { TapePathDiagram } from './TapePathDiagram.tsx'
@@ -76,29 +66,6 @@ import { Tip } from './Tip.tsx'
 import { TriggerPatch } from './TriggerPatch.tsx'
 import { TuneRoll } from './TuneRoll.tsx'
 
-const CUTS_SHOWN = 4
-
-// A count rather than the board it is counted off, so the eight parts on the
-// shelf sit still through a morph instead of each recounting its group sixty
-// times a second to print the same number.
-function useTouchedCount(group: Group): number {
-  return useBoardValue(c => touchedCount(group, c))
-}
-
-// Every stage's way back, wherever the stage is being shown from: its own
-// reset button, once it is open, puts its moved controls back. It travels and
-// lands in the walk like every other verb, so pressing it by mistake costs one
-// ctrl+z.
-function putBack(group: Group, seconds: number) {
-  resetIn(groupKeys(group), seconds)
-}
-
-const putBackTitle = (group: Group, touched: number) =>
-  `put all ${touched} of ${group.name}'s moved controls back where they booted — ctrl+z brings them again`
-
-// Every control a stage draws as a row, its own and the ones it borrows for a
-// widget of its own — kept by name, because the rows measure themselves against
-// each other and the panel is rebuilt as the board travels.
 const ROWS_BY_GROUP = new Map<string, SliderDef[]>()
 
 function panelRows(group: Group): SliderDef[] {
@@ -112,16 +79,9 @@ function panelRows(group: Group): SliderDef[] {
   return rows
 }
 
-// A control the panel has a reason to draw: one with something to act on, or one
-// your hand has already moved. A fault picks what happened to a wire nobody has
-// cut, and that row is a question about nothing — but a value you set and then
-// unwired is yours, and never vanishes out from under you.
 function shown(def: SliderDef, c: Controls): boolean {
   return !def.needs || def.needs(c) || c[def.key] !== DEFAULT_CONTROLS[def.key]
 }
-
-const useStanding = (cuts: CutDef[]) =>
-  useBoardValue(c => cuts.find(cut => cutStands(cut, c))?.name ?? '')
 
 const useShownKeys = (defs: SliderDef[]): Set<string> =>
   new Set(
@@ -138,9 +98,6 @@ interface Part {
   sliders: SliderDef[]
 }
 
-// The group's controls in table order, cut at every heading a control names.
-// Anything naming none comes back under `null`, which is the block above the
-// first heading — a stage's everyday knobs, and for most stages the whole of it.
 function parts(group: Group): Part[] {
   const out: Part[] = []
   for (const def of group.sliders) {
@@ -157,341 +114,6 @@ function parts(group: Group): Part[] {
 const movedIn = (sliders: SliderDef[], c: Controls) =>
   sliders.filter(d => c[d.key] !== DEFAULT_CONTROLS[d.key]).length
 
-function StageVerbs({ group, seconds }: { group: Group; seconds: number }) {
-  const touched = useTouchedCount(group)
-  return (
-    <ScopeVerbs
-      scope={group.name}
-      what={group.name}
-      seconds={seconds}
-      moved={touched}
-      rollTip={
-        group.editor?.kind === 'drums'
-          ? 'roll this stage — the kit is the one whose pattern is part of it, so this writes the grid too, at the tempo you already had'
-          : `roll every control in ${group.name} somewhere new and leave the rest of the board alone`
-      }
-      resetTip={putBackTitle(group, touched)}
-      onRoll={() =>
-        rollIn(
-          group.name,
-          rollGroup(group, engine.controls.get(), Math.random),
-          seconds,
-        )
-      }
-      onReset={() => putBack(group, seconds)}
-    />
-  )
-}
-
-const rollTipFor = (count: number, what: string, stage: string) =>
-  `Roll the ${count} controls under ${what} somewhere new and leave the rest of ${stage} where it stands.`
-
-const resetTipFor = (what: string, moved: number) =>
-  `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
-
-export function ScopeVerbs({
-  scope,
-  what,
-  seconds,
-  moved,
-  rollTip,
-  resetTip,
-  onRoll,
-  onReset,
-  fold = false,
-}: {
-  scope: string
-  what: string
-  seconds: number
-  moved: number
-  rollTip: string
-  resetTip: string
-  onRoll: () => void
-  onReset: () => void
-  fold?: boolean
-}) {
-  const canUndo = useCanUndoRoll(scope)
-  const verb = fold ? styles.partVerb : styles.verb
-  return (
-    <>
-      <Tip text={rollTip}>
-        <button className={verb} onClick={onRoll}>
-          roll
-        </button>
-      </Tip>
-      {canUndo && (
-        <Tip
-          text={`put ${what} back where it stood before its last roll, and leave every other control where it is now`}
-        >
-          <button className={verb} onClick={() => undoRoll(scope, seconds)}>
-            undo roll
-          </button>
-        </Tip>
-      )}
-      {moved > 0 && (
-        <Tip text={resetTip}>
-          <button
-            className={fold ? styles.partVerbReset : styles.reset}
-            onClick={onReset}
-          >
-            {`reset ${moved}`}
-          </button>
-        </Tip>
-      )}
-    </>
-  )
-}
-
-function MoreMenu({
-  group,
-  seconds,
-  onClose,
-  listed,
-  onList,
-}: {
-  group: Group
-  seconds: number
-  onClose: () => void
-  listed?: boolean
-  onList: (listed: boolean) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const [button, setButton] = useState<HTMLButtonElement | null>(null)
-  const canTakeOff = removable(group.name)
-  if (!canTakeOff && listed === undefined) return null
-  return (
-    <>
-      <button
-        ref={setButton}
-        className={styles.verb}
-        aria-label={`more for ${group.name}`}
-        aria-expanded={open}
-        onClick={() => setOpen(o => !o)}
-      >
-        ⋯
-      </button>
-      {open && (
-        <Menu
-          anchor={button}
-          toggle={button}
-          role="menu"
-          onClose={() => setOpen(false)}
-        >
-          {listed !== undefined && (
-            <Tip
-              text={
-                listed
-                  ? `Back to ${group.name}’s drawing, with its settings behind the boxes.`
-                  : `List every setting of ${group.name} in one column, with no drawing to press through.`
-              }
-            >
-              <button
-                role="menuitemcheckbox"
-                aria-checked={listed}
-                className={menuItem(listed)}
-                onClick={() => {
-                  setOpen(false)
-                  onList(!listed)
-                }}
-              >
-                all settings
-              </button>
-            </Tip>
-          )}
-          {canTakeOff && (
-            <Tip
-              text={`Take ${group.name} off the board and the map. A stage with a level or mix gets it turned off and keeps its other knobs; any other goes back to where it booted. Rolls leave it alone until you add it again.`}
-            >
-              <button
-                role="menuitem"
-                className={menuItem(false)}
-                onClick={() => {
-                  setOpen(false)
-                  engine.morphTo(takeOff(group, engine.controls.get()), seconds)
-                  onClose()
-                }}
-              >
-                take off
-              </button>
-            </Tip>
-          )}
-        </Menu>
-      )}
-    </>
-  )
-}
-
-// The verbs and the cuts for one heading, in a row above the rows they move.
-// Nothing here is a control: pressing one moves the controls underneath, which
-// is the whole of what it is for — the settings are hard to read cold, and this
-// is the way in that leaves them on screen saying what they became.
-//
-// The dice and the way back are per heading and not only per stage because a
-// heading is where the board keeps the things that only mean anything together.
-// Rolling the whole of *Toy keyboard* to hear a different knife on its bus
-// re-rolls its clock, its supply and its bend pot as well, so what you get is a
-// different board and not a different cut — and the three controls you pointed
-// at are the ones you can no longer hear the effect of.
-//
-// Inside the fold rather than on the heading, like the cuts: a row of verbs on
-// a heading you have not opened is a promise about controls you cannot see.
-function PartVerbs({
-  cuts,
-  group,
-  part,
-  rows,
-  moved,
-  standing,
-  seconds,
-}: {
-  cuts: CutDef[]
-  group: Group
-  part: string
-  rows: SliderDef[]
-  moved: number
-  standing: string
-  seconds: number
-}) {
-  const keys = rows.map(d => d.key)
-  const scope = `${group.name} › ${part}`
-  return (
-    <CutRow
-      cuts={cuts}
-      group={group}
-      part={part}
-      standing={standing}
-      seconds={seconds}
-      lead={
-        <span className={styles.partVerbs}>
-          <ScopeVerbs
-            fold
-            scope={scope}
-            what={part}
-            seconds={seconds}
-            moved={moved}
-            rollTip={rollTipFor(rows.length, part, group.name)}
-            resetTip={resetTipFor(part, moved)}
-            onRoll={() =>
-              rollIn(
-                scope,
-                rollKeys(engine.controls.get(), keys, Math.random, true),
-                seconds,
-              )
-            }
-            onReset={() => resetIn(keys, seconds)}
-          />
-        </span>
-      }
-    />
-  )
-}
-
-// The named cuts for one heading, and the way back to no cut at all.
-function CutRow({
-  cuts,
-  group,
-  part,
-  standing,
-  seconds,
-  lead,
-}: {
-  cuts: CutDef[]
-  group: Group
-  part: string
-  standing: string
-  seconds: number
-  lead?: ReactNode
-}) {
-  const wired = useBoardValue(c => cutWired(group.name, part, c))
-  const [open, setOpen] = useState(false)
-  const shownCuts = open
-    ? cuts
-    : cuts.filter((cut, i) => i < CUTS_SHOWN || cut.name === standing)
-  const hidden = cuts.length - shownCuts.length
-  if (!lead && cuts.length === 0) return null
-  return (
-    <div className={styles.cuts}>
-      {lead}
-      {shownCuts.map(cut => (
-        <Tip
-          key={cut.name}
-          text={`${cut.blurb}. One press: ${cutSays(cut)} — which is where it lands in the rows under here.`}
-        >
-          <button
-            className={standing === cut.name ? styles.cutOn : styles.cut}
-            onClick={() =>
-              engine.morphTo(applyCut(cut, engine.controls.get()), seconds)
-            }
-          >
-            {cut.name}
-          </button>
-        </Tip>
-      ))}
-      {hidden > 0 && (
-        <button className={styles.cutMore} onClick={() => setOpen(true)}>
-          {`${hidden} more`}
-        </button>
-      )}
-      {cuts.length > 0 && (wired || open) && (
-        <Tip
-          text={
-            wired
-              ? `take the knife off ${group.name}'s buses and leave the rest of the stage alone`
-              : `there is no knife on ${group.name}'s buses`
-          }
-        >
-          <button
-            className={wired ? styles.cut : styles.cutOff}
-            disabled={!wired}
-            onClick={() =>
-              engine.morphTo(
-                cutOff(group.name, part, engine.controls.get()),
-                seconds,
-              )
-            }
-          >
-            none
-          </button>
-        </Tip>
-      )}
-    </div>
-  )
-}
-
-// A stage's settings, where the stage is one machine rather than a row of
-// separate effects and any single knob on it does nothing you can hear. The
-// desk is sixteen controls that only mean something in combination, and a hand
-// arriving at it has nowhere to start; these are the places it goes that are
-// worth hearing, named for the noise and not for the wiring. Above the rows and
-// under the picture, because the picture is what a rig visibly changes.
-function Rigs({ group, seconds }: { group: Group; seconds: number }) {
-  const rigs = rigsFor(group.name)
-  const standing = useBoardValue(
-    c => rigs.find(rig => rigStands(rig, c))?.name ?? '',
-  )
-  if (rigs.length === 0) return null
-  return (
-    <div className={styles.rigs}>
-      <span className={styles.rigsLabel}>settings</span>
-      {rigs.map(rig => (
-        <Tip
-          key={rig.name}
-          text={`${rig.blurb}. One press: ${group.name} goes back to stock and this is written over it — the rows under here say what it became.`}
-        >
-          <button
-            className={standing === rig.name ? styles.cutOn : styles.cut}
-            onClick={() =>
-              engine.morphTo(applyRig(rig, engine.controls.get()), seconds)
-            }
-          >
-            {rig.name}
-          </button>
-        </Tip>
-      ))}
-    </div>
-  )
-}
-
 function PartFold({
   name,
   rows,
@@ -503,7 +125,6 @@ function PartFold({
 }: {
   name: string
   rows: SliderDef[]
-  /** The rows of the folds the drawing took over, counted as this fold's own. */
   hosted: SliderDef[]
   group: Group
   seconds: number
@@ -513,9 +134,6 @@ function PartFold({
   const own = useBoardValue(c => movedIn(rows, c))
   const moved = useBoardValue(c => movedIn([...rows, ...hosted], c))
   const cuts = cutsFor(group.name, name)
-  // A cut has a name, and a name says more than a count of the controls it
-  // moved: a shut fold reading 'machine-gun' is the heading telling you which
-  // knife is on the bus without your having to open it and read three rows.
   const standing = useStanding(cuts)
   const hostedCuts = hostedBy(group.name, name).flatMap(part =>
     cutsFor(group.name, part),
@@ -583,33 +201,6 @@ const PATH_DRAWINGS = {
 const isPathKind = (kind?: string): kind is keyof typeof PATH_DRAWINGS =>
   kind !== undefined && kind in PATH_DRAWINGS
 
-// A fold's cuts for a drawing that has taken the fold's place.
-function BoxVerbs({
-  group,
-  part,
-  seconds,
-}: {
-  group: Group
-  part: string
-  seconds: number
-}) {
-  const cuts = cutsFor(group.name, part)
-  const standing = useStanding(cuts)
-  return (
-    <CutRow
-      cuts={cuts}
-      group={group}
-      part={part}
-      standing={standing}
-      seconds={seconds}
-    />
-  )
-}
-
-// The rows that sit over the widget rather than under it. Nothing decides
-// which ones except the group saying so — a piano roll is tall enough to push
-// the row naming the song being played off the bottom of the screen, and that
-// is the row the roll is about.
 function Lead({ group }: { group: Group }) {
   const keys = group.lead ?? []
   const rows = group.sliders.filter(def => keys.includes(def.key))
@@ -625,10 +216,6 @@ function Lead({ group }: { group: Group }) {
   )
 }
 
-// A long stage in the shape its own table gives it: the everyday knobs on top,
-// and the rest behind headings you press. Which headings start shut comes off
-// the group — and one holding a control you have moved starts open anyway, since
-// a panel that hides what you set is a panel lying about the board.
 function Rows({
   group,
   seconds,
@@ -643,9 +230,6 @@ function Rows({
   const blocks = parts(group)
   const drawn = listed ? undefined : STAGE_DRAWINGS[group.name]
   const visible = useShownKeys(group.sliders)
-  // Settled the once, on the way in: the fold itself belongs to the browser from
-  // there, and a heading that reopened under a morph because the board had moved
-  // would be the panel taking a hand off the knob you were turning.
   const hostedRows = (name: string) =>
     (listed ? [] : blocks)
       .filter(
@@ -688,8 +272,6 @@ function Rows({
             <ControlSlider key={def.key} def={def} />
           ))
         if (!listed && isHosted(group.name, name)) return null
-        // A heading over nothing is the same question about nothing the rows
-        // themselves wait out.
         if (rows.length === 0) return null
         return (
           <PartFold
@@ -713,8 +295,6 @@ const EDITORS = {
   grid: { label: 'drum pattern', what: 'the drum pattern grid' },
 } as const
 
-// The piano roll and the drum grid are tall, and a player who never writes a
-// melody or a pattern would scroll past them to reach the knobs.
 function EditorToggle({ which }: { which: keyof typeof EDITORS }) {
   const b = useStoreValue(bench)
   const on = b[which]
@@ -738,10 +318,6 @@ function EditorToggle({ which }: { which: keyof typeof EDITORS }) {
   )
 }
 
-// The one stage the map has open, with its controls already unfolded. The panel
-// used to stack all twenty groups as collapsed headers and scroll to whichever
-// the map pointed at; the map is the index now, so what is on screen is what
-// you are turning.
 export function OpenGroup({
   group,
   onClose,
@@ -751,7 +327,6 @@ export function OpenGroup({
   group: Group
   onClose: () => void
   seconds: number
-  /** One of the list view's stack: no close cap, no scroll to it. */
   stacked?: boolean
 }) {
   const shownEditors = useStoreValue(bench)
@@ -776,15 +351,6 @@ export function OpenGroup({
   useEffect(() => {
     if (fresh) markLooked(group.name)
   }, [fresh, group.name])
-  // A tall map can leave the stage it just opened below the fold, so the panel
-  // comes to it — by as little as it takes, which is what scrollIntoPanel is for.
-  //
-  // On the next frame rather than in this commit. Every question it asks — what
-  // overflows, how tall a box is, where it sits — wants a laid-out document, and
-  // the commit it would run in has just mounted a rack of controls and made that
-  // untrue. Asking now drags the whole rack through style and layout inside the
-  // render that built it; asking a frame later reads work the browser has done
-  // anyway. The scroll is smooth and nobody can see the frame.
   useEffect(() => {
     if (stacked) return undefined
     const raf = requestAnimationFrame(() => {
@@ -793,9 +359,6 @@ export function OpenGroup({
     return () => cancelAnimationFrame(raf)
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- scrolls again each time a different stage opens
   }, [group.name, stacked])
-  // The four-track's settings go above its lanes: they are the way in for a hand
-  // that cannot see where to start, and four lanes of empty tape would push them
-  // off the screen.
   const rigsFirst = kind === 'loops'
   const drawn = !listed && group.name in STAGE_DRAWINGS
   const Panel = kind && PANELS[kind]
@@ -811,9 +374,6 @@ export function OpenGroup({
     ) : null
   const rigs = <Rigs group={group} seconds={seconds} />
   return (
-    // The id every door on the map points at. The map draws its boxes as
-    // links so a keyboard reaches them at all, and a link wants somewhere to
-    // land.
     <div
       className={fresh ? styles.firstLook : styles.section}
       ref={el}
@@ -876,87 +436,5 @@ export function OpenGroup({
         </ReserveReadout>
       </div>
     </div>
-  )
-}
-
-// Whatever the drawing found no door for. "Nothing is wired to this" is a hard
-// thing to say inside a picture made of wires, and this used to be where it was
-// said: the slot rack, the bends in no slot, a bay or contact pad with nothing
-// soldered to it. The drawing says all of that itself now — the rack carries
-// what is in none of its slots, the lane between the toys says when neither
-// fires the other, and the bay and the pad sit at the foot — so nothing is
-// expected here. It stays because the map is the panel's only index, and a
-// group with no door on it would otherwise have no way in at all.
-export function Shelf({
-  groups,
-  label,
-  open,
-  onOpen,
-  seconds,
-}: {
-  groups: Group[]
-  label: string
-  open: string | null
-  onOpen: (name: string) => void
-  seconds: number
-}) {
-  if (groups.length === 0) return null
-  return (
-    <div className={styles.shelf}>
-      <span className={styles.shelfLabel}>{label}</span>
-      {groups.map(g => (
-        <ShelfPart
-          key={g.name}
-          group={g}
-          on={open === g.name}
-          onOpen={onOpen}
-          seconds={seconds}
-        />
-      ))}
-    </div>
-  )
-}
-
-function ShelfPart({
-  group,
-  on,
-  onOpen,
-  seconds,
-}: {
-  group: Group
-  on: boolean
-  onOpen: (name: string) => void
-  seconds: number
-}) {
-  const touched = useTouchedCount(group)
-  return (
-    <span className={on ? styles.partOn : styles.part}>
-      <button
-        className={styles.partName}
-        aria-expanded={on}
-        onClick={() => onOpen(group.name)}
-      >
-        {group.name}
-      </button>
-      {touched > 0 && (
-        <Tip text={putBackTitle(group, touched)}>
-          <button
-            className={styles.partReset}
-            onClick={() => putBack(group, seconds)}
-            aria-label={`reset ${group.name}`}
-          >
-            {touched}
-          </button>
-        </Tip>
-      )}
-    </span>
-  )
-}
-
-export function PathHint() {
-  return (
-    <p className={styles.hint}>
-      Click a stage for its controls. A dot marks a stage with moved controls.
-    </p>
   )
 }
