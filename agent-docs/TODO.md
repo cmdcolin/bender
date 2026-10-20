@@ -14,10 +14,9 @@ remove a row here when you add or remove an entry.
 
 ## Needs a call
 
-| Item                                                   | Area                 | First move                                             |
-| ------------------------------------------------------ | -------------------- | ------------------------------------------------------ |
-| [Diagram CSS + route sync](todo/diagram-css-sync.md)   | diagrams, cross-repo | ask which name size and lit-name colour both apps take |
-| [Map touched dot badge](todo/map-touched-dot-badge.md) | map                  | mock the corner dot on a busy board and show the user  |
+| Item                                                 | Area                 | First move                                             |
+| ---------------------------------------------------- | -------------------- | ------------------------------------------------------ |
+| [Diagram CSS + route sync](todo/diagram-css-sync.md) | diagrams, cross-repo | ask which name size and lit-name colour both apps take |
 
 ## Ready
 

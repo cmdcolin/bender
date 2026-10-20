@@ -165,7 +165,7 @@ export function ChainMap({
   const onIt = GROUPS.filter(g => shown.has(g.name))
   const offIt = GROUPS.filter(g => !shown.has(g.name))
 
-  // Clicking a stage's door opens its panel. The touched dot beside a box is
+  // Clicking a stage's door opens its panel. The touched dot on a box corner is
   // signage rather than a control, so it takes no click of its own. A door
   // with a data-key also scrolls the panel to that control's row.
   const press = (target: Element): boolean => {

@@ -384,9 +384,11 @@ const ICON_COL = 16
 const CHIP_H = 16
 const CHIP_GAP = 4
 const CHIP_PAD = 5
-/** the column a stage's touched mark sits in, at the right of its box */
-const COUNT_COL = 18
-const COUNT_INSET = 6
+/** how far in from a box's right edge the key line drops to the row under it */
+const KEY_DROP_IN = 30
+const BADGE_R = 3
+/** keeps a badge on an edge box inside the drawing's margin */
+const BADGE_IN = 2
 const LABEL_H = 12
 /** from a wire label in the gutter to the box it feeds */
 const STUB = 14
@@ -795,16 +797,9 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   // and Signal order touch neither, so they stand clear on the end.
   const foot = [pad, bay, wear, order].filter(drawn)
 
-  // How wide a box has to be to hold what is written on it. The count column is
-  // held open whether or not anything is off stock yet: a rack that grows a
-  // column the first time a control moves would resize itself under every
-  // morph.
-  const countCol = live ? COUNT_COL : 0
+  // How wide a box has to be to hold what is written on it.
   const natural = (n: MapNode) =>
-    PAD_X * 2 +
-    (n.kind === 'inst' ? ICON_COL : 0) +
-    nameWidth(n.label) +
-    countCol
+    PAD_X * 2 + (n.kind === 'inst' ? ICON_COL : 0) + nameWidth(n.label)
   const sum = (row: MapNode[]) => row.reduce((a, n) => a + natural(n), 0)
 
   // The trigger bridges are patch cables, so they are only in the way when one
@@ -847,7 +842,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     // the stages actually on the path do.
     ...pathAndBus
       .filter(n => n.kind !== 'rack')
-      .map(n => PAD_X * 2 + iconCol(n.label) + nameWidth(n.label) + countCol),
+      .map(n => PAD_X * 2 + iconCol(n.label) + nameWidth(n.label)),
   )
   const content = Math.ceil(
     Math.max(
@@ -1173,7 +1168,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   })
   // In the lane under the joint rather than on it. The gap between two boxes
   // is twelve pixels and the word is twice that, so a label written there lands
-  // on the count column of whichever box it overhangs — which is a button, and
+  // on whichever box it overhangs — which is a button, and
   // a word sitting on a button reads as its name.
   const keyLabel: NonNullable<MapWire['label']> = {
     text: reaches(0) ? 'keyboard notes' : 'notes cut',
@@ -1190,7 +1185,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     const from = i === 0 ? kb : keyed[i - 1]!
     // Snaked, the line drops off the end of the row onto the box under it, near
     // the right edge so it stays clear of a trigger landing on the middle.
-    const dropX = from.x + from.w - COUNT_COL - ICON
+    const dropX = from.x + from.w - KEY_DROP_IN
     const pts: Point[] =
       lower.has(to) && !lower.has(from)
         ? dropX > to.x && dropX < to.x + to.w
@@ -1871,27 +1866,21 @@ function words(
   )
 }
 
-// How far off stock a stage is sitting: a dot in the column at the right of
-// its box, lit when the stage differs from default. It draws over the door
-// rather than inside it — a link inside a link is not a thing — and is
-// signage rather than a control: putting a stage back is its own panel's job.
-function touchedMark(
-  name: string,
-  count: number,
-  right: number,
-  y: number,
-  h: number,
-  k: Palette,
-): El[] {
-  if (count === 0) return []
+// A dot on a box's top-right corner when a control in the stage is off stock.
+// It draws outside the door, since a link can't hold a link, and it is signage:
+// the stage's own panel puts it back.
+function touchedMark(n: MapNode, k: Palette): El[] {
+  if (n.count === 0) return []
   return [
-    el('g', { className: 'touched', 'data-touched': name }, [
-      el('title', {}, [`${count} control${count === 1 ? '' : 's'} moved`]),
+    el('g', { className: 'touched', 'data-touched': n.door ?? n.label }, [
+      el('title', {}, [`${n.count} control${n.count === 1 ? '' : 's'} moved`]),
       el('circle', {
-        cx: right - COUNT_INSET,
-        cy: y + h / 2,
-        r: 3,
+        cx: n.x + n.w - BADGE_IN,
+        cy: n.y + BADGE_IN,
+        r: BADGE_R,
         fill: k.accent,
+        stroke: k.bg,
+        strokeWidth: 1.5,
       }),
     ]),
   ]
@@ -2219,7 +2208,7 @@ function glyph(n: MapNode, k: Palette, y: number, pad = PAD_X): El[] {
 }
 
 // A box's edge says whether the stage is doing anything, and the touched dot
-// beside it says whether a control in it has moved.
+// on its corner says whether a control in it has moved.
 const edge = (n: MapNode, k: Palette) =>
   n.open ? k.fg : n.active ? k.dim : k.border
 
@@ -2297,7 +2286,7 @@ export function drawNode(
         links,
         n.open,
       ),
-      ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
+      ...touchedMark(n, k),
     ])
   }
 
@@ -2334,24 +2323,13 @@ export function drawNode(
     return el(
       'g',
       { className: n.id === 'supply' ? 'node rail-chip' : 'node' },
-      [
-        ...door(inner, n.door, links, n.open),
-        ...touchedMark(
-          n.door ?? n.label,
-          n.count,
-          n.x + n.w,
-          n.y,
-          n.h - (bar ? 3 : 0),
-          k,
-        ),
-      ],
+      [...door(inner, n.door, links, n.open), ...touchedMark(n, k)],
     )
   }
   const lit = edge(n, k)
-  const countW = links ? COUNT_COL : 0
   // Every box with room for a glyph column keeps one, so the names down a
   // column share a centre whether or not their stage has a glyph.
-  const roomy = n.w >= PAD_X * 2 + ICON_COL + nameWidth(n.label) + countW
+  const roomy = n.w >= PAD_X * 2 + ICON_COL + nameWidth(n.label)
   const lead = iconCol(n.label) || (roomy ? ICON_COL : 0)
   const inner = [
     el('rect', {
@@ -2368,7 +2346,7 @@ export function drawNode(
     ...glyph(n, k, n.y + (n.h - ICON) / 2),
     words(
       caps(n.label),
-      n.x + lead + (n.w - lead - countW) / 2,
+      n.x + lead + (n.w - lead) / 2,
       baseline(n.y, n.h, FONT),
       FONT,
       n.active || n.open ? k.fg : k.dim,
@@ -2377,7 +2355,7 @@ export function drawNode(
   ]
   return el('g', { className: 'node' }, [
     ...door(inner, n.door, links, n.open),
-    ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
+    ...touchedMark(n, k),
   ])
 }
 
