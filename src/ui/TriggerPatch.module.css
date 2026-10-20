@@ -6,7 +6,7 @@
   width: 100%;
   max-width: 440px;
   height: auto;
-  margin: var(--space-2xs) 0 var(--space-md);
+  margin: var(--space-xs) 0 var(--space-sm);
 }
 
 .label {
@@ -16,8 +16,10 @@
 }
 
 .tag {
-  font-size: var(--fs-xs);
-  fill: var(--fg4);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  fill: var(--fg3);
 }
 
 .hit,

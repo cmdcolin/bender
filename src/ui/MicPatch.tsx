@@ -42,6 +42,8 @@ export function MicPatch() {
       className={styles.diagram}
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       preserveAspectRatio="xMidYMid meet"
+      role="group"
+      aria-label="mic patch"
     >
       <rect
         x={MIC_X}

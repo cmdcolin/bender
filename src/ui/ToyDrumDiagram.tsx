@@ -260,7 +260,7 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
               d={`M${dac.x + dac.w} ${mid(1)} H${width - 2}`}
               look={flow}
             />
-            <Label x={width - 2} y={mid(1) - 4} anchor="end">
+            <Label x={width - 2} y={mid(1) + 12} anchor="end">
               out
             </Label>
             <Bend name="FM" opens="metal bank" pick={pick} hit={fmWire}>

@@ -8,14 +8,14 @@ import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chipLook from './ChipLook.module.css'
 import {
-  boxHeight,
+  ONE_LINE_H,
   boxWidth,
   useReadings,
   useSelectedBox,
   card,
   type BoxPick,
 } from './diagram.ts'
-import { Bend, BoxRows, Diagram, Dot, Wire } from './DiagramParts.tsx'
+import { Bend, BoxRows, Diagram, Dot, Label, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -48,7 +48,7 @@ const KEYS = [
   'drumRom',
 ] as const
 
-const CHIP_H = boxHeight('a\nb')
+const CHIP_H = ONE_LINE_H
 const CHIP_GAP = 12
 
 const WIDTH = 420
@@ -338,14 +338,9 @@ export function KitWiringDiagram() {
                 arrow={arrow}
                 d={`M${AMPS_X + AMPS_W} ${TOP + (N * ROW) / 2} H${WIDTH - 2}`}
               />
-              <text
-                x={WIDTH - 2}
-                y={TOP + (N * ROW) / 2 - 4}
-                textAnchor="end"
-                className={styles.bus}
-              >
+              <Label x={WIDTH - 2} y={TOP + (N * ROW) / 2 + 12} anchor="end">
                 out
-              </text>
+              </Label>
               {node(pattern)}
               {voices.map(b => (
                 <Chip key={b.name} box={b} />

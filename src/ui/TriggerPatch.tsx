@@ -201,6 +201,8 @@ export function TriggerPatch() {
           className={styles.diagram}
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           preserveAspectRatio="xMidYMid meet"
+          role="group"
+          aria-label="trigger patch"
         >
           {box(LEFT_X, 'Clatter')}
           {box(RIGHT_X, 'Plinky')}
