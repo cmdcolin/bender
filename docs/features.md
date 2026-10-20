@@ -308,7 +308,7 @@ line_ cuts the other bus, which the processor never touches. The sine is a table
 and a table is an address, so a knife there reshapes the wave as you play and
 leaves nothing behind. _Effect_ plays a bird, surf, wind, a siren or crickets
 from the ROM. Each is a program of register writes, the busiest traffic the bus
-ever carries.
+ever carries. The effect buttons over the keys run any of them while held.
 
 Named settings, one press each at the head of the panel. A press resets the
 stage to stock and writes the setting over it, and the rows underneath show the

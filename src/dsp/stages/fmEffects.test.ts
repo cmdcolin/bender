@@ -16,6 +16,7 @@ import {
   renderBender,
   rms,
   SR,
+  tail,
 } from '../testRender.ts'
 import { type Cpu, EFFECTS, FM_EFFECT_NAMES } from './fmEffects.ts'
 import { romIndex } from './roms.ts'
@@ -210,4 +211,24 @@ test('a laser shot falls in pitch', () => {
   const centroid = (from: number, to: number) =>
     spectrum(span(x, from, to), SR, 2048).centroid
   expect(centroid(0, 0.045)).toBeGreaterThan(3 * centroid(0.12, 0.165))
+})
+
+test('a held effect button plays its script and letting go stops it', () => {
+  const surf = EFFECTS.findIndex(e => e.name === 'surf')
+  const held = renderBender(
+    NOTHING_PLAYING,
+    3,
+    b => b.fmChip.sfxOn(surf),
+    undefined,
+    (b, secs) => {
+      if (secs >= 1.5) b.fmChip.sfxOff(surf)
+    },
+  )
+  const switched = renderBender(
+    { ...NOTHING_PLAYING, fmEffect: effect('surf') },
+    1.5,
+  )
+  const pressed = held.subarray(SR / 2, (3 * SR) / 2)
+  expect(deviation(pressed, switched.subarray(SR / 2))).toBeLessThan(1e-6)
+  expect(rms(tail(held, 0.5))).toBeLessThan(rms(pressed) / 20)
 })

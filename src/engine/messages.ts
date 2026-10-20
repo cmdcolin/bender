@@ -74,11 +74,12 @@ export interface DrumHitMsg {
   skipTick?: number
 }
 
-/** An effect button on the toy's deck going down or coming up. */
+/** An effect button going down or coming up, on the toy's deck or Glint's. */
 export interface SfxMsg {
   kind: 'sfx'
   sfx: number
   on: boolean
+  dest: 'toy' | 'fm'
 }
 
 // Both run lines in one message: they are two switches on one desk, and the

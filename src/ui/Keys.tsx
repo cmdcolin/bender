@@ -1,12 +1,10 @@
-import { useState } from 'react'
-
 import { YOURS } from '../dsp/stages/roms.ts'
 import { SFX_NAMES } from '../dsp/stages/toySfx.ts'
 import { engine } from '../engine/engine.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
+import { EffectPads } from './EffectPads.tsx'
 import { GateOut } from './GateCables.tsx'
 import { Keybed } from './Keybed.tsx'
-import { claimPress, claimRelease } from './keyPress.ts'
 import styles from './Keys.module.css'
 import { RailLamp } from './RailLamp.tsx'
 import { Tip } from './Tip.tsx'
@@ -88,7 +86,14 @@ export function Keys({
       onOpen={onOpen}
       seconds={seconds}
       onClose={onClose}
-      pads={<SfxPads />}
+      pads={
+        <EffectPads
+          dest="toy"
+          names={SFX_NAMES}
+          tips={SFX_TIPS}
+          className={styles.pads}
+        />
+      }
       tail={<span className={styles.grille} aria-hidden="true" />}
     />
   )
@@ -102,41 +107,3 @@ const SFX_TIPS = [
   'a burst of noise with a thump under it. Hold for a machine gun',
   'a short rising chirp. Hold for a string of them',
 ]
-
-// The effect buttons, in a row over the keys the way the toys had them. A
-// press runs one pass; holding keeps running it.
-function SfxPads() {
-  const [down, setDown] = useState(-1)
-  const press = (sfx: number) => {
-    engine.toySfx(sfx, true)
-    setDown(sfx)
-  }
-  const release = (sfx: number) => {
-    if (down !== sfx) return
-    engine.toySfx(sfx, false)
-    setDown(-1)
-  }
-  return (
-    <div className={styles.pads} role="group" aria-label="effect buttons">
-      {SFX_NAMES.map((name, sfx) => (
-        <Tip key={name} text={SFX_TIPS[sfx]}>
-          <button
-            className={down === sfx ? styles.padOn : styles.pad}
-            aria-pressed={down === sfx}
-            onPointerDown={e => {
-              e.currentTarget.setPointerCapture(e.pointerId)
-              press(sfx)
-            }}
-            onPointerUp={() => release(sfx)}
-            onPointerCancel={() => release(sfx)}
-            onLostPointerCapture={() => release(sfx)}
-            onKeyDown={e => claimPress(e) && press(sfx)}
-            onKeyUp={e => claimRelease(e) && release(sfx)}
-          >
-            {name}
-          </button>
-        </Tip>
-      ))}
-    </div>
-  )
-}

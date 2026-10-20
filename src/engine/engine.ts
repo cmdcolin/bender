@@ -1473,8 +1473,8 @@ export class Engine {
     if (this.recordsSeq(dest)) this.writeSeqNote(note)
   }
 
-  toySfx(sfx: number, on: boolean) {
-    this.post({ kind: 'sfx', sfx, on })
+  sfx(dest: 'toy' | 'fm', sfx: number, on: boolean) {
+    this.post({ kind: 'sfx', sfx, on, dest })
   }
 
   noteOff(semitone: number, dest: NoteDest = 'toy') {

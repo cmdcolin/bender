@@ -335,14 +335,25 @@ test('dragging a cable end off its jack pulls the plug, and dragging a jack to i
 })
 
 test('an effect button on the toy runs while held and lets go on release', () => {
-  const sfx = vi.spyOn(engine, 'toySfx')
+  const sfx = vi.spyOn(engine, 'sfx')
   render(<Keys />)
   const laser = bed('effect buttons').getByRole('button', { name: 'laser' })
   fireEvent.pointerDown(laser)
-  expect(sfx).toHaveBeenLastCalledWith(0, true)
+  expect(sfx).toHaveBeenLastCalledWith('toy', 0, true)
   expect(laser.getAttribute('aria-pressed')).toBe('true')
   fireEvent.pointerUp(laser)
-  expect(sfx).toHaveBeenLastCalledWith(0, false)
+  expect(sfx).toHaveBeenLastCalledWith('toy', 0, false)
   expect(laser.getAttribute('aria-pressed')).toBe('false')
+  sfx.mockRestore()
+})
+
+test('an effect button on Glint runs its effect ROM script while held', () => {
+  const sfx = vi.spyOn(engine, 'sfx')
+  render(<FmKeys />)
+  const surf = bed('effect buttons').getByRole('button', { name: 'surf' })
+  fireEvent.pointerDown(surf)
+  expect(sfx).toHaveBeenLastCalledWith('fm', 1, true)
+  fireEvent.pointerUp(surf)
+  expect(sfx).toHaveBeenLastCalledWith('fm', 1, false)
   sfx.mockRestore()
 })

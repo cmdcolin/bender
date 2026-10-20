@@ -1,0 +1,17 @@
+/* The effect buttons over a keybed: one row of the deck's caps, each lit in
+   the --cap-lit colour the caller's class sets while it is held. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-ctl-sm);
+}
+
+.pad {
+  composes: cap from './button.module.css';
+  touch-action: none;
+}
+
+.padOn {
+  composes: capOn from './button.module.css';
+  touch-action: none;
+}

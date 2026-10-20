@@ -41,7 +41,8 @@ Add them from the **Add instrument** menu.
 
 A two-operator, four-voice FM chip. A processor sets it up a byte at a time over
 a bus, so a wrong byte stays wrong until the processor writes that register
-again.
+again. The row of buttons over its keys runs the effect ROM's scripts (bird,
+surf, wind and seven more) while held.
 
 ![The FM chip's blocks: key, processor, bus, modulator, carrier and output, with clocks and the die.](../public/guide/guide-glint-path.jpg)
 

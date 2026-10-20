@@ -90,3 +90,8 @@
     display: none;
   }
 }
+
+/* The effect buttons light in the board's gold while held. */
+.pads {
+  --cap-lit: var(--gold);
+}

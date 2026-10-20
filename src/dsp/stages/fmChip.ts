@@ -507,6 +507,9 @@ export class FmChip implements Stage {
   // The effect ROM, and the driver running it: a script of writes over time,
   // clocked off the CPU rather than off the rail.
   private effect = -1
+  // The effect button a finger is on, which runs over whatever the Effect
+  // switch is set to for as long as it is held.
+  private heldEffect = -1
   private effectTick = 0
   private effectClock = 0
   private cpu: Cpu = {
@@ -774,6 +777,14 @@ export class FmChip implements Stage {
 
   // A key that came up before its block began lands as an edge, so it still
   // sounds and *Note length* ends it.
+  sfxOn(effect: number) {
+    if (EFFECTS[effect]) this.heldEffect = effect
+  }
+
+  sfxOff(effect: number) {
+    if (effect === this.heldEffect) this.heldEffect = -1
+  }
+
   noteOff(note: number) {
     for (const q of this.queued) if (q.note === note) q.held = false
     this.keyUp(note, false)
@@ -1315,7 +1326,8 @@ export class FmChip implements Stage {
       this.powerUp()
     }
 
-    const effect = Math.round(p[IDX.fmEffect]!) - 1
+    const effect =
+      this.heldEffect >= 0 ? this.heldEffect : Math.round(p[IDX.fmEffect]!) - 1
     if (effect !== this.effect) this.setEffect(effect)
     const script = EFFECTS[this.effect]
 
@@ -1630,6 +1642,7 @@ export class FmChip implements Stage {
 
   panic() {
     this.queued.length = 0
+    this.heldEffect = -1
     this.powerUp()
   }
 
