@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 // The five pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
-// docs/img/guide-*.jpg from the app as it is now. Each shot is a board, a thing to click once the page
+// public/guide/guide-*.jpg from the app as it is now. Each shot is a board, a thing to click once the page
 // is up, and the element (or elements) to crop to — read off the page rather
 // than hand-picked pixels, so a layout change breaks the shot instead of
 // quietly outdating it.
@@ -244,7 +244,7 @@ async function main() {
         w: Math.round((rect.width + pad * 2) * DPR),
         h: Math.round((rect.height + pad * 2) * DPR),
       }
-      const out = join('docs/img', shot.file)
+      const out = join('public/guide', shot.file)
       magick([
         raw,
         '-crop',

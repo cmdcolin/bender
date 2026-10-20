@@ -5,14 +5,9 @@ import { postSchema } from './site/posts.ts'
 
 import { readFileSync } from 'node:fs'
 
-const REPO = 'https://github.com/cmdcolin/bender'
-
-// The user guide lives in docs/, read by people on GitHub too, so the guide
-// page renders it straight from there rather than keeping a second copy. Its
-// links to sibling docs (BENDS.md, MIDI.md, ...) stay relative for GitHub;
-// this loader rewrites them to full GitHub URLs since this site only builds
-// a page for the guide itself. Screenshots under docs/img/ get the same
-// treatment, pointed at the raw file instead of the blob view.
+// The user guide lives in docs/ so GitHub renders it too. The guide page renders
+// it from there; its screenshots sit in public/guide/ and the loader points
+// them at the site's own copy.
 const docs = defineCollection({
   loader: {
     name: 'user-guide',
@@ -21,16 +16,11 @@ const docs = defineCollection({
         new URL('../docs/USER-GUIDE.md', import.meta.url),
         'utf-8',
       )
-      const body = raw
-        .replace(
-          /\]\(([\w-]+\.md)(#[^)]*)?\)/g,
-          (_match, file, hash = '') =>
-            `](${REPO}/blob/main/docs/${file}${hash})`,
-        )
-        .replace(
-          /\]\((img\/[\w.-]+)\)/g,
-          (_match, path) => `](${REPO}/raw/main/docs/${path})`,
-        )
+      const base = import.meta.env.BASE_URL.replace(/\/?$/, '/')
+      const body = raw.replace(
+        /\]\(\.\.\/public\/guide\/([\w.-]+)\)/g,
+        (_match, file) => `](${base}guide/${file})`,
+      )
       const rendered = await context.renderMarkdown(body)
       context.store.set({ id: 'user-guide', body, data: {}, rendered })
     },
