@@ -58,10 +58,6 @@
   composes: chipOn from './button.module.css';
 }
 
-.verbOff {
-  composes: chipOff from './button.module.css';
-}
-
 /* Carrying the count it is about to take back to zero. It lights the way panic
    does, not the way a roll does: what it undoes is an afternoon of turning,
    recoverable off ctrl+z and still not a thing to press by accident. */
@@ -207,26 +203,19 @@
    pills: a cut is a board with a name, and these are things you do to
    whatever board is there. A row where both look alike is a row where 'roll'
    reads as one more named glitch. */
+.partVerbs {
+  display: flex;
+  gap: var(--gap-ctl-sm);
+  margin-right: var(--space-xs);
+}
+
 .partVerb {
   composes: chipQuiet square from './button.module.css';
 }
 
-.partVerbOff {
-  composes: chipOff square from './button.module.css';
-}
-
 .partVerbReset {
   composes: chipDanger square from './button.module.css';
-  margin-right: var(--space-xs);
   font-variant-numeric: tabular-nums;
-}
-
-/* Nothing under this heading has moved, so there is nothing to put back. Lit
-   like the rest of the row's dead buttons rather than like a reset, because a
-   reset that glows with no work to do is one you press to find out. */
-.partOff {
-  composes: chipOff square from './button.module.css';
-  margin-right: var(--space-xs);
 }
 
 /* Lit while the board is standing on this one, so the row says which knife is

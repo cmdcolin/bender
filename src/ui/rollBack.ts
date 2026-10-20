@@ -1,10 +1,16 @@
 import { useSyncExternalStore } from 'react'
 
-import { CONTROL_KEYS, type ControlKey, type Controls } from '../controls.ts'
+import {
+  CONTROL_KEYS,
+  DEFAULT_CONTROLS,
+  type ControlKey,
+  type Controls,
+} from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { createStore } from '../listeners.ts'
 import { HOLD_KEYS } from './controls/index.ts'
 import { useBoardValue } from './ControlsContext.ts'
+import { resetKeys } from './presets/index.ts'
 
 // For each stage and fold, the values its rolls overwrote. Undo there puts the
 // last roll's controls back and leaves every other control where it stands.
@@ -57,3 +63,10 @@ export function useCanUndoRoll(scope: string): boolean {
   useSyncExternalStore(stashes.subscribe, stashes.get)
   return useBoardValue(() => live(scope))
 }
+
+export function resetIn(keys: readonly ControlKey[], seconds: number) {
+  engine.morphTo(resetKeys(engine.controls.get(), keys), seconds, new Set(keys))
+}
+
+export const useMovedCount = (keys: readonly ControlKey[]): number =>
+  useBoardValue(c => keys.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length)

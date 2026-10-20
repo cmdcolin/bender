@@ -8,10 +8,6 @@
   composes: chipQuiet square from './button.module.css';
 }
 
-.off {
-  composes: chipOff square from './button.module.css';
-}
-
 .reset {
   composes: chipDanger square from './button.module.css';
   font-variant-numeric: tabular-nums;

@@ -51,15 +51,13 @@ import {
   cutStands,
   cutWired,
   type CutDef,
-  resetGroup,
-  resetKeys,
   rigsFor,
   rigStands,
   rollGroup,
   rollKeys,
 } from './presets/index.ts'
 import { scrollIntoPanel } from './reveal.ts'
-import { rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
+import { resetIn, rollIn, undoRoll, useCanUndoRoll } from './rollBack.ts'
 import styles from './Section.module.css'
 import { ControlSlider, ReserveReadout } from './Slider.tsx'
 import { slidersFirst } from './slidersFirst.ts'
@@ -85,17 +83,11 @@ function useTouchedCount(group: Group): number {
 // lands in the walk like every other verb, so pressing it by mistake costs one
 // ctrl+z.
 function putBack(group: Group, seconds: number) {
-  engine.morphTo(
-    resetGroup(group, engine.controls.get()),
-    seconds,
-    new Set(groupKeys(group)),
-  )
+  resetIn(groupKeys(group), seconds)
 }
 
 const putBackTitle = (group: Group, touched: number) =>
-  touched > 0
-    ? `put all ${touched} of ${group.name}'s moved controls back where they booted — ctrl+z brings them again`
-    : `${group.name} is already where it booted`
+  `put all ${touched} of ${group.name}'s moved controls back where they booted — ctrl+z brings them again`
 
 // Every control a stage draws as a row, its own and the ones it borrows for a
 // widget of its own — kept by name, because the rows measure themselves against
@@ -175,12 +167,8 @@ const rollTipFor = (count: number, what: string, stage: string) =>
   `Roll the ${count} controls under ${what} somewhere new and leave the rest of ${stage} where it stands.`
 
 const resetTipFor = (what: string, moved: number) =>
-  moved > 0
-    ? `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
-    : `${what} is already where it booted`
+  `put ${what}'s ${moved} moved controls back where they booted — ctrl+z brings them again`
 
-// Roll, undo and reset for one scope of the board. The stage header and each
-// part's fold draw it, the fold in its smaller look.
 export function ScopeVerbs({
   scope,
   what,
@@ -202,28 +190,34 @@ export function ScopeVerbs({
   onReset: () => void
   fold?: boolean
 }) {
-  const on = fold ? styles.partVerbReset : styles.reset
-  const off = fold ? styles.partOff : styles.verbOff
+  const canUndo = useCanUndoRoll(scope)
+  const verb = fold ? styles.partVerb : styles.verb
   return (
     <>
       <Tip text={rollTip}>
-        <button
-          className={fold ? styles.partVerb : styles.verb}
-          onClick={onRoll}
-        >
+        <button className={verb} onClick={onRoll}>
           roll
         </button>
       </Tip>
-      <UndoRoll scope={scope} what={what} seconds={seconds} fold={fold} />
-      <Tip text={resetTip}>
-        <button
-          className={moved > 0 ? on : off}
-          onClick={onReset}
-          disabled={moved === 0}
+      {canUndo && (
+        <Tip
+          text={`put ${what} back where it stood before its last roll, and leave every other control where it is now`}
         >
-          {moved > 0 ? `reset ${moved}` : 'reset'}
-        </button>
-      </Tip>
+          <button className={verb} onClick={() => undoRoll(scope, seconds)}>
+            undo roll
+          </button>
+        </Tip>
+      )}
+      {moved > 0 && (
+        <Tip text={resetTip}>
+          <button
+            className={fold ? styles.partVerbReset : styles.reset}
+            onClick={onReset}
+          >
+            {`reset ${moved}`}
+          </button>
+        </Tip>
+      )}
     </>
   )
 }
@@ -279,39 +273,6 @@ function MoreMenu({
   )
 }
 
-function UndoRoll({
-  scope,
-  what,
-  seconds,
-  fold = false,
-}: {
-  scope: string
-  what: string
-  seconds: number
-  fold?: boolean
-}) {
-  const on = fold ? styles.partVerb : styles.verb
-  const off = fold ? styles.partVerbOff : styles.verbOff
-  const can = useCanUndoRoll(scope)
-  return (
-    <Tip
-      text={
-        can
-          ? `put ${what} back where it stood before its last roll, and leave every other control where it is now`
-          : `no roll of ${what} to take back`
-      }
-    >
-      <button
-        className={can ? on : off}
-        disabled={!can}
-        onClick={() => undoRoll(scope, seconds)}
-      >
-        undo
-      </button>
-    </Tip>
-  )
-}
-
 // The verbs and the cuts for one heading, in a row above the rows they move.
 // Nothing here is a control: pressing one moves the controls underneath, which
 // is the whole of what it is for — the settings are hard to read cold, and this
@@ -353,29 +314,25 @@ function PartVerbs({
       standing={standing}
       seconds={seconds}
       lead={
-        <ScopeVerbs
-          fold
-          scope={scope}
-          what={part}
-          seconds={seconds}
-          moved={moved}
-          rollTip={rollTipFor(rows.length, part, group.name)}
-          resetTip={resetTipFor(part, moved)}
-          onRoll={() =>
-            rollIn(
-              scope,
-              rollKeys(engine.controls.get(), keys, Math.random, true),
-              seconds,
-            )
-          }
-          onReset={() =>
-            engine.morphTo(
-              resetKeys(engine.controls.get(), keys),
-              seconds,
-              new Set(keys),
-            )
-          }
-        />
+        <span className={styles.partVerbs}>
+          <ScopeVerbs
+            fold
+            scope={scope}
+            what={part}
+            seconds={seconds}
+            moved={moved}
+            rollTip={rollTipFor(rows.length, part, group.name)}
+            resetTip={resetTipFor(part, moved)}
+            onRoll={() =>
+              rollIn(
+                scope,
+                rollKeys(engine.controls.get(), keys, Math.random, true),
+                seconds,
+              )
+            }
+            onReset={() => resetIn(keys, seconds)}
+          />
+        </span>
       }
     />
   )

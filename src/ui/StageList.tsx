@@ -1,12 +1,11 @@
-import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
 import { bench } from './bench.ts'
 import { StageBar } from './ChainMap.tsx'
 import { GROUPS, groupKeys } from './controls/index.ts'
 import { useBoardValue, useStoreValue } from './ControlsContext.ts'
 import { add, added, shownOn } from './fitted.ts'
-import { resetKeys, rollGroup } from './presets/index.ts'
-import { rollIn } from './rollBack.ts'
+import { rollGroup } from './presets/index.ts'
+import { resetIn, rollIn, useMovedCount } from './rollBack.ts'
 import { OpenGroup, ScopeVerbs } from './Section.tsx'
 import styles from './StageList.module.css'
 
@@ -19,23 +18,17 @@ const WHOLE_LIST = 'every stage on the board'
 // Roll, undo and reset for every stage in the list at once.
 function ListVerbs({ groups, seconds }: { groups: Group[]; seconds: number }) {
   const keys = [...new Set(groups.flatMap(g => groupKeys(g)))]
-  const moved = useBoardValue(
-    c => keys.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
-  )
+  const moved = useMovedCount(keys)
   return (
     <div className={styles.verbs}>
-      <span className={styles.label}>all settings</span>
+      <span className={styles.label}>every stage</span>
       <ScopeVerbs
         scope={WHOLE_LIST}
         what={WHOLE_LIST}
         seconds={seconds}
         moved={moved}
         rollTip="Roll every control of every stage in the list somewhere new. Stages off the board stay where they are."
-        resetTip={
-          moved > 0
-            ? `put all ${moved} moved controls in the list back where they booted — ctrl+z brings them again`
-            : 'every stage in the list is already where it booted'
-        }
+        resetTip={`put all ${moved} moved controls in the list back where they booted — ctrl+z brings them again`}
         onRoll={() =>
           rollIn(
             WHOLE_LIST,
@@ -46,13 +39,7 @@ function ListVerbs({ groups, seconds }: { groups: Group[]; seconds: number }) {
             seconds,
           )
         }
-        onReset={() =>
-          engine.morphTo(
-            resetKeys(engine.controls.get(), keys),
-            seconds,
-            new Set(keys),
-          )
-        }
+        onReset={() => resetIn(keys, seconds)}
       />
     </div>
   )

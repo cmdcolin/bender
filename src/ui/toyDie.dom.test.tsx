@@ -269,10 +269,10 @@ test('an open box resets its own rows from inside its card', () => {
   fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
   const card = screen.getByRole('region', { name: 'envelope' })
   const reset = () =>
-    within(card).getByRole('button', { name: 'reset envelope' })
-  expect(reset().hasAttribute('disabled')).toBe(true)
+    within(card).queryByRole('button', { name: 'reset envelope' })
+  expect(reset()).toBeNull()
   fireEvent.click(within(card).getByRole('button', { name: 'roll envelope' }))
-  fireEvent.click(reset())
+  fireEvent.click(reset()!)
   for (const key of NODE_KEYS.envelope!)
     expect(engine.controls.get()[key]).toBe(DEFAULT_CONTROLS[key])
 })

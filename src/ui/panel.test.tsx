@@ -384,6 +384,8 @@ test('a morph in flight puts the bar up instead', async () => {
 // what you get is a different board rather than a different cut.
 const inFold = (head: HTMLElement, name: RegExp) =>
   within(head.parentElement!).getByRole('button', { name })
+const notInFold = (head: HTMLElement, name: RegExp) =>
+  within(head.parentElement!).queryByRole('button', { name })
 
 test('a fold rolls its own rows and leaves the rest of the stage alone', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
@@ -427,19 +429,20 @@ test('undo on a fold takes back its roll and keeps a knob turned since', () => {
   })
   act(() => engine.set('ensMix', 0.9))
   act(() => {
-    fireEvent.click(inFold(line(), /^undo$/))
+    fireEvent.click(inFold(line(), /^undo roll$/))
   })
   expect({ ...engine.controls.get(), ensMix: was.ensMix }).toEqual(was)
   expect(engine.controls.get().ensMix).toBe(0.9)
-  expect((inFold(line(), /^undo$/) as HTMLButtonElement).disabled).toBe(true)
+  expect(notInFold(line(), /^undo roll$/)).toBeNull()
 })
 
 test('undo on a stage walks back its rolls one at a time', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   openFmChip()
-  const undo = () =>
-    screen.getAllByRole('button', { name: /^undo$/ })[0] as HTMLButtonElement
-  expect(undo().disabled).toBe(true)
+  const undo = () => screen.getAllByRole('button', { name: /^undo roll$/ })[0]!
+  const noUndo = () =>
+    expect(screen.queryByRole('button', { name: /^undo roll$/ })).toBeNull()
+  noUndo()
   const roll = () => screen.getAllByRole('button', { name: /^roll$/ })[0]!
   const boot = { ...engine.controls.get() }
   act(() => {
@@ -457,14 +460,14 @@ test('undo on a stage walks back its rolls one at a time', () => {
     fireEvent.click(undo())
   })
   expect(engine.controls.get()).toEqual(boot)
-  expect(undo().disabled).toBe(true)
+  noUndo()
 })
 
 test('a fold with nothing moved under it offers no way back', () => {
   act(() => engine.patch({ ...DEFAULT_CONTROLS }))
   openEnsemble()
   fireEvent.click(line())
-  expect((inFold(line(), /^reset$/) as HTMLButtonElement).disabled).toBe(true)
+  expect(notInFold(line(), /^reset/)).toBeNull()
 })
 
 // A travel whose middle is a stop and whose bottom half is backwards. The knob
