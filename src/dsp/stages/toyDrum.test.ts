@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
-import { CYCLE, STEPS } from '../../drums.ts'
+import { CYCLE, ROCK, STEPS } from '../../drums.ts'
 import { IDX, packParams } from '../../engine/params.ts'
 import { buildBender } from '../build.ts'
 import { DEST } from '../modbus.ts'
@@ -1430,6 +1430,7 @@ function bars(
   built.transport.drums = true
   const p = packParams({
     ...DEFAULT_CONTROLS,
+    ...ROCK,
     chipLevel: 0,
     drumBpm: 240,
     ...c,

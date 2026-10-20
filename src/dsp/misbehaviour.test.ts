@@ -7,6 +7,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { ROCK } from '../drums.ts'
 import { packParams } from '../engine/params.ts'
 import { buildBender, buildChain } from './build.ts'
 import { DEST } from './modbus.ts'
@@ -31,7 +32,7 @@ function render(
   seed = 1,
 ): Float32Array {
   const chain = buildChain(SR, seed)
-  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const p = packParams({ ...DEFAULT_CONTROLS, ...ROCK, ...overrides })
   const io = makeIo()
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   const out = new Float32Array(blocks * BLOCK)
@@ -242,7 +243,7 @@ function railPitch(
   to: number,
 ): number {
   const built = buildBender(SR)
-  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const p = packParams({ ...DEFAULT_CONTROLS, ...ROCK, ...overrides })
   const io = makeIo()
   const blocks = Math.ceil((to * SR) / BLOCK)
   let sum = 0
