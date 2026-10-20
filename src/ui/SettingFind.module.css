@@ -1,0 +1,42 @@
+.find {
+  padding-bottom: var(--space-sm);
+}
+
+.field {
+  width: 100%;
+  padding: var(--space-2xs) var(--space-sm);
+  font: inherit;
+  font-size: var(--fs-xs);
+  color: var(--fg);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--ctl-radius);
+}
+
+.field:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.hits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-ctl-sm);
+  padding-top: var(--space-xs);
+}
+
+.hit {
+  composes: actionQuiet from './button.module.css';
+}
+
+.stage {
+  margin-left: var(--space-xs);
+  color: var(--fg3);
+  font-size: var(--fs-xs);
+}
+
+.note {
+  align-self: center;
+  color: var(--fg3);
+  font-size: var(--fs-xs);
+}

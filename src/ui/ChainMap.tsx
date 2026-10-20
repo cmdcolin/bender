@@ -22,6 +22,7 @@ import { Menu } from './Menu.tsx'
 import { read, write } from './persist.ts'
 import { watchRail } from './railWatch.ts'
 import { aimAt } from './reveal.ts'
+import { SettingFind } from './SettingFind.tsx'
 import { Shelf } from './Shelf.tsx'
 import { formerName } from './stageNames.ts'
 import { watchTriggers } from './triggerWatch.ts'
@@ -204,33 +205,36 @@ export function StageBar({
 }) {
   const listed = useStoreValue(listView)
   return (
-    <div className={styles.addRow}>
-      <button
-        className={styles.add}
-        aria-pressed={listed}
-        onClick={() => setListView(!listed)}
-      >
-        {listed ? '◧ show the diagram' : '☰ show as a list'}
-      </button>
-      {children}
-      <StageMenu
-        groups={off}
-        button="+ add a stage"
-        label="add a stage"
-        former
-        onPick={onOpen}
-      />
-      <StageMenu
-        groups={on.filter(g => removable(g.name))}
-        button="− take off a stage"
-        label="take off a stage"
-        onPick={name => {
-          const group = GROUP_BY_NAME.get(name)!
-          engine.morphTo(takeOff(group, engine.controls.get()), seconds)
-          if (open === name) onOpen(name)
-        }}
-      />
-    </div>
+    <>
+      <div className={styles.addRow}>
+        <button
+          className={styles.add}
+          aria-pressed={listed}
+          onClick={() => setListView(!listed)}
+        >
+          {listed ? '◧ show the diagram' : '☰ show as a list'}
+        </button>
+        {children}
+        <StageMenu
+          groups={off}
+          button="+ add a stage"
+          label="add a stage"
+          former
+          onPick={onOpen}
+        />
+        <StageMenu
+          groups={on.filter(g => removable(g.name))}
+          button="− take off a stage"
+          label="take off a stage"
+          onPick={name => {
+            const group = GROUP_BY_NAME.get(name)!
+            engine.morphTo(takeOff(group, engine.controls.get()), seconds)
+            if (open === name) onOpen(name)
+          }}
+        />
+      </div>
+      <SettingFind groups={on} open={open} onOpen={onOpen} />
+    </>
   )
 }
 
