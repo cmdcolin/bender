@@ -17,7 +17,7 @@ and PADS is the open box.
 
 ![The toy drums. Pads and pattern feed the triggers, which feed the one-shots, tanks, metal bank and noise, then the amps and the DAC.](/bender/blog/drum-voices-diagram.webp)
 
-The FM chip draws its operators as a close-up under the chip's box.
+The FM chip's diagram shows its operators as a close-up under the chip's box.
 
 ![The FM chip's operators. The modulator has feedback, and the carrier and LFO sit beside it.](/bender/blog/fm-operators-zoom.webp)
 

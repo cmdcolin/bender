@@ -3,9 +3,9 @@
 bender publishes `window.bender`, a JavaScript API for the page. A browsing
 agent such as Claude in Chrome calls it to read and change the board, write
 melodies and drum patterns, and measure the sound. The app page carries a
-`<meta name="ai-instructions">` tag and logs a console message, and both tell
-the agent to read `bender.help` first. `bender.help` gives an overview and names
-four topics, and `bender.guide(topic)` documents the calls in each.
+`<meta name="ai-instructions">` tag and logs a console message, and each says to
+read `bender.help` first. `bender.help` returns an overview and lists four
+topics, and `bender.guide(topic)` documents the calls in each.
 
 ![bender in Chrome with the Claude side panel open on the right. The panel shows the request "This page is bender, a circuit-bent toy keyboard, and it has a scripting API on window.bender. Load the dying toy preset, write a C minor arpeggio into the melody memory with a kick on every beat, play both, and tell me what bender.listen hears", followed by the steps Claude took: capturing the page, clicking, reading page text. On the left, the Toy keyboard section is open with its tune set to yours and the notes of the arpeggio in the piano roll.](img/claude-in-chrome.jpg)
 
@@ -32,15 +32,19 @@ so bender needs no setup beyond the extension. Example requests:
 - find the controls that make the delay feed back, and raise them over five
   seconds
 
-Claude takes one of two routes. In the second eval run described under
-[Testing](#testing), where the prompt told Claude to evaluate `bender.help`,
-every session read the help and a guide topic with JavaScript, then made its
-changes with calls such as `bender.load`, `bender.tune` and `bender.set`. In the
-side-panel session in the screenshot, where the request only mentioned
-`window.bender`, Claude loaded the preset by clicking its chip and entered the
-notes by clicking cells in the piano roll. Both routes change the same controls,
-and the clicking route takes many more steps. A request that asks Claude to run
-`bender.help` with JavaScript points it at the API route.
+Claude takes one of two routes:
+
+- **API route:** in the second eval run described under [Testing](#testing), the
+  prompt told Claude to evaluate `bender.help`. Every session read the help and
+  a guide topic with JavaScript, then made its changes with calls such as
+  `bender.load`, `bender.tune` and `bender.set`.
+- **Clicking route:** in the side-panel session in the screenshot, the request
+  only mentioned `window.bender`. Claude loaded the preset by clicking its chip
+  and entered the notes by clicking cells in the piano roll.
+
+Both routes change the same controls, and the clicking route takes many more
+steps. A request that asks Claude to run `bender.help` with JavaScript points it
+at the API route.
 
 ## Claude Code
 

@@ -13,8 +13,8 @@ The site is an [Astro](https://astro.build) project with three pages:
   `src/pocket/`, which runs the same engine with a scope, a preset strip and a
   run button in place of the panel
 
-All three sit under `/bender/`, the path GitHub Pages serves the repo at, so the
-dev server has the app at `http://localhost:4321/bender/app/`.
+The three pages sit under `/bender/`, the path GitHub Pages serves the repo at,
+so the dev server has the app at `http://localhost:4321/bender/app/`.
 
 ## Styling
 
@@ -31,12 +31,12 @@ rules for composing them.
 
 The suite includes a torture test that pins every feedback path past unity at
 once and asserts nothing non-finite, and nothing past the limiter, ever leaves
-the chain. It runs two seconds locally and ten under `test:full`. It also runs
-the panel in jsdom, where what's under test is the sentences the panel generates
-rather than audio — that a fold counts the rows underneath it correctly, that
-loading a ROM lands in the undo history, that a drag anywhere on the window
-counts as a drag. The engine reaches for an `AudioContext` on the way up and
-gets a silent one back; see `src/ui/testDom.ts`.
+the chain. The test runs two seconds locally and ten under `test:full`. The
+suite also runs the panel in jsdom to test the sentences the panel generates:
+that a fold counts the rows underneath it correctly, that loading a ROM adds an
+entry to the undo history, that a drag anywhere on the window counts as a drag.
+The engine requests an `AudioContext` at startup, and the test setup supplies a
+silent one; see `src/ui/testDom.ts`.
 
 ## Performance
 
@@ -46,25 +46,26 @@ deadline once and a buffer goes out unfilled, which is an audible click.
 - `pnpm bench` renders offline and reports what the chain costs per block, stage
   by stage. A board with everything patched sits near 9% of one core; the board
   as it boots sits near 1%. `pnpm bench stock` renders just that second case.
-- `pnpm blocks` reports the distribution of block costs rather than the mean,
-  since the mean isn't what causes glitches — a board averaging a tenth of its
-  budget can still click if its worst blocks run ten times its median.
+- `pnpm blocks` reports the distribution of block costs, because glitches come
+  from the slowest blocks: a board averaging a tenth of its budget can still
+  click if its worst blocks run ten times its median.
 - `pnpm cold` reports the first few seconds, before anything has JIT-tiered up —
-  the window both of the above render past before they start timing.
+  the window that `pnpm bench` and `pnpm blocks` render past before they start
+  timing.
 - `pnpm soak` plays a bar, then leaves the board ringing out for several minutes
-  while it prints what each stage costs. The number to watch is whether any
-  column climbs over time: an envelope that decays geometrically can arrive at a
-  denormal number instead of zero, and once it does the stage can cost twenty
-  times what it did. `pnpm denormal` sweeps the whole graph for exactly that; it
-  takes minutes, so `pnpm test` skips it.
+  while it prints what each stage costs. Watch for any column that climbs over
+  time: an envelope that decays geometrically can reach a denormal number
+  instead of zero, and the stage can then cost twenty times what it did.
+  `pnpm denormal` sweeps the whole graph for exactly that; it takes minutes, so
+  `pnpm test` skips it.
 - `pnpm ab <ref>` compares the working tree against a git ref as a paired run on
   the same machine, since two renders of identical code on a shared machine can
   otherwise report a double-digit percentage difference from nothing but
   scheduling noise.
 
-Those five all render the chain offline in node, where there is no panel. The
-panel has a deadline of its own — sixty frames a second, and eight widgets that
-write straight to the DOM off the meter rather than through a render:
+`pnpm bench`, `blocks`, `cold`, `soak` and `ab` render the chain offline in
+node, with no panel. The panel has a separate deadline of sixty frames a second,
+and eight widgets write to the DOM from the meter without a React render:
 
 - `pnpm panel` builds the app, opens it in a real Chrome with the audio running,
   and reports what the main thread spends per frame and where: javascript,
@@ -73,18 +74,18 @@ write straight to the DOM off the meter rather than through a render:
   board travelling, `pnpm panel 8 drag` a slider under a hand,
   `pnpm panel 12 hover` a pointer resting on control after control, and
   `pnpm panel 10 open` stage after stage off the map, which is the one that
-  costs. Wants Chrome — it looks on PATH, then in `/Applications`, then at
-  `BENDER_CHROME`.
+  costs. Needs Chrome, which it looks for on PATH, then in `/Applications`, then
+  at `BENDER_CHROME`.
 
-  It says how much, and where in the frame, but not whose. For that set
-  `BENDER_DUMP` to a path and the sampled profile lands there — open it in
-  devtools' performance panel, which is how the forced layout inside the
-  stage-open commit was found.
+  The report shows how much time and where in the frame, and cannot attribute it
+  to code. Set `BENDER_DUMP` to a path and the script writes the sampled profile
+  there; open it in devtools' performance panel, which is how the forced layout
+  inside the stage-open commit was found.
 
-  The column to read is `layout`. Nothing on the panel changes the size of
-  anything, so layout should sit near zero; layout that does not is something
-  writing the DOM every frame whether or not it has anything new to say. That is
-  how the one in
+  Read the `layout` column. No control on the panel changes the size of
+  anything, so layout should sit near zero. Layout that stays high means
+  something writes the DOM every frame whether or not it has anything new to
+  write. That is how the per-frame write described in
   [optimizations.md](optimizations.md#the-panel-is-not-what-costs-one-write-a-frame-was)
   was found, and it was worth half the main thread.
 
@@ -101,11 +102,11 @@ write straight to the DOM off the meter rather than through a render:
   column reads 0 when Chrome is not drawing the page, which happens with the
   display off, and the drawing columns mean nothing in that run.
 
-What those numbers mean, and which of them can be trusted, is
-[optimizations.md](optimizations.md). How a block actually gets rendered across
-the main and audio threads is [dataflow.md](dataflow.md).
+[optimizations.md](optimizations.md) explains what those numbers mean and which
+to trust. [dataflow.md](dataflow.md) shows how a block gets rendered across the
+main and audio threads.
 
-## Keeping the generated docs honest
+## Generated docs and audit sweeps
 
 - `pnpm diagram` regenerates the signal path diagram (`img/chain-*.svg`) from
   the same layout code the panel draws with. Run it after any change to
@@ -113,62 +114,62 @@ the main and audio threads is [dataflow.md](dataflow.md).
 - `pnpm dash` regenerates the screenshot in the why-sign-in card
   (`public/dashboard.jpg`): it starts the dev server, opens the home page in a
   headless Chrome, and calls `showHome` with voices invented in the script, so
-  the shot needs no account and reaches nothing but localhost. Only the dev
-  server hands `showHome` to the page. Wants a Chrome (on PATH, in
-  `/Applications`, or at `BENDER_CHROME`) and ImageMagick's `magick`. Regenerate
-  it on Linux: the shot is of live text in `system-ui`, so the font the stack
-  resolves to decides how wide the boxes are.
+  the shot needs no account and contacts only localhost. The dev server exposes
+  `showHome` on the page. Needs a Chrome (on PATH, in `/Applications`, or at
+  `BENDER_CHROME`) and ImageMagick's `magick`. Regenerate it on Linux, because
+  the shot shows live text in `system-ui` and the font the stack resolves to
+  sets the box widths.
 
 - `demos.json` lists the demos. `pnpm demos` writes them into the README, and
   the build fails if that block is stale. `pnpm reel` renders the ones marked
   `showcase` into `public/demos/*.mp3` for the landing page's Demos section,
-  offline and through the worklet's own board. The build runs it too, so the
-  clips stay out of git; it needs `ffmpeg` on PATH.
+  offline and through the worklet's board. The build runs it too, so the clips
+  stay out of git; it needs `ffmpeg` on PATH.
 
 - The bus drawing in [BENDS.md](BENDS.md#where-the-buses-run) is
   `docs/img/buses.dot`, re-rendered in the same commit as any edit:
-  `dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg`. Nothing checks it, for
-  the reasons [dataflow.md](dataflow.md) gives about the other one.
-- `pnpm features` regenerates [features.md](features.md) from the app's own
-  control tables and tooltips. Run it after changing a control, a preset, or a
-  ROM — a test fails the build if the committed file falls behind.
+  `dot -Tsvg docs/img/buses.dot -o docs/img/buses.svg`. No check compares the
+  SVG with the DOT file, for the reasons [dataflow.md](dataflow.md) gives for
+  its diagram.
+- `pnpm features` regenerates [features.md](features.md) from the app's control
+  tables and tooltips. A test fails the build if the committed file falls
+  behind, so run it after changing a control, a preset, or a ROM.
 - `pnpm knife` sweeps every wire and fault on every bus and reports which ones
-  are actually audible.
+  are audible.
 - `pnpm spectrum` sweeps the same space and reports what each one _sounds_ like:
   level, spectral centroid, flatness — 0 for a sine, 1 for noise — and where the
-  power sat across five bands. Each bus ends with a `reach` line, which is the
-  one worth reading: how much of the spectrum that chip's whole bend space
-  covers. A row of faults that all land in the same band is a chip whose bends
-  differ from each other by less than the panel implies. A chip that can be more
-  than one machine gets a `reach` line per machine — Glint is swept again with
-  its percussion bank on and again with an effect running, because the same
-  knife finds a different chip in each. `pnpm spectrum fm` does one chip and
-  `pnpm spectrum cuts` the named cuts and the preset catalog. The whole sweep
-  takes a few minutes.
-- `pnpm audible` asks a question the other two cannot: whether each branch of
-  the kit's summing junction is connected at all. It takes each path out — one
-  constant at a time, in a copy of `src` under the system temp dir, so nothing
-  writes to the working tree — renders the board with and without it, and
-  reports how far the take moved. `pnpm audible kick` does the paths named for
-  one voice.
+  power sat across five bands. Each bus ends with a `reach` line giving how much
+  of the spectrum that chip's whole bend space covers. A row of faults that all
+  fall in the same band means the chip's bends differ from each other by less
+  than the panel implies. A chip that can be more than one machine gets a
+  `reach` line per machine — Glint is swept again with its percussion bank on
+  and again with an effect running, because the same knife gives a different
+  reach in each. `pnpm spectrum fm` does one chip and `pnpm spectrum cuts` the
+  named cuts and the preset catalog; the whole sweep takes a few minutes.
+- `pnpm audible` checks whether each branch of the kit's summing junction is
+  connected at all, which `knife` and `spectrum` cannot. It takes each path out
+  — one constant at a time, in a copy of `src` under the system temp dir, so
+  nothing writes to the working tree — renders the board with and without it,
+  and reports how far the take moved. `pnpm audible kick` does the paths named
+  for one voice.
 
-  Two columns, and the second is the point. `rms` is how far the whole take
-  moved, which is the number `knife` reports; `peak` is the tallest sample of
-  the difference against the tallest sample of the take. A percussive path is
-  small in the first and large in the second, and that asymmetry is not a fault
-  — the kick's coupling cap moves the take's rms by 0.7% and its peak by 8.8%,
-  because a click is three milliseconds long and a render is a second. Which is
-  exactly how that path came to be dead for a long time without any test
-  noticing: measured over a whole take, a branch that owns the attack outright
-  and a branch that is not soldered in look the same.
+  Of the report's two columns, `rms` is how far the whole take moved, which is
+  the number `knife` reports; `peak` is the tallest sample of the difference
+  against the tallest sample of the take. A percussive path is small in `rms`
+  and large in `peak`, and that asymmetry is expected — the kick's coupling cap
+  moves the take's rms by 0.7% and its peak by 8.8%, because a click is three
+  milliseconds long and a render is a second. Measured over a whole take, a
+  branch that supplies the attack and a branch that is not soldered in look the
+  same by `rms`, and that is how the kick's coupling path stayed dead for a long
+  time without any test noticing.
 
-  Anything under a thousandth on both columns is reported as a path nothing
-  hears, and anything under a fiftieth as one barely there. The second tier is
-  the more useful: a path can be connected — and so pass any test that asks only
-  whether it does _something_ — while carrying too little to be the thing it was
-  built to do. Add an entry whenever you add a branch to the output, and fix the
-  `find` string if a rename breaks it; a substitution that matches nothing is
-  reported rather than skipped.
+  The script reports anything under a thousandth on both columns as a path
+  nothing hears, and anything under a fiftieth as one barely there. The second
+  tier is the more useful, because a path can be connected, and so pass any test
+  that asks whether it does _something_, while contributing too little to be
+  what it was built to do. Add an entry whenever you add a branch to the output,
+  and fix the `find` string if a rename breaks it; the script reports a
+  substitution that matches nothing.
 
 ## Releases
 

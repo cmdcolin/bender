@@ -7,14 +7,14 @@ virtual web based circuit bender
 - Home page, and your saved voices once you sign in:
   https://cmdcolin.github.io/bender/
 
-Every link anyone has shared carries the board in the url's hash, and the home
-page hands one straight on to the app, so an old link still opens the board it
-always did.
+A shared link holds the board in the URL hash. When a link with a hash opens the
+home page, the page's script redirects to the app with the hash intact, so an
+old link still opens the same board.
 
 ## The signal path
 
-You interact with the audio using the signal path diagram. Clicking on buttons
-there opens settings panels.
+You interact with the audio through the signal path diagram, and clicking a
+button there opens a settings panel.
 
 Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 
@@ -31,8 +31,8 @@ Full explanation in [How it works](docs/HOW-IT-WORKS.md).
 - A tube amp pedal with Fender and Marshall tone stacks solved from their
   circuits, a push-pull power stage that sags, and a speaker
 - Allows custom piano roll and drum sequences
-- Patch bay with LFO and other modulations, wired from the bay or from a
-  control's own `+ mod` button
+- Patch bay with LFO and other modulations, wired from the bay or from the
+  `+ mod` button on a control
 - Tap in the tempo, either delay time, or the modulation rate
 - Buttons to easily randomize settings
 - Connect MIDI controller (works with Chrome, Firefox Nightly)
@@ -73,17 +73,16 @@ pnpm dev
 
 - [User guide](docs/USER-GUIDE.md) — the machines, the trigger patch and bends
 - [Bends](docs/BENDS.md) — what each fault does to the circuit, and why
-- [How it works](docs/HOW-IT-WORKS.md) — the signal path map and the app's own
+- [How it works](docs/HOW-IT-WORKS.md) — the signal path map and the app's
   architecture
-- [Features](docs/features.md) — every control, generated from the app's own
-  tables
+- [Features](docs/features.md) — every control, generated from the app's tables
 - [MIDI](docs/MIDI.md) — setting up a controller
 - [AI usage](docs/AI-USAGE.md) — playing bender from Claude in Chrome or Claude
   Code through `window.bender`
 - [Development](docs/DEVELOPMENT.md) — testing, benchmarking, releases
 - [Data flow](docs/dataflow.md) — how a block gets rendered across the two
   threads
-- [Optimizations](docs/optimizations.md) — what this has done to fit inside an
+- [Optimizations](docs/optimizations.md) — what the code does to fit inside an
   audio callback
 
 ## Footnote

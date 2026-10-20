@@ -33,7 +33,7 @@
 - A dialog pads its content by `--space-lg`.
 
 The kinds set `line-height: 1.2` and no vertical padding, so the token alone
-decides a control's height whatever font the system supplies.
+sets a control's height whatever font the system supplies.
 
 ## Kinds
 
@@ -56,10 +56,11 @@ decides a control's height whatever font the system supplies.
 - Compose a kind or variant and set nothing beyond layout (margin, position,
   width, `font-family`). A module that sets a property the kind sets loses, in
   the dev server and in the production build alike, because `button.module.css`
-  lands later in the bundle.
+  comes later in the bundle.
 - A new look goes in `button.module.css` as a variant, next to the kind it
   extends.
 - Colours come from tokens. A literal colour belongs to an instrument's case
   (the toy's plastic, the FM board's green), set as a variable on that case.
 - The `:focus-visible` rule in theme.css outlines every focused control. A
-  module with its own focus style turns that outline off in its own rule.
+  module that sets a different focus style must turn that outline off in its
+  rule.

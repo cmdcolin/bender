@@ -1,38 +1,34 @@
 # Bends
 
-Nothing here is a sample. Every fault is a real mechanism, modelled the way the
-actual hardware fails. The toy's whole chip runs off one RC oscillator, so
-pitch, tempo and envelopes are the same clock divided three ways — anything that
-touches the clock touches all three at once, and there's no setting where they
-come apart.
+Every bend models a real hardware fault, and none is a sample. The toy's chip
+runs off one RC oscillator, and a divider splits that clock three ways into
+pitch, tempo and envelopes, so a bend on the clock changes all three at once.
 
 ## Where the buses run
 
 <img src="img/buses.svg" alt="the address, data and wave buses on each chip" width="620">
 
-Several chips carry a **Data line** control and it means something different on
-each, so the drawing says which two blocks every bus runs between and how wide
+Several chips have a **Data line** control that means something different on
+each, so the drawing shows which two blocks every bus runs between and how wide
 it is. [buses.dot](img/buses.dot) is the source.
 
-Which side of the memory a bus sits on decides what the damage sounds like. An
-address bus runs into the memory, so a knife there fetches the wrong thing and
-the chip then plays it perfectly — the tempo never moves. A data bus carries the
-answer back, so a knife there mangles a fetch that was correct. That is why the
-two controls on one chip sound nothing alike.
+A knife on a bus sounds different on each side of the memory. An address bus
+runs into the memory, so a knife there fetches the wrong thing and the chip then
+plays it perfectly, with the tempo unchanged. A data bus carries the answer
+back, so a knife there mangles a fetch that was correct. That is why the two
+controls on one chip sound nothing alike.
 
-Glint is the exception, and the drawing is arranged to show it: both of its
-buses run the same way, into the register file, because the processor writes
-that bus rather than reading it. A register holds what it was last told, so a
-fault there does not pass through — it accumulates, and a byte that lands wrong
-stays wrong until the processor writes that register again.
+Glint is the exception: both of its buses run the same way, into the register
+file, because the processor writes the register file. A register holds the last
+value written to it, so a fault there accumulates, and a byte that is written
+wrong stays wrong until the processor writes that register again.
 
 One wire is one voice on the drum data bus, in the order of the rows, and one
-wire is one bit of the sample word on Parlor's, so those two are the buses where
-a wire number means something fixed. A toy-chip data line carries a note code
-and an FM data line carries whichever byte the processor was sending, so on
-those the wire is something you find rather than something to learn. The named
-cuts under _knife on the bus_ are the shortcut: each one is a wire and a fault
-somebody already found worth keeping.
+wire is one bit of the sample word on Parlor's, so a wire number means something
+fixed on those two buses. A toy-chip data line carries a note code and an FM
+data line carries whichever byte the processor was sending, so on those you find
+a useful wire by trying them. The named cuts under _knife on the bus_ are
+shortcuts, each a wire and a fault already found worth keeping.
 
 The panel draws the same buses under each chip's bus box (the **pattern** box on
 the drum machine), one trace a bit with the lowest on top. The knife rows, named
@@ -53,87 +49,83 @@ follows the rows:
 ## The shared power rail
 
 The Power supply panel draws the rail as one wire from the cells to the
-machines, with the reset chip watching it and the clip biting it. The cells box
-opens first and holds starve, batteries, lead resistance and reservoir; the
-other two boxes open their own rows.
+machines, with the reset chip watching it and the clip touching it. The cells
+box opens first and holds starve, batteries, lead resistance and reservoir; the
+reset chip box and the clip box each open a set of rows.
 
 **Starve** sags the supply the toy keyboard, the drum machine, and the FM chip
-all share. It's a resistor to ground, so it keeps drawing current even after the
-chip has gone quiet — a quarter of the way up, the toy runs flat and dives;
-three-quarters, it reboots several times a second. Past a threshold the watchdog
-decides the supply has failed and resets the chip, restarting the tune from
-wherever it was. Reboots never land on a metronome: the watchdog's own trip
-point drifts with heat, and the reset line holds for somewhere between 40 and
-130 ms, by which point the rail has moved somewhere different anyway. The lamp
-above the keys reads the rail itself, in volts — 4.5 V on fresh cells — and
-shows **reboot** whenever the watchdog fires.
+all share. Starve is a resistor to ground, so it keeps drawing current even
+after the chip has gone quiet. A quarter of the way up the knob, the toy runs
+flat and dives; at three-quarters, it reboots several times a second. Past a
+threshold the watchdog trips and resets the chip, restarting the tune from
+wherever it was. Reboots come at irregular intervals, because the watchdog's
+trip point drifts with heat and the reset line holds for between 40 and 130 ms,
+long enough for the rail to move. The lamp above the keys displays the rail
+voltage, 4.5 V on fresh cells, and **reboot** whenever the watchdog fires.
 
-**Reservoir** is how much capacitance sits behind the supply, and it decides
-whether a starve lands or travels. Stock, the rail follows its load in under a
-millisecond, so a dive arrives instantly. Wind Reservoir up and the same starve
-gets a shape: the pitch leaves from where it was, decelerates as the cap and the
-pot find balance, and settles at the bottom — taking tempo and envelopes down
-with it, since they're all on the same rail. The travel runs from 17 ms to two
-seconds, and it's geometric rather than linear, so the sweep sits through the
-middle of the knob rather than crushed against one end.
+**Reservoir** is how much capacitance sits behind the supply, and it sets
+whether a starve takes effect at once or sweeps. Stock, the rail follows its
+load in under a millisecond, so a dive is instant. With Reservoir wound up, the
+same starve sweeps: the pitch leaves from where it was, decelerates as the cap
+and the pot reach balance, and settles at the bottom, taking tempo and envelopes
+down with it because they share the rail. The travel is geometric from 17 ms to
+two seconds, so the sweep spreads across the whole knob.
 
-**Clip chatter** is a paperclip dragged across the supply pads by hand: a choke,
-not a short. The rail dips and recovers at whatever rate Reservoir allows, a few
-tens of milliseconds at a time, at a rate that clusters rather than ticking
-evenly, because a hand doesn't keep time.
+**Clip chatter** is a paperclip dragged across the supply pads by hand, which
+chokes the rail without shorting it. The rail dips and recovers at the rate
+Reservoir allows, a few tens of milliseconds at a time. The dips come in
+clusters at irregular intervals, as a hand's timing does.
 
-**Clip on clock** is the same paperclip landed on the oscillator pin instead of
-the supply. Starving the supply directly tops out at about two-thirds of an
-octave before the chip stops running altogether; dividing the clock has no such
-ceiling, so this reaches four octaves at the top of the knob and takes the whole
-timebase — pitch, tempo, envelopes — down with it. Leaving is slow, since the
-paperclip is charging a found capacitor through the contact; returning is
-instant, since lifting the clip removes it from the circuit. This only works
-because the oscillator pin is the one high-impedance node on an otherwise
-low-impedance board — it needs a toy clocked off a bare RC oscillator rather
-than a resonator, which is what the cheap ones used.
+**Clip on clock** is the paperclip placed on the oscillator pin instead of the
+supply. Starve alone lowers the pitch by at most about two-thirds of an octave
+before the chip stops running; the clock has no such ceiling, so Clip on clock
+reaches four octaves at the top of the knob and takes the whole timebase (pitch,
+tempo, envelopes) down with it. The pitch leaves its normal value slowly,
+because the paperclip charges a found capacitor through the contact, and returns
+instantly, because lifting the clip removes that capacitor from the circuit.
+Clip on clock works because the oscillator pin is the one high-impedance node on
+an otherwise low-impedance board, and it needs a toy clocked from a bare RC
+oscillator, as the cheap ones were, instead of a resonator.
 
 **Latch-up** is the brownout that doesn't reboot. On a collapsing rail, CMOS can
 jam instead of resetting: the die holds whatever note was sounding and keeps
 drawing current while the output stage sits frozen, so one note screams and
-dives for up to a second before the current finally gives out and the watchdog
-gets its power cycle. It happens more readily to a toy that's been running a
-while and heated up, not to one just switched on.
+dives for up to a second until the current collapses and the watchdog
+power-cycles the chip. Latch-up happens more readily to a toy that has been
+running a while and heated up than to one just switched on.
 
 **Crystal drift** lets the toy's own clock wander off the ratio you set against
-the drum machine. Nothing pulls it back, so the two never lock: they drift out
-of alignment, swing back close to it, and drift apart again, for as long as you
-leave it running.
+the drum machine. The two clocks never lock, so they drift out of alignment,
+swing back close to it, and drift apart again for as long as the toy runs.
 
-**Kit sync** and **Arp sync** hand the tune and the arpeggio a rate off the
-kit's beat, and every bend in this section still drags them. Arp sync on
+**Kit sync** and **Arp sync** derive the tune's and the arpeggio's rates from
+the kit's beat, and every bend in this section still drags them. Arp sync on
 sixty-fourths is a trill at 120 bpm; a clock pot turned up on it climbs into a
 buzz pitched at the strike rate, as high as 800 Hz.
 
-**Junk in the counter** is what happens on the way back from a brownout.
-Pressing play always starts the tune at step zero; a reboot doesn't, because the
-program counter comes back holding whatever was in its latch when the rail
-failed, so the tune as often resumes from the middle of itself as from the top.
+**Junk in the counter** happens when the rail recovers from a brownout. Pressing
+play always starts the tune at step zero; a reboot doesn't, because the program
+counter comes back holding whatever was in its latch when the rail failed, so
+the tune as often resumes from the middle of itself as from the top.
 
-**Batteries** and **Lead resistance** both model a supply that's degraded, but
-in different ways, and it's easy to conflate them. Batteries is how flat the
-cells are: flat cells hold a lower resting voltage and more internal resistance,
-so the rail never fully recovers between notes, and the whole toy runs low and
-late — pitch, tempo and every envelope on that divider stretch out together.
-Lead resistance is a resistor in series with the cells, and it only matters
-under load: with nothing drawing current, it drops nothing, so the rail rests
-exactly where a stock board would however far up the knob is. Play a note and
-it's in the way — the supply sags on the attack and climbs back between hits.
-Batteries is a toy running out; Lead resistance is a toy that whoops on every
-note and never runs low to begin with.
+**Batteries** and **Lead resistance** both model a degraded supply, in different
+ways. Batteries sets how flat the cells are, and flat cells have a lower resting
+voltage and more internal resistance, so the rail never fully recovers between
+notes and the whole toy runs low and late: pitch, tempo and every envelope on
+that divider stretch out together. Lead resistance is a resistor in series with
+the cells that matters only under load. With nothing drawing current it drops no
+voltage, so the rail rests where a stock board's would at any knob position.
+Playing a note draws current, so the supply sags on the attack and climbs back
+between hits. Batteries makes a toy that is running out; Lead resistance makes a
+toy that whoops on every note and never runs low.
 
 **Bend spot + pot** solders a virtual potentiometer straight onto the die, at
 one of four points: the clock, the counter (which scrambles the melody), the DAC
 bias, or the gate line.
 
-Each of the keyboard's four voices also has its own independent output stage on
-this same rail, which is why a starved chord collapses raggedly rather than all
-at once — see **Part spread** under [the parts rack](#the-parts-rack) below.
+The keyboard's four voices each have a separate output stage on this rail, so a
+starved chord collapses raggedly instead of all at once. See **Part spread**
+under [the parts rack](#the-parts-rack) below.
 
 ## The toy chip's pins
 
@@ -150,7 +142,7 @@ part it is soldered to. The clock, tune ROM, envelope and output pin boxes each
 open **Bend spot** and **Bend pot**, and pressing the pot opens the box it hangs
 on.
 
-The drawing gives each feedback bend a red wire of its own:
+The drawing shows each feedback bend as a red wire:
 
 - **Step tap** runs from the voices up to the tune ROM.
 - **PWM tap** runs from the voices to the envelope, and the envelope's tag goes
@@ -194,7 +186,7 @@ feeds each note into the address of the next.
 
 **Song line** is a knife on the five wires that pick which song the ROM serves,
 the memory you played in included. Each step reads the same address from
-whichever song the faulted wires name, so the tune keeps its tempo and length
+whichever song the faulted wires select, so the tune keeps its tempo and length
 and plays another song's notes. A wire that already matches the fault changes
 nothing: _für elise_ is song 4, so S2 held high leaves it alone, and S0 held
 high plays _ode to joy_.
@@ -280,11 +272,11 @@ stays clean. The tap replaces the Volume PWM carrier while it is up.
 **FM on clock** wires the FM chip's output onto the toy's timing pin through the
 coupling Crosstalk uses, so Glint's sound bends the toy's pitch, tempo and
 envelopes together, by up to four octaves. The toy runs first in each block, so
-it hears Glint a block late, 2.7 ms. Glint plays the notes the toy strikes, so
-each chip's timing moves the other's notes. With **Toy on bus** up on Glint as
-well, the toy writes Glint's registers and Glint's sound bends what the toy
-writes next, a loop through both chips. FM on clock does nothing while Glint is
-down.
+it receives Glint's output a block late, 2.7 ms. Glint plays the notes the toy
+strikes, so each chip's timing moves the other's notes. With **Toy on bus** up
+on Glint as well, the toy writes Glint's registers and Glint's sound bends what
+the toy writes next, a loop through both chips. FM on clock does nothing while
+Glint is down.
 
 **Output hold** puts a latch between the voices and the output pin and strobes
 it off the melody's pitch divider, so the pin holds each level until the next
@@ -301,7 +293,7 @@ each of its cycles.
 
 - A note above the oscillator is cut short each cycle, so the oscillator's pitch
   sounds with a note-dependent edge on top.
-- Sweeping the knob across a held note is the classic hard-sync scream.
+- Sweeping the knob across a held note produces the hard-sync scream.
 - A note below the oscillator never finishes a cycle and falls silent, so the
   bass drops out first as the knob rises.
 - The oscillator counts off the chip clock, so clock bends move it with the
@@ -324,83 +316,85 @@ keys stay thin.
 
 ## Glint's register bus
 
-Glint isn't played — it's configured, one byte at a time, by a processor that
-decides what the sound should be and writes it. A register holds whatever it was
-last told until something writes it again, which makes these faults sticky in a
-way the rail faults aren't: a starved rail recovers the instant you let go of
-the knob, but a byte that landed wrong stays wrong until the next write happens
-to touch that register.
+Glint is configured one byte at a time by a processor that writes the settings
+for each sound. A register holds the last value written to it until the next
+write to that register, so these faults stay after they occur. A starved rail
+recovers the instant you let go of the knob; a byte that landed wrong stays
+wrong until a write touches that register again.
 
-Four things can happen to any one of these wires: forced **to ground**, forced
-**to +V**, **bridged** to its neighbour, or **cut**. A bridged pair can no
-longer disagree, so whichever driver pulls low wins. A cut wire floats, and a
-floating wire is the only one of the four that will not stand still: it starts
-on whatever the bus was carrying at the moment it was cut, but the parted trace
-still runs the length of the board beside the one next to it, and a few
-picofarads of that is enough to drag a pin nobody is driving after its
-neighbour's edges. So the bit holds for a word or two and then sets off after
-the traffic next door, always a lap behind and never quite arriving. **Cut
-depth** is how far through the trace the knife went: back it off and it still
-conducts some of the time, and every write that lands slams the bit back to the
-truth in between, so the melody flickers between the version the processor sent
-and the version the wire drifted to.
+Four faults can hit any one of these wires: forced **to ground**, forced **to
++V**, **bridged** to its neighbour, or **cut**.
 
-The most obvious result is the key-up bit getting stuck. A note ends when the
-processor writes that bit back down and the chip sees it change; hold the wire
-high and it never changes, so the note simply never ends, and later notes arrive
-as pitch changes under an envelope that never restarted. Hold it low instead and
-the key never goes down, which is a chip that plays nothing. The frequency's top
-bit shares a byte with the key-on bit, so a fault there moves pitch and whether
-the note happens at all together. Volume goes out as its own nibble, so a stuck
-bit there leaves one of the four voices at the wrong level for good. **Address
+- A bridged pair cannot disagree, so whichever driver pulls low wins.
+- A cut wire floats, and it is the only one of the four that drifts. It starts
+  at whatever the bus was carrying when it was cut, but the parted trace still
+  runs the length of the board beside its neighbour, and a few picofarads of
+  that coupling are enough to drag the undriven pin after the neighbour's edges.
+  The bit holds for a word or two and then follows the traffic next door, always
+  a lap behind.
+- **Cut depth** is how far through the trace the knife went. At a partial depth
+  the wire still conducts some of the time, and every write that lands resets
+  the bit to the truth in between, so the melody flickers between the version
+  the processor sent and the version the wire drifted to.
+
+A common result is the key-up bit getting stuck. A note ends when the processor
+writes that bit back down and the chip sees it change; hold the wire high and it
+never changes, so the note simply never ends, and later notes arrive as pitch
+changes under an envelope that never restarted. Hold it low instead and the key
+never goes down, which is a chip that plays nothing. The frequency's top bit
+shares a byte with the key-on bit, so a fault there moves pitch and whether the
+note happens at all together. Volume goes out as its own nibble, so a stuck bit
+there leaves one of the four voices at the wrong level for good. **Address
 line** faults are the more violent case: the byte arrives intact but gets filed
-under the wrong register entirely, so whatever should have landed there never
-does.
+under the wrong register, so the intended register never receives its value.
 
-**Slip the strobe** is a different failure altogether, and it corrupts nothing.
-A register write is two things arriving together — a number naming the register,
-and the value to put there — and a pulse called the strobe is what tells the
-chip to latch both at once. Make that pulse marginal and the chip sometimes
-misses it, so the value commits to whichever register the last pulse that did
-land had named. Every byte crossing the bus is still exactly what the processor
-sent; it's just paired with the wrong register, one write late. Misses compound:
-two in a row is two writes of lag, and wound all the way over, the chip never
-advances past the first register it ever latched. On a single note, four writes,
-this reads as a smear. The built-in effects fire hundreds of writes a second, so
-the same fault turns a chirping cricket sound into one continuous drone — the
-same place a stuck key-up bit lands, arrived at from the opposite direction.
+**Slip the strobe** corrupts no byte. A register write is two things arriving
+together, a number naming the register and the value to put there, and a pulse
+called the strobe tells the chip to latch both at once. Make that pulse marginal
+and the chip sometimes misses it, so the value commits to whichever register the
+last pulse that did land had named. Every byte crossing the bus is still exactly
+what the processor sent, paired with the wrong register, one write late. Misses
+compound: two in a row is two writes of lag, and wound all the way over, the
+chip never advances past the first register it ever latched. A single note takes
+four writes and smears. The built-in effects fire hundreds of writes a second,
+so the same fault turns a chirping cricket sound into one continuous drone, the
+same result as a stuck key-up bit reached from the opposite direction.
 
 **Cut the wave ROM** targets the one bus on this chip the processor never
-touches. There's no sine computed here — the operators look one up in a
-256-entry table addressed directly by phase, with the top bits mirroring and
-flipping the sign to build the rest of the cycle. **Wave line** cuts one of
-those address wires. Nothing accumulates here, so releasing the knife gives you
-a clean sample on the very next read. Which wire matters more than whether you
-cut it: hold the mirror bit and the quarter-wave runs twice instead of turning
-around, giving a sawtooth edge and an extra octave; hold the sign bit and every
-read comes from the top half of the table, an all-octave rectified tone; cut low
-enough down the bus and the effect is nearly inaudible.
+touches. The chip computes no sine: the operators look one up in a 256-entry
+table addressed directly by phase, with the top bits mirroring and flipping the
+sign to build the rest of the cycle. **Wave line** cuts one of those address
+wires. Releasing the knife gives a clean sample on the very next read, because
+wave-ROM faults leave nothing behind. Which wire you cut matters more than
+whether you cut it:
 
-That is the way into the table. **Wave data line** is the way out, and the two
-behave oppositely: an address fault reads a different sample, correctly, and a
-data fault reads the sample it asked for with a step cut into its amplitude at
-one bit position. The table keeps a magnitude and takes the sign off the phase,
-the way the part does, so nothing on this side of it can move a note — hold the
-top pin high and no sample the chip reads is worth less than half of full scale,
-which fills in the quiet parts of every wave and leaves the note buzzing at the
-pitch it always was. Part the same pin instead and it holds whichever of the
-eight operators a sample went last, so the amplitude arrives from a different
-operator every turn and the chip turns to gravel.
+- Hold the mirror bit and the quarter-wave runs twice instead of turning around,
+  giving a sawtooth edge and an extra octave.
+- Hold the sign bit and every read comes from the top half of the table, an
+  all-octave rectified tone.
+- Cut low enough down the bus and the effect is nearly inaudible.
 
-**Noise blob** is a bodge wire rather than a knife, on those same eight pins.
-The shift register the percussion bank runs on is the only broadband thing on
-this die, and pressing Rhythm was the only way to hear it; a blob of solder from
-its output onto the table's pins is the way round. It sits on them from the
-least significant up, so a touch of it is dirt riding on the note and all the
-way across is eight pins holding one bit — no sine left, and what comes out is
-the carrier's own square gated by the register, since the sign is not one of
-these pins. Nothing the processor does touches it. It is there on every patch,
-under an effect, and through a panic, which no other bend on this chip is.
+**Wave line** is the way into the table and **Wave data line** is the way out.
+They behave oppositely: an address fault reads a different sample, correctly,
+and a data fault reads the sample it asked for with a step cut into its
+amplitude at one bit position. The table keeps a magnitude and takes the sign
+off the phase, the way the part does, so nothing on this side of it can move a
+note. Hold the top pin high and no sample the chip reads is worth less than half
+of full scale, which fills in the quiet parts of every wave and leaves the note
+buzzing at the pitch it always was. Part the same pin instead and it holds
+whichever of the eight operators in a sample went last, so the amplitude comes
+from a different operator every turn and the chip sounds like gravel.
+
+**Noise blob** is a bodge wire, not a knife, on those same eight pins. The shift
+register the percussion bank runs on is the only broadband source on this die,
+and without the blob pressing Rhythm is the only way to hear it. The blob is a
+solder bridge from the register's output onto the table's pins. The blob sits on
+them from the least significant up, so a touch of it is dirt riding on the note
+and all the way across is eight pins holding one bit: no sine remains, and the
+output is the carrier's square gated by the register, since the sign is not one
+of these pins. The blob applies on every patch, under an effect and through a
+panic, which no other bend on this chip does, because the processor cannot touch
+it.
 
 **Patch line** and **Patch data line** cut the table the operators read their
 patch from. It is sixteen rows of eight bytes: row zero is the register file the
@@ -411,7 +405,7 @@ knife: every fetch reads the same wrong byte, and the patch comes back the
 moment the knife comes off.
 
 - A byte line (P0–P2) pairs a patch's bytes wrongly: P0 to ground reads each
-  even byte twice, handing the carrier the modulator's settings.
+  even byte twice, so the carrier gets the modulator's settings.
 - A row line (P3–P6) held at +V swaps every channel onto one of the die's
   patches, past every knob that rewrote the register file's copy. The processor
   only asks for row zero, so the other faults on a row line wait for a data-line
@@ -420,122 +414,117 @@ moment the knife comes off.
   both multipliers and drops the note an octave; B5 is the hold bit, so a struck
   voice rings for as long as the key is down.
 
-**The hidden test register** is undocumented — the factory used it to test the
+**The hidden test register** is undocumented. The factory used it to test the
 die, and the only write a driver ever makes to it is the one that clears it at
 power-on, since a chip that booted with a stray test bit set would never sound
 right. A **Data line** fault on that clearing write sets bits nothing in normal
 operation ever sets, and every later patch change sends the clear again, over
-the same broken wire, corrupting it identically each time. What those bits
-switch isn't part of the normal register vocabulary at all: every operator
-forced wide open turns envelopes into a plain gate, the envelope counter forced
-to its fastest step collapses every note to the same four-millisecond click, the
-output latch skips every other slot for half the sample rate and full aliasing,
-and the latch's sign line held rectifies everything reaching the pin. No
-combination of legal patch bytes produces any of that.
+the same broken wire, corrupting it identically each time. Those bits switch
+behaviours that no combination of legal patch bytes produces:
 
-**The percussion bank** is the register next door to the test one, and it is the
-answer to a complaint anyone who bends this chip arrives at: whatever the knife
-finds, the result comes out high. That is structural rather than accidental. The
-key line hands the chip 220 Hz and up, the driver picks the tightest block for
-every note it is given, and a chip whose only primitive is a sine has no way to
-make a sound that is not a sum of sines. So faults that set a bit go up several
-octaves, faults that clear one mostly clear a bit that was already clear, and
-nothing anywhere in the register file makes noise.
+- Every operator forced wide open turns envelopes into a plain gate.
+- The envelope counter forced to its fastest step collapses every note to the
+  same four-millisecond click.
+- The output latch skips every other slot, for half the sample rate and full
+  aliasing.
+- The latch's sign line held rectifies everything reaching the pin.
 
-Press **Rhythm** and the die hands over the top two channels. Their operators
-are re-tapped onto a kit held in ROM — a bass drum an octave under the bottom of
-the keyboard, and a pair of slots cut off from the sine table altogether and
-wired instead to a shift register that has been free-running since power-on.
-That register is the only noise on the part. The two slots take it at different
-rates off one divider, which is why they do not sound alike: the hi-hat gets
-every bit and comes out as sand, and the snare latches one in eight and holds
-it, which is a rattle with a body under it. Every note strikes the bass drum;
-the snare and the hi-hat want the kit's own trigger lines, which is what **Kit
-voice that plays this chip** clips on.
+**The percussion bank** is the register next door to the test one. Whatever the
+knife finds on this chip, the result comes out high, and the cause is
+structural. The key line supplies 220 Hz and up, the driver picks the tightest
+block for every note it is given, and a chip whose only primitive is a sine
+cannot make a sound that is not a sum of sines. So faults that set a bit go up
+several octaves, faults that clear one mostly clear a bit that was already
+clear, and nothing in the register file makes noise except the percussion bank.
 
-What that is worth is the whole spectrum rather than the top of it. With the
-bank switched over the same knives land somewhere new — a wire that used to move
-a note by an octave now moves how coarse the hiss is, because the frequency
-registers those two slots no longer use for a pitch are what clock the shift
-register. Wind it down and the kit turns into a rumble; wind it up and it turns
-into sand, and nothing else on this chip makes that sweep.
+Pressing **Rhythm** gives the top two channels to the percussion bank. Their
+operators are re-tapped onto a kit held in ROM: a bass drum an octave under the
+bottom of the keyboard, and a pair of slots cut off from the sine table
+altogether and wired instead to a shift register that has been free-running
+since power-on. That register is the only noise on the part. The two slots take
+it at different rates off one divider, so they do not sound alike: the hi-hat
+gets every bit and comes out as sand, and the snare latches one in eight and
+holds it, a rattle with a body under it. Every note strikes the bass drum; the
+snare and the hi-hat need the kit's trigger lines, which **Kit voice that plays
+this chip** clips on.
 
-The bank is one byte, which is what makes it worth bending rather than merely
-worth having. The mode bit and all three drum keys cross the data bus together,
-so a wire held low is a rhythm button that does nothing, and a wire held high is
-a drum that never lifts — the same bend as the note that never ends, one
-register down. It also goes the other way, and that is the one worth finding.
-The driver puts the bank where the panel says with every patch it sends, the
-same way it clears the test register with every patch, so the byte meaning "no
-drums" crosses the bus like any other and a wire held high turns it into the
-byte meaning drums. The chip switches over with nobody having pressed anything,
-and because the driver does not know it happened, it goes on handing those two
-channels notes: the melody arrives at the die as strikes, and the tuning the kit
-would have had was never sent. The kit's rates live in ROM rather than in the
-register file, so a knife on the patch bytes cannot reach them: the drums stay
-crisp on a board where nothing else does. An effect wants the same two channels
-and asked first, so pressing one puts the other down.
+With the bank switched over, the same knives land somewhere new. A wire that
+moves a note by an octave with the bank off moves how coarse the hiss is,
+because the frequency registers those two slots no longer use for a pitch clock
+the shift register. Wind it down and the kit turns into a rumble; wind it up and
+it turns into sand, a sweep no other control on this chip makes.
 
-**The bits the register map has no button for.** A byte is eight wires, and a
-register is not obliged to read all of them. Three of this chip's registers read
-five bits and throw the rest away as far as the panel is concerned — which made
-the top two data wires the least interesting on the chip for a while, since most
-of what a knife could set there landed somewhere nothing looked. What sits in
-those gaps is not spare room. It is the hardware a patch shares rather than
-owns, and it is reachable from the bus and nowhere else.
+The bank is one byte, and its mode bit and all three drum keys cross the data
+bus together, so a wire held low is a rhythm button that does nothing, and a
+wire held high is a drum that never lifts, the same bend as the note that never
+ends, one register down.
 
-There is one LFO on the die. No register sets its rate, none sets its depth, and
-nothing anywhere can start or stop it — it has been running since the board came
-up, and all a patch byte says is whether an operator is soldered to it. The top
-bit of each flags byte wires the operator to the tremolo and the next one down
-wires it to the vibrato. **Vibrato** on the panel is that pair of bits and
-nothing else, which is why it takes a patch write to apply and why a knife can
-leave the button down with nothing wobbling. Because the LFO counts off the same
-divider as everything else on this board, starving the toy slows the wobble
-along with the pitch, the envelopes and the tempo. And because one button wires
-both operators, a two-operator patch hides most of what the tremolo is doing:
-the modulator going up and down is a brightness going up and down, which moves
-the level the opposite way from the carrier doing the same thing. Turn the
-modulator off and the same setting is suddenly obvious.
+A wire held high on the "no drums" byte also switches the bank on. The driver
+sends the bank setting with every patch, the same way it clears the test
+register with every patch, so the byte meaning "no drums" crosses the bus like
+any other, and a wire held high turns it into the byte meaning drums. The chip
+switches over with nobody having pressed anything, and because the driver does
+not know it happened, it goes on sending those two channels notes: the melody
+reaches the die as strikes, and the tuning the kit would have had was never
+sent. The kit's rates are stored in ROM, not in the register file, so a knife on
+the patch bytes cannot reach them, and the drums stay crisp on a board where
+nothing else does. An effect uses the same two channels, so pressing one turns
+the other off.
 
-Key scaling is two more bits at the top of each of two level bytes, and what it
-does is wire the octave into the volume: a patch with it set gives up level the
-higher it is played, which is how one set of eight bytes covers a keyboard
-instead of shrieking at the top of it. The bend in that is the crowding. The
-octave already shares a byte with the key going down and the top of the
-frequency count, so one wire up there was already moving the pitch and whether
-the note happens at all; now it moves how loud the note is as well. A fourth bit
-does the same to the envelope rates, so a patch that rings for a second at the
-bottom of the keyboard can be made to stop ringing at the top.
+**The bits the register map has no button for.** A byte is eight wires, and
+three of this chip's registers read five bits and discard the rest as far as the
+panel is concerned. The bits in those gaps control hardware that a patch shares
+and does not own, and they are reachable from the bus and nowhere else.
 
-**The instrument nibble** is the strangest of them, because it is the only fault
-on this chip that hands you something rather than damaging something. Each
-channel's volume register carries how loud that channel is in its low nibble and
-_which instrument it is playing_ in its high one. Zero means the eight bytes in
-the register file — the patch the panel just sent — and the driver writes zero
-there with every note, because zero is the only answer it has. One to fifteen
-are patches burned into the die, and the case has buttons for eight of them. The
-other seven are on the board, wired to nothing: a violin, a flute, an oboe, a
-trumpet, a horn, a harpsichord and a vibraphone that no button reaches and the
-processor has no reason to name. A wire held high under that nibble is a channel
-that stops reading the register file mid-note and starts reading ROM, and since
-the nibble is per channel, one voice can be somewhere else entirely while its
-neighbours play what you asked for.
+The die has one LFO, which has been running since the board came up. No register
+sets its rate or depth or starts or stops it; a patch byte says only whether an
+operator is wired to it. The top bit of each flags byte wires the operator to
+the tremolo and the next one down wires it to the vibrato. **Vibrato** on the
+panel is that pair of bits and nothing else, which is why it takes a patch write
+to apply and why a knife can leave the button down with nothing wobbling.
+Because the LFO counts off the same divider as everything else on this board,
+starving the toy slows the wobble along with the pitch, the envelopes and the
+tempo. Because one button wires both operators, most of the tremolo is hidden in
+a two-operator patch: the modulator going up and down is a brightness going up
+and down, which moves the level the opposite way from the carrier doing the same
+thing. With the modulator off, the same setting becomes obvious.
 
-**The effect ROM** is the source of the chip's canned effects — a bird call,
+Key scaling is two more bits at the top of each of two level bytes. It wires the
+octave into the volume: a patch with it set loses level the higher it is played,
+so one set of eight bytes covers a keyboard without shrieking at the top. The
+octave already shares a byte with the key-down bit and the top of the frequency
+count, so one wire there already moved the pitch and whether the note sounds,
+and now it also moves the loudness. A fourth bit does the same to the envelope
+rates, so a patch that rings for a second at the bottom of the keyboard can stop
+ringing at the top.
+
+**The instrument nibble** is the one fault on this chip that adds sounds instead
+of damaging them. Each channel's volume register holds how loud that channel is
+in its low nibble and _which instrument it is playing_ in its high one. Zero
+means the eight bytes in the register file — the patch the panel just sent — and
+the driver writes zero there with every note, because zero is the only answer it
+has. One to fifteen are patches burned into the die, and the case has buttons
+for eight of them. The other seven are on the board, wired to nothing: a violin,
+a flute, an oboe, a trumpet, a horn, a harpsichord and a vibraphone that no
+button reaches and the processor has no reason to name. A wire held high under
+that nibble is a channel that stops reading the register file mid-note and
+starts reading ROM, and since the nibble is per channel, one voice can be
+somewhere else entirely while its neighbours play what you asked for.
+
+**The effect ROM** is the source of the chip's canned effects: a bird call,
 surf, wind, a siren, crickets, a phone, a doorbell, a steam train, applause and
-a laser — and none of them are samples. Each is a short program in the processor
-firing register writes at the chip hundreds of times a second: sweeps and
-key-ons for the bird, the modulator's feedback pushed into noise for surf, that
-same noise under a random walk for wind, and so on. Because an effect is the
-busiest traffic the bus ever carries, the dataline bend scales with it — every
-one of those writes lands wrong, and under **Cut** the drifting bit is chasing
-that traffic, so the corruption tracks the effect's own motion rather than
-sitting at a fixed offset. Running an effect also borrows the whole patch and a
-fourth voice, so the keyboard drops to three voices while it plays. Starving the
-rail underneath decouples the two: the processor's clock is a resonator that
-doesn't care what the supply is doing, so the effect keeps arriving at its usual
-rate while the chip it's addressed to dives and slurs underneath it.
+a laser, none of them samples. Each is a short program in the processor firing
+register writes at the chip hundreds of times a second: sweeps and key-ons for
+the bird, the modulator's feedback pushed into noise for surf, that same noise
+under a random walk for wind, and so on. An effect is the busiest traffic the
+bus carries, so the **Data line** bend scales with it: every one of those writes
+comes out wrong, and under **Cut** the drifting bit follows that traffic, so the
+corruption tracks the effect's motion instead of sitting at a fixed offset.
+Running an effect also borrows the whole patch and a fourth voice, so the
+keyboard drops to three voices while it plays. Starving the rail underneath
+decouples the two, because the processor's clock is a resonator that ignores the
+supply, so the effect keeps its usual rate while the chip it addresses dives and
+slurs.
 
 The five later scripts each give the bends a new kind of traffic:
 
@@ -566,8 +555,8 @@ bus:
   a chip still in tune. At 16× the crickets script writes faster than the
   envelopes can follow and comes out close to noise.
 
-Both have bay lanes, **FM clock** and **FM CPU clock**, which move three octaves
-to a full push, as the toy's clock lane does.
+Clock and CPU clock have bay lanes, **FM clock** and **FM CPU clock**, which
+move three octaves to a full push, as the toy's clock lane does.
 
 The drawing under the **die** box shows the parts these faults reach. The
 allocator feeds the register file, four voices run off it, and one converter
@@ -579,16 +568,16 @@ four channels share one, a slot each per sample, and a counter selects the slot:
 
 - **Stuck** on a slot, the counter sends that channel's sample in all four: one
   voice four times as loud into the output stage and the other three gone. The
-  driver hands each note the first free channel, so only the notes that landed
-  in that slot sound. A wire on **FM DAC slot** walks the slots through a chord.
+  driver assigns each note the first free channel, so only the notes assigned to
+  that slot sound. A wire on **FM DAC slot** walks the slots through a chord.
 - **Slipping**, the counter runs slow and now and then reads a channel twice and
   skips the next. A touch is a flutter, the middle a buzz pitched by how often
   it slips, and the top gives each channel a whole sample in turn, which folds
   every note into images a quarter of the sample rate apart.
 
 **Allocator** is the driver's, on the processor's side of the bus. Stuck, it
-hands every note to one channel, so a four-voice chip plays one note at a time
-while the driver goes on believing it has four: each note cuts the last one's
+sends every note to one channel, so a four-voice chip plays one note at a time
+while the driver still treats it as four voices: each note cuts the last one's
 tail off, and a chord comes out as its last note. In melody the four channels
 are interchangeable, so which one it sticks on matters only where a channel
 belongs to something else:
@@ -605,7 +594,7 @@ chip comes up holding random bytes. Switching it on power-cycles the chip into
 them, and so does every panic, with fresh garbage each time:
 
 - A channel whose key bit came up set is already sounding, at a random pitch on
-  a random instrument, and drones until a note lands on it.
+  a random instrument, and drones until a note is played on it.
 - The driver's first patch write clears the test and rhythm registers. With a
   knife on the bus that write can miss, and the chip never finishes booting: on
   the first boot, A0 to ground leaves the test register wide open, skewed and
@@ -648,27 +637,31 @@ The Clatter panel is one drawing of the kit's voices. The pads box at its top
 left opens first and holds level, tempo, swing, chance, tune, decay and mute,
 with the drum pattern above them when it is shown.
 
-The kit's pitched voices — kick, tom, and the body under the snare — aren't
-oscillators with envelopes on them. Each one is a bridged-T network: a handful
-of parts around a transistor that does nothing until the trigger dumps a pulse
-into it, and then rings. The ringing is the drum, which means the decay isn't a
-shape laid over a tone. It's how much of each swing the transistor hands back.
+The kit's pitched voices (kick, tom and the body under the snare) are bridged-T
+networks, each a handful of parts around a transistor that does nothing until
+the trigger dumps a pulse into it, and then rings. The ringing is the drum, so
+the decay is how much of each swing the transistor gives back, with no envelope
+shape laid over a tone.
 
-**Ring** is that fraction, and a fraction has a far side. Under about nine
-tenths of the travel the network gives back less than it took and a kick is a
-kick. At the crossing it gives back exactly what it took and never stops. Past
-it, it makes up the difference every cycle and grows into its own clipping — so
-the pitched voices stop being drums and become notes, which the pattern retunes
-rather than restrikes. The trigger floor is wired to the same fact: a network
-that never drains never gets back under the floor, so a latched voice is also a
-voice the sequencer can't strike again.
+**Ring** is that fraction.
 
-The pitch falling through a hit comes off the same part rather than being drawn
-on. The pulse drives the transistor a long way from where it settles, and what
-the network is tuned to depends on what the transistor looks like from outside,
-so a big swing is a high tuning that comes down as the swing does. Hit it harder
-and the swoop starts higher and lasts longer — an accent is a pitch as well as a
-weight, which no envelope shape can say.
+- Under about nine tenths of the travel, the network gives back less than it
+  took, and the voice stays a drum.
+- At the crossing, it gives back exactly what it took and never stops.
+- Past the crossing, it makes up the difference every cycle and grows into its
+  own clipping, so the pitched voices become notes, which the pattern retunes
+  instead of restriking.
+
+The trigger floor depends on the same fraction: a network that never drains
+never gets back under the floor, so the sequencer cannot strike a latched voice
+again.
+
+The pitch falling through a hit comes from the same part. The pulse drives the
+transistor a long way from where it settles, and what the network is tuned to
+depends on what the transistor looks like from outside, so a big swing is a high
+tuning that comes down as the swing does. Hit it harder and the swoop starts
+higher and lasts longer, so an accent is a pitch as well as a weight, which no
+envelope shape can express.
 
 **Sweep** is the bias trimmer behind that swoop, as a multiple of where the kit
 shipped:
@@ -680,10 +673,10 @@ shipped:
 
 **Bank FM** solders the metal bank's squarer onto the bias of the kick, tom and
 snare networks, so the bank's clatter shakes their tuning. A little turns a kick
-metallic. Past about a third of the travel the tuning swings through zero, the
-network runs backwards for part of each swing, and the kick becomes a quieter,
-brighter clang: at the top its spectral centroid sits near 500 Hz against 67 Hz
-stock.
+metallic. Past about a third of the travel the tuning swings through zero and
+the network runs backwards for part of each swing, so the kick becomes a
+quieter, brighter clang, with its spectral centroid near 500 Hz at the top
+against 67 Hz stock.
 
 **Bank sync** resets all six metal oscillators each time the kick or tom swings
 up through zero. While that drum rings, the hats, cowbell and cymbal repeat at
@@ -697,123 +690,121 @@ answers louder than the kick that drove it. With Ring past the latch the two
 networks are two oscillators, one forcing the other: low on the travel they lock
 to one pitch, and around halfway the pair smears across the low end.
 
-**Trigger pulse** is how long the one-shot holds that line down. The charge is
-the same either way, so this is where it goes rather than how much of it there
-is: narrow is a tall spike that gets through the coupling cap as a click and
-shocks the network cleanly, wide is a shove spread across a good part of a
-cycle, which the cap blocks and the network partly cancels — no click, less
-body, and least of both on the voices pitched high enough that the pulse
-outlasts them.
+**Trigger pulse** is how long the one-shot holds the trigger line down. The
+charge is the same at any width, so the knob changes how the charge is spread.
+Narrow is a tall spike that gets through the coupling cap as a click and shocks
+the network cleanly. Wide is a shove spread across a good part of a cycle, which
+the cap blocks and the network partly cancels: no click, less body, and least of
+both on the voices pitched high enough that the pulse outlasts them.
 
 **Pulse sharing** puts all eight one-shots on one timing rail, so voices fired
-together steal charge from each other. Each runs short at the same height, which
-hands the network less charge and starts the swoop lower. A kick struck with a
-hat and a clap keeps 27% of its body under 120 Hz at the top of the travel, and
-its swoop starts at 75 Hz against 100; a lone kick is untouched. On the
+together steal charge from each other. Each runs short at the same height, so
+the network receives less charge and the swoop starts lower. A kick struck with
+a hat and a clap keeps 27% of its body under 120 Hz at the top of the travel,
+and its swoop starts at 75 Hz against 100; a lone kick is untouched. On the
 measuring board the kit's centroid rises from 440 Hz to 900, where Accent sag on
 every step pulls it down.
 
-**Trigger load** is what those one-shots cost the supply. Each one dumps its
-charge at the front of its hit, before the sound it starts:
+**Trigger load** is the drain those one-shots put on the supply. Each one dumps
+its charge at the front of its hit, before the sound it starts:
 
-- The metal bank sits across the kit's local supply and feels it at once. At the
-  top of the travel a kick drags a ringing cowbell or cymbal down an octave and
-  lets it back over about 60 ms; a kick, snare and hat together drag it nearly
-  two.
+- The metal bank sits across the kit's local supply, so the dip affects it at
+  once. At the top of the travel a kick drags a ringing cowbell or cymbal down
+  an octave and lets it back over about 60 ms; a kick, snare and hat together
+  drag it nearly two.
 - The same spike reaches the board's shared rail a block later. On the measuring
   board the rail dips to 0.35, so Plinky goes flat under every busy step, and
   the kit's own tuning sags with it.
-- The tempo reads the rail through its own decoupling, so it only drifts with
-  the average.
+- The tempo circuit sees the rail through its own decoupling, so it drifts only
+  with the average.
 
-**Snappy** is what the snare is made of. All the way up is the noise transistor
-alone, which is the snare the kit used to have; down, the two tuned networks
-under it come through instead, beating against each other. Tune reaches those
-and doesn't reach the hiss, so a snare with any tone in it moves with the rest
-of the kit.
+**Snappy** mixes the snare's sources. All the way up is the noise transistor
+alone, the kit's plain noise snare; down, the two tuned networks under it come
+through instead, beating against each other. Tune reaches those networks and
+does not reach the hiss, so a snare with any tone in it moves with the rest of
+the kit.
 
-**Noise bias** is the one transistor those voices come off. It's a base-emitter
-junction run backwards until it avalanches, which is where all the hiss on this
-board comes from, and an avalanche isn't something a designer specifies — it's a
-junction driven past where it breaks down. Give it plenty of reverse bias and it
-conducts steadily. Back it toward the knee and it stops making its mind up: it
-latches into conducting and out again at random, holding each for anywhere
-between a third of a millisecond and a tenth of a second. That's a documented
-failure of marginal parts, and it's called popcorn noise for what it sounds
-like.
+**Noise bias** sets the reverse bias on the one transistor that makes the hiss
+for those voices. The transistor is a base-emitter junction run backwards until
+it avalanches, which is the source of all the hiss on this board. Give it plenty
+of reverse bias and it conducts steadily. Back it toward the knee and it latches
+into conducting and out again at random, holding each state for between a third
+of a millisecond and a tenth of a second. Popcorn noise is a documented failure
+of marginal parts, named for what it sounds like.
 
-The snare, both hats and the clap are all hanging off that one transistor, so
-they break up together and mid-hit rather than a voice at a time — half a
-snare's crack missing and the hat over it missing the same half. Down the travel
-the kit's noise stutters; near the bottom it only spits, and what's left is the
-half of each voice that isn't hiss, so Snappy and Metal decide what a spitting
-kit still has to say. It's also the only duration on this board not counted off
-the chip's oscillator: nothing clocks an avalanche, so a rail dragging the tempo
-doesn't drag this.
+The snare, both hats and the clap all use that one transistor, so they break up
+together and mid-hit instead of one voice at a time: half a snare's crack goes
+missing and the hat over it misses the same half. Down the travel the kit's
+noise stutters; near the bottom it only spits, and what remains is the half of
+each voice that isn't hiss, so Snappy and Metal set what a spitting kit still
+sounds like. The avalanche timing is also the only duration on this board not
+counted off the chip's oscillator. No clock drives an avalanche, so a rail
+dragging the tempo does not drag it.
 
-**Dice** wires the kit's dice to that junction. Free, a maybe step rolls fresh
-every time the counter arrives. On the junction, the dice is a comparator on the
-transistor: it rolls while the junction conducts and holds its last answer while
-it doesn't. Down the Noise bias travel the maybe steps stick just as the snare
-and hats start to spit. At a bias of 0.5 a maybe repeats its last answer 74% of
-the time against 51% free; at 0.3 it repeats 97% of the time, two bars or more
-at a stretch. With the bias all the way up the two settings are the same.
+**Dice** wires the kit's dice to the noise junction. Free, a maybe step rolls
+fresh every time the counter reaches it. On the junction, the dice is a
+comparator on the transistor: it rolls while the junction conducts and holds its
+last answer while it doesn't. Down the Noise bias travel the maybe steps stick
+just as the snare and hats start to spit. At a bias of 0.5 a maybe repeats its
+last answer 74% of the time against 51% free; at 0.3 it repeats 97% of the time,
+two bars or more at a stretch. With the bias all the way up the two settings are
+the same.
 
 **Clap gap** sets the period of the clap's burst oscillator, 9 ms stock, and
 **Clap bursts** sets how many bursts it fires before the clap rings out, three
 stock.
 
 - Each burst runs down within its gap, so under about 3 ms the train becomes a
-  buzz with a noise timbre, which the metal bank can't make. It wants dozens of
-  bursts to last long enough to hear.
+  buzz with a noise timbre, which the metal bank can't make. The buzz needs
+  dozens of bursts to last long enough to hear.
 - At a few hundred milliseconds each burst is a separate clap.
 - The gap is counted off the chip's oscillator, so a sagging rail spreads the
   bursts into a flam.
 
 ## The metal bank
 
-The other four voices are one part. The cowbell, the two hats and the cymbal all
-come off a single bank of six square oscillators, tuned so that no two of them
-share a harmonic. Nothing on the board ever stops that bank: a trigger opens an
-amplifier and that's all it does, so every hit catches the six wherever they
-happen to be and no two hats start on the same edge.
+The other four voices, the cowbell, the two hats and the cymbal, are one part: a
+single bank of six square oscillators, tuned so that no two of them share a
+harmonic. The six run continuously: a trigger only opens an amplifier, so every
+hit catches the six wherever they happen to be and no two hats start on the same
+edge.
 
-The six go into a stage with nothing like the headroom for six of them, which is
-what makes a clatter out of them rather than six tones. Summed and left alone,
-the loudest harmonics in the pile all belong to the fastest oscillator and the
-hat comes out ringing on a note; squared off, the edges of all six land in it at
-times that never come round. The cowbell is soldered in ahead of that stage,
-which is why it's the one metal voice with a pitch left in it.
+The six go into a stage with far too little headroom for them, which makes a
+clatter of them instead of six tones. Summed and left alone, the loudest
+harmonics in the pile all belong to the fastest oscillator and the hat comes out
+ringing on a note; squared off, the edges of all six fall in it at times that
+never repeat. The cowbell is soldered in ahead of that stage, which is why it's
+the one metal voice with a pitch left in it.
 
 **Squarer bias** is the resistor that makes that stage a comparator, and backing
-it off is the one knob that hands the six tones back. The stage is a gate with a
+it off is the one control that returns the six tones. The stage is a gate with a
 resistor from its output to its input, which parks it at its own trip point,
-where the gain is in the thousands — so anything at all arrives at the far side
-as a rail. Lean on the resistor and the feedback starts setting a gain instead
-of a threshold: the gate stops deciding and starts amplifying, the sum comes
-through as a sum, and the hat, the open hat and the cymbal turn into a metal
-chord beating against itself. It measures three times as tonal at the bottom of
-the travel as at the top and the band it comes out of hasn't moved, which is
-what separates this from a tone control. The cowbell taps out ahead of the
-stage, so it's the one metal voice this never reaches — the mirror of Bank
+where the gain is in the thousands, so any input swings the output to a rail.
+Lean on the resistor and the feedback starts setting a gain instead of a
+threshold: the gate stops switching and starts amplifying, the sum comes through
+as a sum, and the hat, the open hat and the cymbal turn into a metal chord
+beating against itself. It measures three times as tonal at the bottom of the
+travel as at the top while the band it comes out of stays where it was, which
+distinguishes it from a tone control. The cowbell taps out ahead of the stage,
+so it is the one metal voice Squarer bias never reaches, the mirror of Bank
 spread, which reaches all four.
 
-**Metal** is the pot on the hats' amplifier, between that bank and the noise
-transistor the hat used to be made of — the same transistor the snare and the
-clap are still hanging off. Down the travel is the old hat, and every hit off it
-is the same hit; up it, no two are.
+**Metal** is the pot on the hats' amplifier that blends the metal bank with the
+noise transistor, the same transistor the snare and the clap use. Down the
+travel is the noise hat, and every hit is the same hit; up the travel, no two
+hits are the same.
 
 **Bank spread** leans on the one resistor chain that sets all six. The ends of
-the chain move and the middle stays, so the bank widens rather than transposing
-— that's Tune's job. Every metal voice moves at once because they're the same
+the chain move and the middle stays, so the bank widens instead of transposing,
+which is Tune's job. Every metal voice moves at once because they're the same
 six parts: wind it up and the cowbell detunes, the cymbal turns to glass and the
 hats get grittier.
 
 **Bank starve** puts a resistor into the bank's own supply. All six slow down
 together, up to three octaves, so the cowbell drops and its beat stretches out,
 and the hats and cymbal thin from a clatter to a crackle. The kick, tom and
-snare aren't across that supply, so this moves the metal half of the kit and
-leaves the drums where Tune put them.
+snare are not on that supply, so Bank starve moves the metal half of the kit and
+leaves the drums at the pitch Tune sets.
 
 **Bank gate** solders a trigger line onto that supply. The six run only while
 the chosen voice sounds and hold their phases in between, so gated on the kick
@@ -821,63 +812,64 @@ the hats, cowbell and cymbal speak only under a ringing kick. Gated on a metal
 voice, each hit starts where the last one stopped, so two hats in a row still
 differ; Bank sync is the bend that makes them the same hat.
 
-**Cymbal tone** is a wiper between two taps on the cymbal's own filter rather
-than a corner being swept, which is why it's a tone control and not a second
-volume. Down it keeps the body the hats throw away; up it's most of the way to
-being a hat.
+**Cymbal tone** is a wiper between two taps on the cymbal's filter, so it works
+as a tone control and not a second volume. Down it keeps the body the hats throw
+away; up it's most of the way to being a hat.
 
-The two hats share one cap, which is what a hi-hat pedal is. A closed step
-doesn't silence a ringing open hat — it drains what's left of it in a hurry, so
-writing hats under an open one is a foot on the pedal rather than a mute. What
-does the draining is one resistor across that cap, and **Choke** is where it's
-soldered: move the wire and any voice does that to any other. _Kick cuts the
-kit_ is a gate on everything; _each cuts the next_ passes it round the ring. The
-hats keep their pedal wherever the wire goes, because that pair is wired in the
-metal rather than on the panel. It listens to the trigger line, so a pad, the
-mic and a bridged wire choke exactly as well as the sequencer does.
+The hat and the open hat share one cap, which models a hi-hat pedal. A closed
+step drains a ringing open hat quickly instead of silencing it, so writing hats
+under an open one acts as a foot on the pedal, not a mute. One resistor across
+that cap does the draining, and **Choke** sets where it is soldered: move the
+wire and any voice drains any other. _Kick cuts the kit_ is a gate on
+everything; _each cuts the next_ passes it round the ring. The hats keep their
+pedal wherever the wire goes, because that pair is hard-wired. The choke follows
+the trigger line, so a pad, the mic and a bridged wire choke exactly as well as
+the sequencer does.
 
-**Accent** and **Accent sag** make the accent row a circuit rather than a flag.
-The accent is one cap feeding every voice on the board, and sag is how much each
-accented step takes off it. Left at nothing the bus is stiff and every accent is
-the full one. Wound up, a step stacking four voices hands each of them less than
-a step stacking one, and a second accent arriving before the cap has caught up
-lands softer than the first — so a roll comes out shaped without a knob moving.
+**Accent** and **Accent sag** make the accent row a circuit. The accent is one
+cap feeding every voice on the board, and sag is how much each accented step
+takes off it. Left at nothing the bus is stiff and every accent is the full one.
+Wound up, a step stacking four voices gives each of them less than a step
+stacking one, and a second accent that comes before the cap has recovered is
+softer than the first, so a roll comes out shaped without a knob moving.
 
 ## Parlor's sample bus
 
-Parlor is the plainest machine on the board and the most bent one ever built,
-and those are the same fact. There is no oscillator in it: a ROM holds one short
-recording of each voice — an attack segment and then a loop — and a counter
-walks that ROM at the rate the note asks for. So the whole instrument is a
+Parlor is the simplest machine on the board and has no oscillator. A ROM holds
+one short recording of each voice, an attack segment and then a loop, and a
+counter walks that ROM at the rate set by the note. The whole instrument is a
 counter, a memory and a DAC, and a knife reaches two of the three.
 
-**Address line** is the counter's own wires, running into the memory, so it
-behaves the way the toy chips' address buses do: every word that comes back is a
-real word from the wrong place, and the note never moves. A low wire held down
-reads each word more than once, which drops the voice an octave and coarsens it;
-a high one folds the whole recording onto a fixed half of itself, so a voice
-loops inside its own attack and never reaches the part it was cut for. There are
+**Address line** is the counter's wires, running into the memory, so it behaves
+the way the toy chips' address buses do: every word that comes back is a real
+word from the wrong place, and the note never moves. A low wire held down reads
+each word more than once, which drops the voice an octave and coarsens it; a
+high one folds the whole recording onto a fixed half of itself, so a voice loops
+inside its own attack and never reaches the part it was cut for. There are
 fourteen wires because the counter has to reach the sample memory as well as the
-wave ROM, and the wave ROM fits under the top two — so on every voice but
-_sampled_ those two are wires nothing ever drives high.
+wave ROM, and the wave ROM fits under the top two, so on every voice but
+_sampled_ the top two wires are never driven high.
 
-**Data line** is the answer coming back, and it is the fault the whole hobby is
-named after. The address is right, the sample is not, and it is wrong on every
-word of every voice, so the note keeps its pitch and loses its surface. D7 is
-the top of the word: held high, the bottom half of every wave folds up onto the
-top of it and a string pad comes back as a rectified buzz at the pitch it always
-was. The lower wires punch a notch through each word, which is the gravel. A
-bridge collapses two of them onto a lattice and the wave comes out in steps.
+**Data line** is the answer coming back. The address is right, the sample is
+not, and it is wrong on every word of every voice, so the note keeps its pitch
+and loses its surface. D7 is the top of the word: held high, the bottom half of
+every wave folds up onto the top of it and a string pad comes back as a
+rectified buzz at the pitch it always was. The lower wires punch a notch through
+each word, which is the gravel. A bridge forces two of them to the same value,
+which puts the words on a lattice, so the wave comes out in steps.
 
-Two things about the clock are as much of the sound as the ROM is. It was cut at
-9.9 kHz and nothing interpolates on the way out, so every voice arrives with its
-own images sitting over it — _Tone_ is the two-pole reconstruction filter and
-the whole of what stands between you and them. And the rate is a twelve-bit
-_divider_ rather than a frequency, so what the chip plays is the nearest number
-the counter can be told: dead in tune at the bottom of the keyboard and a few
-cents sharp at the top, which is why one of these never quite sounded in tune
-with anything. _ROM clock_ drags that counter directly, and pitch and aliasing
-move together because on this part they are the same thing.
+Two properties of the clock shape the sound as much as the ROM does:
+
+- The ROM was cut at 9.9 kHz and nothing interpolates on the way out, so every
+  voice has images sitting over it. _Tone_ is the two-pole reconstruction
+  filter, and the only filter between you and them.
+- The rate is a twelve-bit _divider_ rather than a frequency, so the chip plays
+  the nearest number the counter can be told: dead in tune at the bottom of the
+  keyboard and a few cents sharp at the top, which is why one of these never
+  quite sounded in tune with anything.
+
+_ROM clock_ drags that counter directly, and pitch and aliasing move together
+because on this part they are the same thing.
 
 ## Growler's voice card
 
@@ -893,7 +885,7 @@ sit under the ladder and the VCA. Each fault shows as a red reading on its part.
 The pair turns a control voltage into a frequency, and its scale depends on
 temperature, so the three oscillators drift in different directions and the
 octave widths stretch apart. Low notes stay close to in tune and high notes
-disagree. The board's own heat adds to it.
+disagree, and the board's own heat adds to the drift.
 
 **Leaky VCA** leaves the amplifier slightly open, so some of the filter output
 passes with no key down. The oscillators drone under every note and between
@@ -922,60 +914,61 @@ drag its pitch with the other chips.
 
 ## The drum machine's pattern bus
 
-The same four wire faults apply here, between the step counter and the pattern
-memory instead of the ROM. Nothing malfunctions: the counter keeps counting and
-the playhead keeps tracking the step it always did — what changes is which cell
-the memory answers with.
+The pattern bus runs between the step counter and the pattern memory, and the
+four wire faults (to ground, to +V, bridged, cut) apply to it. The counter keeps
+counting and the playhead keeps tracking the step it always did; what changes is
+which cell the memory answers with.
 
 **Address line** faults change which step you get. A0 held low files every odd
 step on top of the even one below it, halving the pattern's resolution; A3 held
-high hands you only the back half of the bar and never the front. A row's length
-lives in the counter rather than the memory, so a leaned-on address line can
-reach cells a short row could never have played on its own.
+high plays only the back half of the bar. A row's length is set in the counter,
+so a knifed address line can reach cells a short row could never have played on
+its own.
 
-**Data line** here is the trigger line itself, not an amplifier — that's what
-separates it from cross-patch. Force one high and that voice fires for real on
-every step the machine fetches, and every other instrument listening to that
+**Data line** here is the trigger line itself, not an amplifier, which
+distinguishes it from cross-patch. Force one high and that voice fires for real
+on every step the machine fetches, and every other instrument listening to that
 trigger line hears it too. Force one low and it's a row you can see and never
 hear. Bridge a pair and the two fire only where both rows agree, thinning a busy
 pattern down to what they have in common.
 
-There are nine wires on that side and only eight voices. The ninth is the
-accent, which is a wire on the same bus rather than a flag beside it — one line
-a row, in the order of the grid, so D8 is the accent and it is the one wire that
-says how hard rather than whether. Held high the accent bus is asked for on
-every step the machine fetches; with the bus stiff that is a kit with one weight
-again, and with **Accent sag** wound up it is a kit weighed by how many voices
-each step strikes, pumping against its own pattern with nothing in the signal
-path. Held low it is the accent row you can see and never hear. Bridged, it
-lands only where the row beside it does — an accent on the crashes and nowhere
-else.
+There are nine wires on that side and eight voices. The ninth wire is the
+accent, on the same bus as the voices: one line a row, in the order of the grid,
+so D8 is the accent, and it is the one wire that says how hard a voice is
+struck, not whether.
+
+- Held high, the machine fetches the accent bus on every step. With the bus
+  stiff the kit has one weight again; with **Accent sag** wound up the kit is
+  weighted by how many voices each step strikes, pumping against its own pattern
+  with nothing in the signal path.
+- Held low, it is the accent row you can see and never hear.
+- Bridged to the row beside it, the accent fires only where that row does: an
+  accent on the crashes and nowhere else.
 
 ## The counter's own clock
 
-Everything above leaves the counter counting and changes what comes back. This
-is the other one: the cell is right and the counter is behind.
+The faults above leave the counter counting and change what comes back. Clock
+slip leaves the cell right and puts the counter behind.
 
 **Clock slip** is the wire clocking the step counter, and how often an edge
-comes out too slow to get over the threshold. Nothing is fetched wrong. The
-strobe still lands, the memory still answers, the voices the step names still
-fire — the counter simply has not moved, so that step plays a second time and
-the bar comes out a step longer than the one before it.
+comes out too slow to get over the threshold. Every fetch is correct: the strobe
+lands, the memory answers and the voices the step names fire, but the counter
+has not moved, so that step plays a second time and the bar comes out a step
+longer than the one before it.
 
-It is the only fault on this board that accumulates. A knifed address line is
-the same wrong cell every lap, for as long as you leave it; a slipped clock
-never comes back to where it started, so the pattern walks against the accent
-row, against every row whose length is not sixteen, and against anything
+Clock slip is the only fault on this board that accumulates. A knifed address
+line is the same wrong cell every lap, for as long as you leave it; a slipped
+clock never comes back to where it started, so the pattern walks against the
+accent row, against every row whose length is not sixteen, and against anything
 following the kit. The playhead walks with it, because the playhead _is_ the
-counter — which is the visible difference between this and a bus fault, where
-the grid goes on chasing the step it always did.
+counter, which is how you tell a slipped clock from a bus fault, where the grid
+keeps chasing the step it always did.
 
-Two things follow it and one does not. MIDI clock out is counted off the steps
-the kit actually clocks, so every follower on the wire is dragged along. _Kit
-sync_ is not: it locks the toy to the tempo the kit was asked for rather than to
-the edges the counter produced, so a slipping kit and a locked toy come apart.
-All the way up nothing gets over the threshold at all and the machine stands on
-one step, at the step rate, with the tempo untouched.
+MIDI clock out counts the steps the kit actually clocks, so every follower on
+the wire is dragged along. _Kit sync_ locks the toy to the tempo the kit was
+asked for instead of to the edges the counter produced, so a slipping kit and a
+locked toy drift apart. All the way up, no edge gets over the threshold and the
+machine stays on one step at the step rate, with the tempo unchanged.
 
 **Counter reset** solders a voice's trigger line to the counter's clear pin. The
 clear is synchronous, so when that voice strikes, the next clock edge loads step
@@ -989,44 +982,45 @@ one:
 - A pad, the mic or the keyboard striking that voice restarts the bar by hand.
 - A reset voice on step one holds the machine on step one, at the step rate.
 
-**Pattern loop** treats the pattern memory as what a cheap machine of this kind
-really has: a shift register clocked by the counter, its output tied back to its
-input. A knife in that loop changes each step as it goes back in, so the pattern
+**Pattern loop** treats the pattern memory as a shift register clocked by the
+counter, with its output tied back to its input, as a cheap machine of this kind
+has. A knife in that loop changes each step as it goes back in, so the pattern
 rewrites itself a lap at a time:
 
 - _Return inverted_ plays every row's gaps every other bar. Empty rows fill, so
   on the stock beat the odd bars strike all eight voices on most steps.
 - _Return a step late_ slides every row one step later each bar, under an accent
   row that stays put.
-- _Each row into the next_ hands each part down the grid a bar at a time: the
+- _Each row into the next_ passes each part down the grid a bar at a time: the
   kick's part on the snare, then the hat, round to the kick after eight bars.
 - _Return through an XOR_ mixes each step with its neighbour, growing a row into
   patterns it never had. A sixteen-step row comes back within 255 bars.
 
-Nothing writes the panel. Writing a step loads that row into the loop again, and
-switching the knife off hands back the grid. The lights show what struck.
+The knife leaves the panel's controls unchanged. Writing a step loads that row
+into the loop again, and switching the knife off restores the grid. The lights
+show what struck.
 
 **Scan** is how long the chip takes to get from one voice to the next. Slow it
 and a step that strikes several voices comes out as a flam, in row order.
 
 ## The drum machine's sample ROM
 
-The sampled kit keeps its eight slabs end to end in one part, kick first and
+The sampled kit stores its eight slabs end to end in one part, kick first and
 cymbal last, and every voice reads that part over the same wires. Those wires
 appear under **Sample ROM** once the kit is switched to sampled.
 
 **Slab counter** is two pins on the counter that walks a slab:
 
 - With the end stop cut, the counter runs on through every slab after the
-  voice's own, so one kick hit carries about four seconds of the whole kit.
+  voice's own, so one kick hit plays about four seconds of the whole kit.
 - With the up/down pin wired, a slab plays backwards: the tail swells into the
   attack.
 - With both, the counter runs backwards to the start of the ROM, and one cymbal
-  hit carries the whole kit in reverse.
+  hit plays the whole kit in reverse.
 
 **ROM address** works like every other address bus on the board, with one
 difference: the memory holds every voice, so a wrong address is often another
-voice's slab. A0 held low reads each word twice. A16 held high lands the kick's
+voice's slab. A0 held low reads each word twice. A16 held high puts the kick's
 counter in the open hat's tail and then the cymbal's attack. With a bridge, the
 counter reads the slabs in clumps.
 
@@ -1034,19 +1028,19 @@ counter reads the slabs in clumps.
 a fault there folds each hit into a square-edged blat at about 1.7 times the
 level. The low wires sit under the quiet tails and are barely audible.
 
-Both knives share **Cut depth** with the pattern bus.
+The ROM address and ROM data knives share **Cut depth** with the pattern bus.
 
 ## The trigger patch's other faults
 
-See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for how to wire it;
-these are what happen once it's live.
+See [the trigger patch](USER-GUIDE.md#the-trigger-patch) for how to wire it. The
+faults below apply once it is live.
 
-**Retrigger** hammers the drum machine's trigger line, and past roughly 40 Hz
-the retrigger period stops sounding like rhythm and becomes the pitch. **Trigger
+**Retrigger** pulses the drum machine's trigger line, and past roughly 40 Hz the
+retrigger period stops sounding like rhythm and becomes the pitch. **Trigger
 floor** sets how far a voice has to have decayed before its one-shot will answer
-the trigger line again — at zero, every pulse strikes; at maximum, a voice won't
-restrike until it's fully finished. It sits on the trigger line itself, so the
-sequencer, pads, mic and keyboard all queue behind it too.
+the trigger line again: at zero, every pulse strikes; at maximum, a voice does
+not restrike until it has fully finished. Trigger floor sits on the trigger line
+itself, so it gates the sequencer, pads, mic and keyboard as well.
 
 **Ring trigger** puts a comparator on one tank's ring and solders its output
 onto other voices' trigger lines. The comparator strikes once a cycle while the
@@ -1061,8 +1055,8 @@ ring is loud:
 - In the sampled kit the comparator reads the slab's output.
 
 **Cross-patch** bridges two drum voices' envelope pins, so one voice's amplifier
-ends up hearing another voice's envelope — a hit you can hear opens a channel
-nothing struck. **Rotate** cycles this through the original three voices;
+follows another voice's envelope, and a hit you can hear opens a channel nothing
+struck. **Rotate** cycles the cross-patch through the original three voices;
 **Whole kit** extends it to every voice on the board, so a voice with no steps
 of its own can still fire off another voice's pattern.
 
@@ -1082,25 +1076,29 @@ the ring modulator's carrier, or the trigger line of the drum machine or the
 glitch buffer.
 
 **Restarts the file on** puts a dropped audio file on a trigger line of your
-choice — one of the kit's voices, any hit at all, a keyboard note, or the mic.
+choice: one of the kit's voices, any hit at all, a keyboard note, or the mic.
 With **Ending** set to one-shot, the file plays as one more drum voice,
-retriggered from the top on every hit; left as a loop, each hit just drops the
-needle back at the start of whatever's already playing.
+retriggered from the top on every hit; left as a loop, each hit restarts the
+file from the beginning.
 
 ## The patch bay and body pad
 
-The patch bay is four free wires. Its sources: the bay's own LFO, the sag on
-whichever supply is dying, the output envelope, the mic, an axis of the body
-pad, the feedback bus itself, the chip's sequencer ramping across each ROM step
-(the one source that stays locked to the tune), either box's trigger line, or
-how hot the board has gotten — the slowest thing on the board, and the one that
-never resets to where it started. Its destinations: a filter cutoff, a carrier,
-a clock, the shift or word-length controls, tape speed or delay time, glitch
-chance, stompbox drive, the kit's trimmer, the spring tank's decay, the drum
-cross-patch amount, the feedback amount, or another wire's own depth. One
-destination, **starve**, isn't a stage at all — it's the shared rail, so a wire
-landed there reaches everything powered from it at once, whether that's a drum
-hit browning the chip out on every kick or an LFO that ages the rail in time.
+The patch bay is four free wires.
+
+- Sources: the bay's own LFO, the sag on whichever supply is dying, the output
+  envelope, the mic, an axis of the body pad, the feedback bus itself, the
+  chip's sequencer ramping across each ROM step (the one source that stays
+  locked to the tune), either box's trigger line, or how hot the board has
+  gotten, the slowest source on the board, which never resets to where it
+  started.
+- Destinations: a filter cutoff, a carrier, a clock, the shift or word-length
+  controls, tape speed or delay time, glitch chance, stompbox drive, the kit's
+  trimmer, the spring tank's decay, the drum cross-patch amount, the feedback
+  amount, or another wire's depth.
+
+One destination, **starve**, is the shared rail and not a stage, so a wire there
+affects everything powered from the rail at once, whether that is a drum hit
+browning the chip out on every kick or an LFO that ages the rail in time.
 
 Twelve lanes reach [the toy chip's pins](#the-toy-chips-pins): **crosstalk**,
 **scan**, **PWM** and **short** move every sample, and the envelope cap, ghost
@@ -1127,13 +1125,13 @@ Five lanes reach the kit: **tempo**, **swing**, **chance**, **decay** and
 step, so fills feed themselves.
 
 The bay's oscillator also offers two shapes beyond the usual LFO set: **chaos**,
-which folds along a Rössler-style band and passes near where it's been without
-ever landing there twice, and **drunk**, a bounded random walk that reflects off
-the ends of its own travel.
+which folds along a Rössler-style band and passes near where it has been without
+ever visiting the same point twice, and **drunk**, a bounded random walk that
+reflects off the ends of its travel.
 
-The **body pad** is a pair of bare contacts: touching both makes your own body
-resistance the control. It does nothing until a wire in the bay is soldered to
-it — the same as the real thing.
+The **body pad** is a pair of bare contacts, and touching both makes your own
+body resistance the control. The pad has no effect until a wire in the bay is
+soldered to it, as on the real device.
 
 ## Effects and pedals
 
@@ -1143,97 +1141,109 @@ motor to the supply means the repeats dive whenever the power fails.
 
 **Ring** puts a multiplier inside the tape delay's regeneration, ahead of the
 sum that writes the tape, so every repeat is shifted again and the tail builds a
-lattice rather than a row of copies. At unison with the note the even harmonics
-appear a lap at a time — the toy's square hasn't got any, and the product writes
-them in. An octave under, the echoes carry a new fundamental below the note
-while what you played stays clean. A few hertz puts each repeat a little further
-out of tune with the last, so the cluster round every harmonic widens as the
-tail goes on. **Ring depth** crossfades the plain tap against the product, which
-is the depth of the modulation, and the ring path is lifted by √2 — otherwise a
-sine carrier would cost the tail 3 dB a lap and the repeats would simply die
-sooner. A dc block sits on the multiplied tap, since at unison the product has a
-constant term and the tone filter is a low-pass rather than a block.
+lattice rather than a row of copies.
+
+- At unison with the note, the even harmonics appear a lap at a time: the toy's
+  square has none, and the product adds them.
+- An octave under, the echoes have a new fundamental below the note while what
+  you played stays clean.
+- A few hertz puts each repeat a little further out of tune with the last, so
+  the cluster round every harmonic widens as the tail goes on.
+
+**Ring depth** crossfades the plain tap against the product, which is the depth
+of the modulation. The ring path is raised by √2, because otherwise a sine
+carrier would lose 3 dB a lap from the tail and the repeats would die sooner. A
+dc block sits on the multiplied tap, since at unison the product has a constant
+term and the tone filter is a low-pass rather than a block.
 
 **Loop filter** is a resonant filter inside the regeneration: sweep it while the
-repeats ring, the dub delay move. **Lamp** is a bulb in the same loop. It dims
-as it heats, so Feedback past 1 swells and backs off instead of pinning.
+repeats ring, the dub delay move. **Lamp** is a bulb in the same loop. The lamp
+dims as it heats, so Feedback past 1 swells and backs off instead of pinning.
 
-**Warble** swings the length of each of the spring tank's four combs on its own
-slow sine. A long decay stops ringing on the same few resonances and smears
-across the notes around them; at the top the combs swing a third of their
-length, every lap bends the pitch again, and the tail goes seasick. The bay's
-**verb warble** lane rides on the knob.
+**Warble** swings the length of each of the spring tank's four combs on a slow
+sine. A long decay stops ringing on the same few resonances and smears across
+the notes around them; at the top the combs swing a third of their length, every
+lap bends the pitch again, and the tail wobbles. The bay's **verb warble** lane
+rides on the knob.
 
-The delay pedal's **shift** mode moves every repeat by the interval **Shift**
-names, and since the repeat is what goes back round, every lap moves again. Up a
-fifth, one note comes back as a staircase of fifths, ten times its pitch by the
-sixth lap; up an octave it is past the top of the band by then and folds back
-down as grit. Down an octave it spirals into the floor and rumbles there. A
+The delay pedal's **shift** mode moves every repeat by the interval set by
+**Shift**, and since the repeat is what goes back round, every lap moves again.
+Up a fifth, one note comes back as a staircase of fifths, ten times its pitch by
+the sixth lap; up an octave it is past the top of the band by then and folds
+back down as grit. Down an octave it spirals into the floor and rumbles there. A
 third of a semitone either way is a smear that drifts further out of tune each
 lap.
 
 **Freq shifter** moves every partial by the same number of hertz rather than the
-same ratio, so harmonic input comes out inharmonic. Its own feedback shifts
-every lap again — the barber-pole effect — which keeps the squeal inside the
-global feedback loop from ever settling on a pitch.
+same ratio, so harmonic input comes out inharmonic. The shifter's feedback
+shifts every lap again (the barber-pole effect), which keeps the squeal inside
+the global feedback loop from ever settling on a pitch.
 
 **Ring mod** does the same thing to a note that the shifter does, and **Track**
-is what decides whether that ruins it. Left off, the carrier stands still and
-the sidebands land on a grid with nothing in common with the one the note came
-in on — the clang the effect is known for. Soldered to the note the toy is
-sounding, the ratio picks which grid comes out: a whole one (unison, octave,
-oct+5th, two oct) puts the sidebands back on the note's own harmonics, so it
-stays in tune and only its timbre moved; a half one (sub, fifth) lands them an
-octave under and writes a new fundamental below what you played; the tritone
-lands on nothing, so the clang is still a clang but it follows the melody. The
-key line only carries what the toy strikes, so a board playing Glint or the
-sampler stays on the Carrier knob.
+controls whether that ruins the note. Left off, the carrier stands still and the
+sidebands fall on a grid unrelated to the note's, which gives the clang the
+effect is known for. Soldered to the note the toy is sounding, the ratio picks
+which grid comes out:
+
+- A whole ratio (unison, octave, oct+5th, two oct) puts the sidebands back on
+  the note's harmonics, so the note stays in tune and only its timbre changes.
+- A half ratio (sub, fifth) puts them an octave under and adds a new fundamental
+  below what you played.
+- The tritone puts them on no harmonic, so the clang is still a clang but it
+  follows the melody.
+
+The key line follows only the notes the toy strikes, so a board playing Glint or
+the sampler stays on the Carrier knob.
 
 **Track**'s four step positions lock the carrier to the sequencer rather than to
 the note: one whole turn per ROM step, or four, sixteen, sixty-four of them. At
 ×1 that is a tremolo landing on the same phase on every step; at ×64 it is an
 audio-rate carrier whose pitch follows the toy's clock, so a starve, a drift or
 a hand on the clock multiplier bends the ring along with the tune, and its phase
-restarts on every note. Stop the sequencer and the Carrier knob takes it back.
+restarts on every note. Stop the sequencer and the Carrier knob controls the
+carrier again.
 
-**Carrier shape**'s third position is a diode bridge — four diodes in a ring,
-which is the circuit the effect is named after — and it is the one that answers
-to how hard you play it. The bridge stops conducting near zero, so a quiet
+**Carrier shape**'s third position is a diode bridge, four diodes in a ring,
+which is the circuit the effect is named after, and it is the only shape that
+responds to how hard you play. The bridge stops conducting near zero, so a quiet
 passage comes out gritty and crossover-distorted where a loud one pushes through
-to something close to the clean multiply. Neither of the other two shapes moves
-at all with level.
+to something close to the clean multiply.
 
-**Carrier from** takes the carrier off another machine on the board rather than
-off the stage's own oscillator, which retires the Carrier knob and Track with
-it. The kit is a gate — the programme sounds only through the hits, and Mix
-hands the dry back underneath. The chaos oscillator never comes round again, so
-its sidebands never settle, and it is the furthest thing from a plain ring the
-board can make. Glint and the toy are pitched, so what comes out is
-intermodulation on a grid rather than a clang, and the noise source reads white.
+**Carrier from** takes the carrier from another machine on the board instead of
+the stage's own oscillator, which disables the Carrier knob and Track.
+
+- The kit is a gate: the programme sounds only through the hits, and Mix brings
+  the dry signal back underneath.
+- The chaos oscillator never repeats, so its sidebands never settle, and it is
+  the furthest source from a plain ring the board offers.
+- Glint and the toy are pitched, so the output is intermodulation on a grid, not
+  a clang.
+- The noise source is white.
+
 Whichever machine you pick has to be up in the mix to make a carrier at all, so
 it is also in the programme it is multiplying.
 
 **toy step late** and **toy beat late** multiply the toy by itself one of its
 steps or one of the kit's beats ago. Two different notes meet in the multiply,
-so their difference tone lands as a bass line under the tune that nobody wrote,
-and the sum tones fizz above it; where the old note and the new one are the
-same, the product is that note's octaves. The step follows the toy's clock, so a
-hand on Clock or a pot on the timing pin drags the delay and bends the old
+so their difference tone appears as a bass line under the tune that nobody
+wrote, and the sum tones fizz above it; where the old note and the new one are
+the same, the product is that note's octaves. The step follows the toy's clock,
+so a hand on Clock or a pot on the timing pin drags the delay and bends the old
 note's pitch on its way out.
 
 **Mix** on a ring modulator is the depth of the modulation rather than a balance
 beside it: the travel runs from clean, through amplitude modulation with the
 note still audible under its own sidebands, to the suppressed-carrier ring at
-the top. So the bay's lane on it is a VCA on the carrier — a wire from the drum
-hit clangs every kick and fades back to the clean note, and one from the output
-envelope rings only the loud passages.
+the top. The bay's lane on it therefore acts as a VCA on the carrier: a wire
+from the drum hit clangs every kick and fades back to the clean note, and one
+from the output envelope rings only the loud passages.
 
 The carrier is also one of the patch bay's destinations, and that lane is four
-octaves wide — which is where most of this bend's range actually is. A wire from
-the drum hit onto it slams the carrier up an octave or more on every kick and
-smears the sidebands into something very near noise; the bay's chaos and drunk
-shapes do the same without the rhythm; the ROM step does it locked to the tune;
-the heat does it over minutes.
+octaves wide, which is where most of this bend's range is. A wire from the drum
+hit onto it pushes the carrier up an octave or more on every kick and smears the
+sidebands into something very near noise; the bay's chaos and drunk shapes do
+the same without the rhythm; the ROM step does it locked to the tune; the heat
+does it over minutes.
 
 **Patched into** re-solders where the feedback bus returns: the source mix, the
 oscillator's FM input, the toy's own rail (so the output browns out the toy that
@@ -1245,21 +1255,26 @@ hard the supply is straining, riding the same ripple that's sagging the rail.
 **Sub octave** is a flip-flop divider ahead of the clipper that mistracks on
 complex input, the same way the vintage pedals it's modelled on did.
 
-**The stompbox** is six circuits, and each clips somewhere structurally
-different rather than running the same curve through a different formula: the
-**screamer** clips inside the op-amp's own feedback loop, so the dry note walks
-underneath it; the **rat** clips to ground behind an op-amp too slow to keep up,
-which is the fizz; the **muff** runs two clipping stages into a scooped tone
-stack; the **germanium** circuit is lopsided, and its bias rides down with the
-signal, so it splutters as a note decays and cleans up as you back off; the
-**octave** circuit rectifies before it clips, coming out an octave up on one
-note and gargling on two; the **gate** circuit sits misbiased at the edge of
-cutoff. **Battery** is how dead the stompbox's own 9V is — the rail sags as the
-pedal works, so notes bloom and collapse, and it shares the board's supply, so
-Starve and Latch-up drag it down too.
+**The stompbox** is six circuits, and each clips in a structurally different
+place:
 
-Every feedback path in the instrument — the delay, the comb filter, the screech
-filter, the global feedback bus — is designed to run past unity on purpose.
+- The **screamer** clips inside the op-amp's feedback loop, so the dry note
+  walks underneath it.
+- The **rat** clips to ground behind an op-amp too slow to keep up, which is the
+  fizz.
+- The **muff** runs two clipping stages into a scooped tone stack.
+- The **germanium** circuit is lopsided, and its bias rides down with the
+  signal, so it splutters as a note decays and cleans up as you back off.
+- The **octave** circuit rectifies before it clips, coming out an octave up on
+  one note and gargling on two.
+- The **gate** circuit sits misbiased at the edge of cutoff.
+
+**Battery** is how dead the stompbox's own 9V is. The rail sags as the pedal
+works, so notes bloom and collapse, and it shares the board's supply, so Starve
+and Latch-up drag it down too.
+
+Every feedback path in the instrument (the delay, the comb filter, the screech
+filter, the global feedback bus) is built to run past unity.
 
 The screech filter's **dropped** fold is a filter that fell off the rack.
 **Popcorn** is a bad junction whose crackle rides the input and rings at the
@@ -1268,96 +1283,97 @@ pot** jumps the cutoff while it sweeps.
 
 ## The parts rack
 
-Every number below was compiled into the model from one real board: how hard a
-paperclip chokes, where the reset chip gives up, how big the oscillator's
-capacitor is. A bent toy is a board whose parts aren't the ones on the
-schematic, so here they're knobs instead of constants.
+Every number below was taken from one real board and compiled into the model:
+how hard a paperclip chokes the rail, where the reset chip trips, how big the
+oscillator's capacitor is. A bent toy is a board whose parts differ from the
+schematic, so the parts rack makes them parameters instead of constants.
 
 **Timing pin** is the oscillator's own decoupling capacitor, as the time window
 it averages the rail over. Stock, a single note's current draw is gone before
-the clock notices it, which is why a chord sags the pitch without the beat
+the clock responds to it, which is why a chord sags the pitch without the beat
 stumbling. Scrape it off and every note in a chord trips the tune; wind it up
-and the timebase stops hearing the rail at all, so the pitch dives while the
-tempo holds steady — something no chip with a single oscillator can normally do.
+and the timebase stops following the rail at all, so the pitch dives while the
+tempo holds steady, which no chip with a single oscillator can normally do.
 
-**Watchdog** sets the voltage where the reset chip decides the supply has
-failed. It can't go below the point where the die itself stops running, so at
-the bottom of the knob the reboot is the last thing that happens after you've
-already heard the whole dive; at the top, the toy resets while it's still
-perfectly able to run, so a sag it used to ride out now knocks it offline.
+**Watchdog** sets the voltage at which the reset chip trips. It cannot go below
+the point where the die stops running, so at the bottom of the knob the reboot
+comes last, after the whole dive has been heard; at the top, the toy resets
+while it can still run, so a sag it would otherwise ride out knocks it offline.
 
 **Latch hold** is where a jammed die and its dying supply settle against each
-other — low is a growl under the floor, high is a shriek that nearly resolves.
+other: low is a growl under the floor, high is a shriek that nearly resolves.
 
 **Clip bite, dwell, charge** and **release** describe the paperclip itself: how
 hard it chokes, how long a touch lasts on average, and how fast the clock leaves
 and returns while it's down and after it lifts. Stock, release is ten times
-faster than charge, and that asymmetry is the entire reason Clip chatter reads
-as a dive rather than a warble — pressing down has to charge a capacitor through
-the contact, while lifting off just removes it from the circuit. Bring release
-down toward charge and dives turn into a warble.
+faster than charge, which makes Clip chatter sound like a dive and not a warble:
+pressing down has to charge a capacitor through the contact, while lifting off
+removes it from the circuit. Bring release down toward charge and dives turn
+into a warble.
 
-**Clock drag** sets how many octaves the oscillator pin's capacitor can divide —
-four octaves stock, with no ceiling the way starving the supply directly has.
+**Clock drag** sets how many octaves the oscillator pin's capacitor can divide
+the clock: four octaves stock, without the ceiling that starving the supply
+directly has.
 
-**Part spread** is how far apart the four output stages came out of the parts
-bin. At zero, all four are identical and a starved chord collapses in lockstep;
-wound up, they scatter, and the chord falls apart over about a second with the
-last voice still going — this is the mechanism behind the ragged chord collapse
+**Part spread** is how much the components of the four output stages differ from
+one another. At zero, all four are identical and a starved chord collapses in
+lockstep; wound up, they scatter, and the chord falls apart over about a second
+with the last voice still going. Part spread produces the ragged chord collapse
 under Starve, above.
 
 **Mixer drive** is the headroom in the single small output stage all four voices
-share. Low leaves room for all four cleanly; high squares off once two notes are
-playing, so playing harder changes the timbre rather than just the level.
+share. At low settings the stage has room for all four cleanly; at high settings
+it squares off once two notes are playing, so playing harder changes the timbre
+and not just the level.
 
-**Part grade**, on the drum kit, is which reel the ladder DAC's resistors were
-sold off — it sets how uneven the converter's steps are. The kit's converter
-itself has three more controls worth knowing: **Bit depth** is the word length
-of the DAC the whole kit shares, and winding it down trims the quiet tails off a
-decay before it trims the hits themselves. **Ladder** governs the resistor
-tolerance in that converter, and because the error scales with the size of the
-bit changing, a cheap ladder doesn't sound like hiss — it sounds like one lurch,
-right at the code where every bit flips at once, which for a signal is the zero
-crossing. That lands hardest on whatever's quietest, and a decaying tail is
-nothing but zero crossings. **Overflow** decides what happens when a step's sum
-doesn't fit the accumulator: left to wrap, a step stacking several voices under
-an accent comes out inside-out, while the quiet steps around it stay untouched.
+**Part grade**, on the drum kit, is the tolerance grade of the ladder DAC's
+resistors, and it sets how uneven the converter's steps are. The kit's converter
+has further controls:
 
-**Voice slot** is the third, and it's the one that says out loud that there's
-one converter and eight voices. The chip works through whatever is sounding a
-voice at a time and writes the ladder once it's been round them all, so the
-kit's sample rate isn't a constant — it's the slot divided into a pass, and a
-pass is as long as the step is busy. A kick on its own comes out at whatever
-rate the board can manage; the same kick under five other voices comes out
-coarser — the second thing a crowded step does to a voice, and it comes off the
-same fact as the accent bus sagging. A slot is counted off the chip's own
-oscillator like the tempo and the envelopes, so a board going down with its
-batteries goes coarse as well as slow. At nothing the chip keeps up and the kit
-is the kit it shipped as.
+- **Bit depth** is the word length of the DAC the whole kit shares. Winding it
+  down trims the quiet tails off a decay before it trims the hits themselves.
+- **Ladder** sets the resistor tolerance in that converter. The error scales
+  with the size of the bit changing, so a cheap ladder sounds like one lurch
+  instead of hiss, right at the code where every bit flips at once, which for a
+  signal is the zero crossing. The lurch matters most for the quietest sounds,
+  and a decaying tail is nothing but zero crossings.
+- **Overflow** sets what happens when a step's sum does not fit the accumulator.
+  Left to wrap, a step stacking several voices under an accent comes out
+  inside-out, while the quiet steps around it stay untouched.
+
+**Voice slot** models the kit's one converter shared by eight voices. The chip
+works through the sounding voices one at a time and writes the ladder once it
+has been round all of them, so the kit's sample rate is not constant: it is the
+slot divided into a pass, and a pass is as long as the step is busy. A kick on
+its own comes out at whatever rate the board can manage; the same kick under
+five other voices comes out coarser, which is the second thing a crowded step
+does to a voice and has the same cause as the accent bus sagging. A slot is
+counted off the chip's oscillator like the tempo and the envelopes, so a board
+going down with its batteries goes coarse as well as slow. At zero the chip
+keeps up and the kit sounds as it shipped.
 
 **DAC reference** is the pin that converter multiplies every code by, and a
-multiplying DAC will take audio there as happily as a fixed voltage:
+multiplying DAC accepts audio there as well as a fixed voltage:
 
 - On the toy chip the kit ring-modulates the melody. Each hit becomes a burst of
   the tune's sidebands, and with the toy silent the kit is silent too. On the
   measuring board the kit's centroid moves from 440 Hz to 5.1 kHz.
 - On the kit itself every hit is squared: an octave up, with a thump under it
   from the square's own offset.
-- On the mic the kit only speaks while you do.
+- On the mic the kit sounds only while you speak.
 - On the bus it takes everything ahead of the kit, so with the feedback bus up
   the kit multiplies its own return and screams.
 
 **Reference depth** crossfades the pin between that signal and the fixed
 voltage, and the patch bay can wire it.
 
-The dice skip this whole rack. A roll here asks for a different way of playing
-this board, not a different board — randomizing the watchdog or the timing pin
-would just produce boards nobody could tell apart from a bug.
+The dice skip this rack, because randomizing the watchdog or the timing pin
+would produce boards nobody could tell apart from a bug.
 
 ## Ageing
 
-Five slow mechanisms, all off by default, that describe what the board does over
-minutes rather than what happens inside a single note.
+Ageing holds five slow mechanisms, all off by default, that change the board
+over minutes instead of inside a single note.
 
 **Heat** builds over about a minute off whatever you're making the board
 dissipate — a screaming feedback loop, a starved rail, an overdriven pedal — and
@@ -1365,86 +1381,84 @@ falls back off over about two. As it builds, the rail holds less, the watchdog
 trips sooner, and the spring tank drifts flat. It never settles anywhere fixed,
 since where it ends up depends on what you played on the way there.
 
-**Fault clustering** decides whether faults arrive at a steady rate or in runs.
-Wound up, each fault makes the next one more likely for a couple of seconds, so
-the same average rate gets redistributed into a minute of nothing followed by a
-dozen faults at once, rather than actually increasing.
+**Fault clustering** sets whether faults come at a steady rate or in runs. Wound
+up, each fault makes the next one more likely for a couple of seconds, so the
+same average rate gets redistributed into a minute of nothing followed by a
+dozen faults at once, with no increase in the rate.
 
-**Dry joints** makes the solder under the bend slots intermittent: a stage
-simply isn't in the signal path some of the time, cutting cleanly in and out
-with no crossfade.
+**Dry joints** makes the solder under the bend slots intermittent: a stage is
+out of the signal path some of the time, cutting in and out with no crossfade.
 
-**Re-solder** changes the board's topology on its own — two bend slots swap
-places, or the feedback return jumps to a different pin — without touching any
-bend's own settings.
+**Re-solder** changes the board's topology without touching any bend's settings:
+two bend slots swap places, or the feedback return jumps to a different pin.
 
 **Cross-coupling** wires the feedback loop's own brightness against the supply
 it strains: more top end opens the screech filter's resonance, which draws more
 current, which sags the rail and shuts the resonance back down a moment later.
-Two opposite-sign loops on different time constants never find a level to sit
-at, so a squeal hunts around a pitch instead of settling on one, with no LFO
-involved at all.
+Two opposite-sign loops on different time constants never reach a steady level,
+so a squeal hunts around a pitch instead of settling on one, with no LFO
+involved.
 
-Underneath all five: the noise, the fault timing and the reboots are seeded from
-the clock at boot, so two takes of the exact same settings are still two
-different takes.
+The noise, the fault timing and the reboots are seeded from the clock at boot,
+so two takes with identical settings differ.
 
 ## The tape machine
 
-The tape machine is the last stage, sitting after brownout — everything upstream
-is the room, and this is what it's recorded onto. Signal crosses the record head
-through a pre-emphasis curve and comes back through its exact inverse, so the
-highs saturate and transients round off before anything sounds distorted;
-running both curves from the same corner instead leaves a small lift around 1.2
-kHz baked in as the machine's own presence. Hiss lives in the medium rather than
-the mix — the replay head colours it, speed sets how loud it is, and it breathes
-a little with the signal, the way biased oxide does.
+The tape machine is the last stage, after brownout: everything upstream is the
+room, and the tape machine is what it is recorded onto. Signal crosses the
+record head through a pre-emphasis curve and comes back through its exact
+inverse, so the highs saturate and transients round off before anything sounds
+distorted; running both curves from the same corner instead leaves a small lift
+around 1.2 kHz as the machine's presence. Hiss belongs to the medium, not the
+mix: the replay head colours it, speed sets how loud it is, and it varies a
+little with the signal, as biased oxide does.
 
-**Speed** moves the machine as a whole rather than as one knob among many: the
-head gap's high-frequency rolloff, the replay bump's frequency, the
-hiss-versus-wow tradeoff, and how long print-through takes to arrive all move
-together with it. 3¾ ips is dark, noisy and unsteady; 15 ips is nearly a wire.
+**Speed** changes the whole machine: the head gap's high-frequency rolloff, the
+replay bump's frequency, the hiss-versus-wow tradeoff, and how long
+print-through takes to appear all move with it. 3¾ ips is dark, noisy and
+unsteady; 15 ips is nearly a wire.
 
-The top of the band has less headroom than the bottom, the way real tape does —
-short wavelengths demagnetise themselves, so a machine driven hard goes dull
-before it goes loud, while the same machine wound down at the same settings is
-nearly transparent. That's most of why tape takes the edge off a cymbal where a
-plain clipper only adds to it.
+The top of the band has less headroom than the bottom, as on real tape: short
+wavelengths demagnetise themselves, so a machine driven hard goes dull before it
+goes loud, while the same machine wound down at the same settings is nearly
+transparent. That is most of why tape takes the edge off a cymbal where a plain
+clipper only adds to it.
 
-**Bias** runs from underbiased — bright and crunchy — to overbiased — dull and
-squashed — with distortion and top end trading off against each other, carrying
-its own record-tilt behavior rather than following the head gap alone.
+**Bias** runs from underbiased (bright and crunchy) to overbiased (dull and
+squashed), trading distortion against top end, and has a record-tilt behavior of
+its own in addition to the head gap's.
 
 **Hysteresis** is the half of tape saturation a simple clipper can't reproduce.
 A symmetric saturator only ever makes odd harmonics; tape's magnetization curve
-is asymmetric, arriving at the gap already magnetised in proportion to how hard
-it's been driven, which produces genuine second harmonic. Because that offset
-tracks level rather than the note itself, it blooms in over a couple of
+is asymmetric: the tape arrives at the gap already magnetised in proportion to
+how hard it has been driven, which produces second harmonic. Because that offset
+tracks level rather than the note itself, it builds up over a couple of
 milliseconds as you play into the machine and takes about a twentieth of a
 second to release, which is why a quiet phrase right after a loud one still
-comes back warm. It ships wound partway on, since a tape machine you have to ask
-to sound like tape is one nobody asks.
+comes back warm. Hysteresis defaults to partway on, so the machine sounds like
+tape without being asked.
 
-**Head bump** is the low end every tape machine adds without being told to — the
-lift where the wavelength passing the replay head matches the head's own size.
-It isn't a single peak: flux recirculates through the core, so the lift is
-paired with a scoop in the low mids, and Speed decides where along the band the
-pair sits.
+**Head bump** is the low-end lift every tape machine adds, where the wavelength
+passing the replay head matches the head's size. The bump is not a single peak:
+flux recirculates through the core, so the lift is paired with a scoop in the
+low mids, and Speed sets where in the band the pair sits.
 
-**Dropouts** shed highs before they shed level, which is what separates oxide
-wearing thin from a simple power cut. **Print-through** is the layer of tape
-wound underneath bleeding through as a dull ghost one wrap behind. **Azimuth**
-lags the right channel and eats its top end, so the recording collapses badly if
-folded down to mono. **Wow** is slow drift plus capstan eccentricity that never
-lets pitch settle; **Wraith** is the faster wobble plus the scrape of tape
-dragging across the head.
+- **Dropouts** shed highs before they shed level, so they sound like oxide
+  wearing thin and not like a simple power cut.
+- **Print-through** is the layer of tape wound underneath bleeding through as a
+  dull ghost one wrap behind.
+- **Azimuth** lags the right channel and removes its top end, so the recording
+  collapses badly if folded down to mono.
+- **Wow** is slow drift plus capstan eccentricity, so the pitch never settles;
+  **Wraith** is the faster wobble plus the scrape of tape dragging across the
+  head.
 
-**Squeal** comes from that same free span of tape between the guides acting as a
-resonator whose friction drops as the tape starts to move. Below a threshold
-that just adds a bit of grain around the resonant note; past it, the damping
-goes negative and the span takes off on its own into a self-sustaining limit
-cycle — nothing needs to excite it, it excites itself. Speed sets the note,
-since a faster tape pulls the span tighter; Tension decides whether it takes off
-at all, and how often. You hear it twice: the squeal itself sounding into the
-room, and everything already recorded on the tape wobbling at the same rate,
-since what's squealing is the tape's own speed past the head.
+**Squeal** comes from the free span of tape between the guides acting as a
+resonator whose friction drops as the tape starts to move. Below a threshold the
+span adds a bit of grain around the resonant note; past it, the damping goes
+negative and the span enters a self-sustaining limit cycle that needs no
+excitation. Speed sets the note, since a faster tape pulls the span tighter;
+Tension sets whether the squeal starts at all, and how often. You hear it twice:
+the squeal itself sounding into the room, and everything already recorded on the
+tape wobbling at the same rate, since the squeal is the tape's own speed past
+the head.

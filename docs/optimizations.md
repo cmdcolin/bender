@@ -5,48 +5,45 @@ and what it tried and threw away.
 
 The audio thread renders 128 samples at a time and gets 2.7 ms to do it, 375
 times a second. Miss once and a buffer goes out unfilled, which is a click.
-Nothing here is ordinary optimization, where a slow path costs patience: the
-deadline is hard, it arrives 375 times a second, and the penalty is audible
-rather than merely slow.
 
-Two things follow from that, and most of this file is downstream of them. The
-tail matters more than the mean — a board averaging a tenth of its budget still
-clicks if its worst blocks are ten times its median. And allocation matters more
-than arithmetic, because a collection lands where the collector chooses rather
-than where the schedule has room.
+The hard deadline gives two rules, and most of this file applies them:
+
+- A board averaging a tenth of its budget still clicks if its worst blocks are
+  ten times its median, so the tail matters more than the mean.
+- A collection runs whenever the collector decides, whether or not the schedule
+  has room, so allocation matters more than arithmetic.
 
 Numbers here came off a shared 16-core Linux box under Node, and several were
-taken while something else was using it. Ratios travel between machines;
-absolutes do not. Where a number is a commit's own claim rather than something
-re-measured for this file, it says so.
+taken while something else was using it. Ratios hold across machines and
+absolute times change. Where a number comes from a commit's message and was not
+re-measured for this file, the number is marked as a commit's claim.
 
 ## Measure first, and know what the measurement can tell you
 
-This section is first because everything after it is only worth what the
-measurement behind it is worth, and the obvious way to measure here is wrong.
+The obvious way to measure here is wrong, and every later result depends on the
+measurement.
 
 `pnpm bench` reports per-stage cost over a long render. `pnpm blocks` reports
 the distribution — p50 through p99.9, and how many blocks went over budget —
-because the mean is not what glitches. `pnpm cold` reports the first seconds,
-before anything has tiered up. `pnpm ab <ref>` compares the working tree against
-a git ref. `pnpm cpu` runs the built app in Chrome and reports CPU time per
-thread and the underruns Chrome counted.
+because glitches come from the slowest blocks. `pnpm cold` reports the first
+seconds, before anything has tiered up. `pnpm ab <ref>` compares the working
+tree against a git ref. `pnpm cpu` runs the built app in Chrome and reports CPU
+time per thread and the underruns Chrome counted.
 
-**The minimum across processes is a lottery.** `bench.ts` takes the best of
+**The minimum across processes varies by chance.** `bench.ts` takes the best of
 several passes, on the reasonable argument that anything else sharing the
 machine only ever adds time, so the fastest pass is the least polluted. That
-holds inside one process. It fails across two, and across two is how a
-before-and-after gets read. Running the _same tree_ against itself in separate
-processes produced a best-block-median 13% apart — a 13% improvement from
-identical code, from nothing but which process got the luckier tier-up and page
-placement.
+holds inside one process and fails across two, which is how a before-and-after
+gets compared. Running the _same tree_ against itself in separate processes
+produced a best-block-median 13% apart, a 13% improvement from identical code,
+because one process got the luckier tier-up and page placement.
 
-So `ab.ts` does not compare two numbers. It alternates the trees pair by pair
-and counts how often the new one won, then runs a sign test on the count. A busy
-machine cannot answer that question wrongly, because both sides of a pair meet
-the same machine. `pnpm ab HEAD` measures one tree against itself and is the
-calibration: it should land near half the pairs, and whatever it reports is the
-floor under anything else you read that day.
+`ab.ts` alternates the trees pair by pair, counts how often the new one won,
+then runs a sign test on the count. A busy machine cannot skew that result,
+because both sides of a pair run on the same machine. `pnpm ab HEAD` measures
+one tree against itself and is the calibration: it should land near half the
+pairs, and whatever it reports sets the noise floor for anything else you read
+that day.
 
 **Microbenchmarks measure latency; loops measure throughput.** Wrapping a phase
 with `% 1` costs 16.5 ns in a loop where each turn waits for the last one, and
@@ -59,37 +56,38 @@ the benchmark with as many independent chains as the code has.
 **Watch for a shared call site going megamorphic.** An early version of that
 same benchmark ran every case through one higher-order runner. The call site
 went megamorphic after the first case and every case after it read about 28 ns
-high — enough to make `Math.sqrt` look like it cost 29 ns. Give each case its
-own loop.
+high — enough to make `Math.sqrt` look like it cost 29 ns. Give each case a
+separate loop.
 
 ## Denormals, which are the largest single effect here
 
-A double that decays toward zero without arriving eventually lands in the
+A double that decays toward zero without arriving eventually enters the
 subnormal range, where arithmetic runs about 20× slower. Every envelope on this
-board decays geometrically and most never reach zero, so the instrument used to
-get slower the longer it was left switched on, and stay slower.
+board decays geometrically and most never reach zero, so without a guard the
+instrument gets slower the longer it is left switched on, and stays slower.
 
-`flushDenormal` — `Math.abs(x) < 1e-15 ? 0 : x` — sits on every recursive double
-the filters carry. The commit that added it puts it at 38× on the affected
+`flushDenormal` — `Math.abs(x) < 1e-15 ? 0 : x` — is applied to every recursive
+double the filters hold. The commit that added it puts it at 38× on the affected
 paths. The tape delay's flutter walk decays by 0.995 a sample, reaches 4.9e-322
-in about a minute and stays there: 91 ms per 10 s of audio instead of 50 ms, for
-ever, on a board whose knobs read as untouched.
+in about a minute and stays there, which costs 91 ms per 10 s of audio instead
+of 50 ms indefinitely, with no knob touched.
 
 The toy chip's envelopes take the other route. `ENV_FLOOR` stops an envelope at
-0.003 rather than halving toward zero for the rest of the session. Everything
-there already treats that as silence — a voice under it can be stolen and none
-of them are summed — so the last stretch was inaudible arithmetic, and not free.
+0.003, where otherwise it would keep halving toward zero for the rest of the
+session. Everything there already treats 0.003 as silence — a voice under it can
+be stolen and none of them are summed — so the stretch below it was inaudible
+arithmetic that cost time.
 
-**The guard does not belong on `Float32Array` writes.** The smallest thing that
-survives a round trip through a float buffer is 1.4e-45, and that reads back out
-as an ordinary double, three hundred decades clear of where doubles go slow.
+**A `Float32Array` write needs no guard.** The smallest thing that survives a
+round trip through a float buffer is 1.4e-45, and that reads back out as an
+ordinary double, three hundred decades clear of where doubles go slow.
 `DelayLine.write` guarded every write and protected nothing, on a board that
 writes into forty-odd lines a sample.
 
-`denormal.test.ts` walks the whole graph looking for this. It needs two passes:
-one static param pack never finds a decay that starts at zero and never leaves
-it, so a second pass winds every knob up and puts it back where it booted, which
-is the only side a wound-up state is visible from.
+`denormal.test.ts` walks the whole graph looking for this, in two passes. One
+static param pack never finds a decay that starts at zero and never leaves it,
+so the second pass winds every knob up and puts it back where it booted, the
+only position where a wound-up state shows.
 
 ## Stop calling libm every sample
 
@@ -103,50 +101,49 @@ is the only side a wound-up state is visible from.
 | `SEMI` — 144-entry ratio table    | `Math.pow(2, n/12)` per voice | eight pow calls a sample, gone                             |
 | `d \| 0`                          | `Math.floor(d)`               | one instruction against a call                             |
 
-The carriers are worth a note. The shifter, the ring modulator and the starved
-stompbox's squeal each ran off `Math.sin` at a rate the block already knew;
-moving them took the shifter from 96 ms to 77 ms and the ring modulator from 21
-ms to 4 ms over 12 s of audio. The shifter could not take `SineOsc`, whose
-second state trails the first by half a sample — a single-sideband shifter
-cancels its unwanted sideband exactly as well as its carrier is 90° apart. So
-`QuadOsc` rotates the whole angle instead, trading the exact amplitude invariant
-for about 3e-12 of drift over twenty seconds.
+The shifter, the ring modulator and the starved stompbox's squeal each ran their
+carrier off `Math.sin` at a rate the block already knew; moving them took the
+shifter from 96 ms to 77 ms and the ring modulator from 21 ms to 4 ms over 12 s
+of audio. The shifter could not take `SineOsc`, whose second state trails the
+first by half a sample — a single-sideband shifter cancels its unwanted sideband
+exactly as well as its carrier is 90° apart. So `QuadOsc` rotates the whole
+angle instead, trading the exact amplitude invariant for about 3e-12 of drift
+over twenty seconds.
 
-`d | 0` is only the floor because the clamp above it already guarantees the
-value is positive and inside the ring. Truncation and flooring part company on
-negatives, so the clamp is load-bearing, not decoration.
+`d | 0` equals the floor because the clamp above it guarantees the value is
+positive and inside the ring. Truncation and flooring differ on negatives, so
+the clamp is required.
 
-`octaves` is not an approximation worth worrying about: it agrees with
-`Math.pow(2, x)` to 8e-16 relative, which is 1.5e-12 cents, and the rendered
-output came out bit-identical because it lands in a `Float32Array` where that
-difference cannot be represented at all.
+`octaves` agrees with `Math.pow(2, x)` to 8e-16 relative, which is 1.5e-12
+cents, and the rendered output came out bit-identical because the result is
+stored in a `Float32Array`, which cannot represent that difference.
 
 ## Flat memory, not graphs of objects
 
-The arithmetic was rarely the cost. Chasing a pointer to a different place on
-the heap for each of six multiply-adds was the cost.
+Chasing a pointer to a different place on the heap for each of six multiply-adds
+cost more than the arithmetic.
 
 The spring tank was seven delay lines inside seven wrapper objects, so one
 sample cost fourteen method calls, each loading a buffer, a mask and a cursor
-from somewhere else. Same taps, same order, laid out as three typed arrays:
-**2.3×** by the commit's measurement. The shifter's two allpass chains were
-eight more objects and went the same way. A tape head's six one-pole filters
-were six objects holding one double each, and the machine has two heads.
+from somewhere else. The same taps in the same order, laid out as three typed
+arrays, run **2.3×** faster by the commit's measurement. The shifter's two
+allpass chains were eight more objects and went the same way. A tape head's six
+one-pole filters were six objects holding one double each, and the machine has
+two heads.
 
-`fixedTap` and `readAt` are the same idea for delay taps. A tap that never moves
-has no business clamping and flooring the same constant 48,000 times a second,
-so it splits its delay once at construction and reads through `readAt` from
-there.
+`fixedTap` and `readAt` apply the same idea to delay taps. A tap that never
+moves would clamp and floor the same constant 48,000 times a second, so it
+splits its delay once at construction and reads through `readAt` from there.
 
-Ring buffers are rounded up to a power of two so wrapping is a mask rather than
-a modulo. `%` on a length the compiler cannot see is an integer divide every
-time, and the spring tank alone was paying for fourteen of them a sample.
+Ring buffers are rounded up to a power of two so wrapping is a mask. `%` on a
+length the compiler cannot see is an integer divide every time, and the spring
+tank alone was running fourteen of them a sample.
 
 ## Nothing allocates on the audio thread
 
-A collection on the audio thread is a hole in the sound, so what the render loop
-hands the collector matters as much as what it spends. The number to aim at is
-none at all, and `bench.ts` reports it.
+A collection on the audio thread causes a gap in the sound, so the garbage the
+render loop produces matters as much as the time it spends. The target is zero
+allocations, and `bench.ts` reports the count.
 
 `Chain.process` built a `Set` and two spread arrays per block — 375 collections
 a second. The slot params go into a buffer the chain owns, the duplicate check
@@ -157,12 +154,11 @@ object per block from `subarray`, and a 128 kB pair of slabs per recorded chunk.
 All of it is written into buffers it owns now.
 
 **`postMessage` serializes on the thread that calls it.** Posting a buffer
-without transferring it does not move the copy to the receiver — the structured
-serializer runs synchronously on the caller. What it buys is the _kind_ of cost:
-a 128 kB memcpy every 0.7 s is 13 µs inside a 2.7 ms block, landing where the
-schedule can see it, where an allocation lands whenever the collector decides.
-Because serialization is synchronous, reusing the buffer immediately afterwards
-is safe.
+without transferring it runs the structured serializer synchronously on the
+caller, so the copy costs the posting thread. The cost is predictable: a 128 kB
+memcpy every 0.7 s is 13 µs inside a 2.7 ms block and falls at a known point in
+the schedule, while a collection runs whenever the collector decides. Because
+serialization is synchronous, reusing the buffer immediately afterwards is safe.
 
 **The chain allocates anyway, and `bench.ts` reported zero.** Its
 `PerformanceObserver` delivers `gc` entries on a later tick, so the count
@@ -173,10 +169,10 @@ MB on the stock board. In Chrome the worklet allocated 34 MB a second on the
 heavy board and ran about 20 scavenges a second on the audio thread, each around
 0.35 ms on AC power.
 
-Nearly all of it is boxed doubles. V8 keeps a double unboxed inside one
-optimized function and writes a double field in place, but a call that stays out
-of line passes its double arguments and its double return value as heap numbers.
-A micro-benchmark of one pole written both ways measured 489 ms and 305
+Nearly all of the allocation is boxed doubles. V8 keeps a double unboxed inside
+one optimized function and writes a double field in place, but a call that stays
+out of line passes its double arguments and its double return value as heap
+numbers. A micro-benchmark of one pole written both ways measured 489 ms and 305
 collections for 20 million out-of-line calls that return the value, and 266 ms
 and no collections when the callee stores it in a field and the caller reads the
 field. TurboFan inlines a callee only while the caller's inlined bytecode stays
@@ -185,8 +181,8 @@ bytecode on their own, so the helpers they call per sample stay out of line.
 
 ## Give V8 small loops to compile
 
-A small method that runs a whole block gets its own compile and its own inlining
-budget, so TurboFan inlines the helpers it calls:
+A small method that runs a whole block gets a separate compile and a separate
+inlining budget, so TurboFan inlines the helpers it calls:
 
 | change                                                        | measured, paired               |
 | ------------------------------------------------------------- | ------------------------------ |
@@ -194,41 +190,41 @@ budget, so TurboFan inlines the helpers it calls:
 | safety tail and limiter moved out of `Chain.process`          | stock board 3% faster, 7 of 8  |
 | multi-pole filters in one `Float64Array`, FM powers as tables | stock board 11% faster, 7 of 8 |
 
-`--trace-turbo-inlining` confirms the tail: `tail` inlines both dc blockers, all
+`--trace-turbo-inlining` shows the tail: `tail` inlines both dc blockers, all
 three followers, the one-pole and both clippers. The tape heads took the same
-block conversion and measured no change, because a head's per-sample body is
-large enough that its own calls to `readHermite`, `softclip` and the noise
-closure still stay out of line. The drum kit is the largest remaining case: on
-the stock board it is half the DSP time and 60% of the allocation, all inside
-one `process` method.
+block conversion and measured no change, because the per-sample body of a head
+is large enough that its calls to `readHermite`, `softclip` and the noise
+closure still stay out of line. The drum kit is the largest remaining case, at
+half the DSP time and 60% of the allocation on the stock board, all inside one
+`process` method.
 
 ## Block rate against sample rate
 
 A knob holds still for the length of a block, so anything derived only from
-knobs belongs at the top of the loop. The spring verb worked out eight `pow`
-calls a sample for a decay that had not moved; `Transient` called `coef` four
-times a sample for four fixed time constants; the toy rail recomputed a `pow`
-for a reservoir factor 48,000 times a second.
+knobs should be computed at the top of the loop. The spring verb worked out
+eight `pow` calls a sample for a decay that had not moved; `Transient` called
+`coef` four times a sample for four fixed time constants; the toy rail
+recomputed a `pow` for a reservoir factor 48,000 times a second.
 
-The limit is worth knowing. Hoisting the _constant_ coefficients — the ones that
-depend only on the sample rate — measured about 0.1%. Being at block rate is not
-by itself a reason to move something; being expensive and repeated is.
+Hoisting the _constant_ coefficients — the ones that depend only on the sample
+rate — measured about 0.1%. Moving a computation to block rate pays when the
+computation is expensive and repeated.
 
 ## Off the audio thread
 
 The signal-path map used graphviz: a 1.35 MB wasm chunk that had to load before
 the panel appeared, for a layout that is a column of boxes and a few wires round
-the outside. Placing fifteen boxes is arithmetic, so `chain-map.ts` does it, and
-both the live map and the README's drawing come out of the one layout and cannot
-drift.
+the outside. Placing fifteen boxes is arithmetic, so `chain-map.ts` computes the
+layout directly, and the live map and the README's drawing both use that layout,
+so they cannot differ.
 
-Owning the layout removed a 150 ms redraw throttle. The throttle came back later
-for a different reason: two of the strings on the map are numbers printed on
-wires, a morph moves them every frame, and React still gets a fresh tree of 179
-SVG elements to diff — about half a millisecond to build and as much again to
-reconcile, so roughly 32 ms of every second a board is travelling. The map reads
-the board on its own clock: at once when it has been still, on the trailing edge
-while it is moving.
+With the layout computed in `chain-map.ts`, the 150 ms redraw throttle went
+away. The throttle came back later for a different reason: two of the strings on
+the map are numbers printed on wires, a morph moves them every frame, and React
+still gets a fresh tree of 179 SVG elements to diff — about half a millisecond
+to build and as much again to reconcile, so roughly 32 ms of every second a
+board is travelling. The map reads the board immediately when the board has been
+still, and on the trailing edge of the throttle while it is moving.
 
 ### Every thread, and on battery
 
@@ -253,16 +249,15 @@ on the renderer main thread, 4% on the compositor and 14% in the GPU process, on
 battery. The scope, the reel and the desk each ran a `requestAnimationFrame`
 loop for as long as they were mounted and repainted a canvas every frame, so a
 silent board kept the compositor and the GPU process drawing. They now request a
-frame when a meter post carries something new to draw, and the scope stops once
-it has drawn a flat trace.
+frame when a meter post has something new to draw, and the scope stops once it
+has drawn a flat trace.
 
 ### The panel is not what costs; one write a frame was
 
-React was never the expensive thing here. On a board playing both machines with
-a tape threaded, the panel's whole share of the main thread was 13% of wall —
-2.1 ms of every 16.6 ms frame — and React's own render and commit was a fifth of
-that. Two thirds of it was style, layout and paint, and all of that came from a
-single line.
+On a board playing both machines with a tape threaded, the panel's whole share
+of the main thread was 13% of wall — 2.1 ms of every 16.6 ms frame — and React's
+own render and commit was a fifth of that. Two thirds of it was style, layout
+and paint, and all of that came from a single line.
 
 `RailLamp` wrote `style.background` and `textContent` on every animation frame,
 whether or not the rail had moved — and on most boards it has not, so the same
@@ -270,7 +265,7 @@ two strings went in sixty times a second. A `textContent` write swaps the text
 node whether the word changed or not, which dirties layout; the colour is a
 `color-mix()` over a `var()`, which is a parse and a style invalidation. The
 document went through layout on every frame the panel was up. Comparing before
-writing, which the panic bar and the desk's meters already did:
+writing, as the panic bar and the desk's meters already did, gave:
 
 | over 8 s, both machines running | before  | after  |
 | ------------------------------- | ------- | ------ |
@@ -280,18 +275,17 @@ writing, which the panic bar and the desk's meters already did:
 | layout                          | 263 ms  | 31 ms  |
 | style recalc                    | 42 ms   | 5.5 ms |
 
-The lesson is not about the lamp. Anything that writes the DOM off a frame
-callback has to hold what it last wrote and compare, because the browser will
-not: an unchanged write is as expensive as a changed one.
+A frame callback that writes the DOM has to hold what it last wrote and compare,
+because the browser does not skip an unchanged write, which costs as much as a
+changed one.
 
 ### So is React dropping frames? Only when a stage opens
 
-The question the section above invites, measured rather than argued.
 `pnpm panel` reports what fraction of the wall clock React held the main thread
-for, and — the number that actually decides whether a frame is missed — the
-longest unbroken stretch it held it. A render averaging half a millisecond a
-frame and a render that arrives as one twenty-millisecond burst have the same
-mean and are not the same instrument.
+for and the longest unbroken stretch it held it, which decides whether a frame
+is missed. A render averaging half a millisecond a frame and a render that
+arrives as one twenty-millisecond burst have the same mean, but only the burst
+misses frames.
 
 Eight seconds each, heavy board, tape threaded, both machines running:
 
@@ -305,108 +299,103 @@ Eight seconds each, heavy board, tape threaded, both machines running:
 For the first three the answer is no, and not narrowly: React's worst single
 render is under 4 ms of a 16.7 ms frame, and no task of any kind overran the
 budget. Those runs do report one or two gaps wider than a frame per eight
-seconds, but the run with nothing touched reports them too, and React is on the
-thread for 0.2% of it there — that is the box this was measured on, not the
-panel. The morph is the interesting one: the board writes every control every
-frame, 441 renders in eight seconds, and it still costs under 2% of the wall,
-because the map that would be expensive to rebuild is on a 120 ms clock and
-everything else reads one number out of the board rather than the board.
+seconds, but so does the run with nothing touched, where React is on the thread
+for 0.2% of the time, so those gaps come from the machine the measurement ran
+on. In the morph the board writes every control every frame, 441 renders in
+eight seconds, and React still costs under 2% of the wall. The map, which is
+expensive to rebuild, updates on a 120 ms clock, and everything else reads a
+single number from the board.
 
-Opening a stage is the exception and it is a real one: mounting a rack of
-controls is a single render around the length of a frame, and it is the only
-interaction in the app where React is the answer to "what was that".
+Opening a stage is the exception: mounting a rack of controls is a single render
+around the length of a frame, and it is the only interaction in the app where
+React accounts for the main-thread time.
 
-A fifth of it was not React at all. `OpenGroup` scrolled the stage it had just
-opened into view from an effect, and every question that scroll asks — what
-overflows, how tall a box is, where it sits — wants a laid-out document, which
-is exactly what the commit it ran in had just stopped being true. So the read
-dragged the whole freshly-mounted rack through style and layout _inside_ the
-render that built it: `scrollParent` alone was 54 ms of the 233 ms React spent
-in ten seconds of opening stages, 23% of it, and the commit phase was 95 ms.
-Moved to the next animation frame — where the browser has done that layout
-anyway, and where a smooth scroll starting one frame later is invisible — the
-whole call falls out of the profile. Commit goes to 36 ms and React's total to
-187, paired and alternated.
+A fifth of that cost was not React. `OpenGroup` scrolled the stage it had just
+opened into view from an effect. The scroll reads what overflows, how tall a box
+is and where it sits, and those reads need a laid-out document, which the commit
+had just invalidated. The reads forced style and layout of the whole freshly
+mounted rack _inside_ the render that built it: `scrollParent` alone was 54 ms
+of the 233 ms React spent in ten seconds of opening stages, 23% of it, and the
+commit phase was 95 ms. The scroll now runs in the next animation frame, where
+the browser has done that layout anyway and a smooth scroll starting one frame
+later is invisible. The whole call disappears from the profile; commit goes to
+36 ms and React's total to 187, paired and alternated.
 
-It is the rail lamp's lesson from the other side. There, the cost was writing
-the DOM when nothing had changed; here it is reading it at the one moment it is
-guaranteed to be dirty. A frame callback is the cheap place to do either.
+Like the rail lamp, this cost came from touching the DOM at the wrong time. The
+lamp wrote it when nothing had changed; here the code read it at the one moment
+it is guaranteed to be dirty. A frame callback is the cheap place to do either.
 
-What is left is honest first-mount cost, spread thin: the render phase is
-unchanged at 135 ms for nineteen opens, and under it nothing is above 7 ms —
+What is left is first-mount cost spread across many functions: the render phase
+is unchanged at 135 ms for nineteen opens, and nothing under it exceeds 7 ms —
 `Tip` on nearly every row, `createElement`, `setInitialProperties`,
-`appendChild`, the map's own rebuild. There is no hotspot left to take out, only
-fewer elements to mount, and the panel's density is the design.
+`appendChild`, the map's rebuild. No hotspot is left, and the only saving is
+mounting fewer elements, which the panel's density rules out.
 
-Worth being clear about what the first three do cost, since it is not nothing:
-the panel is 6% of one core sitting still and 14% with a board travelling. It is
-just that almost none of that is React. Sitting still it is the two canvases and
-the compositor; travelling it is paint and layerize, which is the signal-path
-drawing being replaced every 120 ms.
+In the first three scenes the panel still costs 6% of one core sitting still and
+14% with a board travelling, and almost none of that is React. Sitting still,
+the cost is the two canvases and the compositor; travelling, it is paint and
+layerize from replacing the signal-path drawing every 120 ms.
 
 Three smaller ones, measured the same way with a sampling profile of the
 renderer:
 
-- **The reel's envelope was 256 `fillRect`s a frame.** Two hundred and fifty-six
-  draws for a drawing in two colours. Laid into two paths and filled twice, the
-  reel went from 0.61% of the main thread to 0.40%.
+- **The reel's envelope was 256 `fillRect`s a frame**, for a drawing in two
+  colours. Building two paths and filling each once took the reel from 0.61% of
+  the main thread to 0.40%.
 - **The note report allocated four times a frame to say nothing had changed.**
   `mergeNotes` built a `subarray` and a `Set` per chip per meter post purely to
-  compare sizes. Counting the distinct notes instead — nine of them, at most —
-  took it from 0.13% to nothing.
-- **`packParams` drew a fresh 361-float buffer per flush**, which during a morph
-  is one a frame. It takes an `out` buffer now, the way `peaksOf` does, and the
-  engine keeps one: `postMessage` serializes on the calling thread, so the
-  buffer is free again the moment the post returns.
+  compare sizes. It now counts the distinct notes, nine at most, which took it
+  from 0.13% to nothing.
+- **`packParams` allocated a fresh 361-float buffer per flush**, which during a
+  morph is one a frame. It takes an `out` buffer now, the way `peaksOf` does,
+  and the engine keeps one: `postMessage` serializes on the calling thread, so
+  the buffer is free again the moment the post returns.
 
 ### A property read inside a sample loop
 
 Dropping a file, or rolling one off archive.org, froze the tab for 212 ms. The
 downmix to mono read `buf.numberOfChannels` — an attribute on the decoded
 `AudioBuffer` — as the divisor of its inner loop, so ninety seconds of stereo
-paid 8.6 million trips across the binding. Reading it once into a local, with
+made 8.6 million reads through the binding. Reading it once into a local, with
 the same division and bit-identical output, took the loop from 135 ms to 25 ms
 and the freeze to about half.
 
-Same shape as the block-rate rule on the audio thread, and worth stating in the
-general form: anything the loop did not compute itself is a constant, and a host
-object's attribute is the most expensive kind of constant there is.
+The block-rate rule from the audio thread applies here in general form: any
+value the loop does not compute is a constant, and a host object's attribute is
+an expensive one.
 
 ## What did not pay
 
-Worth recording so nobody spends the afternoon twice.
-
 - **Hoisting constant coefficients.** Looks obvious, measured ~0.1%.
 - **A polynomial sine.** `Math.sin` is 8.8 ns; a 5th-order minimax on the
-  half-wave is 15.6 ns. libm is good now.
+  half-wave is 15.6 ns, so libm is faster.
 - **A polynomial exp2.** 32 ns against `Math.exp`'s 16 — and the polynomial
   needs a `2 ** n` for the integer part, which is the very call being avoided.
 - **The `% 1` phase wrap.** 0.65 ns a turn in place. It stayed because it is
-  exact and reads no worse, not because it showed up.
+  exact and reads no worse.
 - **A bigger internal block.** Measured +15%, at the cost of 8 ms of latency and
   a change to the feedback character the README leans on.
-- **Wasm and SIMD.** An honest last resort for another 2–4×, and it costs the
-  readability that makes the rest of this possible.
+- **Wasm and SIMD.** A last resort for another 2–4× that costs the readability
+  the rest of this depends on.
 - **Replacing floating-ui with a hand-rolled tip.** Twelve seconds of hovering,
   twenty tips up and down: not one floating-ui function appears in the top
   twenty by self time, React holds the thread for 0.4% of it, its longest render
   is 2.1 ms, and nothing overran a frame. The panel is _less_ busy under a
   hovering pointer (1.48 ms a frame) than under a travelling board (2.27 ms).
 
-  It is already built the way a hand-rolled one would have to be. `Bubble` is a
-  separate component and it is the only thing that calls `useFloating`, so an
-  idle tip costs one state hook and no listeners — which matters, because the
-  drum grid alone holds a hundred and twenty of them. The bubble is a native
-  `popover` in the top layer already, so the library is not doing the layering;
-  it is doing flip and shift, which is the part that keeps a tip on a slider at
-  the foot of the panel from opening off the bottom of the window.
+  The current tip is built the way a hand-rolled one would have to be. `Bubble`
+  is a separate component and the only thing that calls `useFloating`, so an
+  idle tip costs one state hook and no listeners, and the drum grid alone holds
+  a hundred and twenty of them. The bubble is already a native `popover` in the
+  top layer, so the library supplies flip and shift, which keep a tip on a
+  slider at the foot of the panel from opening off the bottom of the window.
 
-  What it would buy is 8.1 kB gzipped, 4% of the bundle, measured by stubbing
-  the import out and rebuilding. That is a real number and a load-time argument,
-  not a frame-time one. If it is ever worth taking, CSS anchor positioning
-  (`position-anchor`, `position-try-fallbacks: flip-block`) does flip and shift
-  declaratively with no javascript at all — but it is Chromium-only for now, so
-  it needs a fallback, which is most of the code back again.
+  Removing floating-ui would save 8.1 kB gzipped, 4% of the bundle, measured by
+  stubbing the import out and rebuilding. That saving matters at load time and
+  not per frame. CSS anchor positioning (`position-anchor`,
+  `position-try-fallbacks: flip-block`) does flip and shift declaratively with
+  no javascript, but it is Chromium-only for now, so it needs a fallback, which
+  brings back most of the code.
 
 - **`flushDenormal` as two compares.** `x < 1e-15 && x > -1e-15 ? 0 : x` returns
   the same value as the `Math.abs` form for every input and is 20 bytes of
@@ -425,14 +414,15 @@ Worth recording so nobody spends the afternoon twice.
   takes about five seconds to get there, putting 67 blocks over budget on the
   way — 67 clicks on page load, every load. `bench.ts` renders 400 blocks before
   it starts timing and `blocks.ts` renders 2000, so neither can see it;
-  `pnpm cold` exists to. Nothing is deoptimizing in steady state (a 4 s render
-  deopts 81 times, a 40 s render 67), so this is tier-up, not a bug. A throwaway
-  warm-up chain halves it and costs 700 ms of silence at load; faulting the
-  delay lines in with `panic()` is nearly free and worth about a tenth. Neither
-  finishes it, and none of it is measured where it happens — this is Node, the
-  worklet is Chrome. That wants a DevTools profile of the first seconds.
+  `pnpm cold` measures it. Steady state shows no deoptimization (a 4 s render
+  deopts 81 times, a 40 s render 67), so the cause is tier-up and not a bug. A
+  throwaway warm-up chain halves it and costs 700 ms of silence at load;
+  faulting the delay lines in with `panic()` takes almost no time and is worth
+  about a tenth. Neither finishes it, and the measurements come from Node while
+  the worklet runs in Chrome. A DevTools profile of the first seconds is needed.
 - **`toyChip`** holds its voices as an array of objects and is the most
-  expensive stage on the board. Same treatment as the spring tank.
+  expensive stage on the board. The spring tank's flat-memory layout would apply
+  to it.
 - **The chain's safety tail** runs eight filter objects a sample.
 - **`computeFeedback`** reads its comb through the clamping `read()` although
   the delay is fixed for the block.
@@ -440,45 +430,45 @@ Worth recording so nobody spends the afternoon twice.
   goes straight into a 2500 Hz lowpass at 0.05 gain, where linear would do.
 - **Opening a stage** is still a 14–20 ms React render, the largest in the app,
   and still around the length of a frame after the forced layout came out of it.
-  The rest is a rack of controls being mounted and there is no hotspot in it —
-  the only lever left is rendering fewer elements, which is a question about the
-  panel rather than about React.
-- **Paint and layerize, while the map is moving.** `pnpm panel morph` puts them
-  at 0.49 and 0.29 ms a frame, which is the two largest columns and more than
-  all the javascript. It is the signal-path drawing: 179 SVG elements replaced
-  every 120 ms, and the compositor re-recording that corner of the document each
-  time. Nothing cheap suggests itself — the throttle is already there, and the
-  next step down is either a canvas or memoising the subtrees that did not move.
+  The cost is a rack of controls being mounted with no hotspot in it, so the
+  remaining saving is rendering fewer elements, which changes the panel and not
+  React.
+- **Paint and layerize, while the map is moving.** `pnpm panel morph` reports
+  them at 0.49 and 0.29 ms a frame, which are the two largest columns and more
+  than all the javascript. The cost comes from the signal-path drawing: 179 SVG
+  elements replaced every 120 ms, and the compositor re-recording that corner of
+  the document each time. No cheap fix is known: the throttle is already in
+  place, and the next step is a canvas or memoising the subtrees that did not
+  move.
 - **The scope's trace** is the largest single thing javascript does per frame at
   about 0.25% of one core, and it is already close to minimal: 512 `lineTo` into
   a backing store 2216 pixels wide, so the trace is sparser than the canvas and
-  there is nothing to decimate. Only drawing it less often would help, and that
-  is the one thing on screen you read a shape off.
+  there is nothing to decimate. The remaining saving is drawing it less often,
+  and the trace is the one thing on screen read for its shape.
 - **`peaksOf` over a freshly dropped file** is the 19 ms still inside the sample
   load's long task, and it is a full scan of ninety seconds of audio to fill 256
   bins.
 
 ## Techniques from elsewhere
 
-Not measured here, and listed because they are the next places to look rather
-than because this instrument needs them.
+Each technique below is unmeasured here and marks a place to look next.
 
 - **FTZ/DAZ is unreachable from JavaScript.** Native audio code sets the CPU
-  flags that make denormals flush to zero for free. JS cannot, which is why the
-  explicit compare above exists and why it is worth 38× rather than nothing.
+  flags that make denormals flush to zero with no extra code. JS cannot set
+  them, so the explicit compare above is needed, and it is worth 38×.
 - **Never lock, never allocate, never wait on the audio thread.** The standard
   main-to-audio channel is a `SharedArrayBuffer` ring with atomics, not
   `postMessage`, once the traffic is more than occasional.
 - **Watch for megamorphic call sites in hot loops.** The chain calls
   `s.process()` over fifteen different stage classes, which is megamorphic — but
-  it happens twenty times a block, not per sample, so it costs nothing. The same
-  shape inside a sample loop would not be free.
+  it happens twenty times a block and not per sample, so its cost is negligible.
+  The same call pattern inside a sample loop would be expensive.
 - **`Float32Array` halves memory traffic** against `Float64Array` and costs a
   conversion on every read and write. Delay lines here are f32 because they are
   large and streamed; filter state is f64 because it is small, hot, and
   recursive.
-- **Branch-free arithmetic** pays where a branch is genuinely unpredictable, and
-  costs where the predictor would have got it right. Measure before
-  straightening one out.
+- **Branch-free arithmetic** pays where a branch is unpredictable, and costs
+  where the predictor would have got it right. Measure before straightening one
+  out.
 - **Table-driven transcendentals** still win for anything with a rejection loop
   in it, as the gaussian did. For a plain `sin` or `exp`, libm has caught up.
