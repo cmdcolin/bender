@@ -349,14 +349,15 @@ function nodeId(name: string): string {
 // boxes and the gaps*. Going up a step here is not the same as scaling the
 // whole drawing up — CAP_H, LABEL_H and every gap stay where they are, so the
 // text grows and the picture barely does.
-const FONT = 11
+/** box names, drawn in capitals like every stage diagram's */
+const FONT = 9
 const SMALL = 10
-const BOX_H = 26
+const BOX_H = 22
 const MIN_W = 100
 /** the width a lone column of stages draws at, when its names need less */
 const STAGE_W = 150
 const PAD_X = 9
-const ROW_GAP = 7
+const ROW_GAP = 6
 /** the channel the folded path's cable runs up, between the two columns */
 const COL_GAP = 28
 const INST_GAP = 12
@@ -473,6 +474,9 @@ export interface Options {
   /** The groups to draw; the README's copy leaves it out and draws them all. */
   shown?: ReadonlySet<string>
 }
+
+const caps = (label: string) => label.toUpperCase()
+const nameWidth = (label: string) => textWidth(caps(label), FONT)
 
 const midX = (n: MapNode) => n.x + n.w / 2
 const midY = (n: MapNode) => n.y + n.h / 2
@@ -691,7 +695,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const slotted = bendOrder(c)
   const bends = slotted.filter(has)
   const loose = BENDS.filter(b => !slotted.includes(b.group) && has(b.group))
-  const chipW = loose.map(b => textWidth(b.label, SMALL) + CHIP_PAD * 2)
+  const chipW = loose.map(b => nameWidth(b.label) + CHIP_PAD * 2)
   for (const b of loose) doors.add(b.group)
   // No box of its own, and no door: which bend runs where is Signal order's to
   // open, off the foot of the drawing. What's left of the rack is a place to
@@ -796,7 +800,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
   const natural = (n: MapNode) =>
     PAD_X * 2 +
     (n.kind === 'inst' ? ICON_COL : 0) +
-    textWidth(n.label, FONT) +
+    nameWidth(n.label) +
     countCol
   const sum = (row: MapNode[]) => row.reduce((a, n) => a + natural(n), 0)
 
@@ -840,9 +844,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     // the stages actually on the path do.
     ...pathAndBus
       .filter(n => n.kind !== 'rack')
-      .map(
-        n => PAD_X * 2 + iconCol(n.label) + textWidth(n.label, FONT) + countCol,
-      ),
+      .map(n => PAD_X * 2 + iconCol(n.label) + nameWidth(n.label) + countCol),
   )
   const content = Math.ceil(
     Math.max(
@@ -2223,6 +2225,7 @@ export function drawNode(
   if (n.kind === 'chip') {
     const lead = iconCol(n.label)
     const ink = n.active || n.open ? k.fg : k.dim
+    const note = n.id === 'no_trig'
     return el('g', { className: 'node' }, [
       ...door(
         [
@@ -2239,10 +2242,10 @@ export function drawNode(
           }),
           ...(lead ? glyph(n, k, n.y + (n.h - ICON) / 2, CHIP_PAD) : []),
           words(
-            n.label,
+            note ? n.label : caps(n.label),
             n.x + lead + (n.w - lead) / 2,
-            baseline(n.y, n.h, SMALL),
-            SMALL,
+            baseline(n.y, n.h, note ? SMALL : FONT),
+            note ? SMALL : FONT,
             ink,
           ),
         ],
@@ -2274,7 +2277,7 @@ export function drawNode(
       }),
       ...glyph(n, k, n.y + (n.h - ICON) / 2 - (bar ? 1.5 : 0)),
       words(
-        n.label,
+        caps(n.label),
         n.x + PAD_X + ICON_COL,
         baseline(n.y, n.h - (bar ? 3 : 0), FONT),
         FONT,
@@ -2303,7 +2306,7 @@ export function drawNode(
   const countW = links ? COUNT_COL : 0
   // Every box with room for a glyph column keeps one, so the names down a
   // column share a centre whether or not their stage has a glyph.
-  const roomy = n.w >= PAD_X * 2 + ICON_COL + textWidth(n.label, FONT) + countW
+  const roomy = n.w >= PAD_X * 2 + ICON_COL + nameWidth(n.label) + countW
   const lead = iconCol(n.label) || (roomy ? ICON_COL : 0)
   const inner = [
     el('rect', {
@@ -2319,7 +2322,7 @@ export function drawNode(
     }),
     ...glyph(n, k, n.y + (n.h - ICON) / 2),
     words(
-      n.label,
+      caps(n.label),
       n.x + lead + (n.w - lead - countW) / 2,
       baseline(n.y, n.h, FONT),
       FONT,
