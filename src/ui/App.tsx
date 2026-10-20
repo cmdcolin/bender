@@ -321,7 +321,6 @@ function BoardVerbs({
   )
 }
 
-// The board as the address bar spells it, which is what a voice holds.
 const boardQuery = () => boardHash(window.location.hash, engine.controls.get())
 
 const copyLink = (query: string) => {
@@ -345,13 +344,8 @@ export function App(props: { openedFromLink?: boolean }) {
   const sampleError = useStoreValue(engine.sampleError)
   const remapping = useStoreValue(remapOpen)
   const coarse = useCoarse()
-  // Which stage's controls the panel is showing. The map is the way in — every
-  // group has a door on it, the stages along the path and the rest of the board
-  // drawn where it sits — so one stage is open at a time and the rest of the
-  // panel stays the map.
   const [open, setOpen] = useState<string | null>(null)
   const openGroup = GROUPS.find(g => g.name === open)
-  // Opening a stage puts it on the map, so closing it again leaves it there.
   const show = (name: string | null) => {
     if (name) add([name])
     setOpen(name)
@@ -360,19 +354,10 @@ export function App(props: { openedFromLink?: boolean }) {
   const listed = useStoreValue(listView)
   const morphSeconds = useStoreValue(morphSetting)
   const drifting = useStoreValue(engine.drifting)
-  // Whether the last hunt reached the end and kept a board, as against being
-  // called off, which is what the dialog stays up to say. A hunt that was
-  // stopped by hand needs no note: you are holding the answer.
   const [landed, setLanded] = useState(false)
   const dismissLanded = useCallback(() => setLanded(false), [])
-  // Up once, for a board that arrived from a link: closing it, by either
-  // door, is the last anyone hears of it — pressing play from the row below
-  // afterwards is a second gesture and gets no overlay to answer to.
   const [showStart, setShowStart] = useState(!!props.openedFromLink)
   const [showAbout, setShowAbout] = useState(false)
-  // Why an account, and the name of the save waiting on the answer. `null` is
-  // shut, and `{ pending: null }` is the card opened from the menu with no save
-  // behind it.
   const [why, setWhy] = useState<{ pending: string | null } | null>(null)
   const [showMidi, setShowMidi] = useState(false)
 
@@ -380,17 +365,12 @@ export function App(props: { openedFromLink?: boolean }) {
   const libUid = lib.user?.uid ?? null
   const signedIn = lib.status === 'ready'
 
-  // What the name box offers: the preset the board is standing on, or the voice
-  // last saved or recalled, counted up once that name is taken.
   const suggestName = () =>
     suggestVoiceName(
       lib.voices,
       lib.lastName ?? presetNameFor(engine.controls.get()) ?? 'my voice',
     )
 
-  // Recall morphs, the way pressing a preset chip does. An open lands the whole
-  // board at once by putting it on the address bar — useBoardUrl hears the
-  // hashchange and applies it, which is exactly what arriving on a link does.
   const morphToQuery = (query: string) => {
     const patch = boardFromUrl('', `#${query}`)
     if (patch !== null)
@@ -411,16 +391,10 @@ export function App(props: { openedFromLink?: boolean }) {
   useSyncedPrefs(libUid)
   useDrumKeys()
 
-  // Space is the run/stop line over both machines, wherever the focus is; the
-  // keypress itself is the gesture that takes the audio context live.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey)
         return
-      // A select included: space is the only way a keyboard opens one, and the
-      // panel picks a morph duration, a row length and half its choices that
-      // way. A focused button is not — space over one is still the run line,
-      // which is the point of running it over the whole window.
       if (isTyping(e.target)) return
       e.preventDefault()
       engine.toggleRun()
@@ -429,25 +403,16 @@ export function App(props: { openedFromLink?: boolean }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // A save with nobody signed in opens the why-sign-in card. useSavedVoices
-  // holds the board, so signing in from the card saves what was on screen when
-  // the key went down.
   const askSave = () => {
     const name = suggestName()
     if (lib.saveVoice(name, boardQuery()) === 'needs-auth')
       setWhy({ pending: name })
   }
 
-  // Read at keypress time rather than closed over when the listener went on,
-  // so the handler goes on the window once and still saves the board and the
-  // library as they are now.
   const save = useRef(() => {})
   // oxlint-disable-next-line react/refs -- the keydown listener reads the latest save handler through this ref
   save.current = askSave
 
-  // Save, on the key every application that saves anything puts it on. The
-  // board is not a document and the browser's own dialog would offer to write
-  // the page to disk, so the default goes either way.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (
@@ -463,8 +428,6 @@ export function App(props: { openedFromLink?: boolean }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // The walk, on the keys every other app puts it on. Repeats count: holding
-  // ctrl+z is how you get back out of a run of rolls.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() !== 'z' || !(e.ctrlKey || e.metaKey)) return
@@ -478,11 +441,6 @@ export function App(props: { openedFromLink?: boolean }) {
   }, [morphSeconds])
 
   return (
-    // The whole window takes the drop, because the hint says anywhere and a
-    // dragover nobody cancels is a drop the browser takes itself — which on the
-    // panel, half the width of the app, meant navigating away from the board.
-    // Dragleave fires on the way into a child as well, so the flag only clears
-    // for a pointer that has left the app entirely.
     <div
       className={styles.app}
       onDragOver={e => {
@@ -500,10 +458,6 @@ export function App(props: { openedFromLink?: boolean }) {
       onDrop={onDrop}
     >
       <main className={styles.left}>
-        {/* Wrapped so the narrow layout can send it to the end: a trace with
-            nothing on it is the first screen of a phone otherwise. The
-            recorder sits beside it: it taps the session rather than playing in
-            it, so it has no place among the instruments. */}
         <div className={styles.top}>
           <div className={styles.scope}>
             <Scope />
@@ -595,23 +549,14 @@ export function App(props: { openedFromLink?: boolean }) {
           />
         </div>
 
-        {/* What the hunt is doing while it does it, and the only way to call
-            it off: eight seconds of the board playing six strangers reads as a
-            fault unless something says otherwise. */}
         <HuntDialog landed={landed} onDismiss={dismissLanded} />
 
-        {/* A link opens a board nobody has heard yet, with the two run
-            buttons buried in the row below — this is what says where to
-            press and starts both machines together, eased up rather than
-            landing at whatever level the board was left. */}
         {showStart && <StartOverlay onClose={() => setShowStart(false)} />}
 
         {showAbout && <AboutDialog onClose={() => setShowAbout(false)} />}
 
         {remapping && <KeysDialog onClose={() => remapOpen.set(false)} />}
 
-        {/* Closing on the way to the popup leaves the Google window clear.
-            The save the card was holding lands on the save button below. */}
         {why && (
           <WhySignInDialog
             pendingName={why.pending}

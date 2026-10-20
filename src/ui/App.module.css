@@ -3,9 +3,6 @@
   height: 100%;
 }
 
-/* Scrolls on its own, now that the presets live here: eleven chips fit under
-   the hint on any screen, and the other fifty-three unfold into whatever is
-   left rather than into the panel's map. */
 .left {
   flex: 1;
   min-width: 0;
@@ -23,8 +20,6 @@
   gap: var(--space-md);
 }
 
-/* The trace fills the row the recorder sets, rather than sitting at its own
-   height beside it. */
 @media (min-width: 761px) {
   .top .scope canvas {
     position: absolute;
@@ -61,22 +56,12 @@
   width: clamp(470px, 30vw, 600px);
   flex: none;
   overflow-y: auto;
-  /* Opening a stage brings the scrollbar in, which would narrow the map under
-     the pointer that opened it. */
   scrollbar-gutter: stable;
   padding: 0 var(--space-lg) var(--space-md);
   border-left: 1px solid var(--border);
   background: var(--surface);
 }
 
-/* The nameplate row and the row of verbs under it, pinned to the top of the
-   panel's scroll. The panel is a header, a map and whatever stage the map has
-   open, and the stage is often taller than the screen: scrolled down to its
-   last row, panic and undo were the two things you most wanted and the two
-   that had left. The margins pull the strip out over the panel's own padding so
-   the map does not show through at either side on its way under. The panel's
-   top padding is this strip's rather than the panel's, so nothing scrolls up
-   past the strip's top edge. */
 .chrome {
   --verb-w: 56px;
   position: sticky;
@@ -88,10 +73,6 @@
   border-bottom: 1px solid var(--border-quiet);
 }
 
-/* The nameplate, and the two verbs that are about no board in particular: how
-   the next one arrives and how to shut this one up. They share the row because
-   neither the brand nor a duration picker earns a line of its own, and top
-   right is where a plate's panic button belongs anyway. */
 .head {
   display: flex;
   flex-wrap: wrap;
@@ -100,9 +81,6 @@
   padding-bottom: var(--space-sm);
 }
 
-/* Brand and build as one press. Bare of everything a button is drawn with —
-   the plate is a nameplate first, and a filled box up here would read as a
-   fourth verb in a row of three. */
 .nameplate {
   display: flex;
   align-items: baseline;
@@ -137,15 +115,6 @@
   composes: actionQuiet from './button.module.css';
 }
 
-/* The panel's row of verbs: buttons at their own width, wrapping when they run
-   out. Nothing stretches to fill a line, so a button's width says how long its
-   label is and nothing else — a row that wrapped used to hand its last two
-   buttons the whole leftover width and read as a different, more important kind
-   of button.
-
-   There were two such rows. The second was the eight rolls, seven of them
-   opening with the word this row's first button already is, and they are behind
-   its caret now. */
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -154,14 +123,10 @@
   padding-bottom: var(--space-sm);
 }
 
-/* Aliases, so the row's markup reads in its own words: the shapes and every
-   state they take are in button.module.css. */
 .btn {
   composes: action from './button.module.css';
 }
 
-/* A verb that did not land — a save the network refused. Red for as long as the
-   ✕ is up, which is longer than a ✓ stays. */
 .btnBad {
   composes: actionDanger from './button.module.css';
 }
@@ -188,18 +153,12 @@
   min-width: var(--verb-w);
 }
 
-/* The duration picker opens the session buttons, right of the nameplate. */
 .morph {
   composes: btn;
   text-align: center;
   appearance: none;
 }
 
-/* The fill is a transform on a full-width bar rather than a width, so a 30s
-   morph animates on the compositor instead of relaying out the row 60 times a
-   second. The label sits over it and never moves. The width is the morph
-   select's, whose place it takes for the length of the morph: sized to its own
-   label it would shuffle everything after it along twice per roll. */
 .flight {
   composes: actionOn from './button.module.css';
   position: relative;
@@ -218,7 +177,6 @@
   position: relative;
 }
 
-/* The recorder's faceplate. The tape loop's face composes `.box` too. */
 .box {
   container-type: inline-size;
   position: relative;
@@ -269,9 +227,6 @@
   color: var(--fg4);
 }
 
-/* The roll's own line: what it is doing while it does it, and what it came back
-   with once it has. Its own colour, so a wait reads as the app working rather
-   than as the board saying something. */
 .rolling {
   font-size: var(--fs-xs);
   color: var(--accent);
@@ -291,22 +246,9 @@
   color: var(--accent2);
 }
 
-/* A verb whose word changes when it starts — lit alone is a thing you notice
-   only once you are looking for it, so drift says "drifting…" while it runs.
-   The two words are 38px and 66px, and the button used to take whichever it was
-   saying: the press that started it shoved every button after it 28px along the
-   row, and on a phone, where the row wraps, moved a whole line of them.
-
-   The wider word stands in the same grid cell as whichever word is being said,
-   hidden, and only while it is not the one being said — so the cell is as wide
-   as the widest in both states, and the word "drifting…" is never in the
-   document twice. A grid rather than a min-width in pixels, because a pixel
-   here would be a guess about a font this app does not ship. */
 .holdsWidest {
   display: grid;
   grid-template-areas: 'said';
-  /* the cell is wider than the word standing in it, and a button centres its
-     label — without this the two words would sit against the left edge */
   justify-items: center;
 }
 
@@ -314,19 +256,10 @@
   grid-area: said;
 }
 
-/* Holds the width of the longest label the button can show, so the row keeps
-   still as a verb answers. A browser leaves a `visibility: hidden` span out of
-   the accessible name; a test renderer with no CSS does not, so the span is
-   aria-hidden too. */
 .widest {
   visibility: hidden;
 }
 
-/* One column, and the page is the scroller. The run switches go first and stay
-   pinned while the machines scroll under them, since a phone has no space bar
-   to run them from; the trace goes last, because a flat line was the whole
-   first screen. The panel's own strip takes over at the top once the page has
-   scrolled into the board. */
 @media (max-width: 760px) {
   .app {
     flex-direction: column;
@@ -341,8 +274,6 @@
     flex-direction: column-reverse;
     align-items: stretch;
   }
-  /* overflow back to visible on both columns, or each would be its own scroll
-     container and the strips would stick to a box that never moves. */
   .panel {
     width: auto;
     overflow: visible;

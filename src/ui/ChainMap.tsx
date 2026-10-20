@@ -38,27 +38,12 @@ const foldMap = (folded: boolean) => {
   write(FOLD_KEY, folded ? '1' : '0')
 }
 
-// The channels the bus meters, by the name the map draws them under. The mic is
-// a wire rather than a machine and has no box of its own, so it is not here.
 const SOUNDING = CHANNELS.filter(c => c.tap < MAX_SOURCES)
 
-// Graphviz used to lay the map out again for any change to the string at all,
-// and it was debounced for that. Drawing it ourselves is far cheaper but not
-// free: the panel still hands React a fresh tree of 179 SVG elements to diff,
-// which is half a millisecond to build and at least as much again to reconcile
-// — and two of the strings in it are numbers printed on wires, the feedback
-// amount and each patch wire's depth, which a morph moves every frame.
-//
-// What the map is for is its shape, and a shape can wait a tenth of a second.
-// So it draws at once when it has been still, and on the trailing edge while
-// the board is moving. Which stage is open is not on this clock: that arrives
-// as a prop and lights up the moment it is clicked.
 const REDRAW_MS = 120
 
-// Below this share of a fresh rail the supply bar on the map turns amber.
 const SAGGING = 0.85
 
-// Amber holds this long after the last dip, so a dip on every hit stays lit.
 const SAG_HOLD_MS = 1500
 
 function useSettledControls(): Controls {
@@ -87,7 +72,6 @@ function useSettledControls(): Controls {
 
 const AIM_MS = 1200
 
-// Two frames on, after the stage has mounted and scrolled itself into view.
 function aimAt(key: string, from: Element | null) {
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
@@ -107,12 +91,6 @@ function mount(node: El | string, key: number): ReactNode {
   return createElement(node.tag, { key, ...node.attrs }, node.kids?.map(mount))
 }
 
-// The signal path: live bend order, the feedback wire, and each stage a door
-// into its controls. The map is the panel's index — clicking a box is what puts
-// a stage's knobs on screen — so it draws folded into two columns, which is what
-// keeps it and the stage it opens on screen together. The drawing has somewhere
-// for every part of the board now, wired or not, so the shelf under it is the
-// backstop rather than a list: what lands there is a group the drawing forgot.
 export function ChainMap({
   open,
   onOpen,
@@ -124,11 +102,6 @@ export function ChainMap({
 }) {
   const controls = useSettledControls()
   const coarse = useCoarse()
-  // Which sources are sounding, which is the one thing on the map that isn't in
-  // the board: it comes off the meters on the bus rather than off any control.
-  // The run switches used to answer it and could only answer it for two of the
-  // six — the FM chip has no switch, the sampler's lies when nothing is
-  // threaded, and a switch says nothing about the fader in front of it.
   const lit = useStoreValue(engine.sounding)
   const playing = SOUNDING.filter(c => lit & (1 << c.tap)).map(c => c.name)
   const benchNow = useStoreValue(bench)
@@ -165,9 +138,6 @@ export function ChainMap({
   const onIt = GROUPS.filter(g => shown.has(g.name))
   const offIt = GROUPS.filter(g => !shown.has(g.name))
 
-  // Clicking a stage's door opens its panel. The touched dot on a box corner is
-  // signage rather than a control, so it takes no click of its own. A door
-  // with a data-key also scrolls the panel to that control's row.
   const press = (target: Element): boolean => {
     const door = target.closest('[data-door]')
     const group = GROUP_BY_NAME.get(door?.getAttribute('data-door') ?? '')
@@ -184,11 +154,6 @@ export function ChainMap({
 
   return (
     <div className={styles.map}>
-      {/* Every stage as a chip a finger can land on. The drawing is six boxes
-          across and scales to the width it is given, which on a phone puts
-          its doors at twenty pixels; nothing about the drawing can grow them
-          without a sideways pan, so the doors are laid out again here, at
-          the height every other press on a phone gets. */}
       {(coarse || folded) && (
         <Shelf
           groups={onIt}
@@ -238,7 +203,6 @@ export function ChainMap({
   )
 }
 
-/** The row under the panel's stages: the view switch, then add and take off. */
 export function StageBar({
   on,
   off,
@@ -286,9 +250,6 @@ export function StageBar({
   )
 }
 
-// A button that opens a menu of stages under the place each sits in the chain.
-// The menu stays up for the next pick, and shuts on a press elsewhere or the
-// last pick.
 function StageMenu({
   groups,
   button: text,
@@ -299,7 +260,6 @@ function StageMenu({
   groups: { name: string; place: string }[]
   button: string
   label: string
-  /** Names each renamed stage's old name beside the new one. */
   former?: boolean
   onPick: (name: string) => void
 }) {

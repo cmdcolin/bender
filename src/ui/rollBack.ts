@@ -17,9 +17,6 @@ import {
 import { useBoardValue } from './ControlsContext.ts'
 import { cutStands, resetKeys, type CutDef } from './presets/index.ts'
 
-// For each stage and fold, the values its rolls overwrote. Undo there puts the
-// last roll's controls back and leaves every other control where it stands.
-
 type Was = readonly (readonly [ControlKey, number])[]
 
 const DEPTH = 16
@@ -45,8 +42,6 @@ export function rollIn(scope: string, target: Controls, seconds: number) {
 
 const moves = (was: Was, c: Controls) => was.some(([k, v]) => c[k] !== v)
 
-// undoRoll skips an entry the board already matches, such as one a ctrl+z or a
-// hand has put back.
 export function undoRoll(scope: string, seconds: number) {
   const stack = [...(stashes.get().get(scope) ?? [])]
   const now = engine.controls.get()

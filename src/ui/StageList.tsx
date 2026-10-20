@@ -16,7 +16,6 @@ const noop = () => {}
 
 const WHOLE_LIST = 'every stage on the board'
 
-// Roll, undo and reset for every stage in the list at once.
 function ListVerbs({ groups, seconds }: { groups: Group[]; seconds: number }) {
   const keys = [...new Set(groups.flatMap(g => groupKeys(g)))]
   const moved = useMovedCount(keys)
@@ -46,9 +45,6 @@ function ListVerbs({ groups, seconds }: { groups: Group[]; seconds: number }) {
   )
 }
 
-// Every stage on the board, one under the other with its sliders open: the
-// panel without the drawing. A stage joins the list the way it joins the map,
-// from add a stage or by coming up on the board.
 export function StageList({ seconds }: { seconds: number }) {
   const benchNow = useStoreValue(bench)
   useStoreValue(added)
