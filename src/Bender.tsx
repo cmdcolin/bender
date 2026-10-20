@@ -3,6 +3,7 @@ import { exposeBenderApi } from './ui/agentApi.ts'
 import { App } from './ui/App.tsx'
 import { keepRunState } from './ui/runState.ts'
 import { boardFromLocation } from './ui/share.ts'
+import { startFresh } from './ui/starterBoard.ts'
 import './theme.css'
 
 // A url that names a board sets the board up, and stops there. It used to press
@@ -15,6 +16,7 @@ if (shared) engine.patch(shared)
 // What a reload does put back is what this tab was running, which the link
 // never carried either way — see runState.
 const returning = keepRunState()
+if (!shared && !returning) startFresh()
 
 exposeBenderApi()
 
