@@ -15,7 +15,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// The six pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
+// The five pictures in docs/USER-GUIDE.md: `pnpm guide-shots` rewrites all of
 // docs/img/guide-*.jpg from the app as it is now. Each shot is a board, a thing to click once the page
 // is up, and the element (or elements) to crop to — read off the page rather
 // than hand-picked pixels, so a layout change breaks the shot instead of
@@ -36,21 +36,22 @@ interface Shot {
   board?: Partial<Controls>
   act?: (page: Page) => Promise<void>
   select: string[]
+  pad?: number
 }
 
 const SHOTS: Shot[] = [
   {
     file: 'guide-keyboard.jpg',
-    select: ['[aria-label="toy keyboard"]'],
+    select: ['[aria-label="plinky"]'],
   },
   {
     file: 'guide-drums.jpg',
-    select: ['[aria-label="toy drums"]'],
+    select: ['[aria-label="clatter"]'],
   },
   {
     file: 'guide-fm.jpg',
     board: { fmLevel: 0.6, fmVoice: 1 },
-    select: ['[aria-label="fm keyboard"]'],
+    select: ['[aria-label="glint"]'],
   },
   {
     file: 'guide-trigger.jpg',
@@ -63,10 +64,13 @@ const SHOTS: Shot[] = [
     },
     act: page => click(page, '[data-door="Trigger patch"]'),
     select: ['aside [class*="section"]'],
+    pad: 8,
   },
   {
     file: 'guide-patchbay.jpg',
     board: {
+      fmLevel: 0.5,
+      combMix: 0.4,
       mod0Src: 1,
       mod0Dest: 27,
       mod1Src: 3,
@@ -76,11 +80,7 @@ const SHOTS: Shot[] = [
     },
     act: page => click(page, '[data-door="Patch bay"]'),
     select: ['aside [class*="section"]'],
-  },
-  {
-    file: 'guide-saved.jpg',
-    act: page => click(page, 'aside [class*="trigger"]'),
-    select: ['aside [class*="trigger"]', '[aria-label="saved voices"]'],
+    pad: 8,
   },
 ]
 
@@ -237,11 +237,12 @@ async function main() {
       const raw = join(work, `${shot.file}.png`)
       const rect = await shoot(full, shot, raw)
 
+      const pad = shot.pad ?? PAD
       const box = {
-        x: Math.round((rect.x - PAD) * DPR),
-        y: Math.round((rect.y - PAD) * DPR),
-        w: Math.round((rect.width + PAD * 2) * DPR),
-        h: Math.round((rect.height + PAD * 2) * DPR),
+        x: Math.round((rect.x - pad) * DPR),
+        y: Math.round((rect.y - pad) * DPR),
+        w: Math.round((rect.width + pad * 2) * DPR),
+        h: Math.round((rect.height + pad * 2) * DPR),
       }
       const out = join('docs/img', shot.file)
       magick([
