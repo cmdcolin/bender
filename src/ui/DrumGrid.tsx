@@ -144,8 +144,6 @@ export function DrumGrid() {
   return (
     <div className={styles.wrap}>
       <div className={styles.roms}>
-        {/* Runs the kit from the grid itself, so toggling it doesn't mean a
-            trip back up to the io row while you're looking at the pattern. */}
         <Tip text={playing ? 'Stop the kit.' : 'Run the kit.'}>
           <button
             className={playing ? styles.playOn : styles.play}
@@ -155,6 +153,7 @@ export function DrumGrid() {
             {playing ? '❚❚' : '▶'}
           </button>
         </Tip>
+        <span className={styles.label}>beats</span>
         {DRUM_ROMS.map(r => (
           <Tip key={r.name} text={r.blurb}>
             <button
@@ -200,6 +199,7 @@ export function DrumGrid() {
           "something" or "nothing" — the grid itself is the only place to see
           what a pattern is. */}
       <div className={styles.slots}>
+        <span className={styles.label}>memory</span>
         {slots.map((slot, i) => (
           <Tip
             key={i}
@@ -228,6 +228,7 @@ export function DrumGrid() {
           because none of them is a place you can be: a ROM is where the grid
           is, a move is something that happened to it. */}
       <div className={styles.moves}>
+        <span className={styles.label}>moves</span>
         {DRUM_MOVES.map(move => (
           <Tip key={move.name} text={move.blurb}>
             <button
@@ -246,6 +247,7 @@ export function DrumGrid() {
       </div>
 
       <div className={styles.grid}>
+        <Ruler />
         {[...GRID_ROWS, THROW_ROW].map((row, v) => (
           <Row
             key={row.key}
@@ -258,24 +260,34 @@ export function DrumGrid() {
         <BendRow live={live} />
       </div>
 
-      {/* The one place that may start the kit, because it is a button that says
-          it will. Nothing else on the board presses play for you. */}
-      {live || (
+      {level === 0 && (
         <button
           className={styles.silent}
           onClick={() => {
-            if (level === 0) {
-              engine.armStep()
-              engine.set('drumLevel', 0.8)
-            }
+            engine.armStep()
+            engine.set('drumLevel', 0.8)
             engine.setDrumsPlaying(true)
           }}
         >
-          {level === 0
-            ? 'the kit is turned down — bring Level up and run it'
-            : 'the kit is stopped — run it'}
+          the kit is turned down — bring Level up and run it
         </button>
       )}
+    </div>
+  )
+}
+
+function Ruler() {
+  return (
+    <div className={styles.row} aria-hidden="true">
+      <span />
+      <div className={styles.cells}>
+        {Array.from({ length: STEPS }, (_, s) => (
+          <span key={s} className={styles.tick}>
+            {s % 4 === 0 ? s / 4 + 1 : ''}
+          </span>
+        ))}
+      </div>
+      <span />
     </div>
   )
 }
@@ -312,7 +324,7 @@ const Row = memo(function Row({
 
   return (
     <Tip text={row.help}>
-      <div className={styles.row}>
+      <div className={kind === 'voice' ? styles.row : styles.extraRow}>
         {/* The name is the voice itself: press it to hear the row without waiting
             for the playhead to reach a step you have just written. Accent is
             not a voice, so its name is only a name. */}

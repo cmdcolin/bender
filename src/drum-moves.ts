@@ -396,7 +396,7 @@ export interface DrumMove {
 
 export const DRUM_MOVES: DrumMove[] = [
   {
-    name: 'roll',
+    name: 'new beat',
     blurb:
       'a pattern nobody has heard: a feel picked at random — four on the floor, a backbeat, a break, halftime, or hits spread evenly the Euclidean way — with its trimmings, a fill often enough to notice, and now and then a few steps of a trimming voice wired through the dice. It writes the grid and nothing else, so the kit keeps its tempo and its tone',
     play: kit => randomPattern(kit.rand),

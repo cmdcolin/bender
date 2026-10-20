@@ -1,14 +1,17 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
+import { bench, setBench } from './bench.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
 import { ToyDrumDiagram } from './ToyDrumDiagram.tsx'
 import './testDom.ts'
+
+beforeEach(() => setBench({ ...bench.get(), grid: false }))
 
 const box = (name: string) =>
   screen.getByRole('button', { name: `${name} controls` })
@@ -46,11 +49,13 @@ test('the DAC opens the converter rows and the sample ROM opens the kit rows', (
   expect(screen.queryByText('Bit depth')).toBeNull()
 })
 
-test('the pattern opens the bus rows, and the triggers leave their rows to their own drawing', () => {
+test('pressing pattern shows the grid and the bus rows, and pressing triggers shows only its verbs', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<ToyDrumDiagram verbs={part => <p>{`verbs for ${part}`}</p>} />)
   fireEvent.click(box('pattern'))
   expect(screen.getByText('Data line')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'kick step 1' })).not.toBeNull()
+  expect(bench.get().grid).toBe(true)
   fireEvent.click(box('triggers'))
   expect(screen.getByText('verbs for triggers and cross-patch')).not.toBeNull()
   expect(screen.queryByText('Retrigger')).toBeNull()
@@ -120,14 +125,17 @@ test('the pads box starts open on the kit rows, and the stage draws no folds', (
   ).toHaveLength(1)
 })
 
-test('showing the drum pattern opens the pads box', () => {
+test('showing the drum pattern opens the pattern box, and leaving the box hides it', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   openKit()
+  const toggle = () => screen.getByRole('button', { name: 'show drum pattern' })
   fireEvent.click(box('noise'))
-  expect(screen.queryByText('Tempo')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'show drum pattern' }))
-  expect(screen.getByText('Tempo')).not.toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'show drum pattern' }))
+  fireEvent.click(toggle())
+  expect(screen.getByText('Data line')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'kick step 1' })).not.toBeNull()
+  fireEvent.click(box('tanks'))
+  expect(screen.queryByRole('button', { name: 'kick step 1' })).toBeNull()
+  expect(toggle().getAttribute('aria-pressed')).toBe('false')
 })
 
 test('the pads box lights when a kit knob moves', () => {

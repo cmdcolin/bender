@@ -1,15 +1,19 @@
+import { useState } from 'react'
+
+import { bench, setBench } from './bench.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS } from './controls/index.ts'
+import { useStoreValue } from './ControlsContext.ts'
 import diagram from './Diagram.module.css'
 import {
   boxWidth,
   glyphBoxWidth,
   ONE_LINE_H,
   partKeys,
-  useBoxWhileEditing,
   useFlow,
   useReadings,
   useSelectedBox,
+  type BoxPick,
   type BoxSpec,
 } from './diagram.ts'
 import {
@@ -22,6 +26,7 @@ import {
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
+import { DrumGrid } from './DrumGrid.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { VOICE_BOXES } from './toyBoxKeys.ts'
 
@@ -68,7 +73,7 @@ const HELP: Record<BoxId, string> = {
   triggers:
     'What the trigger lines do before a one-shot hears them: retriggers, the floor a voice must drain to, the scan, the accent bus, the choke and the cross-patches.',
   pattern:
-    'The step counter and the pattern memory. The rows put a knife on the wires that clock it, address it and carry the word back.',
+    'The step counter and the pattern memory. You write the pattern on the grid, and the rows put a knife on the wires that clock the counter, address the memory and carry the word back.',
   'sample ROM':
     'The kit sampled by itself. Switched on, the voices read their slabs from a ROM, and the address and data wires to it can take a knife.',
 }
@@ -123,12 +128,33 @@ function padsGlyph(x: number, mid: number) {
   )
 }
 
+// usePatternBox keeps the header's pattern switch and the pattern box in step:
+// the switch opens the box, and opening or leaving the box flips the switch.
+function usePatternBox(): BoxPick {
+  const shown = useStoreValue(bench).grid
+  const pick = useSelectedBox(shown ? 'pattern' : PADS)
+  const [was, setWas] = useState(shown)
+  if (shown !== was) {
+    setWas(shown)
+    if (shown !== (pick.selected === 'pattern')) pick.toggle('pattern')
+  }
+  return {
+    selected: pick.selected,
+    toggle: id => {
+      const next = id === 'pattern' && pick.selected !== id
+      pick.toggle(id)
+      if (next === shown) return
+      setWas(next)
+      setBench({ ...bench.get(), grid: next })
+    },
+  }
+}
+
 // Pads and the pattern fire the triggers. One-shots and amps each span the three
 // voices, so every voice gets its own wire in and out; the sum happens in the DAC.
-export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
+export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
-  const pick = useSelectedBox(PADS)
-  useBoxWhileEditing(pick, Boolean(editor), PADS)
+  const pick = usePatternBox()
   const flow = useFlow('Clatter')
 
   const srcW = Math.max(...FIRST.map(boxWidth))
@@ -318,13 +344,10 @@ export function ToyDrumDiagram({ verbs, editor, zoom }: DrawingProps) {
           name={open?.name ?? pick.selected}
           onHide={() => pick.toggle(pick.selected!)}
         >
+          {pick.selected === 'pattern' && <DrumGrid />}
           {close}
           {pick.selected === PADS ? (
-            <BoxRows
-              title={open?.name ?? pick.selected}
-              keys={PAD_KEYS}
-              verbs={editor}
-            />
+            <BoxRows title={open?.name ?? pick.selected} keys={PAD_KEYS} />
           ) : (
             <BoxRows
               title={open?.name ?? pick.selected}

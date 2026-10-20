@@ -7,8 +7,15 @@
 .roms {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--gap-ctl-sm);
   margin-bottom: var(--space-xs);
+}
+
+.label {
+  font-size: var(--fs-xs);
+  color: var(--fg4);
+  margin-right: var(--space-2xs);
 }
 
 .rom {
@@ -29,6 +36,7 @@
 
 .slots {
   display: flex;
+  align-items: center;
   gap: var(--gap-ctl-sm);
   margin-bottom: var(--space-xs);
 }
@@ -50,6 +58,7 @@
 .moves {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--gap-ctl-sm);
   margin-bottom: var(--space-sm);
 }
@@ -64,11 +73,23 @@
   gap: var(--space-2xs);
 }
 
-.row {
+.row,
+.extraRow {
   display: grid;
   grid-template-columns: 4.4rem 1fr 2.6rem;
   align-items: center;
   gap: var(--space-sm);
+}
+
+.row + .extraRow {
+  margin-top: var(--space-xs);
+}
+
+.tick {
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg4);
+  line-height: 1;
 }
 
 /* The name is the voice: it is a button on every row but the accent, and
@@ -288,12 +309,22 @@
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
   padding: var(--space-2xs) var(--space-lg) var(--space-2xs) var(--space-xs);
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
+  background: none;
+  border: 1px solid transparent;
   border-radius: var(--ctl-radius);
-  color: var(--fg3);
+  color: var(--fg4);
   cursor: pointer;
   appearance: none;
+}
+
+.field .chevron {
+  visibility: hidden;
+}
+
+.field:hover .chevron,
+.field:focus-within .chevron,
+.lenShort + .chevron {
+  visibility: visible;
 }
 
 .chevron {
@@ -317,11 +348,10 @@
 .lenShort {
   color: var(--accent2);
   border-color: var(--accent2);
+  background: var(--surface-raised);
 }
 
-/* The one press on the board that starts the kit, so it says so: at --fg4 the
-   sentence telling you the kit is stopped was 2.8:1, which is a instruction
-   pitched below the thing it is about. */
+/* --fg3, because at --fg4 the sentence read at 2.8:1. */
 .silent {
   display: block;
   margin-top: var(--space-md);
@@ -342,9 +372,18 @@
    accident. The row gives up its name to buy them height and width; the grid is
    what the panel is for. */
 @media (max-width: 760px) {
-  .row {
-    grid-template-columns: 2.2rem 1fr 1.6rem;
+  .row,
+  .extraRow {
+    grid-template-columns: 3.2rem 1fr 1.6rem;
     gap: var(--space-xs);
+  }
+  .len,
+  .lenShort {
+    padding: var(--space-2xs) 0;
+    text-align: center;
+  }
+  .chevron {
+    display: none;
   }
   .cell,
   .cellOn,
