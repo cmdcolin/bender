@@ -1,4 +1,4 @@
-import chip from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import { GROUPS } from './controls/index.ts'
 import diagram from './Diagram.module.css'
 import {
@@ -12,9 +12,9 @@ import {
   card,
 } from './diagram.ts'
 import {
+  Bend,
   BoxRows,
   BoxView,
-  Diagram,
   Dot,
   GlyphBox,
   Label,
@@ -108,56 +108,64 @@ export function SupplyDiagram() {
 
   return (
     <>
-      <div
-        className={chip.chips}
-        style={{ maxWidth: width + 2, marginInline: 'auto' }}
+      <ChipDrawing
+        maxWidth={width + 2}
+        width={width + 2}
+        left={1}
+        height={HEIGHT}
+        label="power supply"
       >
-        <Diagram
-          width={width + 2}
-          left={1}
-          height={HEIGHT}
-          label="power supply"
-        >
-          {arrow => (
-            <>
-              <Wire
-                arrow={arrow}
-                d={`M${cellsW} ${mid} H${width - 2}`}
-                look={flow}
+        {arrow => (
+          <>
+            <Wire
+              arrow={arrow}
+              d={`M${cellsW} ${mid} H${width - 2}`}
+              look={flow}
+            />
+            <Label x={width - 2} y={mid - 4} anchor="end">
+              machines
+            </Label>
+            {(
+              [
+                [reset, `M${watchX} ${mid} V${LOW}`, watchX],
+                [clip, `M${biteX} ${LOW} V${mid}`, biteX],
+              ] as const
+            ).map(([b, d, x]) => (
+              <Bend
+                key={b.id}
+                name={`${b.name} wire`}
+                opens={b.id!}
+                pick={pick}
+                hit={d}
+              >
+                <Wire arrow={arrow} d={d} />
+                <Dot x={x} y={mid} />
+              </Bend>
+            ))}
+            <GlyphBox
+              x={0}
+              y={TOP}
+              w={cellsW}
+              h={BOX_H}
+              name={CELLS}
+              help="the batteries, their leads, the reservoir cap and the starve that drains them"
+              lit={r.touched(...BOX_KEYS[CELLS])}
+              selected={pick.selected === CELLS}
+              onSelect={() => pick.toggle(CELLS)}
+              glyphW={GLYPH_W}
+              glyph={batteryGlyph}
+            />
+            {[reset, clip].map(b => (
+              <BoxView
+                key={b.id}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
               />
-              <Label x={width - 2} y={mid - 4} anchor="end">
-                machines
-              </Label>
-              <Wire arrow={arrow} d={`M${watchX} ${mid} V${LOW}`} />
-              <Wire arrow={arrow} d={`M${biteX} ${LOW} V${mid}`} />
-              {[watchX, biteX].map(x => (
-                <Dot key={x} x={x} y={mid} />
-              ))}
-              <GlyphBox
-                x={0}
-                y={TOP}
-                w={cellsW}
-                h={BOX_H}
-                name={CELLS}
-                help="the batteries, their leads, the reservoir cap and the starve that drains them"
-                lit={r.touched(...BOX_KEYS[CELLS])}
-                selected={pick.selected === CELLS}
-                onSelect={() => pick.toggle(CELLS)}
-                glyphW={GLYPH_W}
-                glyph={batteryGlyph}
-              />
-              {[reset, clip].map(b => (
-                <BoxView
-                  key={b.id}
-                  box={b}
-                  selected={b.id === pick.selected}
-                  onSelect={pick.toggle}
-                />
-              ))}
-            </>
-          )}
-        </Diagram>
-      </div>
+            ))}
+          </>
+        )}
+      </ChipDrawing>
       <BoxRows
         card={card(pick)}
         hint="Press a box for its settings."

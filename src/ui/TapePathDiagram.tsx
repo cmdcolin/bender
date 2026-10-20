@@ -10,6 +10,7 @@ import {
   card,
 } from './diagram.ts'
 import {
+  Bend,
   BoxRows,
   BoxView,
   Capstan,
@@ -146,6 +147,8 @@ export function TapePathDiagram() {
     id: name,
     keys: touchedBy.filter(k => k !== 'tapeDrive'),
   })
+  const recWire = `M${REC_MID} ${ROW_Y} V${TAPE_Y + 5}`
+  const playWire = `M${PLAY_MID} ${TAPE_Y + 5} V${ROW_Y}`
   const boxes = [
     box(
       0,
@@ -256,28 +259,34 @@ export function TapePathDiagram() {
                 <TapeLine d={tapeRun(format)} />
                 <Capstan x={CAPSTAN_X} y={TAPE_Y} />
               </Pressable>
-              <HeadBar
-                x={REC_MID}
-                y={TAPE_Y - 5}
-                h={10}
-                on={lit('tapeDrive', 'tapeBias', 'tapeHyst')}
-              />
-              <HeadBar
-                x={PLAY_MID}
-                y={TAPE_Y - 5}
-                h={10}
-                on={lit('tapeBump', 'tapeAzimuth')}
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${REC_MID} ${ROW_Y} V${TAPE_Y + 5}`}
-                look={taped}
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${PLAY_MID} ${TAPE_Y + 5} V${ROW_Y}`}
-                look={taped}
-              />
+              <Bend
+                name="rec head wire"
+                opens="rec head"
+                pick={pick}
+                hit={recWire}
+              >
+                <HeadBar
+                  x={REC_MID}
+                  y={TAPE_Y - 5}
+                  h={10}
+                  on={lit('tapeDrive', 'tapeBias', 'tapeHyst')}
+                />
+                <Wire arrow={arrow} d={recWire} look={taped} />
+              </Bend>
+              <Bend
+                name="replay head wire"
+                opens="replay head"
+                pick={pick}
+                hit={playWire}
+              >
+                <HeadBar
+                  x={PLAY_MID}
+                  y={TAPE_Y - 5}
+                  h={10}
+                  on={lit('tapeBump', 'tapeAzimuth')}
+                />
+                <Wire arrow={arrow} d={playWire} look={taped} />
+              </Bend>
               {[
                 [BOARD_W, NR_IN_X],
                 [NR_IN_X + NR_IN_W, REC_X],
@@ -300,7 +309,7 @@ export function TapePathDiagram() {
                 d={`M${BOARD_W / 2} ${ROW_Y + ROW_H} V${BYPASS_Y} H${JOIN_X} V${ROW_MID}`}
                 look={off ? 'plain' : 'dash'}
               />
-              <Dot x={JOIN_X} y={ROW_MID} r={2} />
+              <Dot x={JOIN_X} y={ROW_MID} />
               <Label
                 x={WIDTH / 2}
                 y={BYPASS_Y + 12}

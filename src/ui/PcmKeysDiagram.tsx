@@ -7,7 +7,7 @@ import {
   useSelectedBox,
   type BoxSpec,
 } from './diagram.ts'
-import { BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
+import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 
 import type { Verbs, Zoom } from './foldHosting.ts'
 
@@ -168,11 +168,10 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const edge = (from: BoxSpec, to: BoxSpec) =>
     `M${from.x + from.w} ${mid} H${to.x}`
   const chain = [...row, mix]
-  const drops = [
-    `M${counter.x + counter.w / 2} ${TOP + BOX_H} V${TOP + ROW}`,
-    ...[midOf(counter, rom), midOf(rom, envelope)].map(
-      m => `M${m} ${busY} V${mid}`,
-    ),
+  const drops: [string, string][] = [
+    ['vibrato', `M${counter.x + counter.w / 2} ${TOP + BOX_H} V${TOP + ROW}`],
+    ['addr bus', `M${midOf(counter, rom)} ${busY} V${mid}`],
+    ['data bus', `M${midOf(rom, envelope)} ${busY} V${mid}`],
   ]
   return (
     <>
@@ -192,8 +191,16 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
                 look={i < 2 ? 'plain' : flow}
               />
             ))}
-            {drops.map(d => (
-              <Wire key={d} d={d} look="dash" />
+            {drops.map(([opens, d]) => (
+              <Bend
+                key={opens}
+                name={`${opens} wire`}
+                opens={opens}
+                pick={pick}
+                hit={d}
+              >
+                <Wire d={d} look="dash" />
+              </Bend>
             ))}
             {boxes.map(b => (
               <BoxView

@@ -9,7 +9,14 @@ import {
   type BoxSpec,
   card,
 } from './diagram.ts'
-import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
+import {
+  Bend,
+  BoxRows,
+  BoxView,
+  Diagram,
+  Label,
+  Wire,
+} from './DiagramParts.tsx'
 
 const KEYS = [
   'ampMix',
@@ -116,6 +123,12 @@ export function AmpPathDiagram() {
   const top = boxes[0]!.y
   const speaker = boxes[3]!
   const howling = r.value('ampMicro') > 0
+  const returnWire = `M${speaker.x + speaker.w / 2} ${top} V${RETURN_Y} H${boxW / 2} V${top}`
+  const labelPick = (id: string) => ({
+    id,
+    selected: pick.selected === id,
+    onSelect: pick.toggle,
+  })
   return (
     <>
       <div className={chip.chips}>
@@ -134,19 +147,26 @@ export function AmpPathDiagram() {
                   look={off ? 'plain' : 'on'}
                 />
               ))}
-              <Wire
-                arrow={arrow}
-                d={`M${speaker.x + speaker.w / 2} ${top} V${RETURN_Y} H${boxW / 2} V${top}`}
-                look={howling ? 'alarm' : 'dash'}
-              />
-              <Label
-                x={WIDTH / 2}
-                y={RETURN_Y - 1}
-                anchor="middle"
-                on={howling}
+              <Bend
+                name="microphonic return"
+                opens="preamp"
+                pick={pick}
+                hit={returnWire}
               >
-                microphonic return
-              </Label>
+                <Wire
+                  arrow={arrow}
+                  d={returnWire}
+                  look={howling ? 'alarm' : 'dash'}
+                />
+                <Label
+                  x={WIDTH / 2}
+                  y={RETURN_Y - 1}
+                  anchor="middle"
+                  on={howling}
+                >
+                  microphonic return
+                </Label>
+              </Bend>
               {boxes.map(b => (
                 <BoxView
                   key={b.name}
@@ -192,7 +212,12 @@ export function AmpPathDiagram() {
                 }
                 opacity={off ? 0.55 : 1}
               />
-              <Label x={PLOT.right} y={plotY(stack(HZ.high)) - 4} anchor="end">
+              <Label
+                x={PLOT.right}
+                y={plotY(stack(HZ.high)) - 4}
+                anchor="end"
+                pick={labelPick('tone stack')}
+              >
                 tone stack
               </Label>
               <Label
@@ -202,6 +227,7 @@ export function AmpPathDiagram() {
                 )}
                 y={plotY(cabDb(cab, loudest)) - 4}
                 anchor="middle"
+                pick={labelPick('speaker')}
               >
                 speaker
               </Label>

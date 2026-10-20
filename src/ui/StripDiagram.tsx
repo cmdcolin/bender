@@ -8,7 +8,14 @@ import {
   type BoxSpec,
   card,
 } from './diagram.ts'
-import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
+import {
+  Bend,
+  BoxRows,
+  BoxView,
+  Diagram,
+  Label,
+  Wire,
+} from './DiagramParts.tsx'
 
 const BOX_H = boxHeight('')
 const TOP = 24
@@ -64,6 +71,15 @@ export function StripDiagram({ track }: { track: Track }) {
   const touched = (...ns: Suffix[]) => r.touched(...ns.map(key))
 
   const listens = Math.round(val('In'))
+  const recWires = [
+    `M${centre(EQ_X)} ${TOP + BOX_H} V${BOTTOM}`,
+    `M${EQ_X + W} ${LOW_MID} H${LOOP_X}`,
+  ]
+  const cueWires = [
+    `M${LOOP_X + LOOP_W} ${LOW_MID} H${CUE_X}`,
+    `M${centre(CUE_X)} ${BOTTOM} V${(TOP + BOX_H + BOTTOM) / 2} H${centre(PAN_X)} V${TOP + BOX_H}`,
+  ]
+  const sendWire = `M${centre(FADER_X)} ${TOP} V6`
   const boxes: BoxSpec[] = [
     {
       x: IN_X,
@@ -186,30 +202,39 @@ export function StripDiagram({ track }: { track: Track }) {
                   d={`M${x + W} ${MID} H${x + STEP}`}
                 />
               ))}
-              <Wire
-                arrow={arrow}
-                d={`M${centre(EQ_X)} ${TOP + BOX_H} V${BOTTOM}`}
-                look={recording}
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${EQ_X + W} ${LOW_MID} H${LOOP_X}`}
-                look={recording}
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${LOOP_X + LOOP_W} ${LOW_MID} H${CUE_X}`}
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${centre(CUE_X)} ${BOTTOM} V${(TOP + BOX_H + BOTTOM) / 2} H${centre(PAN_X)} V${TOP + BOX_H}`}
-              />
+              <Bend
+                name="rec wires"
+                opens="rec"
+                pick={pick}
+                hit={recWires.join(' ')}
+              >
+                {recWires.map(d => (
+                  <Wire key={d} arrow={arrow} d={d} look={recording} />
+                ))}
+              </Bend>
+              <Bend
+                name="cue wires"
+                opens="cue"
+                pick={pick}
+                hit={cueWires.join(' ')}
+              >
+                {cueWires.map(d => (
+                  <Wire key={d} arrow={arrow} d={d} />
+                ))}
+              </Bend>
               <Wire
                 arrow={arrow}
                 d={`M${LOOP_X + LOOP_W / 2} ${BOTTOM + BOX_H} V${RETURN_Y} H${centre(IN_X)} V${TOP + BOX_H}`}
                 look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
               />
-              <Wire arrow={arrow} d={`M${centre(FADER_X)} ${TOP} V6`} />
+              <Bend
+                name="aux send wire"
+                opens="send"
+                pick={pick}
+                hit={sendWire}
+              >
+                <Wire arrow={arrow} d={sendWire} />
+              </Bend>
               <Label
                 x={centre(FADER_X) + 6}
                 y={13}

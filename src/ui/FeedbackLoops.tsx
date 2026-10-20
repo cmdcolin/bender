@@ -8,7 +8,14 @@ import {
   type BoxSpec,
   card,
 } from './diagram.ts'
-import { BoxRows, BoxView, Diagram, Label, Wire } from './DiagramParts.tsx'
+import {
+  Bend,
+  BoxRows,
+  BoxView,
+  Diagram,
+  Label,
+  Wire,
+} from './DiagramParts.tsx'
 import styles from './FeedbackLoops.module.css'
 
 const STRIPS = [
@@ -97,6 +104,7 @@ export function FeedbackLoops() {
         : undefined
       : boxes.find(b => b.id === pick.selected)?.keys
   const arcStyle = { opacity: 0.25 + r.value('fbCross') * 0.6 }
+  const arcs = [bend(0, 1, 20), bend(1, 2, 20), bend(2, 0, 34)]
 
   return (
     <>
@@ -149,21 +157,21 @@ export function FeedbackLoops() {
               ))}
               {crossed && (
                 <>
-                  <path
-                    d={bend(0, 1, 20)}
-                    className={styles.cross}
-                    style={arcStyle}
-                  />
-                  <path
-                    d={bend(1, 2, 20)}
-                    className={styles.cross}
-                    style={arcStyle}
-                  />
-                  <path
-                    d={bend(2, 0, 34)}
-                    className={styles.cross}
-                    style={arcStyle}
-                  />
+                  <Bend
+                    name="cross wires"
+                    opens="cross"
+                    pick={pick}
+                    hit={arcs.join(' ')}
+                  >
+                    {arcs.map(d => (
+                      <path
+                        key={d}
+                        d={d}
+                        className={styles.cross}
+                        style={arcStyle}
+                      />
+                    ))}
+                  </Bend>
                   <Label
                     x={-50}
                     y={MID + 3}

@@ -7,7 +7,7 @@ import {
   useSelectedBox,
   type BoxSpec,
 } from './diagram.ts'
-import { BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
+import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
 import { VOICE_IDS, VOICE_PICKS } from './fmVoicePicks.ts'
 
@@ -176,6 +176,10 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const edge = (from: BoxSpec, to: BoxSpec) =>
     `M${from.x + from.w} ${mid} H${to.x}`
   const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
+  const clockDrops = drops.map(dx => `M${dx} ${TOP + BOX_H} V${TOP + ROW}`)
+  const dieDrops = drops.map(
+    dx => `M${dx} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`,
+  )
   const part = open && PARTS[open.id!]
   const close = zoomed ? <FmVoiceDiagram pick={pick} /> : part && zoom?.(part)
   return (
@@ -191,21 +195,23 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
                 look={i === 0 ? 'plain' : flow}
               />
             ))}
-            {drops.map(drop => (
-              <Wire
-                key={`clock${drop}`}
-                arrow={arrow}
-                d={`M${drop} ${TOP + BOX_H} V${TOP + ROW}`}
-                look="dash"
-              />
-            ))}
-            {drops.map(drop => (
-              <Wire
-                key={`die${drop}`}
-                arrow={arrow}
-                d={`M${drop} ${TOP + ROW * 2} V${TOP + ROW + BOX_H}`}
-                look="dash"
-              />
+            {(
+              [
+                ['clocks', 'clock wires', clockDrops],
+                ['die', 'die wires', dieDrops],
+              ] as const
+            ).map(([opens, name, ds]) => (
+              <Bend
+                key={opens}
+                name={name}
+                opens={opens}
+                pick={pick}
+                hit={ds.join(' ')}
+              >
+                {ds.map(d => (
+                  <Wire key={d} arrow={arrow} d={d} look="dash" />
+                ))}
+              </Bend>
             ))}
             {boxes.map(b => (
               <BoxView

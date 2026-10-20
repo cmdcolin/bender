@@ -199,6 +199,8 @@ export function MonoPathDiagram({
   const filterWire = `M${mod.x + mod.w} ${modMid} H${filter.x + filter.w / 2} V${top + BOX_H}`
   const loopWire = `M${back} ${MID} V${over} H${loopX} V${top}`
   const noiseWire = `M${noiseX} ${over - 12} V${top}`
+  const tapWire = `M${tap} ${oscMid(2)} V${modMid} H${mod.x}`
+  const cardWire = `M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`
   const syncWire = `M${syncX} ${OSC_Y[0]! + OSC_H} V${OSC_Y[1]}`
   const fmWire = `M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`
   return (
@@ -261,11 +263,10 @@ export function MonoPathDiagram({
                 noise
               </Label>
             </Bend>
-            <Wire
-              arrow={arrow}
-              d={`M${tap} ${oscMid(2)} V${modMid} H${mod.x}`}
-            />
-            <Dot x={tap} y={oscMid(2)} />
+            <Bend name="osc 3 tap" opens="modulation" pick={pick} hit={tapWire}>
+              <Wire arrow={arrow} d={tapWire} />
+              <Dot x={tap} y={oscMid(2)} />
+            </Bend>
             <Bend
               name="pitch modulation"
               opens="modulation"
@@ -290,11 +291,14 @@ export function MonoPathDiagram({
                 look={wire(up('monoModFilter'))}
               />
             </Bend>
-            <Wire
-              arrow={arrow}
-              d={`M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`}
-              look="dash"
-            />
+            <Bend
+              name="voice card wire"
+              opens="voice card"
+              pick={pick}
+              hit={cardWire}
+            >
+              <Wire arrow={arrow} d={cardWire} look="dash" />
+            </Bend>
             <Pressable
               name="oscillators"
               selected={frameFrame}

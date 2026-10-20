@@ -25,13 +25,3 @@
 .chips svg rect.inner[rx='3'] {
   fill: var(--surface);
 }
-
-.chips svg .tag text {
-  text-decoration: underline dotted;
-  text-underline-offset: 2px;
-}
-
-.chips svg .tag:hover text,
-.chips svg .tag[aria-pressed='true'] text {
-  text-decoration: underline solid;
-}

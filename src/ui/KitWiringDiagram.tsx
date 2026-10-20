@@ -13,8 +13,9 @@ import {
   useReadings,
   useSelectedBox,
   card,
+  type BoxPick,
 } from './diagram.ts'
-import { BoxRows, Diagram, Dot, Wire } from './DiagramParts.tsx'
+import { Bend, BoxRows, Diagram, Dot, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -154,10 +155,12 @@ function RunWire({
   run,
   lane,
   arrow,
+  pick,
 }: {
   run: Run
   lane: number
   arrow: string
+  pick: BoxPick
 }) {
   const x = VOICE_X - 12 - lane * LANE_STEP
   const ring = run.kind === 'ring'
@@ -166,10 +169,11 @@ function RunWire({
   const ys = [startY, ...ends]
   const pedal = run.kind === 'pedal'
   const look = pedal ? 'plain' : 'alarm'
-  return (
+  const spine = `${ring ? `M${VOICE_X} ${startY} H${x} ` : ''}M${x} ${Math.min(...ys)} V${Math.max(...ys)}`
+  const drawn = (
     <>
       <path
-        d={`${ring ? `M${VOICE_X} ${startY} H${x} ` : ''}M${x} ${Math.min(...ys)} V${Math.max(...ys)}`}
+        d={spine}
         className={pedal ? styles.trace : styles.jumper}
         strokeDasharray={ring ? undefined : '3 2'}
       />
@@ -196,6 +200,18 @@ function RunWire({
         ),
       )}
     </>
+  )
+  if (pedal) return drawn
+  const opens = ring ? 'ring trigger' : 'choke'
+  return (
+    <Bend
+      name={`${opens} wire`}
+      opens={opens}
+      pick={pick}
+      hit={`${spine} ${ends.map(y => `M${x} ${y} H${VOICE_X}`).join(' ')}`}
+    >
+      {drawn}
+    </Bend>
   )
 }
 
@@ -285,30 +301,37 @@ export function KitWiringDiagram() {
                 </g>
               ))}
               {crossing &&
-                wiring.map((from, v) =>
-                  from === v ? null : sampled ? (
-                    <Wire
+                wiring.map((from, v) => {
+                  if (from === v) return null
+                  const d = `M${voiceRight} ${rowY(from)} L${AMPS_X} ${rowY(v)}`
+                  return (
+                    <Bend
                       key={v}
-                      arrow={arrow}
-                      d={`M${voiceRight} ${rowY(from)} L${AMPS_X} ${rowY(v)}`}
-                      look="dash"
-                    />
-                  ) : (
-                    <Bodge
-                      key={v}
-                      x1={voiceRight}
-                      y1={rowY(from)}
-                      x2={AMPS_X}
-                      y2={rowY(v)}
-                    />
-                  ),
-                )}
+                      name="cross-patch wire"
+                      opens="cross-patch"
+                      pick={pick}
+                      hit={d}
+                    >
+                      {sampled ? (
+                        <Wire arrow={arrow} d={d} look="dash" />
+                      ) : (
+                        <Bodge
+                          x1={voiceRight}
+                          y1={rowY(from)}
+                          x2={AMPS_X}
+                          y2={rowY(v)}
+                        />
+                      )}
+                    </Bend>
+                  )
+                })}
               {all.map((run, i) => (
                 <RunWire
                   key={`${run.kind}${run.from}`}
                   run={run}
                   lane={laneOf[i]!}
                   arrow={arrow}
+                  pick={pick}
                 />
               ))}
               <Wire

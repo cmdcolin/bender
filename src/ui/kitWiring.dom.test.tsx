@@ -78,3 +78,16 @@ test('each patch, and the trigger lines and amps, open their own knobs', () => {
   press('trigger lines')
   expect(screen.getByText('Retrigger')).not.toBeNull()
 })
+
+test('a soldered wire opens the patch it belongs to', () => {
+  open()
+  set({ drumChoke: 2, drumCross: 1, drumCrossAmt: 0.5 })
+  fireEvent.click(
+    screen.getAllByRole('button', { name: 'choke wire controls' })[0]!,
+  )
+  expect(screen.getByText('Choke')).not.toBeNull()
+  fireEvent.click(
+    screen.getAllByRole('button', { name: 'cross-patch wire controls' })[0]!,
+  )
+  expect(screen.getByText('Cross bleed')).not.toBeNull()
+})
