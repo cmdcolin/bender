@@ -188,6 +188,16 @@ test('a box links to the anchor the panel renders, and the shelf does not', () =
   ).not.toContain('href=')
 })
 
+test('doors name what they open, mark the open stage and come before wires', () => {
+  const svg = serialize(drawMap(buildMap(DEFAULT_CONTROLS, { open: 'Wraith' })))
+  expect(svg).toContain('aria-label="Wraith controls"')
+  const current = [...svg.matchAll(/data-door="([^"]+)"[^>]*aria-current/g)]
+  expect(new Set(current.map(m => m[1]))).toEqual(new Set(['Wraith']))
+  expect(svg.indexOf('data-door="Wraith"')).toBeLessThan(
+    svg.indexOf('data-wire="mix-path"'),
+  )
+})
+
 test('touched controls show a count', () => {
   const map = buildMap({ ...DEFAULT_CONTROLS, ringMix: 0.5, ringHz: 100 })
   expect(box(map, 'Ring_mod')?.count).toBe(2)

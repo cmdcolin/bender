@@ -447,6 +447,7 @@ export interface ChainMap {
   height: number
   palette: Palette
   links: boolean
+  open?: string
 }
 
 export interface Options {
@@ -1645,6 +1646,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
     height: Math.max(...nodes.map(n => n.y + n.h)) + MARGIN,
     palette: k,
     links: live,
+    open: o.open,
   }
 }
 
@@ -1806,9 +1808,25 @@ const BEND_MIX: Record<string, keyof Controls> = Object.fromEntries(
 
 const baseline = (y: number, h: number, size: number) => y + h / 2 + size * 0.35
 
-function door(inner: El[], name: string | undefined, links: boolean): El[] {
+function door(
+  inner: El[],
+  name: string | undefined,
+  links: boolean,
+  current = false,
+): El[] {
   if (!name || !links) return inner
-  return [el('a', { href: `#${groupAnchor(name)}`, 'data-door': name }, inner)]
+  return [
+    el(
+      'a',
+      {
+        href: `#${groupAnchor(name)}`,
+        'data-door': name,
+        'aria-label': `${name} controls`,
+        ...(current && { 'aria-current': 'true' }),
+      },
+      inner,
+    ),
+  ]
 }
 
 function words(
@@ -2197,6 +2215,7 @@ export function drawNode(
         ],
         n.door,
         links,
+        n.open,
       ),
     ])
   }
@@ -2208,6 +2227,7 @@ export function drawNode(
         [words(n.label, n.x + PAD_X, n.y + CAP_H - 2, SMALL, k.dim, 'start')],
         n.door,
         links,
+        n.open,
       ),
     ])
   }
@@ -2252,6 +2272,7 @@ export function drawNode(
         ],
         n.door,
         links,
+        n.open,
       ),
       ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
     ])
@@ -2291,7 +2312,7 @@ export function drawNode(
       'g',
       { className: n.id === 'supply' ? 'node rail-chip' : 'node' },
       [
-        ...door(inner, n.door, links),
+        ...door(inner, n.door, links, n.open),
         ...touchedMark(
           n.door ?? n.label,
           n.count,
@@ -2332,12 +2353,12 @@ export function drawNode(
     ...benchedMark(n, k),
   ]
   return el('g', { className: 'node' }, [
-    ...door(inner, n.door, links),
+    ...door(inner, n.door, links, n.open),
     ...touchedMark(n.door ?? n.label, n.count, n.x + n.w, n.y, n.h, k),
   ])
 }
 
-function drawWire(w: MapWire, links: boolean): El {
+function drawWire(w: MapWire, links: boolean, open?: string): El {
   const parts: El[] = [
     el('path', {
       className: 'line',
@@ -2378,10 +2399,12 @@ function drawWire(w: MapWire, links: boolean): El {
   return el(
     'g',
     { className: 'wire', 'data-wire': w.id },
-    door(parts, w.door, links),
+    door(parts, w.door, links, w.door === open),
   )
 }
 
+// Boxes come before wires so Tab reaches a stage before the wires round it.
+// The supply rail alone stays underneath, since it runs behind the boxes.
 export function drawMap(map: ChainMap): El {
   const meter = Math.min(
     ...map.nodes.filter(n => n.level !== undefined).map(n => n.w - PAD_X * 2),
@@ -2396,8 +2419,13 @@ export function drawMap(map: ChainMap): El {
       fontFamily: 'Helvetica, Arial, sans-serif',
     },
     [
-      ...map.wires.map(w => drawWire(w, map.links)),
+      ...map.wires
+        .filter(w => w.id === 'rail')
+        .map(w => drawWire(w, map.links, map.open)),
       ...map.nodes.map(n => drawNode(n, map.palette, map.links, meter)),
+      ...map.wires
+        .filter(w => w.id !== 'rail')
+        .map(w => drawWire(w, map.links, map.open)),
     ],
   )
 }
