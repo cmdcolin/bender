@@ -1,5 +1,7 @@
 import { IDX } from '../../engine/params.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
+import { Crossings } from '../util/crossings.ts'
 import { octaves, wrap1 } from '../util/pitch.ts'
 import { flushDenormal } from '../util/softclip.ts'
 
@@ -56,6 +58,7 @@ export class ChaosOsc implements Stage {
   private phaseB = 0
   private rail = 1
   private stalled = false
+  private micEdges = new Crossings()
 
   private readonly sr: number
 
@@ -78,7 +81,9 @@ export class ChaosOsc implements Stage {
     const baseStarve = p[IDX.oscStarve]!
     const modStarve = ctx.mod.read(DEST.oscStarve)
     const modHz = ctx.mod.read(DEST.oscHz)
-    const micFm = Math.round(p[IDX.micPatch]!) === 2
+    const micJack = Math.round(p[IDX.micPatch]!)
+    const micFm = micJack === MIC.oscFm
+    const micSync = micJack === MIC.oscSync
     const fbFm = ctx.fbDest === 1
 
     for (let i = 0; i < io.n; i++) {
@@ -104,6 +109,7 @@ export class ChaosOsc implements Stage {
         if (fbFm) hz += ctx.fb[i]! * 1800
         hz = Math.min(Math.max(hz, 0), this.sr * 0.45)
         this.phaseA = wrap1(this.phaseA + hz / this.sr)
+        if (micSync && this.micEdges.rise(ctx.mic[i]!)) this.phaseA = 0
         const amp = Math.min(Math.max((this.rail - 0.12) / 0.6, 0), 1)
         out = shape(this.phaseA, mode) * amp
       }
@@ -142,5 +148,6 @@ export class ChaosOsc implements Stage {
     this.phaseB = 0
     this.rail = 1
     this.stalled = false
+    this.micEdges.reset()
   }
 }

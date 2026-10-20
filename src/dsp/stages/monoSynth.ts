@@ -1,5 +1,6 @@
 import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { KEY_BIAS, SEQ_TO_MONO, voiceMask } from '../trigbus.ts'
@@ -14,6 +15,8 @@ const OUT_TRIM = 0.6
 const FALLBACK_STEP_S = 0.125
 const CUTOFF_LANE_OCTAVES = 4
 const QUEUE_MAX = 32
+// The mic on the mixer's external input, level with a full oscillator.
+const MIC_IN_GAIN = 1.5
 
 // The voice card of a three-oscillator monosynth, wired onto the toy's supply
 // and its gate line. Keys from its own bed and a controller arrive with their
@@ -38,6 +41,7 @@ export class MonoSynth implements Stage {
   private from = 0
   private pitchLane: Float32Array | null = null
   private cutLane: Float32Array | null = null
+  private ext: Float32Array | null = null
 
   private readonly sr: number
   private readonly rail: ToyRail
@@ -145,6 +149,9 @@ export class MonoSynth implements Stage {
     v.droop = p[IDX.monoDroop]!
     v.dacBit = Math.round(p[IDX.monoDacBit]!) - 1
     v.sag = p[IDX.monoSag]!
+    const micIn = Math.round(p[IDX.micPatch]!) === MIC.growlerIn
+    v.ext = micIn ? MIC_IN_GAIN : 0
+    this.ext = micIn ? ctx.mic : null
   }
 
   private strike(
@@ -173,7 +180,7 @@ export class MonoSynth implements Stage {
       this.buf,
       this.from,
       to,
-      null,
+      this.ext,
       this.pitchLane,
       this.cutLane,
     )

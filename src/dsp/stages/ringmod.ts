@@ -1,4 +1,5 @@
 import { IDX, SOURCE_TAPS, type SourceTap } from '../../engine/params.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { KEY_BIAS } from '../trigbus.ts'
 import { DelayLine } from '../util/delayline.ts'
@@ -159,7 +160,7 @@ export class RingMod implements Stage {
     const stepK = TRACK_STEP[track] ?? 0
     const baseMix = p[IDX.ringMix]!
     const mixMod = ctx.mod.read(DEST.ringMix)
-    const micCarrier = Math.round(p[IDX.micPatch]!) === 4
+    const micCarrier = Math.round(p[IDX.micPatch]!) === MIC.ringCarrier
     // The mic keeps precedence: a shout patched onto the carrier is a wire
     // somebody put there by hand, and this is a choice off a list.
     const from = Math.round(p[IDX.ringFrom]!)

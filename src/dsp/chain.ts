@@ -7,6 +7,7 @@ import {
   TAP_MIC,
 } from '../engine/params.ts'
 import { pedalOrderAt } from '../pedals.ts'
+import { MIC } from './micJacks.ts'
 import { DEST, ModBus, SOURCE_LEVEL_DEST } from './modbus.ts'
 import { BLOCK, type Ctx, type Stage, type StereoBlock } from './stage.ts'
 import { RING_FROM_TAP } from './stages/ringmod.ts'
@@ -479,7 +480,7 @@ export class Chain {
         io.r[i] = this.fbRetR[i]!
       }
     }
-    if (Math.round(p[IDX.micPatch]!) === 0) {
+    if (Math.round(p[IDX.micPatch]!) === MIC.mix) {
       for (let i = 0; i < n; i++) {
         io.l[i]! += ctx.mic[i]!
         io.r[i]! += ctx.mic[i]!

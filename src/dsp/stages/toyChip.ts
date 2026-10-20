@@ -12,10 +12,13 @@ import {
   TUNE_STEPS,
 } from '../../tune.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
 import { voiceMask } from '../trigbus.ts'
 import { Burst } from '../util/burst.ts'
+import { CrossingRate } from '../util/crossings.ts'
 import { Drunk } from '../util/drift.ts'
+import { coef, Follower } from '../util/follower.ts'
 import { A3_HZ, octaves, wrap1 } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
 import { flushDenormal, softclip } from '../util/softclip.ts'
@@ -205,6 +208,12 @@ const CROSS_OCTAVES = 4.5
 // so it goes in with more gain.
 const FM_CLOCK_GAIN = 4
 const FM_CLOCK_OCTAVES = 4
+// The mic on the clock pin: a voice crossing zero 220 times a second runs the
+// chip at stock speed. In silence the clock drops to 1/256 and the toy clicks.
+const MIC_CLOCK_FLOOR = 1 / 256
+const MIC_CLOCK_TOP = 16
+// The mic on a bus: its loudness, as a binary word XORed onto the lines.
+const MIC_BUS_GAIN = 4
 
 // A latch between the voices and the output pin, strobed off the melody's pitch
 // divider: from five octaves over the note at the bottom of the knob to three
@@ -469,6 +478,12 @@ export class ToyChip implements Stage {
   private outAddr = -1
   private outData = -1
   private outBit = 0
+  private micRate: CrossingRate
+  private micEnv = new Follower()
+  private readonly micAttack: number
+  private readonly micRelease: number
+  private micAddr = 0
+  private micData = 0
   // The effect button sounding, or -1, and whether a finger is still on it: a
   // held button runs its program again each time it ends.
   private sfx = -1
@@ -501,6 +516,9 @@ export class ToyChip implements Stage {
     this.addrBus = new Bus(ROM_ADDR_LINES, seed ^ 0xadd4)
     this.crossLpA = Math.exp((-2 * Math.PI * CROSS_LP_HZ) / sr)
     this.crossHpA = Math.exp((-2 * Math.PI * CROSS_HP_HZ) / sr)
+    this.micRate = new CrossingRate(sr)
+    this.micAttack = coef(0.002, sr)
+    this.micRelease = coef(0.08, sr)
     this.bankBus = new Bus(BANK_LINES, seed ^ 0xba4c)
     this.divBus = new Bus(DIV_LINES, seed ^ 0xd1f)
   }
@@ -747,6 +765,7 @@ export class ToyChip implements Stage {
     }
     if (this.outAddr >= 0)
       addr = (addr & ~(1 << this.outAddr)) | (this.outBit << this.outAddr)
+    addr ^= this.micAddr
     return (
       this.addrBus.read(addr, this.addrLine, this.addrFault, this.busCut) %
       this.len
@@ -801,6 +820,7 @@ export class ToyChip implements Stage {
     }
     if (this.outData >= 0)
       word = (word & ~(1 << this.outData)) | (this.outBit << this.outData)
+    word ^= this.micData
     // Both banks come back in the memory's vocabulary, so nothing downstream
     // has to know which of the two it is reading. The ROM's own spelling — -1
     // for a rest, -2 for a hold — only works because its steps never go below
@@ -1053,7 +1073,11 @@ export class ToyChip implements Stage {
     const tone = TONE_DUTY[Math.round(p[IDX.chipTone]!)] ?? TONE_DUTY[0]!
     // bias bend drags the duty cycle up from whatever the tone selector taps
     const duty = spot === 3 ? Math.min(tone + pot * 0.45, 0.98) : tone
-    const micToRail = Math.round(p[IDX.micPatch]!) === 1
+    const micJack = Math.round(p[IDX.micPatch]!)
+    const micToRail = micJack === MIC.toyRail
+    const micClock = micJack === MIC.toyClock
+    if (micJack !== MIC.toyAddr) this.micAddr = 0
+    if (micJack !== MIC.toyData) this.micData = 0
     const fbToRail = ctx.fbDest === 2
     const modClock = ctx.mod.read(DEST.chipClock)
     // A wire onto the supply itself. Everything else on this board is powered
@@ -1235,6 +1259,12 @@ export class ToyChip implements Stage {
           fmClock * FM_CLOCK_OCTAVES * softclip(this.fmLp - this.fmHp),
         )
       }
+      if (micClock) {
+        const hz = this.micRate.process(ctx.mic[i]!)
+        clock *= Math.min(Math.max(hz / A3_HZ, MIC_CLOCK_FLOOR), MIC_CLOCK_TOP)
+      }
+      if (micJack === MIC.toyAddr || micJack === MIC.toyData)
+        this.micOnBus(tune, ctx.mic[i]!, micJack)
       // Flat cells slow the divider itself, so the song runs late as well as low.
       const timing = clock * rail.clockFactor
       this.stepHzNow =
@@ -1629,6 +1659,24 @@ export class ToyChip implements Stage {
   private driveBus(tune: number[], bit: number) {
     if (bit === this.outBit) return
     this.outBit = bit
+    this.reread(tune)
+  }
+
+  private micOnBus(tune: number[], x: number, jack: number) {
+    const lines = jack === MIC.toyAddr ? ROM_ADDR_LINES : ROM_DATA_LINES
+    const env = this.micEnv.process(x, this.micAttack, this.micRelease)
+    const top = (1 << lines) - 1
+    const word = Math.min(Math.floor(env * MIC_BUS_GAIN * top), top)
+    const was = jack === MIC.toyAddr ? this.micAddr : this.micData
+    if (word === was) return
+    if (jack === MIC.toyAddr) this.micAddr = word
+    else this.micData = word
+    this.reread(tune)
+  }
+
+  // A line on either bus changed under a step already playing, so the step is
+  // read again and the note jumps to whatever comes back.
+  private reread(tune: number[]) {
     const step = this.readRom(tune, this.pos)
     if (isNote(step)) this.note = step
     else if (step === REST) this.note = REST
@@ -1692,6 +1740,10 @@ export class ToyChip implements Stage {
   }
 
   panic() {
+    this.micRate.reset()
+    this.micEnv.reset()
+    this.micAddr = 0
+    this.micData = 0
     this.dataBus.reset()
     this.addrBus.reset()
     this.bankBus.reset()

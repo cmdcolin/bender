@@ -1,7 +1,8 @@
 import { IDX } from '../../engine/params.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { N_DRUM_VOICES, voiceMask } from '../trigbus.ts'
-import { Transient } from '../util/follower.ts'
+import { coef, Follower, Transient } from '../util/follower.ts'
 import { lpCoef, OnePoleLP } from '../util/onepole.ts'
 import { octaves } from '../util/pitch.ts'
 import { mulberry32, type Rng } from '../util/rng.ts'
@@ -37,6 +38,11 @@ const HISS_COLOR = 0.35
 // pulled back from the floor.
 const HOLD_HZ = 10
 const HOLD_MAX = 2
+
+// The mic on the capstan motor: the tape runs at the speed knob's rate times
+// how loud you are, up to double, and stops in silence.
+const MOTOR_GAIN = 6
+const MOTOR_TOP = 2
 
 // The smallest window the handles can pinch the loop down to. Two frames is a
 // tone rather than a loop, and this board is happy to make one — what it must
@@ -94,6 +100,9 @@ export class Sampler implements Stage {
   private pos = 0
   private playing = true
   private micTrig: Transient
+  private readonly motor = new Follower()
+  private readonly motorAttack: number
+  private readonly motorRelease: number
   private readonly wear = new OnePoleLP()
   private readonly hissColor = new OnePoleLP()
   private envOld = 0
@@ -128,6 +137,8 @@ export class Sampler implements Stage {
   constructor(sr: number) {
     this.sr = sr
     this.micTrig = new Transient(sr)
+    this.motorAttack = coef(0.03, sr)
+    this.motorRelease = coef(0.25, sr)
     this.blank = new Float32Array(Math.round(MAX_REEL_S * sr))
     this.undoBuf = new Float32Array(this.blank.length)
   }
@@ -290,6 +301,7 @@ export class Sampler implements Stage {
     const n = buf.length
     const level = p[IDX.sampleLevel]!
     const speed = p[IDX.sampleSpeed]!
+    const motor = Math.round(p[IDX.micPatch]!) === MIC.tapeMotor
     const trig = Math.round(p[IDX.sampleTrig]!)
     const oneShot = Math.round(p[IDX.sampleMode]!) === 1
     const erase = p[IDX.loopErase]!
@@ -396,8 +408,14 @@ export class Sampler implements Stage {
       // wire on a capstan does: it drags the transport the tape is already on,
       // so a starve dives the pitch and leaves the direction alone — and a
       // motor parked at the stop stays parked however hard anything pushes it.
-      const next =
-        this.pos + (modSpeed ? speed * octaves(modSpeed[i]! * 2) : speed)
+      let step = modSpeed ? speed * octaves(modSpeed[i]! * 2) : speed
+      if (motor)
+        step *= Math.min(
+          this.motor.process(ctx.mic[i]!, this.motorAttack, this.motorRelease) *
+            MOTOR_GAIN,
+          MOTOR_TOP,
+        )
+      const next = this.pos + step
       if (this.taking && next >= to) this.taking = false
       if (oneShot && (next >= to || next < from)) this.playing = false
       this.pos = from + ((((next - from) % span) + span) % span)
@@ -415,6 +433,7 @@ export class Sampler implements Stage {
     this.playing = true
     this.binAt = -1
     this.micTrig.reset()
+    this.motor.reset()
     this.wear.reset()
     this.hissColor.reset()
     this.envOld = 0

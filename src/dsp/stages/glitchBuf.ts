@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { Burst } from '../util/burst.ts'
 import { Transient } from '../util/follower.ts'
@@ -64,7 +65,7 @@ export class GlitchBuf implements Stage {
     )
     const baseProb = p[IDX.glitchProb]!
     const mod = ctx.mod.read(DEST.glitch)
-    const micTrig = Math.round(p[IDX.micPatch]!) === 6
+    const micTrig = Math.round(p[IDX.micPatch]!) === MIC.glitchTrig
     const cluster = p[IDX.faultCluster]!
     const n = this.bufL.length
 

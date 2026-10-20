@@ -12,6 +12,7 @@ import {
 } from '../../drums.ts'
 import { IDX, packParams } from '../../engine/params.ts'
 import { Bus, FAULT_NAMES } from '../bus.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST, hop, ModBus } from '../modbus.ts'
 import { BLOCK } from '../stage.ts'
 import { ToyRail } from '../toyRail.ts'
@@ -1148,7 +1149,7 @@ export class ToyDrum implements Stage {
     const cymTone = Math.min(Math.max(p[IDX.drumCymTone]!, 0), 1)
     const baseRetrig = p[IDX.drumRetrigHz]!
     const mod = ctx.mod.read(DEST.retrig)
-    const micTrig = Math.round(p[IDX.micPatch]!) === 5
+    const micTrig = Math.round(p[IDX.micPatch]!) === MIC.drumTrig
     const keyTrig = Math.round(p[IDX.trigToDrum]!)
     const cross = Math.round(p[IDX.drumCross]!)
     const baseBleed = cross === 0 ? 0 : p[IDX.drumCrossAmt]!

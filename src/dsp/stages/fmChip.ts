@@ -2,6 +2,7 @@ import { ACCENT_GAIN } from '../../drums.ts'
 import { IDX } from '../../engine/params.ts'
 import { snap } from '../../scale.ts'
 import { Bus, FAULT_NAMES, Strobe } from '../bus.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST, hop } from '../modbus.ts'
 import { KEY_BIAS, N_DRUM_VOICES, SEQ_TO_FM, voiceMask } from '../trigbus.ts'
 import { A3_HZ, octaves } from '../util/pitch.ts'
@@ -186,6 +187,8 @@ const ADDER_BITS = [0, 11, 10, 9, 8, 7]
 // How far the toy's output swings the bus: a tune at its stock level spans most
 // of the byte.
 const TOY_BUS_GAIN = 2
+// The mic on the low six data lines, through the same converter.
+const MIC_BUS_BITS = 6
 
 /** The table's word, and the count a full-scale magnitude comes out as. */
 const WAVE_DATA_BITS = 8
@@ -536,6 +539,7 @@ export class FmChip implements Stage {
   private busData = 0
   private toyBits = 0
   private toyHeld = 0
+  private micHeld = 0
 
   private readonly sr: number
   private readonly rail: ToyRail
@@ -570,6 +574,15 @@ export class FmChip implements Stage {
       Math.round(clamp01(0.5 + x * TOY_BUS_GAIN) * 0xff) >> (8 - this.toyBits)
     if (level === this.toyHeld) return
     this.toyHeld = level
+    this.commit(this.busAddr, (this.busData & ~mask) | level)
+  }
+
+  private micOnBus(x: number) {
+    const mask = (1 << MIC_BUS_BITS) - 1
+    const level =
+      Math.round(clamp01(0.5 + x * TOY_BUS_GAIN) * 0xff) >> (8 - MIC_BUS_BITS)
+    if (level === this.micHeld) return
+    this.micHeld = level
     this.commit(this.busAddr, (this.busData & ~mask) | level)
   }
 
@@ -1336,6 +1349,7 @@ export class FmChip implements Stage {
     this.adderMask = adder > 0 ? (1 << ADDER_BITS[adder]!) - 1 : 0
     this.toyBits = hop(p[IDX.fmToyBus]!, 9, bay.read(DEST.fmToyBus))
     const toy = ctx.toy
+    const micOnBus = Math.round(p[IDX.micPatch]!) === MIC.glintBus
     const modSlip = bay.read(DEST.fmDacSlip)
     this.blob = baseBlob
     const rail = this.rail
@@ -1472,6 +1486,7 @@ export class FmChip implements Stage {
         : cpuX
       this.stepLfo(rail.clockFactor * xtal)
       if (this.toyBits > 0) this.toyOnBus(toy[i]!)
+      if (micOnBus) this.micOnBus(ctx.mic[i]!)
       if (modBlob) this.blob = clamp01(baseBlob + modBlob[i]!)
       if (this.blob > 0 && !kit) this.stepNoise(rail.clockFactor * xtal)
 

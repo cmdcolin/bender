@@ -1,4 +1,5 @@
 import { IDX } from '../../engine/params.ts'
+import { MIC } from '../micJacks.ts'
 import { DEST } from '../modbus.ts'
 import { DelayLine, fixedTap } from '../util/delayline.ts'
 import { coef as timeCoef } from '../util/follower.ts'
@@ -97,7 +98,7 @@ export class TapeDelay implements Stage {
     const flutter = p[IDX.flutter]!
     const mix = p[IDX.dlyMix]!
     const coef = lpCoef(p[IDX.dlyToneHz]!, this.sr)
-    const micInject = Math.round(p[IDX.micPatch]!) === 3
+    const micInject = Math.round(p[IDX.micPatch]!) === MIC.delayFb
     const fbInject = ctx.fbDest === 3
     const brake = p[IDX.tapeBrake]!
     const railDrag = p[IDX.tapeMotorRail]!
