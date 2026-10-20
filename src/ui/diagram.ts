@@ -145,3 +145,55 @@ export const GLYPH_GAP = 4
 /** The width of a box holding a glyph `glyphW` wide beside its name. */
 export const glyphBoxWidth = (name: string, glyphW: number) =>
   boxWidth(name) + glyphW + GLYPH_GAP
+
+/** Left edges of a row of boxes `widths` wide, from `start`, with `gaps`
+    between them: one gap for all, or one per space. */
+export const lefts = (
+  widths: readonly number[],
+  gaps: number | readonly number[],
+  start = 0,
+) =>
+  widths.map((_, i) =>
+    widths
+      .slice(0, i)
+      .reduce(
+        (x, w, j) => x + w + (typeof gaps === 'number' ? gaps : gaps[j]!),
+        start,
+      ),
+  )
+
+/** A row of boxes `widths` wide spread so it spans `span` from `start`, with
+    rounded left edges and the gap it took. */
+export function spread(widths: readonly number[], span: number, start = 0) {
+  const gap = (span - widths.reduce((a, b) => a + b, 0)) / (widths.length - 1)
+  return { gap, xs: lefts(widths, gap, start).map(Math.round) }
+}
+
+/** The wire from each box's right edge to the next box's left edge, at `y`. */
+export const chainPaths = (
+  boxes: readonly { x: number; w: number }[],
+  y: number,
+) =>
+  boxes.slice(1).map((to, i) => `M${boxes[i]!.x + boxes[i]!.w} ${y} H${to.x}`)
+
+/** Builds a box named by its id that opens `keys` and lights when one of them
+    is off stock. */
+export const boxMaker =
+  <K extends ControlKey>(touched: (...keys: K[]) => boolean) =>
+  (
+    id: string,
+    x: number,
+    y: number,
+    w: number,
+    keys: readonly K[],
+    help: string,
+  ): BoxSpec => ({
+    id,
+    keys,
+    x,
+    y,
+    w,
+    name: id,
+    touched: touched(...keys),
+    help,
+  })

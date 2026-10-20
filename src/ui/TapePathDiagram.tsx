@@ -1,4 +1,4 @@
-import chip from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import styles from './Diagram.module.css'
 import {
   boxHeight,
@@ -14,7 +14,6 @@ import {
   BoxRows,
   BoxView,
   Capstan,
-  Diagram,
   Dot,
   HeadBar,
   Label,
@@ -198,138 +197,136 @@ export function TapePathDiagram() {
   const lit = (...ks: (typeof KEYS)[number][]) => r.touched(...ks)
   return (
     <>
-      <div className={chip.chips}>
-        <Diagram
-          width={WIDTH}
-          height={BYPASS_Y + 16}
-          label="tape machine signal path"
-        >
-          {arrow => (
-            <>
-              <Pressable
-                name="tape"
+      <ChipDrawing
+        width={WIDTH}
+        height={BYPASS_Y + 16}
+        label="tape machine signal path"
+      >
+        {arrow => (
+          <>
+            <Pressable
+              name="tape"
+              selected={pick.selected === 'tape'}
+              onSelect={() => pick.toggle('tape')}
+              opacity={off ? 0.55 : 1}
+            >
+              <title>
+                tape — The medium and how fast it runs: hiss, wow, flutter,
+                dropouts, print-through and squeal.
+              </title>
+              <Plate
+                x={0}
+                y={0}
+                w={WIDTH - 4}
+                h={DECK_H}
+                touched={tapeTouched}
                 selected={pick.selected === 'tape'}
-                onSelect={() => pick.toggle('tape')}
-                opacity={off ? 0.55 : 1}
+              />
+              <text
+                x={CAPTION_X}
+                y={captionTop + LINE_H - 3}
+                textAnchor="middle"
+                className={tapeTouched ? styles.nameOn : styles.name}
               >
-                <title>
-                  tape — The medium and how fast it runs: hiss, wow, flutter,
-                  dropouts, print-through and squeal.
-                </title>
-                <Plate
-                  x={0}
-                  y={0}
-                  w={WIDTH - 4}
-                  h={DECK_H}
-                  touched={tapeTouched}
-                  selected={pick.selected === 'tape'}
+                tape
+              </text>
+              {deck.shell && (
+                <rect
+                  x={deck.shell.x}
+                  y={deck.shell.y}
+                  width={deck.shell.w}
+                  height={deck.shell.h}
+                  rx={3}
+                  className={styles.reel}
                 />
-                <text
-                  x={CAPTION_X}
-                  y={captionTop + LINE_H - 3}
-                  textAnchor="middle"
-                  className={tapeTouched ? styles.nameOn : styles.name}
-                >
-                  tape
-                </text>
-                {deck.shell && (
-                  <rect
-                    x={deck.shell.x}
-                    y={deck.shell.y}
-                    width={deck.shell.w}
-                    height={deck.shell.h}
-                    rx={3}
-                    className={styles.reel}
-                  />
-                )}
-                <Reel
-                  cx={deck.left[0]}
-                  cy={deck.left[1]}
-                  r={deck.reel}
-                  full={0.85}
-                  spokes={deck.spokes}
-                />
-                <Reel
-                  cx={deck.right[0]}
-                  cy={deck.right[1]}
-                  r={deck.reel}
-                  full={0.5}
-                  spokes={deck.spokes}
-                />
-                <TapeLine d={tapeRun(format)} />
-                <Capstan x={CAPSTAN_X} y={TAPE_Y} />
-              </Pressable>
-              <Bend
-                name="rec head wire"
-                opens="rec head"
-                pick={pick}
-                hit={recWire}
-              >
-                <HeadBar
-                  x={REC_MID}
-                  y={TAPE_Y - 5}
-                  h={10}
-                  on={lit('tapeDrive', 'tapeBias', 'tapeHyst')}
-                />
-                <Wire arrow={arrow} d={recWire} look={taped} />
-              </Bend>
-              <Bend
-                name="replay head wire"
-                opens="replay head"
-                pick={pick}
-                hit={playWire}
-              >
-                <HeadBar
-                  x={PLAY_MID}
-                  y={TAPE_Y - 5}
-                  h={10}
-                  on={lit('tapeBump', 'tapeAzimuth')}
-                />
-                <Wire arrow={arrow} d={playWire} look={taped} />
-              </Bend>
-              {[
-                [BOARD_W, NR_IN_X],
-                [NR_IN_X + NR_IN_W, REC_X],
-                [PLAY_X + PLAY_W, NR_OUT_X],
-              ].map(([from, to]) => (
-                <Wire
-                  key={from}
-                  arrow={arrow}
-                  d={`M${from} ${ROW_MID} H${to}`}
-                  look={taped}
-                />
-              ))}
-              <Wire d={`M${OUT_X} ${ROW_MID} H${JOIN_X}`} look={taped} />
+              )}
+              <Reel
+                cx={deck.left[0]}
+                cy={deck.left[1]}
+                r={deck.reel}
+                full={0.85}
+                spokes={deck.spokes}
+              />
+              <Reel
+                cx={deck.right[0]}
+                cy={deck.right[1]}
+                r={deck.reel}
+                full={0.5}
+                spokes={deck.spokes}
+              />
+              <TapeLine d={tapeRun(format)} />
+              <Capstan x={CAPSTAN_X} y={TAPE_Y} />
+            </Pressable>
+            <Bend
+              name="rec head wire"
+              opens="rec head"
+              pick={pick}
+              hit={recWire}
+            >
+              <HeadBar
+                x={REC_MID}
+                y={TAPE_Y - 5}
+                h={10}
+                on={lit('tapeDrive', 'tapeBias', 'tapeHyst')}
+              />
+              <Wire arrow={arrow} d={recWire} look={taped} />
+            </Bend>
+            <Bend
+              name="replay head wire"
+              opens="replay head"
+              pick={pick}
+              hit={playWire}
+            >
+              <HeadBar
+                x={PLAY_MID}
+                y={TAPE_Y - 5}
+                h={10}
+                on={lit('tapeBump', 'tapeAzimuth')}
+              />
+              <Wire arrow={arrow} d={playWire} look={taped} />
+            </Bend>
+            {[
+              [BOARD_W, NR_IN_X],
+              [NR_IN_X + NR_IN_W, REC_X],
+              [PLAY_X + PLAY_W, NR_OUT_X],
+            ].map(([from, to]) => (
               <Wire
+                key={from}
                 arrow={arrow}
-                d={`M${JOIN_X} ${ROW_MID} H${WIDTH - 4}`}
+                d={`M${from} ${ROW_MID} H${to}`}
                 look={taped}
               />
-              <Wire
-                d={`M${BOARD_W / 2} ${ROW_Y + ROW_H} V${BYPASS_Y} H${JOIN_X} V${ROW_MID}`}
-                look={off ? 'plain' : 'dash'}
+            ))}
+            <Wire d={`M${OUT_X} ${ROW_MID} H${JOIN_X}`} look={taped} />
+            <Wire
+              arrow={arrow}
+              d={`M${JOIN_X} ${ROW_MID} H${WIDTH - 4}`}
+              look={taped}
+            />
+            <Wire
+              d={`M${BOARD_W / 2} ${ROW_Y + ROW_H} V${BYPASS_Y} H${JOIN_X} V${ROW_MID}`}
+              look={off ? 'plain' : 'dash'}
+            />
+            <Dot x={JOIN_X} y={ROW_MID} />
+            <Label
+              x={WIDTH / 2}
+              y={BYPASS_Y + 12}
+              anchor="middle"
+              on={r.touched('tapeMix', 'tapeAt')}
+            >
+              dry
+            </Label>
+            {boxes.map(b => (
+              <BoxView
+                key={b.name}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
               />
-              <Dot x={JOIN_X} y={ROW_MID} />
-              <Label
-                x={WIDTH / 2}
-                y={BYPASS_Y + 12}
-                anchor="middle"
-                on={r.touched('tapeMix', 'tapeAt')}
-              >
-                dry
-              </Label>
-              {boxes.map(b => (
-                <BoxView
-                  key={b.name}
-                  box={b}
-                  selected={b.id === pick.selected}
-                  onSelect={pick.toggle}
-                />
-              ))}
-            </>
-          )}
-        </Diagram>
-      </div>
+            ))}
+          </>
+        )}
+      </ChipDrawing>
       <BoxRows card={card(pick)} keys={open} />
     </>
   )

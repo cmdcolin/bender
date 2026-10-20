@@ -6,6 +6,9 @@ import {
   useReadings,
   useSelectedBox,
   type BoxSpec,
+  boxMaker,
+  chainPaths,
+  lefts,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 
@@ -83,37 +86,18 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       'The four voices sum into the eight-bit DAC, and a two-pole filter follows it.',
     ],
   ]
-  const box = (
-    id: string,
-    x: number,
-    y: number,
-    w: number,
-    keys: readonly Key[],
-    help: string,
-  ): BoxSpec => ({
-    id,
-    keys,
-    x,
-    y,
-    w,
-    name: id,
-    touched: r.touched(...keys),
-    help,
-  })
+  const box = boxMaker(r.touched)
   const names = [...path.map(([id]) => id), 'mix']
   const widths = names.map(boxWidth)
-  let x = 0
-  const placed = names.map((id, i) => {
-    const at = x
-    x += widths[i]! + GAP
-    return { id, x: at, w: widths[i]! }
-  })
-  const width = x - GAP + 2
+  const xs = lefts(widths, GAP)
+  const width = xs.at(-1)! + widths.at(-1)! + 2
   const row = path.map(([id, keys, help], i) =>
-    box(id, placed[i]!.x, TOP + ROW, placed[i]!.w, keys, help),
+    box(id, xs[i]!, TOP + ROW, widths[i]!, keys, help),
   )
   const mix: BoxSpec = {
-    ...placed[names.length - 1]!,
+    id: 'mix',
+    x: xs.at(-1)!,
+    w: widths.at(-1)!,
     y: TOP + ROW,
     name: 'mix',
     touched: false,
@@ -165,8 +149,6 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const close = part ? zoom?.(part) : null
   const feet = busY + BOX_H + 4
   const mid = TOP + ROW + BOX_H / 2
-  const edge = (from: BoxSpec, to: BoxSpec) =>
-    `M${from.x + from.w} ${mid} H${to.x}`
   const chain = [...row, mix]
   const drops: [string, string][] = [
     ['vibrato', `M${counter.x + counter.w / 2} ${TOP + BOX_H} V${TOP + ROW}`],
@@ -183,13 +165,8 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       >
         {arrow => (
           <>
-            {chain.slice(1).map((to, i) => (
-              <Wire
-                key={to.id}
-                arrow={arrow}
-                d={edge(chain[i]!, to)}
-                look={i < 2 ? 'plain' : flow}
-              />
+            {chainPaths(chain, mid).map((d, i) => (
+              <Wire key={d} arrow={arrow} d={d} look={i < 2 ? 'plain' : flow} />
             ))}
             {drops.map(([opens, d]) => (
               <Bend

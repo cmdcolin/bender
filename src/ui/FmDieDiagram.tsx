@@ -1,5 +1,6 @@
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import chip from './ChipLook.module.css'
 import diagram from './Diagram.module.css'
 import {
@@ -9,10 +10,10 @@ import {
   useReadings,
   useSelectedBox,
   card,
+  spread,
 } from './diagram.ts'
 import {
   BoxRows,
-  Diagram,
   Label,
   PickPart,
   Plate,
@@ -78,10 +79,7 @@ export function FmDieDiagram() {
     frameW,
     boxWidth('DAC'),
   ]
-  const gap = (WIDTH - TAIL - widths.reduce((a, b) => a + b)) / 3
-  const xs = widths.map((_, i) =>
-    Math.round(widths.slice(0, i).reduce((a, b) => a + b + gap, 0)),
-  )
+  const { gap, xs } = spread(widths, WIDTH - TAIL)
   const box = (i: number, name: string): ChipBox => ({
     name,
     x: xs[i]!,
@@ -101,122 +99,112 @@ export function FmDieDiagram() {
 
   return (
     <>
-      <div className={chip.chips}>
-        <Diagram width={WIDTH} height={HEIGHT} label="FM die and driver">
-          {arrow => (
-            <>
-              <PickPart opens="voices" pick={pick}>
-                <title>
-                  voices — Four channels of two operators each. The log adder
-                  sets the arithmetic every operator uses.
-                </title>
-                <Plate
-                  x={frameX}
-                  y={TOP}
-                  w={frameW}
-                  h={HEAD + STACK + FOOT}
-                  touched={adder > 0}
-                  selected={pick.selected === 'voices'}
-                />
-                <text
-                  x={frameX + frameW / 2}
-                  y={TOP + 11}
-                  textAnchor="middle"
-                  className={adder ? diagram.nameOn : diagram.name}
-                >
-                  voices
-                </text>
-                <text
-                  x={frameX + frameW / 2}
-                  y={TOP + HEAD + STACK + 11}
-                  textAnchor="middle"
-                  className={adder ? diagram.nameOn : styles.bus}
-                >
-                  adder
-                </text>
-                <g className={chip.inner}>
-                  {Array.from({ length: VOICES }, (_, i) => (
-                    <g key={i}>
-                      <Plate
-                        x={voiceX}
-                        y={voiceTop(i)}
-                        w={voiceW}
-                        h={VOICE_H}
-                      />
-                      <text
-                        x={voiceX + voiceW / 2}
-                        y={voiceMid(i) + 3}
-                        textAnchor="middle"
-                        className={diagram.name}
-                      >
-                        voice {i + 1}
-                      </text>
-                    </g>
-                  ))}
-                </g>
-              </PickPart>
+      <ChipDrawing width={WIDTH} height={HEIGHT} label="FM die and driver">
+        {arrow => (
+          <>
+            <PickPart opens="voices" pick={pick}>
+              <title>
+                voices — Four channels of two operators each. The log adder sets
+                the arithmetic every operator uses.
+              </title>
+              <Plate
+                x={frameX}
+                y={TOP}
+                w={frameW}
+                h={HEAD + STACK + FOOT}
+                touched={adder > 0}
+                selected={pick.selected === 'voices'}
+              />
+              <text
+                x={frameX + frameW / 2}
+                y={TOP + 11}
+                textAnchor="middle"
+                className={adder ? diagram.nameOn : diagram.name}
+              >
+                voices
+              </text>
+              <text
+                x={frameX + frameW / 2}
+                y={TOP + HEAD + STACK + 11}
+                textAnchor="middle"
+                className={adder ? diagram.nameOn : styles.bus}
+              >
+                adder
+              </text>
+              <g className={chip.inner}>
+                {Array.from({ length: VOICES }, (_, i) => (
+                  <g key={i}>
+                    <Plate x={voiceX} y={voiceTop(i)} w={voiceW} h={VOICE_H} />
+                    <text
+                      x={voiceX + voiceW / 2}
+                      y={voiceMid(i) + 3}
+                      textAnchor="middle"
+                      className={diagram.name}
+                    >
+                      voice {i + 1}
+                    </text>
+                  </g>
+                ))}
+              </g>
+            </PickPart>
+            <Wire
+              arrow={arrow}
+              d={`M${allocBox.x + allocBox.w} ${MID} H${regsBox.x}`}
+              look={flow}
+            />
+            <Wire d={`M${regsBox.x + regsBox.w} ${MID} H${fanX}`} look={flow} />
+            {stuckLast(alloc).map(i => (
               <Wire
+                key={`in${i}`}
                 arrow={arrow}
-                d={`M${allocBox.x + allocBox.w} ${MID} H${regsBox.x}`}
-                look={flow}
+                d={`M${fanX} ${MID} V${voiceMid(i)} H${voiceX}`}
+                look={stuckLook(alloc, flow, i)}
               />
+            ))}
+            {stuckLast(slot).map(i => (
               <Wire
-                d={`M${regsBox.x + regsBox.w} ${MID} H${fanX}`}
-                look={flow}
+                key={`out${i}`}
+                d={`M${voiceX + voiceW} ${voiceMid(i)} H${mergeX} V${MID}`}
+                look={stuckLook(slot, flow, i)}
               />
-              {stuckLast(alloc).map(i => (
-                <Wire
-                  key={`in${i}`}
-                  arrow={arrow}
-                  d={`M${fanX} ${MID} V${voiceMid(i)} H${voiceX}`}
-                  look={stuckLook(alloc, flow, i)}
-                />
-              ))}
-              {stuckLast(slot).map(i => (
-                <Wire
-                  key={`out${i}`}
-                  d={`M${voiceX + voiceW} ${voiceMid(i)} H${mergeX} V${MID}`}
-                  look={stuckLook(slot, flow, i)}
-                />
-              ))}
-              <Wire
-                arrow={arrow}
-                d={`M${mergeX} ${MID} H${dacBox.x}`}
-                look={flow}
-              />
-              <Wire
-                arrow={arrow}
-                d={`M${dacBox.x + dacBox.w} ${MID} H${WIDTH - 2}`}
-                look={flow}
-              />
-              <Label x={WIDTH - 2} y={MID + 12} anchor="end">
-                out
-              </Label>
-              <Chip
-                box={allocBox}
-                lit={alloc > 0}
-                help="The driver’s note allocator. Stuck, it hands every note to one channel."
-                pick={pick}
-                keys={OPENS.allocator}
-              />
-              <Chip
-                box={regsBox}
-                lit={boot > 0}
-                help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
-                pick={pick}
-                keys={OPENS.registers}
-              />
-              <Chip
-                box={dacBox}
-                lit={slot > 0 || slip > 0}
-                help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
-                pick={pick}
-                keys={OPENS.DAC}
-              />
-            </>
-          )}
-        </Diagram>
-      </div>
+            ))}
+            <Wire
+              arrow={arrow}
+              d={`M${mergeX} ${MID} H${dacBox.x}`}
+              look={flow}
+            />
+            <Wire
+              arrow={arrow}
+              d={`M${dacBox.x + dacBox.w} ${MID} H${WIDTH - 2}`}
+              look={flow}
+            />
+            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
+              out
+            </Label>
+            <Chip
+              box={allocBox}
+              lit={alloc > 0}
+              help="The driver’s note allocator. Stuck, it hands every note to one channel."
+              pick={pick}
+              keys={OPENS.allocator}
+            />
+            <Chip
+              box={regsBox}
+              lit={boot > 0}
+              help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
+              pick={pick}
+              keys={OPENS.registers}
+            />
+            <Chip
+              box={dacBox}
+              lit={slot > 0 || slip > 0}
+              help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
+              pick={pick}
+              keys={OPENS.DAC}
+            />
+          </>
+        )}
+      </ChipDrawing>
       <BoxRows
         card={card(pick)}
         hint="Press a box for its settings."

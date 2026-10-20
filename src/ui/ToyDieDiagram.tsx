@@ -13,6 +13,8 @@ import {
   useReadings,
   useSelectedBox,
   type BoxPick,
+  chainPaths,
+  lefts,
 } from './diagram.ts'
 import { BoxRows, GlyphBox, OpenBox, PickPart, Wire } from './DiagramParts.tsx'
 import { rollGlyph, ROLL_GLYPH_W } from './rollGlyph.tsx'
@@ -210,9 +212,10 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
   const keyboardW = glyphBoxWidth(KEYBOARD, GLYPH_W)
   const lead = Math.max(0, (keyboardW - widths[0]!) / 2)
   const width = widths.reduce((a, b) => a + b, lead + TAIL + sum(GAPS))
+  const xs = lefts(widths, GAPS, lead)
   const row = names.map((name, i): ChipBox => ({
     name,
-    x: Math.round(lead + sum(widths.slice(0, i)) + sum(GAPS.slice(0, i))),
+    x: Math.round(xs[i]!),
     y: LOW,
     w: widths[i]!,
     h: BOX_H,
@@ -280,13 +283,8 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
               d={`M${middle(keys)} ${TOP + BOX_H} V${LOW}`}
               look={flow}
             />
-            {row.slice(1).map((to, i) => (
-              <Wire
-                key={to.name}
-                arrow={arrow}
-                d={`M${row[i]!.x + row[i]!.w} ${mid} H${to.x}`}
-                look={flow}
-              />
+            {chainPaths(row, mid).map(d => (
+              <Wire key={d} arrow={arrow} d={d} look={flow} />
             ))}
             <Wire
               arrow={arrow}

@@ -1,4 +1,4 @@
-import chip from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import { type Track } from './controls/index.ts'
 import {
   boxHeight,
@@ -8,14 +8,7 @@ import {
   type BoxSpec,
   card,
 } from './diagram.ts'
-import {
-  Bend,
-  BoxRows,
-  BoxView,
-  Diagram,
-  Label,
-  Wire,
-} from './DiagramParts.tsx'
+import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 
 const BOX_H = boxHeight('')
 const TOP = 24
@@ -187,78 +180,67 @@ export function StripDiagram({ track }: { track: Track }) {
 
   return (
     <>
-      <div className={chip.chips}>
-        <Diagram
-          width={BUS_X + BUS_W + 2}
-          height={RETURN_Y + 4}
-          label={`track ${track} signal path`}
-        >
-          {arrow => (
-            <>
-              {[IN_X, TRIM_X, EQ_X, FADER_X, PAN_X].map(x => (
-                <Wire
-                  key={x}
-                  arrow={arrow}
-                  d={`M${x + W} ${MID} H${x + STEP}`}
-                />
+      <ChipDrawing
+        width={BUS_X + BUS_W + 2}
+        height={RETURN_Y + 4}
+        label={`track ${track} signal path`}
+      >
+        {arrow => (
+          <>
+            {[IN_X, TRIM_X, EQ_X, FADER_X, PAN_X].map(x => (
+              <Wire key={x} arrow={arrow} d={`M${x + W} ${MID} H${x + STEP}`} />
+            ))}
+            <Bend
+              name="rec wires"
+              opens="rec"
+              pick={pick}
+              hit={recWires.join(' ')}
+            >
+              {recWires.map(d => (
+                <Wire key={d} arrow={arrow} d={d} look={recording} />
               ))}
-              <Bend
-                name="rec wires"
-                opens="rec"
-                pick={pick}
-                hit={recWires.join(' ')}
-              >
-                {recWires.map(d => (
-                  <Wire key={d} arrow={arrow} d={d} look={recording} />
-                ))}
-              </Bend>
-              <Bend
-                name="cue wires"
-                opens="cue"
-                pick={pick}
-                hit={cueWires.join(' ')}
-              >
-                {cueWires.map(d => (
-                  <Wire key={d} arrow={arrow} d={d} />
-                ))}
-              </Bend>
-              <Wire
-                arrow={arrow}
-                d={`M${LOOP_X + LOOP_W / 2} ${BOTTOM + BOX_H} V${RETURN_Y} H${centre(IN_X)} V${TOP + BOX_H}`}
-                look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
+            </Bend>
+            <Bend
+              name="cue wires"
+              opens="cue"
+              pick={pick}
+              hit={cueWires.join(' ')}
+            >
+              {cueWires.map(d => (
+                <Wire key={d} arrow={arrow} d={d} />
+              ))}
+            </Bend>
+            <Wire
+              arrow={arrow}
+              d={`M${LOOP_X + LOOP_W / 2} ${BOTTOM + BOX_H} V${RETURN_Y} H${centre(IN_X)} V${TOP + BOX_H}`}
+              look={listens === 0 && val('Rec') > 0 ? 'on' : 'dash'}
+            />
+            <Bend name="aux send wire" opens="send" pick={pick} hit={sendWire}>
+              <Wire arrow={arrow} d={sendWire} />
+            </Bend>
+            <Label
+              x={centre(FADER_X) + 6}
+              y={13}
+              on={val('Send') > 0}
+              pick={{
+                id: 'send',
+                selected: pick.selected === 'send',
+                onSelect: pick.toggle,
+              }}
+            >
+              aux send
+            </Label>
+            {boxes.map(b => (
+              <BoxView
+                key={b.name}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
               />
-              <Bend
-                name="aux send wire"
-                opens="send"
-                pick={pick}
-                hit={sendWire}
-              >
-                <Wire arrow={arrow} d={sendWire} />
-              </Bend>
-              <Label
-                x={centre(FADER_X) + 6}
-                y={13}
-                on={val('Send') > 0}
-                pick={{
-                  id: 'send',
-                  selected: pick.selected === 'send',
-                  onSelect: pick.toggle,
-                }}
-              >
-                aux send
-              </Label>
-              {boxes.map(b => (
-                <BoxView
-                  key={b.name}
-                  box={b}
-                  selected={b.id === pick.selected}
-                  onSelect={pick.toggle}
-                />
-              ))}
-            </>
-          )}
-        </Diagram>
-      </div>
+            ))}
+          </>
+        )}
+      </ChipDrawing>
       <BoxRows card={card(pick)} keys={open?.keys} note={open?.note} />
     </>
   )

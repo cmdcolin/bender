@@ -1,5 +1,5 @@
 import { Chip, type ChipBox } from './BusDiagram.tsx'
-import chip from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   boxHeight,
   boxWidth,
@@ -7,8 +7,10 @@ import {
   useReadings,
   useSelectedBox,
   card,
+  spread,
+  chainPaths,
 } from './diagram.ts'
-import { BoxRows, Diagram, Label, Wire } from './DiagramParts.tsx'
+import { BoxRows, Label, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -79,10 +81,10 @@ export function MonoCardDiagram() {
     },
   ]
   const widths = parts.map(p => boxWidth(p.name))
-  const gap = (WIDTH - TAIL - widths.reduce((a, b) => a + b)) / 5
+  const { xs } = spread(widths, WIDTH - TAIL)
   const boxes = parts.map((p, i): ChipBox => ({
     name: p.name,
-    x: Math.round(widths.slice(0, i).reduce((a, b) => a + b + gap, 0)),
+    x: xs[i]!,
     y: CHIP_Y,
     w: widths[i]!,
     h: CHIP_H,
@@ -96,74 +98,67 @@ export function MonoCardDiagram() {
 
   return (
     <>
-      <div className={chip.chips}>
-        <Diagram
-          width={WIDTH}
-          height={HEIGHT}
-          label="growler voice card faults"
-        >
-          {arrow => (
-            <>
-              {boxes.slice(1).map((to, i) => (
-                <Wire
-                  key={to.name}
-                  arrow={arrow}
-                  d={`M${boxes[i]!.x + boxes[i]!.w} ${MID} H${to.x}`}
-                  look={flow}
-                />
-              ))}
+      <ChipDrawing
+        width={WIDTH}
+        height={HEIGHT}
+        label="growler voice card faults"
+      >
+        {arrow => (
+          <>
+            {chainPaths(boxes, MID).map(d => (
+              <Wire key={d} arrow={arrow} d={d} look={flow} />
+            ))}
+            <Wire
+              arrow={arrow}
+              d={`M${vca.x + vca.w} ${MID} H${WIDTH - 2}`}
+              look={flow}
+            />
+            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
+              out
+            </Label>
+            {[conv, ladder].map(b => (
               <Wire
+                key={`sag${b.name}`}
                 arrow={arrow}
-                d={`M${vca.x + vca.w} ${MID} H${WIDTH - 2}`}
-                look={flow}
+                d={`M${centre(b)} ${TOP + BAR_H} V${CHIP_Y}`}
+                look="dash"
               />
-              <Label x={WIDTH - 2} y={MID + 12} anchor="end">
-                out
-              </Label>
-              {[conv, ladder].map(b => (
-                <Wire
-                  key={`sag${b.name}`}
-                  arrow={arrow}
-                  d={`M${centre(b)} ${TOP + BAR_H} V${CHIP_Y}`}
-                  look="dash"
-                />
-              ))}
-              {[ladder, vca].map(b => (
-                <Wire
-                  key={`cap${b.name}`}
-                  arrow={arrow}
-                  d={`M${centre(b)} ${LOW_Y} V${CHIP_Y + CHIP_H}`}
-                  look="dash"
-                />
-              ))}
+            ))}
+            {[ladder, vca].map(b => (
+              <Wire
+                key={`cap${b.name}`}
+                arrow={arrow}
+                d={`M${centre(b)} ${LOW_Y} V${CHIP_Y + CHIP_H}`}
+                look="dash"
+              />
+            ))}
+            <Chip
+              box={{ name: 'regulator', x: regX, y: TOP, w: regW, h: BAR_H }}
+              lit={on('monoSag')}
+              help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
+              pick={pick}
+              keys={OPENS.regulator}
+            />
+            <Chip
+              box={{ name: 'contours', x: lowX, y: LOW_Y, w: lowW, h: BAR_H }}
+              lit={r.value('monoCap') > 1}
+              help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
+              pick={pick}
+              keys={OPENS.contours}
+            />
+            {boxes.map((box, i) => (
               <Chip
-                box={{ name: 'regulator', x: regX, y: TOP, w: regW, h: BAR_H }}
-                lit={on('monoSag')}
-                help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
+                key={box.name}
+                box={box}
+                lit={parts[i]!.lit}
+                help={parts[i]!.help}
                 pick={pick}
-                keys={OPENS.regulator}
+                keys={OPENS[box.name]}
               />
-              <Chip
-                box={{ name: 'contours', x: lowX, y: LOW_Y, w: lowW, h: BAR_H }}
-                lit={r.value('monoCap') > 1}
-                help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
-                pick={pick}
-                keys={OPENS.contours}
-              />
-              {boxes.map((box, i) => (
-                <Chip
-                  key={box.name}
-                  box={box}
-                  lit={parts[i]!.lit}
-                  help={parts[i]!.help}
-                  pick={pick}
-                  keys={OPENS[box.name]}
-                />
-              ))}
-            </>
-          )}
-        </Diagram>
-      </div>
+            ))}
+          </>
+        )}
+      </ChipDrawing>
       <BoxRows
         card={card(pick)}
         hint="Press a box for its settings."

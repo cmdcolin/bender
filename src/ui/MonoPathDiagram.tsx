@@ -11,6 +11,8 @@ import {
   useReadings,
   useSelectedBox,
   type BoxSpec,
+  spread,
+  chainPaths,
 } from './diagram.ts'
 import {
   Bend,
@@ -148,10 +150,7 @@ export function MonoPathDiagram({
     'loudness',
   ]
   const widths = row.map(id => (id === 'frame' ? FRAME_W : boxWidth(id)))
-  const gap = (WIDTH - TAIL - widths.reduce((a, b) => a + b)) / (row.length - 1)
-  const xs = widths.map((_, i) =>
-    Math.round(widths.slice(0, i).reduce((a, b) => a + b + gap, 0)),
-  )
+  const { xs } = spread(widths, WIDTH - TAIL)
   const top = MID - BOX_H / 2
   const keys = box('keys', xs[0]!, top)
   const frameX = xs[1]!
@@ -222,16 +221,9 @@ export function MonoPathDiagram({
               />
             ))}
             <Wire arrow={arrow} d={`M${join} ${MID} H${mixer.x}`} look={flow} />
-            <Wire
-              arrow={arrow}
-              d={`M${mixer.x + mixer.w} ${MID} H${filter.x}`}
-              look={flow}
-            />
-            <Wire
-              arrow={arrow}
-              d={`M${filter.x + filter.w} ${MID} H${loud.x}`}
-              look={flow}
-            />
+            {chainPaths([mixer, filter, loud], MID).map(d => (
+              <Wire key={d} arrow={arrow} d={d} look={flow} />
+            ))}
             <Wire
               arrow={arrow}
               d={`M${loud.x + loud.w} ${MID} H${WIDTH - 2}`}

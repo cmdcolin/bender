@@ -1,5 +1,5 @@
 import { cabDb, stackDb } from '../dsp/stages/amp.ts'
-import chip from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import styles from './Diagram.module.css'
 import {
   boxHeight,
@@ -9,14 +9,7 @@ import {
   type BoxSpec,
   card,
 } from './diagram.ts'
-import {
-  Bend,
-  BoxRows,
-  BoxView,
-  Diagram,
-  Label,
-  Wire,
-} from './DiagramParts.tsx'
+import { Bend, BoxRows, BoxView, Label, Wire } from './DiagramParts.tsx'
 
 const KEYS = [
   'ampMix',
@@ -131,110 +124,108 @@ export function AmpPathDiagram() {
   })
   return (
     <>
-      <div className={chip.chips}>
-        <Diagram
-          width={WIDTH}
-          height={PLOT.bottom + 18}
-          label="ember signal path and tone"
-        >
-          {arrow => (
-            <>
-              {boxes.map((b, i) => (
-                <Wire
-                  key={b.name}
-                  arrow={arrow}
-                  d={`M${b.x + b.w} ${MID} H${boxes[i + 1]?.x ?? WIDTH - 2}`}
-                  look={off ? 'plain' : 'on'}
-                />
-              ))}
-              <Bend
-                name="microphonic return"
-                opens="preamp"
-                pick={pick}
-                hit={returnWire}
-              >
-                <Wire
-                  arrow={arrow}
-                  d={returnWire}
-                  look={howling ? 'alarm' : 'dash'}
-                />
-                <Label
-                  x={WIDTH / 2}
-                  y={RETURN_Y - 1}
-                  anchor="middle"
-                  on={howling}
-                >
-                  microphonic return
-                </Label>
-              </Bend>
-              {boxes.map(b => (
-                <BoxView
-                  key={b.name}
-                  box={b}
-                  selected={b.id === pick.selected}
-                  onSelect={pick.toggle}
-                />
-              ))}
-              {[0, -12, -24].map(db => (
-                <g key={db}>
-                  <line
-                    x1={PLOT.left}
-                    x2={PLOT.right}
-                    y1={plotY(db)}
-                    y2={plotY(db)}
-                    className={styles.grid}
-                  />
-                  <Label x={PLOT.left - 4} y={plotY(db) + 3} anchor="end">
-                    {db === 0 ? '0 dB' : String(db)}
-                  </Label>
-                </g>
-              ))}
-              {[100, 1000, 10000].map(hz => (
-                <Label
-                  key={hz}
-                  x={plotX(hz)}
-                  y={PLOT.bottom + 12}
-                  anchor="middle"
-                >
-                  {hz >= 1000 ? `${hz / 1000} kHz` : `${hz} Hz`}
-                </Label>
-              ))}
-              <path
-                d={curve(hz => cabDb(cab, hz))}
-                className={styles.curveQuiet}
+      <ChipDrawing
+        width={WIDTH}
+        height={PLOT.bottom + 18}
+        label="ember signal path and tone"
+      >
+        {arrow => (
+          <>
+            {boxes.map((b, i) => (
+              <Wire
+                key={b.name}
+                arrow={arrow}
+                d={`M${b.x + b.w} ${MID} H${boxes[i + 1]?.x ?? WIDTH - 2}`}
+                look={off ? 'plain' : 'on'}
               />
-              <path
-                d={curve(stack)}
-                className={
-                  r.touched('ampBass', 'ampMid', 'ampTreble', 'ampVoice')
-                    ? styles.curveOn
-                    : styles.curve
-                }
-                opacity={off ? 0.55 : 1}
+            ))}
+            <Bend
+              name="microphonic return"
+              opens="preamp"
+              pick={pick}
+              hit={returnWire}
+            >
+              <Wire
+                arrow={arrow}
+                d={returnWire}
+                look={howling ? 'alarm' : 'dash'}
               />
               <Label
-                x={PLOT.right}
-                y={plotY(stack(HZ.high)) - 4}
-                anchor="end"
-                pick={labelPick('tone stack')}
-              >
-                tone stack
-              </Label>
-              <Label
-                x={Math.min(
-                  Math.max(plotX(loudest), PLOT.left + 24),
-                  PLOT.right - 90,
-                )}
-                y={plotY(cabDb(cab, loudest)) - 4}
+                x={WIDTH / 2}
+                y={RETURN_Y - 1}
                 anchor="middle"
-                pick={labelPick('speaker')}
+                on={howling}
               >
-                speaker
+                microphonic return
               </Label>
-            </>
-          )}
-        </Diagram>
-      </div>
+            </Bend>
+            {boxes.map(b => (
+              <BoxView
+                key={b.name}
+                box={b}
+                selected={b.id === pick.selected}
+                onSelect={pick.toggle}
+              />
+            ))}
+            {[0, -12, -24].map(db => (
+              <g key={db}>
+                <line
+                  x1={PLOT.left}
+                  x2={PLOT.right}
+                  y1={plotY(db)}
+                  y2={plotY(db)}
+                  className={styles.grid}
+                />
+                <Label x={PLOT.left - 4} y={plotY(db) + 3} anchor="end">
+                  {db === 0 ? '0 dB' : String(db)}
+                </Label>
+              </g>
+            ))}
+            {[100, 1000, 10000].map(hz => (
+              <Label
+                key={hz}
+                x={plotX(hz)}
+                y={PLOT.bottom + 12}
+                anchor="middle"
+              >
+                {hz >= 1000 ? `${hz / 1000} kHz` : `${hz} Hz`}
+              </Label>
+            ))}
+            <path
+              d={curve(hz => cabDb(cab, hz))}
+              className={styles.curveQuiet}
+            />
+            <path
+              d={curve(stack)}
+              className={
+                r.touched('ampBass', 'ampMid', 'ampTreble', 'ampVoice')
+                  ? styles.curveOn
+                  : styles.curve
+              }
+              opacity={off ? 0.55 : 1}
+            />
+            <Label
+              x={PLOT.right}
+              y={plotY(stack(HZ.high)) - 4}
+              anchor="end"
+              pick={labelPick('tone stack')}
+            >
+              tone stack
+            </Label>
+            <Label
+              x={Math.min(
+                Math.max(plotX(loudest), PLOT.left + 24),
+                PLOT.right - 90,
+              )}
+              y={plotY(cabDb(cab, loudest)) - 4}
+              anchor="middle"
+              pick={labelPick('speaker')}
+            >
+              speaker
+            </Label>
+          </>
+        )}
+      </ChipDrawing>
       <BoxRows card={card(pick)} keys={open?.keys} />
     </>
   )

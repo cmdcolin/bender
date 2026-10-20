@@ -6,7 +6,7 @@ import {
 } from '../dsp/stages/toyDrum.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
-import chipLook from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import {
   ONE_LINE_H,
   boxWidth,
@@ -14,8 +14,9 @@ import {
   useSelectedBox,
   card,
   type BoxPick,
+  lefts,
 } from './diagram.ts'
-import { Bend, BoxRows, Diagram, Dot, Label, Wire } from './DiagramParts.tsx'
+import { Bend, BoxRows, Dot, Label, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -261,11 +262,10 @@ export function KitWiringDiagram() {
   ]
   const widths = patches.map(p => boxWidth(p.name))
   const spanW = widths.reduce((a, b) => a + b, 0) + CHIP_GAP * 2
+  const xs = lefts(widths, CHIP_GAP, (WIDTH - spanW) / 2)
   const patchBoxes = patches.map((p, i): ChipBox => ({
     name: p.name,
-    x:
-      (WIDTH - spanW) / 2 +
-      widths.slice(0, i).reduce((a, b) => a + b + CHIP_GAP, 0),
+    x: xs[i]!,
     y: CHIP_Y,
     w: widths[i]!,
     h: CHIP_H,
@@ -283,74 +283,72 @@ export function KitWiringDiagram() {
   )
   return (
     <>
-      <div className={chipLook.chips}>
-        <Diagram width={WIDTH} height={HEIGHT} label="drum kit wiring">
-          {arrow => (
-            <>
-              {voices.map((b, v) => (
-                <g key={b.name}>
-                  <Wire
-                    arrow={arrow}
-                    d={`M${PATTERN_W} ${rowY(v)} H${VOICE_X}`}
-                  />
-                  <Wire
-                    arrow={arrow}
-                    d={`M${voiceRight} ${rowY(v)} H${AMPS_X}`}
-                    look={crossing && wiring[v] !== v ? 'dash' : 'plain'}
-                  />
-                </g>
-              ))}
-              {crossing &&
-                wiring.map((from, v) => {
-                  if (from === v) return null
-                  const d = `M${voiceRight} ${rowY(from)} L${AMPS_X} ${rowY(v)}`
-                  return (
-                    <Bend
-                      key={v}
-                      name="cross-patch wire"
-                      opens="cross-patch"
-                      pick={pick}
-                      hit={d}
-                    >
-                      {sampled ? (
-                        <Wire arrow={arrow} d={d} look="dash" />
-                      ) : (
-                        <Bodge
-                          x1={voiceRight}
-                          y1={rowY(from)}
-                          x2={AMPS_X}
-                          y2={rowY(v)}
-                        />
-                      )}
-                    </Bend>
-                  )
-                })}
-              {all.map((run, i) => (
-                <RunWire
-                  key={`${run.kind}${run.from}`}
-                  run={run}
-                  lane={laneOf[i]!}
+      <ChipDrawing width={WIDTH} height={HEIGHT} label="drum kit wiring">
+        {arrow => (
+          <>
+            {voices.map((b, v) => (
+              <g key={b.name}>
+                <Wire
                   arrow={arrow}
-                  pick={pick}
+                  d={`M${PATTERN_W} ${rowY(v)} H${VOICE_X}`}
                 />
-              ))}
-              <Wire
+                <Wire
+                  arrow={arrow}
+                  d={`M${voiceRight} ${rowY(v)} H${AMPS_X}`}
+                  look={crossing && wiring[v] !== v ? 'dash' : 'plain'}
+                />
+              </g>
+            ))}
+            {crossing &&
+              wiring.map((from, v) => {
+                if (from === v) return null
+                const d = `M${voiceRight} ${rowY(from)} L${AMPS_X} ${rowY(v)}`
+                return (
+                  <Bend
+                    key={v}
+                    name="cross-patch wire"
+                    opens="cross-patch"
+                    pick={pick}
+                    hit={d}
+                  >
+                    {sampled ? (
+                      <Wire arrow={arrow} d={d} look="dash" />
+                    ) : (
+                      <Bodge
+                        x1={voiceRight}
+                        y1={rowY(from)}
+                        x2={AMPS_X}
+                        y2={rowY(v)}
+                      />
+                    )}
+                  </Bend>
+                )
+              })}
+            {all.map((run, i) => (
+              <RunWire
+                key={`${run.kind}${run.from}`}
+                run={run}
+                lane={laneOf[i]!}
                 arrow={arrow}
-                d={`M${AMPS_X + AMPS_W} ${TOP + (N * ROW) / 2} H${WIDTH - 2}`}
+                pick={pick}
               />
-              <Label x={WIDTH - 2} y={TOP + (N * ROW) / 2 + 12} anchor="end">
-                out
-              </Label>
-              {node(pattern)}
-              {voices.map(b => (
-                <Chip key={b.name} box={b} />
-              ))}
-              {node(amps)}
-              {patchBoxes.map((b, i) => node(b, patches[i]!.lit))}
-            </>
-          )}
-        </Diagram>
-      </div>
+            ))}
+            <Wire
+              arrow={arrow}
+              d={`M${AMPS_X + AMPS_W} ${TOP + (N * ROW) / 2} H${WIDTH - 2}`}
+            />
+            <Label x={WIDTH - 2} y={TOP + (N * ROW) / 2 + 12} anchor="end">
+              out
+            </Label>
+            {node(pattern)}
+            {voices.map(b => (
+              <Chip key={b.name} box={b} />
+            ))}
+            {node(amps)}
+            {patchBoxes.map((b, i) => node(b, patches[i]!.lit))}
+          </>
+        )}
+      </ChipDrawing>
       <BoxRows
         card={card(pick)}
         keys={open?.keys}

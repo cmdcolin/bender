@@ -1,6 +1,6 @@
 import { PATCH_BYTES, REG, AM, VIB } from '../dsp/stages/fmVoices.ts'
 import bus from './BusDiagram.module.css'
-import chip from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import styles from './Diagram.module.css'
 import {
   LINE_H,
@@ -9,14 +9,7 @@ import {
   useReadings,
   type BoxPick,
 } from './diagram.ts'
-import {
-  Bend,
-  Diagram,
-  Plate,
-  PickPart,
-  Wire,
-  type WireLook,
-} from './DiagramParts.tsx'
+import { Bend, Plate, PickPart, Wire, type WireLook } from './DiagramParts.tsx'
 import { GAP, LEAD, OP_W, SPAN_W, WIDTH, X0 } from './fmVoiceSpan.ts'
 
 const KEYS = [
@@ -119,111 +112,109 @@ export function FmVoiceDiagram({ pick }: { pick: BoxPick }) {
   )
 
   return (
-    <div className={chip.chips}>
-      <Diagram width={WIDTH} height={HEIGHT} label="FM operators">
-        {arrow => (
-          <g opacity={boosted ? 1 : 0.45}>
-            <Wire arrow={arrow} d={`M${X0} ${MID} H${mod.x}`} />
-            <text x={X0 + 2} y={MID - 5} className={styles.note}>
-              patch
-            </text>
-            <Bend
-              name="brightness"
-              opens="brightness"
-              pick={pick}
-              hit={brightWire}
-            >
-              <Wire
-                arrow={arrow}
-                d={brightWire}
-                look={indexBoost ? 'alarm' : flow}
-              />
-              <text
-                x={wireMid}
-                y={MID - 5}
-                textAnchor="middle"
-                className={r.touched('fmBright') ? styles.noteOn : styles.note}
-              >
-                brightness
-              </text>
-              {indexBoost && (
-                <text
-                  x={wireMid}
-                  y={MID + 14}
-                  textAnchor="middle"
-                  className={bus.knifed}
-                >
-                  booster
-                </text>
-              )}
-            </Bend>
+    <ChipDrawing width={WIDTH} height={HEIGHT} label="FM operators">
+      {arrow => (
+        <g opacity={boosted ? 1 : 0.45}>
+          <Wire arrow={arrow} d={`M${X0} ${MID} H${mod.x}`} />
+          <text x={X0 + 2} y={MID - 5} className={styles.note}>
+            patch
+          </text>
+          <Bend
+            name="brightness"
+            opens="brightness"
+            pick={pick}
+            hit={brightWire}
+          >
             <Wire
               arrow={arrow}
-              d={`M${car.x + car.w} ${MID} H${X0 + SPAN_W - 2}`}
-              look={flow}
+              d={brightWire}
+              look={indexBoost ? 'alarm' : flow}
             />
             <text
-              x={X0 + SPAN_W - 2}
-              y={MID + 12}
-              textAnchor="end"
-              className={styles.note}
+              x={wireMid}
+              y={MID - 5}
+              textAnchor="middle"
+              className={r.touched('fmBright') ? styles.noteOn : styles.note}
             >
-              out
+              brightness
             </text>
-            <Bend name="feedback" opens="feedback" pick={pick} hit={loopWire}>
-              <Wire arrow={arrow} d={loopWire} look={loopLook} />
+            {indexBoost && (
               <text
-                x={mod.x + mod.w / 2}
-                y={LOOP_Y - 3}
+                x={wireMid}
+                y={MID + 14}
                 textAnchor="middle"
-                className={
-                  feedbackBoost
-                    ? bus.knifed
-                    : feedback > 0
-                      ? styles.noteOn
-                      : styles.note
-                }
+                className={bus.knifed}
               >
-                feedback
+                booster
               </text>
-            </Bend>
-            <Bend
-              name="LFO wires"
-              opens="lfo"
-              pick={pick}
-              hit={lfoDrops.join(' ')}
+            )}
+          </Bend>
+          <Wire
+            arrow={arrow}
+            d={`M${car.x + car.w} ${MID} H${X0 + SPAN_W - 2}`}
+            look={flow}
+          />
+          <text
+            x={X0 + SPAN_W - 2}
+            y={MID + 12}
+            textAnchor="end"
+            className={styles.note}
+          >
+            out
+          </text>
+          <Bend name="feedback" opens="feedback" pick={pick} hit={loopWire}>
+            <Wire arrow={arrow} d={loopWire} look={loopLook} />
+            <text
+              x={mod.x + mod.w / 2}
+              y={LOOP_Y - 3}
+              textAnchor="middle"
+              className={
+                feedbackBoost
+                  ? bus.knifed
+                  : feedback > 0
+                    ? styles.noteOn
+                    : styles.note
+              }
             >
-              {lfoDrops.map(d => (
-                <Wire key={d} arrow={arrow} d={d} look={lfoLook} />
-              ))}
-            </Bend>
-            <PickPart name="LFO" opens="lfo" pick={pick}>
-              <title>
-                LFO — The die’s one LFO, soldered to the operators for vibrato,
-                tremolo or both.
-              </title>
-              <Plate
-                x={mod.x}
-                y={LFO_Y}
-                w={span}
-                h={LFO_H}
-                touched={lfo > 0}
-                selected={pick.selected === 'lfo'}
-              />
-              <text
-                x={mod.x + span / 2}
-                y={LFO_Y + LFO_H - 6}
-                textAnchor="middle"
-                className={lfo > 0 ? styles.nameOn : styles.name}
-              >
-                LFO
-              </text>
-            </PickPart>
-            <OperatorChip op={mod} pick={pick} />
-            <OperatorChip op={car} pick={pick} />
-          </g>
-        )}
-      </Diagram>
-    </div>
+              feedback
+            </text>
+          </Bend>
+          <Bend
+            name="LFO wires"
+            opens="lfo"
+            pick={pick}
+            hit={lfoDrops.join(' ')}
+          >
+            {lfoDrops.map(d => (
+              <Wire key={d} arrow={arrow} d={d} look={lfoLook} />
+            ))}
+          </Bend>
+          <PickPart name="LFO" opens="lfo" pick={pick}>
+            <title>
+              LFO — The die’s one LFO, soldered to the operators for vibrato,
+              tremolo or both.
+            </title>
+            <Plate
+              x={mod.x}
+              y={LFO_Y}
+              w={span}
+              h={LFO_H}
+              touched={lfo > 0}
+              selected={pick.selected === 'lfo'}
+            />
+            <text
+              x={mod.x + span / 2}
+              y={LFO_Y + LFO_H - 6}
+              textAnchor="middle"
+              className={lfo > 0 ? styles.nameOn : styles.name}
+            >
+              LFO
+            </text>
+          </PickPart>
+          <OperatorChip op={mod} pick={pick} />
+          <OperatorChip op={car} pick={pick} />
+        </g>
+      )}
+    </ChipDrawing>
   )
 }

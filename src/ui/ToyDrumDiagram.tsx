@@ -15,6 +15,7 @@ import {
   useSelectedBox,
   type BoxPick,
   type BoxSpec,
+  lefts,
 } from './diagram.ts'
 import {
   Bend,
@@ -170,9 +171,7 @@ export function ToyDrumDiagram({ verbs, zoom }: DrawingProps) {
     boxWidth('amps'),
     Math.max(boxWidth('DAC'), boxWidth('sample ROM')),
   ]
-  const xs = widths.map((_, i) =>
-    Math.round(widths.slice(0, i).reduce((a, b) => a + b, 0) + GAP * i),
-  )
+  const xs = lefts(widths, GAP).map(Math.round)
   const width = widths.reduce((a, b) => a + b, 0) + GAP * 3 + TAIL
   const triggersY = TOP + HEAD
   const rowY = (i: number) =>

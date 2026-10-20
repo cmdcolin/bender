@@ -12,7 +12,13 @@ import {
 } from './busSpecs.ts'
 import { sliderFor } from './controls/index.ts'
 import diagram from './Diagram.module.css'
-import { boxHeight, boxWidth, useReadings, type BoxPick } from './diagram.ts'
+import {
+  boxHeight,
+  boxWidth,
+  spread,
+  useReadings,
+  type BoxPick,
+} from './diagram.ts'
 import { BoxView, Diagram, Dot, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
@@ -64,11 +70,7 @@ function place(row: BusRow, rowTop: number, tapped: boolean) {
   const boxTop = rowTop + above
   const mid = boxTop + coreH / 2
   const widths = row.chips.map(c => Math.max(...[c].flat().map(boxWidth)))
-  const gap =
-    (WIDTH - 2 - widths.reduce((a, b) => a + b)) / (row.chips.length - 1)
-  const xs = widths.map((_, i) =>
-    Math.round(widths.slice(0, i).reduce((a, b) => a + b + gap, 1)),
-  )
+  const { xs } = spread(widths, WIDTH - 2, 1)
   const links = row.links.map((link, i) => {
     let top = mid - stackH(link) / 2
     return link.map(r => {

@@ -5,7 +5,9 @@ import {
   useFlow,
   useReadings,
   useSelectedBox,
-  type BoxSpec,
+  boxMaker,
+  chainPaths,
+  spread,
 } from './diagram.ts'
 import { Bend, BoxRows, BoxView, OpenBox, Wire } from './DiagramParts.tsx'
 import { FmVoiceDiagram } from './FmVoiceDiagram.tsx'
@@ -119,31 +121,12 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     ],
     ['output', ['fmDrive'], 'The one output stage the four voices share.'],
   ]
-  const box = (
-    id: string,
-    x: number,
-    y: number,
-    w: number,
-    keys: readonly Key[],
-    help: string,
-  ): BoxSpec => ({
-    id,
-    keys,
-    x,
-    y,
-    w,
-    name: id,
-    touched: r.touched(...keys),
-    help,
-  })
+  const box = boxMaker(r.touched)
   const widths = path.map(([id]) => boxWidth(id))
-  const gap = (WIDTH - 2 - widths.reduce((a, b) => a + b)) / (widths.length - 1)
-  let x = 0
-  const row = path.map(([id, keys, help], i) => {
-    const spec = box(id, Math.round(x), TOP + ROW, widths[i]!, keys, help)
-    x += spec.w + gap
-    return spec
-  })
+  const { xs } = spread(widths, WIDTH - 2)
+  const row = path.map(([id, keys, help], i) =>
+    box(id, xs[i]!, TOP + ROW, widths[i]!, keys, help),
+  )
   const at = (id: string) => row.find(b => b.id === id)!
   const mod = at('modulator')
   const car = at('carrier')
@@ -173,8 +156,6 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const zoomed = pick.selected !== null && VOICE_IDS.includes(pick.selected)
   const feet = TOP + ROW * 2 + BOX_H + 4
   const mid = TOP + ROW + BOX_H / 2
-  const edge = (from: BoxSpec, to: BoxSpec) =>
-    `M${from.x + from.w} ${mid} H${to.x}`
   const drops = [mod.x + mod.w / 2, car.x + car.w / 2]
   const clockDrops = drops.map(dx => `M${dx} ${TOP + BOX_H} V${TOP + ROW}`)
   const dieDrops = drops.map(
@@ -187,11 +168,11 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       <ChipDrawing width={WIDTH} height={feet} label="glint signal path">
         {arrow => (
           <>
-            {row.slice(1).map((to, i) => (
+            {chainPaths(row, mid).map((d, i) => (
               <Wire
-                key={to.id}
+                key={d}
                 arrow={arrow}
-                d={edge(row[i]!, to)}
+                d={d}
                 look={i === 0 ? 'plain' : flow}
               />
             ))}
