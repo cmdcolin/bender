@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from 'react'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
@@ -112,6 +119,19 @@ function panelRows(group: Group): SliderDef[] {
 function shown(def: SliderDef, c: Controls): boolean {
   return !def.needs || def.needs(c) || c[def.key] !== DEFAULT_CONTROLS[def.key]
 }
+
+const useStanding = (cuts: CutDef[]) =>
+  useBoardValue(c => cuts.find(cut => cutStands(cut, c))?.name ?? '')
+
+const useShownKeys = (defs: SliderDef[]): Set<string> =>
+  new Set(
+    useBoardValue(c =>
+      defs
+        .filter(d => shown(d, c))
+        .map(d => d.key)
+        .join(','),
+    ).split(','),
+  )
 
 interface Part {
   name: string | null
@@ -497,15 +517,11 @@ function PartFold({
   // A cut has a name, and a name says more than a count of the controls it
   // moved: a shut fold reading 'machine-gun' is the heading telling you which
   // knife is on the bus without your having to open it and read three rows.
-  const standing = useBoardValue(
-    c => cuts.find(cut => cutStands(cut, c))?.name ?? '',
-  )
+  const standing = useStanding(cuts)
   const hostedCuts = hostedBy(group.name, name).flatMap(part =>
     cutsFor(group.name, part),
   )
-  const hostedStanding = useBoardValue(
-    c => hostedCuts.find(cut => cutStands(cut, c))?.name ?? '',
-  )
+  const hostedStanding = useStanding(hostedCuts)
   const badge = standing || hostedStanding
   const says = badge || (moved > 0 ? `${moved} moved` : undefined)
   const caution = group.caution?.part === name ? group.caution.text : null
@@ -540,6 +556,25 @@ const verbsFor =
   (group: Group, seconds: number): Verbs =>
   part => <BoxVerbs group={group} part={part} seconds={seconds} />
 
+type EditorKind = NonNullable<Group['editor']>['kind']
+
+const PANELS: Partial<Record<EditorKind, ComponentType>> = {
+  mixer: Mixer,
+  feedback: FeedbackLoops,
+  order: OrderRack,
+  patch: PatchBay,
+  trigger: TriggerPatch,
+  supply: SupplyReading,
+  mic: MicPatch,
+  loops: FourTrack,
+}
+
+const BARE_DRAWINGS: Partial<Record<EditorKind, ComponentType>> = {
+  tapeLoop: TapeLoopDiagram,
+  tapePath: TapePathDiagram,
+  ampPath: AmpPathDiagram,
+}
+
 const PATH_DRAWINGS = {
   fm: FmChipDiagram,
   pcm: PcmKeysDiagram,
@@ -560,9 +595,7 @@ function BoxVerbs({
   seconds: number
 }) {
   const cuts = cutsFor(group.name, part)
-  const standing = useBoardValue(
-    c => cuts.find(cut => cutStands(cut, c))?.name ?? '',
-  )
+  const standing = useStanding(cuts)
   return (
     <CutRow
       cuts={cuts}
@@ -581,15 +614,7 @@ function BoxVerbs({
 function Lead({ group }: { group: Group }) {
   const keys = group.lead ?? []
   const rows = group.sliders.filter(def => keys.includes(def.key))
-  // The same string the rest of the rows come off, and for the same reason: a
-  // row arriving or leaving is rare, and the board moves sixty times a second.
-  const shownKeys = useBoardValue(c =>
-    rows
-      .filter(d => shown(d, c))
-      .map(d => d.key)
-      .join(','),
-  )
-  const visible = new Set(shownKeys.split(','))
+  const visible = useShownKeys(rows)
   return (
     <>
       {rows
@@ -618,18 +643,7 @@ function Rows({
 }) {
   const blocks = parts(group)
   const drawn = listed ? undefined : STAGE_DRAWINGS[group.name]
-  // Which rows have anything to act on, as a string rather than the board they
-  // are read off: a stage stands open through morphs and drags, and taking the
-  // board would rebuild every row in it sixty times a second — where what the
-  // list actually turns on is a row arriving or leaving, which is rare. The
-  // rows themselves each hold their own control and move on their own.
-  const shownKeys = useBoardValue(c =>
-    group.sliders
-      .filter(d => shown(d, c))
-      .map(d => d.key)
-      .join(','),
-  )
-  const visible = new Set(shownKeys.split(','))
+  const visible = useShownKeys(group.sliders)
   // Settled the once, on the way in: the fold itself belongs to the browser from
   // there, and a heading that reopened under a morph because the board had moved
   // would be the panel taking a hand off the knob you were turning.
@@ -745,13 +759,14 @@ export function OpenGroup({
   const listedEverywhere = useStoreValue(listView)
   const [listedHere, setListedHere] = useState(false)
   const listed = listedEverywhere || listedHere
+  const kind = group.editor?.kind
   const drawable = useMemo(
     () =>
       group.name in STAGE_DRAWINGS ||
-      isPathKind(group.editor?.kind) ||
-      ['tapeLoop', 'tapePath', 'ampPath'].includes(group.editor?.kind ?? '') ||
+      isPathKind(kind) ||
+      (kind !== undefined && kind in BARE_DRAWINGS) ||
       group.sliders.some(d => d.part && foldDrawing(group.name, d.part)),
-    [group],
+    [group, kind],
   )
   const el = useRef<HTMLDivElement>(null)
   const fresh = useMemo(
@@ -782,16 +797,17 @@ export function OpenGroup({
   // The four-track's settings go above its lanes: they are the way in for a hand
   // that cannot see where to start, and four lanes of empty tape would push them
   // off the screen.
-  const rigsFirst = group.editor?.kind === 'loops'
+  const rigsFirst = kind === 'loops'
   const drawn = !listed && group.name in STAGE_DRAWINGS
-  const kind = group.editor?.kind
+  const Panel = kind && PANELS[kind]
+  const BareDrawing = !listed && kind ? BARE_DRAWINGS[kind] : undefined
   const PathDrawing =
     !listed && isPathKind(kind) ? PATH_DRAWINGS[kind] : undefined
   const rollBoxed = drawn || Boolean(group.memory && PathDrawing)
   const widget =
-    group.editor?.kind === 'roll' && shownEditors.roll && !drawn ? (
+    kind === 'roll' && shownEditors.roll && !drawn ? (
       <TuneRoll />
-    ) : group.editor?.kind === 'drums' && shownEditors.grid ? (
+    ) : kind === 'drums' && shownEditors.grid ? (
       <DrumGrid />
     ) : null
   const rigs = <Rigs group={group} seconds={seconds} />
@@ -810,12 +826,12 @@ export function OpenGroup({
           {former && <span className={styles.was}> ({former})</span>}
         </span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}
-        {group.editor?.kind === 'mic' && <MicSwitch />}
+        {kind === 'mic' && <MicSwitch />}
         <MicCap stage={group.name} />
-        {(group.editor?.kind === 'roll' || group.memory) && !rollBoxed && (
+        {(kind === 'roll' || group.memory) && !rollBoxed && (
           <EditorToggle which="roll" />
         )}
-        {group.editor?.kind === 'drums' && <EditorToggle which="grid" />}
+        {kind === 'drums' && <EditorToggle which="grid" />}
         <StageVerbs group={group} seconds={seconds} />
         <MoreMenu
           group={group}
@@ -841,23 +857,14 @@ export function OpenGroup({
           {!drawn && <Lead group={group} />}
           {rigsFirst && rigs}
           {!drawn && widget}
-          {group.editor?.kind === 'mixer' && <Mixer />}
-          {group.editor?.kind === 'feedback' && <FeedbackLoops />}
-          {group.editor?.kind === 'order' && <OrderRack />}
-          {group.editor?.kind === 'patch' && <PatchBay />}
-          {group.editor?.kind === 'trigger' && <TriggerPatch />}
-          {group.editor?.kind === 'supply' && <SupplyReading />}
-          {group.editor?.kind === 'mic' && <MicPatch />}
-          {group.editor?.kind === 'loops' && <FourTrack />}
-          {!listed && group.editor?.kind === 'tapeLoop' && <TapeLoopDiagram />}
-          {!listed && group.editor?.kind === 'tapePath' && <TapePathDiagram />}
+          {Panel && <Panel />}
+          {BareDrawing && <BareDrawing />}
           {PathDrawing && (
             <PathDrawing
               zoom={zoomFor(group.name)}
               verbs={verbsFor(group, seconds)}
             />
           )}
-          {!listed && group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
           {group.memory && !PathDrawing && shownEditors.roll && <MonoRoll />}
           {!rigsFirst && rigs}
           <Rows
