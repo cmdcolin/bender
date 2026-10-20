@@ -44,9 +44,9 @@
    and trapped the wheel.
 
    max-width and not width: the svg keeps its own size and only ever scales
-   down. The labels draw at 11px only while the drawing fits the column (433 in
-   445). Each box added across the source rows has pushed it past before, so
-   the panel snakes them onto two lines.
+   down, so the labels draw full size only while the drawing fits the column.
+   Each box added across the source rows has pushed it past before, so the
+   panel snakes them onto two lines.
 
    The ceiling is a ration, and what it rations for is the stage under it. The
    panel holds a header, this, and whatever a door on it opens, and the last of
