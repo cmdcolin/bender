@@ -23,8 +23,10 @@ export const DRAWN_ROWS = new Set(
   Object.entries(STAGE_DRAWINGS).map(([group, part]) => `${group}|${part}`),
 )
 
-/** Folds the drawing of another fold has taken over, drawn as boxes in it. */
+/** Folds a drawing has taken over, drawn as boxes in it, keyed by the stage
+    and the fold or drawing that holds them. */
 const HOSTED: Record<string, readonly string[]> = {
+  'Growler|voice card': ['melody'],
   'Clatter|inside the voices': [
     'the converter',
     'Sample ROM',

@@ -151,7 +151,7 @@ test('every knob in the die fold sits in one of the parts', () => {
 
 test('the keyboard box starts open on the playing rows, and the bus box swaps in its own', () => {
   open()
-  for (const row of ['Tune', 'Level', 'Tone', 'Arpeggio'])
+  for (const row of ['Level', 'Tone', 'Arpeggio'])
     expect(screen.getByText(row)).not.toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'bus controls' }))
   expect(screen.queryByText('Arpeggio')).toBeNull()
@@ -174,13 +174,15 @@ test('the stage draws no folds and no rows outside the drawing', () => {
   expect(screen.queryByText('Level')).toBeNull()
 })
 
-test('showing the piano roll opens the keyboard box', () => {
+test('the memory box holds the tune picker and the piano roll', () => {
   open()
-  fireEvent.click(screen.getByRole('button', { name: 'envelope controls' }))
+  expect(screen.queryByRole('button', { name: 'show piano roll' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'keyboard controls' }))
   expect(screen.queryByText('Tune')).toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'show piano roll' }))
+  fireEvent.click(screen.getByRole('button', { name: 'memory controls' }))
   expect(screen.getByText('Tune')).not.toBeNull()
-  fireEvent.click(screen.getByRole('button', { name: 'show piano roll' }))
+  expect(screen.getByRole('button', { name: 'C4 step 1' })).not.toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'memory controls' }))
 })
 
 test('the bend spot row opens from the boxes it solders to', () => {

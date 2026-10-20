@@ -1,8 +1,10 @@
+import { MONO_SEQ_STEP_KEYS } from '../tune.ts'
 import { ChipDrawing } from './ChipDrawing.tsx'
 import chip from './ChipLook.module.css'
 import styles from './Diagram.module.css'
 import {
   boxWidth,
+  glyphBoxWidth,
   ONE_LINE_H,
   partKeys,
   useFlow,
@@ -15,6 +17,7 @@ import {
   BoxRows,
   BoxView,
   Dot,
+  GlyphBox,
   Label,
   OpenBox,
   Plate,
@@ -22,6 +25,8 @@ import {
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
+import { MonoRoll } from './MonoRoll.tsx'
+import { rollGlyph, ROLL_GLYPH_W } from './rollGlyph.tsx'
 
 import type { ControlKey } from '../controls.ts'
 import type { Verbs, Zoom } from './foldHosting.ts'
@@ -66,7 +71,20 @@ const PARTS = new Map<string, string>(
   Object.entries(BOXES).map(([id, b]) => [id, b.part]),
 )
 
-const KEYS = [...new Set(Object.values(BOXES).flatMap(b => keysOf(b.part)))]
+const MEMORY = 'memory'
+const MEMORY_KEYS = keysOf('melody')
+const WRITTEN_KEYS: ControlKey[] = [
+  ...MEMORY_KEYS,
+  ...MONO_SEQ_STEP_KEYS,
+  'monoSeqLen',
+]
+
+const KEYS = [
+  ...new Set([
+    ...Object.values(BOXES).flatMap(b => keysOf(b.part)),
+    ...WRITTEN_KEYS,
+  ]),
+]
 
 const wire = (on: boolean): WireLook => (on ? 'on' : 'dash')
 
@@ -95,7 +113,8 @@ const HEIGHT = ROW2 + BOX_H + 4
 // The voice card as the Model D's panel lays it out. The keys set the pitch of
 // three oscillators, the mixer sums them with noise and the output fed back,
 // and the ladder filter and the VCA follow, each with its own contour. Osc 3 or
-// noise feeds the modulation bus, back to the oscillators and the cutoff.
+// noise feeds the modulation bus, back to the oscillators and the cutoff. The
+// melody memory under the keys opens the piano roll.
 export function MonoPathDiagram({
   verbs,
   zoom,
@@ -141,6 +160,13 @@ export function MonoPathDiagram({
   const loud = box('loudness', xs[4]!, top)
   const mod = box('modulation', mixer.x - 10, ROW2)
   const card = box('voice card', 0, ROW2)
+  const memory = {
+    x: 0,
+    y: ROW2,
+    w: glyphBoxWidth(MEMORY, ROLL_GLYPH_W),
+    h: BOX_H,
+  }
+  const playsHere = up('monoSeqOn') && r.value('monoSeqTo') === 0
   card.x = WIDTH - 2 - card.w
   const boxes = [keys, mixer, filter, loud, mod, card]
   const oscs = box('oscillators', frameX, FRAME_TOP)
@@ -148,6 +174,7 @@ export function MonoPathDiagram({
     { id: 'sync', keys: ['monoSync'] as const },
     { id: 'FM', keys: ['monoFm'] as const },
   ]
+  const memoryOpen = pick.selected === MEMORY
   const drawn = [...boxes, oscs].find(b => b.id === pick.selected)
   const open = drawn ?? words.find(w => w.id === pick.selected)
   const part = open && PARTS.get(open.id!)
@@ -180,6 +207,11 @@ export function MonoPathDiagram({
         {arrow => (
           <>
             <Wire arrow={arrow} d={`M${keys.x + keys.w} ${MID} H${frameX}`} />
+            <Wire
+              arrow={arrow}
+              d={`M${keys.x + keys.w / 2} ${ROW2} V${top + BOX_H}`}
+              look={wire(playsHere)}
+            />
             {[0, 1, 2].map(i => (
               <Wire
                 key={i}
@@ -326,9 +358,30 @@ export function MonoPathDiagram({
                 onSelect={pick.toggle}
               />
             ))}
+            <GlyphBox
+              {...memory}
+              name={MEMORY}
+              help="the second melody memory and its piano roll, and which machine it plays"
+              lit={r.touched(...WRITTEN_KEYS)}
+              selected={memoryOpen}
+              onSelect={() => pick.toggle(MEMORY)}
+              glyphW={ROLL_GLYPH_W}
+              glyph={rollGlyph}
+            />
           </>
         )}
       </ChipDrawing>
+      {memoryOpen && (
+        <OpenBox name={MEMORY} onHide={() => pick.toggle(MEMORY)}>
+          <BoxRows
+            title={MEMORY}
+            keys={MEMORY_KEYS}
+            inOrder
+            verbs={verbs('melody')}
+            under={{ keys: MEMORY_KEYS, node: <MonoRoll /> }}
+          />
+        </OpenBox>
+      )}
       {open && (
         <OpenBox
           name={drawn?.name ?? open.id!}

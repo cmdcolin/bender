@@ -820,8 +820,9 @@ export function OpenGroup({
   const kind = group.editor?.kind
   const PathDrawing =
     !listed && isPathKind(kind) ? PATH_DRAWINGS[kind] : undefined
+  const rollBoxed = drawn || Boolean(group.memory && PathDrawing)
   const widget =
-    group.editor?.kind === 'roll' && shownEditors.roll ? (
+    group.editor?.kind === 'roll' && shownEditors.roll && !drawn ? (
       <TuneRoll />
     ) : group.editor?.kind === 'drums' && shownEditors.grid ? (
       <DrumGrid />
@@ -843,7 +844,7 @@ export function OpenGroup({
         </span>
         {isPedal(group.name) && <BenchToggle stage={group.name} />}
         {group.editor?.kind === 'mic' && <MicSwitch />}
-        {(group.editor?.kind === 'roll' || group.memory) && (
+        {(group.editor?.kind === 'roll' || group.memory) && !rollBoxed && (
           <EditorToggle which="roll" />
         )}
         {group.editor?.kind === 'drums' && <EditorToggle which="grid" />}
@@ -900,7 +901,7 @@ export function OpenGroup({
             />
           )}
           {!listed && group.editor?.kind === 'ampPath' && <AmpPathDiagram />}
-          {group.memory && shownEditors.roll && <MonoRoll />}
+          {group.memory && !PathDrawing && shownEditors.roll && <MonoRoll />}
           {!rigsFirst && rigs}
           <Rows
             key={group.name}

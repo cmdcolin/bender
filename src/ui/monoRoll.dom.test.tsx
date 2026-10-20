@@ -4,20 +4,28 @@ import { beforeEach, expect, test } from 'vitest'
 
 import { engine } from '../engine/engine.ts'
 import { HOLD, REST } from '../tune.ts'
-import { bench } from './bench.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
 beforeEach(() => {
-  bench.set({ ...bench.get(), roll: true })
   act(() => engine.patch({ monoSeqOn: 0, monoSeqLen: 16 }))
 })
 
 const openMono = () => {
   const group = GROUPS.find(g => g.name === 'Growler')
   if (!group) throw new Error('no Mono synth group')
-  return render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
+  const view = render(
+    <OpenGroup group={group} onClose={() => {}} seconds={0} />,
+  )
+  openMemory()
+  return view
+}
+
+// The drawing's memory box holds the roll.
+const openMemory = () => {
+  if (!screen.queryByRole('region', { name: 'memory' }))
+    fireEvent.click(screen.getByRole('button', { name: 'memory controls' }))
 }
 
 const cell = (name: string) => screen.getByRole('button', { name })

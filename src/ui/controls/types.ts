@@ -134,8 +134,9 @@ export interface Group {
     | { kind: 'fm' }
     | { kind: 'pcm' }
     | { kind: 'ampPath' }
-  /** A melody memory beside the group's editor, drawn as a piano roll under it
-      when the player shows piano rolls. Its steps and length have no slider. */
+  /** A melody memory beside the group's editor. The drawing's memory box opens
+      it as a piano roll; the listed panel shows the roll when the player shows
+      piano rolls. Its steps and length have no slider. */
   memory?: { keys: ControlKey[] }
   /** Controls the group's own widget turns, so the panel draws no row for them.
       The definitions stay in `sliders` — they are what a roll, a reset, a rig

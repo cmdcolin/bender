@@ -1,25 +1,30 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 
 import { YOURS } from '../dsp/stages/roms.ts'
 import { engine } from '../engine/engine.ts'
 import { HOLD, REST } from '../tune.ts'
-import { bench } from './bench.ts'
 import { GROUPS } from './controls/index.ts'
 import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
-
-beforeEach(() => {
-  bench.set({ ...bench.get(), roll: true, grid: true })
-})
 
 // The melody memory, as the panel draws it. An empty memory opens on the
 // keyboard's own bottom C, so these name their cells from there.
 const openKeyboard = () => {
   const group = GROUPS.find(g => g.name === 'Plinky')
   if (!group) throw new Error('no Toy keyboard group')
-  return render(<OpenGroup group={group} onClose={() => {}} seconds={0} />)
+  const view = render(
+    <OpenGroup group={group} onClose={() => {}} seconds={0} />,
+  )
+  openMemory()
+  return view
+}
+
+// The drawing's memory box holds the roll.
+const openMemory = () => {
+  if (!screen.queryByRole('region', { name: 'memory' }))
+    fireEvent.click(screen.getByRole('button', { name: 'memory controls' }))
 }
 
 const cell = (name: string) => screen.getByRole('button', { name })

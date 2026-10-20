@@ -383,9 +383,10 @@ test('a machine added from the menu has its box on the map', () => {
   expect(shownOn(engine.controls.get()).has('Growler')).toBe(true)
 })
 
-test('the piano roll stays out of the toy keyboard panel until it is shown', () => {
+test('the piano roll stays out of the listed toy keyboard panel until it is shown', () => {
   const toy = GROUPS.find(g => g.name === 'Plinky')!
   render(<OpenGroup group={toy} onClose={() => {}} seconds={0} />)
+  fireEvent.click(screen.getByRole('button', { name: 'all settings' }))
   expect(screen.queryByRole('application', { name: /roll/i })).toBeNull()
   const before = document.body.innerHTML
   const toggle = screen.getByRole('button', { name: 'show piano roll' })

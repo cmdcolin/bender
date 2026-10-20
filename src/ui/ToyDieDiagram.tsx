@@ -1,3 +1,4 @@
+import { TUNE_ALL_STEP_KEYS } from '../tune.ts'
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import { ChipDrawing } from './ChipDrawing.tsx'
@@ -8,15 +9,16 @@ import {
   glyphBoxWidth,
   ONE_LINE_H,
   partKeys,
-  useBoxWhileEditing,
   useFlow,
   useReadings,
   useSelectedBox,
   type BoxPick,
 } from './diagram.ts'
 import { BoxRows, GlyphBox, OpenBox, PickPart, Wire } from './DiagramParts.tsx'
+import { rollGlyph, ROLL_GLYPH_W } from './rollGlyph.tsx'
 import { slidersFirst } from './slidersFirst.ts'
 import { NODE_KEYS, POT } from './toyBoxKeys.ts'
+import { TuneRoll } from './TuneRoll.tsx'
 
 import type { DrawingProps } from './drawingFor.tsx'
 
@@ -47,17 +49,18 @@ const GROUP = GROUPS.find(g => g.name === 'Plinky')!
 const BUS = 'knife on the bus'
 const DIE = 'inside the die'
 const KEYBOARD = 'keyboard'
+const MEMORY = 'memory'
 
 const BUS_KEYS = partKeys('Plinky', BUS)
 
-const LEAD_KEYS = GROUP.lead ?? []
-const PLAY_KEYS = [
+const MEMORY_KEYS = GROUP.lead ?? []
+const WRITTEN_KEYS = [...MEMORY_KEYS, ...TUNE_ALL_STEP_KEYS, 'tuneLen'] as const
+const KEYBOARD_KEYS = [
   ...slidersFirst(
-    GROUP.sliders.filter(d => !d.part && !LEAD_KEYS.includes(d.key)),
+    GROUP.sliders.filter(d => !d.part && !MEMORY_KEYS.includes(d.key)),
   ),
   ...slidersFirst(GROUP.sliders.filter(d => d.part === 'arp and key lock')),
 ].map(d => d.key)
-const KEYBOARD_KEYS = [...LEAD_KEYS, ...PLAY_KEYS]
 
 // What lights each box: its own knobs, leaving the pot to the box it sits on.
 const OWN_KEYS = Object.fromEntries(
@@ -75,6 +78,7 @@ const ROOM = 22
 const ROW_GAP = 44
 const BOX_H = ONE_LINE_H
 const GAPS = [26, 38, 22]
+const MEMORY_GAP = 26
 const TAIL = 28
 const TOP = ROOM
 const LOW = TOP + BOX_H + ROW_GAP
@@ -200,15 +204,16 @@ function ClockTag({ x, y, pick }: { x: number; y: number; pick: BoxPick }) {
 
 // The parts of the toy chip the pin bends reach. The key matrix and the tune ROM
 // strike the voices, each voice's envelope sets its level, and the output pin
-// carries every voice off the chip. One clock times the voices, the scan counter
-// and the PWM carrier. Bends that are on show as the keys under the drawing.
-export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
+// carries every voice off the chip. The melody memory rides the ROM's bus and
+// opens the piano roll. One clock times the voices, the scan counter and the
+// PWM carrier. Bends that are on show as the keys under the drawing.
+export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
   const r = useReadings(KEYS)
   const own = useReadings(BOX_KEYS)
   const knifed = useReadings(BUS_KEYS).touched(...BUS_KEYS)
   const played = useReadings(KEYBOARD_KEYS).touched(...KEYBOARD_KEYS)
+  const written = useReadings(WRITTEN_KEYS).touched(...WRITTEN_KEYS)
   const pick = useSelectedBox(KEYBOARD)
-  useBoxWhileEditing(pick, Boolean(editor), KEYBOARD)
   const read = (key: (typeof KEYS)[number]) => Math.round(r.value(key))
   const up = (key: (typeof KEYS)[number]) => r.value(key) > 0
   const flow = useFlow('Plinky')
@@ -257,6 +262,14 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
     w: busW,
     h: BOX_H,
   }
+  const memory: ChipBox = {
+    name: MEMORY,
+    x: rom.x + rom.w + MEMORY_GAP,
+    y: TOP,
+    w: glyphBoxWidth(MEMORY, ROLL_GLYPH_W),
+    h: BOX_H,
+  }
+  const memoryDrop = memory.x + 12
   const mid = LOW + BOX_H / 2
   const pinRight = pin.x + pin.w
   const spot = read('chipBendSpot')
@@ -311,6 +324,11 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
             <Wire d={`M${feed} ${TOP + BOX_H} V${bus.y}`} />
             <Wire
               arrow={arrow}
+              d={`M${memoryDrop} ${TOP + BOX_H} V${bus.y + BOX_H / 2} H${bus.x + bus.w}`}
+              look={written ? flow : 'plain'}
+            />
+            <Wire
+              arrow={arrow}
               d={`M${feed} ${bus.y + BOX_H} V${LOW}`}
               look={knifed ? 'alarm' : 'plain'}
             />
@@ -356,12 +374,21 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
             />
             <GlyphBox
               {...keyboard}
-              help="the tune, level, tone, accompaniment, arpeggio and key lock"
+              help="level, tone, accompaniment, arpeggio and key lock"
               lit={played}
               selected={pick.selected === KEYBOARD}
               onSelect={() => pick.toggle(KEYBOARD)}
               glyphW={GLYPH_W}
               glyph={keyboardGlyph}
+            />
+            <GlyphBox
+              {...memory}
+              help="the song the chip plays, and your own melody on a piano roll"
+              lit={written}
+              selected={pick.selected === MEMORY}
+              onSelect={() => pick.toggle(MEMORY)}
+              glyphW={ROLL_GLYPH_W}
+              glyph={rollGlyph}
             />
             <Node
               pick={pick}
@@ -393,10 +420,13 @@ export function ToyDieDiagram({ verbs, editor, zoom }: DrawingProps) {
         <OpenBox name={open} onHide={() => pick.toggle(open)}>
           {open === 'bus' && zoom?.(BUS)}
           {open === KEYBOARD ? (
+            <BoxRows title={open} keys={KEYBOARD_KEYS} />
+          ) : open === MEMORY ? (
             <BoxRows
               title={open}
-              keys={KEYBOARD_KEYS}
-              under={editor ? { keys: LEAD_KEYS, node: editor } : undefined}
+              keys={MEMORY_KEYS}
+              inOrder
+              under={{ keys: MEMORY_KEYS, node: <TuneRoll /> }}
             />
           ) : (
             <BoxRows
