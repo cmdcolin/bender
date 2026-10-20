@@ -13,22 +13,22 @@ to open that part's controls.
 
 ## Plinky
 
-![Plinky's deck: a voltage lamp, play, REC and HOLD switches, an octave switch, a speaker grille and a volume slider above two octaves of keys with letters printed on them.](../public/guide/guide-keyboard.jpg)
+![Plinky's deck: the front of a toy keyboard chip on a battery.](../public/guide/guide-keyboard.jpg)
 
 A toy keyboard chip on a battery that sags. One RC oscillator clocks a divider,
 a ROM of tunes and the envelopes. Record a melody, hold a chord, turn on the
 arpeggiator.
 
-![Plinky's chip drawing: the keyboard feeds a key matrix into the voices, the tune ROM feeds the voices over a bus, and the voices run through the envelope to the output pin. The clock box stands apart.](../public/guide/guide-die.jpg)
+![The toy chip's blocks: keyboard, key matrix, voices, tune ROM, bus, envelope, output pin and clock.](../public/guide/guide-die.jpg)
 
 ## Clatter
 
-![Clatter's deck: a record light, play and REC switches and a volume slider above a sixteen-step pattern strip and eight numbered pads, kick through cymbal.](../public/guide/guide-drums.jpg)
+![Clatter's deck: the front of a toy drum box, with eight pads and a sixteen-step pattern strip.](../public/guide/guide-drums.jpg)
 
 A toy drum box. A step counter reads a pattern memory and fires analog voices.
 Tap pads, tap the tempo, or draw steps in the strip.
 
-![Clatter's voice drawing: the pads and the pattern fire the triggers, which feed the one-shots, tanks, metal bank and noise, then the amps and the DAC. A sample ROM also feeds the DAC.](../public/guide/guide-drum-voices.jpg)
+![The drum box's blocks: triggers into one-shots, tanks, a metal bank and noise, then amps and a DAC fed by a sample ROM.](../public/guide/guide-drum-voices.jpg)
 
 ## More machines
 
@@ -36,35 +36,35 @@ Add them from the **Add instrument** menu.
 
 ### Glint
 
-![Glint's keybed: a green circuit board with a waveform mark and "2-op" in the header, REC and HOLD switches, an octave switch, a volume slider and two octaves of keys.](../public/guide/guide-fm.jpg)
+![Glint's keybed on the green board of a two-operator FM chip.](../public/guide/guide-fm.jpg)
 
 A two-operator, four-voice FM chip. A processor sets it up a byte at a time over
 a bus, so a wrong byte stays wrong until the processor writes that register
 again.
 
-![Glint's drawing: the key feeds a processor, then a bus, a modulator, a carrier and the output, with clocks above the modulator and carrier and the die below them.](../public/guide/guide-glint-path.jpg)
+![The FM chip's blocks: key, processor, bus, modulator, carrier and output, with clocks and the die.](../public/guide/guide-glint-path.jpg)
 
 ### Parlor
 
-![Parlor's keybed: a grey case with a voltage lamp, REC and HOLD switches, an octave switch, a volume slider and two octaves of keys.](../public/guide/guide-parlor.jpg)
+![Parlor's keybed: the front of an eight-bit sampling home keyboard.](../public/guide/guide-parlor.jpg)
 
 An eight-bit sampling home keyboard. A ROM holds one short recording per voice,
 and a counter walks it at the rate each note asks for.
 
-![Parlor's drawing: keys, counter, ROM, envelope, tone and mix in a row, with vibrato above the counter and the address and data buses under the counter and the ROM.](../public/guide/guide-parlor-path.jpg)
+![The sampler's blocks: keys, counter, ROM, envelope, tone and mix, with vibrato and the address and data buses.](../public/guide/guide-parlor-path.jpg)
 
 ### Growler
 
-![Growler's keybed: a dark case with wooden end cheeks, REC and HOLD switches, an octave switch, a volume slider and two octaves of keys.](../public/guide/guide-growler.jpg)
+![Growler's keybed: the front of a Model D-style monosynth card.](../public/guide/guide-growler.jpg)
 
 A Model D-style monosynth card. Three oscillators with hard sync feed a
 four-pole transistor ladder filter that self-oscillates.
 
-![Growler's voice card drawing: keys into three oscillators with sync and FM, a mixer with noise and a feedback line from the output, the filter, the loudness stage, modulation back to the oscillators and filter, and the voice card under the loudness stage.](../public/guide/guide-growler-card.jpg)
+![The monosynth's blocks: three oscillators, mixer, ladder filter, loudness stage, modulation and voice card.](../public/guide/guide-growler-card.jpg)
 
 ### Four-track
 
-![The four-track desk: four channel strips of trim, aux, EQ, pan and fader controls above four tape lanes, with speed, side and noise-reduction switches underneath.](../public/guide/guide-fourtrack.jpg)
+![The cassette four-track's desk: four channel strips above four tape lanes.](../public/guide/guide-fourtrack.jpg)
 
 A cassette four-track. Four tape loops of different lengths run behind a desk
 with EQ and an aux send, and the desk squeals with nothing plugged in.
@@ -76,7 +76,7 @@ with EQ and an aux send, and the desk squeals with nothing plugged in.
 
 ## The trigger patch
 
-![The trigger patch diagram: Clatter and Plinky as two boxes with "kit plays keys" and "keys play kit" wires between them, and Glint, Parlor and Growler below with "kit hits" and "keyboard notes" wires running in.](../public/guide/guide-trigger.jpg)
+![The trigger patch: jumper wires between Clatter, Plinky, Glint, Parlor and Growler.](../public/guide/guide-trigger.jpg)
 
 Jumper wires between machines: Plinky's gate line and Clatter's trigger lines
 are bare traces, and a jumper bridges one onto another machine's key input. Drum
@@ -85,7 +85,7 @@ listen to both.
 
 ## Power supply
 
-![The power supply drawing: the cells feed a rail running out to the machines, with a reset chip and a clip on the rail.](../public/guide/guide-power.jpg)
+![The battery rail: cells, reset chip and clip, feeding the machines.](../public/guide/guide-power.jpg)
 
 One battery rail runs Plinky, Clatter, Glint, Parlor and Growler, so a sag drops
 the pitch of all five and slows the kit. A reset chip reboots the chips at a
