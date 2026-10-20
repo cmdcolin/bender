@@ -60,6 +60,9 @@ const KEYS = [
   'fmCarRatio',
   'fmLfo',
   'fmDrive',
+  'fmLevel',
+  'fmMute',
+  'fmVoice',
   ...KNIFE,
   ...DIE,
 ] as const
@@ -95,6 +98,7 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     [
       'processor',
       [
+        'fmVoice',
         'fmEffect',
         'fmSfxWire',
         'fmSfxPick',
@@ -119,7 +123,11 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
       ['fmCarRatio', 'fmLfo'],
       'The operator you hear: its ratio, and whether the die’s one LFO is soldered to it.',
     ],
-    ['output', ['fmDrive'], 'The one output stage the four voices share.'],
+    [
+      'output',
+      ['fmLevel', 'fmMute', 'fmDrive'],
+      'The one output stage the four voices share, and Glint’s fader into the source mix.',
+    ],
   ]
   const box = boxMaker(r.touched)
   const widths = path.map(([id]) => boxWidth(id))

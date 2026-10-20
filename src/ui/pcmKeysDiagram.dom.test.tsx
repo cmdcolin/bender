@@ -29,10 +29,13 @@ test('the keyboard opens on the ROM, and each box swaps in its own rows', () => 
   expect(screen.getByText('Address line')).not.toBeNull()
 })
 
-test('the mix box ends the path and opens nothing', () => {
+test('the mix box opens the fader and mute', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   render(<PcmKeysDiagram verbs={() => null} />)
-  expect(screen.queryByRole('button', { name: 'mix controls' })).toBeNull()
+  expect(screen.queryByText('Level')).toBeNull()
+  fireEvent.click(box('mix'))
+  expect(screen.getByText('Level')).not.toBeNull()
+  expect(screen.getByText('Mute')).not.toBeNull()
 })
 
 const accent = (name: string) =>

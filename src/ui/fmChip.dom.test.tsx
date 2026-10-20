@@ -4,8 +4,9 @@ import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
-import { CHANNELS } from './controls/index.ts'
+import { CHANNELS, GROUPS } from './controls/index.ts'
 import { FmChipDiagram } from './FmChipDiagram.tsx'
+import { OpenGroup } from './Section.tsx'
 import './testDom.ts'
 
 const FM_TAP = CHANNELS.find(c => c.name === 'Glint')!.tap
@@ -26,6 +27,24 @@ test('the chip opens on the modulator, and each box swaps in its own rows', () =
   fireEvent.click(box('die'))
   expect(screen.queryByText('Allocator')).toBeNull()
   expect(screen.queryByText('Data line')).toBeNull()
+})
+
+test('the output box holds the fader and mute, the processor the voice', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(
+    <OpenGroup
+      group={GROUPS.find(g => g.name === 'Glint')!}
+      onClose={() => {}}
+      seconds={0}
+    />,
+  )
+  expect(screen.queryByText('Level')).toBeNull()
+  expect(screen.queryByText('Voice')).toBeNull()
+  fireEvent.click(box('output'))
+  expect(screen.getAllByText('Level')).toHaveLength(1)
+  expect(screen.getAllByText('Mute')).toHaveLength(1)
+  fireEvent.click(box('processor'))
+  expect(screen.getAllByText('Voice')).toHaveLength(1)
 })
 
 test('a box lists its sliders before its buttons and dropdowns', () => {

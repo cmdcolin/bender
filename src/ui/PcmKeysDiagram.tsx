@@ -29,6 +29,8 @@ const KEYS = [
   'pcmEnv',
   'pcmRelease',
   'pcmTone',
+  'pcmLevel',
+  'pcmMute',
 ] as const
 
 type Key = (typeof KEYS)[number]
@@ -94,15 +96,14 @@ export function PcmKeysDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
   const row = path.map(([id, keys, help], i) =>
     box(id, xs[i]!, TOP + ROW, widths[i]!, keys, help),
   )
-  const mix: BoxSpec = {
-    id: 'mix',
-    x: xs.at(-1)!,
-    w: widths.at(-1)!,
-    y: TOP + ROW,
-    name: 'mix',
-    touched: false,
-    help: 'The keyboard’s fader and mute are above, in the rows. This is where it joins the source mix.',
-  }
+  const mix = box(
+    'mix',
+    xs.at(-1)!,
+    TOP + ROW,
+    widths.at(-1)!,
+    ['pcmLevel', 'pcmMute'],
+    'The keyboard’s fader and mute, where it joins the source mix.',
+  )
   const at = (id: string) => row.find(b => b.id === id)!
   const counter = at('counter')
   const rom = at('ROM')

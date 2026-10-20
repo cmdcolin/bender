@@ -36,7 +36,19 @@ test('each box opens its fold’s rows, drawn once', () => {
   press('voice card')
   press('VCA')
   expect(screen.getAllByText('Leaky VCA')).toHaveLength(1)
+  expect(screen.queryByText('Cutoff')).toBeNull()
+})
+
+test('the filter, keys and out wire hold the rows no fold names', () => {
+  open()
+  expect(screen.queryByText('Level')).toBeNull()
+  press('filter')
   expect(screen.getAllByText('Cutoff')).toHaveLength(1)
+  press('keys')
+  expect(screen.getAllByText('Glide')).toHaveLength(1)
+  press('out')
+  expect(screen.getAllByText('Level')).toHaveLength(1)
+  expect(screen.getAllByText('Mute')).toHaveLength(1)
 })
 
 test('the piano roll box opens the melody rows and the piano roll', () => {

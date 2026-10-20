@@ -69,6 +69,15 @@ const BOXES = {
 
 type BoxId = keyof typeof BOXES
 
+const LOOSE: Partial<Record<BoxId, ControlKey[]>> = {
+  keys: ['monoGlide'],
+  filter: ['monoCutoff', 'monoEmph', 'monoContour', 'monoDrive'],
+}
+
+const OUT_KEYS: ControlKey[] = ['monoLevel', 'monoMute']
+
+const boxKeys = (id: BoxId) => [...keysOf(BOXES[id].part), ...(LOOSE[id] ?? [])]
+
 const PARTS = new Map<string, string>(
   Object.entries(BOXES).map(([id, b]) => [id, b.part]),
 )
@@ -84,6 +93,8 @@ const WRITTEN_KEYS: ControlKey[] = [
 const KEYS = [
   ...new Set([
     ...Object.values(BOXES).flatMap(b => keysOf(b.part)),
+    ...Object.values(LOOSE).flat(),
+    ...OUT_KEYS,
     ...WRITTEN_KEYS,
   ]),
 ]
@@ -130,7 +141,7 @@ export function MonoPathDiagram({
   const up = (key: ControlKey) => r.value(key) > 0
 
   const box = (id: BoxId, x: number, y: number): BoxSpec => {
-    const keys = keysOf(BOXES[id].part)
+    const keys = boxKeys(id)
     return {
       id,
       keys,
@@ -172,6 +183,7 @@ export function MonoPathDiagram({
   const words = [
     { id: 'sync', keys: ['monoSync'] as const },
     { id: 'FM', keys: ['monoFm'] as const },
+    { id: 'out', keys: OUT_KEYS },
   ]
   const rollOpen = pick.selected === ROLL
   const drawn = [...boxes, oscs].find(b => b.id === pick.selected)
@@ -200,6 +212,7 @@ export function MonoPathDiagram({
   const noiseWire = `M${noiseX} ${over - 12} V${top}`
   const tapWire = `M${tap} ${oscMid(2)} V${modMid} H${mod.x}`
   const cardWire = `M${loud.x + loud.w / 2} ${ROW2} V${top + BOX_H}`
+  const outWire = `M${loud.x + loud.w} ${MID} H${WIDTH - 2}`
   const syncWire = `M${syncX} ${OSC_Y[0]! + OSC_H} V${OSC_Y[1]}`
   const fmWire = `M${fmX} ${OSC_Y[1]} V${OSC_Y[0]! + OSC_H}`
   return (
@@ -224,14 +237,17 @@ export function MonoPathDiagram({
             {chainPaths([mixer, filter, loud], MID).map(d => (
               <Wire key={d} arrow={arrow} d={d} look={flow} />
             ))}
-            <Wire
-              arrow={arrow}
-              d={`M${loud.x + loud.w} ${MID} H${WIDTH - 2}`}
-              look={flow}
-            />
-            <Label x={WIDTH - 2} y={MID + 12} anchor="end">
-              out
-            </Label>
+            <Bend name="out" opens="out" pick={pick} hit={outWire}>
+              <Wire arrow={arrow} d={outWire} look={flow} />
+              <Label
+                x={WIDTH - 2}
+                y={MID + 12}
+                anchor="end"
+                on={r.touched(...OUT_KEYS)}
+              >
+                out
+              </Label>
+            </Bend>
             <Bend name="feedback" opens="mixer" pick={pick} hit={loopWire}>
               <Wire arrow={arrow} d={loopWire} look={wire(up('monoLoop'))} />
               <Label

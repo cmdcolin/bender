@@ -221,11 +221,13 @@ function Rows({
   seconds,
   listed,
   editor,
+  boxed,
 }: {
   group: Group
   seconds: number
   listed: boolean
   editor?: ReactNode
+  boxed: boolean
 }) {
   const blocks = parts(group)
   const drawn = listed ? undefined : STAGE_DRAWINGS[group.name]
@@ -266,7 +268,7 @@ function Rows({
               verbs={verbsFor(group, seconds)}
             />
           )
-        if (drawn && name === null) return null
+        if ((drawn || boxed) && name === null) return null
         if (name === null)
           return slidersFirst(rows).map(def => (
             <ControlSlider key={def.key} def={def} />
@@ -432,6 +434,7 @@ export function OpenGroup({
             seconds={seconds}
             listed={listed}
             editor={drawn && widget}
+            boxed={Boolean(PathDrawing)}
           />
         </ReserveReadout>
       </div>
