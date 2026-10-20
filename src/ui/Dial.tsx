@@ -1,4 +1,10 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
+import {
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
@@ -9,10 +15,11 @@ import { formatValue, fromPos, toPos } from './slider-scale.ts'
 import { Tip } from './Tip.tsx'
 
 const SWEEP = 270
-const RADIUS = 15
 const CENTRE = 20
+const BODY = 12
+const TICKS = 11
 const KNOB_TRAVEL_PX = 160
-const FADER_TRAVEL_PX = 96
+const FADER_TRAVEL_PX = 80
 const DETENT = 0.02
 
 const point = (pos: number, r: number) => {
@@ -20,12 +27,7 @@ const point = (pos: number, r: number) => {
   return [CENTRE + r * Math.sin(a), CENTRE - r * Math.cos(a)] as const
 }
 
-const arc = (from: number, to: number) => {
-  const [x0, y0] = point(Math.min(from, to), RADIUS)
-  const [x1, y1] = point(Math.max(from, to), RADIUS)
-  const large = Math.abs(to - from) * SWEEP > 180 ? 1 : 0
-  return `M${x0} ${y0}A${RADIUS} ${RADIUS} 0 ${large} 1 ${x1} ${y1}`
-}
+const tick = (i: number) => i / (TICKS - 1)
 
 // A control on the desk: a round knob, or a vertical fader. Drag it up and down,
 // step it with the arrow keys, double-click to put it back to stock. A knob with
@@ -40,6 +42,7 @@ export function Dial({
   short?: string
 }) {
   const value = useControlValue(def.key)
+  const shade = useId().replaceAll(':', '')
   const [held, setHeld] = useState(false)
   const drag = useRef<{ y: number; pos: number } | null>(null)
   const groove = useRef<HTMLDivElement>(null)
@@ -105,29 +108,59 @@ export function Dial({
 
   const face = fader ? (
     <div ref={groove} className={styles.groove}>
+      <span className={styles.scale} />
       <span className={styles.slot}>
         <span
           className={touched ? styles.fillOn : styles.fill}
           style={{ height: `${pos * 100}%` }}
         />
       </span>
-      <span className={styles.cap} style={{ bottom: `${pos * 100}%` }} />
+      <span
+        className={touched ? styles.capOn : styles.handle}
+        style={{ bottom: `${pos * 100}%` }}
+      />
     </div>
   ) : (
     <svg className={styles.knob} viewBox="0 0 40 40" aria-hidden="true">
-      <path className={styles.ring} d={arc(0, 1)} />
-      {pos === turn ? null : (
-        <path
-          className={touched ? styles.sweepOn : styles.sweep}
-          d={arc(turn, pos)}
-        />
-      )}
+      <defs>
+        <radialGradient id={shade} cx="35%" cy="30%" r="80%">
+          <stop offset="0" className={styles.shineHi} />
+          <stop offset="1" className={styles.shineLo} />
+        </radialGradient>
+      </defs>
+      {Array.from({ length: TICKS }, (_, i) => {
+        const t = tick(i)
+        const [x0, y0] = point(t, 16)
+        const [x1, y1] = point(t, 19)
+        const lit =
+          touched &&
+          t >= Math.min(turn, pos) - 1e-6 &&
+          t <= Math.max(turn, pos) + 1e-6
+        return (
+          <line
+            key={i}
+            className={lit ? styles.tickOn : styles.tick}
+            x1={x0}
+            y1={y0}
+            x2={x1}
+            y2={y1}
+          />
+        )
+      })}
+      <circle className={styles.skirt} cx={CENTRE} cy={CENTRE} r={BODY + 1.5} />
+      <circle
+        className={styles.cap}
+        cx={CENTRE}
+        cy={CENTRE}
+        r={BODY}
+        fill={`url(#${shade})`}
+      />
       <line
         className={touched ? styles.pointerOn : styles.pointer}
-        x1={point(pos, 4)[0]}
-        y1={point(pos, 4)[1]}
-        x2={point(pos, RADIUS)[0]}
-        y2={point(pos, RADIUS)[1]}
+        x1={point(pos, 3)[0]}
+        y1={point(pos, 3)[1]}
+        x2={point(pos, BODY - 1)[0]}
+        y2={point(pos, BODY - 1)[1]}
       />
     </svg>
   )

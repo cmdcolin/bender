@@ -22,9 +22,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
   min-width: 0;
-  padding: var(--space-sm) var(--space-xs);
+  padding: var(--space-xs);
   border: 1px solid var(--border-quiet);
   border-radius: 4px;
 }
@@ -44,7 +44,7 @@
 .knobs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-sm) var(--space-xs);
+  gap: var(--space-xs);
   align-self: stretch;
 }
 
