@@ -2,6 +2,27 @@
 
 All notable changes to bender are documented here.
 
+## [1.15.0](https://github.com/cmdcolin/bender/compare/v1.14.1...v1.15.0) - 2026-10-20
+
+### Features
+- *(ui)* [`b5a6990`](https://github.com/cmdcolin/bender/commit/b5a69902171f291a9869e4986f5bb0f072ad276f) synth drawings hold Level, Mute and the loose rows in their boxes
+- *(dsp)* [`92b9569`](https://github.com/cmdcolin/bender/commit/92b9569b44a6d95715260f93d58714fb9eb1c26a) loop overrun, write strobe, sign on up/down and shared latch for Parlor
+- *(ui)* [`b1b9ab6`](https://github.com/cmdcolin/bender/commit/b1b9ab66bc7a11218c023abc59dbed64604f04c8) a fresh tab opens with every synth up and the delay and reverb bypassed
+- *(ui)* [`1751822`](https://github.com/cmdcolin/bender/commit/1751822079db2a0bc77cbcf363fe13f7bdc3a827) find a setting by name from under the map
+
+### Fixes
+- *(ui)* [`4971b72`](https://github.com/cmdcolin/bender/commit/4971b72d1d699155cc0749101e363c1abb811ad5) cable drags cancel cleanly, mic drawing jacks plug like the menu
+- *(ui)* [`2f664ab`](https://github.com/cmdcolin/bender/commit/2f664abf83cb64351ac2ceefda1878b935cb5c81) arrow and page keys step sliders along their travel
+- *(ui)* [`e6589e4`](https://github.com/cmdcolin/bender/commit/e6589e4ce238e8333de9f0b971e6624c14caa467) space, esc and ctrl+S leave a focused control its key
+- *(ui)* [`f5d9815`](https://github.com/cmdcolin/bender/commit/f5d98158e5b390be72e21f4ce704b2384bacc2b7) kit trigger lines and amps light, open cards carry the box's name
+- *(ui)* [`416c3f3`](https://github.com/cmdcolin/bender/commit/416c3f3ca3d3fd1cb277b653cde7572c7b80de34) still-heard notice is a dot on the mute cap
+- *(ui)* [`b8548e8`](https://github.com/cmdcolin/bender/commit/b8548e8b16b736d45c3c63ed01e6f54ed9040a61) an aimed knob opens the box that holds it
+- *(ui)* [`4c39c77`](https://github.com/cmdcolin/bender/commit/4c39c7755192ea3fec772ca9da1792e46b79fc6f) simplify MIDI dialog Escape handler to match videoskillet
+- *(ui)* [`6488235`](https://github.com/cmdcolin/bender/commit/6488235418b14b2bb9e4aab84914ae5fc36f851d) MIDI dialog Escape closes only when no binding is armed
+
+### Refactor
+- *(ui)* [`132fe42`](https://github.com/cmdcolin/bender/commit/132fe42bc033b40fa13548d295b960f7131829de) amp drawing keeps its live curves, drops the dB and Hz labels
+
 ## [1.14.1](https://github.com/cmdcolin/bender/compare/v1.14.0...v1.14.1) - 2026-10-20
 
 ### Features
