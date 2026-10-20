@@ -23,8 +23,17 @@ test('pressing a jack solders the mic there, and only that jack reads as pressed
 test('the wire lights only once the mic is turned up', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   const { container } = render(<MicPatch />)
-  const wire = () => container.querySelector('line')!.getAttribute('stroke')
-  expect(wire()).toBe('var(--fg3)')
+  const lit = () =>
+    container.querySelector('path[class*="wire"]')!.getAttribute('class')!
+  expect(lit()).not.toContain('wireOn')
   act(() => engine.set('micLevel', 0.5))
-  expect(wire()).toBe('var(--accent)')
+  expect(lit()).toContain('wireOn')
+})
+
+test('pressing the mic opens no card, since its level is a row already', () => {
+  engine.writeBoard(DEFAULT_CONTROLS)
+  render(<MicPatch />)
+  const mic = screen.getByRole('button', { name: 'mic controls' })
+  fireEvent.click(mic)
+  expect(screen.queryByRole('region')).toBeNull()
 })

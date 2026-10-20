@@ -44,3 +44,21 @@ export function scrollIntoPanel(el: HTMLElement) {
     else window.scrollBy({ top: delta, behavior: 'smooth' })
   }
 }
+
+const AIM_MS = 1200
+
+/** Scrolls to the row of `key` and flashes it, two frames on so a stage that
+    has just opened has laid itself out. */
+export function aimAt(key: string, from: Element | null = null) {
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      const row = (
+        from?.closest('aside') ?? document
+      ).querySelector<HTMLElement>(`[data-control="${key}"]`)
+      if (!row) return
+      scrollIntoPanel(row)
+      row.dataset.aimed = ''
+      setTimeout(() => delete row.dataset.aimed, AIM_MS)
+    }),
+  )
+}

@@ -1,20 +1,3 @@
-/* The kit and the keyboard, and the two wires that can bridge one's trigger
-   line onto the other's gate — solder both and the two boxes play each
-   other, which three plain dropdowns never quite say out loud. */
-.diagram {
-  display: block;
-  width: 100%;
-  max-width: 440px;
-  height: auto;
-  margin: var(--space-xs) 0 var(--space-sm);
-}
-
-.label {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
 .tag {
   font-size: 9px;
   text-transform: uppercase;
@@ -29,10 +12,4 @@
 
 .hitOn {
   stroke: var(--surface-raised);
-}
-
-.hint {
-  margin: 0 0 var(--space-md);
-  font-size: var(--fs-xs);
-  color: var(--fg3);
 }

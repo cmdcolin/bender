@@ -52,22 +52,23 @@ test('a machine’s name goes grey once nothing plays it', () => {
   const { container } = render(
     <OpenGroup group={patch()} onClose={() => {}} seconds={0} />,
   )
-  const ink = (name: string) =>
+  const played = (name: string) =>
     [...container.querySelectorAll('svg text')]
       .find(t => t.textContent === name)!
-      .getAttribute('fill')
-  expect(ink('Growler')).toBe('var(--fg)')
+      .closest('g')!
+      .getAttribute('opacity') === '1'
+  expect(played('Growler')).toBe(true)
   act(() => {
     engine.set('fmKeyGate', 1)
     engine.set('fmStruck', 1)
   })
-  expect(ink('Glint')).toBe('var(--fg)')
+  expect(played('Glint')).toBe(true)
   act(() => {
     engine.set('monoKeyGate', 1)
     engine.set('pcmKeyGate', 1)
   })
-  expect(ink('Growler')).toBe('var(--fg4)')
-  expect(ink('Parlor')).toBe('var(--fg4)')
+  expect(played('Growler')).toBe(false)
+  expect(played('Parlor')).toBe(false)
   expect(screen.queryByText('kick hits')).toBeNull()
 })
 

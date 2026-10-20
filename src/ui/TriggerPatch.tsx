@@ -1,9 +1,9 @@
-import chipLook from './ChipLook.module.css'
+import { ChipDrawing } from './ChipDrawing.tsx'
 import { sliderFor } from './controls/index.ts'
 import { useBoardValue, useControlValue } from './ControlsContext.ts'
 import diagramStyles from './Diagram.module.css'
-import { useSelectedBox, card } from './diagram.ts'
-import { BoxRows } from './DiagramParts.tsx'
+import { useReadings, useSelectedBox, card } from './diagram.ts'
+import { BoxRows, BoxView, Pressable } from './DiagramParts.tsx'
 import styles from './TriggerPatch.module.css'
 
 import type { ControlKey } from '../controls.ts'
@@ -43,6 +43,8 @@ const OPENS = new Map<string, readonly ControlKey[]>([
   ),
 ])
 
+const READ = CHIPS.flatMap(c => [c.struck, c.gate])
+
 const BOX_W = 84
 const BOX_H = 20
 const WIDTH = 420
@@ -60,7 +62,7 @@ const CHIP_W = KEYS_MID - CHIP_INSET - CHIP_X
 const CHIP_H = 20
 const CHIP_TOP = TOP + BOX_H + 20
 const CHIP_PITCH = CHIP_H + 6
-const HEIGHT = CHIP_TOP + CHIPS.length * CHIP_PITCH - 6 + 6
+const HEIGHT = CHIP_TOP + CHIPS.length * CHIP_PITCH
 
 const KIT = 'var(--cool)'
 const KEYS = 'var(--accent2)'
@@ -112,12 +114,27 @@ function bridge(
   )
 }
 
+const source = (x: number, name: string) => (
+  <BoxView
+    box={{
+      x,
+      y: TOP,
+      w: BOX_W,
+      h: BOX_H,
+      name,
+      touched: false,
+      help: `${name} plays the machines its wires reach.`,
+    }}
+  />
+)
+
 // The kit, the keyboard and the three machines that play off them, with every
 // wire that makes one machine strike another. A wire is dashed and grey while
 // its setting is off. Pressing a wire opens its row underneath, and pressing a
 // machine opens both of its rows.
 export function TriggerPatch() {
   const pick = useSelectedBox()
+  const r = useReadings(READ)
   const toKeys = Math.round(useControlValue('trigToKeys'))
   const toDrum = Math.round(useControlValue('trigToDrum'))
   const note = Math.round(useControlValue('trigKeysNote'))
@@ -142,137 +159,118 @@ export function TriggerPatch() {
   const press = (id: Pick, hit: string, drawn: ReactNode) => {
     const selected = pick.selected === id
     return (
-      <g
+      <Pressable
         key={id}
-        className={`${diagramStyles.pick} ${selected ? diagramStyles.pickedLabel : ''}`}
-        role="button"
-        tabIndex={0}
-        aria-pressed={selected}
-        aria-label={`${id} controls`}
-        onClick={() => pick.toggle(id)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            pick.toggle(id)
-          }
-        }}
+        name={id}
+        selected={selected}
+        onSelect={() => pick.toggle(id)}
+        className={selected ? diagramStyles.pickedLabel : ''}
       >
         <path
           d={hit}
           fill="none"
           strokeWidth={9}
-          className={
-            selected && !CHIPS.some(c => c.name === id)
-              ? styles.hitOn
-              : styles.hit
-          }
+          className={selected ? styles.hitOn : styles.hit}
         />
         {drawn}
-      </g>
+      </Pressable>
     )
   }
 
-  const box = (x: number, name: string) => (
-    <>
-      <rect
-        x={x}
-        y={TOP}
-        width={BOX_W}
-        height={BOX_H}
-        rx={3}
-        stroke="var(--border-hover)"
-      />
-      <text
-        x={x + BOX_W / 2}
-        y={TOP + BOX_H / 2 + 3}
-        textAnchor="middle"
-        className={styles.label}
-        fill="var(--fg)"
-      >
-        {name}
-      </text>
-    </>
-  )
-
   return (
     <>
-      <div className={chipLook.chips}>
-        <svg
-          className={styles.diagram}
-          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          preserveAspectRatio="xMidYMid meet"
-          role="group"
-          aria-label="trigger patch"
-        >
-          {box(LEFT_X, 'Clatter')}
-          {box(RIGHT_X, 'Plinky')}
+      <ChipDrawing width={WIDTH} height={HEIGHT} label="trigger patch">
+        {() => (
+          <>
+            {source(LEFT_X, 'Clatter')}
+            {source(RIGHT_X, 'Plinky')}
 
-          {press(
-            'kit → keys',
-            `M ${LEFT_X + BOX_W} ${UP_Y} H ${RIGHT_X}`,
-            bridge(
-              upOn,
-              KIT,
-              upTitle,
-              LEFT_X + BOX_W,
-              RIGHT_X,
-              UP_Y,
-              'kit plays keys',
-              UP_Y - 4,
-            ),
-          )}
-          {press(
-            'keys → kit',
-            `M ${RIGHT_X} ${DOWN_Y} H ${LEFT_X + BOX_W}`,
-            bridge(
-              downOn,
-              KIT,
-              downTitle,
-              RIGHT_X,
-              LEFT_X + BOX_W,
-              DOWN_Y,
-              'keys play kit',
-              DOWN_Y + 12,
-            ),
-          )}
+            {press(
+              'kit → keys',
+              `M ${LEFT_X + BOX_W} ${UP_Y} H ${RIGHT_X}`,
+              bridge(
+                upOn,
+                KIT,
+                upTitle,
+                LEFT_X + BOX_W,
+                RIGHT_X,
+                UP_Y,
+                'kit plays keys',
+                UP_Y - 4,
+              ),
+            )}
+            {press(
+              'keys → kit',
+              `M ${RIGHT_X} ${DOWN_Y} H ${LEFT_X + BOX_W}`,
+              bridge(
+                downOn,
+                KIT,
+                downTitle,
+                RIGHT_X,
+                LEFT_X + BOX_W,
+                DOWN_Y,
+                'keys play kit',
+                DOWN_Y + 12,
+              ),
+            )}
 
-          <text
-            x={DRUM_MID + 5}
-            y={TOP + BOX_H + 14}
-            className={styles.tag}
-            fill="var(--fg3)"
-          >
-            kit hits
-          </text>
-          <text
-            x={KEYS_MID - 5}
-            y={TOP + BOX_H + 14}
-            textAnchor="end"
-            className={styles.tag}
-            fill="var(--fg3)"
-          >
-            keyboard notes
-          </text>
+            <text
+              x={DRUM_MID + 5}
+              y={TOP + BOX_H + 14}
+              className={styles.tag}
+              fill="var(--fg3)"
+            >
+              kit hits
+            </text>
+            <text
+              x={KEYS_MID - 5}
+              y={TOP + BOX_H + 14}
+              textAnchor="end"
+              className={styles.tag}
+              fill="var(--fg3)"
+            >
+              keyboard notes
+            </text>
 
-          {[false, true].flatMap(live =>
-            machines
-              .filter(m => m.struckOn === live)
-              .map(m => press(`kit → ${m.name}`, m.strike.hit, m.strike.drawn)),
-          )}
-          {[false, true].flatMap(live =>
-            machines
-              .filter(m => !m.gateCut === live)
-              .map(m => press(`keys → ${m.name}`, m.gate.hit, m.gate.drawn)),
-          )}
-          {machines.map(m => press(m.name, m.box.hit, m.box.drawn))}
-        </svg>
-      </div>
-      {!pick.selected && (
-        <p className={styles.hint}>
-          Press a wire to set it, or a machine to set both of its wires.
-        </p>
-      )}
-      <BoxRows card={card(pick)} keys={OPENS.get(pick.selected ?? '')} />
+            {[false, true].flatMap(live =>
+              machines
+                .filter(m => m.struckOn === live)
+                .map(m =>
+                  press(`kit → ${m.name}`, m.strike.hit, m.strike.drawn),
+                ),
+            )}
+            {[false, true].flatMap(live =>
+              machines
+                .filter(m => !m.gateCut === live)
+                .map(m => press(`keys → ${m.name}`, m.gate.hit, m.gate.drawn)),
+            )}
+            {machines.map(m => (
+              <BoxView
+                key={m.name}
+                box={{
+                  id: m.name,
+                  keys: OPENS.get(m.name),
+                  x: CHIP_X,
+                  y: m.top,
+                  w: CHIP_W,
+                  h: CHIP_H,
+                  name: m.name,
+                  off: !m.played,
+                  touched: r.touched(m.struckKey, m.gateKey),
+                  help: `What plays the ${m.name}: the kit's strike and Plinky's jumper.`,
+                }}
+                selected={pick.selected === m.name}
+                onSelect={pick.toggle}
+              />
+            ))}
+          </>
+        )}
+      </ChipDrawing>
+      <BoxRows
+        card={card(pick)}
+        hint="Press a wire to set it, or a machine to set both of its wires."
+        keys={OPENS.get(pick.selected ?? '')}
+      />
     </>
   )
 }
@@ -342,29 +340,15 @@ function machineParts(chip: (typeof CHIPS)[number], top: number, code: string) {
       </g>
     ),
   }
-  const box: Part = {
-    hit: `M ${CHIP_X} ${top} h ${CHIP_W} v ${CHIP_H} h ${-CHIP_W} z`,
-    drawn: (
-      <>
-        <rect
-          x={CHIP_X}
-          y={top}
-          width={CHIP_W}
-          height={CHIP_H}
-          rx={3}
-          stroke="var(--border-hover)"
-        />
-        <text
-          x={CHIP_X + CHIP_W / 2}
-          y={mid + 3}
-          textAnchor="middle"
-          className={styles.label}
-          fill={played ? 'var(--fg)' : OFF}
-        >
-          {chip.name}
-        </text>
-      </>
-    ),
+  return {
+    name: chip.name,
+    struckKey: chip.struck,
+    gateKey: chip.gate,
+    top,
+    played,
+    struckOn,
+    gateCut,
+    strike,
+    gate,
   }
-  return { name: chip.name, struckOn, gateCut, strike, gate, box }
 }
