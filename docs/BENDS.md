@@ -206,6 +206,12 @@ Bends:
     envelope reach the effect voice too.
   - The sweep loads whole divider words, so laser and bird climb in steps near
     the top.
+- **Effect wire:** solders the effect buttons to a kit trigger line, the toy's
+  gate (every note, the tune included), the reset line, or holds one stuck down.
+  - **Button it presses** picks the effect: one of the six, random, or the next
+    one along.
+  - A hat wired to gun is a machine gun in time with the pattern.
+  - Reboot with a starved rail fires an effect every time the chip resets.
 
 ## Glint's register bus
 

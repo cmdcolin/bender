@@ -1,9 +1,33 @@
+import { VOICE_LABELS } from '../../drums.ts'
+import { ANY_CHOICE } from '../trigbus.ts'
+
 // The toy's effect buttons. Each is a short program for a sweep counter that
 // loads the melody's divider, plus the noise register for the two that blow
 // up. A program is a curve over its own length, read at the chip's clock, so
 // a flat battery or a pot on the timing pin stretches a laser zap as it lowers
 // it.
 export const SFX_NAMES = ['laser', 'siren', 'ufo', 'bomb', 'gun', 'bird']
+
+/** Which button a wire onto the effect buttons presses: one of them, a new one
+    at random each press, or the next one along. */
+export const SFX_PICKS = [...SFX_NAMES, 'random', 'next']
+export const PICK_RANDOM = SFX_NAMES.length
+export const PICK_NEXT = SFX_NAMES.length + 1
+
+/** What the wire onto the effect buttons is soldered to: one of the kit's
+    trigger lines, the chip's own gate, the reset line, or a blob that holds the
+    button down for good. */
+export const SFX_WIRES = [
+  'off',
+  ...VOICE_LABELS,
+  'any hit',
+  'toy notes',
+  'reboot',
+  'stuck',
+]
+export const WIRE_TOY = ANY_CHOICE + 1
+export const WIRE_REBOOT = ANY_CHOICE + 2
+export const WIRE_STUCK = ANY_CHOICE + 3
 
 const LEN_S = [0.14, 1.6, 0.9, 2.4, 0.075, 0.22]
 

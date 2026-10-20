@@ -22,7 +22,7 @@ import {
 } from '../testRender.ts'
 import { YOURS } from './roms.ts'
 import { ToyChip } from './toyChip.ts'
-import { SFX_NAMES, sfxLength } from './toySfx.ts'
+import { SFX_NAMES, SFX_PICKS, SFX_WIRES, sfxLength } from './toySfx.ts'
 
 // A memory written out as the controls that carry it. Anything not named is a
 // step with nothing on it.
@@ -847,4 +847,49 @@ test('the clock drags a siren down and slows it', () => {
   const ratio = pitchHz(at(1)) / pitchHz(at(0.5))
   expect(ratio).toBeGreaterThan(1.8)
   expect(ratio).toBeLessThan(2.4)
+})
+
+const wire = (name: string) => SFX_WIRES.indexOf(name)
+const toyStem = (over: Partial<Controls>, seconds: number) =>
+  renderStems({ ...over }, seconds).stems[SOURCE_TAPS.indexOf('toyChip')]!
+
+test('a kick wired onto the effect buttons fires one on every hit', () => {
+  const gun = SFX_PICKS.indexOf('gun')
+  expect(
+    deviation(
+      toyStem({ sfxWire: wire('kick'), sfxPick: gun }, 2),
+      toyStem({ sfxPick: gun }, 2),
+    ),
+  ).toBeGreaterThan(0.1)
+})
+
+test('on toy notes, a key the hand strikes fires the effect too', () => {
+  const played = (sfxWire: number) =>
+    renderBender({ ...CHIP_ONLY, sfxWire }, 0.5, b => b.toyChip.noteOn(0))
+  expect(deviation(played(wire('toy notes')), played(0))).toBeGreaterThan(0.2)
+})
+
+test('a stuck effect button repeats with nobody touching it', () => {
+  const stuck = (sfxWire: number) =>
+    tail(renderBender({ ...CHIP_ONLY, sfxWire }, 2))
+  expect(rms(stuck(wire('stuck')))).toBeGreaterThan(0.01)
+  expect(rms(stuck(0))).toBeLessThan(1e-4)
+})
+
+test('a stuck button on next walks the row', () => {
+  const stuck = (sfxPick: number) =>
+    renderBender({ ...CHIP_ONLY, sfxWire: wire('stuck'), sfxPick }, 1)
+  expect(deviation(stuck(SFX_PICKS.indexOf('next')), stuck(0))).toBeGreaterThan(
+    0.3,
+  )
+})
+
+test('on reboot, a starved rail fires the effect each time the chip resets', () => {
+  const starved = (sfxWire: number) =>
+    renderBender(
+      { ...CHIP_ONLY, chipLevel: 1, chipStarve: 1, sfxWire },
+      3,
+      b => (b.transport.tune = true),
+    )
+  expect(deviation(starved(wire('reboot')), starved(0))).toBeGreaterThan(0.1)
 })

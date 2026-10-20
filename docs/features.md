@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-494 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+496 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 125 presets, 23 stage settings and 46 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 46 controls are shy, mostly the ones that act on the
+names it still sets it. 47 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -116,7 +116,7 @@ puts the knife on, and the rows under it show the controls it set:
   itself
 
 <details>
-<summary>47 controls</summary>
+<summary>49 controls</summary>
 
 | control             | range                                                                                                                          | what it does                                                                                                                                                                                  |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -156,6 +156,8 @@ puts the knife on, and the rows under it show the controls it set:
 | Voice XOR           | off to full                                                                                                                    | Replaces the voice mix with an XOR of the voices’ squares: the first voice flips each time another voice is low                                                                               |
 | Envelope bits       | off to full                                                                                                                    | Shortens the envelope counter so every fade runs in steps                                                                                                                                     |
 | Duty on envelope    | off to full                                                                                                                    | Ties the pulse width to the envelope                                                                                                                                                          |
+| Effect wire †       | 13 of them, off through stuck                                                                                                  | Solders a wire onto the effect buttons                                                                                                                                                        |
+| Button it presses   | laser, siren, ufo, bomb, gun, bird, random, next                                                                               | Which effect button the wire presses                                                                                                                                                          |
 | Data line †         | off, D0, D1, D2, D3, D4, D5                                                                                                    | Which wire between the ROM and the divider the knife is on                                                                                                                                    |
 | Data fault          | cut, to ground, to +V, bridged                                                                                                 | What happened to the wire                                                                                                                                                                     |
 | Address line †      | off, A0, A1, A2, A3, A4                                                                                                        | Which wire between the program counter and the ROM the knife is on                                                                                                                            |

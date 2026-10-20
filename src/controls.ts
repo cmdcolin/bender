@@ -53,6 +53,8 @@ export const DEFAULT_CONTROLS = {
   chipXor: 0,
   chipEnvBits: 0,
   chipDutyEnv: 0,
+  sfxWire: 0,
+  sfxPick: 0,
 
   // The parts on the toy board, as opposed to what you are doing to it. Every
   // default here is the number that used to be compiled in, so a board nobody

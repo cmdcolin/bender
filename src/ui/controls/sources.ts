@@ -60,6 +60,7 @@ import {
   ROM_COUNT_NAMES,
   RING_TRIG_NAMES,
 } from '../../dsp/stages/toyDrum.ts'
+import { SFX_PICKS, SFX_WIRES } from '../../dsp/stages/toySfx.ts'
 import { NOTE_NAMES } from '../../notes.ts'
 import { SCALE_NAMES } from '../../scale.ts'
 import { MONO_SEQ_STEP_KEYS, TUNE_ALL_STEP_KEYS } from '../../tune.ts'
@@ -587,6 +588,30 @@ export const SOURCE_GROUPS: Group[] = [
         step: 0.01,
         unit: '',
         help: 'Ties the pulse width to the envelope. Each note strikes as a thin spike and opens to the width the tone selector holds as it fades, so every note sweeps from reedy to hollow. Held keys stay thin.',
+      },
+      {
+        key: 'sfxWire',
+        label: 'Effect wire',
+        part: 'inside the die',
+        shy: true,
+        min: 0,
+        max: SFX_WIRES.length - 1,
+        step: 1,
+        unit: '',
+        choices: SFX_WIRES,
+        help: 'Solders a wire onto the effect buttons. On a kit voice, each hit presses the button. On toy notes, every note the chip strikes presses it, the tune included. On reboot, the button fires each time a starved rail resets the chip. Stuck holds the button down for good, so the effect repeats with nobody touching it.',
+      },
+      {
+        key: 'sfxPick',
+        label: 'Button it presses',
+        part: 'inside the die',
+        min: 0,
+        max: SFX_PICKS.length - 1,
+        step: 1,
+        unit: '',
+        choices: SFX_PICKS,
+        needs: c => Math.round(c.sfxWire) > 0,
+        help: 'Which effect button the wire presses. Random picks a new one on each press, and next walks along the row. With the button stuck, random and next pick again each time a pass ends.',
       },
       {
         key: 'chipDataLine',

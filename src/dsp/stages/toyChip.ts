@@ -28,7 +28,17 @@ import {
   YOURS,
   type Rom,
 } from './roms.ts'
-import { sfxAt, sfxLength, type SfxFrame } from './toySfx.ts'
+import {
+  PICK_NEXT,
+  PICK_RANDOM,
+  sfxAt,
+  sfxLength,
+  SFX_NAMES,
+  WIRE_REBOOT,
+  WIRE_STUCK,
+  WIRE_TOY,
+  type SfxFrame,
+} from './toySfx.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { ToyRail } from '../toyRail.ts'
@@ -471,6 +481,11 @@ export class ToyChip implements Stage {
   private noiseClock = 0
   private lfsr = LFSR_SEED
   private frame: SfxFrame = { oct: 0, tone: 0, noiseOct: 0, noise: 0 }
+  // The wire onto the effect buttons, as of this block, and the last button the
+  // next-along pick pressed.
+  private sfxWire = 0
+  private sfxPick = 0
+  private sfxNext = -1
 
   private readonly sr: number
   private readonly rail: ToyRail
@@ -587,9 +602,23 @@ export class ToyChip implements Stage {
     this.sfxT = 0
   }
 
+  // A press off the wire. A stuck button stays down, and on random or next it
+  // picks again each time a pass ends.
+  private wirePress() {
+    const pick = this.sfxPick
+    this.sfx =
+      pick === PICK_RANDOM
+        ? Math.floor(this.rng() * SFX_NAMES.length)
+        : pick === PICK_NEXT
+          ? (this.sfxNext = (this.sfxNext + 1) % SFX_NAMES.length)
+          : pick
+    this.sfxHeld = this.sfxWire === WIRE_STUCK
+    this.sfxT = 0
+  }
+
   /** Letting go lets the pass run to its end. */
   sfxOff(sfx: number) {
-    if (sfx === this.sfx) this.sfxHeld = false
+    if (sfx === this.sfx && this.sfxWire !== WIRE_STUCK) this.sfxHeld = false
   }
 
   noteOff(semitone: number) {
@@ -1106,9 +1135,21 @@ export class ToyChip implements Stage {
       this.chord = this.triads[0]!
     }
 
+    const sfxWire = Math.round(p[IDX.sfxWire]!)
+    const sfxPick = Math.round(p[IDX.sfxPick]!)
+    if (sfxWire !== this.sfxWire || sfxPick !== this.sfxPick) {
+      const wasStuck = this.sfxWire === WIRE_STUCK
+      this.sfxWire = sfxWire
+      this.sfxPick = sfxPick
+      if (sfxWire === WIRE_STUCK) this.wirePress()
+      else if (wasStuck) this.sfxHeld = false
+    }
+    const sfxMask = voiceMask(sfxWire < WIRE_TOY ? sfxWire : 0)
+
     if (rail.rebootCount !== this.lastReboot) {
       this.lastReboot = rail.rebootCount
       this.restart(tune, true)
+      if (sfxWire === WIRE_REBOOT) this.wirePress()
     }
     if (this.transport.tune !== this.wasPlaying) {
       this.wasPlaying = this.transport.tune
@@ -1253,6 +1294,8 @@ export class ToyChip implements Stage {
       if (trigMask && Math.round(ctx.trig.drumBits[i]!) & trigMask) {
         this.fromDrum(trigNote, tune, Math.min(ctx.trig.drumGain[i]!, 1))
       }
+      if (sfxMask && Math.round(ctx.trig.drumBits[i]!) & sfxMask)
+        this.wirePress()
 
       // gate bend: the gate line buzzes open and shut
       if (spot === 4 && pot > 0) {
@@ -1511,6 +1554,7 @@ export class ToyChip implements Stage {
       if (this.keyPending) {
         ctx.trig.keyStruck(i, this.keyNote, this.keyHeldPending)
         this.keyPending = false
+        if (sfxWire === WIRE_TOY) this.wirePress()
       }
       io.l[i]! += out
       io.r[i]! += out
@@ -1537,6 +1581,10 @@ export class ToyChip implements Stage {
         return 0
       }
       this.sfxT -= len * Math.floor(this.sfxT / len)
+      if (this.sfxWire === WIRE_STUCK && this.sfxPick >= PICK_RANDOM) {
+        this.wirePress()
+        return 0
+      }
     }
     const f = this.frame
     sfxAt(this.sfx, this.sfxT, f)
@@ -1663,6 +1711,7 @@ export class ToyChip implements Stage {
     this.lastOut = 0
     this.sfx = -1
     this.sfxHeld = false
+    this.sfxWire = 0
     this.sfxPhase = 0
     this.noiseClock = 0
     this.lfsr = LFSR_SEED

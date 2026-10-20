@@ -63,6 +63,8 @@ export const PARAM_DEFS = [
   ['chipXor', 'slew'],
   ['chipEnvBits', 'slew'],
   ['chipDutyEnv', 'slew'],
+  ['sfxWire', 'step'],
+  ['sfxPick', 'step'],
 
   ['chipLeadR', 'slew'],
   ['chipDecouple', 'slew'],
