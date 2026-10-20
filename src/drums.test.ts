@@ -56,11 +56,11 @@ test('every ROM fits sixteen steps', () => {
   }
 })
 
-test('the machine boots on the rock ROM', () => {
+test('the machine boots blank', () => {
   const booted = Object.fromEntries(
     PATTERN_KEYS.map(k => [k, DEFAULT_CONTROLS[k]]),
   ) as DrumMasks
-  expect(romMatching(booted)?.name).toBe('rock')
+  expect(romMatching(booted)?.name).toBe('clear')
 })
 
 test('clear wipes every voice', () => {

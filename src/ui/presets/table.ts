@@ -117,6 +117,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Bare metal on the timing pin — every touch dives an octave and snaps back',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.85,
       chipAccomp: 0.5,
       chipStarve: 0.3,
@@ -134,6 +135,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Cells too far gone to hold the rail — the whole toy runs low and late',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.85,
       chipBattery: 0.75,
       chipAccomp: 0.6,
@@ -186,6 +188,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'The key-up write reaches Glint with its key bit held high, so nothing it plays ends',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0,
       drumLevel: 0.5,
       fmLevel: 0.8,
@@ -336,6 +339,7 @@ export const PRESETS: PresetDef[] = [
     name: 'gravel dac',
     blurb: 'The kit’s converter built from resistors off an unmeasured reel',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0,
       drumLevel: 0.9,
       drumBits: 5,
@@ -347,6 +351,7 @@ export const PRESETS: PresetDef[] = [
     name: 'machine gun',
     blurb: 'Drum machine retriggered into rolls',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0,
       drumLevel: 0.9,
       drumBpm: 170,
@@ -362,6 +367,7 @@ export const PRESETS: PresetDef[] = [
     name: 'drum scream',
     blurb: 'Retrigger past audio rate — the kit becomes a pitch',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0,
       drumLevel: 0.95,
       drumBpm: 45,
@@ -994,6 +1000,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Mic on the drum trigger line: clap and it fires your pattern — bring your mic level up',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0,
       drumLevel: 0.9,
       micPatch: 5,
@@ -1367,6 +1374,7 @@ export const PRESETS: PresetDef[] = [
     name: 'pinned',
     blurb: 'Underbiased and slammed — the machine as the distortion',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.8,
       drumLevel: 0.5,
       drumBpm: 96,
@@ -1386,6 +1394,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Kick soldered onto the keyboard’s gate: one hit, one step of the ROM',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.8,
       chipAccomp: 0.35,
       drumLevel: 0.6,
@@ -1401,6 +1410,7 @@ export const PRESETS: PresetDef[] = [
     name: 'call and answer',
     blurb: 'The snare triggers a chord, and each note of it triggers a clap',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.75,
       drumLevel: 0.7,
       drumBpm: 92,
@@ -1416,6 +1426,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'A wire off the kit’s trigger line onto the cutoff — shut between hits',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.7,
       drumLevel: 0.8,
       filtMix: 1,
@@ -1430,6 +1441,7 @@ export const PRESETS: PresetDef[] = [
     name: 'slapback',
     blurb: 'The plain box, set the plain way — one repeat, close behind',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.8,
       drumLevel: 0.5,
       echoLevel: 0.45,
@@ -1442,6 +1454,7 @@ export const PRESETS: PresetDef[] = [
     name: 'bucket brigade',
     blurb: 'Every lap through the chips comes back darker than the last',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.75,
       drumLevel: 0.45,
       echoMode: 1,
@@ -1456,6 +1469,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Every hit lifts the record head, and the box goes round what it just heard',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.6,
       drumLevel: 0.8,
       drumBpm: 110,
@@ -1511,6 +1525,7 @@ export const PRESETS: PresetDef[] = [
     name: 'kicked amp',
     blurb: 'Every hit from the kit throws the springs against the housing',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.6,
       drumLevel: 0.7,
       drumBpm: 96,
@@ -1591,6 +1606,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Hold a chord: the arpeggio counts sixty-fourths off the kit, four octaves in no order, a hail of notes at the drums’ tempo',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0.75,
       chipArp: arp('random'),
       chipArpSync: arpSync('sixty-fourths'),
@@ -1730,6 +1746,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'The whole instrument printed to a deck running under speed, drowned in spring',
     patch: {
+      ...romMasks('rock'),
       deckSpeed: 0.78,
       chipLevel: 0.35,
       chipAccomp: 0.5,
@@ -1887,6 +1904,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'The filter self-oscillating at 45 Hz with the kit’s hits wired onto the cutoff, so each hit comes out as a low sine, with popcorn and an arcing cap crackling through it',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0,
       drumLevel: 0.8,
       filtHz: 45,
@@ -1976,6 +1994,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Parlor’s pipe organ with the ROM clock at 0.12×, three octaves down, playing the toy’s song in power chords',
     patch: {
+      ...romMasks('rock'),
       chipLevel: 0,
       drumLevel: 0.5,
       pcmLevel: 1,
@@ -1991,6 +2010,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Growler on the toy’s gate line: two saws and a square two octaves under the tune, with a short filter contour and a little glide',
     patch: {
+      ...romMasks('rock'),
       monoLevel: 1,
       chipLevel: 0,
       drumLevel: 0.6,
@@ -2003,6 +2023,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'One saw an octave up into the ladder with the emphasis near oscillation and no sustain on the filter contour, and the bay’s LFO sweeping the cutoff every twelve seconds',
     patch: {
+      ...romMasks('rock'),
       monoLevel: 1,
       chipLevel: 0,
       drumLevel: 0.7,
@@ -2036,6 +2057,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Growler’s gate jumper cut and the kick’s trigger line clipped on, so every kick restarts the bass on the last key you played',
     patch: {
+      ...romMasks('rock'),
       monoLevel: 1,
       chipLevel: 0,
       drumLevel: 0.8,
@@ -2128,6 +2150,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'The mono bass on a bad voice card: the pitch hold leaks so each note sinks, the converter runs hot, a ladder pair is mismatched and loud notes sag the regulator',
     patch: {
+      ...romMasks('rock'),
       monoLevel: 1,
       chipLevel: 0,
       drumLevel: 0.6,
@@ -2145,6 +2168,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Every oscillator down and the ladder past self-oscillation, struck by the kick, so the filter contour drops a sine two octaves on each hit',
     patch: {
+      ...romMasks('rock'),
       monoLevel: 2.5,
       chipLevel: 0,
       drumLevel: 0.6,
@@ -2171,6 +2195,7 @@ export const PRESETS: PresetDef[] = [
     blurb:
       'Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so each note of the tune sweeps down through the harmonics',
     patch: {
+      ...romMasks('rock'),
       monoLevel: 1,
       chipLevel: 0,
       drumLevel: 0.6,

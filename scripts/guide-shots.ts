@@ -1,5 +1,5 @@
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
-import { encodeControls } from '../src/ui/share.ts'
+import { boardHash } from '../src/ui/share.ts'
 import {
   attach,
   chromePath,
@@ -271,8 +271,8 @@ async function main() {
   try {
     for (const shot of SHOTS) {
       const board: Controls = { ...DEFAULT_CONTROLS, ...shot.board }
-      const query = encodeControls(board)
-      const full = query ? `${url}#set=${query}` : url
+      const query = boardHash('', board)
+      const full = query ? `${url}#${query}` : url
       const raw = join(work, `${shot.file}.png`)
       const rect = await shoot(full, shot, raw)
 

@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { ROCK } from '../drums.ts'
 import { sliderFor } from './controls/index.ts'
 import {
   boardFrom,
@@ -145,15 +146,40 @@ test('writing a board clears the name it rode under before', () => {
   expect(new URLSearchParams(h).get('set')).toBe('dlyFb:1.4')
 })
 
+const OLD_KIT = {
+  drumKick: ROCK.drumKick,
+  drumSnare: ROCK.drumSnare,
+  drumHat: ROCK.drumHat,
+}
+
 test('a link opens the board it names, from the hash or an older url', () => {
   expect(boardFromUrl('', '#set=filtRes:1.2')).toEqual({ filtRes: 1.2 })
-  expect(boardFromUrl('', '#b=filtRes:1.2')).toEqual({ filtRes: 1.2 })
-  expect(boardFromUrl('?set=filtRes:1.2', '')).toEqual({ filtRes: 1.2 })
+  expect(boardFromUrl('', '#b=filtRes:1.2')).toEqual({
+    ...OLD_KIT,
+    filtRes: 1.2,
+  })
+  expect(boardFromUrl('?set=filtRes:1.2', '')).toEqual({
+    ...OLD_KIT,
+    filtRes: 1.2,
+  })
   expect(boardFromUrl('?set=dlyFb:1.4', '#set=filtRes:1.2')).toEqual({
     filtRes: 1.2,
   })
   expect(boardFromUrl('', '#set=filtRes:1.2&b=dlyFb:1.4')).toEqual({
     filtRes: 1.2,
+  })
+})
+
+test('boardFromUrl gives an unmarked short link the old beat', () => {
+  const h = boardHash('', { ...DEFAULT_CONTROLS, filtRes: 1.2 })
+  expect(new URLSearchParams(h).get('v')).toBe('2')
+  expect(boardFromUrl('', `#${h}`)).toEqual({ filtRes: 1.2 })
+  const old = h.replace('&v=2', '')
+  expect(boardFromUrl('', `#${old}`)).toEqual({ ...OLD_KIT, filtRes: 1.2 })
+  const cleared = boardHash('', { ...DEFAULT_CONTROLS, ...OLD_KIT, drumHat: 0 })
+  expect(boardFromUrl('', `#${cleared}`)).toEqual({
+    drumKick: ROCK.drumKick,
+    drumSnare: ROCK.drumSnare,
   })
 })
 

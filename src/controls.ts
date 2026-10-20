@@ -279,11 +279,11 @@ export const DEFAULT_CONTROLS = {
   drumSlip: 0,
   drumChance: 0.5,
 
-  // The pattern: one sixteen-bit mask per voice, step 1 in the high bit so the
-  // literal reads left to right like the grid. This is the 'rock' ROM.
-  drumKick: 0b1000_0000_1001_0000,
-  drumSnare: 0b0000_1000_0000_1000,
-  drumHat: 0b0010_0010_0010_0010,
+  // One sixteen-bit mask per voice, step 1 in the high bit. The kit starts
+  // blank; share.ts gives links from before then the old 'rock' pattern back.
+  drumKick: 0,
+  drumSnare: 0,
+  drumHat: 0,
   drumClap: 0,
   drumTom: 0,
   drumBell: 0,

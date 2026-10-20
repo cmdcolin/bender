@@ -1450,9 +1450,9 @@ the board waits until you press play.
   down, so the only copy you hear is the keyed one
 - [**dying toy**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:0.6,chipStarve:0.85,delayMs:300,dlyFb:0.5,dlyMix:0.3,brownAmt:0.35)
   — Starved rail, sagging pitch, watchdog reboots mid-tune
-- [**paperclip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.5,chipStarve:0.3,chipCap:0.6,chipClipHz:3,chipClipClock:0.45,drumLevel:0.25,brownAmt:0.25,humLevel:0.2,faultCluster:0.55)
+- [**paperclip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.5,chipStarve:0.3,chipCap:0.6,chipClipHz:3,chipClipClock:0.45,drumLevel:0.25,drumKick:32912,drumSnare:2056,drumHat:8738,brownAmt:0.25,humLevel:0.2,faultCluster:0.55)
   — Bare metal on the timing pin — every touch dives an octave and snaps back
-- [**flat batteries**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.6,chipBattery:0.75,drumLevel:0.55,drumBits:5,tapeMix:0.45,tapeHiss:0.5)
+- [**flat batteries**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipAccomp:0.6,chipBattery:0.75,drumLevel:0.55,drumBits:5,drumKick:32912,drumSnare:2056,drumHat:8738,tapeMix:0.45,tapeHiss:0.5)
   — Cells too far gone to hold the rail — the whole toy runs low and late
 - [**melody scrambler**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipClockX:2.5,chipBendSpot:2,chipBendPot:0.8,glitchProb:0.45,glitchSliceMs:90,glitchMix:0.5)
   — Pot soldered on the program counter
@@ -1460,10 +1460,10 @@ the board waits until you press play.
   — A data line held high — the tune keeps its rhythm and its rests fill in
 - [**half a tune**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipAccomp:0.5,chipAddrLine:4,chipAddrFault:1,delayMs:260,dlyFb:0.4,dlyMix:0.25)
   — An address line on the floor: the song folds into its first half
-- [**stuck key**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.5,fmLevel:0.8,fmVoice:1,fmBright:0.6,fmLength:0.3,fmDataLine:5,fmDataFault:2)
+- [**stuck key**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.5,drumKick:32912,drumSnare:2056,drumHat:8738,fmLevel:0.8,fmVoice:1,fmBright:0.6,fmLength:0.3,fmDataLine:5,fmDataFault:2)
   — The key-up write reaches Glint with its key bit held high, so nothing it
   plays ends
-- [**drum machine on the die**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.35,drumBpm:132,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmKeyGate:1,fmRhythm:1,fmBusCut:0.85,fmWaveLine:9,revMix:0.2)
+- [**drum machine on the die**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.35,drumBpm:132,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmKeyGate:1,fmRhythm:1,fmBusCut:0.85,fmWaveLine:9,revMix:0.2)
   — The chip’s own percussion bank, run through a half-parted wave line
 - [**dawn chorus**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmDataLine:3,fmBusCut:0.55)
   — Bird calls off the effect ROM, every write of them corrupted
@@ -1481,7 +1481,7 @@ the board waits until you press play.
 - [**reboot loop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmKeyGate:1,modLfoHz:6,modLfoShape:2,mod0Src:1,mod0Dest:102,mod0Depth:1)
   — A square wave on Glint’s cold boot: it power-cycles six times a second, each
   time into a different chord of garbage
-- [**tune on the bass drum**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.35,drumBpm:132,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmRhythm:1,fmAlloc:3)
+- [**tune on the bass drum**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.35,drumBpm:132,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumAccent:32896,fmLevel:0.85,fmStruck:9,fmRhythm:1,fmAlloc:3)
   — The FM driver’s allocator stuck on the channel the rhythm bank took, so
   every note of the song retunes and strikes the die’s bass drum
 - [**bird fight**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:1,fmAlloc:4)
@@ -1490,11 +1490,11 @@ the board waits until you press play.
 - [**standing ovation**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,fmLevel:0.8,fmEffect:9,fmAdder:3)
   — Applause off the effect ROM through a 9-bit log adder that wraps, until the
   room is a wall of white noise
-- [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9)
+- [**gravel dac**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumDecay:1.6,drumBits:5,drumLadder:0.9,drumKick:32912,drumSnare:2056,drumHat:8738)
   — The kit’s converter built from resistors off an unmeasured reel
-- [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)
+- [**machine gun**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:170,drumRetrigHz:24,drumKick:32912,drumSnare:2056,drumHat:8738,driveDb:24,distMode:2,distMix:0.6,delayMs:140,dlyMix:0.2)
   — Drum machine retriggered into rolls
-- [**drum scream**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.95,drumBpm:45,drumRetrigHz:700,bits:6,crushMix:0.5,revDecayS:3,revMix:0.3)
+- [**drum scream**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.95,drumBpm:45,drumRetrigHz:700,drumKick:32912,drumSnare:2056,drumHat:8738,bits:6,crushMix:0.5,revDecayS:3,revMix:0.3)
   — Retrigger past audio rate — the kit becomes a pitch
 - [**crushed chip**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,chipClockX:2,bits:3,srHz:2600,srJitter:0.6,crushMix:0.9)
   — Overclocked tune through a dying DAC
@@ -1567,7 +1567,7 @@ the board waits until you press play.
   — A soldered DAC bias into a ringing comb, slowed right down
 - [**dying walkman**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipClockX:0.8,bits:7,srHz:9000,crushMix:0.5,delayMs:260,dlyFb:0.45,wowDepthMs:5,flutter:0.45,dlyToneHz:3500,dlyMix:0.5,revMix:0.35)
   — A chewed tape running into a failing DAC
-- [**wrong voices**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumCross:4,drumCrossAmt:0.85,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,distMix:0.35,revMix:0.25)
+- [**wrong voices**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumCross:4,drumCrossAmt:0.85,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumAccent:32896,distMix:0.35,revMix:0.25)
   — Envelope pins bridged — the kit fires the wrong drums
 - [**yell into it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,micPatch:3,driveDb:28,distMix:0.6,delayMs:220,dlyFb:0.95,dlyMix:0.7)
   — Mic soldered into the delay feedback path — bring your mic level up
@@ -1581,20 +1581,20 @@ the board waits until you press play.
   — Skin on the pad rides the cutoff, and pressing harder opens the feedback
 - [**clock wobble**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.85,delayMs:240,dlyMix:0.25,modLfoHz:0.5,mod0Src:1,mod0Dest:4,mod0Depth:0.55)
   — The bay LFO dragging the chip crystal around
-- [**clap at it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,micPatch:5,driveDb:16,distMix:0.45,revMix:0.3)
+- [**clap at it**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumKick:32912,drumSnare:2056,drumHat:8738,micPatch:5,driveDb:16,distMix:0.45,revMix:0.3)
   — Mic on the drum trigger line: clap and it fires your pattern — bring your
   mic level up
-- [**backbeat**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumSnare:0,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
+- [**backbeat**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumSwing:0.5,drumDecay:1.4,drumBits:4,drumKick:32896,drumHat:43690,drumClap:2056,drumAccent:2056,revDecayS:2.5,revMix:0.3)
   — Claps on two and four, shuffled hard, through four bits of DAC
-- [**boom bap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:88,drumSwing:0.6,drumBits:12,drumRom:1,drumRomHz:22000,drumKick:33312,drumHat:43690,drumAccent:2056,revMix:0.18,tapeMix:0.5,tapeHiss:0.55,tapeWow:0.3)
+- [**boom bap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:88,drumSwing:0.6,drumBits:12,drumRom:1,drumRomHz:22000,drumKick:33312,drumSnare:2056,drumHat:43690,drumAccent:2056,revMix:0.18,tapeMix:0.5,tapeHiss:0.55,tapeWow:0.3)
   — The kit sampled by itself, twelve bits and shuffled
 - [**dusty kit**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:84,drumSwing:0.4,drumDecay:0.5,drumRom:1,drumRomHz:12000,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,bendSlot0:2,bits:6,srHz:12000,crushMix:0.3,revDecayS:1.2,revMix:0.25)
   — The ROM clock down at 12 k and every hit truncated — a sampler running out
   of seconds
-- [**pitched down**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:76,drumTune:0.5,drumRom:1,drumKick:34952,drumHat:34952,drumOpen:514,drumCym:32768,drumAccent:32896,revDecayS:3,revMix:0.3)
+- [**pitched down**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:76,drumTune:0.5,drumRom:1,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:514,drumCym:32768,drumAccent:32896,revDecayS:3,revMix:0.3)
   — Every slab read at half speed — the long ones smear into each other and the
   kit sounds an octave under
-- [**struck metal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:92,drumDecay:2.4,drumMetal:1,drumCymTone:0.2,drumSpread:0.4,drumSquare:0.06,drumKick:34952,drumHat:34952,drumOpen:8738,drumCym:32768,drumAccent:32896,revDecayS:2.4,revMix:0.32)
+- [**struck metal**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:92,drumDecay:2.4,drumMetal:1,drumCymTone:0.2,drumSpread:0.4,drumSquare:0.06,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumCym:32768,drumAccent:32896,revDecayS:2.4,revMix:0.32)
   — The squarer biased out of the way — the hats and the cymbal come back as the
   six tones they are made of
 - [**popcorn**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumDecay:1.3,drumSnappy:0.9,drumNoiseBias:0.42,drumMetal:0.25,drumKick:33312,drumSnare:2312,drumHat:44718,drumClap:514,drumAccent:2056,revMix:0.24)
@@ -1616,32 +1616,32 @@ the board waits until you press play.
 - [**two clocks**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipSync:1,drumLevel:0.9,drumBpm:124,drumSlip:0.2,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,delayMs:288,dlyMix:0.22)
   — The toy locked to the kit’s tempo while the kit’s counter slips out from
   under it, so the downbeat drifts
-- [**rusted bell**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumDecay:2.5,drumMetal:1,drumBankStarve:1,drumKick:37412,drumSnare:0,drumHat:9362,drumBell:37416,drumCym:32768,drumAccent:32768,revMix:0.3)
+- [**rusted bell**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:104,drumDecay:2.5,drumMetal:1,drumBankStarve:1,drumKick:37412,drumHat:9362,drumBell:37416,drumCym:32768,drumAccent:32768,revMix:0.3)
   — The metal bank’s supply starved through a resistor, three octaves down — the
   cowbell clanks like a pipe, the hats and cymbal crackle, and the kick stays
   where it was
-- [**metal under the kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:120,drumDecay:0.4,drumMetal:1,drumBankGate:1,drumKick:32928,drumHat:65535,drumCym:32768)
+- [**metal under the kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:120,drumDecay:0.4,drumMetal:1,drumBankGate:1,drumKick:32928,drumSnare:2056,drumHat:65535,drumCym:32768)
   — The metal bank’s supply soldered to the kick’s trigger line — sixteenth hats
   and a cymbal that only sound while a kick rings, and freeze in the gaps
   between
-- [**buzzing hands**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:108,drumClapGap:2,drumClapCount:60,drumKick:37008,drumSnare:0,drumClap:2088,drumBell:2,drumAccent:32896,revMix:0.2)
+- [**buzzing hands**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:108,drumClapGap:2,drumClapCount:60,drumKick:37008,drumHat:8738,drumClap:2088,drumBell:2,drumAccent:32896,revMix:0.2)
   — The clap’s burst oscillator run up to 500 Hz for sixty bursts — every clap a
   buzzing tone made of noise, which the metal bank cannot make
-- [**two drums arguing**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:96,drumRing:0.95,drumSweep:3,drumTankCouple:0.5,drumKick:32768,drumSnare:30464,drumHat:0,drumTom:255,drumAccent:32896)
+- [**two drums arguing**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:96,drumRing:0.95,drumSweep:3,drumTankCouple:0.5,drumKick:32768,drumSnare:30464,drumTom:255,drumAccent:32896)
   — The kick’s network wired into the tom’s, both latched past the ring — two
   oscillators forcing each other into a low smear the pattern keeps retuning
-- [**sticky dice**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumNoiseBias:0.3,drumMetal:0.4,drumDice:1,drumKick:43690,drumHat:0,drumAccent:32896,drumKickMaybe:5137,drumSnareMaybe:8484,drumHatMaybe:65535,drumOpenMaybe:514)
+- [**sticky dice**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:128,drumNoiseBias:0.3,drumMetal:0.4,drumDice:1,drumKick:43690,drumSnare:2056,drumAccent:32896,drumKickMaybe:5137,drumSnareMaybe:8484,drumHatMaybe:65535,drumOpenMaybe:514)
   — Maybe steps on every row and a dice wired to a noise transistor at its knee
   — the hats spit, and the pattern locks for bars at a time before it lurches
 - [**drums made of the tune**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.5,drumLevel:1.2,drumBpm:120,drumRef:1,drumKick:33312,drumSnare:2312,drumHat:44718,drumAccent:2056,revMix:0.25)
   — The kit’s converter running off the toy’s output instead of a fixed
   reference — every hit is the melody ring-modulated into a burst, and the kit
   goes quiet when the toy does
-- [**lone kicks zap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumMetal:0.8,drumSweep:6,drumPulseShare:1,drumKick:37514,drumSnare:0,drumHat:4618,drumClap:4104)
+- [**lone kicks zap**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumBpm:112,drumMetal:0.8,drumSweep:6,drumPulseShare:1,drumKick:37514,drumHat:4618,drumClap:4104)
   — The one-shots on one timing rail with the sweep trimmer wound up — a kick
   alone zaps down from the top, and a kick under hats and a clap sounds short,
   thin and flat
-- [**every hit dives**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.9,drumBpm:100,drumDecay:3,drumMetal:1,drumTrigLoad:1,drumKick:34952,drumHat:34952,drumBell:8738,drumOpen:8738,drumCym:32896,drumAccent:32896)
+- [**every hit dives**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.9,drumBpm:100,drumDecay:3,drumMetal:1,drumTrigLoad:1,drumKick:34952,drumSnare:2056,drumHat:34952,drumBell:8738,drumOpen:8738,drumCym:32896,drumAccent:32896)
   — The one-shots’ charge pulled straight off the supply — a ringing cymbal and
   cowbell dive an octave on every kick, and the toy’s tune sags flat under the
   busy steps
@@ -1649,19 +1649,19 @@ the board waits until you press play.
   — The toy, printed clean to 7½ ips — hiss, a little wow, nothing broken
 - [**shed oxide**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipStarve:0.2,tapeMix:1,tapeSpeed:0,tapeDrive:10,tapeBias:0.55,tapeHiss:0.8,tapeWow:0.8,tapeFlutter:0.7,tapeDrop:0.6,tapePrint:0.7,tapeAzimuth:0.35,tapeSqueal:0.45)
   — Slow tape gone soft: dropouts, print-through, a squeal that comes and goes
-- [**pinned**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,drumLevel:0.5,drumBpm:96,delayMs:180,dlyMix:0.25,tapeMix:1,tapeSpeed:2,tapeDrive:15,tapeBias:-0.85,tapeHiss:0.4,tapeWow:0.15,tapeFlutter:0.2)
+- [**pinned**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,drumLevel:0.5,drumBpm:96,drumKick:32912,drumSnare:2056,drumHat:8738,delayMs:180,dlyMix:0.25,tapeMix:1,tapeSpeed:2,tapeDrive:15,tapeBias:-0.85,tapeHiss:0.4,tapeWow:0.15,tapeFlutter:0.2)
   — Underbiased and slammed — the machine as the distortion
-- [**kit on keys**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipAccomp:0.35,drumLevel:0.6,drumBpm:104,delayMs:288,dlyMix:0.22,trigToKeys:1,trigKeysNote:1)
+- [**kit on keys**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipAccomp:0.35,drumLevel:0.6,drumBpm:104,drumKick:32912,drumSnare:2056,drumHat:8738,delayMs:288,dlyMix:0.22,trigToKeys:1,trigKeysNote:1)
   — Kick soldered onto the keyboard’s gate: one hit, one step of the ROM
-- [**call and answer**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumBpm:92,revDecayS:2.4,revMix:0.3,trigToKeys:2,trigKeysNote:3,trigToDrum:4)
+- [**call and answer**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumBpm:92,drumKick:32912,drumSnare:2056,drumHat:8738,revDecayS:2.4,revMix:0.3,trigToKeys:2,trigKeysNote:3,trigToDrum:4)
   — The snare triggers a chord, and each note of it triggers a clap
-- [**hit gate**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,drumLevel:0.8,filtHz:180,filtRes:0.85,filtMix:1,mod0Src:9,mod0Depth:0.85)
+- [**hit gate**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,drumLevel:0.8,drumKick:32912,drumSnare:2056,drumHat:8738,filtHz:180,filtRes:0.85,filtMix:1,mod0Src:9,mod0Depth:0.85)
   — A wire off the kit’s trigger line onto the cutoff — shut between hits
-- [**slapback**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,drumLevel:0.5,echoMs:110,echoFb:0.15,echoToneHz:6000,echoLevel:0.45)
+- [**slapback**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,drumLevel:0.5,drumKick:32912,drumSnare:2056,drumHat:8738,echoMs:110,echoFb:0.15,echoToneHz:6000,echoLevel:0.45)
   — The plain box, set the plain way — one repeat, close behind
-- [**bucket brigade**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumLevel:0.45,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6)
+- [**bucket brigade**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,drumLevel:0.45,drumKick:32912,drumSnare:2056,drumHat:8738,echoMode:1,echoMs:480,echoFb:0.72,echoToneHz:5000,echoLevel:0.6)
   — Every lap through the chips comes back darker than the last
-- [**beat repeat**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.8,drumBpm:110,echoMode:4,echoMs:136,echoFb:0.85,echoLevel:0.8)
+- [**beat repeat**](https://cmdcolin.github.io/bender/app/#set=drumLevel:0.8,drumBpm:110,drumKick:32912,drumSnare:2056,drumHat:8738,echoMode:4,echoMs:136,echoFb:0.85,echoLevel:0.8)
   — Every hit lifts the record head, and the box goes round what it just heard
 - [**three heads**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipAccomp:0.3,delayMs:170,dlyFb:0.4,wowDepthMs:2,dlyHeads:4,dlyMix:0.45)
   — One repeat, three play heads along the tape — a rhythm off a single tap
@@ -1670,7 +1670,7 @@ the board waits until you press play.
 - [**spliced reel**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.4,delayMs:380,dlyFb:0.55,flutter:0.25,dlySplice:0.8,dlyErase:0.7,dlyMix:0.5)
   — A loop joined badly and an erase head that failed — the last lap bleeds
   through
-- [**kicked amp**](https://cmdcolin.github.io/bender/app/#set=drumBpm:96,revDecayS:3,revBoing:0.8,revKick:0.7,revMix:0.6)
+- [**kicked amp**](https://cmdcolin.github.io/bender/app/#set=drumBpm:96,drumKick:32912,drumSnare:2056,drumHat:8738,revDecayS:3,revBoing:0.8,revKick:0.7,revMix:0.6)
   — Every hit from the kit throws the springs against the housing
 - [**played backwards**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,echoMode:2,echoMs:500,echoLevel:0.75,revMix:0.25)
   — Half a second at a time, each played back reversed
@@ -1681,7 +1681,7 @@ the board waits until you press play.
 - [**clockwork**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipArp:3,chipArpOct:2,delayMs:240,dlyMix:0.25,revMix:0.2)
   — The counter stepping through the notes you hold — hold a chord, or latch it
   with hold
-- [**hailstorm**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipArp:4,chipArpOct:4,chipArpSync:8,drumLevel:0.6,drumBpm:140,revMix:0.25)
+- [**hailstorm**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.75,chipArp:4,chipArpOct:4,chipArpSync:8,drumLevel:0.6,drumBpm:140,drumKick:32912,drumSnare:2056,drumHat:8738,revMix:0.25)
   — Hold a chord: the arpeggio counts sixty-fourths off the kit, four octaves in
   no order, a hail of notes at the drums’ tempo
 - [**ghost bassline**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.8,chipDrift:0.6,ringFrom:9,ringMix:0.85)
@@ -1706,48 +1706,48 @@ the board waits until you press play.
   — The kit through a bucket brigade a millisecond long, fed back on itself
 - [**doubled**](https://cmdcolin.github.io/bender/app/#set=fmLevel:0.6,fmVoice:6,fmBright:0.6,fmLength:1.2,revDecayS:3,revMix:0.3)
   — The gate jumper left on: one key, a square and an FM string on it
-- [**slowed + reverb**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.35,chipAccomp:0.5,drumLevel:0.25,fmLevel:0.6,fmVoice:2,fmBright:0.4,fmLength:1.4,echoMs:420,echoFb:0.65,echoLevel:1,revDecayS:7,revMix:0.6,revDry:0.55,tapeMix:0.55,tapeHiss:0.5,tapeWow:0.5,deckSpeed:0.78)
+- [**slowed + reverb**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.35,chipAccomp:0.5,drumLevel:0.25,drumKick:32912,drumSnare:2056,drumHat:8738,fmLevel:0.6,fmVoice:2,fmBright:0.4,fmLength:1.4,echoMs:420,echoFb:0.65,echoLevel:1,revDecayS:7,revMix:0.6,revDry:0.55,tapeMix:0.55,tapeHiss:0.5,tapeWow:0.5,deckSpeed:0.78)
   — The whole instrument printed to a deck running under speed, drowned in
   spring
-- [**tape stop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.6,drumLevel:0.6,drumBpm:104,drumKick:34952,drumHat:34952,drumOpen:8738,drumAccent:32896,revMix:0.2,deckInertia:1.5)
+- [**tape stop**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.6,drumLevel:0.6,drumBpm:104,drumKick:34952,drumSnare:2056,drumHat:34952,drumOpen:8738,drumAccent:32896,revMix:0.2,deckInertia:1.5)
   — A heavy platter under a running board — Varispeed at 0 stops the tape
-- [**dropped in the post**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumTune:0.7,drumDecay:1.6,drumKick:34952,drumSnare:0,drumClap:2056,drumThrow:8,filtHz:650,filtRes:0.8,filtPop:0.45,filtMix:1,delayMs:381,dlyFb:0.72,dlyToneHz:2500,dlySend:0,dlyLoopMode:2,dlyLoopRes:0.55,dlyMix:0.7,revDecayS:3,revKick:0.3,revMix:0.25,modLfoHz:0.12,mod0Src:1,mod0Dest:67)
+- [**dropped in the post**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumTune:0.7,drumDecay:1.6,drumKick:34952,drumHat:8738,drumClap:2056,drumThrow:8,filtHz:650,filtRes:0.8,filtPop:0.45,filtMix:1,delayMs:381,dlyFb:0.72,dlyToneHz:2500,dlySend:0,dlyLoopMode:2,dlyLoopRes:0.55,dlyMix:0.7,revDecayS:3,revKick:0.3,revMix:0.25,modLfoHz:0.12,mod0Src:1,mod0Dest:67)
   — A dub kit through a crackling filter, the last clap thrown into a dark echo
 - [**breathing echo**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.7,chipAccomp:0.3,delayMs:330,dlyFb:1.35,wowDepthMs:1.5,dlyToneHz:3500,dlyLamp:0.8,dlyLampS:1.4,dlyMix:0.6)
   — Feedback past 1 through a lamp that dims as it heats
-- [**fills feed fills**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:96,drumSwing:0.15,drumScan:12,drumChance:0.05,drumKick:32896,drumHat:0,drumHatMaybe:30583,drumTomMaybe:257,revMix:0.2,mod0Src:9,mod0Dest:64,mod0Depth:1.6)
+- [**fills feed fills**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.85,drumBpm:96,drumSwing:0.15,drumScan:12,drumChance:0.05,drumKick:32896,drumSnare:2056,drumHatMaybe:30583,drumTomMaybe:257,revMix:0.2,mod0Src:9,mod0Dest:64,mod0Depth:1.6)
   — Every hit raises the odds of the next ghost hit, and a slow scan flams them
-- [**ringing kick bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumTune:0.7,drumRing:0.88,drumKick:33312,drumSnare:0,drumClap:2056,modLfoHz:1.97,modLfoShape:3,mod0Src:1,mod0Dest:14,mod0Depth:0.3)
+- [**ringing kick bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumTune:0.7,drumRing:0.88,drumKick:33312,drumHat:8738,drumClap:2056,modLfoHz:1.97,modLfoShape:3,mod0Src:1,mod0Dest:14,mod0Depth:0.3)
   — Ring at 0.88 keeps the kick’s network sounding between hits, and a
   sample-and-hold wire on the kit’s tune moves it to a new pitch every beat
-- [**string under the hats**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumKick:32896,drumSnare:0,drumHat:43690,combHz:44,combFb:0.99,combDampHz:700,combMix:1,modLfoHz:0.99,modLfoShape:3,mod0Src:1,mod0Dest:2,mod0Depth:0.2)
+- [**string under the hats**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.9,drumKick:32896,drumHat:43690,combHz:44,combFb:0.99,combDampHz:700,combMix:1,modLfoHz:0.99,modLfoShape:3,mod0Src:1,mod0Dest:2,mod0Depth:0.2)
   — The comb at 44 Hz just under self-oscillation, struck by every hat, with a
   sample-and-hold wire moving its pitch every two beats
-- [**pinged filter**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,filtHz:45,filtRes:1.25,filtDriveDb:6,filtPop:0.5,filtArc:0.4,filtMix:1,mod0Src:9)
+- [**pinged filter**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumKick:32912,drumSnare:2056,drumHat:8738,filtHz:45,filtRes:1.25,filtDriveDb:6,filtPop:0.5,filtArc:0.4,filtMix:1,mod0Src:9)
   — The filter self-oscillating at 45 Hz with the kit’s hits wired onto the
   cutoff, so each hit comes out as a low sine, with popcorn and an arcing cap
   crackling through it
-- [**sub siren**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:90,drumKick:33312,drumSnare:0,drumHat:0,drumClap:2056,delayMs:500,dlyFb:0.9,dlyToneHz:1500,dlyLoopMode:1,dlyLoopHz:70,dlyLoopRes:1.3,dlyMix:0.8,modLfoHz:0.07,mod0Src:1,mod0Dest:67,mod0Depth:0.35)
+- [**sub siren**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumBpm:90,drumKick:33312,drumClap:2056,delayMs:500,dlyFb:0.9,dlyToneHz:1500,dlyLoopMode:1,dlyLoopHz:70,dlyLoopRes:1.3,dlyMix:0.8,modLfoHz:0.07,mod0Src:1,mod0Dest:67,mod0Depth:0.35)
   — The tape delay’s loop filter resonating at 70 Hz, so the repeats whistle at
   a sub pitch, with an LFO sweeping the cutoff once every fourteen seconds
-- [**retrigger bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumTune:0.5,drumDecay:1.5,drumRetrigHz:45,drumKick:33312,drumSnare:0,drumClap:2056,stompCircuit:2,stompDrive:20,stompTone:0.2,stompMix:0.5,modLfoHz:0.25,mod0Src:1,mod0Dest:5,mod0Depth:0.15,tapeMix:1,tapeSpeed:0,tapeDrive:8,tapeBump:1.2)
+- [**retrigger bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumTune:0.5,drumDecay:1.5,drumRetrigHz:45,drumKick:33312,drumHat:8738,drumClap:2056,stompCircuit:2,stompDrive:20,stompTone:0.2,stompMix:0.5,modLfoHz:0.25,mod0Src:1,mod0Dest:5,mod0Depth:0.15,tapeMix:1,tapeSpeed:0,tapeDrive:8,tapeBump:1.2)
   — The kit retriggered 45 times a second, which turns the kick into a buzzing
   45 Hz note, through the muff and onto slow tape for the head bump
 - [**bass on a sagging rail**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0.9,chipAccomp:1,chipClockX:0.25,drumLevel:0,fbAmt:0.8,fbDelayMs:40,fbTone:-0.5,fbDest:2)
   — The toy two octaves down on auto bass-chord, with the feedback return
   soldered onto its supply rail, so loud notes pull the rail down and the pitch
   falls with it
-- [**basement organ**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.5,pcmLevel:1,pcmVoice:2,pcmEnv:1,pcmChord:6,pcmClockX:0.12)
+- [**basement organ**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.5,drumKick:32912,drumSnare:2056,drumHat:8738,pcmLevel:1,pcmVoice:2,pcmEnv:1,pcmChord:6,pcmClockX:0.12)
   — Parlor’s pipe organ with the ROM clock at 0.12×, three octaves down, playing
   the toy’s song in power chords
-- [**mono bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.7,monoGlide:0.03)
+- [**mono bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:1,monoGate:0.7,monoGlide:0.03)
   — Growler on the toy’s gate line: two saws and a square two octaves under the
   tune, with a short filter contour and a little glide
-- [**acid line**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,monoLevel:1,monoGate:0.5,monoGlide:0.06,monoRange1:-1,monoMix1:1,monoMix2:0,monoMix3:0,monoCutoff:260,monoEmph:0.88,monoContour:3.2,monoTrack:0.5,monoDrive:2.2,monoFD:0.15,monoFS:0,monoFR:0.08,monoAD:0.3,monoAS:0.7,monoAR:0.03,modLfoHz:0.08,mod0Src:1,mod0Dest:76,mod0Depth:0.3)
+- [**acid line**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:1,monoGate:0.5,monoGlide:0.06,monoRange1:-1,monoMix1:1,monoMix2:0,monoMix3:0,monoCutoff:260,monoEmph:0.88,monoContour:3.2,monoTrack:0.5,monoDrive:2.2,monoFD:0.15,monoFS:0,monoFR:0.08,monoAD:0.3,monoAS:0.7,monoAR:0.03,modLfoHz:0.08,mod0Src:1,mod0Dest:76,mod0Depth:0.3)
   — One saw an octave up into the ladder with the emphasis near oscillation and
   no sustain on the filter contour, and the bay’s LFO sweeping the cutoff every
   twelve seconds
-- [**kick bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,monoLevel:1,monoKeyGate:1,monoGate:0.45,monoStruck:1,monoContour:2.5,monoFD:0.12,monoFS:0.05,monoAD:0.3,monoAS:0.5)
+- [**kick bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.8,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:1,monoKeyGate:1,monoGate:0.45,monoStruck:1,monoContour:2.5,monoFD:0.12,monoFS:0.05,monoAD:0.3,monoAS:0.5)
   — Growler’s gate jumper cut and the kick’s trigger line clipped on, so every
   kick restarts the bass on the last key you played
 - [**leaky drone**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0,monoLevel:2,monoKeyGate:1,monoWave3:0,monoRange1:-1,monoRange2:-1,monoTune2:0.11,monoTune3:0,monoOsc3:2,monoDrift:6,monoMix3:0,monoNoise:0.1,monoLoop:0.4,monoCutoff:280,monoEmph:0.85,monoContour:0,monoTrack:0,monoDrive:2.4,monoModFilter:2,monoLeak:1,revDecayS:5,revMix:0.35)
@@ -1758,14 +1758,14 @@ the board waits until you press play.
   — The leaky drone two octaves down, through a slow ensemble, a dark wobbling
   tape echo and a fourteen-second room, with an LFO that takes half a minute to
   open the ladder
-- [**sinking bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.9,monoGlide:0.04,monoEmph:0.5,monoHeat:0.7,monoMismatch:0.5,monoDroop:0.3,monoSag:0.5)
+- [**sinking bass**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:1,monoGate:0.9,monoGlide:0.04,monoEmph:0.5,monoHeat:0.7,monoMismatch:0.5,monoDroop:0.3,monoSag:0.5)
   — The mono bass on a bad voice card: the pitch hold leaks so each note sinks,
   the converter runs hot, a ladder pair is mismatched and loud notes sag the
   regulator
-- [**filter kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:2.5,monoKeyGate:1,monoStruck:1,monoMix1:0,monoMix2:0,monoMix3:0,monoCutoff:33,monoEmph:1.08,monoContour:2.2,monoTrack:1,monoFD:0.07,monoFS:0,monoFR:0.05,monoAD:0.5,monoAS:0.6,monoAR:0.12)
+- [**filter kick**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:2.5,monoKeyGate:1,monoStruck:1,monoMix1:0,monoMix2:0,monoMix3:0,monoCutoff:33,monoEmph:1.08,monoContour:2.2,monoTrack:1,monoFD:0.07,monoFS:0,monoFR:0.05,monoAD:0.5,monoAS:0.6,monoAR:0.12)
   — Every oscillator down and the ladder past self-oscillation, struck by the
   kick, so the filter contour drops a sine two octaves on each hit
-- [**tearing sync**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,monoLevel:1,monoGate:0.8,monoGlide:0.05,monoRange1:-1,monoRange2:-1,monoTune2:0,monoSync:1,monoSweep:24,monoMix1:0,monoMix2:1,monoMix3:0.4,monoCutoff:700,monoContour:2,monoFD:0.4,monoFS:0.3)
+- [**tearing sync**](https://cmdcolin.github.io/bender/app/#set=chipLevel:0,drumLevel:0.6,drumKick:32912,drumSnare:2056,drumHat:8738,monoLevel:1,monoGate:0.8,monoGlide:0.05,monoRange1:-1,monoRange2:-1,monoTune2:0,monoSync:1,monoSweep:24,monoMix1:0,monoMix2:1,monoMix3:0.4,monoCutoff:700,monoContour:2,monoFD:0.4,monoFS:0.3)
   — Osc 2 hard-synced to osc 1 and swept two octaves by the filter contour, so
   each note of the tune sweeps down through the harmonics
 

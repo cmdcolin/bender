@@ -1,3 +1,5 @@
+import { ROCK } from '../src/drums.ts'
+
 import type { Controls } from '../src/controls.ts'
 
 // Every pedal wet, tape on, the supply dying, four wires in the bay and the
@@ -25,6 +27,7 @@ export const HEAVY: Partial<Controls> = {
   chipDrift: 0.5,
   chipLatch: 0.2,
   drumLevel: 0.6,
+  ...ROCK,
   drumLadder: 0.5,
   drumRetrigHz: 20,
   fmLevel: 0.5,

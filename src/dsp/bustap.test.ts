@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { ROCK } from '../drums.ts'
 import { SOURCE_TAPS, TAP_BUS, TAP_MIC, packParams } from '../engine/params.ts'
 import { CHANNELS } from '../ui/controls/index.ts'
 import { buildBender, buildChain } from './build.ts'
@@ -55,7 +56,7 @@ test('each channel meters its own source and nobody else', () => {
   // rather than a stage; both are checked on their own below.
   const wired: Partial<Controls>[] = [
     { chipLevel: 1 },
-    { drumLevel: 1 },
+    { drumLevel: 1, ...ROCK },
     // Nothing over on the toy strikes a note unless the toy's own sequencer is
     // running, which it is: the FM chip has no keys of its own.
     { fmLevel: 1 },

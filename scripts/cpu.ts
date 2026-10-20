@@ -2,7 +2,7 @@ import { preview } from 'astro'
 
 import config from '../astro.config.ts'
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
-import { encodeControls } from '../src/ui/share.ts'
+import { boardHash } from '../src/ui/share.ts'
 import { HEAVY } from './boards.ts'
 import { attach, chromePath, sleep, type Page } from './chrome.ts'
 import { buildAndPreview } from './serve.ts'
@@ -234,7 +234,7 @@ async function session(url: string, scene: Scene, setup = '') {
       source: RECORD_CONTEXTS,
     })
     await page.send('Page.navigate', {
-      url: `${url}#set=${encodeControls(BOARDS[scene])}`,
+      url: `${url}#${boardHash('#set=', BOARDS[scene])}`,
     })
     await sleep(3000)
     await ask(page, `window.bender.start()`)

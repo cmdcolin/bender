@@ -1,5 +1,5 @@
 import { DEFAULT_CONTROLS, type Controls } from '../src/controls.ts'
-import { encodeControls } from '../src/ui/share.ts'
+import { boardHash } from '../src/ui/share.ts'
 import { HEAVY } from './boards.ts'
 import {
   attach,
@@ -237,7 +237,7 @@ async function main() {
       '--no-first-run',
       '--no-default-browser-check',
       '--window-size=1600,1000',
-      `${url}#set=${encodeControls(BOARD)}`,
+      `${url}#${boardHash('#set=', BOARD)}`,
     ],
     { stdio: 'ignore' },
   )

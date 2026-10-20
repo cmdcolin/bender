@@ -1,9 +1,13 @@
 // The rig the dsp tests render through: a board at 48 kHz run block by block,
 // and the measurements that turn what came out of it into something to assert on.
 import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { ROCK } from '../drums.ts'
 import { MAX_SOURCES, packParams } from '../engine/params.ts'
 import { buildBender, buildChain, type BuiltChain } from './build.ts'
 import { BLOCK, type StereoBlock } from './stage.ts'
+
+// The kit's old stock pattern, which these renders were measured against.
+const BASE: Controls = { ...DEFAULT_CONTROLS, ...ROCK }
 
 export const SR = 48000
 
@@ -16,7 +20,7 @@ export function render(
   seconds = 0.5,
 ): Float32Array {
   const chain = buildChain(SR)
-  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const p = packParams({ ...BASE, ...overrides })
   const io = makeIo()
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   const out = new Float32Array(blocks * BLOCK)
@@ -42,7 +46,7 @@ export function renderBender(
 ): Float32Array {
   const built = buildBender(SR)
   setup?.(built)
-  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const p = packParams({ ...BASE, ...overrides })
   const io = makeIo()
   const mic = new Float32Array(BLOCK)
   const blocks = Math.ceil((seconds * SR) / BLOCK)
@@ -66,7 +70,7 @@ export function renderStereo(
 ): { l: Float32Array; r: Float32Array } {
   const built = buildBender(SR)
   setup?.(built)
-  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const p = packParams({ ...BASE, ...overrides })
   const io = makeIo()
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   const l = new Float32Array(blocks * BLOCK)
@@ -92,7 +96,7 @@ export function renderStems(
   built.transport.drums = true
   built.chain.capturing = true
   setup?.(built)
-  const p = packParams({ ...DEFAULT_CONTROLS, ...overrides })
+  const p = packParams({ ...BASE, ...overrides })
   const io = makeIo()
   const blocks = Math.ceil((seconds * SR) / BLOCK)
   const master = new Float32Array(blocks * BLOCK)

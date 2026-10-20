@@ -6,8 +6,8 @@ import type { ControlKey } from './controls.ts'
 // patch and the cross-patch name their choices off it, and the DSP reads its
 // param order from it — the order of the rows here *is* the bit order of a step.
 //
-// Step 1 sits in the high bit, so every mask literal in this file and in
-// DEFAULT_CONTROLS reads left to right exactly like the grid on screen.
+// Step 1 sits in the high bit, so every mask literal reads left to right exactly
+// like the grid on screen.
 
 export const STEPS = 16
 
@@ -245,7 +245,7 @@ const rom = (
 // a starting point, not the state: the grid is the pattern, and loading a ROM
 // writes over it.
 export const DRUM_ROMS: DrumRom[] = [
-  rom('rock', 'The one the machine boots with', {
+  rom('rock', 'Kick, snare and hat, the plainest beat', {
     drumKick: 0b1000_0000_1001_0000,
     drumSnare: 0b0000_1000_0000_1000,
     drumHat: 0b0010_0010_0010_0010,
@@ -314,6 +314,8 @@ export const DRUM_ROMS: DrumRom[] = [
   }),
   rom('clear', 'Wipe every voice and write your own', {}),
 ]
+
+export const ROCK: DrumMasks = DRUM_ROMS[0]!.masks
 
 export function romMatching(masks: DrumMasks): DrumRom | undefined {
   return DRUM_ROMS.find(r => PATTERN_KEYS.every(k => r.masks[k] === masks[k]))

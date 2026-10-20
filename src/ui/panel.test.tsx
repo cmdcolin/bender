@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
-import { GRID_ROWS, hasStep } from '../drums.ts'
+import { GRID_ROWS, hasStep, ROCK } from '../drums.ts'
 import { ECHO_MODE } from '../dsp/stages/echo.ts'
 import { ENS_MODE } from '../dsp/stages/ensemble.ts'
 import { engine } from '../engine/engine.ts'
@@ -220,6 +220,7 @@ test('a drag across the grid draws a run of steps, and one undo takes it back', 
 // straight back in again. Three states, so a drag off a lit step wires the run
 // it crosses through the dice and one off a maybe wipes it.
 test('a drag writes whatever the step it started on became', () => {
+  engine.patch({ ...engine.controls.get(), ...ROCK })
   render(<OpenGroup group={group('Clatter')} onClose={() => {}} seconds={0} />)
   const cell = (step: number) =>
     screen.getByRole('button', { name: `hat step ${step + 1}` })

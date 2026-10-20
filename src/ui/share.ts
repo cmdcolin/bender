@@ -5,7 +5,7 @@ import {
   type ControlKey,
   type Controls,
 } from '../controls.ts'
-import { asLen, asMask, LEN_KEYS } from '../drums.ts'
+import { asLen, asMask, LEN_KEYS, ROCK } from '../drums.ts'
 import {
   asTuneLen,
   asTuneStep,
@@ -48,6 +48,18 @@ const PACKED = 'p'
 // same name, and before that in the hash under a shorter one. Read, never
 // written, so links from those days still open the board they meant.
 const LEGACY_HASH_KEY = 'b'
+
+// boardHash marks a short link with `v=2` since the kit started blank.
+// boardFromUrl gives the old 'rock' pattern back to a short link without the
+// mark and to a link in a retired form, because those left the pattern out as
+// stock. It reads the long form as typed.
+const VERSION = 'v'
+const BLANK_KIT = '2'
+const OLD_STOCK_KIT: Partial<Controls> = {
+  drumKick: ROCK.drumKick,
+  drumSnare: ROCK.drumSnare,
+  drumHat: ROCK.drumHat,
+}
 
 // Your finger is not part of the board.
 const PRIVATE = new Set<ControlKey>(['bodyX', 'bodyY'])
@@ -124,10 +136,12 @@ export function boardHash(hash: string, c: Controls): string {
   // it saying something staler.
   q.delete(LEGACY_HASH_KEY)
   q.delete(long ? PACKED : PARAM)
+  q.delete(VERSION)
   const key = long ? PARAM : PACKED
   const set = long ? encodeControls(c) : packControls(c, isPrivate)
   if (set === '' && !long) q.delete(key)
   else q.set(key, set)
+  if (set !== '' && !long) q.set(VERSION, BLANK_KIT)
   // A fragment may carry ':' and ',' as themselves, and this one is read off
   // the address bar by people, so the separators go back to being one
   // character each. The reader takes them either way.
@@ -145,8 +159,9 @@ export function boardFromUrl(
 ): Partial<Controls> | null {
   const h = new URLSearchParams(hash.replace(/^#/, ''))
   const packed = h.get(PACKED)
+  const typed = h.get(PARAM)
   const named =
-    h.get(PARAM) ??
+    typed ??
     h.get(LEGACY_HASH_KEY) ??
     (packed === null ? new URLSearchParams(search).get(PARAM) : null)
   if (named === null && packed === null) return null
@@ -154,7 +169,9 @@ export function boardFromUrl(
     named === null
       ? unpackControls(packed ?? '', isPrivate)
       : decodeControls(named)
-  return Object.keys(patch).length > 0 ? patch : null
+  if (Object.keys(patch).length === 0) return null
+  const current = typed !== null || h.get(VERSION) === BLANK_KIT
+  return current ? patch : { ...OLD_STOCK_KIT, ...patch }
 }
 
 // The whole board a link names, not just the controls it lists. Everything it

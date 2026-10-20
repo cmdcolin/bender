@@ -31,7 +31,7 @@ import {
   type SliderDef,
 } from './controls/index.ts'
 import { applyPreset, PRESETS, presetNameFor } from './presets/index.ts'
-import { coerceControl, encodeControls } from './share.ts'
+import { boardHash, coerceControl } from './share.ts'
 import { formatValue } from './slider-scale.ts'
 
 // The Claude in Chrome extension cuts a returned string at 1000 characters and
@@ -237,7 +237,7 @@ const decibels = (x: number) =>
 
 function link() {
   const { origin, pathname } = window.location
-  return `${origin}${pathname}#set=${encodeControls(engine.controls.get())}`
+  return `${origin}${pathname}#${boardHash('#set=', engine.controls.get())}`
 }
 
 function summary() {
