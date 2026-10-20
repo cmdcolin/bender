@@ -57,33 +57,29 @@ test('the kit at zero is heard on the FM chip only through a bridged trigger', (
   ])
 })
 
-test('the header names the machine that still plays the toy', () => {
+test('the mute cap lights a dot while Glint still plays the toy', () => {
   engine.writeBoard(board({ chipLevel: 0, fmLevel: 0.6 }))
   render(<DeviceVerbs stage="Plinky" />)
-  expect(screen.queryByRole('status')).toBeNull()
+  expect(screen.queryByLabelText('still heard')).toBeNull()
   act(() => {
     engine.sounding.set(FM)
     engine.chipNotes.set(new Set([60]))
   })
-  expect(screen.getByRole('status').textContent).toBe(
-    'Level 0, but Glint still plays it',
-  )
+  expect(screen.getByLabelText('still heard')).toBeTruthy()
 })
 
 test('a toy pulled to zero mid-note stays unflagged while its needle falls', () => {
   engine.writeBoard(board({ chipLevel: 0 }))
   render(<DeviceVerbs stage="Plinky" />)
   act(() => engine.sounding.set(TOY))
-  expect(screen.queryByRole('status')).toBeNull()
+  expect(screen.queryByLabelText('still heard')).toBeNull()
 })
 
-test('the header says so when the toy at zero still reads on its own meter', () => {
+test('the mute cap lights a dot when the toy at zero still reads on its own meter', () => {
   engine.writeBoard(board({ chipLevel: 0 }))
   render(<DeviceVerbs stage="Plinky" />)
   const taps = new Float32Array(engine.meter.get().taps.length)
   taps[CHANNELS.find(c => c.name === 'Plinky')!.tap] = 0.2
   act(() => engine.meter.set({ ...engine.meter.get(), taps }))
-  expect(screen.getByRole('status').textContent).toBe(
-    'Level 0, but sound leaks through',
-  )
+  expect(screen.getByLabelText('still heard')).toBeTruthy()
 })

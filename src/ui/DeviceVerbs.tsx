@@ -73,9 +73,11 @@ function Mute({
   const atZero = levelAt <= 0
   const muted = switched || atZero
   const pedal = isPedal(stage)
+  const where = useHeardThrough(stage)
+  const heard = !pedal && where.length > 0
   return (
     <Tip
-      text={
+      text={[
         pedal
           ? muted
             ? `${stage} is bypassed. Switching it back on brings the sound you left.`
@@ -84,8 +86,9 @@ function Mute({
             ? `${stage}’s Level is at 0. Unmute brings it back up.`
             : muted
               ? `${stage} is muted. Unmute brings it back at the Level you left.`
-              : `Silences ${stage} and leaves its Level where it is.`
-      }
+              : `Silences ${stage} and leaves its Level where it is.`,
+        ...(heard ? [stillHeardText(stage, where, atZero)] : []),
+      ].join(' ')}
     >
       <button
         className={muted ? styles.capOn : styles.cap}
@@ -101,24 +104,22 @@ function Mute({
         }}
       >
         {pedal ? POWER : SPEAKER(muted)}
+        {heard && (
+          <span className={styles.leak} role="img" aria-label="still heard" />
+        )}
       </button>
     </Tip>
   )
 }
 
-// A machine turned down and still in the mix: through a bend that reaches past
-// its fader, or through another machine playing its part.
-function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
-  const where = useHeardThrough(stage)
-  const atZero = useControlValue(level) <= 0
-  if (where.length === 0) return null
+function stillHeardText(stage: string, where: string[], atZero: boolean) {
   const players = where.filter(to => to !== stage)
-  const cause = atZero ? 'Level' : 'mute'
   const part = stage === 'Clatter' ? 'hits' : 'notes'
-  const text = [
-    atZero ? `${stage}’s Level is at 0.` : `${stage} is muted.`,
+  return [
     ...(where.includes(stage)
-      ? [`Its meter still reads sound, so a bend leaks past the ${cause}.`]
+      ? [
+          `Its meter still reads sound, so a bend leaks past the ${atZero ? 'Level' : 'mute'}.`,
+        ]
       : []),
     ...players.map(
       to => `${to} still plays its ${part} over the ${viaOf(stage, to)}.`,
@@ -127,18 +128,6 @@ function StillHeard({ stage, level }: { stage: string; level: ControlKey }) {
       ? [`Turning ${players.join(' and ')} down silences them.`]
       : []),
   ].join(' ')
-  const down = atZero ? 'Level 0' : 'muted'
-  const label =
-    players.length > 0
-      ? `${down}, but ${players.join(' and ')} still plays it`
-      : `${down}, but sound leaks through`
-  return (
-    <Tip text={text}>
-      <span className={styles.heard} role="status" tabIndex={0}>
-        {label}
-      </span>
-    </Tip>
-  )
 }
 
 // The roll cap, and one ⋯ menu holding the kinds of roll and the face's own
@@ -297,7 +286,6 @@ export function DeviceVerbs({
   const level = levelOf(stage)
   return (
     <>
-      {level && <StillHeard stage={stage} level={level} />}
       {mute && !noMute && <Mute stage={stage} control={mute} level={level} />}
       {level && !noLevel && <FaceLevel control={level} />}
       {!noMic && <MicCap stage={stage} />}
