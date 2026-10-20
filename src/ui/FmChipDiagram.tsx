@@ -44,6 +44,9 @@ const KEYS = [
   'fmKeyGate',
   'fmLength',
   'fmEffect',
+  'fmSfxWire',
+  'fmSfxPick',
+  'fmSfxHold',
   'fmRhythm',
   'fmNoiseBlob',
   'fmClockX',
@@ -89,8 +92,15 @@ export function FmChipDiagram({ verbs, zoom }: { verbs: Verbs; zoom?: Zoom }) {
     ],
     [
       'processor',
-      ['fmEffect', 'fmRhythm', 'fmNoiseBlob'],
-      'The driver: it sends the voice, runs the effect ROM and the rhythm bank.',
+      [
+        'fmEffect',
+        'fmSfxWire',
+        'fmSfxPick',
+        'fmSfxHold',
+        'fmRhythm',
+        'fmNoiseBlob',
+      ],
+      'The driver: it sends the voice, runs the effect ROM and the rhythm bank, and reads the effect buttons.',
     ],
     [
       'bus',

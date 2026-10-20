@@ -7,7 +7,7 @@ import {
   VOICE_LABELS,
 } from '../../drums.ts'
 import { FAULT, FAULT_NAMES, lineNames } from '../../dsp/bus.ts'
-import { FM_EFFECT_NAMES } from '../../dsp/stages/fmEffects.ts'
+import { FM_EFFECT_NAMES, FM_SFX_PICKS } from '../../dsp/stages/fmEffects.ts'
 import {
   fallSecs,
   FM_LFO_NAMES,
@@ -1459,6 +1459,9 @@ export const SOURCE_GROUPS: Group[] = [
       'fmLfo',
       'fmLength',
       'fmEffect',
+      'fmSfxWire',
+      'fmSfxPick',
+      'fmSfxHold',
       'fmNoiseBlob',
       'fmRhythm',
       'fmClockX',
@@ -1583,6 +1586,42 @@ export const SOURCE_GROUPS: Group[] = [
         choices: FM_EFFECT_NAMES,
         shy: true,
         help: 'The effect ROM — a bird, surf, wind, a siren, crickets, a phone, a doorbell, a steam train, applause and a laser. None is a sample: each is a little program firing hundreds of register writes a second, far and away the busiest thing the bus ever carries. It borrows the fourth channel, so Voice, Bright and Feedback sit still while one runs.',
+      },
+      {
+        key: 'fmSfxWire',
+        label: 'Effect wire',
+        part: 'effect and rhythm',
+        shy: true,
+        min: 0,
+        max: SFX_WIRES.length - 1,
+        step: 1,
+        unit: '',
+        choices: SFX_WIRES,
+        help: 'Solders a wire onto the effect buttons. On a kit voice, each hit presses the button and starts its script from the top. On toy notes, every note Plinky strikes presses it, the tune included. On reboot, the button fires each time a starved rail resets the chip. Stuck holds the button down for good.',
+      },
+      {
+        key: 'fmSfxPick',
+        label: 'Button it presses',
+        part: 'effect and rhythm',
+        min: 0,
+        max: FM_SFX_PICKS.length - 1,
+        step: 1,
+        unit: '',
+        choices: FM_SFX_PICKS,
+        needs: c => Math.round(c.fmSfxWire) > 0,
+        help: 'Which effect button the wire presses. Random picks a new one on each press, and next walks along the row. With the button stuck, random and next pick again each time Press length runs out.',
+      },
+      {
+        key: 'fmSfxHold',
+        label: 'Press length',
+        part: 'effect and rhythm',
+        min: 0.02,
+        max: 4,
+        step: 0.01,
+        unit: 's',
+        curve: 'log',
+        needs: c => Math.round(c.fmSfxWire) > 0,
+        help: 'How long a press off the wire holds the button down. The scripts loop, so this is where each one stops: short, a hit is a chirp of the script; long, the next hit cuts it off first.',
       },
       {
         key: 'fmNoiseBlob',

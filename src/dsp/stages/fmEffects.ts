@@ -461,6 +461,10 @@ export const EFFECTS: Effect[] = [
 /** off, then one per script — what the effect button steps through. */
 export const FM_EFFECT_NAMES = ['off', ...EFFECTS.map(e => e.name)]
 
+/** Which button a wire onto the effect buttons presses: one of them, a new one
+    at random each press, or the next one along. */
+export const FM_SFX_PICKS = [...EFFECTS.map(e => e.name), 'random', 'next']
+
 // Pressing the effect button, which is eight patch bytes and a volume. The
 // patch goes out once and is never sent again, so whatever the wires did to it
 // is the sound of the effect until something else writes those registers.

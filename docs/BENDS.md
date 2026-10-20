@@ -313,6 +313,11 @@ write touches that register again.
     **Log adder** it is white noise.
   - **laser:** a note dropping six octaves in a sixth of a second, three shots a
     burst.
+- **Effect wire:** the same wire as the toy's, onto Glint's effect buttons. Each
+  press restarts the script from the top.
+  - **Press length** sets how long a press holds the button, since the scripts
+    loop. Short presses on a hat turn a bird call into chirps on the beat.
+  - Stuck on random or next picks a new script each time Press length runs out.
 - **Clock:** the chip's crystal. Pitch, envelope rates, LFO and shift register
   count off it, so turning it down transposes the chip without changing timbre.
   **lock** sets it to the toy's crystal.

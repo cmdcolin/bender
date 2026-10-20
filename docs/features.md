@@ -3,7 +3,7 @@
 # What is in the box
 
 A virtual toy keyboard and drum machine on a supply rail you can ruin. It has
-496 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
+499 knobs and switches in 35 groups, seven bends for six slots, 18 ROM tunes,
 125 presets, 23 stage settings and 46 named cuts. The generator reads everything
 below from the control tables, so the list stays in step with the instrument.
 
@@ -83,7 +83,7 @@ control, so you can check whether something exists and what it is called.
 
 A **†** marks a shy control: one a roll brings on rarely and low, so no single
 effect buries the board. Your hand can still set it anywhere, and a preset that
-names it still sets it. 47 controls are shy, mostly the ones that act on the
+names it still sets it. 48 controls are shy, mostly the ones that act on the
 whole board.
 
 ## Sources
@@ -385,48 +385,51 @@ puts the knife on, and the rows under it show the controls it set:
   digital buzz at the pitch it always had
 
 <details>
-<summary>38 controls</summary>
+<summary>41 controls</summary>
 
-| control                        | range                                                                           | what it does                                                                                                         |
-| ------------------------------ | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Level                          | 0 to 4, normal 0 to 1                                                           | How loud Glint is in the source mix                                                                                  |
-| Mute                           | live or muted                                                                   | Silences Glint on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness     |
-| Voice                          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                   | Which of the eight patches under the voice buttons the processor sends the chip                                      |
-| Brightness                     | 0 to 4, normal 0 to 1                                                           | How loud the modulator is into the carrier, which sets the whole tone of a two-operator chip                         |
-| Feedback                       | 0 to 11, normal 0 to 7                                                          | How much of the modulator goes back into itself, three bits of it as the part had                                    |
-| Drive                          | 0 to 36 dB                                                                      | How hard the four voices drive the one output stage on the chip                                                      |
-| Vibrato                        | off, vibrato, tremolo, both                                                     | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
-| Note length                    | 0.02 to 4 s                                                                     | How long the processor waits before writing the key back up, for a note nothing is holding                           |
-| Effect †                       | off, bird, surf, wind, siren, crickets, phone, doorbell, steam, applause, laser | The effect ROM — a bird, surf, wind, a siren, crickets, a phone, a doorbell, a steam train, applause and a laser     |
-| Noise blob                     | off to full                                                                     | A blob of solder from the shift register’s output onto the pins the sine table reads out on                          |
-| Rhythm                         | off or kit                                                                      | The percussion bank, which is a second thing the die can be                                                          |
-| Clock                          | 0.05× to 16×                                                                    | Drags the chip’s own crystal                                                                                         |
-| CPU clock                      | 0.05× to 16×                                                                    | Drags the processor’s crystal, which the chip does not share                                                         |
-| Kit voice that plays this chip | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit               | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
-| Plays Plinky’s notes           | yes, soldered or no, cut                                                        | The jumper from the toy’s gate line onto this chip’s key input                                                       |
-| Mod ratio                      | 17 of them, as patched through 15×                                              | What the modulator runs at against the note, as a multiple of it                                                     |
-| Car ratio                      | 17 of them, as patched through 15×                                              | The same table on the carrier, which moves the note itself — 2 is the same patch an octave up                        |
-| Mod decay                      | 17 of them, as patched through 2.52 s                                           | How long the modulator takes to fall away, which makes an FM note a bell or an organ                                 |
-| Data line †                    | off, D0, D1, D2, D3, D4, D5, D6, D7                                             | Which of the eight wires carrying bytes to the register file the knife is on                                         |
-| Data fault                     | cut, to ground, to +V, bridged                                                  | What happened to the wire — the same four things a knife does to any trace                                           |
-| Address line †                 | off, A0, A1, A2, A3, A4, A5                                                     | Which of the six wires choosing the register the knife is on                                                         |
-| Address fault                  | cut, to ground, to +V, bridged                                                  | The same four things, on the address side                                                                            |
-| Wave line †                    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                     | Which of the ten wires addressing the sine table the knife is on                                                     |
-| Wave fault †                   | cut, to ground, to +V, bridged                                                  | The same four things, on the wave ROM’s address                                                                      |
-| Wave data line †               | off, T0, T1, T2, T3, T4, T5, T6, T7                                             | Which of the eight wires carrying the sine table’s output the knife is on                                            |
-| Wave data fault †              | cut, to ground, to +V, bridged                                                  | The same four things, on the table’s way out                                                                         |
-| Patch line †                   | off, P0, P1, P2, P3, P4, P5, P6                                                 | Which of the seven wires addressing the patch table the knife is on                                                  |
-| Patch fault †                  | cut, to ground, to +V, bridged                                                  | The same four things, on the table’s address                                                                         |
-| Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                             | Which of the eight wires carrying the patch table’s output the knife is on                                           |
-| Patch data fault †             | cut, to ground, to +V, bridged                                                  | The same four things, on the table’s way out                                                                         |
-| Cut depth                      | off to full                                                                     | How far through the trace the knife cuts; only the cut fault uses it                                                 |
-| Strobe slip †                  | off to full                                                                     | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
-| DAC slot †                     | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4                        | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot           |
-| Slot slip †                    | off to full                                                                     | The slot counter running slow against the converter, so now and then it reads one channel twice and skips the next   |
-| Allocator                      | free, stuck on 1, stuck on 2, stuck on 3, stuck on 4                            | The driver’s note allocator, stuck handing every note to one channel                                                 |
-| Cold boot †                    | clean or garbage                                                                | What the register file holds at power-on                                                                             |
-| Log adder †                    | linear, 11 bits, 10 bits, 9 bits, 8 bits, 7 bits                                | Linear multiplies, which the board does as built                                                                     |
-| Toy on bus                     | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits              | Solders Plinky’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire                    |
+| control                        | range                                                                                    | what it does                                                                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Level                          | 0 to 4, normal 0 to 1                                                                    | How loud Glint is in the source mix                                                                                  |
+| Mute                           | live or muted                                                                            | Silences Glint on the bus and leaves its Level where you set it, so unmuting brings it back at the same loudness     |
+| Voice                          | organ, brass, e.piano, bell, clarinet, bass, strings, marimba                            | Which of the eight patches under the voice buttons the processor sends the chip                                      |
+| Brightness                     | 0 to 4, normal 0 to 1                                                                    | How loud the modulator is into the carrier, which sets the whole tone of a two-operator chip                         |
+| Feedback                       | 0 to 11, normal 0 to 7                                                                   | How much of the modulator goes back into itself, three bits of it as the part had                                    |
+| Drive                          | 0 to 36 dB                                                                               | How hard the four voices drive the one output stage on the chip                                                      |
+| Vibrato                        | off, vibrato, tremolo, both                                                              | The one LFO on the die, which has no register anywhere — no rate, no depth, nothing to start or stop it              |
+| Note length                    | 0.02 to 4 s                                                                              | How long the processor waits before writing the key back up, for a note nothing is holding                           |
+| Effect †                       | off, bird, surf, wind, siren, crickets, phone, doorbell, steam, applause, laser          | The effect ROM — a bird, surf, wind, a siren, crickets, a phone, a doorbell, a steam train, applause and a laser     |
+| Effect wire †                  | 13 of them, off through stuck                                                            | Solders a wire onto the effect buttons                                                                               |
+| Button it presses              | bird, surf, wind, siren, crickets, phone, doorbell, steam, applause, laser, random, next | Which effect button the wire presses                                                                                 |
+| Press length                   | 0.02 to 4 s                                                                              | How long a press off the wire holds the button down                                                                  |
+| Noise blob                     | off to full                                                                              | A blob of solder from the shift register’s output onto the pins the sine table reads out on                          |
+| Rhythm                         | off or kit                                                                               | The percussion bank, which is a second thing the die can be                                                          |
+| Clock                          | 0.05× to 16×                                                                             | Drags the chip’s own crystal                                                                                         |
+| CPU clock                      | 0.05× to 16×                                                                             | Drags the processor’s crystal, which the chip does not share                                                         |
+| Kit voice that plays this chip | off, kick, snare, hat, clap, tom, bell, open hat, cymbal, any hit                        | The kit’s trigger lines, clipped onto this chip’s key input                                                          |
+| Plays Plinky’s notes           | yes, soldered or no, cut                                                                 | The jumper from the toy’s gate line onto this chip’s key input                                                       |
+| Mod ratio                      | 17 of them, as patched through 15×                                                       | What the modulator runs at against the note, as a multiple of it                                                     |
+| Car ratio                      | 17 of them, as patched through 15×                                                       | The same table on the carrier, which moves the note itself — 2 is the same patch an octave up                        |
+| Mod decay                      | 17 of them, as patched through 2.52 s                                                    | How long the modulator takes to fall away, which makes an FM note a bell or an organ                                 |
+| Data line †                    | off, D0, D1, D2, D3, D4, D5, D6, D7                                                      | Which of the eight wires carrying bytes to the register file the knife is on                                         |
+| Data fault                     | cut, to ground, to +V, bridged                                                           | What happened to the wire — the same four things a knife does to any trace                                           |
+| Address line †                 | off, A0, A1, A2, A3, A4, A5                                                              | Which of the six wires choosing the register the knife is on                                                         |
+| Address fault                  | cut, to ground, to +V, bridged                                                           | The same four things, on the address side                                                                            |
+| Wave line †                    | off, W0, W1, W2, W3, W4, W5, W6, W7, W8, W9                                              | Which of the ten wires addressing the sine table the knife is on                                                     |
+| Wave fault †                   | cut, to ground, to +V, bridged                                                           | The same four things, on the wave ROM’s address                                                                      |
+| Wave data line †               | off, T0, T1, T2, T3, T4, T5, T6, T7                                                      | Which of the eight wires carrying the sine table’s output the knife is on                                            |
+| Wave data fault †              | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s way out                                                                         |
+| Patch line †                   | off, P0, P1, P2, P3, P4, P5, P6                                                          | Which of the seven wires addressing the patch table the knife is on                                                  |
+| Patch fault †                  | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s address                                                                         |
+| Patch data line †              | off, B0, B1, B2, B3, B4, B5, B6, B7                                                      | Which of the eight wires carrying the patch table’s output the knife is on                                           |
+| Patch data fault †             | cut, to ground, to +V, bridged                                                           | The same four things, on the table’s way out                                                                         |
+| Cut depth                      | off to full                                                                              | How far through the trace the knife cuts; only the cut fault uses it                                                 |
+| Strobe slip †                  | off to full                                                                              | The pulse telling the address latch to take what is on the wires, and how often it comes out too narrow to be caught |
+| DAC slot †                     | counting, stuck on 1, stuck on 2, stuck on 3, stuck on 4                                 | The four channels take turns through one converter, a slot each per sample, and a counter selects the slot           |
+| Slot slip †                    | off to full                                                                              | The slot counter running slow against the converter, so now and then it reads one channel twice and skips the next   |
+| Allocator                      | free, stuck on 1, stuck on 2, stuck on 3, stuck on 4                                     | The driver’s note allocator, stuck handing every note to one channel                                                 |
+| Cold boot †                    | clean or garbage                                                                         | What the register file holds at power-on                                                                             |
+| Log adder †                    | linear, 11 bits, 10 bits, 9 bits, 8 bits, 7 bits                                         | Linear multiplies, which the board does as built                                                                     |
+| Toy on bus                     | off, 1 bit, 2 bits, 3 bits, 4 bits, 5 bits, 6 bits, 7 bits, 8 bits                       | Solders Plinky’s output onto the low bits of this chip’s data bus, loudest bit on the lowest wire                    |
 
 </details>
 

@@ -42,6 +42,7 @@ import {
   TEST,
   VIB,
 } from './fmVoices.ts'
+import { WIRE_REBOOT, WIRE_STUCK, WIRE_TOY } from './toySfx.ts'
 
 import type { Ctx, Stage, StereoBlock } from '../stage.ts'
 import type { ToyRail } from '../toyRail.ts'
@@ -271,6 +272,8 @@ const DRUM_KEYS = [
 
 /** The noise byte the effect ROM reads, which is a table on the real part. */
 const EFFECT_SEED = 0x5e
+
+const WIRE_SEED = 0x5f
 
 /** What the die comes up holding on a cold boot, one draw per boot. */
 const BOOT_SEED = 0x3b
@@ -510,6 +513,15 @@ export class FmChip implements Stage {
   // The effect button a finger is on, which runs over whatever the Effect
   // switch is set to for as long as it is held.
   private heldEffect = -1
+  // The wire onto the effect buttons: what it last pressed, and how many
+  // samples it holds that button down for yet. The scripts loop, so a press off
+  // the wire lasts as long as Press length says.
+  private wireEffect = -1
+  private wireLeft = 0
+  private wireNext = -1
+  private wirePick = 0
+  private wireStuck = false
+  private wireRng = mulberry32(WIRE_SEED)
   private effectTick = 0
   private effectClock = 0
   private cpu: Cpu = {
@@ -777,6 +789,34 @@ export class FmChip implements Stage {
 
   // A key that came up before its block began lands as an edge, so it still
   // sounds and *Note length* ends it.
+  // A press off the wire, which restarts the script even when it is the one
+  // already running.
+  private wirePress(hold: number) {
+    const pick = this.wirePick
+    const n =
+      pick === EFFECTS.length
+        ? Math.floor(this.wireRng() * EFFECTS.length)
+        : pick === EFFECTS.length + 1
+          ? (this.wireNext = (this.wireNext + 1) % EFFECTS.length)
+          : pick
+    this.wireEffect = n
+    this.wireLeft = hold
+    this.setEffect(n)
+  }
+
+  // The wire letting go: a stuck button on random or next presses again, a
+  // stuck one on a single effect keeps it running, and anything else hands the
+  // channel back to the hand and the Effect switch.
+  private wireRelease(hold: number, base: number) {
+    if (this.wireStuck) {
+      if (this.wirePick >= EFFECTS.length) this.wirePress(hold)
+      else this.wireLeft = hold
+      return
+    }
+    this.wireEffect = -1
+    if (base !== this.effect) this.setEffect(base)
+  }
+
   sfxOn(effect: number) {
     if (EFFECTS[effect]) this.heldEffect = effect
   }
@@ -1320,16 +1360,30 @@ export class FmChip implements Stage {
       this.powerUp()
     }
     this.cold = cold
-    if (this.rail.rebootCount !== this.lastReboot) {
+    const rebooted = this.rail.rebootCount !== this.lastReboot
+    if (rebooted) {
       this.lastReboot = this.rail.rebootCount
       this.queued.length = 0
       this.powerUp()
     }
 
-    const effect =
+    const base =
       this.heldEffect >= 0 ? this.heldEffect : Math.round(p[IDX.fmEffect]!) - 1
+    const sfxWire = Math.round(p[IDX.fmSfxWire]!)
+    const holdSamples = Math.max(Math.round(p[IDX.fmSfxHold]! * this.sr), 1)
+    this.wirePick = Math.round(p[IDX.fmSfxPick]!)
+    const stuck = sfxWire === WIRE_STUCK
+    if (stuck !== this.wireStuck) {
+      this.wireStuck = stuck
+      if (stuck) this.wirePress(holdSamples)
+      else this.wireLeft = 0
+    }
+    if (rebooted && sfxWire === WIRE_REBOOT) this.wirePress(holdSamples)
+    const wireMask = voiceMask(sfxWire < WIRE_TOY ? sfxWire : 0)
+    const wireToy = sfxWire === WIRE_TOY
+    const effect = this.wireEffect >= 0 ? this.wireEffect : base
     if (effect !== this.effect) this.setEffect(effect)
-    const script = EFFECTS[this.effect]
+    let script = EFFECTS[this.effect]
 
     // The rhythm button. An effect and the kit want the same channels and the
     // effect asked first, so pressing one puts the other down — which is the
@@ -1425,6 +1479,16 @@ export class FmChip implements Stage {
       // does not reach, so the gesture keeps its own time however far the rail
       // has dragged the chip it is writing to — which is the whole sound of it:
       // a bird call in tempo, driving a synthesiser that has been told nonsense.
+      if (
+        (wireMask && Math.round(ctx.trig.drumBits[i]!) & wireMask) ||
+        (wireToy && ctx.trig.key[i]! !== 0)
+      ) {
+        this.wirePress(holdSamples)
+        script = EFFECTS[this.effect]
+      } else if (this.wireEffect >= 0 && --this.wireLeft <= 0) {
+        this.wireRelease(holdSamples, base)
+        script = EFFECTS[this.effect]
+      }
       if (script) {
         this.effectClock += (script.hz * cpu) / this.sr
         while (this.effectClock >= 1) {
@@ -1643,6 +1707,8 @@ export class FmChip implements Stage {
   panic() {
     this.queued.length = 0
     this.heldEffect = -1
+    this.wireEffect = -1
+    this.wireStuck = false
     this.powerUp()
   }
 

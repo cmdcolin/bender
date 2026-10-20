@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 
 import { DEFAULT_CONTROLS, type Controls } from '../../controls.ts'
-import { packParams } from '../../engine/params.ts'
+import { packParams, SOURCE_TAPS } from '../../engine/params.ts'
 import { buildBender, buildChain } from '../build.ts'
 import { FAULT } from '../bus.ts'
 import { spectrum } from '../spectrum.ts'
@@ -14,12 +14,19 @@ import {
   pitchHz,
   quiet,
   renderBender,
+  renderStems,
   rms,
   SR,
   tail,
 } from '../testRender.ts'
-import { type Cpu, EFFECTS, FM_EFFECT_NAMES } from './fmEffects.ts'
+import {
+  type Cpu,
+  EFFECTS,
+  FM_EFFECT_NAMES,
+  FM_SFX_PICKS,
+} from './fmEffects.ts'
 import { romIndex } from './roms.ts'
+import { SFX_WIRES } from './toySfx.ts'
 
 // Nothing is playing here: the toy is down, the transport is stopped and no key
 // has been pressed. Whatever comes out is the CPU running a script at a chip
@@ -231,4 +238,55 @@ test('a held effect button plays its script and letting go stops it', () => {
   const pressed = held.subarray(SR / 2, (3 * SR) / 2)
   expect(deviation(pressed, switched.subarray(SR / 2))).toBeLessThan(1e-6)
   expect(rms(tail(held, 0.5))).toBeLessThan(rms(pressed) / 20)
+})
+
+const wire = (name: string) => SFX_WIRES.indexOf(name)
+// The jumper off the toy's gate cut, so nothing reaches the chip but the wire.
+const WIRED_ONLY: Partial<Controls> = { ...NOTHING_PLAYING, fmKeyGate: 1 }
+const seg = (x: Float32Array, from: number, to: number) =>
+  x.subarray(Math.floor(from * SR), Math.floor(to * SR))
+
+test('a kick wired onto the effect buttons runs a script on every hit', () => {
+  const fm = (over: Partial<Controls>) =>
+    renderStems({ ...WIRED_ONLY, drumLevel: 0.5, ...over }, 2).stems[
+      SOURCE_TAPS.indexOf('fmChip')
+    ]!
+  const bird = FM_SFX_PICKS.indexOf('bird')
+  expect(rms(fm({ fmSfxWire: wire('kick'), fmSfxPick: bird }))).toBeGreaterThan(
+    0.01,
+  )
+  expect(rms(fm({ fmSfxPick: bird }))).toBeLessThan(1e-4)
+})
+
+test('a press off the wire lasts as long as Press length', () => {
+  const siren = FM_SFX_PICKS.indexOf('siren')
+  const out = renderBender(
+    {
+      ...WIRED_ONLY,
+      fmSfxWire: wire('toy notes'),
+      fmSfxPick: siren,
+      fmSfxHold: 0.5,
+    },
+    2,
+    b => b.toyChip.noteOn(0),
+  )
+  const pressed = rms(seg(out, 0.1, 0.45))
+  expect(pressed).toBeGreaterThan(0.01)
+  expect(rms(seg(out, 1.5, 2))).toBeLessThan(pressed / 20)
+})
+
+test('a stuck effect button keeps its script running', () => {
+  const stuck = renderBender(
+    { ...WIRED_ONLY, fmSfxWire: wire('stuck'), fmSfxHold: 0.2 },
+    2,
+  )
+  expect(rms(seg(stuck, 1.5, 2))).toBeGreaterThan(0.01)
+})
+
+test('on reboot, a starved rail fires an effect each time the chip resets', () => {
+  const starved = (fmSfxWire: number) =>
+    renderStems({ ...WIRED_ONLY, chipLevel: 1, chipStarve: 1, fmSfxWire }, 3)
+      .stems[SOURCE_TAPS.indexOf('fmChip')]!
+  expect(rms(starved(wire('reboot')))).toBeGreaterThan(0.01)
+  expect(rms(starved(0))).toBeLessThan(1e-4)
 })
