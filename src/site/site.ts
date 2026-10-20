@@ -25,6 +25,7 @@ export const PANEL_SHOT = {
 // What the shared site components say about this product: its name, where its
 // pages are, and the links the bar and the footer carry.
 const REPO = 'https://github.com/cmdcolin/bender'
+const JAM = 'https://myloveydove.com/jam-of-the-day/index.html'
 
 export const SITE = {
   name: 'bender',
@@ -33,6 +34,7 @@ export const SITE = {
   app: appUrl,
   nav: [
     [guideUrl, 'User guide'],
+    [JAM, 'Jam of the day'],
     [blogUrl, 'Blog'],
     [aboutUrl, 'About'],
     [REPO, 'GitHub'],
