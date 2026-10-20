@@ -15,3 +15,5 @@ export const blogUrl = `${siteRoot}blog/`
 export const guideUrl = `${siteRoot}guide/`
 
 export const boardUrl = (query: string) => `${appUrl}#${query}`
+
+export const jamUrl = `${siteRoot}jam/`
