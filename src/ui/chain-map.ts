@@ -1143,7 +1143,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
             [midX(toy), railY],
             [midX(toy), chipY],
           ],
-      { color: k.dim, dash: '1 2' },
+      { color: k.dim, dash: '1 2', door: SUPPLY },
     )
 
   // The key line, which is solder rather than a cable you patched: the FM chip
@@ -1349,7 +1349,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         [spineX, collectY],
         boardBottom + Math.min(BAND_GAP, COLLECT_H) / 2,
       ),
-      { color: k.border },
+      { color: k.border, door: mix.door },
     )
   if (spine) {
     for (const row of lineRows)
@@ -1362,7 +1362,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
             [i === 0 ? src.x + src.w : src.x, midY(src)],
             [spineX, midY(src)],
           ],
-          { color: k.border },
+          { color: k.border, door: src.door },
         )
   }
   const leads: number[] = []
@@ -1378,7 +1378,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
           [x, src.y + src.h],
           [x, collectY],
         ],
-        { color: k.border },
+        { color: k.border, door: src.door },
       )
     }
   if (!spine)
@@ -1390,7 +1390,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         [Math.min(spineX, ...channels, ...leads), collectY],
         [Math.max(spineX, ...channels, ...leads), collectY],
       ],
-      { color: k.border },
+      { color: k.border, door: mix.door },
     )
   wire(
     'collect-mix',
@@ -1400,7 +1400,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
       [channels.length ? midX(mix) : spineX, collectY],
       [channels.length ? midX(mix) : spineX, mix.y],
     ],
-    { color: k.border },
+    { color: k.border, door: mix.door },
   )
   if (down.length)
     wire(
@@ -1411,9 +1411,10 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         [midX(down[0]!), mix.y + mix.h],
         [midX(down[0]!), down[0]!.y],
       ],
-      { color: k.border },
+      { color: k.border, door: mix.door },
     )
 
+  const orderDoor = has(order.label) ? order.door : undefined
   // The path itself: a hop from the foot of each box to the head of the next.
   for (const col of [down, up]) {
     for (let i = 1; i < col.length; i++) {
@@ -1431,7 +1432,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
               [midX(a), a.y + a.h],
               [midX(b), b.y],
             ],
-        { color: k.border },
+        { color: k.border, door: orderDoor },
       )
     }
   }
@@ -1452,7 +1453,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         [midX(b), turnY],
         [midX(b), b.y + b.h],
       ],
-      { color: k.accent },
+      { color: k.accent, door: orderDoor },
     )
   } else if (up.length) {
     const [a, b] = [down[down.length - 1]!, up[0]!]
@@ -1468,7 +1469,7 @@ export function buildMap(c: Controls, o: Options = {}): ChainMap {
         [chan, midY(b)],
         [b.x, midY(b)],
       ],
-      { color: k.accent },
+      { color: k.accent, door: orderDoor },
     )
   }
 

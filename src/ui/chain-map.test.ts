@@ -558,6 +558,24 @@ test.each(Object.entries(BOARDS))('every door is drawn: %s', (_, board) => {
   checkLayout(map)
 })
 
+test.each(Object.entries(BOARDS))(
+  'every wire opens a group: %s',
+  (_, board) => {
+    const map = buildMap(board, { wrap: true, loop: true })
+    const names = new Set(GROUPS.map(g => g.name))
+    for (const w of map.wires) expect(names, w.id).toContain(w.door)
+  },
+)
+
+test('hops open Signal order, out-bars their source, rail drops the supply', () => {
+  const map = buildMap(DEFAULT_CONTROLS, { wrap: true, loop: true })
+  expect(hop(map, 'Ring_mod', 'Crusher')?.door).toBe('Signal order')
+  expect(map.wires.find(w => w.id === 'fold')?.door).toBe('Signal order')
+  expect(map.wires.find(w => w.id === 'Spool-out')?.door).toBe('Spool')
+  expect(map.wires.find(w => w.id === 'rail-Plinky')?.door).toBe('Power supply')
+  expect(map.wires.find(w => w.id === 'collect-mix')?.door).toBe('Mix bus')
+})
+
 const OPEN_HAT = VOICE_LABELS.indexOf('open hat') + 1
 
 const leftOf = (x: number, width: number, anchor?: string) =>
