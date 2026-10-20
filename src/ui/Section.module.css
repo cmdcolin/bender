@@ -75,6 +75,6 @@
 }
 
 .caution {
-  composes: hint;
+  composes: hint from './Shelf.module.css';
   color: var(--alarm);
 }
