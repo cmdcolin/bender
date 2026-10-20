@@ -34,7 +34,7 @@ const WIDTH = 420
 const MID = 36
 const RETURN_Y = 11
 
-const PLOT = { left: 30, right: 414, top: 68, bottom: 136 }
+const PLOT = { left: 4, right: 414, top: 68, bottom: 136 }
 const DB = { top: 6, bottom: -36 }
 const HZ = { low: 40, high: 12000 }
 const POINTS = 64
@@ -56,9 +56,6 @@ function curve(at: (hz: number) => number): string {
   }).join(' ')
 }
 
-// The amp as the path the board takes through it, with what the tone stack and
-// the speaker do to the spectrum drawn underneath. The microphonic fault is the
-// wire from the speaker back to the first tube.
 export function AmpPathDiagram() {
   const r = useReadings(KEYS)
   const pick = useSelectedBox()
@@ -126,7 +123,7 @@ export function AmpPathDiagram() {
     <>
       <ChipDrawing
         width={WIDTH}
-        height={PLOT.bottom + 18}
+        height={PLOT.bottom + 6}
         label="ember signal path and tone"
       >
         {arrow => (
@@ -168,28 +165,14 @@ export function AmpPathDiagram() {
               />
             ))}
             {[0, -12, -24].map(db => (
-              <g key={db}>
-                <line
-                  x1={PLOT.left}
-                  x2={PLOT.right}
-                  y1={plotY(db)}
-                  y2={plotY(db)}
-                  className={styles.grid}
-                />
-                <Label x={PLOT.left - 4} y={plotY(db) + 3} anchor="end">
-                  {db === 0 ? '0 dB' : String(db)}
-                </Label>
-              </g>
-            ))}
-            {[100, 1000, 10000].map(hz => (
-              <Label
-                key={hz}
-                x={plotX(hz)}
-                y={PLOT.bottom + 12}
-                anchor="middle"
-              >
-                {hz >= 1000 ? `${hz / 1000} kHz` : `${hz} Hz`}
-              </Label>
+              <line
+                key={db}
+                x1={PLOT.left}
+                x2={PLOT.right}
+                y1={plotY(db)}
+                y2={plotY(db)}
+                className={styles.grid}
+              />
             ))}
             <path
               d={curve(hz => cabDb(cab, hz))}
