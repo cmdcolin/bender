@@ -2,6 +2,26 @@
 
 All notable changes to bender are documented here.
 
+## [1.14.1](https://github.com/cmdcolin/bender/compare/v1.14.0...v1.14.1) - 2026-10-20
+
+### Features
+- *(ui)* [`eb13a22`](https://github.com/cmdcolin/bender/commit/eb13a22d66f06691c5e28abd4d6d748391094116) stage, fold and box verbs hide undo and reset until they apply
+- *(ui)* [`5b40c98`](https://github.com/cmdcolin/bender/commit/5b40c9848007feb96e076d8b97fe8d0e3050bb66) all settings moves into the stage's ⋯ menu
+- *(ui)* [`775b3d2`](https://github.com/cmdcolin/bender/commit/775b3d2e9427acac7dd225acaa39566c5cf7d3a6) folds badge only what moved
+
+### Fixes
+- *(ui)* [`4d4983c`](https://github.com/cmdcolin/bender/commit/4d4983c8467e3847fd1d05b7bbd8a8564283644f) ☰ tooltip names what the menu holds, and the map hint is one line
+- *(ui)* [`0d41444`](https://github.com/cmdcolin/bender/commit/0d41444defb0ca18bca4a76d4f2606bf5b79bf11) stage caution composes hint from Shelf.module.css
+
+### Refactor
+- *(ui)* [`513b8a9`](https://github.com/cmdcolin/bender/commit/513b8a9625512b9bfd4697c43bc0c3ba3100249a) OpenGroup picks its editor from a table
+- *(ui)* [`c229340`](https://github.com/cmdcolin/bender/commit/c229340c525e515285ed7df058daacf9cb5cdbb1) App's header splits into AppMenu, BoardVerbs and SteadyLabel
+- *(ui)* [`e176c2e`](https://github.com/cmdcolin/bender/commit/e176c2ecec031be862fb5fceab1057851780a907) split Section.tsx into StageVerbs and Shelf
+- *(ui)* [`01e01cb`](https://github.com/cmdcolin/bender/commit/01e01cb30113bdbd6a7cf756bde6bac47dc99932) drop the comments from the panel's header, map and list
+
+### Documentation
+- [`b68ba5a`](https://github.com/cmdcolin/bender/commit/b68ba5a9ccf674cf7c6f54c0408485e8f6800938) give Spool its own guide section and heavier section dividers
+
 ## [1.14.0](https://github.com/cmdcolin/bender/compare/v1.13.0...v1.14.0) - 2026-10-20
 
 ### Features
