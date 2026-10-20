@@ -39,7 +39,7 @@ const lit = (part: string) =>
     .getByRole('button', { name: `${part} controls` })
     .querySelector('rect')!
     .getAttribute('class')!
-    .includes('chipOn')
+    .includes('boxOn')
 
 test('the stock die names its parts and lights none', () => {
   open()

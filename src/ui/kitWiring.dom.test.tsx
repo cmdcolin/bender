@@ -39,7 +39,7 @@ const lit = (part: string) =>
     .getByRole('button', { name: `${part} controls` })
     .querySelector('rect')!
     .getAttribute('class')!
-    .includes('chipOn')
+    .includes('boxOn')
 
 test('the choke, ring trigger and cross-patch each light once moved and name no setting', () => {
   open()

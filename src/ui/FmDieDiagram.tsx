@@ -1,9 +1,10 @@
 import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
+import diagram from './Diagram.module.css'
 import {
-  boxHeight,
   boxWidth,
+  ONE_LINE_H,
   useFlow,
   useReadings,
   useSelectedBox,
@@ -14,12 +15,12 @@ import {
   Diagram,
   Label,
   PickPart,
+  Plate,
   Wire,
   type WireLook,
 } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
-import type { ReactNode } from 'react'
 
 const KEYS = [
   'fmDacSlot',
@@ -48,9 +49,6 @@ const STACK = VOICES * VOICE_H + (VOICES - 1) * VOICE_GAP
 const HEIGHT = TOP + HEAD + STACK + FOOT + TOP
 const MID = TOP + HEAD + STACK / 2
 
-const widest = (...names: string[]) => Math.max(...names.map(boxWidth))
-const BOX_LINES = 'a'
-
 const voiceTop = (i: number) => TOP + HEAD + i * (VOICE_H + VOICE_GAP)
 const voiceMid = (i: number) => voiceTop(i) + VOICE_H / 2
 
@@ -75,25 +73,25 @@ export function FmDieDiagram() {
 
   const frameW = boxWidth('voice 4') + 16
   const widths = [
-    widest('allocator'),
-    widest('registers'),
+    boxWidth('allocator'),
+    boxWidth('registers'),
     frameW,
-    widest('DAC'),
+    boxWidth('DAC'),
   ]
   const gap = (WIDTH - TAIL - widths.reduce((a, b) => a + b)) / 3
   const xs = widths.map((_, i) =>
     Math.round(widths.slice(0, i).reduce((a, b) => a + b + gap, 0)),
   )
-  const box = (i: number, lines: string): ChipBox => ({
-    name: '',
+  const box = (i: number, name: string): ChipBox => ({
+    name,
     x: xs[i]!,
-    y: MID - boxHeight(lines) / 2,
+    y: MID - ONE_LINE_H / 2,
     w: widths[i]!,
-    h: boxHeight(lines),
+    h: ONE_LINE_H,
   })
-  const allocBox = { ...box(0, BOX_LINES), name: 'allocator' }
-  const regsBox = { ...box(1, BOX_LINES), name: 'registers' }
-  const dacBox = { ...box(3, BOX_LINES), name: 'DAC' }
+  const allocBox = box(0, 'allocator')
+  const regsBox = box(1, 'registers')
+  const dacBox = box(3, 'DAC')
   const frameX = xs[2]!
   const frameRight = frameX + frameW
   const voiceW = boxWidth('voice 4')
@@ -101,64 +99,62 @@ export function FmDieDiagram() {
   const fanX = regsBox.x + regsBox.w + gap / 2
   const mergeX = frameRight + gap / 2
 
-  const node = (name: string, child: ReactNode) => (
-    <PickPart opens={name} pick={pick}>
-      {child}
-    </PickPart>
-  )
-
   return (
     <>
       <div className={chip.chips}>
         <Diagram width={WIDTH} height={HEIGHT} label="FM die and driver">
           {arrow => (
             <>
-              {node(
-                'voices',
-                <g>
-                  <title>
-                    voices — Four channels of two operators each. The log adder
-                    sets the arithmetic every operator uses.
-                  </title>
-                  <rect
-                    x={frameX}
-                    y={TOP}
-                    width={frameW}
-                    height={HEAD + STACK + FOOT}
-                    rx={3}
-                    className={adder ? styles.chipOn : styles.chip}
-                  />
-                  <text
-                    x={frameX + frameW / 2}
-                    y={TOP + 11}
-                    textAnchor="middle"
-                    className={adder ? styles.chipNameOn : styles.chipName}
-                  >
-                    voices
-                  </text>
-                  <text
-                    x={frameX + frameW / 2}
-                    y={TOP + HEAD + STACK + 11}
-                    textAnchor="middle"
-                    className={adder ? styles.chipNameOn : styles.bus}
-                  >
-                    adder
-                  </text>
+              <PickPart opens="voices" pick={pick}>
+                <title>
+                  voices — Four channels of two operators each. The log adder
+                  sets the arithmetic every operator uses.
+                </title>
+                <Plate
+                  x={frameX}
+                  y={TOP}
+                  w={frameW}
+                  h={HEAD + STACK + FOOT}
+                  touched={adder > 0}
+                  selected={pick.selected === 'voices'}
+                />
+                <text
+                  x={frameX + frameW / 2}
+                  y={TOP + 11}
+                  textAnchor="middle"
+                  className={adder ? diagram.nameOn : diagram.name}
+                >
+                  voices
+                </text>
+                <text
+                  x={frameX + frameW / 2}
+                  y={TOP + HEAD + STACK + 11}
+                  textAnchor="middle"
+                  className={adder ? diagram.nameOn : styles.bus}
+                >
+                  adder
+                </text>
+                <g className={chip.inner}>
                   {Array.from({ length: VOICES }, (_, i) => (
-                    <Chip
-                      key={i}
-                      box={{
-                        name: `voice ${i + 1}`,
-                        x: voiceX,
-                        y: voiceTop(i),
-                        w: voiceW,
-                        h: VOICE_H,
-                      }}
-                      className={chip.inner}
-                    />
+                    <g key={i}>
+                      <Plate
+                        x={voiceX}
+                        y={voiceTop(i)}
+                        w={voiceW}
+                        h={VOICE_H}
+                      />
+                      <text
+                        x={voiceX + voiceW / 2}
+                        y={voiceMid(i) + 3}
+                        textAnchor="middle"
+                        className={diagram.name}
+                      >
+                        voice {i + 1}
+                      </text>
+                    </g>
                   ))}
-                </g>,
-              )}
+                </g>
+              </PickPart>
               <Wire
                 arrow={arrow}
                 d={`M${allocBox.x + allocBox.w} ${MID} H${regsBox.x}`}
@@ -196,30 +192,27 @@ export function FmDieDiagram() {
               <Label x={WIDTH - 2} y={MID + 12} anchor="end">
                 out
               </Label>
-              {node(
-                'allocator',
-                <Chip
-                  box={allocBox}
-                  lit={alloc > 0}
-                  help="The driver’s note allocator. Stuck, it hands every note to one channel."
-                />,
-              )}
-              {node(
-                'registers',
-                <Chip
-                  box={regsBox}
-                  lit={boot > 0}
-                  help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
-                />,
-              )}
-              {node(
-                'DAC',
-                <Chip
-                  box={dacBox}
-                  lit={slot > 0 || slip > 0}
-                  help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
-                />,
-              )}
+              <Chip
+                box={allocBox}
+                lit={alloc > 0}
+                help="The driver’s note allocator. Stuck, it hands every note to one channel."
+                pick={pick}
+                keys={OPENS.allocator}
+              />
+              <Chip
+                box={regsBox}
+                lit={boot > 0}
+                help="The register file the driver writes. At power-on it holds clean zeros, or random bytes."
+                pick={pick}
+                keys={OPENS.registers}
+              />
+              <Chip
+                box={dacBox}
+                lit={slot > 0 || slip > 0}
+                help="Four channels share one converter, a slot each per sample. A stuck counter repeats one channel in every slot. A slow one reads a channel twice and skips the next."
+                pick={pick}
+                keys={OPENS.DAC}
+              />
             </>
           )}
         </Diagram>

@@ -1,4 +1,3 @@
-import styles from './BusDiagram.module.css'
 import { Chip, type ChipBox } from './BusDiagram.tsx'
 import chip from './ChipLook.module.css'
 import {
@@ -9,10 +8,9 @@ import {
   useSelectedBox,
   card,
 } from './diagram.ts'
-import { BoxRows, Diagram, Label, PickPart, Wire } from './DiagramParts.tsx'
+import { BoxRows, Diagram, Label, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
-import type { ReactNode } from 'react'
 
 const KEYS = [
   'monoHeat',
@@ -45,44 +43,6 @@ const LOW_Y = CHIP_Y + CHIP_H + 18
 const HEIGHT = LOW_Y + BAR_H + 4
 
 const centre = (b: ChipBox) => b.x + b.w / 2
-
-function Bar({
-  x,
-  y,
-  w,
-  name,
-  lit,
-  help,
-}: {
-  x: number
-  y: number
-  w: number
-  name: string
-  lit: boolean
-  help: string
-}) {
-  return (
-    <g>
-      <title>{`${name} — ${help}`}</title>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={BAR_H}
-        rx={3}
-        className={lit ? styles.chipOn : styles.chip}
-      />
-      <text
-        x={x + w / 2}
-        y={y + BAR_H - 6}
-        textAnchor="middle"
-        className={lit ? styles.chipNameOn : styles.chipName}
-      >
-        {name}
-      </text>
-    </g>
-  )
-}
 
 export function MonoCardDiagram() {
   const r = useReadings(KEYS)
@@ -134,12 +94,6 @@ export function MonoCardDiagram() {
   const lowX = ladder.x
   const lowW = vca.x + vca.w - lowX
 
-  const node = (name: string, child: ReactNode) => (
-    <PickPart key={name} opens={name} pick={pick}>
-      {child}
-    </PickPart>
-  )
-
   return (
     <>
       <div className={chip.chips}>
@@ -182,39 +136,30 @@ export function MonoCardDiagram() {
                   look="dash"
                 />
               ))}
-              {node(
-                'regulator',
-                <Bar
-                  x={regX}
-                  y={TOP}
-                  w={regW}
-                  name="regulator"
-                  lit={on('monoSag')}
-                  help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
-                />,
-              )}
-              {node(
-                'contours',
-                <Bar
-                  x={lowX}
-                  y={LOW_Y}
-                  w={lowW}
-                  name="contours"
-                  lit={r.value('monoCap') > 1}
-                  help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
-                />,
-              )}
-              {boxes.map((box, i) => {
-                const chipBox = (
-                  <Chip
-                    key={box.name}
-                    box={box}
-                    lit={parts[i]!.lit}
-                    help={parts[i]!.help}
-                  />
-                )
-                return OPENS[box.name] ? node(box.name, chipBox) : chipBox
-              })}
+              <Chip
+                box={{ name: 'regulator', x: regX, y: TOP, w: regW, h: BAR_H }}
+                lit={on('monoSag')}
+                help="The voice card’s supply. Loud notes pull it down, which dips the pitch and closes the filter."
+                pick={pick}
+                keys={OPENS.regulator}
+              />
+              <Chip
+                box={{ name: 'contours', x: lowX, y: LOW_Y, w: lowW, h: BAR_H }}
+                lit={r.value('monoCap') > 1}
+                help="The two contour generators, one for the filter and one for the loudness. Bigger timing capacitors stretch every attack, decay and release."
+                pick={pick}
+                keys={OPENS.contours}
+              />
+              {boxes.map((box, i) => (
+                <Chip
+                  key={box.name}
+                  box={box}
+                  lit={parts[i]!.lit}
+                  help={parts[i]!.help}
+                  pick={pick}
+                  keys={OPENS[box.name]}
+                />
+              ))}
             </>
           )}
         </Diagram>

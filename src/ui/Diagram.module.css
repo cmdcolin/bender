@@ -36,7 +36,10 @@
   text-transform: none;
 }
 
-.nameOn,
+.nameOn {
+  fill: var(--fg);
+}
+
 .noteOn {
   fill: var(--accent);
 }

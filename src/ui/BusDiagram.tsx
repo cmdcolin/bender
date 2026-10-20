@@ -11,8 +11,8 @@ import {
   type Tap,
 } from './busSpecs.ts'
 import { sliderFor } from './controls/index.ts'
-import { boxHeight, boxWidth, LINE_H, useReadings } from './diagram.ts'
-import { Diagram, Dot, Wire } from './DiagramParts.tsx'
+import { boxHeight, boxWidth, useReadings, type BoxPick } from './diagram.ts'
+import { BoxView, Diagram, Dot, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -102,44 +102,27 @@ function layout(spec: BusSpec, tapped: (row: BusRow) => boolean) {
   return rows
 }
 
+// A box in the chip look. With `pick` and `keys`, pressing it opens those
+// knobs under the drawing.
 export function Chip({
   box,
   lit,
-  help,
-  className,
+  help = '',
+  pick,
+  keys,
 }: {
   box: ChipBox
-  /** A knob inside is off stock: the frame and the name go accent. */
   lit?: boolean
   help?: string
-  className?: string
+  pick?: BoxPick
+  keys?: readonly ControlKey[]
 }) {
-  const lines = box.name.split('\n')
-  const top = box.y + (box.h - LINE_H * lines.length) / 2
-  const frame = lit ? styles.chipOn : styles.chip
   return (
-    <g>
-      {help && <title>{`${box.name.replace('\n', ' ')} — ${help}`}</title>}
-      <rect
-        x={box.x}
-        y={box.y}
-        width={box.w}
-        height={box.h}
-        rx={3}
-        className={className ? `${frame} ${className}` : frame}
-      />
-      {lines.map((line, i) => (
-        <text
-          key={line}
-          x={box.x + box.w / 2}
-          y={top + LINE_H * (i + 1) - 3}
-          textAnchor="middle"
-          className={lit ? styles.chipNameOn : styles.chipName}
-        >
-          {line}
-        </text>
-      ))}
-    </g>
+    <BoxView
+      box={{ ...box, touched: lit ?? false, help, id: box.name, keys }}
+      selected={pick?.selected === box.name}
+      onSelect={pick?.toggle}
+    />
   )
 }
 

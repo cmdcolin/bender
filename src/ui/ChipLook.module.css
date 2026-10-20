@@ -21,7 +21,8 @@
   text-decoration: none;
 }
 
-.chips svg .inner {
+.chips svg .inner rect[rx='3'],
+.chips svg rect.inner[rx='3'] {
   fill: var(--surface);
 }
 

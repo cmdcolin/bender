@@ -160,24 +160,6 @@ function keyboardGlyph(x: number, mid: number) {
   )
 }
 
-function Node({
-  box,
-  lit,
-  help,
-  pick,
-}: {
-  box: ChipBox
-  lit?: boolean
-  help: string
-  pick: BoxPick
-}) {
-  return (
-    <PickPart opens={box.name} pick={pick}>
-      <Chip box={box} lit={lit} help={help} />
-    </PickPart>
-  )
-}
-
 // A clock input drawn as a labelled stub on a box's top edge instead of a wire:
 // the clock reaches four parts, and wires to all of them crowd out the signal
 // path. The tag shows only while the clock is open, to show where it reaches.
@@ -336,39 +318,45 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
             <ClockTag x={voices.x + voices.w - 24} y={LOW} pick={pick} />
             <ClockTag x={env.x + 12} y={LOW} pick={pick} />
             <ClockTag x={pin.x + 12} y={LOW} pick={pick} />
-            <Node
+            <Chip
               pick={pick}
               box={rom}
+              keys={NODE_KEYS[rom.name]}
               lit={lit('tune ROM')}
               help="The counter that steps through the tune and the ROM that holds its notes. The output pin can be soldered onto one of its address or note-code wires."
             />
-            <Node
+            <Chip
               pick={pick}
               box={clock}
+              keys={NODE_KEYS[clock.name]}
               lit={lit('clock')}
               help="The crystal and its divider. Pitch, tempo, the scan counter and the PWM carrier all count off it."
             />
-            <Node
+            <Chip
               pick={pick}
               box={keys}
+              keys={NODE_KEYS[keys.name]}
               lit={lit('key matrix')}
               help="The rows and columns the keys close. With the diodes lifted, holding two keys also closes the other two corners of their rectangle."
             />
-            <Node
+            <Chip
               pick={pick}
               box={voices}
+              keys={NODE_KEYS[voices.name]}
               lit={lit('voices')}
               help="The tone generators, one a note, each with its own pitch divider."
             />
-            <Node
+            <Chip
               pick={pick}
               box={env}
+              keys={NODE_KEYS[env.name]}
               lit={lit('envelope')}
               help="The capacitor each note’s level follows. The PWM carrier switches that level on and off."
             />
-            <Node
+            <Chip
               pick={pick}
               box={pin}
+              keys={NODE_KEYS[pin.name]}
               lit={lit('output pin')}
               help="The pin that carries every voice off the chip. The scan counter connects one voice to it at a time, and a short ties every voice onto it."
             />
@@ -390,9 +378,10 @@ export function ToyDieDiagram({ verbs, zoom }: DrawingProps) {
               glyphW={ROLL_GLYPH_W}
               glyph={rollGlyph}
             />
-            <Node
+            <Chip
               pick={pick}
               box={bus}
+              keys={BUS_KEYS}
               lit={knifed}
               help="The address and data wires between the counter, the tune ROM and the voices. The rows put a knife on them."
             />

@@ -14,7 +14,7 @@ import {
   useSelectedBox,
   card,
 } from './diagram.ts'
-import { BoxRows, Diagram, Dot, PickPart, Wire } from './DiagramParts.tsx'
+import { BoxRows, Diagram, Dot, Wire } from './DiagramParts.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
@@ -256,9 +256,14 @@ export function KitWiringDiagram() {
   }))
   const open = pick.selected ? OPENS[pick.selected] : undefined
   const node = (box: ChipBox, lit?: boolean) => (
-    <PickPart key={box.name} opens={box.name} pick={pick}>
-      <Chip box={box} lit={lit} help={OPENS[box.name]!.help} />
-    </PickPart>
+    <Chip
+      key={box.name}
+      box={box}
+      lit={lit}
+      help={OPENS[box.name]!.help}
+      pick={pick}
+      keys={OPENS[box.name]!.keys}
+    />
   )
   return (
     <>
