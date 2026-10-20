@@ -1803,7 +1803,7 @@ back.
 ## Scripts
 
 <details>
-<summary>43 commands</summary>
+<summary>44 commands</summary>
 
 | command              | what it does                                                                                                                                                                           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1822,6 +1822,7 @@ back.
 | `pnpm controls`      | lists every button and select on the panel by rendered height, with `--touch` for a finger                                                                                             |
 | `pnpm cpu`           | CPU time on every Chrome thread, and the underruns Chrome counted                                                                                                                      |
 | `pnpm dash`          | re-shoots the why-sign-in card's screenshot of the signed-in home page                                                                                                                 |
+| `pnpm jam`           | trims, encodes and uploads jams of the day, then records their waveform peaks in src/jam/jams.json                                                                                     |
 | `pnpm demos`         | writes demos.json into the README's Demos block                                                                                                                                        |
 | `pnpm reel`          | renders the showcase demos to mp3 for the landing page's Demos section                                                                                                                 |
 | `pnpm diagram`       | re-renders the README's signal path                                                                                                                                                    |
