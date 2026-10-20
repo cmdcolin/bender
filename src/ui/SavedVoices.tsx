@@ -123,7 +123,10 @@ export function SavedVoices(props: {
                 aria-label="name for this voice"
                 onChange={e => setName(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') save()
+                  const ctrlS =
+                    e.key.toLowerCase() === 's' && (e.ctrlKey || e.metaKey)
+                  if (ctrlS) e.preventDefault()
+                  if (e.key === 'Enter' || ctrlS) save()
                 }}
               />
               <button className={styles.save} onClick={() => save()}>

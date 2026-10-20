@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, expect, test, vi } from 'vitest'
 
@@ -72,6 +72,19 @@ test('escape and the close button both shut it', () => {
 
   fireEvent.click(tab())
   fireEvent.click(screen.getByRole('button', { name: 'close midi' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+})
+
+test('escape with a knob waiting on the wire lets go of it and leaves the dialog up', async () => {
+  midi.status.set('ready')
+  render(<Panel />)
+  fireEvent.click(tab())
+  await act(() => import('./MidiWired.tsx'))
+  act(() => midi.arm('combMix'))
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(midi.armed.get()).toBeNull()
+  expect(screen.queryByRole('dialog')).not.toBeNull()
+  fireEvent.keyDown(window, { key: 'Escape' })
   expect(screen.queryByRole('dialog')).toBeNull()
 })
 

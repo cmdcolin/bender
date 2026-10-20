@@ -692,6 +692,18 @@ class Midi {
     })
   }
 
+  /** True while a knob, pad, throw or effect waits on the wire for its binding. */
+  waiting() {
+    return [
+      this.armed,
+      this.learn,
+      this.padLearn,
+      this.armedPad,
+      this.armedThrow,
+      this.armedEffect,
+    ].some(s => s.get() !== null)
+  }
+
   stopLearn() {
     if (this.sweep !== null) {
       this.sweep = null

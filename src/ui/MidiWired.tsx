@@ -423,8 +423,6 @@ export function Wired() {
   const device: DeviceProfile | undefined =
     DEVICE_PROFILES.find(d => d.name === deviceName) ?? DEVICE_PROFILES[0]
 
-  // Both ways of binding leave the board waiting on a knob, and a hand that has
-  // changed its mind wants out without touching the controller.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
-import { beforeEach, expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { GRID_ROWS, hasStep, ROCK } from '../drums.ts'
@@ -157,6 +157,20 @@ test('a number key strikes the kit, and writes it when record is armed', () => {
   fireEvent.keyDown(box, { key: '1', code: 'Digit1' })
   expect(engine.controls.get().drumKick).toBe(0)
   box.remove()
+})
+
+test('space runs the board unless the focused part already took it', () => {
+  render(<App />)
+  const run = vi.spyOn(engine, 'toggleRun').mockImplementation(() => {})
+  const part = document.createElement('div')
+  part.addEventListener('keydown', e => e.preventDefault())
+  document.body.append(part)
+  fireEvent.keyDown(part, { key: ' ', code: 'Space' })
+  expect(run).not.toHaveBeenCalled()
+  fireEvent.keyDown(document.body, { key: ' ', code: 'Space' })
+  expect(run).toHaveBeenCalledTimes(1)
+  part.remove()
+  run.mockRestore()
 })
 
 // Every knob says what it is and where it stands, in its own units.

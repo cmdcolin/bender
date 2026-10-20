@@ -395,7 +395,7 @@ export function App(props: { openedFromLink?: boolean }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.code !== 'Space' || e.repeat || e.metaKey || e.ctrlKey || e.altKey)
         return
-      if (isTyping(e.target)) return
+      if (e.defaultPrevented || isTyping(e.target)) return
       e.preventDefault()
       engine.toggleRun()
     }
@@ -418,7 +418,8 @@ export function App(props: { openedFromLink?: boolean }) {
       if (
         e.key.toLowerCase() !== 's' ||
         !(e.ctrlKey || e.metaKey) ||
-        e.shiftKey
+        e.shiftKey ||
+        isTyping(e.target)
       )
         return
       e.preventDefault()
