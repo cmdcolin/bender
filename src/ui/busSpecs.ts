@@ -172,7 +172,7 @@ export const BUS_SPECS: Record<string, BusSpec> = {
     cut: 'fmBusCut',
     rows: [
       {
-        chips: ['processor', 'register file'],
+        chips: ['processor', 'registers'],
         links: [
           [
             ribbon('fmDataLine', 'fmDataFault'),
