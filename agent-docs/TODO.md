@@ -12,4 +12,22 @@ frontmatter: `metadata.category` picks the table, `area` and `first_move` are
 the columns, `order` is where it sits. This index has no generator, so add or
 remove a row here when you add or remove an entry.
 
-No open items.
+## Needs a call
+
+| Item                                                   | Area                 | First move                                             |
+| ------------------------------------------------------ | -------------------- | ------------------------------------------------------ |
+| [Diagram CSS + route sync](todo/diagram-css-sync.md)   | diagrams, cross-repo | ask which name size and lit-name colour both apps take |
+| [Map touched dot badge](todo/map-touched-dot-badge.md) | map                  | mock the corner dot on a busy board and show the user  |
+
+## Ready
+
+| Item                                                                  | Area                 | First move                                                        |
+| --------------------------------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
+| [Split `buildMap`](todo/build-map-split.md)                           | map                  | lift pickParts and measure out of buildMap behind one context     |
+| [Fold line for gated rows](todo/fold-line-port.md)                    | diagrams             | read videoskillet diagram.ts shutBy/boxFold and its test          |
+| [Box key registry test](todo/box-key-registry-test.md)                | diagrams, tests      | copy videoskillet schematicKeys.test.ts onto drawingFor.tsx       |
+| [OpenBox + Bend to videoskillet](todo/open-box-to-videoskillet.md)    | diagrams, cross-repo | move OpenBox, PickPart and Bend into the diagram-parts region     |
+| [Layout helpers](todo/diagram-layout-helpers.md)                      | diagrams             | write spreadRow(widths, span) and port BusDiagram and FmDie       |
+| [Patch drawings on shared parts](todo/patch-drawings-shared-parts.md) | diagrams             | swap TriggerPatch's raw svg and press() for Diagram and Pressable |
+| [Inert diagram parts](todo/inert-diagram-parts.md)                    | diagrams             | make BusDiagram's tap, inject and feed wires Bends                |
+| [Toy die roll test](todo/toy-die-roll-test.md)                        | tests                | run the test alone and reset the board at its start               |
