@@ -473,15 +473,6 @@ function Rigs({ group, seconds }: { group: Group; seconds: number }) {
   )
 }
 
-// A heading and what sits under it, with its own count and its own fold. The
-// count is the group header's promise made smaller: how many of these you have
-// moved, so a folded part still says whether anything is going on inside it.
-//
-// It counts the rows the fold will actually open to, not every control the
-// table files under the heading: a fault waiting on a wire nobody has cut is
-// not down there yet, and a heading promising eight controls that opens on four
-// is a heading nobody trusts twice. Every control you have moved is shown, so
-// the moved count is the same either way.
 function PartFold({
   name,
   rows,
@@ -516,20 +507,10 @@ function PartFold({
     c => hostedCuts.find(cut => cutStands(cut, c))?.name ?? '',
   )
   const badge = standing || hostedStanding
-  const says =
-    badge === ''
-      ? moved > 0
-        ? `${moved} moved`
-        : `${rows.length + hosted.length}`
-      : badge
+  const says = badge || (moved > 0 ? `${moved} moved` : undefined)
   const caution = group.caution?.part === name ? group.caution.text : null
   return (
-    <Fold
-      name={name}
-      badge={says}
-      moved={badge !== '' || moved > 0}
-      startOpen={startOpen}
-    >
+    <Fold name={name} badge={says} startOpen={startOpen}>
       {caution && <p className={styles.caution}>{caution}</p>}
       <PartVerbs
         cuts={cuts}

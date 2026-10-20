@@ -49,7 +49,6 @@ const line = () => {
   if (!head) throw new Error('no line fold')
   return head
 }
-const said = (head: HTMLElement) => Number(head.textContent.replace(/\D/g, ''))
 
 const openFmChip = () =>
   render(<OpenGroup group={group('Glint')} onClose={() => {}} seconds={0} />)
@@ -57,15 +56,9 @@ const openFmChip = () =>
 const openEnsemble = () =>
   render(<OpenGroup group={group('Chorale')} onClose={() => {}} seconds={0} />)
 
-// The number on a fold is what it opens to. A fault picks what happened to a
-// wire nobody has cut, so the row waits for a wire — and a heading that counted
-// the ones still waiting promised controls that were not down there.
-test('a fold heading counts the rows it opens to', () => {
+test('a fold heading with nothing moved under it shows no badge', () => {
   openEnsemble()
-  const before = said(line())
-  fireEvent.click(line())
-  expect(before).toBeGreaterThan(0)
-  expect(before).toBe(countRows(line()))
+  expect(line().querySelector('span')).toBeNull()
 })
 
 // Cut a line and the fault asking what happened to it arrives under the same

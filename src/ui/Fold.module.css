@@ -26,14 +26,9 @@
 /* Over on the right, where the readout of every row it opens onto sits. It
    rides a summary, so it is part of a press and reads at the panel's quiet
    tier rather than under it. */
-.count,
 .moved {
   float: right;
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
-  color: var(--fg3);
-}
-
-.moved {
   color: var(--accent);
 }

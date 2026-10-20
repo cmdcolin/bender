@@ -9,15 +9,14 @@ import type { ReactNode } from 'react'
 export function Fold({
   name,
   badge,
-  moved = false,
   startOpen,
   open,
   onToggle,
   children,
 }: {
   name: string
-  badge: string
-  moved?: boolean
+  /** What has moved inside, when anything has. */
+  badge?: string
   startOpen: boolean
   /** Whoever else can open the fold — a lane naming its strip — holds the
       state and hands it down; everyone else leaves both of these out. */
@@ -33,7 +32,7 @@ export function Fold({
     >
       <summary className={styles.head}>
         {name}
-        <span className={moved ? styles.moved : styles.count}>{badge}</span>
+        {badge && <span className={styles.moved}>{badge}</span>}
       </summary>
       {children}
     </details>

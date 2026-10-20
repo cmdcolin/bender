@@ -14,6 +14,7 @@ import { STRIP_KEYS } from './diagram.ts'
 import { Dial } from './Dial.tsx'
 import { Fold } from './Fold.tsx'
 import styles from './FourTrack.module.css'
+import { useMovedCount } from './rollBack.ts'
 import { StripDiagram } from './StripDiagram.tsx'
 import { Tip } from './Tip.tsx'
 
@@ -286,9 +287,7 @@ export function FourTrack() {
   const [open, setOpen] = useState(
     () => firstMoved(engine.controls.get()) !== undefined,
   )
-  const moved = useBoardValue(
-    c => STRIP_KEYS.filter(k => c[k] !== DEFAULT_CONTROLS[k]).length,
-  )
+  const moved = useMovedCount(STRIP_KEYS)
   // A strip knob going off stock from somewhere the strip is not — a setting, a
   // roll, a link — opens the strip on the channel it moved, so what a press just
   // did is on screen. The record arm is left out: it is a lane control and
@@ -337,8 +336,7 @@ export function FourTrack() {
       </div>
       <Fold
         name="channel strip"
-        badge={moved > 0 ? `${moved} moved` : `${STRIP_KEYS.length}`}
-        moved={moved > 0}
+        badge={moved > 0 ? `${moved} moved` : undefined}
         startOpen={false}
         open={open}
         onToggle={setOpen}
