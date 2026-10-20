@@ -14,8 +14,7 @@ remove a row here when you add or remove an entry.
 
 ## Ready
 
-| Item                                                                  | Area                 | First move                                                        |
-| --------------------------------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
-| [Fold line for gated rows](todo/fold-line-port.md)                    | diagrams             | read videoskillet diagram.ts shutBy/boxFold and its test          |
-| [Box key registry test](todo/box-key-registry-test.md)                | diagrams, tests      | copy videoskillet schematicKeys.test.ts onto drawingFor.tsx       |
-| [OpenBox to videoskillet](todo/open-box-to-videoskillet.md)           | diagrams, cross-repo | merge the two BoxRows forks, then share OpenBox                   |
+| Item                                                        | Area                 | First move                                               |
+| ----------------------------------------------------------- | -------------------- | -------------------------------------------------------- |
+| [Fold line for gated rows](todo/fold-line-port.md)          | diagrams             | read videoskillet diagram.ts shutBy/boxFold and its test |
+| [OpenBox to videoskillet](todo/open-box-to-videoskillet.md) | diagrams, cross-repo | merge the two BoxRows forks, then share OpenBox          |
