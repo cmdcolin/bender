@@ -23,6 +23,11 @@
   z-index: -1;
 }
 
+.held {
+  composes: cables;
+  z-index: 2;
+}
+
 /* The input jack, half over the right edge of a keyboard's case. */
 .jack {
   touch-action: none;
@@ -175,6 +180,7 @@
   stroke-width: 14;
   stroke-linecap: round;
   pointer-events: stroke;
+  touch-action: none;
   cursor: pointer;
 }
 
@@ -196,6 +202,7 @@
 /* A paper tag tied on the cable, which is also the way to pull the plug. */
 .tag {
   pointer-events: auto;
+  touch-action: none;
   cursor: pointer;
 }
 

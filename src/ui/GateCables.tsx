@@ -175,7 +175,15 @@ function follow(
   const stop = () => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
-    window.removeEventListener('pointercancel', stop)
+    window.removeEventListener('pointercancel', cancel)
+    window.removeEventListener('keydown', escape)
+  }
+  const cancel = () => {
+    stop()
+    dragging.set(null)
+  }
+  const escape = (k: KeyboardEvent) => {
+    if (k.key === 'Escape') cancel()
   }
   const up = (m: PointerEvent) => {
     stop()
@@ -193,7 +201,8 @@ function follow(
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', up)
-  window.addEventListener('pointercancel', stop)
+  window.addEventListener('pointercancel', cancel)
+  window.addEventListener('keydown', escape)
 }
 
 function grab(taker: Taker, end: End, e: ReactPointerEvent) {
@@ -203,6 +212,8 @@ function grab(taker: Taker, end: End, e: ReactPointerEvent) {
     over => {
       const socket = inputs.get().get(taker)
       if (!socket) return
+      if (over?.dataset.gateTaker === taker && over.dataset.gateEnd === end)
+        return
       const landed =
         over?.dataset.gateTaker === taker && over.dataset.gateEnd !== end
       const plugged = engine.controls.get()[socket.control] < 0.5
@@ -641,8 +652,12 @@ export function GateBench({ children }: { children: ReactNode }) {
             <TrigCable key={t} taker={t} spot={spot} />
           ) : null
         })}
-        {drag && <Held drag={drag} routes={routes} jacks={jacks} />}
       </svg>
+      {drag && (
+        <svg className={styles.held} aria-hidden="true">
+          <Held drag={drag} routes={routes} jacks={jacks} />
+        </svg>
+      )}
     </div>
   )
 }

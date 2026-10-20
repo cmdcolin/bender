@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
-import { expect, test } from 'vitest'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import { expect, test, vi } from 'vitest'
 
 import { DEFAULT_CONTROLS } from '../controls.ts'
 import { engine } from '../engine/engine.ts'
@@ -79,4 +79,24 @@ test('a wire off the kit says so while the kit is stopped', () => {
   const said = () => container.querySelector('title')!.textContent
   expect(said()).toMatch(/kit is stopped/)
   expect(bayFaults(engine.controls.get())).toEqual([])
+})
+
+test('the tip numbers a dead wire by its place in the bay', () => {
+  engine.writeBoard({
+    ...DEFAULT_CONTROLS,
+    mod2Src: choiceValue('mod2Src', 'mic'),
+    mod2Dest: choiceValue('mod2Dest', 'verb decay'),
+    mod2Depth: 0.8,
+  })
+  vi.useFakeTimers()
+  render(<PatchBay />)
+  fireEvent.pointerEnter(solder()!)
+  act(() => {
+    vi.runAllTimers()
+  })
+  vi.useRealTimers()
+  const tip = document.getElementById(
+    solder()!.getAttribute('aria-describedby')!,
+  )
+  expect(tip?.textContent).toMatch(/^Wire 3 /)
 })

@@ -20,6 +20,13 @@ test('pressing a jack solders the mic there, and only that jack reads as pressed
   expect(jack('mix').getAttribute('aria-pressed')).toBe('false')
 })
 
+test('a jack on the drawing turns the mic up, as the Mic into menu does', () => {
+  engine.writeBoard({ ...DEFAULT_CONTROLS, micLevel: 0 })
+  render(<MicPatch />)
+  fireEvent.click(jack('osc FM'))
+  expect(engine.controls.get().micLevel).toBeGreaterThan(0)
+})
+
 test('the wire lights only once the mic is turned up', () => {
   engine.writeBoard(DEFAULT_CONTROLS)
   const { container } = render(<MicPatch />)

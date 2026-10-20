@@ -6,7 +6,7 @@ import diagram from './Diagram.module.css'
 import { BoxView, Plate, Wire } from './DiagramParts.tsx'
 import styles from './MicPatch.module.css'
 import { describeJack } from './micWiring.ts'
-import { toggleMic } from './plugMic.ts'
+import { plugMic, toggleMic } from './plugMic.ts'
 import { aimAt } from './reveal.ts'
 import { Tip } from './Tip.tsx'
 
@@ -81,11 +81,11 @@ export function MicPatch() {
                   aria-pressed={on}
                   aria-label={`solder the mic to ${d}`}
                   opacity={on ? 1 : 0.6}
-                  onClick={() => engine.set('micPatch', i)}
+                  onClick={() => plugMic(i)}
                   onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      engine.set('micPatch', i)
+                      plugMic(i)
                     }
                   }}
                 >

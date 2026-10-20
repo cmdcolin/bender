@@ -333,6 +333,33 @@ test('dragging a cable end off its jack pulls the plug, and dragging a jack to i
   expect(engine.controls.get().fmKeyGate).toBe(0)
   drag(output, document.body)
   expect(engine.controls.get().fmKeyGate).toBe(1)
+  drag(output, screen.getByRole('button', { name: 'own keys only' }))
+  drag(screen.getByRole('button', { name: 'with Plinky' }), input)
+  expect(engine.controls.get().fmKeyGate).toBe(0)
+})
+
+test('a cancelled cable drag puts the cable back and changes nothing', () => {
+  const { container } = render(
+    <GateBench>
+      <Keys />
+      <FmKeys />
+    </GateBench>,
+  )
+  act(() => engine.set('fmKeyGate', 0))
+  const bench = container.querySelector('[data-gate-bench]')!
+  const input = screen.getByRole('button', { name: 'with Plinky' })
+  for (const end of [
+    () => fireEvent.pointerCancel(window),
+    () => fireEvent.keyDown(window, { key: 'Escape' }),
+  ]) {
+    fireEvent.pointerDown(input, { button: 0, clientX: 0, clientY: 0 })
+    fireEvent.pointerMove(window, { clientX: 40, clientY: 40 })
+    expect(bench.getAttribute('data-dragging')).toBe('true')
+    end()
+    expect(bench.getAttribute('data-dragging')).toBe('false')
+    fireEvent.pointerUp(window, { clientX: 40, clientY: 40 })
+    expect(engine.controls.get().fmKeyGate).toBe(0)
+  }
 })
 
 test('a TRIG cable patches a kit voice into a keyboard, and moves or pulls with a drag', async () => {

@@ -248,8 +248,7 @@ export function PatchBay() {
       {dead > 0 && (
         <Tip
           text={`${faults
-            .filter(Boolean)
-            .map((f, i) => `Wire ${i + 1} ${f}`)
+            .flatMap((f, i) => (f ? [`Wire ${i + 1} ${f}`] : []))
             .join(
               ' ',
             )} Pressing this moves the loose end onto something the board is running — it turns nothing up, so the stages stay where you left them.`}
