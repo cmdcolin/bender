@@ -30,6 +30,11 @@ export function padVoice(code: string): number {
   return voice >= 0 && voice < N_DRUM_VOICES ? voice : -1
 }
 
+export function toggleRowMute(voice: number) {
+  engine.armStep()
+  engine.set('drumRowMute', engine.controls.get().drumRowMute ^ voiceBit(voice))
+}
+
 /** The pads, live for as long as the app is up — the kit answers a finger
     wherever the panel happens to be, exactly as the toy keyboard's letters do. */
 export function useDrumKeys() {
@@ -45,7 +50,8 @@ export function useDrumKeys() {
         !isTyping(e.target)
       ) {
         const voice = padVoice(e.code)
-        if (voice >= 0) engine.drumHit(voiceBit(voice))
+        if (voice >= 0 && e.shiftKey) toggleRowMute(voice)
+        else if (voice >= 0) engine.drumHit(voiceBit(voice))
       }
     }
     window.addEventListener('keydown', down)

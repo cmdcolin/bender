@@ -304,6 +304,7 @@ export const PARAM_DEFS = [
   ['drumAccentLen', 'step'],
   ['drumThrow', 'step'],
   ['drumThrowLen', 'step'],
+  ['drumRowMute', 'step'],
 
   ['fmLevel', 'slew'],
   ['fmMute', 'ramp'],

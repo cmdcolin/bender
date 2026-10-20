@@ -137,6 +137,7 @@ function Pattern({
   const level = useControlValue('drumLevel')
   const tick = useMeterValue(m => m.tick)
   const taken = useStoreValue(engine.drumTaken)
+  const rowMute = useControlValue('drumRowMute')
   // A hit taken before the pattern mounted is old news, not one to flash.
   const [old] = useState(taken)
   const fresh = taken === old ? null : taken
@@ -145,6 +146,7 @@ function Pattern({
     <PatternRow
       key={voice.key}
       voice={voice}
+      muted={(rowMute & voiceBit(v)) !== 0}
       tick={at}
       taken={fresh && fresh.bits & voiceBit(v) ? fresh : null}
     />
@@ -170,10 +172,12 @@ function Pattern({
 
 const PatternRow = memo(function PatternRow({
   voice,
+  muted,
   tick,
   taken,
 }: {
   voice: DrumVoice
+  muted: boolean
   tick: number
   taken: { tick: number; at: number } | null
 }) {
@@ -183,7 +187,7 @@ const PatternRow = memo(function PatternRow({
   const head = tick < 0 ? -1 : tick % len
   const flash = taken ? taken.tick % len : -1
   return (
-    <span className={styles.row} aria-hidden="true">
+    <span className={muted ? styles.rowMuted : styles.row} aria-hidden="true">
       {Array.from({ length: STEPS }, (_, s) => {
         const state = s < len ? stepState(mask, maybe, s) : 'out'
         const classes = [

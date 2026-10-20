@@ -1,7 +1,9 @@
 import { expect, test } from 'vitest'
 
-import { DEFAULT_CONTROLS } from '../controls.ts'
+import { DEFAULT_CONTROLS, type Controls } from '../controls.ts'
+import { ROCK, STEPS } from '../drums.ts'
 import { SOURCE_TAPS, packParams } from '../engine/params.ts'
+import { buildBender } from './build.ts'
 import { Chain } from './chain.ts'
 import { BLOCK, type Stage } from './stage.ts'
 import { makeIo, renderStems, rms, SR } from './testRender.ts'
@@ -54,4 +56,33 @@ test('unmuting fades back up to the level the machine had', () => {
   const stem = chain.stems.slice(0, BLOCK)
   expect(stem[0]).toBeLessThan(0.01)
   expect(stem[BLOCK - 1]).toBeCloseTo(0.5, 6)
+})
+
+const KICK = 1
+const SNARE = 2
+
+function firedInABar(c: Partial<Controls>, strike = 0): number {
+  const built = buildBender(SR)
+  built.transport.drums = true
+  const p = packParams({
+    ...DEFAULT_CONTROLS,
+    ...ROCK,
+    chipLevel: 0,
+    drumBpm: 240,
+    ...c,
+  })
+  const io = makeIo()
+  if (strike) built.toyDrum.strike(strike, 1)
+  let fired = 0
+  while (built.toyDrum.tick < STEPS) {
+    built.chain.process(io, p)
+    fired |= built.toyDrum.takeFired()
+  }
+  return fired
+}
+
+test('a muted row keeps the pattern off its voice, and the pad still strikes it', () => {
+  expect(firedInABar({}) & (KICK | SNARE)).toBe(KICK | SNARE)
+  expect(firedInABar({ drumRowMute: KICK }) & (KICK | SNARE)).toBe(SNARE)
+  expect(firedInABar({ drumRowMute: KICK }, KICK) & KICK).toBe(KICK)
 })

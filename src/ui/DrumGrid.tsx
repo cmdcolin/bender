@@ -36,7 +36,7 @@ import {
 } from './ControlsContext.ts'
 import { SHUFFLE } from './DeviceVerbs.tsx'
 import styles from './DrumGrid.module.css'
-import { padKeyFor } from './drumKeys.ts'
+import { padKeyFor, toggleRowMute } from './drumKeys.ts'
 import { Tip } from './Tip.tsx'
 import { useStruck } from './useStruck.ts'
 
@@ -276,9 +276,32 @@ export function DrumGrid() {
   )
 }
 
+function MuteSwitch({ voice, muted }: { voice: number; muted: boolean }) {
+  const label = DRUM_VOICES[voice]!.label
+  return (
+    <Tip
+      text={
+        muted
+          ? `Put the pattern back on the ${label}. Shift+${padKeyFor(voice)} does it too.`
+          : `Keep the pattern off the ${label}; the pad still plays it. Shift+${padKeyFor(voice)} does it too.`
+      }
+    >
+      <button
+        className={muted ? styles.muteOn : styles.mute}
+        aria-label={`mute ${label}`}
+        aria-pressed={muted}
+        onClick={() => toggleRowMute(voice)}
+      >
+        m
+      </button>
+    </Tip>
+  )
+}
+
 function Ruler() {
   return (
     <div className={styles.row} aria-hidden="true">
+      <span />
       <span />
       <div className={styles.cells}>
         {Array.from({ length: STEPS }, (_, s) => (
@@ -321,6 +344,8 @@ const Row = memo(function Row({
   const under = useUnder(live, len)
 
   const voice = DRUM_VOICES.findIndex(v => v.key === row.key)
+  const muted =
+    useControlValue('drumRowMute') & (voice < 0 ? 0 : voiceBit(voice))
 
   return (
     <Tip text={row.help}>
@@ -351,7 +376,12 @@ const Row = memo(function Row({
             </button>
           </Tip>
         )}
-        <div className={styles.cells}>
+        {voice < 0 ? (
+          <span />
+        ) : (
+          <MuteSwitch voice={voice} muted={muted !== 0} />
+        )}
+        <div className={muted ? styles.cellsMuted : styles.cells}>
           {Array.from({ length: STEPS }, (_, s) => (
             <Cell
               key={s}
@@ -505,8 +535,9 @@ function BendRow({ live }: { live: boolean }) {
   const under = useUnder(live, STEPS)
   return (
     <Tip text="Steps that fire a bend key: the first step the first key, the second the second, each held for its step. Redeal the keys and the same steps fire the new ones.">
-      <div className={styles.row}>
+      <div className={styles.extraRow}>
         <span className={mask ? styles.nameOn : styles.name}>bend</span>
+        <span />
         <div className={styles.cells}>
           {Array.from({ length: STEPS }, (_, s) => {
             const on = (mask & stepBit(s)) !== 0

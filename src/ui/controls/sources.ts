@@ -778,6 +778,7 @@ export const SOURCE_GROUPS: Group[] = [
         ),
         THROW_ROW.key,
         THROW_ROW.len,
+        'drumRowMute',
       ],
     },
     sliders: [

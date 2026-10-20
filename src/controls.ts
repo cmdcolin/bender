@@ -317,6 +317,8 @@ export const DEFAULT_CONTROLS = {
   drumAccentLen: 16,
   drumThrow: 0,
   drumThrowLen: 16,
+  // A bit per voice: a set bit keeps the pattern off that voice.
+  drumRowMute: 0,
 
   fmLevel: 0,
   fmMute: 0,

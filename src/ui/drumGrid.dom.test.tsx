@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 
 import { GRID_ROWS } from '../drums.ts'
 import { engine } from '../engine/engine.ts'
 import styles from './DrumGrid.module.css'
 import { DrumGrid } from './DrumGrid.tsx'
+import { useDrumKeys } from './drumKeys.ts'
 import './testDom.ts'
 
 const under = (label: string) =>
@@ -24,4 +25,26 @@ test('each row walks its own playhead off the kit’s step count', () => {
   expect(under('kick')).toEqual([3])
   expect(under('snare')).toEqual([8])
   act(() => engine.meter.set({ ...engine.meter.get(), tick: 0 }))
+})
+
+function Keys() {
+  useDrumKeys()
+  return null
+}
+
+test('the m switch and shift with a pad number mute a row', () => {
+  render(
+    <>
+      <Keys />
+      <DrumGrid />
+    </>,
+  )
+  const mute = screen.getByRole('button', { name: 'mute kick' })
+  fireEvent.click(mute)
+  expect(engine.controls.get().drumRowMute).toBe(1)
+  expect(mute.getAttribute('aria-pressed')).toBe('true')
+  fireEvent.keyDown(window, { code: 'Digit2', shiftKey: true })
+  expect(engine.controls.get().drumRowMute).toBe(3)
+  fireEvent.click(mute)
+  expect(engine.controls.get().drumRowMute).toBe(2)
 })

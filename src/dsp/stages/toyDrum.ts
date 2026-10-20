@@ -1075,7 +1075,7 @@ export class ToyDrum implements Stage {
     const word = this.wordAt(p, this.tick)
     const at = STEPS - 1 - (this.tick % this.throwLen)
     this.throwing = ((Math.round(p[IDX.drumThrow]!) >> at) & 1) === 1
-    let named = word & VOICE_BITS
+    let named = word & VOICE_BITS & ~Math.round(p[IDX.drumRowMute]!)
     if (!fallback && this.tick === this.skipTick) {
       named &= ~this.skipBits
       this.skipTick = -1

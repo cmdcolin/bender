@@ -76,7 +76,7 @@
 .row,
 .extraRow {
   display: grid;
-  grid-template-columns: 4.4rem 1fr 2.6rem;
+  grid-template-columns: 4.4rem 1.2rem 1fr 2.6rem;
   align-items: center;
   gap: var(--space-sm);
 }
@@ -155,10 +155,40 @@
   margin-left: auto;
 }
 
-.cells {
+.cells,
+.cellsMuted {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
   gap: var(--space-2xs);
+}
+
+.cellsMuted {
+  opacity: 0.35;
+}
+
+.mute,
+.muteOn {
+  height: 15px;
+  padding: 0;
+  font-size: var(--fs-xs);
+  line-height: 1;
+  border: 1px solid var(--border-quiet);
+  border-radius: 2px;
+  background: none;
+  color: var(--fg4);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mute:hover {
+  color: var(--fg);
+  border-color: var(--border-hover);
+}
+
+.muteOn {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: var(--bg);
 }
 
 /* A step is a lamp over a contact: dark until you close it, and every fourth
@@ -374,7 +404,7 @@
 @media (max-width: 760px) {
   .row,
   .extraRow {
-    grid-template-columns: 3.2rem 1fr 1.6rem;
+    grid-template-columns: 3.2rem 1.4rem 1fr 1.6rem;
     gap: var(--space-xs);
   }
   .len,
@@ -388,6 +418,8 @@
   .cell,
   .cellOn,
   .cellMaybe,
+  .mute,
+  .muteOn,
   .accent,
   .accentOn {
     height: 26px;

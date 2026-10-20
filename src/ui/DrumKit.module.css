@@ -85,10 +85,15 @@
   outline-offset: 1px;
 }
 
-.row {
+.row,
+.rowMuted {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
   column-gap: 2px;
+}
+
+.rowMuted {
+  opacity: 0.3;
 }
 
 .cell {
