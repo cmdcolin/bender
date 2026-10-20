@@ -2894,7 +2894,16 @@ export const SOURCE_GROUPS: Group[] = [
         // to what it is worth down there.
         step: 0.001,
         unit: '×',
-        curve: 'symlog',
+        // Half the travel is the slowdown from ×1 to frozen, straight so a
+        // tape winds down evenly under the hand; reverse gets a quarter, and
+        // ×1 to ×4 the last quarter in octaves.
+        knots: [
+          [-4, 0],
+          [-1, 0.1],
+          [0, 0.25],
+          [1, 0.75],
+          [4, 1],
+        ],
         // A knob whose middle is a stop and whose left half is reverse reads as
         // a broken one if the readout only prints the number: coming down past
         // zero the tape picks up again, and "−2.400 ×" does not say that where
@@ -2914,10 +2923,10 @@ export const SOURCE_GROUPS: Group[] = [
         action: {
           label: 'stop',
           title:
-            'park the tape on the spot the head is standing — the middle of this travel, with reverse below it and forward above',
+            'park the tape on the spot the head is standing, with reverse below it on the travel and forward above',
           value: () => 0,
         },
-        help: 'Playback speed, with the stop in the middle of the travel and reverse below it. The left half is not slower, it is backwards: the tape freezes where the head stands and picks up the other way. The red ticks bound ×0–×1, ordinary speed; past that you are speeding the tape up rather than just playing it faster. The arrow on the reel says which way you are going.',
+        help: 'Playback speed, with reverse below the stop and forward above it. Below the stop the tape runs backwards: the tape freezes where the head stands and picks up the other way. The red ticks bound ×0–×1, ordinary speed; past that you are speeding the tape up rather than just playing it faster. The arrow on the reel says which way you are going.',
       },
       {
         key: 'sampleTrig',

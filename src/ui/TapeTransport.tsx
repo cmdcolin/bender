@@ -9,9 +9,15 @@ import { Tip } from './Tip.tsx'
 
 import type { ControlKey } from '../controls.ts'
 
-const SPEED_LABELS = ['½×', '1×', '2×'] as const
+const SPEED_LABELS = ['¼×', '½×', '¾×', '1×', '2×'] as const
 type Speed = (typeof SPEED_LABELS)[number]
-const SPEEDS: Record<Speed, number> = { '½×': 0.5, '1×': 1, '2×': 2 }
+const SPEEDS: Record<Speed, number> = {
+  '¼×': 0.25,
+  '½×': 0.5,
+  '¾×': 0.75,
+  '1×': 1,
+  '2×': 2,
+}
 
 const NOTHING =
   'Nothing on the tape yet. Load one, drop a file or open the mic.'
@@ -89,7 +95,7 @@ function KnobArrow({
 }
 
 // What you do to a tape loop with your hand on it: start it, stop it, turn it
-// round, step it through half, normal and double. The Speed knob in the panel
+// round, step it through quarter, half, three-quarter, normal and double. The Speed knob in the panel
 // does all of it and more; these are the keys that come up every time, laid out
 // as on a deck: play stays down until stop pops it. Rec arms the record head,
 // which works on a blank reel too. The arrow beside a key opens its knobs in a
@@ -218,7 +224,7 @@ export function TapeTransport({
         <Tip
           text={
             on
-              ? `Tape speed, stepping through half, normal and double in whichever direction it is running — press for ${next}. The arrow beside it, or the Speed knob in the panel, goes anywhere between.`
+              ? `Tape speed, stepping through quarter, half, three-quarter, normal and double in whichever direction it is running — press for ${next}. The arrow beside it, or the Speed knob in the panel, goes anywhere between.`
               : NOTHING
           }
         >

@@ -106,10 +106,10 @@ test('a symlog split with a normal spends its travel there instead of at the sto
 // travel either side of the turn, so 20 positions is the pull you asked for.
 const DEADBAND = 25
 
-test('a symlog travel never springs the thumb further than its own detent', () => {
+test('a curved split travel never springs the thumb further than its own detent', () => {
   const sprung: string[] = []
   for (const d of ALL_SLIDERS) {
-    if (d.curve !== 'symlog') continue
+    if (d.curve !== 'symlog' && !d.knots) continue
     for (let i = 0; i <= 1000; i++) {
       const back = Math.round(
         toPos(d, snapToStep(d, fromPos(d, i / 1000))) * 1000,
@@ -121,35 +121,36 @@ test('a symlog travel never springs the thumb further than its own detent', () =
   expect(sprung.slice(0, 5)).toEqual([])
 })
 
-// The other half of the same complaint: a speed is a ratio, so a step worth a
-// hundredth of a semitone at ×1 is worth an octave at ×0.01. The slow end is
-// where you crawl, and it used to be where the hundredth-wide step left barely
-// a hundred speeds to crawl between — now that half's own throw is shared with
-// the run back up to ordinary speed, so the count is lower but still well
-// clear of that bug.
-test('the sampler still crawls in small enough steps to crawl in', () => {
-  const d = sliderFor('sampleSpeed')
-  const slow = new Set<number>()
-  for (let i = 0; i <= 1000; i++) {
-    const v = snapToStep(d, fromPos(d, i / 1000))
-    if (v > 0 && v <= 1) slow.add(v)
-  }
-  expect(slow.size).toBeGreaterThan(100)
+test('a knot track runs straight through zero and in octaves either side', () => {
+  const d = def({
+    min: -4,
+    max: 4,
+    step: 0.001,
+    knots: [
+      [-4, 0],
+      [-1, 0.1],
+      [0, 0.25],
+      [1, 0.75],
+      [4, 1],
+    ],
+  })
+  expect(toPos(d, -4)).toBe(0)
+  expect(toPos(d, 0)).toBe(0.25)
+  expect(toPos(d, 0.5)).toBeCloseTo(0.5)
+  expect(toPos(d, 2)).toBeCloseTo(0.875)
+  expect(toPos(d, -2)).toBeCloseTo(0.05)
+  expect(fromPos(d, 0.625)).toBeCloseTo(0.75)
+  expect(fromPos(d, 0.875)).toBeCloseTo(2)
+  expect(fromPos(d, 0)).toBe(-4)
+  expect(fromPos(d, 1)).toBe(4)
 })
 
-// The reason for spending it there: a hand riding near ordinary speed gets far
-// more of the travel than one parked at rest, which is the whole point of
-// pivoting the curve on `normal` instead of on the stop.
-test('the sampler spends more travel near ordinary speed than near rest', () => {
+test('the tape slows from ×1 to frozen evenly over half the track', () => {
   const d = sliderFor('sampleSpeed')
-  const nearNormal = new Set<number>()
-  const nearRest = new Set<number>()
-  for (let i = 0; i <= 1000; i++) {
-    const v = snapToStep(d, fromPos(d, i / 1000))
-    if (v >= 0.9 && v <= 1.1) nearNormal.add(v)
-    if (v > 0 && v <= 0.1) nearRest.add(v)
-  }
-  expect(nearNormal.size).toBeGreaterThan(nearRest.size * 10)
+  const span = toPos(d, 1) - toPos(d, 0)
+  expect(span).toBeCloseTo(0.5)
+  for (const v of [0.1, 0.3, 0.5, 0.7, 0.9])
+    expect(toPos(d, v) - toPos(d, 0)).toBeCloseTo(v * span)
 })
 
 // Every control has to be able to reach both of its own ends off the track,

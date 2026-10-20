@@ -18,6 +18,10 @@ export interface SliderDef {
       the stop and onto that value instead — a speed you mostly ride near ×1
       wants more of the throw there than at rest. `symlog` needs a `split`. */
   curve?: 'log' | 'symlog'
+  /** Values pinned to track positions, rising, for a travel no stock curve
+      fits; overrides `curve`. Between two knots of one sign the track spends
+      even travel per octave, and a stretch touching zero runs straight. */
+  knots?: readonly (readonly [value: number, pos: number])[]
   /** What the control is to the stage, where that outlives its name: a mix is
       the stage's dry/wet, a level is the whole of whether it is there at all.
       A roll reads this to decide what it must leave audible. */

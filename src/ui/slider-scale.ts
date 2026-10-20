@@ -101,7 +101,34 @@ export function ordinary(def: SliderDef): SliderDef {
 export const pastNormal = (def: SliderDef, value: number) =>
   def.normal !== undefined && (value < def.normal[0] || value > def.normal[1])
 
+type Knots = NonNullable<SliderDef['knots']>
+
+const octaveRun = (a: number, b: number) => a * b > 0
+
+function knotsToPos(knots: Knots, value: number): number {
+  const i = knots.findIndex(([v], k) => k > 0 && value <= v)
+  if (i < 0) return knots[knots.length - 1]![1]
+  if (i === 0) return knots[0]![1]
+  const [a, pa] = knots[i - 1]!
+  const [b, pb] = knots[i]!
+  const frac = octaveRun(a, b)
+    ? Math.log(value / a) / Math.log(b / a)
+    : (value - a) / (b - a)
+  return pa + Math.max(0, frac) * (pb - pa)
+}
+
+function knotsFromPos(knots: Knots, pos: number): number {
+  const i = knots.findIndex(([, p], k) => k > 0 && pos <= p)
+  if (i < 0) return knots[knots.length - 1]![0]
+  if (i === 0) return knots[0]![0]
+  const [a, pa] = knots[i - 1]!
+  const [b, pb] = knots[i]!
+  const frac = Math.max(0, (pos - pa) / (pb - pa))
+  return octaveRun(a, b) ? a * Math.pow(b / a, frac) : a + frac * (b - a)
+}
+
 export function toPos(def: SliderDef, value: number): number {
+  if (def.knots) return knotsToPos(def.knots, value)
   if (def.normal) return normalToPos(def, value)
   if (def.curve === 'symlog') {
     const { at, normal } = def.split!
@@ -128,6 +155,7 @@ export function toPos(def: SliderDef, value: number): number {
 }
 
 export function fromPos(def: SliderDef, pos: number): number {
+  if (def.knots) return knotsFromPos(def.knots, pos)
   if (def.normal) return normalFromPos(def, pos)
   if (def.curve === 'symlog') {
     const { at, normal } = def.split!

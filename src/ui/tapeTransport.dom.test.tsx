@@ -23,7 +23,7 @@ test('with nothing on the tape every verb is dead', () => {
     ).toBe(true)
 })
 
-test('the speed key steps half, normal, double and keeps the direction', () => {
+test('the speed key steps from double round to a quarter and keeps the direction', () => {
   engine.writeBoard({ ...DEFAULT_CONTROLS, sampleSpeed: 1 })
   render(<TapeTransport loaded />)
   fireEvent.click(speedKey())
@@ -34,10 +34,14 @@ test('the speed key steps half, normal, double and keeps the direction', () => {
     'true',
   )
   fireEvent.click(speedKey())
-  expect(speed()).toBe(-0.5)
-  expect(speedKey().textContent).toBe('½×')
+  expect(speed()).toBe(-0.25)
+  expect(speedKey().textContent).toBe('¼×')
   press('reverse')
-  expect(speed()).toBe(0.5)
+  expect(speed()).toBe(0.25)
+  fireEvent.click(speedKey())
+  fireEvent.click(speedKey())
+  expect(speed()).toBe(0.75)
+  expect(speedKey().textContent).toBe('¾×')
 })
 
 test('rec works with nothing loaded and latches while the record head is armed', () => {

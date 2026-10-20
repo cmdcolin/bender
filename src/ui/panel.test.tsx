@@ -479,13 +479,13 @@ test('a split travel pulls to its turn and says which side it is on', () => {
   const knob = speed()
 
   fireEvent.pointerDown(knob)
-  fireEvent.change(knob, { target: { value: '505' } })
+  fireEvent.change(knob, { target: { value: '255' } })
   expect(engine.controls.get().sampleSpeed).toBe(0)
   expect(knob.getAttribute('aria-valuetext')).toBe('frozen')
 
-  fireEvent.change(knob, { target: { value: '300' } })
+  fireEvent.change(knob, { target: { value: '150' } })
   expect(engine.controls.get().sampleSpeed).toBeLessThan(0)
-  expect(knob.getAttribute('aria-valuetext')).toBe('0.996× reverse')
+  expect(knob.getAttribute('aria-valuetext')).toBe('0.667× reverse')
 })
 
 // The pull is the drag's, not the keyboard's. A key step is a fifth of the
