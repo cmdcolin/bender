@@ -7,6 +7,15 @@ import { fromPos, toPos } from './slider-scale.ts'
 const FINE = 0.1
 const WHEEL_STEP = 0.01
 const WHEEL_FINE_STEP = 0.002
+const PAGE = 10
+const KEY_DIR: Record<string, number> = {
+  ArrowUp: 1,
+  ArrowRight: 1,
+  ArrowDown: -1,
+  ArrowLeft: -1,
+  PageUp: PAGE,
+  PageDown: -PAGE,
+}
 const SCROLL_HOLD_MS = 400
 const WHEEL_STEP_GAP_MS = 600
 
@@ -26,8 +35,9 @@ function nudge(def: SliderDef, pos: number, dir: number) {
   return snapToStep(def, now + dir * def.step)
 }
 
-/** Shift-drag moves the knob at a tenth of the hand's speed, and the wheel
-    steps it (finer with shift) unless the panel was scrolling a moment ago. */
+/** Shift-drag moves the knob at a tenth of the hand's speed. The wheel and the
+    arrow keys step it along its travel, finer with shift; the wheel holds off
+    while the panel was scrolling a moment ago. */
 export function useFineTrack(
   ref: RefObject<HTMLInputElement | null>,
   def: SliderDef,
@@ -65,10 +75,19 @@ export function useFineTrack(
       e.preventDefault()
       if (now - lastWheel > WHEEL_STEP_GAP_MS) engine.armStep()
       lastWheel = now
-      const dir = delta < 0 ? 1 : -1
-      const step = stops ? 1 / stops : e.shiftKey ? WHEEL_FINE_STEP : WHEEL_STEP
-      const pos = toPos(def, engine.controls.get()[def.key]) + dir * step
-      engine.set(def.key, nudge(def, pos, dir))
+      step(delta < 0 ? 1 : -1, e.shiftKey)
+    }
+    const key = (e: KeyboardEvent) => {
+      const dir = KEY_DIR[e.key]
+      if (!dir || e.altKey || e.ctrlKey || e.metaKey) return
+      e.preventDefault()
+      if (!e.repeat) engine.armStep()
+      step(dir, e.shiftKey)
+    }
+    const step = (dir: number, fine: boolean) => {
+      const by = stops ? 1 / stops : fine ? WHEEL_FINE_STEP : WHEEL_STEP
+      const pos = toPos(def, engine.controls.get()[def.key]) + dir * by
+      engine.set(def.key, nudge(def, pos, Math.sign(dir)))
     }
 
     input.addEventListener('pointerdown', down)
@@ -76,7 +95,9 @@ export function useFineTrack(
     input.addEventListener('pointerup', up)
     input.addEventListener('pointercancel', up)
     input.addEventListener('wheel', wheel, { passive: false })
+    input.addEventListener('keydown', key)
     return () => {
+      input.removeEventListener('keydown', key)
       input.removeEventListener('pointerdown', down)
       input.removeEventListener('pointermove', move)
       input.removeEventListener('pointerup', up)

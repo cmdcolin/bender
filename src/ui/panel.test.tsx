@@ -172,6 +172,23 @@ test('a slider carries its name and its own units', () => {
   expect(time.getAttribute('aria-valuetext')).toBe('1200 ms')
 })
 
+test('arrow keys walk a slider along its travel, and page keys take bigger strides', () => {
+  render(<OpenGroup group={group('Wraith')} onClose={() => {}} seconds={0} />)
+  const time = screen.getByRole('slider', { name: 'Time' })
+  act(() => engine.set('delayMs', 300))
+  const at = () => engine.controls.get().delayMs
+  fireEvent.keyDown(time, { key: 'ArrowUp' })
+  const one = at()
+  expect(one).toBeGreaterThan(300)
+  fireEvent.keyDown(time, { key: 'ArrowRight', repeat: true })
+  expect(at()).toBeGreaterThan(one)
+  fireEvent.keyDown(time, { key: 'ArrowDown' })
+  fireEvent.keyDown(time, { key: 'ArrowLeft' })
+  expect(at()).toBe(300)
+  fireEvent.keyDown(time, { key: 'PageUp' })
+  expect(at() - 300).toBeGreaterThan(5 * (one - 300))
+})
+
 // The kit's ROM buttons write over whatever you had drawn, so they land in the
 // walk like every other verb on the panel.
 test('a drum ROM lands in the walk, and ctrl+z takes it back', () => {
