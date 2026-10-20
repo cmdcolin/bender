@@ -1,23 +1,23 @@
 ---
 name: open-box-to-videoskillet
 description:
-  Give videoskillet bender's OpenBox card, Bend wires and PickPart, so its
-  diagram wires press like bender's.
+  Give videoskillet bender's OpenBox card, once the two BoxRows forks merge, and
+  put its wires on the shared Bend.
 metadata:
   category: ready
   area: diagrams, cross-repo
-  first_move: move OpenBox, PickPart and Bend into the diagram-parts sync region
+  first_move: merge the two BoxRows forks, then share OpenBox
   order: 5
 ---
 
-# Port `OpenBox`, `Bend` and `PickPart` to videoskillet
+# Port `OpenBox` to videoskillet
 
-- In bender's `src/ui/DiagramParts.tsx`, outside the sync region:
-  - `OpenBox` frames the open box's rows with its name and a × hide button.
-  - `Bend` makes a wire and its name one button over a 12px hit stroke.
-  - `PickPart` turns any part of a drawing into a box opener.
-- videoskillet's diagram wires do nothing when pressed. Sync H/V drive and the
-  return wires would suit `Bend`.
-- `.wireHit` and `.bendPick` in `Diagram.module.css` go with them; see
-  [diagram-css-sync](diagram-css-sync.md).
+- `PickPart` and `Bend` sit in the shared `diagram-parts` region since 0441c7d,
+  with `.wireHit` and `.bendPick` in `diagram-core`. No videoskillet drawing
+  uses `Bend` yet; sync H/V drive and the return wires would suit it.
+- `OpenBox` in bender's `src/ui/DiagramParts.tsx` frames the open box's rows
+  with its name and a × hide button. It wraps `BoxRows`, which has forked:
+  bender has `verbs`, `under`, `inOrder` and `card`; videoskillet has
+  `FoldLine`, `HelpLine` and scroll into view. See
+  [fold-line-port](fold-line-port.md).
 - `useFlow` (wires light while signal runs) could follow later.

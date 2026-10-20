@@ -12,19 +12,13 @@ frontmatter: `metadata.category` picks the table, `area` and `first_move` are
 the columns, `order` is where it sits. This index has no generator, so add or
 remove a row here when you add or remove an entry.
 
-## Needs a call
-
-| Item                                                 | Area                 | First move                                             |
-| ---------------------------------------------------- | -------------------- | ------------------------------------------------------ |
-| [Diagram CSS + route sync](todo/diagram-css-sync.md) | diagrams, cross-repo | ask which name size and lit-name colour both apps take |
-
 ## Ready
 
 | Item                                                                  | Area                 | First move                                                        |
 | --------------------------------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
 | [Fold line for gated rows](todo/fold-line-port.md)                    | diagrams             | read videoskillet diagram.ts shutBy/boxFold and its test          |
 | [Box key registry test](todo/box-key-registry-test.md)                | diagrams, tests      | copy videoskillet schematicKeys.test.ts onto drawingFor.tsx       |
-| [OpenBox + Bend to videoskillet](todo/open-box-to-videoskillet.md)    | diagrams, cross-repo | move OpenBox, PickPart and Bend into the diagram-parts region     |
+| [OpenBox to videoskillet](todo/open-box-to-videoskillet.md)           | diagrams, cross-repo | merge the two BoxRows forks, then share OpenBox                   |
 | [Layout helpers](todo/diagram-layout-helpers.md)                      | diagrams             | write spreadRow(widths, span) and port BusDiagram and FmDie       |
 | [Patch drawings on shared parts](todo/patch-drawings-shared-parts.md) | diagrams             | swap TriggerPatch's raw svg and press() for Diagram and Pressable |
 | [Inert diagram parts](todo/inert-diagram-parts.md)                    | diagrams             | make BusDiagram's tap, inject and feed wires Bends                |
