@@ -20,7 +20,7 @@ const rows = jams
     order: dateOf(name) ?? '',
     peaks,
   }))
-  .sort(
+  .toSorted(
     (a, b) => b.order.localeCompare(a.order) || a.title.localeCompare(b.title),
   )
 ---
