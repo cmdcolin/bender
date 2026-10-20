@@ -1,3 +1,4 @@
+/* CROSS_REPO_SYNC(diagram-core) */
 .diagram {
   display: block;
   width: 100%;
@@ -16,18 +17,20 @@
 }
 
 .name,
-.nameOn {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  fill: var(--fg2);
-}
-
+.nameOn,
 .note,
 .noteOn {
   font-size: 9px;
-  text-transform: uppercase;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.name,
+.nameOn {
+  fill: var(--fg2);
+}
+
+.note {
   fill: var(--fg3);
 }
 
@@ -42,25 +45,6 @@
 
 .noteOn {
   fill: var(--accent);
-}
-
-.glyph,
-.glyphOn {
-  color: var(--fg2);
-}
-
-.glyphOn {
-  color: var(--accent);
-}
-
-.glyphLine {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1;
-}
-
-.glyphFill {
-  fill: currentColor;
 }
 
 .wire,
@@ -97,6 +81,60 @@
 
 .headAlarm {
   fill: var(--alarm);
+}
+
+/* A box you can press: the pointer says so, a hair of fill says which one is
+   open, and the focus ring is the browser's own on the group. */
+.pick {
+  cursor: pointer;
+  outline: none;
+}
+
+.pick:hover rect,
+.pick:focus-visible rect {
+  stroke: var(--fg2);
+}
+
+.selected {
+  fill: var(--surface-raised);
+  stroke-width: 1.5;
+}
+
+.box.selected {
+  stroke: var(--fg2);
+}
+
+/* A wire drawn again as a wide clear stroke, so a thin wire is easy to press. */
+.wireHit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+}
+
+.bendPick:hover path:not(.wireHit),
+.bendPick:focus-visible path:not(.wireHit) {
+  stroke: var(--fg);
+}
+/* CROSS_REPO_SYNC_END(diagram-core) */
+
+.glyph,
+.glyphOn {
+  color: var(--fg2);
+}
+
+.glyphOn {
+  color: var(--accent);
+}
+
+.glyphLine {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.glyphFill {
+  fill: currentColor;
 }
 
 .dot {
@@ -154,44 +192,11 @@
   stroke-width: 2;
 }
 
-/* A box you can press: the pointer says so, a hair of fill says which one is
-   open, and the focus ring is the browser's own on the group. */
-.pick {
-  cursor: pointer;
-  outline: none;
-}
-
-.pick:hover rect,
-.pick:focus-visible rect {
-  stroke: var(--fg2);
-}
-
 .hit,
 .pick:hover .hit,
 .pick:focus-visible .hit {
   fill: transparent;
   stroke: none;
-}
-
-.wireHit {
-  fill: none;
-  stroke: transparent;
-  stroke-width: 12;
-  pointer-events: stroke;
-}
-
-.bendPick:hover path:not(.wireHit),
-.bendPick:focus-visible path:not(.wireHit) {
-  stroke: var(--fg);
-}
-
-.selected {
-  fill: var(--surface-raised);
-  stroke-width: 1.5;
-}
-
-.box.selected {
-  stroke: var(--fg2);
 }
 
 .rows {

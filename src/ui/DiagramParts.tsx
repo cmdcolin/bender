@@ -278,30 +278,6 @@ export function Diagram({
     </svg>
   )
 }
-// CROSS_REPO_SYNC_END(diagram-parts)
-
-// A junction where wires meet, or a wire soldered on where the board had none.
-export function Dot({
-  x,
-  y,
-  r = 1.6,
-  look = 'plain',
-}: {
-  x: number
-  y: number
-  r?: number
-  look?: 'plain' | 'alarm'
-}) {
-  return (
-    <circle
-      cx={x}
-      cy={y}
-      r={r}
-      className={look === 'alarm' ? styles.dotAlarm : styles.dot}
-    />
-  )
-}
-
 // A part of a drawing that opens the rows of the box `opens`. `name` is what a
 // screen reader hears, where the box's own name would not say which part it is.
 export function PickPart({
@@ -355,6 +331,30 @@ export function Bend({
       <path d={hit} className={styles.wireHit} />
       {children}
     </Pressable>
+  )
+}
+
+// CROSS_REPO_SYNC_END(diagram-parts)
+
+// A junction where wires meet, or a wire soldered on where the board had none.
+export function Dot({
+  x,
+  y,
+  r = 1.6,
+  look = 'plain',
+}: {
+  x: number
+  y: number
+  r?: number
+  look?: 'plain' | 'alarm'
+}) {
+  return (
+    <circle
+      cx={x}
+      cy={y}
+      r={r}
+      className={look === 'alarm' ? styles.dotAlarm : styles.dot}
+    />
   )
 }
 
